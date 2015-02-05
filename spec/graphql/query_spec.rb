@@ -2,8 +2,7 @@ require 'spec_helper'
 
 describe GraphQL::Query do
   let(:query_string) { "post(123) { title, content } "}
-  let(:namespace) { Nodes }
-  let(:query) { GraphQL::Query.new(query_string, namespace: namespace) }
+  let(:query) { GraphQL::Query.new(query_string, namespace: Nodes) }
 
   describe '#root' do
     it 'contains the first node of the graph' do

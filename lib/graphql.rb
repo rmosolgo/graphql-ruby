@@ -3,7 +3,7 @@ require "active_support/core_ext/string/inflections"
 require "active_support/core_ext/object/blank"
 
 module GraphQL
-  VERSION = "0.0.0"
+  VERSION = "0.0.1"
 
   autoload(:CollectionEdge,   "graphql/collection_edge")
   autoload(:Parser,           "graphql/parser")
