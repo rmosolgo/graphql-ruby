@@ -154,7 +154,6 @@ describe GraphQL::Query do
     describe  'when making calls on the edge' do
       let(:query_string) { "post(123) { comments { average_rating } }"}
 
-      focus
       it 'executes those calls' do
         assert_equal query.to_json, {
             "123" => {
