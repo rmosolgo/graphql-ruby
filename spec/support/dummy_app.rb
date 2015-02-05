@@ -52,7 +52,7 @@ class Post < InadequateRecordBase
 end
 
 class Comment < InadequateRecordBase
-  attr_accessor :id, :post_id, :content
+  attr_accessor :id, :post_id, :content, :rating
 
   def post
     Post.find(post_id)

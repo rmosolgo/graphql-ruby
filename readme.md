@@ -4,8 +4,6 @@
 - Your app can implement nodes
 - You can pass strings to `GraphQL::Query` and execute them with your nodes
 
-See [`/spec/support/dummy_app/nodes.rb`](https://github.com/rmosolgo/graphql/blob/master/spec/support/nodes.rb) for node examples.
-
 __Nodes__ provide information to queries by mapping to application objects (via `.call` and `.field_reader`) or implementing fields themselves (eg `Nodes::PostNode#teaser`, `Nodes::ViewerNode`).
 
 __Edges__ handle node-to-node relationships. Calls are provided to `#apply_calls(items, call_hash)` as a hash of `callname => argument` pairs. Your app decides which calls to handle and how to handle them.
@@ -18,6 +16,8 @@ __Edges__ handle node-to-node relationships. Calls are provided to `#apply_calls
 - What do graphql mutation queries even look like?
 
 ## For example
+
+See [`/spec/support/dummy_app/nodes.rb`](https://github.com/rmosolgo/graphql/blob/master/spec/support/nodes.rb) for node & edge examples.
 
 You could implement nodes that map to objects in a Rails app.
 

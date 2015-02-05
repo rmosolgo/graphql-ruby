@@ -28,8 +28,11 @@ class GraphQL::CollectionEdge
     unfiltered_items
   end
 
+  def filtered_items
+    @filtered_items ||= apply_calls(items, calls)
+  end
+
   def edges(fields:)
-    filtered_items = apply_calls(items, calls)
     filtered_items.map do |item|
       node = edge_class.new(item)
       json = {}

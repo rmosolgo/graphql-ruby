@@ -4,7 +4,7 @@ module Nodes
     cursor :id
 
     edges :comments,
-      collection_class_name: "Nodes::ApplicationCollectionEdge"
+      collection_class_name: "Nodes::CommentsEdge"
 
     def teaser
       content.length > 10 ? "#{content[0..9]}..." : content
@@ -53,6 +53,13 @@ module Nodes
       end
 
       filtered_items
+    end
+  end
+
+  class CommentsEdge < ApplicationCollectionEdge
+    def average_rating
+      total_rating = filtered_items.map(&:rating).inject(&:+).to_f
+      total_rating / filtered_items.size
     end
   end
 end

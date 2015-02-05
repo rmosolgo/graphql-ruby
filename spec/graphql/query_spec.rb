@@ -6,8 +6,8 @@ describe GraphQL::Query do
 
   before do
     @post = Post.create(id: 123, content: "So many great things", title: "My great post")
-    @comment1 = Comment.create(id: 444, post_id: 123, content: "I agree")
-    @comment2 = Comment.create(id: 445, post_id: 123, content: "I disagree")
+    @comment1 = Comment.create(id: 444, post_id: 123, content: "I agree", rating: 5)
+    @comment2 = Comment.create(id: 445, post_id: 123, content: "I disagree", rating: 1)
   end
 
   after do
@@ -146,6 +146,19 @@ describe GraphQL::Query do
                   }
                 ]
               }
+            }
+          }
+      end
+    end
+
+    describe  'when making calls on the edge' do
+      let(:query_string) { "post(123) { comments { average_rating } }"}
+
+      focus
+      it 'executes those calls' do
+        assert_equal query.to_json, {
+            "123" => {
+              "comments" => { "average_rating" => 3 }
             }
           }
       end
