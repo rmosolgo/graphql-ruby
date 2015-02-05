@@ -13,6 +13,7 @@ class GraphQL::Query
     root_node = make_call(nil, root.identifier, root.argument)
     raise "Couldn't find root for #{root.identifier}(#{root.argument})" if root.nil?
 
+    root_node.query = self
     root_node.fields = root.fields
     {
       root_node.cursor => root_node.to_json

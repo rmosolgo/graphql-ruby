@@ -1,5 +1,5 @@
 class GraphQL::Node
-  attr_accessor :fields
+  attr_accessor :fields, :query
 
   def initialize(target=nil)
     # DONT EXPOSE Node#target! otherwise you might be able to access it
@@ -24,6 +24,7 @@ class GraphQL::Node
         edge = safe_send(field.identifier)
         edge.calls = field.call_hash
         edge.fields = field.fields
+        edge.query = query
         json[name] = edge.to_json
       end
     end
@@ -43,11 +44,11 @@ class GraphQL::Node
     end
   end
 
-  def self.edges(field_name, collection_class_name:, edge_class_name:)
+  def self.edges(field_name, collection_class_name:, edge_class_name: nil)
     define_method(field_name) do
       collection_items = @target.send(field_name)
       collection_class = Object.const_get(collection_class_name)
-      edge_class = Object.const_get(edge_class_name)
+      edge_class = edge_class_name.nil? ? query.get_node(field_name.to_s.singularize) : Object.const_get(edge_class_name)
       collection = collection_class.new(items: collection_items, edge_class: edge_class)
     end
   end

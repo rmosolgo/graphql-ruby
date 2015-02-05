@@ -1,5 +1,5 @@
 class GraphQL::CollectionEdge
-  attr_accessor :fields, :edge_class, :calls, :fields
+  attr_accessor :fields, :edge_class, :calls, :fields, :query
 
   def initialize(items:, edge_class:)
     @items = items

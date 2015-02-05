@@ -4,8 +4,7 @@ module Nodes
     cursor :id
 
     edges :comments,
-      collection_class_name: "Nodes::ApplicationCollectionEdge",
-      edge_class_name: "Nodes::CommentNode"
+      collection_class_name: "Nodes::ApplicationCollectionEdge"
 
     def teaser
       content.length > 10 ? "#{content[0..9]}..." : content
