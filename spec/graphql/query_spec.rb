@@ -4,6 +4,18 @@ describe GraphQL::Query do
   let(:query_string) { "post(123) { title, content } "}
   let(:query) { GraphQL::Query.new(query_string, namespace: Nodes) }
 
+  before do
+    @post = Post.create(id: 123, content: "So many great things", title: "My great post")
+    @comment1 = Comment.create(id: 444, post_id: 123, content: "I agree")
+    @comment2 = Comment.create(id: 445, post_id: 123, content: "I disagree")
+  end
+
+  after do
+    @post.destroy
+    @comment1.destroy
+    @comment2.destroy
+  end
+
   describe '#root' do
     it 'contains the first node of the graph' do
       assert query.root.is_a?(GraphQL::Syntax::Node)
@@ -11,17 +23,6 @@ describe GraphQL::Query do
   end
 
   describe '#to_json' do
-    before do
-      @post = Post.create(id: 123, content: "So many great things", title: "My great post")
-      @comment1 = Comment.create(id: 444, post_id: 123, content: "I agree")
-      @comment2 = Comment.create(id: 445, post_id: 123, content: "I disagree")
-    end
-
-    after do
-      @post.destroy
-      @comment1.destroy
-      @comment2.destroy
-    end
 
     it 'performs the root node call' do
       assert_send([Nodes::PostNode, :call, "123"])
@@ -148,6 +149,21 @@ describe GraphQL::Query do
             }
           }
       end
+    end
+  end
+
+  describe '.default_namespace=' do
+    let(:query) { GraphQL::Query.new(query_string) }
+    after { GraphQL::Query.default_namespace = nil }
+
+    it 'uses that namespace for lookups' do
+      GraphQL::Query.default_namespace = Nodes
+      assert_equal query.to_json, {
+        "123" => {
+          "title" => "My great post",
+          "content" => "So many great things"
+        }
+      }
     end
   end
 end

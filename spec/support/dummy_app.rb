@@ -53,6 +53,7 @@ end
 
 class Comment < InadequateRecordBase
   attr_accessor :id, :post_id, :content
+
   def post
     Post.find(post_id)
   end
