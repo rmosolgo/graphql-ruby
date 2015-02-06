@@ -85,10 +85,10 @@ PLATFORMS
 
 DEPENDENCIES
   graphql!
-  guard
-  guard-bundler
-  guard-minitest
-  minitest
-  minitest-focus
-  minitest-reporters
-  rake
+  guard (>= 2.1)
+  guard-bundler (>= 2.1)
+  guard-minitest (>= 2.1)
+  minitest (>= 5.5)
+  minitest-focus (>= 1.1)
+  minitest-reporters (>= 1.0)
+  rake (>= 10)
