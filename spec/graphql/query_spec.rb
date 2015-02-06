@@ -8,12 +8,16 @@ describe GraphQL::Query do
     @post = Post.create(id: 123, content: "So many great things", title: "My great post")
     @comment1 = Comment.create(id: 444, post_id: 123, content: "I agree", rating: 5)
     @comment2 = Comment.create(id: 445, post_id: 123, content: "I disagree", rating: 1)
+    @like1 = Like.create(id: 991, post_id: 123)
+    @like2 = Like.create(id: 992, post_id: 123)
   end
 
   after do
     @post.destroy
     @comment1.destroy
     @comment2.destroy
+    @like1.destroy
+    @like2.destroy
   end
 
   describe '#root' do
@@ -143,6 +147,19 @@ describe GraphQL::Query do
           "content" => "So many great things"
         }
       }
+    end
+  end
+
+  describe 'when edge nodes were named explicitly' do
+    let(:query_string) { "post(123) { likes { any, edges { node { id } } } }"}
+    let(:result) { query.as_json }
+
+    it 'gets node values' do
+      assert_equal [991,992], result["123"]["likes"]["edges"].map {|e|  e["node"]["id"] }
+    end
+
+    it 'gets edge values' do
+      assert_equal true, result["123"]["likes"]["any"]
     end
   end
 end

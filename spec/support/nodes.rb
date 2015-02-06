@@ -5,8 +5,11 @@ module Nodes
     field_reader :id, :title, :content
     cursor :id
 
-    edges :comments,
-      collection_class_name: "Nodes::CommentsEdge"
+    edges :comments
+
+    edges :likes,
+      edge_class_name: "Nodes::ThumbUpEdge",
+      node_class_name: "Nodes::ThumbUpNode"
 
     def teaser
       content.length > 10 ? "#{content[0..9]}..." : content
@@ -26,6 +29,11 @@ module Nodes
       obj = Comment.find(argument)
       self.new(obj)
     end
+  end
+
+  # wraps a Like, for testing explicit name
+  class ThumbUpNode < GraphQL::Node
+    field_reader :id
   end
 
   class ViewerNode < GraphQL::Node
@@ -62,6 +70,13 @@ module Nodes
     def average_rating
       total_rating = filtered_items.map(&:rating).inject(&:+).to_f
       total_rating / filtered_items.size
+    end
+  end
+
+  # Wraps Likes, for testing explicit naming
+  class ThumbUpEdge < ApplicationCollectionEdge
+    def any
+      filtered_items.any?
     end
   end
 end

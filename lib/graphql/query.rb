@@ -25,6 +25,11 @@ class GraphQL::Query
     namespace.const_get(name.camelize)
   end
 
+  def get_edge(identifier)
+    name = "#{identifier}_edge"
+    namespace.const_get(name.camelize)
+  end
+
   def make_call(context, name, *arguments)
     if context.nil?
       context = get_node(name)

@@ -44,12 +44,12 @@ class GraphQL::Node
     end
   end
 
-  def self.edges(field_name, collection_class_name:, edge_class_name: nil)
+  def self.edges(field_name, edge_class_name: nil, node_class_name: nil)
     define_method(field_name) do
       collection_items = @target.send(field_name)
-      collection_class = Object.const_get(collection_class_name)
-      edge_class = edge_class_name.nil? ? query.get_node(field_name.to_s.singularize) : Object.const_get(edge_class_name)
-      collection = collection_class.new(items: collection_items, edge_class: edge_class)
+      edge_class = edge_class_name.nil? ? query.get_edge(field_name.to_s) : Object.const_get(edge_class_name)
+      node_class = node_class_name.nil? ? query.get_node(field_name.to_s.singularize) : Object.const_get(node_class_name)
+      collection = edge_class.new(items: collection_items, node_class: node_class)
     end
   end
 

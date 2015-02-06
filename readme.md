@@ -3,18 +3,16 @@
 [![Build Status](https://travis-ci.org/rmosolgo/graphql-ruby.svg?branch=master)](https://travis-ci.org/rmosolgo/graphql-ruby)
 [![Gem Version](https://badge.fury.io/rb/graphql.svg)](http://badge.fury.io/rb/graphql)
 
-- Parser & tranform from [parslet](http://kschiess.github.io/parslet/)
-- Your app can implement nodes
-- You can pass strings to `GraphQL::Query` and execute them with your nodes
+Create a GraphQL interface by implementing _nodes_ and _edges_, then running queries.
 
-__Nodes__ provide information to queries by mapping to application objects (via `.call` and `.field_reader`) or implementing fields themselves (eg `Nodes::PostNode#teaser`, `Nodes::ViewerNode`).
+__Nodes__ provide information to queries by mapping to application objects via `.call` and `.field_reader`. They can wrap existing objects (like models) or provide data by implementing methods.
 
 __Edges__ handle node-to-node relationships. Calls are provided to `#apply_calls(items, call_hash)` as a hash of `callname => argument` pairs. Your app decides which calls to handle and how to handle them.
 
+__Queries__ are made with `GraphQL::Query.new(query_string, namespace:)`. Use `Query#as_json` to get the result of a query.
 
 ## To do:
 
-- Better class inference. Declaring edge classes is stupid.
 - How to authenticate?
 - What do graphql mutation queries even look like?
 

@@ -49,6 +49,10 @@ class Post < InadequateRecordBase
   def comments
     Comment.where(post_id: id)
   end
+
+  def likes
+    Like.where(post_id: id)
+  end
 end
 
 class Comment < InadequateRecordBase
@@ -59,4 +63,10 @@ class Comment < InadequateRecordBase
   end
 end
 
+class Like < InadequateRecordBase
+  attr_accessor :id, :post_id
 
+  def post
+    Post.find(post_id)
+  end
+end

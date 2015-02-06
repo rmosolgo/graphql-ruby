@@ -1,9 +1,9 @@
 class GraphQL::CollectionEdge
-  attr_accessor :fields, :edge_class, :calls, :fields, :query
+  attr_accessor :fields, :node_class, :calls, :fields, :query
 
-  def initialize(items:, edge_class:)
+  def initialize(items:, node_class:)
     @items = items
-    @edge_class = edge_class
+    @node_class = node_class
   end
 
   def as_json
@@ -34,7 +34,7 @@ class GraphQL::CollectionEdge
 
   def edges(fields:)
     filtered_items.map do |item|
-      node = edge_class.new(item)
+      node = node_class.new(item)
       json = {}
       fields.each do |field|
         name = field.identifier
