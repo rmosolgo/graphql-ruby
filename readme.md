@@ -1,6 +1,7 @@
 # graphql
 
 [![Build Status](https://travis-ci.org/rmosolgo/graphql-ruby.svg?branch=master)](https://travis-ci.org/rmosolgo/graphql-ruby)
+[![Gem Version](https://badge.fury.io/rb/graphql.svg)](http://badge.fury.io/rb/graphql)
 
 - Parser & tranform from [parslet](http://kschiess.github.io/parslet/)
 - Your app can implement nodes
