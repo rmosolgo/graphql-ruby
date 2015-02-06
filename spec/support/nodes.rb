@@ -1,3 +1,5 @@
+require 'graphql'
+
 module Nodes
   class PostNode < GraphQL::Node
     field_reader :id, :title, :content

@@ -65,15 +65,7 @@ describe GraphQL::Query do
     describe  'when requesting a collection' do
       let(:query_string) { "post(123) {
           title,
-          comments {
-            count,
-            edges {
-              cursor,
-              node {
-                content
-              }
-            }
-          }
+          comments { count, edges { cursor, node { content } } }
         }"}
       it 'returns collection data' do
         assert_equal query.as_json, {
@@ -82,56 +74,31 @@ describe GraphQL::Query do
               "comments" => {
                 "count" => 2,
                 "edges" => [
-                  {
-                    "cursor" => "444",
-                    "node" => {
-                      "content" => "I agree"
-                    }
-                  },
-                  {
-                    "cursor" => "445",
-                    "node" => {
-                      "content" => "I disagree"
-                    }
-                  }
+                  { "cursor" => "444", "node" => {"content" => "I agree"} },
+                  { "cursor" => "445", "node" => {"content" => "I disagree"}}
                 ]
-              }
-            }
-          }
+            }}}
       end
     end
 
     describe  'when making calls on a collection' do
-      let(:query_string) { "post(123) {
-          comments.first(1) {
-            edges { cursor, node { content } }
-          }
-        }"}
+      let(:query_string) { "post(123) { comments.first(1) { edges { cursor, node { content } } } }"}
 
       it 'executes those calls' do
         assert_equal query.as_json, {
             "123" => {
               "comments" => {
                 "edges" => [
-                  {
-                    "cursor" => "444",
-                    "node" => {
-                      "content" => "I agree"
-                    }
-                  }
+                  { "cursor" => "444", "node" => { "content" => "I agree"} }
                 ]
-              }
-            }
-          }
+            }}}
       end
     end
 
     describe  'when making DEEP calls on a collection' do
-      let(:query_string) { "post(123) {
-          comments.after(444).first(1) {
+      let(:query_string) { "post(123) { comments.after(444).first(1) {
             edges { cursor, node { content } }
-          }
-        }"}
+          }}"}
 
       it 'executes those calls' do
         assert_equal query.as_json, {
@@ -140,26 +107,26 @@ describe GraphQL::Query do
                 "edges" => [
                   {
                     "cursor" => "445",
-                    "node" => {
-                      "content" => "I disagree"
-                    }
+                    "node" => { "content" => "I disagree"}
                   }
                 ]
-              }
-            }
-          }
+            }}}
       end
     end
 
-    describe  'when making calls on the edge' do
+    describe  'when requesting fields at collection-level' do
       let(:query_string) { "post(123) { comments { average_rating } }"}
 
       it 'executes those calls' do
-        assert_equal query.as_json, {
-            "123" => {
-              "comments" => { "average_rating" => 3 }
-            }
-          }
+        assert_equal query.as_json, { "123" => { "comments" => { "average_rating" => 3 } } }
+      end
+    end
+
+    describe  'when requesting collection-level fields that dont exist' do
+      let(:query_string) { "post(123) { comments { bogus_field } }"}
+
+      it 'raises FieldNotDefined' do
+        assert_raises(GraphQL::FieldNotDefinedError) { query.as_json }
       end
     end
   end
