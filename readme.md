@@ -1,5 +1,7 @@
 # graphql
 
+[![Build Status](https://travis-ci.org/rmosolgo/graphql-ruby.svg?branch=master)](https://travis-ci.org/rmosolgo/graphql-ruby)
+
 - Parser & tranform from [parslet](http://kschiess.github.io/parslet/)
 - Your app can implement nodes
 - You can pass strings to `GraphQL::Query` and execute them with your nodes
