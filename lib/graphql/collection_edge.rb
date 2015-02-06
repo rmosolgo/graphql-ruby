@@ -6,7 +6,7 @@ class GraphQL::CollectionEdge
     @edge_class = edge_class
   end
 
-  def to_json
+  def as_json
     json = {}
     fields.each do |field|
       name = field.identifier
@@ -40,7 +40,7 @@ class GraphQL::CollectionEdge
         name = field.identifier
         if name == "node" # it's magic
           node.fields = field.fields
-          json[name] = node.to_json
+          json[name] = node.as_json
         else
           json[name] = node.safe_send(name)
         end

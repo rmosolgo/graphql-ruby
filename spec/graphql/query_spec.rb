@@ -22,15 +22,15 @@ describe GraphQL::Query do
     end
   end
 
-  describe '#to_json' do
+  describe '#as_json' do
 
     it 'performs the root node call' do
       assert_send([Nodes::PostNode, :call, "123"])
-      query.to_json
+      query.as_json
     end
 
     it 'finds fields that delegate to a target' do
-      assert_equal query.to_json, {
+      assert_equal query.as_json, {
         "123" => {
           "title" => "My great post",
           "content" => "So many great things"
@@ -41,7 +41,7 @@ describe GraphQL::Query do
     describe 'when requesting fields defined on the node' do
       let(:query_string) { "post(123) { teaser } "}
       it 'finds fields defined on the node' do
-        assert_equal query.to_json, { "123" => { "teaser" => @post.content[0,10] + "..."}}
+        assert_equal query.as_json, { "123" => { "teaser" => @post.content[0,10] + "..."}}
       end
     end
 
@@ -49,7 +49,7 @@ describe GraphQL::Query do
     describe 'when requesting an undefined field' do
       let(:query_string) { "post(123) { destroy } "}
       it 'raises a FieldNotDefined error' do
-        assert_raises(GraphQL::FieldNotDefinedError) { query.to_json }
+        assert_raises(GraphQL::FieldNotDefinedError) { query.as_json }
         assert(Post.find(123).present?)
       end
     end
@@ -58,7 +58,7 @@ describe GraphQL::Query do
       let(:query_string) { "viewer() { name }"}
       it 'calls the node with nil' do
         assert_send([Nodes::ViewerNode, :call, nil])
-        query.to_json
+        query.as_json
       end
     end
 
@@ -76,7 +76,7 @@ describe GraphQL::Query do
           }
         }"}
       it 'returns collection data' do
-        assert_equal query.to_json, {
+        assert_equal query.as_json, {
             "123" => {
               "title" => "My great post",
               "comments" => {
@@ -109,7 +109,7 @@ describe GraphQL::Query do
         }"}
 
       it 'executes those calls' do
-        assert_equal query.to_json, {
+        assert_equal query.as_json, {
             "123" => {
               "comments" => {
                 "edges" => [
@@ -134,7 +134,7 @@ describe GraphQL::Query do
         }"}
 
       it 'executes those calls' do
-        assert_equal query.to_json, {
+        assert_equal query.as_json, {
             "123" => {
               "comments" => {
                 "edges" => [
@@ -155,7 +155,7 @@ describe GraphQL::Query do
       let(:query_string) { "post(123) { comments { average_rating } }"}
 
       it 'executes those calls' do
-        assert_equal query.to_json, {
+        assert_equal query.as_json, {
             "123" => {
               "comments" => { "average_rating" => 3 }
             }
@@ -170,7 +170,7 @@ describe GraphQL::Query do
 
     it 'uses that namespace for lookups' do
       GraphQL::Query.default_namespace = Nodes
-      assert_equal query.to_json, {
+      assert_equal query.as_json, {
         "123" => {
           "title" => "My great post",
           "content" => "So many great things"

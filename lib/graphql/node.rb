@@ -14,7 +14,7 @@ class GraphQL::Node
     end
   end
 
-  def to_json
+  def as_json
     json = {}
     fields.each do |field|
       name = field.identifier
@@ -25,7 +25,7 @@ class GraphQL::Node
         edge.calls = field.call_hash
         edge.fields = field.fields
         edge.query = query
-        json[name] = edge.to_json
+        json[name] = edge.as_json
       end
     end
     json
