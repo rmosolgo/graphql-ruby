@@ -173,4 +173,22 @@ describe GraphQL::Query do
       end
     end
   end
+
+  describe 'parsing error' do
+    let(:query_string) { "\n\n<< bogus >>"}
+
+    it 'raises SyntaxError' do
+      assert_raises(GraphQL::SyntaxError) { result }
+    end
+
+    it 'contains line an character number' do
+      err = assert_raises(GraphQL::SyntaxError) { result }
+      assert_match(/1, 1/, err.to_s)
+    end
+
+    it 'contains sample of text' do
+      err = assert_raises(GraphQL::SyntaxError) { result }
+      assert_includes(err.to_s, "<< bogus >>")
+    end
+  end
 end

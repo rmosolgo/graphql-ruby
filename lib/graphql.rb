@@ -27,4 +27,10 @@ module GraphQL
       super("#{node_name} was requested but was not found")
     end
   end
+  class SyntaxError < RuntimeError
+    def initialize(line, col, string)
+      lines = string.split("\n")
+      super("Syntax Error at (#{line}, #{col}), check usage: #{string}")
+    end
+  end
 end

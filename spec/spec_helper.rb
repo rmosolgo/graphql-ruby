@@ -1,7 +1,7 @@
 require "minitest/autorun"
 require "minitest/focus"
 require "minitest/reporters"
-
+require 'pry'
 Minitest::Reporters.use! Minitest::Reporters::SpecReporter.new
 
 # Filter out Minitest backtrace while allowing backtrace from other libraries

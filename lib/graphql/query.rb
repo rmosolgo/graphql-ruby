@@ -68,5 +68,8 @@ class GraphQL::Query
   def parse(query_string)
     parsed_hash = GraphQL::PARSER.parse(query_string)
     root_node = GraphQL::TRANSFORM.apply(parsed_hash)
+  rescue Parslet::ParseFailed => error
+    line, col = error.cause.source.line_and_column
+    raise GraphQL::SyntaxError.new(line, col, query_string)
   end
 end

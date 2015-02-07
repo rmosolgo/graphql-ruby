@@ -12,7 +12,7 @@ Gem::Specification.new do |s|
   s.authors     = ["Robert Mosolgo"]
   s.email       = ['rdmosolgo@gmail.com']
   s.license     = "MIT"
-  s.required_ruby_version = '>= 2.1.0' # bc keyword args
+  s.required_ruby_version = '>= 2.1.0' # bc optional keyword args
 
   s.files = Dir["{lib}/**/*", "MIT-LICENSE", "readme.md"]
   s.test_files = Dir["spec/**/*"]
@@ -20,6 +20,7 @@ Gem::Specification.new do |s|
   s.add_dependency "activesupport", ">= 4"
   s.add_dependency "parslet", ">= 1.6.2"
 
+  s.add_development_dependency "pry", ">= 0.10"
   s.add_development_dependency "guard", ">= 2.1"
   s.add_development_dependency "guard-bundler", ">= 2.1"
   s.add_development_dependency "guard-minitest", ">= 2.1"

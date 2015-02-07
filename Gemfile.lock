@@ -91,4 +91,5 @@ DEPENDENCIES
   minitest (>= 5.5)
   minitest-focus (>= 1.1)
   minitest-reporters (>= 1.0)
+  pry (>= 0.10)
   rake (>= 10)
