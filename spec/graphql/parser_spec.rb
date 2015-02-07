@@ -1,9 +1,6 @@
 require 'spec_helper'
 
 describe GraphQL::Parser do
-  let(:node_name) { "" }
-  let(:fields) { "id, name"}
-  let(:query) { "#{node_name} { #{fields} }"}
   let(:parser) { GraphQL::PARSER }
 
   describe 'field' do

@@ -17,8 +17,7 @@ class GraphQL::Node
     elsif field.nil?
       raise GraphQL::FieldNotDefinedError, "#{self.class.name}##{identifier} was requested, but it isn't defined."
     else
-      method_name = field[:method] || field[:name]
-      send_field(method_name)
+      send_field(field.method)
     end
   end
 
@@ -27,11 +26,11 @@ class GraphQL::Node
     if edge.nil?
       raise GraphQL::FieldNotDefinedError, "#{self.class.name}##{identifier} was requested, but it isn't defined."
     else
-      edge_class_name = edge[:edge_class_name]
-      node_class_name = edge[:node_class_name]
-      collection_items = send_field(edge[:method] || edge[:name])
-      edge_class = edge_class_name.nil? ? query.get_edge(edge[:name].to_s) : Object.const_get(edge_class_name)
-      node_class = node_class_name.nil? ? query.get_node(edge[:name].to_s.singularize) : Object.const_get(node_class_name)
+      edge_class_name = edge.edge_class_name
+      node_class_name = edge.node_class_name
+      collection_items = send_field(edge.method)
+      edge_class = edge_class_name.nil? ? query.get_edge(edge.name.to_s) : Object.const_get(edge_class_name)
+      node_class = node_class_name.nil? ? query.get_node(edge.name.to_s.singularize) : Object.const_get(node_class_name)
       collection = edge_class.new(items: collection_items, node_class: node_class)
     end
   end
@@ -78,7 +77,7 @@ class GraphQL::Node
     end
 
     def find_field(identifier)
-      fields.find { |f| f[:name] == identifier.to_s }
+      fields.find { |f| f.name == identifier.to_s }
     end
 
     def desc(describe)
@@ -107,24 +106,19 @@ class GraphQL::Node
   def self.field(field_name, method: nil, description: nil, type: nil)
     field_name = field_name.to_s
     raise "You already defined #{field_name}" if has_field?(field_name)
-    fields << {
-      name: field_name,
-      method: method,
-      description: description,
-      type: type,
-    }
+    fields << GraphQL::Field.new(name: field_name, method: method)
   end
 
   def self.edges(field_name, method: nil, description: nil, edge_class_name: nil, node_class_name: nil)
     field_name = field_name.to_s
     raise "You already defined #{field_name}" if has_field?(field_name)
-    fields << {
+    fields << GraphQL::Field.new({
       name: field_name,
       method: method,
       description: description,
       edge_class_name: edge_class_name,
       node_class_name: node_class_name,
-    }
+    })
   end
 
   def self.cursor(field_name)

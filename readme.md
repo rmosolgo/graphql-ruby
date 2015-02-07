@@ -21,6 +21,7 @@ __Queries__ are made with `GraphQL::Query.new(query_string, namespace:)`. Use `Q
 - Implement `page_info`
 - Implement calls as arguments
 - Syntax for aliasing edges?
+- `field_hash` should be `GraphQL::Field`
 
 ## For example
 

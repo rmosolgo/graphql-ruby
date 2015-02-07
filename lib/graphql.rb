@@ -4,6 +4,7 @@ require "active_support/core_ext/object/blank"
 
 module GraphQL
   autoload(:CollectionEdge,   "graphql/collection_edge")
+  autoload(:Field,            "graphql/field")
   autoload(:Parser,           "graphql/parser")
   autoload(:Query,            "graphql/query")
   autoload(:Node,             "graphql/node")

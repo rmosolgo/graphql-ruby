@@ -39,16 +39,16 @@ describe GraphQL::Transform do
       end
     end
 
-
     it 'turns edge into an Edge' do
       tree = parser.edge.parse("friends.orderby(name, birthdate).first(2) { count, edges { node { name } } }")
       res = transform.apply(tree)
       assert(res.is_a?(GraphQL::Syntax::Edge), 'it gets the Edge')
-      assert(res.identifier == "friends")
-      assert(res.calls.length == 2, 'it tracks calls')
-      assert(res.calls[0].identifier == "orderby")
-      assert(res.calls[1].identifier == "first")
-      assert_equal(res.call_hash, {"orderby" => ["name", "birthdate"], "first" => ["2"]})
+      assert_equal "friends", res.identifier
+      assert_equal 2, res.calls.length
+      assert_equal "orderby", res.calls[0].identifier
+      assert_equal ["name", "birthdate"], res.calls[0].arguments
+      assert_equal "first", res.calls[1].identifier
+      assert_equal ["2"], res.calls[1].arguments
     end
 
     it 'turns call into a Call' do
