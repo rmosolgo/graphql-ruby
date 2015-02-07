@@ -1,12 +1,13 @@
 class GraphQL::Query
-  attr_reader :query_string, :root, :namespace
-  def initialize(query_string, namespace: nil)
+  attr_reader :query_string, :root, :namespace, :context
+  def initialize(query_string, namespace: nil, context: nil)
     if !query_string.is_a?(String) || query_string.length == 0
       raise "You must send a query string, not a #{query_string.class.name}"
     end
     @query_string = query_string
     @root = parse(query_string)
     @namespace = namespace || self.class.default_namespace || Object
+    @context = context
   end
 
   def as_json

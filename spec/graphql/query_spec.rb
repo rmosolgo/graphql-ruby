@@ -2,7 +2,9 @@ require 'spec_helper'
 
 describe GraphQL::Query do
   let(:query_string) { "post(123) { title, content } "}
-  let(:query) { GraphQL::Query.new(query_string, namespace: Nodes) }
+  let(:context) { {person_name: "Han Solo" }}
+  let(:query) { GraphQL::Query.new(query_string, namespace: Nodes, context: context) }
+  let(:result) { query.as_json }
 
   before do
     @post = Post.create(id: 123, content: "So many great things", title: "My great post")
@@ -34,18 +36,13 @@ describe GraphQL::Query do
     end
 
     it 'finds fields that delegate to a target' do
-      assert_equal query.as_json, {
-        "123" => {
-          "title" => "My great post",
-          "content" => "So many great things"
-        }
-      }
+      assert_equal result, {"123" => {"title" => "My great post", "content" => "So many great things"}}
     end
 
     describe 'when requesting fields defined on the node' do
       let(:query_string) { "post(123) { teaser } "}
       it 'finds fields defined on the node' do
-        assert_equal query.as_json, { "123" => { "teaser" => @post.content[0,10] + "..."}}
+        assert_equal result, { "123" => { "teaser" => @post.content[0,10] + "..."}}
       end
     end
 
@@ -72,7 +69,7 @@ describe GraphQL::Query do
           comments { count, edges { cursor, node { content } } }
         }"}
       it 'returns collection data' do
-        assert_equal query.as_json, {
+        assert_equal result, {
             "123" => {
               "title" => "My great post",
               "comments" => {
@@ -89,7 +86,7 @@ describe GraphQL::Query do
       let(:query_string) { "post(123) { comments.first(1) { edges { cursor, node { content } } } }"}
 
       it 'executes those calls' do
-        assert_equal query.as_json, {
+        assert_equal result, {
             "123" => {
               "comments" => {
                 "edges" => [
@@ -105,7 +102,7 @@ describe GraphQL::Query do
           }}"}
 
       it 'executes those calls' do
-        assert_equal query.as_json, {
+        assert_equal result, {
             "123" => {
               "comments" => {
                 "edges" => [
@@ -122,7 +119,7 @@ describe GraphQL::Query do
       let(:query_string) { "post(123) { comments { average_rating } }"}
 
       it 'executes those calls' do
-        assert_equal query.as_json, { "123" => { "comments" => { "average_rating" => 3 } } }
+        assert_equal result, { "123" => { "comments" => { "average_rating" => 3 } } }
       end
     end
 
@@ -141,7 +138,7 @@ describe GraphQL::Query do
 
     it 'uses that namespace for lookups' do
       GraphQL::Query.default_namespace = Nodes
-      assert_equal query.as_json, {
+      assert_equal result, {
         "123" => {
           "title" => "My great post",
           "content" => "So many great things"
@@ -150,9 +147,8 @@ describe GraphQL::Query do
     end
   end
 
-  describe 'when edge nodes were named explicitly' do
+  describe 'when edge classes were named explicitly' do
     let(:query_string) { "post(123) { likes { any, edges { node { id } } } }"}
-    let(:result) { query.as_json }
 
     it 'gets node values' do
       assert_equal [991,992], result["123"]["likes"]["edges"].map {|e|  e["node"]["id"] }
@@ -160,6 +156,21 @@ describe GraphQL::Query do
 
     it 'gets edge values' do
       assert_equal true, result["123"]["likes"]["any"]
+    end
+  end
+
+  describe '#context' do
+    let(:query_string) { "context() { person_name }"}
+
+    it 'is accessible inside nodes' do
+      assert_equal result, {"context" => {"person_name" => "Han Solo"}}
+    end
+
+    describe 'inside edges' do
+      let(:query_string) { "post(123) { comments { viewer_name_length } }"}
+      it 'is accessible' do
+        assert_equal 8, result["123"]["comments"]["viewer_name_length"]
+      end
     end
   end
 end

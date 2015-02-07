@@ -57,6 +57,10 @@ class GraphQL::CollectionEdge
     end
   end
 
+  def context
+    query.context
+  end
+
   private
 
   def items

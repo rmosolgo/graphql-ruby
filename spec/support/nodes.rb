@@ -60,6 +60,22 @@ module Nodes
     end
   end
 
+  class ContextNode < GraphQL::Node
+    field :person_name
+
+    def person_name
+      context[:person_name]
+    end
+
+    def cursor
+      "context"
+    end
+
+    def self.call
+      self.new
+    end
+  end
+
   class ApplicationCollectionEdge < GraphQL::CollectionEdge
     def apply_calls(items, calls)
       filtered_items = items
@@ -77,6 +93,11 @@ module Nodes
   end
 
   class CommentsEdge < ApplicationCollectionEdge
+    # just to test context:
+    def viewer_name_length
+      context[:person_name].length
+    end
+
     def average_rating
       total_rating = filtered_items.map(&:rating).inject(&:+).to_f
       total_rating / filtered_items.size

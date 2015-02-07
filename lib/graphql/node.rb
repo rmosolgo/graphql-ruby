@@ -63,6 +63,10 @@ class GraphQL::Node
     json
   end
 
+  def context
+    query.context
+  end
+
   class << self
     def fields
       @fields ||= []
