@@ -51,7 +51,8 @@ class GraphQL::Node
     fields.each do |field|
       name = field.identifier
       if field.is_a?(GraphQL::Syntax::Field)
-        json[name] = get_field(name)
+        key_name = field.alias_name || field.identifier
+        json[key_name] = get_field(name)
       elsif field.is_a?(GraphQL::Syntax::Edge)
         edge = get_edge(field.identifier)
         edge.calls = field.call_hash

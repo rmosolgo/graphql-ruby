@@ -11,7 +11,7 @@ class GraphQL::Parser < Parslet::Parser
   rule(:call) { identifier >> str("(") >> (name.as(:argument) >> separator?).repeat(0).as(:arguments) >> str(")") }
   rule(:dot) { str(".") }
 
-  rule(:field) { identifier }
+  rule(:field) { identifier >> (space >> str("as") >> space >> name.as(:alias_name)).maybe }
 
   rule(:separator?) { str(",").maybe >> space? }
   rule(:identifier) { name.as(:identifier) }

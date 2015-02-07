@@ -12,6 +12,10 @@ describe GraphQL::Parser do
       assert field.parse_with_debug("name")
       assert field.parse_with_debug("date_of_birth")
     end
+
+    it 'finds aliases' do
+      assert field.parse_with_debug("name as moniker")
+    end
   end
 
   describe 'edge' do

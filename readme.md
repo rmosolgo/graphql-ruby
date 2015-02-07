@@ -1,7 +1,7 @@
 # graphql
 
 [![Build Status](https://travis-ci.org/rmosolgo/graphql-ruby.svg?branch=master)](https://travis-ci.org/rmosolgo/graphql-ruby)
-[![Gem Version](https://badge.fury.io/rb/graphql.svg)](http://badge.fury.io/rb/graphql)
+[![Gem Version](https://badge.fury.io/rb/graphql.svg)](https://rubygems.org/gems/graphql)
 
 Create a GraphQL interface by implementing _nodes_ and _edges_, then running queries.
 
@@ -18,9 +18,9 @@ __Queries__ are made with `GraphQL::Query.new(query_string, namespace:)`. Use `Q
 - Implement calls on fields
 - Implement root with multiple keys (eg `node(4,6) => { "4": {}, "6": {}`)
 - Test mutations
-- Implement aliases
 - Implement `page_info`
 - Implement calls as arguments
+- Syntax for aliasing edges?
 
 ## For example
 

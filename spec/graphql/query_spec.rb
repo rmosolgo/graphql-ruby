@@ -39,13 +39,23 @@ describe GraphQL::Query do
       assert_equal result, {"123" => {"title" => "My great post", "content" => "So many great things"}}
     end
 
+    describe 'when aliasing things' do
+      let(:query_string) { "post(123) { title as headline, content as what_it_says }"}
+
+      it 'applies aliases to fields' do
+        assert_equal @post.title, result["123"]["headline"]
+        assert_equal @post.content, result["123"]["what_it_says"]
+      end
+
+      it 'applies aliases to edges' # dunno the syntax yet
+    end
+
     describe 'when requesting fields defined on the node' do
       let(:query_string) { "post(123) { teaser } "}
       it 'finds fields defined on the node' do
         assert_equal result, { "123" => { "teaser" => @post.content[0,10] + "..."}}
       end
     end
-
 
     describe 'when requesting an undefined field' do
       let(:query_string) { "post(123) { destroy } "}
