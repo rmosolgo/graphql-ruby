@@ -37,6 +37,10 @@ describe GraphQL::Parser do
       assert call.parse_with_debug("node(123)")
       assert call.parse_with_debug("viewer()")
     end
+
+    it 'finds calls with multiple arguments' do
+      assert call.parse_with_debug("node(4, 6)")
+    end
   end
 
   describe 'call_chain' do

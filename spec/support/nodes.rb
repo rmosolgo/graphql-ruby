@@ -55,7 +55,7 @@ module Nodes
       "viewer"
     end
 
-    def self.call(argument)
+    def self.call
       self.new
     end
   end
@@ -65,11 +65,11 @@ module Nodes
       filtered_items = items
 
       if calls["after"].present?
-        filtered_items = filtered_items.select {|i| i.id > calls["after"].to_i }
+        filtered_items = filtered_items.select {|i| i.id > calls["after"].first.to_i }
       end
 
       if calls["first"].present?
-        filtered_items = filtered_items.first(calls["first"].to_i)
+        filtered_items = filtered_items.first(calls["first"].first.to_i)
       end
 
       filtered_items

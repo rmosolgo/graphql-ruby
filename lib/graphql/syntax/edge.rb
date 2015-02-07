@@ -7,6 +7,6 @@ class GraphQL::Syntax::Edge
   end
 
   def call_hash
-    calls.inject({}) { |memo, call| memo[call.identifier] = call.argument; memo }
+    calls.inject({}) { |memo, call| memo[call.identifier] = call.arguments; memo }
   end
 end

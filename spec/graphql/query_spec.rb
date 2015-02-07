@@ -60,8 +60,8 @@ describe GraphQL::Query do
 
     describe 'when the root call doesnt have an argument' do
       let(:query_string) { "viewer() { name }"}
-      it 'calls the node with nil' do
-        assert_send([Nodes::ViewerNode, :call, nil])
+      it 'calls the node with no arguments' do
+        assert_send([Nodes::ViewerNode, :call])
         query.as_json
       end
     end

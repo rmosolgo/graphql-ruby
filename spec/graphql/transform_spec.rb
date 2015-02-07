@@ -5,6 +5,7 @@ describe GraphQL::Transform do
   let(:parser) { GraphQL::PARSER }
 
   describe '#apply' do
+
     it 'turns a simple node into a Node' do
       tree = parser.parse("post(123) { name }")
       res = transform.apply(tree)
@@ -29,22 +30,22 @@ describe GraphQL::Transform do
     end
 
     it 'turns edge into an Edge' do
-      tree = parser.edge.parse("friends.after(123).first(2) { count, edges { node { name } } }")
+      tree = parser.edge.parse("friends.orderby(name, birthdate).first(2) { count, edges { node { name } } }")
       res = transform.apply(tree)
       assert(res.is_a?(GraphQL::Syntax::Edge), 'it gets the Edge')
       assert(res.identifier == "friends")
       assert(res.calls.length == 2, 'it tracks calls')
-      assert(res.calls[0].identifier == "after")
+      assert(res.calls[0].identifier == "orderby")
       assert(res.calls[1].identifier == "first")
-      assert_equal(res.call_hash, {"after" => "123", "first" => "2"})
+      assert_equal(res.call_hash, {"orderby" => ["name", "birthdate"], "first" => ["2"]})
     end
 
     it 'turns call into a Call' do
-      tree = parser.call.parse("node(123)")
+      tree = parser.call.parse("node(4, 6, tree)")
       res = transform.apply(tree)
       assert(res.is_a?(GraphQL::Syntax::Call))
       assert(res.identifier == "node")
-      assert(res.argument == "123")
+      assert(res.arguments == ["4", "6", "tree"])
     end
 
     it 'turns a call without an argument into a Call' do
@@ -52,7 +53,7 @@ describe GraphQL::Transform do
       res = transform.apply(tree)
       assert(res.is_a?(GraphQL::Syntax::Call))
       assert(res.identifier == "viewer")
-      assert(res.argument == nil)
+      assert(res.arguments.length == 0)
     end
   end
 end

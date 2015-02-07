@@ -6,7 +6,6 @@ describe GraphQL::Node do
 
   describe '__type__' do
     it 'has name' do
-      puts result
       assert_equal "Post", result["Post"]["name"]
     end
 

@@ -14,9 +14,7 @@ __Queries__ are made with `GraphQL::Query.new(query_string, namespace:)`. Use `Q
 ## To do:
 
 - Implement type & field documentation
-- Test string arguments
 - Implement calls on fields
-- Implement multiple arguments
 - Root with multiple keys
 - Implement `context`
 - Test mutations

@@ -40,7 +40,7 @@ class GraphQL::Query
 
   def execute!
     if root.identifier == "type"
-      root_node = GraphQL::Node::TypeNode.call(root.argument)
+      root_node = GraphQL::Node::TypeNode.call(*root.arguments)
     else
       root_node = fetch_root_node
     end
@@ -54,7 +54,7 @@ class GraphQL::Query
 
   def fetch_root_node
     root_class = get_node(root.identifier)
-    root_node = root_class.send(:call, root.argument)
+    root_node = root_class.send(:call, *root.arguments)
 
     if !root_node.is_a?(root_class)
       raise "#{root_call.name}.call must return an instance of #{root_class.name}, not an instance of #{root_node.class.name}"
