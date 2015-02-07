@@ -10,8 +10,40 @@ class GraphQL::Query
   end
 
   def as_json
-    root_node = make_call(nil, root.identifier, root.argument)
-    raise "Couldn't find root for #{root.identifier}(#{root.argument})" if root.nil?
+    @as_json ||= execute!
+  end
+
+  def get_node(identifier)
+    identifier = identifier.camelize
+    if GraphQL::TYPE_ALIASES.has_key?(identifier)
+      return GraphQL::TYPE_ALIASES[identifier]
+    end
+    name = "#{identifier}Node"
+    namespace.const_get(name)
+  rescue NameError => e
+    if namespace != Object
+      name  = "#{namespace}::#{name}"
+    end
+    raise GraphQL::NodeNotDefinedError.new(name)
+  end
+
+  def get_edge(identifier)
+    name = "#{identifier}_edge"
+    namespace.const_get(name.camelize)
+  end
+
+  class << self
+    attr_accessor :default_namespace
+  end
+
+  private
+
+  def execute!
+    if root.identifier == "type"
+      root_node = GraphQL::Node::TypeNode.call(root.argument)
+    else
+      root_node = fetch_root_node
+    end
 
     root_node.query = self
     root_node.fields = root.fields
@@ -20,29 +52,17 @@ class GraphQL::Query
     }
   end
 
-  def get_node(identifier)
-    name = "#{identifier}_node"
-    namespace.const_get(name.camelize)
-  end
+  def fetch_root_node
+    root_class = get_node(root.identifier)
+    root_node = root_class.send(:call, root.argument)
 
-  def get_edge(identifier)
-    name = "#{identifier}_edge"
-    namespace.const_get(name.camelize)
-  end
-
-  def make_call(context, name, *arguments)
-    if context.nil?
-      context = get_node(name)
-      name = "call"
+    if !root_node.is_a?(root_class)
+      raise "#{root_call.name}.call must return an instance of #{root_class.name}, not an instance of #{root_node.class.name}"
     end
-    context.send(name, *arguments)
+
+    root_node
   end
 
-  class << self
-    attr_accessor :default_namespace
-  end
-
-  private
 
   def parse(query_string)
     parsed_hash = GraphQL::PARSER.parse(query_string)

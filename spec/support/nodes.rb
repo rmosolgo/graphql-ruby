@@ -2,7 +2,12 @@ require 'graphql'
 
 module Nodes
   class PostNode < GraphQL::Node
-    field_reader :id, :title, :content
+    desc "A blog post entry"
+    field :id
+    field :title
+    field :content
+    field :teaser
+
     cursor :id
 
     edges :comments
@@ -12,7 +17,7 @@ module Nodes
       node_class_name: "Nodes::ThumbUpNode"
 
     def teaser
-      content.length > 10 ? "#{content[0..9]}..." : content
+      target.content.length > 10 ? "#{target.content[0..9]}..." : content
     end
 
     def self.call(argument)
@@ -22,7 +27,9 @@ module Nodes
   end
 
   class CommentNode < GraphQL::Node
-    field_reader :id, :post, :content
+    field :id
+    field :content
+
     cursor :id
 
     def self.call(argument)
@@ -33,10 +40,13 @@ module Nodes
 
   # wraps a Like, for testing explicit name
   class ThumbUpNode < GraphQL::Node
-    field_reader :id
+    type "Upvote"
+    field :id
   end
 
   class ViewerNode < GraphQL::Node
+    field :name
+
     def name
       "It's you again"
     end

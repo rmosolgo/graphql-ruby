@@ -13,8 +13,16 @@ __Queries__ are made with `GraphQL::Query.new(query_string, namespace:)`. Use `Q
 
 ## To do:
 
-- How to authenticate?
-- What do graphql mutation queries even look like?
+- Implement type & field documentation
+- Test string arguments
+- Implement calls on fields
+- Implement multiple arguments
+- Root with multiple keys
+- Implement `context`
+- Test mutations
+- Implement aliases
+- Implement `page_info`
+- Implement calls as arguments
 
 ## For example
 

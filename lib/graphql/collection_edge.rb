@@ -42,7 +42,7 @@ class GraphQL::CollectionEdge
           node.fields = field.fields
           json[name] = node.as_json
         else
-          json[name] = node.safe_send(name)
+          json[name] = node.get_field(name)
         end
       end
       json

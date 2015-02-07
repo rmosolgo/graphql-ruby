@@ -17,9 +17,14 @@ module GraphQL
     autoload(:Node,       "graphql/syntax/node")
   end
 
+  TYPE_ALIASES = {}
   PARSER = Parser.new
   TRANSFORM = Transform.new
 
-  class FieldNotDefinedError < RuntimeError
+  class FieldNotDefinedError < RuntimeError; end
+  class NodeNotDefinedError < RuntimeError
+    def initialize(node_name)
+      super("#{node_name} was requested but was not found")
+    end
   end
 end
