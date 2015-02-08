@@ -109,7 +109,7 @@ class GraphQL::Node
     raise "You already defined #{field_name}" if has_field?(field_name)
     fields << GraphQL::Field.create_class({
       name: field_name,
-      owner: self,
+      owner_class: self,
       method: method,
       description: description
     })
@@ -120,7 +120,7 @@ class GraphQL::Node
     raise "You already defined #{field_name}" if has_field?(field_name)
     fields << GraphQL::Field.create_class({
       name: field_name,
-      owner: self,
+      owner_class: self,
       method: method,
       description: description,
       edge_class_name: edge_class_name,

@@ -26,7 +26,6 @@ describe GraphQL::Node do
     let(:query_string) { "type(Upvote) { name }"}
 
     it 'overrides __type__.name' do
-      puts result
       assert_equal "Upvote", result["Upvote"]["name"]
     end
   end

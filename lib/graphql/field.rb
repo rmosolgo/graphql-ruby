@@ -9,6 +9,7 @@ class GraphQL::Field
     self.class.const_get(const_name)
   end
 
+  # delegate to class constant
   ["name", "description", "edge_class_name", "node_class_name"].each do |method_name|
     define_method(method_name) do
       const_get(method_name.upcase)
@@ -27,10 +28,10 @@ class GraphQL::Field
     node_class_name.present? ? Object.const_get(node_class_name) : query.get_node(name.singularize)
   end
 
-  def self.create_class(name:, owner:, method: nil, description: nil, edge_class_name: nil, node_class_name: nil)
+  def self.create_class(name:, owner_class:, method: nil, description: nil, edge_class_name: nil, node_class_name: nil)
     new_class = Class.new(self)
     new_class.const_set :NAME, name
-    new_class.const_set :OWNER, owner
+    new_class.const_set :OWNER_CLASS, owner_class
     new_class.const_set :METHOD, method
     new_class.const_set :DESCRIPTION , description
     new_class.const_set :EDGE_CLASS_NAME, edge_class_name
@@ -40,7 +41,7 @@ class GraphQL::Field
 
   def self.to_s
     if const_defined?(:NAME)
-      "<FieldClass: #{const_get(:OWNER).name}::#{const_get(:NAME)}>"
+      "<FieldClass: #{const_get(:OWNER_CLASS).name}::#{const_get(:NAME)}>"
     else
       super
     end

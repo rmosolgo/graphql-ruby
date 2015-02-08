@@ -3,7 +3,7 @@ require 'ostruct'
 
 describe GraphQL::Field do
   let(:owner) { OpenStruct.new(name: "TestOwner")}
-  let(:field) { GraphQL::Field.create_class(name: "high_fives", owner: owner).new(query: {}) }
+  let(:field) { GraphQL::Field.create_class(name: "high_fives", owner_class: owner).new(query: {}) }
   describe '#name' do
     it 'is present' do
       assert_equal field.name, "high_fives"
@@ -16,7 +16,7 @@ describe GraphQL::Field do
     end
 
     it 'can be overriden' do
-      handslap_field = GraphQL::Field.create_class(name: "high_fives", method: "handslaps", owner: owner).new(query: {})
+      handslap_field = GraphQL::Field.create_class(name: "high_fives", method: "handslaps", owner_class: owner).new(query: {})
       assert_equal "high_fives", handslap_field.name
       assert_equal "handslaps", handslap_field.method
     end
