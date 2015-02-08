@@ -78,6 +78,7 @@ describe GraphQL::Query do
           title,
           comments { count, edges { cursor, node { content } } }
         }"}
+
       it 'returns collection data' do
         assert_equal result, {
             "123" => {

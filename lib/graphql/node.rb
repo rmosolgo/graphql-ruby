@@ -11,27 +11,26 @@ class GraphQL::Node
   end
 
   def get_field(identifier)
-    field = self.class.find_field(identifier)
+    field_class = self.class.find_field(identifier)
     if identifier == "cursor"
       cursor
-    elsif field.nil?
+    elsif field_class.nil?
       raise GraphQL::FieldNotDefinedError, "#{self.class.name}##{identifier} was requested, but it isn't defined."
     else
-      send_field(field.method)
+      field_class.new(query: query)
     end
   end
 
   def get_edge(identifier)
-    edge = self.class.find_field(identifier)
-    if edge.nil?
+    field_class = self.class.find_field(identifier)
+    if field_class.nil?
       raise GraphQL::FieldNotDefinedError, "#{self.class.name}##{identifier} was requested, but it isn't defined."
     else
-      edge_class_name = edge.edge_class_name
-      node_class_name = edge.node_class_name
+      edge = field_class.new(query: query)
       collection_items = send_field(edge.method)
-      edge_class = edge_class_name.nil? ? query.get_edge(edge.name.to_s) : Object.const_get(edge_class_name)
-      node_class = node_class_name.nil? ? query.get_node(edge.name.to_s.singularize) : Object.const_get(node_class_name)
-      collection = edge_class.new(items: collection_items, node_class: node_class)
+      edge_class = edge.edge_class
+      node_class = edge.node_class
+      edge_class.new(items: collection_items, node_class: node_class)
     end
   end
 
@@ -41,7 +40,8 @@ class GraphQL::Node
     elsif target.respond_to?(method_name)
       target.send(method_name)
     else
-      raise "Couldn't find a target for #{self.class.name}#{method_name}"
+      binding.pry
+      raise "Couldn't find a target for #{self.class.name}##{method_name}"
     end
   end
 
@@ -51,7 +51,8 @@ class GraphQL::Node
       name = field.identifier
       if field.is_a?(GraphQL::Syntax::Field)
         key_name = field.alias_name || field.identifier
-        json[key_name] = get_field(name)
+        field = get_field(name)
+        json[key_name] = send_field(field.method)
       elsif field.is_a?(GraphQL::Syntax::Edge)
         edge = get_edge(field.identifier)
         edge.calls = field.call_hash
@@ -77,7 +78,7 @@ class GraphQL::Node
     end
 
     def find_field(identifier)
-      fields.find { |f| f.name == identifier.to_s }
+      fields.find { |f| f.const_get(:NAME) == identifier.to_s }
     end
 
     def desc(describe)
@@ -106,14 +107,20 @@ class GraphQL::Node
   def self.field(field_name, method: nil, description: nil, type: nil)
     field_name = field_name.to_s
     raise "You already defined #{field_name}" if has_field?(field_name)
-    fields << GraphQL::Field.new(name: field_name, method: method)
+    fields << GraphQL::Field.create_class({
+      name: field_name,
+      owner: self,
+      method: method,
+      description: description
+    })
   end
 
   def self.edges(field_name, method: nil, description: nil, edge_class_name: nil, node_class_name: nil)
     field_name = field_name.to_s
     raise "You already defined #{field_name}" if has_field?(field_name)
-    fields << GraphQL::Field.new({
+    fields << GraphQL::Field.create_class({
       name: field_name,
+      owner: self,
       method: method,
       description: description,
       edge_class_name: edge_class_name,
@@ -123,7 +130,8 @@ class GraphQL::Node
 
   def self.cursor(field_name)
     define_method "cursor" do
-      get_field(field_name).to_s
+      field = get_field(field_name)
+      send_field(field.method).to_s
     end
   end
 end
