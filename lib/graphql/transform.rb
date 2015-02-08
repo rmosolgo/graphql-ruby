@@ -9,5 +9,5 @@ class GraphQL::Transform < Parslet::Transform
   # call
   rule(identifier: simple(:i), arguments: sequence(:a)) { GraphQL::Syntax::Call.new(identifier: i.to_s, arguments: a) }
   # argument
-  rule(argument: simple(:a)) { a.to_s}
+  rule(argument: simple(:a)) { a.to_s }
 end
