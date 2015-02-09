@@ -1,5 +1,9 @@
-class GraphQL::CollectionEdge
+class GraphQL::Edge
+  include GraphQL::Callable
+  include GraphQL::Fieldable
+
   attr_accessor :fields, :node_class, :calls, :fields, :query
+  attr_reader :items
 
   def initialize(items:, node_class:)
     @items = items
@@ -13,19 +17,11 @@ class GraphQL::CollectionEdge
       if name == "edges"
         json["edges"] = edges(fields: field.fields)
       else
-        json[name] = safe_send(name)
+        field = get_field(field)
+        json[name] = field.value
       end
     end
     json
-  end
-
-  def count
-    @items.count
-  end
-
-  def apply_calls(unfiltered_items, call_hash)
-    # override this to apply calls to your items
-    unfiltered_items
   end
 
   def filtered_items
@@ -42,18 +38,10 @@ class GraphQL::CollectionEdge
           node.fields = field.fields
           json[name] = node.as_json
         else
-          json[name] = node.get_field(name)
+          json[name] = node.get_field(field)
         end
       end
       json
-    end
-  end
-
-  def safe_send(identifier)
-    if respond_to?(identifier)
-      public_send(identifier)
-    else
-      raise GraphQL::FieldNotDefinedError, "#{self.class.name}##{identifier} was requested, but it isn't defined."
     end
   end
 
@@ -61,9 +49,11 @@ class GraphQL::CollectionEdge
     query.context
   end
 
-  private
-
-  def items
-    @items
+  def method_missing(method_name, *args, &block)
+    if items.respond_to?(method_name)
+      items.public_send(method_name, *args, &block)
+    else
+      super
+    end
   end
 end

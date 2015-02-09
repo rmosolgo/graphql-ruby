@@ -38,8 +38,8 @@ describe GraphQL::Node do
 
     describe 'extends:' do
       it 'uses the provided class as a superclass' do
-        first_letter = Nodes::ThumbUpNode.fields[1]
-        assert first_letter.superclass == Nodes::FirstLetterField
+        letters_field = Nodes::CommentNode.find_field("letters")
+        assert letters_field.superclass == Nodes::LetterSelectionField
       end
     end
   end

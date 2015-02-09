@@ -1,16 +1,22 @@
 class GraphQL::Field
-  attr_reader :query, :owner
-  def initialize(query: nil, owner: nil)
+  include GraphQL::Callable
+  attr_reader :query, :owner, :calls
+  def initialize(query: nil, owner: nil, calls: [])
     @query = query
     @owner = owner
+    @calls = calls
   end
 
   def raw_value
-    @owner.send_field(method)
+    owner.send(method)
   end
 
   def value
-    raw_value
+    finished_value
+  end
+
+  def finished_value
+    @finished_value ||= apply_calls(raw_value, calls)
   end
 
   # instance `const_get` reaches up to class namespace

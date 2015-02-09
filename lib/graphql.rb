@@ -3,8 +3,10 @@ require "active_support/core_ext/string/inflections"
 require "active_support/core_ext/object/blank"
 
 module GraphQL
-  autoload(:CollectionEdge,   "graphql/collection_edge")
+  autoload(:Callable,         "graphql/callable")
+  autoload(:Edge,             "graphql/edge")
   autoload(:Field,            "graphql/field")
+  autoload(:Fieldable,        "graphql/fieldable")
   autoload(:Parser,           "graphql/parser")
   autoload(:Query,            "graphql/query")
   autoload(:Node,             "graphql/node")
@@ -28,7 +30,11 @@ module GraphQL
   PARSER = Parser.new
   TRANSFORM = Transform.new
 
-  class FieldNotDefinedError < RuntimeError; end
+  class FieldNotDefinedError < RuntimeError
+    def initialize(class_name, field_name)
+      super("#{class_name}##{field_name} was requested, but it isn't defined.")
+    end
+  end
   class NodeNotDefinedError < RuntimeError
     def initialize(node_name)
       super("#{node_name} was requested but was not found")

@@ -29,7 +29,6 @@ describe GraphQL::Query do
   end
 
   describe '#as_json' do
-
     it 'performs the root node call' do
       assert_send([Nodes::PostNode, :call, "123"])
       query.as_json
@@ -54,6 +53,32 @@ describe GraphQL::Query do
       let(:query_string) { "post(123) { teaser } "}
       it 'finds fields defined on the node' do
         assert_equal result, { "123" => { "teaser" => @post.content[0,10] + "..."}}
+      end
+    end
+
+    describe 'when accessing custom fields' do
+      let(:query_string) { "comment(444) { letters }"}
+      it 'uses the custom field' do
+        assert_equal "I agree", result["444"]["letters"]
+      end
+
+      describe 'when making calls on fields' do
+        let(:query_string) { "comment(444) {
+            letters.select(4, 3),
+            letters.from(3).for(2) as snippet
+          }"}
+
+        it 'works with aliases' do
+          assert result["444"]["snippet"].present?
+        end
+
+        it 'applies calls' do
+          assert_equal "gr", result["444"]["snippet"]
+        end
+
+        it 'applies calls with multiple arguments' do
+          assert_equal "ree", result["444"]["letters"]
+        end
       end
     end
 
@@ -131,6 +156,13 @@ describe GraphQL::Query do
 
       it 'executes those calls' do
         assert_equal result, { "123" => { "comments" => { "average_rating" => 3 } } }
+      end
+    end
+
+    describe  'when making calls on node fields' do
+      let(:query_string) { "post(123) { comments { edges { node { letters.from(3).for(3) }} } }"}
+      it 'makes calls on the fields' do
+        assert_equal ["gre", "isa"], result["123"]["comments"]["edges"].map {|e| e["node"]["letters"] }
       end
     end
 
