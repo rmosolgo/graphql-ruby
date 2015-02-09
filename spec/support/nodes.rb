@@ -90,20 +90,8 @@ module Nodes
 
   class ApplicationEdge < GraphQL::Edge
     field :count
-
-    def apply_calls(items, calls)
-      filtered_items = items
-
-      if calls["after"].present?
-        filtered_items = filtered_items.select {|i| i.id > calls["after"].first.to_i }
-      end
-
-      if calls["first"].present?
-        filtered_items = filtered_items.first(calls["first"].first.to_i)
-      end
-
-      filtered_items
-    end
+    call :after, -> (prev_items, after) { prev_items.select {|i| i.id > after.to_i } }
+    call :first, -> (prev_items, first) { prev_items.first(first.to_i) }
   end
 
   class CommentsEdge < ApplicationEdge

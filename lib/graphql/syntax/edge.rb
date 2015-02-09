@@ -5,8 +5,4 @@ class GraphQL::Syntax::Edge
     @calls = calls
     @fields = fields
   end
-
-  def call_hash
-    calls.inject({}) { |memo, call| memo[call.identifier] = call.arguments; memo }
-  end
 end

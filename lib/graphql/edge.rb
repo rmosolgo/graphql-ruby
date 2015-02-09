@@ -2,11 +2,13 @@ class GraphQL::Edge
   include GraphQL::Callable
   include GraphQL::Fieldable
 
-  attr_accessor :fields, :node_class, :calls, :fields, :query
-  attr_reader :items
+  attr_reader :items, :calls, :fields, :query, :node_class
 
-  def initialize(items:, node_class:)
+  def initialize(items:, node_class:, query:, calls: [], fields: [])
     @items = items
+    @fields = fields
+    @calls = calls
+    @query = query
     @node_class = node_class
   end
 

@@ -1,11 +1,5 @@
 class GraphQL::Introspection::FieldsEdge < GraphQL::Edge
   field :count
-
-  def apply_calls(unfiltered, call_hash)
-    present_calls = call_hash.keys & ["first", "last"]
-    present_calls.each do |call_name|
-      unfiltered = unfiltered.send(call_name, call_hash[call_name].first.to_i)
-    end
-    unfiltered
-  end
+  call :first, -> (prev_items, first) { prev_items.first(first.to_i)}
+  call :last, -> (prev_items, last) { prev_items.last(last.to_i)}
 end

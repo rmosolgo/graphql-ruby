@@ -25,9 +25,6 @@ class GraphQL::Node
         json[key_name] = field.value
       elsif field.is_a?(GraphQL::Syntax::Edge)
         edge = get_edge(field)
-        edge.calls = field.call_hash
-        edge.fields = field.fields
-        edge.query = query
         json[name] = edge.as_json
       end
     end

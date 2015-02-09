@@ -21,9 +21,7 @@ module GraphQL::Fieldable
       else
         edge = field_class.new(query: query)
         collection_items = send(edge.method)
-        edge_class = edge.edge_class
-        node_class = edge.node_class
-        edge_class.new(items: collection_items, node_class: node_class)
+        edge.edge_class.new(fields: syntax_field.fields, items: collection_items, node_class: edge.node_class, calls: syntax_field.calls, query: query)
       end
     end
 

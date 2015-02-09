@@ -13,13 +13,14 @@ describe GraphQL::Transform do
       end
 
       it 'turns a node into a Node' do
-        tree = parser.parse("viewer() { name, friends.first(10) { birthdate } }")
+        tree = parser.parse("person(1) { name, check_ins.last(4) { count, edges { node { id } }  } }")
         res = transform.apply(tree)
         assert(res.is_a?(GraphQL::Syntax::Node), 'it gets a node')
-        assert(res.identifier == "viewer")
+        assert(res.identifier == "person")
         assert(res.fields.length == 2)
         assert(res.fields[0].is_a?(GraphQL::Syntax::Field), 'it gets a field')
         assert(res.fields[1].is_a?(GraphQL::Syntax::Edge), 'it gets an edge')
+        assert(res.fields[1].calls.first.is_a?(GraphQL::Syntax::Call), 'it gets a call')
       end
     end
 
