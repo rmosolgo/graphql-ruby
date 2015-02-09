@@ -41,7 +41,7 @@ class GraphQL::Query
 
   def execute!
     if root.identifier == "type"
-      root_node = GraphQL::Node::TypeNode.call(*root.arguments)
+      root_node = GraphQL::Introspection::TypeNode.call(*root.arguments)
     else
       root_node = fetch_root_node
     end

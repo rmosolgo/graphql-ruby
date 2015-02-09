@@ -1,4 +1,4 @@
-class GraphQL::Node::TypeNode < GraphQL::Node
+class GraphQL::Introspection::TypeNode < GraphQL::Node
   cursor :name
 
   field :name, description: "The name of the node", type: "String"
@@ -6,8 +6,8 @@ class GraphQL::Node::TypeNode < GraphQL::Node
 
   edges :fields,
     method: :field_nodes,
-    edge_class_name: "GraphQL::Node::FieldsEdge",
-    node_class_name: "GraphQL::Node::FieldNode"
+    edge_class_name: "GraphQL::Introspection::FieldsEdge",
+    node_class_name: "GraphQL::Introspection::FieldNode"
 
   def self.call(type_name)
     new(type_name)

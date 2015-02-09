@@ -1,4 +1,4 @@
-class GraphQL::Node::FieldsEdge < GraphQL::CollectionEdge
+class GraphQL::Introspection::FieldsEdge < GraphQL::CollectionEdge
   def apply_calls(unfiltered, call_hash)
     present_calls = call_hash.keys & ["first", "last"]
     present_calls.each do |call_name|

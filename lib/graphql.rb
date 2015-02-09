@@ -11,6 +11,12 @@ module GraphQL
   autoload(:Transform,        "graphql/transform")
   autoload(:VERSION,          "graphql/version")
 
+  module Introspection
+    autoload(:FieldNode,    "graphql/introspection/field_node.rb")
+    autoload(:FieldsEdge,   "graphql/introspection/fields_edge.rb")
+    autoload(:TypeNode,     "graphql/introspection/type_node.rb")
+  end
+
   module Syntax
     autoload(:Call,       "graphql/syntax/call")
     autoload(:Edge,       "graphql/syntax/edge")

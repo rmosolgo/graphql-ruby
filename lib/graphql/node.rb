@@ -2,10 +2,6 @@ class GraphQL::Node
   attr_accessor :fields, :query
   attr_reader :target
 
-  autoload(:FieldNode, "graphql/node/field_node.rb")
-  autoload(:FieldsEdge, "graphql/node/fields_edge.rb")
-  autoload(:TypeNode, "graphql/node/type_node.rb")
-
   def initialize(target=nil)
     @target = target
   end
