@@ -6,12 +6,15 @@ describe GraphQL::Parser do
   describe 'field' do
     let(:field) { parser.field }
     it 'finds words' do
-      assert field.parse_with_debug("name")
       assert field.parse_with_debug("date_of_birth")
     end
 
     it 'finds aliases' do
       assert field.parse_with_debug("name as moniker")
+    end
+
+    it 'finds calls on fields' do
+      assert field.parse_with_debug("url.site(www).upcase()")
     end
   end
 
@@ -19,7 +22,7 @@ describe GraphQL::Parser do
     let(:edge) { parser.edge }
 
     it 'finds calls on fields' do
-      assert edge.parse_with_debug("friends.first(1) {
+      assert edge.parse_with_debug("friends.after(123).first(1) {
               count,
               edges {
                 cursor,
@@ -29,6 +32,10 @@ describe GraphQL::Parser do
               }
             }
         ")
+    end
+
+    it 'finds aliased edges' do
+      assert edge.parse_with_debug("friends as pals { count } ")
     end
   end
 
@@ -41,16 +48,6 @@ describe GraphQL::Parser do
 
     it 'finds calls with multiple arguments' do
       assert call.parse_with_debug("node(4, 6)")
-    end
-  end
-
-  describe 'call_chain' do
-    let(:call_chain) { parser.call_chain }
-    it 'finds deep calls' do
-      assert call_chain.parse_with_debug("friends.after(123).first(2)")
-    end
-    it 'finds chain with no calls' do
-      assert call_chain.parse_with_debug("friends")
     end
   end
 

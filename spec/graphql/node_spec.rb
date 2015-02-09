@@ -35,5 +35,12 @@ describe GraphQL::Node do
       it 'defaults to field_name'
       it 'can be overriden'
     end
+
+    describe 'extends:' do
+      it 'uses the provided class as a superclass' do
+        first_letter = Nodes::ThumbUpNode.fields[1]
+        assert first_letter.superclass == Nodes::FirstLetterField
+      end
+    end
   end
 end

@@ -17,7 +17,7 @@ class GraphQL::Node
     elsif field_class.nil?
       raise GraphQL::FieldNotDefinedError, "#{self.class.name}##{identifier} was requested, but it isn't defined."
     else
-      field_class.new(query: query)
+      field_class.new(query: query, owner: self)
     end
   end
 
@@ -52,7 +52,7 @@ class GraphQL::Node
       if field.is_a?(GraphQL::Syntax::Field)
         key_name = field.alias_name || field.identifier
         field = get_field(name)
-        json[key_name] = send_field(field.method)
+        json[key_name] = field.value
       elsif field.is_a?(GraphQL::Syntax::Edge)
         edge = get_edge(field.identifier)
         edge.calls = field.call_hash
@@ -104,15 +104,17 @@ class GraphQL::Node
     raise NotImplementedError, "Implement #{name}#call(argument) to use this node as a call"
   end
 
-  def self.field(field_name, method: nil, description: nil, type: nil)
+  def self.field(field_name, extends: nil, method: nil, description: nil, type: nil)
     field_name = field_name.to_s
     raise "You already defined #{field_name}" if has_field?(field_name)
-    fields << GraphQL::Field.create_class({
+    field_class = GraphQL::Field.create_class({
       name: field_name,
+      extends: extends,
       owner_class: self,
       method: method,
       description: description
     })
+    fields << field_class
   end
 
   def self.edges(field_name, method: nil, description: nil, edge_class_name: nil, node_class_name: nil)

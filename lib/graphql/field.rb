@@ -1,7 +1,16 @@
 class GraphQL::Field
-  attr_reader :query
-  def initialize(query: nil)
+  attr_reader :query, :owner
+  def initialize(query: nil, owner: nil)
     @query = query
+    @owner = owner
+  end
+
+  def raw_value
+    @owner.send_field(method)
+  end
+
+  def value
+    raw_value
   end
 
   # instance `const_get` reaches up to class namespace
@@ -28,8 +37,9 @@ class GraphQL::Field
     node_class_name.present? ? Object.const_get(node_class_name) : query.get_node(name.singularize)
   end
 
-  def self.create_class(name:, owner_class:, method: nil, description: nil, edge_class_name: nil, node_class_name: nil)
-    new_class = Class.new(self)
+  def self.create_class(name:, owner_class:, extends: nil, method: nil, description: nil, edge_class_name: nil, node_class_name: nil)
+    field_superclass = extends || self
+    new_class = Class.new(field_superclass)
     new_class.const_set :NAME, name
     new_class.const_set :OWNER_CLASS, owner_class
     new_class.const_set :METHOD, method

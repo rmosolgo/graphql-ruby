@@ -38,11 +38,17 @@ module Nodes
     end
   end
 
+  class FirstLetterField < GraphQL::Field
+  end
+
   # wraps a Like, for testing explicit name
   class ThumbUpNode < GraphQL::Node
     type "Upvote"
     field :id
+    field :first_letter, extends: FirstLetterField
   end
+
+
 
   class ViewerNode < GraphQL::Node
     field :name
