@@ -1,4 +1,5 @@
 require 'graphql'
+require 'support/dummy_app.rb'
 
 module Nodes
   class ApplicationNode < GraphQL::Node
