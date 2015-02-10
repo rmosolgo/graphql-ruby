@@ -52,17 +52,18 @@ class GraphQL::Node
     def node_name
       @node_name || name.split("::").last.sub(/Node$/, '')
     end
-  end
 
-  def self.call(argument)
-    raise NotImplementedError, "Implement #{name}#call(argument) to use this node as a call"
-  end
 
-  def self.cursor(field_name)
-    define_method "cursor" do
-      field_class = self.class.find_field(field_name)
-      field = field_class.new(query: query, owner: self, calls: [])
-      field.value.to_s
+    def call(argument)
+      raise NotImplementedError, "Implement #{name}#call(argument) to use this node as a call"
+    end
+
+    def cursor(field_name)
+      define_method "cursor" do
+        field_class = self.class.find_field(field_name)
+        field = field_class.new(query: query, owner: self, calls: [])
+        field.value.to_s
+      end
     end
   end
 end

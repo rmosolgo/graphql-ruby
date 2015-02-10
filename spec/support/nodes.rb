@@ -59,7 +59,12 @@ module Nodes
     type "Upvote"
   end
 
-
+  class StupidThumbUpNode < ThumbUpNode
+    node_for(Like)
+    def id
+      target.id.to_s + target.id.to_s
+    end
+  end
 
   class ViewerNode < GraphQL::Node
     field :name

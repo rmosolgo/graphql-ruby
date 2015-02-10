@@ -11,9 +11,7 @@ Create a GraphQL interface by implementing _nodes_ and _edges_, then running que
 
 - Implement type, field & call documentation
 - Implement edge and call introspection
-- Implement root with multiple keys (eg `node(4,6) => { "4": {}, "6": {}`)
-- Test mutations
-- Implement `page_info`?
+- Test mutations (what about JSON arguments?)
 - Implement calls as arguments
 - Syntax for aliasing edges?
 - Fix naming conflict for calls on fields (if parent has `some_call` and child has `some_call`, use child implementation)

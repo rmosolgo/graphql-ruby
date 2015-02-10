@@ -21,11 +21,11 @@ Gem::Specification.new do |s|
   s.add_dependency "parslet", ">= 1.6.2"
 
   s.add_development_dependency "pry", ">= 0.10"
-  s.add_development_dependency "guard", ">= 2.1"
+  s.add_development_dependency "guard", ">= 2.11"
   s.add_development_dependency "guard-bundler", ">= 2.1"
   s.add_development_dependency "guard-minitest", ">= 2.1"
   s.add_development_dependency "minitest", ">= 5.5"
   s.add_development_dependency "minitest-focus", ">= 1.1"
   s.add_development_dependency "minitest-reporters", ">= 1.0"
-  s.add_development_dependency "rake", ">= 10"
+  s.add_development_dependency "rake", ">= 10.4"
 end

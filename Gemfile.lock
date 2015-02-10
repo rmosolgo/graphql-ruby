@@ -66,7 +66,7 @@ GEM
       coderay (~> 1.1.0)
       method_source (~> 0.8.1)
       slop (~> 3.4)
-    rake (10.1.0)
+    rake (10.4.2)
     rb-fsevent (0.9.4)
     rb-inotify (0.9.5)
       ffi (>= 0.5.0)
@@ -85,11 +85,11 @@ PLATFORMS
 
 DEPENDENCIES
   graphql!
-  guard (>= 2.1)
+  guard (>= 2.11)
   guard-bundler (>= 2.1)
   guard-minitest (>= 2.1)
   minitest (>= 5.5)
   minitest-focus (>= 1.1)
   minitest-reporters (>= 1.0)
   pry (>= 0.10)
-  rake (>= 10)
+  rake (>= 10.4)

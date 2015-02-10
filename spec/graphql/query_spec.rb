@@ -87,6 +87,13 @@ describe GraphQL::Query do
           assert_equal "ree", result["444"]["letters"]
         end
       end
+
+      describe 'when requesting fields overriden on a child class' do
+        let(:query_string) { 'stupid_thumb_up(991) { id }'}
+        it 'uses the child implementation' do
+          assert_equal '991991', result["991991"]["id"]
+        end
+      end
     end
 
     describe 'when requesting an undefined field' do
