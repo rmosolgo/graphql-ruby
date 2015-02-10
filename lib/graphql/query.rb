@@ -41,27 +41,36 @@ class GraphQL::Query
 
   def execute!
     if root.identifier == "type"
-      root_node = GraphQL::Introspection::TypeNode.call(*root.arguments)
+      type_node = GraphQL::Introspection::TypeNode.call(*root.arguments)
+      root_nodes = [type_node]
     else
-      root_node = fetch_root_node
+      root_nodes = fetch_root_node
     end
 
-    root_node.query = self
-    root_node.fields = root.fields
-    {
-      root_node.cursor => root_node.as_json
-    }
+    result = {}
+
+    root_nodes.each do |n|
+      n.query = self
+      n.fields = root.fields
+      result[n.cursor] = n.as_json
+    end
+
+    result
   end
 
   def fetch_root_node
     root_class = get_node(root.identifier)
-    root_node = root_class.send(:call, *root.arguments)
-
-    if !root_node.is_a?(root_class)
-      raise "#{root_call.name}.call must return an instance of #{root_class.name}, not an instance of #{root_node.class.name}"
+    # if only one object, make an array of it
+    root_nodes = root_class.send(:call, *root.arguments)
+    if !root_nodes.is_a?(Array)
+      root_nodes = [root_nodes]
     end
 
-    root_node
+    if !root_nodes[0].is_a?(root_class)
+      raise "#{root_class.name}.call must return an instance of #{root_class.name}, not an instance of #{root_nodes[0].class.name}"
+    end
+
+    root_nodes
   end
 
 

@@ -1,14 +1,30 @@
 require 'graphql'
 
 module Nodes
-  class PostNode < GraphQL::Node
-    desc "A blog post entry"
+  class ApplicationNode < GraphQL::Node
     field :id
+    cursor :id
+
+    class << self
+      attr_accessor :model_class
+      def node_for(m_class)
+        @model_class = m_class
+      end
+
+      def call(*ids)
+        ids = ids.map(&:to_i)
+        items = model_class.all.select { |x| ids.include?(x.id) }
+        items.map { |x| self.new(x) }
+      end
+    end
+  end
+
+  class PostNode < ApplicationNode
+    node_for Post
+    desc "A blog post entry"
     field :title
     field :content
     field :teaser
-
-    cursor :id
 
     edges :comments
 
@@ -18,11 +34,6 @@ module Nodes
 
     def teaser
       target.content.length > 10 ? "#{target.content[0..9]}..." : content
-    end
-
-    def self.call(argument)
-      post = Post.find(argument.to_i)
-      self.new(post)
     end
   end
 
@@ -35,23 +46,16 @@ module Nodes
     end
   end
 
-  class CommentNode < GraphQL::Node
-    field :id
+  class CommentNode < ApplicationNode
+    node_for Comment
     field :content
     field :letters, extends: LetterSelectionField
-
-    cursor :id
-
-    def self.call(argument)
-      obj = Comment.find(argument)
-      self.new(obj)
-    end
   end
 
   # wraps a Like, for testing explicit name
-  class ThumbUpNode < GraphQL::Node
+  class ThumbUpNode < ApplicationNode
+    node_for(Like)
     type "Upvote"
-    field :id
   end
 
 

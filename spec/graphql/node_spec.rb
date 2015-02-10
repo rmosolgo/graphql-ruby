@@ -16,7 +16,7 @@ describe GraphQL::Node do
     it 'has fields' do
       assert_equal 6, result["Post"]["fields"]["count"]
       assert_equal 1, result["Post"]["fields"]["edges"].length
-      assert_equal({ "name" => "id", "description" => nil}, result["Post"]["fields"]["edges"][0]["node"])
+      assert_equal({ "name" => "title", "description" => nil}, result["Post"]["fields"]["edges"][0]["node"])
     end
 
     it 'has edges'

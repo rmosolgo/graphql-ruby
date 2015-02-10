@@ -6,23 +6,23 @@ class InadequateRecordBase
   end
 
   def destroy
-    self.class.objects.delete(self)
+    self.class.all.delete(self)
   end
 
   class << self
     attr_accessor :_objects
-    def objects
+    def all
       @_objects ||= []
     end
   end
 
   def self.find(id)
-    objects.find { |object| object.id.to_s == id.to_s}
+    all.find { |object| object.id.to_s == id.to_s}
   end
 
   def self.where(query={})
     result = []
-    objects.each do |object|
+    all.each do |object|
       match = true
 
       query.each do |key, value|
@@ -38,7 +38,7 @@ class InadequateRecordBase
 
   def self.create(attributes)
     instance = self.new(attributes)
-    objects << instance
+    all << instance
     instance
   end
 end

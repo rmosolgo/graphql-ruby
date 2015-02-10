@@ -38,6 +38,13 @@ describe GraphQL::Query do
       assert_equal result, {"123" => {"title" => "My great post", "content" => "So many great things"}}
     end
 
+    describe 'with multiple roots' do
+      let(:query_string) { "comment(444, 445) { content } "}
+      it 'adds each as a key-value of the response' do
+        assert_equal ["444", "445"], result.keys
+      end
+    end
+
     describe 'when aliasing things' do
       let(:query_string) { "post(123) { title as headline, content as what_it_says }"}
 

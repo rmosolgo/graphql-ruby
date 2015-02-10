@@ -22,7 +22,7 @@ class GraphQL::Introspection::TypeNode < GraphQL::Node
   end
 
   def field_nodes
-    type_class.fields
+    type_class.all_fields
   end
 
   private
