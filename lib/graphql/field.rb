@@ -6,7 +6,6 @@ class GraphQL::Field
     @calls = calls
   end
 
-
   def raw_value
     owner.send(method)
   end

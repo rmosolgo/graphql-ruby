@@ -18,8 +18,6 @@ describe GraphQL::Node do
       assert_equal 1, result["Post"]["fields"]["edges"].length
       assert_equal({ "name" => "title", "description" => nil}, result["Post"]["fields"]["edges"][0]["node"])
     end
-
-    it 'has edges'
   end
 
   describe '.node_name' do
@@ -36,7 +34,11 @@ describe GraphQL::Node do
       it 'can be overriden'
     end
 
-    describe 'extends:' do
+    describe 'type:' do
+      it 'uses symbols to find built-ins' do
+        id_field = Nodes::CommentNode.find_field("id")
+        assert id_field.superclass == GraphQL::Types::NumberField
+      end
       it 'uses the provided class as a superclass' do
         letters_field = Nodes::CommentNode.find_field("letters")
         assert letters_field.superclass == Nodes::LetterSelectionField
