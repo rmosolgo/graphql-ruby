@@ -1,10 +1,15 @@
 class GraphQL::Introspection::TypeNode < GraphQL::Node
   cursor :name
 
-  field :name, description: "The name of the node", type: "String"
-  field :description, description: "Description of the node", type: "String"
+  field :name,
+     description: "The name of the node",
+     type: :string
 
-  edges :fields,
+  field :description,
+    description: "Description of the node",
+    type: :string
+
+  field :fields,
     method: :field_nodes,
     edge_class_name: "GraphQL::Introspection::FieldsEdge",
     node_class_name: "GraphQL::Introspection::FieldNode"

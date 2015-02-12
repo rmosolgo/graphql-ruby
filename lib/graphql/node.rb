@@ -19,14 +19,9 @@ class GraphQL::Node
     json = {}
     fields.each do |field|
       name = field.identifier
-      if field.is_a?(GraphQL::Syntax::Field)
-        key_name = field.alias_name || field.identifier
-        field = get_field(field)
-        json[key_name] = field.value
-      elsif field.is_a?(GraphQL::Syntax::Edge)
-        edge = get_edge(field)
-        json[name] = edge.as_json
-      end
+      key_name = field.alias_name || field.identifier
+      field = get_field(field)
+      json[key_name] = field.value
     end
     json
   end

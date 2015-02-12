@@ -3,7 +3,8 @@ require 'support/dummy_app.rb'
 
 module Nodes
   class ApplicationNode < GraphQL::Node
-    field :id
+    field :id,
+      type: :number
     cursor :id
 
     class << self
@@ -20,25 +21,7 @@ module Nodes
     end
   end
 
-  class PostNode < ApplicationNode
-    node_for Post
-    desc "A blog post entry"
-    field :title
-    field :content
-    field :teaser
-
-    edges :comments
-
-    edges :likes,
-      edge_class_name: "Nodes::ThumbUpEdge",
-      node_class_name: "Nodes::ThumbUpNode"
-
-    def teaser
-      target.content.length > 10 ? "#{target.content[0..9]}..." : content
-    end
-  end
-
-  class LetterSelectionField < GraphQL::Field
+  class LetterSelectionField < GraphQL::Types::StringField
     call :from, ->    (prev_value, chars) { prev_value[(chars.to_i)..-1] }
     call :for, ->     (prev_value, chars) { prev_value[0, (chars.to_i)] }
     call :select, ->  (prev_value, from_chars, for_chars) { prev_value[from_chars.to_i, for_chars.to_i] }
@@ -47,10 +30,35 @@ module Nodes
     end
   end
 
+  class PostNode < ApplicationNode
+    node_for Post
+    desc "A blog post entry"
+    field :title,
+      type: :string
+
+    field :content,
+      type: LetterSelectionField
+    field :length,
+      type: :number
+
+    field :comments,
+      type: :connection
+
+    field :likes,
+      type: :connection,
+      edge_class_name: "Nodes::ThumbUpEdge",
+      node_class_name: "Nodes::ThumbUpNode"
+
+    def length
+      target.content.length
+    end
+  end
+
   class CommentNode < ApplicationNode
     node_for Comment
     field :content
-    field :letters, extends: LetterSelectionField
+    field :letters,
+      type: LetterSelectionField
   end
 
   # wraps a Like, for testing explicit name
@@ -99,9 +107,12 @@ module Nodes
   end
 
   class ApplicationEdge < GraphQL::Edge
-    field :count
+    field :count, type: :number
     call :after, -> (prev_items, after) { prev_items.select {|i| i.id > after.to_i } }
     call :first, -> (prev_items, first) { prev_items.first(first.to_i) }
+    def count
+      items.count
+    end
   end
 
   class CommentsEdge < ApplicationEdge

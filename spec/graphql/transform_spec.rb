@@ -62,6 +62,12 @@ describe GraphQL::Transform do
         assert_equal "first", res.calls[1].identifier
         assert_equal ["2"], res.calls[1].arguments
       end
+
+      it 'gets aliases' do
+        tree = parser.edge.parse("friends.orderby(name, birthdate).first(2) as pals { count, edges { node { name } } }")
+        res = transform.apply(tree)
+        assert_equal "pals", res.alias_name
+      end
     end
 
     describe 'calls' do

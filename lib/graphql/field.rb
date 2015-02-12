@@ -7,6 +7,7 @@ class GraphQL::Field
     @calls = calls
   end
 
+
   def raw_value
     owner.send(method)
   end
@@ -36,22 +37,26 @@ class GraphQL::Field
   end
 
   def edge_class
-   edge_class_name.present? ? Object.const_get(edge_class_name) : query.get_edge(name)
+    query.const_get(edge_class_name) || GraphQL::Edge
   end
 
   def node_class
-    node_class_name.present? ? Object.const_get(node_class_name) : query.get_node(name.singularize)
+    query.const_get(node_class_name) || raise("Couldn't find node class #{node_class_name} for #{self.class}")
   end
 
-  def self.create_class(name:, owner_class:, extends: nil, method: nil, description: nil, edge_class_name: nil, node_class_name: nil)
-    field_superclass = extends || self
+  def self.create_class(name:, owner_class:, type:, method: nil, description: nil, edge_class_name: nil, node_class_name: nil)
+    if type.is_a?(Symbol)
+      type = BUILT_IN_TYPES[type]
+    end
+
+    field_superclass = type || self
     new_class = Class.new(field_superclass)
     new_class.const_set :NAME, name
     new_class.const_set :OWNER_CLASS, owner_class
     new_class.const_set :METHOD, method
     new_class.const_set :DESCRIPTION , description
-    new_class.const_set :EDGE_CLASS_NAME, edge_class_name
-    new_class.const_set :NODE_CLASS_NAME, node_class_name
+    new_class.const_set :EDGE_CLASS_NAME, (edge_class_name || "#{name.camelize}Edge")
+    new_class.const_set :NODE_CLASS_NAME, (node_class_name || "#{name.singularize.camelize}Node")
     new_class
   end
 
@@ -62,4 +67,40 @@ class GraphQL::Field
       super
     end
   end
+
+  class << self
+    def field_type(field_type_name)
+      @_field_type = field_type_name
+    end
+
+    def lookup_field_type
+      @_field_type || superclass._field_type
+    end
+
+    def _field_type
+      if self != GraphQL::Field
+        lookup_field_type || raise("No type found for #{self}")
+      else
+        nil
+      end
+    end
+
+    def type
+      _field_type
+    end
+
+    def field_name
+      const_get(:NAME)
+    end
+
+    def description
+      const_get(:DESCRIPTION)
+    end
+  end
+
+  BUILT_IN_TYPES = {
+    string:     GraphQL::Types::StringField,
+    connection: GraphQL::Types::ConnectionField,
+    number:     GraphQL::Types::NumberField,
+  }
 end

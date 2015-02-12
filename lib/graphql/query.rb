@@ -28,9 +28,12 @@ class GraphQL::Query
     raise GraphQL::NodeNotDefinedError.new(name)
   end
 
-  def get_edge(identifier)
-    name = "#{identifier}_edge"
-    namespace.const_get(name.camelize)
+  def const_get(identifier)
+    if namespace.const_defined?(identifier)
+      namespace.const_get(identifier)
+    else
+      nil
+    end
   end
 
   class << self

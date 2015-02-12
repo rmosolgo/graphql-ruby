@@ -57,9 +57,9 @@ describe GraphQL::Query do
     end
 
     describe 'when requesting fields defined on the node' do
-      let(:query_string) { "post(123) { teaser } "}
+      let(:query_string) { "post(123) { length } "}
       it 'finds fields defined on the node' do
-        assert_equal result, { "123" => { "teaser" => @post.content[0,10] + "..."}}
+        assert_equal 20, result["123"]["length"]
       end
     end
 

@@ -9,19 +9,15 @@ module GraphQL::Fieldable
         cursor
       elsif field_class.nil?
         raise GraphQL::FieldNotDefinedError.new(self.class.name, syntax_field.identifier)
-      else
-        field_class.new(query: query, owner: self, calls: syntax_field.calls)
-      end
-    end
-
-    def get_edge(syntax_field)
-      field_class = self.class.find_field(syntax_field.identifier)
-      if field_class.nil?
-        raise GraphQL::FieldNotDefinedError.new(self.class.name, syntax_field.identifier)
-      else
+      elsif syntax_field.is_a?(GraphQL::Syntax::Edge)
         edge = field_class.new(query: query)
+        if query.nil?
+          binding.pry
+        end
         collection_items = send(edge.method)
         edge.edge_class.new(fields: syntax_field.fields, items: collection_items, node_class: edge.node_class, calls: syntax_field.calls, query: query)
+      else
+        field_class.new(query: query, owner: self, calls: syntax_field.calls)
       end
     end
 
@@ -46,30 +42,21 @@ module GraphQL::Fieldable
         all_fields.find { |f| f.const_get(:NAME) == identifier.to_s }
       end
 
-      def field(field_name, extends: nil, method: nil, description: nil, type: nil)
+      def field(field_name, type: nil, method: nil, description: nil, edge_class_name: nil, node_class_name: nil)
         field_name = field_name.to_s
         raise "You already defined #{field_name}" if has_field?(field_name)
         field_class = GraphQL::Field.create_class({
           name: field_name,
-          extends: extends,
-          owner_class: self,
-          method: method,
-          description: description
-        })
-        fields << field_class
-      end
-
-      def edges(field_name, method: nil, description: nil, edge_class_name: nil, node_class_name: nil)
-        field_name = field_name.to_s
-        raise "You already defined #{field_name}" if has_field?(field_name)
-        fields << GraphQL::Field.create_class({
-          name: field_name,
+          type: type,
           owner_class: self,
           method: method,
           description: description,
           edge_class_name: edge_class_name,
           node_class_name: node_class_name,
         })
+        field_class_name = field_name.camelize + "Field"
+        self.const_set(field_class_name, field_class)
+        fields << field_class
       end
     end
   end

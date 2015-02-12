@@ -12,6 +12,10 @@ class GraphQL::Edge
     @node_class = node_class
   end
 
+  def value
+    as_json
+  end
+
   def as_json
     json = {}
     fields.each do |field|
@@ -38,6 +42,7 @@ class GraphQL::Edge
         name = field.identifier
         if name == "node" # it's magic
           node.fields = field.fields
+          node.query = query
           json[name] = node.as_json
         else
           json[name] = node.get_field(field)
