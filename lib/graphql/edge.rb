@@ -1,5 +1,4 @@
-class GraphQL::Edge
-  include GraphQL::Callable
+class GraphQL::Edge < GraphQL::Field
   include GraphQL::Fieldable
 
   attr_reader :items, :calls, :fields, :query, :node_class

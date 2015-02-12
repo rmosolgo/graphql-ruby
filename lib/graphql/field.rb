@@ -1,5 +1,4 @@
 class GraphQL::Field
-  include GraphQL::Callable
   attr_reader :query, :owner, :calls
   def initialize(query: nil, owner: nil, calls: [])
     @query = query
@@ -44,31 +43,43 @@ class GraphQL::Field
     query.const_get(node_class_name) || raise("Couldn't find node class #{node_class_name} for #{self.class}")
   end
 
-  def self.create_class(name:, owner_class:, type:, method: nil, description: nil, edge_class_name: nil, node_class_name: nil)
-    if type.is_a?(Symbol)
-      type = BUILT_IN_TYPES[type]
+  def apply_calls(initial_value, call_array)
+    val = initial_value
+    call_array.each do |call|
+      registered_call = self.class.find_call(call.identifier)
+      if registered_call.nil?
+        raise "Call not found: #{self.class.name}##{call.identifier}"
+      end
+      val = registered_call[:lambda].call(val, *call.arguments)
     end
-
-    field_superclass = type || self
-    new_class = Class.new(field_superclass)
-    new_class.const_set :NAME, name
-    new_class.const_set :OWNER_CLASS, owner_class
-    new_class.const_set :METHOD, method
-    new_class.const_set :DESCRIPTION , description
-    new_class.const_set :EDGE_CLASS_NAME, (edge_class_name || "#{name.camelize}Edge")
-    new_class.const_set :NODE_CLASS_NAME, (node_class_name || "#{name.singularize.camelize}Node")
-    new_class
-  end
-
-  def self.to_s
-    if const_defined?(:NAME)
-      "<FieldClass: #{const_get(:OWNER_CLASS).name}::#{const_get(:NAME)}>"
-    else
-      super
-    end
+    val
   end
 
   class << self
+    def create_class(name:, owner_class:, type:, method: nil, description: nil, edge_class_name: nil, node_class_name: nil)
+      if type.is_a?(Symbol)
+        type = BUILT_IN_TYPES[type]
+      end
+
+      field_superclass = type || self
+      new_class = Class.new(field_superclass)
+      new_class.const_set :NAME, name
+      new_class.const_set :OWNER_CLASS, owner_class
+      new_class.const_set :METHOD, method
+      new_class.const_set :DESCRIPTION , description
+      new_class.const_set :EDGE_CLASS_NAME, (edge_class_name || "#{name.camelize}Edge")
+      new_class.const_set :NODE_CLASS_NAME, (node_class_name || "#{name.singularize.camelize}Node")
+      new_class
+    end
+
+    def to_s
+      if const_defined?(:NAME)
+        "<FieldClass: #{const_get(:OWNER_CLASS).name}::#{const_get(:NAME)}>"
+      else
+        super
+      end
+    end
+
     def field_type(field_type_name)
       @_field_type = field_type_name
     end
@@ -95,6 +106,29 @@ class GraphQL::Field
 
     def description
       const_get(:DESCRIPTION)
+    end
+
+    def calls
+      @calls ||= []
+    end
+
+    def parent_calls
+      superclass == Object ? [] : (superclass.calls  + superclass.parent_calls)
+    end
+
+    def all_calls
+      calls + parent_calls
+    end
+
+    def find_call(name)
+      all_calls.find { |c| c[:name] == name }
+    end
+
+    def call(name, lambda)
+      calls << {
+        name: name.to_s,
+        lambda: lambda,
+      }
     end
   end
 

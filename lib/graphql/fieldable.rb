@@ -11,9 +11,6 @@ module GraphQL::Fieldable
         raise GraphQL::FieldNotDefinedError.new(self.class.name, syntax_field.identifier)
       elsif syntax_field.is_a?(GraphQL::Syntax::Edge)
         edge = field_class.new(query: query)
-        if query.nil?
-          binding.pry
-        end
         collection_items = send(edge.method)
         edge.edge_class.new(fields: syntax_field.fields, items: collection_items, node_class: edge.node_class, calls: syntax_field.calls, query: query)
       else
@@ -27,7 +24,9 @@ module GraphQL::Fieldable
       end
 
       def parent_fields
-        superclass == Object ? [] : (superclass.fields + superclass.parent_fields)
+        superclass.fields + superclass.parent_fields
+      rescue NoMethodError
+        []
       end
 
       def all_fields
