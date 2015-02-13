@@ -5,17 +5,14 @@ class GraphQL::Parser < Parslet::Parser
   rule(:node) { space? >> call >> space? >> fields.as(:fields) }
 
   # field set
-  rule(:fields) { str("{") >> space? >> ((edge | field) >> separator?).repeat(1) >> space? >> str("}") >> space?}
-
-  # edge
-  rule(:edge) { field >> space? >> fields.as(:fields) }
+  rule(:fields) { str("{") >> space? >> (field >> separator?).repeat(1) >> space? >> str("}") >> space?}
 
   #call
   rule(:call) { identifier >> str("(") >> (name.as(:argument) >> separator?).repeat(0).as(:arguments) >> str(")") }
   rule(:dot) { str(".") }
 
   # field
-  rule(:field) { identifier >> call_chain.maybe >> alias_name.maybe }
+  rule(:field) { identifier >> call_chain.maybe >> alias_name.maybe >> space? >> fields.as(:fields).maybe }
   rule(:call_chain) { (dot >> call).repeat(0).as(:calls) }
   rule(:alias_name) { space >> str("as") >> space >> name.as(:alias_name) }
 

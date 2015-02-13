@@ -7,7 +7,7 @@ describe GraphQL::Query do
   let(:result) { query.as_json }
 
   before do
-    @post = Post.create(id: 123, content: "So many great things", title: "My great post")
+    @post = Post.create(id: 123, content: "So many great things", title: "My great post", published_at: Date.new(2010,1,4))
     @comment1 = Comment.create(id: 444, post_id: 123, content: "I agree", rating: 5)
     @comment2 = Comment.create(id: 445, post_id: 123, content: "I disagree", rating: 1)
     @like1 = Like.create(id: 991, post_id: 123)
@@ -45,6 +45,26 @@ describe GraphQL::Query do
       end
     end
 
+    describe 'when accessing fields that return objects' do
+      describe 'when making calls on the field' do
+        let(:query_string) { "post(123) { published_at.ymd() }"}
+        it 'returns the modified value' do
+          assert_equal "2010-01-04", result["123"]["published_at"]
+        end
+      end
+      describe 'when not requesting fields' do
+        let(:query_string) { "post(123) { published_at }"}
+        it 'returns value' do
+          assert_equal "Jan 2010", result["123"]["published_at"]
+        end
+      end
+      describe 'when requesting more fields' do
+        let(:query_string) { "post(123) { published_at { month, year } }"}
+        it 'returns those fields' do
+          assert_equal({"month" => 1, "year" => 2010}, result["123"]["published_at"])
+        end
+      end
+    end
     describe 'when aliasing things' do
       let(:query_string) { "post(123) { title as headline, content as what_it_says }"}
 
@@ -175,6 +195,7 @@ describe GraphQL::Query do
 
     describe  'when making calls on node fields' do
       let(:query_string) { "post(123) { comments { edges { node { letters.from(3).for(3) }} } }"}
+
       it 'makes calls on the fields' do
         assert_equal ["gre", "isa"], result["123"]["comments"]["edges"].map {|e| e["node"]["letters"] }
       end

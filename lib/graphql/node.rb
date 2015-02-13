@@ -17,11 +17,11 @@ class GraphQL::Node
 
   def as_json
     json = {}
-    fields.each do |field|
-      name = field.identifier
-      key_name = field.alias_name || field.identifier
-      field = get_field(field)
-      json[key_name] = field.value
+    fields.each do |syntax_field|
+      name = syntax_field.identifier
+      key_name = syntax_field.alias_name || syntax_field.identifier
+      field = get_field(syntax_field)
+      json[key_name] = field.as_result
     end
     json
   end

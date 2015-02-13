@@ -9,12 +9,13 @@ module GraphQL::Fieldable
         cursor
       elsif field_class.nil?
         raise GraphQL::FieldNotDefinedError.new(self.class.name, syntax_field.identifier)
-      elsif syntax_field.is_a?(GraphQL::Syntax::Edge)
-        edge = field_class.new(query: query)
-        collection_items = send(edge.method)
-        edge.edge_class.new(fields: syntax_field.fields, items: collection_items, node_class: edge.node_class, calls: syntax_field.calls, query: query)
       else
-        field_class.new(query: query, owner: self, calls: syntax_field.calls)
+        field_class.new(
+          query: query,
+          owner: self,
+          calls: syntax_field.calls,
+          fields: syntax_field.fields,
+        )
       end
     end
 

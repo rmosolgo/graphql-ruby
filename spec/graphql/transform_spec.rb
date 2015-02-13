@@ -19,7 +19,7 @@ describe GraphQL::Transform do
         assert(res.identifier == "person")
         assert(res.fields.length == 2)
         assert(res.fields[0].is_a?(GraphQL::Syntax::Field), 'it gets a field')
-        assert(res.fields[1].is_a?(GraphQL::Syntax::Edge), 'it gets an edge')
+        assert(res.fields[1].is_a?(GraphQL::Syntax::Field), 'it gets an field with fields')
         assert(res.fields[1].calls.first.is_a?(GraphQL::Syntax::Call), 'it gets a call')
       end
     end
@@ -48,25 +48,36 @@ describe GraphQL::Transform do
         assert_equal "first", res.calls[1].identifier
         assert_equal ["3"], res.calls[1].arguments
       end
-    end
 
-    describe 'edges' do
-      it 'turns edge into an Edge' do
-        tree = parser.edge.parse("friends.orderby(name, birthdate).first(2) { count, edges { node { name } } }")
-        res = transform.apply(tree)
-        assert(res.is_a?(GraphQL::Syntax::Edge), 'it gets the Edge')
-        assert_equal "friends", res.identifier
-        assert_equal 2, res.calls.length
-        assert_equal "orderby", res.calls[0].identifier
-        assert_equal ["name", "birthdate"], res.calls[0].arguments
-        assert_equal "first", res.calls[1].identifier
-        assert_equal ["2"], res.calls[1].arguments
-      end
-
-      it 'gets aliases' do
-        tree = parser.edge.parse("friends.orderby(name, birthdate).first(2) as pals { count, edges { node { name } } }")
-        res = transform.apply(tree)
-        assert_equal "pals", res.alias_name
+      describe 'fields that return objects' do
+        it 'gets them' do
+          tree = parser.field.parse("friends { count }")
+          res = transform.apply(tree)
+          assert_equal "friends", res.identifier
+          assert_equal 1, res.fields.length
+        end
+        it 'gets them with aliases' do
+          tree = parser.field.parse("friends as pals { count }")
+          res = transform.apply(tree)
+          assert_equal "friends", res.identifier
+          assert_equal "pals", res.alias_name
+          assert_equal 1, res.fields.length
+        end
+        it 'gets them with calls' do
+          tree = parser.field.parse("friends.orderby(name, birthdate).last(1) { count }")
+          res = transform.apply(tree)
+          assert_equal "friends", res.identifier
+          assert_equal 1, res.fields.length
+          assert_equal 2, res.calls.length
+        end
+        it 'gets them with calls and aliases' do
+          tree = parser.field.parse("friends.orderby(name, birthdate).last(1) as pals { count }")
+          res = transform.apply(tree)
+          assert_equal "friends", res.identifier
+          assert_equal "pals", res.alias_name
+          assert_equal 1, res.fields.length
+          assert_equal 2, res.calls.length
+        end
       end
     end
 

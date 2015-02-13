@@ -23,7 +23,7 @@ class GraphQL::Edge < GraphQL::Field
         json["edges"] = edges(fields: field.fields)
       else
         field = get_field(field)
-        json[name] = field.value
+        json[name] = field.as_result
       end
     end
     json

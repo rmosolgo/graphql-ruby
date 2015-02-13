@@ -44,7 +44,7 @@ class InadequateRecordBase
 end
 
 class Post < InadequateRecordBase
-  attr_accessor :id, :title, :content
+  attr_accessor :id, :title, :content, :published_at
 
   def comments
     Comment.where(post_id: id)

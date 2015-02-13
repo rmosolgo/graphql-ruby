@@ -1,9 +1,10 @@
 class GraphQL::Field
-  attr_reader :query, :owner, :calls
-  def initialize(query: nil, owner: nil, calls: [])
+  attr_reader :query, :owner, :calls, :fields
+  def initialize(query: nil, owner: nil, calls: [], fields: [])
     @query = query
     @owner = owner
     @calls = calls
+    @fields = fields
   end
 
   def raw_value
@@ -12,6 +13,29 @@ class GraphQL::Field
 
   def value
     finished_value
+  end
+
+  def as_json
+    finished_value
+  end
+
+  def as_result
+    if fields.any?
+      to_node.as_json
+    else
+      as_json
+    end
+  end
+
+  def to_node
+    items = raw_value
+    edge_class.new(
+      query: query,
+      items: items,
+      node_class: node_class,
+      calls: calls,
+      fields: fields,
+    )
   end
 
   def finished_value

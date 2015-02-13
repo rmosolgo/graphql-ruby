@@ -16,26 +16,23 @@ describe GraphQL::Parser do
     it 'finds calls on fields' do
       assert field.parse_with_debug("url.site(www).upcase()")
     end
-  end
 
-  describe 'edge' do
-    let(:edge) { parser.edge }
+    describe 'fields that return objects' do
+      it 'finds them' do
+        assert field.parse_with_debug("birthdate { month, year }")
+      end
 
-    it 'finds calls on fields' do
-      assert edge.parse_with_debug("friends.after(123).first(1) {
-              count,
-              edges {
-                cursor,
-                node {
-                  name
-                }
-              }
-            }
-        ")
-    end
+      it 'finds them with aliases' do
+        assert field.parse_with_debug("birthdate as d_o_b { month, year }")
+      end
 
-    it 'finds aliased edges' do
-      assert edge.parse_with_debug("friends as pals { count } ")
+      it 'finds them with calls' do
+        assert field.parse_with_debug("friends.after(123) { count { edges { node { id } } } }")
+      end
+
+      it 'finds them with calls and aliases' do
+        assert field.parse_with_debug("friends.after(123) as pals { count { edges { node { id } } } }")
+      end
     end
   end
 
