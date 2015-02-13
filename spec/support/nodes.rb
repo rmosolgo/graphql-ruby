@@ -34,15 +34,7 @@ module Nodes
     field_type "Date"
     call :ymd, -> (prev_value) { prev_value.strftime("%Y-%m-%d") }
 
-    def as_json
-      if calls.any?
-        super
-      else
-        value.strftime("%b %Y")
-      end
-    end
-
-    def to_node
+    def as_node
       n = DateNode.new(raw_value)
       n.fields = self.fields
       n

@@ -52,12 +52,6 @@ describe GraphQL::Query do
           assert_equal "2010-01-04", result["123"]["published_at"]
         end
       end
-      describe 'when not requesting fields' do
-        let(:query_string) { "post(123) { published_at }"}
-        it 'returns value' do
-          assert_equal "Jan 2010", result["123"]["published_at"]
-        end
-      end
       describe 'when requesting more fields' do
         let(:query_string) { "post(123) { published_at { month, year } }"}
         it 'returns those fields' do

@@ -11,23 +11,19 @@ class GraphQL::Field
     owner.send(method)
   end
 
-  def value
-    finished_value
-  end
-
-  def as_json
+  def as_json_value
     finished_value
   end
 
   def as_result
     if fields.any?
-      to_node.as_json
+      as_node.as_json
     else
-      as_json
+      as_json_value
     end
   end
 
-  def to_node
+  def as_node
     items = raw_value
     edge_class.new(
       query: query,

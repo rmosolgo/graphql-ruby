@@ -57,7 +57,7 @@ class GraphQL::Node
       define_method "cursor" do
         field_class = self.class.find_field(field_name)
         field = field_class.new(query: query, owner: self, calls: [])
-        field.value.to_s
+        field.as_json_value.to_s
       end
     end
   end

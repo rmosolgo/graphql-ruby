@@ -10,12 +10,14 @@ Create a GraphQL interface by implementing _nodes_ and _edges_, then running que
 ## To do:
 
 - Implement calls that return objects, bring connections into that paradigm
+- Use a good API for fields that return objects
 - Implement root calls w/ JSON arguments
 - Implement `schema()`
 - Implement calls as arguments
 - Implement call argument introspection (wait for spec)
 - Fix naming conflict for calls on fields (if parent has `some_call` and child has `some_call`, use child implementation)
 - Do something about the risk of accidently overriding important methods (eg `Field#value`) in custom classes
+- For fields that return objects, can they be queried _without_ other fields? Or must they always have fields?
 
 ## For example
 
