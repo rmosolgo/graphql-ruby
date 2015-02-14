@@ -5,6 +5,27 @@ describe GraphQL::Transform do
   let(:parser) { GraphQL::PARSER }
 
   describe '#apply' do
+    describe 'query' do
+      focus
+      it 'parses node and variables' do
+        tree = parser.query.parse(%{
+          like_page(<page_info>) { page { id, likes } }
+
+          <page_info>: {
+            "page" : { "id": 4},
+            "person" : {"id": 4}
+          }
+          <other>: {
+            "page" : { "id": 4},
+            "person" : {"id": 4}
+          }
+          })
+        res = transform.apply(tree)
+        assert_equal 1, res.nodes.length
+        assert_equal ["<page_info>", "<other>"], res.variables.map(&:identifier)
+      end
+    end
+
     describe 'nodes' do
       it 'turns a simple node into a Node' do
         tree = parser.parse("post(123) { name }")
@@ -96,6 +117,25 @@ describe GraphQL::Transform do
         assert(res.is_a?(GraphQL::Syntax::Call))
         assert(res.identifier == "viewer")
         assert(res.arguments.length == 0)
+      end
+
+      it 'gets calls with variable identifiers' do
+        tree = parser.call.parse("like_page(<page_info>)")
+        res = transform.apply(tree)
+        assert_equal "<page_info>", res.arguments[0]
+      end
+    end
+
+    describe 'variables' do
+      it 'gets variables' do
+        tree = parser.variable.parse(%{
+          <page_info>: {
+            "page" : { "id": 4},
+            "person" : {"id": 4}
+          }
+          })
+        res = transform.apply(tree)
+        assert_equal "<page_info>", res.identifier
       end
     end
   end

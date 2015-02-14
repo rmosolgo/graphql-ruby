@@ -1,6 +1,6 @@
 class GraphQL::Parser < Parslet::Parser
-  root(:node)
-
+  root(:query)
+  rule(:query) { node.repeat.as(:nodes) >> variable.repeat.as(:variables) }
   # node
   rule(:node) { space? >> call >> space? >> fields.as(:fields) }
 
@@ -8,13 +8,19 @@ class GraphQL::Parser < Parslet::Parser
   rule(:fields) { str("{") >> space? >> (field >> separator?).repeat(1) >> space? >> str("}") >> space?}
 
   #call
-  rule(:call) { identifier >> str("(") >> (name.as(:argument) >> separator?).repeat(0).as(:arguments) >> str(")") }
+  rule(:call) { identifier >> str("(") >> (argument.as(:argument) >> separator?).repeat(0).as(:arguments) >> str(")") }
   rule(:dot) { str(".") }
+  rule(:argument) { (identifier | variable_identifier)}
 
   # field
   rule(:field) { identifier >> call_chain.maybe >> alias_name.maybe >> space? >> fields.as(:fields).maybe }
   rule(:call_chain) { (dot >> call).repeat(0).as(:calls) }
   rule(:alias_name) { space >> str("as") >> space >> name.as(:alias_name) }
+
+  # variable
+  rule(:variable) { space? >> variable_identifier >> str(":") >> space? >> json_string.as(:json_string) >> space?}
+  rule(:json_string) { str("{") >> (match('[^{}]') | json_string).repeat >> str("}")}
+  rule(:variable_identifier) { (str("<") >> name >> str(">")).as(:identifier) }
 
   # general purpose
   rule(:separator?) { str(",").maybe >> space? }

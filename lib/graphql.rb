@@ -21,7 +21,9 @@ module GraphQL
   module Syntax
     autoload(:Call,       "graphql/syntax/call")
     autoload(:Field,      "graphql/syntax/field")
+    autoload(:Query,      "graphql/syntax/query")
     autoload(:Node,       "graphql/syntax/node")
+    autoload(:Variable,   "graphql/syntax/variable")
   end
 
   module Types

@@ -3,6 +3,27 @@ require 'spec_helper'
 describe GraphQL::Parser do
   let(:parser) { GraphQL::PARSER }
 
+  describe 'query' do
+    let(:query) { parser.query }
+    it 'parses node-only' do
+      assert query.parse_with_debug("node(4) { id, name } ")
+    end
+    it 'parses node and variables' do
+      assert query.parse_with_debug(%{
+        like_page(<page>) {
+          page { id }
+        }
+        <page>: {
+          "page": {"id": 1},
+          "person" : { "id", 4}
+        }
+        <other>: {
+          "page": {"id": 1},
+          "person" : { "id", 4}
+        }
+      })
+    end
+  end
   describe 'field' do
     let(:field) { parser.field }
     it 'finds words' do
@@ -46,6 +67,10 @@ describe GraphQL::Parser do
     it 'finds calls with multiple arguments' do
       assert call.parse_with_debug("node(4, 6)")
     end
+
+    it 'finds calls with variables' do
+      assert call.parse_with_debug("like_page(<page>)")
+    end
   end
 
   describe 'fields' do
@@ -70,7 +95,8 @@ describe GraphQL::Parser do
     end
 
     it 'parses nested nodes' do
-      assert node.parse_with_debug("node(someone)
+      assert node.parse_with_debug("
+        node(someone)
             {
               id,
               name,
@@ -83,6 +109,26 @@ describe GraphQL::Parser do
               }
             }
           ")
+    end
+  end
+
+  describe 'variable' do
+    let(:variable) { parser.variable }
+    it 'gets variables' do
+      assert variable.parse_with_debug(%{<my_input>: {"key": "value"}})
+    end
+
+    it 'gets variables with nesting' do
+      assert variable.parse_with_debug(%{
+      <my_input>: {
+        "key": "value",
+        "1": 2,
+        "true": false,
+        "nested": {
+          "key" : "value"
+          }
+        }
+      })
     end
   end
 end
