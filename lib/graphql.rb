@@ -3,10 +3,8 @@ require "active_support/core_ext/string/inflections"
 require "active_support/core_ext/object/blank"
 
 module GraphQL
-  autoload(:Callable,         "graphql/callable")
   autoload(:Connection,       "graphql/connection")
   autoload(:Field,            "graphql/field")
-  autoload(:Fieldable,        "graphql/fieldable")
   autoload(:Parser,           "graphql/parser")
   autoload(:Query,            "graphql/query")
   autoload(:Node,             "graphql/node")
