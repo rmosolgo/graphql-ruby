@@ -10,6 +10,7 @@ Create a GraphQL interface by implementing _nodes_ and _edges_, then running que
 ## To do:
 
 - Implement calls that return objects, bring connections into that paradigm
+- Allow a default connection class
 - Use a good API for fields that return objects
 - Implement root calls w/ JSON arguments
 - Implement `schema()`

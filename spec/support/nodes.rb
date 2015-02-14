@@ -13,10 +13,10 @@ module Nodes
         @model_class = m_class
       end
 
-      def call(*ids)
+      def call(*ids, query:, fields:)
         ids = ids.map(&:to_i)
         items = model_class.all.select { |x| ids.include?(x.id) }
-        items.map { |x| self.new(x) }
+        items.map { |x| self.new(x, query: query, fields: fields) }
       end
     end
   end
@@ -30,15 +30,14 @@ module Nodes
     end
   end
 
-  class DateField < GraphQL::Field
-    field_type "Date"
-    call :ymd, -> (prev_value) { prev_value.strftime("%Y-%m-%d") }
+  class ApplicationConnectionField < GraphQL::Types::ConnectionField
+    call :first, -> (prev_items, first) { prev_items.first(first.to_i) }
+    call :after, -> (prev_items, after) { prev_items.select {|i| i.id > after.to_i } }
+  end
 
-    def as_node
-      n = DateNode.new(raw_value)
-      n.fields = self.fields
-      n
-    end
+  class DateField < GraphQL::Types::ObjectField
+    field_type "Date"
+    call :minus_days, -> (prev_value, minus_days) { prev_value - minus_days.to_i }
   end
 
   class DateNode < GraphQL::Node
@@ -58,14 +57,14 @@ module Nodes
       type: :number
 
     field :comments,
-      type: :connection
+      type: ApplicationConnectionField
 
     field :published_at,
       type: DateField
 
     field :likes,
       type: :connection,
-      edge_class_name: "Nodes::ThumbUpEdge",
+      connection_class_name: "Nodes::ThumbUpConnection",
       node_class_name: "Nodes::ThumbUpNode"
 
     def length
@@ -104,8 +103,8 @@ module Nodes
       "viewer"
     end
 
-    def self.call
-      self.new
+    def self.call(*args, **kwargs)
+      self.new(*args, **kwargs)
     end
   end
 
@@ -120,21 +119,19 @@ module Nodes
       "context"
     end
 
-    def self.call
-      self.new
+    def self.call(*args, **kwargs)
+      self.new(*args, **kwargs)
     end
   end
 
-  class ApplicationEdge < GraphQL::Edge
+  class ApplicationConnection < GraphQL::Connection
     field :count, type: :number
-    call :after, -> (prev_items, after) { prev_items.select {|i| i.id > after.to_i } }
-    call :first, -> (prev_items, first) { prev_items.first(first.to_i) }
     def count
       items.count
     end
   end
 
-  class CommentsEdge < ApplicationEdge
+  class CommentsConnection < ApplicationConnection
     field :viewer_name_length
     field :average_rating
 
@@ -144,17 +141,17 @@ module Nodes
     end
 
     def average_rating
-      total_rating = filtered_items.map(&:rating).inject(&:+).to_f
-      total_rating / filtered_items.size
+      total_rating = items.map(&:rating).inject(&:+).to_f
+      total_rating / items.size
     end
   end
 
   # Wraps Likes, for testing explicit naming
-  class ThumbUpEdge < ApplicationEdge
+  class ThumbUpConnection < ApplicationConnection
     field :any
 
     def any
-      filtered_items.any?
+      items.any?
     end
   end
 end

@@ -1,10 +1,12 @@
 class GraphQL::Node
   include GraphQL::Fieldable
-  attr_accessor :fields, :query
+  attr_reader :fields, :query
   attr_reader :target
 
-  def initialize(target=nil)
+  def initialize(target=nil, fields:, query:)
     @target = target
+    @query = query
+    @fields = fields
   end
 
   def method_missing(method_name, *args, &block)
@@ -15,15 +17,25 @@ class GraphQL::Node
     end
   end
 
-  def as_json
+  def as_result
     json = {}
     fields.each do |syntax_field|
-      name = syntax_field.identifier
       key_name = syntax_field.alias_name || syntax_field.identifier
-      field = get_field(syntax_field)
-      json[key_name] = field.as_result
+      if key_name == 'node'
+        clone_node = self.class.new(target, fields: syntax_field.fields, query: query)
+        json[key_name] = clone_node.as_result
+      elsif key_name == 'cursor'
+        json[key_name] = cursor
+      else
+        field = get_field(syntax_field)
+        json[key_name] = field.as_result
+      end
     end
     json
+  end
+
+  def as_json
+    as_result
   end
 
   def context
@@ -57,7 +69,8 @@ class GraphQL::Node
       define_method "cursor" do
         field_class = self.class.find_field(field_name)
         field = field_class.new(query: query, owner: self, calls: [])
-        field.as_json_value.to_s
+        cursor = GraphQL::Types::CursorField.new(field.as_result)
+        cursor.as_result
       end
     end
   end

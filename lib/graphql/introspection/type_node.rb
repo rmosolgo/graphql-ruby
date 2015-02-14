@@ -10,12 +10,13 @@ class GraphQL::Introspection::TypeNode < GraphQL::Node
     type: :string
 
   field :fields,
+    type: :connection,
     method: :field_nodes,
-    edge_class_name: "GraphQL::Introspection::FieldsEdge",
+    connection_class_name: "GraphQL::Introspection::FieldsConnection",
     node_class_name: "GraphQL::Introspection::FieldNode"
 
-  def self.call(type_name)
-    new(type_name)
+  def self.call(type_name, **kwargs)
+    new(type_name, **kwargs)
   end
 
   def name

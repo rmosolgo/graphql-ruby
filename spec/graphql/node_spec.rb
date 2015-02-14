@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe GraphQL::Node do
-  let(:query_string) { "type(Post) { name, description, fields.first(1) { count, edges { node { name, description }}} }"}
+  let(:query_string) { "type(Post) { name, description, fields { count, edges { node { name, description }}} }"}
   let(:result) { GraphQL::Query.new(query_string, namespace: Nodes).as_json }
 
   describe '__type__' do
@@ -15,7 +15,6 @@ describe GraphQL::Node do
 
     it 'has fields' do
       assert_equal 7, result["Post"]["fields"]["count"]
-      assert_equal 1, result["Post"]["fields"]["edges"].length
       assert_equal({ "name" => "title", "description" => nil}, result["Post"]["fields"]["edges"][0]["node"])
     end
   end

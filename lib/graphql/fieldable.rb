@@ -42,7 +42,7 @@ module GraphQL::Fieldable
         all_fields.find { |f| f.const_get(:NAME) == identifier.to_s }
       end
 
-      def field(field_name, type: nil, method: nil, description: nil, edge_class_name: nil, node_class_name: nil)
+      def field(field_name, type: nil, method: nil, description: nil, connection_class_name: nil, node_class_name: nil)
         field_name = field_name.to_s
         raise "You already defined #{field_name}" if has_field?(field_name)
         field_class = GraphQL::Field.create_class({
@@ -51,7 +51,7 @@ module GraphQL::Fieldable
           owner_class: self,
           method: method,
           description: description,
-          edge_class_name: edge_class_name,
+          connection_class_name: connection_class_name,
           node_class_name: node_class_name,
         })
         field_class_name = field_name.camelize + "Field"

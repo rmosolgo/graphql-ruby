@@ -11,31 +11,22 @@ class GraphQL::Field
     owner.send(method)
   end
 
-  def as_json_value
+  def as_result
     finished_value
   end
 
-  def as_result
-    if fields.any?
-      as_node.as_json
-    else
-      as_json_value
-    end
-  end
-
-  def as_node
-    items = raw_value
-    edge_class.new(
-      query: query,
-      items: items,
-      node_class: node_class,
-      calls: calls,
-      fields: fields,
-    )
-  end
-
   def finished_value
-    @finished_value ||= apply_calls(raw_value, calls)
+    @finished_value ||= begin
+      val = raw_value
+      calls.each do |call|
+        registered_call = self.class.find_call(call.identifier)
+        if registered_call.nil?
+          raise "Call not found: #{self.class.name}##{call.identifier}"
+        end
+        val = registered_call[:lambda].call(val, *call.arguments)
+      end
+      val
+    end
   end
 
   # instance `const_get` reaches up to class namespace
@@ -44,7 +35,7 @@ class GraphQL::Field
   end
 
   # delegate to class constant
-  ["name", "description", "edge_class_name", "node_class_name"].each do |method_name|
+  ["name", "description"].each do |method_name|
     define_method(method_name) do
       const_get(method_name.upcase)
     end
@@ -54,28 +45,8 @@ class GraphQL::Field
     const_get(:METHOD) || name
   end
 
-  def edge_class
-    query.const_get(edge_class_name) || GraphQL::Edge
-  end
-
-  def node_class
-    query.const_get(node_class_name) || raise("Couldn't find node class #{node_class_name} for #{self.class}")
-  end
-
-  def apply_calls(initial_value, call_array)
-    val = initial_value
-    call_array.each do |call|
-      registered_call = self.class.find_call(call.identifier)
-      if registered_call.nil?
-        raise "Call not found: #{self.class.name}##{call.identifier}"
-      end
-      val = registered_call[:lambda].call(val, *call.arguments)
-    end
-    val
-  end
-
   class << self
-    def create_class(name:, owner_class:, type:, method: nil, description: nil, edge_class_name: nil, node_class_name: nil)
+    def create_class(name:, owner_class:, type:, method: nil, description: nil, connection_class_name: nil, node_class_name: nil)
       if type.is_a?(Symbol)
         type = BUILT_IN_TYPES[type]
       end
@@ -86,7 +57,7 @@ class GraphQL::Field
       new_class.const_set :OWNER_CLASS, owner_class
       new_class.const_set :METHOD, method
       new_class.const_set :DESCRIPTION , description
-      new_class.const_set :EDGE_CLASS_NAME, (edge_class_name || "#{name.camelize}Edge")
+      new_class.const_set :CONNECTION_CLASS_NAME, (connection_class_name || "#{name.camelize}Connection")
       new_class.const_set :NODE_CLASS_NAME, (node_class_name || "#{name.singularize.camelize}Node")
       new_class
     end

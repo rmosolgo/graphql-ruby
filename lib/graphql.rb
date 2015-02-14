@@ -4,7 +4,7 @@ require "active_support/core_ext/object/blank"
 
 module GraphQL
   autoload(:Callable,         "graphql/callable")
-  autoload(:Edge,             "graphql/edge")
+  autoload(:Connection,       "graphql/connection")
   autoload(:Field,            "graphql/field")
   autoload(:Fieldable,        "graphql/fieldable")
   autoload(:Parser,           "graphql/parser")
@@ -14,22 +14,23 @@ module GraphQL
   autoload(:VERSION,          "graphql/version")
 
   module Introspection
-    autoload(:CallNode,     "graphql/introspection/call_node.rb")
-    autoload(:FieldNode,    "graphql/introspection/field_node.rb")
-    autoload(:FieldsEdge,   "graphql/introspection/fields_edge.rb")
-    autoload(:TypeNode,     "graphql/introspection/type_node.rb")
+    autoload(:CallNode,           "graphql/introspection/call_node.rb")
+    autoload(:FieldNode,          "graphql/introspection/field_node.rb")
+    autoload(:FieldsConnection,   "graphql/introspection/fields_connection.rb")
+    autoload(:TypeNode,           "graphql/introspection/type_node.rb")
   end
 
   module Syntax
     autoload(:Call,       "graphql/syntax/call")
-    autoload(:Edge,       "graphql/syntax/edge")
     autoload(:Field,      "graphql/syntax/field")
     autoload(:Node,       "graphql/syntax/node")
   end
 
   module Types
-    autoload(:NumberField,      "graphql/types/number_field.rb")
     autoload(:ConnectionField,  "graphql/types/connection_field.rb")
+    autoload(:CursorField,      "graphql/types/cursor_field.rb")
+    autoload(:NumberField,      "graphql/types/number_field.rb")
+    autoload(:ObjectField,      "graphql/types/object_field.rb")
     autoload(:StringField,      "graphql/types/string_field.rb")
   end
 

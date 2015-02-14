@@ -29,11 +29,6 @@ describe GraphQL::Query do
   end
 
   describe '#as_json' do
-    it 'performs the root node call' do
-      assert_send([Nodes::PostNode, :call, "123"])
-      query.as_json
-    end
-
     it 'finds fields that delegate to a target' do
       assert_equal result, {"123" => {"title" => "My great post", "content" => "So many great things"}}
     end
@@ -47,9 +42,9 @@ describe GraphQL::Query do
 
     describe 'when accessing fields that return objects' do
       describe 'when making calls on the field' do
-        let(:query_string) { "post(123) { published_at.ymd() }"}
+        let(:query_string) { "post(123) { published_at.minus_days(200) { year } }"}
         it 'returns the modified value' do
-          assert_equal "2010-01-04", result["123"]["published_at"]
+          assert_equal 2009, result["123"]["published_at"]["year"]
         end
       end
       describe 'when requesting more fields' do
@@ -121,8 +116,7 @@ describe GraphQL::Query do
     describe 'when the root call doesnt have an argument' do
       let(:query_string) { "viewer() { name }"}
       it 'calls the node with no arguments' do
-        assert_send([Nodes::ViewerNode, :call])
-        query.as_json
+        assert_equal "It's you again", result["viewer"]["name"]
       end
     end
 
