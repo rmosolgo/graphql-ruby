@@ -12,12 +12,6 @@ module Nodes
       def node_for(m_class)
         @model_class = m_class
       end
-
-      def call(*ids, query:, fields:)
-        ids = ids.map(&:to_i)
-        items = model_class.all.select { |x| ids.include?(x.id) }
-        items.map { |x| self.new(x, query: query, fields: fields) }
-      end
     end
   end
 
@@ -103,10 +97,6 @@ module Nodes
     def cursor
       "viewer"
     end
-
-    def self.call(*args, **kwargs)
-      self.new(*args, **kwargs)
-    end
   end
 
   class ContextNode < GraphQL::Node
@@ -118,10 +108,6 @@ module Nodes
 
     def cursor
       "context"
-    end
-
-    def self.call(*args, **kwargs)
-      self.new(*args, **kwargs)
     end
   end
 

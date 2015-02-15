@@ -31,7 +31,6 @@ describe GraphQL::Transform do
       it 'turns a simple node into a Node' do
         tree = parser.node.parse("post(123) { name }")
         res = transform.apply(tree)
-        puts tree, res
         assert(res.is_a?(GraphQL::Syntax::Node), 'it gets a node')
       end
 

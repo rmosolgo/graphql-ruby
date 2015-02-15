@@ -78,10 +78,6 @@ class GraphQL::Node
       @node_name || name.split("::").last.sub(/Node$/, '').underscore
     end
 
-    def call(argument)
-      raise NotImplementedError, "Implement #{name}#call(argument) to use this node as a call"
-    end
-
     def cursor(field_name)
       define_method "cursor" do
         field_class = self.class.find_field(field_name)
