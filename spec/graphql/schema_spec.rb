@@ -29,14 +29,48 @@ describe GraphQL::Schema do
   end
 
   describe 'querying schema' do
-  let(:query_string) { "schema() { calls { count }, nodes { count } } "}
+  let(:query_string) { "schema() {
+    calls {
+      count,
+      edges {
+        node {
+          name,
+          returns,
+          arguments {
+            edges {
+              node {
+                name, type
+              }
+            }
+          }
+        }
+      }
+    },
+    nodes {
+      count
+    }
+  }"}
   let(:context) { {person_name: "Han Solo" }}
   let(:query) { GraphQL::Query.new(query_string, namespace: Nodes, context: context) }
   let(:result) { query.as_result }
 
-    it 'returns all calls' do
-      assert schema.calls.size > 0
-      assert_equal schema.calls.size, result["schema"]["calls"]["count"]
+    describe 'querying calls' do
+      it 'returns all calls' do
+        assert schema.calls.size > 0
+        assert_equal schema.calls.size, result["schema"]["calls"]["count"]
+      end
+
+      it 'shows return types' do
+        upvote_post_call = result["schema"]["calls"]["edges"].find {|e| e["node"]["name"] == "upvote_post"}
+        assert_equal ["post", "upvote"], upvote_post_call["node"]["returns"]
+      end
+
+      it 'shows argument types' do
+        upvote_post_call = result["schema"]["calls"]["edges"].find {|e| e["node"]["name"] == "upvote_post"}
+        puts upvote_post_call
+        expected_arguments = [{"node"=>{"name"=>"post_data", "type"=>"object"}}, {"node"=>{"name"=>"person_id", "type"=>"number"}}]
+        assert_equal expected_arguments, upvote_post_call["node"]["arguments"]["edges"]
+      end
     end
 
     it 'returns all nodes' do

@@ -2,12 +2,17 @@ class GraphQL::RootCall
   attr_reader :query, :arguments
   def initialize(query:, syntax_arguments:)
     @query = query
-    @arguments = syntax_arguments.map do |syntax_arg|
-      if syntax_arg[0] == "<"
-        query.get_variable(syntax_arg)
-      else
-        syntax_arg
-      end
+
+    raise "#{self.class.name} must declare arguments" if self.class.argument_declarations.nil?
+    @arguments = syntax_arguments.each_with_index.map do |syntax_arg, idx|
+
+      value = if syntax_arg[0] == "<"
+          query.get_variable(syntax_arg).json_string
+        else
+          syntax_arg
+        end
+
+      self.class.typecast(idx, value)
     end
   end
 
@@ -19,6 +24,7 @@ class GraphQL::RootCall
     return_declarations = self.class.return_declarations
     raise "#{self.class.name} must declare returns" unless return_declarations.present?
     return_values = execute!(*arguments)
+
     if return_values.is_a?(Hash)
       unexpected_returns = return_values.keys - return_declarations.keys
       missing_returns = return_declarations.keys - return_values.keys
@@ -57,6 +63,48 @@ class GraphQL::RootCall
 
     def return_declarations
       @return_declarations ||= {}
+    end
+
+    def arguments(*argument_declarations)
+      @argument_declarations = argument_declarations.compact
+    end
+
+    def argument_declarations
+      @argument_declarations || (superclass.respond_to?(:argument_declarations) ? superclass.argument_declarations : [])
+    end
+
+    def argument_declaration_for_index(idx)
+      if argument_declarations.first[:any_number]
+        argument_declarations.first
+      else
+        argument_declarations[idx]
+      end
+    end
+
+    TYPE_CHECKS = {
+      object: Hash,
+      number: Numeric,
+      string: String,
+    }
+
+    def typecast(idx, value)
+      arg_dec = argument_declaration_for_index(idx)
+      expected_type = arg_dec[:type]
+      expected_type_class = TYPE_CHECKS[expected_type]
+
+      if expected_type == :string
+        parsed_value = value
+      else
+        parsed_value = JSON.parse('{ "value" : ' + value + '}')["value"]
+      end
+
+      if !parsed_value.is_a?(expected_type_class)
+        raise GraphQL::RootCallArgumentError.new(arg_dec, value)
+      end
+
+      parsed_value
+    rescue JSON::ParserError
+      raise GraphQL::RootCallArgumentError.new(arg_dec, value)
     end
 
     def schema_name

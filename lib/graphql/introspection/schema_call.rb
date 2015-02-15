@@ -1,5 +1,6 @@
 class GraphQL::Introspection::SchemaCall < GraphQL::RootCall
-  returns __type__: "schema"
+  returns :schema
+  arguments(nil)
 
   def execute!
     GraphQL::SCHEMA

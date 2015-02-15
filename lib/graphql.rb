@@ -16,10 +16,11 @@ module GraphQL
 
   module Introspection
     autoload(:CallNode,           "graphql/introspection/call_node")
+    autoload(:Connection,         "graphql/introspection/connection")
     autoload(:FieldNode,          "graphql/introspection/field_node")
-    autoload(:FieldsConnection,   "graphql/introspection/fields_connection")
+    autoload(:RootCallArgumentNode, "graphql/introspection/root_call_argument_node")
+    autoload(:RootCallNode,       "graphql/introspection/root_call_node")
     autoload(:SchemaCall,         "graphql/introspection/schema_call")
-    autoload(:SchemaConnection,   "graphql/introspection/schema_connection")
     autoload(:SchemaNode,         "graphql/introspection/schema_node")
     autoload(:TypeCall,           "graphql/introspection/type_call")
     autoload(:TypeNode,           "graphql/introspection/type_node")
@@ -46,9 +47,11 @@ module GraphQL
   PARSER = Parser.new
   SCHEMA = Schema.new
   TRANSFORM = Transform.new
-  # auto-load these so they're in SCHEMA
+  # preload these so they're in SCHEMA
+  Introspection::Connection
+  Introspection::RootCallArgumentNode
+  Introspection::RootCallNode
   Introspection::SchemaCall
-  Introspection::SchemaConnection
   Introspection::SchemaNode
   Introspection::TypeCall
   Introspection::TypeNode
@@ -72,6 +75,12 @@ module GraphQL
     def initialize(line, col, string)
       lines = string.split("\n")
       super("Syntax Error at (#{line}, #{col}), check usage: #{string}")
+    end
+  end
+
+  class RootCallArgumentError < RuntimeError
+    def initialize(declaration, actual)
+      super("Wrong type for #{declaration[:name]}: expected a #{declaration[:type]} but got #{actual}")
     end
   end
 end

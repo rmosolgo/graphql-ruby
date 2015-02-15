@@ -18,7 +18,7 @@ class GraphQL::Parser < Parslet::Parser
   rule(:alias_name) { space >> str("as") >> space >> name.as(:alias_name) }
 
   # variable
-  rule(:variable) { space? >> variable_identifier >> str(":") >> space? >> json_string.as(:json_string) >> space?}
+  rule(:variable) { space? >> variable_identifier >> str(":") >> space? >> (name | json_string ).as(:json_string) >> space?}
   rule(:json_string) { str("{") >> (match('[^{}]') | json_string).repeat >> str("}")}
   rule(:variable_identifier) { (str("<") >> name >> str(">")).as(:identifier) }
 

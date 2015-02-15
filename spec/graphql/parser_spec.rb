@@ -114,7 +114,12 @@ describe GraphQL::Parser do
 
   describe 'variable' do
     let(:variable) { parser.variable }
-    it 'gets variables' do
+
+    it 'gets scalar variables' do
+      assert variable.parse_with_debug(%{<some_number>: 888})
+      assert variable.parse_with_debug(%{<some_string>: my_string})
+    end
+    it 'gets json variables' do
       assert variable.parse_with_debug(%{<my_input>: {"key": "value"}})
     end
 

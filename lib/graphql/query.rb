@@ -26,8 +26,10 @@ class GraphQL::Query
 
   def get_variable(identifier)
     syntax_var = @root.variables.find { |v| v.identifier == identifier }
-    # to do: memoize
-    JSON.parse(syntax_var.json_string)
+    if syntax_var.blank?
+      raise "No variable found for #{identifier}, defined variables are #{@root.variables.map(&:identifier)}"
+    end
+    syntax_var
   end
 
   class << self
@@ -55,7 +57,7 @@ class GraphQL::Query
         result[name.to_s] = node_value.as_result
       end
     elsif result_object.is_a?(Array)
-      node_type = root_call_class.return_declarations[:__type__]
+      node_type = root_call_class.return_declarations.values.first
       node_class = GraphQL::SCHEMA.get_node(node_type)
       fields_for_node = root_syntax_node.fields
       result_object.each do |item|
@@ -63,7 +65,7 @@ class GraphQL::Query
         result[node_value.cursor] = node_value.as_result
       end
     else
-      node_type = root_call_class.return_declarations[:__type__]
+      node_type = root_call_class.return_declarations.values.first
       node_class = GraphQL::SCHEMA.get_node(node_type)
       fields_for_node = root_syntax_node.fields
       node_value = node_class.new(result_object, query: self, fields: fields_for_node)

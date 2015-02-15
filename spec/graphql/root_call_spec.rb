@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe GraphQL::RootCall do
   let(:query_string) { %{
-    upvote_post(<upvote_data>) {
+    upvote_post(<post_data>, <person_id>) {
       post {
         likes { count, any }
       }
@@ -10,10 +10,8 @@ describe GraphQL::RootCall do
         post_id
       }
     }
-    <upvote_data>: {
-      "post" : { "id" : #{@post_id} },
-      "person": { "id" : 888 }
-    }
+    <post_data>: { "id" : #{@post_id} }
+    <person_id>: 888
   }}
   let(:result) { GraphQL::Query.new(query_string, namespace: Nodes).as_json }
 
@@ -42,7 +40,12 @@ describe GraphQL::RootCall do
       assert_equal true, result["post"]["likes"]["any"]
     end
 
-    it 'validates the input'
+    describe 'when the input is the wrong type' do
+      let(:query_string) { %{upvote_post(bogus_arg, 888) { post { id } } } }
+      it 'validates the input' do
+        assert_raises(GraphQL::RootCallArgumentError) { result }
+      end
+    end
   end
 
   describe '#__type__' do

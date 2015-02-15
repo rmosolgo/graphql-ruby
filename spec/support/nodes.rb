@@ -143,6 +143,11 @@ module Nodes
   end
 
   class FindCall < GraphQL::RootCall
+    arguments({
+        name: "ids",
+        type: :number,
+        any_number: true,
+      })
     def execute!(*ids)
       model_class = model_type
       items = ids.map { |id| model_class.find(id.to_i) }
@@ -150,35 +155,35 @@ module Nodes
   end
 
   class PostCall < FindCall
-    returns __type__: "post"
+    returns :post
     def model_type
       Post
     end
   end
 
   class CommentCall < FindCall
-    returns __type__: "comment"
+    returns :comment
     def model_type
       Comment
     end
   end
 
   class StupidThumbUpCall < FindCall
-    returns __type__: "stupid_thumb_up"
+    returns :stupid_thumb_up
     def model_type
       Like
     end
   end
 
   class ViewerCall < GraphQL::RootCall
-    returns __type__: "viewer"
+    returns :viewer
     def execute!
       nil
     end
   end
 
   class ContextCall < GraphQL::RootCall
-    returns __type__: "context"
+    returns :context
     def execute!
       nil
     end
@@ -188,8 +193,17 @@ module Nodes
     indentifier "upvote_post"
     returns :post, :upvote
 
-    def execute!(payload)
-      post_id = payload["post"]["id"]
+    arguments({
+        name: "post_data",
+        type: :object,
+      }, {
+        name: "person_id",
+        type: :number
+      }
+      )
+
+    def execute!(post_data, person_id)
+      post_id = post_data["id"]
       like = Like.create(post_id: post_id)
       {
         post: Post.find(post_id),
