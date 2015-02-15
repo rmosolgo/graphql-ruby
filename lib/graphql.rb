@@ -1,13 +1,16 @@
-require "parslet"
-require "active_support/core_ext/string/inflections"
 require "active_support/core_ext/object/blank"
+require "active_support/core_ext/string/inflections"
+require "json"
+require "parslet"
 
 module GraphQL
   autoload(:Connection,       "graphql/connection")
   autoload(:Field,            "graphql/field")
+  autoload(:Node,             "graphql/node")
   autoload(:Parser,           "graphql/parser")
   autoload(:Query,            "graphql/query")
-  autoload(:Node,             "graphql/node")
+  autoload(:RootCall,         "graphql/root_call")
+  autoload(:Schema,           "graphql/schema")
   autoload(:Transform,        "graphql/transform")
   autoload(:VERSION,          "graphql/version")
 
@@ -15,8 +18,10 @@ module GraphQL
     autoload(:CallNode,           "graphql/introspection/call_node.rb")
     autoload(:FieldNode,          "graphql/introspection/field_node.rb")
     autoload(:FieldsConnection,   "graphql/introspection/fields_connection.rb")
+    autoload(:TypeCall,           "graphql/introspection/type_call.rb")
     autoload(:TypeNode,           "graphql/introspection/type_node.rb")
   end
+
 
   module Syntax
     autoload(:Call,       "graphql/syntax/call")
@@ -36,7 +41,9 @@ module GraphQL
 
   TYPE_ALIASES = {}
   PARSER = Parser.new
+  SCHEMA = Schema.new
   TRANSFORM = Transform.new
+  Introspection::TypeCall
 
   class FieldNotDefinedError < RuntimeError
     def initialize(class_name, field_name)
@@ -45,7 +52,12 @@ module GraphQL
   end
   class NodeNotDefinedError < RuntimeError
     def initialize(node_name)
-      super("#{node_name} was requested but was not found")
+      super("#{node_name} was requested but was not found. Defined nodes are: #{SCHEMA.node_names}")
+    end
+  end
+  class RootCallNotDefinedError < RuntimeError
+    def initialize(name)
+      super("Call '#{name}' was requested but was not found. Defined nodes are: #{SCHEMA.root_call_names}")
     end
   end
   class SyntaxError < RuntimeError

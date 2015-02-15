@@ -14,32 +14,34 @@ class InadequateRecordBase
     def all
       @_objects ||= []
     end
-  end
 
-  def self.find(id)
-    all.find { |object| object.id.to_s == id.to_s}
-  end
-
-  def self.where(query={})
-    result = []
-    all.each do |object|
-      match = true
-
-      query.each do |key, value|
-        if object.send(key) != value
-          match = false
-        end
-      end
-
-      result << object if match
+    def find(id)
+      all.find { |object| object.id.to_s == id.to_s } || raise("Failed to find #{name} => #{id}")
     end
-    result
-  end
 
-  def self.create(attributes)
-    instance = self.new(attributes)
-    all << instance
-    instance
+    def where(query={})
+      result = []
+      all.each do |object|
+        match = true
+
+        query.each do |key, value|
+          if object.send(key) != value
+            match = false
+          end
+        end
+
+        result << object if match
+      end
+      result
+    end
+
+    def create(attributes)
+      @next_id ||= 0
+      attributes[:id] ||= @next_id += 1
+      instance = self.new(attributes)
+      all << instance
+      instance
+    end
   end
 end
 

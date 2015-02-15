@@ -36,7 +36,7 @@ module Nodes
   end
 
   class DateField < GraphQL::Types::ObjectField
-    field_type "Date"
+    field_type "date"
     call :minus_days, -> (prev_value, minus_days) { prev_value - minus_days.to_i }
   end
 
@@ -82,7 +82,8 @@ module Nodes
   # wraps a Like, for testing explicit name
   class ThumbUpNode < ApplicationNode
     node_for(Like)
-    type "Upvote"
+    type "upvote"
+    field :post_id
   end
 
   class StupidThumbUpNode < ThumbUpNode
@@ -152,6 +153,75 @@ module Nodes
 
     def any
       items.any?
+    end
+  end
+
+  class FindCall < GraphQL::RootCall
+    def execute!(*ids)
+      model_class = model_type
+      items = ids.map { |id| model_class.find(id.to_i) }
+      result_hash = {}
+      result_hash["__type__"] = node_type
+      items.each { |item| result_hash[item.id.to_s] = item }
+      result_hash
+    end
+  end
+
+  class PostCall < FindCall
+    def model_type
+      Post
+    end
+    def node_type
+      PostNode
+    end
+  end
+
+  class CommentCall < FindCall
+    def model_type
+      Comment
+    end
+    def node_type
+      CommentNode
+    end
+  end
+
+  class StupidThumbUpCall < FindCall
+    def model_type
+      Like
+    end
+    def node_type
+      StupidThumbUpNode
+    end
+  end
+
+  class ViewerCall < GraphQL::RootCall
+    def execute!
+      {
+        "viewer" => nil,
+        "__type__" => ViewerNode,
+      }
+    end
+  end
+
+  class ContextCall < GraphQL::RootCall
+    def execute!
+      {
+        "context" => nil,
+        "__type__" => ContextNode,
+      }
+    end
+  end
+
+  class LikePostCall < GraphQL::RootCall
+    indentifier "upvote_post"
+
+    def execute!(payload)
+      post_id = payload["post"]["id"]
+      like = Like.create(post_id: post_id)
+      {
+        "post" => Post.find(post_id),
+        "upvote" => like
+      }
     end
   end
 end

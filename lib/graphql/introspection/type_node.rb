@@ -15,12 +15,8 @@ class GraphQL::Introspection::TypeNode < GraphQL::Node
     connection_class_name: "GraphQL::Introspection::FieldsConnection",
     node_class_name: "GraphQL::Introspection::FieldNode"
 
-  def self.call(type_name, **kwargs)
-    new(type_name, **kwargs)
-  end
-
   def name
-    type_class.node_name
+    type_class.schema_name
   end
 
   def description
@@ -34,7 +30,7 @@ class GraphQL::Introspection::TypeNode < GraphQL::Node
   private
 
   def type_class
-    @type_class ||= query.get_node(@target)
+    @type_class ||= @target
   end
 end
 

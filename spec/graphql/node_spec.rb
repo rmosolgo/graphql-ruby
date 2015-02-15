@@ -1,29 +1,29 @@
 require 'spec_helper'
 
 describe GraphQL::Node do
-  let(:query_string) { "type(Post) { name, description, fields { count, edges { node { name, description }}} }"}
+  let(:query_string) { "type(post) { name, description, fields { count, edges { node { name, description }}} }"}
   let(:result) { GraphQL::Query.new(query_string, namespace: Nodes).as_json }
 
   describe '__type__' do
     it 'has name' do
-      assert_equal "Post", result["Post"]["name"]
+      assert_equal "post", result["post"]["name"]
     end
 
     it 'has description' do
-      assert_equal "A blog post entry", result["Post"]["description"]
+      assert_equal "A blog post entry", result["post"]["description"]
     end
 
     it 'has fields' do
-      assert_equal 7, result["Post"]["fields"]["count"]
-      assert_equal({ "name" => "title", "description" => nil}, result["Post"]["fields"]["edges"][0]["node"])
+      assert_equal 7, result["post"]["fields"]["count"]
+      assert_equal({ "name" => "title", "description" => nil}, result["post"]["fields"]["edges"][0]["node"])
     end
   end
 
   describe '.node_name' do
-    let(:query_string) { "type(Upvote) { name }"}
+    let(:query_string) { "type(upvote) { name }"}
 
     it 'overrides __type__.name' do
-      assert_equal "Upvote", result["Upvote"]["name"]
+      assert_equal "upvote", result["upvote"]["name"]
     end
   end
 

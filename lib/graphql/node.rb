@@ -58,6 +58,10 @@ class GraphQL::Node
   end
 
   class << self
+    def inherited(child_class)
+      GraphQL::SCHEMA.add_node(child_class)
+    end
+
     def desc(describe)
       @description = describe
     end
@@ -67,14 +71,12 @@ class GraphQL::Node
     end
 
     def type(type_name)
-      GraphQL::TYPE_ALIASES[type_name] = self
       @node_name = type_name
     end
 
-    def node_name
-      @node_name || name.split("::").last.sub(/Node$/, '')
+    def schema_name
+      @node_name || name.split("::").last.sub(/Node$/, '').underscore
     end
-
 
     def call(argument)
       raise NotImplementedError, "Implement #{name}#call(argument) to use this node as a call"

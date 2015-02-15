@@ -14,26 +14,18 @@ class GraphQL::Query
     @as_json ||= execute!
   end
 
-  def get_node(identifier)
-    identifier = identifier.camelize
-    if GraphQL::TYPE_ALIASES.has_key?(identifier)
-      return GraphQL::TYPE_ALIASES[identifier]
-    end
-    name = "#{identifier}Node"
-    namespace.const_get(name)
-  rescue NameError => e
-    if namespace != Object
-      name  = "#{namespace}::#{name}"
-    end
-    raise GraphQL::NodeNotDefinedError.new(name)
-  end
-
   def const_get(identifier)
     if namespace.const_defined?(identifier)
       namespace.const_get(identifier)
     else
       nil
     end
+  end
+
+  def get_variable(identifier)
+    syntax_var = @root.variables.find { |v| v.identifier == identifier }
+    # to do: memoize
+    JSON.parse(syntax_var.json_string)
   end
 
   class << self
@@ -43,37 +35,33 @@ class GraphQL::Query
   private
 
   def execute!
-    root_nodes = fetch_root_node
-
+    root_syntax_node = root.nodes[0]
+    root_call_identifier = root_syntax_node.identifier
+    root_call_class = GraphQL::SCHEMA.get_call(root_call_identifier)
+    root_call = root_call_class.new(query: self, syntax_arguments: root_syntax_node.arguments)
+    result_hash = root_call.as_result
     result = {}
 
-    root_nodes.each do |n|
-      result[n.cursor] = n.as_json
+    type = result_hash.delete("__type__")
+
+    result_hash.each do |cursor, value|
+      if value.is_a?(GraphQL::Node)
+        result[cursor] = value.as_result
+        next
+      elsif type
+        node_class = type
+        fields_for_node = root_syntax_node.fields
+      else
+        node_class = GraphQL::SCHEMA.get_node(cursor)
+        field_for_node = root_syntax_node.fields.find {|f| f.identifier == cursor }
+        fields_for_node = field_for_node.fields
+      end
+      node_value = node_class.new(value,query: self, fields: fields_for_node )
+      result[cursor] = node_value.as_result
     end
 
     result
   end
-
-  def fetch_root_node
-    if root.identifier == "type"
-      root_class = GraphQL::Introspection::TypeNode
-    else
-      root_class = get_node(root.identifier)
-    end
-
-    # if only one object, make an array of it
-    root_nodes = root_class.send(:call, *root.arguments, query: self, fields: root.fields)
-    if !root_nodes.is_a?(Array)
-      root_nodes = [root_nodes]
-    end
-
-    if !root_nodes[0].is_a?(root_class)
-      raise "#{root_class.name}.call must return an instance of #{root_class.name}, not an instance of #{root_nodes[0].class.name}"
-    end
-
-    root_nodes
-  end
-
 
   def parse(query_string)
     parsed_hash = GraphQL::PARSER.parse(query_string)

@@ -33,26 +33,25 @@ describe GraphQL::Field do
   end
 
   describe '__type__' do
-    let(:query_string) { "type(Post) { fields { edges { node { name, type, calls { edges { node { name } }} } } } } "}
+    let(:query_string) { "type(post) { fields { edges { node { name, type, calls { edges { node { name } }} } } } } "}
     let(:query) { GraphQL::Query.new(query_string, namespace: Nodes, context: {}) }
     let(:result) { query.as_json }
-
     it 'has name' do
-      assert_equal "title",     result["Post"]["fields"]["edges"][0]["node"]["name"]
-      assert_equal "content",   result["Post"]["fields"]["edges"][1]["node"]["name"]
-      assert_equal "length",    result["Post"]["fields"]["edges"][2]["node"]["name"]
-      assert_equal "comments",  result["Post"]["fields"]["edges"][3]["node"]["name"]
+      assert_equal "title",     result["post"]["fields"]["edges"][0]["node"]["name"]
+      assert_equal "content",   result["post"]["fields"]["edges"][1]["node"]["name"]
+      assert_equal "length",    result["post"]["fields"]["edges"][2]["node"]["name"]
+      assert_equal "comments",  result["post"]["fields"]["edges"][3]["node"]["name"]
     end
 
     it 'has type' do
-      assert_equal "string",      result["Post"]["fields"]["edges"][0]["node"]["type"]
-      assert_equal "string",      result["Post"]["fields"]["edges"][1]["node"]["type"]
-      assert_equal "number",      result["Post"]["fields"]["edges"][2]["node"]["type"]
-      assert_equal "connection",  result["Post"]["fields"]["edges"][3]["node"]["type"]
+      assert_equal "string",      result["post"]["fields"]["edges"][0]["node"]["type"]
+      assert_equal "string",      result["post"]["fields"]["edges"][1]["node"]["type"]
+      assert_equal "number",      result["post"]["fields"]["edges"][2]["node"]["type"]
+      assert_equal "connection",  result["post"]["fields"]["edges"][3]["node"]["type"]
     end
 
     it 'has calls' do
-      content_calls = result["Post"]["fields"]["edges"][1]["node"]["calls"]["edges"]
+      content_calls = result["post"]["fields"]["edges"][1]["node"]["calls"]["edges"]
       assert_equal 3, content_calls.length
       assert_equal ["from", "for", "select"], content_calls.map {|c| c["node"]["name"] }
     end

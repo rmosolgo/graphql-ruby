@@ -6,7 +6,6 @@ describe GraphQL::Transform do
 
   describe '#apply' do
     describe 'query' do
-      focus
       it 'parses node and variables' do
         tree = parser.query.parse(%{
           like_page(<page_info>) { page { id, likes } }
@@ -22,19 +21,22 @@ describe GraphQL::Transform do
           })
         res = transform.apply(tree)
         assert_equal 1, res.nodes.length
+        assert_equal "like_page", res.nodes[0].identifier
+        assert_equal ["<page_info>"], res.nodes[0].arguments
         assert_equal ["<page_info>", "<other>"], res.variables.map(&:identifier)
       end
     end
 
     describe 'nodes' do
       it 'turns a simple node into a Node' do
-        tree = parser.parse("post(123) { name }")
+        tree = parser.node.parse("post(123) { name }")
         res = transform.apply(tree)
+        puts tree, res
         assert(res.is_a?(GraphQL::Syntax::Node), 'it gets a node')
       end
 
       it 'turns a node into a Node' do
-        tree = parser.parse("person(1) { name, check_ins.last(4) { count, edges { node { id } }  } }")
+        tree = parser.node.parse("person(1) { name, check_ins.last(4) { count, edges { node { id } }  } }")
         res = transform.apply(tree)
         assert(res.is_a?(GraphQL::Syntax::Node), 'it gets a node')
         assert(res.identifier == "person")

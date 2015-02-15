@@ -22,12 +22,6 @@ describe GraphQL::Query do
     @like2.destroy
   end
 
-  describe '#root' do
-    it 'contains the first node of the graph' do
-      assert query.root.is_a?(GraphQL::Syntax::Node)
-    end
-  end
-
   describe '#as_json' do
     it 'finds fields that delegate to a target' do
       assert_equal result, {"123" => {"title" => "My great post", "content" => "So many great things"}}
@@ -100,7 +94,7 @@ describe GraphQL::Query do
       describe 'when requesting fields overriden on a child class' do
         let(:query_string) { 'stupid_thumb_up(991) { id }'}
         it 'uses the child implementation' do
-          assert_equal '991991', result["991991"]["id"]
+          assert_equal '991991', result["991"]["id"]
         end
       end
     end
