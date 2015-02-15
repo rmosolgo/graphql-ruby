@@ -10,7 +10,6 @@ Create a GraphQL interface by implementing _nodes_ and _connections_, then runni
 ## To do:
 
 - Make root call API not suck
-- Implement `schema()`
 - Implement calls as arguments
 - Implement call argument introspection (wait for spec)
 - Allow a default connection class

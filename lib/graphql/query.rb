@@ -10,9 +10,11 @@ class GraphQL::Query
     @context = context
   end
 
-  def as_json
-    @as_json ||= execute!
+  def as_result
+    @as_result ||= execute!
   end
+
+  def as_json; as_result; end
 
   def const_get(identifier)
     if namespace.const_defined?(identifier)

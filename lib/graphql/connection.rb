@@ -1,13 +1,17 @@
 class GraphQL::Connection < GraphQL::Node
   field :edges
 
-  attr_reader :items, :calls, :fields, :query, :node_class
+  attr_reader :calls, :fields, :query, :node_class
 
   def initialize(items, node_class:, query:, fields: [])
-    @items = items
+    @target = items
     @fields = fields
     @query = query
     @node_class = node_class
+  end
+
+  def items
+    @target
   end
 
   def edge_fields

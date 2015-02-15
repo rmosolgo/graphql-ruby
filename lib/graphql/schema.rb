@@ -1,19 +1,20 @@
 class GraphQL::Schema
+  attr_reader :nodes, :calls
   def initialize
     @nodes = []
-    @root_calls = []
+    @calls = []
   end
 
   def add_call(call_class)
-    @root_calls << call_class
+    @calls << call_class
   end
 
   def get_call(identifier)
-    @root_calls.find { |c| c.schema_name == identifier } || raise(GraphQL::RootCallNotDefinedError.new(identifier))
+    @calls.find { |c| c.schema_name == identifier } || raise(GraphQL::RootCallNotDefinedError.new(identifier))
   end
 
-  def root_call_names
-    @root_calls.map(&:schema_name)
+  def call_names
+    @calls.map(&:schema_name)
   end
 
   def add_node(node_class)

@@ -15,11 +15,14 @@ module GraphQL
   autoload(:VERSION,          "graphql/version")
 
   module Introspection
-    autoload(:CallNode,           "graphql/introspection/call_node.rb")
-    autoload(:FieldNode,          "graphql/introspection/field_node.rb")
-    autoload(:FieldsConnection,   "graphql/introspection/fields_connection.rb")
-    autoload(:TypeCall,           "graphql/introspection/type_call.rb")
-    autoload(:TypeNode,           "graphql/introspection/type_node.rb")
+    autoload(:CallNode,           "graphql/introspection/call_node")
+    autoload(:FieldNode,          "graphql/introspection/field_node.")
+    autoload(:FieldsConnection,   "graphql/introspection/fields_connection")
+    autoload(:SchemaCall,         "graphql/introspection/schema_call")
+    autoload(:SchemaConnection,   "graphql/introspection/schema_connection")
+    autoload(:SchemaNode,   "graphql/introspection/schema_node")
+    autoload(:TypeCall,           "graphql/introspection/type_call")
+    autoload(:TypeNode,           "graphql/introspection/type_node")
   end
 
 
@@ -32,11 +35,11 @@ module GraphQL
   end
 
   module Types
-    autoload(:ConnectionField,  "graphql/types/connection_field.rb")
-    autoload(:CursorField,      "graphql/types/cursor_field.rb")
-    autoload(:NumberField,      "graphql/types/number_field.rb")
-    autoload(:ObjectField,      "graphql/types/object_field.rb")
-    autoload(:StringField,      "graphql/types/string_field.rb")
+    autoload(:ConnectionField,  "graphql/types/connection_field")
+    autoload(:CursorField,      "graphql/types/cursor_field")
+    autoload(:NumberField,      "graphql/types/number_field")
+    autoload(:ObjectField,      "graphql/types/object_field")
+    autoload(:StringField,      "graphql/types/string_field")
   end
 
   TYPE_ALIASES = {}
@@ -44,6 +47,8 @@ module GraphQL
   SCHEMA = Schema.new
   TRANSFORM = Transform.new
   Introspection::TypeCall
+  Introspection::SchemaCall
+  Introspection::SchemaConnection
 
   class FieldNotDefinedError < RuntimeError
     def initialize(class_name, field_name)
@@ -57,7 +62,7 @@ module GraphQL
   end
   class RootCallNotDefinedError < RuntimeError
     def initialize(name)
-      super("Call '#{name}' was requested but was not found. Defined nodes are: #{SCHEMA.root_call_names}")
+      super("Call '#{name}' was requested but was not found. Defined calls are: #{SCHEMA.call_names}")
     end
   end
   class SyntaxError < RuntimeError
