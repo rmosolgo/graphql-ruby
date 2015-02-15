@@ -16,11 +16,11 @@ module GraphQL
 
   module Introspection
     autoload(:CallNode,           "graphql/introspection/call_node")
-    autoload(:FieldNode,          "graphql/introspection/field_node.")
+    autoload(:FieldNode,          "graphql/introspection/field_node")
     autoload(:FieldsConnection,   "graphql/introspection/fields_connection")
     autoload(:SchemaCall,         "graphql/introspection/schema_call")
     autoload(:SchemaConnection,   "graphql/introspection/schema_connection")
-    autoload(:SchemaNode,   "graphql/introspection/schema_node")
+    autoload(:SchemaNode,         "graphql/introspection/schema_node")
     autoload(:TypeCall,           "graphql/introspection/type_call")
     autoload(:TypeNode,           "graphql/introspection/type_node")
   end
