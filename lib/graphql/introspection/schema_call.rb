@@ -1,8 +1,7 @@
 class GraphQL::Introspection::SchemaCall < GraphQL::RootCall
+  returns __type__: "schema"
+
   def execute!
-    {
-      "schema" => GraphQL::SCHEMA,
-      "__type__" => GraphQL::Introspection::SchemaNode,
-    }
+    GraphQL::SCHEMA
   end
 end

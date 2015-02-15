@@ -146,67 +146,54 @@ module Nodes
     def execute!(*ids)
       model_class = model_type
       items = ids.map { |id| model_class.find(id.to_i) }
-      result_hash = {}
-      result_hash["__type__"] = node_type
-      items.each { |item| result_hash[item.id.to_s] = item }
-      result_hash
     end
   end
 
   class PostCall < FindCall
+    returns __type__: "post"
     def model_type
       Post
-    end
-    def node_type
-      PostNode
     end
   end
 
   class CommentCall < FindCall
+    returns __type__: "comment"
     def model_type
       Comment
-    end
-    def node_type
-      CommentNode
     end
   end
 
   class StupidThumbUpCall < FindCall
+    returns __type__: "stupid_thumb_up"
     def model_type
       Like
-    end
-    def node_type
-      StupidThumbUpNode
     end
   end
 
   class ViewerCall < GraphQL::RootCall
+    returns __type__: "viewer"
     def execute!
-      {
-        "viewer" => nil,
-        "__type__" => ViewerNode,
-      }
+      nil
     end
   end
 
   class ContextCall < GraphQL::RootCall
+    returns __type__: "context"
     def execute!
-      {
-        "context" => nil,
-        "__type__" => ContextNode,
-      }
+      nil
     end
   end
 
   class LikePostCall < GraphQL::RootCall
     indentifier "upvote_post"
+    returns :post, :upvote
 
     def execute!(payload)
       post_id = payload["post"]["id"]
       like = Like.create(post_id: post_id)
       {
-        "post" => Post.find(post_id),
-        "upvote" => like
+        post: Post.find(post_id),
+        upvote: like
       }
     end
   end

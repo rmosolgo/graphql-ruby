@@ -1,8 +1,6 @@
 class GraphQL::Introspection::TypeCall < GraphQL::RootCall
+  returns __type__: "type"
   def execute!(type_name)
-    {
-      type_name => GraphQL::SCHEMA.get_node(type_name),
-      "__type__" => GraphQL::Introspection::TypeNode
-    }
+    GraphQL::SCHEMA.get_node(type_name)
   end
 end

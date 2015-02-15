@@ -8,4 +8,8 @@ class GraphQL::Introspection::SchemaNode < GraphQL::Node
     type: :connection,
     connection_class_name: "GraphQL::Introspection::SchemaConnection",
     node_class_name: "GraphQL::Node"
+
+  def cursor
+    "schema"
+  end
 end

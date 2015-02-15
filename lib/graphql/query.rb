@@ -41,25 +41,33 @@ class GraphQL::Query
     root_call_identifier = root_syntax_node.identifier
     root_call_class = GraphQL::SCHEMA.get_call(root_call_identifier)
     root_call = root_call_class.new(query: self, syntax_arguments: root_syntax_node.arguments)
-    result_hash = root_call.as_result
+    result_object = root_call.as_result
+    return_declarations = root_call_class.return_declarations
     result = {}
 
-    type = result_hash.delete("__type__")
-
-    result_hash.each do |cursor, value|
-      if value.is_a?(GraphQL::Node)
-        result[cursor] = value.as_result
-        next
-      elsif type
-        node_class = type
-        fields_for_node = root_syntax_node.fields
-      else
-        node_class = GraphQL::SCHEMA.get_node(cursor)
-        field_for_node = root_syntax_node.fields.find {|f| f.identifier == cursor }
+    if result_object.is_a?(Hash)
+      result_object.each do |name, value|
+        node_type = root_call_class.return_declarations[name]
+        node_class = GraphQL::SCHEMA.get_node(node_type)
+        field_for_node = root_syntax_node.fields.find {|f| f.identifier == name.to_s }
         fields_for_node = field_for_node.fields
+        node_value = node_class.new(value,query: self, fields: fields_for_node)
+        result[name.to_s] = node_value.as_result
       end
-      node_value = node_class.new(value,query: self, fields: fields_for_node )
-      result[cursor] = node_value.as_result
+    elsif result_object.is_a?(Array)
+      node_type = root_call_class.return_declarations[:__type__]
+      node_class = GraphQL::SCHEMA.get_node(node_type)
+      fields_for_node = root_syntax_node.fields
+      result_object.each do |item|
+        node_value = node_class.new(item, query: self, fields: fields_for_node)
+        result[node_value.cursor] = node_value.as_result
+      end
+    else
+      node_type = root_call_class.return_declarations[:__type__]
+      node_class = GraphQL::SCHEMA.get_node(node_type)
+      fields_for_node = root_syntax_node.fields
+      node_value = node_class.new(result_object, query: self, fields: fields_for_node)
+      result[node_value.cursor] = node_value.as_result
     end
 
     result

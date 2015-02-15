@@ -94,7 +94,7 @@ describe GraphQL::Query do
       describe 'when requesting fields overriden on a child class' do
         let(:query_string) { 'stupid_thumb_up(991) { id }'}
         it 'uses the child implementation' do
-          assert_equal '991991', result["991"]["id"]
+          assert_equal '991991', result["991991"]["id"]
         end
       end
     end
@@ -223,7 +223,7 @@ describe GraphQL::Query do
     let(:query_string) { "context() { person_name }"}
 
     it 'is accessible inside nodes' do
-      assert_equal result, {"context" => {"person_name" => "Han Solo"}}
+      assert_equal({"context" => {"person_name" => "Han Solo"}}, result)
     end
 
     describe 'inside edges' do

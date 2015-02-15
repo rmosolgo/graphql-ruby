@@ -46,9 +46,12 @@ module GraphQL
   PARSER = Parser.new
   SCHEMA = Schema.new
   TRANSFORM = Transform.new
-  Introspection::TypeCall
+  # auto-load these so they're in SCHEMA
   Introspection::SchemaCall
   Introspection::SchemaConnection
+  Introspection::SchemaNode
+  Introspection::TypeCall
+  Introspection::TypeNode
 
   class FieldNotDefinedError < RuntimeError
     def initialize(class_name, field_name)
