@@ -17,14 +17,14 @@ Create a GraphQL interface by implementing _nodes_ and _connections_, then runni
 - Allow a default connection class, or some way to infer connection from name
 - Do something about the risk of accidently overriding important methods (eg `Field#value`) in custom classes
 - For fields that return objects, can they be queried _without_ other fields? Or must they always have fields?
+- __document__ (wait for spec)
 
 ## For example
 
-See [`/spec/support/dummy_app/nodes.rb`](https://github.com/rmosolgo/graphql/blob/master/spec/support/nodes.rb) for node & edge examples.
+- See test implementation in [`/spec/support/dummy_app/nodes.rb`](https://github.com/rmosolgo/graphql/blob/master/spec/support/nodes.rb)
+- See `graphql-ruby-demo` with Rails on [github](https://github.com/rmosolgo/graphql-ruby-demo) or [heroku](http://graphql-ruby-demo.herokuapp.com/)
 
-You could implement nodes that map to objects in a Rails app.
-
-![gql](https://cloud.githubusercontent.com/assets/2231765/6055402/58ea2efc-acb3-11e4-95ea-0a22af9737d3.gif)
+![gql](https://cloud.githubusercontent.com/assets/2231765/6217972/5d24edda-b5ce-11e4-9e07-3548304af862.png)
 
 
 ## About this project
