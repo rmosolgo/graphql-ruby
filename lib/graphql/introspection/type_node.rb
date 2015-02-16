@@ -2,8 +2,9 @@ class GraphQL::Introspection::TypeNode < GraphQL::Node
   cursor :name
 
   field :name,
-     description: "The name of the node",
-     type: :string
+    method: :schema_name,
+    description: "The name of the node",
+    type: :string
 
   field :description,
     description: "Description of the node",
@@ -11,26 +12,8 @@ class GraphQL::Introspection::TypeNode < GraphQL::Node
 
   field :fields,
     type: :connection,
-    method: :field_nodes,
+    method: :all_fields,
     connection_class_name: "GraphQL::Introspection::Connection",
     node_class_name: "GraphQL::Introspection::FieldNode"
-
-  def name
-    type_class.schema_name
-  end
-
-  def description
-    type_class.description
-  end
-
-  def field_nodes
-    type_class.all_fields
-  end
-
-  private
-
-  def type_class
-    @type_class ||= @target
-  end
 end
 

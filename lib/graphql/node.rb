@@ -111,7 +111,6 @@ class GraphQL::Node
 
     def field(field_name, type: nil, method: nil, description: nil, connection_class_name: nil, node_class_name: nil)
       field_name = field_name.to_s
-      raise "You already defined #{field_name}" if has_field?(field_name)
       field_class = GraphQL::Field.create_class({
         name: field_name,
         type: type,

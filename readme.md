@@ -9,10 +9,13 @@ Create a GraphQL interface by implementing _nodes_ and _connections_, then runni
 
 ## To do:
 
-- Make root call API not suck
+- remove query namespace
+- make it reload-safe
+- Make root call arguments API not suck
 - Implement calls as arguments
+- Allow abstract nodes & calls (not in schema)
 - Implement call argument introspection (wait for spec)
-- Allow a default connection class
+- Allow a default connection class, or some way to infer connection from name
 - Fix naming conflict for calls on fields (if parent has `some_call` and child has `some_call`, use child implementation)
 - Do something about the risk of accidently overriding important methods (eg `Field#value`) in custom classes
 - For fields that return objects, can they be queried _without_ other fields? Or must they always have fields?

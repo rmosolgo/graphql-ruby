@@ -46,8 +46,31 @@ describe GraphQL::Schema do
         }
       }
     },
-    nodes {
-      count
+    types {
+      count,
+      edges {
+        node {
+          name,
+          fields {
+            count,
+            edges {
+              node {
+                name,
+                type,
+                calls {
+                  count,
+                  edges {
+                    node {
+                      name,
+                      arguments
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   }"}
   let(:context) { {person_name: "Han Solo" }}
@@ -55,27 +78,42 @@ describe GraphQL::Schema do
   let(:result) { query.as_result }
 
     describe 'querying calls' do
+      let(:upvote_post_call) { result["schema"]["calls"]["edges"].find {|e| e["node"]["name"] == "upvote_post"} }
       it 'returns all calls' do
         assert schema.calls.size > 0
         assert_equal schema.calls.size, result["schema"]["calls"]["count"]
       end
 
       it 'shows return types' do
-        upvote_post_call = result["schema"]["calls"]["edges"].find {|e| e["node"]["name"] == "upvote_post"}
         assert_equal ["post", "upvote"], upvote_post_call["node"]["returns"]
       end
 
       it 'shows argument types' do
-        upvote_post_call = result["schema"]["calls"]["edges"].find {|e| e["node"]["name"] == "upvote_post"}
-        puts upvote_post_call
         expected_arguments = [{"node"=>{"name"=>"post_data", "type"=>"object"}}, {"node"=>{"name"=>"person_id", "type"=>"number"}}]
         assert_equal expected_arguments, upvote_post_call["node"]["arguments"]["edges"]
       end
     end
 
-    it 'returns all nodes' do
-      assert schema.nodes.size > 0
-      assert_equal schema.nodes.size, result["schema"]["nodes"]["count"]
+    describe 'querying types' do
+      let(:post_type) { result["schema"]["types"]["edges"].find { |e| e["node"]["name"] == "post" }["node"]}
+      let(:content_field) { post_type["fields"]["edges"].find { |e| e["node"]["name"] == "content" }["node"]}
+      let(:select_call) { content_field["calls"]["edges"].find { |e| e["node"]["name"] == "select"}["node"]}
+      it 'returns all types' do
+        assert schema.nodes.size > 0
+        assert_equal schema.nodes.size, result["schema"]["types"]["count"]
+      end
+
+      it 'show type name & fields' do
+        assert_equal "post", post_type["name"]
+        assert_equal 7, post_type["fields"]["count"]
+      end
+
+      it 'shows field type & calls' do
+        assert_equal "string", content_field["type"]
+        assert_equal 3, content_field["calls"]["count"]
+        assert_equal "select", select_call["name"]
+        assert_equal "from_chars (req), for_chars (req)", select_call["arguments"]
+      end
     end
   end
 end

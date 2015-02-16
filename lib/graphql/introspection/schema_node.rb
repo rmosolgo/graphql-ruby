@@ -4,10 +4,11 @@ class GraphQL::Introspection::SchemaNode < GraphQL::Node
     connection_class_name: "GraphQL::Introspection::Connection",
     node_class_name: "GraphQL::Introspection::RootCallNode"
 
-  field :nodes,
+  field :types,
+    method: :nodes,
     type: :connection,
     connection_class_name: "GraphQL::Introspection::Connection",
-    node_class_name: "GraphQL::Node"
+    node_class_name: "GraphQL::Introspection::TypeNode"
 
   def cursor
     "schema"

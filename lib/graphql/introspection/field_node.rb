@@ -8,8 +8,10 @@ class GraphQL::Introspection::FieldNode < GraphQL::Node
   field :description,
     type: :string,
     description: "The description of the field"
-  field :calls, method: :all_calls,
+  field :calls,
+    method: :all_calls,
     type: :connection,
     description: "Calls available on this field",
+    connection_class_name: "GraphQL::Introspection::Connection",
     node_class_name: "GraphQL::Introspection::CallNode"
 end

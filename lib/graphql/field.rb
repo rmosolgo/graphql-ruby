@@ -80,7 +80,7 @@ class GraphQL::Field
 
     def _field_type
       if self != GraphQL::Field
-        lookup_field_type || raise("No type found for #{self}")
+        lookup_field_type
       else
         nil
       end
