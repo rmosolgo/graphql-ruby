@@ -42,7 +42,7 @@ class GraphQL::Node
   end
 
   def get_field(syntax_field)
-    field_class = self.class.find_field(syntax_field.identifier)
+    field_class = self.class.fields[syntax_field.identifier]
     if syntax_field.identifier == "cursor"
       cursor
     elsif field_class.nil?
@@ -84,7 +84,7 @@ class GraphQL::Node
 
     def cursor(field_name)
       define_method "cursor" do
-        field_class = self.class.find_field(field_name)
+        field_class = self.class.fields[field_name.to_s]
         field = field_class.new(query: query, owner: self, calls: [])
         cursor = GraphQL::Types::CursorField.new(field.as_result)
         cursor.as_result
@@ -99,10 +99,6 @@ class GraphQL::Node
 
     def _fields
       @fields ||= {}
-    end
-
-    def find_field(identifier)
-      fields[identifier.to_s]
     end
 
     def field(field_name, type: nil, method: nil, description: nil, connection_class_name: nil, node_class_name: nil)

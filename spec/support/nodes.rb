@@ -48,6 +48,7 @@ module Nodes
     field :content,
       type: LetterSelectionField
     field :length,
+      method: :length_of_content,
       type: :number
 
     field :comments,
@@ -61,7 +62,7 @@ module Nodes
       connection_class_name: "Nodes::ThumbUpConnection",
       node_class_name: "Nodes::ThumbUpNode"
 
-    def length
+    def length_of_content
       target.content.length
     end
   end
