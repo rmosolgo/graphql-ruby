@@ -56,29 +56,30 @@ module GraphQL
   Introspection::TypeCall
   Introspection::TypeNode
 
-  class FieldNotDefinedError < RuntimeError
+  class Error < RuntimeError; end
+  class FieldNotDefinedError < Error
     def initialize(class_name, field_name)
       super("#{class_name}##{field_name} was requested, but it isn't defined.")
     end
   end
-  class NodeNotDefinedError < RuntimeError
+  class NodeNotDefinedError < Error
     def initialize(node_name)
       super("#{node_name} was requested but was not found. Defined nodes are: #{SCHEMA.node_names}")
     end
   end
-  class RootCallNotDefinedError < RuntimeError
+  class RootCallNotDefinedError < Error
     def initialize(name)
       super("Call '#{name}' was requested but was not found. Defined calls are: #{SCHEMA.call_names}")
     end
   end
-  class SyntaxError < RuntimeError
+  class SyntaxError < Error
     def initialize(line, col, string)
       lines = string.split("\n")
       super("Syntax Error at (#{line}, #{col}), check usage: #{string}")
     end
   end
 
-  class RootCallArgumentError < RuntimeError
+  class RootCallArgumentError < Error
     def initialize(declaration, actual)
       super("Wrong type for #{declaration[:name]}: expected a #{declaration[:type]} but got #{actual}")
     end
