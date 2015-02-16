@@ -55,7 +55,8 @@ class GraphQL::Node
 
   class << self
     def inherited(child_class)
-      if child_class.ancestors.include?(GraphQL::Connection)
+      # use name to prevent autoloading Connection
+      if child_class.ancestors.map(&:name).include?("GraphQL::Connection")
         GraphQL::SCHEMA.add_connection(child_class)
       else
         GraphQL::SCHEMA.add_type(child_class)
@@ -95,7 +96,7 @@ class GraphQL::Node
     def fields
       superclass.fields.merge(_fields)
     rescue NoMethodError
-      {}
+      _fields
     end
 
     def _fields

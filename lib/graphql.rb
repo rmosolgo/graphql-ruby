@@ -41,6 +41,7 @@ module GraphQL
     autoload(:NumberField,      "graphql/types/number_field")
     autoload(:ObjectField,      "graphql/types/object_field")
     autoload(:StringField,      "graphql/types/string_field")
+    autoload(:TypeField,        "graphql/types/type_field")
   end
 
   TYPE_ALIASES = {}
@@ -55,6 +56,7 @@ module GraphQL
   Introspection::SchemaNode
   Introspection::TypeCall
   Introspection::TypeNode
+  Node.field(:__type__, type: GraphQL::Types::TypeField)
 
   class Error < RuntimeError; end
   class FieldNotDefinedError < Error

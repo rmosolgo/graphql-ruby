@@ -15,8 +15,25 @@ describe GraphQL::Node do
     end
 
     it 'has fields' do
-      assert_equal 7, result["post"]["fields"]["count"]
+      assert_equal 8, result["post"]["fields"]["count"]
       assert_equal({ "name" => "title", "description" => nil}, title_field)
+    end
+
+    describe 'getting the __type__ field' do
+      before do
+        @post = Post.create(id: 155, content: "Hello world")
+      end
+
+      after do
+        @post.destroy
+      end
+
+      let(:query_string) { "post(155) { __type__ { name, fields { count } } }"}
+
+      it 'exposes the type' do
+        assert_equal "post", result["155"]["__type__"]["name"]
+        assert_equal 8, result["155"]["__type__"]["fields"]["count"]
+      end
     end
   end
 
@@ -30,10 +47,10 @@ describe GraphQL::Node do
 
   describe '.field' do
     it 'doesnt add the field twice if you call it twice' do
-      assert_equal 3, Nodes::CommentNode.fields.size
+      assert_equal 4, Nodes::CommentNode.fields.size
       Nodes::CommentNode.field(:id)
       Nodes::CommentNode.field(:id)
-      assert_equal 3, Nodes::CommentNode.fields.size
+      assert_equal 4, Nodes::CommentNode.fields.size
       Nodes::CommentNode.remove_field(:id)
     end
 

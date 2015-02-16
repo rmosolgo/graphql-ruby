@@ -104,7 +104,7 @@ describe GraphQL::Schema do
 
       it 'show type name & fields' do
         assert_equal "post", post_type["name"]
-        assert_equal 7, post_type["fields"]["count"]
+        assert_equal 8, post_type["fields"]["count"]
       end
 
       it 'shows field type & calls' do

@@ -122,5 +122,6 @@ class GraphQL::Field
     string:     GraphQL::Types::StringField,
     connection: GraphQL::Types::ConnectionField,
     number:     GraphQL::Types::NumberField,
+    object:     GraphQL::Types::ObjectField,
   }
 end

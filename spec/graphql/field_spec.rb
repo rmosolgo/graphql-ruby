@@ -47,10 +47,10 @@ describe GraphQL::Field do
     let(:query_string) { "type(post) { fields { edges { node { name, type, calls { edges { node { name } }} } } } } "}
     let(:query) { GraphQL::Query.new(query_string, context: {}) }
     let(:result) { query.as_result }
-    let(:id_field)        { result["post"]["fields"]["edges"][0]["node"] }
-    let(:title_field)     { result["post"]["fields"]["edges"][1]["node"] }
-    let(:comments_field)  { result["post"]["fields"]["edges"][4]["node"] }
-    let(:content_field)   { result["post"]["fields"]["edges"][2]["node"] }
+    let(:id_field)        { result["post"]["fields"]["edges"][1]["node"] }
+    let(:title_field)     { result["post"]["fields"]["edges"][2]["node"] }
+    let(:comments_field)  { result["post"]["fields"]["edges"][5]["node"] }
+    let(:content_field)   { result["post"]["fields"]["edges"][3]["node"] }
 
     it 'has name' do
       assert_equal "id", id_field["name"]
