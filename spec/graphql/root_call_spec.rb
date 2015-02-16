@@ -13,7 +13,7 @@ describe GraphQL::RootCall do
     <post_data>: { "id" : #{@post_id} }
     <person_id>: 888
   }}
-  let(:result) { GraphQL::Query.new(query_string, namespace: Nodes).as_json }
+  let(:result) { GraphQL::Query.new(query_string).as_result }
 
   before do
     # make sure tests don't conflict :(

@@ -18,13 +18,13 @@ describe GraphQL::Schema do
     end
   end
 
-  describe '#get_node' do
+  describe '#get_type' do
     it 'finds nodes from their class name' do
-      assert_equal Nodes::PostNode, schema.get_node("post")
+      assert_equal Nodes::PostNode, schema.get_type("post")
     end
 
     it 'finds nodes from declared names' do
-      assert_equal Nodes::ThumbUpNode, schema.get_node("upvote")
+      assert_equal Nodes::ThumbUpNode, schema.get_type("upvote")
     end
   end
 
@@ -73,8 +73,7 @@ describe GraphQL::Schema do
       }
     }
   }"}
-  let(:context) { {person_name: "Han Solo" }}
-  let(:query) { GraphQL::Query.new(query_string, namespace: Nodes, context: context) }
+  let(:query) { GraphQL::Query.new(query_string) }
   let(:result) { query.as_result }
 
     describe 'querying calls' do
@@ -99,8 +98,8 @@ describe GraphQL::Schema do
       let(:content_field) { post_type["fields"]["edges"].find { |e| e["node"]["name"] == "content" }["node"]}
       let(:select_call) { content_field["calls"]["edges"].find { |e| e["node"]["name"] == "select"}["node"]}
       it 'returns all types' do
-        assert schema.nodes.size > 0
-        assert_equal schema.nodes.size, result["schema"]["types"]["count"]
+        assert schema.types.size > 0
+        assert_equal schema.types.size, result["schema"]["types"]["count"]
       end
 
       it 'show type name & fields' do

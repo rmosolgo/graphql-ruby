@@ -19,7 +19,7 @@ class GraphQL::Field
     @finished_value ||= begin
       val = raw_value
       calls.each do |call|
-        registered_call = self.class.find_call(call.identifier)
+        registered_call = self.class.calls[call.identifier]
         if registered_call.nil?
           raise "Call not found: #{self.class.name}##{call.identifier}"
         end
@@ -32,6 +32,8 @@ class GraphQL::Field
   # instance `const_get` reaches up to class namespace
   def const_get(const_name)
     self.class.const_get(const_name)
+  rescue
+    nil
   end
 
   # delegate to class constant
@@ -57,8 +59,8 @@ class GraphQL::Field
       new_class.const_set :OWNER_CLASS, owner_class
       new_class.const_set :METHOD, method
       new_class.const_set :DESCRIPTION , description
-      new_class.const_set :CONNECTION_CLASS_NAME, (connection_class_name || "#{name.camelize}Connection")
-      new_class.const_set :NODE_CLASS_NAME, (node_class_name || "#{name.singularize.camelize}Node")
+      new_class.const_set :CONNECTION_CLASS_NAME, connection_class_name
+      new_class.const_set :NODE_CLASS_NAME, node_class_name
       new_class
     end
 
@@ -99,23 +101,17 @@ class GraphQL::Field
     end
 
     def calls
-      @calls ||= []
+      superclass.calls.merge(_calls)
+    rescue NoMethodError
+      {}
     end
 
-    def parent_calls
-      superclass == Object ? [] : (superclass.calls  + superclass.parent_calls)
-    end
-
-    def all_calls
-      calls + parent_calls
-    end
-
-    def find_call(name)
-      all_calls.find { |c| c[:name] == name }
+    def _calls
+      @calls ||= {}
     end
 
     def call(name, lambda)
-      calls << {
+      _calls[name.to_s] = {
         name: name.to_s,
         lambda: lambda,
       }

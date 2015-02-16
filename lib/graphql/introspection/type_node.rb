@@ -19,4 +19,3 @@ class GraphQL::Introspection::TypeNode < GraphQL::Node
     target.fields.values
   end
 end
-

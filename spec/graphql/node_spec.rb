@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe GraphQL::Node do
   let(:query_string) { "type(post) { name, description, fields { count, edges { node { name, description }}} }"}
-  let(:result) { GraphQL::Query.new(query_string, namespace: Nodes).as_json }
+  let(:result) { GraphQL::Query.new(query_string).as_result}
 
   describe '__type__' do
     let(:title_field) { result["post"]["fields"]["edges"].find {|e| e["node"]["name"] == "title"}["node"] }

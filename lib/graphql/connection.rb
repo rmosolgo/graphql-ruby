@@ -24,4 +24,10 @@ class GraphQL::Connection < GraphQL::Node
       node.as_result
     end
   end
+
+  class << self
+    def default_schema_name
+      name.split("::").last.sub(/Connection$/, '').underscore
+    end
+  end
 end

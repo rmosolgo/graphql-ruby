@@ -23,6 +23,17 @@ describe GraphQL::Field do
     end
   end
 
+  describe '.call' do
+    let(:content_field) { Nodes::PostNode.fields["content"] }
+    it 'doesnt register a call twice' do
+      assert_equal 3, content_field.calls.size
+      call = content_field.calls.first[1]
+      content_field.call(call[:name], call[:lambda])
+      content_field.call(call[:name], call[:lambda])
+      assert_equal 3, content_field.calls.size
+    end
+  end
+
   describe '.to_s' do
     it 'includes name' do
       assert_match(/high_fives/, field.class.to_s)
@@ -34,8 +45,8 @@ describe GraphQL::Field do
 
   describe '__type__' do
     let(:query_string) { "type(post) { fields { edges { node { name, type, calls { edges { node { name } }} } } } } "}
-    let(:query) { GraphQL::Query.new(query_string, namespace: Nodes, context: {}) }
-    let(:result) { query.as_json }
+    let(:query) { GraphQL::Query.new(query_string, context: {}) }
+    let(:result) { query.as_result }
     let(:id_field)        { result["post"]["fields"]["edges"][0]["node"] }
     let(:title_field)     { result["post"]["fields"]["edges"][1]["node"] }
     let(:comments_field)  { result["post"]["fields"]["edges"][4]["node"] }

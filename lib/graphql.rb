@@ -64,7 +64,7 @@ module GraphQL
   end
   class NodeNotDefinedError < Error
     def initialize(node_name)
-      super("#{node_name} was requested but was not found. Defined nodes are: #{SCHEMA.node_names}")
+      super("#{node_name} was requested but was not found. Defined nodes are: #{SCHEMA.type_names}")
     end
   end
   class RootCallNotDefinedError < Error

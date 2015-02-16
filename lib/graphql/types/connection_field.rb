@@ -8,11 +8,19 @@ class GraphQL::Types::ConnectionField < GraphQL::Field
   end
 
   def connection_class
-    query.const_get(connection_class_name) || GraphQL::Connection
+    if connection_class_name.present?
+      Object.const_get(connection_class_name)
+    else
+      GraphQL::SCHEMA.get_connection(name)
+    end
   end
 
   def node_class
-    query.const_get(node_class_name) || raise("Couldn't find node class #{node_class_name} for #{self.class}")
+    if node_class_name.present?
+      Object.const_get(node_class_name)
+    else
+      GraphQL::SCHEMA.get_type(name.singularize)
+    end
   end
 
   def as_node

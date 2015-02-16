@@ -3,8 +3,8 @@ require 'spec_helper'
 describe GraphQL::Query do
   let(:query_string) { "post(123) { title, content } "}
   let(:context) { {person_name: "Han Solo" }}
-  let(:query) { GraphQL::Query.new(query_string, namespace: Nodes, context: context) }
-  let(:result) { query.as_json }
+  let(:query) { GraphQL::Query.new(query_string, context: context) }
+  let(:result) { query.as_result }
 
   before do
     @post = Post.create(id: 123, content: "So many great things", title: "My great post", published_at: Date.new(2010,1,4))
@@ -22,7 +22,7 @@ describe GraphQL::Query do
     @like2.destroy
   end
 
-  describe '#as_json' do
+  describe '#as_result' do
     it 'finds fields that delegate to a target' do
       assert_equal result, {"123" => {"title" => "My great post", "content" => "So many great things"}}
     end
@@ -102,7 +102,7 @@ describe GraphQL::Query do
     describe 'when requesting an undefined field' do
       let(:query_string) { "post(123) { destroy } "}
       it 'raises a FieldNotDefined error' do
-        assert_raises(GraphQL::FieldNotDefinedError) { query.as_json }
+        assert_raises(GraphQL::FieldNotDefinedError) { query.as_result }
         assert(Post.find(123).present?)
       end
     end
@@ -187,23 +187,8 @@ describe GraphQL::Query do
       let(:query_string) { "post(123) { comments { bogus_field } }"}
 
       it 'raises FieldNotDefined' do
-        assert_raises(GraphQL::FieldNotDefinedError) { query.as_json }
+        assert_raises(GraphQL::FieldNotDefinedError) { query.as_result }
       end
-    end
-  end
-
-  describe '.default_namespace=' do
-    let(:query) { GraphQL::Query.new(query_string) }
-    after { GraphQL::Query.default_namespace = nil }
-
-    it 'uses that namespace for lookups' do
-      GraphQL::Query.default_namespace = Nodes
-      assert_equal result, {
-        "123" => {
-          "title" => "My great post",
-          "content" => "So many great things"
-        }
-      }
     end
   end
 

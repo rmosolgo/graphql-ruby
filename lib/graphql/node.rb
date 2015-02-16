@@ -33,10 +33,6 @@ class GraphQL::Node
     json
   end
 
-  def as_json
-    as_result
-  end
-
   def context
     query.context
   end
@@ -60,9 +56,9 @@ class GraphQL::Node
   class << self
     def inherited(child_class)
       if child_class.ancestors.include?(GraphQL::Connection)
-        return
+        GraphQL::SCHEMA.add_connection(child_class)
       else
-        GraphQL::SCHEMA.add_node(child_class)
+        GraphQL::SCHEMA.add_type(child_class)
       end
     end
 
@@ -75,11 +71,16 @@ class GraphQL::Node
     end
 
     def type(type_name)
-      @node_name = type_name
+      @node_name = type_name.to_s
+      GraphQL::SCHEMA.add_type(self)
     end
 
     def schema_name
-      @node_name || name.split("::").last.sub(/Node$/, '').underscore
+      @node_name || default_schema_name
+    end
+
+    def default_schema_name
+      name.split("::").last.sub(/Node$/, '').underscore
     end
 
     def cursor(field_name)

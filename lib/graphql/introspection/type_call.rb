@@ -5,6 +5,6 @@ class GraphQL::Introspection::TypeCall < GraphQL::RootCall
     type: :string,
     })
   def execute!(type_name)
-    GraphQL::SCHEMA.get_node(type_name)
+    GraphQL::SCHEMA.get_type(type_name)
   end
 end
