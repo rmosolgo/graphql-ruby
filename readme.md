@@ -13,6 +13,7 @@ Create a GraphQL interface by implementing _nodes_ and _connections_, then runni
 - make it reload-safe
 - Make root call arguments API not suck
 - Implement calls as arguments
+- double-check how to handle `pals.first(3) { count }`
 - Allow abstract nodes & calls (not in schema)
 - Implement call argument introspection (wait for spec)
 - Allow a default connection class, or some way to infer connection from name

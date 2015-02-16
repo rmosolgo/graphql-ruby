@@ -12,8 +12,11 @@ class GraphQL::Introspection::TypeNode < GraphQL::Node
 
   field :fields,
     type: :connection,
-    method: :all_fields,
     connection_class_name: "GraphQL::Introspection::Connection",
     node_class_name: "GraphQL::Introspection::FieldNode"
+
+  def fields
+    target.fields.values
+  end
 end
 

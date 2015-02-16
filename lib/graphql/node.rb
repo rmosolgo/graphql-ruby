@@ -1,11 +1,11 @@
 class GraphQL::Node
-  attr_reader :fields, :query
+  attr_reader :syntax_fields, :query
   attr_reader :target
 
   def initialize(target=nil, fields:, query:)
     @target = target
     @query = query
-    @fields = fields
+    @syntax_fields = fields
   end
 
   def method_missing(method_name, *args, &block)
@@ -18,7 +18,7 @@ class GraphQL::Node
 
   def as_result
     json = {}
-    fields.each do |syntax_field|
+    syntax_fields.each do |syntax_field|
       key_name = syntax_field.alias_name || syntax_field.identifier
       if key_name == 'node'
         clone_node = self.class.new(target, fields: syntax_field.fields, query: query)
@@ -92,25 +92,17 @@ class GraphQL::Node
     end
 
     def fields
-      @fields ||= []
-    end
-
-    def parent_fields
-      superclass.fields + superclass.parent_fields
+      superclass.fields.merge(_fields)
     rescue NoMethodError
-      []
+      {}
     end
 
-    def all_fields
-      fields + parent_fields
-    end
-
-    def has_field?(identifier)
-      !!find_field(identifier)
+    def _fields
+      @fields ||= {}
     end
 
     def find_field(identifier)
-      all_fields.find { |f| f.const_get(:NAME) == identifier.to_s }
+      fields[identifier.to_s]
     end
 
     def field(field_name, type: nil, method: nil, description: nil, connection_class_name: nil, node_class_name: nil)
@@ -126,7 +118,11 @@ class GraphQL::Node
       })
       field_class_name = field_name.camelize + "Field"
       self.const_set(field_class_name, field_class)
-      fields << field_class
+      _fields[field_name] = field_class
+    end
+
+    def remove_field(field_name)
+      _fields.delete(field_name.to_s)
     end
   end
 end
