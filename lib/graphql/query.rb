@@ -52,9 +52,11 @@ class GraphQL::Query
         node_type = root_call_class.return_declarations[name]
         node_class = GraphQL::SCHEMA.get_node(node_type)
         field_for_node = root_syntax_node.fields.find {|f| f.identifier == name.to_s }
-        fields_for_node = field_for_node.fields
-        node_value = node_class.new(value,query: self, fields: fields_for_node)
-        result[name.to_s] = node_value.as_result
+        if field_for_node.present?
+          fields_for_node = field_for_node.fields
+          node_value = node_class.new(value,query: self, fields: fields_for_node)
+          result[name.to_s] = node_value.as_result
+        end
       end
     elsif result_object.is_a?(Array)
       node_type = root_call_class.return_declarations.values.first

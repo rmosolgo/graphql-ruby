@@ -59,7 +59,11 @@ class GraphQL::Node
 
   class << self
     def inherited(child_class)
-      GraphQL::SCHEMA.add_node(child_class)
+      if child_class.ancestors.include?(GraphQL::Connection)
+        return
+      else
+        GraphQL::SCHEMA.add_node(child_class)
+      end
     end
 
     def desc(describe)
