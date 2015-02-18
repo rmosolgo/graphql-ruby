@@ -38,7 +38,7 @@ class GraphQL::Node
   end
 
   def get_field(syntax_field)
-    field_class = self.class.fields[syntax_field.identifier]
+    field_class = self.class.all_fields[syntax_field.identifier]
     if syntax_field.identifier == "cursor"
       cursor
     elsif field_class.nil?
@@ -86,41 +86,40 @@ class GraphQL::Node
 
     def cursor(field_name)
       define_method "cursor" do
-        field_class = self.class.fields[field_name.to_s]
+        field_class = self.class.all_fields[field_name.to_s]
         field = field_class.new(query: query, owner: self, calls: [])
         cursor = GraphQL::Types::CursorField.new(field.as_result)
         cursor.as_result
       end
     end
 
-    def fields
-      superclass.fields.merge(_fields)
+    def all_fields
+      superclass.all_fields.merge(own_fields)
     rescue NoMethodError
-      _fields
+      own_fields
     end
 
-    def _fields
-      @fields ||= {}
+    def own_fields
+      @own_fields ||= {}
     end
 
-    def field(field_name, type: nil, method: nil, description: nil, connection_class_name: nil, node_class_name: nil)
+    def field(field_name, type: nil, description: nil, connection_class_name: nil, node_class_name: nil)
       field_name = field_name.to_s
       field_class = GraphQL::Field.create_class({
         name: field_name,
         type: type,
         owner_class: self,
-        method: method,
         description: description,
         connection_class_name: connection_class_name,
         node_class_name: node_class_name,
       })
       field_class_name = field_name.camelize + "Field"
       self.const_set(field_class_name, field_class)
-      _fields[field_name] = field_class
+      own_fields[field_name] = field_class
     end
 
     def remove_field(field_name)
-      _fields.delete(field_name.to_s)
+      own_fields.delete(field_name.to_s)
     end
   end
 end

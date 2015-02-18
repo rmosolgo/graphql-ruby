@@ -47,31 +47,20 @@ describe GraphQL::Node do
 
   describe '.field' do
     it 'doesnt add the field twice if you call it twice' do
-      assert_equal 4, Nodes::CommentNode.fields.size
+      assert_equal 4, Nodes::CommentNode.all_fields.size
       Nodes::CommentNode.field(:id)
       Nodes::CommentNode.field(:id)
-      assert_equal 4, Nodes::CommentNode.fields.size
+      assert_equal 4, Nodes::CommentNode.all_fields.size
       Nodes::CommentNode.remove_field(:id)
-    end
-
-    describe 'method:' do
-      let(:title_field) { Nodes::PostNode.fields["title"]}
-      let(:length_field) { Nodes::PostNode.fields["length"]}
-      it 'defaults to field_name' do
-        assert_equal "title", title_field.new.method
-      end
-      it 'can be overriden' do
-        assert_equal :length_of_content, length_field.new.method
-      end
     end
 
     describe 'type:' do
       it 'uses symbols to find built-ins' do
-        id_field = Nodes::CommentNode.fields["id"]
+        id_field = Nodes::CommentNode.all_fields["id"]
         assert id_field.superclass == GraphQL::Types::NumberField
       end
       it 'uses the provided class as a superclass' do
-        letters_field = Nodes::CommentNode.fields["letters"]
+        letters_field = Nodes::CommentNode.all_fields["letters"]
         assert letters_field.superclass == Nodes::LetterSelectionField
       end
     end

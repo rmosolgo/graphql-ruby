@@ -43,12 +43,10 @@ class GraphQL::Field
     end
   end
 
-  def method
-    const_get(:METHOD) || name
-  end
+  def method; name; end
 
   class << self
-    def create_class(name:, owner_class:, type:, method: nil, description: nil, connection_class_name: nil, node_class_name: nil)
+    def create_class(name:, owner_class:, type:, description: nil, connection_class_name: nil, node_class_name: nil)
       if type.is_a?(Symbol)
         type = BUILT_IN_TYPES[type]
       end
@@ -57,7 +55,6 @@ class GraphQL::Field
       new_class = Class.new(field_superclass)
       new_class.const_set :NAME, name
       new_class.const_set :OWNER_CLASS, owner_class
-      new_class.const_set :METHOD, method
       new_class.const_set :DESCRIPTION , description
       new_class.const_set :CONNECTION_CLASS_NAME, connection_class_name
       new_class.const_set :NODE_CLASS_NAME, node_class_name

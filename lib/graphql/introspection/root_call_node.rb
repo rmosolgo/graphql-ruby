@@ -1,5 +1,5 @@
 class GraphQL::Introspection::RootCallNode < GraphQL::Node
-  field :name, method: :schema_name
+  field :name
   field :returns
 
   field :arguments,
@@ -14,5 +14,9 @@ class GraphQL::Introspection::RootCallNode < GraphQL::Node
 
   def arguments
     @target.argument_declarations
+  end
+
+  def name
+    schema_name
   end
 end

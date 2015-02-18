@@ -15,16 +15,10 @@ describe GraphQL::Field do
     it 'defaults to name' do
       assert_equal "high_fives", field.method
     end
-
-    it 'can be overriden' do
-      handslap_field = GraphQL::Field.create_class(name: "high_fives", method: "handslaps",  type: :number, owner_class: owner).new(query: {})
-      assert_equal "high_fives", handslap_field.name
-      assert_equal "handslaps", handslap_field.method
-    end
   end
 
   describe '.call' do
-    let(:content_field) { Nodes::PostNode.fields["content"] }
+    let(:content_field) { Nodes::PostNode.all_fields["content"] }
     it 'doesnt register a call twice' do
       assert_equal 3, content_field.calls.size
       call = content_field.calls.first[1]

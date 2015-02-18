@@ -1,6 +1,5 @@
 class GraphQL::Introspection::FieldNode < GraphQL::Node
   field :name,
-    method: :field_name,
     type: :string,
     description: "The name of the field"
   field :type,
@@ -17,5 +16,9 @@ class GraphQL::Introspection::FieldNode < GraphQL::Node
 
   def calls
     target.calls.values
+  end
+
+  def name
+    field_name
   end
 end

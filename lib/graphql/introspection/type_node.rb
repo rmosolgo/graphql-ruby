@@ -2,7 +2,6 @@ class GraphQL::Introspection::TypeNode < GraphQL::Node
   cursor :name
 
   field :name,
-    method: :schema_name,
     description: "The name of the node",
     type: :string
 
@@ -16,6 +15,10 @@ class GraphQL::Introspection::TypeNode < GraphQL::Node
     node_class_name: "GraphQL::Introspection::FieldNode"
 
   def fields
-    target.fields.values
+    target.all_fields.values
+  end
+
+  def name
+    schema_name
   end
 end

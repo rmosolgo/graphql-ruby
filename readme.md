@@ -9,7 +9,9 @@ Create a GraphQL interface by implementing _nodes_ and _connections_, then runni
 
 ## To do:
 
+- Handle blank objects in nested calls
 - Make root call arguments API not suck
+- Use FieldDefiner API, something similar for arguments?
 - Implement calls as arguments
 - double-check how to handle `pals.first(3) { count }`
 - Allow abstract nodes & calls (not in schema)

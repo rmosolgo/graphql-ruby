@@ -15,15 +15,15 @@ module GraphQL
   autoload(:VERSION,          "graphql/version")
 
   module Introspection
-    autoload(:CallNode,           "graphql/introspection/call_node")
-    autoload(:Connection,         "graphql/introspection/connection")
-    autoload(:FieldNode,          "graphql/introspection/field_node")
+    autoload(:CallNode,             "graphql/introspection/call_node")
+    autoload(:Connection,           "graphql/introspection/connection")
+    autoload(:FieldNode,            "graphql/introspection/field_node")
     autoload(:RootCallArgumentNode, "graphql/introspection/root_call_argument_node")
-    autoload(:RootCallNode,       "graphql/introspection/root_call_node")
-    autoload(:SchemaCall,         "graphql/introspection/schema_call")
-    autoload(:SchemaNode,         "graphql/introspection/schema_node")
-    autoload(:TypeCall,           "graphql/introspection/type_call")
-    autoload(:TypeNode,           "graphql/introspection/type_node")
+    autoload(:RootCallNode,         "graphql/introspection/root_call_node")
+    autoload(:SchemaCall,           "graphql/introspection/schema_call")
+    autoload(:SchemaNode,           "graphql/introspection/schema_node")
+    autoload(:TypeCall,             "graphql/introspection/type_call")
+    autoload(:TypeNode,             "graphql/introspection/type_node")
   end
 
 
