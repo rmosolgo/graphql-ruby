@@ -1,5 +1,5 @@
 class GraphQL::Types::ConnectionField < GraphQL::Field
-  field_type "connection"
+  type "connection"
 
   ["connection_class_name", "node_class_name"].each do |method_name|
     define_method(method_name) do
@@ -15,20 +15,11 @@ class GraphQL::Types::ConnectionField < GraphQL::Field
     end
   end
 
-  def node_class
-    if node_class_name.present?
-      Object.const_get(node_class_name)
-    else
-      GraphQL::SCHEMA.get_type(name.singularize)
-    end
-  end
-
   def as_node
     items = finished_value
     connection_class.new(
       items,
       query: query,
-      node_class: node_class,
       fields: fields,
     )
   end

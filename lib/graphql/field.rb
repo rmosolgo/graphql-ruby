@@ -23,7 +23,7 @@ class GraphQL::Field
         if registered_call.nil?
           raise "Call not found: #{self.class.name}##{call.identifier}"
         end
-        val = registered_call[:lambda].call(val, *call.arguments)
+        val = registered_call.lambda.call(val, *call.arguments)
       end
       val
     end
@@ -46,9 +46,13 @@ class GraphQL::Field
   def method; name; end
 
   class << self
+    def inherited(child_class)
+      GraphQL::SCHEMA.add_field(child_class)
+    end
+
     def create_class(name:, owner_class:, type:, description: nil, connection_class_name: nil, node_class_name: nil)
       if type.is_a?(Symbol)
-        type = BUILT_IN_TYPES[type]
+        type = GraphQL::SCHEMA.get_field(type)
       end
 
       field_superclass = type || self
@@ -69,24 +73,21 @@ class GraphQL::Field
       end
     end
 
-    def field_type(field_type_name)
-      @_field_type = field_type_name
+    def type(value_type_name)
+      @value_type = value_type_name.to_s
+      GraphQL::SCHEMA.add_field(self)
     end
 
-    def lookup_field_type
-      @_field_type || superclass._field_type
+    def value_type
+      @value_type || superclass.value_type
     end
 
-    def _field_type
-      if self != GraphQL::Field
-        lookup_field_type
-      else
-        nil
-      end
+    def schema_name
+      @value_type || (name.present? ? default_schema_name : nil)
     end
 
-    def type
-      _field_type
+    def default_schema_name
+      name.split("::").last.sub(/Field$/, '').underscore
     end
 
     def field_name
@@ -108,17 +109,9 @@ class GraphQL::Field
     end
 
     def call(name, lambda)
-      _calls[name.to_s] = {
-        name: name.to_s,
-        lambda: lambda,
-      }
+      _calls[name.to_s] = GraphQL::Call.new(name: name.to_s, lambda: lambda)
     end
   end
 
-  BUILT_IN_TYPES = {
-    string:     GraphQL::Types::StringField,
-    connection: GraphQL::Types::ConnectionField,
-    number:     GraphQL::Types::NumberField,
-    object:     GraphQL::Types::ObjectField,
-  }
+  type :any
 end

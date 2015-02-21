@@ -1,13 +1,13 @@
 class GraphQL::Connection < GraphQL::Node
-  field :edges
+  exposes "Array"
+  field.any(:edges)
 
-  attr_reader :calls, :syntax_fields, :query, :node_class
+  attr_reader :calls, :syntax_fields, :query
 
-  def initialize(items, node_class:, query:, fields: [])
+  def initialize(items, query:, fields: [])
     @target = items
     @syntax_fields = fields
     @query = query
-    @node_class = node_class
   end
 
   def items
@@ -15,13 +15,16 @@ class GraphQL::Connection < GraphQL::Node
   end
 
   def edge_fields
-    @edge_fields = syntax_fields.find { |f| f.identifier == "edges" }.fields
+    @edge_fields ||= syntax_fields.find { |f| f.identifier == "edges" }.fields
   end
 
   def edges
+    raise "#{self.class} expected a connection, but got `nil`" if items.nil?
     items.map do |item|
+      node_class = GraphQL::SCHEMA.type_for_object(item)
       node = node_class.new(item, fields: edge_fields, query: query)
-      node.as_result
+      res = node.as_result
+      res
     end
   end
 
@@ -29,5 +32,13 @@ class GraphQL::Connection < GraphQL::Node
     def default_schema_name
       name.split("::").last.sub(/Connection$/, '').underscore
     end
+
+    attr_accessor :default_connection
+    def default_connection!
+      GraphQL::Connection.default_connection = self
+    end
+
   end
+
+  self.default_connection!
 end

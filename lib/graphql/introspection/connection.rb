@@ -1,5 +1,7 @@
 class GraphQL::Introspection::Connection < GraphQL::Connection
-  field :count
+  type :introspection_connection
+
+  field.number(:count)
 
   def count
     size

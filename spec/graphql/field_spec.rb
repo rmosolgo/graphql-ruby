@@ -22,8 +22,8 @@ describe GraphQL::Field do
     it 'doesnt register a call twice' do
       assert_equal 3, content_field.calls.size
       call = content_field.calls.first[1]
-      content_field.call(call[:name], call[:lambda])
-      content_field.call(call[:name], call[:lambda])
+      content_field.call(call.name, call.lambda)
+      content_field.call(call.name, call.lambda)
       assert_equal 3, content_field.calls.size
     end
   end

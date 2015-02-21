@@ -34,8 +34,7 @@ class GraphQL::Query
 
     if result_object.is_a?(Hash)
       result_object.each do |name, value|
-        node_type = root_call_class.return_declarations[name]
-        node_class = GraphQL::SCHEMA.get_type(node_type)
+        node_class = GraphQL::SCHEMA.type_for_object(value)
         field_for_node = root_syntax_node.fields.find {|f| f.identifier == name.to_s }
         if field_for_node.present?
           fields_for_node = field_for_node.fields
@@ -44,16 +43,14 @@ class GraphQL::Query
         end
       end
     elsif result_object.is_a?(Array)
-      node_type = root_call_class.return_declarations.values.first
-      node_class = GraphQL::SCHEMA.get_type(node_type)
       fields_for_node = root_syntax_node.fields
       result_object.each do |item|
+        node_class = GraphQL::SCHEMA.type_for_object(item)
         node_value = node_class.new(item, query: self, fields: fields_for_node)
         result[node_value.cursor] = node_value.as_result
       end
     else
-      node_type = root_call_class.return_declarations.values.first
-      node_class = GraphQL::SCHEMA.get_type(node_type)
+      node_class = GraphQL::SCHEMA.type_for_object(result_object)
       fields_for_node = root_syntax_node.fields
       node_value = node_class.new(result_object, query: self, fields: fields_for_node)
       result[node_value.cursor] = node_value.as_result

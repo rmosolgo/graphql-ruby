@@ -63,6 +63,15 @@ class GraphQL::Node
       end
     end
 
+    def exposes(ruby_class_name)
+      @ruby_class_name = ruby_class_name
+      GraphQL::SCHEMA.add_type(self)
+    end
+
+    def ruby_class_name
+      @ruby_class_name
+    end
+
     def desc(describe)
       @description = describe
     end
@@ -72,12 +81,12 @@ class GraphQL::Node
     end
 
     def type(type_name)
-      @node_name = type_name.to_s
+      @type_name = type_name.to_s
       GraphQL::SCHEMA.add_type(self)
     end
 
     def schema_name
-      @node_name || default_schema_name
+      @type_name || default_schema_name
     end
 
     def default_schema_name
@@ -103,19 +112,8 @@ class GraphQL::Node
       @own_fields ||= {}
     end
 
-    def field(field_name, type: nil, description: nil, connection_class_name: nil, node_class_name: nil)
-      field_name = field_name.to_s
-      field_class = GraphQL::Field.create_class({
-        name: field_name,
-        type: type,
-        owner_class: self,
-        description: description,
-        connection_class_name: connection_class_name,
-        node_class_name: node_class_name,
-      })
-      field_class_name = field_name.camelize + "Field"
-      self.const_set(field_class_name, field_class)
-      own_fields[field_name] = field_class
+    def field
+      @field_definer ||= GraphQL::FieldDefiner.new(self)
     end
 
     def remove_field(field_name)

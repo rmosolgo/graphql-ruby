@@ -3,7 +3,7 @@ class GraphQL::RootCall
   def initialize(query:, syntax_arguments:)
     @query = query
 
-    raise "#{self.class.name} must declare arguments" if self.class.argument_declarations.nil?
+    raise "#{self.class.name} must declare arguments" unless self.class.arguments
     @arguments = syntax_arguments.each_with_index.map do |syntax_arg, idx|
 
       value = if syntax_arg[0] == "<"
@@ -18,6 +18,10 @@ class GraphQL::RootCall
 
   def execute!(*args)
     raise NotImplementedError, "Do work in this method"
+  end
+
+  def context
+    query.context
   end
 
   def as_result
@@ -65,34 +69,41 @@ class GraphQL::RootCall
       @return_declarations ||= {}
     end
 
-    def arguments(*argument_declarations)
-      @argument_declarations = argument_declarations.compact
+    def argument
+      @argument ||= GraphQL::RootCallArgumentDefiner.new(self)
     end
 
-    def argument_declarations
-      @argument_declarations || (superclass.respond_to?(:argument_declarations) ? superclass.argument_declarations : [])
+    def own_arguments
+      @argument && @argument.arguments
     end
 
-    def argument_declaration_for_index(idx)
-      if argument_declarations.first[:any_number]
-        argument_declarations.first
+    def arguments
+      own = own_arguments || []
+      own + superclass.arguments
+    rescue NoMethodError
+      own
+    end
+
+    def argument_for_index(idx)
+      if arguments.first.any_number
+        arguments.first
       else
-        argument_declarations[idx]
+        arguments[idx]
       end
     end
 
     TYPE_CHECKS = {
-      object: Hash,
-      number: Numeric,
-      string: String,
+      "object" => Hash,
+      "number" => Numeric,
+      "string" => String,
     }
 
     def typecast(idx, value)
-      arg_dec = argument_declaration_for_index(idx)
-      expected_type = arg_dec[:type]
+      arg_dec = argument_for_index(idx)
+      expected_type = arg_dec.type
       expected_type_class = TYPE_CHECKS[expected_type]
 
-      if expected_type == :string
+      if expected_type == "string"
         parsed_value = value
       else
         parsed_value = JSON.parse('{ "value" : ' + value + '}')["value"]

@@ -4,12 +4,16 @@ require "json"
 require "parslet"
 
 module GraphQL
+  autoload(:Call,             "graphql/call")
   autoload(:Connection,       "graphql/connection")
   autoload(:Field,            "graphql/field")
+  autoload(:FieldDefiner,     "graphql/field_definer")
   autoload(:Node,             "graphql/node")
   autoload(:Parser,           "graphql/parser")
   autoload(:Query,            "graphql/query")
   autoload(:RootCall,         "graphql/root_call")
+  autoload(:RootCallArgument,         "graphql/root_call_argument")
+  autoload(:RootCallArgumentDefiner,         "graphql/root_call_argument_definer")
   autoload(:Schema,           "graphql/schema")
   autoload(:Transform,        "graphql/transform")
   autoload(:VERSION,          "graphql/version")
@@ -36,37 +40,30 @@ module GraphQL
   end
 
   module Types
+    autoload(:BooleanField,     "graphql/types/boolean_field")
     autoload(:ConnectionField,  "graphql/types/connection_field")
     autoload(:CursorField,      "graphql/types/cursor_field")
+    autoload(:HashNode,         "graphql/types/hash_node")
     autoload(:NumberField,      "graphql/types/number_field")
     autoload(:ObjectField,      "graphql/types/object_field")
     autoload(:StringField,      "graphql/types/string_field")
     autoload(:TypeField,        "graphql/types/type_field")
   end
 
-  TYPE_ALIASES = {}
-  PARSER = Parser.new
-  SCHEMA = Schema.new
-  TRANSFORM = Transform.new
-  # preload these so they're in SCHEMA
-  Introspection::Connection
-  Introspection::RootCallArgumentNode
-  Introspection::RootCallNode
-  Introspection::SchemaCall
-  Introspection::SchemaNode
-  Introspection::TypeCall
-  Introspection::TypeNode
-  Node.field(:__type__, type: GraphQL::Types::TypeField)
-
   class Error < RuntimeError; end
   class FieldNotDefinedError < Error
     def initialize(class_name, field_name)
-      super("#{class_name}##{field_name} was requested, but it isn't defined.")
+      super("#{class_name}##{field_name} was requested, but it isn't defined. Defined fields are: #{SCHEMA.field_names}")
     end
   end
   class NodeNotDefinedError < Error
     def initialize(node_name)
       super("#{node_name} was requested but was not found. Defined nodes are: #{SCHEMA.type_names}")
+    end
+  end
+  class  ConnectionNotDefinedError < Error
+    def initialize(node_name)
+      super("#{node_name} was requested but was not found. Defined connections are: #{SCHEMA.connection_names}")
     end
   end
   class RootCallNotDefinedError < Error
@@ -83,7 +80,16 @@ module GraphQL
 
   class RootCallArgumentError < Error
     def initialize(declaration, actual)
-      super("Wrong type for #{declaration[:name]}: expected a #{declaration[:type]} but got #{actual}")
+      super("Wrong type for #{declaration.name}: expected a #{declaration.type} but got #{actual}")
     end
   end
+
+  PARSER = Parser.new
+  SCHEMA = Schema.new
+  TRANSFORM = Transform.new
+  # preload these so they're in SCHEMA
+  Dir["#{File.dirname(__FILE__)}/graphql/types/*.rb"].each { |f| p f; require f }
+  Dir["#{File.dirname(__FILE__)}/graphql/introspection/*.rb"].each { |f| require f }
+  Dir["#{File.dirname(__FILE__)}/graphql/syntax/*.rb"].each { |f| require f }
+  Node.field.__type__(:__type__)
 end

@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe GraphQL::Query do
   let(:query_string) { "post(123) { title, content } "}
-  let(:context) { {person_name: "Han Solo" }}
+  let(:context) { Context.new(person_name: "Han Solo") }
   let(:query) { GraphQL::Query.new(query_string, context: context) }
   let(:result) { query.as_result }
 
@@ -92,7 +92,7 @@ describe GraphQL::Query do
       end
 
       describe 'when requesting fields overriden on a child class' do
-        let(:query_string) { 'stupid_thumb_up(991) { id }'}
+        let(:query_string) { 'thumb_up(991) { id }'}
         it 'uses the child implementation' do
           assert_equal '991991', result["991991"]["id"]
         end
@@ -108,9 +108,9 @@ describe GraphQL::Query do
     end
 
     describe 'when the root call doesnt have an argument' do
-      let(:query_string) { "viewer() { name }"}
+      let(:query_string) { "context() { person_name }"}
       it 'calls the node with no arguments' do
-        assert_equal "It's you again", result["viewer"]["name"]
+        assert_equal "Han Solo", result["context"]["person_name"]
       end
     end
 
@@ -196,7 +196,7 @@ describe GraphQL::Query do
     let(:query_string) { "post(123) { likes { any, edges { node { id } } } }"}
 
     it 'gets node values' do
-      assert_equal [991,992], result["123"]["likes"]["edges"].map {|e|  e["node"]["id"] }
+      assert_equal ["991991","992992"], result["123"]["likes"]["edges"].map {|e|  e["node"]["id"] }
     end
 
     it 'gets edge values' do

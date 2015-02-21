@@ -72,3 +72,10 @@ class Like < InadequateRecordBase
     Post.find(post_id)
   end
 end
+
+class Context
+  attr_reader :person_name
+  def initialize(person_name:)
+    @person_name = person_name
+  end
+end

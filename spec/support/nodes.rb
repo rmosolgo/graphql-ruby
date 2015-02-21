@@ -3,8 +3,7 @@ require 'support/dummy_app.rb'
 
 module Nodes
   class ApplicationNode < GraphQL::Node
-    field :id,
-      type: :number
+    field.number(:id)
     cursor :id
 
     class << self
@@ -12,6 +11,35 @@ module Nodes
       def node_for(m_class)
         @model_class = m_class
       end
+    end
+  end
+
+  class ApplicationConnection < GraphQL::Connection
+    default_connection!
+    field.number(:count)
+    field.boolean(:any)
+
+    def count
+      items.count
+    end
+
+    def any
+      items.any?
+    end
+  end
+
+  class CommentsConnection < ApplicationConnection
+    field.number :viewer_name_length
+    field.number :average_rating
+
+    # just to test context:
+    def viewer_name_length
+      context.person_name.length
+    end
+
+    def average_rating
+      total_rating = items.map(&:rating).inject(&:+).to_f
+      total_rating / items.size
     end
   end
 
@@ -25,41 +53,33 @@ module Nodes
   end
 
   class ApplicationConnectionField < GraphQL::Types::ConnectionField
+    type :connection
     call :first, -> (prev_items, first) { prev_items.first(first.to_i) }
     call :after, -> (prev_items, after) { prev_items.select {|i| i.id > after.to_i } }
   end
 
   class DateField < GraphQL::Types::ObjectField
-    field_type "date"
+    type :date
     call :minus_days, -> (prev_value, minus_days) { prev_value - minus_days.to_i }
   end
 
   class DateNode < GraphQL::Node
-    field :year,  type: :number
-    field :month, type: :number
+    exposes "Date"
+    field.number(:year)
+    field.number(:month)
   end
 
   class PostNode < ApplicationNode
     node_for Post
+    exposes "Post"
     desc "A blog post entry"
-    field :title,
-      type: :string
 
-    field :content,
-      type: LetterSelectionField
-    field :length,
-      type: :number
-
-    field :comments,
-      type: ApplicationConnectionField
-
-    field :published_at,
-      type: DateField
-
-    field :likes,
-      type: :connection,
-      connection_class_name: "Nodes::ThumbUpConnection",
-      node_class_name: "Nodes::ThumbUpNode"
+    field.string(:title)
+    field.letter_selection(:content)
+    field.number(:length)
+    field.connection(:comments)
+    field.date(:published_at)
+    field.connection(:likes)
 
     def length
       target.content.length
@@ -68,86 +88,34 @@ module Nodes
 
   class CommentNode < ApplicationNode
     node_for Comment
-    field :content
-    field :letters,
-      type: LetterSelectionField
+    exposes "Comment"
+    field.string :content
+    field.letter_selection(:letters)
   end
 
   # wraps a Like, for testing explicit name
   class ThumbUpNode < ApplicationNode
     node_for(Like)
+    exposes "Like"
     type "upvote"
-    field :post_id
-  end
-
-  class StupidThumbUpNode < ThumbUpNode
-    node_for(Like)
+    field.number :post_id
     def id
       target.id.to_s + target.id.to_s
     end
   end
 
-  class ViewerNode < GraphQL::Node
-    field :name
-
-    def name
-      "It's you again"
-    end
-
-    def cursor
-      "viewer"
-    end
-  end
-
   class ContextNode < GraphQL::Node
-    field :person_name
-
-    def person_name
-      context[:person_name]
-    end
+    exposes "Context"
+    field.string(:person_name)
 
     def cursor
       "context"
     end
   end
 
-  class ApplicationConnection < GraphQL::Connection
-    field :count, type: :number
-    def count
-      items.count
-    end
-  end
-
-  class CommentsConnection < ApplicationConnection
-    field :viewer_name_length
-    field :average_rating
-
-    # just to test context:
-    def viewer_name_length
-      context[:person_name].length
-    end
-
-    def average_rating
-      total_rating = items.map(&:rating).inject(&:+).to_f
-      total_rating / items.size
-    end
-  end
-
-  # Wraps Likes, for testing explicit naming
-  class ThumbUpConnection < ApplicationConnection
-    field :any
-
-    def any
-      items.any?
-    end
-  end
 
   class FindCall < GraphQL::RootCall
-    arguments({
-        name: "ids",
-        type: :number,
-        any_number: true,
-      })
+    argument.number("ids", any_number: true)
     def execute!(*ids)
       model_class = model_type
       items = ids.map { |id| model_class.find(id.to_i) }
@@ -168,24 +136,17 @@ module Nodes
     end
   end
 
-  class StupidThumbUpCall < FindCall
-    returns :stupid_thumb_up
+  class ThumbUpCall < FindCall
+    returns :thumb_up
     def model_type
       Like
-    end
-  end
-
-  class ViewerCall < GraphQL::RootCall
-    returns :viewer
-    def execute!
-      nil
     end
   end
 
   class ContextCall < GraphQL::RootCall
     returns :context
     def execute!
-      nil
+      context
     end
   end
 
@@ -193,14 +154,9 @@ module Nodes
     indentifier "upvote_post"
     returns :post, :upvote
 
-    arguments({
-        name: "post_data",
-        type: :object,
-      }, {
-        name: "person_id",
-        type: :number
-      }
-      )
+    argument.object("post_data")
+    argument.number("person_id")
+
 
     def execute!(post_data, person_id)
       post_id = post_data["id"]
