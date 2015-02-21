@@ -10,4 +10,8 @@ class GraphQL::Introspection::SchemaNode < GraphQL::Node
   def types
     @target.types.values
   end
+
+  def calls
+    target.calls.values
+  end
 end

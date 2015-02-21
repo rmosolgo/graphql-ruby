@@ -78,9 +78,14 @@ describe GraphQL::Schema do
 
     describe 'querying calls' do
       let(:upvote_post_call) { result["schema"]["calls"]["edges"].find {|e| e["node"]["name"] == "upvote_post"} }
+
       it 'returns all calls' do
-        assert schema.calls.size > 0
-        assert_equal schema.calls.size, result["schema"]["calls"]["count"]
+        assert_equal 7, result["schema"]["calls"]["count"]
+      end
+
+      it 'doesnt show abstract call classes' do
+        call_names = result["schema"]["calls"]["edges"].map {|e| e["node"]["name"] }
+        assert(!call_names.include?("find"))
       end
 
       it 'shows return types' do
@@ -97,9 +102,14 @@ describe GraphQL::Schema do
       let(:post_type) { result["schema"]["types"]["edges"].find { |e| e["node"]["name"] == "post" }["node"]}
       let(:content_field) { post_type["fields"]["edges"].find { |e| e["node"]["name"] == "content" }["node"]}
       let(:select_call) { content_field["calls"]["edges"].find { |e| e["node"]["name"] == "select"}["node"]}
+
       it 'returns all types' do
-        assert schema.types.size > 0
-        assert_equal schema.types.size, result["schema"]["types"]["count"]
+        assert_equal 13, result["schema"]["types"]["count"]
+      end
+
+      it 'doesnt return types that dont expose anything' do
+        type_names = result["schema"]["types"]["edges"].map {|e| e["node"]["name"] }
+        assert(!type_names.include?("application"))
       end
 
       it 'show type name & fields' do

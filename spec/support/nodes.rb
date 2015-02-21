@@ -115,6 +115,7 @@ module Nodes
 
 
   class FindCall < GraphQL::RootCall
+    abstract!
     argument.number("ids", any_number: true)
     def execute!(*ids)
       model_class = model_type

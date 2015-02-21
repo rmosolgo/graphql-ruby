@@ -44,6 +44,7 @@ class GraphQL::RootCall
   class << self
     def indentifier(ident_name)
       @identifier = ident_name
+      GraphQL::SCHEMA.add_call(self)
     end
 
     def returns(*return_declaration_names)
@@ -124,6 +125,10 @@ class GraphQL::RootCall
 
     def inherited(child_class)
       GraphQL::SCHEMA.add_call(child_class)
+    end
+
+    def abstract!
+      GraphQL::SCHEMA.remove_call(self)
     end
   end
 end

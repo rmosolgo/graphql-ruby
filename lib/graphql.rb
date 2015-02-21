@@ -88,8 +88,8 @@ module GraphQL
   SCHEMA = Schema.new
   TRANSFORM = Transform.new
   # preload these so they're in SCHEMA
-  Dir["#{File.dirname(__FILE__)}/graphql/types/*.rb"].each { |f| p f; require f }
-  Dir["#{File.dirname(__FILE__)}/graphql/introspection/*.rb"].each { |f| require f }
-  Dir["#{File.dirname(__FILE__)}/graphql/syntax/*.rb"].each { |f| require f }
+  ["types", "introspection"].each do |preload_dir|
+    Dir["#{File.dirname(__FILE__)}/graphql/#{preload_dir}/*.rb"].each { |f| require f }
+  end
   Node.field.__type__(:__type__)
 end

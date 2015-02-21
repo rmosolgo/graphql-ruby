@@ -5,19 +5,27 @@ class GraphQL::Schema
     @connections = {}
     @fields = {}
     @class_names = {}
-    @calls = []
+    @calls = {}
   end
 
   def add_call(call_class)
-    @calls << call_class
+    remove_call(call_class)
+    @calls[call_class.schema_name] = call_class
   end
 
   def get_call(identifier)
-    @calls.find { |c| c.schema_name == identifier } || raise(GraphQL::RootCallNotDefinedError.new(identifier))
+    @calls[identifier.to_s] || raise(GraphQL::RootCallNotDefinedError.new(identifier))
+  end
+
+  def remove_call(call_class)
+    existing_name = @calls.key(call_class)
+    if existing_name
+      @calls.delete(existing_name)
+    end
   end
 
   def call_names
-    @calls.map(&:schema_name)
+    @calls.keys
   end
 
   def add_type(node_class)

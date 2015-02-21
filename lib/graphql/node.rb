@@ -58,8 +58,6 @@ class GraphQL::Node
       # use name to prevent autoloading Connection
       if child_class.ancestors.map(&:name).include?("GraphQL::Connection")
         GraphQL::SCHEMA.add_connection(child_class)
-      else
-        GraphQL::SCHEMA.add_type(child_class)
       end
     end
 

@@ -9,18 +9,14 @@ Create a GraphQL interface by implementing _nodes_ and _connections_, then runni
 
 ## To do:
 
-- Use FieldDefiner API, something similar for arguments?
-  - Methods on FieldDefiner fetch types out of the schema
-  - Types specify what kind of objects they wrap (by class name)
-  - When a query is wrapping objects with nodes, it uses the object's class name to find a node
+
+- Allow a default connection class, or some way to infer connection from name
+  - right now, `Introspection::Connection` isn't getting used, only `ApplicationConnection` is.
 
 - Handle blank objects in nested calls
-- Make root call arguments API not suck
 - Implement calls as arguments
 - double-check how to handle `pals.first(3) { count }`
-- Allow abstract nodes & calls (not in schema)
 - Implement call argument introspection (wait for spec)
-- Allow a default connection class, or some way to infer connection from name
 - Do something about the risk of accidently overriding important methods (eg `Field#value`) in custom classes
 - For fields that return objects, can they be queried _without_ other fields? Or must they always have fields?
 - __document__ (wait for spec)
