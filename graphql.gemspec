@@ -20,6 +20,7 @@ Gem::Specification.new do |s|
   s.add_dependency "activesupport", ">= 4"
   s.add_dependency "parslet", ">= 1.6.2"
 
+  s.add_development_dependency "codeclimate-test-reporter", '~>0.4'
   s.add_development_dependency "pry", ">= 0.10"
   s.add_development_dependency "guard", ">= 2.11"
   s.add_development_dependency "guard-bundler", ">= 2.1"

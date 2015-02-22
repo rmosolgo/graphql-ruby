@@ -1,3 +1,6 @@
+require "codeclimate-test-reporter"
+CodeClimate::TestReporter.start
+
 require 'date'
 require "minitest/autorun"
 require "minitest/focus"
