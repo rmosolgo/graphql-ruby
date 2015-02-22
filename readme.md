@@ -146,4 +146,3 @@ result
 ```
 
 You could do something like this [inside a Rails controller](https://github.com/rmosolgo/graphql-ruby-demo/blob/master/app/controllers/queries_controller.rb#L5).
-

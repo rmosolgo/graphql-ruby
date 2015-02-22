@@ -5,19 +5,19 @@ require "parslet"
 require "singleton"
 
 module GraphQL
-  autoload(:Call,             "graphql/call")
-  autoload(:Connection,       "graphql/connection")
-  autoload(:Field,            "graphql/field")
-  autoload(:FieldDefiner,     "graphql/field_definer")
-  autoload(:Node,             "graphql/node")
-  autoload(:Parser,           "graphql/parser")
-  autoload(:Query,            "graphql/query")
-  autoload(:RootCall,         "graphql/root_call")
+  autoload(:Call,                     "graphql/call")
+  autoload(:Connection,               "graphql/connection")
+  autoload(:Field,                    "graphql/field")
+  autoload(:FieldDefiner,             "graphql/field_definer")
+  autoload(:Node,                     "graphql/node")
+  autoload(:Parser,                   "graphql/parser")
+  autoload(:Query,                    "graphql/query")
+  autoload(:RootCall,                 "graphql/root_call")
   autoload(:RootCallArgument,         "graphql/root_call_argument")
-  autoload(:RootCallArgumentDefiner,         "graphql/root_call_argument_definer")
-  autoload(:Schema,           "graphql/schema")
-  autoload(:Transform,        "graphql/transform")
-  autoload(:VERSION,          "graphql/version")
+  autoload(:RootCallArgumentDefiner,  "graphql/root_call_argument_definer")
+  autoload(:Schema,                   "graphql/schema")
+  autoload(:Transform,                "graphql/transform")
+  autoload(:VERSION,                  "graphql/version")
 
   module Introspection
     autoload(:CallNode,             "graphql/introspection/call_node")
