@@ -2,6 +2,7 @@ require "active_support/core_ext/object/blank"
 require "active_support/core_ext/string/inflections"
 require "json"
 require "parslet"
+require "singleton"
 
 module GraphQL
   autoload(:Call,             "graphql/call")
@@ -43,7 +44,6 @@ module GraphQL
     autoload(:BooleanField,     "graphql/types/boolean_field")
     autoload(:ConnectionField,  "graphql/types/connection_field")
     autoload(:CursorField,      "graphql/types/cursor_field")
-    autoload(:HashNode,         "graphql/types/hash_node")
     autoload(:NumberField,      "graphql/types/number_field")
     autoload(:ObjectField,      "graphql/types/object_field")
     autoload(:StringField,      "graphql/types/string_field")
@@ -85,7 +85,7 @@ module GraphQL
   end
 
   PARSER = Parser.new
-  SCHEMA = Schema.new
+  SCHEMA = Schema.instance
   TRANSFORM = Transform.new
   # preload these so they're in SCHEMA
   ["types", "introspection"].each do |preload_dir|

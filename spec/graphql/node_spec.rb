@@ -47,10 +47,10 @@ describe GraphQL::Node do
 
   describe '.field' do
     it 'doesnt add the field twice if you call it twice' do
-      assert_equal 4, Nodes::CommentNode.all_fields.size
+      assert_equal 5, Nodes::CommentNode.all_fields.size
       Nodes::CommentNode.field.number(:id)
       Nodes::CommentNode.field.number(:id)
-      assert_equal 4, Nodes::CommentNode.all_fields.size
+      assert_equal 5, Nodes::CommentNode.all_fields.size
       Nodes::CommentNode.remove_field(:id)
     end
 

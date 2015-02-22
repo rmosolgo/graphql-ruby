@@ -16,7 +16,7 @@ class InadequateRecordBase
     end
 
     def find(id)
-      all.find { |object| object.id.to_s == id.to_s } || raise("Failed to find #{name} => #{id}")
+      all.find { |object| object.id.to_s == id.to_s }
     end
 
     def where(query={})

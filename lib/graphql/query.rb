@@ -1,5 +1,16 @@
+# Executes queries from strings against {GraphQL::SCHEMA}.
+#
+# @example
+#   query_str = "post(1) { title, comments { count } }"
+#   query_ctx = {user: current_user}
+#   query = GraphQL::Query.new(query_str, context: query_ctx)
+#   result = query.as_result
+
 class GraphQL::Query
   attr_reader :query_string, :root, :context
+
+  # @param [String] query_string the string to be parsed
+  # @param [Object] context an object which will be available to all nodes and fields in the schema
   def initialize(query_string, context: nil)
     if !query_string.is_a?(String) || query_string.length == 0
       raise "You must send a query string, not a #{query_string.class.name}"
@@ -9,10 +20,14 @@ class GraphQL::Query
     @context = context
   end
 
+  # @return [Hash] result the JSON response to this query
+  # Calling {#as_result} more than once won't cause the query to be re-run
   def as_result
     @as_result ||= execute!
   end
 
+  # @param [String] identifier
+  # returns a query variable named `identifier`, otherwise raises.
   def get_variable(identifier)
     syntax_var = @root.variables.find { |v| v.identifier == identifier }
     if syntax_var.blank?

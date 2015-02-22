@@ -91,6 +91,7 @@ module Nodes
     exposes "Comment"
     field.string :content
     field.letter_selection(:letters)
+    field.object(:post)
   end
 
   # wraps a Like, for testing explicit name

@@ -1,3 +1,37 @@
+# Every query begins with a root call. It might find data or mutate data and return some results.
+#
+# A root call should:
+#
+# - declare any arguments with {.argument}, or declare `argument.none`
+# - declare returns with {.return}
+# - implement {#execute!} to take those arguments and return values
+#
+# @example
+#   FindPostCall < GraphQL::RootCall
+#     argument.number(:ids, any_number: true)
+#     returns :post
+#
+#     def execute!(*ids)
+#       ids.map { |id| Post.find(id) }
+#     end
+#   end
+#
+# @example
+#   CreateCommentCall < GraphQL::RootCall
+#     argument.number(:post_id)
+#     argument.object(:comment)
+#     returns :post, :comment
+#
+#     def execute!(post_id, comment)
+#       post = Post.find(post_id)
+#       new_comment = post.comments.create!(comment)
+#       {
+#         comment: new_comment,
+#         post: post,
+#       }
+#     end
+#   end
+#
 class GraphQL::RootCall
   attr_reader :query, :arguments
   def initialize(query:, syntax_arguments:)
@@ -42,11 +76,29 @@ class GraphQL::RootCall
   end
 
   class << self
+    # @param [String] ident_name
+    # Declare an alternative name used in a query string
     def indentifier(ident_name)
       @identifier = ident_name
       GraphQL::SCHEMA.add_call(self)
     end
 
+    # The name used by {GraphQL::SCHEMA}. Uses {.identifier} or derives a name from the class name.
+    def schema_name
+      @identifier || name.split("::").last.sub(/Call$/, '').underscore
+    end
+
+    def inherited(child_class)
+      GraphQL::SCHEMA.add_call(child_class)
+    end
+
+    # This call won't be visible in `schema()`
+    def abstract!
+      GraphQL::SCHEMA.remove_call(self)
+    end
+
+    # @param [Symbol] return_declarations
+    # Name of returned values from this call
     def returns(*return_declaration_names)
       if return_declaration_names.last.is_a?(Hash)
         return_declarations_hash = return_declaration_names.pop
@@ -70,6 +122,8 @@ class GraphQL::RootCall
       @return_declarations ||= {}
     end
 
+    # @return [GraphQL::RootCallArgumentDefiner] definer
+    # Use this object to declare arguments.
     def argument
       @argument ||= GraphQL::RootCallArgumentDefiner.new(self)
     end
@@ -117,18 +171,6 @@ class GraphQL::RootCall
       parsed_value
     rescue JSON::ParserError
       raise GraphQL::RootCallArgumentError.new(arg_dec, value)
-    end
-
-    def schema_name
-      @identifier || name.split("::").last.sub(/Call$/, '').underscore
-    end
-
-    def inherited(child_class)
-      GraphQL::SCHEMA.add_call(child_class)
-    end
-
-    def abstract!
-      GraphQL::SCHEMA.remove_call(self)
     end
   end
 end

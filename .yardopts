@@ -1,0 +1,4 @@
+--no-private
+--exclude lib/syntax
+--markup markdown
+lib/**/*.rb

@@ -17,11 +17,10 @@ Create a GraphQL interface by implementing _nodes_ and _connections_, then runni
 - Implement calls as arguments
 - double-check how to handle `pals.first(3) { count }`
 - Implement call argument introspection (wait for spec)
-- Do something about the risk of accidently overriding important methods (eg `Field#value`) in custom classes
 - For fields that return objects, can they be queried _without_ other fields? Or must they always have fields?
 - __document__ (wait for spec)
 
-## For example
+## Example Implementation
 
 - See test implementation in [`/spec/support/dummy_app/nodes.rb`](https://github.com/rmosolgo/graphql/blob/master/spec/support/nodes.rb)
 - See `graphql-ruby-demo` with Rails on [github](https://github.com/rmosolgo/graphql-ruby-demo) or [heroku](http://graphql-ruby-demo.herokuapp.com/)
@@ -29,143 +28,122 @@ Create a GraphQL interface by implementing _nodes_ and _connections_, then runni
 ![gql](https://cloud.githubusercontent.com/assets/2231765/6217972/5d24edda-b5ce-11e4-9e07-3548304af862.png)
 
 
-## About this project
+## Usage
 
-GraphQL was recently announced by Facebook as their prefered HTTP API. From various sources, this is what I have learned about it.
+- Implement _nodes_ that wrap objects in your application
+- Implement _calls_ that return those objects (and may mutate the application state)
+- Execute _queries_ and return the result.
 
-__Contents__
+### Nodes
 
-- [Definition](#definition)
-- [Examples](#examples)
-- [Syntax](#syntax)
+Nodes are delegators that wrap objects in your app. You must whitelist fields by declaring them in the class definition.
 
-## Definition
 
-GraphQL is:
-- a text interface for client-server communication.
-- a means of exposing your application. Since it's implemented by your application, it may expose data from storage or other application-specific values.
-- backend- and language-agnostic.
-
-To serve GraphQL, a server implements a single endpoint which accepts queries and returns JSON responses.
-
-## Examples
-
-### Retrieving data
-
+```ruby
+class FishNode < GraphQL::Node
+  exposes "Fish"
+  cursor(:id)
+  field.number(:id)
+  field.string(:name)
+  field.string(:species)
+  field.object(:aquarium)
+end
 ```
-node(4, 6) {
-  id,
-  url.site(mobile) as mobile_url,
-  url.site(www) as www_url,
-  friends.orderby(name).first(1) {
-   count,
-   edges {
-     cursor,
-     node {
-       id,
-       name
+
+You can also declare connections between objects:
+
+```ruby
+class AquariumNode < GraphQL::Node
+  exposes "Aquarium"
+  cursor(:id)
+  field.number(:id)
+  field.number(:occupancy)
+  field.connection(:fishes)
+end
+```
+
+### Calls
+
+Calls selectively expose your application to the world. They always return values and they may perform mutations.
+
+Calls declare returns, declare arguments, and implement `#execute!`.
+
+This call just finds values:
+
+```ruby
+class FindFishCall < GraphQL::RootCall
+  returns :fish
+  argument.number(:id)
+  def execute!(id)
+    Fish.find(id)
+  end
+end
+```
+
+This call performs a mutation:
+
+```ruby
+class RelocateFishCall < GraphQL::RootCall
+  returns :fish, :previous_aquarium, :new_aquarium
+  argument.number(:fish_id)
+  argument.number(:new_aquarium_id)
+
+  def execute!(fish_id, new_aquarium_id)
+    fish = Fish.find(fish_id)
+
+    # context is defined by the query, see below
+    if !context[:user].can_move?(fish)
+      raise RelocateNotAllowedError
+    end
+
+    previous_aquarium = fish.aquarium
+    new_aquarium = Aquarium.find(new_aquarium_id)
+    fish.update_attributes(aquarium: new_aquarium)
+    {
+      fish: fish,
+      previous_aquarium: previous_aquarium,
+      new_aquarium: new_aquarium,
     }
-   }
-  }
-}
+  end
+end
 ```
 
-```js
-{
- "4": {
-    "id" : 4,
-    "mobile_url" : "https://m.facebook.com/4",
-    "www_url" : "https://www.facebook.com/4",
-    "friends" : {
-      "count" : 1000,
-      "edges" : [
-        {
-          "cursor": "6",
-          "node": {
-            "id": 6,
-            "name" : "Your pal"
-          }
-        }
-      ]
-    },
- "6": { /* similar structure as above */ }
- }
+### Queries
+
+When your system is setup, you can perform queries from a string.
+
+```ruby
+query_str = "find_fish(1) { name, species } "
+query     = GraphQL::Query.new(query_str)
+result    = query.as_result
+
+result
+# {
+#   "1" => {
+#     "name" => "Sharky",
+#     "species" => "Goldfish",
+#   }
+# }
 ```
 
-### Mutations
+Each query may also define a `context` object which will be accessible at every point in execution.
 
-Mutation queries are root calls with side-effects. They expose fields that may have changed as a result of the mutation.
+```ruby
+query_str = "move_fish(1, 3) { fish { name }, new_aquarium { occupancy } }"
+query_ctx = {user: current_user, request: request}
+query     = GraphQL::Query.new(query_str, context: query_ctx)
+result    = query.as_result
 
-Client tokens allow the client to make optimistic updates, then revert if the operation fails.
-
-```
-page_like({
-  "client_token": "4001",
-  "id": 1234
- }) {
- page {
-  likes,
-  liked_by_viewer
- }
-}
-```
-
-```js
-{
-  "1234": {
-    "likes": 41,
-    "liked_by_viewer": true
-  },
-  "client_token": "4001"
-}
+result
+# {
+#   "fish" => {
+#     "name" => "Sharky"
+#   },
+#   "new_aquarium" => {
+#     "occupancy" => 12
+#   }
+# }
 ```
 
-## Syntax
+You could do something like this [inside a Rails controller](https://github.com/rmosolgo/graphql-ruby-demo/blob/master/app/controllers/queries_controller.rb#L5).
 
-### Node
-
-Nodes map to objects in your application (maybe something in your database, maybe some other object like `current_user`). They have:
-
-- fields, which yield values or other objects
-- connections, which expose one-to-many relationships
-- `__type__`, which allows introspection on that node type (name, description, fields, edges)
-- a `cursor`, which is an opaque string defined by the server.
-
-_(Is the cursor different for different contexts? Or does an object always have the same cursor?)_
-
-Nodes are retrieved by _root calls_. Edges also contain nodes.
-
-### Field
-
-A field belongs to a node. It exposes information about its owner. It may return a scalar or another node (exposing another object or a connection).
-
-Fields are implemented by the server and requested by the client as names inside curly-braces, eg `{ name, id }`.
-
-Fields can be aliased using `as`.
-
-### Call
-
-Calls allow the client to provide specifications along with its request. A call consists of:
-- a _name_; and
-- any number of _arguments_, wrapped in `()`
-
-Calls can be made:
-
-- at the _root_ of a query, eg `viewer()`
-- on _fields_, eg `url.site(www)`, `friends.first(3) as best_pals`
-
-Call arguments are always handled as strings.
-
-Calls can be chained.
-
-### Connections
-
-Connections connect nodes to other nodes. They implement:
-- fields of their own, eg `friends { count, page_info { has_next_page }}`
-- `__type__`, for introspection on the edge.
-
-To access the member nodes, use `{ edges { node { /* fields */ } }`.
-
-### Context
-
-Context is an implementation-specific object that informs a query about its client. This allows a query to perform authentication, localization, etc.

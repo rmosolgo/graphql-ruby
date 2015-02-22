@@ -192,6 +192,23 @@ describe GraphQL::Query do
     end
   end
 
+  describe 'when requesting fields on a related object' do
+    let(:query_string) { "comment(444) { post { title } }"}
+    it 'finds fields on that object' do
+      assert_equal "My great post", result["444"]["post"]["title"]
+    end
+
+    describe 'when the object doesnt exist' do
+      before do
+        Post.all.map(&:destroy)
+      end
+
+      it 'blows_up' do # what _should_ this do?
+        assert_raises(RuntimeError) { result }
+      end
+    end
+  end
+
   describe 'when edge classes were named explicitly' do
     let(:query_string) { "post(123) { likes { any, edges { node { id } } } }"}
 
