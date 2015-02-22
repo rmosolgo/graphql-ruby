@@ -12,7 +12,7 @@ Create a GraphQL interface by implementing _nodes_ and _connections_, then runni
 
 - Allow a default connection class, or some way to infer connection from name
   - right now, `Introspection::Connection` isn't getting used, only `ApplicationConnection` is.
-
+- How do you express failure? HTTP response? `errors` key?
 - Handle blank objects in nested calls
 - Implement calls as arguments
 - double-check how to handle `pals.first(3) { count }`
