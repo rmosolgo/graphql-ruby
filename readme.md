@@ -5,6 +5,7 @@
 [![Dependency Status](https://gemnasium.com/rmosolgo/graphql-ruby.svg)](https://gemnasium.com/rmosolgo/graphql-ruby)
 [![Code Climate](https://codeclimate.com/github/rmosolgo/graphql-ruby/badges/gpa.svg)](https://codeclimate.com/github/rmosolgo/graphql-ruby)
 [![Test Coverage](https://codeclimate.com/github/rmosolgo/graphql-ruby/badges/coverage.svg)](https://codeclimate.com/github/rmosolgo/graphql-ruby)
+![image](https://cloud.githubusercontent.com/assets/2231765/6424458/d5fd3896-beae-11e4-892a-77e135e6bf37.png)
 
 Create a GraphQL interface by implementing _nodes_ and _connections_, then running queries.
 
