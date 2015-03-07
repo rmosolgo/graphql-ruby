@@ -5,7 +5,7 @@ require "graphql/version"
 Gem::Specification.new do |s|
   s.name        = 'graphql'
   s.version     = GraphQL::VERSION
-  s.date        = '2015-01-30'
+  s.date        = '2015-03-06'
   s.summary     = "GraphQL"
   s.description = "A GraphQL adapter for Ruby"
   s.homepage    = 'http://github.com/rmosolgo/graphql-ruby'
