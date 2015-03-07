@@ -1,4 +1,4 @@
 --no-private
 --exclude lib/syntax
 --markup markdown
-lib/**/*.rb
+lib/**/*.rb - readme.md

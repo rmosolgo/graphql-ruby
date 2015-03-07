@@ -34,6 +34,8 @@
 #
 class GraphQL::RootCall
   attr_reader :query, :arguments
+
+  # Validates arguments against declared {.argument}s
   def initialize(query:, syntax_arguments:)
     @query = query
 
@@ -46,18 +48,23 @@ class GraphQL::RootCall
           syntax_arg
         end
 
-      self.class.typecast(idx, value)
+      typecast(idx, value)
     end
   end
 
+  # @param [Array] args (splat) all args provided in query string (as strings)
+  # This method is invoked with the arguments provided to the query.
+  # It should do work and return values matching the {.returns} declarations
   def execute!(*args)
     raise NotImplementedError, "Do work in this method"
   end
 
+  # The object passed to {Query#initialize} as `context`
   def context
     query.context
   end
 
+  # Executes the call, validates the return values against declared {.returns}, then returns the return values.
   def as_result
     return_declarations = self.class.return_declarations
     raise "#{self.class.name} must declare returns" unless return_declarations.present?
@@ -123,7 +130,10 @@ class GraphQL::RootCall
     end
 
     # @return [GraphQL::RootCallArgumentDefiner] definer
-    # Use this object to declare arguments.
+    # Use this object to declare arguments. They must be declared in order
+    # @example
+    #   argument.string("post_title")
+    #   argument.object("comment_data") # allows a JSON object
     def argument
       @argument ||= GraphQL::RootCallArgumentDefiner.new(self)
     end
@@ -138,39 +148,42 @@ class GraphQL::RootCall
     rescue NoMethodError
       own
     end
+  end
 
-    def argument_for_index(idx)
-      if arguments.first.any_number
-        arguments.first
-      else
-        arguments[idx]
-      end
-    end
+  private
 
-    TYPE_CHECKS = {
-      "object" => Hash,
-      "number" => Numeric,
-      "string" => String,
-    }
+  TYPE_CHECKS = {
+    "object" => Hash,
+    "number" => Numeric,
+    "string" => String,
+  }
 
-    def typecast(idx, value)
-      arg_dec = argument_for_index(idx)
-      expected_type = arg_dec.type
-      expected_type_class = TYPE_CHECKS[expected_type]
-
-      if expected_type == "string"
-        parsed_value = value
-      else
-        parsed_value = JSON.parse('{ "value" : ' + value + '}')["value"]
-      end
-
-      if !parsed_value.is_a?(expected_type_class)
-        raise GraphQL::RootCallArgumentError.new(arg_dec, value)
-      end
-
-      parsed_value
-    rescue JSON::ParserError
-      raise GraphQL::RootCallArgumentError.new(arg_dec, value)
+  def argument_for_index(idx)
+    if self.class.arguments.first.any_number
+      self.class.arguments.first
+    else
+      self.class.arguments[idx]
     end
   end
+
+  def typecast(idx, value)
+    arg_dec = argument_for_index(idx)
+    expected_type = arg_dec.type
+    expected_type_class = TYPE_CHECKS[expected_type]
+
+    if expected_type == "string"
+      parsed_value = value
+    else
+      parsed_value = JSON.parse('{ "value" : ' + value + '}')["value"]
+    end
+
+    if !parsed_value.is_a?(expected_type_class)
+      raise GraphQL::RootCallArgumentError.new(arg_dec, value)
+    end
+
+    parsed_value
+  rescue JSON::ParserError
+    raise GraphQL::RootCallArgumentError.new(arg_dec, value)
+  end
+
 end

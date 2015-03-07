@@ -9,11 +9,8 @@ describe GraphQL::Field do
     it 'is present' do
       assert_equal field.name, "high_fives"
     end
-  end
-
-  describe '#method' do
     it 'defaults to name' do
-      assert_equal "high_fives", field.method
+      assert_equal "high_fives", field.name
     end
   end
 

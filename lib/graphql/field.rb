@@ -47,7 +47,7 @@ class GraphQL::Field
   end
 
   def raw_value
-    owner.send(method)
+    owner.send(name)
   end
 
   def as_result
@@ -81,8 +81,6 @@ class GraphQL::Field
       const_get(method_name.upcase)
     end
   end
-
-  def method; name; end
 
   class << self
     def inherited(child_class)

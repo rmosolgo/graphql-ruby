@@ -7,7 +7,9 @@
 #   result = query.as_result
 
 class GraphQL::Query
-  attr_reader :query_string, :root, :context
+  # This is the object passed to {#initialize} as `context:`
+  attr_reader :context
+  attr_reader :query_string, :root
 
   # @param [String] query_string the string to be parsed
   # @param [Object] context an object which will be available to all nodes and fields in the schema

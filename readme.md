@@ -7,27 +7,27 @@
 [![Test Coverage](https://codeclimate.com/github/rmosolgo/graphql-ruby/badges/coverage.svg)](https://codeclimate.com/github/rmosolgo/graphql-ruby)
 ![image](https://cloud.githubusercontent.com/assets/2231765/6424458/d5fd3896-beae-11e4-892a-77e135e6bf37.png)
 
-Create a GraphQL interface by implementing _nodes_ and _connections_, then running queries.
+Create a GraphQL interface by implementing [__nodes__](#nodes) and [__calls__](#calls), then running [__queries__](#queries).
+
+API Docs: <http://rubydoc.info/gems/graphql>
 
 ## To do:
-
 
 - Allow a default connection class, or some way to infer connection from name
   - right now, `Introspection::Connection` isn't getting used, only `ApplicationConnection` is.
 - How do you express failure? HTTP response? `errors` key?
-- Handle blank objects in nested calls
+- Handle blank objects in nested calls (how? wait for spec)
 - Implement calls as arguments
 - double-check how to handle `pals.first(3) { count }`
 - Implement call argument introspection (wait for spec)
 - For fields that return objects, can they be queried _without_ other fields? Or must they always have fields?
-- __document__ (wait for spec)
 
 ## Example Implementation
 
 - See test implementation in [`/spec/support/dummy_app/nodes.rb`](https://github.com/rmosolgo/graphql/blob/master/spec/support/nodes.rb)
 - See `graphql-ruby-demo` with Rails on [github](https://github.com/rmosolgo/graphql-ruby-demo) or [heroku](http://graphql-ruby-demo.herokuapp.com/)
 
-![gql](https://cloud.githubusercontent.com/assets/2231765/6217972/5d24edda-b5ce-11e4-9e07-3548304af862.png)
+<a href="http://graphql-ruby-demo.herokuapp.com/" target="_blank"><img src="https://cloud.githubusercontent.com/assets/2231765/6217972/5d24edda-b5ce-11e4-9e07-3548304af862.png" style="max-width: 800px;"/></a>
 
 
 ## Usage
