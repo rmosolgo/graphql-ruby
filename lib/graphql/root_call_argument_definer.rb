@@ -1,3 +1,4 @@
+# Enables the {RootCall.argument} API, used internall by GraphQL
 class GraphQL::RootCallArgumentDefiner
   ARGUMENT_TYPES = [:string, :object, :number]
 

@@ -1,3 +1,4 @@
+# {Transform} is a [parslet](http://kschiess.github.io/parslet/) transform for for turning the AST into objects in {GraphQL::Syntax}.
 class GraphQL::Transform < Parslet::Transform
   # query
   rule(nodes: sequence(:n), variables: sequence(:v)) { GraphQL::Syntax::Query.new(nodes: n, variables: v)}

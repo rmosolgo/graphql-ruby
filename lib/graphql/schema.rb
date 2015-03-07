@@ -1,6 +1,6 @@
 # {GraphQL::SCHEMA} keeps track of defined nodes, fields and calls.
+#
 # Although you don't interact with it directly, it responds to queries for `schema()` and `__type__` info.
-
 class GraphQL::Schema
   include Singleton
   attr_reader :types, :calls, :fields, :class_names, :connections

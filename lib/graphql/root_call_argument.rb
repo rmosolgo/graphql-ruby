@@ -1,3 +1,4 @@
+# Created by {RootCall.argument}, used internally by GraphQL
 class GraphQL::RootCallArgument
   attr_reader :type, :name, :any_number
   def initialize(type:, name:, any_number: false)

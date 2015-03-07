@@ -19,6 +19,7 @@ module GraphQL
   autoload(:Transform,                "graphql/transform")
   autoload(:VERSION,                  "graphql/version")
 
+  # These objects are used for introspections (eg, responding to `schema()` calls).
   module Introspection
     autoload(:CallNode,             "graphql/introspection/call_node")
     autoload(:Connection,           "graphql/introspection/connection")
@@ -31,7 +32,7 @@ module GraphQL
     autoload(:TypeNode,             "graphql/introspection/type_node")
   end
 
-
+  # These objects are skinny wrappers for going from the AST to actual {Node} and {Field} instances.
   module Syntax
     autoload(:Call,       "graphql/syntax/call")
     autoload(:Field,      "graphql/syntax/field")
@@ -40,6 +41,7 @@ module GraphQL
     autoload(:Variable,   "graphql/syntax/variable")
   end
 
+  # These fields wrap Ruby data types and some GraphQL internal values.
   module Types
     autoload(:BooleanField,     "graphql/types/boolean_field")
     autoload(:ConnectionField,  "graphql/types/connection_field")
@@ -49,35 +51,41 @@ module GraphQL
     autoload(:StringField,      "graphql/types/string_field")
     autoload(:TypeField,        "graphql/types/type_field")
   end
-
+  # @abstract
+  # Base class for all errors, so you can rescue from all graphql errors at once.
   class Error < RuntimeError; end
+  # This node doesn't have a field with that name.
   class FieldNotDefinedError < Error
     def initialize(class_name, field_name)
       super("#{class_name}##{field_name} was requested, but it isn't defined. Defined fields are: #{SCHEMA.field_names}")
     end
   end
+  # There's no Node defined for that kind of object.
   class NodeNotDefinedError < Error
     def initialize(node_name)
       super("#{node_name} was requested but was not found. Defined nodes are: #{SCHEMA.type_names}")
     end
   end
+  # This node doesn't have a connection with that name.
   class  ConnectionNotDefinedError < Error
     def initialize(node_name)
       super("#{node_name} was requested but was not found. Defined connections are: #{SCHEMA.connection_names}")
     end
   end
+  # The root call of this query isn't in the schema.
   class RootCallNotDefinedError < Error
     def initialize(name)
       super("Call '#{name}' was requested but was not found. Defined calls are: #{SCHEMA.call_names}")
     end
   end
+  # The query couldn't be parsed.
   class SyntaxError < Error
     def initialize(line, col, string)
       lines = string.split("\n")
       super("Syntax Error at (#{line}, #{col}), check usage: #{string}")
     end
   end
-
+  # This root call takes different arguments.
   class RootCallArgumentError < Error
     def initialize(declaration, actual)
       super("Wrong type for #{declaration.name}: expected a #{declaration.type} but got #{actual}")
@@ -85,6 +93,7 @@ module GraphQL
   end
 
   PARSER = Parser.new
+  # This singleton contains all defined nodes and fields.
   SCHEMA = Schema.instance
   TRANSFORM = Transform.new
   # preload these so they're in SCHEMA

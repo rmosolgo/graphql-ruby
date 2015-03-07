@@ -8,7 +8,7 @@ Gem::Specification.new do |s|
   s.date        = '2015-01-30'
   s.summary     = "GraphQL"
   s.description = "A GraphQL adapter for Ruby"
-  s.homepage    = 'http://github.com/rmosolgo/graphql'
+  s.homepage    = 'http://github.com/rmosolgo/graphql-ruby'
   s.authors     = ["Robert Mosolgo"]
   s.email       = ['rdmosolgo@gmail.com']
   s.license     = "MIT"
