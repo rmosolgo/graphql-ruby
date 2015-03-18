@@ -38,8 +38,9 @@
 #   }
 #   QUERY
 class GraphQL::Field
-  attr_reader :query, :owner, :calls, :fields
-  def initialize(query: nil, owner: nil, calls: [], fields: [])
+  attr_reader :name, :query, :owner, :calls, :fields, :connection_class_name, :node_class_name
+  def initialize(name:, query: nil, owner: nil, connection_class_name: nil, node_class_name: nil,  calls: [], fields: [])
+    @name = name
     @query = query
     @owner = owner
     @calls = calls
@@ -68,47 +69,16 @@ class GraphQL::Field
     end
   end
 
-  # instance `const_get` reaches up to class namespace
-  def const_get(const_name)
-    self.class.const_get(const_name)
-  rescue
-    nil
+  def to_s
+    "<Field: #{owner}##{name}>"
   end
 
-  # delegate to class constant
-  ["name", "description"].each do |method_name|
-    define_method(method_name) do
-      const_get(method_name.upcase)
-    end
-  end
 
   class << self
     def inherited(child_class)
       GraphQL::SCHEMA.add_field(child_class)
     end
 
-    def create_class(name:, owner_class:, type:, description: nil, connection_class_name: nil, node_class_name: nil)
-      if type.is_a?(Symbol)
-        type = GraphQL::SCHEMA.get_field(type)
-      end
-
-      field_superclass = type || self
-      new_class = Class.new(field_superclass)
-      new_class.const_set :NAME, name
-      new_class.const_set :OWNER_CLASS, owner_class
-      new_class.const_set :DESCRIPTION , description
-      new_class.const_set :CONNECTION_CLASS_NAME, connection_class_name
-      new_class.const_set :NODE_CLASS_NAME, node_class_name
-      new_class
-    end
-
-    def to_s
-      if const_defined?(:NAME)
-        "<FieldClass: #{const_get(:OWNER_CLASS).name}::#{const_get(:NAME)}>"
-      else
-        super
-      end
-    end
     # @param [Symbol] type_name the name used for getting this field from the {GraphQL::SCHEMA}.
     # Defines the name used for getting fields of this type from the schema.
     # @example
@@ -136,14 +106,6 @@ class GraphQL::Field
 
     def default_schema_name
       name.split("::").last.sub(/Field$/, '').underscore
-    end
-
-    def field_name
-      const_get(:NAME)
-    end
-
-    def description
-      const_get(:DESCRIPTION)
     end
 
     def calls

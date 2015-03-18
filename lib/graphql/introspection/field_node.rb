@@ -1,19 +1,14 @@
 class GraphQL::Introspection::FieldNode < GraphQL::Node
-  exposes "GraphQL::Field"
+  exposes "GraphQL::FieldMapping"
   field.string(:name)
   field.string(:type)
-  field.string(:description)
   field.connection(:calls)
 
   def calls
-    target.calls.values
-  end
-
-  def name
-    schema_name
+    target.field_class.calls.values
   end
 
   def type
-    value_type
+    target.field_class.value_type
   end
 end

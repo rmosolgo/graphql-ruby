@@ -6,6 +6,7 @@ class GraphQL::Introspection::TypeNode < GraphQL::Node
 
   cursor :name
 
+  # they're actually {FieldMappings}
   def fields
     target.all_fields.values
   end

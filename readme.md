@@ -13,6 +13,7 @@ API Docs: <http://rubydoc.info/gems/graphql>
 
 ## To do:
 
+- Since fields aren't checked at load-time, add a runtime schema validation
 - Allow a default connection class, or some way to infer connection from name
   - right now, `Introspection::Connection` isn't getting used, only `ApplicationConnection` is.
 - How do you express failure? HTTP response? `errors` key?

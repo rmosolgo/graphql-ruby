@@ -3,19 +3,17 @@ require 'ostruct'
 
 describe GraphQL::Field do
   let(:owner) { OpenStruct.new(name: "TestOwner")}
-  let(:field) { GraphQL::Field.create_class(name: "high_fives", type: :number, owner_class: owner).new(query: {}) }
+  let(:field_class) { Class.new(GraphQL::Types::NumberField) }
+  let(:field) { field_class.new(name: "high_fives", owner: owner, query: {}) }
 
   describe '#name' do
-    it 'is present' do
-      assert_equal field.name, "high_fives"
-    end
     it 'defaults to name' do
       assert_equal "high_fives", field.name
     end
   end
 
   describe '.call' do
-    let(:content_field) { Nodes::PostNode.all_fields["content"] }
+    let(:content_field) { Nodes::PostNode.all_fields["content"].field_class }
     it 'doesnt register a call twice' do
       assert_equal 3, content_field.calls.size
       call = content_field.calls.first[1]
@@ -27,10 +25,10 @@ describe GraphQL::Field do
 
   describe '.to_s' do
     it 'includes name' do
-      assert_match(/high_fives/, field.class.to_s)
+      assert_match(/high_fives/, field.to_s)
     end
     it 'includes owner name' do
-      assert_match(/TestOwner/, field.class.to_s)
+      assert_match(/TestOwner/, field.to_s)
     end
   end
 

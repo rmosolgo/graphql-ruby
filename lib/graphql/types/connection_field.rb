@@ -1,12 +1,6 @@
 class GraphQL::Types::ConnectionField < GraphQL::Field
   type "connection"
 
-  ["connection_class_name", "node_class_name"].each do |method_name|
-    define_method(method_name) do
-      const_get(method_name.upcase)
-    end
-  end
-
   def connection_class
     if connection_class_name.present?
       Object.const_get(connection_class_name)

@@ -43,15 +43,6 @@ module Nodes
     end
   end
 
-  class LetterSelectionField < GraphQL::Types::StringField
-    call :from, ->    (prev_value, chars) { prev_value[(chars.to_i)..-1] }
-    call :for, ->     (prev_value, chars) { prev_value[0, (chars.to_i)] }
-    call :select, ->  (prev_value, from_chars, for_chars) { prev_value[from_chars.to_i, for_chars.to_i] }
-    def raw_value
-      owner.content
-    end
-  end
-
   class ApplicationConnectionField < GraphQL::Types::ConnectionField
     type :connection
     call :first, -> (prev_items, first) { prev_items.first(first.to_i) }
@@ -114,6 +105,14 @@ module Nodes
     end
   end
 
+  class LetterSelectionField < GraphQL::Types::StringField
+    call :from, ->    (prev_value, chars) { prev_value[(chars.to_i)..-1] }
+    call :for, ->     (prev_value, chars) { prev_value[0, (chars.to_i)] }
+    call :select, ->  (prev_value, from_chars, for_chars) { prev_value[from_chars.to_i, for_chars.to_i] }
+    def raw_value
+      owner.content
+    end
+  end
 
   class FindCall < GraphQL::RootCall
     abstract!

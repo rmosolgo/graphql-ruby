@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe GraphQL::Node do
-  let(:query_string) { "type(post) { name, description, fields { count, edges { node { name, description }}} }"}
+  let(:query_string) { "type(post) { name, description, fields { count, edges { node { name }}} }"}
   let(:result) { GraphQL::Query.new(query_string).as_result}
 
   describe '__type__' do
@@ -16,7 +16,7 @@ describe GraphQL::Node do
 
     it 'has fields' do
       assert_equal 8, result["post"]["fields"]["count"]
-      assert_equal({ "name" => "title", "description" => nil}, title_field)
+      assert_equal({ "name" => "title"}, title_field)
     end
 
     describe 'getting the __type__ field' do
@@ -56,12 +56,12 @@ describe GraphQL::Node do
 
     describe 'type:' do
       it 'uses symbols to find built-ins' do
-        id_field = Nodes::CommentNode.all_fields["id"]
-        assert id_field.superclass == GraphQL::Types::NumberField
+        field_mapping = Nodes::CommentNode.all_fields["id"]
+        assert_equal GraphQL::Types::NumberField, field_mapping.field_class
       end
       it 'uses the provided class as a superclass' do
         letters_field = Nodes::CommentNode.all_fields["letters"]
-        assert letters_field.superclass == Nodes::LetterSelectionField
+        assert_equal Nodes::LetterSelectionField, letters_field.field_class
       end
     end
   end

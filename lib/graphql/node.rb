@@ -117,8 +117,8 @@ class GraphQL::Node
     # Declares what field will be used as the cursor for this node.
     def cursor(field_name)
       define_method "cursor" do
-        field_class = self.class.all_fields[field_name.to_s]
-        field = field_class.new(query: query, owner: self, calls: [])
+        field_mapping = self.class.all_fields[field_name.to_s]
+        field = field_mapping.to_field(query: query, owner: self, calls: [])
         cursor = GraphQL::Types::CursorField.new(field.as_result)
         cursor.as_result
       end
@@ -151,13 +151,13 @@ class GraphQL::Node
   private
 
   def get_field(syntax_field)
-    field_class = self.class.all_fields[syntax_field.identifier]
+    field_mapping = self.class.all_fields[syntax_field.identifier]
     if syntax_field.identifier == "cursor"
       cursor
-    elsif field_class.nil?
+    elsif field_mapping.nil?
       raise GraphQL::FieldNotDefinedError.new(self.class.name, syntax_field.identifier)
     else
-      field_class.new(
+      field_mapping.to_field(
         query: query,
         owner: self,
         calls: syntax_field.calls,

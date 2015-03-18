@@ -9,6 +9,7 @@ module GraphQL
   autoload(:Connection,               "graphql/connection")
   autoload(:Field,                    "graphql/field")
   autoload(:FieldDefiner,             "graphql/field_definer")
+  autoload(:FieldMapping,             "graphql/field_mapping")
   autoload(:Node,                     "graphql/node")
   autoload(:Parser,                   "graphql/parser")
   autoload(:Query,                    "graphql/query")
