@@ -14,8 +14,6 @@ API Docs: <http://rubydoc.info/gems/graphql>
 
 ## To do:
 
-- Allow a default connection class, or some way to infer connection from name
-  - right now, `Introspection::Connection` isn't getting used, only `ApplicationConnection` is.
 - How do you express failure? HTTP response? `errors` key?
 - Handle blank objects in nested calls (how? wait for spec)
 - Implement calls as arguments

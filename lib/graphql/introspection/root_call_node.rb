@@ -2,7 +2,7 @@ class GraphQL::Introspection::RootCallNode < GraphQL::Node
   exposes "GraphQL::RootCall"
   field.string(:name)
   field.string(:returns)
-  field.connection(:arguments)
+  field.introspection_connection(:arguments)
 
 
   def returns

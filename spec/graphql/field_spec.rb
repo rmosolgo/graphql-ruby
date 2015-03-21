@@ -3,7 +3,7 @@ require 'ostruct'
 
 describe GraphQL::Field do
   let(:owner) { OpenStruct.new(name: "TestOwner")}
-  let(:field_class) { Class.new(GraphQL::Types::NumberField) }
+  let(:field_class) { Class.new(GraphQL::Fields::NumberField) }
   let(:field) { field_class.new(name: "high_fives", owner: owner, query: {}) }
 
   describe '#name' do

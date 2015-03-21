@@ -122,7 +122,7 @@ class GraphQL::Node
       define_method "cursor" do
         field_mapping = self.class.all_fields[field_name.to_s]
         field = field_mapping.to_field(query: query, owner: self, calls: [])
-        cursor = GraphQL::Types::CursorField.new(field.as_result)
+        cursor = GraphQL::Fields::CursorField.new(field.as_result)
         cursor.as_result
       end
     end

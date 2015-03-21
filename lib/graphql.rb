@@ -19,10 +19,22 @@ module GraphQL
   autoload(:Transform,                "graphql/transform")
   autoload(:VERSION,                  "graphql/version")
 
+  # These fields wrap Ruby data types and some GraphQL internal values.
+  module Fields
+    autoload(:BooleanField,     "graphql/fields/boolean_field")
+    autoload(:ConnectionField,  "graphql/fields/connection_field")
+    autoload(:CursorField,      "graphql/fields/cursor_field")
+    autoload(:NumberField,      "graphql/fields/number_field")
+    autoload(:ObjectField,      "graphql/fields/object_field")
+    autoload(:StringField,      "graphql/fields/string_field")
+    autoload(:TypeField,        "graphql/fields/type_field")
+  end
+
   # These objects are used for introspections (eg, responding to `schema()` calls).
   module Introspection
     autoload(:CallNode,             "graphql/introspection/call_node")
     autoload(:Connection,           "graphql/introspection/connection")
+    autoload(:ConnectionField,      "graphql/introspection/connection_field")
     autoload(:FieldNode,            "graphql/introspection/field_node")
     autoload(:RootCallArgumentNode, "graphql/introspection/root_call_argument_node")
     autoload(:RootCallNode,         "graphql/introspection/root_call_node")
@@ -47,16 +59,6 @@ module GraphQL
     autoload(:Variable,   "graphql/syntax/variable")
   end
 
-  # These fields wrap Ruby data types and some GraphQL internal values.
-  module Types
-    autoload(:BooleanField,     "graphql/types/boolean_field")
-    autoload(:ConnectionField,  "graphql/types/connection_field")
-    autoload(:CursorField,      "graphql/types/cursor_field")
-    autoload(:NumberField,      "graphql/types/number_field")
-    autoload(:ObjectField,      "graphql/types/object_field")
-    autoload(:StringField,      "graphql/types/string_field")
-    autoload(:TypeField,        "graphql/types/type_field")
-  end
   # @abstract
   # Base class for all errors, so you can rescue from all graphql errors at once.
   class Error < RuntimeError; end
@@ -117,7 +119,7 @@ module GraphQL
   SCHEMA = Schema::Schema.instance
   TRANSFORM = Transform.new
   # preload these so they're in SCHEMA
-  ["types", "introspection"].each do |preload_dir|
+  ["fields", "introspection"].each do |preload_dir|
     Dir["#{File.dirname(__FILE__)}/graphql/#{preload_dir}/*.rb"].each { |f| require f }
   end
   Node.field.__type__(:__type__)

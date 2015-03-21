@@ -57,7 +57,7 @@ describe GraphQL::Node do
     describe 'type:' do
       it 'uses symbols to find built-ins' do
         field_mapping = Nodes::CommentNode.all_fields["id"]
-        assert_equal GraphQL::Types::NumberField, field_mapping.field_class
+        assert_equal GraphQL::Fields::NumberField, field_mapping.field_class
       end
       it 'uses the provided class as a superclass' do
         letters_field = Nodes::CommentNode.all_fields["letters"]

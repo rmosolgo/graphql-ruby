@@ -1,4 +1,4 @@
-class GraphQL::Types::ObjectField < GraphQL::Field
+class GraphQL::Fields::ObjectField < GraphQL::Field
   type "object"
   def as_result
     node_class = GraphQL::SCHEMA.type_for_object(finished_value)

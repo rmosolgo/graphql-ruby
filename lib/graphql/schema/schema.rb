@@ -25,6 +25,7 @@ class GraphQL::Schema::Schema
 
   def add_call(call_class)
     remove_call(call_class)
+    raise "You can't make #{call_class.name}'s type '#{call_class.schema_name}'" if call_class.schema_name.blank?
     @calls[call_class.schema_name] = call_class
   end
 

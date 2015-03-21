@@ -1,9 +1,9 @@
 # {Field}s are used to safely lookup values on {Node}s. When you define a custom field, you can access it from {Node.field}
 #
 # `graphql` has built-in fields for some Ruby data types:
-# - `boolean`: {Types::BooleanField}
-# - `number`: {Types::NumberField}
-# - `string`: {Types::StringField}
+# - `boolean`: {Fields::BooleanField}
+# - `number`: {Fields::NumberField}
+# - `string`: {Fields::StringField}
 #
 # You can define custom fields that allow you to control how values are exposed.
 # - {Field.type} defines how it can be used inside {Node.field} calls.
@@ -38,8 +38,8 @@
 #   }
 #   QUERY
 class GraphQL::Field
-  attr_reader :name, :query, :owner, :calls, :fields, :connection_class_name, :node_class_name
-  def initialize(name:, query: nil, owner: nil, connection_class_name: nil, node_class_name: nil,  calls: [], fields: [])
+  attr_reader :name, :query, :owner, :calls, :fields
+  def initialize(name:, query: nil, owner: nil,  calls: [], fields: [])
     @name = name
     @query = query
     @owner = owner

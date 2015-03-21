@@ -1,4 +1,4 @@
-class GraphQL::Types::CursorField
+class GraphQL::Fields::CursorField
   def initialize(value)
     @value = value
   end

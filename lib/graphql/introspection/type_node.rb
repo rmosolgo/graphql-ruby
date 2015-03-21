@@ -2,7 +2,7 @@ class GraphQL::Introspection::TypeNode < GraphQL::Node
   exposes "GraphQL::Node"
   field.string(:name)
   field.string(:description)
-  field.connection(:fields)
+  field.introspection_connection(:fields)
 
   cursor :name
 

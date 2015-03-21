@@ -1,7 +1,7 @@
 class GraphQL::Introspection::SchemaNode < GraphQL::Node
   exposes "GraphQL::Schema::Schema"
-  field.connection(:calls)
-  field.connection(:types)
+  field.introspection_connection(:calls)
+  field.introspection_connection(:types)
 
   def cursor
     "schema"
