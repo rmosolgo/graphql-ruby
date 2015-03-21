@@ -1,7 +1,7 @@
 # Parser is a [parslet](http://kschiess.github.io/parslet/) parser for parsing queries.
 #
 # If it failes to parse, a {SyntaxError} is raised.
-class GraphQL::Parser < Parslet::Parser
+class GraphQL::Parser::Parser < Parslet::Parser
   root(:query)
   rule(:query) { node.repeat.as(:nodes) >> variable.repeat.as(:variables) }
   # node

@@ -47,14 +47,17 @@ class GraphQL::Field
     @fields = fields
   end
 
+  # The value that comes right from the owner
   def raw_value
-    owner.send(name)
+    @raw_value ||= owner.send(name)
   end
 
+  # The result inserted into the GraphQL response as JSON
   def as_result
     finished_value
   end
 
+  # The value after applying all calls
   def finished_value
     @finished_value ||= begin
       val = raw_value

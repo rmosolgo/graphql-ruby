@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe GraphQL::Parser do
+describe GraphQL::Parser::Parser do
   let(:parser) { GraphQL::PARSER }
 
   describe 'query' do

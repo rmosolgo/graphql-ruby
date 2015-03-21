@@ -11,12 +11,10 @@ module GraphQL
   autoload(:FieldDefiner,             "graphql/field_definer")
   autoload(:FieldMapping,             "graphql/field_mapping")
   autoload(:Node,                     "graphql/node")
-  autoload(:Parser,                   "graphql/parser")
   autoload(:Query,                    "graphql/query")
   autoload(:RootCall,                 "graphql/root_call")
   autoload(:RootCallArgument,         "graphql/root_call_argument")
   autoload(:RootCallArgumentDefiner,  "graphql/root_call_argument_definer")
-  autoload(:Transform,                "graphql/transform")
   autoload(:VERSION,                  "graphql/version")
 
   # These fields wrap Ruby data types and some GraphQL internal values.
@@ -42,6 +40,12 @@ module GraphQL
     autoload(:SchemaNode,           "graphql/introspection/schema_node")
     autoload(:TypeCall,             "graphql/introspection/type_call")
     autoload(:TypeNode,             "graphql/introspection/type_node")
+  end
+
+  # These objects are singletons used to parse queries
+  module Parser
+    autoload(:Parser,     "graphql/parser/parser")
+    autoload(:Transform,  "graphql/parser/transform")
   end
 
   # These objects are used to track the schema of the graph
@@ -114,10 +118,12 @@ module GraphQL
     end
   end
 
-  PARSER = Parser.new
+  # Singleton {Parser::Parser} instance
+  PARSER = Parser::Parser.new
   # This singleton contains all defined nodes and fields.
   SCHEMA = Schema::Schema.instance
-  TRANSFORM = Transform.new
+  # Singleton {Parser::Transform} instance
+  TRANSFORM = Parser::Transform.new
   # preload these so they're in SCHEMA
   ["fields", "introspection"].each do |preload_dir|
     Dir["#{File.dirname(__FILE__)}/graphql/#{preload_dir}/*.rb"].each { |f| require f }
