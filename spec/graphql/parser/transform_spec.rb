@@ -146,7 +146,6 @@ describe GraphQL::Parser::Transform do
     end
 
     describe 'fragments' do
-      focus
       it 'gets fragments' do
         tree = parser.fragment.parse(%{$frag: { id, name, $otherFrag }})
         res = transform.apply(tree)

@@ -28,24 +28,18 @@ class GraphQL::Query
     @as_result ||= execute!
   end
 
-  # @param [String] identifier
-  # returns a query variable named `identifier`, otherwise raises.
-  def get_variable(identifier)
-    syntax_var = @root.variables.find { |v| v.identifier == identifier }
-    if syntax_var.blank?
-      raise "No variable found for #{identifier}, defined variables are #{@root.variables.map(&:identifier)}"
-    end
-    syntax_var
+  # Provides access to query variables, raises an error if not found
+  # @example
+  #   query.variables["<person_data>"]
+  def variables
+    @variables ||= LookupHash.new("variable", @root.variables)
   end
 
-  # @param [String] identifier
-  # returns a query fragment named `identifier`, otherwise raises.
-  def get_fragment(identifier)
-    syntax_frag = @root.fragments.find {|f| f.identifier == identifier}
-    if syntax_frag.blank?
-      raise "No fragment found for #{identifier}, defined fragments are: #{@root.fragments.map(&:identifier)}"
-    end
-    syntax_frag
+  # Provides access to query fragments, raises an error if not found
+  # @example
+  #   query.fragments["$personData"]
+  def fragments
+    @fragments ||= LookupHash.new("fragment", @root.fragments)
   end
 
   private
@@ -92,5 +86,25 @@ class GraphQL::Query
   rescue Parslet::ParseFailed => error
     line, col = error.cause.source.line_and_column
     raise GraphQL::SyntaxError.new(line, col, query_string)
+  end
+
+  # Caches items by name, raises an error if not found
+  class LookupHash
+    attr_reader :item_name, :items
+    def initialize(item_name, items)
+      @items = items
+      @item_name = item_name
+      @storage = Hash.new do |hash, identifier|
+        value = items.find {|i| i.identifier == identifier }
+        if value.blank?
+          "No #{item_name} found for #{identifier}, defined #{item_name}s are: #{items.map(&:identifier)}"
+        end
+        hash[identifier] = value
+      end
+    end
+
+    def [](identifier)
+      @storage[identifier]
+    end
   end
 end

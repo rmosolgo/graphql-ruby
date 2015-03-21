@@ -53,7 +53,7 @@ describe GraphQL::Query do
       let(:query_string) { "post(123) { id, $publishedData } $publishedData: { published_at { month, year } }"}
 
       it 'can yield the fragment' do
-        fragment = query.get_fragment("$publishedData")
+        fragment = query.fragments["$publishedData"]
         assert_equal "$publishedData", fragment.identifier
         assert_equal 1, fragment.fields.length
       end

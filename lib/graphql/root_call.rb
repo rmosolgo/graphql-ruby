@@ -43,7 +43,7 @@ class GraphQL::RootCall
     @arguments = syntax_arguments.each_with_index.map do |syntax_arg, idx|
 
       value = if syntax_arg[0] == "<"
-          query.get_variable(syntax_arg).json_string
+          query.variables[syntax_arg].json_string
         else
           syntax_arg
         end
