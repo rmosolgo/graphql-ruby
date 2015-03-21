@@ -1,7 +1,13 @@
 # {GraphQL::SCHEMA} keeps track of defined nodes, fields and calls.
 #
 # Although you don't interact with it directly, it responds to queries for `schema()` and `__type__` info.
-class GraphQL::Schema
+#
+# You can validate it at runtime with {#validate}
+# @example
+#   # validate the schema
+#   GraphQL::SCHEMA.validate
+#
+class GraphQL::Schema::Schema
   include Singleton
   attr_reader :types, :calls, :fields, :class_names, :connections
   def initialize
@@ -10,6 +16,11 @@ class GraphQL::Schema
     @fields = {}
     @class_names = {}
     @calls = {}
+  end
+
+  def validate
+    validation = GraphQL::Schema::SchemaValidation.new
+    validation.validate(self)
   end
 
   def add_call(call_class)
@@ -38,7 +49,7 @@ class GraphQL::Schema
       @types.delete(existing_name)
     end
 
-    @class_names[node_class.ruby_class_name] = node_class
+    @class_names[node_class.exposes_class_name] = node_class
     @types[node_class.schema_name] = node_class
   end
 
@@ -90,7 +101,7 @@ class GraphQL::Schema
   end
 
   def get_field(identifier)
-    @fields[identifier.to_s] || raise(GraphQL::FieldNotDefinedError.new("<unknown>", identifier))
+    @fields[identifier.to_s] || raise(GraphQL::FieldTypeMissingError.new(identifier))
   end
 
   def field_names

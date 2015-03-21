@@ -1,5 +1,5 @@
 class GraphQL::Introspection::SchemaNode < GraphQL::Node
-  exposes "GraphQL::Schema"
+  exposes "GraphQL::Schema::Schema"
   field.connection(:calls)
   field.connection(:types)
 

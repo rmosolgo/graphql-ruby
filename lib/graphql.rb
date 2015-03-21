@@ -16,7 +16,6 @@ module GraphQL
   autoload(:RootCall,                 "graphql/root_call")
   autoload(:RootCallArgument,         "graphql/root_call_argument")
   autoload(:RootCallArgumentDefiner,  "graphql/root_call_argument_definer")
-  autoload(:Schema,                   "graphql/schema")
   autoload(:Transform,                "graphql/transform")
   autoload(:VERSION,                  "graphql/version")
 
@@ -31,6 +30,12 @@ module GraphQL
     autoload(:SchemaNode,           "graphql/introspection/schema_node")
     autoload(:TypeCall,             "graphql/introspection/type_call")
     autoload(:TypeNode,             "graphql/introspection/type_node")
+  end
+
+  # These objects are used to track the schema of the graph
+  module Schema
+    autoload(:Schema,           "graphql/schema/schema")
+    autoload(:SchemaValidation, "graphql/schema/schema_validation")
   end
 
   # These objects are skinny wrappers for going from the AST to actual {Node} and {Field} instances.
@@ -57,8 +62,22 @@ module GraphQL
   class Error < RuntimeError; end
   # This node doesn't have a field with that name.
   class FieldNotDefinedError < Error
-    def initialize(class_name, field_name)
-      super("#{class_name}##{field_name} was requested, but it isn't defined. Defined fields are: #{SCHEMA.field_names}")
+    def initialize(node_class, field_name)
+      class_name = node_class.name
+      defined_field_names = node_class.all_fields.keys
+      super("#{class_name}##{field_name} was requested, but it isn't defined. Defined fields are: #{defined_field_names}")
+    end
+  end
+  # This field type isn't in the schema.
+  class FieldTypeMissingError < Error
+    def initialize(field_type_name)
+      super("field.#{field_type_name} was requested, but it isn't defined. Defined field types are: #{SCHEMA.field_names}")
+    end
+  end
+  # The class that this node is supposed to expose isn't defined
+  class ExposesClassMissingError < Error
+    def initialize(node_class)
+      super("#{node_class.name} exposes #{node_class.exposes_class_name}, but that class wasn't found.")
     end
   end
   # There's no Node defined for that kind of object.
@@ -95,7 +114,7 @@ module GraphQL
 
   PARSER = Parser.new
   # This singleton contains all defined nodes and fields.
-  SCHEMA = Schema.instance
+  SCHEMA = Schema::Schema.instance
   TRANSFORM = Transform.new
   # preload these so they're in SCHEMA
   ["types", "introspection"].each do |preload_dir|

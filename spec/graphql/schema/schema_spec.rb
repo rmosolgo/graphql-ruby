@@ -1,10 +1,10 @@
 require 'spec_helper'
 
-describe GraphQL::Schema do
+describe GraphQL::Schema::Schema do
   let(:schema) { GraphQL::SCHEMA }
   describe 'global instance' do
     it 'exists as GraphQL::SCHEMA' do
-      assert GraphQL::SCHEMA.is_a?(GraphQL::Schema)
+      assert GraphQL::SCHEMA.is_a?(GraphQL::Schema::Schema)
     end
   end
 
@@ -29,40 +29,41 @@ describe GraphQL::Schema do
   end
 
   describe 'querying schema' do
-  let(:query_string) { "schema() {
-    calls {
-      count,
-      edges {
-        node {
-          name,
-          returns,
-          arguments {
-            edges {
-              node {
-                name, type
+    let(:query_string) { "schema() {
+      calls {
+        count,
+        edges {
+          node {
+            name,
+            returns,
+            arguments {
+              edges {
+                node {
+                  name, type
+                }
               }
             }
           }
         }
-      }
-    },
-    types {
-      count,
-      edges {
-        node {
-          name,
-          fields {
-            count,
-            edges {
-              node {
-                name,
-                type,
-                calls {
-                  count,
-                  edges {
-                    node {
-                      name,
-                      arguments
+      },
+      types {
+        count,
+        edges {
+          node {
+            name,
+            fields {
+              count,
+              edges {
+                node {
+                  name,
+                  type,
+                  calls {
+                    count,
+                    edges {
+                      node {
+                        name,
+                        arguments
+                      }
                     }
                   }
                 }
@@ -71,10 +72,9 @@ describe GraphQL::Schema do
           }
         }
       }
-    }
-  }"}
-  let(:query) { GraphQL::Query.new(query_string) }
-  let(:result) { query.as_result }
+    }"}
+    let(:query) { GraphQL::Query.new(query_string) }
+    let(:result) { query.as_result }
 
     describe 'querying calls' do
       let(:upvote_post_call) { result["schema"]["calls"]["edges"].find {|e| e["node"]["name"] == "upvote_post"} }

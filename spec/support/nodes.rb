@@ -83,6 +83,8 @@ module Nodes
     field.string :content
     field.letter_selection(:letters)
     field.object(:post)
+
+    def letters; content; end
   end
 
   # wraps a Like, for testing explicit name

@@ -65,6 +65,9 @@ class GraphQL::Node
     query.context
   end
 
+  def __type__
+    self.class
+  end
 
   class << self
     # Registers this node in {GraphQL::SCHEMA}
@@ -76,14 +79,14 @@ class GraphQL::Node
     end
 
     # @param [String] class_name name of the class this node will wrap.
-    def exposes(ruby_class_name)
-      @ruby_class_name = ruby_class_name
+    def exposes(exposes_class_name)
+      @exposes_class_name = exposes_class_name
       GraphQL::SCHEMA.add_type(self)
     end
 
     # The name of the class wrapped by this node
-    def ruby_class_name
-      @ruby_class_name
+    def exposes_class_name
+      @exposes_class_name
     end
 
     # @param [String] describe
@@ -146,6 +149,18 @@ class GraphQL::Node
     def remove_field(field_name)
       own_fields.delete(field_name.to_s)
     end
+
+    # Can the node handle a field with this name?
+    def respond_to_field?(field_name)
+      if method_defined?(field_name)
+        true
+      elsif exposes_class_name.present?
+        exposes_class = Object.const_get(exposes_class_name)
+        exposes_class.method_defined?(field_name) || exposes_class.respond_to?(field_name)
+      else
+        false
+      end
+    end
   end
 
   private
@@ -155,7 +170,7 @@ class GraphQL::Node
     if syntax_field.identifier == "cursor"
       cursor
     elsif field_mapping.nil?
-      raise GraphQL::FieldNotDefinedError.new(self.class.name, syntax_field.identifier)
+      raise GraphQL::FieldNotDefinedError.new(self.class, syntax_field.identifier)
     else
       field_mapping.to_field(
         query: query,
