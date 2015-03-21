@@ -52,6 +52,11 @@ class GraphQL::Node
         json[key_name] = clone_node.as_result
       elsif key_name == 'cursor'
         json[key_name] = cursor
+      elsif key_name[0] == "$"
+        fragment = query.get_fragment(key_name)
+        # execute the fragment and merge it into this result
+        clone_node = self.class.new(target, fields: fragment.fields, query: query)
+        json.merge!(clone_node.as_result)
       else
         field = get_field(syntax_field)
         json[key_name] = field.as_result

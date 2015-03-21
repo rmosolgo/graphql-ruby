@@ -11,7 +11,7 @@ describe GraphQL::Parser::Parser do
     it 'parses node and variables' do
       assert query.parse_with_debug(%{
         like_page(<page>) {
-          page { id }
+          $pageFragment
         }
         <page>: {
           "page": {"id": 1},
@@ -21,9 +21,14 @@ describe GraphQL::Parser::Parser do
           "page": {"id": 1},
           "person" : { "id", 4}
         }
+
+        $pageFragment: {
+          page { id }
+        }
       })
     end
   end
+
   describe 'field' do
     let(:field) { parser.field }
     it 'finds words' do
@@ -94,6 +99,10 @@ describe GraphQL::Parser::Parser do
       assert node.parse_with_debug("viewer() {id}")
     end
 
+    it 'parses query fragments' do
+      assert node.parse_with_debug("viewer() { id, $someFrag }")
+    end
+
     it 'parses nested nodes' do
       assert node.parse_with_debug("
         node(someone)
@@ -132,6 +141,26 @@ describe GraphQL::Parser::Parser do
         "nested": {
           "key" : "value"
           }
+        }
+      })
+    end
+  end
+
+  describe 'fragment' do
+    let(:fragment) { parser.fragment }
+
+    it 'gets parts of queries' do
+      assert fragment.parse_with_debug(%{ $frag: { id } })
+    end
+
+    it 'gets nested parts of queries' do
+      assert fragment.parse_with_debug(%{
+        $frag: {
+          item {
+            name,
+            price
+          },
+          $qtyFragment
         }
       })
     end

@@ -56,11 +56,12 @@ module GraphQL
 
   # These objects are skinny wrappers for going from the AST to actual {Node} and {Field} instances.
   module Syntax
-    autoload(:Call,       "graphql/syntax/call")
-    autoload(:Field,      "graphql/syntax/field")
-    autoload(:Query,      "graphql/syntax/query")
-    autoload(:Node,       "graphql/syntax/node")
-    autoload(:Variable,   "graphql/syntax/variable")
+    autoload(:Call,     "graphql/syntax/call")
+    autoload(:Field,    "graphql/syntax/field")
+    autoload(:Query,    "graphql/syntax/query")
+    autoload(:Fragment, "graphql/syntax/fragment")
+    autoload(:Node,     "graphql/syntax/node")
+    autoload(:Variable, "graphql/syntax/variable")
   end
 
   # @abstract

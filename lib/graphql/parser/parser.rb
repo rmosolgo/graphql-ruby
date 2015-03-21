@@ -3,20 +3,25 @@
 # If it failes to parse, a {SyntaxError} is raised.
 class GraphQL::Parser::Parser < Parslet::Parser
   root(:query)
-  rule(:query) { node.repeat.as(:nodes) >> variable.repeat.as(:variables) }
+  rule(:query) { node.repeat.as(:nodes) >> variable.repeat.as(:variables) >> fragment.repeat.as(:fragments) }
+
   # node
   rule(:node) { space? >> call >> space? >> fields.as(:fields) }
+
+  # fragment
+  rule(:fragment) { space? >> fragment_identifier >> str(":") >> space? >> fields.as(:fields) >> space?}
+  rule(:fragment_identifier) { (str("$") >> name).as(:identifier) }
 
   # field set
   rule(:fields) { str("{") >> space? >> (field >> separator?).repeat(1) >> space? >> str("}") >> space?}
 
-  #call
+  # call
   rule(:call) { identifier >> str("(") >> (argument.as(:argument) >> separator?).repeat(0).as(:arguments) >> str(")") }
   rule(:dot) { str(".") }
   rule(:argument) { (identifier | variable_identifier)}
 
   # field
-  rule(:field) { identifier >> call_chain.maybe >> alias_name.maybe >> space? >> fields.as(:fields).maybe }
+  rule(:field) { (identifier | fragment_identifier) >> call_chain.maybe >> alias_name.maybe >> space? >> fields.as(:fields).maybe }
   rule(:call_chain) { (dot >> call).repeat(0).as(:calls) }
   rule(:alias_name) { space >> str("as") >> space >> name.as(:alias_name) }
 

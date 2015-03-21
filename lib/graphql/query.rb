@@ -38,6 +38,16 @@ class GraphQL::Query
     syntax_var
   end
 
+  # @param [String] identifier
+  # returns a query fragment named `identifier`, otherwise raises.
+  def get_fragment(identifier)
+    syntax_frag = @root.fragments.find {|f| f.identifier == identifier}
+    if syntax_frag.blank?
+      raise "No fragment found for #{identifier}, defined fragments are: #{@root.fragments.map(&:identifier)}"
+    end
+    syntax_frag
+  end
+
   private
 
   def execute!

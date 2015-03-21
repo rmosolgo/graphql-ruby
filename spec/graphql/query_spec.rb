@@ -48,6 +48,21 @@ describe GraphQL::Query do
         end
       end
     end
+
+    describe 'when using query fragments' do
+      let(:query_string) { "post(123) { id, $publishedData } $publishedData: { published_at { month, year } }"}
+
+      it 'can yield the fragment' do
+        fragment = query.get_fragment("$publishedData")
+        assert_equal "$publishedData", fragment.identifier
+        assert_equal 1, fragment.fields.length
+      end
+
+      it 'returns literal fields and fragment fields' do
+        assert_equal(123, result["123"]['id'])
+        assert_equal({"month" => 1, "year" => 2010}, result["123"]["published_at"])
+      end
+    end
     describe 'when aliasing things' do
       let(:query_string) { "post(123) { title as headline, content as what_it_says }"}
 

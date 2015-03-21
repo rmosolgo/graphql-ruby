@@ -1,7 +1,7 @@
 # {Transform} is a [parslet](http://kschiess.github.io/parslet/) transform for for turning the AST into objects in {GraphQL::Syntax}.
 class GraphQL::Parser::Transform < Parslet::Transform
   # query
-  rule(nodes: sequence(:n), variables: sequence(:v)) { GraphQL::Syntax::Query.new(nodes: n, variables: v)}
+  rule(nodes: sequence(:n), variables: sequence(:v), fragments: sequence(:f)) { GraphQL::Syntax::Query.new(nodes: n, variables: v, fragments: f)}
   # node
   rule(identifier: simple(:i), arguments: sequence(:a), fields: sequence(:f)) {GraphQL::Syntax::Node.new(identifier: i.to_s, arguments: a, fields: f)}
   # field
@@ -17,4 +17,6 @@ class GraphQL::Parser::Transform < Parslet::Transform
   rule(identifier: simple(:i)) { i.to_s }
   # variable
   rule(identifier: simple(:i), json_string: simple(:j)) { GraphQL::Syntax::Variable.new(identifier: i.to_s, json_string: j.to_s)}
+  # fragment
+  rule(identifier: simple(:i), fields: sequence(:f)) { GraphQL::Syntax::Fragment.new(identifier: i, fields: f)}
 end

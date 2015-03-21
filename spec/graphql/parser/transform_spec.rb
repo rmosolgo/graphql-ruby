@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe GraphQL::Transform do
+describe GraphQL::Parser::Transform do
   let(:transform) { GraphQL::TRANSFORM }
   let(:parser) { GraphQL::PARSER }
 
@@ -8,7 +8,7 @@ describe GraphQL::Transform do
     describe 'query' do
       it 'parses node and variables' do
         tree = parser.query.parse(%{
-          like_page(<page_info>) { page { id, likes } }
+          like_page(<page_info>) { page { $fragment, likes } }
 
           <page_info>: {
             "page" : { "id": 4},
@@ -18,12 +18,17 @@ describe GraphQL::Transform do
             "page" : { "id": 4},
             "person" : {"id": 4}
           }
+
+          $fragment: {
+            id, name
+          }
           })
         res = transform.apply(tree)
         assert_equal 1, res.nodes.length
         assert_equal "like_page", res.nodes[0].identifier
         assert_equal ["<page_info>"], res.nodes[0].arguments
         assert_equal ["<page_info>", "<other>"], res.variables.map(&:identifier)
+        assert_equal ["$fragment"], res.fragments.map(&:identifier)
       end
     end
 
@@ -137,6 +142,16 @@ describe GraphQL::Transform do
           })
         res = transform.apply(tree)
         assert_equal "<page_info>", res.identifier
+      end
+    end
+
+    describe 'fragments' do
+      focus
+      it 'gets fragments' do
+        tree = parser.fragment.parse(%{$frag: { id, name, $otherFrag }})
+        res = transform.apply(tree)
+        assert_equal "$frag", res.identifier
+        assert_equal ["id", "name", "$otherFrag"], res.fields.map(&:identifier)
       end
     end
   end
