@@ -5,7 +5,8 @@
 [![Dependency Status](https://gemnasium.com/rmosolgo/graphql-ruby.svg)](https://gemnasium.com/rmosolgo/graphql-ruby)
 [![Code Climate](https://codeclimate.com/github/rmosolgo/graphql-ruby/badges/gpa.svg)](https://codeclimate.com/github/rmosolgo/graphql-ruby)
 [![Test Coverage](https://codeclimate.com/github/rmosolgo/graphql-ruby/badges/coverage.svg)](https://codeclimate.com/github/rmosolgo/graphql-ruby)
-![image](https://cloud.githubusercontent.com/assets/2231765/6424458/d5fd3896-beae-11e4-892a-77e135e6bf37.png)
+[![built with love](https://cloud.githubusercontent.com/assets/2231765/6766607/d07992c6-cfc9-11e4-813f-d9240714dd50.png)](http://rmosolgo.github.io/react-badges/)
+
 
 Create a GraphQL interface by implementing [__nodes__](#nodes) and [__calls__](#calls), then running [__queries__](#queries).
 
