@@ -50,6 +50,7 @@ module GraphQL
 
   # These objects are used to track the schema of the graph
   module Schema
+    autoload(:ALL,              "graphql/schema/all")
     autoload(:Schema,           "graphql/schema/schema")
     autoload(:SchemaValidation, "graphql/schema/schema_validation")
   end

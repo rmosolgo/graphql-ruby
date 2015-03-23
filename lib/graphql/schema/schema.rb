@@ -18,6 +18,11 @@ class GraphQL::Schema::Schema
     @calls = {}
   end
 
+  # Queries the whole schema and returns the result
+  def all
+    GraphQL::Query.new(GraphQL::Schema::ALL).as_result
+  end
+
   def validate
     validation = GraphQL::Schema::SchemaValidation.new
     validation.validate(self)

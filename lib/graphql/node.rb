@@ -157,7 +157,9 @@ class GraphQL::Node
 
     # Can the node handle a field with this name?
     def respond_to_field?(field_name)
-      if method_defined?(field_name)
+      if all_fields[field_name.to_s].blank?
+        false
+      elsif method_defined?(field_name)
         true
       elsif exposes_class_name.present?
         exposes_class = Object.const_get(exposes_class_name)
