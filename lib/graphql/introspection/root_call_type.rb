@@ -1,4 +1,4 @@
-class GraphQL::Introspection::RootCallNode < GraphQL::Node
+class GraphQL::Introspection::RootCallType < GraphQL::Node
   exposes "GraphQL::RootCall"
   field.string(:name)
   field.string(:returns)

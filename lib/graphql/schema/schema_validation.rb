@@ -11,27 +11,22 @@ class GraphQL::Schema::SchemaValidation
   def validate(schema)
     schema.types.each do |type_name, type_class|
 
-      if type_class.exposes_class_name.present?
-        ensure_exposes_class_exists(type_class)
+      type_class.exposes_class_names.each do |exposes_class_name|
+        begin
+          Object.const_get(exposes_class_name)
+        rescue NameError
+          raise GraphQL::ExposesClassMissingError.new(type_class)
+        end
       end
 
       type_class.all_fields.each do |field_name, field_mapping|
-        # Make sure it's in the schema:
-        schema.get_field(field_mapping.type)
-
+        # Make sure the type exists
+        field_mapping.type_class
         # Make sure the node can handle it
         if !type_class.respond_to_field?(field_mapping.name)
           raise GraphQL::FieldNotDefinedError.new(type_class, field_mapping.name)
         end
       end
     end
-  end
-
-  private
-
-  def ensure_exposes_class_exists(type_class)
-    Object.const_get(type_class.exposes_class_name)
-  rescue NameError
-    raise GraphQL::ExposesClassMissingError.new(type_class)
   end
 end

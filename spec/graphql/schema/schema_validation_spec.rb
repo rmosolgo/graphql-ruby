@@ -29,7 +29,7 @@ describe GraphQL::Schema::SchemaValidation do
     end
 
     it 'raises an error' do
-      assert_raises(GraphQL::FieldTypeMissingError) { schema.validate }
+      assert_raises(GraphQL::NodeNotDefinedError) { schema.validate }
     end
   end
 

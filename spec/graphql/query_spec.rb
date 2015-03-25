@@ -83,6 +83,7 @@ describe GraphQL::Query do
 
     describe 'when accessing custom fields' do
       let(:query_string) { "comment(444) { letters }"}
+
       it 'uses the custom field' do
         assert_equal "I agree", result["444"]["letters"]
       end
@@ -153,13 +154,13 @@ describe GraphQL::Query do
       let(:query_string) { "post(123) { comments.first(1) { edges { cursor, node { content } } } }"}
 
       it 'executes those calls' do
-        assert_equal result, {
-            "123" => {
-              "comments" => {
-                "edges" => [
-                  { "cursor" => "444", "node" => { "content" => "I agree"} }
-                ]
-            }}}
+        expected_result = { "123" => {
+          "comments" => {
+            "edges" => [
+              { "cursor" => "444", "node" => { "content" => "I agree"} }
+            ]
+        }}}
+        assert_equal(expected_result, result)
       end
     end
 
@@ -209,6 +210,7 @@ describe GraphQL::Query do
 
   describe 'when requesting fields on a related object' do
     let(:query_string) { "comment(444) { post { title } }"}
+
     it 'finds fields on that object' do
       assert_equal "My great post", result["444"]["post"]["title"]
     end
@@ -219,7 +221,7 @@ describe GraphQL::Query do
       end
 
       it 'blows_up' do # what _should_ this do?
-        assert_raises(RuntimeError) { result }
+        assert_raises(NoMethodError) { result }
       end
     end
   end

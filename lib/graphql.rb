@@ -2,14 +2,12 @@ require "active_support/core_ext/object/blank"
 require "active_support/core_ext/string/inflections"
 require "json"
 require "parslet"
-require "singleton"
 
 module GraphQL
   autoload(:Call,                     "graphql/call")
   autoload(:Connection,               "graphql/connection")
-  autoload(:Field,                    "graphql/field")
   autoload(:FieldDefiner,             "graphql/field_definer")
-  autoload(:FieldMapping,             "graphql/field_mapping")
+  autoload(:Field,                    "graphql/field")
   autoload(:Node,                     "graphql/node")
   autoload(:Query,                    "graphql/query")
   autoload(:RootCall,                 "graphql/root_call")
@@ -17,29 +15,17 @@ module GraphQL
   autoload(:RootCallArgumentDefiner,  "graphql/root_call_argument_definer")
   autoload(:VERSION,                  "graphql/version")
 
-  # These fields wrap Ruby data types and some GraphQL internal values.
-  module Fields
-    autoload(:BooleanField,     "graphql/fields/boolean_field")
-    autoload(:ConnectionField,  "graphql/fields/connection_field")
-    autoload(:CursorField,      "graphql/fields/cursor_field")
-    autoload(:NumberField,      "graphql/fields/number_field")
-    autoload(:ObjectField,      "graphql/fields/object_field")
-    autoload(:StringField,      "graphql/fields/string_field")
-    autoload(:TypeField,        "graphql/fields/type_field")
-  end
-
   # These objects are used for introspections (eg, responding to `schema()` calls).
   module Introspection
-    autoload(:CallNode,             "graphql/introspection/call_node")
+    autoload(:CallType,             "graphql/introspection/call_type")
     autoload(:Connection,           "graphql/introspection/connection")
-    autoload(:ConnectionField,      "graphql/introspection/connection_field")
-    autoload(:FieldNode,            "graphql/introspection/field_node")
+    autoload(:FieldType,            "graphql/introspection/field_type")
     autoload(:RootCallArgumentNode, "graphql/introspection/root_call_argument_node")
-    autoload(:RootCallNode,         "graphql/introspection/root_call_node")
+    autoload(:RootCallType,         "graphql/introspection/root_call_type")
     autoload(:SchemaCall,           "graphql/introspection/schema_call")
-    autoload(:SchemaNode,           "graphql/introspection/schema_node")
+    autoload(:SchemaType,           "graphql/introspection/schema_type")
     autoload(:TypeCall,             "graphql/introspection/type_call")
-    autoload(:TypeNode,             "graphql/introspection/type_node")
+    autoload(:TypeType,             "graphql/introspection/type_type")
   end
 
   # These objects are singletons used to parse queries
@@ -65,6 +51,13 @@ module GraphQL
     autoload(:Variable, "graphql/syntax/variable")
   end
 
+  # These objects expose values
+  module Types
+    autoload(:BooleanType, "graphql/types/boolean_type")
+    autoload(:ObjectType, "graphql/types/object_type")
+    autoload(:StringType, "graphql/types/string_type")
+    autoload(:NumberType, "graphql/types/number_type")
+  end
   # @abstract
   # Base class for all errors, so you can rescue from all graphql errors at once.
   class Error < RuntimeError; end
@@ -76,16 +69,10 @@ module GraphQL
       super("#{class_name}##{field_name} was requested, but it isn't defined. Defined fields are: #{defined_field_names}")
     end
   end
-  # This field type isn't in the schema.
-  class FieldTypeMissingError < Error
-    def initialize(field_type_name)
-      super("field.#{field_type_name} was requested, but it isn't defined. Defined field types are: #{SCHEMA.field_names}")
-    end
-  end
   # The class that this node is supposed to expose isn't defined
   class ExposesClassMissingError < Error
     def initialize(node_class)
-      super("#{node_class.name} exposes #{node_class.exposes_class_name}, but that class wasn't found.")
+      super("#{node_class.name} exposes #{node_class.exposes_class_names.join(", ")}, but that class wasn't found.")
     end
   end
   # There's no Node defined for that kind of object.
@@ -127,7 +114,7 @@ module GraphQL
   # Singleton {Parser::Transform} instance
   TRANSFORM = Parser::Transform.new
   # preload these so they're in SCHEMA
-  ["fields", "introspection"].each do |preload_dir|
+  ["introspection", "types"].each do |preload_dir|
     Dir["#{File.dirname(__FILE__)}/graphql/#{preload_dir}/*.rb"].each { |f| require f }
   end
   Node.field.__type__(:__type__)

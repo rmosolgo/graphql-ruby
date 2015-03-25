@@ -14,21 +14,26 @@ module Nodes
     end
   end
 
+
   class ApplicationConnection < GraphQL::Connection
-    default_connection!
+    type :connection
+    call :first, -> (prev_items, first) { prev_items.first(first.to_i) }
+    call :after, -> (prev_items, after) { prev_items.select {|i| i.id > after.to_i } }
+
     field.number(:count)
     field.boolean(:any)
 
     def count
-      items.count
+      target.count
     end
 
     def any
-      items.any?
+      target.any?
     end
   end
 
   class CommentsConnection < ApplicationConnection
+    type :comments
     field.number :viewer_name_length
     field.number :average_rating
 
@@ -38,23 +43,15 @@ module Nodes
     end
 
     def average_rating
-      total_rating = items.map(&:rating).inject(&:+).to_f
-      total_rating / items.size
+      total_rating = target.map(&:rating).inject(&:+).to_f
+      total_rating / target.size
     end
   end
 
-  class ApplicationConnectionField < GraphQL::Fields::ConnectionField
-    type :connection
-    call :first, -> (prev_items, first) { prev_items.first(first.to_i) }
-    call :after, -> (prev_items, after) { prev_items.select {|i| i.id > after.to_i } }
-  end
-
-  class DateField < GraphQL::Fields::ObjectField
-    type :date
-    call :minus_days, -> (prev_value, minus_days) { prev_value - minus_days.to_i }
-  end
 
   class DateNode < GraphQL::Node
+    type :date
+    call :minus_days, -> (prev_value, minus_days) { prev_value - minus_days.to_i }
     exposes "Date"
     field.number(:year)
     field.number(:month)
@@ -68,7 +65,7 @@ module Nodes
     field.string(:title)
     field.letter_selection(:content)
     field.number(:length)
-    field.connection(:comments)
+    field.comments(:comments)
     field.date(:published_at)
     field.connection(:likes)
 
@@ -80,9 +77,9 @@ module Nodes
   class CommentNode < ApplicationNode
     node_for Comment
     exposes "Comment"
-    field.string :content
+    field.string(:content)
     field.letter_selection(:letters)
-    field.object(:post)
+    field.post(:post)
 
     def letters; content; end
   end
@@ -107,12 +104,13 @@ module Nodes
     end
   end
 
-  class LetterSelectionField < GraphQL::Fields::StringField
+  class LetterSelectionType < GraphQL::Node
+    type :letter_selection
     call :from, ->    (prev_value, chars) { prev_value[(chars.to_i)..-1] }
     call :for, ->     (prev_value, chars) { prev_value[0, (chars.to_i)] }
     call :select, ->  (prev_value, from_chars, for_chars) { prev_value[from_chars.to_i, for_chars.to_i] }
-    def raw_value
-      owner.content
+    def as_result
+      apply_calls(target)
     end
   end
 

@@ -59,9 +59,12 @@ describe GraphQL::Schema::Schema do
       let(:post_type) { result["schema"]["types"]["edges"].find { |e| e["node"]["name"] == "post" }["node"]}
       let(:content_field) { post_type["fields"]["edges"].find { |e| e["node"]["name"] == "content" }["node"]}
       let(:select_call) { content_field["calls"]["edges"].find { |e| e["node"]["name"] == "select"}["node"]}
+      let(:type_names) { result["schema"]["types"]["edges"].map {|t| t["node"]["name"] }}
 
       it 'returns all types' do
-        assert_equal 13, result["schema"]["types"]["count"]
+        types_count = 19
+        assert_equal types_count, result["schema"]["types"]["count"]
+        assert_equal types_count, type_names.length
       end
 
       it 'doesnt return types that dont expose anything' do
@@ -74,8 +77,13 @@ describe GraphQL::Schema::Schema do
         assert_equal 8, post_type["fields"]["count"]
       end
 
+      it 'has custom types' do
+        assert type_names.include?("letter_selection")
+        assert_equal "letter_selection", content_field["type"]
+      end
+
       it 'shows field type & calls' do
-        assert_equal "string", content_field["type"]
+        assert_equal "letter_selection", content_field["type"]
         assert_equal 3, content_field["calls"]["count"]
         assert_equal "select", select_call["name"]
         assert_equal "from_chars (req), for_chars (req)", select_call["arguments"]

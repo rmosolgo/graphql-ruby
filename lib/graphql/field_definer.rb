@@ -16,7 +16,7 @@ class GraphQL::FieldDefiner
 
   def map_field(field_name, type: nil, description: nil)
     field_name = field_name.to_s
-    mapping = GraphQL::FieldMapping.new(
+    mapping = GraphQL::Field.new(
       name: field_name,
       type: type,
     )

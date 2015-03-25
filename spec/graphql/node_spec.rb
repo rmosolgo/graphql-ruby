@@ -1,11 +1,12 @@
 require 'spec_helper'
 
 describe GraphQL::Node do
-  let(:query_string) { "type(post) { name, description, fields { count, edges { node { name }}} }"}
+  let(:query_string) { "type(post) { name, description, fields { count, edges { node { name, type }}} }"}
   let(:result) { GraphQL::Query.new(query_string).as_result}
 
   describe '__type__' do
     let(:title_field) { result["post"]["fields"]["edges"].find {|e| e["node"]["name"] == "title"}["node"] }
+
     it 'has name' do
       assert_equal "post", result["post"]["name"]
     end
@@ -16,7 +17,7 @@ describe GraphQL::Node do
 
     it 'has fields' do
       assert_equal 8, result["post"]["fields"]["count"]
-      assert_equal({ "name" => "title"}, title_field)
+      assert_equal({ "name" => "title", "type" => "string"}, title_field)
     end
 
     describe 'getting the __type__ field' do
@@ -57,11 +58,11 @@ describe GraphQL::Node do
     describe 'type:' do
       it 'uses symbols to find built-ins' do
         field_mapping = Nodes::CommentNode.all_fields["id"]
-        assert_equal GraphQL::Fields::NumberField, field_mapping.field_class
+        assert_equal GraphQL::Types::NumberType, field_mapping.type_class
       end
       it 'uses the provided class as a superclass' do
         letters_field = Nodes::CommentNode.all_fields["letters"]
-        assert_equal Nodes::LetterSelectionField, letters_field.field_class
+        assert_equal Nodes::LetterSelectionType, letters_field.type_class
       end
     end
   end

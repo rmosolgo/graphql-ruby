@@ -7,13 +7,14 @@
 #   # validate the schema
 #   GraphQL::SCHEMA.validate
 #
+require "singleton"
+
 class GraphQL::Schema::Schema
   include Singleton
   attr_reader :types, :calls, :fields, :class_names, :connections
   def initialize
     @types = {}
     @connections = {}
-    @fields = {}
     @class_names = {}
     @calls = {}
   end
@@ -55,7 +56,10 @@ class GraphQL::Schema::Schema
       @types.delete(existing_name)
     end
 
-    @class_names[node_class.exposes_class_name] = node_class
+    node_class.exposes_class_names.each do |exposes_class_name|
+      @class_names[exposes_class_name] = node_class
+    end
+
     @types[node_class.schema_name] = node_class
   end
 
@@ -64,7 +68,7 @@ class GraphQL::Schema::Schema
   end
 
   def type_names
-    @types.keys
+    @types.keys.sort
   end
 
   def type_for_object(app_object)
@@ -79,7 +83,7 @@ class GraphQL::Schema::Schema
         return @class_names[class_name]
       end
     end
-    raise "Couldn't find node for class #{app_class} #{app_object} (ancestors: #{app_class.ancestors.map(&:name)}, defined: #{registered_class_names})"
+    raise "Couldn't find node for class #{app_class} \"#{app_object}\" (ancestors: #{app_class.ancestors.map(&:name)}, defined: #{registered_class_names})"
   end
 
   def add_connection(node_class)
@@ -96,21 +100,5 @@ class GraphQL::Schema::Schema
 
   def connection_names
     @connections.keys
-  end
-
-  def add_field(field_class)
-    existing_name = @fields.key(field_class)
-    if existing_name
-      @fields.delete(existing_name)
-    end
-    @fields[field_class.schema_name.to_s] = field_class
-  end
-
-  def get_field(identifier)
-    @fields[identifier.to_s] || raise(GraphQL::FieldTypeMissingError.new(identifier))
-  end
-
-  def field_names
-    @fields.keys
   end
 end

@@ -1,4 +1,4 @@
-class GraphQL::Introspection::CallNode < GraphQL::Node
+class GraphQL::Introspection::CallType < GraphQL::Node
   exposes "GraphQL::Call"
   field.string(:name)
   field.string(:arguments)
