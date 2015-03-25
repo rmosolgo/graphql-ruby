@@ -48,11 +48,10 @@ module Nodes
     end
   end
 
-
-  class DateNode < GraphQL::Node
+  class DateType < GraphQL::Node
+    exposes "Date"
     type :date
     call :minus_days, -> (prev_value, minus_days) { prev_value - minus_days.to_i }
-    exposes "Date"
     field.number(:year)
     field.number(:month)
   end
@@ -98,9 +97,14 @@ module Nodes
   class ContextNode < GraphQL::Node
     exposes "Context"
     field.string(:person_name)
+    field.boolean(:present)
 
     def cursor
       "context"
+    end
+
+    def present
+      true
     end
   end
 

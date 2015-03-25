@@ -19,7 +19,6 @@ API Docs: <http://rubydoc.info/gems/graphql>
 - Implement calls as arguments
 - double-check how to handle `pals.first(3) { count }`
 - Implement call argument introspection (wait for spec)
-- For fields that return objects, can they be queried _without_ other fields? Or must they always have fields?
 
 ## Example Implementation
 
@@ -47,7 +46,8 @@ class FishNode < GraphQL::Node
   field.number(:id)
   field.string(:name)
   field.string(:species)
-  field.object(:aquarium)
+  # specify an `AquariumNode`:
+  field.aquarium(:aquarium)
 end
 ```
 
@@ -61,6 +61,48 @@ class AquariumNode < GraphQL::Node
   field.number(:occupancy)
   field.connection(:fishes)
 end
+```
+
+You can make custom connections:
+
+```ruby
+class FishSchoolConnection < GraphQL::Connection
+  type :fish_school # now it is a field type
+  call :largest, -> (prev_value, number)  { fishes.sort_by(&:weight).first(number.to_i) }
+
+  field.number(:count) # delegated to `target`
+  field.boolean(:has_more)
+
+  def has_more
+    # the `largest()` call may have removed some items:
+    target.count < original_target.count
+  end
+end
+```
+
+Then use them:
+
+```ruby
+class AquariumNode < GraphQL::Node
+  field.fish_school(:fishes)
+end
+```
+
+And in queries:
+
+```
+aquarium(1) {
+  name,
+  occupancy,
+  fishes.largest(3) {
+      edges {
+        node { name, species }
+      },
+      count,
+      has_more
+    }
+  }
+}
 ```
 
 ### Calls

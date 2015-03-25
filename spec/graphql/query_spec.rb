@@ -124,8 +124,9 @@ describe GraphQL::Query do
     end
 
     describe 'when the root call doesnt have an argument' do
-      let(:query_string) { "context() { person_name }"}
+      let(:query_string) { "context() { person_name, present }"}
       it 'calls the node with no arguments' do
+        assert_equal true, result["context"]["present"]
         assert_equal "Han Solo", result["context"]["person_name"]
       end
     end

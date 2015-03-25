@@ -5,8 +5,9 @@
 # - Extend `GraphQL::Node`
 # - Declare what this node will wrap with {.exposes}
 # - Declare fields with {.field}
+# - Declare calls with {.call}
 #
-# @example
+# @example Expose a class in your app
 #   class PostNode < GraphQL::Node
 #     exposes('Post')
 #
@@ -18,7 +19,19 @@
 #     field.connection(:comments)
 #   end
 #
-
+# @example Expose a data type
+#   class DateType < GraphQL::Node
+#     exposes "Date"
+#     type :date
+#     call :minus_days, -> (prev_value, minus_days) { prev_value - minus_days.to_i }
+#     field.number(:year)
+#     field.number(:month)
+#   end
+#
+#   # now you could use it
+#   class PostNode
+#     field.date(:published_at)
+#   end
 class GraphQL::Node
   # The object wrapped by this `Node`, _before_ calls are applied
   attr_reader :original_target
@@ -188,16 +201,16 @@ class GraphQL::Node
     end
 
     def calls
-      superclass.calls.merge(_calls)
+      superclass.calls.merge(own_calls)
     rescue NoMethodError
       {}
     end
     # @param [String] name the identifier for this call
     # @param [lambda] operation the transformation this call makes
     #
-    # Define a call that can be made on this field.
+    # Define a call that can be made on nodes of this type.
     # The `lambda` receives arguments:
-    # - 1: `previous_value` -- the value of this field
+    # - 1: `previous_value` -- the value of this node
     # - *: arguments passed in the query (as strings)
     #
     # @example
@@ -208,11 +221,11 @@ class GraphQL::Node
     #   call :greater_than, -> (prev_value, test_value) { prev_value > test_value.to_f }
     #   # (`test_value` is passed in as a string)
     def call(name, lambda)
-      _calls[name.to_s] = GraphQL::Call.new(name: name.to_s, lambda: lambda)
+      own_calls[name.to_s] = GraphQL::Call.new(name: name.to_s, lambda: lambda)
     end
 
-    def _calls
-      @calls ||= {}
+    def own_calls
+      @own_calls ||= {}
     end
   end
 

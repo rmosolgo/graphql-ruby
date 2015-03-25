@@ -11,10 +11,9 @@ require "singleton"
 
 class GraphQL::Schema::Schema
   include Singleton
-  attr_reader :types, :calls, :fields, :class_names, :connections
+  attr_reader :types, :calls, :class_names
   def initialize
     @types = {}
-    @connections = {}
     @class_names = {}
     @calls = {}
   end
@@ -84,21 +83,5 @@ class GraphQL::Schema::Schema
       end
     end
     raise "Couldn't find node for class #{app_class} \"#{app_object}\" (ancestors: #{app_class.ancestors.map(&:name)}, defined: #{registered_class_names})"
-  end
-
-  def add_connection(node_class)
-    existing_name = @connections.key(node_class)
-    if existing_name
-      @connections.delete(existing_name)
-    end
-    @connections[node_class.schema_name.to_s] = node_class
-  end
-
-  def get_connection(identifier)
-    @connections[identifier] || GraphQL::Connection.default_connection || raise(GraphQL::ConnectionNotDefinedError.new(identifier))
-  end
-
-  def connection_names
-    @connections.keys
   end
 end
