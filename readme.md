@@ -25,7 +25,7 @@ API Docs: <http://rubydoc.info/gems/graphql>
 - See test implementation in [`/spec/support/dummy_app/nodes.rb`](https://github.com/rmosolgo/graphql/blob/master/spec/support/nodes.rb)
 - See `graphql-ruby-demo` with Rails on [github](https://github.com/rmosolgo/graphql-ruby-demo) or [heroku](http://graphql-ruby-demo.herokuapp.com/)
 
-<a href="http://graphql-ruby-demo.herokuapp.com/" target="_blank"><img src="https://cloud.githubusercontent.com/assets/2231765/6217972/5d24edda-b5ce-11e4-9e07-3548304af862.png" style="max-width: 800px;"/></a>
+<a href="http://graphql-ruby-demo.herokuapp.com/" target="_blank"><img src="https://cloud.githubusercontent.com/assets/2231765/6839956/c62c1fca-d32d-11e4-9e54-ec6743d3e4b5.png" style="max-width: 800px;"/></a>
 
 
 ## Usage
