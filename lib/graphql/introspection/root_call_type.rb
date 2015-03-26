@@ -13,4 +13,8 @@ class GraphQL::Introspection::RootCallType < GraphQL::Node
   def name
     schema_name
   end
+
+  def arguments
+    target.arguments.values
+  end
 end

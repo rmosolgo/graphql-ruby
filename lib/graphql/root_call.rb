@@ -139,14 +139,34 @@ class GraphQL::RootCall
     end
 
     def own_arguments
-      @argument && @argument.arguments
+      @own_arguments ||= {}
     end
 
     def arguments
-      own = own_arguments || []
-      own + superclass.arguments
+      superclass.arguments.merge(own_arguments)
     rescue NoMethodError
-      own
+      {}
+    end
+
+    def add_argument(argument)
+      existing_argument = arguments[argument.name]
+      if existing_argument.blank?
+        # only assign an index if this variable wasn't already defined
+        argument.index = arguments.keys.length
+      else
+        # use the same index as the already-defined one
+        argument.index = existing_argument.index
+      end
+
+      own_arguments[argument.name] = argument
+    end
+
+    def argument_at_index(idx)
+      if arguments.values.first.any_number
+        arguments.values.first
+      else
+        arguments.values.find { |arg| arg.index == idx } || raise("No argument found for #{name} at index #{JSON.dump(idx)} (argument indexes: #{arguments.values.map(&:index)})")
+      end
     end
   end
 
@@ -158,16 +178,9 @@ class GraphQL::RootCall
     "string" => String,
   }
 
-  def argument_for_index(idx)
-    if self.class.arguments.first.any_number
-      self.class.arguments.first
-    else
-      self.class.arguments[idx]
-    end
-  end
 
   def typecast(idx, value)
-    arg_dec = argument_for_index(idx)
+    arg_dec = self.class.argument_at_index(idx)
     expected_type = arg_dec.type
     expected_type_class = TYPE_CHECKS[expected_type]
 

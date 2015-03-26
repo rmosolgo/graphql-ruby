@@ -48,8 +48,22 @@ describe GraphQL::RootCall do
     end
   end
 
+  describe '.argument' do
+    it 'is reload-safe' do
+      assert_equal 2, Nodes::LikePostCall.arguments.length, "it starts with 1"
+      assert_equal "person_id", Nodes::LikePostCall.argument_at_index(1).name
+      assert_raises(RuntimeError, 'it raises before') { Nodes::LikePostCall.argument_at_index(2) }
+
+      Nodes::LikePostCall.argument.number("person_id")
+
+      assert_equal 2, Nodes::LikePostCall.arguments.length, "it stays at 1"
+      assert_equal "person_id", Nodes::LikePostCall.argument_at_index(1).name
+      assert_raises(RuntimeError, 'it raises after') { Nodes::LikePostCall.argument_at_index(2) }
+    end
+  end
+
   describe '#__type__' do
-    it 'describes the input'
+    it 'describes the arguments'
     it 'describes the response'
   end
 end
