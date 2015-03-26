@@ -14,6 +14,8 @@ API Docs: <http://rubydoc.info/gems/graphql>
 
 ## To do:
 
+- add testing examples
+- add owner info for debugging
 - How do you express failure? HTTP response? `errors` key?
 - Handle blank objects in nested calls (how? wait for spec)
 - Implement calls as arguments
