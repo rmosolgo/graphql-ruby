@@ -46,8 +46,7 @@ class GraphQL::Query
 
   def execute!
     root_syntax_node = root.nodes[0]
-    root_call_identifier = root_syntax_node.identifier
-    root_call_class = GraphQL::SCHEMA.get_call(root_call_identifier)
+    root_call_class = GraphQL::SCHEMA.get_call(root_syntax_node.identifier)
     root_call = root_call_class.new(query: self, syntax_arguments: root_syntax_node.arguments)
     result_object = root_call.as_result
     return_declarations = root_call_class.return_declarations
