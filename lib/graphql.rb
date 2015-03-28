@@ -13,6 +13,8 @@ module GraphQL
   autoload(:RootCall,                 "graphql/root_call")
   autoload(:RootCallArgument,         "graphql/root_call_argument")
   autoload(:RootCallArgumentDefiner,  "graphql/root_call_argument_definer")
+  autoload(:TestCallChain,            "graphql/testing/test_call_chain")
+  autoload(:TestNode,                 "graphql/testing/test_node")
   autoload(:VERSION,                  "graphql/version")
 
   # These objects are used for introspections (eg, responding to `schema()` calls).
@@ -115,7 +117,18 @@ module GraphQL
   TRANSFORM = Parser::Transform.new
   # preload these so they're in SCHEMA
   ["introspection", "types"].each do |preload_dir|
-    Dir["#{File.dirname(__FILE__)}/graphql/#{preload_dir}/*.rb"].each { |f| require f }
+    full_dir = File.expand_path("../graphql/#{preload_dir}/*.rb", __FILE__)
+    Dir.glob(full_dir).each { |f| require f }
   end
+  # work around some dependency issue:
   Node.field.__type__(:__type__)
+
+  def self.parse(as, string)
+    parser = GraphQL::PARSER.public_send(as)
+    tree = parser.parse(string)
+    GraphQL::TRANSFORM.apply(tree)
+  rescue Parslet::ParseFailed => error
+    line, col = error.cause.source.line_and_column
+    raise GraphQL::SyntaxError.new(line, col, string)
+  end
 end

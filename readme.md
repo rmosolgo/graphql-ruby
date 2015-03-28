@@ -14,8 +14,10 @@ API Docs: <http://rubydoc.info/gems/graphql>
 
 ## To do:
 
-- add testing examples
-- add owner info for debugging
+- testing with JSON args
+- Make root calls plain ol' calls, on the root?
+- Make fields like calls with no args?
+- improve debugging experience
 - How do you express failure? HTTP response? `errors` key?
 - Handle blank objects in nested calls (how? wait for spec)
 - Implement calls as arguments

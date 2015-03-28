@@ -48,7 +48,7 @@ module Nodes
     end
   end
 
-  class DateType < GraphQL::Node
+  class DateNode < GraphQL::Node
     exposes "Date"
     type :date
     call :minus_days, -> (prev_value, minus_days) { prev_value - minus_days.to_i }
@@ -81,6 +81,13 @@ module Nodes
     field.post(:post)
 
     def letters; content; end
+  end
+
+  class AlbumNode < ApplicationNode
+    node_for Post::Album
+    exposes("Post::Album")
+    field.comments
+    field.post
   end
 
   # wraps a Like, for testing explicit name

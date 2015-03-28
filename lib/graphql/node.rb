@@ -68,7 +68,7 @@ class GraphQL::Node
         if key_name == 'node'
           clone_node = self.class.new(target, fields: syntax_field.fields, query: query, calls: syntax_field.calls)
           json[key_name] = clone_node.as_result
-        elsif key_name == 'cursor'
+        elsif key_name == "cursor"
           json[key_name] = cursor
         elsif key_name[0] == "$"
           fragment = query.fragments[key_name]
@@ -76,9 +76,7 @@ class GraphQL::Node
           clone_node = self.class.new(target, fields: fragment.fields, query: query, calls: @calls)
           json.merge!(clone_node.as_result)
         else
-          field = get_field(syntax_field)
-          new_target = public_send(field.name)
-          new_node = field.type_class.new(new_target, fields: syntax_field.fields, query: query, calls: syntax_field.calls)
+          new_node = value_for_field(syntax_field)
           json[key_name] = new_node.as_result
         end
       end
@@ -105,12 +103,21 @@ class GraphQL::Node
       @calls.each do |call|
         registered_call = self.class.calls[call.identifier]
         if registered_call.nil?
-          raise "Call not found: #{self.class.name}##{call.identifier}"
+          raise GraphQL::CallNotDefinedError.new(self.class, call.identifier)
         end
         val = registered_call.lambda.call(val, *call.arguments)
       end
       val
     end
+  end
+
+  def value_for_field(syntax_field)
+    field_mapping = self.class.all_fields[syntax_field.identifier]
+    if field_mapping.nil?
+      raise GraphQL::FieldNotDefinedError.new(self.class, syntax_field.identifier)
+    end
+    new_target = public_send(field_mapping.name)
+    field_mapping.type_class.new(new_target, fields: syntax_field.fields, query: query, calls: syntax_field.calls)
   end
 
   class << self
@@ -157,7 +164,7 @@ class GraphQL::Node
     def cursor(field_name)
       define_method "cursor" do
         field_mapping = self.class.all_fields[field_name.to_s]
-        public_send(field_mapping.name).to_s
+        cursor_value = public_send(field_mapping.name).to_s
       end
     end
 
@@ -227,18 +234,15 @@ class GraphQL::Node
     def own_calls
       @own_calls ||= {}
     end
-  end
 
-  private
-
-  def get_field(syntax_field)
-    field_mapping = self.class.all_fields[syntax_field.identifier]
-    if syntax_field.identifier == "cursor"
-      cursor
-    elsif field_mapping.nil?
-      raise GraphQL::FieldNotDefinedError.new(self.class, syntax_field.identifier)
-    else
-      field_mapping
+    # @return [TestNode] a {TestNode} wrapping the given target
+    # @param target [Object] the object exposed by the {TestNode}. Not necessarily an instance of {Node.exposes}, you could pass a mock here.
+    # @option fields [Array, String] Whitelist fields which can be accessed on this {TestNode} and show up in {TestNode#as_result}. (Otherwise, any field may be accessed)
+    # @option calls [Array, String] Calls to apply when making this {TestNode}.
+    #
+    # Returns a {TestNode}, which is suitable for testing this class. See {TestNode} for examples of testing.
+    def test(target, fields: [], calls: [])
+      GraphQL::TestNode.new(target: target, node_class: self, fields: fields, calls: calls)
     end
   end
 end
