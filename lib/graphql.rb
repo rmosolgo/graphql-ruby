@@ -60,54 +60,17 @@ module GraphQL
     autoload(:StringType, "graphql/types/string_type")
     autoload(:NumberType, "graphql/types/number_type")
   end
+
   # @abstract
   # Base class for all errors, so you can rescue from all graphql errors at once.
   class Error < RuntimeError; end
-  # This node doesn't have a field with that name.
-  class FieldNotDefinedError < Error
-    def initialize(node_class, field_name)
-      class_name = node_class.name
-      defined_field_names = node_class.all_fields.keys
-      super("#{class_name}##{field_name} was requested, but it isn't defined. Defined fields are: #{defined_field_names}")
-    end
-  end
-  # The class that this node is supposed to expose isn't defined
-  class ExposesClassMissingError < Error
-    def initialize(node_class)
-      super("#{node_class.name} exposes #{node_class.exposes_class_names.join(", ")}, but that class wasn't found.")
-    end
-  end
-  # There's no Node defined for that kind of object.
-  class NodeNotDefinedError < Error
-    def initialize(node_name)
-      super("#{node_name} was requested but was not found. Defined nodes are: #{SCHEMA.type_names}")
-    end
-  end
-  # This node doesn't have a connection with that name.
-  class  ConnectionNotDefinedError < Error
-    def initialize(node_name)
-      super("#{node_name} was requested but was not found. Defined connections are: #{SCHEMA.connection_names}")
-    end
-  end
-  # The root call of this query isn't in the schema.
-  class RootCallNotDefinedError < Error
-    def initialize(name)
-      super("Call '#{name}' was requested but was not found. Defined calls are: #{SCHEMA.call_names}")
-    end
-  end
-  # The query couldn't be parsed.
-  class SyntaxError < Error
-    def initialize(line, col, string)
-      lines = string.split("\n")
-      super("Syntax Error at (#{line}, #{col}), check usage: #{string}")
-    end
-  end
-  # This root call takes different arguments.
-  class RootCallArgumentError < Error
-    def initialize(declaration, actual)
-      super("Wrong type for #{declaration.name}: expected a #{declaration.type} but got #{actual}")
-    end
-  end
+  autoload(:CallNotDefinedError,      'graphql/errors/call_not_defined_error')
+  autoload(:ExposesClassMissingError, 'graphql/errors/exposes_class_missing_error')
+  autoload(:FieldNotDefinedError,     'graphql/errors/field_not_defined_error')
+  autoload(:NodeNotDefinedError,      'graphql/errors/node_not_defined_error')
+  autoload(:RootCallArgumentError,    'graphql/errors/root_call_argument_error')
+  autoload(:RootCallNotDefinedError,  'graphql/errors/root_call_argument_error')
+  autoload(:SyntaxError,              'graphql/errors/syntax_error')
 
   # Singleton {Parser::Parser} instance
   PARSER = Parser::Parser.new
