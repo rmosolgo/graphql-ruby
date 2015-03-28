@@ -32,6 +32,13 @@
 #   class PostNode
 #     field.date(:published_at)
 #   end
+#
+# @example Infer field name from field type
+#   # These are equivalent:
+#   post.comments(:comments)
+#   post.comments
+#   # (Requires that a `CommentsConnection` was implemented)
+#
 class GraphQL::Node
   # The object wrapped by this `Node`, _before_ calls are applied
   attr_reader :original_target
