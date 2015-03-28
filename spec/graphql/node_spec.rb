@@ -1,22 +1,23 @@
 require 'spec_helper'
 
 describe GraphQL::Node do
-  let(:query_string) { "type(post) { name, description, fields { count, edges { node { name, type }}} }"}
+  let(:query_string) { "type(album) { name, description, fields { count, edges { node { name, type }}} }"}
   let(:result) { GraphQL::Query.new(query_string).as_result}
 
   describe '__type__' do
-    let(:title_field) { result["post"]["fields"]["edges"].find {|e| e["node"]["name"] == "title"}["node"] }
+    let(:title_field) { result["album"]["fields"]["edges"].find {|e| e["node"]["name"] == "title"}["node"] }
 
     it 'has name' do
-      assert_equal "post", result["post"]["name"]
+      assert_equal "album", result["album"]["name"]
     end
 
     it 'has description' do
-      assert_equal "A blog post entry", result["post"]["description"]
+      assert_equal "Photos to accompany a post", result["album"]["description"]
     end
 
-    it 'has fields' do
-      assert_equal 8, result["post"]["fields"]["count"]
+    it 'has fields with declared names and inferred names' do
+      field_names = result["album"]["fields"]["edges"].map { |f| f["node"]["name"]}
+      assert_equal ["__type__", "id", "title", "comments", "post"], field_names
       assert_equal({ "name" => "title", "type" => "string"}, title_field)
     end
 

@@ -84,8 +84,13 @@ module Nodes
   end
 
   class AlbumNode < ApplicationNode
+    desc "Photos to accompany a post"
     node_for Post::Album
+    # Schema validation test, can it handle:
+    # - nested exposes name
+    # - field name inferred from field type
     exposes("Post::Album")
+    field.string(:title)
     field.comments
     field.post
   end

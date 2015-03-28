@@ -1,49 +1,4 @@
-class InadequateRecordBase
-  def initialize(attributes={})
-    attributes.each do |key, value|
-      self.send("#{key}=", value)
-    end
-  end
-
-  def destroy
-    self.class.all.delete(self)
-  end
-
-  class << self
-    attr_accessor :_objects
-    def all
-      @_objects ||= []
-    end
-
-    def find(id)
-      all.find { |object| object.id.to_s == id.to_s }
-    end
-
-    def where(query={})
-      result = []
-      all.each do |object|
-        match = true
-
-        query.each do |key, value|
-          if object.send(key) != value
-            match = false
-          end
-        end
-
-        result << object if match
-      end
-      result
-    end
-
-    def create(attributes)
-      @next_id ||= 0
-      attributes[:id] ||= @next_id += 1
-      instance = self.new(attributes)
-      all << instance
-      instance
-    end
-  end
-end
+require_relative './inadequate_record_base'
 
 class Post < InadequateRecordBase
   attr_accessor :id, :title, :content, :published_at
@@ -55,7 +10,7 @@ class Post < InadequateRecordBase
   end
 
   class Album < InadequateRecordBase
-    attr_accessor :id, :post_id
+    attr_accessor :id, :post_id, :title
     def post
       Post.find(post_id)
     end
