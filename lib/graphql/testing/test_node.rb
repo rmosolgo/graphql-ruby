@@ -5,6 +5,7 @@
 # Usually, you get a TestNode from {Node.test}.
 #
 # You can test calls, fields and whole query results with {TestNode}:
+#
 # - {TestNode#[]} returns values for fields.
 # - {TestNode#call} returns a new TestNode with the specified calls applied.
 # - {TestNode#as_result} returns a whole result for this node (if it's a node that exposes fields, you must pass those `fields:` to {Node.test}).

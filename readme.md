@@ -2,41 +2,28 @@
 
 [![Build Status](https://travis-ci.org/rmosolgo/graphql-ruby.svg?branch=master)](https://travis-ci.org/rmosolgo/graphql-ruby)
 [![Gem Version](https://badge.fury.io/rb/graphql.svg)](https://rubygems.org/gems/graphql)
-[![Dependency Status](https://gemnasium.com/rmosolgo/graphql-ruby.svg)](https://gemnasium.com/rmosolgo/graphql-ruby)
 [![Code Climate](https://codeclimate.com/github/rmosolgo/graphql-ruby/badges/gpa.svg)](https://codeclimate.com/github/rmosolgo/graphql-ruby)
 [![Test Coverage](https://codeclimate.com/github/rmosolgo/graphql-ruby/badges/coverage.svg)](https://codeclimate.com/github/rmosolgo/graphql-ruby)
 [![built with love](https://cloud.githubusercontent.com/assets/2231765/6766607/d07992c6-cfc9-11e4-813f-d9240714dd50.png)](http://rmosolgo.github.io/react-badges/)
 
-
-Create a GraphQL interface by implementing [__nodes__](#nodes) and [__calls__](#calls), then running [__queries__](#queries).
-
-API Docs: <http://rubydoc.info/gems/graphql>
-
-## To do:
-
-- testing with JSON args
-- Make root calls plain ol' calls, on the root?
-- Make fields like calls with no args?
-- improve debugging experience
-- How do you express failure? HTTP response? `errors` key?
-- Handle blank objects in nested calls (how? wait for spec)
-- Implement calls as arguments
-- double-check how to handle `pals.first(3) { count }`
-- Implement call argument introspection (wait for spec)
+Create a GraphQL interface by implementing [nodes](#nodes) and [calls](#calls), then running [queries](#queries).
 
 ## Example Implementation
 
 - See test implementation in [`/spec/support/dummy_app/nodes.rb`](https://github.com/rmosolgo/graphql/blob/master/spec/support/nodes.rb)
 - See `graphql-ruby-demo` with Rails on [github](https://github.com/rmosolgo/graphql-ruby-demo) or [heroku](http://graphql-ruby-demo.herokuapp.com/)
 
-<a href="http://graphql-ruby-demo.herokuapp.com/" target="_blank"><img src="https://cloud.githubusercontent.com/assets/2231765/6839956/c62c1fca-d32d-11e4-9e54-ec6743d3e4b5.png" style="max-width: 800px;"/></a>
-
+<a href="http://graphql-ruby-demo.herokuapp.com/" target="_blank"><img src="https://cloud.githubusercontent.com/assets/2231765/6839956/c62c1fca-d32d-11e4-9e54-ec6743d3e4b5.png" style="max-height: 300px; max-width: 100%; display: block; margin: auto;"/></a>
 
 ## Usage
 
-- Implement _nodes_ that wrap objects in your application
-- Implement _calls_ that return those objects (and may mutate the application state)
-- Execute _queries_ and return the result.
+Create a GraphQL interface:
+
+- Implement [__nodes__](#nodes) that wrap objects in your application
+- Implement [__calls__](#calls) that expose those objects (and may mutate the application state)
+- Execute [__queries__](#queries) on the system.
+
+API docs: [Ruby gem](http://rubydoc.info/gems/graphql), [master branch](http://www.rubydoc.info/github/rmosolgo/graphql-ruby/master)
 
 ### Nodes
 
@@ -157,7 +144,7 @@ end
 
 ### Queries
 
-When your system is setup, you can perform queries from a string.
+When your system is set up, you can perform queries from a string.
 
 ```ruby
 query_str = "find_fish(1) { name, species } "
@@ -192,4 +179,17 @@ result
 # }
 ```
 
-You could do something like this [inside a Rails controller](https://github.com/rmosolgo/graphql-ruby-demo/blob/master/app/controllers/queries_controller.rb#L5).
+You could do something like this [inside a Rails controller](https://github.com/rmosolgo/graphql-ruby-demo/blob/master/app/controllers/queries_controller.rb#L21).
+
+## To Do:
+
+- testing with JSON args
+- Make root calls plain ol' calls, on the root?
+- Make fields like calls with no args?
+- improve debugging experience
+- build nodes for Date, DateTime, Time, Hash
+- How do you express failure? HTTP response? `errors` key?
+- Handle blank objects in nested calls (how? wait for spec)
+- Implement calls as arguments
+- double-check how to handle `pals.first(3) { count }`
+- Implement call argument introspection (wait for spec)
