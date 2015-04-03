@@ -4,6 +4,8 @@ class GraphQL::Parser::Transform < Parslet::Transform
   rule(nodes: sequence(:n), variables: sequence(:v), fragments: sequence(:f)) { GraphQL::Syntax::Query.new(nodes: n, variables: v, fragments: f)}
   # node
   rule(identifier: simple(:i), arguments: sequence(:a), fields: sequence(:f)) {GraphQL::Syntax::Node.new(identifier: i.to_s, arguments: a, fields: f)}
+  ### if `fields` is not a sequence, it's `{ }`, an empty array:
+  rule(identifier: simple(:i), arguments: sequence(:a), fields: simple(:f)) {GraphQL::Syntax::Node.new(identifier: i.to_s, arguments: a, fields: [])}
   # field
   rule(identifier: simple(:i), calls: sequence(:c), fields: sequence(:f), alias_name: simple(:a)) { GraphQL::Syntax::Field.new(identifier: i.to_s, fields: f, calls: c, alias_name: a.to_s)}
   rule(identifier: simple(:i), calls: sequence(:c), alias_name: simple(:a)) { GraphQL::Syntax::Field.new(identifier: i.to_s, calls: c, alias_name: a.to_s)}

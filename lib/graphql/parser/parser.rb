@@ -13,7 +13,7 @@ class GraphQL::Parser::Parser < Parslet::Parser
   rule(:fragment_identifier) { (str("$") >> name).as(:identifier) }
 
   # field set
-  rule(:fields) { str("{") >> space? >> (field >> separator?).repeat(1) >> space? >> str("}") >> space?}
+  rule(:fields) { str("{") >> space? >> (field >> separator?).repeat(0) >> space? >> str("}") >> space?}
 
   # call
   rule(:call) { identifier >> str("(") >> (argument.as(:argument) >> separator?).repeat(0).as(:arguments) >> str(")") }

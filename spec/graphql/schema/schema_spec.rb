@@ -46,7 +46,7 @@ describe GraphQL::Schema::Schema do
       end
 
       it 'shows return types' do
-        assert_equal ["post", "upvote"], upvote_post_call["node"]["returns"]
+        assert_equal ["post", "upvote", "context"], upvote_post_call["node"]["returns"]
       end
 
       it 'shows argument types' do

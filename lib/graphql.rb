@@ -13,6 +13,7 @@ module GraphQL
   autoload(:RootCall,                 "graphql/root_call")
   autoload(:RootCallArgument,         "graphql/root_call_argument")
   autoload(:RootCallArgumentDefiner,  "graphql/root_call_argument_definer")
+  autoload(:TestCall,                 "graphql/testing/test_call")
   autoload(:TestCallChain,            "graphql/testing/test_call_chain")
   autoload(:TestNode,                 "graphql/testing/test_node")
   autoload(:VERSION,                  "graphql/version")

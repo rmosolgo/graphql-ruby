@@ -168,6 +168,11 @@ class GraphQL::RootCall
         arguments.values.find { |arg| arg.index == idx } || raise("No argument found for #{name} at index #{JSON.dump(idx)} (argument indexes: #{arguments.values.map(&:index)})")
       end
     end
+
+    # Returns a {TestCall} for this call.
+    def test
+      GraphQL::TestCall.new(self)
+    end
   end
 
   private

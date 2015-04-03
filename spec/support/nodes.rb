@@ -97,6 +97,7 @@ module Nodes
     exposes "Like"
     type "upvote"
     field.number :post_id
+    field.number :person_id
     def id
       target.id.to_s + target.id.to_s
     end
@@ -165,7 +166,7 @@ module Nodes
 
   class LikePostCall < GraphQL::RootCall
     indentifier "upvote_post"
-    returns :post, :upvote
+    returns :post, :upvote, :context
 
     argument.object("post_data")
     argument.number("person_id")
@@ -173,10 +174,11 @@ module Nodes
 
     def execute!(post_data, person_id)
       post_id = post_data["id"]
-      like = Like.create(post_id: post_id)
+      like = Like.create(post_id: post_id, person_id: person_id)
       {
         post: Post.find(post_id),
-        upvote: like
+        upvote: like,
+        context: context,
       }
     end
   end

@@ -28,7 +28,7 @@ class Comment < InadequateRecordBase
 end
 
 class Like < InadequateRecordBase
-  attr_accessor :id, :post_id
+  attr_accessor :id, :post_id, :person_id
   def post
     Post.find(post_id)
   end

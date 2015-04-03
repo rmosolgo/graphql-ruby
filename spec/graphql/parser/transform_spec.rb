@@ -39,6 +39,15 @@ describe GraphQL::Parser::Transform do
         assert(res.is_a?(GraphQL::Syntax::Node), 'it gets a node')
       end
 
+      it 'turns a node with no fields into a node' do
+        tree = parser.node.parse("post(456) { }")
+        res = transform.apply(tree)
+        pp tree
+        pp res
+        assert(res.is_a?(GraphQL::Syntax::Node), 'it gets a node')
+      end
+
+
       it 'turns a node into a Node' do
         tree = parser.node.parse("person(1) { name, check_ins.last(4) { count, edges { node { id } }  } }")
         res = transform.apply(tree)

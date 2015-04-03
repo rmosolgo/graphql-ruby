@@ -10,22 +10,23 @@ describe GraphQL::Parser::Parser do
     end
     it 'parses node and variables' do
       assert query.parse_with_debug(%{
-        like_page(<page>) {
+        like_page(<page1>, <other>) {
           $pageFragment
         }
-        <page>: {
+        <page1>: {
           "page": {"id": 1},
           "person" : { "id", 4}
         }
-        <other>: {
-          "page": {"id": 1},
-          "person" : { "id", 4}
-        }
+
+        <other>: 24
 
         $pageFragment: {
           page { id }
         }
       })
+    end
+    it 'parses no fields' do
+      assert query.parse_with_debug("node(4) { } ")
     end
   end
 
