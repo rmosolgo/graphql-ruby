@@ -64,10 +64,8 @@ module GraphQL
     autoload(:NumberType,   "graphql/types/number_type")
   end
 
-  # @abstract
-  # Base class for all errors, so you can rescue from all graphql errors at once.
-  class Error < RuntimeError; end
   autoload(:CallNotDefinedError,      'graphql/errors/call_not_defined_error')
+  autoload(:Error,                    'graphql/errors/error')
   autoload(:ExposesClassMissingError, 'graphql/errors/exposes_class_missing_error')
   autoload(:FieldNotDefinedError,     'graphql/errors/field_not_defined_error')
   autoload(:FieldNotImplementedError, 'graphql/errors/field_not_implemented_error')
