@@ -187,7 +187,6 @@ You could do something like this [inside a Rails controller](https://github.com/
 - Make root calls plain ol' calls, on the root?
 - Make fields like calls with no args?
 - improve debugging experience
-- build nodes for Date, DateTime, Time, Hash
 - How do you express failure? HTTP response? `errors` key?
 - Handle blank objects in nested calls (how? wait for spec)
 - Implement calls as arguments

@@ -62,7 +62,7 @@ describe GraphQL::Schema::Schema do
       let(:type_names) { result["schema"]["types"]["edges"].map {|t| t["node"]["name"] }}
 
       it 'returns all types' do
-        types_count = 20
+        types_count = 22
         assert_equal types_count, result["schema"]["types"]["count"]
         assert_equal types_count, type_names.length
       end

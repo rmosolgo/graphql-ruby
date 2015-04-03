@@ -24,7 +24,7 @@ class GraphQL::Schema::SchemaValidation
         field_mapping.type_class
         # Make sure the node can handle it
         if !type_class.respond_to_field?(field_mapping.name)
-          raise GraphQL::FieldNotDefinedError.new(type_class, field_mapping.name)
+          raise GraphQL::FieldNotImplementedError.new(type_class, field_mapping.name)
         end
       end
     end

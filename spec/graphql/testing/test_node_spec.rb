@@ -2,7 +2,8 @@ require 'spec_helper'
 
 describe GraphQL::TestNode do
   let(:date) { Date.new(2009,1,10) }
-  let(:date_test_node) { Nodes::DateNode.test(date) }
+  let(:type_class) { GraphQL::Types::DateTimeType }
+  let(:date_test_node) { type_class.test(date) }
 
   it 'comes from Node.test' do
     assert_instance_of GraphQL::TestNode, date_test_node
@@ -60,7 +61,7 @@ describe GraphQL::TestNode do
   end
 
   describe 'when it starts with fields' do
-    let(:date_test_node) { Nodes::DateNode.test(date, fields: ["month"])}
+    let(:date_test_node) { type_class.test(date, fields: ["month"])}
     it 'returns those fields with as_result' do
       assert_equal({"month" => 1}, date_test_node.as_result)
     end
@@ -78,17 +79,17 @@ describe GraphQL::TestNode do
 
   describe 'when it starts with calls' do
     it 'applies those calls from string' do
-      test_node = Nodes::DateNode.test(date, calls: "minus_days(6).minus_days(5)")
+      test_node = type_class.test(date, calls: "minus_days(6).minus_days(5)")
       assert_equal(2008, test_node["year"])
     end
 
     it 'applies those calls from array' do
-      test_node = Nodes::DateNode.test(date, calls: ["minus_days", 25])
+      test_node = type_class.test(date, calls: ["minus_days", 25])
       assert_equal(2008, test_node["year"])
     end
 
     it 'applies those calls from array of arrays' do
-      test_node = Nodes::DateNode.test(date, calls: [["minus_days", 5], ["minus_days", 6]])
+      test_node = type_class.test(date, calls: [["minus_days", 5], ["minus_days", 6]])
       assert_equal(2008, test_node["year"])
     end
   end

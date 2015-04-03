@@ -55,10 +55,13 @@ module GraphQL
 
   # These objects expose values
   module Types
-    autoload(:BooleanType, "graphql/types/boolean_type")
-    autoload(:ObjectType, "graphql/types/object_type")
-    autoload(:StringType, "graphql/types/string_type")
-    autoload(:NumberType, "graphql/types/number_type")
+    autoload(:DateType,     "graphql/types/date_type")
+    autoload(:DateTimeType, "graphql/types/date_time_type")
+    autoload(:BooleanType,  "graphql/types/boolean_type")
+    autoload(:ObjectType,   "graphql/types/object_type")
+    autoload(:StringType,   "graphql/types/string_type")
+    autoload(:TimeType,     "graphql/types/time_type")
+    autoload(:NumberType,   "graphql/types/number_type")
   end
 
   # @abstract
@@ -67,6 +70,7 @@ module GraphQL
   autoload(:CallNotDefinedError,      'graphql/errors/call_not_defined_error')
   autoload(:ExposesClassMissingError, 'graphql/errors/exposes_class_missing_error')
   autoload(:FieldNotDefinedError,     'graphql/errors/field_not_defined_error')
+  autoload(:FieldNotImplementedError, 'graphql/errors/field_not_implemented_error')
   autoload(:NodeNotDefinedError,      'graphql/errors/node_not_defined_error')
   autoload(:RootCallArgumentError,    'graphql/errors/root_call_argument_error')
   autoload(:RootCallNotDefinedError,  'graphql/errors/root_call_argument_error')

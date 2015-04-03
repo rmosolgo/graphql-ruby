@@ -42,7 +42,7 @@ describe GraphQL::Schema::SchemaValidation do
     end
 
     it 'raises an error' do
-      assert_raises(GraphQL::FieldNotDefinedError) { schema.validate }
+      assert_raises(GraphQL::FieldNotImplementedError) { schema.validate }
     end
   end
 end

@@ -48,12 +48,8 @@ module Nodes
     end
   end
 
-  class DateNode < GraphQL::Node
-    exposes "Date"
-    type :date
+  class GraphQL::Types::DateTimeType
     call :minus_days, -> (prev_value, minus_days) { prev_value - minus_days.to_i }
-    field.number(:year)
-    field.number(:month)
   end
 
   class PostNode < ApplicationNode
@@ -65,7 +61,7 @@ module Nodes
     field.letter_selection(:content)
     field.number(:length)
     field.comments(:comments)
-    field.date(:published_at)
+    field.date_time(:published_at)
     field.connection(:likes)
 
     def length
