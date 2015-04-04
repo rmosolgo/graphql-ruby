@@ -8,7 +8,7 @@ describe GraphQL::Parser::Transform do
     describe 'query' do
       it 'parses node and variables' do
         tree = parser.query.parse(%{
-          like_page(<page_info>) { page { $fragment, likes } }
+          like_page(<page_info>, 12, {"public": true}) { page { $fragment, likes } }
 
           <page_info>: {
             "page" : { "id": 4},
@@ -26,7 +26,7 @@ describe GraphQL::Parser::Transform do
         res = transform.apply(tree)
         assert_equal 1, res.nodes.length
         assert_equal "like_page", res.nodes[0].identifier
-        assert_equal ["<page_info>"], res.nodes[0].arguments
+        assert_equal ["<page_info>", "12", '{"public": true}'], res.nodes[0].arguments
         assert_equal ["<page_info>", "<other>"], res.variables.map(&:identifier)
         assert_equal ["$fragment"], res.fragments.map(&:identifier)
       end
@@ -42,8 +42,6 @@ describe GraphQL::Parser::Transform do
       it 'turns a node with no fields into a node' do
         tree = parser.node.parse("post(456) { }")
         res = transform.apply(tree)
-        pp tree
-        pp res
         assert(res.is_a?(GraphQL::Syntax::Node), 'it gets a node')
       end
 

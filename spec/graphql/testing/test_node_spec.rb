@@ -57,6 +57,10 @@ describe GraphQL::TestNode do
       it 'blows up if you send an undefined call' do
         assert_raises(GraphQL::CallNotDefinedError) { date_test_node.call("bogus_call", 123) }
       end
+
+      it 'blows up if you send bad arguments' do
+        skip("Node calls don't implement argument introspection yet (waiting for a spec)")
+      end
     end
   end
 

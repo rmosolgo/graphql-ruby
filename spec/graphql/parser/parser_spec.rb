@@ -10,7 +10,7 @@ describe GraphQL::Parser::Parser do
     end
     it 'parses node and variables' do
       assert query.parse_with_debug(%{
-        like_page(<page1>, <other>) {
+        like_page(<page1>, <other>, {"public": true}) {
           $pageFragment
         }
         <page1>: {

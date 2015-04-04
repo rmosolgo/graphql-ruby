@@ -104,20 +104,14 @@ class GraphQL::TestCall
   private
 
   def as_query_string(args)
-    arg_names = args.length.times.map { |n| "<arg#{n}>" }
-
-    arg_values = args.each_with_index.map do |arg, idx|
+    arg_values = args.map do |arg|
       if arg.is_a?(String) || arg.is_a?(Numeric)
         val = "#{arg}"
       else
         val = JSON.dump(arg)
       end
-      "<arg#{idx}>: #{val}"
     end
 
-    "#{@call_class.schema_name}(#{arg_names.join(",")}) {
-    }
-    #{arg_values.join("\n")}
-    "
+    "#{@call_class.schema_name}(#{arg_values.join(",")}) {}"
   end
 end
