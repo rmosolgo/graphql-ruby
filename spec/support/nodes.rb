@@ -130,7 +130,7 @@ module Nodes
   class FindCall < GraphQL::RootCall
     abstract!
     argument.number("ids", any_number: true)
-    def execute!(*ids)
+    def execute(*ids)
       model_class = model_type
       items = ids.map { |id| model_class.find(id.to_i) }
     end
@@ -159,7 +159,7 @@ module Nodes
 
   class ContextCall < GraphQL::RootCall
     returns :context
-    def execute!
+    def execute
       context
     end
   end
@@ -172,7 +172,7 @@ module Nodes
     argument.number("person_id")
 
 
-    def execute!(post_data, person_id)
+    def execute(post_data, person_id)
       post_id = post_data["id"]
       like = Like.create(post_id: post_id, person_id: person_id)
       {

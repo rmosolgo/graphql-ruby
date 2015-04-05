@@ -4,14 +4,14 @@
 #
 # - declare any arguments with {.argument}, or declare `argument.none`
 # - declare returns with {.return}
-# - implement {#execute!} to take those arguments and return values
+# - implement {#execute} to take those arguments and return values
 #
 # @example
 #   FindPostCall < GraphQL::RootCall
 #     argument.number(:ids, any_number: true)
 #     returns :post
 #
-#     def execute!(*ids)
+#     def execute(*ids)
 #       ids.map { |id| Post.find(id) }
 #     end
 #   end
@@ -22,7 +22,7 @@
 #     argument.object(:comment)
 #     returns :post, :comment
 #
-#     def execute!(post_id, comment)
+#     def execute(post_id, comment)
 #       post = Post.find(post_id)
 #       new_comment = post.comments.create!(comment)
 #       {
@@ -55,7 +55,7 @@ class GraphQL::RootCall
   # @param [Array] args (splat) all args provided in query string (as strings)
   # This method is invoked with the arguments provided to the query.
   # It should do work and return values matching the {.returns} declarations
-  def execute!(*args)
+  def execute(*args)
     raise NotImplementedError, "Do work in this method"
   end
 
@@ -68,7 +68,7 @@ class GraphQL::RootCall
   def as_result
     return_declarations = self.class.return_declarations
     raise "#{self.class.name} must declare returns" unless return_declarations.present?
-    return_values = execute!(*arguments)
+    return_values = execute(*arguments)
 
     if return_values.is_a?(Hash)
       unexpected_returns = return_values.keys - return_declarations.keys

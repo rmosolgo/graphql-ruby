@@ -25,7 +25,7 @@ class GraphQL::Query
   # @return [Hash] result the JSON response to this query
   # Calling {#as_result} more than once won't cause the query to be re-run
   def as_result
-    @as_result ||= execute!
+    @as_result ||= execute
   end
 
   # Provides access to query variables, raises an error if not found
@@ -44,7 +44,7 @@ class GraphQL::Query
 
   private
 
-  def execute!
+  def execute
     root_syntax_node = root.nodes[0]
     root_call_class = GraphQL::SCHEMA.get_call(root_syntax_node.identifier)
     root_call = root_call_class.new(query: self, syntax_arguments: root_syntax_node.arguments)

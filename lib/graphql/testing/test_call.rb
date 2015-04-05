@@ -19,7 +19,7 @@
 #     argument.number(:id)
 #     argument.string(:new_name)
 #
-#     def execute!(id, new_name)
+#     def execute(id, new_name)
 #       restaurant = Restaurant.find(id)
 #       if context[:user].admin?
 #         restaurant.update_attributes(name: new_name)
@@ -88,7 +88,7 @@ class GraphQL::TestCall
     query = GraphQL::Query.new(query_string, context: @context)
     query_args = query.root.nodes[0].arguments
     call = @call_class.new(query: query, syntax_arguments: query_args)
-    call.execute!(*args)
+    call.execute(*args)
   end
 
   # Return a copy of this {TestCall} with the given context built-in

@@ -37,8 +37,10 @@ class FishNode < GraphQL::Node
   field.number(:id)
   field.string(:name)
   field.string(:species)
-  # specify an `AquariumNode`:
+  # specify that `aquarium` should be an `AquariumNode`:
   field.aquarium(:aquarium)
+  # Since it's named `aquarium` and the type is `aquarium`, you could also write:
+  field.aquarium # method name is inferred to be `aquarium`
 end
 ```
 
@@ -100,7 +102,7 @@ aquarium(1) {
 
 Calls selectively expose your application to the world. They always return values and they may perform mutations.
 
-Calls declare returns, declare arguments, and implement `#execute!`.
+Calls declare returns, declare arguments, and implement `#execute`.
 
 This call just finds values:
 
@@ -108,7 +110,7 @@ This call just finds values:
 class FindFishCall < GraphQL::RootCall
   returns :fish
   argument.number(:id)
-  def execute!(id)
+  def execute(id)
     Fish.find(id)
   end
 end
@@ -122,7 +124,7 @@ class RelocateFishCall < GraphQL::RootCall
   argument.number(:fish_id)
   argument.number(:new_aquarium_id)
 
-  def execute!(fish_id, new_aquarium_id)
+  def execute(fish_id, new_aquarium_id)
     fish = Fish.find(fish_id)
 
     # context is defined by the query, see below
@@ -183,10 +185,9 @@ You could do something like this [inside a Rails controller](https://github.com/
 
 ## To Do:
 
-- testing with JSON args
 - Make root calls plain ol' calls, on the root?
 - Make fields like calls with no args?
-- improve debugging experience
+- improve parsing & debugging experience
 - How do you express failure? HTTP response? `errors` key?
 - Handle blank objects in nested calls (how? wait for spec)
 - Implement calls as arguments
