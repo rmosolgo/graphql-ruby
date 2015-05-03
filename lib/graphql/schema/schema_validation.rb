@@ -11,6 +11,11 @@ class GraphQL::Schema::SchemaValidation
   def validate(schema)
     schema.types.each do |type_name, type_class|
 
+      if type_class.exposes_class_names.any?
+        # make sure description is present
+        type_class.description.blank? && raise("#{type_class.name} must have a description: declare one with `desc 'my description'` in the class definition!")
+      end
+
       type_class.exposes_class_names.each do |exposes_class_name|
         begin
           Object.const_get(exposes_class_name)

@@ -67,4 +67,20 @@ describe GraphQL::Node do
       end
     end
   end
+
+  describe '.description' do
+    before do
+      @prev_desc = Nodes::AlbumNode.description
+    end
+
+    after do
+      Nodes::AlbumNode.desc(@prev_desc)
+    end
+
+    it 'returns the descripiton declared with `.desc`' do
+      new_desc = "A photo album"
+      Nodes::AlbumNode.desc(new_desc)
+      assert_equal(new_desc, Nodes::AlbumNode.description)
+    end
+  end
 end

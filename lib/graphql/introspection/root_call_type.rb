@@ -1,5 +1,7 @@
 class GraphQL::Introspection::RootCallType < GraphQL::Node
   exposes "GraphQL::RootCall"
+  desc "A call that can be used as the root of a query"
+
   field.string(:name)
   field.string(:returns)
   field.introspection_connection(:arguments)

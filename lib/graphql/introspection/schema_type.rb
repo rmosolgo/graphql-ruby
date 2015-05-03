@@ -1,5 +1,6 @@
 class GraphQL::Introspection::SchemaType < GraphQL::Node
   exposes "GraphQL::Schema::Schema"
+  desc "The schema for a GraphQL endpoint"
   field.introspection_connection(:calls)
   field.introspection_connection(:types)
 

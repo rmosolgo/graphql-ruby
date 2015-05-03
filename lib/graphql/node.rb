@@ -10,7 +10,7 @@
 # @example Expose a class in your app
 #   class PostNode < GraphQL::Node
 #     exposes('Post')
-#
+#     desc('A blog post about something interesting')
 #     cursor(:id)
 #
 #     field.number(:id)
@@ -22,6 +22,7 @@
 # @example Expose a data type
 #   class DateType < GraphQL::Node
 #     exposes "Date"
+#     desc('A given year-month-day')
 #     type :date
 #     call :minus_days, -> (prev_value, minus_days) { prev_value - minus_days.to_i }
 #     field.number(:year)
@@ -147,7 +148,7 @@ class GraphQL::Node
 
     # The description of this node
     def description
-      @description || raise("#{name}.description isn't defined")
+      @description
     end
 
     # @param [String] type_name

@@ -72,6 +72,7 @@ module Nodes
   class CommentNode < ApplicationNode
     node_for Comment
     exposes "Comment"
+    desc("Comment on a blog post")
     field.string(:content)
     field.letter_selection(:letters)
     field.post(:post)
@@ -96,6 +97,7 @@ module Nodes
     node_for(Like)
     exposes "Like"
     type "upvote"
+    desc("A show of support for a post")
     field.number :post_id
     field.number :person_id
     def id
@@ -105,6 +107,7 @@ module Nodes
 
   class ContextNode < GraphQL::Node
     exposes "Context"
+    desc("A request context")
     field.string(:person_name)
     field.boolean(:present)
 

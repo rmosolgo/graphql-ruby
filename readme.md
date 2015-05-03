@@ -33,6 +33,7 @@ Nodes are delegators that wrap objects in your app. You must whitelist fields by
 ```ruby
 class FishNode < GraphQL::Node
   exposes "Fish"
+  desc "A slippery, delicious animal that lives in water"
   cursor(:id)
   field.number(:id)
   field.string(:name)
@@ -49,6 +50,7 @@ You can also declare connections between objects:
 ```ruby
 class AquariumNode < GraphQL::Node
   exposes "Aquarium"
+  desc "A place where fish live"
   cursor(:id)
   field.number(:id)
   field.number(:occupancy)
@@ -193,3 +195,9 @@ You could do something like this [inside a Rails controller](https://github.com/
 - Implement calls as arguments
 - double-check how to handle `pals.first(3) { count }`
 - Implement call argument introspection (wait for spec)
+
+## Goals:
+
+- Implement the GraphQL spec (when Facebook releases it) & support a Relay front end
+- Provide idiomatic, plain-Ruby API with similarities to reference implementation where possible
+- Support `graphql-rails`

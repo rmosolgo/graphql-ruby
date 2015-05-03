@@ -1,5 +1,6 @@
 class GraphQL::Introspection::CallType < GraphQL::Node
   exposes "GraphQL::Call"
+  desc 'A call that can be made on a node'
   field.string(:name)
   field.string(:arguments)
 

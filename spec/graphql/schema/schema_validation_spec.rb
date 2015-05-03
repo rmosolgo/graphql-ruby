@@ -45,4 +45,18 @@ describe GraphQL::Schema::SchemaValidation do
       assert_raises(GraphQL::FieldNotImplementedError) { schema.validate }
     end
   end
+
+  describe 'when a description is missing' do
+    before do
+      @prev_desc = Nodes::PostNode.description
+      Nodes::PostNode.desc(nil)
+    end
+    after do
+      Nodes::PostNode.desc(@prev_desc)
+    end
+
+    it 'raises an error' do
+      assert_raises(RuntimeError) { schema.validate }
+    end
+  end
 end
