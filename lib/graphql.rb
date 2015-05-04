@@ -1,79 +1,91 @@
 require "active_support/core_ext/object/blank"
 require "active_support/core_ext/string/inflections"
+require "active_support/dependencies/autoload"
 require "json"
 require "parslet"
 
 module GraphQL
-  autoload(:Call,                     "graphql/call")
-  autoload(:Connection,               "graphql/connection")
-  autoload(:FieldDefiner,             "graphql/field_definer")
-  autoload(:Field,                    "graphql/field")
-  autoload(:Node,                     "graphql/node")
-  autoload(:Query,                    "graphql/query")
-  autoload(:RootCall,                 "graphql/root_call")
-  autoload(:RootCallArgument,         "graphql/root_call_argument")
-  autoload(:RootCallArgumentDefiner,  "graphql/root_call_argument_definer")
-  autoload(:TestCall,                 "graphql/testing/test_call")
-  autoload(:TestCallChain,            "graphql/testing/test_call_chain")
-  autoload(:TestNode,                 "graphql/testing/test_node")
-  autoload(:VERSION,                  "graphql/version")
+  extend ActiveSupport::Autoload
+  autoload(:Call)
+  autoload(:Connection)
+  autoload(:FieldDefiner)
+  autoload(:Field)
+  autoload(:Node)
+  autoload(:Query)
+  autoload(:RootCall)
+  autoload(:RootCallArgument)
+  autoload(:RootCallArgumentDefiner)
+  autoload(:VERSION)
 
   # These objects are used for introspections (eg, responding to `schema()` calls).
   module Introspection
-    autoload(:CallType,             "graphql/introspection/call_type")
-    autoload(:Connection,           "graphql/introspection/connection")
-    autoload(:FieldType,            "graphql/introspection/field_type")
-    autoload(:RootCallArgumentNode, "graphql/introspection/root_call_argument_node")
-    autoload(:RootCallType,         "graphql/introspection/root_call_type")
-    autoload(:SchemaCall,           "graphql/introspection/schema_call")
-    autoload(:SchemaType,           "graphql/introspection/schema_type")
-    autoload(:TypeCall,             "graphql/introspection/type_call")
-    autoload(:TypeType,             "graphql/introspection/type_type")
+    extend ActiveSupport::Autoload
+    autoload(:CallType)
+    autoload(:Connection)
+    autoload(:FieldType)
+    autoload(:RootCallArgumentNode)
+    autoload(:RootCallType)
+    autoload(:SchemaCall)
+    autoload(:SchemaType)
+    autoload(:TypeCall)
+    autoload(:TypeType)
   end
 
   # These objects are singletons used to parse queries
   module Parser
-    autoload(:Parser,     "graphql/parser/parser")
-    autoload(:Transform,  "graphql/parser/transform")
+    extend ActiveSupport::Autoload
+    autoload(:Parser)
+    autoload(:Transform)
   end
 
   # These objects are used to track the schema of the graph
   module Schema
-    autoload(:ALL,              "graphql/schema/all")
-    autoload(:Schema,           "graphql/schema/schema")
-    autoload(:SchemaValidation, "graphql/schema/schema_validation")
+    extend ActiveSupport::Autoload
+    autoload(:ALL)
+    autoload(:Schema)
+    autoload(:SchemaValidation)
   end
 
   # These objects are skinny wrappers for going from the AST to actual {Node} and {Field} instances.
   module Syntax
-    autoload(:Call,     "graphql/syntax/call")
-    autoload(:Field,    "graphql/syntax/field")
-    autoload(:Query,    "graphql/syntax/query")
-    autoload(:Fragment, "graphql/syntax/fragment")
-    autoload(:Node,     "graphql/syntax/node")
-    autoload(:Variable, "graphql/syntax/variable")
+    extend ActiveSupport::Autoload
+    autoload(:Call)
+    autoload(:Field)
+    autoload(:Query)
+    autoload(:Fragment)
+    autoload(:Node)
+    autoload(:Variable)
   end
 
   # These objects expose values
   module Types
-    autoload(:DateType,     "graphql/types/date_type")
-    autoload(:DateTimeType, "graphql/types/date_time_type")
-    autoload(:BooleanType,  "graphql/types/boolean_type")
-    autoload(:ObjectType,   "graphql/types/object_type")
-    autoload(:StringType,   "graphql/types/string_type")
-    autoload(:TimeType,     "graphql/types/time_type")
-    autoload(:NumberType,   "graphql/types/number_type")
+    extend ActiveSupport::Autoload
+    autoload(:DateType)
+    autoload(:DateTimeType)
+    autoload(:BooleanType)
+    autoload(:ObjectType)
+    autoload(:StringType)
+    autoload(:TimeType)
+    autoload(:NumberType)
   end
 
-  autoload(:CallNotDefinedError,      'graphql/errors/call_not_defined_error')
-  autoload(:Error,                    'graphql/errors/error')
-  autoload(:ExposesClassMissingError, 'graphql/errors/exposes_class_missing_error')
-  autoload(:FieldNotDefinedError,     'graphql/errors/field_not_defined_error')
-  autoload(:FieldNotImplementedError, 'graphql/errors/field_not_implemented_error')
-  autoload(:NodeNotDefinedError,      'graphql/errors/node_not_defined_error')
-  autoload(:RootCallArgumentError,    'graphql/errors/root_call_argument_error')
-  autoload(:RootCallNotDefinedError,  'graphql/errors/root_call_argument_error')
-  autoload(:SyntaxError,              'graphql/errors/syntax_error')
+  autoload_under "errors" do
+    autoload(:CallNotDefinedError)
+    autoload(:Error)
+    autoload(:ExposesClassMissingError)
+    autoload(:FieldNotDefinedError)
+    autoload(:FieldNotImplementedError)
+    autoload(:NodeNotDefinedError)
+    autoload(:RootCallArgumentError)
+    autoload(:RootCallNotDefinedError)
+    autoload(:SyntaxError)
+  end
+
+  autoload_under "testing" do
+    autoload(:TestCall)
+    autoload(:TestCallChain)
+    autoload(:TestNode)
+  end
 
   # Singleton {Parser::Parser} instance
   PARSER = Parser::Parser.new
@@ -83,7 +95,7 @@ module GraphQL
   TRANSFORM = Parser::Transform.new
   # preload these so they're in SCHEMA
   ["introspection", "types"].each do |preload_dir|
-    full_dir = File.expand_path("../graphql/#{preload_dir}/*.rb", __FILE__)
+    full_dir = File.expand_path("../graph_ql/#{preload_dir}/*.rb", __FILE__)
     Dir.glob(full_dir).each { |f| require f }
   end
   # work around some dependency issue:
