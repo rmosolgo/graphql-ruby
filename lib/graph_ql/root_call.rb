@@ -74,9 +74,9 @@ class GraphQL::RootCall
       unexpected_returns = return_values.keys - return_declarations.keys
       missing_returns = return_declarations.keys - return_values.keys
       if unexpected_returns.any?
-        raise "#{self.class.name} returned #{unexpected_returns}, but didn't declare them."
+        raise GraphQL::UnexpectedReturnsError.new(self.class, unexpected_returns)
       elsif missing_returns.any?
-        raise "#{self.class.name} declared #{missing_returns}, but didn't return them."
+        raise GraphQL::MissingReturnsError.new(self.class, missing_returns)
       end
     end
     return_values

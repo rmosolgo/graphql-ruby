@@ -29,8 +29,10 @@ module GraphQL
     autoload(:FieldNotDefinedError)
     autoload(:FieldNotImplementedError)
     autoload(:NodeNotDefinedError)
+    autoload(:MissingReturnsError)
     autoload(:RootCallArgumentError)
     autoload(:RootCallNotDefinedError)
+    autoload(:UnexpectedReturnsError)
     autoload(:SyntaxError)
   end
 
