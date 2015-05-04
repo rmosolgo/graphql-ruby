@@ -13,10 +13,10 @@
 #     desc('A blog post about something interesting')
 #     cursor(:id)
 #
-#     field.number(:id)
-#     field.string(:title)
-#     field.string(:content)
-#     field.connection(:comments)
+#     field.number(:id, "Unique identifier")
+#     field.string(:title, "Title of this blog post")
+#     field.string(:content, "Full text content of this post")
+#     field.connection(:comments, "Comments left on this post by readers")
 #   end
 #
 # @example Expose a data type
@@ -25,19 +25,19 @@
 #     desc('A given year-month-day')
 #     type :date
 #     call :minus_days, -> (prev_value, minus_days) { prev_value - minus_days.to_i }
-#     field.number(:year)
-#     field.number(:month)
+#     field.number(:year, "Year, AD")
+#     field.number(:month, "Month in the year")
 #   end
 #
 #   # now you could use it
 #   class PostNode
-#     field.date(:published_at)
+#     field.date(:published_at, "Date that this post was made public")
 #   end
 #
 # @example Infer field name from field type
 #   # These are equivalent:
-#   post.comments(:comments)
-#   post.comments
+#   post.comments(:comments, "Comments left by readers")
+#   post.comments("Comments left by readers")
 #   # (Requires that a `CommentsConnection` was implemented)
 #
 class GraphQL::Node

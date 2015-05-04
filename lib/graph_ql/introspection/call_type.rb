@@ -1,8 +1,8 @@
 class GraphQL::Introspection::CallType < GraphQL::Node
   exposes "GraphQL::Call"
   desc 'A call that can be made on a node'
-  field.string(:name)
-  field.string(:arguments)
+  field.string(:name, "The identifier for this call")
+  field.string(:arguments, "Arguments accepted by this call")
 
   def arguments
     args = target.lambda.parameters

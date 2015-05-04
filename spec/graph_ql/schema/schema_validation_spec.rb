@@ -22,7 +22,7 @@ describe GraphQL::Schema::SchemaValidation do
 
   describe "when there's a bad field type" do
     before do
-      Nodes::PostNode.field.bogus_kind(:bogus_title)
+      Nodes::PostNode.field.bogus_kind(:bogus_title, "Nonsense")
     end
     after do
       Nodes::PostNode.remove_field(:bogus_title)
@@ -35,7 +35,7 @@ describe GraphQL::Schema::SchemaValidation do
 
   describe "when a field cant find a corresponding method" do
     before do
-      Nodes::PostNode.field.string(:bogus_title)
+      Nodes::PostNode.field.string(:bogus_title, "Nonsense")
     end
     after do
       Nodes::PostNode.remove_field(:bogus_title)

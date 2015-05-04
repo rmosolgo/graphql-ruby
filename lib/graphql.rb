@@ -99,7 +99,7 @@ module GraphQL
     Dir.glob(full_dir).each { |f| require f }
   end
   # work around some dependency issue:
-  Node.field.__type__(:__type__)
+  Node.field.__type__(:__type__, "The schema entry for this node type")
 
   def self.parse(as, string)
     parser = GraphQL::PARSER.public_send(as)
