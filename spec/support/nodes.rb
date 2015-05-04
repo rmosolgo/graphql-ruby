@@ -3,7 +3,7 @@ require 'support/dummy_app.rb'
 
 module Nodes
   class ApplicationNode < GraphQL::Node
-    field.number(:id)
+    field.number(:id, "Unique ID")
     cursor :id
 
     class << self
@@ -20,8 +20,8 @@ module Nodes
     call :first, -> (prev_items, first) { prev_items.first(first.to_i) }
     call :after, -> (prev_items, after) { prev_items.select {|i| i.id > after.to_i } }
 
-    field.number(:count)
-    field.boolean(:any)
+    field.number(:count, "Items in the collection")
+    field.boolean(:any, "Item has any items at all?")
 
     def count
       target.count
@@ -34,8 +34,8 @@ module Nodes
 
   class CommentsConnection < ApplicationConnection
     type :comments
-    field.number :viewer_name_length
-    field.number :average_rating
+    field.number :viewer_name_length, "Number of characters in the name of the person accessing this resource (test of context inside a node)"
+    field.number :average_rating, "Average rating of comments in this collection"
 
     # just to test context:
     def viewer_name_length
@@ -57,12 +57,12 @@ module Nodes
     exposes "Post"
     desc "A blog post entry"
 
-    field.string(:title)
-    field.letter_selection(:content)
-    field.number(:length)
-    field.comments(:comments)
-    field.date_time(:published_at)
-    field.connection(:likes)
+    field.string(:title, "Title of this post")
+    field.letter_selection(:content, "Full text content of this post")
+    field.number(:length, "Number of characters in this post's content")
+    field.comments(:comments, "Comments in this post, left by readers")
+    field.date_time(:published_at, "Date this post was released")
+    field.connection(:likes, "Number of users who have liked this post")
 
     def length
       target.content.length
@@ -73,9 +73,9 @@ module Nodes
     node_for Comment
     exposes "Comment"
     desc("Comment on a blog post")
-    field.string(:content)
-    field.letter_selection(:letters)
-    field.post(:post)
+    field.string(:content, "Full text content of this comment")
+    field.letter_selection(:letters, "Selection of content")
+    field.post(:post, "Post which this comment belongs to")
 
     def letters; content; end
   end
@@ -87,9 +87,9 @@ module Nodes
     # - nested exposes name
     # - field name inferred from field type
     exposes("Post::Album")
-    field.string(:title)
-    field.comments
-    field.post
+    field.string(:title, "Title for this album")
+    field.comments("Comments left on this album by viewers")
+    field.post("Post that this album belongs to")
   end
 
   # wraps a Like, for testing explicit name
@@ -98,8 +98,8 @@ module Nodes
     exposes "Like"
     type "upvote"
     desc("A show of support for a post")
-    field.number :post_id
-    field.number :person_id
+    field.number :post_id, "ID of owning post"
+    field.number :person_id, "ID of owning person"
     def id
       target.id.to_s + target.id.to_s
     end
@@ -108,8 +108,8 @@ module Nodes
   class ContextNode < GraphQL::Node
     exposes "Context"
     desc("A request context")
-    field.string(:person_name)
-    field.boolean(:present)
+    field.string(:person_name, "Name of the viewer")
+    field.boolean(:present, "True")
 
     def cursor
       "context"

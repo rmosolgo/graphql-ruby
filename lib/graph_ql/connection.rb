@@ -41,7 +41,7 @@
 #   QUERY
 class GraphQL::Connection < GraphQL::Node
   exposes "Array"
-  field.object(:edges)
+  field.object(:edges, "Members of this connection")
 
   def edge_fields
     @edge_fields ||= syntax_fields.find { |f| f.identifier == "edges" }.fields
