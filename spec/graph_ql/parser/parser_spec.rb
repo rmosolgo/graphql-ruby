@@ -60,6 +60,10 @@ describe GraphQL::Parser::Parser do
       it 'finds them with calls and aliases' do
         assert field.parse_with_debug("friends.after(123) as pals { count { edges { node { id } } } }")
       end
+
+      it 'finds them with keyword args' do
+        assert field.parse_with_debug("friends(after: 123, first: 3) as pals")
+      end
     end
   end
 
@@ -90,6 +94,10 @@ describe GraphQL::Parser::Parser do
 
     it 'finds nested field list' do
       assert fields.parse_with_debug("{id,date_of_birth{month, year}}")
+    end
+
+    it 'finds with keyword args' do
+      assert fields.parse_with_debug("{ name, friends(after: 123, first: 3) {count} }")
     end
   end
 

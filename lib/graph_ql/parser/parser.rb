@@ -21,7 +21,9 @@ class GraphQL::Parser::Parser < Parslet::Parser
   rule(:argument) { (identifier | variable_identifier | json_string)}
 
   # field
-  rule(:field) { (identifier | fragment_identifier) >> call_chain.maybe >> alias_name.maybe >> space? >> fields.as(:fields).maybe }
+  rule(:field) { (identifier | fragment_identifier) >> (keyword_arguments | call_chain).maybe >> alias_name.maybe >> space? >> fields.as(:fields).maybe }
+  rule(:keyword_arguments) { str("(") >> keyword_pair.repeat >> str(")")}
+  rule(:keyword_pair) { name >> str(":") >> space? >> argument >> separator? }
   rule(:call_chain) { (dot >> call).repeat(0).as(:calls) }
   rule(:alias_name) { space >> str("as") >> space >> name.as(:alias_name) }
 

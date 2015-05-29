@@ -41,6 +41,7 @@
 #   QUERY
 class GraphQL::Connection < GraphQL::Node
   exposes "Array"
+  desc 'Collection of objects'
   field.object(:edges)
 
   def edge_fields
