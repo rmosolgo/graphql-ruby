@@ -195,6 +195,8 @@ You could do something like this [inside a Rails controller](https://github.com/
 - Implement calls as arguments
 - double-check how to handle `pals.first(3) { count }`
 - Implement call argument introspection (wait for spec)
+- Remove call-chain? (wait for spec)
+- Implement keyword args to fields
 
 ## Goals:
 

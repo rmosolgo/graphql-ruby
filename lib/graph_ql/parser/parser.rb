@@ -21,12 +21,11 @@ class GraphQL::Parser::Parser < Parslet::Parser
   rule(:argument) { (identifier | variable_identifier | json_string)}
 
   # field
-  rule(:field) { (identifier | fragment_identifier) >> (keyword_arguments | call_chain).maybe >> alias_name.maybe >> space? >> fields.as(:fields).maybe }
-  rule(:keyword_arguments) { str("(") >> keyword_pair.repeat >> str(")")}
-  rule(:keyword_pair) { name >> str(":") >> space? >> argument >> separator? }
-  rule(:call_chain) { (dot >> call).repeat(0).as(:calls) }
-  rule(:alias_name) { space >> str("as") >> space >> name.as(:alias_name) }
-
+  rule(:field) { (identifier | fragment_identifier) >> keyword_arguments >> call_chain.as(:calls).maybe >> alias_name.maybe.as(:alias_name) >> space? >> fields.maybe.as(:optional_fields).as(:fields) }
+  rule(:keyword_arguments) { str("(").maybe >> keyword_pair.repeat(0).as(:keyword_pairs).maybe  >> str(")").maybe }
+  rule(:keyword_pair) { name.as(:keyword) >> str(":") >> space? >> argument.as(:keyword_value) >> separator? }
+  rule(:call_chain) { (dot >> call).repeat(0) }
+  rule(:alias_name) { space >> str("as") >> space >> name.as(:alias_identifier) }
   # variable
   rule(:variable) { space? >> variable_identifier >> str(":") >> space? >> (name | json_string ).as(:json_string) >> space?}
   rule(:json_string) { str("{") >> (match('[^{}]') | json_string).repeat >> str("}")}

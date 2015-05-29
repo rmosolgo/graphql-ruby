@@ -3,8 +3,9 @@ module GraphQL::Syntax
   extend ActiveSupport::Autoload
   autoload(:Call)
   autoload(:Field)
-  autoload(:Query)
   autoload(:Fragment)
+  autoload(:KeywordPair)
+  autoload(:Query)
   autoload(:Node)
   autoload(:Variable)
 end

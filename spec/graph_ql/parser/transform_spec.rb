@@ -64,6 +64,7 @@ describe GraphQL::Parser::Transform do
         res = transform.apply(tree)
         assert(res.is_a?(GraphQL::Syntax::Field))
         assert(res.identifier == "friends")
+        assert(res.alias_name.nil?)
       end
 
       it 'gets aliases' do
@@ -103,6 +104,15 @@ describe GraphQL::Parser::Transform do
           assert_equal "friends", res.identifier
           assert_equal 1, res.fields.length
           assert_equal 2, res.calls.length
+        end
+        it 'gets them with keyword arguments' do
+          tree = parser.field.parse("friends(orderby: name, last: 1) { count }")
+          res = transform.apply(tree)
+          assert_equal "friends", res.identifier
+          assert_equal 2, res.keyword_pairs.length
+          assert_equal "orderby", res.keyword_pairs.first.key
+          assert_equal "1", res.keyword_pairs.last.value
+          assert_equal 1, res.fields.length
         end
         it 'gets them with calls and aliases' do
           tree = parser.field.parse("friends.orderby(name, birthdate).last(1) as pals { count }")
