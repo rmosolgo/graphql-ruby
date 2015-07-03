@@ -3,175 +3,103 @@ require 'spec_helper'
 describe GraphQL::Parser::Parser do
   let(:parser) { GraphQL::PARSER }
 
-  describe 'query' do
-    let(:query) { parser.query }
-    it 'parses node-only' do
-      assert query.parse_with_debug("node(4) { id, name } ")
-    end
-    it 'parses node and variables' do
-      assert query.parse_with_debug(%{
-        like_page(<page1>, <other>, {"public": true}) {
-          $pageFragment
-        }
-        <page1>: {
-          "page": {"id": 1},
-          "person" : { "id", 4}
-        }
+  it 'parses documents' do
+    assert(parser.parse_with_debug(%|
+    # let's make a big query:
+    # a read-only:
+    query getStuff {id, name @if: true}
+    # a mutation:
+    mutation changeStuff($override=true, $cucumber={id: 7, name: "Cucumber"}) @veggie {
+      # change the cucumber
+      changeStuff(thing: $cucumber) {
+        id,
+        name,
+        ... family on Species # background info, of course
+      }
+    }
 
-        <other>: 24
+    # a fragment:
+    fragment family on Species {
+      family {
+        name,             # name of the family
+        members(first: 3) # some of the other examples
+      }
+    }
+    |), 'gets a document with lots of comments')
 
-        $pageFragment: {
-          page { id }
-        }
-      })
-    end
-    it 'parses no fields' do
-      assert query.parse_with_debug("node(4) { } ")
-    end
+    assert(parser.parse_with_debug("{fields, only, inThisOne}"), 'fetch-only query')
   end
 
-  describe 'field' do
-    let(:field) { parser.field }
-    it 'finds words' do
-      assert field.parse_with_debug("date_of_birth")
-    end
 
-    it 'finds aliases' do
-      assert field.parse_with_debug("name as moniker")
-    end
-
-    it 'finds calls on fields' do
-      assert field.parse_with_debug("url.site(www).upcase()")
-    end
-
-    describe 'fields that return objects' do
-      it 'finds them' do
-        assert field.parse_with_debug("birthdate { month, year }")
-      end
-
-      it 'finds them with aliases' do
-        assert field.parse_with_debug("birthdate as d_o_b { month, year }")
-      end
-
-      it 'finds them with calls' do
-        assert field.parse_with_debug("friends.after(123) { count { edges { node { id } } } }")
-      end
-
-      it 'finds them with calls and aliases' do
-        assert field.parse_with_debug("friends.after(123) as pals { count { edges { node { id } } } }")
-      end
-
-      it 'finds them with keyword args' do
-        assert field.parse_with_debug("friends(after: 123, first: 3) as pals")
-      end
-    end
+  it 'parses operation definitions' do
+    assert(parser.operation_definition.parse_with_debug(%|{id, name, ...people}|), "just a selection")
+    assert(parser.operation_definition.parse_with_debug(%|query personStuff {id, name, ...people}|), "named fetch")
+    assert(parser.operation_definition.parse_with_debug(%|query personStuff @flagDirective {id, name, ...people}|), "with a directive")
+    assert(parser.operation_definition.parse_with_debug(%|mutation changeStuff($stuff = 1, $things= true) {id, name, ...people}|), "just a selection")
   end
 
-  describe 'call' do
-    let(:call) { parser.call }
-    it 'finds bare calls' do
-      assert call.parse_with_debug("node(123)")
-      assert call.parse_with_debug("viewer()")
-    end
-
-    it 'finds calls with multiple arguments' do
-      assert call.parse_with_debug("node(4, 6)")
-    end
-
-    it 'finds calls with variables' do
-      assert call.parse_with_debug("like_page(<page>)")
-    end
+  it 'parses fragment definitions' do
+    assert(parser.fragment_definition.parse_with_debug(%|fragment nutritionFacts on Food { fat, sodium, carbohydrates, vitamins { a, b } }|))
+    assert(parser.fragment_definition.parse_with_debug(%|fragment nutritionFacts on Food @directive: "argument" { fat, sodium, carbohydrates, vitamins { a, b } }|), 'gets directives')
   end
 
-  describe 'fields' do
-    let(:fields) { parser.fields }
-
-    it 'finds fields' do
-      assert fields.parse_with_debug("{id,name}")
-      assert fields.parse_with_debug("{ id, name, favorite_food }")
-      assert fields.parse_with_debug("{\n  id,\n  name,\n  favorite_food\n}")
-    end
-
-    it 'finds nested field list' do
-      assert fields.parse_with_debug("{id,date_of_birth{month, year}}")
-    end
-
-    it 'finds with keyword args' do
-      assert fields.parse_with_debug("{ name, friends(after: 123, first: 3) {count} }")
-    end
+  it 'parses selection_set' do
+    assert(parser.selection_set.parse_with_debug(%|{id, name, people { count }}|), 'gets nested fields')
+    assert(parser.selection_set.parse_with_debug(%|{id, ... myFragment }|), 'gets fragment spreads')
+    assert(parser.selection_set.parse_with_debug(%|{id, ... on User @myFlag { name, photo } }|), 'gets inline fragments')
+    assert(parser.selection_set.parse_with_debug(%|{id @if: true, ... myFragment @if: $something}|), 'gets directives')
   end
 
-  describe 'node' do
-    let(:node) { parser.node }
-
-    it 'parses root calls' do
-      assert node.parse_with_debug("viewer() {id}")
-    end
-
-    it 'parses query fragments' do
-      assert node.parse_with_debug("viewer() { id, $someFrag }")
-    end
-
-    it 'parses nested nodes' do
-      assert node.parse_with_debug("
-        node(someone)
-            {
-              id,
-              name,
-              friends.after(12345).first(3) {
-                cursor,
-                node {
-                  id,
-                  name
-                }
-              }
-            }
-          ")
-    end
+  it 'parses directives' do
+    assert(parser.directives.parse_with_debug("@doSomething"), 'gets without argument')
+    assert(parser.directives.parse_with_debug('@doSomething: "forSomeReason"'), 'gets with argument')
+    assert(parser.directives.parse_with_debug('@myFlag, @doSomething: "forSomeReason"'), 'gets multiple')
   end
 
-  describe 'variable' do
-    let(:variable) { parser.variable }
-
-    it 'gets scalar variables' do
-      assert variable.parse_with_debug(%{<some_number>: 888})
-      assert variable.parse_with_debug(%{<some_string>: my_string})
-    end
-    it 'gets json variables' do
-      assert variable.parse_with_debug(%{<my_input>: {"key": "value"}})
-    end
-
-    it 'gets variables with nesting' do
-      assert variable.parse_with_debug(%{
-      <my_input>: {
-        "key": "value",
-        "1": 2,
-        "true": false,
-        "nested": {
-          "key" : "value"
-          }
-        }
-      })
-    end
+  it 'parses fields' do
+    assert(parser.field.parse_with_debug(%|myField { name, id }|), 'gets subselections')
+    assert(parser.field.parse_with_debug(%{myAlias: myField}), 'gets an alias')
+    assert(parser.field.parse_with_debug(%{myField(intKey: 1, floatKey: 1.1e5)}), 'gets arguments')
+    assert(parser.field.parse_with_debug(%{myAlias: myField(stringKey: "my_string", boolKey: false)}), 'gets alias and arguments')
+    assert(parser.field.parse_with_debug(%|myField @withFlag, @if: true { name, id }|), 'gets with directive')
   end
 
-  describe 'fragment' do
-    let(:fragment) { parser.fragment }
-
-    it 'gets parts of queries' do
-      assert fragment.parse_with_debug(%{ $frag: { id } })
+  describe 'value' do
+    it 'gets ints' do
+      assert(parser.value.parse_with_debug("100"), 'positive')
+      assert(parser.value.parse_with_debug("-9"), 'negative')
+      assert(parser.value.parse_with_debug("0"), 'zero')
     end
 
-    it 'gets nested parts of queries' do
-      assert fragment.parse_with_debug(%{
-        $frag: {
-          item {
-            name,
-            price
-          },
-          $qtyFragment
-        }
-      })
+    it 'gets floats' do
+      assert(parser.value.parse_with_debug("1.14"), 'no exponent')
+      assert(parser.value.parse_with_debug("6.7e-9"), 'negative exponent')
+      assert(parser.value.parse_with_debug("0.4e12"), 'exponent')
+    end
+
+    it 'gets booleans' do
+      assert(parser.value.parse_with_debug("true"))
+      assert(parser.value.parse_with_debug("false"))
+    end
+
+    it 'gets strings' do
+      assert(parser.value.parse_with_debug('"my string"'))
+    end
+
+    it 'gets arrays' do
+      assert(parser.value.parse_with_debug('[true, 1, "my string", -5.123e56]'), 'array of values')
+      assert(parser.value.parse_with_debug('[]'), 'empty array')
+      assert(parser.value.parse_with_debug('[[true, 1], ["my string", -5.123e56]]'), 'array of arrays')
+    end
+
+    it 'gets variables' do
+      assert(parser.value.parse_with_debug('$myVariable'), 'gets named variables')
+    end
+
+    it 'gets objects' do
+      assert(parser.value.parse_with_debug('{name: "tomato", calories: 50}'), 'gets scalar values')
+      assert(parser.value.parse_with_debug('{listOfValues: [1, 2, [3]], nestedObject: {nestedKey: "nested{Value}"}}'), 'gets complex values')
+      assert(parser.value.parse_with_debug('{variableKey: $variableValue}'), 'gets variables')
     end
   end
 end
