@@ -44,6 +44,9 @@ class GraphQL::Parser::Transform < Parslet::Transform
   rule(variable_name: simple(:n), variable_value: simple(:v)) { Variable.new(name: n, value: v)}
   rule(variable_name: simple(:n), variable_value: sequence(:v)) { Variable.new(name: n, value: v)}
 
+  # Query short-hand
+  rule(unnamed_selections: sequence(:s)) { OperationDefinition.new(selections: s, operation_type: "query", name: nil, variables: [], directives: [])}
+
   # Field
   rule(
     alias: simple(:a),

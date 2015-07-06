@@ -41,6 +41,10 @@ describe GraphQL::Parser::Transform do
     |
     res = get_result(query, debug: false)
     assert_equal(4, res.parts.length)
+
+    res = get_result("{ me {id, birthdate} } # query shorthand")
+    assert_equal(1, res.parts.length)
+    assert_equal("me", res.parts.first.selections.first.name)
   end
 
   it 'transforms operation definitions' do

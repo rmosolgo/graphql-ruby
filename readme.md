@@ -192,8 +192,6 @@ You could do something like this [inside a Rails controller](https://github.com/
 - double-check how to handle `pals.first(3) { count }`
 - Implement call argument introspection (wait for spec)
 - Implement keyword args to fields (`.value(options={})` ? )
-- `query` operation, short-hand of `{ ... }`
-- alias with `alias: field` instead of `as`
 - Directives
 - Fragment with `...` & `fragment` keyword
 - Deprecation (`isDeprecated` + `deprecationReason`)
@@ -203,7 +201,6 @@ You could do something like this [inside a Rails controller](https://github.com/
 - `__type__` -> `__type`, `__schema`, `__TypeKind`
 - more validations: Scalars have no selections, Objects have selections, fragments must be used, fragment fields & args must suit the type, fragments don't spread infinitely, inline fragment type must be possible for the parent query type (eg `...on Dog` inside `CatOrDog` but not `...on Fish`)
 - Serial vs non-serial execution?
-- comments with `# .... \n`
 - improve parsing & debugging experience
 
 ## Goals:

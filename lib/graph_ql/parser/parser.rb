@@ -35,7 +35,8 @@ class GraphQL::Parser::Parser < Parslet::Parser
     selections.as(:selections)
   }
 
-  rule(:operation_definition) { (selections | named_operation_definition) }
+  rule(:operation_definition) { (unnamed_selections | named_operation_definition) }
+  rule(:unnamed_selections) { selections.as(:unnamed_selections)}
   rule(:named_operation_definition) {
     operation_type.as(:operation_type) >> space? >>
     name.as(:name) >>
