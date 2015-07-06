@@ -1,174 +1,101 @@
 require 'spec_helper'
 
 describe GraphQL::Parser::Transform do
-  let(:transform) { GraphQL::TRANSFORM }
-  let(:parser) { GraphQL::PARSER }
-
-  describe '#apply' do
-    describe 'query' do
-      it 'parses node and variables' do
-        tree = parser.query.parse(%{
-          like_page(<page_info>, 12, {"public": true}) { page { $fragment, likes } }
-
-          <page_info>: {
-            "page" : { "id": 4},
-            "person" : {"id": 4}
-          }
-          <other>: {
-            "page" : { "id": 4},
-            "person" : {"id": 4}
-          }
-
-          $fragment: {
-            id, name
-          }
-          })
-        res = transform.apply(tree)
-        assert_equal 1, res.nodes.length
-        assert_equal "like_page", res.nodes[0].identifier
-        assert_equal ["<page_info>", "12", '{"public": true}'], res.nodes[0].arguments
-        assert_equal ["<page_info>", "<other>"], res.variables.map(&:identifier)
-        assert_equal ["$fragment"], res.fragments.map(&:identifier)
-      end
+  def get_result(query_string, parse: nil, debug: false)
+    # send parse: :value to do something less than a document
+    parser = parse ? GraphQL::PARSER.send(parse) : GraphQL::PARSER
+    raw_tree = parser.parse_with_debug(query_string)
+    transformed_result = GraphQL::TRANSFORM.apply(raw_tree)
+    # send debug: true to see parsing & transforming output
+    if debug
+      p raw_tree.inspect
+      p transformed_result.inspect
     end
+    transformed_result
+  end
 
-    describe 'nodes' do
-      it 'turns a simple node into a Node' do
-        tree = parser.node.parse("post(123) { name }")
-        res = transform.apply(tree)
-        assert(res.is_a?(GraphQL::Syntax::Node), 'it gets a node')
-      end
+  it 'transforms documents' do
+    query = %|
+      # you can retrieve data:
+      query someInfo {
+        me {
+          name, favorite_food,
+          ...personInfo
+        }
+      }
 
-      it 'turns a node with no fields into a node' do
-        tree = parser.node.parse("post(456) { }")
-        res = transform.apply(tree)
-        assert(res.is_a?(GraphQL::Syntax::Node), 'it gets a node')
-      end
+      # assign fragments:
+      fragment personInfo on Person {
+        birthdate, name # with fields
+      }
 
+      fragment petInfo on Pet { isHousebroken, species } # all on one line
 
-      it 'turns a node into a Node' do
-        tree = parser.node.parse("person(1) { name, check_ins.last(4) { count, edges { node { id } }  } }")
-        res = transform.apply(tree)
-        assert(res.is_a?(GraphQL::Syntax::Node), 'it gets a node')
-        assert(res.identifier == "person")
-        assert(res.fields.length == 2)
-        assert(res.fields[0].is_a?(GraphQL::Syntax::Field), 'it gets a field')
-        assert(res.fields[1].is_a?(GraphQL::Syntax::Field), 'it gets an field with fields')
-        assert(res.fields[1].calls.first.is_a?(GraphQL::Syntax::Call), 'it gets a call')
-      end
-    end
+      # and also mutations
+      mutation changePetInfo($id=4, $info={name: "Fido", isHousebroken: true}) {
+        changePetName(id: $id, info: $info) {
+          name,
+          ... petInfo,
+        }
+      }
+    |
+    res = get_result(query, debug: false)
+    assert_equal(4, res.parts.length)
+  end
 
-    describe 'fields' do
-      it 'turns a field into a Field' do
-        tree = parser.field.parse("friends")
-        res = transform.apply(tree)
-        assert(res.is_a?(GraphQL::Syntax::Field))
-        assert(res.identifier == "friends")
-        assert(res.alias_name.nil?)
-      end
+  it 'transforms operation definitions' do
+    res = get_result("query someInfo { a, b, c }", parse: :operation_definition)
+    assert_equal("query", res.operation_type)
+    assert_equal("someInfo", res.name)
+    assert_equal(3, res.selections.length)
 
-      it 'gets aliases' do
-        tree = parser.field.parse("friends as pals")
-        res = transform.apply(tree)
-        assert(res.is_a?(GraphQL::Syntax::Field))
-        assert(res.identifier == "friends")
-        assert(res.alias_name == "pals")
-      end
+    res = get_result("mutation changeThings($var=4.5,$arr=[1,2,3]) @flag, @if: true { changeThings(var: $var) { a,b,c }}", parse: :operation_definition)
+    assert_equal("mutation", res.operation_type)
+    assert_equal("var", res.variables.first.name)
+    assert_equal(4.5, res.variables.first.value)
+    assert_equal("arr", res.variables.last.name)
+    assert_equal([1,2,3], res.variables.last.value)
+    assert_equal(2, res.directives.length)
+  end
 
-      it 'gets calls' do
-        tree = parser.field.parse("friends.orderby(name, birthdate).first(3)")
-        res = transform.apply(tree)
-        assert_equal "orderby", res.calls[0].identifier
-        assert_equal ["name", "birthdate"], res.calls[0].arguments
-        assert_equal "first", res.calls[1].identifier
-        assert_equal ["3"], res.calls[1].arguments
-      end
+  it 'transforms fragment definitions' do
+    res = get_result("fragment someFields on SomeType @flag1, @flag2 { id, name }", parse: :fragment_definition)
+    assert_equal("someFields", res.name)
+    assert_equal("SomeType", res.type)
+    assert_equal(2, res.directives.length)
+    assert_equal(2, res.selections.length)
+  end
 
-      describe 'fields that return objects' do
-        it 'gets them' do
-          tree = parser.field.parse("friends { count }")
-          res = transform.apply(tree)
-          assert_equal "friends", res.identifier
-          assert_equal 1, res.fields.length
-        end
-        it 'gets them with aliases' do
-          tree = parser.field.parse("friends as pals { count }")
-          res = transform.apply(tree)
-          assert_equal "friends", res.identifier
-          assert_equal "pals", res.alias_name
-          assert_equal 1, res.fields.length
-        end
-        it 'gets them with calls' do
-          tree = parser.field.parse("friends.orderby(name, birthdate).last(1) { count }")
-          res = transform.apply(tree)
-          assert_equal "friends", res.identifier
-          assert_equal 1, res.fields.length
-          assert_equal 2, res.calls.length
-        end
-        it 'gets them with keyword arguments' do
-          tree = parser.field.parse("friends(orderby: name, last: 1) { count }")
-          res = transform.apply(tree)
-          assert_equal "friends", res.identifier
-          assert_equal 2, res.keyword_pairs.length
-          assert_equal "orderby", res.keyword_pairs.first.key
-          assert_equal "1", res.keyword_pairs.last.value
-          assert_equal 1, res.fields.length
-        end
-        it 'gets them with calls and aliases' do
-          tree = parser.field.parse("friends.orderby(name, birthdate).last(1) as pals { count }")
-          res = transform.apply(tree)
-          assert_equal "friends", res.identifier
-          assert_equal "pals", res.alias_name
-          assert_equal 1, res.fields.length
-          assert_equal 2, res.calls.length
-        end
-      end
-    end
+  it 'transforms selections' do
+    res = get_result("{ id, ...petStuff @flag, ... on Pet { isHousebroken }, name }", parse: :selections)
+    expected_classes = [GraphQL::Syntax::Field, GraphQL::Syntax::FragmentSpread, GraphQL::Syntax::InlineFragment, GraphQL::Syntax::Field]
+    assert_equal(expected_classes, res.map(&:class))
+  end
 
-    describe 'calls' do
-      it 'turns call into a Call' do
-        tree = parser.call.parse("node(4, 6, tree)")
-        res = transform.apply(tree)
-        assert(res.is_a?(GraphQL::Syntax::Call))
-        assert(res.identifier == "node")
-        assert(res.arguments == ["4", "6", "tree"])
-      end
+  it 'transforms fields' do
+    res = get_result(%|best_pals: friends(first: 3, query: {nice: {very: true}})|, parse: :field)
+    assert_equal(GraphQL::Syntax::Field, res.class)
+    assert_equal("friends", res.name)
+    assert_equal("best_pals", res.alias)
+    assert_equal("first", res.arguments.first.name)
+    assert_equal(3, res.arguments.first.value)
+    assert_equal({"nice" => {"very" => true}}, res.arguments.last.value.to_h)
 
-      it 'turns a call without an argument into a Call' do
-        tree = parser.call.parse("viewer()")
-        res = transform.apply(tree)
-        assert(res.is_a?(GraphQL::Syntax::Call))
-        assert(res.identifier == "viewer")
-        assert(res.arguments.length == 0)
-      end
+    res = get_result(%|me @flag, @if: "something" {name, id}|, parse: :field)
+    assert_equal("me", res.name)
+    assert_equal(2, res.directives.length)
+    assert_equal("flag", res.directives.first.name)
+    assert_equal("something", res.directives.last.argument)
+    assert_equal(2, res.selections.length)
+  end
 
-      it 'gets calls with variable identifiers' do
-        tree = parser.call.parse("like_page(<page_info>)")
-        res = transform.apply(tree)
-        assert_equal "<page_info>", res.arguments[0]
-      end
-    end
+  it 'transforms directives' do
+    res = get_result("@doSomething: true", parse: :directive)
+    assert_equal("doSomething", res.name, 'gets the name without @')
+    assert_equal(true, res.argument)
 
-    describe 'variables' do
-      it 'gets variables' do
-        tree = parser.variable.parse(%{
-          <page_info>: {
-            "page" : { "id": 4},
-            "person" : {"id": 4}
-          }
-          })
-        res = transform.apply(tree)
-        assert_equal "<page_info>", res.identifier
-      end
-    end
-
-    describe 'fragments' do
-      it 'gets fragments' do
-        tree = parser.fragment.parse(%{$frag: { id, name, $otherFrag }})
-        res = transform.apply(tree)
-        assert_equal "$frag", res.identifier
-        assert_equal ["id", "name", "$otherFrag"], res.fields.map(&:identifier)
-      end
-    end
+    res = get_result("@someFlag", parse: :directive)
+    assert_equal("someFlag", res.name)
+    assert_equal(nil, res.argument, 'gets nil if no argument')
   end
 end
