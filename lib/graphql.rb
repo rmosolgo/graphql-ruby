@@ -32,8 +32,9 @@ module GraphQL
   # Singleton {Parser::Transform} instance
   TRANSFORM = Parser::Transform.new
 
-  def self.parse(string)
-    tree = GraphQL::PARSER.parse(string)
+  def self.parse(string, as: nil)
+    parser = as ? GraphQL::PARSER.send(as) : GraphQL::PARSER
+    tree = parser.parse(string)
     GraphQL::TRANSFORM.apply(tree)
   rescue Parslet::ParseFailed => error
     line, col = error.cause.source.line_and_column

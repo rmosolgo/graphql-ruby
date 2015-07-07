@@ -46,7 +46,7 @@ class GraphQL::Parser::Parser < Parslet::Parser
   }
   rule(:operation_type) { (str("query") | str("mutation")) }
   rule(:operation_variable_definitions) { str("(") >> space? >> (operation_variable_definition >> separator?).repeat(1) >> space? >> str(")") }
-  rule(:operation_variable_definition) { value_variable.as(:variable_name) >> space? >> (str("=") >> space? >> value.as(:variable_value)).maybe }
+  rule(:operation_variable_definition) { value_variable.as(:variable_name) >> space? >> (str(":") >> space? >> value.as(:variable_value)).maybe }
 
   rule(:selection) { (inline_fragment | fragment_spread | field) >> space? >> separator? }
   rule(:selections) { str("{") >> space? >> selection.repeat(1) >> space? >> str("}")}

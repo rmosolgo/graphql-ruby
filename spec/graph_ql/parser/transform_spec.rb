@@ -32,7 +32,7 @@ describe GraphQL::Parser::Transform do
       fragment petInfo on Pet { isHousebroken, species } # all on one line
 
       # and also mutations
-      mutation changePetInfo($id=4, $info={name: "Fido", isHousebroken: true}) {
+      mutation changePetInfo($id: 4, $info: {name: "Fido", isHousebroken: true}) {
         changePetName(id: $id, info: $info) {
           name,
           ... petInfo,
@@ -53,7 +53,7 @@ describe GraphQL::Parser::Transform do
     assert_equal("someInfo", res.name)
     assert_equal(3, res.selections.length)
 
-    res = get_result("mutation changeThings($var=4.5,$arr=[1,2,3]) @flag, @if: true { changeThings(var: $var) { a,b,c }}", parse: :operation_definition)
+    res = get_result("mutation changeThings($var: 4.5,$arr: [1,2,3]) @flag, @if: true { changeThings(var: $var) { a,b,c }}", parse: :operation_definition)
     assert_equal("mutation", res.operation_type)
     assert_equal("var", res.variables.first.name)
     assert_equal(4.5, res.variables.first.value)

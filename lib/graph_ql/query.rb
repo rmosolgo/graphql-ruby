@@ -25,7 +25,7 @@ class GraphQL::Query
     response = {}
     @operations.each do |name, operation|
       resolver = OperationResolver.new(operation, self)
-      response[name] = resolver.response
+      response[name] = resolver.result
     end
     response
   end

@@ -9,7 +9,7 @@ describe GraphQL::Parser::Parser do
     # a read-only:
     query getStuff {id, name @if: true}
     # a mutation:
-    mutation changeStuff($override=true, $cucumber={id: 7, name: "Cucumber"}) @veggie, @healthy: true {
+    mutation changeStuff($override: true, $cucumber: {id: 7, name: "Cucumber"}) @veggie, @healthy: true {
       # change the cucumber
       changeStuff(thing: $cucumber) {
         id,
@@ -35,7 +35,7 @@ describe GraphQL::Parser::Parser do
     assert(parser.operation_definition.parse_with_debug(%|{id, name, ...people}|), "just a selection")
     assert(parser.operation_definition.parse_with_debug(%|query personStuff {id, name, ...people}|), "named fetch")
     assert(parser.operation_definition.parse_with_debug(%|query personStuff @flagDirective {id, name, ...people}|), "with a directive")
-    assert(parser.operation_definition.parse_with_debug(%|mutation changeStuff($stuff = 1, $things= true) {id, name, ...people}|), "just a selection")
+    assert(parser.operation_definition.parse_with_debug(%|mutation changeStuff($stuff: 1, $things: true) {id, name, ...people}|), "just a selection")
   end
 
   it 'parses fragment definitions' do

@@ -7,6 +7,7 @@ describe GraphQL::Type do
     assert_equal("Cheese", type.type_name)
     type.type_name("Fromage")
     assert_equal("Fromage", type.type_name)
+    type.type_name("Cheese")
   end
 
   it 'has a description' do
