@@ -5,7 +5,7 @@ describe GraphQL::Query::OperationResolver do
   let(:resolver) { GraphQL::Query::OperationResolver.new(operation, nil)}
   describe "variables" do
     it 'returns variables by name' do
-      assert_equal(1, resolver.variables["cheeseId"])
+      assert_equal(1, resolver.variables["$cheeseId"])
     end
   end
 end

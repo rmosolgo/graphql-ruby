@@ -41,8 +41,8 @@ class GraphQL::Parser::Transform < Parslet::Transform
     selections:     sequence(:s),
   ) { OperationDefinition.new(operation_type: ot.to_s, name: n.to_s, variables: v, directives: d, selections: s) }
   optional_sequence(:optional_variables)
-  rule(variable_name: simple(:n), variable_value: simple(:v)) { Variable.new(name: n, value: v)}
-  rule(variable_name: simple(:n), variable_value: sequence(:v)) { Variable.new(name: n, value: v)}
+  rule(variable_name: simple(:n), variable_value: simple(:v)) { Variable.new(name: n.name, value: v)}
+  rule(variable_name: simple(:n), variable_value: sequence(:v)) { Variable.new(name: n.name, value: v)}
 
   # Query short-hand
   rule(unnamed_selections: sequence(:s)) { OperationDefinition.new(selections: s, operation_type: "query", name: nil, variables: [], directives: [])}
@@ -73,5 +73,5 @@ class GraphQL::Parser::Transform < Parslet::Transform
   rule(int: simple(:v)) { v.to_i }
   rule(float: simple(:v)) { v.to_f }
   rule(string: simple(:v)) { v.to_s }
-  rule(variable: simple(:v)) { v.to_s }
+  rule(variable: simple(:v)) { VariableIdentifier.new(name: v.to_s) }
 end

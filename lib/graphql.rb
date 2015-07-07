@@ -38,7 +38,7 @@ module GraphQL
     GraphQL::TRANSFORM.apply(tree)
   rescue Parslet::ParseFailed => error
     line, col = error.cause.source.line_and_column
-    raise GraphQL::SyntaxError.new(line, col, string)
+    raise [line, col, string].join(", ")
   end
 
 
@@ -49,6 +49,16 @@ module GraphQL
         define_method(name) do |new_value=nil|
           new_value && self.instance_variable_set(ivar_name, new_value)
           instance_variable_get(ivar_name)
+        end
+      end
+    end
+  end
+
+  module Forwardable
+    def delegate(*methods, to:)
+      methods.each do |method_name|
+        define_method(method_name) do |*args|
+          self.public_send(to).public_send(method_name, *args)
         end
       end
     end

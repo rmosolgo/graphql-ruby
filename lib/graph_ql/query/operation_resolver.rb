@@ -1,14 +1,14 @@
 class GraphQL::Query::OperationResolver
-  attr_reader :variables
+  extend GraphQL::Forwardable
+  attr_reader :variables, :query
+
   def initialize(operation_definition, query)
     @operation_definition = operation_definition
     @variables = operation_definition.variables.reduce({}) { |memo, var| memo[var.name] = var.value; memo }
     @query = query
   end
 
-  def context
-    @query.context
-  end
+  delegate :context, to: :query
 
   def result
     @result ||= execute

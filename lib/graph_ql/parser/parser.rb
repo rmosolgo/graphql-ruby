@@ -85,7 +85,7 @@ class GraphQL::Parser::Parser < Parslet::Parser
   rule(:value_int) { (value_sign? >> match('\d').repeat(1)).as(:int) }
   # TODO: support unicode, escaped chars (match the spec)
   rule(:value_string) { str('"') >> match('[^\"]').repeat(1).as(:string) >> str('"')}
-  rule(:value_variable) { str("$") >> name.as(:variable) }
+  rule(:value_variable) { (str("$") >> name).as(:variable) }
 
   rule(:separator?) { (space? >> str(",") >> space?).maybe }
   rule(:name) { match('[_A-Za-z]') >> match('[_0-9A-Za-z]').repeat(0) }
