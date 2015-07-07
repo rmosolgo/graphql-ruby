@@ -7,8 +7,9 @@ CheeseType = GraphQL::Type.new do
   description "Cultured dairy product"
   interfaces [Edible, Meltable]
   self.fields = {
-    flavor:   field.string!(:flavor, "The flavor of ice cream"),
-    fat_content: field.float!(:fat_content, "Percentage which is milkfat")
+    id:           !field.integer(:id, "Unique identifier"),
+    flavor:       !field.string(:flavor, "Kind of cheese"),
+    fat_content:  !field.float(:fat_content, "Percentage which is milkfat")
   }
 end
 

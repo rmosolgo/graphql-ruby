@@ -1,5 +1,5 @@
 # {Transform} is a [parslet](http://kschiess.github.io/parslet/) transform for for turning the AST into objects in {GraphQL::Syntax}.
-class GraphQL::Parser::Transform < Parslet::Transform
+class GraphQL::Transform < Parslet::Transform
   # Get syntax classes by shallow name:
   def self.const_missing(constant_name)
     GraphQL::Syntax.const_get(constant_name)
@@ -19,7 +19,7 @@ class GraphQL::Parser::Transform < Parslet::Transform
     type_condition: simple(:type),
     directives:     sequence(:directives),
     selections:     sequence(:selections)
-  ) {FragmentDefinition.new(name: name, type: type, directives: directives, selections: selections)}
+  ) {FragmentDefinition.new(name: name.to_s, type: type, directives: directives, selections: selections)}
 
   rule(
     fragment_spread_name: simple(:n),
@@ -27,10 +27,10 @@ class GraphQL::Parser::Transform < Parslet::Transform
   ) { FragmentSpread.new(name: n.to_s, directives: d)}
 
   rule(
-    inline_fragment_name: simple(:n),
+    inline_fragment_type: simple(:n),
     directives: sequence(:d),
     selections: sequence(:s),
-  ) { InlineFragment.new(name: n, directives: d, selections: s)}
+  ) { InlineFragment.new(type: n, directives: d, selections: s)}
 
   # Operation Definition
   rule(

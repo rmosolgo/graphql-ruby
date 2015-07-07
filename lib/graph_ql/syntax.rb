@@ -46,7 +46,7 @@ module GraphQL::Syntax
   FieldArgument = AbstractNode.create(:name, :value)
   FragmentDefinition = AbstractNode.create(:name, :type, :directives, :selections)
   FragmentSpread = AbstractNode.create(:name, :directives)
-  InlineFragment = AbstractNode.create(:name, :directives, :selections)
+  InlineFragment = AbstractNode.create(:type, :directives, :selections)
   InputObject = AbstractNode.create(:pairs) do
     def to_h(options={})
       pairs.inject({}) do |memo, pair|

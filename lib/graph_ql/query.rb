@@ -1,9 +1,11 @@
 class GraphQL::Query
   extend ActiveSupport::Autoload
-  autoload(:FieldResolver)
+  autoload(:FieldResolutionStrategy)
+  autoload(:FragmentSpreadResolutionStrategy)
+  autoload(:InlineFragmentResolutionStrategy)
   autoload(:OperationResolver)
   autoload(:SelectionResolver)
-  attr_reader :schema, :document, :context
+  attr_reader :schema, :document, :context, :fragments
 
   def initialize(schema, query_string, context)
     @schema = schema
@@ -13,9 +15,9 @@ class GraphQL::Query
     @operations = {}
 
     @document.parts.each do |part|
-      if !part.is_a?(GraphQL::Syntax::OperationDefinition)
+      if part.is_a?(GraphQL::Syntax::FragmentDefinition)
         @fragments[part.name] = part
-      else
+      elsif part.is_a?(GraphQL::Syntax::OperationDefinition)
         @operations[part.name] = part
       end
     end

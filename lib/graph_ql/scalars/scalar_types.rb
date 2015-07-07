@@ -1,3 +1,4 @@
 GraphQL::SCALAR_TYPES = [
   GraphQL::STRING_TYPE,
+  GraphQL::INTEGER_TYPE,
 ]

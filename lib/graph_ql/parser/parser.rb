@@ -1,7 +1,7 @@
 # Parser is a [parslet](http://kschiess.github.io/parslet/) parser for parsing queries.
 #
 # If it failes to parse, a {SyntaxError} is raised.
-class GraphQL::Parser::Parser < Parslet::Parser
+class GraphQL::Parser < Parslet::Parser
   root(:document)
   rule(:document) { (
       space                |
@@ -30,7 +30,7 @@ class GraphQL::Parser::Parser < Parslet::Parser
   # TODO: `on` bug, see spec
   rule(:inline_fragment) {
     str("...") >> space? >>
-    str("on ") >> name.as(:inline_fragment_name) >> space? >>
+    str("on ") >> name.as(:inline_fragment_type) >> space? >>
     directives.maybe.as(:optional_directives).as(:directives) >> space? >>
     selections.as(:selections)
   }

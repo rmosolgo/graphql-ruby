@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe GraphQL::Parser::Parser do
+describe GraphQL::Parser do
   let(:parser) { GraphQL::PARSER }
 
   it 'parses documents' do
@@ -14,7 +14,8 @@ describe GraphQL::Parser::Parser do
       changeStuff(thing: $cucumber) {
         id,
         name,
-        ... family on Species # background info, of course
+        ... on Species { color },
+        ... family # background info, of course
       }
     }
 
@@ -25,6 +26,8 @@ describe GraphQL::Parser::Parser do
         members(first: 3, query: {isPlant: true}) # some of the other examples
       }
     }
+
+    fragment nonsense on NonsenseType { bogus }
     |), 'gets a document with lots of comments')
 
     assert(parser.parse_with_debug("{fields, only, inThisOne}"), 'fetch-only query')
@@ -33,7 +36,7 @@ describe GraphQL::Parser::Parser do
 
   it 'parses operation definitions' do
     assert(parser.operation_definition.parse_with_debug(%|{id, name, ...people}|), "just a selection")
-    assert(parser.operation_definition.parse_with_debug(%|query personStuff {id, name, ...people}|), "named fetch")
+    assert(parser.operation_definition.parse_with_debug(%|query personStuff {id, name, ...people, ... stuff}|), "named fetch")
     assert(parser.operation_definition.parse_with_debug(%|query personStuff @flagDirective {id, name, ...people}|), "with a directive")
     assert(parser.operation_definition.parse_with_debug(%|mutation changeStuff($stuff: 1, $things: true) {id, name, ...people}|), "just a selection")
   end

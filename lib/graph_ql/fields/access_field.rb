@@ -11,4 +11,8 @@ class GraphQL::AccessField
   def resolve(object, arguments, context)
     object.send(property)
   end
+
+  def !
+    GraphQL::NonNullField.new(field: self)
+  end
 end

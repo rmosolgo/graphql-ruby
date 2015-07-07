@@ -1,12 +1,13 @@
 class GraphQL::AccessFieldDefiner
-  def string(name, desc)
-    GraphQL::AccessField.new(type: GraphQL::STRING_TYPE, property: name, description: desc)
-  end
+  FIELD_TYPES = {
+    string:   GraphQL::STRING_TYPE,
+    integer:  GraphQL::INTEGER_TYPE,
+    float:    GraphQL::STRING_TYPE,
+  }
 
-  def string!(name, desc)
-    GraphQL::NonNullField.new(field: string(name, desc))
-  end
-
-  def float!(name, desc)
+  FIELD_TYPES.each do |name, type|
+    define_method(name) do |name, desc|
+      GraphQL::AccessField.new(type: type, property: name, description: desc)
+    end
   end
 end

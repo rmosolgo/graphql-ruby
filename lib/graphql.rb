@@ -21,16 +21,19 @@ module GraphQL
     autoload(:NonNullField)
   end
 
+  autoload_under "parser" do
+    autoload(:Parser)
+    autoload(:Transform)
+  end
+
   autoload_under "scalars" do
-    autoload(:SCALAR_TYPE)
+    autoload(:INTEGER_TYPE)
     autoload(:SCALAR_TYPES)
     autoload(:STRING_TYPE)
   end
 
-  # Singleton {Parser::Parser} instance
-  PARSER = Parser::Parser.new
-  # Singleton {Parser::Transform} instance
-  TRANSFORM = Parser::Transform.new
+  PARSER = Parser.new
+  TRANSFORM = Transform.new
 
   def self.parse(string, as: nil)
     parser = as ? GraphQL::PARSER.send(as) : GraphQL::PARSER

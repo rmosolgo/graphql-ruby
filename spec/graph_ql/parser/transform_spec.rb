@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe GraphQL::Parser::Transform do
+describe GraphQL::Transform do
   def get_result(query_string, parse: nil, debug: false)
     # send parse: :value to do something less than a document
     parser = parse ? GraphQL::PARSER.send(parse) : GraphQL::PARSER
