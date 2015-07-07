@@ -22,8 +22,9 @@ module GraphQL
   end
 
   autoload_under "scalars" do
-    autoload(:ScalarType)
-    autoload(:StringType)
+    autoload(:SCALAR_TYPE)
+    autoload(:SCALAR_TYPES)
+    autoload(:STRING_TYPE)
   end
 
   # Singleton {Parser::Parser} instance
@@ -44,7 +45,7 @@ module GraphQL
     def attr_definable(*names)
       names.each do |name|
         ivar_name = "@#{name}".to_sym
-        define_singleton_method(name) do |new_value=nil|
+        define_method(name) do |new_value=nil|
           new_value && self.instance_variable_set(ivar_name, new_value)
           instance_variable_get(ivar_name)
         end

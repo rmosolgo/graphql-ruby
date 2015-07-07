@@ -2,22 +2,13 @@ require_relative './dummy_data'
 Edible = :edible
 Meltable = :meltable
 
-class CheeseType < GraphQL::Type
+CheeseType = GraphQL::Type.new do
   type_name "Cheese"
   description "Cultured dairy product"
   interfaces [Edible, Meltable]
   self.fields = {
     flavor:   field.string!(:flavor, "The flavor of ice cream"),
-    creamery: field.string(:creamery, "The name of the place where the ice cream was made"),
-  }
-end
-
-class MilkType < GraphQL::Type
-  type_name "Milk"
-  description "Dairy beverage, served cold"
-  interfaces [Edible]
-  self.fields = {
-    # fat_content: field.float!(:fat_content)
+    fat_content: field.float!(:fat_content, "Percentage which is milkfat")
   }
 end
 
@@ -38,7 +29,7 @@ class FetchField < GraphQL::AbstractField
   end
 end
 
-class QueryType < GraphQL::Type
+QueryType = GraphQL::Type.new do
   type_name "Query"
   description "Query root of the system"
   self.fields = {

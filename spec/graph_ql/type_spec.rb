@@ -19,10 +19,8 @@ describe GraphQL::Type do
 
   describe '.fields ' do
     let(:flavor_field) { type.fields["flavor"] }
-    let(:creamery_field) { type.fields["creamery"]}
     it 'exposes fields' do
       assert_equal(GraphQL::NonNullField, flavor_field.class)
-      assert_equal(GraphQL::AccessField, creamery_field.class)
     end
   end
 end

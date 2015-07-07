@@ -1,7 +1,7 @@
 # Implement {AbstractField} by calling {property} on its object
 # and returning the result.
 class GraphQL::AccessField
-  attr_reader :type, :description
+  attr_reader :type, :description, :property
   def initialize(type:, property:, description:)
     @type = type
     @property = property
@@ -9,7 +9,6 @@ class GraphQL::AccessField
   end
 
   def resolve(object, arguments, context)
-    p "Obj: #{object}, #{@property}"
-    object.send(@property)
+    object.send(property)
   end
 end

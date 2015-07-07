@@ -6,7 +6,7 @@ class GraphQL::Query::FieldResolver
     arguments = ast_field.arguments.reduce({}) { |m, a| m[a.name] = a.value; m }
     field = type.fields[ast_field.name]
     value = field.resolve(target, arguments, query.context)
-    if field.type.is_a?(GraphQL::ScalarType)
+    if GraphQL::SCALAR_TYPES.include?(field.type)
       @result = field.type.coerce(value)
     else
       resolver = GraphQL::Query::SelectionResolver.new(value, field.type, ast_field.selections, query)
