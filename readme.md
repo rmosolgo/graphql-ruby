@@ -6,6 +6,8 @@
 [![Test Coverage](https://codeclimate.com/github/rmosolgo/graphql-ruby/badges/coverage.svg)](https://codeclimate.com/github/rmosolgo/graphql-ruby)
 [![built with love](https://cloud.githubusercontent.com/assets/2231765/6766607/d07992c6-cfc9-11e4-813f-d9240714dd50.png)](http://rmosolgo.github.io/react-badges/)
 
+(Current status: getting up to spec!)
+
 Create a GraphQL interface by implementing [nodes](#nodes) and [calls](#calls), then running [queries](#queries).
 
 ## Example Implementation
