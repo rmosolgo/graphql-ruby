@@ -54,9 +54,9 @@ class GraphQL::Parser::Transform < Parslet::Transform
     field_arguments: sequence(:args),
     directives: sequence(:dir),
     selections: sequence(:sel)
-  ) { Field.new(alias: a.to_s, name: name.to_s, arguments: args, directives: dir, selections: sel) }
+  ) { Field.new(alias: a, name: name.to_s, arguments: args, directives: dir, selections: sel) }
 
-  rule(alias_name: simple(:a)) { a }
+  rule(alias_name: simple(:a)) { a.to_s }
   optional_sequence(:optional_field_arguments)
   rule(field_argument_name: simple(:n), field_argument_value: simple(:v)) { FieldArgument.new(name: n.to_s, value: v)}
   optional_sequence(:optional_selections)

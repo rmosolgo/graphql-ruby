@@ -87,6 +87,7 @@ describe GraphQL::Parser::Transform do
 
     res = get_result(%|me @flag, @if: "something" {name, id}|, parse: :field)
     assert_equal("me", res.name)
+    assert_equal(nil, res.alias)
     assert_equal(2, res.directives.length)
     assert_equal("flag", res.directives.first.name)
     assert_equal("something", res.directives.last.argument)

@@ -1,7 +1,7 @@
-# These objects are used to track the schema of the graph
-module GraphQL::Schema
-  extend ActiveSupport::Autoload
-  autoload(:ALL)
-  autoload(:Schema)
-  autoload(:SchemaValidation)
+class GraphQL::Schema
+  attr_reader :query, :mutation
+  def initialize(query:, mutation:)
+    @query    = query
+    @mutation = mutation
+  end
 end

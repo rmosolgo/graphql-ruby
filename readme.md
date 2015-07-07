@@ -189,22 +189,18 @@ You could do something like this [inside a Rails controller](https://github.com/
 
 - Express failure with `errors` key (http://facebook.github.io/graphql/#sec-Errors)
 - Handle blank objects by returning `null`
-- double-check how to handle `pals.first(3) { count }`
-- Implement call argument introspection (wait for spec)
-- Implement keyword args to fields (`.value(options={})` ? )
 - Directives
-- Fragment with `...` & `fragment` keyword
 - Deprecation (`isDeprecated` + `deprecationReason`)
 - Interfaces + inline fragments
 - Unions
 - Non-null
 - `__type__` -> `__type`, `__schema`, `__TypeKind`
+  - `__typename`: shortcut to `__type.name`
 - more validations: Scalars have no selections, Objects have selections, fragments must be used, fragment fields & args must suit the type, fragments don't spread infinitely, inline fragment type must be possible for the parent query type (eg `...on Dog` inside `CatOrDog` but not `...on Fish`)
 - Serial vs non-serial execution?
-- improve parsing & debugging experience
 
 ## Goals:
 
-- Implement the GraphQL spec (when Facebook releases it) & support a Relay front end
+- Implement the GraphQL spec & support a Relay front end
 - Provide idiomatic, plain-Ruby API with similarities to reference implementation where possible
 - Support `graphql-rails`

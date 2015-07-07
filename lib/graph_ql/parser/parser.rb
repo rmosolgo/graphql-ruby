@@ -59,7 +59,7 @@ class GraphQL::Parser::Parser < Parslet::Parser
     selections.maybe.as(:optional_selections).as(:selections)
   }
 
-  rule(:field_alias) { name.maybe.as(:alias_name) >> space? >> str(":") >> space? }
+  rule(:field_alias) { name.as(:alias_name) >> space? >> str(":") >> space? }
   rule(:field_arguments) { str("(") >> field_argument.repeat(1) >> str(")") }
   rule(:field_argument) { name.as(:field_argument_name) >> str(":") >> space? >> value.as(:field_argument_value) >> separator? }
 

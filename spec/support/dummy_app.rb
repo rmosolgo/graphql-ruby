@@ -1,42 +1,49 @@
-require_relative './inadequate_record_base'
+require_relative './dummy_data'
+Edible = :edible
+Meltable = :meltable
 
-class Post < InadequateRecordBase
-  attr_accessor :id, :title, :content, :published_at
-  def comments
-    Comment.where(post_id: id)
-  end
-  def likes
-    Like.where(post_id: id)
+class CheeseType < GraphQL::Type
+  type_name "Cheese"
+  description "Cultured dairy product"
+  interfaces [Edible, Meltable]
+  self.fields = {
+    flavor:   field.string!(:flavor, "The flavor of ice cream"),
+    creamery: field.string(:creamery, "The name of the place where the ice cream was made"),
+  }
+end
+
+class MilkType < GraphQL::Type
+  type_name "Milk"
+  description "Dairy beverage, served cold"
+  interfaces [Edible]
+  self.fields = {
+    # fat_content: field.float!(:fat_content)
+  }
+end
+
+class FetchField < GraphQL::AbstractField
+  attr_reader :type
+  def initialize(type:, model:, data:)
+    @type = type
+    @model = model
+    @data = data
   end
 
-  class Album < InadequateRecordBase
-    attr_accessor :id, :post_id, :title
-    def post
-      Post.find(post_id)
-    end
-    def comments
-      post.comments
-    end
+  def description
+    "Find a #{@model.type_name} by id"
+  end
+
+  def resolve(target, arguments, context)
+    @data[arguments["id"]]
   end
 end
 
-class Comment < InadequateRecordBase
-  attr_accessor :id, :post_id, :content, :rating
-  def post
-    Post.find(post_id)
-  end
+class QueryType < GraphQL::Type
+  type_name "Query"
+  description "Query root of the system"
+  self.fields = {
+    cheese: FetchField.new(type: CheeseType, model: Cheese, data: CHEESES)
+  }
 end
 
-class Like < InadequateRecordBase
-  attr_accessor :id, :post_id, :person_id
-  def post
-    Post.find(post_id)
-  end
-end
-
-class Context
-  attr_reader :person_name
-  def initialize(person_name:)
-    @person_name = person_name
-  end
-end
+DummySchema = GraphQL::Schema.new(query: QueryType, mutation: nil)
