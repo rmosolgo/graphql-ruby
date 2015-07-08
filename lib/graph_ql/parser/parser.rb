@@ -46,7 +46,11 @@ class GraphQL::Parser < Parslet::Parser
   }
   rule(:operation_type) { (str("query") | str("mutation")) }
   rule(:operation_variable_definitions) { str("(") >> space? >> (operation_variable_definition >> separator?).repeat(1) >> space? >> str(")") }
-  rule(:operation_variable_definition) { value_variable.as(:variable_name) >> space? >> (str(":") >> space? >> value.as(:variable_value)).maybe }
+  rule(:operation_variable_definition) {
+    value_variable.as(:variable_name) >> space? >>
+    str(":") >> space? >>
+    type.as(:variable_type) >> space? >>
+    (str("=") >> space? >> value.as(:variable_default_value)).maybe.as(:variable_optional_default_value)}
 
   rule(:selection) { (inline_fragment | fragment_spread | field) >> space? >> separator? }
   rule(:selections) { str("{") >> space? >> selection.repeat(1) >> space? >> str("}")}
@@ -66,7 +70,11 @@ class GraphQL::Parser < Parslet::Parser
   rule(:directives) { (directive >> separator?).repeat(1) }
   rule(:directive) { str("@") >> name.as(:directive_name) >> (space? >> str(":") >> space?).maybe >> value.maybe.as(:directive_argument) }
 
-  # TODO: Enum
+  rule(:type) { (non_null_type | list_type | type_name)}
+  rule(:list_type) { str("[") >> type >> str("]")}
+  rule(:non_null_type) { (list_type | type_name) >> str("!") }
+  rule(:type_name) { name }
+
   rule(:value) {(
     value_input_object  |
     value_float         |

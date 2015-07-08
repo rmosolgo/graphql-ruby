@@ -3,9 +3,9 @@ require 'spec_helper'
 describe GraphQL::Query do
   describe '#execute' do
     let(:query_string) { "
-      query getFlavor($goudaId: 2) {
+      query getFlavor {
         brie: cheese(id: 1)   { ...cheeseFields, ... meatFields, taste: flavor },
-        cheese(id: $goudaId)  { id, ...cheeseFields, ... on Cheese { cheeseKind: flavor }, ... on Meat { cut } }
+        cheese(id: 2)  { id, ...cheeseFields, ... on Cheese { cheeseKind: flavor }, ... on Meat { cut } }
         fromSource(source: COW) { id }
       }
 

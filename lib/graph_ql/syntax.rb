@@ -59,6 +59,6 @@ module GraphQL::Syntax
   end
   InputObjectPair = AbstractNode.create(:name, :value)
   OperationDefinition = AbstractNode.create(:operation_type, :name, :variables, :directives, :selections)
-  Variable = AbstractNode.create(:name, :value)
+  Variable = AbstractNode.create(:name, :type, :default_value)
   VariableIdentifier = AbstractNode.create(:name)
 end

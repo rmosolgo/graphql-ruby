@@ -9,9 +9,9 @@ describe GraphQL::Parser do
     # a read-only:
     query getStuff {id, name @if: true}
     # a mutation:
-    mutation changeStuff($override: true, $cucumber: {id: 7, name: "Cucumber"}) @veggie, @healthy: true {
+    mutation changeStuff($override: Boolean!, $cucumbers: [Vegetable]!) @veggie, @healthy: true {
       # change the cucumber
-      changeStuff(thing: $cucumber) {
+      changeStuff(thing: $cucumbers) {
         id,
         name,
         ... on Species { color },
@@ -38,7 +38,7 @@ describe GraphQL::Parser do
     assert(parser.operation_definition.parse_with_debug(%|{id, name, ...people}|), "just a selection")
     assert(parser.operation_definition.parse_with_debug(%|query personStuff {id, name, ...people, ... stuff}|), "named fetch")
     assert(parser.operation_definition.parse_with_debug(%|query personStuff @flagDirective {id, name, ...people}|), "with a directive")
-    assert(parser.operation_definition.parse_with_debug(%|mutation changeStuff($stuff: 1, $things: true) {id, name, ...people}|), "just a selection")
+    assert(parser.operation_definition.parse_with_debug(%|mutation changeStuff($stuff: Int = 1, $things: [Boolean]!) {id, name, ...people}|), "mutation with arguments")
   end
 
   it 'parses fragment definitions' do
@@ -65,6 +65,14 @@ describe GraphQL::Parser do
     assert(parser.field.parse_with_debug(%{myField(intKey: 1, floatKey: 1.1e5)}), 'gets arguments')
     assert(parser.field.parse_with_debug(%{myAlias: myField(stringKey: "my_string", boolKey: false, objKey: {key : true})}), 'gets alias and arguments')
     assert(parser.field.parse_with_debug(%|myField @withFlag, @if: true { name, id }|), 'gets with directive')
+  end
+
+  it 'parses variable definitions' do
+    assert(parser.operation_variable_definition.parse_with_debug("$myVar: Boolean = true"), "it gets variables with defaults")
+    assert(parser.operation_variable_definition.parse_with_debug("$myVar: [Int]"), "it gets list variables")
+    assert(parser.operation_variable_definition.parse_with_debug("$myVar: Elephant!"), "it gets non-null variables")
+    assert(parser.operation_variable_definition.parse_with_debug("$myVar: [Food]!"), "it gets non-null list variables")
+    assert(parser.operation_variable_definitions.parse_with_debug(%|($myVar: Elephant!, $myList: [Float], $myString: String="Cheese")|), "it gets a list of defns")
   end
 
   describe 'value' do
