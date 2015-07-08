@@ -55,9 +55,9 @@ describe GraphQL::Transform do
 
     res = get_result("mutation changeThings($var: Float = 4.5, $arr: [Int]!) @flag, @if: true { changeThings(var: $var) { a,b,c }}", parse: :operation_definition)
     assert_equal("mutation", res.operation_type)
-    assert_equal("$var", res.variables.first.name)
+    assert_equal("var", res.variables.first.name)
     assert_equal(4.5, res.variables.first.default_value)
-    assert_equal("$arr", res.variables.last.name)
+    assert_equal("arr", res.variables.last.name)
     assert_equal(2, res.directives.length)
   end
 

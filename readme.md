@@ -199,6 +199,7 @@ You could do something like this [inside a Rails controller](https://github.com/
 - Introspection
 - Validations
 - Serial vs non-serial execution?
+- field merging (https://github.com/graphql/graphql-js/issues/19#issuecomment-118515077)
 
 ## Goals:
 

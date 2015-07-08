@@ -5,12 +5,13 @@ class GraphQL::Query
   autoload(:InlineFragmentResolutionStrategy)
   autoload(:OperationResolver)
   autoload(:SelectionResolver)
-  attr_reader :schema, :document, :context, :fragments
+  attr_reader :schema, :document, :context, :fragments, :params
 
-  def initialize(schema, query_string, context)
+  def initialize(schema, query_string, context: nil, params: {})
     @schema = schema
     @document = GraphQL.parse(query_string)
     @context = context
+    @params = params
     @fragments = {}
     @operations = {}
 

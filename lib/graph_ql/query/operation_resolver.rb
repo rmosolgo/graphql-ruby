@@ -4,7 +4,7 @@ class GraphQL::Query::OperationResolver
 
   def initialize(operation_definition, query)
     @operation_definition = operation_definition
-    @variables = operation_definition.variables.reduce({}) { |memo, var| memo[var.name] = var.value; memo }
+    @variables = query.params
     @query = query
   end
 
