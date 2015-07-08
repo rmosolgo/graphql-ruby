@@ -1,7 +1,7 @@
 class GraphQL::Query::InlineFragmentResolutionStrategy
   attr_reader :result
   def initialize(ast_inline_fragment, type, target, operation_resolver)
-    if ast_inline_fragment.type != type.type_name
+    if ast_inline_fragment.type != type.name
       @result = {}
     else
       selections = ast_inline_fragment.selections

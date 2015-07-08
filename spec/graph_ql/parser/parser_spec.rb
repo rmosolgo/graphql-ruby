@@ -104,5 +104,9 @@ describe GraphQL::Parser do
       assert(parser.value.parse_with_debug('{listOfValues: [1, 2, [3]], nestedObject: {nestedKey: "nested{Value}"}}'), 'gets complex values')
       assert(parser.value.parse_with_debug('{variableKey: $variableValue}'), 'gets variables')
     end
+
+    it 'gets enums' do
+      assert(parser.value.parse_with_debug("MY_ENUM"), 'gets enums')
+    end
   end
 end

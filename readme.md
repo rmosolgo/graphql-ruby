@@ -193,12 +193,11 @@ You could do something like this [inside a Rails controller](https://github.com/
 - Handle blank objects by returning `null`
 - Directives
 - Deprecation (`isDeprecated` + `deprecationReason`)
-- Interfaces + inline fragments
+- Interfaces
 - Unions
 - Non-null
-- `__type__` -> `__type`, `__schema`, `__TypeKind`
-  - `__typename`: shortcut to `__type.name`
-- more validations: Scalars have no selections, Objects have selections, fragments must be used, fragment fields & args must suit the type, fragments don't spread infinitely, inline fragment type must be possible for the parent query type (eg `...on Dog` inside `CatOrDog` but not `...on Fish`)
+- Introspection
+- Validations
 - Serial vs non-serial execution?
 
 ## Goals:

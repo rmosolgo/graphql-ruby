@@ -74,7 +74,8 @@ class GraphQL::Parser < Parslet::Parser
     value_string        |
     value_boolean       |
     value_array         |
-    value_variable
+    value_variable      |
+    value_enum
   )}
   rule(:value_sign?) { str("-").maybe }
   rule(:value_array) { (str("[") >> (value >> separator?).repeat(0) >> str("]")).as(:array) }
@@ -85,6 +86,7 @@ class GraphQL::Parser < Parslet::Parser
   rule(:value_int) { (value_sign? >> match('\d').repeat(1)).as(:int) }
   # TODO: support unicode, escaped chars (match the spec)
   rule(:value_string) { str('"') >> match('[^\"]').repeat(1).as(:string) >> str('"')}
+  rule(:value_enum) { name.as(:enum) }
   rule(:value_variable) { (str("$") >> name).as(:variable) }
 
   rule(:separator?) { (space? >> str(",") >> space?).maybe }

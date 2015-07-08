@@ -6,18 +6,21 @@ require "parslet"
 
 module GraphQL
   extend ActiveSupport::Autoload
+  autoload(:Enum)
   autoload(:Interface)
   autoload(:Parser)
   autoload(:Query)
   autoload(:Schema)
   autoload(:Syntax)
-  autoload(:Type)
+  autoload(:TypeKinds)
+  autoload(:ObjectType)
   autoload(:VERSION)
 
   autoload_under "fields" do
     autoload(:AbstractField)
     autoload(:AccessField)
     autoload(:AccessFieldDefiner)
+    autoload(:ListField)
     autoload(:NonNullField)
   end
 
@@ -26,9 +29,10 @@ module GraphQL
     autoload(:Transform)
   end
 
-  autoload_under "scalars" do
+  autoload_under "types" do
+    autoload(:ScalarType)
     autoload(:INTEGER_TYPE)
-    autoload(:SCALAR_TYPES)
+    autoload(:ListType)
     autoload(:STRING_TYPE)
   end
 

@@ -6,6 +6,7 @@ describe GraphQL::Query do
       query getFlavor($goudaId: 2) {
         brie: cheese(id: 1)   { ...cheeseFields, ... meatFields, taste: flavor },
         cheese(id: $goudaId)  { id, ...cheeseFields, ... on Cheese { cheeseKind: flavor }, ... on Meat { cut } }
+        fromSource(source: COW) { id }
       }
 
       fragment cheeseFields on Cheese {
@@ -18,11 +19,12 @@ describe GraphQL::Query do
     "}
     let(:query) { GraphQL::Query.new(DummySchema, query_string, {})}
 
-    it 'returns a result' do
+    it 'returns fields on objects' do
       res = query.execute
       expected = { "getFlavor" => {
           "brie" =>   { "flavor" => "Brie", "taste" => "Brie" },
-          "cheese" => { "id" => 2, "flavor" => "Gouda", "cheeseKind" => "Gouda" }
+          "cheese" => { "id" => 2, "flavor" => "Gouda", "cheeseKind" => "Gouda" },
+          "fromSource" => [{ "id" => 1 }, {"id" => 2}],
         }}
       assert_equal(expected, res)
     end

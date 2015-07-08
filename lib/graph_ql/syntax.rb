@@ -42,6 +42,7 @@ module GraphQL::Syntax
 
   Directive = AbstractNode.create(:name, :argument)
   Document = AbstractNode.create(:parts)
+  Enum = AbstractNode.create(:name)
   Field = AbstractNode.create(:name, :alias, :arguments, :directives, :selections)
   FieldArgument = AbstractNode.create(:name, :value)
   FragmentDefinition = AbstractNode.create(:name, :type, :directives, :selections)

@@ -7,7 +7,11 @@ class GraphQL::AccessFieldDefiner
 
   FIELD_TYPES.each do |name, type|
     define_method(name) do |name, desc|
-      GraphQL::AccessField.new(type: type, property: name, description: desc)
+      of_type(type, name, desc)
     end
+  end
+
+  def of_type(type, name, desc)
+    GraphQL::AccessField.new(type: type, property: name, description: desc)
   end
 end

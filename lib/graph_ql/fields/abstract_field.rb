@@ -1,6 +1,6 @@
 class GraphQL::AbstractField
   def type
-    raise NotImplementError, "#type should return the type class which this field returns"
+    raise NotImplementedError, "#type should return the type class which this field returns"
   end
 
   def description

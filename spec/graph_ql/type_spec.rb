@@ -1,13 +1,13 @@
 require 'spec_helper'
 
-describe GraphQL::Type do
+describe GraphQL::ObjectType do
   let(:type) { CheeseType }
 
   it 'has a name' do
-    assert_equal("Cheese", type.type_name)
-    type.type_name("Fromage")
-    assert_equal("Fromage", type.type_name)
-    type.type_name("Cheese")
+    assert_equal("Cheese", type.name)
+    type.name("Fromage")
+    assert_equal("Fromage", type.name)
+    type.name("Cheese")
   end
 
   it 'has a description' do

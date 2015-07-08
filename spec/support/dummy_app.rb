@@ -1,15 +1,26 @@
 require_relative './dummy_data'
+
 Edible = :edible
+# Edible = GraphQL::Interface.new do
+#   description "Something you can eat, yum"
+#   self.fields = {
+#     fat_content: !field.float("Percentage which is fat"),
+#   }
+# end
+
 Meltable = :meltable
 
-CheeseType = GraphQL::Type.new do
-  type_name "Cheese"
+DairyAnimalEnum = GraphQL::Enum.new("DairyAnimal", ["COW", "GOAT", "SHEEP"])
+
+CheeseType = GraphQL::ObjectType.new do
+  name "Cheese"
   description "Cultured dairy product"
   interfaces [Edible, Meltable]
   self.fields = {
     id:           !field.integer(:id, "Unique identifier"),
     flavor:       !field.string(:flavor, "Kind of cheese"),
-    fat_content:  !field.float(:fat_content, "Percentage which is milkfat")
+    source:       !field(DairyAnimalEnum, :source, "Animal which produced the milk for this cheese"),
+    fat_content:  !field.float(:fat_content, "Percentage which is milkfat"),
   }
 end
 
@@ -30,11 +41,22 @@ class FetchField < GraphQL::AbstractField
   end
 end
 
-QueryType = GraphQL::Type.new do
-  type_name "Query"
+class SourceField < GraphQL::AbstractField
+  def type
+    GraphQL::ListType.new(of_type: CheeseType)
+  end
+
+  def resolve(target, arguments, context)
+    CHEESES.values.select{ |c| c.source == arguments["source"] }
+  end
+end
+
+QueryType = GraphQL::ObjectType.new do
+  name "Query"
   description "Query root of the system"
   self.fields = {
-    cheese: FetchField.new(type: CheeseType, model: Cheese, data: CHEESES)
+    cheese: FetchField.new(type: CheeseType, model: Cheese, data: CHEESES),
+    fromSource: SourceField.new,
   }
 end
 

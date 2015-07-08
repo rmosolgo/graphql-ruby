@@ -74,4 +74,5 @@ class GraphQL::Transform < Parslet::Transform
   rule(float: simple(:v)) { v.to_f }
   rule(string: simple(:v)) { v.to_s }
   rule(variable: simple(:v)) { VariableIdentifier.new(name: v.to_s) }
+  rule(enum: simple(:v)) { Enum.new(name: v.to_s)}
 end

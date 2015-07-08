@@ -77,13 +77,14 @@ describe GraphQL::Transform do
   end
 
   it 'transforms fields' do
-    res = get_result(%|best_pals: friends(first: 3, query: {nice: {very: true}})|, parse: :field)
+    res = get_result(%|best_pals: friends(first: 3, coolnessLevel: SO_COOL, query: {nice: {very: true}})|, parse: :field)
     assert_equal(GraphQL::Syntax::Field, res.class)
     assert_equal("friends", res.name)
     assert_equal("best_pals", res.alias)
-    assert_equal("first", res.arguments.first.name)
-    assert_equal(3, res.arguments.first.value)
-    assert_equal({"nice" => {"very" => true}}, res.arguments.last.value.to_h)
+    assert_equal("first", res.arguments[0].name)
+    assert_equal(3, res.arguments[0].value)
+    assert_equal("SO_COOL", res.arguments[1].value.name)
+    assert_equal({"nice" => {"very" => true}}, res.arguments[2].value.to_h)
 
     res = get_result(%|me @flag, @if: "something" {name, id}|, parse: :field)
     assert_equal("me", res.name)
