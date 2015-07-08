@@ -71,9 +71,9 @@ class GraphQL::Parser < Parslet::Parser
   rule(:directive) { str("@") >> name.as(:directive_name) >> (space? >> str(":") >> space?).maybe >> value.maybe.as(:directive_argument) }
 
   rule(:type) { (non_null_type | list_type | type_name)}
-  rule(:list_type) { str("[") >> type >> str("]")}
-  rule(:non_null_type) { (list_type | type_name) >> str("!") }
-  rule(:type_name) { name }
+  rule(:list_type) { str("[") >> type.as(:list_type) >> str("]")}
+  rule(:non_null_type) { (list_type | type_name).as(:non_null_type) >> str("!") }
+  rule(:type_name) { name.as(:type_name) }
 
   rule(:value) {(
     value_input_object  |

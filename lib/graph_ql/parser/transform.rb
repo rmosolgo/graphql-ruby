@@ -66,6 +66,11 @@ class GraphQL::Transform < Parslet::Transform
   # Directive
   rule(directive_name: simple(:name), directive_argument: simple(:value)) { Directive.new(name: name.to_s, argument: value) }
 
+  # Type Defs
+  rule(type_name: simple(:n))     { TypeName.new(name: n.to_s) }
+  rule(list_type: simple(:t))     { ListType.new(of_type: t)}
+  rule(non_null_type: simple(:t)) { NonNullType.new(of_type: t)}
+
   # Values
   rule(array: sequence(:v)) { v }
   rule(boolean: simple(:v)) { v == "true" ? true : false }
