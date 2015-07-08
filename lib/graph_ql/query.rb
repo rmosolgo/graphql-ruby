@@ -16,9 +16,9 @@ class GraphQL::Query
     @operations = {}
 
     @document.parts.each do |part|
-      if part.is_a?(GraphQL::Syntax::FragmentDefinition)
+      if part.is_a?(GraphQL::Nodes::FragmentDefinition)
         @fragments[part.name] = part
-      elsif part.is_a?(GraphQL::Syntax::OperationDefinition)
+      elsif part.is_a?(GraphQL::Nodes::OperationDefinition)
         @operations[part.name] = part
       end
     end

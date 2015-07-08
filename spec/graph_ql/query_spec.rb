@@ -30,7 +30,7 @@ describe GraphQL::Query do
     end
 
     it 'exposes fragments' do
-      assert_equal(GraphQL::Syntax::FragmentDefinition, query.fragments['cheeseFields'].class)
+      assert_equal(GraphQL::Nodes::FragmentDefinition, query.fragments['cheeseFields'].class)
     end
   end
 end

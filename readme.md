@@ -197,7 +197,7 @@ You could do something like this [inside a Rails controller](https://github.com/
 - Unions
 - Non-null
 - Introspection
-- Validations
+- Validations: implement lots of validators
 - Serial vs non-serial execution?
 - field merging (https://github.com/graphql/graphql-js/issues/19#issuecomment-118515077)
 

@@ -73,13 +73,13 @@ describe GraphQL::Transform do
 
   it 'transforms selections' do
     res = get_result("{ id, ...petStuff @flag, ... on Pet { isHousebroken }, name }", parse: :selections)
-    expected_classes = [GraphQL::Syntax::Field, GraphQL::Syntax::FragmentSpread, GraphQL::Syntax::InlineFragment, GraphQL::Syntax::Field]
+    expected_classes = [GraphQL::Nodes::Field, GraphQL::Nodes::FragmentSpread, GraphQL::Nodes::InlineFragment, GraphQL::Nodes::Field]
     assert_equal(expected_classes, res.map(&:class))
   end
 
   it 'transforms fields' do
     res = get_result(%|best_pals: friends(first: 3, coolnessLevel: SO_COOL, query: {nice: {very: true}})|, parse: :field)
-    assert_equal(GraphQL::Syntax::Field, res.class)
+    assert_equal(GraphQL::Nodes::Field, res.class)
     assert_equal("friends", res.name)
     assert_equal("best_pals", res.alias)
     assert_equal("first", res.arguments[0].name)

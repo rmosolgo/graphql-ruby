@@ -11,9 +11,9 @@ module GraphQL
   autoload(:Parser)
   autoload(:Query)
   autoload(:Schema)
-  autoload(:Syntax)
   autoload(:TypeKinds)
   autoload(:ObjectType)
+  autoload(:Validator)
   autoload(:VERSION)
 
   autoload_under "fields" do
@@ -25,8 +25,10 @@ module GraphQL
   end
 
   autoload_under "parser" do
+    autoload(:Nodes)
     autoload(:Parser)
     autoload(:Transform)
+    autoload(:Visitor)
   end
 
   autoload_under "types" do
@@ -34,6 +36,11 @@ module GraphQL
     autoload(:INTEGER_TYPE)
     autoload(:ListType)
     autoload(:STRING_TYPE)
+  end
+
+  module Validations
+    extend ActiveSupport::Autoload
+    autoload(:FragmentsAreUsed)
   end
 
   PARSER = Parser.new

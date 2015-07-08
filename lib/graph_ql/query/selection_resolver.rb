@@ -2,9 +2,9 @@ class GraphQL::Query::SelectionResolver
   attr_reader :result
 
   RESOLUTION_STRATEGIES = {
-    GraphQL::Syntax::Field =>           GraphQL::Query::FieldResolutionStrategy,
-    GraphQL::Syntax::FragmentSpread =>  GraphQL::Query::FragmentSpreadResolutionStrategy,
-    GraphQL::Syntax::InlineFragment =>  GraphQL::Query::InlineFragmentResolutionStrategy,
+    GraphQL::Nodes::Field =>          GraphQL::Query::FieldResolutionStrategy,
+    GraphQL::Nodes::FragmentSpread => GraphQL::Query::FragmentSpreadResolutionStrategy,
+    GraphQL::Nodes::InlineFragment => GraphQL::Query::InlineFragmentResolutionStrategy,
   }
 
   def initialize(target, type, selections, operation_resolver)

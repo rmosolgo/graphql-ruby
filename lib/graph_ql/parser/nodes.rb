@@ -1,5 +1,4 @@
-# These objects are skinny wrappers for going from the AST to actual {Node} and {Field} instances.
-module GraphQL::Syntax
+module GraphQL::Nodes
   # AbstractNode creates classes who:
   # - require their keyword arguments, throw ArgumentError if they don't match
   # - expose accessors for keyword arguments
@@ -20,6 +19,13 @@ module GraphQL::Syntax
           self.send("#{attr}=", value)
         end
       end
+    end
+
+    def children
+      self.class.required_attrs
+        .map { |attr| send(attr) }
+        .flatten # eg #fields is a list of children
+        .select { |val| val.is_a?(GraphQL::Nodes::AbstractNode) }
     end
 
     class << self
