@@ -20,8 +20,8 @@ CampsiteType = GraphQL::Type.new do
   name "Campsite"
   description "A place where you can set up camp"
   self.fields = {
-    id:       field.integer!(:id, "The unique ID of this object"),
-    facility: field(FacilityEnum, :facility, "The setup of this campsite"),
+    id:       field(type: !type.Int, desc: "The unique ID of this object"),
+    facility: field(type: FacilityEnum, desc: "The setup of this campsite"),
   }
 end
 
@@ -29,17 +29,18 @@ CampgroundType = GraphQL::Type.new do
   name "Campground"
   description "A collection of campsites which are administered together"
   self.fields = {
-    id:         field.integer!(:id, "The unique ID of this object"),
-    name:       field.string!(:name, "The advertised name of this campground"),
-    campsites:  field(CampsiteType, :campsites, "Campsites which compose this campground"),
+    id:         field(type: !type.Int, desc: "The unique ID of this object"),
+    name:       field(type: !type.String, desc: "The advertised name of this campground"),
+    campsites:  field(type: !type[CampsiteType], desc: "Campsites which compose this campground"),
   }
 end
 
 class FindField < GraphQL::Field
-  attr_reader :type
+  attr_reader :type, :arguments
   def initialize(type:, model:)
     @type = type
-    @model
+    @model = model
+    @arguments = {id: !type.Int}
   end
 
   def description
@@ -56,7 +57,7 @@ QueryType = GraphQL::Type.new do
   description "The root for queries of this system"
   self.fields = {
     campground: FindField.new(type: CampgroundType, model: Campground),
-    campsite:   FindField.new(type: CampsiteType, model: Campsite),
+    campsite:   FindField.new(type: CampsiteType,   model: Campsite),
   }
 end
 
@@ -90,7 +91,6 @@ query.result # =>
 - Directives
 - Deprecation (`isDeprecated` + `deprecationReason`)
 - Interfaces
-- Non-null
 - Introspection
 - Validations: implement lots of validators
 - Serial vs non-serial execution?
