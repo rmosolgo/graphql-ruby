@@ -5,10 +5,9 @@ class GraphQL::ListField < GraphQL::AbstractField
   end
 
   def type
-    GraphQL::LIST_TYPE
+    GraphQL::TypeKinds::LIST
   end
 
-  def type;         field.type;         end
   def description;  field.description;  end
 
   def resolve(object, arguments, context)

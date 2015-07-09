@@ -4,3 +4,8 @@ CHEESES = {
   2 => Cheese.new(2, "Gouda", 0.3, "COW"),
   3 => Cheese.new(3, "Manchego", 0.065, "SHEEP")
 }
+
+Milk = Struct.new(:id, :fat_content, :source)
+MILKS = {
+  1 => Milk.new(1, 0.04, "COW"),
+}

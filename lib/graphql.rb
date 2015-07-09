@@ -13,6 +13,7 @@ module GraphQL
   autoload(:Schema)
   autoload(:TypeKinds)
   autoload(:ObjectType)
+  autoload(:Union)
   autoload(:Validator)
   autoload(:VERSION)
 
@@ -22,6 +23,12 @@ module GraphQL
     autoload(:AccessFieldDefiner)
     autoload(:ListField)
     autoload(:NonNullField)
+  end
+
+  autoload_under "introspection" do
+    autoload(:TypeField)
+    autoload(:TypeKindEnum)
+    autoload(:TypeType)
   end
 
   autoload_under "parser" do
@@ -40,7 +47,9 @@ module GraphQL
 
   module Validations
     extend ActiveSupport::Autoload
+    autoload(:FieldsWillMerge)
     autoload(:FragmentsAreUsed)
+    autoload(:FieldsAreDefinedOnType)
   end
 
   PARSER = Parser.new

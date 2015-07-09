@@ -1,3 +1,10 @@
+# Any object can be a type as long as it implements:
+#  - #fields: Hash of { String => Field } pairs
+#  - #kind: one of GraphQL::TypeKinds
+#  - #interfaces: Array of Interfaces
+#  - #name: String
+#  - #description: String
+#
 class GraphQL::ObjectType
   extend GraphQL::Definable
   attr_definable :name, :description, :interfaces

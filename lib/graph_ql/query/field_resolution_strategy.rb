@@ -1,16 +1,18 @@
 class GraphQL::Query::FieldResolutionStrategy
   FIELD_TYPE_KIND_STRATEGIES = {
     GraphQL::TypeKinds::SCALAR => :coerce_value,
-    GraphQL::TypeKinds::LIST => :map_value,
+    GraphQL::TypeKinds::LIST =>   :map_value,
     GraphQL::TypeKinds::OBJECT => :resolve_selections,
+    GraphQL::TypeKinds::ENUM =>   :return_name_as_string,
   }
 
   attr_reader :result, :result_name
+
   def initialize(ast_field, type, target, operation_resolver)
     arguments = Arguments.new(ast_field.arguments, operation_resolver.variables).to_h
     field = type.fields[ast_field.name]
     value = field.resolve(target, arguments, operation_resolver.context)
-    strategy_method = FIELD_TYPE_KIND_STRATEGIES[field.type.kind]
+    strategy_method = FIELD_TYPE_KIND_STRATEGIES[field.type.kind] || raise("No strategy found for #{field.type.kind}")
     result_value = send(strategy_method, field.type, value, ast_field, operation_resolver)
     result_name = ast_field.alias || ast_field.name
     @result = { result_name => result_value}
@@ -34,6 +36,11 @@ class GraphQL::Query::FieldResolutionStrategy
     resolver = GraphQL::Query::SelectionResolver.new(value, field_type, ast_field.selections, operation_resolver)
     resolver.result
   end
+
+  def return_name_as_string(field_type, value, ast_field, operation_resolver)
+    value.to_s
+  end
+
   # Creates a plain hash out of arguments, looking up variables if necessary
   class Arguments
     attr_reader :to_h

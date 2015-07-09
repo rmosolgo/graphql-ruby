@@ -6,186 +6,81 @@
 [![Test Coverage](https://codeclimate.com/github/rmosolgo/graphql-ruby/badges/coverage.svg)](https://codeclimate.com/github/rmosolgo/graphql-ruby)
 [![built with love](https://cloud.githubusercontent.com/assets/2231765/6766607/d07992c6-cfc9-11e4-813f-d9240714dd50.png)](http://rmosolgo.github.io/react-badges/)
 
-__Current status__: rewriting according to spec, this readme describes the previous [prototype implementation](https://github.com/rmosolgo/graphql-ruby/tree/74ad3c30a6d8db010ec3856f5871f8a02fcfba42)!
+__Current status__: rewriting according to spec, see also the previous [prototype implementation](https://github.com/rmosolgo/graphql-ruby/tree/74ad3c30a6d8db010ec3856f5871f8a02fcfba42)!
 
-Create a GraphQL interface by implementing [nodes](#nodes) and [calls](#calls), then running [queries](#queries).
+## Overview
 
-## Example Implementation
-
-- See test implementation in [`/spec/support/dummy_app/nodes.rb`](https://github.com/rmosolgo/graphql/blob/master/spec/support/nodes.rb)
-- See `graphql-ruby-demo` with Rails on [github](https://github.com/rmosolgo/graphql-ruby-demo) or [heroku](http://graphql-ruby-demo.herokuapp.com/)
-
-<a href="http://graphql-ruby-demo.herokuapp.com/" target="_blank"><img src="https://cloud.githubusercontent.com/assets/2231765/6839956/c62c1fca-d32d-11e4-9e54-ec6743d3e4b5.png" style="max-height: 300px; max-width: 100%; display: block; margin: auto;"/></a>
-
-## Usage
-
-Create a GraphQL interface:
-
-- Implement [__nodes__](#nodes) that wrap objects in your application
-- Implement [__calls__](#calls) that expose those objects (and may mutate the application state)
-- Execute [__queries__](#queries) on the system.
-
-API docs: [Ruby gem](http://rubydoc.info/gems/graphql), [master branch](http://www.rubydoc.info/github/rmosolgo/graphql-ruby/master)
-
-### Nodes
-
-Nodes are delegators that wrap objects in your app. You must whitelist fields by declaring them in the class definition.
-
+Build a schema:
 
 ```ruby
-class FishNode < GraphQL::Node
-  exposes "Fish"
-  desc "A slippery, delicious animal that lives in water"
-  cursor(:id)
-  field.number(:id)
-  field.string(:name)
-  field.string(:species)
-  # specify that `aquarium` should be an `AquariumNode`:
-  field.aquarium(:aquarium)
-  # Since it's named `aquarium` and the type is `aquarium`, you could also write:
-  field.aquarium # method name is inferred to be `aquarium`
+
+FacilityEnum = GraphQL::Enum.new("Facility", ["TENT", "RV", "CABIN", "BACKWOODS"])
+
+CampsiteType = GraphQL::Type.new do
+  name "Campsite"
+  description "A place where you can set up camp"
+  self.fields = {
+    id:       field.integer!(:id, "The unique ID of this object"),
+    facility: field(FacilityEnum, :facility, "The setup of this campsite"),
+  }
 end
-```
 
-You can also declare connections between objects:
-
-```ruby
-class AquariumNode < GraphQL::Node
-  exposes "Aquarium"
-  desc "A place where fish live"
-  cursor(:id)
-  field.number(:id)
-  field.number(:occupancy)
-  field.connection(:fishes)
+CampgroundType = GraphQL::Type.new do
+  name "Campground"
+  description "A collection of campsites which are administered together"
+  self.fields = {
+    id:         field.integer!(:id, "The unique ID of this object"),
+    name:       field.string!(:name, "The advertised name of this campground"),
+    campsites:  field(CampsiteType, :campsites, "Campsites which compose this campground"),
+  }
 end
-```
 
-You can make custom connections:
+class FindField < GraphQL::Field
+  attr_reader :type
+  def initialize(type:, model:)
+    @type = type
+    @model
+  end
 
-```ruby
-class FishSchoolConnection < GraphQL::Connection
-  type :fish_school # now it is a field type
-  call :largest, -> (prev_value, number)  { fishes.sort_by(&:weight).first(number.to_i) }
+  def description
+    "Find a #{@type.name} by id"
+  end
 
-  field.number(:count) # delegated to `target`
-  field.boolean(:has_more)
-
-  def has_more
-    # the `largest()` call may have removed some items:
-    target.count < original_target.count
+  def resolve(target, arguments, context)
+    @model.find(arguments["id"])
   end
 end
+
+QueryType = GraphQL::Type.new do
+  name "Query"
+  description "The root for queries of this system"
+  self.fields = {
+    campground: FindField.new(type: CampgroundType, model: Campground),
+    campsite:   FindField.new(type: CampsiteType, model: Campsite),
+  }
+end
+
+Schema = GraphQL::Schema.new(query: QueryType, mutation: MutationType)
 ```
 
-Then use them:
+Execute a query:
 
 ```ruby
-class AquariumNode < GraphQL::Node
-  field.fish_school(:fishes)
-end
-```
-
-And in queries:
-
-```
-aquarium(1) {
-  name,
-  occupancy,
-  fishes.largest(3) {
-      edges {
-        node { name, species }
-      },
-      count,
-      has_more
+query_string = %|
+  query getCampsite($campsiteId: Int!) {
+    campsite(id: $campsiteId) {
+      ... campsiteFields
     }
   }
-}
-```
+  fragment campsiteFields on Campsite { id, facility }
+|
 
-### Calls
-
-Calls selectively expose your application to the world. They always return values and they may perform mutations.
-
-Calls declare returns, declare arguments, and implement `#execute`.
-
-This call just finds values:
-
-```ruby
-class FindFishCall < GraphQL::RootCall
-  returns :fish
-  argument.number(:id)
-  def execute(id)
-    Fish.find(id)
-  end
-end
-```
-
-This call performs a mutation:
-
-```ruby
-class RelocateFishCall < GraphQL::RootCall
-  returns :fish, :previous_aquarium, :new_aquarium
-  argument.number(:fish_id)
-  argument.number(:new_aquarium_id)
-
-  def execute(fish_id, new_aquarium_id)
-    fish = Fish.find(fish_id)
-
-    # context is defined by the query, see below
-    if !context[:user].can_move?(fish)
-      raise RelocateNotAllowedError
-    end
-
-    previous_aquarium = fish.aquarium
-    new_aquarium = Aquarium.find(new_aquarium_id)
-    fish.update_attributes(aquarium: new_aquarium)
-    {
-      fish: fish,
-      previous_aquarium: previous_aquarium,
-      new_aquarium: new_aquarium,
-    }
-  end
-end
-```
-
-### Queries
-
-When your system is set up, you can perform queries from a string.
-
-```ruby
-query_str = "find_fish(1) { name, species } "
-query     = GraphQL::Query.new(query_str)
-result    = query.as_result
-
-result
+query = GraphQL::Query.new(Schema, query_string, params: {"campsiteId" => 1})
+query.result # =>
 # {
-#   "1" => {
-#     "name" => "Sharky",
-#     "species" => "Goldfish",
-#   }
+#   "data" => {"campsite" => {"id" => 1, "facility" => "RV"}},
 # }
 ```
-
-Each query may also define a `context` object which will be accessible at every point in execution.
-
-```ruby
-query_str = "move_fish(1, 3) { fish { name }, new_aquarium { occupancy } }"
-query_ctx = {user: current_user, request: request}
-query     = GraphQL::Query.new(query_str, context: query_ctx)
-result    = query.as_result
-
-result
-# {
-#   "fish" => {
-#     "name" => "Sharky"
-#   },
-#   "new_aquarium" => {
-#     "occupancy" => 12
-#   }
-# }
-```
-
-You could do something like this [inside a Rails controller](https://github.com/rmosolgo/graphql-ruby-demo/blob/master/app/controllers/queries_controller.rb#L21).
 
 ## To Do:
 

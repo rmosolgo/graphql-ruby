@@ -20,9 +20,23 @@ CheeseType = GraphQL::ObjectType.new do
     id:           !field.integer(:id, "Unique identifier"),
     flavor:       !field.string(:flavor, "Kind of cheese"),
     source:       !field(DairyAnimalEnum, :source, "Animal which produced the milk for this cheese"),
-    fat_content:  !field.float(:fat_content, "Percentage which is milkfat"),
+    fatContent:   !field.float(:fat_content, "Percentage which is milkfat"),
   }
 end
+
+MilkType = GraphQL::ObjectType.new do
+  name 'Milk'
+  description "Dairy beverage"
+  interfaces [Edible]
+  self.fields = {
+    id:           !field.integer(:id, "Unique identifier"),
+    source:       !field(DairyAnimalEnum, :source, "Animal which produced this milk"),
+    fatContent:   !field.float(:fat_content, "Percentage which is milkfat"),
+    # flavors:      field.list_of.string! ["Chocol"]
+  }
+end
+
+DairyProductUnion = GraphQL::Union.new("DairyProduct", [MilkType, CheeseType])
 
 class FetchField < GraphQL::AbstractField
   attr_reader :type
@@ -51,12 +65,21 @@ class SourceField < GraphQL::AbstractField
   end
 end
 
+class FavoriteField < GraphQL::AbstractField
+  def initialize(returning:)
+    @returning = returning
+  end
+  def type; DairyProductUnion; end
+  def resolve(t, a, c); @returning; end
+end
+
 QueryType = GraphQL::ObjectType.new do
   name "Query"
   description "Query root of the system"
   self.fields = {
     cheese: FetchField.new(type: CheeseType, model: Cheese, data: CHEESES),
     fromSource: SourceField.new,
+    favoriteDiary: FavoriteField.new(returning: MILKS[1]),
   }
 end
 
