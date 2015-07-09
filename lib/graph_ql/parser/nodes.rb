@@ -46,7 +46,7 @@ module GraphQL::Nodes
     end
   end
 
-  Directive = AbstractNode.create(:name, :argument)
+  Directive = AbstractNode.create(:name, :value)
   Document = AbstractNode.create(:parts)
   Enum = AbstractNode.create(:name)
   Field = AbstractNode.create(:name, :alias, :arguments, :directives, :selections)

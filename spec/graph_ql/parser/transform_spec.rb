@@ -92,17 +92,17 @@ describe GraphQL::Transform do
     assert_equal(nil, res.alias)
     assert_equal(2, res.directives.length)
     assert_equal("flag", res.directives.first.name)
-    assert_equal("something", res.directives.last.argument)
+    assert_equal("something", res.directives.last.value)
     assert_equal(2, res.selections.length)
   end
 
   it 'transforms directives' do
     res = get_result("@doSomething: true", parse: :directive)
     assert_equal("doSomething", res.name, 'gets the name without @')
-    assert_equal(true, res.argument)
+    assert_equal(true, res.value)
 
     res = get_result("@someFlag", parse: :directive)
     assert_equal("someFlag", res.name)
-    assert_equal(nil, res.argument, 'gets nil if no argument')
+    assert_equal(nil, res.value, 'gets nil if no value')
   end
 end

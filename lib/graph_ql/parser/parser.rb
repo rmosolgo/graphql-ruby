@@ -19,8 +19,6 @@ class GraphQL::Parser < Parslet::Parser
      space? >> selections.as(:selections)
   }
 
-  # TODO: can fragment spreads have type conditions,
-  # eg `... petInfo on Pet,`
   rule(:fragment_spread) {
     str("...") >> space? >>
     name.as(:fragment_spread_name) >> space? >>
@@ -68,7 +66,7 @@ class GraphQL::Parser < Parslet::Parser
   rule(:field_argument) { name.as(:field_argument_name) >> str(":") >> space? >> value.as(:field_argument_value) >> separator? }
 
   rule(:directives) { (directive >> separator?).repeat(1) }
-  rule(:directive) { str("@") >> name.as(:directive_name) >> (space? >> str(":") >> space?).maybe >> value.maybe.as(:directive_argument) }
+  rule(:directive) { str("@") >> name.as(:directive_name) >> (space? >> str(":") >> space?).maybe >> value.maybe.as(:directive_value) }
 
   rule(:type) { (non_null_type | list_type | type_name)}
   rule(:list_type) { str("[") >> type.as(:list_type) >> str("]")}

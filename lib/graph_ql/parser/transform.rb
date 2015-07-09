@@ -19,7 +19,7 @@ class GraphQL::Transform < Parslet::Transform
     type_condition: simple(:type),
     directives:     sequence(:directives),
     selections:     sequence(:selections)
-  ) {FragmentDefinition.new(name: name.to_s, type: type, directives: directives, selections: selections)}
+  ) {FragmentDefinition.new(name: name.to_s, type: type.to_s, directives: directives, selections: selections)}
 
   rule(
     fragment_spread_name: simple(:n),
@@ -30,7 +30,7 @@ class GraphQL::Transform < Parslet::Transform
     inline_fragment_type: simple(:n),
     directives: sequence(:d),
     selections: sequence(:s),
-  ) { InlineFragment.new(type: n, directives: d, selections: s)}
+  ) { InlineFragment.new(type: n.to_s, directives: d, selections: s)}
 
   # Operation Definition
   rule(
@@ -64,7 +64,7 @@ class GraphQL::Transform < Parslet::Transform
   optional_sequence(:optional_directives)
 
   # Directive
-  rule(directive_name: simple(:name), directive_argument: simple(:value)) { Directive.new(name: name.to_s, argument: value) }
+  rule(directive_name: simple(:name), directive_value: simple(:value)) { Directive.new(name: name.to_s, value: value) }
 
   # Type Defs
   rule(type_name: simple(:n))     { TypeName.new(name: n.to_s) }
