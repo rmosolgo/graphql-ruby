@@ -18,10 +18,18 @@ describe GraphQL::ObjectType do
     assert_equal([:edible, :meltable], type.interfaces)
   end
 
+  it 'becomes non-null with !' do
+    non_null_type = !type
+    assert_equal(GraphQL::TypeKinds::NON_NULL, non_null_type.kind)
+    assert_equal(type, non_null_type.of_type)
+    assert_equal(GraphQL::TypeKinds::NON_NULL, (!GraphQL::STRING_TYPE).kind)
+  end
+
   describe '.fields ' do
-    let(:flavor_field) { type.fields["flavor"] }
     it 'exposes fields' do
-      assert_equal(GraphQL::NonNullField, flavor_field.class)
+      field = type.fields["id"]
+      assert_equal(GraphQL::TypeKinds::NON_NULL, field.type.kind)
+      assert_equal(GraphQL::TypeKinds::SCALAR, field.type.of_type.kind)
     end
   end
 end

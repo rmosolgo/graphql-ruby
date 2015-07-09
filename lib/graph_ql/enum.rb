@@ -1,4 +1,5 @@
 class GraphQL::Enum
+  include GraphQL::NonNullWithBang
   attr_reader :name
   def initialize(name, values)
     @name = name

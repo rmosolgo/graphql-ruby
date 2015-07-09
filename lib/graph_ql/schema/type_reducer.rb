@@ -2,7 +2,9 @@ class GraphQL::Schema::TypeReducer
   FIELDS_TYPE_KINDS = [GraphQL::TypeKinds::OBJECT]
   attr_reader :type, :result
   def initialize(type, existing_type_hash)
-    if existing_type_hash.has_key?(type.name)
+    if [GraphQL::TypeKinds::NON_NULL, GraphQL::TypeKinds::LIST].include?(type.kind)
+      @result = find_types(type.of_type, existing_type_hash.dup)
+    elsif existing_type_hash.has_key?(type.name)
       # been here, done that
       @result = existing_type_hash
     else

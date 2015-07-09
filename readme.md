@@ -85,11 +85,11 @@ query.result # =>
 ## To Do:
 
 - Express failure with `errors` key (http://facebook.github.io/graphql/#sec-Errors)
+- Good API for field arguments
 - Handle blank objects by returning `null`
 - Directives
 - Deprecation (`isDeprecated` + `deprecationReason`)
 - Interfaces
-- Unions
 - Non-null
 - Introspection
 - Validations: implement lots of validators

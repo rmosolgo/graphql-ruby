@@ -1,18 +1,14 @@
-# Implement {AbstractField} by calling {property} on its object
+# Implement {AbstractField} by calling the field name on its object
 # and returning the result.
 class GraphQL::AccessField
-  attr_reader :type, :description, :property
-  def initialize(type:, property:, description:)
+  attr_reader :type, :description, :arguments
+  def initialize(type:, arguments:, description:)
     @type = type
-    @property = property
+    @arguments = arguments
     @description = description
   end
 
-  def resolve(object, arguments, context)
-    object.send(property)
-  end
-
-  def !
-    GraphQL::NonNullField.new(field: self)
+  def resolve(object, args, context)
+    GraphQL::Query::DEFAULT_RESOLVE
   end
 end

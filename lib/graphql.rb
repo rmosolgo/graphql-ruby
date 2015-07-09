@@ -12,7 +12,6 @@ module GraphQL
   autoload(:Query)
   autoload(:Schema)
   autoload(:TypeKinds)
-  autoload(:ObjectType)
   autoload(:Union)
   autoload(:Validator)
   autoload(:VERSION)
@@ -39,10 +38,16 @@ module GraphQL
   end
 
   autoload_under "types" do
+    autoload(:AbstractType)
     autoload(:ScalarType)
-    autoload(:INTEGER_TYPE)
+    autoload(:FLOAT_TYPE)
+    autoload(:INT_TYPE)
     autoload(:ListType)
+    autoload(:NonNullType)
+    autoload(:NonNullWithBang)
+    autoload(:ObjectType)
     autoload(:STRING_TYPE)
+    autoload(:TypeDefiner)
   end
 
   module Validations

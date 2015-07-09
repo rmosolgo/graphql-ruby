@@ -7,6 +7,10 @@ class GraphQL::TypeField < GraphQL::AbstractField
     GraphQL::TypeType
   end
 
+  def description
+    "A type in the GraphQL system"
+  end
+
   def resolve(object, arguments, context)
     type_name = arguments["name"]
     @schema.types[type_name]

@@ -1,24 +1,35 @@
 class GraphQL::Query::FieldResolutionStrategy
   FIELD_TYPE_KIND_STRATEGIES = {
-    GraphQL::TypeKinds::SCALAR => :coerce_value,
-    GraphQL::TypeKinds::LIST =>   :map_value,
-    GraphQL::TypeKinds::OBJECT => :resolve_selections,
-    GraphQL::TypeKinds::ENUM =>   :return_name_as_string,
+    GraphQL::TypeKinds::SCALAR =>   :coerce_value,
+    GraphQL::TypeKinds::LIST =>     :map_value,
+    GraphQL::TypeKinds::OBJECT =>   :resolve_selections,
+    GraphQL::TypeKinds::ENUM =>     :return_name_as_string,
+    GraphQL::TypeKinds::NON_NULL => :get_wrapped_type,
   }
 
   attr_reader :result, :result_name
 
   def initialize(ast_field, type, target, operation_resolver)
     arguments = Arguments.new(ast_field.arguments, operation_resolver.variables).to_h
-    field = type.fields[ast_field.name]
+    field = type.fields[ast_field.name] || raise("No field found on #{type.name} for '#{ast_field.name}'")
     value = field.resolve(target, arguments, operation_resolver.context)
-    strategy_method = FIELD_TYPE_KIND_STRATEGIES[field.type.kind] || raise("No strategy found for #{field.type.kind}")
-    result_value = send(strategy_method, field.type, value, ast_field, operation_resolver)
+    if value == GraphQL::Query::DEFAULT_RESOLVE
+      value = if arguments.empty?
+        target.send(ast_field.name)
+      else
+        target.send(ast_field.name, arguments)
+      end
+    end
+    result_value = resolve_with_strategy(field.type, value, ast_field, operation_resolver)
     result_name = ast_field.alias || ast_field.name
     @result = { result_name => result_value}
   end
 
   private
+  def resolve_with_strategy(field_type, value, ast_field, operation_resolver)
+    strategy_method = FIELD_TYPE_KIND_STRATEGIES[field_type.kind] || raise("No strategy found for #{field_type.kind}")
+    send(strategy_method, field_type, value, ast_field, operation_resolver)
+  end
 
   def coerce_value(field_type, value, ast_field, operation_resolver)
     field_type.coerce(value)
@@ -39,6 +50,11 @@ class GraphQL::Query::FieldResolutionStrategy
 
   def return_name_as_string(field_type, value, ast_field, operation_resolver)
     value.to_s
+  end
+
+  def get_wrapped_type(field_type, value, ast_field, operation_resolver)
+    wrapped_type = field_type.of_type
+    resolve_with_strategy(wrapped_type, value, ast_field, operation_resolver)
   end
 
   # Creates a plain hash out of arguments, looking up variables if necessary

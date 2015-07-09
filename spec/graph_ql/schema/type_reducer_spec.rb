@@ -7,9 +7,10 @@ describe GraphQL::Schema::TypeReducer do
   it 'finds types from a single type and its fields' do
     expected = {
       "Cheese" => CheeseType,
-      "Integer" => GraphQL::INTEGER_TYPE,
+      "Int" => GraphQL::INT_TYPE,
       "String" => GraphQL::STRING_TYPE,
       "DairyAnimal" => DairyAnimalEnum,
+      "Float" => GraphQL::FLOAT_TYPE,
     }
     assert_equal(expected.keys, reducer.result.keys)
     assert_equal(expected, reducer.result)

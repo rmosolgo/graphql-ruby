@@ -1,4 +1,5 @@
 class GraphQL::Union
+  include GraphQL::NonNullWithBang
   attr_reader :name
   def initialize(name, types)
     if types.length < 2
