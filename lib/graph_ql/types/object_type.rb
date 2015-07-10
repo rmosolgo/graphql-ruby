@@ -36,6 +36,15 @@ class GraphQL::ObjectType
     @type ||= GraphQL::TypeDefiner.new
   end
 
+  def interfaces(new_interfaces=nil)
+    if new_interfaces.nil?
+      @interfaces
+    else
+      @interfaces = new_interfaces
+      new_interfaces.each {|i| i.possible_types << self }
+    end
+  end
+
   def kind
     GraphQL::TypeKinds::OBJECT
   end

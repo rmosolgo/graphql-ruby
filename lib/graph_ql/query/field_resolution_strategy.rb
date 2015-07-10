@@ -68,12 +68,13 @@ class GraphQL::Query::FieldResolutionStrategy
   private
 
   FIELD_TYPE_KIND_STRATEGIES = {
-    GraphQL::TypeKinds::SCALAR =>   ScalarResolutionStrategy,
-    GraphQL::TypeKinds::LIST =>     ListResolutionStrategy,
-    GraphQL::TypeKinds::OBJECT =>   ObjectResolutionStrategy,
-    GraphQL::TypeKinds::UNION =>    ObjectResolutionStrategy,
-    GraphQL::TypeKinds::ENUM =>     EnumResolutionStrategy,
-    GraphQL::TypeKinds::NON_NULL => NonNullResolutionStrategy,
+    GraphQL::TypeKinds::SCALAR =>     ScalarResolutionStrategy,
+    GraphQL::TypeKinds::LIST =>       ListResolutionStrategy,
+    GraphQL::TypeKinds::OBJECT =>     ObjectResolutionStrategy,
+    GraphQL::TypeKinds::UNION =>      ObjectResolutionStrategy,
+    GraphQL::TypeKinds::INTERFACE =>  ObjectResolutionStrategy,
+    GraphQL::TypeKinds::ENUM =>       EnumResolutionStrategy,
+    GraphQL::TypeKinds::NON_NULL =>   NonNullResolutionStrategy,
   }
 
   # Creates a plain hash out of arguments, looking up variables if necessary

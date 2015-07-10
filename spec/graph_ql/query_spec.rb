@@ -5,11 +5,19 @@ describe GraphQL::Query do
     let(:query_string) { %|
       query getFlavor($cheeseId: Int!) {
         brie: cheese(id: 1)   { ...cheeseFields, ... meatFields, taste: flavor },
-        cheese(id: $cheeseId)  { id, ...cheeseFields, ... on Cheese { cheeseKind: flavor }, ... on Meat { cut } }
+        cheese(id: $cheeseId)  {
+          id,
+          ...cheeseFields,
+          ... edibleFields,
+          ... on Cheese { cheeseKind: flavor },
+          ... on Meat { cut }
+        }
         fromSource(source: COW) { id }
         firstSheep: searchDairy(product: {source: SHEEP}) { ... dairyFields }
+        favoriteEdible { fatContent }
       }
       fragment cheeseFields on Cheese { flavor }
+      fragment edibleFields on Edible { fatContent }
       fragment meatFields on Meat { cut }
       fragment dairyFields on DairyProduct {
          ... on Cheese { flavor }
@@ -22,9 +30,10 @@ describe GraphQL::Query do
       res = query.execute
       expected = { "getFlavor" => {
           "brie" =>   { "flavor" => "Brie", "taste" => "Brie" },
-          "cheese" => { "id" => 2, "flavor" => "Gouda", "cheeseKind" => "Gouda" },
+          "cheese" => { "id" => 2, "fatContent" => 0.3, "flavor" => "Gouda", "cheeseKind" => "Gouda" },
           "fromSource" => [{ "id" => 1 }, {"id" => 2}],
           "firstSheep" => { "flavor" => "Manchego" },
+          "favoriteEdible"=>{"fatContent"=>0.04},
         }}
       assert_equal(expected, res)
     end

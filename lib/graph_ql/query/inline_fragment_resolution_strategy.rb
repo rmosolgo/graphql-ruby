@@ -1,7 +1,8 @@
 class GraphQL::Query::InlineFragmentResolutionStrategy
   attr_reader :result
   def initialize(ast_inline_fragment, type, target, operation_resolver)
-    resolved_type = GraphQL::Query::TypeResolver.new(target, ast_inline_fragment.type, type).type
+    child_type = operation_resolver.query.schema.types[ast_inline_fragment.type]
+    resolved_type = GraphQL::Query::TypeResolver.new(target, child_type, type).type
     if resolved_type.nil?
       @result = {}
     else

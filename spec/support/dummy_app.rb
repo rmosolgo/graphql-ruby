@@ -1,21 +1,27 @@
 require_relative './dummy_data'
 
-Edible = :edible
-# Edible = GraphQL::Interface.new do
-#   description "Something you can eat, yum"
-#   self.fields = {
-#     fat_content: !field.float("Percentage which is fat"),
-#   }
-# end
+Edible = GraphQL::Interface.new do
+  name "Edible"
+  description "Something you can eat, yum"
+  fields({
+    fatContent: field(type: !type.Float, desc: "Percentage which is fat"),
+  })
+end
 
-Meltable = :meltable
+AnimalProduct = GraphQL::Interface.new do
+  name "AnimalProduct"
+  description "Comes from an animal, no joke"
+  fields({
+    source: field(type: !type.String, desc: "Animal which produced this product"),
+  })
+end
 
 DairyAnimalEnum = GraphQL::Enum.new("DairyAnimal", ["COW", "GOAT", "SHEEP"])
 
 CheeseType = GraphQL::ObjectType.new do
   name "Cheese"
   description "Cultured dairy product"
-  interfaces [Edible, Meltable]
+  interfaces [Edible, AnimalProduct]
   self.fields = {
     id:           field(type: !type.Int, desc: "Unique identifier"),
     flavor:       field(type: !type.String, desc: "Kind of cheese"),
@@ -27,7 +33,7 @@ end
 MilkType = GraphQL::ObjectType.new do
   name 'Milk'
   description "Dairy beverage"
-  interfaces [Edible]
+  interfaces [Edible, AnimalProduct]
   self.fields = {
     id:           field(type: !type.Int, desc: "Unique identifier"),
     source:       field(type: DairyAnimalEnum, desc: "Animal which produced this milk"),
@@ -79,9 +85,8 @@ class SourceField < GraphQL::AbstractField
 end
 
 FavoriteField = GraphQL::Field.new do |f|
-  f.name "favoriteDiary"
-  f.description "My favorite dairy product"
-  f.type DairyProductUnion
+  f.description "My favorite food"
+  f.type Edible
   f.resolve -> (t, a, c) { MILKS[1] }
 end
 
@@ -92,7 +97,7 @@ QueryType = GraphQL::ObjectType.new do
   fields({
     cheese: FetchField.new(type: CheeseType, data: CHEESES),
     fromSource: SourceField.new,
-    favoriteDiary: FavoriteField,
+    favoriteEdible: FavoriteField,
     searchDairy: GraphQL::Field.new { |f|
       f.name "searchDairy"
       f.description "Find dairy products matching a description"

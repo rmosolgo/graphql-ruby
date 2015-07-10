@@ -3,7 +3,8 @@ class GraphQL::Query::FragmentSpreadResolutionStrategy
   def initialize(ast_fragment_spread, type, target, operation_resolver)
     fragments = operation_resolver.query.fragments
     fragment = fragments[ast_fragment_spread.name]
-    resolved_type = GraphQL::Query::TypeResolver.new(target, fragment.type, type).type
+    child_type = operation_resolver.query.schema.types[fragment.type]
+    resolved_type = GraphQL::Query::TypeResolver.new(target, child_type, type).type
     if resolved_type.nil?
       @result = {}
     else
