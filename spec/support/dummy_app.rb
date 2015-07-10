@@ -20,7 +20,7 @@ CheeseType = GraphQL::ObjectType.new do
     id:           field(type: !type.Int, desc: "Unique identifier"),
     flavor:       field(type: !type.String, desc: "Kind of cheese"),
     source:       field(type: !DairyAnimalEnum, desc: "Animal which produced the milk for this cheese"),
-    fatContent:   field(type: !type.Float, desc: "Percentage which is milkfat"),
+    fatContent:   field(type: !type.Float, desc: "Percentage which is milkfat", deprecation_reason: "Diet fashion has changed"),
   }
 end
 
@@ -41,6 +41,16 @@ MilkType = GraphQL::ObjectType.new do
 end
 
 DairyProductUnion = GraphQL::Union.new("DairyProduct", [MilkType, CheeseType])
+
+DairyProductInputType = GraphQL::InputObjectType.new {
+  name "DairyProductInput"
+  description "Properties for finding a dairy product"
+  input_fields({
+    source:     arg({type: DairyAnimalEnum}),
+    fatContent: arg({type: type.Float}),
+  })
+}
+
 
 class FetchField < GraphQL::AbstractField
   attr_reader :type
@@ -68,14 +78,13 @@ class SourceField < GraphQL::AbstractField
   end
 end
 
-class FavoriteField < GraphQL::AbstractField
-  def initialize(returning:)
-    @returning = returning
-  end
-  def description; "My favorite dairy product"; end
-  def type; DairyProductUnion; end
-  def resolve(t, a, c); @returning; end
+FavoriteField = GraphQL::Field.new do |f|
+  f.name "favoriteDiary"
+  f.description "My favorite dairy product"
+  f.type DairyProductUnion
+  f.resolve -> (t, a, c) { MILKS[1] }
 end
+
 
 QueryType = GraphQL::ObjectType.new do
   name "Query"
@@ -83,7 +92,15 @@ QueryType = GraphQL::ObjectType.new do
   self.fields = {
     cheese: FetchField.new(type: CheeseType, data: CHEESES),
     fromSource: SourceField.new,
-    favoriteDiary: FavoriteField.new(returning: MILKS[1]),
+    favoriteDiary: FavoriteField,
+    searchDairy: GraphQL::Field.new { |f|
+      f.name "searchDairy"
+      f.description "Find dairy products matching a description"
+      f.type DairyProductUnion
+      f.arguments({product: {type: DairyProductInputType}})
+      # pretend it's searching!
+      f.resolve -> (t, a, c) { [CHEESES, MILKS].sample.values.sample }
+    }
   }
 end
 

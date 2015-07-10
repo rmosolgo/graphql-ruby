@@ -20,6 +20,10 @@ class GraphQL::Schema::TypeReducer
       type.fields.each do |name, field|
         reducer = self.class.new(field.type, type_hash)
         type_hash.merge!(reducer.result)
+        field.arguments.each do |name, argument|
+          reducer = self.class.new(argument[:type], type_hash)
+          type_hash.merge!(reducer.result)
+        end
       end
     end
     type_hash

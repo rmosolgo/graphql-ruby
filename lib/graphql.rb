@@ -19,12 +19,15 @@ module GraphQL
   autoload_under "fields" do
     autoload(:AbstractField)
     autoload(:AccessField)
-    autoload(:AccessFieldDefiner)
-    autoload(:ListField)
-    autoload(:NonNullField)
+    autoload(:Field)
   end
 
   autoload_under "introspection" do
+    autoload(:FieldType)
+    autoload(:FieldsField)
+    autoload(:InputValueType)
+    autoload(:InputFieldsField)
+    autoload(:OfTypeField)
     autoload(:TypeField)
     autoload(:TypeKindEnum)
     autoload(:TypeType)
@@ -39,8 +42,11 @@ module GraphQL
 
   autoload_under "types" do
     autoload(:AbstractType)
+    autoload(:BOOLEAN_TYPE)
     autoload(:ScalarType)
     autoload(:FLOAT_TYPE)
+    autoload(:InputObjectType)
+    autoload(:InputValue)
     autoload(:INT_TYPE)
     autoload(:ListType)
     autoload(:NonNullType)
@@ -72,6 +78,7 @@ module GraphQL
 
   module Definable
     def attr_definable(*names)
+      attr_accessor(*names)
       names.each do |name|
         ivar_name = "@#{name}".to_sym
         define_method(name) do |new_value=nil|

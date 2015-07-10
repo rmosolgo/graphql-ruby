@@ -1,20 +1,21 @@
 GraphQL::TypeType = GraphQL::ObjectType.new do
   name "__Type"
   description "A type in the GraphQL schema"
+
   self.fields = {
     name: field(type: !type.String, desc: "The name of this type"),
     kind: field(type: GraphQL::TypeKindEnum, desc: "The kind of this type"),
+    description: field(type: type.String, desc: "The description for this type"),
+    fields: GraphQL::FieldsField.new,
+    ofType: GraphQL::OfTypeField,
+    inputFields: GraphQL::InputFieldsField,
   }
 end
-# fields: !field(GraphQL::FieldType, :fields, "Fields on this type"), # TODO: arguments (includeDeprecated: Boolean = false)
+# Work around circular loading!
+GraphQL::OfTypeField.type = GraphQL::TypeType
+GraphQL::InputValueType.fields["type"].type = GraphQL::TypeType
+
 # type __Type {
-#   kind: __TypeKind!
-#   name: String
-#   description: String
-#
-#   # OBJECT and INTERFACE only
-#   fields(includeDeprecated: Boolean = false): [__Field!]
-#
 #   # OBJECT only
 #   interfaces: [__Type!]
 #
@@ -26,7 +27,4 @@ end
 #
 #   # INPUT_OBJECT only
 #   inputFields: [__InputValue!]
-#
-#   # NON_NULL and LIST only
-#   ofType: __Type
 # }

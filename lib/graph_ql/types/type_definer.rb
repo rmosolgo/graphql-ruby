@@ -3,6 +3,7 @@ class GraphQL::TypeDefiner
     Int:     GraphQL::INT_TYPE,
     String:  GraphQL::STRING_TYPE,
     Float:   GraphQL::FLOAT_TYPE,
+    Boolean: GraphQL::BOOLEAN_TYPE,
   }
 
   TYPES.each do |method_name, type|

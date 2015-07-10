@@ -13,6 +13,6 @@ class GraphQL::TypeField < GraphQL::AbstractField
 
   def resolve(object, arguments, context)
     type_name = arguments["name"]
-    @schema.types[type_name]
+    @schema.types[type_name] || raise("No type found in schema for '#{type_name}'")
   end
 end

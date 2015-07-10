@@ -56,9 +56,15 @@ QueryType = GraphQL::Type.new do
   name "Query"
   description "The root for queries of this system"
   self.fields = {
-    campground: FindField.new(type: CampgroundType, model: Campground),
-    campsite:   FindField.new(type: CampsiteType,   model: Campsite),
-  }
+    campground:   FindField.new(type: CampgroundType, model: Campground),
+    campsite:     FindField.new(type: CampsiteType,   model: Campsite),
+    grandCanyon:  GraphQL::Field.new do |f|
+      # you can define a field inline too
+      f.name "Grand Canyon South Rim Campground"
+      f.description "The campground on the south rim, maintained by the NPS"
+      f.type CampgroundType
+      f.resolve -> (obj, args, ctx) { Campground.find_by(name: "Grand Canyon")}
+    },
 end
 
 Schema = GraphQL::Schema.new(query: QueryType, mutation: MutationType)
@@ -86,12 +92,11 @@ query.result # =>
 ## To Do:
 
 - Express failure with `errors` key (http://facebook.github.io/graphql/#sec-Errors)
-- Good API for field arguments
 - Handle blank objects by returning `null`
 - Directives
-- Deprecation (`isDeprecated` + `deprecationReason`)
+- Input Objects
 - Interfaces
-- Introspection
+- Introspection: finish `TypeType`, implement `SchemaType`, `DirectiveType`, `InputValueType`
 - Validations: implement lots of validators
 - Serial vs non-serial execution?
 - field merging (https://github.com/graphql/graphql-js/issues/19#issuecomment-118515077)
