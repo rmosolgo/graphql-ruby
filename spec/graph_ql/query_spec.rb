@@ -7,9 +7,14 @@ describe GraphQL::Query do
         brie: cheese(id: 1)   { ...cheeseFields, ... meatFields, taste: flavor },
         cheese(id: $cheeseId)  { id, ...cheeseFields, ... on Cheese { cheeseKind: flavor }, ... on Meat { cut } }
         fromSource(source: COW) { id }
+        firstSheep: searchDairy(product: {source: SHEEP}) { ... dairyFields }
       }
       fragment cheeseFields on Cheese { flavor }
       fragment meatFields on Meat { cut }
+      fragment dairyFields on DairyProduct {
+         ... on Cheese { flavor }
+         ... on Milk   { source }
+      }
     |}
     let(:query) { GraphQL::Query.new(DummySchema, query_string, context: {}, params: {"cheeseId" => 2})}
 
@@ -19,6 +24,7 @@ describe GraphQL::Query do
           "brie" =>   { "flavor" => "Brie", "taste" => "Brie" },
           "cheese" => { "id" => 2, "flavor" => "Gouda", "cheeseKind" => "Gouda" },
           "fromSource" => [{ "id" => 1 }, {"id" => 2}],
+          "firstSheep" => { "flavor" => "Manchego" },
         }}
       assert_equal(expected, res)
     end

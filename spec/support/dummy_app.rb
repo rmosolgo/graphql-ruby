@@ -98,8 +98,14 @@ QueryType = GraphQL::ObjectType.new do
       f.description "Find dairy products matching a description"
       f.type DairyProductUnion
       f.arguments({product: {type: DairyProductInputType}})
-      # pretend it's searching!
-      f.resolve -> (t, a, c) { [CHEESES, MILKS].sample.values.sample }
+      f.resolve -> (t, a, c) {
+        products = CHEESES.values + MILKS.values
+        source =  a["product"]["source"]
+        if !source.nil?
+          products = products.select { |p| p.source == source }
+        end
+        products.first
+      }
     }
   })
 end

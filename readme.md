@@ -94,9 +94,8 @@ query.result # =>
 - Express failure with `errors` key (http://facebook.github.io/graphql/#sec-Errors)
 - Handle blank objects by returning `null`
 - Directives
-- Input Objects
 - Interfaces
-- Introspection: finish `TypeType`, implement `SchemaType`, `DirectiveType`, `InputValueType`
+- Introspection: implement `SchemaType`, `DirectiveType`
 - Validations: implement lots of validators
 - Serial vs non-serial execution?
 - field merging (https://github.com/graphql/graphql-js/issues/19#issuecomment-118515077)

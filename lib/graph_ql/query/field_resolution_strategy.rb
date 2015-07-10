@@ -71,6 +71,7 @@ class GraphQL::Query::FieldResolutionStrategy
     GraphQL::TypeKinds::SCALAR =>   ScalarResolutionStrategy,
     GraphQL::TypeKinds::LIST =>     ListResolutionStrategy,
     GraphQL::TypeKinds::OBJECT =>   ObjectResolutionStrategy,
+    GraphQL::TypeKinds::UNION =>    ObjectResolutionStrategy,
     GraphQL::TypeKinds::ENUM =>     EnumResolutionStrategy,
     GraphQL::TypeKinds::NON_NULL => NonNullResolutionStrategy,
   }
@@ -80,14 +81,23 @@ class GraphQL::Query::FieldResolutionStrategy
     attr_reader :to_h
     def initialize(ast_arguments, variables)
       @to_h = ast_arguments.reduce({}) do |memo, arg|
-        value = arg.value
-        if value.is_a?(GraphQL::Nodes::VariableIdentifier)
-          value = variables[value.name]
-        elsif value.is_a?(GraphQL::Nodes::Enum)
-          value = value.name
-        end
+        value = reduce_value(arg.value, variables)
         memo[arg.name] = value
         memo
+      end
+    end
+
+    private
+
+    def reduce_value(value, variables)
+      if value.is_a?(GraphQL::Nodes::VariableIdentifier)
+        value = variables[value.name]
+      elsif value.is_a?(GraphQL::Nodes::Enum)
+        value = value.name
+      elsif value.is_a?(GraphQL::Nodes::InputObject)
+        value = Arguments.new(value.pairs, variables).to_h
+      else
+        value
       end
     end
   end

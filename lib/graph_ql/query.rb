@@ -6,6 +6,7 @@ class GraphQL::Query
   autoload(:InlineFragmentResolutionStrategy)
   autoload(:OperationResolver)
   autoload(:SelectionResolver)
+  autoload(:TypeResolver)
   attr_reader :schema, :document, :context, :fragments, :params
 
   def initialize(schema, query_string, context: nil, params: {})
