@@ -89,7 +89,7 @@ end
 QueryType = GraphQL::ObjectType.new do
   name "Query"
   description "Query root of the system"
-  self.fields = {
+  fields({
     cheese: FetchField.new(type: CheeseType, data: CHEESES),
     fromSource: SourceField.new,
     favoriteDiary: FavoriteField,
@@ -101,7 +101,7 @@ QueryType = GraphQL::ObjectType.new do
       # pretend it's searching!
       f.resolve -> (t, a, c) { [CHEESES, MILKS].sample.values.sample }
     }
-  }
+  })
 end
 
 DummySchema = GraphQL::Schema.new(query: QueryType, mutation: nil)

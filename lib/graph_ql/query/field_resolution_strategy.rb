@@ -4,7 +4,7 @@ class GraphQL::Query::FieldResolutionStrategy
   def initialize(ast_field, parent_type, target, operation_resolver)
     arguments = Arguments.new(ast_field.arguments, operation_resolver.variables).to_h
     field_name = ast_field.name
-    field = parent_type.fields[field_name] || raise("No field found on #{parent_type.name} '#{type}' for '#{field_name}'")
+    field = parent_type.fields[field_name] || raise("No field found on #{parent_type.name} '#{parent_type}' for '#{field_name}'")
     value = field.resolve(target, arguments, operation_resolver.context)
     strategy_class = FIELD_TYPE_KIND_STRATEGIES[field.type.kind] || raise("No strategy found for #{field.type.kind}")
     if value == GraphQL::Query::DEFAULT_RESOLVE

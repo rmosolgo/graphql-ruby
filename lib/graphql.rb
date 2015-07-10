@@ -10,6 +10,7 @@ module GraphQL
   autoload(:Interface)
   autoload(:Parser)
   autoload(:Query)
+  autoload(:Repl)
   autoload(:Schema)
   autoload(:TypeKinds)
   autoload(:Union)
