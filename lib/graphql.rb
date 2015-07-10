@@ -30,7 +30,7 @@ module GraphQL
     autoload(:InputFieldsField)
     autoload(:OfTypeField)
     autoload(:PossibleTypesField)
-    autoload(:TypeField)
+    autoload(:SchemaType)
     autoload(:TypeKindEnum)
     autoload(:TypeType)
   end

@@ -4,9 +4,8 @@ class GraphQL::Schema::TypeReducer
   attr_reader :type, :result
   def initialize(type, existing_type_hash)
     if [GraphQL::TypeKinds::NON_NULL, GraphQL::TypeKinds::LIST].include?(type.kind)
-      type = type.of_type
-    end
-    if existing_type_hash.has_key?(type.name)
+      @result = reduce_type(type.of_type, existing_type_hash)
+    elsif existing_type_hash.has_key?(type.name)
       # been here, done that
       @result = existing_type_hash
     else
@@ -20,26 +19,26 @@ class GraphQL::Schema::TypeReducer
     type_hash[type.name] = type
     if FIELDS_TYPE_KINDS.include?(type.kind)
       type.fields.each do |name, field|
-        reducer = self.class.new(field.type, type_hash)
-        type_hash.merge!(reducer.result)
+        type_hash.merge!(reduce_type(field.type, type_hash))
         field.arguments.each do |name, argument|
-          reducer = self.class.new(argument[:type], type_hash)
-          type_hash.merge!(reducer.result)
+          type_hash.merge!(reduce_type(argument[:type], type_hash))
         end
       end
     end
     if type.kind == GraphQL::TypeKinds::OBJECT
       type.interfaces.each do |interface|
-        reducer = self.class.new(interface, type_hash)
-        type_hash.merge!(reducer.result)
+        type_hash.merge!(reduce_type(interface, type_hash))
       end
     end
     if POSSIBLE_TYPES_TYPE_KINDS.include?(type.kind)
       type.possible_types.each do |possible_type|
-        reducer = self.class.new(possible_type, type_hash)
-        type_hash.merge!(reducer.result)
+        type_hash.merge!(reduce_type(possible_type, type_hash))
       end
     end
     type_hash
+  end
+
+  def reduce_type(type, type_hash)
+    self.class.new(type, type_hash).result
   end
 end

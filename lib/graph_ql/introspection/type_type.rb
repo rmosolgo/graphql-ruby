@@ -16,12 +16,6 @@ end
 #   # OBJECT only
 #   interfaces: [__Type!]
 #
-#   # INTERFACE and UNION only
-#   possibleTypes: [__Type!]
-#
 #   # ENUM only
 #   enumValues(includeDeprecated: Boolean = false): [__EnumValue!]
-#
-#   # INPUT_OBJECT only
-#   inputFields: [__InputValue!]
 # }

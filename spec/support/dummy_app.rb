@@ -60,6 +60,7 @@ DairyProductInputType = GraphQL::InputObjectType.new {
 
 class FetchField < GraphQL::AbstractField
   attr_reader :type
+  attr_accessor :name
   def initialize(type:, data:)
     @type = type
     @data = data
@@ -74,14 +75,12 @@ class FetchField < GraphQL::AbstractField
   end
 end
 
-class SourceField < GraphQL::AbstractField
-  def type
-    GraphQL::ListType.new(of_type: CheeseType)
-  end
-  def description; "Cheese from source"; end
-  def resolve(target, arguments, context)
+SourceField = GraphQL::Field.new do |f|
+  f.type GraphQL::ListType.new(of_type: CheeseType)
+  f.description "Cheese from source"
+  f.resolve -> (target, arguments, context) {
     CHEESES.values.select{ |c| c.source == arguments["source"] }
-  end
+  }
 end
 
 FavoriteField = GraphQL::Field.new do |f|
@@ -96,7 +95,7 @@ QueryType = GraphQL::ObjectType.new do
   description "Query root of the system"
   fields({
     cheese: FetchField.new(type: CheeseType, data: CHEESES),
-    fromSource: SourceField.new,
+    fromSource: SourceField,
     favoriteEdible: FavoriteField,
     searchDairy: GraphQL::Field.new { |f|
       f.name "searchDairy"
