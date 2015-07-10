@@ -75,8 +75,8 @@ describe GraphQL::TypeType do
               "description"=>"Properties for finding a dairy product",
               "kind"=>"INPUT_OBJECT",
               "inputFields"=>[
-                {"name"=>"source", "type"=>{ "name" => "DairyAnimal"}, "defaultValue"=>""},
-                {"name"=>"fatContent", "type"=>{ "name" => "Float"}, "defaultValue"=>""}
+                {"name"=>"source", "type"=>{ "name" => "DairyAnimal"}, "defaultValue"=>nil},
+                {"name"=>"fatContent", "type"=>{ "name" => "Float"}, "defaultValue"=>nil}
               ]
             }
           }

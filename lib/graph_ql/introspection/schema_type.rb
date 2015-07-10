@@ -12,6 +12,11 @@ GraphQL::SchemaType = GraphQL::ObjectType.new do
       f.description "The query root of this schema"
       f.resolve -> (obj, arg, ctx) { obj.query }
     },
+    mutationType: GraphQL::Field.new { |f|
+      f.type GraphQL::TypeType
+      f.description "The mutation root of this schema"
+      f.resolve -> (obj, arg, ctx) { obj.mutation }
+    },
   })
 end
 # type __Schema {

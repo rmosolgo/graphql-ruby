@@ -18,8 +18,7 @@ __Current status__: rewriting according to spec, see also the previous [prototyp
 - Express failure with `errors` key (http://facebook.github.io/graphql/#sec-Errors)
 - Put response in `data` key
 - Handle blank objects by returning `null`
-- Directives
-- Introspection: implement `SchemaType`, `DirectiveType`
+- Directives, `DirectiveType`, `SchemaType.directives`
 - Validations: implement lots of validators
 - Serial vs non-serial execution?
 - field merging (https://github.com/graphql/graphql-js/issues/19#issuecomment-118515077)

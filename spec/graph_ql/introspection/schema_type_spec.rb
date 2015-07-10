@@ -6,6 +6,7 @@ describe GraphQL::SchemaType do
       __schema {
         types { name }
         queryType { fields { name }}
+        mutationType { fields { name }}
       }
     }
   |}
@@ -23,7 +24,8 @@ describe GraphQL::SchemaType do
             {"name"=>"__type"},
             {"name"=>"__schema"}
           ]
-        }
+        },
+        "mutationType" => nil,
       }
     }}
     assert_equal(expected, result)

@@ -6,18 +6,22 @@ class GraphQL::Query::FieldResolutionStrategy
     field_name = ast_field.name
     field = parent_type.fields[field_name] || raise("No field found on #{parent_type.name} '#{parent_type}' for '#{field_name}'")
     value = field.resolve(target, arguments, operation_resolver.context)
-    strategy_class = FIELD_TYPE_KIND_STRATEGIES[field.type.kind] || raise("No strategy found for #{field.type.kind}")
-    if value == GraphQL::Query::DEFAULT_RESOLVE
-      begin
-        value = target.send(field_name)
-      rescue NoMethodError => e
-        raise("Couldn't resolve field '#{field_name}' to #{target.class} '#{target}' (resulted in NoMethodError)")
+    if value.nil?
+      @result_value = value
+    else
+      if value == GraphQL::Query::DEFAULT_RESOLVE
+        begin
+          value = target.send(field_name)
+        rescue NoMethodError => e
+          raise("Couldn't resolve field '#{field_name}' to #{target.class} '#{target}' (resulted in NoMethodError)")
+        end
       end
+      strategy_class = FIELD_TYPE_KIND_STRATEGIES[field.type.kind] || raise("No strategy found for #{field.type.kind}")
+      result_strategy = strategy_class.new(value, field.type, target, parent_type, ast_field, operation_resolver)
+      @result_value = result_strategy.result
     end
-    result_strategy = strategy_class.new(value, field.type, target, parent_type, ast_field, operation_resolver)
-    @result_value = result_strategy.result
     result_name = ast_field.alias || ast_field.name
-    @result = { result_name => result_value}
+    @result = { result_name => @result_value}
   end
 
   class ScalarResolutionStrategy
