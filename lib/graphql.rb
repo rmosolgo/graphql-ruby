@@ -29,6 +29,7 @@ module GraphQL
     autoload(:InputValueType)
     autoload(:InputFieldsField)
     autoload(:OfTypeField)
+    autoload(:PossibleTypesField)
     autoload(:TypeField)
     autoload(:TypeKindEnum)
     autoload(:TypeType)

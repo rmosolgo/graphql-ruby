@@ -5,6 +5,7 @@ class GraphQL::ObjectType
 
   def initialize(&block)
     self.fields = []
+    self.interfaces = []
     instance_eval(&block)
   end
 

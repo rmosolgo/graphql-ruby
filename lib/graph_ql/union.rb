@@ -1,6 +1,6 @@
 class GraphQL::Union
   include GraphQL::NonNullWithBang
-  attr_reader :name
+  attr_reader :name, :possible_types
   def initialize(name, types)
     if types.length < 2
       raise ArgumentError, "Union #{name} must be defined with 2 or more types, not #{types.length}"
@@ -13,23 +13,23 @@ class GraphQL::Union
     end
 
     @name = name
-    @types = types
+    @possible_types = types
   end
 
   def kind; GraphQL::TypeKinds::UNION; end
 
   def include?(type)
-    @types.include?(type)
+    possible_types.include?(type)
   end
 
   # Find a type in this union for a given object.
   # Reimplement if needed
   def resolve_type(object)
-    type_name = "#{object.class.name}"
-    @types.find {|t| t.name == type_name}
+    type_name = object.class.name
+    possible_types.find {|t| t.name == type_name}
   end
 
   def to_s
-    "<GraphQL::Union #{name} [#{@types.map(&:name).join(", ")}]>"
+    "<GraphQL::Union #{name} [#{possible_types.map(&:name).join(", ")}]>"
   end
 end

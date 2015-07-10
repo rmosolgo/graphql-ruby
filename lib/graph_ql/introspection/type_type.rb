@@ -9,6 +9,7 @@ GraphQL::TypeType = GraphQL::ObjectType.new do
     fields: GraphQL::FieldsField.new,
     ofType: GraphQL::OfTypeField,
     inputFields: GraphQL::InputFieldsField,
+    possibleTypes: GraphQL::PossibleTypesField,
   }
 end
 # type __Type {

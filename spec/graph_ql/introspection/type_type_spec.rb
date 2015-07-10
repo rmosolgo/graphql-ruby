@@ -5,7 +5,8 @@ describe GraphQL::TypeType do
      query introspectionQuery {
        cheeseType:    __type(name: "Cheese") { name, kind, fields { name, isDeprecated, type { name, ofType { name } } } }
        dairyAnimal:   __type(name: "DairyAnimal") { name, kind }
-       dairyProduct:  __type(name: "DairyProduct") { name, kind }
+       dairyProduct:  __type(name: "DairyProduct") { name, kind, possibleTypes { name } }
+       animalProduct: __type(name: "AnimalProduct") { name, kind, possibleTypes { name }, fields { name } }
      }
   |}
   let(:query) { GraphQL::Query.new(DummySchema, query_string, context: {}, params: {"cheeseId" => 2})}
@@ -28,7 +29,14 @@ describe GraphQL::TypeType do
       },
       "dairyProduct"=>{
         "name"=>"DairyProduct",
-        "kind"=>"UNION"
+        "kind"=>"UNION",
+        "possibleTypes"=>[{"name"=>"Milk"}, {"name"=>"Cheese"}],
+      },
+      "animalProduct" => {
+        "name"=>"AnimalProduct",
+        "kind"=>"INTERFACE",
+        "possibleTypes"=>[{"name"=>"Cheese"}, {"name"=>"Milk"}],
+        "fields"=>[{"name"=>"source"}]
       }
     }}
     assert_equal(expected, res)
