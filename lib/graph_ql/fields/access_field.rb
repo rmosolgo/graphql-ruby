@@ -14,4 +14,11 @@ class GraphQL::AccessField < GraphQL::AbstractField
   def resolve(object, args, context)
     @property.nil? ? GraphQL::Query::DEFAULT_RESOLVE : object.send(@property)
   end
+
+  def type
+    if @type.is_a?(Proc)
+      @type = @type.call
+    end
+    @type
+  end
 end

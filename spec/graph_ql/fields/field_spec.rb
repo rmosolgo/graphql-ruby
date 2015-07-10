@@ -1,7 +1,10 @@
 require 'spec_helper'
 
 describe GraphQL::Field do
-  it 'requires type' do
-    assert_raises(ArgumentError) { GraphQL::Field.new {|f| f.name("MyField"); f.description("My desc") }}
+  it 'accepts a proc as type' do
+    field = GraphQL::Field.new { |f|
+      f.type(-> { DairyProductUnion })
+    }
+    assert_equal(DairyProductUnion, field.type)
   end
 end

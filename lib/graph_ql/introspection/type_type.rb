@@ -11,10 +11,6 @@ GraphQL::TypeType = GraphQL::ObjectType.new do
     inputFields: GraphQL::InputFieldsField,
   }
 end
-# Work around circular loading!
-GraphQL::OfTypeField.type = GraphQL::TypeType
-GraphQL::InputValueType.fields["type"].type = GraphQL::TypeType
-
 # type __Type {
 #   # OBJECT only
 #   interfaces: [__Type!]

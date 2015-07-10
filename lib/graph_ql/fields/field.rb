@@ -6,11 +6,6 @@ class GraphQL::Field < GraphQL::AbstractField
   def initialize(&block)
     @arguments = {}
     yield(self) if block_given?
-    REQUIRED_DEFINITIONS.each do |defn|
-      if public_send(defn).nil?
-        raise(ArgumentError, "Field #{name || "<no name>"} must define #{defn}!")
-      end
-    end
   end
 
   # Used when defining:
@@ -22,6 +17,17 @@ class GraphQL::Field < GraphQL::AbstractField
       @resolve_proc = proc_or_object
     else
       @resolve_proc.call(proc_or_object, arguments, ctx)
+    end
+  end
+
+  def type(type_or_proc=nil)
+    if type_or_proc.nil?
+      if @type.is_a?(Proc)
+        @type = @type.call
+      end
+      @type
+    else
+      @type = type_or_proc
     end
   end
 end
