@@ -6,6 +6,7 @@ require "parslet"
 
 module GraphQL
   extend ActiveSupport::Autoload
+  autoload(:Directive)
   autoload(:Enum)
   autoload(:Interface)
   autoload(:Parser)
@@ -16,6 +17,12 @@ module GraphQL
   autoload(:Union)
   autoload(:Validator)
   autoload(:VERSION)
+
+  autoload_under "directives" do
+    autoload(:DirectiveChain)
+    autoload(:IncludeDirective)
+    autoload(:SkipDirective)
+  end
 
   autoload_under "fields" do
     autoload(:AbstractField)

@@ -2,7 +2,7 @@ class GraphQL::Query::FieldResolutionStrategy
   attr_reader :result, :result_value
 
   def initialize(ast_field, parent_type, target, operation_resolver)
-    arguments = Arguments.new(ast_field.arguments, operation_resolver.variables).to_h
+    arguments = GraphQL::Query::Arguments.new(ast_field.arguments, operation_resolver.variables).to_h
     field_name = ast_field.name
     field = parent_type.fields[field_name] || raise("No field found on #{parent_type.name} '#{parent_type}' for '#{field_name}'")
     value = field.resolve(target, arguments, operation_resolver.context)
@@ -80,30 +80,4 @@ class GraphQL::Query::FieldResolutionStrategy
     GraphQL::TypeKinds::ENUM =>       EnumResolutionStrategy,
     GraphQL::TypeKinds::NON_NULL =>   NonNullResolutionStrategy,
   }
-
-  # Creates a plain hash out of arguments, looking up variables if necessary
-  class Arguments
-    attr_reader :to_h
-    def initialize(ast_arguments, variables)
-      @to_h = ast_arguments.reduce({}) do |memo, arg|
-        value = reduce_value(arg.value, variables)
-        memo[arg.name] = value
-        memo
-      end
-    end
-
-    private
-
-    def reduce_value(value, variables)
-      if value.is_a?(GraphQL::Nodes::VariableIdentifier)
-        value = variables[value.name]
-      elsif value.is_a?(GraphQL::Nodes::Enum)
-        value = value.name
-      elsif value.is_a?(GraphQL::Nodes::InputObject)
-        value = Arguments.new(value.pairs, variables).to_h
-      else
-        value
-      end
-    end
-  end
 end

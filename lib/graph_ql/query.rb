@@ -1,6 +1,7 @@
 class GraphQL::Query
   DEFAULT_RESOLVE = :__default_resolve
   extend ActiveSupport::Autoload
+  autoload(:Arguments)
   autoload(:FieldResolutionStrategy)
   autoload(:FragmentSpreadResolutionStrategy)
   autoload(:InlineFragmentResolutionStrategy)

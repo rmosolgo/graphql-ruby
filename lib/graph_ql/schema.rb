@@ -1,8 +1,9 @@
 class GraphQL::Schema
   extend ActiveSupport::Autoload
   autoload(:TypeReducer)
+  DIRECTIVES = [GraphQL::SkipDirective, GraphQL::IncludeDirective]
 
-  attr_reader :query, :mutation
+  attr_reader :query, :mutation, :directives
   def initialize(query:, mutation:)
     # Add fields to this query root for introspection:
     query.fields = query.fields.merge({
@@ -20,6 +21,7 @@ class GraphQL::Schema
 
     @query    = query
     @mutation = mutation
+    @directives = DIRECTIVES.reduce({}) { |m, d| m[d.name] = d; m }
   end
 
   def types
