@@ -5,6 +5,7 @@ class GraphQL::Field < GraphQL::AbstractField
 
   def initialize(&block)
     @arguments = {}
+    @resolve_proc = -> (o, a, c) { GraphQL::Query::DEFAULT_RESOLVE }
     yield(self) if block_given?
   end
 

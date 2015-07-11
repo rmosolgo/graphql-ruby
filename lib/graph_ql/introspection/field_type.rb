@@ -1,6 +1,6 @@
 GraphQL::FieldType = GraphQL::ObjectType.new do
-  name "Field"
-  description "Fields on a GraphQL type"
+  name "__Field"
+  description "Field on a GraphQL type"
   self.fields = {
     name: field(type: !type.String, desc: "The name for accessing this field"),
     description: field(type: !type.String, desc: "The description of this field"),

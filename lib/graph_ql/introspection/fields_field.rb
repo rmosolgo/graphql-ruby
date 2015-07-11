@@ -12,7 +12,7 @@ class GraphQL::FieldsField < GraphQL::AbstractField
   end
 
   def resolve(object, arguments, context)
-    fields = object.send(:fields).values
+    fields = object.fields.values
     if !arguments["includeDeprecated"]
       fields = fields.select {|f| !f.deprecated? }
     end

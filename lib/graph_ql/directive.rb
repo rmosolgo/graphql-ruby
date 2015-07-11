@@ -1,10 +1,14 @@
-class GraphQL::Directive
-  ON_OPERATION =  :on_operation
-  ON_FRAGMENT =   :on_fragment
-  ON_FIELD =      :on_field
+class GraphQL::Directive < GraphQL::ObjectType
+  LOCATIONS = [
+    ON_OPERATION =  :on_operation?,
+    ON_FRAGMENT =   :on_fragment?,
+    ON_FIELD =      :on_field?,
+  ]
+  LOCATIONS.each do |location|
+    define_method(location) { self.on.include?(location) }
+  end
 
-  extend GraphQL::Definable
-  attr_definable :name, :on, :description, :arguments
+  attr_definable :on, :arguments
 
   def initialize(&block)
     @arguments = {}
@@ -19,13 +23,14 @@ class GraphQL::Directive
       @resolve_proc.call(proc_or_arguments, proc)
     end
   end
-end
 
-# type __Directive {
-#   name: String!
-#   description: String
-#   args: [__InputValue!]!
-#   onOperation: Boolean!
-#   onFragment: Boolean!
-#   onField: Boolean!
-# }
+  def arguments(new_arguments=nil)
+    if new_arguments.nil?
+      @arguments
+    else
+      @arguments = new_arguments
+        .reduce({}) {|memo, (k, v)| memo[k.to_s] = v; memo}
+        .each { |k, v| v.respond_to?("name=") && v.name = k}
+    end
+  end
+end

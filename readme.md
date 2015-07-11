@@ -20,10 +20,12 @@ __Current status__: rewriting according to spec, see also the previous [prototyp
   - build error object with position
   - Express failure with `errors` key (http://facebook.github.io/graphql/#sec-Errors)
 - Put response in `data` key
-- directives on fragments, `DirectiveType`, `SchemaType.directives`
+- directives:
   - `@skip` has precedence over `@include`
   - directives on fragments: http://facebook.github.io/graphql/#sec-Fragment-Directives
-  - update validators
+- enums:
+  - accept value descriptions
+  - introspection on `TypeType`
 - Serial vs non-serial execution?
 - field merging (https://github.com/graphql/graphql-js/issues/19#issuecomment-118515077)
 
