@@ -15,11 +15,15 @@ __Current status__: rewriting according to spec, see also the previous [prototyp
 
 ## To Do:
 
-- Express failure with `errors` key (http://facebook.github.io/graphql/#sec-Errors)
+- Validations:
+  - implement lots of validators
+  - build error object with position
+  - Express failure with `errors` key (http://facebook.github.io/graphql/#sec-Errors)
 - Put response in `data` key
 - directives on fragments, `DirectiveType`, `SchemaType.directives`
-- `@skip` has precedence over `@include`
-- Validations: implement lots of validators
+  - `@skip` has precedence over `@include`
+  - directives on fragments: http://facebook.github.io/graphql/#sec-Fragment-Directives
+  - update validators
 - Serial vs non-serial execution?
 - field merging (https://github.com/graphql/graphql-js/issues/19#issuecomment-118515077)
 

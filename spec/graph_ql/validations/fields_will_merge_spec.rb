@@ -28,10 +28,11 @@ describe GraphQL::Validations::FieldsWillMerge do
   let(:errors) { validator.validate(document) }
   it 'finds field naming conflicts' do
     expected_errors = [
-      "Field 'nickname' has a conflict: name or fatContent?",             # alias conflict in query
-      "Field 'originName' has a conflict: id or name?",                   # nested conflict
-      "Field 'id' has a directive conflict: {} or {\"someFlag\":null}?",  # different directives
-      "Field 'fatContent' has a conflict: fatContent or name?",           # alias/name conflict in query and fragment
+      "Field 'nickname' has a field conflict: name or fatContent?",             # alias conflict in query
+      "Field 'originName' has a field conflict: id or name?",                   # nested conflict
+      "Field 'id' has a directive conflict: [] or [someFlag]?",                 # different directives
+      "Field 'id' has a directive argument conflict: [] or [{}]?",              # not sure this is a great way to handle it but here we are!
+      "Field 'fatContent' has a field conflict: fatContent or name?",           # alias/name conflict in query and fragment
       "Field 'similarCheeses' has an argument conflict: {\"source\":\"sourceVar\"} or {\"source\":\"SHEEP\"}?", # different arguments
     ]
     assert_equal(expected_errors, errors)

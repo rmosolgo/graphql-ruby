@@ -1,5 +1,12 @@
-# Depth-first traversal through the tree, calling hooks at each stop
+# Depth-first traversal through the tree, calling hooks at each stop.
 #
+# @example: Create a visitor, add hooks, then search a document
+#   total_field_count = 0
+#   visitor = GraphQL::Visitor.new
+#   visitor[GraphQL::Nodes::Field] << -> (node) { total_field_count += 1 }
+#   visitor[GraphQL::Nodes::Document].leave << -> (node) { p total_field_count }
+#   visitor.visit(document)
+#   # => 6
 #
 class GraphQL::Visitor
   def initialize
