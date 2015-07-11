@@ -59,12 +59,14 @@ class GraphQL::Transform < Parslet::Transform
 
   rule(alias_name: simple(:a)) { a.to_s }
   optional_sequence(:optional_field_arguments)
-  rule(field_argument_name: simple(:n), field_argument_value: simple(:v)) { FieldArgument.new(name: n.to_s, value: v)}
+  rule(field_argument_name: simple(:n), field_argument_value: simple(:v)) { Argument.new(name: n.to_s, value: v)}
   optional_sequence(:optional_selections)
   optional_sequence(:optional_directives)
 
   # Directive
-  rule(directive_name: simple(:name), directive_value: simple(:value)) { Directive.new(name: name.to_s, value: value) }
+  rule(directive_name: simple(:name), directive_arguments: sequence(:args)) { Directive.new(name: name.to_s, arguments: args) }
+  rule(directive_argument_name: simple(:n), directive_argument_value: simple(:v)) { Argument.new(name: n.to_s, value: v)}
+  optional_sequence(:optional_directive_arguments)
 
   # Type Defs
   rule(type_name: simple(:n))     { TypeName.new(name: n.to_s) }
@@ -75,7 +77,7 @@ class GraphQL::Transform < Parslet::Transform
   rule(array: sequence(:v)) { v }
   rule(boolean: simple(:v)) { v == "true" ? true : false }
   rule(input_object: sequence(:v)) { InputObject.new(pairs: v) }
-  rule(input_object_name: simple(:n), input_object_value: simple(:v)) { InputObjectPair.new(name: n.to_s, value: v)}
+  rule(input_object_name: simple(:n), input_object_value: simple(:v)) { Argument.new(name: n.to_s, value: v)}
   rule(int: simple(:v)) { v.to_i }
   rule(float: simple(:v)) { v.to_f }
   rule(string: simple(:v)) { v.to_s }

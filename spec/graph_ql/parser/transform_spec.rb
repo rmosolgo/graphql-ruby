@@ -53,7 +53,7 @@ describe GraphQL::Transform do
     assert_equal("someInfo", res.name)
     assert_equal(3, res.selections.length)
 
-    res = get_result("mutation changeThings($var: Float = 4.5, $arr: [Int]!) @flag, @if: true { changeThings(var: $var) { a,b,c }}", parse: :operation_definition)
+    res = get_result("mutation changeThings($var: Float = 4.5, $arr: [Int]!) @flag, @skip(if: 1) { changeThings(var: $var) { a,b,c }}", parse: :operation_definition)
     assert_equal("mutation", res.operation_type)
     assert_equal("var", res.variables.first.name)
     assert_equal("Float", res.variables.first.type.name)
@@ -87,22 +87,23 @@ describe GraphQL::Transform do
     assert_equal("SO_COOL", res.arguments[1].value.name)
     assert_equal({"nice" => {"very" => true}}, res.arguments[2].value.to_h)
 
-    res = get_result(%|me @flag, @if: "something" {name, id}|, parse: :field)
+    res = get_result(%|me @flag, @include(if: "something") {name, id}|, parse: :field)
     assert_equal("me", res.name)
     assert_equal(nil, res.alias)
     assert_equal(2, res.directives.length)
     assert_equal("flag", res.directives.first.name)
-    assert_equal("something", res.directives.last.value)
+    assert_equal("something", res.directives.last.arguments.first.value)
     assert_equal(2, res.selections.length)
   end
 
   it 'transforms directives' do
-    res = get_result("@doSomething: true", parse: :directive)
+    res = get_result("@doSomething(vigorously: true)", parse: :directive)
     assert_equal("doSomething", res.name, 'gets the name without @')
-    assert_equal(true, res.value)
+    assert_equal("vigorously", res.arguments.first.name)
+    assert_equal(true, res.arguments.first.value)
 
     res = get_result("@someFlag", parse: :directive)
     assert_equal("someFlag", res.name)
-    assert_equal(nil, res.value, 'gets nil if no value')
+    assert_equal([], res.arguments, 'gets [] if no args')
   end
 end

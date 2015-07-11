@@ -46,11 +46,11 @@ module GraphQL::Nodes
     end
   end
 
-  Directive = AbstractNode.create(:name, :value)
+  Argument = AbstractNode.create(:name, :value)
+  Directive = AbstractNode.create(:name, :arguments)
   Document = AbstractNode.create(:parts)
   Enum = AbstractNode.create(:name)
   Field = AbstractNode.create(:name, :alias, :arguments, :directives, :selections)
-  FieldArgument = AbstractNode.create(:name, :value)
   FragmentDefinition = AbstractNode.create(:name, :type, :directives, :selections)
   FragmentSpread = AbstractNode.create(:name, :directives)
   InlineFragment = AbstractNode.create(:type, :directives, :selections)
@@ -63,7 +63,6 @@ module GraphQL::Nodes
       end
     end
   end
-  InputObjectPair = AbstractNode.create(:name, :value)
   ListType = AbstractNode.create(:of_type)
   NonNullType = AbstractNode.create(:of_type)
   OperationDefinition = AbstractNode.create(:operation_type, :name, :variables, :directives, :selections)
