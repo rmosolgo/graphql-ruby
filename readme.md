@@ -19,7 +19,6 @@ __Current status__: rewriting according to spec, see also the previous [prototyp
   - implement lots of validators
   - build error object with position
   - Express failure with `errors` key (http://facebook.github.io/graphql/#sec-Errors)
-- Put response in `data` key
 - directives:
   - `@skip` has precedence over `@include`
   - directives on fragments: http://facebook.github.io/graphql/#sec-Fragment-Directives

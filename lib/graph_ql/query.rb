@@ -27,6 +27,15 @@ class GraphQL::Query
     end
   end
 
+  # Get the result for this query, executing it once
+  def result
+    @result ||= {
+      "data" => execute,
+    }
+  end
+
+  private
+
   def execute
     response = {}
     @operations.each do |name, operation|

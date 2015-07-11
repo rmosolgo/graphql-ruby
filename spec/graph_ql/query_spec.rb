@@ -28,8 +28,7 @@ describe GraphQL::Query do
     let(:query) { GraphQL::Query.new(DummySchema, query_string, context: {}, params: {"cheeseId" => 2})}
 
     it 'returns fields on objects' do
-      res = query.execute
-      expected = { "getFlavor" => {
+      expected = {"data"=> { "getFlavor" => {
           "brie" =>   { "flavor" => "Brie", "taste" => "Brie" },
           "cheese" => {
             "__typename" => "Cheese",
@@ -41,8 +40,8 @@ describe GraphQL::Query do
           "fromSource" => [{ "id" => 1 }, {"id" => 2}],
           "firstSheep" => { "flavor" => "Manchego" },
           "favoriteEdible"=>{"__typename"=>"Edible", "fatContent"=>0.04},
-        }}
-      assert_equal(expected, res)
+      }}}
+      assert_equal(expected, query.result)
     end
 
     it 'exposes fragments' do

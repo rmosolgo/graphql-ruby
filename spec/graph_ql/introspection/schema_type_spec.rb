@@ -10,9 +10,9 @@ describe GraphQL::SchemaType do
       }
     }
   |}
-  let(:result) { GraphQL::Query.new(DummySchema, query_string).execute }
+  let(:result) { GraphQL::Query.new(DummySchema, query_string).result }
   it 'exposes the schema' do
-    expected = { "getSchema" => {
+    expected = { "data" => { "getSchema" => {
       "__schema" => {
         "types" => DummySchema.types.values.map { |t| t.name.nil? ? (p t; raise("no name for #{t}")) : {"name" => t.name} },
         "queryType"=>{
@@ -28,7 +28,7 @@ describe GraphQL::SchemaType do
         },
         "mutationType" => nil,
       }
-    }}
+    }}}
     assert_equal(expected, result)
   end
 end

@@ -8,10 +8,10 @@ describe GraphQL::DirectiveType do
       }
     }
   |}
-  let(:result) { GraphQL::Query.new(DummySchema, query_string).execute }
+  let(:result) { GraphQL::Query.new(DummySchema, query_string).result }
 
   it 'shows directive info ' do
-    expected = {"getDirectives" => {
+    expected = { "data" => {"getDirectives" => {
       "__schema" => {
         "directives" => [
           {
@@ -34,7 +34,7 @@ describe GraphQL::DirectiveType do
           },
         ]
       }
-    }}
+    }}}
     assert_equal(expected, result)
   end
 end
