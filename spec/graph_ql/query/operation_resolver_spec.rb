@@ -5,6 +5,7 @@ describe GraphQL::Query::OperationResolver do
   let(:params) { {"cheeseId" => 1}}
   let(:query) { q = Minitest::Mock.new; q.expect(:params, params); q}
   let(:resolver) { GraphQL::Query::OperationResolver.new(operation, query)}
+
   describe "variables" do
     it 'returns variables by name' do
       assert_equal(1, resolver.variables["cheeseId"])

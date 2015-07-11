@@ -114,4 +114,21 @@ QueryType = GraphQL::ObjectType.new do
   })
 end
 
-DummySchema = GraphQL::Schema.new(query: QueryType, mutation: nil)
+GLOBAL_VALUES = []
+
+MutationType = GraphQL::ObjectType.new do
+  name "Mutation"
+  description "The root for mutations in this schema"
+  fields({
+    pushValue: GraphQL::Field.new { |f|
+      f.description("Push a value onto a global array :D")
+      f.type(!type[!type.Int])
+      f.arguments(value: arg(type: !type.Int))
+      f.resolve -> (o, args, ctx) {
+        GLOBAL_VALUES << args["value"]
+        GLOBAL_VALUES
+      }
+    }
+  })
+end
+DummySchema = GraphQL::Schema.new(query: QueryType, mutation: MutationType)

@@ -26,7 +26,7 @@ describe GraphQL::Query do
       }
     |}
     let(:query) { GraphQL::Query.new(DummySchema, query_string, context: {}, params: {"cheeseId" => 2})}
-
+    let(:result) { query.result }
     it 'returns fields on objects' do
       expected = {"data"=> { "getFlavor" => {
           "brie" =>   { "flavor" => "Brie", "taste" => "Brie" },
@@ -41,11 +41,31 @@ describe GraphQL::Query do
           "firstSheep" => { "flavor" => "Manchego" },
           "favoriteEdible"=>{"__typename"=>"Edible", "fatContent"=>0.04},
       }}}
-      assert_equal(expected, query.result)
+      assert_equal(expected, result)
     end
 
     it 'exposes fragments' do
       assert_equal(GraphQL::Nodes::FragmentDefinition, query.fragments['cheeseFields'].class)
+    end
+
+    describe 'execution order' do
+      let(:query_string) {%|
+        mutation setInOrder {
+          first:  pushValue(value: 1)
+          second: pushValue(value: 5)
+          third:  pushValue(value: 2)
+        }
+      |}
+      it 'executes mutations in order' do
+        expected = {"data"=>{
+          "setInOrder"=>{
+            "first"=> [1],
+            "second"=>[1, 5],
+            "third"=> [1, 5, 2],
+          }
+        }}
+        assert_equal(expected, result)
+      end
     end
   end
 end

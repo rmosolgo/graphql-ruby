@@ -26,7 +26,12 @@ describe GraphQL::SchemaType do
             {"name"=>"__schema"},
           ]
         },
-        "mutationType" => nil,
+        "mutationType"=> {
+          "fields"=>[
+            {"name"=>"pushValue"},
+            {"name"=>"__typename"}
+          ]
+        },
       }
     }}}
     assert_equal(expected, result)
