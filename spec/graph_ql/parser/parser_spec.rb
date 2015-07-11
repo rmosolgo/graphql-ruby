@@ -7,9 +7,9 @@ describe GraphQL::Parser do
     assert(parser.parse_with_debug(%|
     # let's make a big query:
     # a read-only:
-    query getStuff {id, name @if: true}
+    query getStuff {id, name @skip(if: true)}
     # a mutation:
-    mutation changeStuff($override: Boolean!, $cucumbers: [Vegetable]!) @veggie, @healthy: true {
+    mutation changeStuff($override: Boolean!, $cucumbers: [Vegetable]!) @veggie, @healthy(vitamins: true) {
       # change the cucumber
       changeStuff(thing: $cucumbers) {
         id,
@@ -43,20 +43,20 @@ describe GraphQL::Parser do
 
   it 'parses fragment definitions' do
     assert(parser.fragment_definition.parse_with_debug(%|fragment nutritionFacts on Food { fat, sodium, carbohydrates, vitamins { a, b } }|))
-    assert(parser.fragment_definition.parse_with_debug(%|fragment nutritionFacts on Food @directive: "argument" { fat, sodium, carbohydrates, vitamins { a, b } }|), 'gets directives')
+    assert(parser.fragment_definition.parse_with_debug(%|fragment nutritionFacts on Food @directive(key: 1) { fat, sodium, carbohydrates, vitamins { a, b } }|), 'gets directives')
   end
 
   it 'parses selections' do
     assert(parser.selections.parse_with_debug(%|{id, name, people { count }}|), 'gets nested fields')
     assert(parser.selections.parse_with_debug(%|{id, ... myFragment }|), 'gets fragment spreads')
     assert(parser.selections.parse_with_debug(%|{id, ... on User @myFlag { name, photo } }|), 'gets inline fragments')
-    assert(parser.selections.parse_with_debug(%|{id @if: true, ... myFragment @if: $something}|), 'gets directives')
+    assert(parser.selections.parse_with_debug(%|{id @skip(if: true), ... myFragment @include(if: $something)}|), 'gets directives')
   end
 
   it 'parses directives' do
     assert(parser.directives.parse_with_debug("@doSomething"), 'gets without argument')
-    assert(parser.directives.parse_with_debug('@doSomething: "forSomeReason"'), 'gets with argument')
-    assert(parser.directives.parse_with_debug('@myFlag, @doSomething: "forSomeReason"'), 'gets multiple')
+    assert(parser.directives.parse_with_debug('@doSomething(why: "forSomeReason")'), 'gets with argument')
+    assert(parser.directives.parse_with_debug('@myFlag, @doSomething(why: "forSomeReason")'), 'gets multiple')
   end
 
   it 'parses fields' do
@@ -64,7 +64,7 @@ describe GraphQL::Parser do
     assert(parser.field.parse_with_debug(%{myAlias: myField}), 'gets an alias')
     assert(parser.field.parse_with_debug(%{myField(intKey: 1, floatKey: 1.1e5)}), 'gets arguments')
     assert(parser.field.parse_with_debug(%{myAlias: myField(stringKey: "my_string", boolKey: false, objKey: {key : true})}), 'gets alias and arguments')
-    assert(parser.field.parse_with_debug(%|myField @withFlag, @if: true { name, id }|), 'gets with directive')
+    assert(parser.field.parse_with_debug(%|myField @withFlag, @skip(if: true) { name, id }|), 'gets with directive')
   end
 
   it 'parses variable definitions' do
