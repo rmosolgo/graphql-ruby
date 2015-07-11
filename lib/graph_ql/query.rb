@@ -32,6 +32,9 @@ class GraphQL::Query
     @result ||= {
       "data" => execute,
     }
+  rescue StandardError => err
+    message = "Something went wrong during query execution: #{err}"
+    {"errors" => [{"message" => message}]}
   end
 
   private

@@ -48,6 +48,17 @@ describe GraphQL::Query do
       assert_equal(GraphQL::Nodes::FragmentDefinition, query.fragments['cheeseFields'].class)
     end
 
+    describe 'runtime errors' do
+      let(:query_string) {%| query noMilk { milk(id: 1000) { name } }|}
+      it 'turns into error messages' do
+        expected = {"errors"=>[
+          {"message"=>"Something went wrong during query execution: No field found on Query 'Query' for 'milk'"}
+        ]}
+        assert_equal(expected, result)
+      end
+    end
+
+
     describe 'execution order' do
       let(:query_string) {%|
         mutation setInOrder {
