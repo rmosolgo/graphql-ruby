@@ -33,6 +33,8 @@ module GraphQL
   autoload_under "introspection" do
     autoload(:ArgumentsField)
     autoload(:DirectiveType)
+    autoload(:EnumValuesField)
+    autoload(:EnumValueType)
     autoload(:FieldType)
     autoload(:FieldsField)
     autoload(:InputValueType)

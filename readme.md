@@ -22,10 +22,6 @@ __Current status__: rewriting according to spec, see also the previous [prototyp
 - directives:
   - `@skip` has precedence over `@include`
   - directives on fragments: http://facebook.github.io/graphql/#sec-Fragment-Directives
-- enums:
-  - accept value descriptions
-  - introspection on `TypeType`
-- Serial vs non-serial execution?
 - field merging (https://github.com/graphql/graphql-js/issues/19#issuecomment-118515077)
 
 ## Goals:

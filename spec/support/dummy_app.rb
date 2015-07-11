@@ -16,7 +16,14 @@ AnimalProduct = GraphQL::Interface.new do
   })
 end
 
-DairyAnimalEnum = GraphQL::Enum.new("DairyAnimal", ["COW", "GOAT", "SHEEP"])
+DairyAnimalEnum = GraphQL::Enum.new do |e|
+  e.name "DairyAnimal"
+  e.description "An animal which can yield milk"
+  e.value("COW",    "Animal with black and white spots")
+  e.value("GOAT",   "Animal with horns")
+  e.value("SHEEP",  "Animal with wool")
+  e.value("YAK",    "Animal with long hair", deprecation_reason: "Out of fashion")
+end
 
 CheeseType = GraphQL::ObjectType.new do
   name "Cheese"

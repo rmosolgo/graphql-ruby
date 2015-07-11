@@ -4,7 +4,7 @@ describe GraphQL::TypeType do
   let(:query_string) {%|
      query introspectionQuery {
        cheeseType:    __type(name: "Cheese") { name, kind, fields { name, isDeprecated, type { name, ofType { name } } } }
-       dairyAnimal:   __type(name: "DairyAnimal") { name, kind }
+       dairyAnimal:   __type(name: "DairyAnimal") { name, kind, enumValues(includeDeprecated: false) { name, isDeprecated } }
        dairyProduct:  __type(name: "DairyProduct") { name, kind, possibleTypes { name } }
        animalProduct: __type(name: "AnimalProduct") { name, kind, possibleTypes { name }, fields { name } }
      }
@@ -16,6 +16,12 @@ describe GraphQL::TypeType do
     {"name"=>"source",      "isDeprecated" => false, "type" => { "name" => "Non-Null", "ofType" => { "name" => "DairyAnimal"}}},
     {"name"=>"__typename",  "isDeprecated"=>false,    "type"=> { "name" => "Non-Null", "ofType" => { "name" => "String"}}},
   ]}
+
+  let(:dairy_animals) {[
+    {"name"=>"COW",   "isDeprecated"=> false },
+    {"name"=>"GOAT",  "isDeprecated"=> false },
+    {"name"=>"SHEEP", "isDeprecated"=> false },
+  ]}
   it 'exposes metadata about types' do
     expected = {"data"=> { "introspectionQuery" => {
       "cheeseType" => {
@@ -25,7 +31,8 @@ describe GraphQL::TypeType do
       },
       "dairyAnimal"=>{
         "name"=>"DairyAnimal",
-        "kind"=>"ENUM"
+        "kind"=>"ENUM",
+        "enumValues"=> dairy_animals,
       },
       "dairyProduct"=>{
         "name"=>"DairyProduct",
@@ -49,6 +56,7 @@ describe GraphQL::TypeType do
     let(:query_string) {%|
        query introspectionQuery {
          cheeseType:    __type(name: "Cheese") { name, kind, fields(includeDeprecated: true) { name, isDeprecated, type { name, ofType { name } } } }
+         dairyAnimal:   __type(name: "DairyAnimal") { name, kind, enumValues(includeDeprecated: true) { name, isDeprecated } }
        }
     |}
     let(:deprecated_fields) { {"name"=>"fatContent", "isDeprecated"=>true, "type"=>{"name"=>"Non-Null", "ofType"=>{"name"=>"Float"}}} }
@@ -60,6 +68,11 @@ describe GraphQL::TypeType do
           "name"=> "Cheese",
           "kind" => "OBJECT",
           "fields"=> new_cheese_fields
+        },
+        "dairyAnimal"=>{
+          "name"=>"DairyAnimal",
+          "kind"=>"ENUM",
+          "enumValues"=> dairy_animals + [{"name" => "YAK", "isDeprecated" => true}],
         },
       }}}
       assert_equal(expected, query.result)
