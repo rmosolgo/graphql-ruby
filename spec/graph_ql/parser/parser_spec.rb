@@ -27,7 +27,7 @@ describe GraphQL::Parser do
       }
     }
 
-    fragment nonsense on NonsenseType { bogus }
+    fragment nonsense on NonsenseType @skip(if: true) { bogus }
     |), 'gets a document with lots of comments')
 
     assert(parser.parse_with_debug("{fields, only, inThisOne}"), 'fetch-only query')

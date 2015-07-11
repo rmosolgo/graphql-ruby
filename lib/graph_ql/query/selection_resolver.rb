@@ -9,7 +9,7 @@ class GraphQL::Query::SelectionResolver
 
   def initialize(target, type, selections, operation_resolver)
     @result = selections.reduce({}) do |memo, ast_field|
-      chain = GraphQL::DirectiveChain.new(GraphQL::Directive::ON_FIELD, operation_resolver, ast_field.directives) {
+      chain = GraphQL::DirectiveChain.new(ast_field, operation_resolver) {
         strategy_class = RESOLUTION_STRATEGIES[ast_field.class]
         strategy = strategy_class.new(ast_field, type, target, operation_resolver)
         strategy.result
