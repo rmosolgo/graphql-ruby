@@ -6,6 +6,7 @@ describe GraphQL::Query do
       query getFlavor($cheeseId: Int!) {
         brie: cheese(id: 1)   { ...cheeseFields, ... meatFields, taste: flavor },
         cheese(id: $cheeseId)  {
+          __typename,
           id,
           ...cheeseFields,
           ... edibleFields,
@@ -14,7 +15,7 @@ describe GraphQL::Query do
         }
         fromSource(source: COW) { id }
         firstSheep: searchDairy(product: {source: SHEEP}) { ... dairyFields }
-        favoriteEdible { fatContent }
+        favoriteEdible { __typename, fatContent }
       }
       fragment cheeseFields on Cheese { flavor }
       fragment edibleFields on Edible { fatContent }
@@ -30,10 +31,16 @@ describe GraphQL::Query do
       res = query.execute
       expected = { "getFlavor" => {
           "brie" =>   { "flavor" => "Brie", "taste" => "Brie" },
-          "cheese" => { "id" => 2, "fatContent" => 0.3, "flavor" => "Gouda", "cheeseKind" => "Gouda" },
+          "cheese" => {
+            "__typename" => "Cheese",
+            "id" => 2,
+            "fatContent" => 0.3,
+            "flavor" => "Gouda",
+            "cheeseKind" => "Gouda",
+          },
           "fromSource" => [{ "id" => 1 }, {"id" => 2}],
           "firstSheep" => { "flavor" => "Manchego" },
-          "favoriteEdible"=>{"fatContent"=>0.04},
+          "favoriteEdible"=>{"__typename"=>"Edible", "fatContent"=>0.04},
         }}
       assert_equal(expected, res)
     end

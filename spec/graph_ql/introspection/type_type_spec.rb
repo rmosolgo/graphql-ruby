@@ -14,6 +14,7 @@ describe GraphQL::TypeType do
     {"name"=>"id",          "isDeprecated" => false, "type" => { "name" => "Non-Null", "ofType" => { "name" => "Int"}}},
     {"name"=>"flavor",      "isDeprecated" => false, "type" => { "name" => "Non-Null", "ofType" => { "name" => "String"}}},
     {"name"=>"source",      "isDeprecated" => false, "type" => { "name" => "Non-Null", "ofType" => { "name" => "DairyAnimal"}}},
+    {"name"=>"__typename",  "isDeprecated"=>false,    "type"=> { "name" => "Non-Null", "ofType" => { "name" => "String"}}},
   ]}
   it 'exposes metadata about types' do
     res = query.execute
@@ -36,7 +37,10 @@ describe GraphQL::TypeType do
         "name"=>"AnimalProduct",
         "kind"=>"INTERFACE",
         "possibleTypes"=>[{"name"=>"Cheese"}, {"name"=>"Milk"}],
-        "fields"=>[{"name"=>"source"}]
+        "fields"=>[
+          {"name"=>"source"},
+          {"name"=>"__typename"},
+        ]
       }
     }}
     assert_equal(expected, res)
@@ -50,11 +54,13 @@ describe GraphQL::TypeType do
     |}
     let(:deprecated_fields) { {"name"=>"fatContent", "isDeprecated"=>true, "type"=>{"name"=>"Non-Null", "ofType"=>{"name"=>"Float"}}} }
     it 'can expose deprecated fields' do
+      typename = cheese_fields.pop
+      new_cheese_fields = cheese_fields + [deprecated_fields, typename]
       expected = { "introspectionQuery" => {
         "cheeseType" => {
           "name"=> "Cheese",
           "kind" => "OBJECT",
-          "fields"=> cheese_fields + [deprecated_fields]
+          "fields"=> new_cheese_fields
         },
       }}
       assert_equal(expected, query.execute)

@@ -21,8 +21,9 @@ describe GraphQL::SchemaType do
             {"name"=>"fromSource"},
             {"name"=>"favoriteEdible"},
             {"name"=>"searchDairy"},
+            {"name"=>"__typename"},
             {"name"=>"__type"},
-            {"name"=>"__schema"}
+            {"name"=>"__schema"},
           ]
         },
         "mutationType" => nil,

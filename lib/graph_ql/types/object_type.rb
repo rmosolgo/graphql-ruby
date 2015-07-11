@@ -22,6 +22,12 @@ class GraphQL::ObjectType
       .reduce({}) { |memo, (key, value)| memo[key.to_s] = value; memo }
     # Set the name from its context on this type:
     stringified_fields.each {|k, v| v.respond_to?("name=") && v.name = k }
+    stringified_fields["__typename"] = GraphQL::Field.new do |f|
+      f.name "__typename"
+      f.description "The name of this type"
+      f.type -> { !GraphQL::STRING_TYPE }
+      f.resolve -> (o, a, c) { self.name }
+    end
     @fields = stringified_fields
   end
 
