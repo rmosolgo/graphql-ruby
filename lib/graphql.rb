@@ -8,6 +8,7 @@ module GraphQL
   extend ActiveSupport::Autoload
   autoload(:Directive)
   autoload(:Enum)
+  autoload(:Field)
   autoload(:Interface)
   autoload(:Parser)
   autoload(:Query)
@@ -22,12 +23,6 @@ module GraphQL
     autoload(:DirectiveChain)
     autoload(:IncludeDirective)
     autoload(:SkipDirective)
-  end
-
-  autoload_under "fields" do
-    autoload(:AbstractField)
-    autoload(:AccessField)
-    autoload(:Field)
   end
 
   autoload_under "introspection" do

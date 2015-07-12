@@ -25,10 +25,9 @@ __Current status__: rewriting according to spec, see also the previous [prototyp
 - Support any "real" value for enum, not just stringified name (see `Character::EPISODES` in demo)
 - field merging (https://github.com/graphql/graphql-js/issues/19#issuecomment-118515077)
 - Code clean-up
-  - unify type resolving in query (`UNRESOLVED_TYPE_KINDS` vs `TypeResolver`)
   - `ObjectType` should `yield(self)` instead of `instance_eval`
   - get rid of `AbstractField`, it's probably useless (and probably `AccessField`)
-  - remove implementations of `deprecated?`, make the field check for `deprecation_reason`
+
 ## Goals:
 
 - Implement the GraphQL spec & support a Relay front end

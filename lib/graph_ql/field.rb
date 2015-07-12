@@ -1,4 +1,4 @@
-class GraphQL::Field < GraphQL::AbstractField
+class GraphQL::Field
   extend GraphQL::Definable
   attr_definable(:arguments, :deprecation_reason, :name, :description, :type)
 

@@ -5,6 +5,9 @@ GraphQL::EnumValueType = GraphQL::ObjectType.new do
     name: field(type: !type.String),
     description: field(type: !type.String),
     deprecationReason: field(type: !type.String, property: :deprecation_reason),
-    isDeprecated: field(type: !type.Boolean, property: :deprecated?),
+    isDeprecated: GraphQL::Field.new { |f|
+      f.type !type.Boolean
+      f.resolve -> (obj, a, c) { !!obj.deprecation_reason }
+    },
   })
 end

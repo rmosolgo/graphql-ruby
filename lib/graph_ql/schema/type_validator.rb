@@ -8,6 +8,10 @@ class GraphQL::Schema::TypeValidator
     implementation.must_respond_to(:description, as: kind_name)
     if type.kind.fields?
       implementation.must_respond_to(:fields, as: kind_name)
+      field_validator = GraphQL::Schema::FieldValidator.new
+      type.fields.values.each do |field|
+        field_validator.validate(field, errors)
+      end
     end
     if type.kind.resolves?
       implementation.must_respond_to(:possible_types, as: kind_name)

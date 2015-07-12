@@ -8,7 +8,7 @@ GraphQL::EnumValuesField = GraphQL::Field.new do |f|
     return nil if !object.kind.enum?
     fields = object.values.values
     if !arguments["includeDeprecated"]
-      fields = fields.select {|f| !f.deprecated? }
+      fields = fields.select {|f| !f.deprecation_reason }
     end
     fields
   }

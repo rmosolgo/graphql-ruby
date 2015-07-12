@@ -7,7 +7,7 @@ GraphQL::FieldsField = GraphQL::Field.new do |f|
   f.resolve -> (object, arguments, context) {
     fields = object.fields.values
     if !arguments["includeDeprecated"]
-      fields = fields.select {|f| !f.deprecated? }
+      fields = fields.select {|f| !f.deprecation_reason }
     end
     fields
   }

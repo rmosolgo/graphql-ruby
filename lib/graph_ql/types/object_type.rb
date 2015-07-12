@@ -32,7 +32,19 @@ class GraphQL::ObjectType
   end
 
   def field(type:, args: {}, property: nil, desc: "", deprecation_reason: nil)
-    GraphQL::AccessField.new(type: type, arguments: args, property: property, description: desc, deprecation_reason: deprecation_reason)
+    resolve = if property.nil?
+      -> (o, a, c)  { GraphQL::Query::DEFAULT_RESOLVE }
+    else
+      -> (object, a, c) { object.send(property) }
+    end
+
+    GraphQL::Field.new do |f|
+      f.type(type)
+      f.arguments(args)
+      f.description(desc)
+      f.resolve(resolve)
+      f.deprecation_reason(deprecation_reason)
+    end
   end
 
   def arg(type:, desc: "", default_value: nil)

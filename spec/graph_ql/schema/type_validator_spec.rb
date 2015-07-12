@@ -7,7 +7,7 @@ describe GraphQL::Schema::TypeValidator do
       deprecation_reason: nil,
       kind: GraphQL::TypeKinds::OBJECT,
       interfaces: [],
-      fields: [],
+      fields: {},
     })
     def o.to_s; "InvalidType"; end
     o

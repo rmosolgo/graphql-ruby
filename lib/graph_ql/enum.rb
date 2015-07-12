@@ -23,8 +23,5 @@ class GraphQL::Enum
       @description = description
       @deprecation_reason = deprecation_reason
     end
-    def deprecated?
-      !!deprecation_reason
-    end
   end
 end

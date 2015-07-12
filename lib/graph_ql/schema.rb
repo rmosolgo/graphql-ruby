@@ -1,5 +1,6 @@
 class GraphQL::Schema
   extend ActiveSupport::Autoload
+  autoload(:FieldValidator)
   autoload(:ImplementationValidator)
   autoload(:SchemaValidator)
   autoload(:TypeReducer)
