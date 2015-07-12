@@ -1,8 +1,9 @@
 class GraphQL::Union
   include GraphQL::NonNullWithBang
-  attr_reader :name, :possible_types
-  def initialize(name, types)
+  attr_reader :name, :description, :possible_types
+  def initialize(name, desc, types)
     @name = name
+    @description = desc
     @possible_types = types
   end
 

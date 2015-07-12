@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe GraphQL::Schema::UnionValidator do
   let(:object) {
-    GraphQL::Union.new("Something", [DairyProductInputType])
+    GraphQL::Union.new("Something", "some union", [DairyProductInputType])
   }
   let(:errors) { e = []; GraphQL::Schema::UnionValidator.new.validate(object, e); e;}
   it 'must be 2+ types, must be only object types' do

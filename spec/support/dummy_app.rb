@@ -56,7 +56,11 @@ MilkType = GraphQL::ObjectType.new do
   }
 end
 
-DairyProductUnion = GraphQL::Union.new("DairyProduct", [MilkType, CheeseType])
+DairyProductUnion = GraphQL::Union.new(
+  "DairyProduct",
+  "Kinds of food made from milk",
+  [MilkType, CheeseType]
+)
 
 DairyProductInputType = GraphQL::InputObjectType.new {
   name "DairyProductInput"
