@@ -1,4 +1,5 @@
 class GraphQL::Query::FieldResolutionStrategy
+  UNRESOLVED_TYPE_KINDS = [GraphQL::TypeKinds::UNION, GraphQL::TypeKinds::INTERFACE]
   attr_reader :result, :result_value
 
   def initialize(ast_field, parent_type, target, operation_resolver)
@@ -16,8 +17,15 @@ class GraphQL::Query::FieldResolutionStrategy
           raise("Couldn't resolve field '#{field_name}' to #{target.class} '#{target}' (resulted in NoMethodError)")
         end
       end
-      strategy_class = FIELD_TYPE_KIND_STRATEGIES[field.type.kind] || raise("No strategy found for #{field.type.kind}")
-      result_strategy = strategy_class.new(value, field.type, target, parent_type, ast_field, operation_resolver)
+
+      if UNRESOLVED_TYPE_KINDS.include?(field.type.kind)
+        resolved_type = field.type.resolve_type(value)
+      else
+        resolved_type = field.type
+      end
+
+      strategy_class = FIELD_TYPE_KIND_STRATEGIES[resolved_type.kind] || raise("No strategy found for #{resolved_type.kind}")
+      result_strategy = strategy_class.new(value, resolved_type, target, parent_type, ast_field, operation_resolver)
       @result_value = result_strategy.result
     end
     result_name = ast_field.alias || ast_field.name
@@ -75,8 +83,6 @@ class GraphQL::Query::FieldResolutionStrategy
     GraphQL::TypeKinds::SCALAR =>     ScalarResolutionStrategy,
     GraphQL::TypeKinds::LIST =>       ListResolutionStrategy,
     GraphQL::TypeKinds::OBJECT =>     ObjectResolutionStrategy,
-    GraphQL::TypeKinds::UNION =>      ObjectResolutionStrategy,
-    GraphQL::TypeKinds::INTERFACE =>  ObjectResolutionStrategy,
     GraphQL::TypeKinds::ENUM =>       EnumResolutionStrategy,
     GraphQL::TypeKinds::NON_NULL =>   NonNullResolutionStrategy,
   }

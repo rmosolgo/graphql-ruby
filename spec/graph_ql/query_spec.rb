@@ -25,21 +25,23 @@ describe GraphQL::Query do
          ... on Milk   { source }
       }
     |}
-    let(:query) { GraphQL::Query.new(DummySchema, query_string, context: {}, params: {"cheeseId" => 2})}
+    let(:debug) { false }
+    let(:query) { GraphQL::Query.new(DummySchema, query_string, context: {}, params: {"cheeseId" => 2}, debug: debug)}
     let(:result) { query.result }
+
     it 'returns fields on objects' do
       expected = {"data"=> { "getFlavor" => {
           "brie" =>   { "flavor" => "Brie", "taste" => "Brie" },
           "cheese" => {
             "__typename" => "Cheese",
             "id" => 2,
-            "fatContent" => 0.3,
             "flavor" => "Gouda",
+            "fatContent" => 0.3,
             "cheeseKind" => "Gouda",
           },
           "fromSource" => [{ "id" => 1 }, {"id" => 2}],
           "firstSheep" => { "flavor" => "Manchego" },
-          "favoriteEdible"=>{"__typename"=>"Edible", "fatContent"=>0.04},
+          "favoriteEdible"=>{"__typename"=>"Milk", "fatContent"=>0.04},
       }}}
       assert_equal(expected, result)
     end
@@ -55,6 +57,13 @@ describe GraphQL::Query do
           {"message"=>"Something went wrong during query execution: No field found on Query 'Query' for 'milk'"}
         ]}
         assert_equal(expected, result)
+      end
+
+      describe 'if debug: true' do
+        let(:debug) { true }
+        it 'raises error' do
+          assert_raises(RuntimeError) { result }
+        end
       end
     end
 

@@ -10,14 +10,16 @@ class GraphQL::Query
   autoload(:TypeResolver)
   attr_reader :schema, :document, :context, :fragments, :params
 
-  def initialize(schema, query_string, context: nil, params: {})
+  def initialize(schema, query_string, context: nil, params: {}, debug: false)
     @schema = schema
-    @document = GraphQL.parse(query_string)
+    @debug = debug
+    @query_string = query_string
     @context = context
     @params = params
     @fragments = {}
     @operations = {}
 
+    @document = GraphQL.parse(@query_string)
     @document.parts.each do |part|
       if part.is_a?(GraphQL::Nodes::FragmentDefinition)
         @fragments[part.name] = part
@@ -33,8 +35,12 @@ class GraphQL::Query
       "data" => execute,
     }
   rescue StandardError => err
-    message = "Something went wrong during query execution: #{err}"
-    {"errors" => [{"message" => message}]}
+    if @debug
+      raise err
+    else
+      message = "Something went wrong during query execution: #{err}"
+      {"errors" => [{"message" => message}]}
+    end
   end
 
   private

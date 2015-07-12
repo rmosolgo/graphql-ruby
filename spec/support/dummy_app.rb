@@ -4,7 +4,10 @@ Edible = GraphQL::Interface.new do
   name "Edible"
   description "Something you can eat, yum"
   fields({
-    fatContent: field(type: !type.Float, desc: "Percentage which is fat"),
+    fatContent: field(
+      type: !type.Float,
+      property: :non_existent_field_that_should_never_be_called,
+      desc: "Percentage which is fat"),
   })
 end
 
