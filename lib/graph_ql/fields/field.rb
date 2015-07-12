@@ -3,9 +3,9 @@ class GraphQL::Field < GraphQL::AbstractField
   REQUIRED_DEFINITIONS = [:name, :description, :type]
   attr_definable(:arguments, :deprecation_reason, *REQUIRED_DEFINITIONS)
 
-  def initialize(&block)
+  def initialize(&_block)
     @arguments = {}
-    @resolve_proc = -> (o, a, c) { GraphQL::Query::DEFAULT_RESOLVE }
+    @resolve_proc = -> (_o, _a, _c) { GraphQL::Query::DEFAULT_RESOLVE }
     yield(self) if block_given?
   end
 
@@ -13,7 +13,7 @@ class GraphQL::Field < GraphQL::AbstractField
   #   resolve -> (obj, args, ctx) { obj.get_value }
   # Also used when executing queries:
   #   field.resolve(obj, args, ctx)
-  def resolve(proc_or_object, arguments=nil, ctx=nil)
+  def resolve(proc_or_object, arguments = nil, ctx = nil)
     if arguments.nil? && ctx.nil?
       @resolve_proc = proc_or_object
     else
@@ -21,11 +21,9 @@ class GraphQL::Field < GraphQL::AbstractField
     end
   end
 
-  def type(type_or_proc=nil)
+  def type(type_or_proc = nil)
     if type_or_proc.nil?
-      if @type.is_a?(Proc)
-        @type = @type.call
-      end
+      @type = @type.call if @type.is_a?(Proc)
       @type
     else
       @type = type_or_proc

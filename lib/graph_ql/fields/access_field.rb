@@ -11,14 +11,12 @@ class GraphQL::AccessField < GraphQL::AbstractField
     @deprecation_reason = deprecation_reason
   end
 
-  def resolve(object, args, context)
+  def resolve(object, _args, _context)
     @property.nil? ? GraphQL::Query::DEFAULT_RESOLVE : object.send(@property)
   end
 
   def type
-    if @type.is_a?(Proc)
-      @type = @type.call
-    end
+    @type = @type.call if @type.is_a?(Proc)
     @type
   end
 end
