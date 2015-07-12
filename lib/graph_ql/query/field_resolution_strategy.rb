@@ -59,7 +59,6 @@ class GraphQL::Query::FieldResolutionStrategy
     end
   end
 
-
   class EnumResolutionStrategy
     attr_reader :result
     def initialize(value, field_type, target, parent_type, ast_field, operation_resolver)

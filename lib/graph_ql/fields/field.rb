@@ -1,12 +1,11 @@
 class GraphQL::Field < GraphQL::AbstractField
   extend GraphQL::Definable
-  REQUIRED_DEFINITIONS = [:name, :description, :type]
-  attr_definable(:arguments, :deprecation_reason, *REQUIRED_DEFINITIONS)
+  attr_definable(:arguments, :deprecation_reason, :name, :description, :type)
 
-  def initialize(&block)
+  def initialize
     @arguments = {}
     @resolve_proc = -> (o, a, c) { GraphQL::Query::DEFAULT_RESOLVE }
-    yield(self) if block_given?
+    yield(self)
   end
 
   # Used when defining:
@@ -21,14 +20,15 @@ class GraphQL::Field < GraphQL::AbstractField
     end
   end
 
+  # You can pass a proc which will cause the type to be lazy-evaled,
+  # That's nice if you have load-order issues
   def type(type_or_proc=nil)
-    if type_or_proc.nil?
-      if @type.is_a?(Proc)
-        @type = @type.call
-      end
-      @type
-    else
+    if !type_or_proc.nil?
       @type = type_or_proc
+    elsif @type.is_a?(Proc)
+      # lazy-eval it
+      @type = @type.call
     end
+    @type
   end
 end

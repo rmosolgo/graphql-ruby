@@ -27,7 +27,8 @@ __Current status__: rewriting according to spec, see also the previous [prototyp
 - Code clean-up
   - unify type resolving in query (`UNRESOLVED_TYPE_KINDS` vs `TypeResolver`)
   - `ObjectType` should `yield(self)` instead of `instance_eval`
-
+  - get rid of `AbstractField`, it's probably useless (and probably `AccessField`)
+  - move create-time validations from Union on to create-time validations on schema
 ## Goals:
 
 - Implement the GraphQL spec & support a Relay front end

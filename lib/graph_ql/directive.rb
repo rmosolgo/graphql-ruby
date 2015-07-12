@@ -10,14 +10,15 @@ class GraphQL::Directive < GraphQL::ObjectType
 
   attr_definable :on, :arguments
 
-  def initialize(&block)
+  def initialize
     @arguments = {}
     @on = []
-    yield(self) if block_given?
+    yield(self)
   end
 
   def resolve(proc_or_arguments, proc=nil)
     if proc.nil?
+      # resolve is being defined, just set it
       @resolve_proc = proc_or_arguments
     else
       @resolve_proc.call(proc_or_arguments, proc)
@@ -25,12 +26,11 @@ class GraphQL::Directive < GraphQL::ObjectType
   end
 
   def arguments(new_arguments=nil)
-    if new_arguments.nil?
-      @arguments
-    else
+    if !new_arguments.nil?
       @arguments = new_arguments
         .reduce({}) {|memo, (k, v)| memo[k.to_s] = v; memo}
         .each { |k, v| v.respond_to?("name=") && v.name = k}
     end
+    @arguments
   end
 end
