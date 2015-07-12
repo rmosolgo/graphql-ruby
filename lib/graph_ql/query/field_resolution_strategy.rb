@@ -1,5 +1,4 @@
 class GraphQL::Query::FieldResolutionStrategy
-  UNRESOLVED_TYPE_KINDS = [GraphQL::TypeKinds::UNION, GraphQL::TypeKinds::INTERFACE]
   attr_reader :result, :result_value
 
   def initialize(ast_field, parent_type, target, operation_resolver)
@@ -18,7 +17,7 @@ class GraphQL::Query::FieldResolutionStrategy
         end
       end
 
-      if UNRESOLVED_TYPE_KINDS.include?(field.type.kind)
+      if field.type.kind.resolves?
         resolved_type = field.type.resolve_type(value)
       else
         resolved_type = field.type

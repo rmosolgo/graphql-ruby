@@ -1,6 +1,10 @@
 class GraphQL::Schema
   extend ActiveSupport::Autoload
+  autoload(:ImplementationValidator)
+  autoload(:SchemaValidator)
   autoload(:TypeReducer)
+  autoload(:TypeValidator)
+  autoload(:UnionValidator)
   DIRECTIVES = [GraphQL::SkipDirective, GraphQL::IncludeDirective]
 
   attr_reader :query, :mutation, :directives
@@ -22,6 +26,10 @@ class GraphQL::Schema
     @query    = query
     @mutation = mutation
     @directives = DIRECTIVES.reduce({}) { |m, d| m[d.name] = d; m }
+    errors = SchemaValidator.new.validate(self)
+    if errors.any?
+      raise("Schema is invalid: \n#{errors.join("\n")}")
+    end
   end
 
   def types

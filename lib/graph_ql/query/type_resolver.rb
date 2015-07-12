@@ -6,11 +6,11 @@ class GraphQL::Query::TypeResolver
   def initialize(target, child_type, parent_type)
     @type = if child_type.nil?
       nil
-    elsif GraphQL::TypeKinds::UNION == parent_type.kind
+    elsif parent_type.kind.union?
       parent_type.resolve_type(target)
-    elsif GraphQL::TypeKinds::UNION == child_type.kind && child_type.include?(parent_type)
+    elsif child_type.kind.union? && child_type.include?(parent_type)
       parent_type
-    elsif GraphQL::TypeKinds::INTERFACE == child_type.kind
+    elsif child_type.kind.interface?
       child_type.resolve_type(target)
     elsif child_type == parent_type
       parent_type

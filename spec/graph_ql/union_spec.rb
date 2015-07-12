@@ -13,14 +13,6 @@ describe GraphQL::Union do
     assert(!union.include?(:type_3))
   end
 
-  it 'must be 2+ types' do
-    assert_raises(ArgumentError) { GraphQL::Union.new("Something", [type_1])}
-  end
-
-  it 'must be all object types' do
-    assert_raises(ArgumentError) { GraphQL::Union.new("Something", [type_1, type_2, union])}
-  end
-
   it 'infers type from an object' do
     assert_equal(CheeseType, DairyProductUnion.resolve_type(CHEESES[1]))
   end

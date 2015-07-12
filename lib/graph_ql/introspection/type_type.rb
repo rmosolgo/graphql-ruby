@@ -4,7 +4,11 @@ GraphQL::TypeType = GraphQL::ObjectType.new do
 
   self.fields = {
     name: field(type: !type.String, desc: "The name of this type"),
-    kind: field(type: GraphQL::TypeKindEnum, desc: "The kind of this type"),
+    kind: GraphQL::Field.new { |f|
+      f.type GraphQL::TypeKindEnum
+      f.description "The kind of this type"
+      f.resolve -> (target, a, c) { target.kind.name }
+    },
     description: field(type: type.String, desc: "The description for this type"),
     fields: GraphQL::FieldsField,
     ofType: GraphQL::OfTypeField,
