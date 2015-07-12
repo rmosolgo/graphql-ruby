@@ -8,15 +8,15 @@ module GraphQL::Nodes
 
       extra_keys = options.keys - required_keys
       if extra_keys.any?
-        raise ArgumentError, "#{self.class.name} Extra arguments: #{extra_keys}"
+        fail ArgumentError, "#{self.class.name} Extra arguments: #{extra_keys}"
       end
 
       required_keys.each do |attr|
-        if !options.has_key?(attr)
-          raise ArgumentError, "#{self.class.name} Missing argument: #{attr}"
+        if !options.key?(attr)
+          fail ArgumentError, "#{self.class.name} Missing argument: #{attr}"
         else
           value = options[attr]
-          self.send("#{attr}=", value)
+          send("#{attr}=", value)
         end
       end
     end
@@ -55,7 +55,7 @@ module GraphQL::Nodes
   FragmentSpread = AbstractNode.create(:name, :directives)
   InlineFragment = AbstractNode.create(:type, :directives, :selections)
   InputObject = AbstractNode.create(:pairs) do
-    def to_h(options={})
+    def to_h(_options = {})
       pairs.inject({}) do |memo, pair|
         v = pair.value
         memo[pair.name] = v.is_a?(InputObject) ? v.to_h : v

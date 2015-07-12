@@ -7,20 +7,19 @@
 #   - #deprecation_reason
 class GraphQL::AbstractField
   def name
-    raise NotImplementedError, "#{self.class.name}#name should return the name for accessing this field"
+    fail NotImplementedError, "#{self.class.name}#name should return the name for accessing this field"
   end
 
   def type
-    raise NotImplementedError, "#{self.class.name}#type should return the type class which this field returns"
+    fail NotImplementedError, "#{self.class.name}#type should return the type class which this field returns"
   end
 
   def description
-    raise NotImplementedError, "#{self.class.name}#description should return this field's description"
+    fail NotImplementedError, "#{self.class.name}#description should return this field's description"
   end
 
-
-  def resolve(object, arguments, context)
-    raise NotImplementedError, "#{self.class.name}#resolve(object, arguments, context) should execute this field for object"
+  def resolve(_object, _arguments, _context)
+    fail NotImplementedError, "#{self.class.name}#resolve(object, arguments, context) should execute this field for object"
   end
 
   def arguments

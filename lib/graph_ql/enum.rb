@@ -8,7 +8,7 @@ class GraphQL::Enum
     yield(self) if block_given?
   end
 
-  def value(name, description=nil, deprecation_reason: nil)
+  def value(name, description = nil, deprecation_reason: nil)
     @values[name] = EnumValue.new(name: name, description: description, deprecation_reason: deprecation_reason)
   end
 
@@ -27,6 +27,7 @@ class GraphQL::Enum
       @description = description
       @deprecation_reason = deprecation_reason
     end
+
     def deprecated?
       !!deprecation_reason
     end
