@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe GraphQL::TypeType do
+describe GraphQL::Introspection::TypeType do
   let(:query_string) {%|
      query introspectionQuery {
        cheeseType:    __type(name: "Cheese") { name, kind, fields { name, isDeprecated, type { name, ofType { name } } } }

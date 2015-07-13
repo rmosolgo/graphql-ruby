@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe GraphQL::DirectiveType do
+describe GraphQL::Introspection::DirectiveType do
   let(:query_string) {%|
     query getDirectives {
       __schema {

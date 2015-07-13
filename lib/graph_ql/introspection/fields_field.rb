@@ -1,6 +1,6 @@
-GraphQL::FieldsField = GraphQL::Field.new do |f|
+GraphQL::Introspection::FieldsField = GraphQL::Field.new do |f|
   f.description "List of fields on this object"
-  f.type -> { GraphQL::ListType.new(of_type: GraphQL::NonNullType.new(of_type: GraphQL::FieldType)) }
+  f.type -> { GraphQL::ListType.new(of_type: GraphQL::NonNullType.new(of_type: GraphQL::Introspection::FieldType)) }
   f.arguments({
     includeDeprecated: {type: GraphQL::BOOLEAN_TYPE, default_value: false}
   })

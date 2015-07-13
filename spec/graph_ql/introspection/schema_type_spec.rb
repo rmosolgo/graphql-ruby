@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe GraphQL::SchemaType do
+describe GraphQL::Introspection::SchemaType do
   let(:query_string) {%|
     query getSchema {
       __schema {

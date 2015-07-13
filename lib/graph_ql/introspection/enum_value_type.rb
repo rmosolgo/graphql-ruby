@@ -1,4 +1,4 @@
-GraphQL::EnumValueType = GraphQL::ObjectType.new do
+GraphQL::Introspection::EnumValueType = GraphQL::ObjectType.new do
   name "__EnumValue"
   description "A possible value for an Enum"
   fields({

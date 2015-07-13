@@ -25,7 +25,8 @@ module GraphQL
     autoload(:SkipDirective)
   end
 
-  autoload_under "introspection" do
+  module Introspection
+    extend ActiveSupport::Autoload
     autoload(:ArgumentsField)
     autoload(:DirectiveType)
     autoload(:EnumValuesField)

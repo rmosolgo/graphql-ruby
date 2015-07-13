@@ -24,10 +24,10 @@ __Current status__: rewriting according to spec, see also the previous [prototyp
   - directives on fragments: http://facebook.github.io/graphql/#sec-Fragment-Directives
 - Support any "real" value for enum, not just stringified name (see `Character::EPISODES` in demo)
 - field merging (https://github.com/graphql/graphql-js/issues/19#issuecomment-118515077)
+- `__type.interfaces` field
 - Code clean-up
   - `ObjectType` should `yield(self)` instead of `instance_eval`
-  - get rid of `AbstractField`, it's probably useless (and probably `AccessField`)
-
+  - `yield(item, GraphQL::TYPE_DEFINER)`
 ## Goals:
 
 - Implement the GraphQL spec & support a Relay front end

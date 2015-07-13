@@ -14,12 +14,12 @@ class GraphQL::Schema
     query.fields = query.fields.merge({
       "__type" =>     GraphQL::Field.new do |f|
         f.description("A type in the GraphQL system")
-        f.type(!GraphQL::TypeType)
-        f.resolve -> (o, a, c) { self.types[a["name"]] || raise("No type found in schema for '#{a["name"]}'") }
+        f.type(!GraphQL::Introspection::TypeType)
+        f.resolve -> (o, a, c) { self.types[a["name"]] }
       end,
       "__schema" =>   GraphQL::Field.new do |f|
         f.description("This GraphQL schema")
-        f.type(!GraphQL::SchemaType)
+        f.type(!GraphQL::Introspection::SchemaType)
         f.resolve -> (o, a, c) { self }
       end
     })
