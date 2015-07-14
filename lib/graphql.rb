@@ -39,6 +39,7 @@ module GraphQL
     autoload(:PossibleTypesField)
     autoload(:SchemaType)
     autoload(:TypeKindEnum)
+    autoload(:TypenameField)
     autoload(:TypeType)
   end
 
@@ -72,8 +73,6 @@ module GraphQL
     autoload(:FieldsAreDefinedOnType)
   end
 
-  PARSER = Parser.new
-  TRANSFORM = Transform.new
 
   def self.parse(string, as: nil)
     parser = as ? GraphQL::PARSER.send(as) : GraphQL::PARSER
@@ -107,4 +106,8 @@ module GraphQL
       end
     end
   end
+
+
+  PARSER = Parser.new
+  TRANSFORM = Transform.new
 end

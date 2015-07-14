@@ -1,4 +1,6 @@
+require 'singleton'
 class GraphQL::TypeDefiner
+  include Singleton
   TYPES = {
     Int:     GraphQL::INT_TYPE,
     String:  GraphQL::STRING_TYPE,

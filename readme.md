@@ -17,8 +17,8 @@ __Current status__: rewriting according to spec, see also the previous [prototyp
 
 - Validations:
   - implement lots of validators
-  - build error object with position
-  - Express failure with `errors` key (http://facebook.github.io/graphql/#sec-Errors)
+  - build error object with position and message
+  - hook up by default, accept `validate: false`
 - directives:
   - `@skip` has precedence over `@include`
   - directives on fragments: http://facebook.github.io/graphql/#sec-Fragment-Directives

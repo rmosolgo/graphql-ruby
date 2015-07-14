@@ -1,21 +1,21 @@
 require_relative './dummy_data'
 
-Edible = GraphQL::Interface.new do
-  name "Edible"
-  description "Something you can eat, yum"
-  fields({
-    fatContent: field(
+Edible = GraphQL::Interface.new do |i, type|
+  i.name "Edible"
+  i.description "Something you can eat, yum"
+  i.fields({
+    fatContent: i.field(
       type: !type.Float,
       property: :non_existent_field_that_should_never_be_called,
       desc: "Percentage which is fat"),
   })
 end
 
-AnimalProduct = GraphQL::Interface.new do
-  name "AnimalProduct"
-  description "Comes from an animal, no joke"
-  fields({
-    source: field(type: !type.String, desc: "Animal which produced this product"),
+AnimalProduct = GraphQL::Interface.new do |i, type|
+  i.name "AnimalProduct"
+  i.description "Comes from an animal, no joke"
+  i.fields({
+    source: i.field(type: !type.String, desc: "Animal which produced this product"),
   })
 end
 
@@ -28,27 +28,27 @@ DairyAnimalEnum = GraphQL::Enum.new do |e|
   e.value("YAK",    "Animal with long hair", deprecation_reason: "Out of fashion")
 end
 
-CheeseType = GraphQL::ObjectType.new do
-  name "Cheese"
-  description "Cultured dairy product"
-  interfaces [Edible, AnimalProduct]
-  self.fields = {
-    id:           field(type: !type.Int, desc: "Unique identifier"),
-    flavor:       field(type: !type.String, desc: "Kind of cheese"),
-    source:       field(type: !DairyAnimalEnum, desc: "Animal which produced the milk for this cheese"),
-    fatContent:   field(type: !type.Float, desc: "Percentage which is milkfat", deprecation_reason: "Diet fashion has changed"),
+CheeseType = GraphQL::ObjectType.new do |t, type|
+  t.name "Cheese"
+  t.description "Cultured dairy product"
+  t.interfaces [Edible, AnimalProduct]
+  t.fields = {
+    id:           t.field(type: !type.Int, desc: "Unique identifier"),
+    flavor:       t.field(type: !type.String, desc: "Kind of cheese"),
+    source:       t.field(type: !DairyAnimalEnum, desc: "Animal which produced the milk for this cheese"),
+    fatContent:   t.field(type: !type.Float, desc: "Percentage which is milkfat", deprecation_reason: "Diet fashion has changed"),
   }
 end
 
-MilkType = GraphQL::ObjectType.new do
-  name 'Milk'
-  description "Dairy beverage"
-  interfaces [Edible, AnimalProduct]
-  self.fields = {
-    id:           field(type: !type.Int, desc: "Unique identifier"),
-    source:       field(type: DairyAnimalEnum, desc: "Animal which produced this milk"),
-    fatContent:   field(type: !type.Float, desc: "Percentage which is milkfat"),
-    flavors:      field(
+ MilkType = GraphQL::ObjectType.new do |t, type|
+  t.name 'Milk'
+  t.description "Dairy beverage"
+  t.interfaces [Edible, AnimalProduct]
+  t.fields = {
+    id:           t.field(type: !type.Int, desc: "Unique identifier"),
+    source:       t.field(type: DairyAnimalEnum, desc: "Animal which produced this milk"),
+    fatContent:   t.field(type: !type.Float, desc: "Percentage which is milkfat"),
+    flavors:      t.field(
           type: type[type.String],
           desc: "Chocolate, Strawberry, etc",
           args: {limit: {type: type.Int}}
@@ -62,12 +62,12 @@ DairyProductUnion = GraphQL::Union.new(
   [MilkType, CheeseType]
 )
 
-DairyProductInputType = GraphQL::InputObjectType.new {
-  name "DairyProductInput"
-  description "Properties for finding a dairy product"
-  input_fields({
-    source:     arg({type: DairyAnimalEnum}),
-    fatContent: arg({type: type.Float}),
+DairyProductInputType = GraphQL::InputObjectType.new {|t, type|
+  t.name "DairyProductInput"
+  t.description "Properties for finding a dairy product"
+  t.input_fields({
+    source:     t.arg({type: DairyAnimalEnum}),
+    fatContent: t.arg({type: type.Float}),
   })
 }
 
@@ -106,10 +106,10 @@ FavoriteField = GraphQL::Field.new do |f|
 end
 
 
-QueryType = GraphQL::ObjectType.new do
-  name "Query"
-  description "Query root of the system"
-  fields({
+QueryType = GraphQL::ObjectType.new do |t|
+  t.name "Query"
+  t.description "Query root of the system"
+  t.fields({
     cheese: FetchField.new(type: CheeseType, data: CHEESES),
     fromSource: SourceField,
     favoriteEdible: FavoriteField,
@@ -132,14 +132,14 @@ end
 
 GLOBAL_VALUES = []
 
-MutationType = GraphQL::ObjectType.new do
-  name "Mutation"
-  description "The root for mutations in this schema"
-  fields({
+MutationType = GraphQL::ObjectType.new do |t, type|
+  t.name "Mutation"
+  t.description "The root for mutations in this schema"
+  t.fields({
     pushValue: GraphQL::Field.new { |f|
       f.description("Push a value onto a global array :D")
       f.type(!type[!type.Int])
-      f.arguments(value: arg(type: !type.Int))
+      f.arguments(value: t.arg(type: !type.Int))
       f.resolve -> (o, args, ctx) {
         GLOBAL_VALUES << args["value"]
         GLOBAL_VALUES

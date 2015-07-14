@@ -1,7 +1,7 @@
-GraphQL::Introspection::SchemaType = GraphQL::ObjectType.new do
-  name "__Schema"
-  description "A GraphQL schema"
-  fields({
+GraphQL::Introspection::SchemaType = GraphQL::ObjectType.new do |t, type|
+  t.name "__Schema"
+  t.description "A GraphQL schema"
+  t.fields({
     types: GraphQL::Field.new { |f|
       f.type !type[!GraphQL::Introspection::TypeType]
       f.description "Types in this schema"
@@ -24,9 +24,3 @@ GraphQL::Introspection::SchemaType = GraphQL::ObjectType.new do
     },
   })
 end
-# type __Schema {
-#   types: [__Type!]!
-#   queryType: __Type!
-#   mutationType: __Type
-#   directives: [__Directive!]!
-# }

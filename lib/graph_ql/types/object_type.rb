@@ -6,7 +6,7 @@ class GraphQL::ObjectType
   def initialize(&block)
     self.fields = []
     self.interfaces = []
-    instance_eval(&block)
+    yield(self, GraphQL::TypeDefiner.instance)
   end
 
   def fields(new_fields=nil)
@@ -22,12 +22,7 @@ class GraphQL::ObjectType
       .reduce({}) { |memo, (key, value)| memo[key.to_s] = value; memo }
     # Set the name from its context on this type:
     stringified_fields.each {|k, v| v.respond_to?("name=") && v.name = k }
-    stringified_fields["__typename"] = GraphQL::Field.new do |f|
-      f.name "__typename"
-      f.description "The name of this type"
-      f.type -> { !GraphQL::STRING_TYPE }
-      f.resolve -> (o, a, c) { self.name }
-    end
+    stringified_fields["__typename"] = GraphQL::Introspection::TypenameField.create(self)
     @fields = stringified_fields
   end
 
@@ -49,10 +44,6 @@ class GraphQL::ObjectType
 
   def arg(type:, desc: "", default_value: nil)
     GraphQL::InputValue.new(type: type, description: desc, default_value: default_value)
-  end
-
-  def type
-    @type ||= GraphQL::TypeDefiner.new
   end
 
   def interfaces(new_interfaces=nil)

@@ -10,7 +10,7 @@ class GraphQL::Query
   autoload(:TypeResolver)
   attr_reader :schema, :document, :context, :fragments, :params
 
-  def initialize(schema, query_string, context: nil, params: {}, debug: false)
+  def initialize(schema, query_string, context: nil, params: {}, debug: false, validate: true)
     @schema = schema
     @debug = debug
     @query_string = query_string
