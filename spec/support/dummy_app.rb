@@ -1,6 +1,6 @@
 require_relative './dummy_data'
 
-Edible = GraphQL::Interface.new do |i, type|
+EdibleInterface = GraphQL::Interface.new do |i, type|
   i.name "Edible"
   i.description "Something you can eat, yum"
   i.fields({
@@ -11,7 +11,7 @@ Edible = GraphQL::Interface.new do |i, type|
   })
 end
 
-AnimalProduct = GraphQL::Interface.new do |i, type|
+AnimalProductInterface = GraphQL::Interface.new do |i, type|
   i.name "AnimalProduct"
   i.description "Comes from an animal, no joke"
   i.fields({
@@ -31,7 +31,7 @@ end
 CheeseType = GraphQL::ObjectType.new do |t, type|
   t.name "Cheese"
   t.description "Cultured dairy product"
-  t.interfaces [Edible, AnimalProduct]
+  t.interfaces [EdibleInterface, AnimalProductInterface]
   t.fields = {
     id:           t.field(type: !type.Int, desc: "Unique identifier"),
     flavor:       t.field(type: !type.String, desc: "Kind of cheese"),
@@ -43,7 +43,7 @@ end
  MilkType = GraphQL::ObjectType.new do |t, type|
   t.name 'Milk'
   t.description "Dairy beverage"
-  t.interfaces [Edible, AnimalProduct]
+  t.interfaces [EdibleInterface, AnimalProductInterface]
   t.fields = {
     id:           t.field(type: !type.Int, desc: "Unique identifier"),
     source:       t.field(type: DairyAnimalEnum, desc: "Animal which produced this milk"),
@@ -101,7 +101,7 @@ end
 
 FavoriteField = GraphQL::Field.new do |f|
   f.description "My favorite food"
-  f.type Edible
+  f.type EdibleInterface
   f.resolve -> (t, a, c) { MILKS[1] }
 end
 
@@ -116,7 +116,7 @@ QueryType = GraphQL::ObjectType.new do |t|
     searchDairy: GraphQL::Field.new { |f|
       f.name "searchDairy"
       f.description "Find dairy products matching a description"
-      f.type DairyProductUnion
+      f.type !DairyProductUnion
       f.arguments({product: {type: DairyProductInputType}})
       f.resolve -> (t, a, c) {
         products = CHEESES.values + MILKS.values

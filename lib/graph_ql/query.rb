@@ -43,7 +43,7 @@ class GraphQL::Query
     if @debug
       raise err
     else
-      message = "Something went wrong during query execution: #{err}"
+      message = "Something went wrong during query execution: #{err}" # \n  #{err.backtrace.join("\n  ")}"
       {"errors" => [{"message" => message}]}
     end
   end
@@ -51,12 +51,11 @@ class GraphQL::Query
   private
 
   def execute
-    response = {}
-    @operations.each do |name, operation|
+    @operations.reduce({}) do |memo, (name, operation)|
       resolver = OperationResolver.new(operation, self)
-      response[name] = resolver.result
+      memo[name] = resolver.result
+      memo
     end
-    response
   end
 
   def validation_errors

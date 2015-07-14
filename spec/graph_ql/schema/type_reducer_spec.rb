@@ -9,9 +9,9 @@ describe GraphQL::Schema::TypeReducer do
       "String" => GraphQL::STRING_TYPE,
       "DairyAnimal" => DairyAnimalEnum,
       "Float" => GraphQL::FLOAT_TYPE,
-      "Edible" => Edible,
+      "Edible" => EdibleInterface,
       "Milk" => MilkType,
-      "AnimalProduct" => AnimalProduct,
+      "AnimalProduct" => AnimalProductInterface,
     }
     assert_equal(expected.keys, reducer.result.keys)
     assert_equal(expected, reducer.result)

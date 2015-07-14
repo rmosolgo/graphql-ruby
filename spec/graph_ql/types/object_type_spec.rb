@@ -15,7 +15,7 @@ describe GraphQL::ObjectType do
   end
 
   it 'may have interfaces' do
-    assert_equal([Edible, AnimalProduct], type.interfaces)
+    assert_equal([EdibleInterface, AnimalProductInterface], type.interfaces)
   end
 
   it 'becomes non-null with !' do

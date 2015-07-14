@@ -1,5 +1,11 @@
 class GraphQL::StaticValidation::FieldsAreDefinedOnType
-  TYPE_INFERRENCE_ROOTS = [GraphQL::Nodes::OperationDefinition, GraphQL::Nodes::FragmentDefinition]
+  # These are jumping-off points for infering types down the tree
+  TYPE_INFERRENCE_ROOTS = [
+    GraphQL::Nodes::OperationDefinition,
+    GraphQL::Nodes::FragmentDefinition
+  ]
+
+  IS_FIELD = Proc.new {|f| f.is_a?(GraphQL::Nodes::Field) }
 
   def validate(context)
     visitor = context.visitor
@@ -20,24 +26,20 @@ class GraphQL::StaticValidation::FieldsAreDefinedOnType
   end
 
   def validate_selections(type, selections, context)
+    if type.kind.union? && selections.any?(&IS_FIELD)
+      context.errors << "Selections can't be made directly on unions (see selections on #{type.name})"
+      return
+    end
     selections
-      .select {|f| f.is_a?(GraphQL::Nodes::Field) } # don't worry about fragments
+      .select(&IS_FIELD)  # don't worry about fragments
       .each do |ast_field|
         field = type.fields[ast_field.name]
         if field.nil?
           context.errors << "Field '#{ast_field.name}' doesn't exist on type '#{type.name}'"
         else
-          field_type = get_type(field.type)
+          field_type = field.type.kind.unwrap(field.type)
           validate_selections(field_type, ast_field.selections, context)
         end
       end
-  end
-
-  def get_type(type)
-    if type.kind.wraps?
-      get_type(type.of_type)
-    else
-      type
-    end
   end
 end

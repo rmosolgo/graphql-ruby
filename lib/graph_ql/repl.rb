@@ -19,7 +19,7 @@ class GraphQL::Repl
   def execute_query(query_string)
     begin
       query = GraphQL::Query.new(@schema, query_string)
-      puts JSON.pretty_generate(query.execute)
+      puts JSON.pretty_generate(query.result)
     rescue StandardError => err
       puts "Couldn't parse: #{err}\n\n" # #{err.backtrace.join("\n")}"
     end

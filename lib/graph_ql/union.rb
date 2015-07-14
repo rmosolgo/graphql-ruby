@@ -21,6 +21,6 @@ class GraphQL::Union
   end
 
   def to_s
-    "<GraphQL::Union #{name} [#{possible_types.map(&:name).join(", ")}]>"
+    "<GraphQL::Union #{name}>"
   end
 end

@@ -11,6 +11,24 @@ module GraphQL::TypeKinds
     def resolves?;  @resolves;  end
     def fields?;    @fields;    end
     def wraps?;     @wraps;     end
+    def to_s;       @name;      end
+
+    def resolve(type, value)
+      if resolves?
+        type.resolve_type(value)
+      else
+        type
+      end
+    end
+
+    def unwrap(type)
+      if wraps?
+        wrapped_type = type.of_type
+        wrapped_type.kind.unwrap(wrapped_type)
+      else
+        type
+      end
+    end
   end
 
   TYPE_KINDS = [

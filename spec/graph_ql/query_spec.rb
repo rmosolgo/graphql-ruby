@@ -20,7 +20,7 @@ describe GraphQL::Query do
       fragment cheeseFields on Cheese { flavor }
       fragment edibleFields on Edible { fatContent }
       fragment milkFields on Milk { source }
-      fragment dairyFields on DairyProduct {
+      fragment dairyFields on AnimalProduct {
          ... on Cheese { flavor }
          ... on Milk   { source }
       }
@@ -52,11 +52,14 @@ describe GraphQL::Query do
 
     describe 'runtime errors' do
       let(:query_string) {%| query noMilk { error }|}
-      it 'turns into error messages' do
-        expected = {"errors"=>[
-          {"message"=>"Something went wrong during query execution: This error was raised on purpose"}
-        ]}
-        assert_equal(expected, result)
+      describe 'if debug: false' do
+        let(:debug) { false }
+        it 'turns into error messages' do
+          expected = {"errors"=>[
+            {"message"=>"Something went wrong during query execution: This error was raised on purpose"}
+          ]}
+          assert_equal(expected, result)
+        end
       end
 
       describe 'if debug: true' do

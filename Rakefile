@@ -10,12 +10,24 @@ end
 
 task(default: :test)
 
-task :repl do
+def load_gem_and_dummy
   $:.push File.expand_path("../lib", __FILE__)
   $:.push File.expand_path("../spec", __FILE__)
   require 'graphql'
   require './spec/support/dummy_app'
+end
+
+task :repl do
+  load_gem_and_dummy
   ARGV.clear
   repl = GraphQL::Repl.new(DummySchema)
   repl.run
+end
+
+task :console do
+  require 'irb'
+  require 'irb/completion'
+  load_gem_and_dummy
+  ARGV.clear
+  IRB.start
 end
