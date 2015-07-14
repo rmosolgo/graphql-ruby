@@ -12,7 +12,7 @@ class GraphQL::Parser < Parslet::Parser
 
   # TODO: whitespace sensitive regarding `on`, eg `onFood`, see lookahead note in spec
   rule(:fragment_definition) {
-    str("fragment") >>
+    str("fragment").as(:fragment_keyword) >>
      space? >> name.as(:fragment_name) >>
      space? >> str("on") >> space? >> name.as(:type_condition) >>
      space? >> directives.maybe.as(:optional_directives).as(:directives) >>
@@ -20,14 +20,14 @@ class GraphQL::Parser < Parslet::Parser
   }
 
   rule(:fragment_spread) {
-    str("...") >> space? >>
+    spread.as(:fragment_spread_keyword) >> space? >>
     name.as(:fragment_spread_name) >> space? >>
     directives.maybe.as(:optional_directives).as(:directives)
   }
-
+  rule(:spread) { str("...") }
   # TODO: `on` bug, see spec
   rule(:inline_fragment) {
-    str("...") >> space? >>
+    spread.as(:fragment_spread_keyword) >> space? >>
     str("on ") >> name.as(:inline_fragment_type) >> space? >>
     directives.maybe.as(:optional_directives).as(:directives) >> space? >>
     selections.as(:selections)
@@ -37,7 +37,7 @@ class GraphQL::Parser < Parslet::Parser
   rule(:unnamed_selections) { selections.as(:unnamed_selections)}
   rule(:named_operation_definition) {
     operation_type.as(:operation_type) >> space? >>
-    name.as(:name) >>
+    name.as(:name) >> space? >>
     operation_variable_definitions.maybe.as(:optional_variables).as(:variables) >> space? >>
     directives.maybe.as(:optional_directives).as(:directives) >> space? >>
     selections.as(:selections)

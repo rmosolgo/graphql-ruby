@@ -3,20 +3,30 @@ module GraphQL::Nodes
   # - require their keyword arguments, throw ArgumentError if they don't match
   # - expose accessors for keyword arguments
   class AbstractNode
+    attr_accessor :line, :col
     def initialize(options)
       required_keys = self.class.required_attrs
+      allowed_keys = required_keys + [:line, :col]
+      position_source = options.delete(:position_source)
+      if !position_source.nil?
+        options[:line], options[:col] = position_source.line_and_column
+      end
 
-      extra_keys = options.keys - required_keys
+      present_keys = options.keys
+      extra_keys = present_keys - allowed_keys
       if extra_keys.any?
         raise ArgumentError, "#{self.class.name} Extra arguments: #{extra_keys}"
       end
 
-      required_keys.each do |attr|
-        if !options.has_key?(attr)
-          raise ArgumentError, "#{self.class.name} Missing argument: #{attr}"
-        else
-          value = options[attr]
-          self.send("#{attr}=", value)
+      missing_keys = required_keys - present_keys
+      if missing_keys.any?
+        raise ArgumentError, "#{self.class.name} Missing arguments: #{missing_keys}"
+      end
+
+      allowed_keys.each do |key|
+        if options.has_key?(key)
+          value = options[key]
+          self.send("#{key}=", value)
         end
       end
     end

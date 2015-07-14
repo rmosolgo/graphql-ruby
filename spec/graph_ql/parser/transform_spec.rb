@@ -53,12 +53,20 @@ describe GraphQL::Transform do
     assert_equal("someInfo", res.name)
     assert_equal(3, res.selections.length)
 
-    res = get_result("mutation changeThings($var: Float = 4.5, $arr: [Int]!) @flag, @skip(if: 1) { changeThings(var: $var) { a,b,c }}", parse: :operation_definition)
+    res = get_result(
+    "mutation changeThings(
+        $var: Float = 4.5,
+        $arr: [Int]!
+      ) @flag, @skip(if: 1) {
+        changeThings(var: $var) { a,b,c }
+      }", parse: :operation_definition)
     assert_equal("mutation", res.operation_type)
     assert_equal("var", res.variables.first.name)
     assert_equal("Float", res.variables.first.type.name)
     assert_equal(4.5, res.variables.first.default_value)
     assert_equal("arr", res.variables.last.name)
+    assert_equal(3, res.variables.last.line)
+    assert_equal(10, res.variables.last.col)
     assert_equal("Int", res.variables.last.type.of_type.of_type.name)
     assert_equal(2, res.directives.length)
   end
@@ -80,6 +88,8 @@ describe GraphQL::Transform do
   it 'transforms fields' do
     res = get_result(%|best_pals: friends(first: 3, coolnessLevel: SO_COOL, query: {nice: {very: true}})|, parse: :field)
     assert_equal(GraphQL::Nodes::Field, res.class)
+    assert_equal(1, res.line)
+    assert_equal(1, res.col)
     assert_equal("friends", res.name)
     assert_equal("best_pals", res.alias)
     assert_equal("first", res.arguments[0].name)
