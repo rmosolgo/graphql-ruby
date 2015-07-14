@@ -4,7 +4,7 @@ describe GraphQL::Introspection::TypeType do
   let(:query_string) {%|
      query introspectionQuery {
        cheeseType:    __type(name: "Cheese") { name, kind, fields { name, isDeprecated, type { name, ofType { name } } } }
-       milkType:      __type(name: "Milk") { fields { type { name, ofType { name } } } }
+       milkType:      __type(name: "Milk") { interfaces { name }, fields { type { name, ofType { name } } } }
        dairyAnimal:   __type(name: "DairyAnimal") { name, kind, enumValues(includeDeprecated: false) { name, isDeprecated } }
        dairyProduct:  __type(name: "DairyProduct") { name, kind, possibleTypes { name } }
        animalProduct: __type(name: "AnimalProduct") { name, kind, possibleTypes { name }, fields { name } }
@@ -31,6 +31,10 @@ describe GraphQL::Introspection::TypeType do
         "fields"=> cheese_fields
       },
       "milkType"=>{
+        "interfaces"=>[
+          {"name"=>"Edible"},
+          {"name"=>"AnimalProduct"}
+        ],
         "fields"=>[
           {"type"=>{"name"=>"Non-Null", "ofType"=>{"name"=>"Int"}}},
           {"type"=>{"name"=>"DairyAnimal", "ofType"=>nil}},

@@ -18,16 +18,15 @@ __Current status__: rewriting according to spec, see also the previous [prototyp
 - Validations:
   - implement lots of validators
   - build error object with position and message
-  - hook up by default, accept `validate: false`
 - directives:
   - `@skip` has precedence over `@include`
   - directives on fragments: http://facebook.github.io/graphql/#sec-Fragment-Directives
 - Support any "real" value for enum, not just stringified name (see `Character::EPISODES` in demo)
 - field merging (https://github.com/graphql/graphql-js/issues/19#issuecomment-118515077)
-- `__type.interfaces` field
 - Code clean-up
-  - `ObjectType` should `yield(self)` instead of `instance_eval`
-  - `yield(item, GraphQL::TYPE_DEFINER)`
+  - every helper yields `|self, type, field, arg|`
+  - Unify unwrapping types (see `FieldsAreDefinedOnType#get_type`)
+
 ## Goals:
 
 - Implement the GraphQL spec & support a Relay front end

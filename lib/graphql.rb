@@ -35,6 +35,7 @@ module GraphQL
     autoload(:FieldsField)
     autoload(:InputValueType)
     autoload(:InputFieldsField)
+    autoload(:InterfacesField)
     autoload(:OfTypeField)
     autoload(:PossibleTypesField)
     autoload(:SchemaType)

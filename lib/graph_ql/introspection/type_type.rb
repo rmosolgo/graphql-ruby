@@ -14,7 +14,8 @@ GraphQL::Introspection::TypeType = GraphQL::ObjectType.new do |t, type|
     ofType: GraphQL::Introspection::OfTypeField,
     inputFields: GraphQL::Introspection::InputFieldsField,
     possibleTypes: GraphQL::Introspection::PossibleTypesField,
-    enumValues: GraphQL::Introspection::EnumValuesField
+    enumValues: GraphQL::Introspection::EnumValuesField,
+    interfaces: GraphQL::Introspection::InterfacesField,
   }
 end
 # type __Type {
