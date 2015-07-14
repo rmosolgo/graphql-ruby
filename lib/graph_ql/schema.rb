@@ -27,6 +27,8 @@ class GraphQL::Schema
     @query    = query
     @mutation = mutation
     @directives = DIRECTIVES.reduce({}) { |m, d| m[d.name] = d; m }
+    @static_validator = GraphQL::StaticValidation::Validator.new(schema: self)
+
     errors = SchemaValidator.new.validate(self)
     if errors.any?
       raise("Schema is invalid: \n#{errors.join("\n")}")

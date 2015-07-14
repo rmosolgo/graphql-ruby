@@ -1,4 +1,4 @@
-class GraphQL::Validations::FieldsAreDefinedOnType
+class GraphQL::StaticValidation::FieldsAreDefinedOnType
   TYPE_INFERRENCE_ROOTS = [GraphQL::Nodes::OperationDefinition, GraphQL::Nodes::FragmentDefinition]
   FIELD_MODIFIERS = [GraphQL::TypeKinds::LIST]
 

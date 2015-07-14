@@ -1,6 +1,8 @@
-class GraphQL::Validator
+class GraphQL::StaticValidation::Validator
   VALIDATORS = [
-    GraphQL::Validations::FragmentsAreUsed,
+    GraphQL::StaticValidation::FragmentsAreUsed,
+    GraphQL::StaticValidation::FieldsAreDefinedOnType,
+    GraphQL::StaticValidation::FieldsWillMerge,
   ]
 
   def initialize(schema:, validators: VALIDATORS)

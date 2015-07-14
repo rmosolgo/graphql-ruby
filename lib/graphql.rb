@@ -50,6 +50,13 @@ module GraphQL
     autoload(:Visitor)
   end
 
+  module StaticValidation
+    extend ActiveSupport::Autoload
+    autoload(:FieldsAreDefinedOnType)
+    autoload(:FieldsWillMerge)
+    autoload(:FragmentsAreUsed)
+    autoload(:Validator)
+  end
   autoload_under "types" do
     autoload(:AbstractType)
     autoload(:BOOLEAN_TYPE)

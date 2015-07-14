@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe GraphQL::Validations::FieldsAreDefinedOnType do
+describe GraphQL::StaticValidation::FieldsAreDefinedOnType do
   let(:document) { GraphQL.parse("
     query getCheese($sourceVar: DairyAnimal!) {
       notDefinedField { name }
@@ -11,7 +11,7 @@ describe GraphQL::Validations::FieldsAreDefinedOnType do
     fragment cheeseFields on Cheese { fatContent, hogwashField }
   ")}
 
-  let(:validator) { GraphQL::Validator.new(schema: DummySchema, validators: [GraphQL::Validations::FieldsAreDefinedOnType]) }
+  let(:validator) { GraphQL::StaticValidation::Validator.new(schema: DummySchema, validators: [GraphQL::StaticValidation::FieldsAreDefinedOnType]) }
   let(:errors) { validator.validate(document) }
   it "finds fields that are requested on types that don't have that field" do
     expected_errors = [

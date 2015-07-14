@@ -12,9 +12,9 @@ class DocumentErrorValidator
   end
 end
 
-describe GraphQL::Validator do
+describe GraphQL::StaticValidation::Validator do
   let(:document)  { OpenStruct.new(name: "This is not a document", children: []) }
-  let(:validator) { GraphQL::Validator.new(schema: "This is not a schema", validators: [SchemaErrorValidator, DocumentErrorValidator]) }
+  let(:validator) { GraphQL::StaticValidation::Validator.new(schema: "This is not a schema", validators: [SchemaErrorValidator, DocumentErrorValidator]) }
 
   it 'uses validators' do
     errors = validator.validate(document)

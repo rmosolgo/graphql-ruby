@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe GraphQL::Validations::FieldsWillMerge do
+describe GraphQL::StaticValidation::FieldsWillMerge do
   let(:document) { GraphQL.parse("
     query getCheese($sourceVar: DairyAnimal!) {
       id
@@ -24,7 +24,7 @@ describe GraphQL::Validations::FieldsWillMerge do
     }
   ")}
 
-  let(:validator) { GraphQL::Validator.new(schema: nil, validators: [GraphQL::Validations::FieldsWillMerge]) }
+  let(:validator) { GraphQL::StaticValidation::Validator.new(schema: nil, validators: [GraphQL::StaticValidation::FieldsWillMerge]) }
   let(:errors) { validator.validate(document) }
   it 'finds field naming conflicts' do
     expected_errors = [

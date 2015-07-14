@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe GraphQL::Validations::FragmentsAreUsed do
+describe GraphQL::StaticValidation::FragmentsAreUsed do
   let(:document) { GraphQL.parse("
     query getCheese {
       name,
@@ -16,7 +16,7 @@ describe GraphQL::Validations::FragmentsAreUsed do
     fragment unusedFields on Cheese { is, not, used }
   ")}
 
-  let(:validator) { GraphQL::Validator.new(schema: nil, validators: [GraphQL::Validations::FragmentsAreUsed]) }
+  let(:validator) { GraphQL::StaticValidation::Validator.new(schema: nil, validators: [GraphQL::StaticValidation::FragmentsAreUsed]) }
   let(:errors) { validator.validate(document) }
 
   it 'adds errors for unused fragment definitions' do

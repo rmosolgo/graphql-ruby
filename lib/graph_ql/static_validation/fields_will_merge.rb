@@ -1,4 +1,4 @@
-class GraphQL::Validations::FieldsWillMerge
+class GraphQL::StaticValidation::FieldsWillMerge
   HAS_SELECTIONS = [GraphQL::Nodes::OperationDefinition, GraphQL::Nodes::InlineFragment]
 
   def validate(context)

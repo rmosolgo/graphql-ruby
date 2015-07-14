@@ -1,4 +1,4 @@
-class GraphQL::Validations::FragmentsAreUsed
+class GraphQL::StaticValidation::FragmentsAreUsed
   def validate(context)
     v = context.visitor
     used_fragment_names = []
