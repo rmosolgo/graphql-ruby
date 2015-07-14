@@ -1,6 +1,5 @@
 class GraphQL::StaticValidation::FieldsAreDefinedOnType
   TYPE_INFERRENCE_ROOTS = [GraphQL::Nodes::OperationDefinition, GraphQL::Nodes::FragmentDefinition]
-  FIELD_MODIFIERS = [GraphQL::TypeKinds::LIST]
 
   def validate(context)
     visitor = context.visitor
@@ -28,17 +27,17 @@ class GraphQL::StaticValidation::FieldsAreDefinedOnType
         if field.nil?
           context.errors << "Field '#{ast_field.name}' doesn't exist on type '#{type.name}'"
         else
-          field_type = get_field_type(field)
+          field_type = get_type(field.type)
           validate_selections(field_type, ast_field.selections, context)
         end
       end
   end
 
-  def get_field_type(field)
-    if FIELD_MODIFIERS.include?(field.type.kind)
-      field.type.of_type
+  def get_type(type)
+    if type.kind.wraps?
+      get_type(type.of_type)
     else
-      field.type
+      type
     end
   end
 end

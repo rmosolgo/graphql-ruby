@@ -60,6 +60,6 @@ class GraphQL::ObjectType
   end
 
   def to_s
-    name
+    "<GraphQL::ObjectType #{name} {#{fields.keys.join(", ")}}>"
   end
 end

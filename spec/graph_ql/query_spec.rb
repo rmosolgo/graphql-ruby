@@ -4,14 +4,14 @@ describe GraphQL::Query do
   describe '#execute' do
     let(:query_string) { %|
       query getFlavor($cheeseId: Int!) {
-        brie: cheese(id: 1)   { ...cheeseFields, ... meatFields, taste: flavor },
+        brie: cheese(id: 1)   { ...cheeseFields, ... milkFields, taste: flavor },
         cheese(id: $cheeseId)  {
           __typename,
           id,
           ...cheeseFields,
           ... edibleFields,
           ... on Cheese { cheeseKind: flavor },
-          ... on Meat { cut }
+          ... on Milk { source }
         }
         fromSource(source: COW) { id }
         firstSheep: searchDairy(product: {source: SHEEP}) { ... dairyFields }
@@ -19,7 +19,7 @@ describe GraphQL::Query do
       }
       fragment cheeseFields on Cheese { flavor }
       fragment edibleFields on Edible { fatContent }
-      fragment meatFields on Meat { cut }
+      fragment milkFields on Milk { source }
       fragment dairyFields on DairyProduct {
          ... on Cheese { flavor }
          ... on Milk   { source }
@@ -51,10 +51,10 @@ describe GraphQL::Query do
     end
 
     describe 'runtime errors' do
-      let(:query_string) {%| query noMilk { milk(id: 1000) { name } }|}
+      let(:query_string) {%| query noMilk { error }|}
       it 'turns into error messages' do
         expected = {"errors"=>[
-          {"message"=>"Something went wrong during query execution: No field found on Query 'Query' for 'milk'"}
+          {"message"=>"Something went wrong during query execution: This error was raised on purpose"}
         ]}
         assert_equal(expected, result)
       end

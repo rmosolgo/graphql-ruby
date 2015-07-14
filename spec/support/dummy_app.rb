@@ -126,7 +126,12 @@ QueryType = GraphQL::ObjectType.new do |t|
         end
         products.first
       }
-    }
+    },
+    error: GraphQL::Field.new { |f|
+      f.description "Raise an error"
+      f.type GraphQL::STRING_TYPE
+      f.resolve -> (t, a, c) { raise("This error was raised on purpose") }
+    },
   })
 end
 

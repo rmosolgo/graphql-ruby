@@ -4,7 +4,7 @@ describe GraphQL::Introspection::DirectiveType do
   let(:query_string) {%|
     query getDirectives {
       __schema {
-        directives { name, args { name, type { name, ofType { name }} }, onField, onFragment, onOperation }
+        directives { name, args { name, type { name, ofType { name } } }, onField, onFragment, onOperation }
       }
     }
   |}

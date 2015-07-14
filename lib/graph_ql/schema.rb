@@ -8,7 +8,7 @@ class GraphQL::Schema
   autoload(:UnionValidator)
   DIRECTIVES = [GraphQL::SkipDirective, GraphQL::IncludeDirective]
 
-  attr_reader :query, :mutation, :directives
+  attr_reader :query, :mutation, :directives, :static_validator
   def initialize(query:, mutation:)
     # Add fields to this query root for introspection:
     query.fields = query.fields.merge({

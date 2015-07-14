@@ -15,4 +15,8 @@ class GraphQL::NonNullType < GraphQL::ObjectType
   def kind
     GraphQL::TypeKinds::NON_NULL
   end
+
+  def to_s
+    "<GraphQL::NonNullType(#{of_type.name})>"
+  end
 end

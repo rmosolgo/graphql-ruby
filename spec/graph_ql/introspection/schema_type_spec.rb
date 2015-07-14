@@ -21,6 +21,7 @@ describe GraphQL::Introspection::SchemaType do
             {"name"=>"fromSource"},
             {"name"=>"favoriteEdible"},
             {"name"=>"searchDairy"},
+            {"name"=>"error"},
             {"name"=>"__typename"},
             {"name"=>"__type"},
             {"name"=>"__schema"},
