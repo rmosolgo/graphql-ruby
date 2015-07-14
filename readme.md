@@ -6,12 +6,23 @@
 [![Test Coverage](https://codeclimate.com/github/rmosolgo/graphql-ruby/badges/coverage.svg)](https://codeclimate.com/github/rmosolgo/graphql-ruby)
 [![built with love](https://cloud.githubusercontent.com/assets/2231765/6766607/d07992c6-cfc9-11e4-813f-d9240714dd50.png)](http://rmosolgo.github.io/react-badges/)
 
-__Current status__: rewriting according to spec, see also the previous [prototype implementation](https://github.com/rmosolgo/graphql-ruby/tree/74ad3c30a6d8db010ec3856f5871f8a02fcfba42)!
-
 ## Overview
 
-- See the __[test schema](https://github.com/rmosolgo/graphql-ruby/blob/master/spec/support/dummy_app.rb)__ for an example GraphQL schema in Ruby.
-- See __[query_spec.rb](https://github.com/rmosolgo/graphql-ruby/blob/master/spec/graph_ql/query_spec.rb)__ for an example of query execution.
+- Install the gem:
+
+  ```ruby
+  # Gemfile
+  gem 'graphql'
+  ```
+
+- Build a schema:
+  - See the [test schema](https://github.com/rmosolgo/graphql-ruby/blob/master/spec/support/dummy_app.rb) for an example GraphQL schema in Ruby.
+  - See [`graphql-ruby-demo`](https://github.com/rmosolgo/graphql-ruby-demo) for an example schema on Rails
+
+- Execute queries
+  - See [query_spec.rb](https://github.com/rmosolgo/graphql-ruby/blob/master/spec/graph_ql/query_spec.rb) for an example of query execution.
+  - See [`queries_controller.rb`](https://github.com/rmosolgo/graphql-ruby-demo/blob/master/app/controllers/queries_controller.rb) for a Rails example
+
 
 ## To Do:
 
