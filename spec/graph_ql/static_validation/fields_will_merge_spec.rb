@@ -26,6 +26,8 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
 
   let(:validator) { GraphQL::StaticValidation::Validator.new(schema: nil, validators: [GraphQL::StaticValidation::FieldsWillMerge]) }
   let(:errors) { validator.validate(document) }
+  let(:error_messages) { errors.map { |e| e["message" ] }}
+
   it 'finds field naming conflicts' do
     expected_errors = [
       "Field 'nickname' has a field conflict: name or fatContent?",             # alias conflict in query
@@ -35,6 +37,6 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
       "Field 'fatContent' has a field conflict: fatContent or name?",           # alias/name conflict in query and fragment
       "Field 'similarCheeses' has an argument conflict: {\"source\":\"sourceVar\"} or {\"source\":\"SHEEP\"}?", # different arguments
     ]
-    assert_equal(expected_errors, errors)
+    assert_equal(expected_errors, error_messages)
   end
 end

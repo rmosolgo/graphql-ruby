@@ -1,24 +1,30 @@
 class GraphQL::StaticValidation::FragmentsAreUsed
+  include GraphQL::StaticValidation::Message::MessageHelper
+
   def validate(context)
     v = context.visitor
-    used_fragment_names = []
-    defined_fragment_names = []
-    v[GraphQL::Nodes::FragmentSpread] << -> (node) { used_fragment_names <<  node.name }
-    v[GraphQL::Nodes::FragmentDefinition] << -> (node) { defined_fragment_names << node.name}
-    v[GraphQL::Nodes::Document].leave << -> (node) { add_errors(context.errors, used_fragment_names, defined_fragment_names) }
+    used_fragments = []
+    defined_fragments = []
+    v[GraphQL::Nodes::FragmentSpread] << -> (node) { used_fragments <<  node }
+    v[GraphQL::Nodes::FragmentDefinition] << -> (node) { defined_fragments << node}
+    v[GraphQL::Nodes::Document].leave << -> (node) { add_errors(context.errors, used_fragments, defined_fragments) }
   end
 
   private
 
-  def add_errors(errors, used_fragment_names, defined_fragment_names)
-    undefined_fragment_names = used_fragment_names - defined_fragment_names
-    if undefined_fragment_names.any?
-      errors << "Some fragments were used but not defined: #{undefined_fragment_names.join(", ")}"
+  def add_errors(errors, used_fragments, defined_fragments)
+    undefined_fragments = find_difference(used_fragments, defined_fragments.map(&:name))
+    undefined_fragments.each do |fragment|
+      errors << message("Fragment #{fragment.name} was used, but not defined", fragment)
     end
 
-    unused_fragment_names = defined_fragment_names - used_fragment_names
-    if unused_fragment_names.any?
-      errors << "Some fragments were defined but not used: #{unused_fragment_names.join(", ")}"
+    unused_fragments = find_difference(defined_fragments, used_fragments.map(&:name))
+    unused_fragments.each do |fragment|
+      errors << message("Fragment #{fragment.name} was defined, but not used", fragment)
     end
+  end
+
+  def find_difference(fragments, allowed_fragment_names)
+    fragments.select {|f| !allowed_fragment_names.include?(f.name) }
   end
 end

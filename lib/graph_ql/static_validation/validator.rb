@@ -16,7 +16,7 @@ class GraphQL::StaticValidation::Validator
       validator.new.validate(context)
     end
     context.visitor.visit(document)
-    context.errors
+    context.errors.map(&:to_h)
   end
 
   class Context

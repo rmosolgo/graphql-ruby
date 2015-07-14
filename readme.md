@@ -17,7 +17,7 @@ __Current status__: rewriting according to spec, see also the previous [prototyp
 
 - Validations:
   - implement lots of validators
-  - build error object with position and message
+  - implement `TypeStack` to provide type info to validators
 - directives:
   - `@skip` has precedence over `@include`
   - directives on fragments: http://facebook.github.io/graphql/#sec-Fragment-Directives

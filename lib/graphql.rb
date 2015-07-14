@@ -56,6 +56,7 @@ module GraphQL
     autoload(:FieldsAreDefinedOnType)
     autoload(:FieldsWillMerge)
     autoload(:FragmentsAreUsed)
+    autoload(:Message)
     autoload(:Validator)
   end
   autoload_under "types" do

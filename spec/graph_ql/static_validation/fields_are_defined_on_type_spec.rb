@@ -13,6 +13,7 @@ describe GraphQL::StaticValidation::FieldsAreDefinedOnType do
 
   let(:validator) { GraphQL::StaticValidation::Validator.new(schema: DummySchema, validators: [GraphQL::StaticValidation::FieldsAreDefinedOnType]) }
   let(:errors) { validator.validate(GraphQL.parse(query_string)) }
+  let(:error_messages) { errors.map { |e| e["message" ] }}
   it "finds fields that are requested on types that don't have that field" do
     expected_errors = [
       "Field 'notDefinedField' doesn't exist on type 'Query'",  # from query root
@@ -20,14 +21,14 @@ describe GraphQL::StaticValidation::FieldsAreDefinedOnType do
       "Field 'bogusField' doesn't exist on type 'Cheese'",      # from a list
       "Field 'hogwashField' doesn't exist on type 'Cheese'",    # from a fragment
     ]
-    assert_equal(expected_errors, errors)
+    assert_equal(expected_errors, error_messages)
   end
 
   describe 'on interfaces' do
     let(:query_string) { "query getStuff { favoriteEdible { amountThatILikeIt } }"}
     it 'finds invalid fields' do
       expected_errors = [
-        "Field 'amountThatILikeIt' doesn't exist on type 'Edible'"
+        {"message"=>"Field 'amountThatILikeIt' doesn't exist on type 'Edible'", "locations"=>[{"line"=>1, "column"=>18}]}
       ]
       assert_equal(expected_errors, errors)
     end
@@ -41,7 +42,12 @@ describe GraphQL::StaticValidation::FieldsAreDefinedOnType do
     "}
     it 'doesnt allow selections on unions' do
       expected_errors = [
-        "Selections can't be made directly on unions (see selections on DairyProduct)"
+        {
+          "message"=>"Selections can't be made directly on unions (see selections on DairyProduct)",
+          "locations"=>[
+            {"line"=>3, "column"=>7}
+          ]
+        }
       ]
       assert_equal(expected_errors, errors)
     end

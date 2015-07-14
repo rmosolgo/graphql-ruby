@@ -41,27 +41,28 @@ class GraphQL::StaticValidation::FieldsWillMerge
 
   # Compare two field definitions, add errors to the list if there are any
   class FieldDefinitionComparison
+    include GraphQL::StaticValidation::Message::MessageHelper
     NAMED_VALUES = [GraphQL::Nodes::Enum, GraphQL::Nodes::VariableIdentifier]
     attr_reader :errors
     def initialize(name, prev_def, next_def)
       errors = []
       if prev_def.name != next_def.name
-        errors << "Field '#{name}' has a field conflict: #{prev_def.name} or #{next_def.name}?"
+        errors << message("Field '#{name}' has a field conflict: #{prev_def.name} or #{next_def.name}?", next_def)
       end
       prev_arguments = reduce_list(prev_def.arguments)
       next_arguments = reduce_list(next_def.arguments)
       if prev_arguments != next_arguments
-        errors << "Field '#{name}' has an argument conflict: #{JSON.dump(prev_arguments)} or #{JSON.dump(next_arguments)}?"
+        errors << message("Field '#{name}' has an argument conflict: #{JSON.dump(prev_arguments)} or #{JSON.dump(next_arguments)}?", next_def)
       end
       prev_directive_names = prev_def.directives.map(&:name)
       next_directive_names = next_def.directives.map(&:name)
       if prev_directive_names != next_directive_names
-        errors << "Field '#{name}' has a directive conflict: [#{prev_directive_names.join(", ")}] or [#{next_directive_names.join(", ")}]?"
+        errors << message("Field '#{name}' has a directive conflict: [#{prev_directive_names.join(", ")}] or [#{next_directive_names.join(", ")}]?", next_def)
       end
       prev_directive_args = prev_def.directives.map {|d| reduce_list(d.arguments) }
       next_directive_args = next_def.directives.map {|d| reduce_list(d.arguments) }
       if prev_directive_args != next_directive_args
-        errors << "Field '#{name}' has a directive argument conflict: #{JSON.dump(prev_directive_args)} or #{JSON.dump(next_directive_args)}?"
+        errors << message("Field '#{name}' has a directive argument conflict: #{JSON.dump(prev_directive_args)} or #{JSON.dump(next_directive_args)}?", next_def)
       end
       @errors = errors
     end

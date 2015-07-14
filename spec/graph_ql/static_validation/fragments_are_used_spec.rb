@@ -20,9 +20,10 @@ describe GraphQL::StaticValidation::FragmentsAreUsed do
   let(:errors) { validator.validate(document) }
 
   it 'adds errors for unused fragment definitions' do
-    assert_includes(errors, 'Some fragments were defined but not used: unusedFields')
+    assert_includes(errors, {"message"=>"Fragment unusedFields was defined, but not used", "locations"=>[{"line"=>13, "column"=>5}]})
   end
+
   it 'adds errors for undefined fragment spreads' do
-    assert_includes(errors, 'Some fragments were used but not defined: undefinedFields')
+    assert_includes(errors, {"message"=>"Fragment undefinedFields was used, but not defined", "locations"=>[{"line"=>7, "column"=>9}]})
   end
 end
