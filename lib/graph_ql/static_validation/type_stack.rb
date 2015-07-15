@@ -67,7 +67,7 @@ class GraphQL::StaticValidation::TypeStack
           stack.object_types.push(nil)
         end
       else
-        stack.field_definitions.push(parent_type)
+        stack.field_definitions.push(nil)
         stack.object_types.push(parent_type)
       end
     end

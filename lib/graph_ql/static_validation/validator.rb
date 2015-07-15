@@ -3,6 +3,7 @@ class GraphQL::StaticValidation::Validator
     GraphQL::StaticValidation::FragmentsAreUsed,
     GraphQL::StaticValidation::FieldsAreDefinedOnType,
     GraphQL::StaticValidation::FieldsWillMerge,
+    GraphQL::StaticValidation::FieldsHaveAppropriateSelections,
   ]
 
   def initialize(schema:, validators: VALIDATORS)
@@ -33,6 +34,10 @@ class GraphQL::StaticValidation::Validator
 
     def object_types
       @type_stack.object_types
+    end
+
+    def field_definition
+      @type_stack.field_definitions.last
     end
   end
 end

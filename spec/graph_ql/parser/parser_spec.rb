@@ -38,7 +38,7 @@ describe GraphQL::Parser do
     assert(parser.operation_definition.parse_with_debug(%|{id, name, ...people}|), "just a selection")
     assert(parser.operation_definition.parse_with_debug(%|query personStuff {id, name, ...people, ... stuff}|), "named fetch")
     assert(parser.operation_definition.parse_with_debug(%|query personStuff @flagDirective {id, name, ...people}|), "with a directive")
-    assert(parser.operation_definition.parse_with_debug(%|mutation changeStuff($stuff: Int = 1, $things: [Boolean]!) {id, name, ...people}|), "mutation with arguments")
+    assert(parser.operation_definition.parse_with_debug(%|mutation changeStuff($stuff: Int = 1, $things: [SomeType]!) {id, name, ...people}|), "mutation with arguments")
   end
 
   it 'parses fragment definitions' do

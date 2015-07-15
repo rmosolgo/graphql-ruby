@@ -57,6 +57,7 @@ module GraphQL
     autoload(:FieldsAreDefinedOnType)
     autoload(:FieldsWillMerge)
     autoload(:FragmentsAreUsed)
+    autoload(:FieldsHaveAppropriateSelections)
     autoload(:Message)
     autoload(:TypeStack)
     autoload(:Validator)
@@ -76,14 +77,6 @@ module GraphQL
     autoload(:STRING_TYPE)
     autoload(:TypeDefiner)
   end
-
-  module Validations
-    extend ActiveSupport::Autoload
-    autoload(:FieldsWillMerge)
-    autoload(:FragmentsAreUsed)
-    autoload(:FieldsAreDefinedOnType)
-  end
-
 
   def self.parse(string, as: nil)
     parser = as ? GraphQL::PARSER.send(as) : GraphQL::PARSER
