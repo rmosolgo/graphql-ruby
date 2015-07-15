@@ -5,9 +5,9 @@ class GraphQL::StaticValidation::FragmentsAreUsed
     v = context.visitor
     used_fragments = []
     defined_fragments = []
-    v[GraphQL::Nodes::FragmentSpread] << -> (node) { used_fragments <<  node }
-    v[GraphQL::Nodes::FragmentDefinition] << -> (node) { defined_fragments << node}
-    v[GraphQL::Nodes::Document].leave << -> (node) { add_errors(context.errors, used_fragments, defined_fragments) }
+    v[GraphQL::Nodes::FragmentSpread] << -> (node, parent) { used_fragments <<  node }
+    v[GraphQL::Nodes::FragmentDefinition] << -> (node, parent) { defined_fragments << node}
+    v[GraphQL::Nodes::Document].leave << -> (node, parent) { add_errors(context.errors, used_fragments, defined_fragments) }
   end
 
   private

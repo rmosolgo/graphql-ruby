@@ -21,7 +21,7 @@ class GraphQL::Schema::TypeReducer
       type.fields.each do |name, field|
         type_hash.merge!(reduce_type(field.type, type_hash))
         field.arguments.each do |name, argument|
-          type_hash.merge!(reduce_type(argument[:type], type_hash))
+          type_hash.merge!(reduce_type(argument.type, type_hash))
         end
       end
     end

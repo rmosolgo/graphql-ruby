@@ -53,10 +53,12 @@ module GraphQL
 
   module StaticValidation
     extend ActiveSupport::Autoload
+    autoload(:ArgumentsObeyDefinition)
     autoload(:FieldsAreDefinedOnType)
     autoload(:FieldsWillMerge)
     autoload(:FragmentsAreUsed)
     autoload(:Message)
+    autoload(:TypeStack)
     autoload(:Validator)
   end
   autoload_under "types" do

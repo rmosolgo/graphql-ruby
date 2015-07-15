@@ -14,6 +14,7 @@ describe GraphQL::StaticValidation::FieldsAreDefinedOnType do
   let(:validator) { GraphQL::StaticValidation::Validator.new(schema: DummySchema, validators: [GraphQL::StaticValidation::FieldsAreDefinedOnType]) }
   let(:errors) { validator.validate(GraphQL.parse(query_string)) }
   let(:error_messages) { errors.map { |e| e["message" ] }}
+
   it "finds fields that are requested on types that don't have that field" do
     expected_errors = [
       "Field 'notDefinedField' doesn't exist on type 'Query'",  # from query root
@@ -26,6 +27,7 @@ describe GraphQL::StaticValidation::FieldsAreDefinedOnType do
 
   describe 'on interfaces' do
     let(:query_string) { "query getStuff { favoriteEdible { amountThatILikeIt } }"}
+
     it 'finds invalid fields' do
       expected_errors = [
         {"message"=>"Field 'amountThatILikeIt' doesn't exist on type 'Edible'", "locations"=>[{"line"=>1, "column"=>18}]}
@@ -38,8 +40,10 @@ describe GraphQL::StaticValidation::FieldsAreDefinedOnType do
     let(:query_string) { "
       query notOnUnion { favoriteEdible { ...dpFields } }
       fragment dbFields on DairyProduct { source }
-      fragment dbIndirectFields on DairyProduct { ... on Cheese {source } }
+      fragment dbIndirectFields on DairyProduct { ... on Cheese { source } }
     "}
+
+
     it 'doesnt allow selections on unions' do
       expected_errors = [
         {

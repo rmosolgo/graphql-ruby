@@ -74,7 +74,7 @@ The `resolve` proc will be called with:
 
 - `object`: The "parent" of this field (in the above case, it's the query root, not very useful)
 - `arguments`: A hash with arguments passed to the field (keys will be strings)
-- `context`: An arbitrary object defined when running the query (see other guide)
+- `context`: An arbitrary object defined when running the query (see [Executing queries](http://www.rubydoc.info/github/rmosolgo/graphql-ruby/file/guides/executing_queries.md))
 
 #### The query root type
 
@@ -191,6 +191,6 @@ p JSON.dump(response_hash)
 
 Read more in some other guides:
 
-- Type & Field Helpers
-- Executing Queries
-- Extending `graphql-ruby`
+- [Type & Field Helpers](http://www.rubydoc.info/github/rmosolgo/graphql-ruby/file/guides/type_and_field_helpers.md)
+- [Executing Queries](http://www.rubydoc.info/github/rmosolgo/graphql-ruby/file/guides/executing_queries.md)
+- [Extending `graphql-ruby`](http://www.rubydoc.info/github/rmosolgo/graphql-ruby/file/guides/extending_graphql_ruby.md)

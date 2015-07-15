@@ -9,8 +9,13 @@
 #   # => 6
 #
 class GraphQL::Visitor
+  SKIP = :_skip
+
+  attr_reader :enter, :leave
   def initialize
     @visitors = {}
+    @enter = []
+    @leave = []
   end
 
   def [](node_class)
@@ -18,11 +23,30 @@ class GraphQL::Visitor
   end
 
   # Apply built-up vistors to `document`
-  def visit(root)
-    node_visitor = self[root.class]
-    node_visitor.begin_visit(root)
-    root.children.map { |child| visit(child) }
-    node_visitor.end_visit(root)
+  def visit(root, parent=nil)
+    begin_visit(root, parent) &&
+      root.children.reduce(true) { |memo, child| memo && visit(child, root) }
+    end_visit(root, parent)
+  end
+
+  private
+
+  def begin_visit(node, parent)
+    self.class.apply_hooks(enter, node, parent)
+    node_visitor = self[node.class]
+    self.class.apply_hooks(node_visitor.enter, node, parent)
+  end
+
+  # Should global `leave` visitors come first or last?
+  def end_visit(node, parent)
+    self.class.apply_hooks(leave, node, parent)
+    node_visitor = self[node.class]
+    self.class.apply_hooks(node_visitor.leave, node, parent)
+  end
+
+  # If one of the visitors returns SKIP, stop visiting this node
+  def self.apply_hooks(hooks, node, parent)
+    hooks.reduce(true) { |memo, proc| memo && (proc.call(node, parent) != SKIP) }
   end
 
   class NodeVisitor
@@ -34,14 +58,6 @@ class GraphQL::Visitor
 
     def <<(hook)
       enter << hook
-    end
-
-    def begin_visit(node)
-      enter.map{ |proc| proc.call(node) }
-    end
-
-    def end_visit(node)
-      leave.map{ |proc| proc.call(node) }
     end
   end
 end

@@ -62,4 +62,8 @@ class GraphQL::ObjectType
   def to_s
     "<GraphQL::ObjectType #{name}>"
   end
+
+  def inspect
+    to_s
+  end
 end

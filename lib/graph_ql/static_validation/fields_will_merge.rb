@@ -1,42 +1,51 @@
 class GraphQL::StaticValidation::FieldsWillMerge
-  HAS_SELECTIONS = [GraphQL::Nodes::OperationDefinition, GraphQL::Nodes::InlineFragment]
-
   def validate(context)
     fragments = {}
     has_selections = []
     visitor = context.visitor
-    HAS_SELECTIONS.each do |node_class|
-      visitor[node_class] << -> (node) { has_selections << node }
-    end
-    visitor[GraphQL::Nodes::FragmentDefinition] << -> (node) { fragments[node.name] = node }
-    visitor[GraphQL::Nodes::Document].leave << -> (node) {
-      has_selections.each { |node| validate_selections(node.selections, {}, fragments, context.errors)}
+    visitor[GraphQL::Nodes::OperationDefinition] << -> (node, parent) {
+      if node.selections.any?
+        has_selections << node
+      end
+    }
+    visitor[GraphQL::Nodes::Document].leave << -> (node, parent) {
+      has_selections.each { |node|
+        field_map = gather_fields_by_name(node.selections, {}, context)
+        find_conflicts(field_map, context)
+      }
     }
   end
 
   private
 
-  def validate_selections(selections, name_to_field, fragments, errors)
-    selections.each do |field|
-      if field.is_a?(GraphQL::Nodes::InlineFragment)
-        validate_selections(field.selections, name_to_field, fragments, errors)
-      elsif field.is_a?(GraphQL::Nodes::FragmentSpread)
-        fragment = fragments[field.name]
-        validate_selections(fragment.selections, name_to_field, fragments, errors)
-      else
-        field_errors = validate_field(field, name_to_field)
-        errors.push(*field_errors)
-        validate_selections(field.selections, name_to_field, fragments, errors)
+  def find_conflicts(field_map, context)
+    field_map.each do |name, ast_fields|
+      comparison = FieldDefinitionComparison.new(name, ast_fields)
+      context.errors.push(*comparison.errors)
+
+      subfield_map = ast_fields.reduce({}) do |memo, defn|
+        gather_fields_by_name(defn.selections, memo, context)
       end
+      find_conflicts(subfield_map, context)
     end
   end
 
-  def validate_field(field, name_to_field)
-    name_in_selection = field.alias || field.name
-    name_to_field[name_in_selection] ||= field
-    first_field_def = name_to_field[name_in_selection]
-    comparison = FieldDefinitionComparison.new(name_in_selection, first_field_def, field)
-    comparison.errors
+  def gather_fields_by_name(fields, field_map, context)
+    fields.each do |field|
+      if field.is_a?(GraphQL::Nodes::InlineFragment)
+        next_fields = field.selections
+      elsif field.is_a?(GraphQL::Nodes::FragmentSpread)
+        fragment = context.fragments[field.name]
+        next_fields = fragment.selections
+      else
+        name_in_selection = field.alias || field.name
+        field_map[name_in_selection] ||= []
+        field_map[name_in_selection].push(field)
+        next_fields = []
+      end
+      gather_fields_by_name(next_fields, field_map, context)
+    end
+    field_map
   end
 
   # Compare two field definitions, add errors to the list if there are any
@@ -44,26 +53,29 @@ class GraphQL::StaticValidation::FieldsWillMerge
     include GraphQL::StaticValidation::Message::MessageHelper
     NAMED_VALUES = [GraphQL::Nodes::Enum, GraphQL::Nodes::VariableIdentifier]
     attr_reader :errors
-    def initialize(name, prev_def, next_def)
+    def initialize(name, defs)
       errors = []
-      if prev_def.name != next_def.name
-        errors << message("Field '#{name}' has a field conflict: #{prev_def.name} or #{next_def.name}?", next_def)
+
+      names = defs.map(&:name).uniq
+      if names.length != 1
+        errors << message("Field '#{name}' has a field conflict: #{names.join(" or ")}?", defs.first)
       end
-      prev_arguments = reduce_list(prev_def.arguments)
-      next_arguments = reduce_list(next_def.arguments)
-      if prev_arguments != next_arguments
-        errors << message("Field '#{name}' has an argument conflict: #{JSON.dump(prev_arguments)} or #{JSON.dump(next_arguments)}?", next_def)
+
+      args = defs.map { |defn| reduce_list(defn.arguments)}.uniq
+      if args.length != 1
+        errors << message("Field '#{name}' has an argument conflict: #{args.map {|a| JSON.dump(a) }.join(" or ")}?", defs.first)
       end
-      prev_directive_names = prev_def.directives.map(&:name)
-      next_directive_names = next_def.directives.map(&:name)
-      if prev_directive_names != next_directive_names
-        errors << message("Field '#{name}' has a directive conflict: [#{prev_directive_names.join(", ")}] or [#{next_directive_names.join(", ")}]?", next_def)
+
+      directive_names = defs.map { |defn| defn.directives.map(&:name) }.uniq
+      if directive_names.length != 1
+        errors << message("Field '#{name}' has a directive conflict: #{directive_names.map {|names| "[#{names.join(", ")}]"}.join(" or ")}?", defs.first)
       end
-      prev_directive_args = prev_def.directives.map {|d| reduce_list(d.arguments) }
-      next_directive_args = next_def.directives.map {|d| reduce_list(d.arguments) }
-      if prev_directive_args != next_directive_args
-        errors << message("Field '#{name}' has a directive argument conflict: #{JSON.dump(prev_directive_args)} or #{JSON.dump(next_directive_args)}?", next_def)
+
+      directive_args = defs.map {|defn| defn.directives.map {|d| reduce_list(d.arguments) } }.uniq
+      if directive_args.length != 1
+        errors << message("Field '#{name}' has a directive argument conflict: #{directive_args.map {|args| JSON.dump(args)}.join(" or ")}?", defs.first)
       end
+
       @errors = errors
     end
 

@@ -9,13 +9,13 @@ describe GraphQL::Visitor do
 
   let(:visitor) do
     v = GraphQL::Visitor.new
-    v[GraphQL::Nodes::Field] << -> (node) { counts[:fields_entered] += 1 }
+    v[GraphQL::Nodes::Field] << -> (node, parent) { counts[:fields_entered] += 1 }
     # two ways to set up enter hooks:
-    v[GraphQL::Nodes::Argument] <<       -> (node) { counts[:argument_names] << node.name }
-    v[GraphQL::Nodes::Argument].enter << -> (node) { counts[:arguments_entered] += 1}
-    v[GraphQL::Nodes::Argument].leave << -> (node) { counts[:arguments_left] += 1 }
+    v[GraphQL::Nodes::Argument] <<       -> (node, parent) { counts[:argument_names] << node.name }
+    v[GraphQL::Nodes::Argument].enter << -> (node, parent) { counts[:arguments_entered] += 1}
+    v[GraphQL::Nodes::Argument].leave << -> (node, parent) { counts[:arguments_left] += 1 }
 
-    v[GraphQL::Nodes::Document].leave << -> (node) { counts[:finished] = true }
+    v[GraphQL::Nodes::Document].leave << -> (node, parent) { counts[:finished] = true }
     v
   end
 
@@ -27,5 +27,13 @@ describe GraphQL::Visitor do
     assert_equal(2, counts[:arguments_left])
     assert_equal(["id", "first"], counts[:argument_names])
     assert(counts[:finished])
+  end
+
+  describe 'Visitor::SKIP' do
+    it 'skips the rest of the node' do
+      visitor[GraphQL::Nodes::Document] << -> (node, parent) { GraphQL::Visitor::SKIP }
+      visitor.visit(document)
+      assert_equal(0, counts[:fields_entered])
+    end
   end
 end

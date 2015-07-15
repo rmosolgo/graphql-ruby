@@ -2,7 +2,7 @@ GraphQL::Introspection::EnumValuesField = GraphQL::Field.new do |f|
   f.description "Values for this enum"
   f.type GraphQL::ListType.new(of_type: GraphQL::NonNullType.new(of_type: GraphQL::Introspection::EnumValueType))
   f.arguments({
-    includeDeprecated: {type: GraphQL::BOOLEAN_TYPE, default_value: false}
+    includeDeprecated: GraphQL::InputValue.new({type: GraphQL::BOOLEAN_TYPE, default_value: false})
   })
   f.resolve -> (object, arguments, context) {
     return nil if !object.kind.enum?

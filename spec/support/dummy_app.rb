@@ -36,6 +36,12 @@ CheeseType = GraphQL::ObjectType.new do |t, type|
     id:           t.field(type: !type.Int, desc: "Unique identifier"),
     flavor:       t.field(type: !type.String, desc: "Kind of cheese"),
     source:       t.field(type: !DairyAnimalEnum, desc: "Animal which produced the milk for this cheese"),
+    similarCheeses: GraphQL::Field.new do |f|
+      f.description "Cheeses like this one"
+      f.type(t)
+      f.arguments({source: t.arg(type: !type[!DairyAnimalEnum])})
+      f.resolve -> (t, a, c) { CHEESES.values.find { |c| c.source == a["source"] } }
+    end,
     fatContent:   t.field(type: !type.Float, desc: "Percentage which is milkfat", deprecation_reason: "Diet fashion has changed"),
   }
 end
@@ -51,7 +57,7 @@ end
     flavors:      t.field(
           type: type[type.String],
           desc: "Chocolate, Strawberry, etc",
-          args: {limit: {type: type.Int}}
+          args: {limit: t.arg({type: type.Int})}
         ),
   }
 end
@@ -117,7 +123,7 @@ QueryType = GraphQL::ObjectType.new do |t|
       f.name "searchDairy"
       f.description "Find dairy products matching a description"
       f.type !DairyProductUnion
-      f.arguments({product: {type: DairyProductInputType}})
+      f.arguments({product: t.arg({type: DairyProductInputType})})
       f.resolve -> (t, a, c) {
         products = CHEESES.values + MILKS.values
         source =  a["product"]["source"]

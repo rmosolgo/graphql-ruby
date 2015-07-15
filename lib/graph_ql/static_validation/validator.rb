@@ -20,12 +20,19 @@ class GraphQL::StaticValidation::Validator
   end
 
   class Context
-    attr_reader :schema, :document, :errors, :visitor
+    attr_reader :schema, :document, :errors, :visitor, :fragments
     def initialize(schema, document)
       @schema = schema
       @document = document
-      @visitor = GraphQL::Visitor.new
+      @fragments = {}
       @errors = []
+      @visitor = GraphQL::Visitor.new
+      @visitor[GraphQL::Nodes::FragmentDefinition] << -> (node, parent) { @fragments[node.name] = node }
+      @type_stack = GraphQL::StaticValidation::TypeStack.new(schema, visitor)
+    end
+
+    def object_types
+      @type_stack.object_types
     end
   end
 end
