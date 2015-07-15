@@ -7,44 +7,27 @@ class GraphQL::StaticValidation::TypeStack
     GraphQL::Nodes::FragmentDefinition,
   ]
 
-  attr_reader :schema
+  attr_reader :schema, :object_types, :field_definitions
   def initialize(schema, visitor)
     @schema = schema
-    visitor.enter << -> (node, parent) { push_type_for_node(node) }
-    visitor.leave << -> (node, parent) { pop_type_for_node(node) }
-  end
-
-  def object_types
-    @object_types ||= []
-  end
-
-  def field_definitions
-    @field_definitions ||= []
+    @object_types = []
+    @field_definitions = []
+    visitor.enter << -> (node, parent) { PUSH_STRATEGIES[node.class].push(self, node) }
+    visitor.leave << -> (node, parent) { PUSH_STRATEGIES[node.class].pop(self, node) }
   end
 
   private
 
-  def push_type_for_node(node)
-    strategy = PUSH_STRATEGIES[node.class]
-    if strategy
-      # p "PUSHING #{node.class}"
-      strategy.push(self, node)
-    else
-      # p "NOT pushing #{node.class}"
-    end
-  rescue StandardError => err
-    raise RuntimeError, "#{node.class} / #{object_types.length} } (#{err})"
+  # Look up strategies by name and use singleton instance to push and pop
+  PUSH_STRATEGIES = Hash.new { |hash, key| hash[key] = get_strategy_for_node_class(key) }
+
+  def self.get_strategy_for_node_class(node_class)
+    node_class_name = node_class.name.split("::").last
+    strategy_key = "#{node_class_name}Strategy"
+    const_defined?(strategy_key) ? const_get(strategy_key).new : NullStrategy.new
   end
 
-
-  def pop_type_for_node(node)
-    strategy = PUSH_STRATEGIES[node.class]
-    if strategy
-      strategy.pop(self, node)
-    end
-  end
-
-  class FragmentDefinitionStrategy
+  class FragmentWithTypeStrategy
     def push(stack, node)
       object_type = stack.schema.types[node.type]
       object_type = object_type.kind.unwrap(object_type)
@@ -56,20 +39,12 @@ class GraphQL::StaticValidation::TypeStack
     end
   end
 
-  class InlineFragmentStrategy
-    def push(stack, node)
-      object_type = stack.schema.types[node.type]
-      object_type = object_type.kind.unwrap(object_type)
-      stack.object_types.push(object_type)
-    end
-
-    def pop(stack, node)
-      stack.object_types.pop
-    end
-  end
+  class FragmentDefinitionStrategy < FragmentWithTypeStrategy; end
+  class InlineFragmentStrategy < FragmentWithTypeStrategy; end
 
   class OperationDefinitionStrategy
     def push(stack, node)
+      # query or mutation
       object_type = stack.schema.public_send(node.operation_type)
       stack.object_types.push(object_type)
     end
@@ -103,12 +78,8 @@ class GraphQL::StaticValidation::TypeStack
     end
   end
 
-  def self.get_strategy_for_node_class(node_class)
-    node_class_name = node_class.name.split("::").last
-    strategy_key = "#{node_class_name}Strategy"
-    const_defined?(strategy_key) ? const_get(strategy_key).new : nil
+  class NullStrategy
+    def push(stack, node);  end
+    def pop(stack, node);   end
   end
-
-  # Look up strategies by name and use singleton instance to push and pop
-  PUSH_STRATEGIES = Hash.new { |hash, key| hash[key] = get_strategy_for_node_class(key) }
 end
