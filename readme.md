@@ -27,7 +27,20 @@
 ## To Do:
 
 - Validations:
-  - implement lots of validators
+  - Implement validations:
+    - [Arguments are defined](http://facebook.github.io/graphql/#sec-Argument-Names)
+    - [Argument values are typed ok](http://facebook.github.io/graphql/#sec-Compatible-Values)
+    - [Required arguments are present](http://facebook.github.io/graphql/#sec-Required-Arguments)
+    - [Fragment spreads are on Object/Union/Interface](http://facebook.github.io/graphql/#sec-Fragments-On-Composite-Types)
+    - [Fragment types exist](http://facebook.github.io/graphql/#sec-Fragment-Spread-Type-Existence)
+    - [Fragments don't go infinite](http://facebook.github.io/graphql/#sec-Fragment-spreads-must-not-form-cycles)
+    - [Fragment spreads are possible](http://facebook.github.io/graphql/#sec-Fragment-spread-is-possible)
+    - [In object scope, object-typed fragments are the same type](http://facebook.github.io/graphql/#sec-Object-Spreads-In-Object-Scope)
+    - [In object scope, abstract-typed fragments fit that object](http://facebook.github.io/graphql/#sec-Abstract-Spreads-in-Object-Scope)
+    - [In abstract scope, object-typed fragments fit that type](http://facebook.github.io/graphql/#sec-Object-Spreads-In-Abstract-Scope)
+    - [In abstract scope, abstract-typed fragments must share a type](http://facebook.github.io/graphql/#sec-Abstract-Spreads-in-Abstract-Scope)
+    - [Directives](http://facebook.github.io/graphql/#sec-Validation.Directives)
+    - everything in [Variables](http://facebook.github.io/graphql/#sec-Validation.Operations.Variables)
 - directives:
   - `@skip` has precedence over `@include`
   - directives on fragments: http://facebook.github.io/graphql/#sec-Fragment-Directives
