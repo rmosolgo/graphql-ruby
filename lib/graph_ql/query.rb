@@ -1,13 +1,5 @@
 class GraphQL::Query
   DEFAULT_RESOLVE = :__default_resolve
-  extend ActiveSupport::Autoload
-  autoload(:Arguments)
-  autoload(:FieldResolutionStrategy)
-  autoload(:FragmentSpreadResolutionStrategy)
-  autoload(:InlineFragmentResolutionStrategy)
-  autoload(:OperationResolver)
-  autoload(:SelectionResolver)
-  autoload(:TypeResolver)
   attr_reader :schema, :document, :context, :fragments, :params
 
   def initialize(schema, query_string, context: nil, params: {}, debug: true, validate: true)
@@ -68,3 +60,11 @@ class GraphQL::Query
     end
   end
 end
+
+require 'graph_ql/query/arguments'
+require 'graph_ql/query/field_resolution_strategy'
+require 'graph_ql/query/fragment_spread_resolution_strategy'
+require 'graph_ql/query/inline_fragment_resolution_strategy'
+require 'graph_ql/query/operation_resolver'
+require 'graph_ql/query/selection_resolver'
+require 'graph_ql/query/type_resolver'

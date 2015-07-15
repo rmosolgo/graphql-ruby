@@ -1,83 +1,7 @@
-require "active_support/core_ext/object/blank"
-require "active_support/core_ext/string/inflections"
-require "active_support/dependencies/autoload"
 require "json"
 require "parslet"
 
 module GraphQL
-  extend ActiveSupport::Autoload
-  autoload(:Directive)
-  autoload(:Enum)
-  autoload(:Field)
-  autoload(:Interface)
-  autoload(:Parser)
-  autoload(:Query)
-  autoload(:Repl)
-  autoload(:Schema)
-  autoload(:TypeKinds)
-  autoload(:Union)
-  autoload(:Validator)
-  autoload(:VERSION)
-
-  autoload_under "directives" do
-    autoload(:DirectiveChain)
-    autoload(:IncludeDirective)
-    autoload(:SkipDirective)
-  end
-
-  module Introspection
-    extend ActiveSupport::Autoload
-    autoload(:ArgumentsField)
-    autoload(:DirectiveType)
-    autoload(:EnumValuesField)
-    autoload(:EnumValueType)
-    autoload(:FieldType)
-    autoload(:FieldsField)
-    autoload(:InputValueType)
-    autoload(:InputFieldsField)
-    autoload(:InterfacesField)
-    autoload(:OfTypeField)
-    autoload(:PossibleTypesField)
-    autoload(:SchemaType)
-    autoload(:TypeKindEnum)
-    autoload(:TypenameField)
-    autoload(:TypeType)
-  end
-
-  autoload_under "parser" do
-    autoload(:Nodes)
-    autoload(:Parser)
-    autoload(:Transform)
-    autoload(:Visitor)
-  end
-
-  module StaticValidation
-    extend ActiveSupport::Autoload
-    autoload(:ArgumentsObeyDefinition)
-    autoload(:FieldsAreDefinedOnType)
-    autoload(:FieldsWillMerge)
-    autoload(:FragmentsAreUsed)
-    autoload(:FieldsHaveAppropriateSelections)
-    autoload(:Message)
-    autoload(:TypeStack)
-    autoload(:Validator)
-  end
-  autoload_under "types" do
-    autoload(:AbstractType)
-    autoload(:BOOLEAN_TYPE)
-    autoload(:ScalarType)
-    autoload(:FLOAT_TYPE)
-    autoload(:InputObjectType)
-    autoload(:InputValue)
-    autoload(:INT_TYPE)
-    autoload(:ListType)
-    autoload(:NonNullType)
-    autoload(:NonNullWithBang)
-    autoload(:ObjectType)
-    autoload(:STRING_TYPE)
-    autoload(:TypeDefiner)
-  end
-
   def self.parse(string, as: nil)
     parser = as ? GraphQL::PARSER.send(as) : GraphQL::PARSER
     tree = parser.parse(string)
@@ -86,7 +10,6 @@ module GraphQL
     line, col = error.cause.source.line_and_column
     raise [line, col, string].join(", ")
   end
-
 
   module Definable
     def attr_definable(*names)
@@ -111,7 +34,58 @@ module GraphQL
     end
   end
 
-
-  PARSER = Parser.new
-  TRANSFORM = Transform.new
+  module Introspection; end
 end
+
+# Order matters for these:
+
+require 'graph_ql/types/non_null_with_bang'
+require 'graph_ql/types/object_type'
+require 'graph_ql/types/list_type'
+require 'graph_ql/types/scalar_type'
+require 'graph_ql/types/non_null_type'
+require 'graph_ql/types/input_value'
+require 'graph_ql/types/input_object_type'
+
+require 'graph_ql/types/type_definer'
+
+require 'graph_ql/enum'
+require 'graph_ql/field'
+require 'graph_ql/union'
+require 'graph_ql/type_kinds'
+require 'graph_ql/introspection/typename_field'
+
+require 'graph_ql/types/int_type'
+require 'graph_ql/types/string_type'
+require 'graph_ql/types/float_type'
+require 'graph_ql/types/boolean_type'
+
+require 'graph_ql/introspection/input_value_type'
+require 'graph_ql/introspection/enum_value_type'
+require 'graph_ql/introspection/type_kind_enum'
+
+require 'graph_ql/introspection/fields_field'
+require 'graph_ql/introspection/of_type_field'
+require 'graph_ql/introspection/input_fields_field'
+require 'graph_ql/introspection/possible_types_field'
+require 'graph_ql/introspection/enum_values_field'
+require 'graph_ql/introspection/interfaces_field'
+
+require 'graph_ql/introspection/type_type'
+require 'graph_ql/introspection/field_type'
+
+require 'graph_ql/introspection/arguments_field'
+require 'graph_ql/introspection/directive_type'
+require 'graph_ql/introspection/schema_type'
+
+require 'graph_ql/parser'
+require 'graph_ql/directive'
+require 'graph_ql/schema'
+
+# Order does not matter for these:
+
+require 'graph_ql/interface'
+require 'graph_ql/query'
+require 'graph_ql/repl'
+require 'graph_ql/static_validation'
+require 'graph_ql/version'

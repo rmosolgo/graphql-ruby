@@ -1,16 +1,11 @@
 require 'singleton'
 class GraphQL::TypeDefiner
   include Singleton
-  TYPES = {
-    Int:     GraphQL::INT_TYPE,
-    String:  GraphQL::STRING_TYPE,
-    Float:   GraphQL::FLOAT_TYPE,
-    Boolean: GraphQL::BOOLEAN_TYPE,
-  }
 
-  TYPES.each do |method_name, type|
-    define_method(method_name) { type }
-  end
+  def Int; GraphQL::INT_TYPE; end
+  def String; GraphQL::STRING_TYPE; end
+  def Float; GraphQL::FLOAT_TYPE; end
+  def Boolean; GraphQL::BOOLEAN_TYPE; end
 
   def [](type)
     GraphQL::ListType.new(of_type: type)
