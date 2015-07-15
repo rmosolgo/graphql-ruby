@@ -34,3 +34,7 @@ class GraphQL::Directive < GraphQL::ObjectType
     @arguments
   end
 end
+
+require 'graph_ql/directives/directive_chain'
+require 'graph_ql/directives/include_directive'
+require 'graph_ql/directives/skip_directive'

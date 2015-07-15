@@ -1,11 +1,4 @@
 class GraphQL::Schema
-  extend ActiveSupport::Autoload
-  autoload(:FieldValidator)
-  autoload(:ImplementationValidator)
-  autoload(:SchemaValidator)
-  autoload(:TypeReducer)
-  autoload(:TypeValidator)
-  autoload(:UnionValidator)
   DIRECTIVES = [GraphQL::SkipDirective, GraphQL::IncludeDirective]
 
   attr_reader :query, :mutation, :directives, :static_validator
@@ -39,3 +32,10 @@ class GraphQL::Schema
     @types ||= TypeReducer.new(query, {}).result
   end
 end
+
+require 'graph_ql/schema/field_validator'
+require 'graph_ql/schema/implementation_validator'
+require 'graph_ql/schema/schema_validator'
+require 'graph_ql/schema/type_reducer'
+require 'graph_ql/schema/type_validator'
+require 'graph_ql/schema/union_validator'
