@@ -22,13 +22,12 @@
 - Execute queries
   - See [query_spec.rb](https://github.com/rmosolgo/graphql-ruby/blob/master/spec/graph_ql/query_spec.rb) for an example of query execution.
   - See [`queries_controller.rb`](https://github.com/rmosolgo/graphql-ruby-demo/blob/master/app/controllers/queries_controller.rb) for a Rails example
-
+  - Try it on [heroku](http://graphql-ruby-demo.herokuapp.com)
 
 ## To Do:
 
 - Validations:
   - implement lots of validators
-  - implement `TypeStack` to provide type info to validators
 - directives:
   - `@skip` has precedence over `@include`
   - directives on fragments: http://facebook.github.io/graphql/#sec-Fragment-Directives
@@ -36,7 +35,7 @@
 - field merging (https://github.com/graphql/graphql-js/issues/19#issuecomment-118515077)
 - Code clean-up
   - every helper yields `|self, type, field, arg|`
-  - Unify unwrapping types (see `FieldsAreDefinedOnType#get_type`)
+  - Unify unwrapping types (It's on `TypeKind` but it's still not right)
 
 ## Goals:
 
