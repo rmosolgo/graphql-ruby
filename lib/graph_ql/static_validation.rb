@@ -3,6 +3,7 @@ end
 
 require 'graph_ql/static_validation/message'
 
+require 'graph_ql/static_validation/fragment_types_exist'
 require 'graph_ql/static_validation/directives_are_defined'
 require 'graph_ql/static_validation/fields_are_defined_on_type'
 require 'graph_ql/static_validation/fields_have_appropriate_selections'
