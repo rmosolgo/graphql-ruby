@@ -33,9 +33,9 @@ class GraphQL::Schema
   end
 end
 
+require 'graph_ql/schema/each_item_validator'
 require 'graph_ql/schema/field_validator'
 require 'graph_ql/schema/implementation_validator'
 require 'graph_ql/schema/schema_validator'
 require 'graph_ql/schema/type_reducer'
 require 'graph_ql/schema/type_validator'
-require 'graph_ql/schema/union_validator'

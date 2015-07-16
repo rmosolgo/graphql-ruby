@@ -50,6 +50,7 @@ class GraphQL::ObjectType
     if new_interfaces.nil?
       @interfaces
     else
+      # if you define interfaces twice, you're gonna have a bad time :(
       @interfaces = new_interfaces
       new_interfaces.each {|i| i.possible_types << self }
     end

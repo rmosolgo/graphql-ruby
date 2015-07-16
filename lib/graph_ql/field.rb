@@ -8,6 +8,22 @@ class GraphQL::Field
     yield(self)
   end
 
+  def arguments(new_arguments=nil)
+    if !new_arguments.nil?
+      self.arguments=(new_arguments)
+    end
+    @arguments
+  end
+
+  def arguments=(new_arguments)
+    stringified_arguments = new_arguments
+      .reduce({}) { |memo, (key, value)| memo[key.to_s] = value; memo }
+    # Set the name from its context on this type:
+    stringified_arguments.each {|k, v| v.respond_to?("name=") && v.name = k }
+    @arguments = stringified_arguments
+  end
+
+
   # Used when defining:
   #   resolve -> (obj, args, ctx) { obj.get_value }
   # Also used when executing queries:

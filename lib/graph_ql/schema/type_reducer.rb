@@ -1,6 +1,6 @@
+# Starting from a given type, discover other types in the system by
+# traversing that type's fields, possible_types, etc
 class GraphQL::Schema::TypeReducer
-  FIELDS_TYPE_KINDS = [GraphQL::TypeKinds::OBJECT, GraphQL::TypeKinds::INTERFACE]
-  POSSIBLE_TYPES_TYPE_KINDS = [GraphQL::TypeKinds::INTERFACE, GraphQL::TypeKinds::UNION]
   attr_reader :type, :result
   def initialize(type, existing_type_hash)
     if [GraphQL::TypeKinds::NON_NULL, GraphQL::TypeKinds::LIST].include?(type.kind)
@@ -17,7 +17,7 @@ class GraphQL::Schema::TypeReducer
 
   def find_types(type, type_hash)
     type_hash[type.name] = type
-    if FIELDS_TYPE_KINDS.include?(type.kind)
+    if type.kind.fields?
       type.fields.each do |name, field|
         type_hash.merge!(reduce_type(field.type, type_hash))
         field.arguments.each do |name, argument|
@@ -25,12 +25,12 @@ class GraphQL::Schema::TypeReducer
         end
       end
     end
-    if type.kind == GraphQL::TypeKinds::OBJECT
+    if type.kind.object?
       type.interfaces.each do |interface|
         type_hash.merge!(reduce_type(interface, type_hash))
       end
     end
-    if POSSIBLE_TYPES_TYPE_KINDS.include?(type.kind)
+    if type.kind.resolves?
       type.possible_types.each do |possible_type|
         type_hash.merge!(reduce_type(possible_type, type_hash))
       end

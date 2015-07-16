@@ -16,6 +16,6 @@ class GraphQL::InputObjectType < GraphQL::ObjectType
   end
 
   def to_s
-    "<GraphQL::InputObjectType #{name} {#{input_fields.keys.join(", ")}} >"
+    "<GraphQL::InputObjectType #{name}>"
   end
 end

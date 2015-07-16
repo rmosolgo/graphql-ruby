@@ -3,27 +3,44 @@ class GraphQL::Schema::TypeValidator
     implementation = GraphQL::Schema::ImplementationValidator.new(type, as: "Type", errors: errors)
     implementation.must_respond_to(:name)
     implementation.must_respond_to(:kind)
+    type_name = type.name
     kind_name = type.kind.name
 
     implementation.must_respond_to(:description, as: kind_name)
+    each_item_validator = GraphQL::Schema::EachItemValidator.new(errors)
+
     if type.kind.fields?
-      implementation.must_respond_to(:fields, as: kind_name)
       field_validator = GraphQL::Schema::FieldValidator.new
-      type.fields.values.each do |field|
-        field_validator.validate(field, errors)
+      implementation.must_respond_to(:fields, as: kind_name) do |fields|
+        each_item_validator.validate(fields.keys, as: "#{type.name}.fields keys", must_be: "Strings") { |k| k.is_a?(String) }
+
+        fields.values.each do |field|
+          field_validator.validate(field, errors)
+        end
       end
     end
+
     if type.kind.resolves?
-      implementation.must_respond_to(:possible_types, as: kind_name)
+      implementation.must_respond_to(:possible_types, as: kind_name) do |possible_types|
+        each_item_validator.validate(possible_types, as: "#{type_name}.possible_types", must_be: "objects") { |t| t.kind.object? }
+      end
     end
+
     if type.kind.object?
-      implementation.must_respond_to(:interfaces, as: kind_name)
+      implementation.must_respond_to(:interfaces, as: kind_name) do |interfaces|
+        each_item_validator.validate(interfaces, as: "#{type_name}.interfaces", must_be: "interfaces") { |t| t.kind.interface? }
+      end
     end
+
     if type.kind.input_object?
       implementation.must_respond_to(:input_fields, as: kind_name)
     end
+
     if type.kind.union?
-      GraphQL::Schema::UnionValidator.new.validate(type, errors)
+      union_types = type.possible_types
+      if union_types.length < 2
+        errors << "Union #{type_name} must be defined with 2 or more types, not #{union_types.length}"
+      end
     end
   end
 end
