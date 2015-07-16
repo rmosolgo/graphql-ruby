@@ -7,10 +7,8 @@ class GraphQL::Union
     @possible_types = types
   end
 
-  def kind; GraphQL::TypeKinds::UNION; end
-
-  def include?(type)
-    possible_types.include?(type)
+  def kind
+    GraphQL::TypeKinds::UNION
   end
 
   # Find a type in this union for a given object.

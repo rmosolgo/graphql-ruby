@@ -8,6 +8,8 @@ You can use `GraphQL::ObjectType.new { ... }` to define types. The block receive
 
 1. `t`, the type which is being created.
 1. `types`, which provides convenience methods for built-in types.
+1. `field`, which provides `.build` for defining fields
+1. `arg`, which provides `.build` for defining arguments
 
 The type accepts some config methods:
 

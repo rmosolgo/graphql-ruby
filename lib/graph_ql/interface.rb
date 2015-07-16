@@ -11,4 +11,8 @@ class GraphQL::Interface < GraphQL::ObjectType
   def resolve_type(object)
     @possible_types.find {|t| t.name == object.class.name }
   end
+
+  def to_s
+    "<GraphQL::Interface #{name}>"
+  end
 end
