@@ -1,5 +1,9 @@
+# Generates GraphQL-compliant validation message.
+# Only supports one "location", too bad :(
 class GraphQL::StaticValidation::Message
+  # Convenience for validators
   module MessageHelper
+    # Error `message` is located at `node`
     def message(message, node)
       GraphQL::StaticValidation::Message.new(message, line: node.line, col: node.col)
     end
