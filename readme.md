@@ -48,7 +48,7 @@
 - Code clean-up
   - every helper yields `|self, type, field, arg|`
   - Unify unwrapping types (It's on `TypeKind` but it's still not right)
-  - de-dup stringify keys logic in `Field` and `ObjectType`
+  - de-dup stringify keys logic in `Field` and `ObjectType` and `Directive`
 
 ## Goals:
 

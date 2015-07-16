@@ -1,8 +1,8 @@
-GraphQL::Introspection::FieldsField = GraphQL::Field.new do |f|
+GraphQL::Introspection::FieldsField = GraphQL::Field.new do |f, type, field, arg|
   f.description "List of fields on this object"
-  f.type -> { GraphQL::ListType.new(of_type: GraphQL::NonNullType.new(of_type: GraphQL::Introspection::FieldType)) }
+  f.type -> { type[!GraphQL::Introspection::FieldType] }
   f.arguments({
-    includeDeprecated: GraphQL::InputValue.new({type: GraphQL::BOOLEAN_TYPE, default_value: false})
+    includeDeprecated: arg.build({type: GraphQL::BOOLEAN_TYPE, default_value: false})
   })
   f.resolve -> (object, arguments, context) {
     fields = object.fields.values

@@ -1,11 +1,5 @@
-GraphQL::Introspection::PossibleTypesField = GraphQL::Field.new do |f|
+GraphQL::Introspection::PossibleTypesField = GraphQL::Field.new do |f, type|
   f.description "Types which compose this Union or Interface"
-  f.type -> { GraphQL::ListType.new(of_type: GraphQL::Introspection::TypeType) }
-  f.resolve -> (target, a, c) {
-    if target.kind.resolves?
-      target.possible_types
-    else
-      nil
-    end
-  }
+  f.type -> { type[GraphQL::Introspection::TypeType] }
+  f.resolve -> (target, a, c) { target.kind.resolves? ? target.possible_types : nil }
 end

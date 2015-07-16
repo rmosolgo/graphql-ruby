@@ -1,4 +1,3 @@
-require 'singleton'
 class GraphQL::TypeDefiner
   include Singleton
 

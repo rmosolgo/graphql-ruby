@@ -5,7 +5,7 @@ class GraphQL::Enum
   attr_reader :values
   def initialize
     @values = {}
-    yield(self)
+    yield(self, GraphQL::TypeDefiner.instance, GraphQL::FieldDefiner.instance, GraphQL::ArgumentDefiner.instance)
   end
 
   def value(name, description=nil, deprecation_reason: nil)

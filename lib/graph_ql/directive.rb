@@ -13,7 +13,7 @@ class GraphQL::Directive < GraphQL::ObjectType
   def initialize
     @arguments = {}
     @on = []
-    yield(self)
+    yield(self, GraphQL::TypeDefiner.instance, GraphQL::FieldDefiner.instance, GraphQL::ArgumentDefiner.instance)
   end
 
   def resolve(proc_or_arguments, proc=nil)

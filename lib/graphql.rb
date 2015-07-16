@@ -1,5 +1,6 @@
 require "json"
 require "parslet"
+require "singleton"
 
 module GraphQL
   def self.parse(string, as: nil)
@@ -48,6 +49,8 @@ require 'graph_ql/types/input_value'
 require 'graph_ql/types/input_object_type'
 
 require 'graph_ql/types/type_definer'
+require 'graph_ql/types/field_definer'
+require 'graph_ql/types/argument_definer'
 
 require 'graph_ql/enum'
 require 'graph_ql/field'

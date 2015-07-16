@@ -35,13 +35,13 @@ Let's make type for `Post`:
 ```ruby
 # `t` is the newly-created type
 # `types` is a helper for declaring GraphQL types
-PostType = GraphQL::ObjectType.new do |t, types|
+PostType = GraphQL::ObjectType.new do |t, types, field|
   t.name "Post"
   t.description "A blog entry"
   t.fields({
-    id:     t.field(type: !types.Int,     desc: "The unique ID for this post"),
-    title:  t.field(type: !types.String,  desc: "The title of this post"),
-    body:   t.field(type: !types.String,  desc: "The body of this post"),
+    id:     field.build(type: !types.Int,     desc: "The unique ID for this post"),
+    title:  field.build(type: !types.String,  desc: "The title of this post"),
+    body:   field.build(type: !types.String,  desc: "The body of this post"),
   })
 end
 ```
@@ -59,12 +59,12 @@ A query root is "just" a type. Its fields don't call methods on some object, tho
 First, let's define a field for finding `Post` objects:
 
 ```ruby
-PostFindField = GraphQL::Field.new do |f|
+PostFindField = GraphQL::Field.new do |f, types, field, arg|
   f.description "Find a Post by id"
   # Return type of this field:
   f.type PostType
   # Arguments which this field expects:
-  f.arguments({id: {type: !GraphQL::INT_TYPE }})
+  f.arguments({id: arg.build({type: !types.Int})})
   # How to fulfill this field:
   f.resolve -> (object, arguments, context) { Post.find(arguments["id"]) }
 end
@@ -121,13 +121,13 @@ end
 First, a `CommentType` to expose comments:
 
 ```ruby
-CommentType = GraphQL::ObjectType.new do |t, types|
+CommentType = GraphQL::ObjectType.new do |t, types, field|
   t.name "Comment"
   t.description "A reply to a post"
   t.fields({
-    id:   t.field(type: !types.Int, desc: "The unique ID of this comment"),
-    body: t.field(type: !types.String, desc: "The content of this comment"),
-    post: t.field(type: !PostType, desc: "The post this comment replies to"),
+    id:   field.build(type: !types.Int, desc: "The unique ID of this comment"),
+    body: field.build(type: !types.String, desc: "The content of this comment"),
+    post: field.build(type: !PostType, desc: "The post this comment replies to"),
   })
 end
 ```
@@ -137,11 +137,11 @@ Notice that the `post` field has `type: !PostType`. This means it returns a non-
 We should also add a `comments` field to `PostType`:
 
 ```ruby
-PostType = GraphQL::ObjectType.new do |t, types|
+PostType = GraphQL::ObjectType.new do |t, types, field|
   # ... existing code ...
   t.fields({
     # ... existing field defs ...
-    comments: t.field(type: !types[!CommentType], description: "Responses to this post")  
+    comments: field.build(type: !types[!CommentType], description: "Responses to this post")  
   })
 end
 ```
@@ -153,11 +153,11 @@ There's a problem: `PostType` and `CommentType` have a circular dependency. You 
 To deal with this, wrap one of the types in a lambda with `-> { ... }`. For example, update the comments field:
 
 ```ruby
-PostType = GraphQL::ObjectType.new do |t, types|
+PostType = GraphQL::ObjectType.new do |t, types, field|
   # ... existing code ...
   t.fields({
     # ... existing field defs ...
-    comments: t.field(type: -> { !types[!CommentType] } , description: "Responses to this post")  
+    comments: field.build(type: -> { !types[!CommentType] } , description: "Responses to this post")  
   })
 end
 ```

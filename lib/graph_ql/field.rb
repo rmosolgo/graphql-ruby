@@ -5,7 +5,7 @@ class GraphQL::Field
   def initialize
     @arguments = {}
     @resolve_proc = -> (o, a, c) { GraphQL::Query::DEFAULT_RESOLVE }
-    yield(self)
+    yield(self, GraphQL::TypeDefiner.instance, GraphQL::FieldDefiner.instance, GraphQL::ArgumentDefiner.instance)
   end
 
   def arguments(new_arguments=nil)

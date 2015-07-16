@@ -6,7 +6,7 @@ class GraphQL::ObjectType
   def initialize(&block)
     self.fields = []
     self.interfaces = []
-    yield(self, GraphQL::TypeDefiner.instance)
+    yield(self, GraphQL::TypeDefiner.instance, GraphQL::FieldDefiner.instance, GraphQL::ArgumentDefiner.instance)
   end
 
   def fields(new_fields=nil)
@@ -26,31 +26,12 @@ class GraphQL::ObjectType
     @fields = stringified_fields
   end
 
-  def field(type:, args: {}, property: nil, desc: "", deprecation_reason: nil)
-    resolve = if property.nil?
-      -> (o, a, c)  { GraphQL::Query::DEFAULT_RESOLVE }
-    else
-      -> (object, a, c) { object.send(property) }
-    end
-
-    GraphQL::Field.new do |f|
-      f.type(type)
-      f.arguments(args)
-      f.description(desc)
-      f.resolve(resolve)
-      f.deprecation_reason(deprecation_reason)
-    end
-  end
-
-  def arg(type:, desc: "", default_value: nil)
-    GraphQL::InputValue.new(type: type, description: desc, default_value: default_value)
-  end
-
   def interfaces(new_interfaces=nil)
     if new_interfaces.nil?
       @interfaces
     else
       # if you define interfaces twice, you're gonna have a bad time :(
+      # (because it gets registered with that interface, then overriden)
       @interfaces = new_interfaces
       new_interfaces.each {|i| i.possible_types << self }
     end
