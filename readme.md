@@ -28,9 +28,6 @@
 
 - Validations:
   - Implement validations:
-    - [Arguments are defined](http://facebook.github.io/graphql/#sec-Argument-Names)
-    - [Argument values are typed ok](http://facebook.github.io/graphql/#sec-Compatible-Values)
-    - [Required arguments are present](http://facebook.github.io/graphql/#sec-Required-Arguments)
     - [Fragment spreads are on Object/Union/Interface](http://facebook.github.io/graphql/#sec-Fragments-On-Composite-Types)
     - [Fragments don't go infinite](http://facebook.github.io/graphql/#sec-Fragment-spreads-must-not-form-cycles)
     - [Fragment spreads are possible](http://facebook.github.io/graphql/#sec-Fragment-spread-is-possible)

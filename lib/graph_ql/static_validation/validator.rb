@@ -1,6 +1,9 @@
 class GraphQL::StaticValidation::Validator
   VALIDATORS = [
     GraphQL::StaticValidation::DirectivesAreDefined,
+    GraphQL::StaticValidation::ArgumentsAreDefined,
+    GraphQL::StaticValidation::RequiredArgumentsArePresent,
+    GraphQL::StaticValidation::ArgumentLiteralsAreCompatible,
     GraphQL::StaticValidation::FragmentTypesExist,
     GraphQL::StaticValidation::FragmentsAreUsed,
     GraphQL::StaticValidation::FieldsAreDefinedOnType,

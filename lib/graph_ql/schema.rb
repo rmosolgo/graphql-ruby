@@ -5,8 +5,9 @@ class GraphQL::Schema
   def initialize(query:, mutation:)
     # Add fields to this query root for introspection:
     query.fields = query.fields.merge({
-      "__type" =>     GraphQL::Field.new do |f|
+      "__type" =>     GraphQL::Field.new do |f, type, field, arg|
         f.description("A type in the GraphQL system")
+        f.arguments({name: arg.build(type: !type.String)})
         f.type(!GraphQL::Introspection::TypeType)
         f.resolve -> (o, a, c) { self.types[a["name"]] }
       end,

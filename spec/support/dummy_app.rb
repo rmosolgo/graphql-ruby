@@ -84,7 +84,7 @@ class FetchField
   def initialize(type:, data:)
     @type = type
     @data = data
-    @arguments = {}
+    @arguments = {"id" => GraphQL::InputValue.new(type: !GraphQL::INT_TYPE, name: "id")}
     @deprecation_reason = nil
   end
 
@@ -97,9 +97,10 @@ class FetchField
   end
 end
 
-SourceField = GraphQL::Field.new do |f|
+SourceField = GraphQL::Field.new do |f, type, field, arg|
   f.type GraphQL::ListType.new(of_type: CheeseType)
   f.description "Cheese from source"
+  f.arguments(source: arg.build(type: !DairyAnimalEnum))
   f.resolve -> (target, arguments, context) {
     CHEESES.values.select{ |c| c.source == arguments["source"] }
   }

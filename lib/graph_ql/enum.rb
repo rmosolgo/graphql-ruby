@@ -16,6 +16,10 @@ class GraphQL::Enum
     GraphQL::TypeKinds::ENUM
   end
 
+  def coerce(value)
+    @values[value]
+  end
+
   class EnumValue
     attr_reader :name, :description, :deprecation_reason
     def initialize(name:, description:, deprecation_reason:)
