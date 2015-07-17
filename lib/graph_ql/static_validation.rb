@@ -2,6 +2,7 @@ module GraphQL::StaticValidation
 end
 
 require 'graph_ql/static_validation/message'
+require 'graph_ql/static_validation/arguments_validator'
 
 require 'graph_ql/static_validation/argument_literals_are_compatible'
 require 'graph_ql/static_validation/arguments_are_defined'
