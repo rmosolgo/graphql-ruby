@@ -85,7 +85,9 @@ describe GraphQL::Parser do
     it 'gets floats' do
       assert(parser.value.parse_with_debug("1.14"), 'no exponent')
       assert(parser.value.parse_with_debug("6.7e-9"), 'negative exponent')
+      assert(parser.value.parse_with_debug("6.7e+9"), 'positive exponent')
       assert(parser.value.parse_with_debug("0.4e12"), 'exponent')
+      assert(parser.value.parse_with_debug("6.7E+9"), 'big e')
     end
 
     it 'gets booleans' do
