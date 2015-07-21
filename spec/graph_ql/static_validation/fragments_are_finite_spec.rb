@@ -1,0 +1,43 @@
+require 'spec_helper'
+
+describe GraphQL::StaticValidation::FragmentsAreFinite do
+  let(:document) { GraphQL.parse(%|
+    query getCheese {
+      cheese(id: 1) {
+        ... idField
+        ... sourceField
+        ... flavorField
+      }
+    }
+
+    fragment sourceField on Cheese {
+      source,
+      ... flavorField
+      ... idField
+    }
+    fragment flavorField on Cheese {
+      flavor,
+      ... sourceField
+    }
+    fragment idField on Cheese {
+      id
+    }
+  |)}
+
+  let(:validator) { GraphQL::StaticValidation::Validator.new(schema: DummySchema, validators: [GraphQL::StaticValidation::FragmentsAreFinite]) }
+  let(:errors) { validator.validate(document) }
+
+  it 'doesnt allow infinite loops' do
+    expected = [
+      {
+        "message"=>"Fragment sourceField contains an infinite loop",
+        "locations"=>[{"line"=>10, "column"=>5}]
+      },
+      {
+        "message"=>"Fragment flavorField contains an infinite loop",
+        "locations"=>[{"line"=>15, "column"=>5}]
+      }
+    ]
+    assert_equal(expected, errors)
+  end
+end

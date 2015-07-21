@@ -1,10 +1,18 @@
+# Initialized with a {GraphQL::Schema}, then it can validate {GraphQL::Nodes::Documents}s based on that schema.
+#
+# By default, it's used by {GraphQL::Query}
 class GraphQL::StaticValidation::Validator
+  # Order is important here. Some validators return {GraphQL::Visitor::SKIP}
+  # which stops the visit on that node. That way it doesn't try to find fields on types that
+  # don't exist, etc.
   VALIDATORS = [
     GraphQL::StaticValidation::DirectivesAreDefined,
     GraphQL::StaticValidation::ArgumentsAreDefined,
     GraphQL::StaticValidation::RequiredArgumentsArePresent,
     GraphQL::StaticValidation::ArgumentLiteralsAreCompatible,
     GraphQL::StaticValidation::FragmentTypesExist,
+    GraphQL::StaticValidation::FragmentsAreOnCompositeTypes,
+    GraphQL::StaticValidation::FragmentsAreFinite,
     GraphQL::StaticValidation::FragmentsAreUsed,
     GraphQL::StaticValidation::FieldsAreDefinedOnType,
     GraphQL::StaticValidation::FieldsWillMerge,

@@ -29,6 +29,11 @@ module GraphQL::TypeKinds
         type
       end
     end
+
+    # Union, Interface & Object
+    def composite?
+      fields? || resolves?
+    end
   end
 
   TYPE_KINDS = [

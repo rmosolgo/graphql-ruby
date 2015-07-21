@@ -5,6 +5,8 @@ require 'graph_ql/static_validation/message'
 require 'graph_ql/static_validation/arguments_validator'
 
 require 'graph_ql/static_validation/argument_literals_are_compatible'
+require 'graph_ql/static_validation/fragments_are_on_composite_types'
+require 'graph_ql/static_validation/fragments_are_finite'
 require 'graph_ql/static_validation/arguments_are_defined'
 require 'graph_ql/static_validation/required_arguments_are_present'
 require 'graph_ql/static_validation/fragment_types_exist'
