@@ -26,7 +26,7 @@ describe GraphQL::Query do
       }
     |}
     let(:debug) { false }
-    let(:query) { GraphQL::Query.new(DummySchema, query_string, context: {}, params: {"cheeseId" => 2}, debug: debug)}
+    let(:query) { GraphQL::Query.new(DummySchema, query_string, params: {"cheeseId" => 2}, debug: debug)}
     let(:result) { query.result }
 
     it 'returns fields on objects' do
@@ -89,6 +89,25 @@ describe GraphQL::Query do
         }}
         assert_equal(expected, result)
       end
+    end
+  end
+
+  describe 'context' do
+    let(:context_field) { GraphQL::Field.new do |f, types, field, args|
+      f.type(GraphQL::STRING_TYPE)
+      f.arguments(key: args.build(type: types.String))
+      f.resolve -> (target, args, ctx) { ctx[args["key"]] }
+    end}
+    let(:query_type) { GraphQL::ObjectType.new {|t| t.fields({context: context_field})}}
+    let(:schema) { GraphQL::Schema.new(query: query_type, mutation: nil)}
+    let(:query) { GraphQL::Query.new(schema, query_string, context: {"some_key" => "some value"})}
+    let(:query_string) { %|
+      query getCtx { context(key: "some_key") }
+    |}
+
+    it 'passes context to fields' do
+      expected = {"data" => {"getCtx" => {"context" => "some value"}}}
+      assert_equal(expected, query.result)
     end
   end
 end

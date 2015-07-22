@@ -9,7 +9,7 @@ class GraphQL::Query
     @schema = schema
     @debug = debug
     @query_string = query_string
-    @context = context
+    @context = Context.new(context)
     @params = params
     @validate = validate
     @fragments = {}
@@ -60,6 +60,18 @@ class GraphQL::Query
       else
         []
       end
+    end
+  end
+
+  # Expose some query-specific info to field resolve functions.
+  # It delegates `[]` to the hash that's passed to `GraphQL::Query#initialize`.
+  class Context
+    def initialize(arbitrary_hash)
+      @arbitrary_hash = arbitrary_hash
+    end
+
+    def [](key)
+      @arbitrary_hash[key]
     end
   end
 end

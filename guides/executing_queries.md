@@ -25,14 +25,14 @@ query.response
 
 ## Context
 
-You can pass arbitrary information into the query with the `context:` keyword.
+You can pass an arbitrary hash of information into the query with the `context:` keyword.
 
 ```ruby
-query = GraphQL::Query.new(MySchema, query_string, query: {current_user: current_user})
+query = GraphQL::Query.new(MySchema, query_string, context: {current_user: current_user})
 query.response
 ```
 
-This value is passed to `resolve` functions of fields. For example, this field only returns a value if the current user has high enough permissions:
+These values will be accessible by key inside `resolve` functions. For example, this field only returns a value if the current user has high enough permissions:
 
 ```ruby
 SecretStringField = GraphQL::Field.new do |f|
@@ -41,6 +41,8 @@ SecretStringField = GraphQL::Field.new do |f|
   f.resolve -> (obj, args, ctx) { ctx[:current_user].authorized? ? obj.secret_string : nil }
 end
 ```
+
+Note that `ctx` is not the _same_ hash that's passed to `GraphQL::Query.new`. `ctx` is an instance of `GraphQL::Query::Context`, which exposes the provided hash and may _also_ contain other information about the query.
 
 ## Debug
 
