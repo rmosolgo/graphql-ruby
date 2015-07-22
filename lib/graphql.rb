@@ -72,6 +72,7 @@ require 'graph_ql/types/int_type'
 require 'graph_ql/types/string_type'
 require 'graph_ql/types/float_type'
 require 'graph_ql/types/boolean_type'
+require 'graph_ql/types/id_type'
 
 require 'graph_ql/introspection/input_value_type'
 require 'graph_ql/introspection/enum_value_type'

@@ -46,12 +46,12 @@ CheeseType = GraphQL::ObjectType.new do |t, type, field, arg|
   }
 end
 
- MilkType = GraphQL::ObjectType.new do |t, type, field, arg|
+MilkType = GraphQL::ObjectType.new do |t, type, field, arg|
   t.name 'Milk'
   t.description "Dairy beverage"
   t.interfaces [EdibleInterface, AnimalProductInterface]
   t.fields = {
-    id:           field.build(type: !type.Int, desc: "Unique identifier"),
+    id:           field.build(type: !type.ID, desc: "Unique identifier"),
     source:       field.build(type: DairyAnimalEnum, desc: "Animal which produced this milk"),
     fatContent:   field.build(type: !type.Float, desc: "Percentage which is milkfat"),
     flavors:      field.build(
@@ -81,10 +81,10 @@ DairyProductInputType = GraphQL::InputObjectType.new {|t, type, field, arg|
 class FetchField
   attr_reader :type, :arguments, :deprecation_reason
   attr_accessor :name
-  def initialize(type:, data:)
+  def initialize(type:, data:, id_type: !GraphQL::INT_TYPE)
     @type = type
     @data = data
-    @arguments = {"id" => GraphQL::InputValue.new(type: !GraphQL::INT_TYPE, name: "id")}
+    @arguments = {"id" => GraphQL::InputValue.new(type: id_type, name: "id")}
     @deprecation_reason = nil
   end
 
@@ -93,7 +93,7 @@ class FetchField
   end
 
   def resolve(target, arguments, context)
-    @data[arguments["id"]]
+    @data[arguments["id"].to_i]
   end
 end
 
@@ -118,6 +118,7 @@ QueryType = GraphQL::ObjectType.new do |t, types, field, arg|
   t.description "Query root of the system"
   t.fields({
     cheese: FetchField.new(type: CheeseType, data: CHEESES),
+    milk: FetchField.new(type: MilkType, data: MILKS, id_type: !types.ID),
     fromSource: SourceField,
     favoriteEdible: FavoriteField,
     searchDairy: GraphQL::Field.new { |f|

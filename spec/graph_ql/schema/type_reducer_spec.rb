@@ -11,6 +11,7 @@ describe GraphQL::Schema::TypeReducer do
       "Float" => GraphQL::FLOAT_TYPE,
       "Edible" => EdibleInterface,
       "Milk" => MilkType,
+      "ID" => GraphQL::ID_TYPE,
       "AnimalProduct" => AnimalProductInterface,
     }
     assert_equal(expected.keys, reducer.result.keys)

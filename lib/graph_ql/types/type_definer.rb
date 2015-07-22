@@ -5,6 +5,7 @@ class GraphQL::TypeDefiner
   def String;   GraphQL::STRING_TYPE;   end
   def Float;    GraphQL::FLOAT_TYPE;    end
   def Boolean;  GraphQL::BOOLEAN_TYPE;  end
+  def ID;       GraphQL::ID_TYPE;       end
 
   def [](type)
     GraphQL::ListType.new(of_type: type)

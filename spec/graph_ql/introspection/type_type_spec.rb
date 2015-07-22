@@ -37,7 +37,7 @@ describe GraphQL::Introspection::TypeType do
           {"name"=>"AnimalProduct"}
         ],
         "fields"=>[
-          {"type"=>{"name"=>"Non-Null", "ofType"=>{"name"=>"Int"}}},
+          {"type"=>{"name"=>"Non-Null", "ofType"=>{"name"=>"ID"}}},
           {"type"=>{"name"=>"DairyAnimal", "ofType"=>nil}},
           {"type"=>{"name"=>"Non-Null", "ofType"=>{"name"=>"Float"}}},
           {"type"=>{"name"=>"List", "ofType"=>{"name"=>"String"}}},
