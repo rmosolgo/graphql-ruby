@@ -27,9 +27,7 @@ class GraphQL::Directive < GraphQL::ObjectType
 
   def arguments(new_arguments=nil)
     if !new_arguments.nil?
-      @arguments = new_arguments
-        .reduce({}) {|memo, (k, v)| memo[k.to_s] = v; memo}
-        .each { |k, v| v.respond_to?("name=") && v.name = k}
+      @arguments = GraphQL::StringNamedHash.new(new_arguments).to_h
     end
     @arguments
   end

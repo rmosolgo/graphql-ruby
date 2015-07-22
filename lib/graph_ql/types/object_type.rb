@@ -10,31 +10,27 @@ class GraphQL::ObjectType
   end
 
   def fields(new_fields=nil)
-    if new_fields
+    if !new_fields.nil?
       self.fields = new_fields
-    else
-      @fields
     end
+    @fields
   end
 
   def fields=(new_fields)
-    stringified_fields = new_fields
-      .reduce({}) { |memo, (key, value)| memo[key.to_s] = value; memo }
-    # Set the name from its context on this type:
-    stringified_fields.each {|k, v| v.respond_to?("name=") && v.name = k }
+    stringified_fields = GraphQL::StringNamedHash.new(new_fields).to_h
+    # TODO: should this field be exposed during introspection? https://github.com/graphql/graphql-js/issues/73
     stringified_fields["__typename"] = GraphQL::Introspection::TypenameField.create(self)
     @fields = stringified_fields
   end
 
   def interfaces(new_interfaces=nil)
-    if new_interfaces.nil?
-      @interfaces
-    else
+    if !new_interfaces.nil?
       # if you define interfaces twice, you're gonna have a bad time :(
       # (because it gets registered with that interface, then overriden)
       @interfaces = new_interfaces
       new_interfaces.each {|i| i.possible_types << self }
     end
+    @interfaces
   end
 
   def kind

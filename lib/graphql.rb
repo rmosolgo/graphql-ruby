@@ -35,6 +35,16 @@ module GraphQL
     end
   end
 
+  class StringNamedHash
+    attr_reader :to_h
+    def initialize(input_hash)
+      @to_h = input_hash
+        .reduce({}) { |memo, (key, value)| memo[key.to_s] = value; memo }
+      # Set the name of the value based on its key
+      @to_h.each {|k, v| v.respond_to?("name=") && v.name = k }
+    end
+  end
+
   module Introspection; end
 end
 
