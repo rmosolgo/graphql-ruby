@@ -4,17 +4,16 @@ describe GraphQL::Query do
   describe '#execute' do
     let(:query_string) { %|
       query getFlavor($cheeseId: Int!) {
-        brie: cheese(id: 1)   { ...cheeseFields, ... milkFields, taste: flavor },
+        brie: cheese(id: 1)   { ...cheeseFields, taste: flavor },
         cheese(id: $cheeseId)  {
           __typename,
           id,
           ...cheeseFields,
           ... edibleFields,
           ... on Cheese { cheeseKind: flavor },
-          ... on Milk { source }
         }
         fromSource(source: COW) { id }
-        firstSheep: searchDairy(product: {source: SHEEP}) { ... dairyFields }
+        firstSheep: searchDairy(product: {source: SHEEP}) { ... dairyFields, ... milkFields }
         favoriteEdible { __typename, fatContent }
       }
       fragment cheeseFields on Cheese { flavor }

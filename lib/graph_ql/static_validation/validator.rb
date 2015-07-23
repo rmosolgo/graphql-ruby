@@ -13,6 +13,7 @@ class GraphQL::StaticValidation::Validator
     GraphQL::StaticValidation::FragmentTypesExist,
     GraphQL::StaticValidation::FragmentsAreOnCompositeTypes,
     GraphQL::StaticValidation::FragmentsAreFinite,
+    GraphQL::StaticValidation::FragmentSpreadsArePossible,
     GraphQL::StaticValidation::FragmentsAreUsed,
     GraphQL::StaticValidation::FieldsAreDefinedOnType,
     GraphQL::StaticValidation::FieldsWillMerge,

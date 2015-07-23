@@ -80,11 +80,6 @@
 
 - Validations:
   - Implement validations:
-    - [Fragment spreads are possible](http://facebook.github.io/graphql/#sec-Fragment-spread-is-possible)
-      - [In object scope, object-typed fragments are the same type](http://facebook.github.io/graphql/#sec-Object-Spreads-In-Object-Scope)
-      - [In object scope, abstract-typed fragments fit that object](http://facebook.github.io/graphql/#sec-Abstract-Spreads-in-Object-Scope)
-      - [In abstract scope, object-typed fragments fit that type](http://facebook.github.io/graphql/#sec-Object-Spreads-In-Abstract-Scope)
-      - [In abstract scope, abstract-typed fragments must share a type](http://facebook.github.io/graphql/#sec-Abstract-Spreads-in-Abstract-Scope)
     - everything in [Variables](http://facebook.github.io/graphql/#sec-Validation.Operations.Variables)
 - directives:
   - `@skip` has precedence over `@include`

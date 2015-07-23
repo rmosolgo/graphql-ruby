@@ -1,0 +1,46 @@
+require 'spec_helper'
+
+describe GraphQL::StaticValidation::FragmentSpreadsArePossible do
+  let(:document) { GraphQL.parse(%|
+    query getCheese {
+      cheese(id: 1) {
+        ... milkFields
+        ... cheeseFields
+        ... on Milk { fatContent }
+        ... on AnimalProduct { source }
+        ... on DairyProduct {
+          fatContent
+          ... on Edible { fatContent }
+        }
+      }
+    }
+
+    fragment milkFields on Milk { fatContent }
+    fragment cheeseFields on Cheese {
+      fatContent
+      ... milkFields
+    }
+  |)}
+
+  let(:validator) { GraphQL::StaticValidation::Validator.new(schema: DummySchema, validators: [GraphQL::StaticValidation::FragmentSpreadsArePossible]) }
+  let(:errors) { validator.validate(document) }
+
+  it "doesnt allow spreads where they'll never apply" do
+    # TODO: more negative, abstract examples here, add stuff to the schema
+    expected = [
+      {
+        "message"=>"Fragment on Milk can't be spread inside Cheese",
+        "locations"=>[{"line"=>6, "column"=>9}]
+      },
+      {
+        "message"=>"Fragment milkFields on Milk can't be spread inside Cheese",
+        "locations"=>[{"line"=>4, "column"=>9}]
+      },
+      {
+        "message"=>"Fragment milkFields on Milk can't be spread inside Cheese",
+        "locations"=>[{"line"=>18, "column"=>7}]
+      }
+    ]
+    assert_equal(expected, errors)
+  end
+end
