@@ -48,8 +48,7 @@ class GraphQL::Query
   def execute
     @operations.reduce({}) do |memo, (name, operation)|
       resolver = OperationResolver.new(operation, self)
-      memo[name] = resolver.result
-      memo
+      memo.merge(resolver.result)
     end
   end
 

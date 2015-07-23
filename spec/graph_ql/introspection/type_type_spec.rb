@@ -25,7 +25,7 @@ describe GraphQL::Introspection::TypeType do
     {"name"=>"SHEEP", "isDeprecated"=> false },
   ]}
   it 'exposes metadata about types' do
-    expected = {"data"=> { "introspectionQuery" => {
+    expected = {"data"=> {
       "cheeseType" => {
         "name"=> "Cheese",
         "kind" => "OBJECT",
@@ -63,7 +63,7 @@ describe GraphQL::Introspection::TypeType do
           {"name"=>"__typename"},
         ]
       }
-    }}}
+    }}
     assert_equal(expected, query.result)
   end
 
@@ -78,7 +78,7 @@ describe GraphQL::Introspection::TypeType do
     it 'can expose deprecated fields' do
       typename = cheese_fields.pop
       new_cheese_fields = cheese_fields + [deprecated_fields, typename]
-      expected = { "data" => { "introspectionQuery" => {
+      expected = { "data" => {
         "cheeseType" => {
           "name"=> "Cheese",
           "kind" => "OBJECT",
@@ -89,7 +89,7 @@ describe GraphQL::Introspection::TypeType do
           "kind"=>"ENUM",
           "enumValues"=> dairy_animals + [{"name" => "YAK", "isDeprecated" => true}],
         },
-      }}}
+      }}
       assert_equal(expected, query.result)
     end
 
@@ -101,7 +101,7 @@ describe GraphQL::Introspection::TypeType do
       |}
 
       it 'exposes metadata about input objects' do
-        expected = { "data" => { "introspectionQuery" => {
+        expected = { "data" => {
             "__type" => {
               "name"=>"DairyProductInput",
               "description"=>"Properties for finding a dairy product",
@@ -111,7 +111,7 @@ describe GraphQL::Introspection::TypeType do
                 {"name"=>"fatContent", "type"=>{ "name" => "Float"}, "defaultValue"=>nil}
               ]
             }
-          }}}
+          }}
         assert_equal(expected, query.result)
       end
     end

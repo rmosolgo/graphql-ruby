@@ -11,7 +11,7 @@ describe GraphQL::Introspection::DirectiveType do
   let(:result) { GraphQL::Query.new(DummySchema, query_string).result }
 
   it 'shows directive info ' do
-    expected = { "data" => {"getDirectives" => {
+    expected = { "data" => {
       "__schema" => {
         "directives" => [
           {
@@ -34,7 +34,7 @@ describe GraphQL::Introspection::DirectiveType do
           },
         ]
       }
-    }}}
+    }}
     assert_equal(expected, result)
   end
 end

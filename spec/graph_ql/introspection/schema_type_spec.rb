@@ -12,7 +12,7 @@ describe GraphQL::Introspection::SchemaType do
   |}
   let(:result) { GraphQL::Query.new(DummySchema, query_string).result }
   it 'exposes the schema' do
-    expected = { "data" => { "getSchema" => {
+    expected = { "data" => {
       "__schema" => {
         "types" => DummySchema.types.values.map { |t| t.name.nil? ? (p t; raise("no name for #{t}")) : {"name" => t.name} },
         "queryType"=>{
@@ -35,7 +35,7 @@ describe GraphQL::Introspection::SchemaType do
           ]
         },
       }
-    }}}
+    }}
     assert_equal(expected, result)
   end
 end

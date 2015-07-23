@@ -91,10 +91,8 @@
   - directives on fragments: http://facebook.github.io/graphql/#sec-Fragment-Directives
 - Support any "real" value for enum, not just stringified name (see `Character::EPISODES` in demo)
 - field merging (https://github.com/graphql/graphql-js/issues/19#issuecomment-118515077)
-- no such thing as multiple operations in one document?
 - Code clean-up
   - Unify unwrapping types (It's on `TypeKind` but it's still not right)
-  - de-dup stringify keys logic in `Field` and `ObjectType` and `Directive`
 
 ## Goals:
 

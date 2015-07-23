@@ -30,7 +30,7 @@ describe GraphQL::Query do
     let(:result) { query.result }
 
     it 'returns fields on objects' do
-      expected = {"data"=> { "getFlavor" => {
+      expected = {"data"=> {
           "brie" =>   { "flavor" => "Brie", "taste" => "Brie" },
           "cheese" => {
             "__typename" => "Cheese",
@@ -42,7 +42,7 @@ describe GraphQL::Query do
           "fromSource" => [{ "id" => 1 }, {"id" => 2}],
           "firstSheep" => { "flavor" => "Manchego" },
           "favoriteEdible"=>{"__typename"=>"Milk", "fatContent"=>0.04},
-      }}}
+      }}
       assert_equal(expected, result)
     end
 
@@ -81,11 +81,9 @@ describe GraphQL::Query do
       |}
       it 'executes mutations in order' do
         expected = {"data"=>{
-          "setInOrder"=>{
             "first"=> [1],
             "second"=>[1, 5],
             "third"=> [1, 5, 2],
-          }
         }}
         assert_equal(expected, result)
       end
@@ -106,7 +104,7 @@ describe GraphQL::Query do
     |}
 
     it 'passes context to fields' do
-      expected = {"data" => {"getCtx" => {"context" => "some value"}}}
+      expected = {"data" => {"context" => "some value"}}
       assert_equal(expected, query.result)
     end
   end

@@ -23,14 +23,14 @@ describe GraphQL::Directive do
       fragment dontSkipIdField on Cheese { dontSkipId: id @skip(if: false) }
     |}
     it 'intercepts fields' do
-      expected = { "data" => {"directives" => {
+      expected = { "data" =>{
         "cheese" => {
           "dontSkipFlavor" => "Brie",
           "includeFlavor" => "Brie",
           "includeId" => 1,
           "dontSkipId" => 1,
         },
-      }}}
+      }}
       assert_equal(expected, result)
     end
   end
@@ -65,7 +65,7 @@ describe GraphQL::Directive do
     |}
 
     it 'intercepts fragment spreads' do
-      expected = { "data" => {"directives" => {
+      expected = { "data" => {
         "cheese" => {
           "dontSkipFlavor" => "Brie",
           "includeFlavor" => "Brie",
@@ -74,7 +74,7 @@ describe GraphQL::Directive do
           "dontSkipInlineId" => 1,
           "includeInlineId" => 1,
         },
-      }}}
+      }}
       assert_equal(expected, result)
     end
   end

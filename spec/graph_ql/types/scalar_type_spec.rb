@@ -9,7 +9,7 @@ describe GraphQL::ScalarType do
     let(:query_string) { %|query getMilk { cow: milk(id: 1) { id } }| }
 
     it 'coerces IDs from ints and serializes as strings' do
-      expected = {"data" => {"getMilk" => {"cow" => {"id" => "1"}}}}
+      expected = {"data" => {"cow" => {"id" => "1"}}}
       assert_equal(expected, result)
     end
   end
@@ -18,9 +18,8 @@ describe GraphQL::ScalarType do
     let(:query_string) { %|query getMilk { cow: milk(id: "1") { id } }| }
 
     it 'coerces IDs from strings and serializes as strings' do
-      expected = {"data" => {"getMilk" => {"cow" => {"id" => "1"}}}}
+      expected = {"data" => {"cow" => {"id" => "1"}}}
       assert_equal(expected, result)
     end
   end
 end
-
