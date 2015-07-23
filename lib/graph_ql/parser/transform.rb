@@ -11,7 +11,7 @@ class GraphQL::Transform < Parslet::Transform
   end
 
   # Document
-  rule(document_parts: sequence(:p)) { Document.new(parts: p, line: p.first.line, col: p.first.col)}
+  rule(document_parts: sequence(:p)) { GraphQL::Nodes::Document.new(parts: p, line: p.first.line, col: p.first.col)}
 
   # Fragment Definition
   rule(
