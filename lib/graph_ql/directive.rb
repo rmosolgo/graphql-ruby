@@ -1,4 +1,7 @@
-class GraphQL::Directive < GraphQL::ObjectType
+class GraphQL::Directive
+  extend GraphQL::Definable
+  attr_definable :on, :arguments, :name, :description
+
   LOCATIONS = [
     ON_OPERATION =  :on_operation?,
     ON_FRAGMENT =   :on_fragment?,
@@ -8,7 +11,6 @@ class GraphQL::Directive < GraphQL::ObjectType
     define_method(location) { self.on.include?(location) }
   end
 
-  attr_definable :on, :arguments
 
   def initialize
     @arguments = {}

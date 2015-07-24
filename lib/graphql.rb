@@ -48,29 +48,23 @@ module GraphQL
   module Introspection; end
 end
 
+def require_dir(dir)
+  Dir.glob(File.expand_path("../graph_ql/#{dir}/*.rb", __FILE__)).each do |file|
+    require file
+  end
+end
 # Order matters for these:
 
-require 'graph_ql/types/non_null_with_bang'
+require_dir('definition_helpers')
 require 'graph_ql/types/object_type'
-require 'graph_ql/types/list_type'
-require 'graph_ql/types/non_null_type'
-require 'graph_ql/types/input_value'
-require 'graph_ql/types/input_object_type'
+require_dir('types')
 
-require 'graph_ql/types/type_definer'
-require 'graph_ql/types/field_definer'
-require 'graph_ql/types/argument_definer'
-
-require 'graph_ql/enum'
 require 'graph_ql/field'
-require 'graph_ql/union'
 require 'graph_ql/type_kinds'
 require 'graph_ql/introspection/typename_field'
 
 require 'graph_ql/scalars/scalar_type'
-Dir.glob(File.expand_path('../graph_ql/scalars/*.rb', __FILE__)).each do |file|
-  require file
-end
+require_dir('scalars')
 
 require 'graph_ql/introspection/input_value_type'
 require 'graph_ql/introspection/enum_value_type'
@@ -96,7 +90,6 @@ require 'graph_ql/schema'
 
 # Order does not matter for these:
 
-require 'graph_ql/interface'
 require 'graph_ql/query'
 require 'graph_ql/repl'
 require 'graph_ql/static_validation'
