@@ -53,7 +53,6 @@ end
 require 'graph_ql/types/non_null_with_bang'
 require 'graph_ql/types/object_type'
 require 'graph_ql/types/list_type'
-require 'graph_ql/types/scalar_type'
 require 'graph_ql/types/non_null_type'
 require 'graph_ql/types/input_value'
 require 'graph_ql/types/input_object_type'
@@ -68,11 +67,10 @@ require 'graph_ql/union'
 require 'graph_ql/type_kinds'
 require 'graph_ql/introspection/typename_field'
 
-require 'graph_ql/types/int_type'
-require 'graph_ql/types/string_type'
-require 'graph_ql/types/float_type'
-require 'graph_ql/types/boolean_type'
-require 'graph_ql/types/id_type'
+require 'graph_ql/scalars/scalar_type'
+Dir.glob(File.expand_path('../graph_ql/scalars/*.rb', __FILE__)).each do |file|
+  require file
+end
 
 require 'graph_ql/introspection/input_value_type'
 require 'graph_ql/introspection/enum_value_type'
