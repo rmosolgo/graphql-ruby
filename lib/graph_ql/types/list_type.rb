@@ -7,8 +7,4 @@ class GraphQL::ListType < GraphQL::ObjectType
   def kind
     GraphQL::TypeKinds::LIST
   end
-
-  def to_s
-    "<GraphQL::ListType(#{of_type.name})>"
-  end
 end

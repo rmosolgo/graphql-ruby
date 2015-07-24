@@ -17,8 +17,4 @@ class GraphQL::Union
     type_name = object.class.name
     possible_types.find {|t| t.name == type_name}
   end
-
-  def to_s
-    "<GraphQL::Union #{name}>"
-  end
 end

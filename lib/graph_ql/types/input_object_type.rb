@@ -11,8 +11,4 @@ class GraphQL::InputObjectType < GraphQL::ObjectType
   def kind
     GraphQL::TypeKinds::INPUT_OBJECT
   end
-
-  def to_s
-    "<GraphQL::InputObjectType #{name}>"
-  end
 end

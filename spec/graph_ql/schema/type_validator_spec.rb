@@ -45,7 +45,7 @@ describe GraphQL::Schema::TypeValidator do
     let(:errors) { e = []; GraphQL::Schema::TypeValidator.new.validate(object, e); e;}
     it 'must be 2+ types, must be only object types' do
       expected = [
-        "Something.possible_types must be objects, but some aren't: <GraphQL::InputObjectType DairyProductInput>",
+        "Something.possible_types must be objects, but some aren't: DairyProductInput",
         "Union Something must be defined with 2 or more types, not 1",
       ]
       assert_equal(expected, errors)

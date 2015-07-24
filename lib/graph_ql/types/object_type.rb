@@ -38,18 +38,29 @@ class GraphQL::ObjectType
   end
 
   def to_s
-    "<GraphQL::ObjectType #{name}>"
+    Printer.instance.print(self)
   end
 
-  def inspect
-    to_s
-  end
+  alias :inspect :to_s
 
   def ==(other)
     if other.is_a?(GraphQL::ObjectType)
       self.to_s == other.to_s
     else
       super
+    end
+  end
+
+  class Printer
+    include Singleton
+    def print(type)
+      if type.kind.non_null?
+        "#{print(type.of_type)}!"
+      elsif type.kind.list?
+        "[#{print(type.of_type)}]"
+      else
+        type.name
+      end
     end
   end
 end
