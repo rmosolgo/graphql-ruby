@@ -9,7 +9,7 @@ describe GraphQL::StaticValidation::FieldsHaveAppropriateSelections do
     }
   ")}
 
-  let(:validator) { GraphQL::StaticValidation::Validator.new(schema: DummySchema, validators: [GraphQL::StaticValidation::FieldsHaveAppropriateSelections]) }
+  let(:validator) { GraphQL::StaticValidation::Validator.new(schema: DummySchema, rules: [GraphQL::StaticValidation::FieldsHaveAppropriateSelections]) }
   let(:errors) { validator.validate(document) }
 
   it 'adds errors for selections on scalars' do

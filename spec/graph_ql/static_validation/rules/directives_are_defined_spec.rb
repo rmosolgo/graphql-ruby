@@ -13,7 +13,7 @@ describe GraphQL::StaticValidation::DirectivesAreDefined do
     }
   ")}
 
-  let(:validator) { GraphQL::StaticValidation::Validator.new(schema: DummySchema, validators: [GraphQL::StaticValidation::DirectivesAreDefined]) }
+  let(:validator) { GraphQL::StaticValidation::Validator.new(schema: DummySchema, rules: [GraphQL::StaticValidation::DirectivesAreDefined]) }
   let(:errors) { validator.validate(document) }
 
   describe 'non-existent directives' do

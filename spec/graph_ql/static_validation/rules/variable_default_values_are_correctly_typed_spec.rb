@@ -16,7 +16,7 @@ describe GraphQL::StaticValidation::VariableDefaultValuesAreCorrectlyTyped do
     }
   ')}
 
-  let(:validator) { GraphQL::StaticValidation::Validator.new(schema: DummySchema, validators: [GraphQL::StaticValidation::VariableDefaultValuesAreCorrectlyTyped]) }
+  let(:validator) { GraphQL::StaticValidation::Validator.new(schema: DummySchema, rules: [GraphQL::StaticValidation::VariableDefaultValuesAreCorrectlyTyped]) }
   let(:errors) { validator.validate(document) }
 
   it "finds default values that don't match their types" do

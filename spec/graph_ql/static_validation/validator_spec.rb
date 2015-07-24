@@ -15,9 +15,9 @@ end
 
 describe GraphQL::StaticValidation::Validator do
   let(:document)  { OpenStruct.new(name: "This is not a document", children: []) }
-  let(:validator) { GraphQL::StaticValidation::Validator.new(schema: "This is not a schema", validators: [SchemaErrorValidator, DocumentErrorValidator]) }
+  let(:validator) { GraphQL::StaticValidation::Validator.new(schema: "This is not a schema", rules: [SchemaErrorValidator, DocumentErrorValidator]) }
 
-  it 'uses validators' do
+  it 'uses rules' do
     errors = validator.validate(document)
     expected_errors = [
       {"message" => "Something is wrong: This is not a schema", "locations" => [{"line" => 100, "column" => 4}]},

@@ -22,7 +22,7 @@ describe GraphQL::StaticValidation::FragmentSpreadsArePossible do
     }
   |)}
 
-  let(:validator) { GraphQL::StaticValidation::Validator.new(schema: DummySchema, validators: [GraphQL::StaticValidation::FragmentSpreadsArePossible]) }
+  let(:validator) { GraphQL::StaticValidation::Validator.new(schema: DummySchema, rules: [GraphQL::StaticValidation::FragmentSpreadsArePossible]) }
   let(:errors) { validator.validate(document) }
 
   it "doesnt allow spreads where they'll never apply" do

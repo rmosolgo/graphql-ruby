@@ -90,6 +90,7 @@
   - Unify unwrapping types (It's on `TypeKind` but it's still not right)
   - move static validation validators to `/static_validation/validators`
   - figure out what goes in `/types` and why
+- Cook up some path other than "n+1s everywhere"
 
 ## Goals:
 

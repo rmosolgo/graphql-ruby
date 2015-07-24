@@ -11,7 +11,7 @@ describe GraphQL::StaticValidation::FragmentsAreUsed do
     fragment unusedFields on Cheese { is, not, used }
   ")}
 
-  let(:validator) { GraphQL::StaticValidation::Validator.new(schema: DummySchema, validators: [GraphQL::StaticValidation::FragmentsAreUsed]) }
+  let(:validator) { GraphQL::StaticValidation::Validator.new(schema: DummySchema, rules: [GraphQL::StaticValidation::FragmentsAreUsed]) }
   let(:errors) { validator.validate(document) }
 
   it 'adds errors for unused fragment definitions' do

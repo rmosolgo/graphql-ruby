@@ -14,7 +14,7 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
     }
   |)}
 
-  let(:validator) { GraphQL::StaticValidation::Validator.new(schema: DummySchema, validators: [GraphQL::StaticValidation::ArgumentLiteralsAreCompatible]) }
+  let(:validator) { GraphQL::StaticValidation::Validator.new(schema: DummySchema, rules: [GraphQL::StaticValidation::ArgumentLiteralsAreCompatible]) }
   let(:errors) { validator.validate(document) }
 
   it 'finds undefined arguments to fields and directives' do

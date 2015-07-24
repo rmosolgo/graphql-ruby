@@ -13,7 +13,7 @@ describe GraphQL::StaticValidation::VariablesAreInputTypes do
     }
   ')}
 
-  let(:validator) { GraphQL::StaticValidation::Validator.new(schema: DummySchema, validators: [GraphQL::StaticValidation::VariablesAreInputTypes]) }
+  let(:validator) { GraphQL::StaticValidation::Validator.new(schema: DummySchema, rules: [GraphQL::StaticValidation::VariablesAreInputTypes]) }
   let(:errors) { validator.validate(document) }
 
   it "finds variables whose types are invalid" do

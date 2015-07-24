@@ -25,7 +25,7 @@ describe GraphQL::StaticValidation::FragmentsAreOnCompositeTypes do
     }
   |)}
 
-  let(:validator) { GraphQL::StaticValidation::Validator.new(schema: DummySchema, validators: [GraphQL::StaticValidation::FragmentsAreOnCompositeTypes]) }
+  let(:validator) { GraphQL::StaticValidation::Validator.new(schema: DummySchema, rules: [GraphQL::StaticValidation::FragmentsAreOnCompositeTypes]) }
   let(:errors) { validator.validate(document) }
 
   it 'requires Object/Union/Interface fragment types' do

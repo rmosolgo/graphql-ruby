@@ -29,7 +29,7 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
     }
   ")}
 
-  let(:validator) { GraphQL::StaticValidation::Validator.new(schema: DummySchema, validators: [GraphQL::StaticValidation::FieldsWillMerge]) }
+  let(:validator) { GraphQL::StaticValidation::Validator.new(schema: DummySchema, rules: [GraphQL::StaticValidation::FieldsWillMerge]) }
   let(:errors) { validator.validate(document) }
   let(:error_messages) { errors.map { |e| e["message" ] }}
 
