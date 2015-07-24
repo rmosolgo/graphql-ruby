@@ -12,39 +12,6 @@ module GraphQL
     raise [line, col, string].join(", ")
   end
 
-  module Definable
-    def attr_definable(*names)
-      attr_accessor(*names)
-      names.each do |name|
-        ivar_name = "@#{name}".to_sym
-        define_method(name) do |new_value=nil|
-          new_value && self.instance_variable_set(ivar_name, new_value)
-          instance_variable_get(ivar_name)
-        end
-      end
-    end
-  end
-
-  module Forwardable
-    def delegate(*methods, to:)
-      methods.each do |method_name|
-        define_method(method_name) do |*args|
-          self.public_send(to).public_send(method_name, *args)
-        end
-      end
-    end
-  end
-
-  class StringNamedHash
-    attr_reader :to_h
-    def initialize(input_hash)
-      @to_h = input_hash
-        .reduce({}) { |memo, (key, value)| memo[key.to_s] = value; memo }
-      # Set the name of the value based on its key
-      @to_h.each {|k, v| v.respond_to?("name=") && v.name = k }
-    end
-  end
-
   module Introspection; end
 end
 
