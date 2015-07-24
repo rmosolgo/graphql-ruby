@@ -13,6 +13,7 @@ describe GraphQL::Query do
           ... on Cheese { cheeseKind: flavor },
         }
         fromSource(source: COW) { id }
+        fromSheep: fromSource(source: SHEEP) { id }
         firstSheep: searchDairy(product: {source: SHEEP}) { ... dairyFields, ... milkFields }
         favoriteEdible { __typename, fatContent }
       }
@@ -39,6 +40,7 @@ describe GraphQL::Query do
             "cheeseKind" => "Gouda",
           },
           "fromSource" => [{ "id" => 1 }, {"id" => 2}],
+          "fromSheep"=>[{"id"=>3}],
           "firstSheep" => { "flavor" => "Manchego" },
           "favoriteEdible"=>{"__typename"=>"Milk", "fatContent"=>0.04},
       }}

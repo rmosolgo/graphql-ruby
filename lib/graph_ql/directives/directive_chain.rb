@@ -24,7 +24,7 @@ class GraphQL::DirectiveChain
       @result = block.call
     else
       applicable_directives.map do |(ast_directive, directive)|
-        args = GraphQL::Query::Arguments.new(ast_directive.arguments, operation_resolver.variables).to_h
+        args = GraphQL::Query::Arguments.new(ast_directive.arguments, directive.arguments, operation_resolver.variables).to_h
         @result = directive.resolve(args, block)
       end
       @result ||= {}

@@ -22,7 +22,7 @@ end
 DairyAnimalEnum = GraphQL::Enum.new do |e|
   e.name "DairyAnimal"
   e.description "An animal which can yield milk"
-  e.value("COW",    "Animal with black and white spots")
+  e.value("COW",    "Animal with black and white spots", value: 1)
   e.value("GOAT",   "Animal with horns")
   e.value("SHEEP",  "Animal with wool")
   e.value("YAK",    "Animal with long hair", deprecation_reason: "Out of fashion")
