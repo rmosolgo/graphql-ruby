@@ -27,7 +27,7 @@
     t.name "Post"
     t.description "A blog post"
     t.fields({
-      id:       field.build(type: !types.Int)
+      id:       field.build(type: !types.Int),
       title:    field.build(type: !types.String),
       body:     field.build(type: !types.String),
       comments: field.build(type: types[!CommentType])
