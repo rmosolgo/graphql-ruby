@@ -1,9 +1,7 @@
 # {Transform} is a [parslet](http://kschiess.github.io/parslet/) transform for for turning the AST into objects in {GraphQL::Nodes} objects.
 class GraphQL::Transform < Parslet::Transform
   # Get syntax classes by shallow name:
-  def self.const_missing(constant_name)
-    GraphQL::Nodes.const_get(constant_name)
-  end
+  include GraphQL::Nodes
 
   def self.optional_sequence(name)
     rule(name => simple(:val)) { [] }

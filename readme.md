@@ -89,7 +89,6 @@
 - Code clean-up
   - Unify unwrapping types (It's on `TypeKind` but it's still not right)
   - move static validation validators to `/static_validation/validators`
-  - fix class lookup in Transformer
   - figure out what goes in `/types` and why
 
 ## Goals:
