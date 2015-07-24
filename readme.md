@@ -76,7 +76,7 @@
   -  [`queries_controller.rb`](https://github.com/rmosolgo/graphql-ruby-demo/blob/master/app/controllers/queries_controller.rb) for a Rails example
   - Try it on [heroku](http://graphql-ruby-demo.herokuapp.com)
 
-## To Do:
+## To Do
 
 - To match spec:
   - Directives:
@@ -90,8 +90,22 @@
   - Unify unwrapping types (It's on `TypeKind` but it's still not right)
 - Cook up some path other than "n+1s everywhere"
 
-## Goals:
+## Goals
 
 - Implement the GraphQL spec & support a Relay front end
 - Provide idiomatic, plain-Ruby API with similarities to reference implementation where possible
 - Support `graphql-rails`
+
+## Getting Involved
+
+- __Say hi & ask questions__ in the [#ruby channel on Slack](https://graphql-slack.herokuapp.com/) or [on Twitter](https://twitter.com/rmosolgo)!
+- __Report bugs__ by posting a description, full stack trace, and all relevant code in a  [GitHub issue](https://github.com/rmosolgo/graphql-ruby/issues).
+- __Features & patches__ are welcome! Consider discussing it in an [issue](https://github.com/rmosolgo/graphql-ruby/issues) or in the [#ruby channel on Slack](https://graphql-slack.herokuapp.com/) to make sure we're on the same page.
+- __Run the tests__ with `rake test` or start up guard with `bundle exec guard`.
+
+## Other Resources
+
+- [GraphQL Spec](http://facebook.github.io/graphql/)
+- Other implementations: [graphql-links](https://github.com/emmenko/graphql-links)
+- `graphql-ruby` + Rails demo ([src](https://github.com/rmosolgo/graphql-ruby-demo) / [heroku](http://graphql-ruby-demo.herokuapp.com))
+- [GraphQL Slack](https://graphql-slack.herokuapp.com/)
