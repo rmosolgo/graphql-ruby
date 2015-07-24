@@ -7,11 +7,12 @@ class GraphQL::StaticValidation::TypeStack
     GraphQL::Nodes::FragmentDefinition,
   ]
 
-  attr_reader :schema, :object_types, :field_definitions
+  attr_reader :schema, :object_types, :field_definitions, :directive_definitions
   def initialize(schema, visitor)
     @schema = schema
     @object_types = []
     @field_definitions = []
+    @directive_definitions = []
     visitor.enter << -> (node, parent) { PUSH_STRATEGIES[node.class].push(self, node) }
     visitor.leave << -> (node, parent) { PUSH_STRATEGIES[node.class].pop(self, node) }
   end
@@ -77,6 +78,17 @@ class GraphQL::StaticValidation::TypeStack
     def pop(stack, node)
       stack.field_definitions.pop
       stack.object_types.pop
+    end
+  end
+
+  class DirectiveStrategy
+    def push(stack, node)
+      directive_defn = stack.schema.directives[node.name]
+      stack.directive_definitions.push(directive_defn)
+    end
+
+    def pop(stack, node)
+      stack.directive_definitions.pop
     end
   end
 

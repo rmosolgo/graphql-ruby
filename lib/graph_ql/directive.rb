@@ -31,6 +31,10 @@ class GraphQL::Directive < GraphQL::ObjectType
     end
     @arguments
   end
+
+  def to_s
+    "<GraphQL::Directive #{name}>"
+  end
 end
 
 require 'graph_ql/directives/directive_chain'

@@ -1,8 +1,5 @@
 # Test whether `ast_value` is a valid input for `type`
 class GraphQL::StaticValidation::LiteralValidator
-  include GraphQL::StaticValidation::Message::MessageHelper
-
-  attr_reader :errors
   def validate(ast_value, type)
     if type.kind.non_null?
       (!ast_value.nil?) && validate(ast_value, type.of_type)

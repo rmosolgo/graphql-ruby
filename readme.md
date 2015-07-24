@@ -78,16 +78,19 @@
 
 ## To Do:
 
-- Validations:
-  - Implement validations:
-    - everything in [Variables](http://facebook.github.io/graphql/#sec-Validation.Operations.Variables)
-- directives:
-  - `@skip` has precedence over `@include`
-  - directives on fragments: http://facebook.github.io/graphql/#sec-Fragment-Directives
+- To match spec:
+  - Directives:
+    - `@skip` has precedence over `@include`
+    - directives on fragments: http://facebook.github.io/graphql/#sec-Fragment-Directives
 - Support any "real" value for enum, not just stringified name (see `Character::EPISODES` in demo)
-- field merging (https://github.com/graphql/graphql-js/issues/19#issuecomment-118515077)
+- Field merging
+  - if you were to request a field, then request it in a fragment, it would get looked up twice
+  - https://github.com/graphql/graphql-js/issues/19#issuecomment-118515077
 - Code clean-up
   - Unify unwrapping types (It's on `TypeKind` but it's still not right)
+  - move static validation validators to `/static_validation/validators`
+  - fix class lookup in Transformer
+  - figure out what goes in `/types` and why
 
 ## Goals:
 

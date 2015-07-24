@@ -9,7 +9,11 @@ describe GraphQL::Parser do
     # a read-only:
     query getStuff {id, name @skip(if: true)}
     # a mutation:
-    mutation changeStuff($override: Boolean!, $cucumbers: [Vegetable]!) @veggie, @healthy(vitamins: true) {
+    mutation changeStuff(
+      $override: Boolean = true,
+      $cucumbers: [Vegetable]!,
+      $input: SomeInputType = {key: "value"},
+    ) @veggie, @healthy(vitamins: true) {
       # change the cucumber
       changeStuff(thing: $cucumbers) {
         id,
@@ -72,7 +76,7 @@ describe GraphQL::Parser do
     assert(parser.operation_variable_definition.parse_with_debug("$myVar: [Int]"), "it gets list variables")
     assert(parser.operation_variable_definition.parse_with_debug("$myVar: Elephant!"), "it gets non-null variables")
     assert(parser.operation_variable_definition.parse_with_debug("$myVar: [Food]!"), "it gets non-null list variables")
-    assert(parser.operation_variable_definitions.parse_with_debug(%|($myVar: Elephant!, $myList: [Float], $myString: String="Cheese")|), "it gets a list of defns")
+    assert(parser.operation_variable_definitions.parse_with_debug(%|($myVar: Elephant!, $myList: [Float], $myString: String = "Cheese")|), "it gets a list of defns")
   end
 
   describe 'value' do

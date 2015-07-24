@@ -18,7 +18,7 @@ describe GraphQL::StaticValidation::TypeStack do
     query getCheese {
       cheese(id: 1) { id, ... edibleFields }
     }
-    fragment edibleFields on Edible { fatContent }
+    fragment edibleFields on Edible { fatContent @skip(if: false)}
   |}
   let(:document) { GraphQL.parse(query_string) }
   let(:validator) { GraphQL::StaticValidation::Validator.new(schema: DummySchema, validators: [TypeCheckValidator]) }

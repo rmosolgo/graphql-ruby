@@ -4,6 +4,6 @@ class GraphQL::ScalarType < GraphQL::ObjectType
   end
 
   def to_s
-    "<GraphQL::ScalarType #{name} >"
+    "<GraphQL::ScalarType #{name}>"
   end
 end

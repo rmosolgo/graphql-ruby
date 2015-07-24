@@ -44,4 +44,12 @@ class GraphQL::ObjectType
   def inspect
     to_s
   end
+
+  def ==(other)
+    if other.is_a?(GraphQL::ObjectType)
+      self.to_s == other.to_s
+    else
+      super
+    end
+  end
 end

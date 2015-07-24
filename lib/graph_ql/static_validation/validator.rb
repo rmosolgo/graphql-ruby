@@ -18,6 +18,10 @@ class GraphQL::StaticValidation::Validator
     GraphQL::StaticValidation::FieldsAreDefinedOnType,
     GraphQL::StaticValidation::FieldsWillMerge,
     GraphQL::StaticValidation::FieldsHaveAppropriateSelections,
+    GraphQL::StaticValidation::VariablesAreInputTypes,
+    GraphQL::StaticValidation::VariableDefaultValuesAreCorrectlyTyped,
+    GraphQL::StaticValidation::VariablesAreUsedAndDefined,
+    GraphQL::StaticValidation::VariableUsagesAreAllowed,
   ]
 
   def initialize(schema:, validators: VALIDATORS)
@@ -52,6 +56,10 @@ class GraphQL::StaticValidation::Validator
 
     def field_definition
       @type_stack.field_definitions.last
+    end
+
+    def directive_definition
+      @type_stack.directive_definitions.last
     end
   end
 end
