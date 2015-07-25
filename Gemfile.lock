@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    graphql (0.2.0)
+    graphql (0.3.0)
       parslet (~> 1.6)
 
 GEM
