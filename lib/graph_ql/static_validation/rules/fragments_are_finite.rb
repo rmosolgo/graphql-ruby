@@ -2,12 +2,9 @@ class GraphQL::StaticValidation::FragmentsAreFinite
   include GraphQL::StaticValidation::Message::MessageHelper
 
   def validate(context)
-
-    context.visitor[GraphQL::Nodes::Document].leave << -> (node, parent) {
-      context.fragments.each do |name, fragment_def|
-        if has_nested_spread(fragment_def, [], context)
-          context.errors << message("Fragment #{fragment_def.name} contains an infinite loop", fragment_def)
-        end
+    context.visitor[GraphQL::Nodes::FragmentDefinition] << -> (node, parent) {
+      if has_nested_spread(node, [], context)
+        context.errors << message("Fragment #{node.name} contains an infinite loop", node)
       end
     }
   end

@@ -10,7 +10,7 @@ class GraphQL::StaticValidation::FieldsWillMerge
     }
     visitor[GraphQL::Nodes::Document].leave << -> (node, parent) {
       has_selections.each { |node|
-        field_map = gather_fields_by_name(node.selections, {}, context)
+        field_map = gather_fields_by_name(node.selections, {}, [], context)
         find_conflicts(field_map, context)
       }
     }
@@ -23,18 +23,26 @@ class GraphQL::StaticValidation::FieldsWillMerge
       comparison = FieldDefinitionComparison.new(name, ast_fields)
       context.errors.push(*comparison.errors)
 
-      subfield_map = ast_fields.reduce({}) do |memo, defn|
-        gather_fields_by_name(defn.selections, memo, context)
+
+      subfield_map = {}
+      visited_fragments = []
+      ast_fields.each do |defn|
+        gather_fields_by_name(defn.selections, subfield_map, visited_fragments, context)
       end
       find_conflicts(subfield_map, context)
     end
   end
 
-  def gather_fields_by_name(fields, field_map, context)
+  def gather_fields_by_name(fields, field_map, visited_fragments, context)
     fields.each do |field|
       if field.is_a?(GraphQL::Nodes::InlineFragment)
         next_fields = field.selections
       elsif field.is_a?(GraphQL::Nodes::FragmentSpread)
+        if visited_fragments.include?(field.name)
+          next
+        else
+          visited_fragments << field.name
+        end
         fragment = context.fragments[field.name]
         next_fields = fragment.selections
       else
@@ -43,7 +51,7 @@ class GraphQL::StaticValidation::FieldsWillMerge
         field_map[name_in_selection].push(field)
         next_fields = []
       end
-      gather_fields_by_name(next_fields, field_map, context)
+      gather_fields_by_name(next_fields, field_map, visited_fragments, context)
     end
     field_map
   end

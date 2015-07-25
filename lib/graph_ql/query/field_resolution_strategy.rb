@@ -40,9 +40,9 @@ class GraphQL::Query::FieldResolutionStrategy
     attr_reader :result
     def initialize(value, field_type, target, parent_type, ast_field, operation_resolver)
       wrapped_type = field_type.of_type
-      resolved_type = wrapped_type.kind.resolve(wrapped_type, value)
-      strategy_class = GraphQL::Query::FieldResolutionStrategy.get_strategy_for_kind(resolved_type.kind)
       @result = value.map do |item|
+        resolved_type = wrapped_type.kind.resolve(wrapped_type, item)
+        strategy_class = GraphQL::Query::FieldResolutionStrategy.get_strategy_for_kind(resolved_type.kind)
         inner_strategy = strategy_class.new(item, resolved_type, target, parent_type, ast_field, operation_resolver)
         inner_strategy.result
       end

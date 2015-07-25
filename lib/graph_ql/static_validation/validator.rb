@@ -21,10 +21,11 @@ class GraphQL::StaticValidation::Validator
     def initialize(schema, document)
       @schema = schema
       @document = document
-      @fragments = {}
+      @fragments = document.parts.each_with_object({}) do |part, memo|
+        part.is_a?(GraphQL::Nodes::FragmentDefinition) && memo[part.name] = part
+      end
       @errors = []
       @visitor = GraphQL::Visitor.new
-      @visitor[GraphQL::Nodes::FragmentDefinition] << -> (node, parent) { @fragments[node.name] = node }
       @type_stack = GraphQL::StaticValidation::TypeStack.new(schema, visitor)
     end
 
