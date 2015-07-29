@@ -1,3 +1,7 @@
+# This implementation of `Directive` is ... not robust.
+# It seems like this area of the spec is still getting worked out, so
+# {Directive} & {DirectiveChain} implement `@skip` and `@include` with
+# minimal impact on query execution.
 class GraphQL::Directive
   extend GraphQL::Definable
   attr_definable :on, :arguments, :name, :description

@@ -1,3 +1,15 @@
+# These are valid values for a type's `fields` hash.
+#
+# You can also use {FieldDefiner#build} to create fields.
+#
+# @example creating a field
+#   name_field = GraphQL::Field.new do |f, types|
+#     f.name("Name")
+#     f.type(!types.String)
+#     f.description("The name of this thing")
+#     f.resolve -> (object, arguments, context) { object.name }
+#   end
+#
 class GraphQL::Field
   extend GraphQL::Definable
   attr_definable(:arguments, :deprecation_reason, :name, :description, :type)
@@ -15,25 +27,44 @@ class GraphQL::Field
     @arguments
   end
 
+  # Define the arguments for this field using {StringNamedHash}
   def arguments=(new_arguments)
     @arguments = GraphQL::StringNamedHash.new(new_arguments).to_h
   end
 
-
-  # Used when defining:
-  #   resolve -> (obj, args, ctx) { obj.get_value }
-  # Also used when executing queries:
-  #   field.resolve(obj, args, ctx)
-  def resolve(proc_or_object, arguments=nil, ctx=nil)
-    if arguments.nil? && ctx.nil?
+  # @overload resolve(definition_proc)
+  #   Define this field to return a value with `definition_proc`
+  #   @example defining the resolve method
+  #     field.resolve -> (obj, args, ctx) { obj.get_value }
+  #   @param definition_proc [Proc] The proc to evaluate to get a value
+  #
+  # @overload resolve(object, arguments, context)
+  #   Get a value for this field
+  #   @example resolving a field value
+  #     field.resolve(obj, args, ctx)
+  #
+  #   @param object [Object] The object this field belongs to
+  #   @param arguments [Hash] Arguments declared in the query
+  #   @param context [GraphQL::Query::Context]
+  def resolve(proc_or_object, arguments=nil, context=nil)
+    if arguments.nil? && context.nil?
       @resolve_proc = proc_or_object
     else
-      @resolve_proc.call(proc_or_object, arguments, ctx)
+      @resolve_proc.call(proc_or_object, arguments, context)
     end
   end
 
-  # You can pass a proc which will cause the type to be lazy-evaled,
-  # That's nice if you have load-order issues
+  # @overload type(return_type)
+  #   Define the return type for this field
+  #   @param return_type [GraphQL::ObjectType, GraphQL::ScalarType] The type this field returns
+  #
+  # @overload type(return_type_proc)
+  #   Wrap the return type in a proc,which will cause the type to be lazy-evaled,
+  #
+  #   That's nice if you have load-order issues.
+  #   @example lazy-evaled return type
+  #      field.type(-> { MyCircularDependentType })
+  #   @param return_type_proc [Proc] A proc which returns the return type for this field
   def type(type_or_proc=nil)
     if !type_or_proc.nil?
       @type = type_or_proc

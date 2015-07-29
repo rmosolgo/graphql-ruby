@@ -8,12 +8,15 @@ class GraphQL::StaticValidation::Message
       GraphQL::StaticValidation::Message.new(message, line: node.line, col: node.col)
     end
   end
-  attr_reader :message, :line, :co
+  attr_reader :message, :line, :col
+
   def initialize(message, line: nil, col: nil)
     @message = message
     @line = line
     @col = col
   end
+
+  # A hash representation of this Message
   def to_h
     {
       "message" => message,

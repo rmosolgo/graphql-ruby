@@ -193,4 +193,3 @@ Read more in some other guides:
 
 - [Type & Field Helpers](http://www.rubydoc.info/github/rmosolgo/graphql-ruby/file/guides/type_and_field_helpers.md)
 - [Executing Queries](http://www.rubydoc.info/github/rmosolgo/graphql-ruby/file/guides/executing_queries.md)
-- [Extending `graphql-ruby`](http://www.rubydoc.info/github/rmosolgo/graphql-ruby/file/guides/extending_graphql_ruby.md)

@@ -1,7 +1,11 @@
+# A GraphQL schema which may be queried with {GraphQL::Query}.
 class GraphQL::Schema
   DIRECTIVES = [GraphQL::SkipDirective, GraphQL::IncludeDirective]
 
   attr_reader :query, :mutation, :directives, :static_validator
+
+  # @param query [GraphQL::ObjectType]  the query root for the schema
+  # @param mutation [GraphQL::ObjectType, nil] the mutation root for the schema
   def initialize(query:, mutation:)
     # Add fields to this query root for introspection:
     query.fields = query.fields.merge({
@@ -29,6 +33,8 @@ class GraphQL::Schema
     end
   end
 
+  # A `{ name => type }` hash of types in this schema
+  # @returns Hash
   def types
     @types ||= TypeReducer.new(query, {}).result
   end

@@ -4,6 +4,8 @@ module GraphQL::Nodes
   # - expose accessors for keyword arguments
   class AbstractNode
     attr_accessor :line, :col
+
+    # @param options [Hash] Must contain all attributes defined by {required_attrs}, may also include `position_source`
     def initialize(options)
       required_keys = self.class.required_attrs
       allowed_keys = required_keys + [:line, :col]
@@ -31,15 +33,17 @@ module GraphQL::Nodes
       end
     end
 
+    # Test all attributes, checking for any other nodes below this one
     def children
       self.class.required_attrs
         .map { |attr| send(attr) }
-        .flatten # eg #fields is a list of children
+        .flatten
         .select { |val| val.is_a?(GraphQL::Nodes::AbstractNode) }
     end
 
     class << self
       attr_reader :required_attrs
+      # Defines attributes which are required at initialization.
       def attr_required(*attr_names)
         @required_attrs ||= []
         @required_attrs += attr_names
@@ -48,6 +52,9 @@ module GraphQL::Nodes
 
       # Create a new AbstractNode child which
       # requires and exposes {attr_names}.
+      # @param attr_names [Array<Symbol>] Attributes this node class will have
+      # @param block [Block] Block passed to `Class.new`
+      # @return [Class] A new node class
       def create(*attr_names, &block)
         cls = Class.new(self, &block)
         cls.attr_required(*attr_names)

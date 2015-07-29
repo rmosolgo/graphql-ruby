@@ -7,7 +7,25 @@ class GraphQL::StaticValidation::TypeStack
     GraphQL::Nodes::FragmentDefinition,
   ]
 
-  attr_reader :schema, :object_types, :field_definitions, :directive_definitions
+  # @return [GraphQL::Schema] the schema whose types are present in this document
+  attr_reader :schema
+
+  # When it enters an object (starting with query or mutation root), it's pushed on this stack.
+  # When it exits, it's popped off.
+  # @return [Array<GraphQL::ObjectType, GraphQL::Union, GraphQL::Interface>]
+  attr_reader :object_types
+
+  # When it enters a field, it's pushed on this stack (useful for nested fields, args).
+  # When it exits, it's popped off.
+  # @return [Array<GraphQL::Field>] fields which have been entered
+  attr_reader :field_definitions
+
+  # Directives are pushed on, then popped off while traversing the tree
+  # @return [Array<GraphQL::Node::Directive>] directives which have been entered
+  attr_reader :directive_definitions
+
+  # @param schema [GraphQL::Schema] the schema whose types to use when climbing this document
+  # @param visitor [GraphQL::Visitor] a visitor to follow & watch the types
   def initialize(schema, visitor)
     @schema = schema
     @object_types = []
@@ -92,6 +110,7 @@ class GraphQL::StaticValidation::TypeStack
     end
   end
 
+  # A no-op strategy (don't handle this node)
   class NullStrategy
     def push(stack, node);  end
     def pop(stack, node);   end

@@ -1,3 +1,6 @@
+# Some conveniences for definining fields on {ObjectType}s and {Interface}s.
+#
+# Passed into initialization blocks, eg {ObjectType#initialize}, {Field#initialize}
 class GraphQL::FieldDefiner
   include Singleton
 

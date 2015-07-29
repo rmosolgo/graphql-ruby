@@ -1,3 +1,6 @@
+# Some conveniences for definining arguments.
+#
+# Passed into initialization blocks, eg {InputObjectType#initialize}, {Field#initialize}
 class GraphQL::ArgumentDefiner
   include Singleton
 

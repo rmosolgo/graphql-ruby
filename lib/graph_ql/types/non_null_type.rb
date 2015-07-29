@@ -1,3 +1,6 @@
+# A non-null type wraps another type.
+#
+# See {TypeKind#unwrap} for accessing the modified type
 class GraphQL::NonNullType < GraphQL::ObjectType
   attr_reader :of_type
   def initialize(of_type:)

@@ -1,5 +1,4 @@
 --no-private
---exclude lib/syntax
 --markup markdown
 --readme readme.md
 --title 'GraphQL Ruby API Documentation'

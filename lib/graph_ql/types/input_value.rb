@@ -1,3 +1,6 @@
+# Used for defined arguments
+#
+# Created by {ArgumentDefiner}
 class GraphQL::InputValue
   attr_reader :type, :description, :default_value
   attr_accessor :name

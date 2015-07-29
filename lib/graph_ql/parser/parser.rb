@@ -1,6 +1,5 @@
 # Parser is a [parslet](http://kschiess.github.io/parslet/) parser for parsing queries.
 #
-# If it failes to parse, a {SyntaxError} is raised.
 class GraphQL::Parser < Parslet::Parser
   root(:document)
   rule(:document) { (

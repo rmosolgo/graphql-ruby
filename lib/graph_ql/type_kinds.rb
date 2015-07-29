@@ -1,4 +1,6 @@
+# Type kinds are the basic categories which a type may belong to (`Object`, `Scalar`, `Union`...)
 module GraphQL::TypeKinds
+  # These objects are singletons, eg `GraphQL::TypeKinds::UNION`, `GraphQL::TypeKinds::SCALAR`.
   class TypeKind
     attr_reader :name
     def initialize(name, resolves: false, fields: false, wraps: false, input: false)
@@ -10,13 +12,19 @@ module GraphQL::TypeKinds
       @composite = fields? || resolves?
     end
 
+    # Does this TypeKind have multiple possible implementors?
     def resolves?;  @resolves;  end
+    # Does this TypeKind have queryable fields?
     def fields?;    @fields;    end
+    # Does this TypeKind modify another type?
     def wraps?;     @wraps;     end
+    # Is this TypeKind a valid query input?
     def input?;     @input;     end
     def to_s;       @name;      end
+    # Is this TypeKind composed of many values?
     def composite?; @composite; end
 
+    # Get the implementing type for `value` from `type` (no-op for TypeKinds which don't `resolves?`)
     def resolve(type, value)
       if resolves?
         type.resolve_type(value)
@@ -25,6 +33,7 @@ module GraphQL::TypeKinds
       end
     end
 
+    # Get the modified type for `type` (no-op for TypeKinds which don't `wraps?`)
     def unwrap(type)
       if wraps?
         wrapped_type = type.of_type

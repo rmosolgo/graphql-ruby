@@ -6,6 +6,9 @@
 [![Test Coverage](https://codeclimate.com/github/rmosolgo/graphql-ruby/badges/coverage.svg)](https://codeclimate.com/github/rmosolgo/graphql-ruby)
 [![built with love](https://cloud.githubusercontent.com/assets/2231765/6766607/d07992c6-cfc9-11e4-813f-d9240714dd50.png)](http://rmosolgo.github.io/react-badges/)
 
+ - [Introduction](https://github.com/rmosolgo/graphql-ruby/blob/master/guides/introduction.md)
+ - [API Documentation](http://www.rubydoc.info/github/rmosolgo/graphql-ruby)
+
 ## Overview
 
 - __Install the gem__:
@@ -82,12 +85,16 @@
   - Directives:
     - `@skip` has precedence over `@include`
     - directives on fragments: http://facebook.github.io/graphql/#sec-Fragment-Directives
+  - `__type { fields }` shouldn't include `__typename` https://github.com/graphql/graphql-js/issues/73#issuecomment-123119823
 - Field merging
   - if you were to request a field, then request it in a fragment, it would get looked up twice
   - https://github.com/graphql/graphql-js/issues/19#issuecomment-118515077
 - Code clean-up
   - Unify unwrapping types (It's on `TypeKind` but it's still not right)
+  - Fix loading & dependency hell
 - Cook up some path other than "n+1s everywhere"
+  - See Sangria's `project` approach
+
 
 ## Goals
 

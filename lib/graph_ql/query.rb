@@ -5,6 +5,13 @@ class GraphQL::Query
   DEFAULT_RESOLVE = :__default_resolve
   attr_reader :schema, :document, :context, :fragments, :params
 
+  # Prepare query `query_string` on {GraphQL::Schema} `schema`
+  # @param schema [GraphQL::Schema]
+  # @param query_string [String]
+  # @param context [#[]] (default: `nil`) an arbitrary hash of values which you can access in {GraphQL::Field#resolve}
+  # @param params [Hash] (default: `{}`) values for `$variables` in the query
+  # @param debug [Boolean] (default: `true`) if true, errors are raised, if false, errors are put in the `errors` key
+  # @param validate [Boolean] (default: `true`) if true, `query_string` will be validated with {StaticValidation::Validator}
   def initialize(schema, query_string, context: nil, params: {}, debug: true, validate: true)
     @schema = schema
     @debug = debug
