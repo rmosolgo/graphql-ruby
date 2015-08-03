@@ -1,5 +1,5 @@
 GraphQL::Introspection::InputValueType = GraphQL::ObjectType.new do |t, type, field|
-  t.name "InputValue"
+  t.name "__InputValue"
   t.description "An input for a field or InputObject"
   t.fields({
     name:         field.build(type: !type.String, desc: "The key for this value"),
