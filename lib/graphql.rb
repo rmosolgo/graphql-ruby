@@ -27,7 +27,7 @@ def require_dir(dir)
 end
 # Order matters for these:
 
-require_dir('definition_helpers')
+require 'graph_ql/definition_helpers'
 require 'graph_ql/types/object_type'
 require_dir('types')
 
@@ -57,7 +57,10 @@ require 'graph_ql/introspection/directive_type'
 require 'graph_ql/introspection/schema_type'
 require 'graph_ql/introspection/introspection_query'
 
+require 'graph_ql/nodes'
 require 'graph_ql/parser'
+require 'graph_ql/transform'
+require 'graph_ql/visitor'
 require 'graph_ql/directive'
 require 'graph_ql/schema'
 

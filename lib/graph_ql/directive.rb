@@ -3,7 +3,7 @@
 # {Directive} & {DirectiveChain} implement `@skip` and `@include` with
 # minimal impact on query execution.
 class GraphQL::Directive
-  extend GraphQL::Definable
+  extend GraphQL::DefinitionHelpers::Definable
   attr_definable :on, :arguments, :name, :description
 
   LOCATIONS = [
@@ -19,7 +19,12 @@ class GraphQL::Directive
   def initialize
     @arguments = {}
     @on = []
-    yield(self, GraphQL::TypeDefiner.instance, GraphQL::FieldDefiner.instance, GraphQL::ArgumentDefiner.instance)
+    yield(
+      self,
+      GraphQL::DefinitionHelpers::TypeDefiner.instance,
+      GraphQL::DefinitionHelpers::FieldDefiner.instance,
+      GraphQL::DefinitionHelpers::ArgumentDefiner.instance
+    )
   end
 
   def resolve(proc_or_arguments, proc=nil)
@@ -33,7 +38,7 @@ class GraphQL::Directive
 
   def arguments(new_arguments=nil)
     if !new_arguments.nil?
-      @arguments = GraphQL::StringNamedHash.new(new_arguments).to_h
+      @arguments = GraphQL::DefinitionHelpers::StringNamedHash.new(new_arguments).to_h
     end
     @arguments
   end
@@ -43,6 +48,5 @@ class GraphQL::Directive
   end
 end
 
-require 'graph_ql/directives/directive_chain'
-require 'graph_ql/directives/include_directive'
-require 'graph_ql/directives/skip_directive'
+require 'graph_ql/directive/include_directive'
+require 'graph_ql/directive/skip_directive'

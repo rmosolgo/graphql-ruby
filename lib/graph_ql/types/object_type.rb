@@ -2,14 +2,19 @@
 #
 #
 class GraphQL::ObjectType
-  extend GraphQL::Definable
+  include GraphQL::DefinitionHelpers::NonNullWithBang
+  extend GraphQL::DefinitionHelpers::Definable
   attr_definable :name, :description, :interfaces, :fields
-  include GraphQL::NonNullWithBang
 
   def initialize(&block)
     self.fields = []
     self.interfaces = []
-    yield(self, GraphQL::TypeDefiner.instance, GraphQL::FieldDefiner.instance, GraphQL::ArgumentDefiner.instance)
+    yield(
+      self,
+      GraphQL::DefinitionHelpers::TypeDefiner.instance,
+      GraphQL::DefinitionHelpers::FieldDefiner.instance,
+      GraphQL::DefinitionHelpers::ArgumentDefiner.instance
+    )
   end
 
   # @overload fields(new_fields)
@@ -28,7 +33,7 @@ class GraphQL::ObjectType
   # Define fields to be `new_fields`, normalize with {StringNamedHash}
   # @param new_fields [Hash] The fields exposed by this type
   def fields=(new_fields)
-    stringified_fields = GraphQL::StringNamedHash.new(new_fields).to_h
+    stringified_fields = GraphQL::DefinitionHelpers::StringNamedHash.new(new_fields).to_h
     stringified_fields["__typename"] = GraphQL::Introspection::TypenameField.create(self)
     @fields = stringified_fields
   end

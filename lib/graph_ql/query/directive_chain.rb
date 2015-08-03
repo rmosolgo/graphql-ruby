@@ -1,4 +1,4 @@
-class GraphQL::DirectiveChain
+class GraphQL::Query::DirectiveChain
   DIRECTIVE_ON = {
     GraphQL::Nodes::Field =>          GraphQL::Directive::ON_FIELD,
     GraphQL::Nodes::InlineFragment => GraphQL::Directive::ON_FRAGMENT,

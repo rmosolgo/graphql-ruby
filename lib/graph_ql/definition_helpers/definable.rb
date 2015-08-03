@@ -4,7 +4,7 @@
 # @example defining an object's name
 #   object.name("New name")
 #
-module GraphQL::Definable
+module GraphQL::DefinitionHelpers::Definable
   def attr_definable(*names)
     attr_accessor(*names)
     names.each do |name|

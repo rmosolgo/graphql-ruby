@@ -11,13 +11,18 @@
 #   end
 #
 class GraphQL::Field
-  extend GraphQL::Definable
+  extend GraphQL::DefinitionHelpers::Definable
   attr_definable(:arguments, :deprecation_reason, :name, :description, :type)
 
   def initialize
     @arguments = {}
     @resolve_proc = -> (o, a, c) { GraphQL::Query::DEFAULT_RESOLVE }
-    yield(self, GraphQL::TypeDefiner.instance, GraphQL::FieldDefiner.instance, GraphQL::ArgumentDefiner.instance)
+    yield(
+      self,
+      GraphQL::DefinitionHelpers::TypeDefiner.instance,
+      GraphQL::DefinitionHelpers::FieldDefiner.instance,
+      GraphQL::DefinitionHelpers::ArgumentDefiner.instance
+    )
   end
 
   def arguments(new_arguments=nil)
@@ -29,7 +34,7 @@ class GraphQL::Field
 
   # Define the arguments for this field using {StringNamedHash}
   def arguments=(new_arguments)
-    @arguments = GraphQL::StringNamedHash.new(new_arguments).to_h
+    @arguments = GraphQL::DefinitionHelpers::StringNamedHash.new(new_arguments).to_h
   end
 
   # @overload resolve(definition_proc)

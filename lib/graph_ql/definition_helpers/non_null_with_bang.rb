@@ -2,7 +2,7 @@
 # @example required Int type
 #   !GraphQL::INT_TYPE
 #
-module GraphQL::NonNullWithBang
+module GraphQL::DefinitionHelpers::NonNullWithBang
   # Make the type non-null
   # @return [GraphQL::NonNullType] a non-null type which wraps the original type
   def !

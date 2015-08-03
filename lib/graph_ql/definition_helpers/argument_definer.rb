@@ -1,7 +1,7 @@
 # Some conveniences for definining arguments.
 #
 # Passed into initialization blocks, eg {InputObjectType#initialize}, {Field#initialize}
-class GraphQL::ArgumentDefiner
+class GraphQL::DefinitionHelpers::ArgumentDefiner
   include Singleton
 
   def build(type:, desc: "", default_value: nil)

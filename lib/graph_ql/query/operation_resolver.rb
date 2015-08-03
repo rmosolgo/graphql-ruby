@@ -1,14 +1,14 @@
 class GraphQL::Query::OperationResolver
-  extend GraphQL::Forwardable
-  attr_reader :variables, :query
+  attr_reader :variables, :query, :context
 
   def initialize(operation_definition, query)
     @operation_definition = operation_definition
     @variables = query.params
     @query = query
+    @context = query.context
   end
 
-  delegate :context, to: :query
+
 
   def result
     @result ||= execute(@operation_definition, query)

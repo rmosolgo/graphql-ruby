@@ -1,7 +1,7 @@
 # Some conveniences for definining return & argument types.
 #
 # Passed into initialization blocks, eg {ObjectType#initialize}, {Field#initialize}
-class GraphQL::TypeDefiner
+class GraphQL::DefinitionHelpers::TypeDefiner
   include Singleton
 
   def Int;      GraphQL::INT_TYPE;      end

@@ -1,7 +1,7 @@
 # Some conveniences for definining fields on {ObjectType}s and {Interface}s.
 #
 # Passed into initialization blocks, eg {ObjectType#initialize}, {Field#initialize}
-class GraphQL::FieldDefiner
+class GraphQL::DefinitionHelpers::FieldDefiner
   include Singleton
 
   def build(type:, args: {}, property: nil, desc: "", deprecation_reason: nil)

@@ -1,6 +1,6 @@
 # A GraphQL schema which may be queried with {GraphQL::Query}.
 class GraphQL::Schema
-  DIRECTIVES = [GraphQL::SkipDirective, GraphQL::IncludeDirective]
+  DIRECTIVES = [GraphQL::Directive::SkipDirective, GraphQL::Directive::IncludeDirective]
 
   attr_reader :query, :mutation, :directives, :static_validator
 

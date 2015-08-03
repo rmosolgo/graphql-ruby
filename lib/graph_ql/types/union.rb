@@ -4,7 +4,7 @@
 #   PetUnion = GraphQL::Union.new("Pet", "House pets", [DogType, CatType])
 #
 class GraphQL::Union
-  include GraphQL::NonNullWithBang
+  include GraphQL::DefinitionHelpers::NonNullWithBang
   attr_reader :name, :description, :possible_types
   def initialize(name, desc, types)
     @name = name

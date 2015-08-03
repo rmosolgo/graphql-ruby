@@ -1,11 +1,16 @@
 class GraphQL::Enum
-  include GraphQL::NonNullWithBang
-  extend GraphQL::Definable
+  include GraphQL::DefinitionHelpers::NonNullWithBang
+  extend GraphQL::DefinitionHelpers::Definable
   attr_definable :name, :description
   attr_reader :values
   def initialize
     @values = {}
-    yield(self, GraphQL::TypeDefiner.instance, GraphQL::FieldDefiner.instance, GraphQL::ArgumentDefiner.instance)
+    yield(
+      self,
+      GraphQL::DefinitionHelpers::TypeDefiner.instance,
+      GraphQL::DefinitionHelpers::FieldDefiner.instance,
+      GraphQL::DefinitionHelpers::ArgumentDefiner.instance
+    )
   end
 
   # Define a value within this enum

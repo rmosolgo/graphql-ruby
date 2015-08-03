@@ -3,7 +3,7 @@
 # - if the value responds to `name=`, then assign the hash key as `name`
 #
 # Used by {ObjectType#fields}, {Field#arguments} and others.
-class GraphQL::StringNamedHash
+class GraphQL::DefinitionHelpers::StringNamedHash
   # Normalized hash for the input
   # @return [Hash] Hash with string keys
   attr_reader :to_h

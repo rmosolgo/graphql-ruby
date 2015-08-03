@@ -22,7 +22,7 @@ class GraphQL::InputObjectType < GraphQL::ObjectType
   #
   def input_fields(new_fields=nil)
     if !new_fields.nil?
-      @new_fields = GraphQL::StringNamedHash.new(new_fields).to_h
+      @new_fields = GraphQL::DefinitionHelpers::StringNamedHash.new(new_fields).to_h
     end
     @new_fields
   end
