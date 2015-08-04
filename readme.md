@@ -91,7 +91,7 @@
   - https://github.com/graphql/graphql-js/issues/19#issuecomment-118515077
 - Code clean-up
   - Unify unwrapping types (It's on `TypeKind` but it's still not right)
-  - Fix loading & dependency hell
+  - Should Enum, Union etc be `EnumType`, `UnionType` etc?
 - Cook up some path other than "n+1s everywhere"
   - See Sangria's `project` approach
 
