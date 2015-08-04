@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe GraphQL::Interface do
+describe GraphQL::InterfaceType do
   let(:interface) { EdibleInterface }
   it 'has possible types' do
     assert_equal([CheeseType, MilkType], interface.possible_types)

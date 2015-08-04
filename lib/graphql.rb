@@ -25,14 +25,14 @@ end
 require 'graph_ql/definition_helpers'
 require 'graph_ql/object_type'
 
-require 'graph_ql/enum'
+require 'graph_ql/enum_type'
 require 'graph_ql/input_object_type'
-require 'graph_ql/input_value'
-require 'graph_ql/interface'
+require 'graph_ql/interface_type'
 require 'graph_ql/list_type'
 require 'graph_ql/non_null_type'
-require 'graph_ql/union'
+require 'graph_ql/union_type'
 
+require 'graph_ql/argument'
 require 'graph_ql/field'
 require 'graph_ql/type_kinds'
 require 'graph_ql/introspection/typename_field'

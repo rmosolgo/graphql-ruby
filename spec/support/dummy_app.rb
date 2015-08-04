@@ -1,6 +1,6 @@
 require_relative './dummy_data'
 
-EdibleInterface = GraphQL::Interface.new do |i, type, field|
+EdibleInterface = GraphQL::InterfaceType.new do |i, type, field|
   i.name "Edible"
   i.description "Something you can eat, yum"
   i.fields({
@@ -11,7 +11,7 @@ EdibleInterface = GraphQL::Interface.new do |i, type, field|
   })
 end
 
-AnimalProductInterface = GraphQL::Interface.new do |i, type, field|
+AnimalProductInterface = GraphQL::InterfaceType.new do |i, type, field|
   i.name "AnimalProduct"
   i.description "Comes from an animal, no joke"
   i.fields({
@@ -19,7 +19,7 @@ AnimalProductInterface = GraphQL::Interface.new do |i, type, field|
   })
 end
 
-DairyAnimalEnum = GraphQL::Enum.new do |e|
+DairyAnimalEnum = GraphQL::EnumType.new do |e|
   e.name "DairyAnimal"
   e.description "An animal which can yield milk"
   e.value("COW",    "Animal with black and white spots", value: 1)
@@ -62,7 +62,7 @@ MilkType = GraphQL::ObjectType.new do |t, type, field, arg|
   }
 end
 
-DairyProductUnion = GraphQL::Union.new(
+DairyProductUnion = GraphQL::UnionType.new(
   "DairyProduct",
   "Kinds of food made from milk",
   [MilkType, CheeseType]
@@ -84,7 +84,7 @@ class FetchField
   def initialize(type:, data:, id_type: !GraphQL::INT_TYPE)
     @type = type
     @data = data
-    @arguments = {"id" => GraphQL::InputValue.new(type: id_type, name: "id")}
+    @arguments = {"id" => GraphQL::Argument.new(type: id_type, name: "id")}
     @deprecation_reason = nil
   end
 

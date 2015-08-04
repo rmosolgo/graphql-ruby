@@ -1,4 +1,4 @@
-class GraphQL::Enum
+class GraphQL::EnumType
   include GraphQL::DefinitionHelpers::NonNullWithBang
   extend GraphQL::DefinitionHelpers::Definable
   attr_definable :name, :description
@@ -39,9 +39,9 @@ class GraphQL::Enum
     @values[value_name].value
   end
 
-  # A value within an {Enum}
+  # A value within an {EnumType}
   #
-  # Created with {Enum#value}
+  # Created with {EnumType#value}
   class EnumValue
     attr_reader :name, :description, :deprecation_reason, :value
     def initialize(name:, description:, deprecation_reason:, value:)

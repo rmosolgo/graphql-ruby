@@ -1,9 +1,9 @@
 # A collection of {ObjectType}s
 #
 # @example a union of types
-#   PetUnion = GraphQL::Union.new("Pet", "House pets", [DogType, CatType])
+#   PetUnion = GraphQL::UnionType.new("Pet", "House pets", [DogType, CatType])
 #
-class GraphQL::Union
+class GraphQL::UnionType
   include GraphQL::DefinitionHelpers::NonNullWithBang
   attr_reader :name, :description, :possible_types
   def initialize(name, desc, types)
@@ -16,7 +16,7 @@ class GraphQL::Union
     GraphQL::TypeKinds::UNION
   end
 
-  # @see {Interface#resolve_type}
+  # @see {InterfaceType#resolve_type}
   def resolve_type(object)
     type_name = object.class.name
     possible_types.find {|t| t.name == type_name}

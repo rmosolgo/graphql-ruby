@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe GraphQL::Enum do
+describe GraphQL::EnumType do
   let(:enum) { DairyAnimalEnum }
 
   it 'coerces names to underlying values' do

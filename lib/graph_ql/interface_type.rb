@@ -1,7 +1,7 @@
 # A collection of types which implement the same fields
 #
 # @example An interface with three required fields
-#   DeviceInterface = GraphQL::Interface.new do |i, types, fields|
+#   DeviceInterface = GraphQL::InterfaceType.new do |i, types, fields|
 #     i.name("Device")
 #     i.description("Hardware devices for computing")
 #     i.fields({
@@ -11,7 +11,7 @@
 #     })
 #   end
 #
-class GraphQL::Interface < GraphQL::ObjectType
+class GraphQL::InterfaceType < GraphQL::ObjectType
   def kind
     GraphQL::TypeKinds::INTERFACE
   end

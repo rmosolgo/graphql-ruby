@@ -40,7 +40,7 @@ describe GraphQL::Schema::TypeValidator do
 
   describe "when a Union isnt valid" do
     let(:object) {
-      GraphQL::Union.new("Something", "some union", [DairyProductInputType])
+      GraphQL::UnionType.new("Something", "some union", [DairyProductInputType])
     }
     let(:errors) { e = []; GraphQL::Schema::TypeValidator.new.validate(object, e); e;}
     it 'must be 2+ types, must be only object types' do

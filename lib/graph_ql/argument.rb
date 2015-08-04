@@ -1,7 +1,7 @@
-# Used for defined arguments
+# Used for defined arguments ({Field}, {InputObjectType})
 #
 # Created by {ArgumentDefiner}
-class GraphQL::InputValue
+class GraphQL::Argument
   attr_reader :type, :description, :default_value
   attr_accessor :name
   def initialize(type:, description: nil, default_value: nil, name: nil)
