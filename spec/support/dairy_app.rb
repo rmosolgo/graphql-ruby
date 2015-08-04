@@ -1,4 +1,4 @@
-require_relative './dummy_data'
+require_relative './dairy_data'
 
 EdibleInterface = GraphQL::InterfaceType.new do |i, type, field|
   i.name "Edible"

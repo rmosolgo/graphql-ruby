@@ -1,3 +1,15 @@
+# A finite set of possible values, represented in query strings with
+# SCREAMING_CASE_NAMES
+#
+# @example An enum of programming languages
+#
+#   LanguageEnum = GraphQL::EnumType.new do |e|
+#     e.name("Languages")
+#     e.descriptions("Programming languages for Web projects")
+#     e.value("PYTHON", "A dynamic, function-oriented language")
+#     e.value("RUBY", "A very dynamic language aimed at programmer happiness")
+#     e.value("JAVASCRIPT", "Accidental lingua franca of the web")
+#   end
 class GraphQL::EnumType
   include GraphQL::DefinitionHelpers::NonNullWithBang
   extend GraphQL::DefinitionHelpers::Definable
