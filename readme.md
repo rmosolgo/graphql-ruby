@@ -1,4 +1,4 @@
-# graphql ![graphql-ruby](graphql-ruby.svg =60x)
+# graphql <img src="https://cloud.githubusercontent.com/assets/2231765/9094460/cb43861e-3b66-11e5-9fbf-71066ff3ab13.png" height=40 alt="graphql-ruby"/>
 
 [![Build Status](https://travis-ci.org/rmosolgo/graphql-ruby.svg?branch=master)](https://travis-ci.org/rmosolgo/graphql-ruby)
 [![Gem Version](https://badge.fury.io/rb/graphql.svg)](https://rubygems.org/gems/graphql)
@@ -115,3 +115,7 @@
 - Other implementations: [graphql-links](https://github.com/emmenko/graphql-links)
 - `graphql-ruby` + Rails demo ([src](https://github.com/rmosolgo/graphql-ruby-demo) / [heroku](http://graphql-ruby-demo.herokuapp.com))
 - [GraphQL Slack](https://graphql-slack.herokuapp.com/)
+
+## P.S. 
+
+Thanks to @sgwilym for the great logo!
