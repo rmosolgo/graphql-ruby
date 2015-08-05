@@ -1,4 +1,4 @@
-# graphql
+# graphql ![graphql-ruby](graphql-ruby.svg =60x)
 
 [![Build Status](https://travis-ci.org/rmosolgo/graphql-ruby.svg?branch=master)](https://travis-ci.org/rmosolgo/graphql-ruby)
 [![Gem Version](https://badge.fury.io/rb/graphql.svg)](https://rubygems.org/gems/graphql)
