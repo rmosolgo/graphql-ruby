@@ -86,14 +86,18 @@
     - `@skip` has precedence over `@include`
     - directives on fragments: http://facebook.github.io/graphql/#sec-Fragment-Directives
   - `__type { fields }` shouldn't include `__typename` https://github.com/graphql/graphql-js/issues/73#issuecomment-123119823
+    - `__typename` works on unions
+    - add `__schema` dynamically
+    - https://github.com/graphql/graphql-js/blob/98efcbd7b37df5f5ae548eb05830a5856209bd90/src/execution/execute.js#L676-L684
 - Field merging
   - if you were to request a field, then request it in a fragment, it would get looked up twice
   - https://github.com/graphql/graphql-js/issues/19#issuecomment-118515077
 - Code clean-up
   - Unify unwrapping types (It's on `TypeKind` but it's still not right)
   - Use StarWarsSchema for tests
+- Better definition API
 - Cook up some path other than "n+1s everywhere"
-  - See Sangria's `project` approach
+  - See Sangria's `project` approach (in progress)
 
 
 ## Goals
@@ -116,6 +120,6 @@
 - `graphql-ruby` + Rails demo ([src](https://github.com/rmosolgo/graphql-ruby-demo) / [heroku](http://graphql-ruby-demo.herokuapp.com))
 - [GraphQL Slack](https://graphql-slack.herokuapp.com/)
 
-## P.S. 
+## P.S.
 
 Thanks to @sgwilym for the great logo!
