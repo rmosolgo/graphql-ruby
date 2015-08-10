@@ -4,7 +4,7 @@ class GraphQL::Query::FieldResolutionStrategy
   def initialize(ast_field, parent_type, target, operation_resolver)
     field_name = ast_field.name
     field = parent_type.fields[field_name] || raise("No field found on #{parent_type.name} '#{parent_type}' for '#{field_name}'")
-    arguments = GraphQL::Query::Arguments.new(ast_field.arguments, field.arguments, operation_resolver.variables).to_h
+    arguments = GraphQL::Query::Arguments.new(ast_field.arguments, field.arguments, operation_resolver.variables)
     value = field.resolve(target, arguments, operation_resolver.context)
     if value.nil?
       @result_value = value

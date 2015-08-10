@@ -128,7 +128,7 @@ QueryType = GraphQL::ObjectType.new do |t, types, field, arg|
       f.arguments({product: arg.build({type: DairyProductInputType})})
       f.resolve -> (t, a, c) {
         products = CHEESES.values + MILKS.values
-        source =  a["product"]["source"]
+        source =  a["product"][:source] # String or sym is ok
         if !source.nil?
           products = products.select { |p| p.source == source }
         end
@@ -154,7 +154,7 @@ MutationType = GraphQL::ObjectType.new do |t, type, field, arg|
       f.type(!type[!type.Int])
       f.arguments(value: arg.build(type: !type.Int))
       f.resolve -> (o, args, ctx) {
-        GLOBAL_VALUES << args["value"]
+        GLOBAL_VALUES << args[:value]
         GLOBAL_VALUES
       }
     }

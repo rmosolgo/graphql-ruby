@@ -1,13 +1,22 @@
-# Creates a plain hash out of arguments, looking up variables if necessary
+require 'forwardable'
+
+# Provide read-only access to arguments by string or symbol names.
 class GraphQL::Query::Arguments
-  attr_reader :to_h
+  extend Forwardable
+
   def initialize(ast_arguments, argument_hash, variables)
-    @to_h = ast_arguments.reduce({}) do |memo, arg|
+    @hash = ast_arguments.reduce({}) do |memo, arg|
       arg_defn = argument_hash[arg.name]
       value = reduce_value(arg.value, arg_defn, variables)
       memo[arg.name] = value
       memo
     end
+  end
+
+  def_delegators :@hash, :keys, :values
+
+  def [](key)
+    @hash[key.to_s]
   end
 
   private
@@ -18,7 +27,7 @@ class GraphQL::Query::Arguments
     elsif value.is_a?(GraphQL::Nodes::Enum)
       value = arg_defn.type.coerce(value.name)
     elsif value.is_a?(GraphQL::Nodes::InputObject)
-      value = self.class.new(value.pairs, arg_defn.type.input_fields, variables).to_h
+      value = self.class.new(value.pairs, arg_defn.type.input_fields, variables)
     else
       value
     end
