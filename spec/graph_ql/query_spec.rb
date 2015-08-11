@@ -14,7 +14,11 @@ describe GraphQL::Query do
         }
         fromSource(source: COW) { id }
         fromSheep: fromSource(source: SHEEP) { id }
-        firstSheep: searchDairy(product: {source: SHEEP}) { ... dairyFields, ... milkFields }
+        firstSheep: searchDairy(product: {source: SHEEP}) {
+          __typename,
+          ... dairyFields,
+          ... milkFields
+        }
         favoriteEdible { __typename, fatContent }
       }
       fragment cheeseFields on Cheese { flavor }
@@ -41,7 +45,7 @@ describe GraphQL::Query do
           },
           "fromSource" => [{ "id" => 1 }, {"id" => 2}],
           "fromSheep"=>[{"id"=>3}],
-          "firstSheep" => { "flavor" => "Manchego" },
+          "firstSheep" => { "__typename" => "Cheese", "flavor" => "Manchego" },
           "favoriteEdible"=>{"__typename"=>"Milk", "fatContent"=>0.04},
       }}
       assert_equal(expected, result)

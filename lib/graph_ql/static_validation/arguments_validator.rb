@@ -5,6 +5,7 @@ class GraphQL::StaticValidation::ArgumentsValidator
   def validate(context)
     visitor = context.visitor
     visitor[GraphQL::Nodes::Field] << -> (node, parent) {
+      return if node.name == "__typename" # not in the schema
       field_defn = context.field_definition
       validate_node(node, field_defn, context)
     }

@@ -33,9 +33,7 @@ class GraphQL::ObjectType
   # Define fields to be `new_fields`, normalize with {StringNamedHash}
   # @param new_fields [Hash] The fields exposed by this type
   def fields=(new_fields)
-    stringified_fields = GraphQL::DefinitionHelpers::StringNamedHash.new(new_fields).to_h
-    stringified_fields["__typename"] = GraphQL::Introspection::TypenameField.create(self)
-    @fields = stringified_fields
+    @fields = GraphQL::DefinitionHelpers::StringNamedHash.new(new_fields).to_h
   end
 
   # @overload interfaces(new_interfaces)

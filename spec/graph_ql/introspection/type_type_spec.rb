@@ -16,7 +16,6 @@ describe GraphQL::Introspection::TypeType do
     {"name"=>"flavor",      "isDeprecated" => false, "type" => { "name" => "Non-Null", "ofType" => { "name" => "String"}}},
     {"name"=>"source",      "isDeprecated" => false, "type" => { "name" => "Non-Null", "ofType" => { "name" => "DairyAnimal"}}},
     {"name"=>"similarCheeses", "isDeprecated"=>false, "type"=>{"name"=>"Cheese", "ofType"=>nil}},
-    {"name"=>"__typename",  "isDeprecated"=>false,    "type"=> { "name" => "Non-Null", "ofType" => { "name" => "String"}}},
   ]}
 
   let(:dairy_animals) {[
@@ -41,7 +40,6 @@ describe GraphQL::Introspection::TypeType do
           {"type"=>{"name"=>"DairyAnimal", "ofType"=>nil}},
           {"type"=>{"name"=>"Non-Null", "ofType"=>{"name"=>"Float"}}},
           {"type"=>{"name"=>"List", "ofType"=>{"name"=>"String"}}},
-          {"type"=>{"name"=>"Non-Null", "ofType"=>{"name"=>"String"}}}
         ]
       },
       "dairyAnimal"=>{
@@ -60,7 +58,6 @@ describe GraphQL::Introspection::TypeType do
         "possibleTypes"=>[{"name"=>"Cheese"}, {"name"=>"Milk"}],
         "fields"=>[
           {"name"=>"source"},
-          {"name"=>"__typename"},
         ]
       }
     }}
@@ -76,8 +73,7 @@ describe GraphQL::Introspection::TypeType do
     |}
     let(:deprecated_fields) { {"name"=>"fatContent", "isDeprecated"=>true, "type"=>{"name"=>"Non-Null", "ofType"=>{"name"=>"Float"}}} }
     it 'can expose deprecated fields' do
-      typename = cheese_fields.pop
-      new_cheese_fields = cheese_fields + [deprecated_fields, typename]
+      new_cheese_fields = cheese_fields + [deprecated_fields]
       expected = { "data" => {
         "cheeseType" => {
           "name"=> "Cheese",

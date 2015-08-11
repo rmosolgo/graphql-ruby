@@ -85,8 +85,7 @@
   - Directives:
     - `@skip` has precedence over `@include`
     - directives on fragments: http://facebook.github.io/graphql/#sec-Fragment-Directives
-  - `__type { fields }` shouldn't include `__typename` https://github.com/graphql/graphql-js/issues/73#issuecomment-123119823
-    - `__typename` works on unions
+  - dynamic introspection fields
     - add `__schema` dynamically
     - https://github.com/graphql/graphql-js/blob/98efcbd7b37df5f5ae548eb05830a5856209bd90/src/execution/execute.js#L676-L684
 - Field merging

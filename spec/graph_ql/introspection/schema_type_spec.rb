@@ -23,7 +23,6 @@ describe GraphQL::Introspection::SchemaType do
             {"name"=>"favoriteEdible"},
             {"name"=>"searchDairy"},
             {"name"=>"error"},
-            {"name"=>"__typename"},
             {"name"=>"__type"},
             {"name"=>"__schema"},
           ]
@@ -31,7 +30,6 @@ describe GraphQL::Introspection::SchemaType do
         "mutationType"=> {
           "fields"=>[
             {"name"=>"pushValue"},
-            {"name"=>"__typename"}
           ]
         },
       }

@@ -6,6 +6,7 @@ class GraphQL::StaticValidation::FieldsAreDefinedOnType
   def validate(context)
     visitor = context.visitor
     visitor[GraphQL::Nodes::Field] << -> (node, parent) {
+      return if node.name == "__typename" # this is fulfilled dynamically, so don't bother checking the type system
       parent_type = context.object_types[-2]
       parent_type = parent_type.kind.unwrap(parent_type)
       validate_field(context.errors, node, parent_type, parent)
