@@ -79,7 +79,7 @@ class GraphQL::StaticValidation::TypeStack
       parent_type = stack.object_types.last
       parent_type = parent_type.kind.unwrap(parent_type)
       if parent_type.kind.fields?
-        field_class = parent_type.fields[node.name]
+        field_class = stack.schema.get_field(parent_type, node.name)
         stack.field_definitions.push(field_class)
         if !field_class.nil?
           next_object_type = field_class.type
@@ -112,7 +112,8 @@ class GraphQL::StaticValidation::TypeStack
 
   # A no-op strategy (don't handle this node)
   class NullStrategy
-    def push(stack, node);  end
-    def pop(stack, node);   end
+    def self.new; self; end
+    def self.push(stack, node);  end
+    def self.pop(stack, node);   end
   end
 end

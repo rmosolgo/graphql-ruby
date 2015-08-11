@@ -14,11 +14,6 @@ class GraphQL::Schema
         f.arguments({name: arg.build(type: !type.String)})
         f.type(!GraphQL::Introspection::TypeType)
         f.resolve -> (o, a, c) { self.types[a["name"]] }
-      end,
-      "__schema" =>   GraphQL::Field.new do |f|
-        f.description("This GraphQL schema")
-        f.type(!GraphQL::Introspection::SchemaType)
-        f.resolve -> (o, a, c) { self }
       end
     })
 
@@ -37,6 +32,18 @@ class GraphQL::Schema
   # @returns Hash
   def types
     @types ||= TypeReducer.new(query, {}).result
+  end
+
+  # Resolve field named `field_name` for type `parent_type`.
+  # Handles dynamic fields `__typename` and `__schema`, too
+  def get_field(parent_type, field_name)
+    if field_name == "__typename"
+      GraphQL::Introspection::TypenameField.create(parent_type)
+    elsif field_name == "__schema" && parent_type == query
+      GraphQL::Introspection::SchemaField.create(self)
+    else
+      parent_type.fields[field_name]
+    end
   end
 end
 
