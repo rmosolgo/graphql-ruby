@@ -61,5 +61,11 @@ class GraphQL::StaticValidation::Validator
     def directive_definition
       @type_stack.directive_definitions.last
     end
+
+    # Don't try to validate dynamic fields
+    # since they aren't defined by the type system
+    def skip_field?(field_name)
+      GraphQL::Schema::DYNAMIC_FIELDS.include?(field_name)
+    end
   end
 end

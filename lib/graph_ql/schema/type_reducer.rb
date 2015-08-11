@@ -13,6 +13,13 @@ class GraphQL::Schema::TypeReducer
     end
   end
 
+  # Reduce all of `types` and return the combined result
+  def self.find_all(types)
+    types.reduce({}) do |memo, type|
+      self.new(type, memo).result
+    end
+  end
+
   private
 
   def find_types(type, type_hash)

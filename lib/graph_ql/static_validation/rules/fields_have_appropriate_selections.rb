@@ -5,7 +5,7 @@ class GraphQL::StaticValidation::FieldsHaveAppropriateSelections
 
   def validate(context)
     context.visitor[GraphQL::Nodes::Field] << -> (node, parent)  {
-      return if node.name == "__typename" || node.name == "__schema" # fulfilled dynamically, not in the schema
+      return if context.skip_field?(node.name)
       field_defn = context.field_definition
       validate_field_selections(node, field_defn, context.errors)
     }

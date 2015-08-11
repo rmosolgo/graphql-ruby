@@ -62,6 +62,7 @@ require 'graph_ql/introspection/field_type'
 require 'graph_ql/introspection/directive_type'
 require 'graph_ql/introspection/schema_type'
 require 'graph_ql/introspection/schema_field'
+require 'graph_ql/introspection/type_by_name_field'
 require 'graph_ql/introspection/introspection_query'
 
 require 'graph_ql/nodes'
