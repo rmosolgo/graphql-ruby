@@ -28,22 +28,35 @@ DairyAnimalEnum = GraphQL::EnumType.new do |e|
   e.value("YAK",    "Animal with long hair", deprecation_reason: "Out of fashion")
 end
 
-CheeseType = GraphQL::ObjectType.new do |t, type, field, arg|
-  t.name "Cheese"
-  t.description "Cultured dairy product"
-  t.interfaces [EdibleInterface, AnimalProductInterface]
-  t.fields = {
-    id:           field.build(type: !type.Int, desc: "Unique identifier"),
-    flavor:       field.build(type: !type.String, desc: "Kind of cheese"),
-    source:       field.build(type: !DairyAnimalEnum, desc: "Animal which produced the milk for this cheese"),
-    similarCheeses: GraphQL::Field.new do |f|
-      f.description "Cheeses like this one"
-      f.type(t)
-      f.arguments({source: arg.build(type: !type[!DairyAnimalEnum])})
-      f.resolve -> (t, a, c) { CHEESES.values.find { |c| c.source == a["source"] } }
-    end,
-    fatContent:   field.build(type: !type.Float, desc: "Percentage which is milkfat", deprecation_reason: "Diet fashion has changed"),
-  }
+CheeseType = GraphQL::ObjectType.define do
+  name "Cheese"
+  description "Cultured dairy product"
+  interfaces [EdibleInterface, AnimalProductInterface]
+
+  field :id, !types.Int, "Unique identifier"
+
+  field :flavor do
+    type(!types.String)
+    description("Kind of Cheese")
+  end
+
+  field :source do
+    type(!DairyAnimalEnum)
+    description("Animal which produced the milk for this cheese")
+  end
+
+  field :similarCheeses do
+    type -> { CheeseType }
+    description("Cheeses like this one")
+    argument :source, !types[!DairyAnimalEnum]
+    resolve -> (t, a, c) { CHEESES.values.find { |c| c.source == a["source"] } }
+  end
+
+  field :fatContent do
+    type(!GraphQL::FLOAT_TYPE)
+    description("Percentage which is milkfat")
+    deprecation_reason("Diet fashion has changed")
+  end
 end
 
 MilkType = GraphQL::ObjectType.new do |t, type, field, arg|

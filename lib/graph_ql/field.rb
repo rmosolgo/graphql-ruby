@@ -11,18 +11,48 @@
 #   end
 #
 class GraphQL::Field
+  DEFAULT_RESOLVE = -> (o, a, c) { GraphQL::Query::DEFAULT_RESOLVE }
   extend GraphQL::DefinitionHelpers::Definable
+  include GraphQL::DefinitionHelpers::DefinedByConfig
   attr_definable(:arguments, :deprecation_reason, :name, :description, :type)
+
+  class DefinitionConfig
+    extend GraphQL::DefinitionHelpers::Definable
+    attr_definable :name, :description, :type, :deprecation_reason, :resolve
+    def initialize
+      @arguments = {}
+    end
+
+    def types
+      GraphQL::DefinitionHelpers::TypeDefiner.instance
+    end
+
+    def argument(name, type)
+      # todo: support description & deprecation
+      @arguments[name.to_s] = GraphQL::Argument.new(name: name.to_s, type: type)
+    end
+
+    def to_instance
+      object = GraphQL::Field.new
+      object.name = name
+      object.type = type
+      object.description = description
+      object.deprecation_reason = deprecation_reason
+      object.resolve = resolve
+      object.arguments = @arguments
+      object
+    end
+  end
 
   def initialize
     @arguments = {}
-    @resolve_proc = -> (o, a, c) { GraphQL::Query::DEFAULT_RESOLVE }
+    @resolve_proc = DEFAULT_RESOLVE
     yield(
       self,
       GraphQL::DefinitionHelpers::TypeDefiner.instance,
       GraphQL::DefinitionHelpers::FieldDefiner.instance,
       GraphQL::DefinitionHelpers::ArgumentDefiner.instance
-    )
+    ) if block_given?
   end
 
   def arguments(new_arguments=nil)
@@ -57,6 +87,10 @@ class GraphQL::Field
     else
       @resolve_proc.call(proc_or_object, arguments, context)
     end
+  end
+
+  def resolve=(resolve_proc)
+    @resolve_proc = resolve_proc || DEFAULT_RESOLVE
   end
 
   # @overload type(return_type)

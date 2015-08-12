@@ -4,17 +4,47 @@
 class GraphQL::ObjectType
   include GraphQL::DefinitionHelpers::NonNullWithBang
   extend GraphQL::DefinitionHelpers::Definable
+  include GraphQL::DefinitionHelpers::DefinedByConfig
   attr_definable :name, :description, :interfaces, :fields
 
+  class DefinitionConfig
+    extend GraphQL::DefinitionHelpers::Definable
+    attr_definable :name, :description, :interfaces
+    def initialize
+      @fields = {}
+    end
+
+    def types
+      GraphQL::DefinitionHelpers::TypeDefiner.instance
+    end
+
+    def field(name, type = nil, desc = nil, &block)
+      field = GraphQL::Field.define(&block)
+      type && field.type = type
+      desc && field.description = desc
+      field.name ||= name.to_s
+      @fields[name.to_s] = field
+    end
+
+    def to_instance
+      object = GraphQL::ObjectType.new
+      object.name = name
+      object.description = description
+      object.fields = @fields
+      object.interfaces = interfaces
+      object
+    end
+  end
+
   def initialize(&block)
-    self.fields = []
+    self.fields = {}
     self.interfaces = []
     yield(
       self,
       GraphQL::DefinitionHelpers::TypeDefiner.instance,
       GraphQL::DefinitionHelpers::FieldDefiner.instance,
       GraphQL::DefinitionHelpers::ArgumentDefiner.instance
-    )
+    ) if block_given?
   end
 
   # @overload fields(new_fields)
@@ -49,10 +79,14 @@ class GraphQL::ObjectType
   #
   def interfaces(new_interfaces=nil)
     if !new_interfaces.nil?
-      @interfaces = new_interfaces
-      new_interfaces.each {|i| i.possible_types << self }
+      self.interfaces = new_interfaces
     end
     @interfaces
+  end
+
+  def interfaces=(new_interfaces)
+    new_interfaces.each {|i| i.possible_types << self }
+    @interfaces = new_interfaces
   end
 
   def kind
