@@ -9,72 +9,72 @@
  - [Introduction](https://github.com/rmosolgo/graphql-ruby/blob/master/guides/introduction.md)
  - [API Documentation](http://www.rubydoc.info/github/rmosolgo/graphql-ruby)
 
+## Installation
+
+Install from RubyGems by adding it to your `Gemfile`, then bundling.
+
+```ruby
+# Gemfile
+gem 'graphql'
+```
+
+```
+$ bundle install
+```
+
 ## Overview
 
-- __Install the gem__:
+#### Declare types & build a schema
 
-  ```ruby
-  # Gemfile
-  gem 'graphql'
-  ```
+```ruby
+# Declare a type...
+PostType = GraphQL::ObjectType.define
+  name "Post"
+  description "A blog post"
 
-  ```
-  $ bundle install
-  ```
+  field :id, !types.ID
+  field :title, !types.String
+  field :body, !types.String
+  field :comments, types[!CommentType]
+end
 
-- __Declare types & build a schema__:
+# ...and a query root
+QueryType = GraphQL::ObjectType.define
+  name "Query"
+  description "The query root of this schema"
 
-  ```ruby
-  # Declare a type...
-  PostType = GraphQL::ObjectType.new do |t, types, field|
-    t.name "Post"
-    t.description "A blog post"
-    t.fields({
-      id:       field.build(type: !types.Int),
-      title:    field.build(type: !types.String),
-      body:     field.build(type: !types.String),
-      comments: field.build(type: types[!CommentType])
-    })
+  field :post do
+    argument :id, !types.ID
+    resolve -> (obj, args, ctx) { Post.find(args["id"]) }
   end
+end
 
-  # ...and a query root
-  QueryType = GraphQL::ObjectType.new do |t, types, field, arg|
-    t.name "Query"
-    t.description "The query root of this schema"
-    t.fields({
-      post: GraphQL::Field.new do |f|
-        f.arguments(id: arg.build(type: !types.Int))
-        f.resolve -> (object, args, context) {
-          Post.find(args["id"])
-        }
-      end
-    })
-  end
+# Then create your schema
+Schema = GraphQL::Schema.new(query: QueryType)
+```
 
-  # Then create your schema
-  Schema = GraphQL::Schema.new(query: QueryType, mutation: nil)
-  ```
+See also:
+  - the [test schema](https://github.com/rmosolgo/graphql-ruby/blob/master/spec/support/dairy_app.rb)
+  - [`graphql-ruby-demo`](https://github.com/rmosolgo/graphql-ruby-demo) for an example schema on Rails
 
-  See also:
-    - the [test schema](https://github.com/rmosolgo/graphql-ruby/blob/master/spec/support/dummy_app.rb)
-    - [`graphql-ruby-demo`](https://github.com/rmosolgo/graphql-ruby-demo) for an example schema on Rails
+#### Execute queries
 
-- __Execute queries__:
+Execute GraphQL queries on a given schema, from a query string.
 
-  ```ruby
-  query = GraphQL::Query.new(Schema, query_string)
-  result_hash = query.result
-  # {
-  #   "data" => {
-  #     "post" => {
-  #        "id" => 1,
-  #        "title" => "GraphQL is nice"
-  #     }
-  #   }
-  # }
-  ```
+```ruby
+query = GraphQL::Query.new(Schema, query_string)
+result_hash = query.result
+# {
+#   "data" => {
+#     "post" => {
+#        "id" => 1,
+#        "title" => "GraphQL is nice"
+#     }
+#   }
+# }
+```
 
-  See also:
+See also:
   - [query_spec.rb](https://github.com/rmosolgo/graphql-ruby/blob/master/spec/graph_ql/query_spec.rb) for an example of query execution.
   -  [`queries_controller.rb`](https://github.com/rmosolgo/graphql-ruby-demo/blob/master/app/controllers/queries_controller.rb) for a Rails example
   - Try it on [heroku](http://graphql-ruby-demo.herokuapp.com)
@@ -85,15 +85,16 @@
   - Directives:
     - `@skip` has precedence over `@include`
     - directives on fragments: http://facebook.github.io/graphql/#sec-Fragment-Directives
+  - Add static validation for empty string
+  - Only run named operation
 - Field merging
   - if you were to request a field, then request it in a fragment, it would get looked up twice
   - https://github.com/graphql/graphql-js/issues/19#issuecomment-118515077
 - Code clean-up
   - Unify unwrapping types (It's on `TypeKind` but it's still not right)
-- Better definition API
+  - Accept native Ruby types in definitions, then convert them to GraphQL types
 - Cook up some path other than "n+1s everywhere"
   - See Sangria's `project` approach ([in progress](https://github.com/rmosolgo/graphql-ruby/pull/15))
-
 
 ## Goals
 
@@ -118,3 +119,4 @@
 ## P.S.
 
 Thanks to @sgwilym for the great logo!
+Definition API heavily inspired by @seanchas's [implementation of GraphQL](https://github.com/seanchas/graphql)

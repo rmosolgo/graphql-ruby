@@ -2,59 +2,55 @@
 # https://github.com/graphql/graphql-js/blob/master/src/__tests__/starWarsSchema.js
 require_relative './star_wars_data'
 
-EpisodeEnum = GraphQL::EnumType.new do |e|
-  e.name("Episode")
-  e.description("One of the films in the Star Wars Trilogy.")
+EpisodeEnum = GraphQL::EnumType.define do
+  name("Episode")
+  description("One of the films in the Star Wars Trilogy.")
 
-  e.value("NEWHOPE",  "Released in 1977", value: 4)
-  e.value("EMPIRE",   "Released in 1980", value: 5)
-  e.value("JEDI",     "Released in 1983", value: 6)
+  value("NEWHOPE",  "Released in 1977", value: 4)
+  value("EMPIRE",   "Released in 1980", value: 5)
+  value("JEDI",     "Released in 1983", value: 6)
 end
 
-CharacterInterface = GraphQL::InterfaceType.new do |i, types, field|
-  i.name("Character")
-  i.description("A character in the Star Wars Trilogy.")
+CharacterInterface = GraphQL::InterfaceType.define do
+  name("Character")
+  description("A character in the Star Wars Trilogy.")
 
-  i.fields({
-    id: field.build(type: !types.String, desc: "The id of the character."),
-    name: field.build(type: types.String, desc: "The name of the Character."),
-    friends: field.build(type: types[i], desc: "The friends of the character, or an empty list if they have none."),
-    appearsIn: field.build(type: types[EpisodeEnum], desc: "Which movies they appear in."),
-  })
+  field :id, !types.String, "The id of the character."
+  field :name, types.String, "The name of the Character."
+  field :friends, -> { types[CharacterInterface] }, "The friends of the character, or an empty list if they have none."
+  field :appearsIn, types[EpisodeEnum], "Which movies they appear in."
 end
 
-HumanType = GraphQL::ObjectType.new do |t, types, field|
-  t.name("Human")
-  t.description("A humanoid creature in the Star Wars universe.")
-  t.fields({
-    id: field.build(type: !types.String, desc: "The id of the human."),
-    name: field.build(type: types.String, desc: "The name of the human."),
-    friends: GraphQL::Field.new { |f|
-      f.type(types[CharacterInterface])
-      f.description("The friends of the human, or an empty list if they have none.")
-      f.resolve(GET_FRIENDS)
-    },
-    appearsIn: field.build(type: types[EpisodeEnum], desc: "Which movies they appear in."),
-    homePlanet: field.build(type: types.String, desc: "The home planet of the human, or null if unknown."),
-  })
-  t.interfaces([CharacterInterface])
+HumanType = GraphQL::ObjectType.define do
+  name("Human")
+  description("A humanoid creature in the Star Wars universe.")
+  field :id, !types.String, "The id of the human."
+  field :name, types.String, "The name of the human."
+  field :friends do
+    type(types[CharacterInterface])
+    description("The friends of the human, or an empty list if they have none.")
+    resolve(GET_FRIENDS)
+  end
+  field :appearsIn, types[EpisodeEnum], "Which movies they appear in."
+  field :homePlanet, types.String, "The home planet of the human, or null if unknown."
+
+  interfaces([CharacterInterface])
 end
 
-DroidType = GraphQL::ObjectType.new do |t, types, field|
-  t.name("Droid")
-  t.description("A mechanical creature in the Star Wars universe.")
-  t.fields({
-    id: field.build(type: !types.String, desc: "The id of the droid."),
-    name: field.build(type: types.String, desc: "The name of the droid."),
-    friends: GraphQL::Field.new { |f|
-      f.type(types[CharacterInterface])
-      f.description("The friends of the droid, or an empty list if they have none.")
-      f.resolve(GET_FRIENDS)
-    },
-    appearsIn: field.build(type: types[EpisodeEnum], desc: "Which movies they appear in."),
-    primaryFunction: field.build(type: types.String, desc: "The primary function of the droid."),
-  })
-  t.interfaces([CharacterInterface])
+DroidType = GraphQL::ObjectType.define do
+  name("Droid")
+  description("A mechanical creature in the Star Wars universe.")
+  field :id, !types.String, "The id of the droid."
+  field :name, types.String, "The name of the droid."
+  field :friends do
+    type(types[CharacterInterface])
+    description("The friends of the droid, or an empty list if they have none.")
+    resolve(GET_FRIENDS)
+  end
+  field :appearsIn, types[EpisodeEnum], "Which movies they appear in."
+  field :primaryFunction, types.String, "The primary function of the droid."
+
+  interfaces([CharacterInterface])
 end
 
 class FindRecordField < GraphQL::Field
@@ -72,16 +68,13 @@ class FindRecordField < GraphQL::Field
 end
 
 
-StarWarsQueryType = GraphQL::ObjectType.new do |t, types, field, arg|
-  t.name("Query")
-  t.fields({
-    hero: GraphQL::Field.new { |f|
-      f.arguments({
-        episode: arg.build(type: EpisodeEnum, desc: "If omitted, returns the hero of the whole saga. If provided, returns the hero of that particular episode"),
-      })
-      f.resolve -> (obj, args, ctx) { args["episode"] == 5 ? luke : artoo }
-    },
-    human: FindRecordField.new(HumanType, HUMAN_DATA),
-    droid: FindRecordField.new(DroidType, DROID_DATA),
-  })
+StarWarsQueryType = GraphQL::ObjectType.define do
+  name("Query")
+  field :hero do
+    argument :episode, EpisodeEnum,  "If omitted, returns the hero of the whole saga. If provided, returns the hero of that particular episode"
+    resolve -> (obj, args, ctx) { args["episode"] == 5 ? luke : artoo }
+  end
+
+  field :human, field: FindRecordField.new(HumanType, HUMAN_DATA)
+  field :droid, field: FindRecordField.new(DroidType, DROID_DATA)
 end

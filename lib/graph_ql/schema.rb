@@ -7,7 +7,7 @@ class GraphQL::Schema
 
   # @param query [GraphQL::ObjectType]  the query root for the schema
   # @param mutation [GraphQL::ObjectType, nil] the mutation root for the schema
-  def initialize(query:, mutation:)
+  def initialize(query:, mutation: nil)
     @query    = query
     @mutation = mutation
     @directives = DIRECTIVES.reduce({}) { |m, d| m[d.name] = d; m }

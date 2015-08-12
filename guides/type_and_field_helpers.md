@@ -4,21 +4,40 @@
 
 ## Defining Types
 
-You can use `GraphQL::ObjectType.new { ... }` to define types. The block receives:
+Use `GraphQL::ObjectType.define { ... }` to define types. Within the block, you can define a few properties:
 
-1. `t`, the type which is being created.
-1. `types`, which provides convenience methods for built-in types.
-1. `field`, which provides `.build` for defining fields
-1. `arg`, which provides `.build` for defining arguments
+- `name`
+- `description`
+- `interfaces` (accepts an array of `InterfaceType`s)
+- `field`, to define a field on this type
 
-The type accepts some config methods:
-
-1. `t.name(type_name)` defines the name
-1. `t.description(type_desc)` defines the description
-1. `t.fields(type_fields)` defines the fields. It accepts a hash of `name => field` values. The keys will be stringified during setting.
-1. `t.interfaces(interfaces)` accepts an array of interfaces which this type implements.
+You also have access to the `types` object, which exposes built-in scalar types (`types.Boolean`, `types.Int`, `types.Float`, `types.String`, `types.ID`)
 
 ## Defining Fields
-## The `types` Helper
-## The `field` Helper
-## The `arg` Helper
+
+Usually, you'll define fields while defining a type. The most common case defines a field name, type, and description. For example:
+
+```ruby
+field :name, types.String, "The name of this thing"
+```
+
+For a more complex definition, you can also pass a definition block. Within the block, you can define `name`, `type`, `description`, `resolve`, and `argument`. For example:
+
+```ruby
+field :comments do
+  type !types[!CommentType]
+
+  description "Comments on this Post"
+
+  argument :moderated, types.Boolean, default_value: true
+
+  resolve -> (obj, args, ctx) do
+     Comment.where(
+       post_id: obj.id,
+       moderated: args["moderated"]
+     )
+   end
+end
+```
+
+This field accepts an optional Boolean argument `moderated`, which it uses to filter results in the `resolve` method.

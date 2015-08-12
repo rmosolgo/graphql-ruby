@@ -1,28 +1,83 @@
-# These are valid values for a type's `fields` hash.
+# {Field}s belong to {ObjectType}s and {InterfaceType}s.
 #
-# You can also use {FieldDefiner#build} to create fields.
+# They're usually created with the `field` helper.
+#
 #
 # @example creating a field
-#   name_field = GraphQL::Field.new do |f, types|
-#     f.name("Name")
-#     f.type(!types.String)
-#     f.description("The name of this thing")
-#     f.resolve -> (object, arguments, context) { object.name }
+#   GraphQL::ObjectType.define do
+#     field :name, types.String, "The name of this thing "
+#   end
+#
+# @example creating a field that accesses a different property on the object
+#   GraphQL::ObjectType.define do
+#     # use the `property` option:
+#     field :firstName, types.String, property: :first_name
+#   end
+#
+# @example defining a field, then attaching it to a type
+#   name_field = GraphQL::Field.define do
+#     name("Name")
+#     type(!types.String)
+#     description("The name of this thing")
+#     resolve -> (object, arguments, context) { object.name }
+#   end
+#
+#   NamedType = GraphQL::ObjectType.define do
+#     # use the `field` option:
+#     field :name, field: name_field
 #   end
 #
 class GraphQL::Field
+  DEFAULT_RESOLVE = -> (o, a, c) { GraphQL::Query::DEFAULT_RESOLVE }
+  include GraphQL::DefinitionHelpers::DefinedByConfig
+  # These are deprecated:
   extend GraphQL::DefinitionHelpers::Definable
   attr_definable(:arguments, :deprecation_reason, :name, :description, :type)
 
+  class DefinitionConfig
+    extend GraphQL::DefinitionHelpers::Definable
+    attr_definable :name, :description, :type, :deprecation_reason, :resolve
+    def initialize
+      @arguments = {}
+    end
+
+    def types
+      GraphQL::DefinitionHelpers::TypeDefiner.instance
+    end
+
+    def argument(name, type, description = nil, default_value: nil)
+      @arguments[name.to_s] = GraphQL::Argument.new(
+        name: name.to_s,
+        type: type,
+        description: description,
+        default_value: nil,
+      )
+    end
+
+    def to_instance
+      object = GraphQL::Field.new
+      object.name = name
+      object.type = type
+      object.description = description
+      object.deprecation_reason = deprecation_reason
+      object.resolve = resolve
+      object.arguments = @arguments
+      object
+    end
+  end
+
   def initialize
     @arguments = {}
-    @resolve_proc = -> (o, a, c) { GraphQL::Query::DEFAULT_RESOLVE }
-    yield(
-      self,
-      GraphQL::DefinitionHelpers::TypeDefiner.instance,
-      GraphQL::DefinitionHelpers::FieldDefiner.instance,
-      GraphQL::DefinitionHelpers::ArgumentDefiner.instance
-    )
+    @resolve_proc = DEFAULT_RESOLVE
+    if block_given?
+      yield(
+        self,
+        GraphQL::DefinitionHelpers::TypeDefiner.instance,
+        GraphQL::DefinitionHelpers::FieldDefiner.instance,
+        GraphQL::DefinitionHelpers::ArgumentDefiner.instance
+      )
+      warn("Initializing with .new is deprecated, use .define instead! (see #{self})")
+    end
   end
 
   def arguments(new_arguments=nil)
@@ -38,6 +93,7 @@ class GraphQL::Field
   end
 
   # @overload resolve(definition_proc)
+  #   @deprecated use {.define} API instead
   #   Define this field to return a value with `definition_proc`
   #   @example defining the resolve method
   #     field.resolve -> (obj, args, ctx) { obj.get_value }
@@ -59,7 +115,12 @@ class GraphQL::Field
     end
   end
 
+  def resolve=(resolve_proc)
+    @resolve_proc = resolve_proc || DEFAULT_RESOLVE
+  end
+
   # @overload type(return_type)
+  #   @deprecated use {.define} API instead
   #   Define the return type for this field
   #   @param return_type [GraphQL::ObjectType, GraphQL::ScalarType] The type this field returns
   #
@@ -78,5 +139,9 @@ class GraphQL::Field
       @type = @type.call
     end
     @type
+  end
+
+  def to_s
+    "<Field: #{name || "not-named"}>"
   end
 end
