@@ -1,7 +1,12 @@
 # A collection of {ObjectType}s
 #
 # @example a union of types
-#   PetUnion = GraphQL::UnionType.new("Pet", "House pets", [DogType, CatType])
+#
+#   PetUnion = GraphQL::UnionType.define do
+#     name "Pet"
+#     description "Animals that live in your house"
+#     possible_types [DogType, CatType, FishType]
+#   end
 #
 class GraphQL::UnionType
   include GraphQL::DefinitionHelpers::NonNullWithBang

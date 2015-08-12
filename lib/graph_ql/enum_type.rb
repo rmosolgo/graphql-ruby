@@ -3,12 +3,12 @@
 #
 # @example An enum of programming languages
 #
-#   LanguageEnum = GraphQL::EnumType.new do |e|
-#     e.name("Languages")
-#     e.descriptions("Programming languages for Web projects")
-#     e.value("PYTHON", "A dynamic, function-oriented language")
-#     e.value("RUBY", "A very dynamic language aimed at programmer happiness")
-#     e.value("JAVASCRIPT", "Accidental lingua franca of the web")
+#   LanguageEnum = GraphQL::EnumType.define do
+#     name "Languages"
+#     description "Programming languages for Web projects"
+#     value("PYTHON", "A dynamic, function-oriented language")
+#     value("RUBY", "A very dynamic language aimed at programmer happiness")
+#     value("JAVASCRIPT", "Accidental lingua franca of the web")
 #   end
 class GraphQL::EnumType
   include GraphQL::DefinitionHelpers::NonNullWithBang
@@ -19,6 +19,7 @@ class GraphQL::EnumType
 
   class DefinitionConfig
     extend GraphQL::DefinitionHelpers::Definable
+    # These are deprecated:
     attr_definable :name, :description
     attr_reader :values
     def initialize
@@ -57,7 +58,7 @@ class GraphQL::EnumType
   end
 
   # Define a value within this enum
-  #
+  # @deprecated use {.define} API instead
   # @param name [String] the string representation of this value
   # @param description [String]
   # @param deprecation_reason [String] if provided, `deprecated?` will be true

@@ -10,6 +10,7 @@
 #   end
 #
 class GraphQL::InputObjectType < GraphQL::ObjectType
+  # Deprecated:
   attr_definable :input_fields
 
   class DefinitionConfig
@@ -23,16 +24,16 @@ class GraphQL::InputObjectType < GraphQL::ObjectType
       GraphQL::DefinitionHelpers::TypeDefiner.instance
     end
 
-    def input_field(name, type = nil, desc = nil, &block)
-      if block_given?
-        argument = GraphQL::Argument.define(&block)
+    def input_field(name, type = nil, desc = nil, default_value: nil, &block)
+      argument = if block_given?
+        GraphQL::Argument.define(&block)
       else
-        argument = GraphQL::Argument.new(
-          name: name,
-          type: type,
-          description: desc
-        )
+        GraphQL::Argument.new
       end
+      argument.name = name
+      type && argument.type = type
+      desc && argument.desc = desc
+      default_value && argument.default_value = default_value
       @input_fields[name.to_s] = argument
     end
 
@@ -46,6 +47,7 @@ class GraphQL::InputObjectType < GraphQL::ObjectType
   end
 
   # @overload input_fields(new_fields)
+  #   @deprecated use {.define} API instead
   #   Define allowed fields, normalized with {StringNamedHash}
   #   @param new_fields [Hash] allowed fields for this input object type
   #

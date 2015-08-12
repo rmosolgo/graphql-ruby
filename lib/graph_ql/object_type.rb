@@ -1,5 +1,23 @@
 # This type exposes fields on an object.
 #
+#  @example defining a type for your IMDB clone
+#    MovieType = GraphQL::ObjectType.define do
+#      name "Movie"
+#      description "A full-length film or a short film"
+#      interfaces [ProductionInterface, DurationInterface]
+#
+#      field :runtimeMinutes, !types.Int, property: :runtime_minutes
+#      field :director, PersonType
+#      field :cast, CastType
+#      field :starring, types[PersonType] do
+#        arguments :limit, types.Int
+#        resolve -> (object, args, ctx) {
+#          stars = object.cast.stars
+#          args[:limit] && stars = stars.limit(args[:limit])
+#          stars
+#        }
+#       end
+#    end
 #
 class GraphQL::ObjectType
   include GraphQL::DefinitionHelpers::NonNullWithBang
@@ -68,6 +86,7 @@ class GraphQL::ObjectType
   end
 
   # @overload fields(new_fields)
+  #   @deprecated use {.define} API instead
   #   Define `new_fields` as the fields this type exposes, uses {#fields=}
   #
   # @overload fields()
@@ -87,10 +106,8 @@ class GraphQL::ObjectType
   end
 
   # @overload interfaces(new_interfaces)
+  #   @deprecated use {.define} API instead
   #   Declare that this type implements `new_interfaces`.
-  #   Shovel this type into each interface's `possible_types` array.
-  #
-  #   (There's a bug here: if you define interfaces twice, it won't remove previous definitions.)
   #
   #   @param new_interfaces [Array<GraphQL::Interface>] interfaces that this type implements
   #
@@ -104,6 +121,10 @@ class GraphQL::ObjectType
     @interfaces
   end
 
+  #   Shovel this type into each interface's `possible_types` array.
+  #
+  #   (There's a bug here: if you define interfaces twice, it won't remove previous definitions.)
+  #   @param new_interfaces [Array<GraphQL::Interface>] interfaces that this type implements
   def interfaces=(new_interfaces)
     new_interfaces.each {|i| i.possible_types << self }
     @interfaces = new_interfaces

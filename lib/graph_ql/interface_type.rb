@@ -1,14 +1,13 @@
 # A collection of types which implement the same fields
 #
 # @example An interface with three required fields
-#   DeviceInterface = GraphQL::InterfaceType.new do |i, types, fields|
-#     i.name("Device")
-#     i.description("Hardware devices for computing")
-#     i.fields({
-#       ram:          fields.build(type: types.String),
-#       processor:    fields.build(type: ProcessorType),
-#       release_year: fields.build(type: types.Int),
-#     })
+#   DeviceInterface = GraphQL::InterfaceType.define do
+#     name("Device")
+#     description("Hardware devices for computing")
+#
+#     field :ram, types.String
+#     field :processor, ProcessorType
+#     field :release_year, types.Int
 #   end
 #
 class GraphQL::InterfaceType < GraphQL::ObjectType

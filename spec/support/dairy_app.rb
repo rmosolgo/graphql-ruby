@@ -84,6 +84,7 @@ class FetchField
       type(return_type)
       description(desc)
       argument :id, id_type
+
       resolve -> (t, a, c) { data[a["id"].to_i] }
     end
   end

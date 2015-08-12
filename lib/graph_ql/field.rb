@@ -1,19 +1,37 @@
-# These are valid values for a type's `fields` hash.
+# {Field}s belong to {ObjectType}s and {InterfaceType}s.
 #
-# You can also use {FieldDefiner#build} to create fields.
+# They're usually created with the `field` helper.
+#
 #
 # @example creating a field
-#   name_field = GraphQL::Field.new do |f, types|
-#     f.name("Name")
-#     f.type(!types.String)
-#     f.description("The name of this thing")
-#     f.resolve -> (object, arguments, context) { object.name }
+#   GraphQL::ObjectType.define do
+#     field :name, types.String, "The name of this thing "
+#   end
+#
+# @example creating a field that accesses a different property on the object
+#   GraphQL::ObjectType.define do
+#     # use the `property` option:
+#     field :firstName, types.String, property: :first_name
+#   end
+#
+# @example defining a field, then attaching it to a type
+#   name_field = GraphQL::Field.define do
+#     name("Name")
+#     type(!types.String)
+#     description("The name of this thing")
+#     resolve -> (object, arguments, context) { object.name }
+#   end
+#
+#   NamedType = GraphQL::ObjectType.define do
+#     # use the `field` option:
+#     field :name, field: name_field
 #   end
 #
 class GraphQL::Field
   DEFAULT_RESOLVE = -> (o, a, c) { GraphQL::Query::DEFAULT_RESOLVE }
-  extend GraphQL::DefinitionHelpers::Definable
   include GraphQL::DefinitionHelpers::DefinedByConfig
+  # These are deprecated:
+  extend GraphQL::DefinitionHelpers::Definable
   attr_definable(:arguments, :deprecation_reason, :name, :description, :type)
 
   class DefinitionConfig
@@ -75,6 +93,7 @@ class GraphQL::Field
   end
 
   # @overload resolve(definition_proc)
+  #   @deprecated use {.define} API instead
   #   Define this field to return a value with `definition_proc`
   #   @example defining the resolve method
   #     field.resolve -> (obj, args, ctx) { obj.get_value }
@@ -101,6 +120,7 @@ class GraphQL::Field
   end
 
   # @overload type(return_type)
+  #   @deprecated use {.define} API instead
   #   Define the return type for this field
   #   @param return_type [GraphQL::ObjectType, GraphQL::ScalarType] The type this field returns
   #

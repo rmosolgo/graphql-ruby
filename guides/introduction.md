@@ -33,16 +33,14 @@ end
 Let's make type for `Post`:
 
 ```ruby
-# `t` is the newly-created type
 # `types` is a helper for declaring GraphQL types
-PostType = GraphQL::ObjectType.new do |t, types, field|
-  t.name "Post"
-  t.description "A blog entry"
-  t.fields({
-    id:     field.build(type: !types.Int,     desc: "The unique ID for this post"),
-    title:  field.build(type: !types.String,  desc: "The title of this post"),
-    body:   field.build(type: !types.String,  desc: "The body of this post"),
-  })
+PostType = GraphQL::ObjectType.define do
+  name "Post"
+  description "A blog entry"
+
+  field :id, !types.ID, "The unique ID for this post"
+  field :title, !types.String, "The title of this post"
+  field :body, !types.String,  "The body of this post"
 end
 ```
 
@@ -54,46 +52,35 @@ However, the post type isn't accessible yet because it's not attached to a query
 
 A query root is "just" a type. Its fields don't call methods on some object, though -- instead, they retrieve objects which will be read.
 
-#### A query field
-
-First, let's define a field for finding `Post` objects:
-
 ```ruby
-PostFindField = GraphQL::Field.new do |f, types, field, arg|
-  f.description "Find a Post by id"
-  # Return type of this field:
-  f.type PostType
-  # Arguments which this field expects:
-  f.arguments({id: arg.build({type: !types.Int})})
-  # How to fulfill this field:
-  f.resolve -> (object, arguments, context) { Post.find(arguments["id"]) }
+QueryRoot = GraphQL::ObjectType.define do
+  name "Query"
+  description "The query root for this schema"
+
+  field :post do
+    type PostType
+    description "Find a Post by id"
+    argument :id, !types.ID
+    resolve -> (object, arguments, context) {
+      Post.find(arguments["id"])
+    }
+  end
 end
 ```
 
-The `resolve` proc will be called with:
+The query root has one field, `post`,  which finds a `Post` by ID. The `resolve` proc will be called with:
 
 - `object`: The "parent" of this field (in the above case, it's the query root, not very useful)
 - `arguments`: A hash with arguments passed to the field (keys will be strings)
 - `context`: An arbitrary object defined when running the query (see [Executing queries](http://www.rubydoc.info/github/rmosolgo/graphql-ruby/file/guides/executing_queries.md))
 
-#### The query root type
 
-Next, create a type which has that field. We'll mount `PostFindField` with the name `post`.
-
-```ruby
-QueryRoot = GraphQL::ObjectType.new do |t|
-  t.name "Query"
-  t.description "The query root for this schema"
-  t.fields({
-    post: PostFindField,
-  })
-end
-```
+## Creating a Schema
 
 Lastly, create the schema:
 
 ```ruby
-Schema = GraphQL::Schema.new(query: QueryRoot, mutation: nil)
+Schema = GraphQL::Schema.new(query: QueryRoot)
 ```
 
 This schema could handle queries like:
@@ -121,14 +108,13 @@ end
 First, a `CommentType` to expose comments:
 
 ```ruby
-CommentType = GraphQL::ObjectType.new do |t, types, field|
-  t.name "Comment"
-  t.description "A reply to a post"
-  t.fields({
-    id:   field.build(type: !types.Int, desc: "The unique ID of this comment"),
-    body: field.build(type: !types.String, desc: "The content of this comment"),
-    post: field.build(type: !PostType, desc: "The post this comment replies to"),
-  })
+CommentType = GraphQL::ObjectType.define do
+  name "Comment"
+  description "A reply to a post"
+
+  field :id, !types.ID, "The unique ID of this comment"
+  field :body, !types.String, "The content of this comment"
+  field :post, !PostType, "The post this comment replies to"
 end
 ```
 
@@ -139,37 +125,20 @@ We should also add a `comments` field to `PostType`:
 ```ruby
 PostType = GraphQL::ObjectType.new do |t, types, field|
   # ... existing code ...
-  t.fields({
-    # ... existing field defs ...
-    comments: field.build(type: !types[!CommentType], description: "Responses to this post")  
-  })
+  field :comments, -> { !types[!CommentType] }, "Responses to this post"
 end
 ```
 
-`types[{SomeType}]` means that this field returns a _list_ of `SomeType`.
+`types[SomeType]` means that this field returns a _list_ of `SomeType`.
 
-There's a problem: `PostType` and `CommentType` have a circular dependency. You can't define `PostType` until `CommentType` is defined. You can't define `CommentType` until `PostType` is defined. Bummer.
-
-To deal with this, wrap one of the types in a lambda with `-> { ... }`. For example, update the comments field:
-
-```ruby
-PostType = GraphQL::ObjectType.new do |t, types, field|
-  # ... existing code ...
-  t.fields({
-    # ... existing field defs ...
-    comments: field.build(type: -> { !types[!CommentType] } , description: "Responses to this post")  
-  })
-end
-```
-
-Notice `type: -> { ... }`. The lambda will be evaluated later, after CommentType has been defined.
+`PostType` and `CommentType` have a circular dependency. To deal with this, wrap one of the types in a lambda with `-> { ... }`. The lambda will be evaluated when the schema is built (and after CommentType has been defined).
 
 ## Executing a Query
 
 After defining your schema, you can evaluate queries with `GraphQL::Query`. For example:
 
 ```ruby
-Schema = GraphQL::Schema.new(query: QueryRoot, mutation: nil) # QueryRoot defined above
+Schema = GraphQL::Schema.new(query: QueryRoot) # QueryRoot defined above
 query_string = "query getPost { post(id: 1) { id, title, comments { body } } }"
 
 query = GraphQL::Query.new(Schema, query_string)

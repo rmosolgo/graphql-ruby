@@ -5,7 +5,7 @@ require "singleton"
 module GraphQL
   # Turn a query string into an AST
   # @param string [String] a GraphQL query string
-  # @param as [Symbol] If you want to use this to parse some _piece_ of a document, pass the rule name (from {GraphQL::Parser::Parser})
+  # @param as [Symbol] If you want to use this to parse some _piece_ of a document, pass the rule name (from {GraphQL::Parser})
   # @return [GraphQL::Nodes::Document]
   def self.parse(string, as: nil)
     parser = as ? GraphQL::PARSER.send(as) : GraphQL::PARSER
