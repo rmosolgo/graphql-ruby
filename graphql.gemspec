@@ -1,6 +1,6 @@
 $:.push File.expand_path("../lib", __FILE__)
 
-require "graph_ql/version"
+require "graphql/version"
 
 Gem::Specification.new do |s|
   s.name        = 'graphql'

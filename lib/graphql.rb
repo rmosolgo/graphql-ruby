@@ -6,7 +6,7 @@ module GraphQL
   # Turn a query string into an AST
   # @param string [String] a GraphQL query string
   # @param as [Symbol] If you want to use this to parse some _piece_ of a document, pass the rule name (from {GraphQL::Parser})
-  # @return [GraphQL::Nodes::Document]
+  # @return [GraphQL::Language::Nodes::Document]
   def self.parse(string, as: nil)
     parser = as ? GraphQL::PARSER.send(as) : GraphQL::PARSER
     tree = parser.parse(string)
@@ -22,59 +22,56 @@ end
 
 # Order matters for these:
 
-require 'graph_ql/definition_helpers'
-require 'graph_ql/object_type'
+require 'graphql/definition_helpers'
+require 'graphql/object_type'
 
-require 'graph_ql/enum_type'
-require 'graph_ql/input_object_type'
-require 'graph_ql/interface_type'
-require 'graph_ql/list_type'
-require 'graph_ql/non_null_type'
-require 'graph_ql/union_type'
+require 'graphql/enum_type'
+require 'graphql/input_object_type'
+require 'graphql/interface_type'
+require 'graphql/list_type'
+require 'graphql/non_null_type'
+require 'graphql/union_type'
 
-require 'graph_ql/argument'
-require 'graph_ql/field'
-require 'graph_ql/type_kinds'
-require 'graph_ql/introspection/typename_field'
+require 'graphql/argument'
+require 'graphql/field'
+require 'graphql/type_kinds'
+require 'graphql/introspection/typename_field'
 
-require 'graph_ql/scalar_type'
-require 'graph_ql/boolean_type'
-require 'graph_ql/float_type'
-require 'graph_ql/id_type'
-require 'graph_ql/int_type'
-require 'graph_ql/string_type'
+require 'graphql/scalar_type'
+require 'graphql/boolean_type'
+require 'graphql/float_type'
+require 'graphql/id_type'
+require 'graphql/int_type'
+require 'graphql/string_type'
 
-require 'graph_ql/introspection/input_value_type'
-require 'graph_ql/introspection/enum_value_type'
-require 'graph_ql/introspection/type_kind_enum'
+require 'graphql/introspection/input_value_type'
+require 'graphql/introspection/enum_value_type'
+require 'graphql/introspection/type_kind_enum'
 
-require 'graph_ql/introspection/fields_field'
-require 'graph_ql/introspection/of_type_field'
-require 'graph_ql/introspection/input_fields_field'
-require 'graph_ql/introspection/possible_types_field'
-require 'graph_ql/introspection/enum_values_field'
-require 'graph_ql/introspection/interfaces_field'
+require 'graphql/introspection/fields_field'
+require 'graphql/introspection/of_type_field'
+require 'graphql/introspection/input_fields_field'
+require 'graphql/introspection/possible_types_field'
+require 'graphql/introspection/enum_values_field'
+require 'graphql/introspection/interfaces_field'
 
-require 'graph_ql/introspection/type_type'
-require 'graph_ql/introspection/arguments_field'
-require 'graph_ql/introspection/field_type'
+require 'graphql/introspection/type_type'
+require 'graphql/introspection/arguments_field'
+require 'graphql/introspection/field_type'
 
-require 'graph_ql/introspection/directive_type'
-require 'graph_ql/introspection/schema_type'
-require 'graph_ql/introspection/schema_field'
-require 'graph_ql/introspection/type_by_name_field'
-require 'graph_ql/introspection/introspection_query'
+require 'graphql/introspection/directive_type'
+require 'graphql/introspection/schema_type'
+require 'graphql/introspection/schema_field'
+require 'graphql/introspection/type_by_name_field'
+require 'graphql/introspection/introspection_query'
 
-require 'graph_ql/nodes'
-require 'graph_ql/parser'
-require 'graph_ql/transform'
-require 'graph_ql/visitor'
-require 'graph_ql/directive'
-require 'graph_ql/schema'
+require 'graphql/language'
+require 'graphql/directive'
+require 'graphql/schema'
 
 # Order does not matter for these:
 
-require 'graph_ql/query'
-require 'graph_ql/repl'
-require 'graph_ql/static_validation'
-require 'graph_ql/version'
+require 'graphql/query'
+require 'graphql/repl'
+require 'graphql/static_validation'
+require 'graphql/version'
