@@ -1,20 +1,20 @@
-GraphQL::Introspection::TypeType = GraphQL::ObjectType.new do |t, type, field|
-  t.name "__Type"
-  t.description "A type in the GraphQL schema"
+GraphQL::Introspection::TypeType = GraphQL::ObjectType.define do
+  name "__Type"
+  description "A type in the GraphQL schema"
 
-  t.fields = {
-    name:           field.build(type: !type.String, desc: "The name of this type"),
-    kind:           GraphQL::Field.new { |f|
-                      f.type GraphQL::Introspection::TypeKindEnum
-                      f.description "The kind of this type"
-                      f.resolve -> (target, a, c) { target.kind.name }
-                    },
-    description:    field.build(type: type.String, desc: "The description for this type"),
-    fields:         GraphQL::Introspection::FieldsField,
-    ofType:         GraphQL::Introspection::OfTypeField,
-    inputFields:    GraphQL::Introspection::InputFieldsField,
-    possibleTypes:  GraphQL::Introspection::PossibleTypesField,
-    enumValues:     GraphQL::Introspection::EnumValuesField,
-    interfaces:     GraphQL::Introspection::InterfacesField,
-  }
+  field :name, !types.String,  "The name of this type"
+  field :description, types.String, "What this type represents"
+
+  field :kind do
+    type GraphQL::Introspection::TypeKindEnum
+    description "The kind of this type"
+    resolve -> (target, a, c) { target.kind.name }
+  end
+
+  field :fields,          field: GraphQL::Introspection::FieldsField
+  field :ofType,          field: GraphQL::Introspection::OfTypeField
+  field :inputFields,     field: GraphQL::Introspection::InputFieldsField
+  field :possibleTypes,   field: GraphQL::Introspection::PossibleTypesField
+  field :enumValues,      field: GraphQL::Introspection::EnumValuesField
+  field :interfaces,      field: GraphQL::Introspection::InterfacesField
 end

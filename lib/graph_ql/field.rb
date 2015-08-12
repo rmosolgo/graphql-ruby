@@ -27,9 +27,13 @@ class GraphQL::Field
       GraphQL::DefinitionHelpers::TypeDefiner.instance
     end
 
-    def argument(name, type)
-      # todo: support description & deprecation
-      @arguments[name.to_s] = GraphQL::Argument.new(name: name.to_s, type: type)
+    def argument(name, type, description = nil, default_value: nil)
+      @arguments[name.to_s] = GraphQL::Argument.new(
+        name: name.to_s,
+        type: type,
+        description: description,
+        default_value: nil,
+      )
     end
 
     def to_instance

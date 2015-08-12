@@ -19,7 +19,7 @@ class GraphQL::ObjectType
       GraphQL::DefinitionHelpers::TypeDefiner.instance
     end
 
-    def field(name_or_pair, type = nil, desc = nil, &block)
+    def field(name_or_pair, type = nil, desc = nil, field: nil, property: nil, &block)
       if name_or_pair.is_a?(Hash)
         name = name_or_pair.keys.first
         value = name_or_pair[name]

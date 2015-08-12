@@ -93,6 +93,9 @@
 - Code clean-up
   - Unify unwrapping types (It's on `TypeKind` but it's still not right)
 - Better definition API
+  - update docs & guides
+  - update Introspection & specs
+  - Accept native Ruby types, then convert them to GraphQL types
 - Cook up some path other than "n+1s everywhere"
   - See Sangria's `project` approach ([in progress](https://github.com/rmosolgo/graphql-ruby/pull/15))
 
@@ -120,3 +123,4 @@
 ## P.S.
 
 Thanks to @sgwilym for the great logo!
+Definition API heavily inspired by @seanchas's [implementation of GraphQL](https://github.com/seanchas/graphql)

@@ -1,8 +1,8 @@
-GraphQL::Introspection::InputFieldsField = GraphQL::Field.new do |f, type|
-  f.name "inputFields"
-  f.description "fields on this input object"
-  f.type type[GraphQL::Introspection::InputValueType]
-  f.resolve -> (target, a, c) {
+GraphQL::Introspection::InputFieldsField = GraphQL::Field.define do
+  name "inputFields"
+  description "fields on this input object"
+  type types[GraphQL::Introspection::InputValueType]
+  resolve -> (target, a, c) {
     if target.kind.input_object?
       target.input_fields.values
     else

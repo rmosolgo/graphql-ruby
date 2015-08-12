@@ -1,10 +1,8 @@
-GraphQL::Introspection::InputValueType = GraphQL::ObjectType.new do |t, type, field|
-  t.name "__InputValue"
-  t.description "An input for a field or InputObject"
-  t.fields({
-    name:         field.build(type: !type.String, desc: "The key for this value"),
-    description:  field.build(type: type.String, desc: "What this value is used for"),
-    type:         field.build(type: -> { GraphQL::Introspection::TypeType }, desc: "The expected type for this value"),
-    defaultValue: field.build(type: type.String, property: :default_value, desc: "The value applied if no other value is provided")
-  })
+GraphQL::Introspection::InputValueType = GraphQL::ObjectType.define do
+  name "__InputValue"
+  description "An input for a field or InputObject"
+  field :name, !types.String, "The key for this value"
+  field :description, types.String, "What this value is used for"
+  field :type, -> { GraphQL::Introspection::TypeType }, "The expected type for this value"
+  field :defaultValue, types.String, "The value applied if no other value is provided", property: :default_value
 end

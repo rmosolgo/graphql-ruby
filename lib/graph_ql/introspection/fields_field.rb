@@ -1,10 +1,8 @@
-GraphQL::Introspection::FieldsField = GraphQL::Field.new do |f, type, field, arg|
-  f.description "List of fields on this object"
-  f.type -> { type[!GraphQL::Introspection::FieldType] }
-  f.arguments({
-    includeDeprecated: arg.build({type: GraphQL::BOOLEAN_TYPE, default_value: false})
-  })
-  f.resolve -> (object, arguments, context) {
+GraphQL::Introspection::FieldsField = GraphQL::Field.define do
+  description "List of fields on this object"
+  type -> { types[!GraphQL::Introspection::FieldType] }
+  argument :includeDeprecated, GraphQL::BOOLEAN_TYPE, default_value: false
+  resolve -> (object, arguments, context) {
     return nil if !object.kind.fields?
     fields = object.fields.values
     if !arguments["includeDeprecated"]

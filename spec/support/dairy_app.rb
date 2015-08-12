@@ -3,7 +3,7 @@ require_relative './dairy_data'
 EdibleInterface = GraphQL::InterfaceType.define do
   name "Edible"
   description "Something you can eat, yum"
-  field({fatContent: :non_existent_field_that_should_never_be_called}, !types.Float, "Percentage which is fat")
+  field :fatContent, !types.Float, "Percentage which is fat", property: :bogus_property
 end
 
 AnimalProductInterface = GraphQL::InterfaceType.define do
@@ -107,8 +107,8 @@ FavoriteFieldDefn = Proc.new {
 QueryType = GraphQL::ObjectType.define do
   name "Query"
   description "Query root of the system"
-  field cheese: FetchField.create(type: CheeseType, data: CHEESES)
-  field milk: FetchField.create(type: MilkType, data: MILKS, id_type: !types.ID)
+  field :cheese, field: FetchField.create(type: CheeseType, data: CHEESES)
+  field :milk, field: FetchField.create(type: MilkType, data: MILKS, id_type: !types.ID)
   field :fromSource, &SourceFieldDefn
   field :favoriteEdible, &FavoriteFieldDefn
   field :searchDairy do

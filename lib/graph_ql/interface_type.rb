@@ -28,16 +28,7 @@ class GraphQL::InterfaceType < GraphQL::ObjectType
       GraphQL::DefinitionHelpers::TypeDefiner.instance
     end
 
-    def field(name_or_pair, type = nil, desc = nil, &block)
-      if name_or_pair.is_a?(Hash)
-        name = name_or_pair.keys.first
-        value = name_or_pair[name]
-        if value.is_a?(GraphQL::Field)
-          field = value
-        end
-      else
-        name = name_or_pair
-      end
+    def field(name, type = nil, desc = nil, property: nil, field: nil, &block)
       field ||= GraphQL::Field.define(&block)
       type && field.type = type
       desc && field.description = desc
