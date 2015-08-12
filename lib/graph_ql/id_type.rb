@@ -1,6 +1,4 @@
-GraphQL::ID_TYPE = GraphQL::ScalarType.new do |t|
-  t.name "ID"
-  def t.coerce(value)
-    value.to_s
-  end
+GraphQL::ID_TYPE = GraphQL::ScalarType.define do
+  name "ID"
+  coerce -> (value) { value.to_s }
 end

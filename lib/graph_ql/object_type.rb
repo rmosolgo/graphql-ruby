@@ -39,8 +39,12 @@ class GraphQL::ObjectType
       @fields[name.to_s] = field
     end
 
+    def type_class
+      GraphQL::ObjectType
+    end
+
     def to_instance
-      object = GraphQL::ObjectType.new
+      object = type_class.new
       object.name = name
       object.description = description
       object.fields = @fields

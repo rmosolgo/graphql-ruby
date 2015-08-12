@@ -92,13 +92,11 @@
   - https://github.com/graphql/graphql-js/issues/19#issuecomment-118515077
 - Code clean-up
   - Unify unwrapping types (It's on `TypeKind` but it's still not right)
+  - Accept native Ruby types in definitions, then convert them to GraphQL types
 - Better definition API
   - update docs & guides
-  - update Introspection & specs
-  - Accept native Ruby types, then convert them to GraphQL types
 - Cook up some path other than "n+1s everywhere"
   - See Sangria's `project` approach ([in progress](https://github.com/rmosolgo/graphql-ruby/pull/15))
-
 
 ## Goals
 
