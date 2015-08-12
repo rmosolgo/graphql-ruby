@@ -28,7 +28,7 @@ $ bundle install
 
 ```ruby
 # Declare a type...
-PostType = GraphQL::ObjectType.define
+PostType = GraphQL::ObjectType.define do
   name "Post"
   description "A blog post"
 
@@ -39,7 +39,7 @@ PostType = GraphQL::ObjectType.define
 end
 
 # ...and a query root
-QueryType = GraphQL::ObjectType.define
+QueryType = GraphQL::ObjectType.define do
   name "Query"
   description "The query root of this schema"
 
