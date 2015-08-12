@@ -1,4 +1,4 @@
-Cheese = Struct.new(:id, :flavor, :fatContent, :source)
+Cheese = Struct.new(:id, :flavor, :fat_content, :source)
 CHEESES = {
   1 => Cheese.new(1, "Brie", 0.19, 1),
   2 => Cheese.new(2, "Gouda", 0.3, 1),

@@ -11,6 +11,7 @@ class GraphQL::ObjectType
     extend GraphQL::DefinitionHelpers::Definable
     attr_definable :name, :description, :interfaces
     def initialize
+      @interfaces = []
       @fields = {}
     end
 
@@ -18,10 +19,22 @@ class GraphQL::ObjectType
       GraphQL::DefinitionHelpers::TypeDefiner.instance
     end
 
-    def field(name, type = nil, desc = nil, &block)
-      field = GraphQL::Field.define(&block)
+    def field(name_or_pair, type = nil, desc = nil, &block)
+      if name_or_pair.is_a?(Hash)
+        name = name_or_pair.keys.first
+        value = name_or_pair[name]
+        if value.is_a?(GraphQL::Field)
+          field = value
+        else
+          property = value
+        end
+      else
+        name = name_or_pair
+      end
+      field ||= GraphQL::Field.define(&block)
       type && field.type = type
       desc && field.description = desc
+      property && field.resolve = -> (t,a,c) { t.public_send(property)}
       field.name ||= name.to_s
       @fields[name.to_s] = field
     end
@@ -39,12 +52,15 @@ class GraphQL::ObjectType
   def initialize(&block)
     self.fields = {}
     self.interfaces = []
-    yield(
-      self,
-      GraphQL::DefinitionHelpers::TypeDefiner.instance,
-      GraphQL::DefinitionHelpers::FieldDefiner.instance,
-      GraphQL::DefinitionHelpers::ArgumentDefiner.instance
-    ) if block_given?
+    if block_given?
+      yield(
+        self,
+        GraphQL::DefinitionHelpers::TypeDefiner.instance,
+        GraphQL::DefinitionHelpers::FieldDefiner.instance,
+        GraphQL::DefinitionHelpers::ArgumentDefiner.instance
+      )
+      warn("Initializing with .new is deprecated, use .define instead! (see #{self})")
+    end
   end
 
   # @overload fields(new_fields)

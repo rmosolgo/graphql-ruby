@@ -47,12 +47,15 @@ class GraphQL::Field
   def initialize
     @arguments = {}
     @resolve_proc = DEFAULT_RESOLVE
-    yield(
-      self,
-      GraphQL::DefinitionHelpers::TypeDefiner.instance,
-      GraphQL::DefinitionHelpers::FieldDefiner.instance,
-      GraphQL::DefinitionHelpers::ArgumentDefiner.instance
-    ) if block_given?
+    if block_given?
+      yield(
+        self,
+        GraphQL::DefinitionHelpers::TypeDefiner.instance,
+        GraphQL::DefinitionHelpers::FieldDefiner.instance,
+        GraphQL::DefinitionHelpers::ArgumentDefiner.instance
+      )
+      warn("Initializing with .new is deprecated, use .define instead! (see #{self})")
+    end
   end
 
   def arguments(new_arguments=nil)
@@ -112,5 +115,9 @@ class GraphQL::Field
       @type = @type.call
     end
     @type
+  end
+
+  def to_s
+    "<Field: #{name || "not-named"}>"
   end
 end
