@@ -11,17 +11,17 @@ module GraphQL
 
       def to_instance
         scalar_type = super
-        scalar_type.coerce = coerce
+        scalar_type.coerce_proc = coerce
         scalar_type
       end
     end
 
     def coerce(value)
-      @coerce.call(value)
+      @coerce_proc.call(value)
     end
 
-    def coerce=(proc)
-      @coerce = proc
+    def coerce_proc=(proc)
+      @coerce_proc = proc
     end
 
     def kind

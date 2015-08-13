@@ -13,9 +13,7 @@
 class GraphQL::EnumType
   include GraphQL::DefinitionHelpers::NonNullWithBang
   include GraphQL::DefinitionHelpers::DefinedByConfig
-  extend GraphQL::DefinitionHelpers::Definable
-  attr_definable :name, :description
-  attr_accessor :values
+  attr_accessor :name, :description, :values
 
   class DefinitionConfig
     extend GraphQL::DefinitionHelpers::Definable
@@ -44,17 +42,8 @@ class GraphQL::EnumType
     end
   end
 
-  def initialize
-    @values = {}
-    if block_given?
-      yield(
-        self,
-        GraphQL::DefinitionHelpers::TypeDefiner.instance,
-        GraphQL::DefinitionHelpers::FieldDefiner.instance,
-        GraphQL::DefinitionHelpers::ArgumentDefiner.instance
-      )
-      warn("Initializing with .new is deprecated, use .define instead! (see #{self})")
-    end
+  def values
+    @values ||= {}
   end
 
   # Define a value within this enum

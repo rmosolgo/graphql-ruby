@@ -10,8 +10,7 @@
 #   end
 #
 class GraphQL::InputObjectType < GraphQL::ObjectType
-  # Deprecated:
-  attr_definable :input_fields
+  attr_accessor :input_fields
 
   class DefinitionConfig
     extend GraphQL::DefinitionHelpers::Definable
@@ -44,20 +43,6 @@ class GraphQL::InputObjectType < GraphQL::ObjectType
       object.input_fields = @input_fields
       object
     end
-  end
-
-  # @overload input_fields(new_fields)
-  #   @deprecated use {.define} API instead
-  #   Define allowed fields, normalized with {StringNamedHash}
-  #   @param new_fields [Hash] allowed fields for this input object type
-  #
-  # @overload input_fields()
-  #   Read the defined fields for this input type
-  #   @return [Hash] allowed fields for this input object type
-  #
-  def input_fields(new_fields=nil)
-    new_fields && self.input_fields = new_fields
-    @input_fields
   end
 
   def input_fields=(new_fields)

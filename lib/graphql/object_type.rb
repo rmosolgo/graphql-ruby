@@ -74,15 +74,6 @@ class GraphQL::ObjectType
   def initialize(&block)
     self.fields = {}
     self.interfaces = []
-    if block_given?
-      yield(
-        self,
-        GraphQL::DefinitionHelpers::TypeDefiner.instance,
-        GraphQL::DefinitionHelpers::FieldDefiner.instance,
-        GraphQL::DefinitionHelpers::ArgumentDefiner.instance
-      )
-      warn("Initializing with .new is deprecated, use .define instead! (see #{self})")
-    end
   end
 
   # @overload fields(new_fields)

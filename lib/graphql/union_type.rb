@@ -26,13 +26,6 @@ class GraphQL::UnionType
     end
   end
 
-  def initialize(name = nil, desc = nil, types = nil)
-    @name = name
-    @description = desc
-    @possible_types = types
-    name && warn("Initializing with .new is deprecated, use .define instead! (see #{self})")
-  end
-
   def kind
     GraphQL::TypeKinds::UNION
   end

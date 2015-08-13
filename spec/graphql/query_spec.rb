@@ -96,12 +96,12 @@ describe GraphQL::Query do
   end
 
   describe 'context' do
-    let(:context_field) { GraphQL::Field.new do |f, types, field, args|
-      f.type(GraphQL::STRING_TYPE)
-      f.arguments(key: args.build(type: types.String))
-      f.resolve -> (target, args, ctx) { ctx[args["key"]] }
-    end}
-    let(:query_type) { GraphQL::ObjectType.new {|t| t.fields({context: context_field})}}
+    let(:query_type) { GraphQL::ObjectType.define {
+      field :context, types.String do
+        argument :key, !types.String
+        resolve -> (target, args, ctx) { ctx[args[:key]] }
+      end
+    }}
     let(:schema) { GraphQL::Schema.new(query: query_type, mutation: nil)}
     let(:query) { GraphQL::Query.new(schema, query_string, context: {"some_key" => "some value"})}
     let(:query_string) { %|
