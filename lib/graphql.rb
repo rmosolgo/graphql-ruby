@@ -13,7 +13,7 @@ module GraphQL
     GraphQL::TRANSFORM.apply(tree)
   rescue Parslet::ParseFailed => error
     line, col = error.cause.source.line_and_column
-    raise [line, col, string].join(", ")
+    raise [error.message, line, col, string].join(", ")
   end
 
   # Types & Fields that support GraphQL introspection queries

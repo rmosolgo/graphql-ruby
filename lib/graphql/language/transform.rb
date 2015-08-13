@@ -16,7 +16,8 @@ module GraphQL::Language
 
 
     # Document
-    rule(document_parts: sequence(:p)) { create_node(:Document, parts: p, line: p.first.line, col: p.first.col)}
+    rule(document_parts: sequence(:p)) { create_node(:Document, parts: p, line: (p.first ? p.first.line : 1), col: (p.first ? p.first.col : 1))}
+    rule(document_parts: simple(:p)) { create_node(:Document, parts: [], line: 1, col: 1)}
 
     # Fragment Definition
     rule(

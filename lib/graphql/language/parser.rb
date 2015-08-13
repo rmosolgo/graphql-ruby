@@ -7,7 +7,7 @@ module GraphQL::Language
         space                |
         operation_definition |
         fragment_definition
-      ).repeat(1).as(:document_parts)
+      ).repeat.as(:document_parts)
     }
 
     # TODO: whitespace sensitive regarding `on`, eg `onFood`, see lookahead note in spec

@@ -75,6 +75,21 @@ describe GraphQL::Query do
       end
     end
 
+    describe "malformed queries" do
+      describe "whitespace-only" do
+        let(:query_string) { " " }
+        it "doesn't blow up" do
+          assert_equal({"data"=> {}}, result)
+        end
+      end
+
+      describe "empty string" do
+        let(:query_string) { "" }
+        it "doesn't blow up" do
+          assert_equal({"data"=> {}}, result)
+        end
+      end
+    end
 
     describe 'execution order' do
       let(:query_string) {%|

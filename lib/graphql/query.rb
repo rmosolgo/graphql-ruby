@@ -34,7 +34,7 @@ class GraphQL::Query
 
   # Get the result for this query, executing it once
   def result
-    if validation_errors.any?
+    if @validate && validation_errors.any?
       return { "errors" => validation_errors }
     end
 
@@ -60,13 +60,7 @@ class GraphQL::Query
   end
 
   def validation_errors
-    @validation_errors ||= begin
-      if @validate
-        @schema.static_validator.validate(@document)
-      else
-        []
-      end
-    end
+    @validation_errors ||= @schema.static_validator.validate(@document)
   end
 
   # Expose some query-specific info to field resolve functions.
