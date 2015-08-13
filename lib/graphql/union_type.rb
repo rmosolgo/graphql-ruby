@@ -12,19 +12,7 @@ class GraphQL::UnionType
   include GraphQL::DefinitionHelpers::NonNullWithBang
   include GraphQL::DefinitionHelpers::DefinedByConfig
   attr_accessor :name, :description, :possible_types
-
-  class DefinitionConfig
-    extend GraphQL::DefinitionHelpers::Definable
-    attr_definable :name, :description, :possible_types
-
-    def to_instance
-      object = GraphQL::UnionType.new
-      object.name = name
-      object.description = description
-      object.possible_types = possible_types
-      object
-    end
-  end
+  defined_by_config :name, :description, :possible_types
 
   def kind
     GraphQL::TypeKinds::UNION

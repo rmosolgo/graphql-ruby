@@ -31,38 +31,7 @@ class GraphQL::Field
   DEFAULT_RESOLVE = -> (o, a, c) { GraphQL::Query::DEFAULT_RESOLVE }
   include GraphQL::DefinitionHelpers::DefinedByConfig
   attr_accessor :arguments, :deprecation_reason, :name, :description, :type
-
-  class DefinitionConfig
-    extend GraphQL::DefinitionHelpers::Definable
-    attr_definable :name, :description, :type, :deprecation_reason, :resolve
-    def initialize
-      @arguments = {}
-    end
-
-    def types
-      GraphQL::DefinitionHelpers::TypeDefiner.instance
-    end
-
-    def argument(name, type, description = nil, default_value: nil)
-      @arguments[name.to_s] = GraphQL::Argument.new(
-        name: name.to_s,
-        type: type,
-        description: description,
-        default_value: nil,
-      )
-    end
-
-    def to_instance
-      object = GraphQL::Field.new
-      object.name = name
-      object.type = type
-      object.description = description
-      object.deprecation_reason = deprecation_reason
-      object.resolve = resolve
-      object.arguments = @arguments
-      object
-    end
-  end
+  defined_by_config :arguments, :deprecation_reason, :name, :description, :type, :resolve
 
   def initialize
     @arguments = {}

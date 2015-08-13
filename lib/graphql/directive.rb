@@ -4,7 +4,8 @@
 # minimal impact on query execution.
 class GraphQL::Directive
   include GraphQL::DefinitionHelpers::DefinedByConfig
-  attr_accessor :on, :arguments, :name, :description, :resolve_proc
+  attr_accessor :on, :arguments, :name, :description
+  defined_by_config :on, :arguments, :name, :description, :resolve
 
   LOCATIONS = [
     ON_OPERATION =  :on_operation?,
@@ -16,37 +17,12 @@ class GraphQL::Directive
     define_method(location) { self.on.include?(location) }
   end
 
-  class DefinitionConfig
-    extend GraphQL::DefinitionHelpers::Definable
-    attr_definable :on, :arguments, :name, :description, :resolve
-
-    def initialize
-      @arguments = {}
-      @on = []
-    end
-
-    def argument(name, type, description = nil, default_value: nil)
-      @arguments[name.to_s] = GraphQL::Argument.new(
-        name: name.to_s,
-        type: type,
-        description: description,
-        default_value: nil,
-      )
-    end
-
-    def to_instance
-      instance = GraphQL::Directive.new
-      instance.on = on
-      instance.arguments = arguments
-      instance.name = name
-      instance.description = description
-      instance.resolve_proc = resolve
-      instance
-    end
-  end
-
   def resolve(arguments, proc)
     @resolve_proc.call(arguments, proc)
+  end
+
+  def resolve=(resolve_proc)
+    @resolve_proc = resolve_proc
   end
 
   def to_s

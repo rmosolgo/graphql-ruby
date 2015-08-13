@@ -43,7 +43,7 @@ CheeseType = GraphQL::ObjectType.define do
     resolve -> (t, a, c) { CHEESES.values.find { |c| c.source == a["source"] } }
   end
 
-  field fatContent: :fat_content do
+  field :fatContent, property: :fat_content do
     type(!GraphQL::FLOAT_TYPE)
     description("Percentage which is milkfat")
     deprecation_reason("Diet fashion has changed")

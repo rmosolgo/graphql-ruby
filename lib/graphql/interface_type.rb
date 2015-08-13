@@ -11,37 +11,10 @@
 #   end
 #
 class GraphQL::InterfaceType < GraphQL::ObjectType
+  defined_by_config :name, :description, :fields
+
   def kind
     GraphQL::TypeKinds::INTERFACE
-  end
-
-  class DefinitionConfig
-    extend GraphQL::DefinitionHelpers::Definable
-    attr_definable :name, :description
-
-    def initialize
-      @fields = {}
-    end
-
-    def types
-      GraphQL::DefinitionHelpers::TypeDefiner.instance
-    end
-
-    def field(name, type = nil, desc = nil, property: nil, field: nil, &block)
-      field ||= GraphQL::Field.define(&block)
-      type && field.type = type
-      desc && field.description = desc
-      field.name ||= name.to_s
-      @fields[name.to_s] = field
-    end
-
-    def to_instance
-      object = GraphQL::InterfaceType.new
-      object.name = name
-      object.description = description
-      object.fields = @fields
-      object
-    end
   end
 
   # @return [Array<GraphQL::ObjectType>] Types which declare that they implement this interface

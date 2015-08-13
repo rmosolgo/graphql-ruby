@@ -93,6 +93,7 @@ See also:
   - Accept native Ruby types in definitions, then convert them to GraphQL types
   - Make Schema validations run before TypeReducer
   - Remove deprecated `params:` keyword
+  - Make sure to raise if you try to configure an attribute which doesnt suit the type
 - Cook up some path other than "n+1s everywhere"
   - See Sangria's `project` approach ([in progress](https://github.com/rmosolgo/graphql-ruby/pull/15))
 

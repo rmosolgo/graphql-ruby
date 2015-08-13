@@ -5,9 +5,9 @@ describe GraphQL::ObjectType do
 
   it 'has a name' do
     assert_equal("Cheese", type.name)
-    type.name("Fromage")
+    type.name = "Fromage"
     assert_equal("Fromage", type.name)
-    type.name("Cheese")
+    type.name = "Cheese"
   end
 
   it 'has a description' do

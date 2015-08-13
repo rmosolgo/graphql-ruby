@@ -14,33 +14,7 @@ class GraphQL::EnumType
   include GraphQL::DefinitionHelpers::NonNullWithBang
   include GraphQL::DefinitionHelpers::DefinedByConfig
   attr_accessor :name, :description, :values
-
-  class DefinitionConfig
-    extend GraphQL::DefinitionHelpers::Definable
-    # These are deprecated:
-    attr_definable :name, :description
-    attr_reader :values
-    def initialize
-      @values = {}
-    end
-
-    def types
-      GraphQL::DefinitionHelpers::TypeDefiner.instance
-    end
-
-    def value(name, desc = nil, deprecation_reason: nil, value: name)
-      value = EnumValue.new(name: name, description: description, deprecation_reason: deprecation_reason, value: value)
-      values[name] = value
-    end
-
-    def to_instance
-      object = GraphQL::EnumType.new
-      object.name = name
-      object.description = description
-      object.values = values
-      object
-    end
-  end
+  defined_by_config :name, :description, :values
 
   def values
     @values ||= {}

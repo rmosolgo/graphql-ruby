@@ -53,17 +53,13 @@ DroidType = GraphQL::ObjectType.define do
   interfaces([CharacterInterface])
 end
 
-class FindRecordField < GraphQL::Field
-  def initialize(type, data)
-    @data = data
-    self.type = type
-    self.arguments = {
-      id: GraphQL::Argument.new(type: !GraphQL::STRING_TYPE, description: "The id of the #{type.name}.")
-    }
-  end
-
-  def resolve(obj, args, ctx)
-    @data[args["id"]]
+class FindRecordField
+  def self.create(return_type, data)
+    GraphQL::Field.define do
+      type(return_type)
+      argument :id, !types.String, "The id of the #{return_type.name}."
+      resolve -> (obj, args, ctx) { data[args["id"]] }
+    end
   end
 end
 
@@ -75,6 +71,6 @@ StarWarsQueryType = GraphQL::ObjectType.define do
     resolve -> (obj, args, ctx) { args["episode"] == 5 ? luke : artoo }
   end
 
-  field :human, field: FindRecordField.new(HumanType, HUMAN_DATA)
-  field :droid, field: FindRecordField.new(DroidType, DROID_DATA)
+  field :human, field: FindRecordField.create(HumanType, HUMAN_DATA)
+  field :droid, field: FindRecordField.create(DroidType, DROID_DATA)
 end
