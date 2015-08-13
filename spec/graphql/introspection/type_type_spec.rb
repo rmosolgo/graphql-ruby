@@ -10,7 +10,7 @@ describe GraphQL::Introspection::TypeType do
        animalProduct: __type(name: "AnimalProduct") { name, kind, possibleTypes { name }, fields { name } }
      }
   |}
-  let(:query) { GraphQL::Query.new(DummySchema, query_string, context: {}, params: {"cheeseId" => 2})}
+  let(:query) { GraphQL::Query.new(DummySchema, query_string, context: {}, variables: {"cheeseId" => 2})}
   let(:cheese_fields) {[
     {"name"=>"id",          "isDeprecated" => false, "type" => { "name" => "Non-Null", "ofType" => { "name" => "Int"}}},
     {"name"=>"flavor",      "isDeprecated" => false, "type" => { "name" => "Non-Null", "ofType" => { "name" => "String"}}},

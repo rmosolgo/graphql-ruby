@@ -3,26 +3,33 @@ class GraphQL::Query
   # The executor will send the field's name to the target object
   # and use the result.
   DEFAULT_RESOLVE = :__default_resolve
-  attr_reader :schema, :document, :context, :fragments, :params
+  attr_reader :schema, :document, :context, :fragments, :variables
 
-  # Prepare query `query_string` on {GraphQL::Schema} `schema`
+  # Prepare query `query_string` on `schema`
   # @param schema [GraphQL::Schema]
   # @param query_string [String]
-  # @param context [#[]] (default: `nil`) an arbitrary hash of values which you can access in {GraphQL::Field#resolve}
-  # @param params [Hash] (default: `{}`) values for `$variables` in the query
-  # @param debug [Boolean] (default: `true`) if true, errors are raised, if false, errors are put in the `errors` key
-  # @param validate [Boolean] (default: `true`) if true, `query_string` will be validated with {StaticValidation::Validator}
-  def initialize(schema, query_string, context: nil, params: {}, debug: true, validate: true)
+  # @param context [#[]] an arbitrary hash of values which you can access in {GraphQL::Field#resolve}
+  # @param variables [Hash] values for `$variables` in the query
+  # @param debug [Boolean] if true, errors are raised, if false, errors are put in the `errors` key
+  # @param validate [Boolean] if true, `query_string` will be validated with {StaticValidation::Validator}
+  # @param operation_name [String] if the query string contains many operations, this is the one which should be executed
+  def initialize(schema, query_string, context: nil, params: nil, variables: {}, debug: true, validate: true, operation_name: nil)
     @schema = schema
     @debug = debug
-    @query_string = query_string
     @context = Context.new(context)
-    @params = params
+
+    @variables = variables
+    if params
+      warn("[GraphQL] params option is deprecated for GraphQL::Query#new, use variables instead")
+      @variables = params
+    end
+
     @validate = validate
+    @operation_name = operation_name
     @fragments = {}
     @operations = {}
 
-    @document = GraphQL.parse(@query_string)
+    @document = GraphQL.parse(query_string)
     @document.parts.each do |part|
       if part.is_a?(GraphQL::Language::Nodes::FragmentDefinition)
         @fragments[part.name] = part
@@ -38,29 +45,37 @@ class GraphQL::Query
       return { "errors" => validation_errors }
     end
 
-    @result ||= {
-      "data" => execute,
-    }
+    @result ||= { "data" => execute }
+
+  rescue OperationNameMissingError => err
+    {"errors" => [{"message" => err.message}]}
   rescue StandardError => err
-    if @debug
-      raise err
-    else
-      message = "Something went wrong during query execution: #{err}" # \n  #{err.backtrace.join("\n  ")}"
-      {"errors" => [{"message" => message}]}
-    end
+    @debug && raise(err)
+    message = "Something went wrong during query execution: #{err}" # \n  #{err.backtrace.join("\n  ")}"
+    {"errors" => [{"message" => message}]}
   end
 
   private
 
   def execute
-    @operations.reduce({}) do |memo, (name, operation)|
-      resolver = OperationResolver.new(operation, self)
-      memo.merge(resolver.result)
-    end
+    return {} if @operations.none?
+    operation = find_operation(@operation_name, @operations)
+    resolver = OperationResolver.new(operation, self)
+    resolver.result
   end
 
   def validation_errors
     @validation_errors ||= @schema.static_validator.validate(@document)
+  end
+
+  def find_operation(operation_name, operations)
+    if operations.length == 1
+      operations.values.first
+    elsif !operations.key?(operation_name)
+      raise OperationNameMissingError, operations.keys
+    else
+      operations[operation_name]
+    end
   end
 
   # Expose some query-specific info to field resolve functions.
@@ -72,6 +87,13 @@ class GraphQL::Query
 
     def [](key)
       @arbitrary_hash[key]
+    end
+  end
+
+  class OperationNameMissingError < StandardError
+    def initialize(names)
+      msg = "You must provide an operation name from: #{names.join(", ")}"
+      super(msg)
     end
   end
 end

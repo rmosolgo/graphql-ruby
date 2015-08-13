@@ -30,7 +30,14 @@ describe GraphQL::Query do
       }
     |}
     let(:debug) { false }
-    let(:query) { GraphQL::Query.new(DummySchema, query_string, params: {"cheeseId" => 2}, debug: debug)}
+    let(:operation_name) { nil }
+    let(:query) { GraphQL::Query.new(
+      DummySchema,
+      query_string,
+      variables: {"cheeseId" => 2},
+      debug: debug,
+      operation_name: operation_name,
+    )}
     let(:result) { query.result }
 
     it 'returns fields on objects' do
@@ -90,6 +97,38 @@ describe GraphQL::Query do
         end
       end
     end
+
+    describe "multiple operations" do
+      let(:query_string) { %|
+        query getCheese1 { cheese(id: 1) { flavor } }
+        query getCheese2 { cheese(id: 2) { flavor } }
+      |}
+      describe "when an operation is named" do
+        let(:operation_name) { "getCheese2" }
+        it "runs the named one" do
+          expected = {
+            "data" => {
+              "cheese" => {
+                "flavor" => "Gouda"
+              }
+            }
+          }
+          assert_equal(expected, result)
+        end
+      end
+
+      describe "when one is NOT named" do
+        it "returns an error" do
+          expected = {
+            "errors" => [
+              {"message" => "You must provide an operation name from: getCheese1, getCheese2"}
+            ]
+          }
+          assert_equal(expected, result)
+        end
+      end
+    end
+
 
     describe 'execution order' do
       let(:query_string) {%|

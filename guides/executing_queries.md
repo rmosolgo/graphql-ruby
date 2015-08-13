@@ -11,17 +11,17 @@ query = GraphQL::Query.new(MySchema, query_string)
 render(json: query.response)
 ```
 
-## Params
+## Variables
 
-If your query contains variables, you can provide their values with the `params:` keyword.
+If your query contains variables, you can provide their values with the `variables:` keyword.
 
 ```ruby
 query_string = "query getPost($postId: !Int){ post(id: $postId) { title } }"
-query = GraphQL::Query.new(MySchema, query_string, params: {"postId" => 2})
+query = GraphQL::Query.new(MySchema, query_string, variables: {"postId" => 2})
 query.response
 ```
 
-`params` keys should be strings, whose names match the variables, without `$`.
+`variables` keys should be strings, whose names match the variables, without `$`.
 
 ## Context
 

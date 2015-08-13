@@ -3,12 +3,10 @@ class GraphQL::Query::OperationResolver
 
   def initialize(operation_definition, query)
     @operation_definition = operation_definition
-    @variables = query.params
+    @variables = query.variables
     @query = query
     @context = query.context
   end
-
-
 
   def result
     @result ||= execute(@operation_definition, query)

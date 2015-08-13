@@ -85,7 +85,6 @@ See also:
   - Directives:
     - `@skip` has precedence over `@include`
     - directives on fragments: http://facebook.github.io/graphql/#sec-Fragment-Directives
-  - Only run named operation
 - Field merging
   - if you were to request a field, then request it in a fragment, it would get looked up twice
   - https://github.com/graphql/graphql-js/issues/19#issuecomment-118515077
@@ -93,6 +92,7 @@ See also:
   - Unify unwrapping types (It's on `TypeKind` but it's still not right)
   - Accept native Ruby types in definitions, then convert them to GraphQL types
   - Make Schema validations run before TypeReducer
+  - Remove deprecated `params:` keyword
 - Cook up some path other than "n+1s everywhere"
   - See Sangria's `project` approach ([in progress](https://github.com/rmosolgo/graphql-ruby/pull/15))
 

@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe GraphQL::Directive do
-  let(:result) { GraphQL::Query.new(DummySchema, query_string, params: {"t" => true, "f" => false}).result }
+  let(:result) { GraphQL::Query.new(DummySchema, query_string, variables: {"t" => true, "f" => false}).result }
   describe 'on fields' do
     let(:query_string) { %|query directives($t: Boolean!, $f: Boolean!) {
       cheese(id: 1) {

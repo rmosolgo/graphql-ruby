@@ -59,7 +59,6 @@ describe GraphQL::StaticValidation::Validator do
       |}
 
       it 'handles infinite fragment spreads' do
-        p errors
         assert_equal(1, errors.length)
       end
     end
