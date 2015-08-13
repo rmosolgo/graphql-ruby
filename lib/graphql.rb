@@ -15,9 +15,6 @@ module GraphQL
     line, col = error.cause.source.line_and_column
     raise [error.message, line, col, string].join(", ")
   end
-
-  # Types & Fields that support GraphQL introspection queries
-  module Introspection; end
 end
 
 # Order matters for these:
@@ -35,7 +32,6 @@ require 'graphql/union_type'
 require 'graphql/argument'
 require 'graphql/field'
 require 'graphql/type_kinds'
-require 'graphql/introspection/typename_field'
 
 require 'graphql/scalar_type'
 require 'graphql/boolean_type'
@@ -44,27 +40,7 @@ require 'graphql/id_type'
 require 'graphql/int_type'
 require 'graphql/string_type'
 
-require 'graphql/introspection/input_value_type'
-require 'graphql/introspection/enum_value_type'
-require 'graphql/introspection/type_kind_enum'
-
-require 'graphql/introspection/fields_field'
-require 'graphql/introspection/of_type_field'
-require 'graphql/introspection/input_fields_field'
-require 'graphql/introspection/possible_types_field'
-require 'graphql/introspection/enum_values_field'
-require 'graphql/introspection/interfaces_field'
-
-require 'graphql/introspection/type_type'
-require 'graphql/introspection/arguments_field'
-require 'graphql/introspection/field_type'
-
-require 'graphql/introspection/directive_type'
-require 'graphql/introspection/schema_type'
-require 'graphql/introspection/schema_field'
-require 'graphql/introspection/type_by_name_field'
-require 'graphql/introspection/introspection_query'
-
+require 'graphql/introspection'
 require 'graphql/language'
 require 'graphql/directive'
 require 'graphql/schema'
