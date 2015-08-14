@@ -1,15 +1,22 @@
 # Starting from a given type, discover other types in the system by
 # traversing that type's fields, possible_types, etc
 class GraphQL::Schema::TypeReducer
-  attr_reader :type, :result
+  attr_reader :type, :existing_type_hash
+
   def initialize(type, existing_type_hash)
-    if [GraphQL::TypeKinds::NON_NULL, GraphQL::TypeKinds::LIST].include?(type.kind)
-      @result = reduce_type(type.of_type, existing_type_hash)
-    elsif existing_type_hash.has_key?(type.name)
+    @type = type
+    @existing_type_hash = existing_type_hash
+  end
+
+  def result
+    @result ||= if type.respond_to?(:kind) && type.kind.wraps?
+      reduce_type(type.of_type, existing_type_hash)
+    elsif type.respond_to?(:name) && existing_type_hash.has_key?(type.name)
       # been here, done that
-      @result = existing_type_hash
+      existing_type_hash
     else
-      @result = find_types(type, existing_type_hash.dup)
+      validate_type(type)
+      find_types(type, existing_type_hash.dup)
     end
   end
 
@@ -26,6 +33,7 @@ class GraphQL::Schema::TypeReducer
     type_hash[type.name] = type
     if type.kind.fields?
       type.fields.each do |name, field|
+
         type_hash.merge!(reduce_type(field.type, type_hash))
         field.arguments.each do |name, argument|
           type_hash.merge!(reduce_type(argument.type, type_hash))
@@ -47,5 +55,14 @@ class GraphQL::Schema::TypeReducer
 
   def reduce_type(type, type_hash)
     self.class.new(type, type_hash).result
+  end
+
+  def validate_type(type)
+    errors = []
+    type_validator = GraphQL::Schema::TypeValidator.new
+    type_validator.validate(type, errors)
+    if errors.any?
+      raise GraphQL::Schema::InvalidTypeError.new(type, errors)
+    end
   end
 end

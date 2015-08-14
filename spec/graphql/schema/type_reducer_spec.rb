@@ -22,4 +22,17 @@ describe GraphQL::Schema::TypeReducer do
     reducer = GraphQL::Schema::TypeReducer.new(QueryType, {})
     assert_equal(DairyProductInputType, reducer.result["DairyProductInput"])
   end
+
+  describe 'when a type is invalid' do
+    let(:invalid_type) {
+      GraphQL::ObjectType.define do
+        name "InvalidType"
+        field :someField
+      end
+    }
+    it 'raises an InvalidTypeError' do
+      reducer = GraphQL::Schema::TypeReducer.new(invalid_type, {})
+      assert_raises(GraphQL::Schema::InvalidTypeError) { reducer.result }
+    end
+  end
 end

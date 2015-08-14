@@ -12,11 +12,6 @@ class GraphQL::Schema
     @mutation = mutation
     @directives = DIRECTIVES.reduce({}) { |m, d| m[d.name] = d; m }
     @static_validator = GraphQL::StaticValidation::Validator.new(schema: self)
-
-    errors = SchemaValidator.new.validate(self)
-    if errors.any?
-      raise("Schema is invalid: \n#{errors.join("\n")}")
-    end
   end
 
   # A `{ name => type }` hash of types in this schema
@@ -41,11 +36,16 @@ class GraphQL::Schema
       nil
     end
   end
+
+  class InvalidTypeError < StandardError
+    def initialize(type, errors)
+      super("Type #{type.respond_to?(:name) ? type.name :  "Unnamed type" } is invalid: #{errors.join(", ")}")
+    end
+  end
 end
 
 require 'graphql/schema/each_item_validator'
 require 'graphql/schema/field_validator'
 require 'graphql/schema/implementation_validator'
-require 'graphql/schema/schema_validator'
 require 'graphql/schema/type_reducer'
 require 'graphql/schema/type_validator'

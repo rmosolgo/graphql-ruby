@@ -44,6 +44,17 @@ end
 
 Note that `ctx` is not the _same_ hash that's passed to `GraphQL::Query.new`. `ctx` is an instance of `GraphQL::Query::Context`, which exposes the provided hash and may _also_ contain other information about the query.
 
+## Operation name
+
+If your query contains multiple operations, you _must_ pass the operation name with the `operation_name:` keyword:
+
+```ruby
+query = GraphQL::Query.new(MySchema, query_string, context: {operation_name: "getPersonInfo"})
+query.response
+```
+
+If you don't, you'll get an error.
+
 ## Debug
 
 By default, `GraphQL::Query` rescues any error during execution and puts it in the response's `"errors"` key. You can disable this with `debug: true`, which will cause any error to be raised.

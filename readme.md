@@ -85,6 +85,8 @@ See also:
   - Directives:
     - `@skip` has precedence over `@include`
     - directives on fragments: http://facebook.github.io/graphql/#sec-Fragment-Directives
+  - Union
+    - only require one type https://github.com/facebook/graphql/commit/972fd5aae01195b018d305c82e43f714f9a41679
 - Field merging
   - if you were to request a field, then request it in a fragment, it would get looked up twice
   - https://github.com/graphql/graphql-js/issues/19#issuecomment-118515077
@@ -118,5 +120,5 @@ See also:
 
 ## P.S.
 
-Thanks to @sgwilym for the great logo!
-Definition API heavily inspired by @seanchas's [implementation of GraphQL](https://github.com/seanchas/graphql)
+- Thanks to @sgwilym for the great logo!
+- Definition API heavily inspired by @seanchas's [implementation of GraphQL](https://github.com/seanchas/graphql)
