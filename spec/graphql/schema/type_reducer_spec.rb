@@ -30,6 +30,7 @@ describe GraphQL::Schema::TypeReducer do
         field :someField
       end
     }
+
     it 'raises an InvalidTypeError' do
       reducer = GraphQL::Schema::TypeReducer.new(invalid_type, {})
       assert_raises(GraphQL::Schema::InvalidTypeError) { reducer.result }

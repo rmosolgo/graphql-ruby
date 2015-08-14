@@ -11,8 +11,8 @@
 class GraphQL::UnionType
   include GraphQL::DefinitionHelpers::NonNullWithBang
   include GraphQL::DefinitionHelpers::DefinedByConfig
-  attr_accessor :name, :description, :possible_types
-  defined_by_config :name, :description, :possible_types
+  attr_accessor :name, :description, :possible_types, :resolve_type
+  defined_by_config :name, :description, :possible_types, :resolve_type
 
   def kind
     GraphQL::TypeKinds::UNION
@@ -20,7 +20,10 @@ class GraphQL::UnionType
 
   # @see {InterfaceType#resolve_type}
   def resolve_type(object)
-    type_name = object.class.name
-    possible_types.find {|t| t.name == type_name}
+    instance_exec(object, &@resolve_type_proc)
+  end
+
+  def resolve_type=(new_proc)
+    @resolve_type_proc = new_proc || GraphQL::InterfaceType::DEFAULT_RESOLVE_TYPE
   end
 end

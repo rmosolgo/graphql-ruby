@@ -11,7 +11,14 @@
 #   end
 #
 class GraphQL::InterfaceType < GraphQL::ObjectType
-  defined_by_config :name, :description, :fields
+  defined_by_config :name, :description, :fields, :resolve_type
+
+  # The default implementation of {#resolve_type} gets `object.class.name`
+  # and finds a type with the same name
+  DEFAULT_RESOLVE_TYPE = -> (object) {
+    type_name = object.class.name
+    possible_types.find {|t| t.name == type_name}
+  }
 
   def kind
     GraphQL::TypeKinds::INTERFACE
@@ -29,6 +36,10 @@ class GraphQL::InterfaceType < GraphQL::ObjectType
   # @param object [Object] the object which needs a type to expose it
   # @return [GraphQL::ObjectType] the type which should expose `object`
   def resolve_type(object)
-    @possible_types.find {|t| t.name == object.class.name }
+    instance_exec(object, &@resolve_type_proc)
+  end
+
+  def resolve_type=(new_proc)
+    @resolve_type_proc = new_proc || DEFAULT_RESOLVE_TYPE
   end
 end

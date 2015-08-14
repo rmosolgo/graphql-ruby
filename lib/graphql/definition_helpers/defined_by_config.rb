@@ -27,6 +27,7 @@ module GraphQL::DefinitionHelpers::DefinedByConfig
       :deprecation_reason, # field
       :type, # field / argument
       :resolve, # field / directive
+      :resolve_type, # interface / union
       :possible_types, # interface / union
       :default_value, # argument
       :on, # directive
