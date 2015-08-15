@@ -28,6 +28,7 @@ describe GraphQL::Introspection::SchemaType do
         "mutationType"=> {
           "fields"=>[
             {"name"=>"pushValue"},
+            {"name"=>"replaceValues"},
           ]
         },
       }

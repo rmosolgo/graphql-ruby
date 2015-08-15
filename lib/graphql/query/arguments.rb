@@ -27,7 +27,8 @@ class GraphQL::Query::Arguments
     elsif value.is_a?(GraphQL::Language::Nodes::Enum)
       value = arg_defn.type.coerce(value.name)
     elsif value.is_a?(GraphQL::Language::Nodes::InputObject)
-      value = self.class.new(value.pairs, arg_defn.type.input_fields, variables)
+      wrapped_type = arg_defn.type.kind.unwrap(arg_defn.type)
+      value = self.class.new(value.pairs, wrapped_type.input_fields, variables)
     else
       value
     end

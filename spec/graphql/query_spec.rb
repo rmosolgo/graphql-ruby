@@ -136,13 +136,16 @@ describe GraphQL::Query do
           first:  pushValue(value: 1)
           second: pushValue(value: 5)
           third:  pushValue(value: 2)
+          fourth: replaceValues(input: {values: [6,5,4]})
         }
       |}
+
       it 'executes mutations in order' do
         expected = {"data"=>{
             "first"=> [1],
             "second"=>[1, 5],
             "third"=> [1, 5, 2],
+            "fourth"=> [6, 5 ,4],
         }}
         assert_equal(expected, result)
       end

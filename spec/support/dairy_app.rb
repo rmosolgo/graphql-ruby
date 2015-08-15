@@ -134,6 +134,14 @@ QueryType = GraphQL::ObjectType.define do
 end
 
 GLOBAL_VALUES = []
+
+ReplaceValuesInputType = GraphQL::InputObjectType.define do
+  name "ReplaceValuesInput"
+  input_field :values, !types[!types.Int]
+end
+
+p ReplaceValuesInputType.input_fields.inspect
+
 MutationType = GraphQL::ObjectType.define do
   name "Mutation"
   description "The root for mutations in this schema"
@@ -142,6 +150,16 @@ MutationType = GraphQL::ObjectType.define do
     argument :value, !types.Int
     resolve -> (o, args, ctx) {
       GLOBAL_VALUES << args[:value]
+      GLOBAL_VALUES
+    }
+  end
+
+  field :replaceValues, !types[!types.Int] do
+    description("Replace the global array with new values")
+    argument :input, !ReplaceValuesInputType
+    resolve -> (o, args, ctx) {
+      GLOBAL_VALUES.clear
+      GLOBAL_VALUES += args[:input][:values]
       GLOBAL_VALUES
     }
   end
