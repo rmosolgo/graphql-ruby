@@ -99,20 +99,20 @@ describe GraphQL::Language::Transform do
     assert_equal("SO_COOL", res.arguments[1].value.name)
     assert_equal({"nice" => {"very" => true}}, res.arguments[2].value.to_h)
 
-    res = get_result(%|me @flag, @include(if: "something") {name, id}|, parse: :field)
+    res = get_result('me @flag, @include(if: "\"something\"") {name, id}', parse: :field)
     assert_equal("me", res.name)
     assert_equal(nil, res.alias)
     assert_equal(2, res.directives.length)
     assert_equal("flag", res.directives.first.name)
-    assert_equal("something", res.directives.last.arguments.first.value)
+    assert_equal('"something"', res.directives.last.arguments.first.value)
     assert_equal(2, res.selections.length)
   end
 
   it 'transforms directives' do
-    res = get_result("@doSomething(vigorously: true)", parse: :directive)
+    res = get_result('@doSomething(vigorously: "\"true\u0025\"")', parse: :directive)
     assert_equal("doSomething", res.name, 'gets the name without @')
     assert_equal("vigorously", res.arguments.first.name)
-    assert_equal(true, res.arguments.first.value)
+    assert_equal('"true%"', res.arguments.first.value)
 
     res = get_result("@someFlag", parse: :directive)
     assert_equal("someFlag", res.name)

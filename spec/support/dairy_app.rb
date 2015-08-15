@@ -140,8 +140,6 @@ ReplaceValuesInputType = GraphQL::InputObjectType.define do
   input_field :values, !types[!types.Int]
 end
 
-p ReplaceValuesInputType.input_fields.inspect
-
 MutationType = GraphQL::ObjectType.define do
   name "Mutation"
   description "The root for mutations in this schema"

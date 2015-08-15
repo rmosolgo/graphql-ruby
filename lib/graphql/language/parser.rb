@@ -95,8 +95,17 @@ module GraphQL::Language
     rule(:value_input_object) { str("{") >> value_input_object_pair.repeat(1).as(:input_object) >> str("}") }
     rule(:value_input_object_pair) { space? >> name.as(:input_object_name) >>  space? >> str(":") >> space? >> value.as(:input_object_value) >> separator? }
     rule(:value_int) { (value_sign? >> match('\d').repeat(1)).as(:int) }
-    # TODO: support unicode, escaped chars (match the spec)
-    rule(:value_string) { str('"') >> match('[^\"]').repeat.as(:string) >> str('"')}
+    rule(:value_string) { str('"') >> value_string_char.repeat.as(:string) >> str('"')}
+    rule(:value_string_char) { value_string_escaped_char | value_string_escaped_unicode | value_string_source_char}
+    rule(:value_string_escaped_char) { str("\\") >> match('["\/bfnrt]') }
+    rule(:value_string_escaped_unicode) { str("\\") >> match('u[\dA-Fa-f]{4}')}
+    rule(:value_string_source_char) { (str('"') | str("\\") | value_string_line_terminator).absent? >> any }
+    rule(:value_string_line_terminator) {
+      str('\u000A') | # new line
+      str('\u000D') | # carriage return
+      str('\u2028') | # line separator
+      str('\u2029')   # paragraph separator
+    }
     rule(:value_enum) { name.as(:enum) }
     rule(:value_variable) { str("$") >> name.as(:variable) }
 

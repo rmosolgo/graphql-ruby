@@ -59,7 +59,7 @@ describe GraphQL::Language::Parser do
 
   it 'parses directives' do
     assert(parser.directives.parse_with_debug("@doSomething"), 'gets without argument')
-    assert(parser.directives.parse_with_debug('@doSomething(why: "forSomeReason")'), 'gets with argument')
+    assert(parser.directives.parse_with_debug('@doSomething(why: "\"forSomeReason\"")'), 'gets with argument')
     assert(parser.directives.parse_with_debug('@myFlag, @doSomething(why: "forSomeReason")'), 'gets multiple')
   end
 
@@ -67,7 +67,7 @@ describe GraphQL::Language::Parser do
     assert(parser.field.parse_with_debug(%|myField { name, id }|), 'gets subselections')
     assert(parser.field.parse_with_debug(%{myAlias: myField}), 'gets an alias')
     assert(parser.field.parse_with_debug(%{myField(intKey: 1, floatKey: 1.1e5)}), 'gets arguments')
-    assert(parser.field.parse_with_debug(%{myAlias: myField(stringKey: "my_string", boolKey: false, objKey: {key : true})}), 'gets alias and arguments')
+    assert(parser.field.parse_with_debug('myAlias: myField(stringKey: "\"my_string\"", boolKey: false, objKey: {key : true})'), 'gets alias and arguments')
     assert(parser.field.parse_with_debug(%|myField @withFlag, @skip(if: true) { name, id }|), 'gets with directive')
   end
 
@@ -100,8 +100,10 @@ describe GraphQL::Language::Parser do
     end
 
     it 'gets strings' do
-      assert(parser.value.parse_with_debug('"my string"'))
-      assert(parser.value.parse_with_debug('""'))
+      assert(parser.value.parse_with_debug('"my string"'), "plain strings")
+      assert(parser.value.parse_with_debug('""'), "empty strings")
+      assert(parser.value.parse_with_debug('"\"Hi!\"\n"'), "escaped strings")
+      assert(parser.value.parse_with_debug('"\u0025\u0026"'), "escaped unicode")
     end
 
     it 'gets arrays' do

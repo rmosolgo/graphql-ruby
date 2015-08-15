@@ -91,7 +91,17 @@ module GraphQL::Language
     rule(input_object_name: simple(:n), input_object_value: sequence(:v)) { create_node(:Argument, name: n.to_s, value: v, position_source: n)}
     rule(int: simple(:v)) { v.to_i }
     rule(float: simple(:v)) { v.to_f }
-    rule(string: simple(:v)) { v.to_s }
+
+    ESCAPES = /\\(["\\\/bfnrt])/
+    UTF_8 = /\\u[\da-f]{4}/i
+    UTF_8_REPLACE = -> (m) { [m[-4..-1].to_i(16)].pack('U') }
+
+    rule(string: simple(:v)) {
+      string = v.to_s
+      string.gsub!(ESCAPES, '\1')
+      string.gsub!(UTF_8, &UTF_8_REPLACE)
+      string
+    }
     rule(variable: simple(:v)) { create_node(:VariableIdentifier, name: v.to_s, position_source: v) }
     rule(enum: simple(:v)) { create_node(:Enum, name: v.to_s, position_source: v)}
   end
