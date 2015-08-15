@@ -101,6 +101,7 @@ describe GraphQL::Language::Parser do
 
     it 'gets strings' do
       assert(parser.value.parse_with_debug('"my string"'))
+      assert(parser.value.parse_with_debug('""'))
     end
 
     it 'gets arrays' do

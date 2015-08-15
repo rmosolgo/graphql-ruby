@@ -96,7 +96,7 @@ module GraphQL::Language
     rule(:value_input_object_pair) { space? >> name.as(:input_object_name) >>  space? >> str(":") >> space? >> value.as(:input_object_value) >> separator? }
     rule(:value_int) { (value_sign? >> match('\d').repeat(1)).as(:int) }
     # TODO: support unicode, escaped chars (match the spec)
-    rule(:value_string) { str('"') >> match('[^\"]').repeat(1).as(:string) >> str('"')}
+    rule(:value_string) { str('"') >> match('[^\"]').repeat.as(:string) >> str('"')}
     rule(:value_enum) { name.as(:enum) }
     rule(:value_variable) { str("$") >> name.as(:variable) }
 
