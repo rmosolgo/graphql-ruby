@@ -6,7 +6,7 @@ class GraphQL::StaticValidation::ArgumentLiteralsAreCompatible < GraphQL::Static
       arg_defn = defn.arguments[arg.name]
       valid = validator.validate(arg.value, arg_defn.type)
       if !valid
-        context.errors << message("#{arg.name} on #{node.class.name.split("::").last} '#{node.name}' has an invalid value", node)
+        context.errors << message("Argument #{arg.name} on #{node.class.name.split("::").last} '#{node.name}' has an invalid value", node)
       end
     end
   end

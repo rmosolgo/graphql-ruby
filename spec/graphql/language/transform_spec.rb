@@ -17,10 +17,12 @@ describe GraphQL::Language::Transform do
   it 'transforms documents' do
     query = %|
       # you can retrieve data:
-      query someInfo {
+      query someInfo($var: [Int!] = [1,2,3]) {
         me {
           name, favorite_food,
           ...personInfo
+          someStuff(vars: [1,2,3])
+          someOtherStuff(input: {ints: [1,2,3]})
         }
       }
 

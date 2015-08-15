@@ -21,19 +21,19 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
     assert_equal(3, errors.length)
 
     query_root_error = {
-      "message"=>"id on Field 'cheese' has an invalid value",
+      "message"=>"Argument id on Field 'cheese' has an invalid value",
       "locations"=>[{"line"=>3, "column"=>7}]
     }
     assert_includes(errors, query_root_error)
 
     input_object_error = {
-      "message"=>"product on Field 'searchDairy' has an invalid value",
+      "message"=>"Argument product on Field 'searchDairy' has an invalid value",
       "locations"=>[{"line"=>6, "column"=>7}]
     }
     assert_includes(errors, input_object_error)
 
     fragment_error = {
-      "message"=>"source on Field 'similarCheeses' has an invalid value",
+      "message"=>"Argument source on Field 'similarCheeses' has an invalid value",
       "locations"=>[{"line"=>10, "column"=>7}]
     }
     assert_includes(errors, fragment_error)
