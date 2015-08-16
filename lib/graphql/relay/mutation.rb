@@ -8,6 +8,8 @@ module GraphQL
     #
     # `resolve` should return a hash with a key for each of the `return_field`s
     #
+    # Inputs will also contain a `clientMutationId`
+    #
     # @example Updating the name of an item
     #   UpdateNameMutation = GraphQL::Relay::Mutation.define do
     #     name "UpdateName"
@@ -32,7 +34,7 @@ module GraphQL
     #   # Then query it:
     #   query_string = %|
     #     mutation updateName {
-    #       updateName(input: {itemId: 1, name: "new name"}, clientMutationId: "1234") {
+    #       updateName(input: {itemId: 1, name: "new name", clientMutationId: "1234"}) {
     #         item { name }
     #         clientMutationId
     #     }|

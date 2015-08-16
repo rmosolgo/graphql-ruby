@@ -2,7 +2,7 @@ module GraphQL
   module Relay
     class ArrayConnection < BaseConnection
       def cursor_from_node(item)
-        idx = all_edges.find_index(item)
+        idx = sliced_nodes.find_index(item)
         "#{idx}"
       end
 
@@ -11,7 +11,7 @@ module GraphQL
       # apply first / last limit results
       def paged_nodes
         @paged_nodes = begin
-          items = all_edges
+          items = sliced_nodes
           first && items = items.first(first)
           last && items.length > last && items.last(last)
           items
