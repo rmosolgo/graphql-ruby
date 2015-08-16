@@ -28,6 +28,16 @@ describe GraphQL::Schema::TypeValidator do
     end
   end
 
+  describe 'when a method returns nil' do
+    let(:type_defn) { base_type_defn.merge(interfaces: nil)}
+    it 'requires name' do
+      assert_equal(
+        ["InvalidType must return a value for #interfaces() to be a OBJECT"],
+        errors
+      )
+    end
+  end
+
   describe "when a field name isnt a string" do
     let(:type_defn) { base_type_defn.merge(fields: {symbol_field: (GraphQL::Field.new {|f|}) }) }
     it "requires string names" do

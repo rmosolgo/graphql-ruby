@@ -11,11 +11,17 @@ class GraphQL::Schema::ImplementationValidator
   # If `block_given?`, yield the return value of that method
   # If provided, use `as` in the error message, overriding class-level `as`.
   def must_respond_to(method_name, args: [], as: nil)
+    local_as = as || implementation_as
+    method_signature = "##{method_name}(#{args.join(", ")})"
     if !object.respond_to?(method_name)
-      local_as = as || implementation_as
-      errors << "#{object.to_s} must respond to ##{method_name}(#{args.join(", ")}) to be a #{local_as}"
+      errors << "#{object.to_s} must respond to #{method_signature} to be a #{local_as}"
     elsif block_given?
-      yield(object.public_send(method_name))
+      return_value = object.public_send(method_name)
+      if return_value.nil?
+        errors << "#{object.to_s} must return a value for #{method_signature} to be a #{local_as}"
+      else
+        yield(return_value)
+      end
     end
   end
 end
