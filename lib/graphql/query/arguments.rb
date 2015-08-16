@@ -13,7 +13,7 @@ class GraphQL::Query::Arguments
     end
   end
 
-  def_delegators :@hash, :keys, :values
+  def_delegators :@hash, :keys, :values, :inspect, :to_h
 
   def [](key)
     @hash[key.to_s]
