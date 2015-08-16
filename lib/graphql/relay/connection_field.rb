@@ -4,9 +4,9 @@ module GraphQL
       def self.create(underlying_field)
         field = GraphQL::Field.define do
           argument :first, types.Int
-          argument :after, types.ID
+          argument :after, types.String
           argument :last, types.Int
-          argument :before, types.ID
+          argument :before, types.String
 
           type(-> { underlying_field.type })
           resolve -> (obj, args, ctx) {

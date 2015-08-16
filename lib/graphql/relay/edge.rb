@@ -1,16 +1,14 @@
 module GraphQL
   module Relay
     class Edge < GraphQL::ObjectType
-      def initialize(record)
-        @record = record
+      attr_reader :node
+      def initialize(node, connection)
+        @node = node
+        @connection = connection
       end
 
       def cursor
-        raise NotImplementedError
-      end
-
-      def node
-        @record
+        @cursor ||= @connection.cursor_from_node(node)
       end
 
       def self.create_type(wrapped_type)

@@ -34,7 +34,7 @@ module GraphQL
       end
 
       def edges
-        @edges ||= paged_edges.map { |e| Edge.new(e) }
+        @edges ||= paged_edges.map { |item| Edge.new(item, self) }
       end
 
       def page_info
@@ -47,6 +47,10 @@ module GraphQL
 
       def has_previous_page
         last && all_edges.count > last
+      end
+
+      def cursor_from_node(object)
+        raise NotImplementedError, "must return a cursor for this object/connection pair"
       end
 
       private
