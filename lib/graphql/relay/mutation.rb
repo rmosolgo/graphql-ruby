@@ -17,7 +17,7 @@ module GraphQL
     #
     #     return_field :item, Item
     #
-    #     resolve -> (inputs) {
+    #     resolve -> (inputs, ctx) {
     #       item = Item.find_by_id(inputs[:id])
     #       item.update(name: inputs[:name])
     #       {item: item}
@@ -58,8 +58,8 @@ module GraphQL
         @field ||= begin
           field_return_type = self.return_type
           field_input_type = self.input_type
-          field_resolve_proc = -> (obj, args,ctx){
-            results_hash = @resolve_proc.call(args[:input])
+          field_resolve_proc = -> (obj, args, ctx){
+            results_hash = @resolve_proc.call(args[:input], ctx)
             Result.new(arguments: args, result: results_hash)
           }
           GraphQL::Field.define do
