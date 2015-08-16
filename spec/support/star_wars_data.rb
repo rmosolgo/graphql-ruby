@@ -34,30 +34,11 @@ STAR_WARS_DATA = {
     memo
   end
 }
-#
-# var nextShip = 9;
-# export function createShip(shipName, factionId) {
-#   var newShip = {
-#     id: '' + (nextShip++),
-#     name: shipName
-#   };
-#   data.Ship[newShip.id] = newShip;
-#   data.Faction[factionId].ships.push(newShip.id);
-#   return newShip;
-# }
-#
-# export function getShip(id) {
-#   return data.Ship[id];
-# }
-#
-# export function getFaction(id) {
-#   return data.Faction[id];
-# }
-#
-# export function getRebels() {
-#   return rebels;
-# }
-#
-# export function getEmpire() {
-#   return empire;
-# }
+
+def STAR_WARS_DATA.create_ship(name, faction_id)
+  new_id = (self["Ship"].keys.map(&:to_i).max + 1).to_s
+  new_ship = OpenStruct.new(id: new_id, name: name)
+  self["Ship"][new_id] = new_ship
+  self["Faction"][faction_id]["ships"] << new_id
+  new_ship
+end

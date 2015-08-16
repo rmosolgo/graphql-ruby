@@ -8,6 +8,9 @@ module GraphQL
           connection_field = GraphQL::Relay::ConnectionField.create(underlying_field)
           fields[name.to_s] = connection_field
         end
+
+        alias :return_field :field
+        alias :return_fields :fields
       end
     end
   end

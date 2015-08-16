@@ -36,6 +36,7 @@ end
 ShipConnection = GraphQL::Relay::ArrayConnection.create_type(Ship)
 
 QueryType = GraphQL::ObjectType.define do
+  name "Query"
   field :rebels, Faction do
     resolve -> (obj, args, ctx) { STAR_WARS_DATA["Faction"]["1"]}
   end
@@ -56,15 +57,38 @@ end
 # end
 #
 # IntroduceShipPayload = GraphQL::ObjectType.define do
-#   input_field :clientMutationId, !types.String
-#   input_field :ship, Ship
-#   input_field :faction, Faction
+#   field :clientMutationId, !types.String
+#   field :ship, Ship
+#   field :faction, Faction
 # end
 #
-# MutationType = GraphQL::ObjectType.define do
-#   field :introduceShip, IntroduceShipPayload do
-#     argument :input, IntroduceShipInput
-#   end
-# end
 
-StarWarsSchema = GraphQL::Schema.new(query: QueryType)
+IntroduceShipMutation = GraphQL::Relay::Mutation.define do
+  # Used as the root for derived types:
+  name "IntroduceShip"
+
+  # Nested under `input` in the query:
+  input_field :shipName, !types.String
+  input_field :factionId, !types.ID
+
+  # Result may have access to these fields:
+  return_field :ship, Ship
+  return_field :faction, Faction
+
+  # Here's the mutation operation:
+  resolve -> (inputs) {
+    faction_id = inputs["factionId"]
+    ship = STAR_WARS_DATA.create_ship(inputs["shipName"], faction_id)
+    faction = STAR_WARS_DATA["Faction"][faction_id]
+    { ship: ship, faction: faction }
+  }
+end
+
+MutationType = GraphQL::ObjectType.define do
+  name "Mutation"
+  # The mutation object exposes a field:
+  field :introduceShip, field: IntroduceShipMutation.field
+end
+
+
+StarWarsSchema = GraphQL::Schema.new(query: QueryType, mutation: MutationType)

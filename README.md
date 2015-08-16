@@ -19,10 +19,11 @@ Helpers for using [`graphql`](https://github.com/rmosolgo/graphql-ruby) with Rel
       - [x] NodeField (returned from `Node.create`)
   - [x] toGlobalId, fromGlobalId (`Node.from_global_id`, `Node.to_global_id`)
   - [x] globalIdField (`field :id, field: GlobalIdField.new("TypeName")`)
+  - [ ] pluralIdentifyingRootField
 
-- Mutations
-  - [ ] Accept inputs, outputs and resolution
-  - [ ] Return a field
+- Mutations (by `Mutation.define`)
+  - [x] Accept inputs, outputs and resolution
+  - [x] Return a field
 
 ## More Resources
 
