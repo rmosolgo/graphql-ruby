@@ -1,4 +1,5 @@
 require 'singleton'
+require 'base64'
 module GraphQL
   module Relay
     # To get a `NodeField` and `NodeInterface`,
@@ -10,7 +11,7 @@ module GraphQL
     class Node
       include Singleton
 
-      # Just call methods on the class
+      # Allows you to call methods on the class
       def self.method_missing(method_name, *args, &block)
         if instance.respond_to?(method_name)
           instance.send(method_name, *args, &block)
@@ -29,13 +30,13 @@ module GraphQL
       # Create a global ID for type-name & ID
       # (This is an opaque transform)
       def to_global_id(type_name, id)
-        "#{type_name}-#{id}"
+        Base64.strict_encode64("#{type_name}-#{id}")
       end
 
       # Get type-name & ID from global ID
-      # (This unwinds the opaque transform)
+      # (This reverts the opaque transform)
       def from_global_id(global_id)
-        global_id.split("-")
+        Base64.decode64(global_id).split("-")
       end
 
       private
