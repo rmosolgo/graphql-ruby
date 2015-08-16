@@ -49,6 +49,7 @@ module GraphQL
         last && all_edges.count > last
       end
 
+      # An opaque operation which returns a connection-specific cursor.
       def cursor_from_node(object)
         raise NotImplementedError, "must return a cursor for this object/connection pair"
       end

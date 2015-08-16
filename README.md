@@ -10,9 +10,8 @@ Helpers for using [`graphql`](https://github.com/rmosolgo/graphql-ruby) with Rel
   - [x] arguments (Object definition `connection` helper)
   - [x] connection type for type (`ConnectionType#connection_class`)
   - [ ] Connection classes
-    - [ ] ArrayConnection
+    - [x] ArrayConnection
     - [ ] HasManyConnection
-  - [ ] Cursors
 
 - Object Identification
   - [x] Node-related types
@@ -27,5 +26,5 @@ Helpers for using [`graphql`](https://github.com/rmosolgo/graphql-ruby) with Rel
 
 ## More Resources
 
-- [`graphql`](https://github.com/rmosolgo/graphql-ruby Ruby gem
+- [`graphql`](https://github.com/rmosolgo/graphql-ruby) Ruby gem
 - [`graphql-relay-js`](https://github.com/graphql/graphql-relay-js) JavaScript helpers for GraphQL and Relay

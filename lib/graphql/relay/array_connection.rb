@@ -22,7 +22,7 @@ module GraphQL
       # Apply cursors to edges
       def all_edges
         @all_edges ||= begin
-          items = @object
+          items = object
           after && items = items[(1 + index_from_cursor(after))..-1]
           before && items = items[0..(index_from_cursor(before) - 1)]
           items

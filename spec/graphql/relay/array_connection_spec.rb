@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe GraphQL::Relay::ArrayConnection do
-  describe "#first" do
+  describe "results" do
     let(:query_string) {%|
       query getShips($first: Int, $after: String, $last: Int, $before: String){
         rebels {
