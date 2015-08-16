@@ -1,6 +1,7 @@
 module GraphQL
   module Relay
-    # The best way to make these is with the connection helper
+    # The best way to make these is with the connection helper,
+    # @see {GraphQL::DefinitionHelpers::DefinedByConfig::DefinitionConfig}
     class ConnectionField
       def self.create(underlying_field)
         field = GraphQL::Field.define do

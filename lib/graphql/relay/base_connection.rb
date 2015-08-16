@@ -1,11 +1,15 @@
 module GraphQL
   module Relay
-    class ConnectionType < GraphQL::ObjectType
-      defined_by_config :name, :fields, :interfaces
-      attr_accessor :connection_class
-    end
-
-    class BaseConnection < GraphQL::ObjectType
+    # Subclasses must implement:
+    #   - {#cursor_from_node}, which returns an opaque cursor for the given item
+    #   - {#sliced_edges}, which slices by `before` & `after`
+    #   - {#paged_edges}, which applies `first` & `last` limits
+    #
+    # In a subclass, you have access to
+    #   - {#object}, the object which the connection will wrap
+    #   - {#first}, {#after}, {#last}, {#before} (arguments passed to the field)
+    #
+    class BaseConnection
       def self.create_type(wrapped_type)
         edge_type = Edge.create_type(wrapped_type)
 
@@ -27,26 +31,31 @@ module GraphQL
         @args = args
       end
 
+      # Provide easy access to provided arguments:
       [:first, :after, :last, :before].each do |arg_name|
         define_method(arg_name) do
           @args[arg_name]
         end
       end
 
+      # Wrap nodes in {Edge}s so they expose cursors.
       def edges
-        @edges ||= paged_edges.map { |item| Edge.new(item, self) }
+        @edges ||= paged_nodes.map { |item| Edge.new(item, self) }
       end
 
+      # Support the `pageInfo` field
       def page_info
         self
       end
 
+      # Used by `pageInfo`
       def has_next_page
-        first && all_edges.count > first
+        first && sliced_nodes.count > first
       end
 
+      # Used by `pageInfo`
       def has_previous_page
-        last && all_edges.count > last
+        last && sliced_nodes.count > last
       end
 
       # An opaque operation which returns a connection-specific cursor.
@@ -56,12 +65,12 @@ module GraphQL
 
       private
 
-      def paged_edges
+      def paged_nodes
         raise NotImplementedError, "must items for this connection after paging"
       end
 
-      def all_edges
-        raise NotImplementedError, "must all items for this connection"
+      def sliced_nodes
+        raise NotImplementedError, "must all items for this connection after chopping off first and last"
       end
     end
   end

@@ -1,7 +1,6 @@
 module GraphQL
   module Relay
     class ArrayConnection < BaseConnection
-
       def cursor_from_node(item)
         idx = all_edges.find_index(item)
         "#{idx}"
@@ -10,8 +9,8 @@ module GraphQL
       private
 
       # apply first / last limit results
-      def paged_edges
-        @paged_edges = begin
+      def paged_nodes
+        @paged_nodes = begin
           items = all_edges
           first && items = items.first(first)
           last && items.length > last && items.last(last)
@@ -20,8 +19,8 @@ module GraphQL
       end
 
       # Apply cursors to edges
-      def all_edges
-        @all_edges ||= begin
+      def sliced_nodes
+        @sliced_nodes ||= begin
           items = object
           after && items = items[(1 + index_from_cursor(after))..-1]
           before && items = items[0..(index_from_cursor(before) - 1)]

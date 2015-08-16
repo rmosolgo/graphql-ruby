@@ -1,5 +1,8 @@
 module GraphQL
   module Relay
+    # Mostly an internal concern.
+    #
+    # Wraps an object as a `node`, and exposes a connection-specific `cursor`.
     class Edge < GraphQL::ObjectType
       attr_reader :node
       def initialize(node, connection)
