@@ -30,8 +30,17 @@ class GraphQL::StaticValidation::VariableUsagesAreAllowed
     end
 
     arg_defn = arguments[arg_node.name]
-    if var_type != arg_defn.type
-      context.errors << message("Type mismatch on variable $#{ast_var.name} and argument #{arg_node.name} (#{var_type.to_s} / #{arg_defn.type.to_s})", arg_node)
+    arg_defn_type = arg_defn.type
+
+    var_inner_type = var_type.kind.unwrap(var_type)
+    arg_inner_type = arg_defn_type.kind.unwrap(arg_defn_type)
+
+    if var_inner_type != arg_inner_type
+      context.errors << create_error("Type mismatch", var_type, ast_var, arg_defn, arg_node)
+    elsif list_dimension(var_type) != list_dimension(arg_defn_type)
+      context.errors << create_error("List dimension mismatch", var_type, ast_var, arg_defn, arg_node)
+    elsif !non_null_levels_match(arg_defn_type, var_type)
+      context.errors << create_error("Nullability mismatch", var_type, ast_var, arg_defn, arg_node)
     end
   end
 
@@ -42,6 +51,30 @@ class GraphQL::StaticValidation::VariableUsagesAreAllowed
       GraphQL::ListType.new(of_type: to_query_type(ast_type.of_type, types))
     else
       types[ast_type.name]
+    end
+  end
+
+  def create_error(error_message, var_type, ast_var, arg_defn, arg_node)
+    message("#{error_message} on variable $#{ast_var.name} and argument #{arg_node.name} (#{var_type.to_s} / #{arg_defn.type.to_s})", arg_node)
+  end
+
+  def list_dimension(type)
+    if type.kind.list?
+      1 + list_dimension(type.of_type)
+    elsif type.kind.non_null?
+      list_dimension(type.of_type)
+    else
+      0
+    end
+  end
+
+  def non_null_levels_match(arg_type, var_type)
+    if arg_type.kind.non_null? && !var_type.kind.non_null?
+      false
+    elsif arg_type.kind.wraps? && var_type.kind.wraps?
+      non_null_levels_match(arg_type.of_type, var_type.of_type)
+    else
+      true
     end
   end
 end
