@@ -6,6 +6,19 @@
 
 ### Bug fixes
 
+## 0.6.1 (16 Aug 2015)
+
+### Breaking changes & deprecations
+
+### New features
+
+- Parse UTF-8 characters & escaped characters
+
+### Bug fixes
+
+- Properly parse empty strings
+- Fix argument / variable compatibility validation
+
 
 ## 0.6.0 (14 Aug 2015)
 
