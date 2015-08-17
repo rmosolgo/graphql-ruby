@@ -80,6 +80,15 @@ See also:
   -  [`queries_controller.rb`](https://github.com/rmosolgo/graphql-ruby-demo/blob/master/app/controllers/queries_controller.rb) for a Rails example
   - Try it on [heroku](http://graphql-ruby-demo.herokuapp.com)
 
+
+#### Use with Relay
+
+If you're building a backend for [Relay](http://facebook.github.io/relay/), you'll need:
+
+- A JSON dump of the schema, which you can get by sending [`GraphQL::Introspection::INTROSPECTION_QUERY`](https://github.com/rmosolgo/graphql-ruby/blob/master/lib/graphql/introspection/introspection_query.rb)
+- Relay-specific helpers for GraphQL like Connections, node fields, and global ids. Here's one example of those: [`graphql-relay`](https://github.com/rmosolgo/graphql-relay-ruby)
+
+
 ## To Do
 
 - To match spec:
@@ -93,11 +102,11 @@ See also:
   - https://github.com/graphql/graphql-js/issues/19#issuecomment-118515077
 - Code clean-up
   - Accept native Ruby types in definitions, then convert them to GraphQL types
-  - Make Schema validations run before TypeReducer
   - Remove deprecated `params:` keyword
-  - Make sure to raise if you try to configure an attribute which doesnt suit the type
+  - Raise if you try to configure an attribute which doesn't suit the type
 - Cook up some path other than "n+1s everywhere"
   - See Sangria's `project` approach ([in progress](https://github.com/rmosolgo/graphql-ruby/pull/15))
+  - Try debounced approach?
 
 ## Goals
 
@@ -118,6 +127,7 @@ See also:
 - Other implementations: [graphql-links](https://github.com/emmenko/graphql-links)
 - `graphql-ruby` + Rails demo ([src](https://github.com/rmosolgo/graphql-ruby-demo) / [heroku](http://graphql-ruby-demo.herokuapp.com))
 - [GraphQL Slack](https://graphql-slack.herokuapp.com/)
+- [Example Relay support](https://github.com/rmosolgo/graphql-relay-ruby) in Ruby
 
 ## P.S.
 
