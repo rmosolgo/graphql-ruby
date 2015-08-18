@@ -142,7 +142,7 @@ Schema = GraphQL::Schema.new(query: QueryRoot) # QueryRoot defined above
 query_string = "query getPost { post(id: 1) { id, title, comments { body } } }"
 
 query = GraphQL::Query.new(Schema, query_string)
-response_hash = query.response
+response_hash = query.result
 p JSON.dump(response_hash)
 # {
 #   "post" : {
