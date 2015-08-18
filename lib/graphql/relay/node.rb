@@ -1,5 +1,4 @@
 require 'singleton'
-require 'base64'
 module GraphQL
   module Relay
     # To get a `NodeField` and `NodeInterface`,

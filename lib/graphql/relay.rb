@@ -1,3 +1,4 @@
+require 'base64'
 require 'graphql/definition_helpers/defined_by_config/definition_config'
 require 'graphql/relay/node'
 require 'graphql/relay/page_info'

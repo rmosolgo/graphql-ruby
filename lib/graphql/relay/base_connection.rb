@@ -24,17 +24,19 @@ module GraphQL
         connection_type
       end
 
-      attr_reader :object
+      attr_reader :object, :arguments
 
-      def initialize(object, args)
+      def initialize(object, arguments)
         @object = object
-        @args = args
+        @arguments = arguments
       end
 
       # Provide easy access to provided arguments:
-      [:first, :after, :last, :before].each do |arg_name|
+      METHODS_FROM_ARGUMENTS = [:first, :after, :last, :before, :order]
+
+      METHODS_FROM_ARGUMENTS.each do |arg_name|
         define_method(arg_name) do
-          @args[arg_name]
+          arguments[arg_name]
         end
       end
 

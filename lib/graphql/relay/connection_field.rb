@@ -9,6 +9,7 @@ module GraphQL
           argument :after, types.String
           argument :last, types.Int
           argument :before, types.String
+          argument :order, types.String
 
           type(-> { underlying_field.type })
           resolve -> (obj, args, ctx) {
