@@ -8,7 +8,7 @@ At the simplest, you can evaluate a query from string against a schema:
 # let's pretend it's a Rails controller!
 query_string = params[:query]
 query = GraphQL::Query.new(MySchema, query_string)
-render(json: query.response)
+render(json: query.result)
 ```
 
 ## Variables
@@ -18,7 +18,7 @@ If your query contains variables, you can provide their values with the `variabl
 ```ruby
 query_string = "query getPost($postId: !Int){ post(id: $postId) { title } }"
 query = GraphQL::Query.new(MySchema, query_string, variables: {"postId" => 2})
-query.response
+query.result
 ```
 
 `variables` keys should be strings, whose names match the variables, without `$`.
@@ -29,7 +29,7 @@ You can pass an arbitrary hash of information into the query with the `context:`
 
 ```ruby
 query = GraphQL::Query.new(MySchema, query_string, context: {current_user: current_user})
-query.response
+query.result
 ```
 
 These values will be accessible by key inside `resolve` functions. For example, this field only returns a value if the current user has high enough permissions:
@@ -50,7 +50,7 @@ If your query contains multiple operations, you _must_ pass the operation name w
 
 ```ruby
 query = GraphQL::Query.new(MySchema, query_string, context: {operation_name: "getPersonInfo"})
-query.response
+query.result
 ```
 
 If you don't, you'll get an error.
@@ -61,7 +61,7 @@ By default, `GraphQL::Query` rescues any error during execution and puts it in t
 
 ```ruby
 query = GraphQL::Query.new(MySchema, query_string, debug: false)
-query.response
+query.result
 ```
 
 ## Validation
@@ -70,5 +70,5 @@ By default, `GraphQL::Query` performs validation on incoming query strings. If y
 
 ```ruby
 query = GraphQL::Query.new(MySchema, query_string, validate: false)
-query.response
+query.result
 ```
