@@ -26,6 +26,20 @@ end
 # Define a connection which will wrap an array:
 ShipConnection = GraphQL::Relay::ArrayConnection.create_type(Ship)
 
+
+BaseType = GraphQL::ObjectType.define do
+  name "Base"
+  interfaces [NodeInterface]
+  field :id, field: GraphQL::Relay::GlobalIdField.new("Base")
+  field :name, types.String
+  field :planet, types.String
+end
+
+# Define a connection which will wrap an array:
+BaseConnection = GraphQL::Relay::RelationConnection.create_type(BaseType)
+
+
+
 Faction = GraphQL::ObjectType.define do
   name "Faction"
   interfaces [NodeInterface]
@@ -36,6 +50,13 @@ Faction = GraphQL::ObjectType.define do
     # will do the rest!
     resolve -> (obj, args, ctx) {
       obj.ships.map {|ship_id| STAR_WARS_DATA["Ship"][ship_id] }
+    }
+  end
+  connection :bases, BaseConnection do
+    # Resolve field should return an Array, the Connection
+    # will do the rest!
+    resolve -> (obj, args, ctx) {
+      Base.where(id: obj.bases)
     }
   end
 end

@@ -10,6 +10,10 @@ module GraphQL
     #   - {#first}, {#after}, {#last}, {#before} (arguments passed to the field)
     #
     class BaseConnection
+      # Just to encode data in the cursor, use something that won't conflict
+      CURSOR_SEPARATOR = "---"
+
+      # Create a connection which exposes edges of this type
       def self.create_type(wrapped_type)
         edge_type = Edge.create_type(wrapped_type)
 

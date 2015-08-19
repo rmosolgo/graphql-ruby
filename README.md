@@ -9,9 +9,9 @@ Helpers for using [`graphql`](https://github.com/rmosolgo/graphql-ruby) with Rel
 - Connections
   - [x] arguments (Object definition `connection` helper)
   - [x] connection type for type (`ConnectionType#connection_class`)
-  - [ ] Connection classes
+  - [x] Connection classes
     - [x] ArrayConnection
-    - [ ] HasManyConnection
+    - [x] RelationConnection
 
 - Object Identification
   - [x] Node-related types
