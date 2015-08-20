@@ -35,6 +35,8 @@ class GraphQL::Schema
     else
       nil
     end
+  rescue StandardError => e
+    raise RuntimeError, "Failed to get field #{field_name} on type #{parent_type}"
   end
 
   class InvalidTypeError < StandardError

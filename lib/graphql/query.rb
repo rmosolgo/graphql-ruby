@@ -60,6 +60,8 @@ class GraphQL::Query
   def execute
     return {} if @operations.none?
     operation = find_operation(@operation_name, @operations)
+    projector = Projection::OperationProjector.new(operation, self)
+    projector.result # The context object will store the projections
     resolver = OperationResolver.new(operation, self)
     resolver.result
   end
@@ -75,18 +77,6 @@ class GraphQL::Query
       raise OperationNameMissingError, operations.keys
     else
       operations[operation_name]
-    end
-  end
-
-  # Expose some query-specific info to field resolve functions.
-  # It delegates `[]` to the hash that's passed to `GraphQL::Query#initialize`.
-  class Context
-    def initialize(arbitrary_hash)
-      @arbitrary_hash = arbitrary_hash
-    end
-
-    def [](key)
-      @arbitrary_hash[key]
     end
   end
 
@@ -106,3 +96,5 @@ require 'graphql/query/operation_resolver'
 require 'graphql/query/selection_resolver'
 require 'graphql/query/type_resolver'
 require 'graphql/query/directive_chain'
+require 'graphql/query/context'
+require 'graphql/query/projection'
