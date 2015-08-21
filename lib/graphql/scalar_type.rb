@@ -2,6 +2,7 @@ module GraphQL
   # The parent type for scalars, eg {GraphQL::STRING_TYPE}, {GraphQL::INT_TYPE}
   #
   class ScalarType < GraphQL::ObjectType
+    include GraphQL::DefinitionHelpers::ResolvesToSelf
     defined_by_config :name, :coerce
     attr_accessor :name
 

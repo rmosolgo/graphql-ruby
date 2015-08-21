@@ -29,7 +29,7 @@
 #
 class GraphQL::Field
   DEFAULT_RESOLVE = -> (o, a, c) { GraphQL::Query::DEFAULT_RESOLVE }
-  DEFAULT_PROJECT = -> (type, args, ctx) { {"name" => name, "args" => args, "projections" => ctx.projections} }
+  DEFAULT_PROJECT = -> (type, args, ctx) { ctx.projections }
 
   include GraphQL::DefinitionHelpers::DefinedByConfig
   attr_accessor :arguments, :deprecation_reason, :name, :description, :type
@@ -75,7 +75,10 @@ class GraphQL::Field
   # This value will be nested inside {Query::Context#projections}
   # and accessible to {#resolve} functions of parent queries
   def project(type, args, ctx)
-    @project_proc.call(type, args, ctx)
+    {
+      name: name,
+      projections: @project_proc.call(type, args, ctx)
+    }
   end
 
   # Get the return type for this field.

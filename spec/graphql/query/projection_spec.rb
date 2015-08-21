@@ -52,17 +52,17 @@ describe GraphQL::Query::Projection do
     expected = {"data"=>
       {
         "projector"=>{
-          "projectedInt"=>1,
+          "projectedInt"=>3,
           "projector"=>{
-            "projectedInt"=>2,
-            "resolvedInt"=>7,
-            "projectedInt2"=>3
+            "projectedInt"=>4,
+            "projectedInt2"=>5,
+            "resolvedInt"=>9,
           }
         },
         "otherProjector"=>{
-          "projectedInt"=>4,
-          "projectedInt2"=>5,
-          "resolvedInt"=>8
+          "projectedInt"=>6,
+          "projectedInt2"=>7,
+          "resolvedInt"=>10,
         }
       }
     }

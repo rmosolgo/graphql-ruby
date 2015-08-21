@@ -20,6 +20,7 @@
 #    end
 #
 class GraphQL::ObjectType
+  include GraphQL::DefinitionHelpers::ResolvesToSelf
   include GraphQL::DefinitionHelpers::NonNullWithBang
   include GraphQL::DefinitionHelpers::DefinedByConfig
   defined_by_config :name, :description, :interfaces, :fields
