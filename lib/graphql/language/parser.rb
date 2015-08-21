@@ -92,7 +92,7 @@ module GraphQL::Language
     rule(:value_array) { (str("[") >> (value >> separator?).repeat(0) >> str("]")).as(:array) }
     rule(:value_boolean) { (str("true") | str("false")).as(:boolean) }
     rule(:value_float) { (value_sign? >> match('\d').repeat(1) >> str(".") >> match('\d').repeat(1) >> (match("[eE]") >> value_sign? >> match('\d').repeat(1)).maybe).as(:float) }
-    rule(:value_input_object) { str("{") >> value_input_object_pair.repeat(1).as(:input_object) >> str("}") }
+    rule(:value_input_object) { str("{") >> space? >> value_input_object_pair.repeat(1).as(:input_object) >> space? >> str("}") }
     rule(:value_input_object_pair) { space? >> name.as(:input_object_name) >>  space? >> str(":") >> space? >> value.as(:input_object_value) >> separator? }
     rule(:value_int) { (value_sign? >> match('\d').repeat(1)).as(:int) }
     rule(:value_string) { str('"') >> value_string_char.repeat.as(:string) >> str('"')}

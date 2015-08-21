@@ -67,7 +67,7 @@ describe GraphQL::Language::Parser do
     assert(parser.field.parse_with_debug(%|myField { name, id }|), 'gets subselections')
     assert(parser.field.parse_with_debug(%{myAlias: myField}), 'gets an alias')
     assert(parser.field.parse_with_debug(%{myField(intKey: 1, floatKey: 1.1e5)}), 'gets arguments')
-    assert(parser.field.parse_with_debug('myAlias: myField(stringKey: "\"my_string\"", boolKey: false, objKey: {key : true})'), 'gets alias and arguments')
+    assert(parser.field.parse_with_debug('myAlias: myField(stringKey: "\"my_string\"", boolKey: false, objKey: { key : true }, otherObjKey: {key: true})'), 'gets alias and arguments')
     assert(parser.field.parse_with_debug(%|myField @withFlag, @skip(if: true) { name, id }|), 'gets with directive')
   end
 
