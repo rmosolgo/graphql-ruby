@@ -95,11 +95,24 @@ If you're building a backend for [Relay](http://facebook.github.io/relay/), you'
   - if you were to request a field, then request it in a fragment, it would get looked up twice
   - https://github.com/graphql/graphql-js/issues/19#issuecomment-118515077
 - Code clean-up
-  - Accept native Ruby types or symbols in definitions, then convert them to GraphQL types
+  - Easier built-in type definition
+    - Make an object that accepts type objects, symbols, or corresponding Ruby classes and convertes them to GraphQL types
+    - Hook up that object to `DefinitionConfig`, so it can map from incoming values to GraphQL types
   - Raise if you try to configure an attribute which doesn't suit the type
-- Cook up some path other than "n+1s everywhere"
-  - See Sangria's `project` approach ([in progress](https://github.com/rmosolgo/graphql-ruby/pull/15))
-  - Try debounced approach?
+    - ie, if you try to define `resolve` on an ObjectType, it should somehow raise
+  - Make better inheritance between types
+    - Implement a BaseType (?) and make all type classes extend that
+    - No more extending ObjectType!
+    - Move `TypeKind#unwrap` to BaseType & update all code
+    - Also move `TypeKind#resolve` ?
+- Big ideas:
+  - Cook up some path other than "n+1s everywhere"
+    - See Sangria's `project` approach ([in progress](https://github.com/rmosolgo/graphql-ruby/pull/15))
+    - Try debounced approach?
+  - Write Ruby bindings for [libgraphqlparser](https://github.com/graphql/libgraphqlparser) and use that instead of Parslet
+  - Add instrumentation
+    - Some way to expose what queries are run, what types & fields are accessed, how long things are taking, etc
+
 
 ## Goals
 
