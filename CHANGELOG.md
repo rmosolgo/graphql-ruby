@@ -2,6 +2,8 @@
 
 ### Breaking changes & deprecations
 
+- Query keyword argument was removed, use `variables:` instead.
+
 ### New features
 
 ### Bug fixes
