@@ -1,24 +1,15 @@
 class GraphQL::Query::OperationResolver
-  attr_reader :query
+  attr_reader :query, :target, :ast_operation_definition
 
-  def initialize(operation_definition, query)
-    @operation_definition = operation_definition
+  def initialize(ast_operation_definition, target, query)
+    @ast_operation_definition = ast_operation_definition
     @query = query
+    @target = target
   end
 
   def result
-    @result ||= execute(@operation_definition, query)
-  end
-
-  private
-
-  def execute(op_def, query)
-    root = if op_def.operation_type == "query"
-      query.schema.query
-    elsif op_def.operation_type == "mutation"
-      query.schema.mutation
-    end
-    resolver = GraphQL::Query::SelectionResolver.new(nil, root, op_def.selections, query)
+    selections = ast_operation_definition.selections
+    resolver = GraphQL::Query::SelectionResolver.new(nil, target, selections, query)
     resolver.result
   end
 end

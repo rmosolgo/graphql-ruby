@@ -3,7 +3,7 @@ class GraphQL::Query
   # The executor will send the field's name to the target object
   # and use the result.
   DEFAULT_RESOLVE = :__default_resolve
-  attr_reader :schema, :document, :context, :fragments, :variables
+  attr_reader :schema, :document, :context, :fragments, :variables, :operations
 
   # Prepare query `query_string` on `schema`
   # @param schema [GraphQL::Schema]
@@ -47,7 +47,7 @@ class GraphQL::Query
 
     @result ||= { "data" => execute }
 
-  rescue OperationNameMissingError => err
+  rescue Executor::OperationNameMissingError => err
     {"errors" => [{"message" => err.message}]}
   rescue StandardError => err
     @debug && raise(err)
@@ -58,24 +58,11 @@ class GraphQL::Query
   private
 
   def execute
-    return {} if @operations.none?
-    operation = find_operation(@operation_name, @operations)
-    resolver = OperationResolver.new(operation, self)
-    resolver.result
+    Executor.new(self, @operation_name).result
   end
 
   def validation_errors
     @validation_errors ||= @schema.static_validator.validate(@document)
-  end
-
-  def find_operation(operation_name, operations)
-    if operations.length == 1
-      operations.values.first
-    elsif !operations.key?(operation_name)
-      raise OperationNameMissingError, operations.keys
-    else
-      operations[operation_name]
-    end
   end
 
   # Expose some query-specific info to field resolve functions.
@@ -89,13 +76,6 @@ class GraphQL::Query
       @arbitrary_hash[key]
     end
   end
-
-  class OperationNameMissingError < StandardError
-    def initialize(names)
-      msg = "You must provide an operation name from: #{names.join(", ")}"
-      super(msg)
-    end
-  end
 end
 
 require 'graphql/query/arguments'
@@ -107,3 +87,4 @@ require 'graphql/query/operation_resolver'
 require 'graphql/query/selection_resolver'
 require 'graphql/query/type_resolver'
 require 'graphql/query/directive_chain'
+require 'graphql/query/executor'
