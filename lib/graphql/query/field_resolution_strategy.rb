@@ -3,9 +3,17 @@ class GraphQL::Query::FieldResolutionStrategy
 
   def initialize(ast_field, parent_type, target, operation_resolver)
     field_name = ast_field.name
-    field = operation_resolver.query.schema.get_field(parent_type, field_name) || raise("No field found on #{parent_type.name} '#{parent_type}' for '#{field_name}'")
+    field = operation_resolver.query.schema.get_field(parent_type, field_name)
     arguments = GraphQL::Query::Arguments.new(ast_field.arguments, field.arguments, operation_resolver.variables)
-    value = field.resolve(target, arguments, operation_resolver.context)
+    context = operation_resolver.context
+
+    # Use the projected value while resolving the field
+    # (it will be nil if there were no projections)
+    projected_value = context.projection_map[ast_field][:projections]
+    value = context.projecting(projected_value) do
+      field.resolve(target, arguments, operation_resolver.context)
+    end
+
     if value.nil?
       @result_value = value
     else

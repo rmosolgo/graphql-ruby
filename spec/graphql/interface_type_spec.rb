@@ -19,6 +19,7 @@ describe GraphQL::InterfaceType do
         favoriteEdible { fatContent }
       }
     |}
+
     it 'gets fields from the type for the given object' do
       expected = {"data"=>{"favoriteEdible"=>{"fatContent"=>0.04}}}
       assert_equal(expected, result)

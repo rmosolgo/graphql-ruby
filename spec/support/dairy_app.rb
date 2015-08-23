@@ -76,7 +76,7 @@ DairyProductInputType = GraphQL::InputObjectType.define {
 }
 
 
-class FetchField
+class FetchField < GraphQL::Field
   def self.create(type:, data:, id_type: !GraphQL::INT_TYPE)
     desc = "Find a #{type.name} by id"
     return_type = type

@@ -22,7 +22,7 @@ class GraphQL::Schema
 
   # Resolve field named `field_name` for type `parent_type`.
   # Handles dynamic fields `__typename`, `__type` and `__schema`, too
-  def get_field(parent_type, field_name)
+  def get_field(parent_type, field_name, strict: false)
     defined_field = parent_type.fields[field_name]
     if defined_field
       defined_field
@@ -33,8 +33,11 @@ class GraphQL::Schema
     elsif field_name == "__type" && parent_type == query
       GraphQL::Introspection::TypeByNameField.create(self.types)
     else
+      strict && raise("No such field #{field_name} on #{parent_type}")
       nil
     end
+  rescue StandardError => e
+    raise RuntimeError, "Failed to get field #{field_name} on type #{parent_type}"
   end
 
   class InvalidTypeError < StandardError

@@ -11,6 +11,7 @@
 #     value("JAVASCRIPT", "Accidental lingua franca of the web")
 #   end
 class GraphQL::EnumType
+  include GraphQL::DefinitionHelpers::ResolvesToSelf
   include GraphQL::DefinitionHelpers::NonNullWithBang
   include GraphQL::DefinitionHelpers::DefinedByConfig
   attr_accessor :name, :description, :values
