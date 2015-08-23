@@ -34,7 +34,8 @@ module GraphQL
         elsif operation.operation_type == "mutation"
           root = query.schema.mutation
         end
-        resolver = GraphQL::Query::OperationResolver.new(operation, root, query)
+        execution_strategy = GraphQL::Query::SerialExecution
+        resolver = execution_strategy.operation_resolution.new(operation, root, query, execution_strategy)
         resolver.result
       end
 

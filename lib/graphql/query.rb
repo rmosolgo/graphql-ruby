@@ -63,12 +63,8 @@ class GraphQL::Query
 end
 
 require 'graphql/query/arguments'
-require 'graphql/query/field_resolution_strategy'
+require 'graphql/query/serial_execution'
 require 'graphql/query/value_resolution'
-require 'graphql/query/fragment_spread_resolution_strategy'
-require 'graphql/query/inline_fragment_resolution_strategy'
-require 'graphql/query/operation_resolver'
-require 'graphql/query/selection_resolver'
 require 'graphql/query/type_resolver'
 require 'graphql/query/directive_chain'
 require 'graphql/query/executor'

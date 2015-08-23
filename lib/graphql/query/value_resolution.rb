@@ -6,14 +6,16 @@ module GraphQL
       end
 
       class BaseResolution
-        attr_reader :value, :field_type, :target, :parent_type, :ast_field, :query
-        def initialize(value, field_type, target, parent_type, ast_field, query)
+        attr_reader :value, :field_type, :target, :parent_type,
+          :ast_field, :query, :execution_strategy
+        def initialize(value, field_type, target, parent_type, ast_field, query, execution_strategy)
           @value = value
           @field_type = field_type
           @target = target
           @parent_type = parent_type
           @ast_field = ast_field
           @query = query
+          @execution_strategy = execution_strategy
         end
 
         def result
@@ -33,7 +35,7 @@ module GraphQL
           value.map do |item|
             resolved_type = wrapped_type.kind.resolve(wrapped_type, item)
             strategy_class = GraphQL::Query::ValueResolution.get_strategy_for_kind(resolved_type.kind)
-            inner_strategy = strategy_class.new(item, resolved_type, target, parent_type, ast_field, query)
+            inner_strategy = strategy_class.new(item, resolved_type, target, parent_type, ast_field, query, execution_strategy)
             inner_strategy.result
           end
         end
@@ -41,7 +43,7 @@ module GraphQL
 
       class ObjectResolution < BaseResolution
         def result
-          resolver = GraphQL::Query::SelectionResolver.new(value, field_type, ast_field.selections, query)
+          resolver = execution_strategy.selection_resolution.new(value, field_type, ast_field.selections, query, execution_strategy)
           resolver.result
         end
       end
@@ -57,7 +59,7 @@ module GraphQL
           wrapped_type = field_type.of_type
           resolved_type = wrapped_type.kind.resolve(wrapped_type, value)
           strategy_class = GraphQL::Query::ValueResolution.get_strategy_for_kind(resolved_type.kind)
-          inner_strategy = strategy_class.new(value, resolved_type, target, parent_type, ast_field, query)
+          inner_strategy = strategy_class.new(value, resolved_type, target, parent_type, ast_field, query, execution_strategy)
           inner_strategy.result
         end
       end
