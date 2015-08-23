@@ -32,6 +32,6 @@ class GraphQL::Query::FieldResolutionStrategy
     resolved_type = field.type.kind.resolve(field.type, value)
     strategy_class = GraphQL::Query::ValueResolution.get_strategy_for_kind(resolved_type.kind)
     result_strategy = strategy_class.new(value, resolved_type, target, parent_type, ast_field, query)
-    @result_value = result_strategy.resolve
+    result_strategy.result
   end
 end
