@@ -1,3 +1,5 @@
+# TODO:  `@skip` has precedence over `@include`
+# TODO: directives on fragments: http://facebook.github.io/graphql/#sec-Fragment-Directives
 class GraphQL::Query::DirectiveChain
   DIRECTIVE_ON = {
     GraphQL::Language::Nodes::Field =>          GraphQL::Directive::ON_FIELD,

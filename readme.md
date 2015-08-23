@@ -91,17 +91,11 @@ If you're building a backend for [Relay](http://facebook.github.io/relay/), you'
 
 ## To Do
 
-- To match spec:
-  - Directives:
-    - `@skip` has precedence over `@include`
-    - directives on fragments: http://facebook.github.io/graphql/#sec-Fragment-Directives
-  - Union
-    - only require one type https://github.com/facebook/graphql/commit/972fd5aae01195b018d305c82e43f714f9a41679
 - Field merging
   - if you were to request a field, then request it in a fragment, it would get looked up twice
   - https://github.com/graphql/graphql-js/issues/19#issuecomment-118515077
 - Code clean-up
-  - Accept native Ruby types in definitions, then convert them to GraphQL types
+  - Accept native Ruby types or symbols in definitions, then convert them to GraphQL types
   - Remove deprecated `params:` keyword
   - Raise if you try to configure an attribute which doesn't suit the type
 - Cook up some path other than "n+1s everywhere"
@@ -112,7 +106,7 @@ If you're building a backend for [Relay](http://facebook.github.io/relay/), you'
 
 - Implement the GraphQL spec & support a Relay front end
 - Provide idiomatic, plain-Ruby API with similarities to reference implementation where possible
-- Support `graphql-rails`
+- Support Ruby on Rails and Relay
 
 ## Getting Involved
 

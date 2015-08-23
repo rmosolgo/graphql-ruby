@@ -50,19 +50,32 @@ describe GraphQL::Schema::TypeValidator do
 
   describe "when a Union isnt valid" do
     let(:object) {
+      union_types = types
       GraphQL::UnionType.define do
         name "Something"
         description "some union"
-        possible_types [DairyProductInputType]
+        possible_types union_types
       end
     }
     let(:errors) { e = []; GraphQL::Schema::TypeValidator.new.validate(object, e); e;}
-    it 'must be 2+ types, must be only object types' do
-      expected = [
-        "Something.possible_types must be objects, but some aren't: DairyProductInput",
-        "Union Something must be defined with 2 or more types, not 1",
-      ]
-      assert_equal(expected, errors)
+
+    describe 'when non-object types' do
+      let(:types) { [DairyProductInputType] }
+      it 'must be must be only object types' do
+        expected = [
+          "Something.possible_types must be objects, but some aren't: DairyProductInput"
+        ]
+        assert_equal(expected, errors)
+      end
+    end
+    describe 'when no types' do
+      let(:types) { [] }
+      it 'must have a type' do
+        expected = [
+          "Union Something must be defined with 1 or more types, not 0!"
+        ]
+        assert_equal(expected, errors)
+      end
     end
   end
 end

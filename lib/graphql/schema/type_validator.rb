@@ -45,8 +45,8 @@ class GraphQL::Schema::TypeValidator
 
     if type.kind.union?
       union_types = type.possible_types
-      if union_types.length < 2
-        own_errors << "Union #{type_name} must be defined with 2 or more types, not #{union_types.length}"
+      if union_types.none?
+        own_errors << "Union #{type_name} must be defined with 1 or more types, not 0!"
       end
     end
     errors.push(*own_errors)
