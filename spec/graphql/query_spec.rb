@@ -62,26 +62,6 @@ describe GraphQL::Query do
       assert_equal(GraphQL::Language::Nodes::FragmentDefinition, query.fragments['cheeseFields'].class)
     end
 
-    describe 'runtime errors' do
-      let(:query_string) {%| query noMilk { error }|}
-      describe 'if debug: false' do
-        let(:debug) { false }
-        it 'turns into error messages' do
-          expected = {"errors"=>[
-            {"message"=>"Something went wrong during query execution: This error was raised on purpose"}
-          ]}
-          assert_equal(expected, result)
-        end
-      end
-
-      describe 'if debug: true' do
-        let(:debug) { true }
-        it 'raises error' do
-          assert_raises(RuntimeError) { result }
-        end
-      end
-    end
-
     describe "malformed queries" do
       describe "whitespace-only" do
         let(:query_string) { " " }

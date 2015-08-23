@@ -3,7 +3,7 @@ class GraphQL::Query
   # The executor will send the field's name to the target object
   # and use the result.
   DEFAULT_RESOLVE = :__default_resolve
-  attr_reader :schema, :document, :context, :fragments, :variables, :operations
+  attr_reader :schema, :document, :context, :fragments, :variables, :operations, :debug
 
   # Prepare query `query_string` on `schema`
   # @param schema [GraphQL::Schema]
@@ -45,21 +45,10 @@ class GraphQL::Query
       return { "errors" => validation_errors }
     end
 
-    @result ||= { "data" => execute }
-
-  rescue Executor::OperationNameMissingError => err
-    {"errors" => [{"message" => err.message}]}
-  rescue StandardError => err
-    @debug && raise(err)
-    message = "Something went wrong during query execution: #{err}" # \n  #{err.backtrace.join("\n  ")}"
-    {"errors" => [{"message" => message}]}
+    @result ||= Executor.new(self, @operation_name).result
   end
 
   private
-
-  def execute
-    Executor.new(self, @operation_name).result
-  end
 
   def validation_errors
     @validation_errors ||= @schema.static_validator.validate(@document)

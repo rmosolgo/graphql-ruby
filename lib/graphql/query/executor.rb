@@ -15,6 +15,18 @@ module GraphQL
       end
 
       def result
+        {"data" => execute }
+      rescue OperationNameMissingError => err
+        {"errors" => [{"message" => err.message}]}
+      rescue StandardError => err
+        query.debug && raise(err)
+        message = "Something went wrong during query execution: #{err}" # \n  #{err.backtrace.join("\n  ")}"
+        {"errors" => [{"message" => message}]}
+      end
+
+      private
+
+      def execute
         return {} if query.operations.none?
         operation = find_operation(operation_name, query.operations)
         if operation.operation_type == "query"
@@ -25,8 +37,6 @@ module GraphQL
         resolver = GraphQL::Query::OperationResolver.new(operation, root, query)
         resolver.result
       end
-
-      private
 
       def find_operation(operation_name, operations)
         if operations.length == 1
