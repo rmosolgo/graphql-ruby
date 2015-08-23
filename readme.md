@@ -96,7 +96,6 @@ If you're building a backend for [Relay](http://facebook.github.io/relay/), you'
   - https://github.com/graphql/graphql-js/issues/19#issuecomment-118515077
 - Code clean-up
   - Accept native Ruby types or symbols in definitions, then convert them to GraphQL types
-  - Remove deprecated `params:` keyword
   - Raise if you try to configure an attribute which doesn't suit the type
 - Cook up some path other than "n+1s everywhere"
   - See Sangria's `project` approach ([in progress](https://github.com/rmosolgo/graphql-ruby/pull/15))

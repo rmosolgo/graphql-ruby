@@ -13,17 +13,12 @@ class GraphQL::Query
   # @param debug [Boolean] if true, errors are raised, if false, errors are put in the `errors` key
   # @param validate [Boolean] if true, `query_string` will be validated with {StaticValidation::Validator}
   # @param operation_name [String] if the query string contains many operations, this is the one which should be executed
-  def initialize(schema, query_string, context: nil, params: nil, variables: {}, debug: true, validate: true, operation_name: nil)
+  def initialize(schema, query_string, context: nil, variables: {}, debug: true, validate: true, operation_name: nil)
     @schema = schema
     @debug = debug
     @context = Context.new(context)
 
     @variables = variables
-    if params
-      warn("[GraphQL] params option is deprecated for GraphQL::Query#new, use variables instead")
-      @variables = params
-    end
-
     @validate = validate
     @operation_name = operation_name
     @fragments = {}
