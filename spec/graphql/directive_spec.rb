@@ -8,6 +8,8 @@ describe GraphQL::Directive do
         # plain fields:
         skipFlavor: flavor @skip(if: true)
         dontSkipFlavor: flavor @skip(if: false)
+        dontSkipDontIncludeFlavor: flavor @skip(if: false), @include(if: false)
+        skipAndInclude: flavor @skip(if: true), @include(if: true)
         includeFlavor: flavor @include(if: $t)
         dontIncludeFlavor: flavor @include(if: $f)
         # fields in fragments
@@ -25,6 +27,7 @@ describe GraphQL::Directive do
     it 'intercepts fields' do
       expected = { "data" =>{
         "cheese" => {
+          "dontSkipDontIncludeFlavor" => "Brie", #skip has precedence over include
           "dontSkipFlavor" => "Brie",
           "includeFlavor" => "Brie",
           "includeId" => 1,

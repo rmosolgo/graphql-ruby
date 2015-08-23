@@ -1,4 +1,3 @@
-# TODO:  `@skip` has precedence over `@include`
 # TODO: directives on fragments: http://facebook.github.io/graphql/#sec-Fragment-Directives
 class GraphQL::Query::DirectiveChain
   DIRECTIVE_ON = {
@@ -18,6 +17,11 @@ class GraphQL::Query::DirectiveChain
     directives = query.schema.directives
     on_what = DIRECTIVE_ON[ast_node.class]
     ast_directives = GET_DIRECTIVES[ast_node.class].call(ast_node, query.fragments)
+
+    if contains_skip?(ast_directives)
+      ast_directives = ast_directives.reject { |ast_directive| ast_directive.name == 'include' }
+    end
+
     applicable_directives = ast_directives
       .map { |ast_directive| [ast_directive, directives[ast_directive.name]] }
       .select { |directive_pair| directive_pair.last.on.include?(on_what) }
@@ -31,5 +35,10 @@ class GraphQL::Query::DirectiveChain
       end
       @result ||= {}
     end
+  end
+
+  private
+  def contains_skip?(directives)
+    directives.any? { |directive| directive.name == 'skip' }
   end
 end
