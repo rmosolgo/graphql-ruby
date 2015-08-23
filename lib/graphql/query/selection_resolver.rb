@@ -7,11 +7,11 @@ class GraphQL::Query::SelectionResolver
     GraphQL::Language::Nodes::InlineFragment => GraphQL::Query::InlineFragmentResolutionStrategy,
   }
 
-  def initialize(target, type, selections, operation_resolver)
+  def initialize(target, type, selections, query)
     @result = selections.reduce({}) do |memo, ast_field|
-      chain = GraphQL::Query::DirectiveChain.new(ast_field, operation_resolver) {
+      chain = GraphQL::Query::DirectiveChain.new(ast_field, query) {
         strategy_class = RESOLUTION_STRATEGIES[ast_field.class]
-        strategy = strategy_class.new(ast_field, type, target, operation_resolver)
+        strategy = strategy_class.new(ast_field, type, target, query)
         strategy.result
       }
       memo.merge(chain.result)

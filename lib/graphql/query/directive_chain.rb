@@ -14,10 +14,10 @@ class GraphQL::Query::DirectiveChain
   }
 
   attr_reader :result
-  def initialize(ast_node, operation_resolver, &block)
-    directives = operation_resolver.query.schema.directives
+  def initialize(ast_node, query, &block)
+    directives = query.schema.directives
     on_what = DIRECTIVE_ON[ast_node.class]
-    ast_directives = GET_DIRECTIVES[ast_node.class].call(ast_node, operation_resolver.query.fragments)
+    ast_directives = GET_DIRECTIVES[ast_node.class].call(ast_node, query.fragments)
     applicable_directives = ast_directives
       .map { |ast_directive| [ast_directive, directives[ast_directive.name]] }
       .select { |directive_pair| directive_pair.last.on.include?(on_what) }
@@ -26,7 +26,7 @@ class GraphQL::Query::DirectiveChain
       @result = block.call
     else
       applicable_directives.map do |(ast_directive, directive)|
-        args = GraphQL::Query::Arguments.new(ast_directive.arguments, directive.arguments, operation_resolver.variables)
+        args = GraphQL::Query::Arguments.new(ast_directive.arguments, directive.arguments, query.variables)
         @result = directive.resolve(args, block)
       end
       @result ||= {}

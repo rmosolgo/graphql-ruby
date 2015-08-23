@@ -1,11 +1,9 @@
 class GraphQL::Query::OperationResolver
-  attr_reader :variables, :query, :context
+  attr_reader :query
 
   def initialize(operation_definition, query)
     @operation_definition = operation_definition
-    @variables = query.variables
     @query = query
-    @context = query.context
   end
 
   def result
@@ -20,7 +18,7 @@ class GraphQL::Query::OperationResolver
     elsif op_def.operation_type == "mutation"
       query.schema.mutation
     end
-    resolver = GraphQL::Query::SelectionResolver.new(nil, root, op_def.selections, self)
+    resolver = GraphQL::Query::SelectionResolver.new(nil, root, op_def.selections, query)
     resolver.result
   end
 end
