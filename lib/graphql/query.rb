@@ -100,6 +100,7 @@ end
 
 require 'graphql/query/arguments'
 require 'graphql/query/field_resolution_strategy'
+require 'graphql/query/value_resolution'
 require 'graphql/query/fragment_spread_resolution_strategy'
 require 'graphql/query/inline_fragment_resolution_strategy'
 require 'graphql/query/operation_resolver'

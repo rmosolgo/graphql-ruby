@@ -17,71 +17,11 @@ class GraphQL::Query::FieldResolutionStrategy
         end
       end
       resolved_type = field.type.kind.resolve(field.type, value)
-      strategy_class = self.class.get_strategy_for_kind(resolved_type.kind)
+      strategy_class = GraphQL::Query::ValueResolution.get_strategy_for_kind(resolved_type.kind)
       result_strategy = strategy_class.new(value, resolved_type, target, parent_type, ast_field, query)
-      @result_value = result_strategy.result
+      @result_value = result_strategy.resolve
     end
     result_name = ast_field.alias || ast_field.name
     @result = { result_name => @result_value}
   end
-
-  def self.get_strategy_for_kind(kind)
-    FIELD_TYPE_KIND_STRATEGIES[kind] || raise("No strategy for #{kind}")
-  end
-
-  class ScalarResolutionStrategy
-    attr_reader :result
-    def initialize(value, field_type, target, parent_type, ast_field, query)
-      @result = field_type.coerce(value)
-    end
-  end
-
-  class ListResolutionStrategy
-    attr_reader :result
-    def initialize(value, field_type, target, parent_type, ast_field, query)
-      wrapped_type = field_type.of_type
-      @result = value.map do |item|
-        resolved_type = wrapped_type.kind.resolve(wrapped_type, item)
-        strategy_class = GraphQL::Query::FieldResolutionStrategy.get_strategy_for_kind(resolved_type.kind)
-        inner_strategy = strategy_class.new(item, resolved_type, target, parent_type, ast_field, query)
-        inner_strategy.result
-      end
-    end
-  end
-
-  class ObjectResolutionStrategy
-    attr_reader :result
-    def initialize(value, field_type, target, parent_type, ast_field, query)
-      resolver = GraphQL::Query::SelectionResolver.new(value, field_type, ast_field.selections, query)
-      @result = resolver.result
-    end
-  end
-
-  class EnumResolutionStrategy
-    attr_reader :result
-    def initialize(value, field_type, target, parent_type, ast_field, query)
-      @result = value.to_s
-    end
-  end
-
-  class NonNullResolutionStrategy
-    attr_reader :result
-    def initialize(value, field_type, target, parent_type, ast_field, query)
-      wrapped_type = field_type.of_type
-      resolved_type = wrapped_type.kind.resolve(wrapped_type, value)
-      strategy_class = GraphQL::Query::FieldResolutionStrategy.get_strategy_for_kind(resolved_type.kind)
-      inner_strategy = strategy_class.new(value, resolved_type, target, parent_type, ast_field, query)
-      @result = inner_strategy.result
-    end
-  end
-
-  private
-
-  FIELD_TYPE_KIND_STRATEGIES = {
-    GraphQL::TypeKinds::SCALAR =>     ScalarResolutionStrategy,
-    GraphQL::TypeKinds::LIST =>       ListResolutionStrategy,
-    GraphQL::TypeKinds::OBJECT =>     ObjectResolutionStrategy,
-    GraphQL::TypeKinds::ENUM =>       EnumResolutionStrategy,
-    GraphQL::TypeKinds::NON_NULL =>   NonNullResolutionStrategy,
-  }
 end
