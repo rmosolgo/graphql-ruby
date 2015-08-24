@@ -7,7 +7,7 @@ Gem::Specification.new do |s|
   s.version     = GraphQL::Relay::VERSION
   s.date        = Date.today.to_s
   s.summary     = "Relay helpers for GraphQL"
-  s.description = "Connections, UUID, etc?"
+  s.description = "Define global ids, connections and mutations to use GraphQL and Relay with a Ruby server."
   s.homepage    = 'http://github.com/rmosolgo/graphql-relay-ruby'
   s.authors     = ["Robert Mosolgo"]
   s.email       = ['rdmosolgo@gmail.com']

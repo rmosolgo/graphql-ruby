@@ -1,5 +1,9 @@
 # graphql-relay
 
+[![Gem Version](https://badge.fury.io/rb/graphql-relay.svg)](http://badge.fury.io/rb/graphql-relay)
+[![Code Climate](https://codeclimate.com/github/rmosolgo/graphql-relay-ruby/badges/gpa.svg)](https://codeclimate.com/github/rmosolgo/graphql-relay-ruby)
+[![Code Climate](https://codeclimate.com/github/rmosolgo/graphql-relay-ruby/badges/gpa.svg)](https://codeclimate.com/github/rmosolgo/graphql-relay-ruby)
+
 Helpers for using [`graphql`](https://github.com/rmosolgo/graphql-ruby) with Relay.
 
 ## Installation
