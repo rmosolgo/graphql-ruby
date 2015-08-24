@@ -1,25 +1,6 @@
 module GraphQL
   class Query
-    module SerialExecution
-      def self.field_resolution
-        FieldResolution
-      end
-
-      def self.fragment_spread_resolution
-        FragmentSpreadResolution
-      end
-
-      def self.inline_fragment_resolution
-        InlineFragmentResolution
-      end
-
-      def self.operation_resolution
-        OperationResolution
-      end
-
-      def self.selection_resolution
-        SelectionResolution
-      end
+    class SerialExecution < GraphQL::Query::BaseExecution
     end
   end
 end

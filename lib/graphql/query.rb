@@ -63,6 +63,7 @@ class GraphQL::Query
 end
 
 require 'graphql/query/arguments'
+require 'graphql/query/base_execution'
 require 'graphql/query/serial_execution'
 require 'graphql/query/value_resolution'
 require 'graphql/query/type_resolver'

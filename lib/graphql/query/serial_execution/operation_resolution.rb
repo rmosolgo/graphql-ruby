@@ -1,6 +1,6 @@
 module GraphQL
   class Query
-    module SerialExecution
+    class SerialExecution
       class OperationResolution
         attr_reader :query, :target, :ast_operation_definition, :execution_strategy
 
