@@ -12,12 +12,25 @@ module GraphQL
 
         def result
           result_name = ast_node.alias || ast_node.name
-          { result_name => result_value}
+          result_value = get_finished_value(get_raw_value)
+          { result_name => result_value  }
         end
 
         private
 
-        def result_value
+        def get_finished_value(raw_value)
+          if raw_value.nil?
+            nil
+          else
+            resolved_type = field.type.kind.resolve(field.type, raw_value)
+            strategy_class = GraphQL::Query::BaseExecution::ValueResolution.get_strategy_for_kind(resolved_type.kind)
+            result_strategy = strategy_class.new(raw_value, resolved_type, target, parent_type, ast_node, query, execution_strategy)
+            result_strategy.result
+          end
+        end
+
+
+        def get_raw_value
           value = field.resolve(target, arguments, query.context)
 
           if value == GraphQL::Query::DEFAULT_RESOLVE
@@ -28,13 +41,7 @@ module GraphQL
             end
           end
 
-          return nil if value.nil?
-
-
-          resolved_type = field.type.kind.resolve(field.type, value)
-          strategy_class = GraphQL::Query::ValueResolution.get_strategy_for_kind(resolved_type.kind)
-          result_strategy = strategy_class.new(value, resolved_type, target, parent_type, ast_node, query, execution_strategy)
-          result_strategy.result
+          value
         end
       end
     end

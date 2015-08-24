@@ -31,10 +31,12 @@ module GraphQL
         operation = find_operation(operation_name, query.operations)
         if operation.operation_type == "query"
           root = query.schema.query
+          execution_strategy = GraphQL::Query::ParallelExecution.new
         elsif operation.operation_type == "mutation"
           root = query.schema.mutation
+          execution_strategy = GraphQL::Query::SerialExecution.new
         end
-        execution_strategy = GraphQL::Query::SerialExecution.new
+        query.context.execution_strategy = execution_strategy
         resolver = execution_strategy.operation_resolution.new(operation, root, query, execution_strategy)
         resolver.result
       end

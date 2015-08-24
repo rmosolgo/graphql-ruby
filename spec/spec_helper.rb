@@ -1,7 +1,7 @@
 require "codeclimate-test-reporter"
 CodeClimate::TestReporter.start
 require 'graphql'
-require 'date'
+require "benchmark"
 require "minitest/autorun"
 require "minitest/focus"
 require "minitest/reporters"

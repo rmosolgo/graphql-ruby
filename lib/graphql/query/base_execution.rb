@@ -1,3 +1,6 @@
+require 'graphql/query/base_execution/selected_object_resolution'
+require 'graphql/query/base_execution/value_resolution'
+
 module GraphQL
   class Query
     class BaseExecution
@@ -22,6 +25,12 @@ module GraphQL
         get_class :SelectionResolution
       end
 
+      # ParallelExecution overrides this to provide
+      # real async behavior
+      def async(&block)
+        block.call
+      end
+
       private
 
       def get_class(class_name)
@@ -30,5 +39,3 @@ module GraphQL
     end
   end
 end
-
-require 'graphql/query/base_execution/selected_object_resolution'
