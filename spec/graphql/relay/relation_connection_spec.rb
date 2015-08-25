@@ -15,15 +15,19 @@ describe GraphQL::Relay::RelationConnection do
       query getShips($first: Int, $after: String, $last: Int, $before: String, $order: String){
         empire {
           bases(first: $first, after: $after, last: $last, before: $before, order: $order) {
-            edges {
-              cursor
-              node {
-                name
-              }
-            }
+            ... basesConnection
             pageInfo {
               hasNextPage
             }
+          }
+        }
+      }
+
+      fragment basesConnection on BaseConnection {
+        edges {
+          cursor
+          node {
+            name
           }
         }
       }

@@ -71,6 +71,9 @@ Examples:
 ## Todo
 
 - [ ] pluralIdentifyingRootField
+- [ ] Make `GlobalIdField` default to the name of the type that includes it
+- [ ] Add `ObjectType#connection_type` helper to make it easier to get a connection
+- [ ] Fix `Node.create` -- make it return one object which exposes useful info
 
 ## More Resources
 
