@@ -26,7 +26,7 @@ empire = OpenStruct.new({
 })
 
 ## Set up "Bases" in ActiveRecord
-ActiveRecord::Base.logger = Logger.new(STDOUT)
+# ActiveRecord::Base.logger = Logger.new(STDOUT)
 ActiveRecord::Base.establish_connection(adapter: "sqlite3", database: ":memory:")
 
 ActiveRecord::Schema.define do

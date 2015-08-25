@@ -35,7 +35,7 @@ BaseType = GraphQL::ObjectType.define do
   field :planet, types.String
 end
 
-# Define a connection which will wrap an array:
+# Define a connection which will wrap an ActiveRecord::Relation:
 BaseConnection = GraphQL::Relay::RelationConnection.create_type(BaseType)
 
 

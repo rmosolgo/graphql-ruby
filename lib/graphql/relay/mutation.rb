@@ -112,7 +112,7 @@ module GraphQL
         end
 
         def clientMutationId
-          arguments[:clientMutationId]
+          arguments[:input][:clientMutationId]
         end
 
         def method_missing(name, *args, &block)

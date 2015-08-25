@@ -30,5 +30,9 @@ describe GraphQL::Relay::Mutation do
         "faction" => {"name" => STAR_WARS_DATA["Faction"]["1"].name }
       }
     }}
+    assert_equal(expected, result)
+    # Cleanup:
+    STAR_WARS_DATA["Ship"].delete("9")
+    STAR_WARS_DATA["Faction"]["1"]["ships"].delete("9")
   end
 end

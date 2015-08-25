@@ -35,16 +35,16 @@ module GraphQL
 
           if after
             _o, order_value = slice_from_cursor(after)
-            sort_query = order_direction == :asc ? "? > ?" : "? < ?"
-            puts sort_query, order_name, order_value
-            items = items.where(sort_query, order_name, order_value)
+            direction_marker = order_direction == :asc ? ">" : "<"
+            where_condition = create_order_condition(order_name, order_value, direction_marker)
+            items = items.where(where_condition)
           end
 
           if before
             _o, order_value = slice_from_cursor(before)
-            sort_query = order_direction == :asc ? "? < ?" : "? > ?"
-            p [sort_query, order_name, order_value]
-            items = items.where(sort_query, order_name, order_value)
+            direction_marker = order_direction == :asc ? "<" : ">"
+            where_condition = create_order_condition(order_name, order_value, direction_marker)
+            items = items.where(where_condition)
           end
 
           items
@@ -64,6 +64,11 @@ module GraphQL
       # Check for direction marker
       def order_direction
         @order_direction ||= order.start_with?("-") ? :desc : :asc
+      end
+
+      def create_order_condition(column, value, direction_marker)
+        name = ActiveRecord::Base.connection.quote_column_name(column)
+        ["#{name} #{direction_marker} ?", value]
       end
     end
   end
