@@ -35,7 +35,7 @@ To create a connection, you should:
   - create a connection type; then
   - implement the field to return objects
 
-To create a connection type, use either `GraphQL::Relay::ArrayConnection.create_type(base_type)` or for an `ActiveRecord::Relation`, use `GraphQL::Relay::RelationConnection.create_type(base_type)`. [Array example](https://github.com/rmosolgo/graphql-relay-ruby/blob/120b750cf86f1eb5c9997b588f022b2ef3a0012c/spec/support/star_wars_schema.rb#L27), [Relation example](https://github.com/rmosolgo/graphql-relay-ruby/blob/120b750cf86f1eb5c9997b588f022b2ef3a0012c/spec/support/star_wars_schema.rb#L39)
+To create a connection type, use either `GraphQL::Relay::ArrayConnection.create_type(base_type)` or for an `ActiveRecord::Relation`, use `GraphQL::Relay::RelationConnection.create_type(base_type)`. [Array example](https://github.com/rmosolgo/graphql-relay-ruby/tree/master/spec/support/star_wars_schema.rb#L27), [Relation example](https://github.com/rmosolgo/graphql-relay-ruby/tree/master/spec/support/star_wars_schema.rb#L39)
 
 Then, implement the field. It's different than a normal field:
   - use the `connection` helper to define it, instead of `field`
