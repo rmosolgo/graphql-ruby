@@ -2,7 +2,6 @@ require "codeclimate-test-reporter"
 CodeClimate::TestReporter.start
 require "sqlite3"
 require "active_record"
-require "graphql"
 require "graphql/relay"
 require "minitest/autorun"
 require "minitest/focus"

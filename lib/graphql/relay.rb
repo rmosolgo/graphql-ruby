@@ -1,4 +1,5 @@
 require 'base64'
+require 'graphql'
 # MONKEY PATCHES 😬
 require 'graphql/definition_helpers/defined_by_config/definition_config'
 require_relative './object_type.rb'
