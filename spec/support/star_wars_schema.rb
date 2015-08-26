@@ -53,8 +53,13 @@ Faction = GraphQL::ObjectType.define do
     # Resolve field should return an Array, the Connection
     # will do the rest!
     resolve -> (obj, args, ctx) {
-      Base.where(id: obj.bases)
+      all_bases = Base.where(id: obj.bases)
+      if args[:nameIncludes]
+        all_bases = all_bases.where("name LIKE ?", "%#{args[:nameIncludes]}%")
+      end
+      all_bases
     }
+    argument :nameIncludes, types.String
   end
 end
 
