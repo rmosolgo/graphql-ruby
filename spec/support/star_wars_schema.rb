@@ -49,8 +49,14 @@ Faction = GraphQL::ObjectType.define do
     # Resolve field should return an Array, the Connection
     # will do the rest!
     resolve -> (obj, args, ctx) {
-      obj.ships.map {|ship_id| STAR_WARS_DATA["Ship"][ship_id] }
+      all_ships = obj.ships.map {|ship_id| STAR_WARS_DATA["Ship"][ship_id] }
+      if args[:nameIncludes]
+        all_ships = all_ships.select { |ship| ship.name.include?(args[:nameIncludes])}
+      end
+      all_ships
     }
+    # You can define arguments here and use them in the connection
+    argument :nameIncludes, types.String
   end
   connection :bases, BaseConnection do
     # Resolve field should return an Array, the Connection
