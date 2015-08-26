@@ -31,8 +31,8 @@ describe GraphQL::StaticValidation::Validator do
 
     describe 'fields & arguments' do
       let(:query_string) { %|
-        query getCheese {
-          cheese(id: 1) {
+        query getCheese($id: Int!) {
+          cheese(id: $id, bogusArg: true) {
             source,
             nonsenseField,
             id(nonsenseArg: 1)
@@ -42,7 +42,8 @@ describe GraphQL::StaticValidation::Validator do
       |}
 
       it 'handles args on invalid fields' do
-        assert_equal(3, errors.length)
+        # nonsenseField, nonsenseArg, bogusField, bogusArg
+        assert_equal(4, errors.length)
       end
     end
 
