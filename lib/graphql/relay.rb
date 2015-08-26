@@ -1,8 +1,8 @@
 require 'base64'
 require 'graphql'
 # MONKEY PATCHES 😬
-require 'graphql/definition_helpers/defined_by_config/definition_config'
-require_relative './object_type.rb'
+require 'graphql/relay/monkey_patches/definition_config'
+require 'graphql/relay/monkey_patches/object_type'
 
 require 'graphql/relay/node'
 require 'graphql/relay/page_info'
