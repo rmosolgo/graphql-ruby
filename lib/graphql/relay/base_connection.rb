@@ -18,13 +18,14 @@ module GraphQL
       CONNECTION_IMPLEMENTATIONS = {}
 
       # Create a connection which exposes edges of this type
-      def self.create_type(wrapped_type)
+      def self.create_type(wrapped_type, &block)
         edge_type = Edge.create_type(wrapped_type)
 
         connection_type = ObjectType.define do
           name("#{wrapped_type.name}Connection")
           field :edges, types[edge_type]
           field :pageInfo, PageInfo, property: :page_info
+          block && instance_eval(&block)
         end
 
         connection_type
