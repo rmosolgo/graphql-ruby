@@ -25,24 +25,19 @@ Global Ids provide refetching & global identification for Relay.
 
 You should implement an object that responds to `#object_from_id(global_id)` & `#type_from_object(object)`, then pass it to `GraphQL::Relay::Node.create(implementation)`. [Example](https://github.com/rmosolgo/graphql-relay-ruby/blob/120b750cf86f1eb5c9997b588f022b2ef3a0012c/spec/support/star_wars_schema.rb#L4-L15)
 
-Then, you can add global id fields to your types with `GraphQL::Relay::GlobalIdField.new(type_name)`. [Example](https://github.com/rmosolgo/graphql-relay-ruby/blob/120b750cf86f1eb5c9997b588f022b2ef3a0012c/spec/support/star_wars_schema.rb#L22)
+Then, you can add global id fields to your types with `global_id_field` definition helper.
+ [Example](https://github.com/rmosolgo/graphql-relay-ruby/blob/master/spec/support/star_wars_schema.rb#L29)
 
 ### Connections
 
-Connections will provide arguments, pagination and `pageInfo` for `Array`s or `ActiveRecord::Relation`s.
-
-To create a connection, you should:
-  - create a connection type; then
-  - implement the field to return objects
-
-To create a connection type, use either `GraphQL::Relay::ArrayConnection.create_type(base_type)` or for an `ActiveRecord::Relation`, use `GraphQL::Relay::RelationConnection.create_type(base_type)`. [Array example](https://github.com/rmosolgo/graphql-relay-ruby/tree/master/spec/support/star_wars_schema.rb#L27), [Relation example](https://github.com/rmosolgo/graphql-relay-ruby/tree/master/spec/support/star_wars_schema.rb#L39)
+Connections will provide arguments, pagination and `pageInfo` for `Array`s or `ActiveRecord::Relation`s. You can use the `connection` definition helper.
 
 Then, implement the field. It's different than a normal field:
   - use the `connection` helper to define it, instead of `field`
-  - use the newly-created connection type as the field's return type
+  - Call `#connection_type` on an `ObjectType` for the field's return type (eg, `ShipType.connection_type`)
   - implement `resolve` to return an Array or an ActiveRecord::Relation, depending on the connection type.
 
-[Example](https://github.com/rmosolgo/graphql-relay-ruby/blob/120b750cf86f1eb5c9997b588f022b2ef3a0012c/spec/support/star_wars_schema.rb#L48-L61)
+[Example 1](https://github.com/rmosolgo/graphql-relay-ruby/blob/master/spec/support/star_wars_schema.rb#L39-L51), [Example 2](https://github.com/rmosolgo/graphql-relay-ruby/blob/master/spec/support/star_wars_schema.rb#L52-L58)
 
 ### Mutations
 
@@ -70,8 +65,6 @@ Examples:
 
 ## Todo
 
-- [ ] pluralIdentifyingRootField
-- [ ] Add `ObjectType#connection_type` helper to make it easier to get a connection
 - [ ] Fix `Node.create` -- make it return one object which exposes useful info
 
 ## More Resources
