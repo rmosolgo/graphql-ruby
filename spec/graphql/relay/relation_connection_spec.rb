@@ -28,6 +28,7 @@ describe GraphQL::Relay::RelationConnection do
       }
 
       fragment basesConnection on BaseConnection {
+        totalCount,
         edges {
           cursor
           node {
@@ -36,6 +37,7 @@ describe GraphQL::Relay::RelationConnection do
         }
       }
     |}
+
     it 'limits the result' do
       result = query(query_string, "first" => 2)
       assert_equal(2, get_names(result).length)
@@ -50,6 +52,14 @@ describe GraphQL::Relay::RelationConnection do
 
       result = query(query_string, "first" => 100)
       assert_equal(false, get_page_info(result)["hasNextPage"])
+    end
+
+    it 'provides custom fileds on the connection type' do
+      result = query(query_string, "first" => 2)
+      assert_equal(
+        Base.where(faction_id: 2).count,
+        result["data"]["empire"]["bases"]["totalCount"]
+      )
     end
 
     it 'slices the result' do

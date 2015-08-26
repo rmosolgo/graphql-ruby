@@ -31,6 +31,16 @@ BaseType = GraphQL::ObjectType.define do
   field :planet, types.String
 end
 
+# Define a connection which will wrap an ActiveRecord::Relation.
+# We use an optional block to add fields to the connection type:
+BaseConnection = GraphQL::Relay::RelationConnection.create_type(BaseType) do
+  field :totalCount do
+    type types.Int
+    resolve -> (obj, args, ctx) { obj.object.count }
+  end
+end
+
+
 Faction = GraphQL::ObjectType.define do
   name "Faction"
   interfaces [NodeInterface]
@@ -49,7 +59,7 @@ Faction = GraphQL::ObjectType.define do
     # You can define arguments here and use them in the connection
     argument :nameIncludes, types.String
   end
-  connection :bases, BaseType.connection_type do
+  connection :bases, BaseConnection do
     # Resolve field should return an Array, the Connection
     # will do the rest!
     resolve -> (obj, args, ctx) {
