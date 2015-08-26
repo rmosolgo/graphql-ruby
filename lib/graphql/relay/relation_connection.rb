@@ -71,5 +71,8 @@ module GraphQL
         ["#{name} #{direction_marker} ?", value]
       end
     end
+    if defined?(ActiveRecord)
+      BaseConnection.register_connection_implementation(ActiveRecord::Relation, RelationConnection)
+    end
   end
 end

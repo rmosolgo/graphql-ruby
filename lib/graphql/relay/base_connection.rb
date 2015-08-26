@@ -13,19 +13,39 @@ module GraphQL
       # Just to encode data in the cursor, use something that won't conflict
       CURSOR_SEPARATOR = "---"
 
+      # Map of collection classes -> connection_classes
+      # eg Array -> ArrayConnection
+      CONNECTION_IMPLEMENTATIONS = {}
+
       # Create a connection which exposes edges of this type
       def self.create_type(wrapped_type)
         edge_type = Edge.create_type(wrapped_type)
 
-        connection_type = ConnectionType.define do
+        connection_type = ObjectType.define do
           name("#{wrapped_type.name}Connection")
           field :edges, types[edge_type]
           field :pageInfo, PageInfo, property: :page_info
         end
 
-        connection_type.connection_class = self
-
         connection_type
+      end
+
+      # @return [subclass of BaseConnection] a connection wrapping `items`
+      def self.connection_for_items(items)
+        implementation = CONNECTION_IMPLEMENTATIONS.find do |items_class, connection_class|
+          items.is_a?(items_class)
+        end
+        if implementation.nil?
+          raise("No connection implementation to wrap #{items.class}")
+        else
+          implementation[1]
+        end
+      end
+
+      # Add `connection_class` as the connection wrapper for `items_class`
+      # eg, `RelationConnection` is the implementation for `AR::Relation`
+      def self.register_connection_implementation(items_class, connection_class)
+        CONNECTION_IMPLEMENTATIONS[items_class] = connection_class
       end
 
       attr_reader :object, :arguments

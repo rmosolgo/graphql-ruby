@@ -44,5 +44,6 @@ module GraphQL
         index.to_i
       end
     end
+    BaseConnection.register_connection_implementation(Array, ArrayConnection)
   end
 end

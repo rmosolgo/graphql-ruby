@@ -23,29 +23,20 @@ Ship = GraphQL::ObjectType.define do
   field :name, types.String
 end
 
-# Define a connection which will wrap an array:
-ShipConnection = GraphQL::Relay::ArrayConnection.create_type(Ship)
-
-
 BaseType = GraphQL::ObjectType.define do
   name "Base"
   interfaces [NodeInterface]
-  field :id, field: GraphQL::Relay::GlobalIdField.new("Base")
+  global_id_field :id
   field :name, types.String
   field :planet, types.String
 end
-
-# Define a connection which will wrap an ActiveRecord::Relation:
-BaseConnection = GraphQL::Relay::RelationConnection.create_type(BaseType)
-
-
 
 Faction = GraphQL::ObjectType.define do
   name "Faction"
   interfaces [NodeInterface]
   field :id, field: GraphQL::Relay::GlobalIdField.new("Faction")
   field :name, types.String
-  connection :ships, ShipConnection do
+  connection :ships, Ship.connection_type do
     # Resolve field should return an Array, the Connection
     # will do the rest!
     resolve -> (obj, args, ctx) {
@@ -58,7 +49,7 @@ Faction = GraphQL::ObjectType.define do
     # You can define arguments here and use them in the connection
     argument :nameIncludes, types.String
   end
-  connection :bases, BaseConnection do
+  connection :bases, BaseType.connection_type do
     # Resolve field should return an Array, the Connection
     # will do the rest!
     resolve -> (obj, args, ctx) {

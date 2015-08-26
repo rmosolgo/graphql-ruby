@@ -22,7 +22,8 @@ module GraphQL
           original_resolve = connection_field.instance_variable_get(:@resolve_proc)
           connection_resolve = -> (obj, args, ctx) {
             items = original_resolve.call(obj, args, ctx)
-            connection_field.type.connection_class.new(items, args)
+            connection_class = GraphQL::Relay::BaseConnection.connection_for_items(items)
+            connection_class.new(items, args)
           }
           connection_field.resolve = connection_resolve
           fields[name.to_s] = connection_field
@@ -30,6 +31,11 @@ module GraphQL
 
         alias :return_field :field
         alias :return_fields :fields
+
+        def global_id_field(field_name)
+          name || raise("You must define the type's name before creating a GlobalIdField")
+          field(name, field: GraphQL::Relay::GlobalIdField.new(name))
+        end
       end
     end
   end
