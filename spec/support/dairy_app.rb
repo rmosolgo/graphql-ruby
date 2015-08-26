@@ -131,6 +131,11 @@ QueryType = GraphQL::ObjectType.define do
     type GraphQL::STRING_TYPE
     resolve -> (t, a, c) { raise("This error was raised on purpose") }
   end
+
+  # To test possibly-null fields
+  field :maybeNull, CheeseType do
+    resolve -> (t, a, c) { nil }
+  end
 end
 
 GLOBAL_VALUES = []

@@ -1,45 +1,44 @@
 require 'spec_helper'
 
 describe GraphQL::Query do
-  describe '#execute' do
-    let(:query_string) { %|
-      query getFlavor($cheeseId: Int!) {
-        brie: cheese(id: 1)   { ...cheeseFields, taste: flavor },
-        cheese(id: $cheeseId)  {
-          __typename,
-          id,
-          ...cheeseFields,
-          ... edibleFields,
-          ... on Cheese { cheeseKind: flavor },
-        }
-        fromSource(source: COW) { id }
-        fromSheep: fromSource(source: SHEEP) { id }
-        firstSheep: searchDairy(product: {source: SHEEP}) {
-          __typename,
-          ... dairyFields,
-          ... milkFields
-        }
-        favoriteEdible { __typename, fatContent }
+  let(:query_string) { %|
+    query getFlavor($cheeseId: Int!) {
+      brie: cheese(id: 1)   { ...cheeseFields, taste: flavor },
+      cheese(id: $cheeseId)  {
+        __typename,
+        id,
+        ...cheeseFields,
+        ... edibleFields,
+        ... on Cheese { cheeseKind: flavor },
       }
-      fragment cheeseFields on Cheese { flavor }
-      fragment edibleFields on Edible { fatContent }
-      fragment milkFields on Milk { source }
-      fragment dairyFields on AnimalProduct {
-         ... on Cheese { flavor }
-         ... on Milk   { source }
+      fromSource(source: COW) { id }
+      fromSheep: fromSource(source: SHEEP) { id }
+      firstSheep: searchDairy(product: {source: SHEEP}) {
+        __typename,
+        ... dairyFields,
+        ... milkFields
       }
-    |}
-    let(:debug) { false }
-    let(:operation_name) { nil }
-    let(:query) { GraphQL::Query.new(
-      DummySchema,
-      query_string,
-      variables: {"cheeseId" => 2},
-      debug: debug,
-      operation_name: operation_name,
-    )}
-    let(:result) { query.result }
-
+      favoriteEdible { __typename, fatContent }
+    }
+    fragment cheeseFields on Cheese { flavor }
+    fragment edibleFields on Edible { fatContent }
+    fragment milkFields on Milk { source }
+    fragment dairyFields on AnimalProduct {
+       ... on Cheese { flavor }
+       ... on Milk   { source }
+    }
+  |}
+  let(:debug) { false }
+  let(:operation_name) { nil }
+  let(:query) { GraphQL::Query.new(
+    DummySchema,
+    query_string,
+    variables: {"cheeseId" => 2},
+    debug: debug,
+    operation_name: operation_name,
+  )}
+  let(:result) { query.result }
+  describe '#result' do
     it 'returns fields on objects' do
       expected = {"data"=> {
           "brie" =>   { "flavor" => "Brie", "taste" => "Brie" },
@@ -58,23 +57,34 @@ describe GraphQL::Query do
       assert_equal(expected, result)
     end
 
-    it 'exposes fragments' do
-      assert_equal(GraphQL::Language::Nodes::FragmentDefinition, query.fragments['cheeseFields'].class)
+    describe "when it hits null objects" do
+      let(:query_string) {%|
+        { maybeNull { flavor, similarCheeses(source: [SHEEP]) { flavor } } }
+      |}
+
+      it "skips null objects" do
+        assert_equal({"data"=> {"maybeNull" => nil}}, result)
+      end
+    end
+  end
+
+  it 'exposes fragments' do
+    assert_equal(GraphQL::Language::Nodes::FragmentDefinition, query.fragments['cheeseFields'].class)
+  end
+
+
+  describe "malformed queries" do
+    describe "whitespace-only" do
+      let(:query_string) { " " }
+      it "doesn't blow up" do
+        assert_equal({"data"=> {}}, result)
+      end
     end
 
-    describe "malformed queries" do
-      describe "whitespace-only" do
-        let(:query_string) { " " }
-        it "doesn't blow up" do
-          assert_equal({"data"=> {}}, result)
-        end
-      end
-
-      describe "empty string" do
-        let(:query_string) { "" }
-        it "doesn't blow up" do
-          assert_equal({"data"=> {}}, result)
-        end
+    describe "empty string" do
+      let(:query_string) { "" }
+      it "doesn't blow up" do
+        assert_equal({"data"=> {}}, result)
       end
     end
   end
