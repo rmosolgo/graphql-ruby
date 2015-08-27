@@ -11,7 +11,7 @@ class GraphQL::DefinitionHelpers::DefinedByConfig::DefinitionConfig
       argument :last, types.Int
       argument :before, types.String
       argument :order, types.String
-      self.instance_eval(&block)
+      self.instance_eval(&block) if block_given?
     }
     connection_field = field(name, type, desc, property: property, &definition_block)
     # Wrap the defined resolve proc
@@ -19,6 +19,11 @@ class GraphQL::DefinitionHelpers::DefinedByConfig::DefinitionConfig
     original_resolve = connection_field.instance_variable_get(:@resolve_proc)
     connection_resolve = -> (obj, args, ctx) {
       items = original_resolve.call(obj, args, ctx)
+      if items == GraphQL::Query::DEFAULT_RESOLVE
+        method_name = property || name
+        p "Obj: #{obj}  ##{method_name}"
+        items = obj.public_send(method_name)
+      end
       connection_class = GraphQL::Relay::BaseConnection.connection_for_items(items)
       connection_class.new(items, args)
     }
@@ -31,6 +36,6 @@ class GraphQL::DefinitionHelpers::DefinedByConfig::DefinitionConfig
 
   def global_id_field(field_name)
     name || raise("You must define the type's name before creating a GlobalIdField")
-    field(name, field: GraphQL::Relay::GlobalIdField.new(name))
+    field(field_name, field: GraphQL::Relay::GlobalIdField.new(name))
   end
 end

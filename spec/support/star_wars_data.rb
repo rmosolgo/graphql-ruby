@@ -10,21 +10,6 @@ names = [
   'Executor',
 ]
 
-rebels  = OpenStruct.new({
-  id: '1',
-  name: 'Alliance to Restore the Republic',
-  ships:  ['1', '2', '3', '4', '5'],
-  bases: ['11', '12']
-})
-
-
-empire = OpenStruct.new({
-  id: '2',
-  name: 'Galactic Empire',
-  ships: ['6', '7', '8'],
-  bases: ['13', '14', '15']
-})
-
 ## Set up "Bases" in ActiveRecord
 # ActiveRecord::Base.logger = Logger.new(STDOUT)
 ActiveRecord::Base.establish_connection(adapter: "sqlite3", database: ":memory:")
@@ -46,6 +31,22 @@ Base.create(id: 12, name: "Echo Base", planet: "Hoth", faction_id: 1)
 Base.create(id: 13, name: "Death Star", planet: nil, faction_id: 2)
 Base.create(id: 14, name: "Shield Generator", planet: "Endor", faction_id: 2)
 Base.create(id: 15, name: "Headquarters", planet: "Coruscant", faction_id: 2)
+
+
+rebels  = OpenStruct.new({
+  id: '1',
+  name: 'Alliance to Restore the Republic',
+  ships:  ['1', '2', '3', '4', '5'],
+  bases: Base.where(faction_id: 1)
+})
+
+
+empire = OpenStruct.new({
+  id: '2',
+  name: 'Galactic Empire',
+  ships: ['6', '7', '8'],
+  bases: Base.where(faction_id: 2)
+})
 
 STAR_WARS_DATA = {
   "Faction" => {

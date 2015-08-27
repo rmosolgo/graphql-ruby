@@ -14,8 +14,6 @@ end
 
 NodeInterface, NodeField = GraphQL::Relay::Node.create(NodeImplementation.new)
 
-
-
 Ship = GraphQL::ObjectType.define do
   name "Ship"
   interfaces [NodeInterface]
@@ -71,6 +69,8 @@ Faction = GraphQL::ObjectType.define do
     }
     argument :nameIncludes, types.String
   end
+
+  connection :noArgsBases, BaseConnection, property: :bases
 end
 
 # Define a mutation. It will also:

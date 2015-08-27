@@ -37,7 +37,7 @@ module GraphQL
           items.is_a?(items_class)
         end
         if implementation.nil?
-          raise("No connection implementation to wrap #{items.class}")
+          raise("No connection implementation to wrap #{items.class} (#{items})")
         else
           implementation[1]
         end

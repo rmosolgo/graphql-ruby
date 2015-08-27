@@ -117,4 +117,24 @@ describe GraphQL::Relay::RelationConnection do
       assert_equal(["Death Star"], get_names(result))
     end
   end
+
+  describe "without a block" do
+    let(:query_string) {%|
+      {
+        empire {
+          noArgsBases {
+            edges {
+              node {
+                name
+              }
+            }
+          }
+        }
+    }|}
+    it "uses default resolve" do
+      result = query(query_string)
+      bases = result["data"]["empire"]["noArgsBases"]["edges"]
+      assert_equal(3, bases.length)
+    end
+  end
 end
