@@ -59,11 +59,21 @@ describe GraphQL::Query do
 
     describe "when it hits null objects" do
       let(:query_string) {%|
-        { maybeNull { flavor, similarCheeses(source: [SHEEP]) { flavor } } }
+        {
+          maybeNull {
+            cheese {
+              flavor,
+              similarCheeses(source: [SHEEP]) { flavor }
+            }
+          }
+        }
       |}
 
       it "skips null objects" do
-        assert_equal({"data"=> {"maybeNull" => nil}}, result)
+        expected = {"data"=> {
+          "maybeNull" => { "cheese" => nil }
+        }}
+        assert_equal(expected, result)
       end
     end
   end

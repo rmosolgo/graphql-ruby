@@ -19,7 +19,6 @@ module GraphQL
 
         def result_value
           value = field.resolve(target, arguments, query.context)
-          return nil if value.nil?
 
           if value == GraphQL::Query::DEFAULT_RESOLVE
             begin
@@ -28,6 +27,9 @@ module GraphQL
               raise("Couldn't resolve field '#{ast_node.name}' to #{target.class} '#{target}' (resulted in #{err})")
             end
           end
+
+          return nil if value.nil?
+
 
           resolved_type = field.type.kind.resolve(field.type, value)
           strategy_class = GraphQL::Query::ValueResolution.get_strategy_for_kind(resolved_type.kind)

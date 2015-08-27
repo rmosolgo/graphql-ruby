@@ -62,6 +62,12 @@ MilkType = GraphQL::ObjectType.define do
   end
 end
 
+MaybeNullType = GraphQL::ObjectType.define do
+  name "MaybeNull"
+  description "An object whose fields return nil"
+  field :cheese, CheeseType
+end
+
 DairyProductUnion = GraphQL::UnionType.define do
   name "DairyProduct"
   description "Kinds of food made from milk"
@@ -133,8 +139,8 @@ QueryType = GraphQL::ObjectType.define do
   end
 
   # To test possibly-null fields
-  field :maybeNull, CheeseType do
-    resolve -> (t, a, c) { nil }
+  field :maybeNull, MaybeNullType do
+    resolve -> (t, a, c) { OpenStruct.new(cheese: nil) }
   end
 end
 
