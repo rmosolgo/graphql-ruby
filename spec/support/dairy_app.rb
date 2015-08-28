@@ -62,6 +62,14 @@ MilkType = GraphQL::ObjectType.define do
   end
 end
 
+DairyType = GraphQL::ObjectType.define do
+  name 'Dairy'
+  description 'A farm where milk is harvested and cheese is produced'
+  field :id, !types.ID
+  field :cheese, CheeseType
+  field :milk, MilkType
+end
+
 MaybeNullType = GraphQL::ObjectType.define do
   name "MaybeNull"
   description "An object whose fields return nil"
@@ -96,6 +104,19 @@ class FetchField
   end
 end
 
+class SingletonField
+  def self.create(type:, data:)
+    desc = "Find the only #{type.name}"
+    return_type = type
+    GraphQL::Field.define do
+      type(return_type)
+      description(desc)
+
+      resolve -> (t, a, c) {data}
+    end
+  end
+end
+
 SourceFieldDefn = Proc.new {
   type GraphQL::ListType.new(of_type: CheeseType)
   description "Cheese from source"
@@ -116,6 +137,7 @@ QueryType = GraphQL::ObjectType.define do
   description "Query root of the system"
   field :cheese, field: FetchField.create(type: CheeseType, data: CHEESES)
   field :milk, field: FetchField.create(type: MilkType, data: MILKS, id_type: !types.ID)
+  field :dairy, field: SingletonField.create(type: DairyType, data: DAIRY)
   field :fromSource, &SourceFieldDefn
   field :favoriteEdible, &FavoriteFieldDefn
   field :searchDairy do

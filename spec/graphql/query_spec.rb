@@ -82,6 +82,40 @@ describe GraphQL::Query do
     assert_equal(GraphQL::Language::Nodes::FragmentDefinition, query.fragments['cheeseFields'].class)
   end
 
+  describe "merging fragments with different keys" do
+    let(:query_string) { %|
+      query getCheeseFieldsThroughDairy {
+        dairy {
+          ...flavorFragment
+          ...fatContentFragment
+        }
+      }
+      fragment flavorFragment on Dairy {
+        cheese {
+          flavor
+        }
+      }
+
+      fragment fatContentFragment on Dairy {
+        cheese {
+          fatContent
+        }
+      }
+
+    |}
+
+    it "should include keys from each fragment" do
+      expected = {"data" => {
+        "dairy" => {
+          "cheese" => {
+            "flavor" => "Brie",
+            "fatContent" => 0.19
+          }
+        }
+      }}
+      assert_equal(expected, result)
+    end
+  end
 
   describe "malformed queries" do
     describe "whitespace-only" do

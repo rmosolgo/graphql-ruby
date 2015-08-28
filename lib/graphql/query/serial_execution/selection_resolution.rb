@@ -21,11 +21,25 @@ module GraphQL
         def result
           selections.reduce({}) do |memo, ast_field|
             field_value = resolve_field(ast_field)
-            memo.merge(field_value)
+            deep_merge memo, field_value
           end
         end
 
         private
+
+        def deep_merge(h1, h2)
+          h1.merge(h2) do |key, oldval, newval|
+            if oldval.is_a?(Array) && newval.is_a?(Array)
+              oldval.each_index.map do |i|
+                deep_merge oldval[i], newval[i]
+              end
+            elsif oldval.is_a?(Hash) && newval.is_a?(Hash)
+              deep_merge(oldval, newval)
+            else
+              newval
+            end
+          end
+        end
 
         def resolve_field(ast_field)
           chain = GraphQL::Query::DirectiveChain.new(ast_field, query) {
