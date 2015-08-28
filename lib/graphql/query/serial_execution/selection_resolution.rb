@@ -29,14 +29,11 @@ module GraphQL
 
         def deep_merge(h1, h2)
           h1.merge(h2) do |key, oldval, newval|
-            oldval = oldval.to_hash if oldval.respond_to?(:to_hash)
-            newval = newval.to_hash if newval.respond_to?(:to_hash)
-
-            if oldval.class.to_s == 'Array' && newval.class.to_s == 'Array'
+            if oldval.is_a?(Array) && newval.is_a?(Array)
               oldval.each_index.map do |i|
                 deep_merge oldval[i], newval[i]
               end
-            elsif oldval.class.to_s == 'Hash' && newval.class.to_s == 'Hash'
+            elsif oldval.is_a?(Hash) && newval.is_a?(Hash)
               deep_merge(oldval, newval)
             else
               newval

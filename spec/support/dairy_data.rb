@@ -9,3 +9,7 @@ Milk = Struct.new(:id, :fatContent, :source)
 MILKS = {
   1 => Milk.new(1, 0.04, 1),
 }
+
+Dairy = Struct.new(:cheese)
+DAIRY = Dairy.new(CHEESES[1])
+
