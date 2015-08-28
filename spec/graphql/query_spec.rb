@@ -94,10 +94,16 @@ describe GraphQL::Query do
         cheese {
           flavor
         }
+        milks {
+          id
+        }
       }
 
       fragment fatContentFragment on Dairy {
         cheese {
+          fatContent
+        }
+        milks {
           fatContent
         }
       }
@@ -110,7 +116,13 @@ describe GraphQL::Query do
           "cheese" => {
             "flavor" => "Brie",
             "fatContent" => 0.19
-          }
+          },
+          "milks" => [
+            {
+              "id" => "1",
+              "fatContent" => 0.04,
+            }
+          ],
         }
       }}
       assert_equal(expected, result)

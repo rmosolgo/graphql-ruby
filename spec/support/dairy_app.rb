@@ -67,7 +67,7 @@ DairyType = GraphQL::ObjectType.define do
   description 'A farm where milk is harvested and cheese is produced'
   field :id, !types.ID
   field :cheese, CheeseType
-  field :milk, MilkType
+  field :milks, types[MilkType]
 end
 
 MaybeNullType = GraphQL::ObjectType.define do

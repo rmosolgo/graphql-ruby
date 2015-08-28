@@ -10,6 +10,4 @@ MILKS = {
   1 => Milk.new(1, 0.04, 1),
 }
 
-Dairy = Struct.new(:cheese)
-DAIRY = Dairy.new(CHEESES[1])
-
+DAIRY = OpenStruct.new(cheese: CHEESES[1], milks: [MILKS[1]])
