@@ -1,3 +1,4 @@
+require "celluloid/current"
 require "json"
 require "parslet"
 require "singleton"

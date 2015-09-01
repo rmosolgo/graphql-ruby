@@ -4,6 +4,9 @@ class GraphQL::Schema
   DYNAMIC_FIELDS = ["__type", "__typename", "__schema"]
 
   attr_reader :query, :mutation, :directives, :static_validator
+  # Override these if you don't want the default executors:
+  attr_accessor :query_execution_strategy, :mutation_execution_strategy
+
 
   # @param query [GraphQL::ObjectType]  the query root for the schema
   # @param mutation [GraphQL::ObjectType, nil] the mutation root for the schema

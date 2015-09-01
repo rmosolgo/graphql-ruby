@@ -30,13 +30,15 @@ module GraphQL
         return {} if query.operations.none?
         operation = find_operation(operation_name, query.operations)
         if operation.operation_type == "query"
-          root = query.schema.query
+          root_type = query.schema.query
+          execution_strategy_class = query.schema.query_execution_strategy || GraphQL::Query::ParallelExecution
         elsif operation.operation_type == "mutation"
-          root = query.schema.mutation
+          root_type = query.schema.mutation
+          execution_strategy_class =  query.schema.mutation_execution_strategy || GraphQL::Query::SerialExecution
         end
-        execution_strategy = GraphQL::Query::SerialExecution.new
-        resolver = execution_strategy.operation_resolution.new(operation, root, query, execution_strategy)
-        resolver.result
+        execution_strategy = execution_strategy_class.new
+        query.context.execution_strategy = execution_strategy
+        result = execution_strategy.execute(operation, root_type, query)
       end
 
       def find_operation(operation_name, operations)

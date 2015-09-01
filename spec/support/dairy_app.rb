@@ -40,7 +40,11 @@ CheeseType = GraphQL::ObjectType.define do
     type -> { CheeseType }
     description("Cheeses like this one")
     argument :source, !types[!DairyAnimalEnum]
-    resolve -> (t, a, c) { CHEESES.values.find { |c| c.source == a["source"] } }
+    resolve -> (t, a, c) {
+      c.async do
+        CHEESES.values.find { |c| c.source == a["source"] }
+      end
+    }
   end
 
   field :fatContent, property: :fat_content do
@@ -157,7 +161,7 @@ QueryType = GraphQL::ObjectType.define do
   field :error do
     description "Raise an error"
     type GraphQL::STRING_TYPE
-    resolve -> (t, a, c) { raise("This error was raised on purpose") }
+    resolve -> (t, a, c) { c.async { raise("This error was raised on purpose") } }
   end
 
   # To test possibly-null fields

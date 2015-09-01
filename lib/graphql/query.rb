@@ -16,7 +16,7 @@ class GraphQL::Query
   def initialize(schema, query_string, context: nil, variables: {}, debug: true, validate: true, operation_name: nil)
     @schema = schema
     @debug = debug
-    @context = Context.new(context)
+    @context = Context.new(values: context)
 
     @variables = variables
     @validate = validate
@@ -52,12 +52,17 @@ class GraphQL::Query
   # Expose some query-specific info to field resolve functions.
   # It delegates `[]` to the hash that's passed to `GraphQL::Query#initialize`.
   class Context
-    def initialize(arbitrary_hash)
-      @arbitrary_hash = arbitrary_hash
+    attr_accessor :execution_strategy
+    def initialize(values:)
+      @values = values
     end
 
     def [](key)
-      @arbitrary_hash[key]
+      @values[key]
+    end
+
+    def async(&block)
+      execution_strategy.async(block)
     end
   end
 end
@@ -65,7 +70,7 @@ end
 require 'graphql/query/arguments'
 require 'graphql/query/base_execution'
 require 'graphql/query/serial_execution'
-require 'graphql/query/value_resolution'
+require 'graphql/query/parallel_execution'
 require 'graphql/query/type_resolver'
 require 'graphql/query/directive_chain'
 require 'graphql/query/executor'

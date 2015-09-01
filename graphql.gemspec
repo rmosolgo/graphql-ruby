@@ -18,6 +18,7 @@ Gem::Specification.new do |s|
   s.test_files = Dir["spec/**/*"]
 
   s.add_runtime_dependency "parslet", "~> 1.6"
+  s.add_runtime_dependency "celluloid", "~>0.17"
 
   s.add_development_dependency "codeclimate-test-reporter", '~>0.4'
   s.add_development_dependency "pry", "~> 0.10"
