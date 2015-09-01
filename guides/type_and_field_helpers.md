@@ -41,3 +41,18 @@ end
 ```
 
 This field accepts an optional Boolean argument `moderated`, which it uses to filter results in the `resolve` method.
+
+## Asynchronous Field Values
+
+You can move asynchronous tasks to the background by using `context.async`.  For example, you can make an HTTP request in the background:
+
+```ruby
+resolve -> (obj, args, context) do
+  # resolve other fields while this request
+  # is in progress:
+  context.async do
+    response = Net::HTTP.get_response(obj.uri)
+    response.body
+  end
+end
+```
