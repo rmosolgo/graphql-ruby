@@ -4,14 +4,14 @@ class GraphQL::StaticValidation::ArgumentsValidator
 
   def validate(context)
     visitor = context.visitor
-    visitor[GraphQL::Language::Nodes::Field] << -> (node, parent) {
-      return if context.skip_field?(node.name)
-      field_defn = context.field_definition
-      validate_node(node, field_defn, context)
-    }
-    visitor[GraphQL::Language::Nodes::Directive] << -> (node, parent) {
-      directive_defn = context.schema.directives[node.name]
-      validate_node(node, directive_defn, context)
+    visitor[GraphQL::Language::Nodes::Argument] << -> (node, parent) {
+      return if parent.is_a?(GraphQL::Language::Nodes::InputObject) || context.skip_field?(parent.name)
+      if parent.is_a?(GraphQL::Language::Nodes::Directive)
+        parent_defn = context.schema.directives[parent.name]
+      else
+        parent_defn = context.field_definition
+      end
+      validate_node(parent, node, parent_defn, context)
     }
   end
 end

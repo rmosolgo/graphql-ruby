@@ -1,13 +1,11 @@
 class GraphQL::StaticValidation::ArgumentLiteralsAreCompatible < GraphQL::StaticValidation::ArgumentsValidator
-  def validate_node(node, defn, context)
-    args_with_literals = node.arguments.select {|a| !a.value.is_a?(GraphQL::Language::Nodes::VariableIdentifier)}
+  def validate_node(parent, node, defn, context)
+    return if node.value.is_a?(GraphQL::Language::Nodes::VariableIdentifier)
     validator = GraphQL::StaticValidation::LiteralValidator.new
-    args_with_literals.each do |arg|
-      arg_defn = defn.arguments[arg.name]
-      valid = validator.validate(arg.value, arg_defn.type)
-      if !valid
-        context.errors << message("Argument #{arg.name} on #{node.class.name.split("::").last} '#{node.name}' has an invalid value", node)
-      end
+    arg_defn = defn.arguments[node.name]
+    valid = validator.validate(node.value, arg_defn.type)
+    if !valid
+      context.errors << message("Argument #{node.name} on #{parent.class.name.split("::").last} '#{parent.name}' has an invalid value", parent)
     end
   end
 end
