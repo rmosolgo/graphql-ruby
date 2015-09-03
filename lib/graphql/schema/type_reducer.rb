@@ -11,18 +11,19 @@ class GraphQL::Schema::TypeReducer
   def result
     @result ||= if type.respond_to?(:kind) && type.kind.wraps?
       reduce_type(type.of_type, existing_type_hash)
-    elsif type.respond_to?(:name) && existing_type_hash.has_key?(type.name)
+    elsif type.respond_to?(:name) && existing_type_hash.fetch(type.name, nil) == type
       # been here, done that
       existing_type_hash
     else
       validate_type(type)
-      find_types(type, existing_type_hash.dup)
+      find_types(type, existing_type_hash)
     end
   end
 
   # Reduce all of `types` and return the combined result
   def self.find_all(types)
-    types.reduce({}) do |memo, type|
+    type_map = GraphQL::Schema::TypeMap.new
+    types.reduce(type_map) do |memo, type|
       self.new(type, memo).result
     end
   end
@@ -33,21 +34,20 @@ class GraphQL::Schema::TypeReducer
     type_hash[type.name] = type
     if type.kind.fields?
       type.fields.each do |name, field|
-
-        type_hash.merge!(reduce_type(field.type, type_hash))
+        reduce_type(field.type, type_hash)
         field.arguments.each do |name, argument|
-          type_hash.merge!(reduce_type(argument.type, type_hash))
+          reduce_type(argument.type, type_hash)
         end
       end
     end
     if type.kind.object?
       type.interfaces.each do |interface|
-        type_hash.merge!(reduce_type(interface, type_hash))
+        reduce_type(interface, type_hash)
       end
     end
     if type.kind.resolves?
       type.possible_types.each do |possible_type|
-        type_hash.merge!(reduce_type(possible_type, type_hash))
+        reduce_type(possible_type, type_hash)
       end
     end
     type_hash

@@ -103,8 +103,6 @@ If you're building a backend for [Relay](http://facebook.github.io/relay/), you'
   - Make better inheritance between types
     - Move `TypeKind#unwrap` to BaseType & update all code
     - Also move `TypeKind#resolve` ?
-  - Fail early if you can't find a type during static validation
-    - https://github.com/rmosolgo/graphql-ruby/issues/31#issuecomment-137253312
 - Big ideas:
   - Cook up some path other than "n+1s everywhere"
     - See Sangria's `project` approach ([in progress](https://github.com/rmosolgo/graphql-ruby/pull/15))

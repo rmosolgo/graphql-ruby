@@ -36,4 +36,29 @@ describe GraphQL::Schema::TypeReducer do
       assert_raises(GraphQL::Schema::InvalidTypeError) { reducer.result }
     end
   end
+
+  describe 'when a schema has multiple types with the same name' do
+    let(:type_1) {
+      GraphQL::ObjectType.define do
+        name "MyType"
+      end
+    }
+    let(:type_2) {
+      GraphQL::ObjectType.define do
+        name "MyType"
+      end
+    }
+    it 'raises an error' do
+      assert_raises(RuntimeError) {
+        GraphQL::Schema::TypeReducer.find_all([type_1, type_2])
+      }
+    end
+  end
+
+  describe 'when getting a type which doesnt exist' do
+    it 'raises an error' do
+      type_map = GraphQL::Schema::TypeReducer.find_all([])
+      assert_raises(RuntimeError) { type_map["SomeType"] }
+    end
+  end
 end
