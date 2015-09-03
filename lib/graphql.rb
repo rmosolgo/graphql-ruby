@@ -21,6 +21,7 @@ end
 # Order matters for these:
 
 require 'graphql/definition_helpers'
+require 'graphql/base_type'
 require 'graphql/object_type'
 
 require 'graphql/enum_type'

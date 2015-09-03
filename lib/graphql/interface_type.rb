@@ -10,8 +10,9 @@
 #     field :release_year, types.Int
 #   end
 #
-class GraphQL::InterfaceType < GraphQL::ObjectType
+class GraphQL::InterfaceType < GraphQL::BaseType
   defined_by_config :name, :description, :fields, :resolve_type
+  attr_accessor :name, :description, :fields, :resolve_type
 
   # The default implementation of {#resolve_type} gets `object.class.name`
   # and finds a type with the same name

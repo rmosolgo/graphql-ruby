@@ -7,8 +7,8 @@
 #     input_field :number, !types.Int
 #   end
 #
-class GraphQL::InputObjectType < GraphQL::ObjectType
-  attr_accessor :input_fields
+class GraphQL::InputObjectType < GraphQL::BaseType
+  attr_accessor :name, :description, :input_fields
   defined_by_config :name, :description, :input_fields
 
   def input_fields=(new_fields)

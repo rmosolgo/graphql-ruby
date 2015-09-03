@@ -8,9 +8,7 @@
 #     possible_types [DogType, CatType, FishType]
 #   end
 #
-class GraphQL::UnionType
-  include GraphQL::DefinitionHelpers::NonNullWithBang
-  include GraphQL::DefinitionHelpers::DefinedByConfig
+class GraphQL::UnionType < GraphQL::BaseType
   attr_accessor :name, :description, :possible_types, :resolve_type
   defined_by_config :name, :description, :possible_types, :resolve_type
 

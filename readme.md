@@ -96,15 +96,15 @@ If you're building a backend for [Relay](http://facebook.github.io/relay/), you'
   - https://github.com/graphql/graphql-js/issues/19#issuecomment-118515077
 - Code clean-up
   - Easier built-in type definition
-    - Make an object that accepts type objects, symbols, or corresponding Ruby classes and convertes them to GraphQL types
+    - Make an object that accepts type objects, symbols, or corresponding Ruby classes and converts them to GraphQL types
     - Hook up that object to `DefinitionConfig`, so it can map from incoming values to GraphQL types
   - Raise if you try to configure an attribute which doesn't suit the type
     - ie, if you try to define `resolve` on an ObjectType, it should somehow raise
   - Make better inheritance between types
-    - Implement a BaseType (?) and make all type classes extend that
-    - No more extending ObjectType!
     - Move `TypeKind#unwrap` to BaseType & update all code
     - Also move `TypeKind#resolve` ?
+  - Fail early if you can't find a type during static validation
+    - https://github.com/rmosolgo/graphql-ruby/issues/31#issuecomment-137253312
 - Big ideas:
   - Cook up some path other than "n+1s everywhere"
     - See Sangria's `project` approach ([in progress](https://github.com/rmosolgo/graphql-ruby/pull/15))

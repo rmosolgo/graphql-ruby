@@ -10,9 +10,7 @@
 #     value("RUBY", "A very dynamic language aimed at programmer happiness")
 #     value("JAVASCRIPT", "Accidental lingua franca of the web")
 #   end
-class GraphQL::EnumType
-  include GraphQL::DefinitionHelpers::NonNullWithBang
-  include GraphQL::DefinitionHelpers::DefinedByConfig
+class GraphQL::EnumType < GraphQL::BaseType
   attr_accessor :name, :description, :values
   defined_by_config :name, :description, :values
 
