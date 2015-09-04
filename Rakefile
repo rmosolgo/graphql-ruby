@@ -14,7 +14,7 @@ def load_gem_and_dummy
   $:.push File.expand_path("../lib", __FILE__)
   $:.push File.expand_path("../spec", __FILE__)
   require 'graphql'
-  require './spec/support/dummy_app'
+  require './spec/support/dairy_app'
 end
 
 task :repl do
