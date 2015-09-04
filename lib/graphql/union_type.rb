@@ -9,19 +9,11 @@
 #   end
 #
 class GraphQL::UnionType < GraphQL::BaseType
-  attr_accessor :name, :description, :possible_types, :resolve_type
+  include GraphQL::BaseType::HasPossibleTypes
+  attr_accessor :name, :description, :possible_types
   defined_by_config :name, :description, :possible_types, :resolve_type
 
   def kind
     GraphQL::TypeKinds::UNION
-  end
-
-  # @see {InterfaceType#resolve_type}
-  def resolve_type(object)
-    instance_exec(object, &@resolve_type_proc)
-  end
-
-  def resolve_type=(new_proc)
-    @resolve_type_proc = new_proc || GraphQL::InterfaceType::DEFAULT_RESOLVE_TYPE
   end
 end

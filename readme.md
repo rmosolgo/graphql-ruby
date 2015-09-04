@@ -97,8 +97,6 @@ If you're building a backend for [Relay](http://facebook.github.io/relay/), you'
 - Code clean-up
   - Raise if you try to configure an attribute which doesn't suit the type
     - ie, if you try to define `resolve` on an ObjectType, it should somehow raise
-  - Make better inheritance between types
-    - Also move `TypeKind#resolve` ?
 - Big ideas:
   - Cook up some path other than "n+1s everywhere"
     - See Sangria's `project` approach ([in progress](https://github.com/rmosolgo/graphql-ruby/pull/15))

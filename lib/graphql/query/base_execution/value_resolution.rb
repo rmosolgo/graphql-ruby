@@ -38,7 +38,7 @@ module GraphQL
           def result
             wrapped_type = field_type.of_type
             value.map do |item|
-              resolved_type = wrapped_type.kind.resolve(wrapped_type, item)
+              resolved_type = wrapped_type.resolve_type(item)
               strategy_class = get_strategy_for_kind(resolved_type.kind)
               inner_strategy = strategy_class.new(item, resolved_type, target, parent_type, ast_field, query, execution_strategy)
               inner_strategy.result
@@ -62,7 +62,7 @@ module GraphQL
         class NonNullResolution < BaseResolution
           def result
             wrapped_type = field_type.of_type
-            resolved_type = wrapped_type.kind.resolve(wrapped_type, value)
+            resolved_type = wrapped_type.resolve_type(value)
             strategy_class = get_strategy_for_kind(resolved_type.kind)
             inner_strategy = strategy_class.new(value, resolved_type, target, parent_type, ast_field, query, execution_strategy)
             inner_strategy.result

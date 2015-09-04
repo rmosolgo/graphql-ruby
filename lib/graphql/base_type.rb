@@ -26,6 +26,35 @@ module GraphQL
       end
     end
 
+    # Find out which possible type to use for `value`.
+    # Returns self if there are no possible types (ie, not Union or Interface)
+    def resolve_type(value)
+      self
+    end
+
+    module HasPossibleTypes
+      # Return the implementing type for `object`.
+      # The default implementation assumes that there's a type with the same name as `object.class.name`.
+      # Maybe you'll need to override this in your own interfaces!
+      #
+      # @param object [Object] the object which needs a type to expose it
+      # @return [GraphQL::ObjectType] the type which should expose `object`
+      def resolve_type(object)
+        instance_exec(object, &@resolve_type_proc)
+      end
+
+      # The default implementation of {#resolve_type} gets `object.class.name`
+      # and finds a type with the same name
+      DEFAULT_RESOLVE_TYPE = -> (object) {
+        type_name = object.class.name
+        possible_types.find {|t| t.name == type_name}
+      }
+
+      def resolve_type=(new_proc)
+        @resolve_type_proc = new_proc || DEFAULT_RESOLVE_TYPE
+      end
+    end
+
     # Print the human-readable name of this type
     def to_s
       Printer.instance.print(self)

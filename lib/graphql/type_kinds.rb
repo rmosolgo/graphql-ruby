@@ -23,15 +23,6 @@ module GraphQL::TypeKinds
     def to_s;       @name;      end
     # Is this TypeKind composed of many values?
     def composite?; @composite; end
-
-    # Get the implementing type for `value` from `type` (no-op for TypeKinds which don't `resolves?`)
-    def resolve(type, value)
-      if resolves?
-        type.resolve_type(value)
-      else
-        type
-      end
-    end
   end
 
   TYPE_KINDS = [
