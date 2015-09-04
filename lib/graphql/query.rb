@@ -18,7 +18,7 @@ class GraphQL::Query
     @debug = debug
     @context = Context.new(values: context)
 
-    @variables = variables
+    @variables = variables.kind_of?(Hash) ? variables : JSON.parse(variables)
     @validate = validate
     @operation_name = operation_name
     @fragments = {}

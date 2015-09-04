@@ -30,10 +30,11 @@ describe GraphQL::Query do
   |}
   let(:debug) { false }
   let(:operation_name) { nil }
+  let(:variables) { {"cheeseId" => 2} }
   let(:query) { GraphQL::Query.new(
     DummySchema,
     query_string,
-    variables: {"cheeseId" => 2},
+    variables: variables,
     debug: debug,
     operation_name: operation_name,
   )}
@@ -75,6 +76,27 @@ describe GraphQL::Query do
         }}
         assert_equal(expected, result)
       end
+    end
+  end
+
+  describe "variables" do
+    let(:variables) { "{\"cheeseId\": 2}" }
+    it 'accepts a string of JSON as variables' do
+      expected = {"data"=> {
+          "brie" =>   { "flavor" => "Brie", "taste" => "Brie" },
+          "cheese" => {
+            "__typename" => "Cheese",
+            "id" => 2,
+            "flavor" => "Gouda",
+            "fatContent" => 0.3,
+            "cheeseKind" => "Gouda",
+          },
+          "fromSource" => [{ "id" => 1 }, {"id" => 2}],
+          "fromSheep"=>[{"id"=>3}],
+          "firstSheep" => { "__typename" => "Cheese", "flavor" => "Manchego" },
+          "favoriteEdible"=>{"__typename"=>"Milk", "fatContent"=>0.04},
+      }}
+      assert_equal(expected, result)
     end
   end
 
