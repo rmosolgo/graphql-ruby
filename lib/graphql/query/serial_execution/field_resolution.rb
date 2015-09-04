@@ -31,7 +31,9 @@ module GraphQL
 
 
         def get_raw_value
+          query.context.ast_node = ast_node
           value = field.resolve(target, arguments, query.context)
+          query.context.ast_node = nil
 
           if value == GraphQL::Query::DEFAULT_RESOLVE
             begin

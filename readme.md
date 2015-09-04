@@ -98,9 +98,6 @@ If you're building a backend for [Relay](http://facebook.github.io/relay/), you'
   - Raise if you try to configure an attribute which doesn't suit the type
     - ie, if you try to define `resolve` on an ObjectType, it should somehow raise
 - Big ideas:
-  - Cook up some path other than "n+1s everywhere"
-    - See Sangria's `project` approach ([in progress](https://github.com/rmosolgo/graphql-ruby/pull/15))
-    - Try debounced approach?
   - Write Ruby bindings for [libgraphqlparser](https://github.com/graphql/libgraphqlparser) and use that instead of Parslet
   - Add instrumentation
     - Some way to expose what queries are run, what types & fields are accessed, how long things are taking, etc
