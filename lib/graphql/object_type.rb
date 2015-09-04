@@ -19,9 +19,7 @@
 #       end
 #    end
 #
-class GraphQL::ObjectType
-  include GraphQL::DefinitionHelpers::NonNullWithBang
-  include GraphQL::DefinitionHelpers::DefinedByConfig
+class GraphQL::ObjectType < GraphQL::BaseType
   defined_by_config :name, :description, :interfaces, :fields
   attr_accessor :name, :description, :interfaces, :fields
 

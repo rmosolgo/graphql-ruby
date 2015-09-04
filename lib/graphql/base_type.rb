@@ -14,6 +14,18 @@ module GraphQL
       end
     end
 
+    # If this type is modifying an underlying type,
+    # return the underlying type. (Otherwise, return `self`.)
+    def unwrap
+      self
+    end
+
+    module ModifiesAnotherType
+      def unwrap
+        self.of_type.unwrap
+      end
+    end
+
     # Print the human-readable name of this type
     def to_s
       Printer.instance.print(self)

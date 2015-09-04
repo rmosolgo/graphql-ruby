@@ -4,20 +4,18 @@ class GraphQL::Schema::TypeReducer
   attr_reader :type, :existing_type_hash
 
   def initialize(type, existing_type_hash)
-    @type = type
+    type = type.nil? ? nil : type.unwrap
+    validate_type(type)
+    if type.respond_to?(:name) && existing_type_hash.fetch(type.name, nil).equal?(type)
+      @result = existing_type_hash
+    else
+      @type = type
+    end
     @existing_type_hash = existing_type_hash
   end
 
   def result
-    @result ||= if type.respond_to?(:kind) && type.kind.wraps?
-      reduce_type(type.of_type, existing_type_hash)
-    elsif type.respond_to?(:name) && existing_type_hash.fetch(type.name, nil) == type
-      # been here, done that
-      existing_type_hash
-    else
-      validate_type(type)
-      find_types(type, existing_type_hash)
-    end
+    @result ||= find_types(type, existing_type_hash)
   end
 
   # Reduce all of `types` and return the combined result

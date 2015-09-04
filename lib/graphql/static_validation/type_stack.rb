@@ -50,7 +50,7 @@ class GraphQL::StaticValidation::TypeStack
     def push(stack, node)
       object_type = stack.schema.types.fetch(node.type, nil)
       if !object_type.nil?
-        object_type = object_type.kind.unwrap(object_type)
+        object_type = object_type.unwrap
       end
       stack.object_types.push(object_type)
     end
@@ -77,7 +77,7 @@ class GraphQL::StaticValidation::TypeStack
   class FieldStrategy
     def push(stack, node)
       parent_type = stack.object_types.last
-      parent_type = parent_type.kind.unwrap(parent_type)
+      parent_type = parent_type.unwrap
       if parent_type.kind.fields?
         field_class = stack.schema.get_field(parent_type, node.name)
         stack.field_definitions.push(field_class)

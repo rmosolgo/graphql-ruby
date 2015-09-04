@@ -32,16 +32,6 @@ module GraphQL::TypeKinds
         type
       end
     end
-
-    # Get the modified type for `type` (no-op for TypeKinds which don't `wraps?`)
-    def unwrap(type)
-      if wraps?
-        wrapped_type = type.of_type
-        wrapped_type.kind.unwrap(wrapped_type)
-      else
-        type
-      end
-    end
   end
 
   TYPE_KINDS = [

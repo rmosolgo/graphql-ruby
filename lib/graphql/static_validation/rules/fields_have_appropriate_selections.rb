@@ -14,7 +14,7 @@ class GraphQL::StaticValidation::FieldsHaveAppropriateSelections
   private
 
   def validate_field_selections(ast_field, field_defn, errors)
-    resolved_type = field_defn.type.kind.unwrap(field_defn.type)
+    resolved_type = field_defn.type.unwrap
 
     if resolved_type.kind.scalar? && ast_field.selections.any?
       error = message("Selections can't be made on scalars (field '#{ast_field.name}' returns #{resolved_type.name} but has selections [#{ast_field.selections.map(&:name).join(", ")}])", ast_field)

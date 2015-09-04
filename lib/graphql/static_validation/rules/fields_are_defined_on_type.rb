@@ -8,7 +8,7 @@ class GraphQL::StaticValidation::FieldsAreDefinedOnType
     visitor[GraphQL::Language::Nodes::Field] << -> (node, parent) {
       return if context.skip_field?(node.name)
       parent_type = context.object_types[-2]
-      parent_type = parent_type.kind.unwrap(parent_type)
+      parent_type = parent_type.unwrap
       validate_field(context.errors, node, parent_type, parent)
     }
   end

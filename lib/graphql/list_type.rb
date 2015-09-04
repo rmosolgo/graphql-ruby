@@ -1,7 +1,8 @@
 # A list type wraps another type.
 #
-# See {TypeKind#unwrap} for accessing the modified type
+# Get the underlying type with {#unwrap}
 class GraphQL::ListType < GraphQL::BaseType
+  include GraphQL::BaseType::ModifiesAnotherType
   attr_reader :of_type, :name
   def initialize(of_type:)
     @name = "List"

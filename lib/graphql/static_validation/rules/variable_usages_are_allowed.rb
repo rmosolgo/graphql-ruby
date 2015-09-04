@@ -32,8 +32,8 @@ class GraphQL::StaticValidation::VariableUsagesAreAllowed
     arg_defn = arguments[arg_node.name]
     arg_defn_type = arg_defn.type
 
-    var_inner_type = var_type.kind.unwrap(var_type)
-    arg_inner_type = arg_defn_type.kind.unwrap(arg_defn_type)
+    var_inner_type = var_type.unwrap
+    arg_inner_type = arg_defn_type.unwrap
 
     if var_inner_type != arg_inner_type
       context.errors << create_error("Type mismatch", var_type, ast_var, arg_defn, arg_node)
