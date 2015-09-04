@@ -1,13 +1,13 @@
-$:.push File.expand_path("../lib", __FILE__)
+$LOAD_PATH.push File.expand_path("../lib", __FILE__)
 
-require "graph_ql/version"
+require "graphql/version"
 
 Gem::Specification.new do |s|
   s.name        = 'graphql'
   s.version     = GraphQL::VERSION
   s.date        = Date.today.to_s
-  s.summary     = "GraphQL"
-  s.description = "A GraphQL adapter for Ruby"
+  s.summary     = "A GraphQL implementation for Ruby"
+  s.description = "Full-fledged implementation of the GraphQL spec. Includes query parsing, static validation, type definition, and query execution."
   s.homepage    = 'http://github.com/rmosolgo/graphql-ruby'
   s.authors     = ["Robert Mosolgo"]
   s.email       = ['rdmosolgo@gmail.com']
@@ -18,6 +18,7 @@ Gem::Specification.new do |s|
   s.test_files = Dir["spec/**/*"]
 
   s.add_runtime_dependency "parslet", "~> 1.6"
+  s.add_runtime_dependency "celluloid", "~>0.17"
 
   s.add_development_dependency "codeclimate-test-reporter", '~>0.4'
   s.add_development_dependency "pry", "~> 0.10"

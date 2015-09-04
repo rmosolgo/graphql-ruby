@@ -1,4 +1,4 @@
-# graphql
+# graphql <img src="https://cloud.githubusercontent.com/assets/2231765/9094460/cb43861e-3b66-11e5-9fbf-71066ff3ab13.png" height=40 alt="graphql-ruby"/>
 
 [![Build Status](https://travis-ci.org/rmosolgo/graphql-ruby.svg?branch=master)](https://travis-ci.org/rmosolgo/graphql-ruby)
 [![Gem Version](https://badge.fury.io/rb/graphql.svg)](https://rubygems.org/gems/graphql)
@@ -9,98 +9,114 @@
  - [Introduction](https://github.com/rmosolgo/graphql-ruby/blob/master/guides/introduction.md)
  - [API Documentation](http://www.rubydoc.info/github/rmosolgo/graphql-ruby)
 
+## Installation
+
+Install from RubyGems by adding it to your `Gemfile`, then bundling.
+
+```ruby
+# Gemfile
+gem 'graphql'
+```
+
+```
+$ bundle install
+```
+
 ## Overview
 
-- __Install the gem__:
+#### Declare types & build a schema
 
-  ```ruby
-  # Gemfile
-  gem 'graphql'
-  ```
+```ruby
+# Declare a type...
+PostType = GraphQL::ObjectType.define do
+  name "Post"
+  description "A blog post"
 
-  ```
-  $ bundle install
-  ```
+  field :id, !types.ID
+  field :title, !types.String
+  field :body, !types.String
+  field :comments, types[!CommentType]
+end
 
-- __Declare types & build a schema__:
+# ...and a query root
+QueryType = GraphQL::ObjectType.define do
+  name "Query"
+  description "The query root of this schema"
 
-  ```ruby
-  # Declare a type...
-  PostType = GraphQL::ObjectType.new do |t, types, field|
-    t.name "Post"
-    t.description "A blog post"
-    t.fields({
-      id:       field.build(type: !types.Int),
-      title:    field.build(type: !types.String),
-      body:     field.build(type: !types.String),
-      comments: field.build(type: types[!CommentType])
-    })
+  field :post do
+    type PostType
+    argument :id, !types.ID
+    resolve -> (obj, args, ctx) { Post.find(args["id"]) }
   end
+end
 
-  # ...and a query root
-  QueryType = GraphQL::ObjectType.new do |t, types, field, arg|
-    t.name "Query"
-    t.description "The query root of this schema"
-    t.fields({
-      post: GraphQL::Field.new do |f|
-        f.arguments(id: arg.build(type: !types.Int))
-        f.resolve -> (object, args, context) {
-          Post.find(args["id"])
-        }
-      end
-    })
-  end
+# Then create your schema
+Schema = GraphQL::Schema.new(query: QueryType)
+```
 
-  # Then create your schema
-  Schema = GraphQL::Schema.new(query: QueryType, mutation: nil)
-  ```
+See also:
+  - the [test schema](https://github.com/rmosolgo/graphql-ruby/blob/master/spec/support/dairy_app.rb)
+  - [`graphql-ruby-demo`](https://github.com/rmosolgo/graphql-ruby-demo) for an example schema on Rails
 
-  See also:
-    - the [test schema](https://github.com/rmosolgo/graphql-ruby/blob/master/spec/support/dummy_app.rb)
-    - [`graphql-ruby-demo`](https://github.com/rmosolgo/graphql-ruby-demo) for an example schema on Rails
+#### Execute queries
 
-- __Execute queries__:
+Execute GraphQL queries on a given schema, from a query string.
 
-  ```ruby
-  query = GraphQL::Query.new(Schema, query_string)
-  result_hash = query.result
-  # {
-  #   "data" => {
-  #     "post" => {
-  #        "id" => 1,
-  #        "title" => "GraphQL is nice"
-  #     }
-  #   }
-  # }
-  ```
+```ruby
+query = GraphQL::Query.new(Schema, query_string)
+result_hash = query.result
+# {
+#   "data" => {
+#     "post" => {
+#        "id" => 1,
+#        "title" => "GraphQL is nice"
+#     }
+#   }
+# }
+```
 
-  See also:
-  - [query_spec.rb](https://github.com/rmosolgo/graphql-ruby/blob/master/spec/graph_ql/query_spec.rb) for an example of query execution.
+See also:
+  - [query_spec.rb](https://github.com/rmosolgo/graphql-ruby/blob/master/spec/graphql/query_spec.rb) for an example of query execution.
   -  [`queries_controller.rb`](https://github.com/rmosolgo/graphql-ruby-demo/blob/master/app/controllers/queries_controller.rb) for a Rails example
   - Try it on [heroku](http://graphql-ruby-demo.herokuapp.com)
 
+
+#### Use with Relay
+
+If you're building a backend for [Relay](http://facebook.github.io/relay/), you'll need:
+
+- A JSON dump of the schema, which you can get by sending [`GraphQL::Introspection::INTROSPECTION_QUERY`](https://github.com/rmosolgo/graphql-ruby/blob/master/lib/graphql/introspection/introspection_query.rb)
+- Relay-specific helpers for GraphQL like Connections, node fields, and global ids. Here's one example of those: [`graphql-relay`](https://github.com/rmosolgo/graphql-relay-ruby)
+
+
 ## To Do
 
-- To match spec:
-  - Directives:
-    - `@skip` has precedence over `@include`
-    - directives on fragments: http://facebook.github.io/graphql/#sec-Fragment-Directives
-  - `__type { fields }` shouldn't include `__typename` https://github.com/graphql/graphql-js/issues/73#issuecomment-123119823
 - Field merging
   - if you were to request a field, then request it in a fragment, it would get looked up twice
   - https://github.com/graphql/graphql-js/issues/19#issuecomment-118515077
 - Code clean-up
-  - Unify unwrapping types (It's on `TypeKind` but it's still not right)
-  - Use StarWarsSchema for tests
-- Cook up some path other than "n+1s everywhere"
-  - See Sangria's `project` approach
+  - Easier built-in type definition
+    - Make an object that accepts type objects, symbols, or corresponding Ruby classes and converts them to GraphQL types
+    - Hook up that object to `DefinitionConfig`, so it can map from incoming values to GraphQL types
+  - Raise if you try to configure an attribute which doesn't suit the type
+    - ie, if you try to define `resolve` on an ObjectType, it should somehow raise
+  - Make better inheritance between types
+    - Move `TypeKind#unwrap` to BaseType & update all code
+    - Also move `TypeKind#resolve` ?
+- Big ideas:
+  - Cook up some path other than "n+1s everywhere"
+    - See Sangria's `project` approach ([in progress](https://github.com/rmosolgo/graphql-ruby/pull/15))
+    - Try debounced approach?
+  - Write Ruby bindings for [libgraphqlparser](https://github.com/graphql/libgraphqlparser) and use that instead of Parslet
+  - Add instrumentation
+    - Some way to expose what queries are run, what types & fields are accessed, how long things are taking, etc
 
 
 ## Goals
 
 - Implement the GraphQL spec & support a Relay front end
 - Provide idiomatic, plain-Ruby API with similarities to reference implementation where possible
-- Support `graphql-rails`
+- Support Ruby on Rails and Relay
 
 ## Getting Involved
 
@@ -115,3 +131,9 @@
 - Other implementations: [graphql-links](https://github.com/emmenko/graphql-links)
 - `graphql-ruby` + Rails demo ([src](https://github.com/rmosolgo/graphql-ruby-demo) / [heroku](http://graphql-ruby-demo.herokuapp.com))
 - [GraphQL Slack](https://graphql-slack.herokuapp.com/)
+- [Example Relay support](https://github.com/rmosolgo/graphql-relay-ruby) in Ruby
+
+## P.S.
+
+- Thanks to @sgwilym for the great logo!
+- Definition API heavily inspired by @seanchas's [implementation of GraphQL](https://github.com/seanchas/graphql)
