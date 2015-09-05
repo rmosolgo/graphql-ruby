@@ -2,11 +2,57 @@
 
 ### Breaking changes & deprecations
 
-- Query keyword argument was removed, use `variables:` instead.
+### New features
+
+### Bug fixes
+
+## 0.8.0 (4 Sept 2015)
+
+### Breaking changes & deprecations
+
+### New features
+
+- Async field resolution with `context.async { ... }`
+- Access AST node during resolve with `context.ast_node`
+
+### Bug fixes
+
+- Fix for validating arguments returning up too soon
+- Raise if you try to define 2 types with the same name
+- Raise if you try to get a type by name but it doesn't exist
+
+## 0.7.1 (27 Aug 2015)
+
+### Breaking changes & deprecations
 
 ### New features
 
 ### Bug fixes
+
+- Merge nested results from different fragments instead of using the latest one only
+
+## 0.7.0 (26 Aug 2015)
+
+### Breaking changes & deprecations
+
+- Query keyword argument `params:` was removed, use `variables:` instead.
+
+### New features
+
+### Bug fixes
+
+- `@skip` has precedence over `@include`
+- Handle when `DEFAULT_RESOVE` returns nil
+
+## 0.6.2 (20 Aug 2015)
+
+### Breaking changes & deprecations
+
+### New features
+
+### Bug fixes
+
+- Fix whitespace parsing in input objects
 
 ## 0.6.1 (16 Aug 2015)
 
