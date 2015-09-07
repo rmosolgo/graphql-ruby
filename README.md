@@ -25,8 +25,7 @@ Global Ids provide refetching & global identification for Relay.
 
 You should implement an object that responds to `#object_from_id(global_id)` & `#type_from_object(object)`, then pass it to `GraphQL::Relay::Node.create(implementation)`. [Example](https://github.com/rmosolgo/graphql-relay-ruby/blob/120b750cf86f1eb5c9997b588f022b2ef3a0012c/spec/support/star_wars_schema.rb#L4-L15)
 
-Then, you can add global id fields to your types with `global_id_field` definition helper.
- [Example](https://github.com/rmosolgo/graphql-relay-ruby/blob/master/spec/support/star_wars_schema.rb#L29)
+Then, you can add global id fields to your types with `global_id_field` definition helper. [Example](https://github.com/rmosolgo/graphql-relay-ruby/blob/master/spec/support/star_wars_schema.rb#L29)
 
 ### Connections
 

@@ -4,7 +4,7 @@ require 'graphql'
 require 'graphql/relay/monkey_patches/definition_config'
 require 'graphql/relay/monkey_patches/object_type'
 
-require 'graphql/relay/node'
+require 'graphql/relay/global_node_identification'
 require 'graphql/relay/page_info'
 require 'graphql/relay/edge'
 require 'graphql/relay/base_connection'
