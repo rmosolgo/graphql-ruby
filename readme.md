@@ -123,7 +123,7 @@ If you're building a backend for [Relay](http://facebook.github.io/relay/), you'
 - `graphql-ruby` + Rails demo ([src](https://github.com/rmosolgo/graphql-ruby-demo) / [heroku](http://graphql-ruby-demo.herokuapp.com))
 - [GraphQL Slack](https://graphql-slack.herokuapp.com/)
 - [Example Relay support](https://github.com/rmosolgo/graphql-relay-ruby) in Ruby
-- [`graphql-parallel`][https://github.com/rmosolgo/graphql-parallel], an asynchronous query execution strategy
+- [`graphql-parallel`](https://github.com/rmosolgo/graphql-parallel), an asynchronous query execution strategy
 
 ## P.S.
 
