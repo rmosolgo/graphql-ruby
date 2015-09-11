@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.9.1 (10 Sept 2015)
+
+### Breaking changes & deprecations
+
+### New features
+
+### Bug fixes
+
+- remove Celluloid dependency
+
+## 0.9.0 (10 Sept 2015)
+
+### Breaking changes & deprecations
+
+- remove `GraphQL::Query::ParallelExecution` (use [`graphql-parallel`](https://github.com/rmosolgo/graphql-parallel))
+
 ## 0.8.1 (10 Sept 2015)
 
 ### Breaking changes & deprecations
