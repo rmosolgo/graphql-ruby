@@ -4,7 +4,7 @@ require "singleton"
 
 module GraphQL
   class ParseError < StandardError
-    attr_accessor :line, :col, :query
+    attr_reader :line, :col, :query
     def initialize(message, line, col, query)
       super(message)
       @line = line
