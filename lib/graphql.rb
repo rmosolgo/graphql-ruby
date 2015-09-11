@@ -3,6 +3,16 @@ require "parslet"
 require "singleton"
 
 module GraphQL
+  class ParseError < StandardError
+    attr_reader :line, :col, :query
+    def initialize(message, line, col, query)
+      super(message)
+      @line = line
+      @col = col
+      @query = query
+    end
+  end
+
   # Turn a query string into an AST
   # @param string [String] a GraphQL query string
   # @param as [Symbol] If you want to use this to parse some _piece_ of a document, pass the rule name (from {GraphQL::Parser})
@@ -12,8 +22,8 @@ module GraphQL
     tree = parser.parse(string)
     GraphQL::TRANSFORM.apply(tree)
   rescue Parslet::ParseFailed => error
-    line, col = error.cause.source.line_and_column
-    raise [error.message, line, col, string].join(", ")
+    line, col = error.cause.source.line_and_column(error.cause.pos)
+    raise GraphQL::ParseError.new(error.message, line, col, string)
   end
 end
 
