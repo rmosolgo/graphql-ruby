@@ -1,5 +1,13 @@
 # Changelog
 
+### Breaking changes & deprecations
+
+### New features
+
+- An error during parsing raises `GraphQL::ParseError`  #33
+
+### Bug fixes
+
 ## 0.9.1 (10 Sept 2015)
 
 ### Breaking changes & deprecations
