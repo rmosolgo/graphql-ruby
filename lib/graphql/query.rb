@@ -48,23 +48,6 @@ class GraphQL::Query
   def validation_errors
     @validation_errors ||= @schema.static_validator.validate(@document)
   end
-
-  # Expose some query-specific info to field resolve functions.
-  # It delegates `[]` to the hash that's passed to `GraphQL::Query#initialize`.
-  class Context
-    attr_accessor :execution_strategy, :ast_node
-    def initialize(values:)
-      @values = values
-    end
-
-    def [](key)
-      @values[key]
-    end
-
-    def async(&block)
-      execution_strategy.async(block)
-    end
-  end
 end
 
 require 'graphql/query/arguments'
@@ -74,3 +57,4 @@ require 'graphql/query/parallel_execution'
 require 'graphql/query/type_resolver'
 require 'graphql/query/directive_chain'
 require 'graphql/query/executor'
+require 'graphql/query/context'

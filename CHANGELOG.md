@@ -1,6 +1,10 @@
 # Changelog
 
+## 0.8.1 (10 Sept 2015)
+
 ### Breaking changes & deprecations
+
+- `GraphQL::Query::ParallelExecution` has been extracted to [`graphql-parallel`](https://github.com/rmosolgo/graphql-parallel)
 
 ### New features
 

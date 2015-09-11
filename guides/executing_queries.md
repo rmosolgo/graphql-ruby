@@ -72,3 +72,29 @@ By default, `GraphQL::Query` performs validation on incoming query strings. If y
 query = GraphQL::Query.new(MySchema, query_string, validate: false)
 query.result
 ```
+
+## Custom Execution Strategies
+
+`graphql` includes a couple of execution strategies, but you can also create custom strategies to support advanced behavior. See `BaseExecution` for the required methods `#initialize` and [`#execute(operation_name, root_type, query)`](http://www.rubydoc.info/github/rmosolgo/graphql-ruby/master/GraphQL/Query/BaseExecution#execute-instance_method)
+
+Then, set your schema to use your custom execution strategy with `#mutation_execution_strategy` or `#query_execution_strategy`
+
+For example:
+
+```
+class CustomQueryStrategy
+  def initialize
+    # ...
+  end
+
+  def execute(operation_name, root_type, query)
+    # ...
+  end
+end
+
+# ... define your types ...
+
+MySchema = GraphQL::Schema.new(query: MyQueryType, mutation: MyMutationType)
+# Use your custom strategy:
+MySchema.query_execution_strategy = CustomQueryStrategy
+```

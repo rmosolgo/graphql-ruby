@@ -15,6 +15,7 @@ module GraphQL
 
       def async(block)
         @has_futures ||= true
+        warn("GraphQL::Query::ParallelExecution has been extracted to the `graphql-parallel` gem, use that instead!")
         pool.future.resolve(block)
       end
 
