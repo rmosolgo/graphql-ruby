@@ -82,6 +82,22 @@ describe GraphQL::Query do
     assert_equal(GraphQL::Language::Nodes::FragmentDefinition, query.fragments['cheeseFields'].class)
   end
 
+  it 'correctly identifies parse error location' do
+    # "Correct" is a bit of an overstatement. All Parslet errors get surfaced
+    # at the beginning of the query they were in, since Parslet sees the query
+    # as invalid. It would be great to have more granularity here.
+    e = assert_raises(GraphQL::ParseError) do
+      GraphQL.parse("
+        query getCoupons {
+          allCoupons: {data{id}}
+        }
+      ")
+    end
+    assert_equal('Extra input after last repetition at line 2 char 9.', e.message)
+    assert_equal(2, e.line)
+    assert_equal(9, e.col)
+  end
+
   describe "merging fragments with different keys" do
     let(:query_string) { %|
       query getCheeseFieldsThroughDairy {
