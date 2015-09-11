@@ -37,12 +37,6 @@ module GraphQL
         get_class :SelectionResolution
       end
 
-      # ParallelExecution overrides this to provide
-      # real async behavior
-      def async(&block)
-        block.call
-      end
-
       private
 
       def get_class(class_name)

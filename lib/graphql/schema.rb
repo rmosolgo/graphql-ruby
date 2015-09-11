@@ -4,7 +4,7 @@ class GraphQL::Schema
   DYNAMIC_FIELDS = ["__type", "__typename", "__schema"]
 
   attr_reader :query, :mutation, :directives, :static_validator
-  # Override these if you don't want the default executors:
+  # Override these if you don't want the default executor:
   attr_accessor :query_execution_strategy, :mutation_execution_strategy
 
 
@@ -15,6 +15,9 @@ class GraphQL::Schema
     @mutation = mutation
     @directives = DIRECTIVES.reduce({}) { |m, d| m[d.name] = d; m }
     @static_validator = GraphQL::StaticValidation::Validator.new(schema: self)
+    # Default to the built-in execution strategy:
+    self.query_execution_strategy = GraphQL::Query::SerialExecution
+    self.mutation_execution_strategy = GraphQL::Query::SerialExecution
   end
 
   # A `{ name => type }` hash of types in this schema

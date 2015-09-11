@@ -11,10 +11,6 @@ module GraphQL
       def [](key)
         @values[key]
       end
-
-      def async(&block)
-        execution_strategy.async(block)
-      end
     end
   end
 end
