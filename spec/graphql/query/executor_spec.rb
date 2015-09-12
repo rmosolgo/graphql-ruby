@@ -93,10 +93,10 @@ describe GraphQL::Query::Executor do
           ... on Dairy {
             id
           }
-          ...repetativeFragment
+          ...repetitiveFragment
         }
       }
-      fragment repetativeFragment on Dairy {
+      fragment repetitiveFragment on Dairy {
         id
       }
     |}
