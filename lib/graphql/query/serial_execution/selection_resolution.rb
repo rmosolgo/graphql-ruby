@@ -84,16 +84,8 @@ module GraphQL
         end
 
         def fields_can_merge?(field1, field2)
-          type1 = query.schema.get_field(type, field1.name).type
-          type2 = query.schema.get_field(type, field2.name).type
-
-          while type1.is_a?(GraphQL::ListType) || type1.is_a?(GraphQL::NonNullType)
-            type1 = type1.of_type
-          end
-
-          while type2.is_a?(GraphQL::ListType) || type2.is_a?(GraphQL::NonNullType)
-            type2 = type2.of_type
-          end
+          type1 = query.schema.get_field(type, field1.name).type.unwrap
+          type2 = query.schema.get_field(type, field2.name).type.unwrap
 
           type1.is_a?(GraphQL::ObjectType) && type2.is_a?(GraphQL::ObjectType)
         end
