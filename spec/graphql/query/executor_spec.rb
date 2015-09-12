@@ -72,13 +72,17 @@ describe GraphQL::Query::Executor do
 
   describe 'fragment resolution' do
     let(:schema) {
+      # we will raise if the dairy field is resolved more than one time
+      resolved = false
+
       DummyQueryType = GraphQL::ObjectType.define do
         name "Query"
         field :dairy do
           type DairyType
           resolve -> (t, a, c) {
-            mock = Minitest::Mock.new
-            mock.expect :id, 1
+            raise if resolved
+            resolved = true
+            DAIRY
           }
         end
       end
