@@ -3,10 +3,12 @@ require 'spec_helper'
 describe GraphQL::Query::Executor do
   let(:debug) { false }
   let(:operation_name) { nil }
+  let(:schema) { DummySchema }
+  let(:variables) { {"cheeseId" => 2} }
   let(:query) { GraphQL::Query.new(
-    DummySchema,
+    schema,
     query_string,
-    variables: {"cheeseId" => 2},
+    variables: variables,
     debug: debug,
     operation_name: operation_name,
   )}
@@ -65,6 +67,44 @@ describe GraphQL::Query::Executor do
       }}
       assert_equal(expected, result)
     end
+  end
+
+
+  describe 'fragment resolution' do
+    let(:schema) {
+      DummyQueryType = GraphQL::ObjectType.define do
+        name "Query"
+        field :dairy do
+          type DairyType
+          resolve -> (t, a, c) {
+            mock = Minitest::Mock.new
+            mock.expect :id, 1
+          }
+        end
+      end
+
+      GraphQL::Schema.new(query: DummyQueryType, mutation: MutationType)
+    }
+    let(:variables) { nil }
+    let(:query_string) { %|
+      query getDairy {
+        dairy {
+          id
+          ... on Dairy {
+            id
+          }
+          ...repetativeFragment
+        }
+      }
+      fragment repetativeFragment on Dairy {
+        id
+      }
+    |}
+
+    it 'resolves each field only one time, even when present in multiple fragments' do
+      result
+    end
+
   end
 
 

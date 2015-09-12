@@ -114,7 +114,6 @@ describe GraphQL::Query do
           id
         }
       }
-
       fragment fatContentFragment on Dairy {
         cheese {
           fatContent
@@ -123,7 +122,6 @@ describe GraphQL::Query do
           fatContent
         }
       }
-
     |}
 
     it "should include keys from each fragment" do
