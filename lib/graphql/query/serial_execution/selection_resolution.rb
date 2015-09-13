@@ -69,25 +69,22 @@ module GraphQL
         end
 
         def merge_fields(field1, field2)
-          if fields_can_merge?(field1, field2)
-            # create a new ast field node merging selections from each field
+          field_type = query.schema.get_field(type, field2.name).type.unwrap
+
+          if field_type.is_a?(GraphQL::ObjectType)
+            # create a new ast field node merging selections from each field.
+            # Because of static validation, we can assume that name, alias,
+            # arguments, and directives are exactly the same for fields 1 and 2.
             GraphQL::Language::Nodes::Field.new(
               name: field2.name,
               alias: field2.alias,
               arguments: field2.arguments,
-              directives: field1.directives + field2.directives,
+              directives: field2.directives,
               selections: field1.selections + field2.selections
             )
           else
             field2
           end
-        end
-
-        def fields_can_merge?(field1, field2)
-          type1 = query.schema.get_field(type, field1.name).type.unwrap
-          type2 = query.schema.get_field(type, field2.name).type.unwrap
-
-          type1.is_a?(GraphQL::ObjectType) && type2.is_a?(GraphQL::ObjectType)
         end
 
         def resolve_field(ast_node)
