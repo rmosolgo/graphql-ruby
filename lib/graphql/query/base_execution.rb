@@ -21,14 +21,6 @@ module GraphQL
         get_class :FieldResolution
       end
 
-      def fragment_spread_resolution
-        get_class :FragmentSpreadResolution
-      end
-
-      def inline_fragment_resolution
-        get_class :InlineFragmentResolution
-      end
-
       def operation_resolution
         get_class :OperationResolution
       end
