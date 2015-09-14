@@ -2,13 +2,20 @@ require 'spec_helper'
 
 describe GraphQL::StaticValidation::VariablesAreUsedAndDefined do
   let(:document) { GraphQL.parse('
-    query getCheese($id: Int, $str: String, $notUsedVar: Float, $bool: Boolean) {
-      cheese(id: $id) {
-        source(str: $str)
+    query getCheese(
+      $usedVar: Int,
+      $usedInnerVar: String,
+      $usedInlineFragmentVar: Boolean,
+      $usedFragmentVar: Int,
+      $notUsedVar: Float,
+    ) {
+      cheese(id: $usedVar) {
+        source(str: $usedInnerVar)
         whatever(undefined: $undefinedVar)
         ... on Cheese {
-          something(bool: $bool)
+          something(bool: $usedInlineFragmentVar)
         }
+        ... outerCheeseFields
       }
     }
 
@@ -17,7 +24,8 @@ describe GraphQL::StaticValidation::VariablesAreUsedAndDefined do
     }
 
     fragment innerCheeseFields on Cheese {
-      source(notDefined: $notDefinedVar)
+      source(notDefined: $undefinedFragmentVar)
+      someField(someArg: $usedFragmentVar)
     }
   ')}
 
@@ -27,16 +35,16 @@ describe GraphQL::StaticValidation::VariablesAreUsedAndDefined do
   it "finds variables which are used-but-not-defined or defined-but-not-used" do
     expected = [
       {
-        "message"=>"Variable $undefinedVar is used but not declared",
-        "locations"=>[{"line"=>5, "column"=>30}]
-      },
-      {
-        "message"=>"Variable $notUsedVar is declared but not used",
+        "message"=>"Variable $notUsedVar is declared by getCheese but not used",
         "locations"=>[{"line"=>2, "column"=>5}]
       },
       {
-        "message"=>"Variable $notDefinedVar is used but not declared",
-        "locations"=>[{"line"=>17, "column"=>27}]
+        "message"=>"Variable $undefinedVar is used by getCheese but not declared",
+        "locations"=>[{"line"=>11, "column"=>30}]
+      },
+      {
+        "message"=>"Variable $undefinedFragmentVar is used by innerCheeseFields but not declared",
+        "locations"=>[{"line"=>24, "column"=>27}]
       },
     ]
     assert_equal(expected, errors)

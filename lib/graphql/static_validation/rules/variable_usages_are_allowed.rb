@@ -17,7 +17,9 @@ class GraphQL::StaticValidation::VariableUsagesAreAllowed
         arguments = context.directive_definition.arguments
       end
       var_defn_ast = declared_variables[node.value.name]
-      validate_usage(arguments, node, var_defn_ast, context)
+      # Might be undefined :(
+      # VariablesAreUsedAndDefined can't finalize its search until the end of the document.
+      var_defn_ast && validate_usage(arguments, node, var_defn_ast, context)
     }
   end
 
