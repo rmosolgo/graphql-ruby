@@ -106,7 +106,10 @@ describe GraphQL::Query::Executor do
     |}
 
     it 'resolves each field only one time, even when present in multiple fragments' do
-      result
+      expected = {"data" => {
+        "dairy" => { "id" => "1" }
+      }}
+      assert_equal(expected, result)
     end
 
   end

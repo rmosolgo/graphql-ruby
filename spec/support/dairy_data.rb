@@ -10,4 +10,8 @@ MILKS = {
   1 => Milk.new(1, 0.04, 1),
 }
 
-DAIRY = OpenStruct.new(cheese: CHEESES[1], milks: [MILKS[1]])
+DAIRY = OpenStruct.new(
+  id: 1,
+  cheese: CHEESES[1],
+  milks: [MILKS[1]]
+)
