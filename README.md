@@ -74,6 +74,6 @@ Examples:
 
 ## More Resources
 
-- [GraphQL Slack](graphql-slack.herokuapp.com), come join us in the `#ruby` channel!
+- [GraphQL Slack](http://graphql-slack.herokuapp.com), come join us in the `#ruby` channel!
 - [`graphql`](https://github.com/rmosolgo/graphql-ruby) Ruby gem
 - [`graphql-relay-js`](https://github.com/graphql/graphql-relay-js) JavaScript helpers for GraphQL and Relay
