@@ -4,11 +4,17 @@
 
 ### New features
 
+- Merge identical fields in fragments so they're only resolved once #34
 - An error during parsing raises `GraphQL::ParseError`  #33
 
 ### Bug fixes
 
-## 0.9.1 (10 Sept 2015)
+- Find nested input types in `TypeReducer` #35
+- Find variable usages inside fragments during static validation 
+
+
+
+## 0.9.2, 0.9.1 (10 Sept 2015)
 
 ### Breaking changes & deprecations
 
