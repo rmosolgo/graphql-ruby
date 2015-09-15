@@ -23,6 +23,26 @@ describe GraphQL::Schema::TypeReducer do
     assert_equal(DairyProductInputType, reducer.result["DairyProductInput"])
   end
 
+  it 'finds types from nested InputObjectTypes' do
+    type_child = GraphQL::InputObjectType.define do
+      name "InputTypeChild"
+      input_field :someField, GraphQL::STRING_TYPE
+    end
+
+    type_parent = GraphQL::InputObjectType.define do
+      name "InputTypeParent"
+      input_field :child, type_child
+    end
+
+    reducer = GraphQL::Schema::TypeReducer.new(type_parent, {})
+    expected = {
+      "InputTypeParent" => type_parent,
+      "InputTypeChild" => type_child,
+      "String" => GraphQL::STRING_TYPE
+    }
+    assert_equal(expected, reducer.result)
+  end
+
   describe 'when a type is invalid' do
     let(:invalid_type) {
       GraphQL::ObjectType.define do

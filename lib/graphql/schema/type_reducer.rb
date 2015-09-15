@@ -48,6 +48,12 @@ class GraphQL::Schema::TypeReducer
         reduce_type(possible_type, type_hash)
       end
     end
+    if type.kind.input_object?
+      type.input_fields.each do |name, input_field|
+        reduce_type(input_field.type, type_hash)
+      end
+    end
+
     type_hash
   end
 
