@@ -23,10 +23,11 @@ bundle install
 
 Global Ids provide refetching & global identification for Relay.
 
-You should implement an object that responds to `#object_from_id(global_id)` & `#type_from_object(object)`, then pass it to `GraphQL::Relay::Node.create(implementation)`. [Example](https://github.com/rmosolgo/graphql-relay-ruby/blob/120b750cf86f1eb5c9997b588f022b2ef3a0012c/spec/support/star_wars_schema.rb#L4-L15)
+You should create `GraphQL::Relay::GlobalNodeIdentification` helper by defining `object_from_id(global_id)` & `type_from_object(object)`. The resulting object provides ID resultion methods, a find-by-global-id field and a node interface. [Example](https://github.com/rmosolgo/graphql-relay-ruby/blob/master/spec/support/star_wars_schema.rb#L9-L18)
 
-Then, you can add global id fields to your types with `global_id_field` definition helper.
- [Example](https://github.com/rmosolgo/graphql-relay-ruby/blob/master/spec/support/star_wars_schema.rb#L29)
+ObjectTypes should implement that interface with the `global_id_field` helper: [Example](https://github.com/rmosolgo/graphql-relay-ruby/blob/master/spec/support/star_wars_schema.rb#L30-L31)
+
+You should attach the field to your query type: [Example](https://github.com/rmosolgo/graphql-relay-ruby/blob/master/spec/support/star_wars_schema.rb#L121)
 
 ### Connections
 
@@ -35,9 +36,13 @@ Connections will provide arguments, pagination and `pageInfo` for `Array`s or `A
 Then, implement the field. It's different than a normal field:
   - use the `connection` helper to define it, instead of `field`
   - Call `#connection_type` on an `ObjectType` for the field's return type (eg, `ShipType.connection_type`)
-  - implement `resolve` to return an Array or an ActiveRecord::Relation, depending on the connection type.
 
-[Example 1](https://github.com/rmosolgo/graphql-relay-ruby/blob/master/spec/support/star_wars_schema.rb#L39-L51), [Example 2](https://github.com/rmosolgo/graphql-relay-ruby/blob/master/spec/support/star_wars_schema.rb#L52-L58)
+Examples:
+
+- [Connection with custom arguments](https://github.com/rmosolgo/graphql-relay-ruby/blob/master/spec/support/star_wars_schema.rb#L51-L63)
+- [Connection with a different name than the underlying property](https://github.com/rmosolgo/graphql-relay-ruby/blob/master/spec/support/star_wars_schema.rb#L77)
+
+You can also add custom fields to connection objects: [Example](https://github.com/rmosolgo/graphql-relay-ruby/blob/master/spec/support/star_wars_schema.rb#L36-L43)
 
 ### Mutations
 
@@ -60,14 +65,15 @@ The resolve proc:
   - Must return a hash with keys matching your defined `return_field`s
 
 Examples:
-  - Definition: [example](https://github.com/rmosolgo/graphql-relay-ruby/blob/120b750cf86f1eb5c9997b588f022b2ef3a0012c/spec/support/star_wars_schema.rb#L74-L93)
-  - Mount on mutation type: [example](https://github.com/rmosolgo/graphql-relay-ruby/blob/120b750cf86f1eb5c9997b588f022b2ef3a0012c/spec/support/star_wars_schema.rb#L111)
+  - Definition: [example](https://github.com/rmosolgo/graphql-relay-ruby/blob/master/spec/support/star_wars_schema.rb#L90)
+  - Mount on mutation type: [example](https://github.com/rmosolgo/graphql-relay-ruby/blob/master/spec/support/star_wars_schema.rb#L127)
 
 ## Todo
 
-- [ ] Fix `Node.create` -- make it return one object which exposes useful info
+- Show how to replace default connection implementations with custom ones
 
 ## More Resources
 
+- [GraphQL Slack](graphql-slack.herokuapp.com), come join us in the `#ruby` channel!
 - [`graphql`](https://github.com/rmosolgo/graphql-ruby) Ruby gem
 - [`graphql-relay-js`](https://github.com/graphql/graphql-relay-js) JavaScript helpers for GraphQL and Relay

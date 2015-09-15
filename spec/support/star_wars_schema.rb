@@ -1,29 +1,33 @@
-# Taken from graphql-relay-js
+# Adapted from graphql-relay-js
 # https://github.com/graphql/graphql-relay-js/blob/master/src/__tests__/starWarsSchema.js
 
-class NodeImplementation
-  def object_from_id(id)
-    type_name, id = GraphQL::Relay::Node.from_global_id(id)
+# This object exposes helpers for working with global IDs:
+# - global id creation & "decrypting"
+# - a find-object-by-global ID field
+# - an interface for Relay ObjectTypes to implement
+# See global_node_identification.rb for the full API.
+NodeIdentification = GraphQL::Relay::GlobalNodeIdentification.define do
+  object_from_id -> (id) do
+    type_name, id = NodeIdentification.from_global_id(id)
     STAR_WARS_DATA[type_name][id]
   end
 
-  def type_from_object(object)
+  type_from_object -> (object) do
     STAR_WARS_DATA["Faction"].values.include?(object) ? Faction : Ship
   end
 end
 
-NodeInterface, NodeField = GraphQL::Relay::Node.create(NodeImplementation.new)
-
 Ship = GraphQL::ObjectType.define do
   name "Ship"
-  interfaces [NodeInterface]
+  interfaces [NodeIdentification.interface]
+  # Explict alternative to `global_id_field` helper:
   field :id, field: GraphQL::Relay::GlobalIdField.new("Ship")
   field :name, types.String
 end
 
 BaseType = GraphQL::ObjectType.define do
   name "Base"
-  interfaces [NodeInterface]
+  interfaces [NodeIdentification.interface]
   global_id_field :id
   field :name, types.String
   field :planet, types.String
@@ -41,7 +45,7 @@ end
 
 Faction = GraphQL::ObjectType.define do
   name "Faction"
-  interfaces [NodeInterface]
+  interfaces [NodeIdentification.interface]
   field :id, field: GraphQL::Relay::GlobalIdField.new("Faction")
   field :name, types.String
   connection :ships, Ship.connection_type do
@@ -114,7 +118,7 @@ QueryType = GraphQL::ObjectType.define do
     resolve -> (obj, args, ctx) { STAR_WARS_DATA["Faction"]["2"]}
   end
 
-  field :node, field: NodeField
+  field :node, field: NodeIdentification.field
 end
 
 MutationType = GraphQL::ObjectType.define do

@@ -25,7 +25,7 @@ describe GraphQL::Relay::Mutation do
         "clientMutationId" => "1234",
         "ship" => {
           "name" => "Bagel",
-          "id" => GraphQL::Relay::Node.to_global_id("Ship", "9"),
+          "id" => NodeIdentification.to_global_id("Ship", "9"),
         },
         "faction" => {"name" => STAR_WARS_DATA["Faction"]["1"].name }
       }

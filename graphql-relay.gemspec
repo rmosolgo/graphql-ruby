@@ -17,7 +17,7 @@ Gem::Specification.new do |s|
   s.files = Dir["{lib}/**/*", "MIT-LICENSE", "readme.md"]
   s.test_files = Dir["spec/**/*"]
 
-  s.add_runtime_dependency "graphql", "~> 0.6"
+  s.add_runtime_dependency "graphql", "~> 0.8"
 
   s.add_development_dependency "activerecord"
   s.add_development_dependency "codeclimate-test-reporter", '~>0.4'

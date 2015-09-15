@@ -38,4 +38,14 @@ class GraphQL::DefinitionHelpers::DefinedByConfig::DefinitionConfig
     name || raise("You must define the type's name before creating a GlobalIdField")
     field(field_name, field: GraphQL::Relay::GlobalIdField.new(name))
   end
+
+  # Support GlobalNodeIdentification
+  attr_accessor :object_from_id_proc, :type_from_object_proc
+  def object_from_id(proc)
+    @object_from_id_proc = proc
+  end
+
+  def type_from_object(proc)
+    @type_from_object_proc = proc
+  end
 end
