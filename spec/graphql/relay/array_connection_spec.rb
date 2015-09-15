@@ -27,6 +27,7 @@ describe GraphQL::Relay::ArrayConnection do
         }
       }
     |}
+
     it 'limits the result' do
       result = query(query_string, "first" => 2)
       number_of_ships = get_names(result).length
