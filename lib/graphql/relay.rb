@@ -2,7 +2,7 @@ require 'base64'
 require 'graphql'
 # MONKEY PATCHES 😬
 require 'graphql/relay/monkey_patches/definition_config'
-require 'graphql/relay/monkey_patches/object_type'
+require 'graphql/relay/monkey_patches/base_type'
 
 require 'graphql/relay/global_node_identification'
 require 'graphql/relay/page_info'
