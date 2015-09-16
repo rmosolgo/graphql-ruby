@@ -4,6 +4,14 @@
 
 ### New features
 
+### Bug fixes
+
+## 0.9.3 (15 Sept 2015)
+
+### Breaking changes & deprecations
+
+### New features
+
 - Add `Schema#execute` shorthand for running queries
 - Merge identical fields in fragments so they're only resolved once #34
 - An error during parsing raises `GraphQL::ParseError`  #33
@@ -12,8 +20,6 @@
 
 - Find nested input types in `TypeReducer` #35
 - Find variable usages inside fragments during static validation
-
-
 
 ## 0.9.2, 0.9.1 (10 Sept 2015)
 
