@@ -24,17 +24,17 @@ module GraphQL
         underlying_field.arguments = underlying_field.arguments.merge(DEFAULT_ARGUMENTS)
         # TODO: make a public API on GraphQL::Field to expose this proc
         original_resolve = underlying_field.instance_variable_get(:@resolve_proc)
-        underlying_field.resolve = get_connection_resolve(original_resolve)
+        underlying_field.resolve = get_connection_resolve(underlying_field.name, original_resolve)
         underlying_field
       end
 
       private
 
-      def self.get_connection_resolve(underlying_resolve)
+      def self.get_connection_resolve(field_name, underlying_resolve)
         -> (obj, args, ctx) {
           items = underlying_resolve.call(obj, args, ctx)
           if items == GraphQL::Query::DEFAULT_RESOLVE
-            items = obj.public_send(name)
+            items = obj.public_send(field_name)
           end
           connection_class = GraphQL::Relay::BaseConnection.connection_for_items(items)
           connection_class.new(items, args)

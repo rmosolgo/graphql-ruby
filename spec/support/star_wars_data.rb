@@ -37,7 +37,8 @@ rebels  = OpenStruct.new({
   id: '1',
   name: 'Alliance to Restore the Republic',
   ships:  ['1', '2', '3', '4', '5'],
-  bases: Base.where(faction_id: 1)
+  bases: Base.where(faction_id: 1),
+  basesClone: Base.where(faction_id: 1),
 })
 
 
@@ -45,7 +46,8 @@ empire = OpenStruct.new({
   id: '2',
   name: 'Galactic Empire',
   ships: ['6', '7', '8'],
-  bases: Base.where(faction_id: 2)
+  bases: Base.where(faction_id: 2),
+  basesClone: Base.where(faction_id: 2),
 })
 
 STAR_WARS_DATA = {

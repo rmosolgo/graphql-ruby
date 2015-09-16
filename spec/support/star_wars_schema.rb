@@ -74,7 +74,7 @@ Faction = GraphQL::ObjectType.define do
     argument :nameIncludes, types.String
   end
 
-  connection :noArgsBases, BaseConnection, property: :bases
+  connection :basesClone, BaseConnection
 end
 
 # Define a mutation. It will also:

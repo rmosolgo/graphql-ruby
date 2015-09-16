@@ -122,7 +122,7 @@ describe GraphQL::Relay::RelationConnection do
     let(:query_string) {%|
       {
         empire {
-          noArgsBases {
+          basesClone {
             edges {
               node {
                 name
@@ -133,7 +133,7 @@ describe GraphQL::Relay::RelationConnection do
     }|}
     it "uses default resolve" do
       result = query(query_string)
-      bases = result["data"]["empire"]["noArgsBases"]["edges"]
+      bases = result["data"]["empire"]["basesClone"]["edges"]
       assert_equal(3, bases.length)
     end
   end
