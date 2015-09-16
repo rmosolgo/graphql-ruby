@@ -12,8 +12,7 @@ describe GraphQL::InterfaceType do
   end
 
   describe 'query evaluation' do
-    let(:query) { GraphQL::Query.new(DummySchema, query_string, context: {}, variables: {"cheeseId" => 2})}
-    let(:result) { query.result }
+    let(:result) { DummySchema.execute(query_string, context: {}, variables: {"cheeseId" => 2})}
     let(:query_string) {%|
       query fav {
         favoriteEdible { fatContent }

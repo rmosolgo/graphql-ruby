@@ -7,8 +7,8 @@ At the simplest, you can evaluate a query from string against a schema:
 ```ruby
 # let's pretend it's a Rails controller!
 query_string = params[:query]
-query = GraphQL::Query.new(MySchema, query_string)
-render(json: query.result)
+result = MySchema.execute(query_string)
+render(json: result)
 ```
 
 ## Variables
@@ -17,8 +17,7 @@ If your query contains variables, you can provide their values with the `variabl
 
 ```ruby
 query_string = "query getPost($postId: !Int){ post(id: $postId) { title } }"
-query = GraphQL::Query.new(MySchema, query_string, variables: {"postId" => 2})
-query.result
+result = MySchema.execute(query_string, variables: {"postId" => 2})
 ```
 
 `variables` keys should be strings, whose names match the variables, without `$`.
@@ -28,8 +27,7 @@ query.result
 You can pass an arbitrary hash of information into the query with the `context:` keyword.
 
 ```ruby
-query = GraphQL::Query.new(MySchema, query_string, context: {current_user: current_user})
-query.result
+result = MySchema.execute(query_string, context: {current_user: current_user})
 ```
 
 These values will be accessible by key inside `resolve` functions. For example, this field only returns a value if the current user has high enough permissions:
@@ -49,8 +47,7 @@ Note that `ctx` is not the _same_ hash that's passed to `GraphQL::Query.new`. `c
 If your query contains multiple operations, you _must_ pass the operation name with the `operation_name:` keyword:
 
 ```ruby
-query = GraphQL::Query.new(MySchema, query_string, context: {operation_name: "getPersonInfo"})
-query.result
+result = MySchema.execute(query_string, context: {operation_name: "getPersonInfo"})
 ```
 
 If you don't, you'll get an error.
@@ -60,8 +57,7 @@ If you don't, you'll get an error.
 By default, `GraphQL::Query` rescues any error during execution and puts it in the response's `"errors"` key. You can disable this with `debug: true`, which will cause any error to be raised.
 
 ```ruby
-query = GraphQL::Query.new(MySchema, query_string, debug: false)
-query.result
+result = MySchema.execute(query_string, debug: true)
 ```
 
 ## Validation
@@ -69,8 +65,7 @@ query.result
 By default, `GraphQL::Query` performs validation on incoming query strings. If you want to disable this, pass `validate: false`. No guarantees it won't blow up :)
 
 ```ruby
-query = GraphQL::Query.new(MySchema, query_string, validate: false)
-query.result
+result = MySchema.execute(query_string, validate: false)
 ```
 
 ## Custom Execution Strategies
@@ -81,8 +76,8 @@ Then, set your schema to use your custom execution strategy with `#mutation_exec
 
 For example:
 
-```
-class CustomQueryStrategy
+```ruby
+class CustomQueryExecutionStrategy
   def initialize
     # ...
   end
@@ -96,5 +91,5 @@ end
 
 MySchema = GraphQL::Schema.new(query: MyQueryType, mutation: MyMutationType)
 # Use your custom strategy:
-MySchema.query_execution_strategy = CustomQueryStrategy
+MySchema.query_execution_strategy = CustomQueryExecutionStrategy
 ```

@@ -63,8 +63,7 @@ See also:
 Execute GraphQL queries on a given schema, from a query string.
 
 ```ruby
-query = GraphQL::Query.new(Schema, query_string)
-result_hash = query.result
+result_hash = Schema.execute(query_string)
 # {
 #   "data" => {
 #     "post" => {
@@ -80,7 +79,6 @@ See also:
   -  [`queries_controller.rb`](https://github.com/rmosolgo/graphql-ruby-demo/blob/master/app/controllers/queries_controller.rb) for a Rails example
   - Try it on [heroku](http://graphql-ruby-demo.herokuapp.com)
 
-
 #### Use with Relay
 
 If you're building a backend for [Relay](http://facebook.github.io/relay/), you'll need:
@@ -91,9 +89,6 @@ If you're building a backend for [Relay](http://facebook.github.io/relay/), you'
 
 ## To Do
 
-- Field merging
-  - if you were to request a field, then request it in a fragment, it would get looked up twice
-  - https://github.com/graphql/graphql-js/issues/19#issuecomment-118515077
 - Code clean-up
   - Raise if you try to configure an attribute which doesn't suit the type
     - ie, if you try to define `resolve` on an ObjectType, it should somehow raise
@@ -101,6 +96,7 @@ If you're building a backend for [Relay](http://facebook.github.io/relay/), you'
   - Write Ruby bindings for [libgraphqlparser](https://github.com/graphql/libgraphqlparser) and use that instead of Parslet
   - Add instrumentation
     - Some way to expose what queries are run, what types & fields are accessed, how long things are taking, etc
+    - before-hooks for every field?
 
 
 ## Goals

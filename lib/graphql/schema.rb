@@ -21,9 +21,17 @@ class GraphQL::Schema
   end
 
   # A `{ name => type }` hash of types in this schema
-  # @returns Hash
+  # @return [Hash]
   def types
     @types ||= TypeReducer.find_all([query, mutation, GraphQL::Introspection::SchemaType].compact)
+  end
+
+  # Execute a query on itself.
+  # See {Query#initialize} for arguments.
+  # @return [Hash] query result, ready to be serialized as JSON
+  def execute(*args)
+    query = GraphQL::Query.new(self, *args)
+    query.result
   end
 
   # Resolve field named `field_name` for type `parent_type`.

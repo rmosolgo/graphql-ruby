@@ -10,7 +10,7 @@ describe GraphQL::Introspection::TypeType do
        animalProduct: __type(name: "AnimalProduct") { name, kind, possibleTypes { name }, fields { name } }
      }
   |}
-  let(:query) { GraphQL::Query.new(DummySchema, query_string, context: {}, variables: {"cheeseId" => 2})}
+  let(:result) { DummySchema.execute(query_string, context: {}, variables: {"cheeseId" => 2}) }
   let(:cheese_fields) {[
     {"name"=>"id",          "isDeprecated" => false, "type" => { "name" => "Non-Null", "ofType" => { "name" => "Int"}}},
     {"name"=>"flavor",      "isDeprecated" => false, "type" => { "name" => "Non-Null", "ofType" => { "name" => "String"}}},
@@ -61,7 +61,7 @@ describe GraphQL::Introspection::TypeType do
         ]
       }
     }}
-    assert_equal(expected, query.result)
+    assert_equal(expected, result)
   end
 
   describe 'deprecated fields' do
@@ -86,7 +86,7 @@ describe GraphQL::Introspection::TypeType do
           "enumValues"=> dairy_animals + [{"name" => "YAK", "isDeprecated" => true}],
         },
       }}
-      assert_equal(expected, query.result)
+      assert_equal(expected, result)
     end
 
     describe 'input objects' do
@@ -108,7 +108,7 @@ describe GraphQL::Introspection::TypeType do
               ]
             }
           }}
-        assert_equal(expected, query.result)
+        assert_equal(expected, result)
       end
     end
   end

@@ -8,7 +8,7 @@ describe GraphQL::Introspection::DirectiveType do
       }
     }
   |}
-  let(:result) { GraphQL::Query.new(DummySchema, query_string).result }
+  let(:result) { DummySchema.execute(query_string) }
 
   it 'shows directive info ' do
     expected = { "data" => {

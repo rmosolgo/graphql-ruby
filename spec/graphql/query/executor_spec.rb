@@ -5,14 +5,12 @@ describe GraphQL::Query::Executor do
   let(:operation_name) { nil }
   let(:schema) { DummySchema }
   let(:variables) { {"cheeseId" => 2} }
-  let(:query) { GraphQL::Query.new(
-    schema,
+  let(:result) { schema.execute(
     query_string,
     variables: variables,
     debug: debug,
     operation_name: operation_name,
   )}
-  let(:result) { query.result }
 
   describe "multiple operations" do
     let(:query_string) { %|

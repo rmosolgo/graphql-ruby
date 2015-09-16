@@ -31,6 +31,7 @@ class GraphQL::Field
   DEFAULT_RESOLVE = -> (o, a, c) { GraphQL::Query::DEFAULT_RESOLVE }
   include GraphQL::DefinitionHelpers::DefinedByConfig
   attr_accessor :arguments, :deprecation_reason, :name, :description, :type
+  attr_reader :resolve_proc
   defined_by_config :arguments, :deprecation_reason, :name, :description, :type, :resolve
 
   def initialize

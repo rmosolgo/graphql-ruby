@@ -4,13 +4,14 @@
 
 ### New features
 
+- Add `Schema#execute` shorthand for running queries
 - Merge identical fields in fragments so they're only resolved once #34
 - An error during parsing raises `GraphQL::ParseError`  #33
 
 ### Bug fixes
 
 - Find nested input types in `TypeReducer` #35
-- Find variable usages inside fragments during static validation 
+- Find variable usages inside fragments during static validation
 
 
 
