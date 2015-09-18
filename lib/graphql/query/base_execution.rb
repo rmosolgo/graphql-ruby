@@ -1,4 +1,3 @@
-require 'graphql/query/base_execution/selected_object_resolution'
 require 'graphql/query/base_execution/value_resolution'
 
 module GraphQL

@@ -1,11 +1,15 @@
 module GraphQL
   class Query
     class SerialExecution
-      class FieldResolution < GraphQL::Query::BaseExecution::SelectedObjectResolution
-        attr_reader :field, :arguments
+      class FieldResolution
+        attr_reader :ast_node, :parent_type, :target, :query, :execution_strategy, :field, :arguments
 
         def initialize(ast_node, parent_type, target, query, execution_strategy)
-          super
+          @ast_node = ast_node
+          @parent_type = parent_type
+          @target = target
+          @query = query
+          @execution_strategy = execution_strategy
           @field = query.schema.get_field(parent_type, ast_node.name) || raise("No field found on #{parent_type.name} '#{parent_type}' for '#{ast_node.name}'")
           @arguments = GraphQL::Query::Arguments.new(ast_node.arguments, field.arguments, query.variables)
         end
