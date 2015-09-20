@@ -23,6 +23,7 @@ describe GraphQL::Introspection::SchemaType do
             {"name"=>"dairy"},
             {"name"=>"fromSource"},
             {"name"=>"favoriteEdible"},
+            {"name"=>"cow"},
             {"name"=>"searchDairy"},
             {"name"=>"error"},
             {"name"=>"maybeNull"},

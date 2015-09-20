@@ -84,6 +84,20 @@ DairyProductUnion = GraphQL::UnionType.define do
   possible_types [MilkType, CheeseType]
 end
 
+CowType = GraphQL::ObjectType.define do
+  name 'Cow'
+  description 'A farm where milk is harvested and cheese is produced'
+  field :id, !types.ID
+  field :name, types.String
+  field :last_produced_dairy, DairyProductUnion
+end
+
+MaybeNullType = GraphQL::ObjectType.define do
+  name "MaybeNull"
+  description "An object whose fields return nil"
+  field :cheese, CheeseType
+end
+
 DairyProductInputType = GraphQL::InputObjectType.define {
   name "DairyProductInput"
   description "Properties for finding a dairy product"
@@ -142,6 +156,7 @@ QueryType = GraphQL::ObjectType.define do
   field :dairy, field: SingletonField.create(type: DairyType, data: DAIRY)
   field :fromSource, &SourceFieldDefn
   field :favoriteEdible, &FavoriteFieldDefn
+  field :cow, field: SingletonField.create(type: CowType, data: COW)
   field :searchDairy do
     description "Find dairy products matching a description"
     type !DairyProductUnion
