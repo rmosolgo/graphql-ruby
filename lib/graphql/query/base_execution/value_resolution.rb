@@ -29,12 +29,15 @@ module GraphQL
         end
 
         class ScalarResolution < BaseResolution
+          # Apply the scalar's defined `coerce` method to the value
           def result
             field_type.coerce(value)
           end
         end
 
         class ListResolution < BaseResolution
+          # For each item in the list,
+          # Resolve it with the "wrapped" type of this list
           def result
             wrapped_type = field_type.of_type
             value.map do |item|
@@ -47,6 +50,7 @@ module GraphQL
         end
 
         class ObjectResolution < BaseResolution
+          # Resolve the selections on this object
           def result
             resolver = execution_strategy.selection_resolution.new(value, field_type, ast_field.selections, query, execution_strategy)
             resolver.result
@@ -54,12 +58,14 @@ module GraphQL
         end
 
         class EnumResolution < BaseResolution
+          # Get the string name for this enum value
           def result
              value.to_s
           end
         end
 
         class NonNullResolution < BaseResolution
+          # Get the "wrapped" type and resolve the value according to that type
           def result
             wrapped_type = field_type.of_type
             resolved_type = wrapped_type.resolve_type(value)
