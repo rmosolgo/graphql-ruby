@@ -99,7 +99,14 @@ If you're building a backend for [Relay](http://facebook.github.io/relay/), you'
   - Add instrumentation
     - Some way to expose what queries are run, what types & fields are accessed, how long things are taking, etc
     - before-hooks for every field?
-
+  - Improve error handling
+    - Currently, the options are:
+      - `debug: false`, all errors are eaten and stringified in `response["errors"]`
+      - `debug: true`, then rescue errors yourself and build a response yourself
+    - Add an option that some fields can return errors with custom messages
+      - Like this: https://github.com/graphql/graphql-js/pull/178
+      - After a field returns an error, the executor could attach the location in the query string
+      - The result would have a `"data"` key _and_ an `"errors"` key (as in that PR and the [spec](http://facebook.github.io/graphql/#sec-Response-Format))
 
 ## Goals
 
@@ -117,7 +124,7 @@ If you're building a backend for [Relay](http://facebook.github.io/relay/), you'
 ## Related Projects
 
 - `graphql-ruby` + Rails demo ([src](https://github.com/rmosolgo/graphql-ruby-demo) / [heroku](http://graphql-ruby-demo.herokuapp.com))
-- [`graphql-batch`](https://github.com/shopify/graphql-batch), an batched query execution strategy
+- [`graphql-batch`](https://github.com/shopify/graphql-batch), a batched query execution strategy
 - [`graphql-parallel`](https://github.com/rmosolgo/graphql-parallel), an asynchronous query execution strategy
 - [Example Relay support](https://github.com/rmosolgo/graphql-relay-ruby) in Ruby
 
