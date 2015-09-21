@@ -6,6 +6,8 @@
 [![Test Coverage](https://codeclimate.com/github/rmosolgo/graphql-ruby/badges/coverage.svg)](https://codeclimate.com/github/rmosolgo/graphql-ruby)
 [![built with love](https://cloud.githubusercontent.com/assets/2231765/6766607/d07992c6-cfc9-11e4-813f-d9240714dd50.png)](http://rmosolgo.github.io/react-badges/)
 
+A Ruby implementation of [GraphQL](http://graphql.org/).
+
  - [Introduction](https://github.com/rmosolgo/graphql-ruby/blob/master/guides/introduction.md)
  - [API Documentation](http://www.rubydoc.info/github/rmosolgo/graphql-ruby)
 
@@ -112,14 +114,12 @@ If you're building a backend for [Relay](http://facebook.github.io/relay/), you'
 - __Features & patches__ are welcome! Consider discussing it in an [issue](https://github.com/rmosolgo/graphql-ruby/issues) or in the [#ruby channel on Slack](https://graphql-slack.herokuapp.com/) to make sure we're on the same page.
 - __Run the tests__ with `rake test` or start up guard with `bundle exec guard`.
 
-## Other Resources
+## Related Projects
 
-- [GraphQL Spec](http://facebook.github.io/graphql/)
-- Other implementations: [graphql-links](https://github.com/emmenko/graphql-links)
 - `graphql-ruby` + Rails demo ([src](https://github.com/rmosolgo/graphql-ruby-demo) / [heroku](http://graphql-ruby-demo.herokuapp.com))
-- [GraphQL Slack](https://graphql-slack.herokuapp.com/)
-- [Example Relay support](https://github.com/rmosolgo/graphql-relay-ruby) in Ruby
+- [`graphql-batch`](https://github.com/shopify/graphql-batch), an batched query execution strategy
 - [`graphql-parallel`](https://github.com/rmosolgo/graphql-parallel), an asynchronous query execution strategy
+- [Example Relay support](https://github.com/rmosolgo/graphql-relay-ruby) in Ruby
 
 ## P.S.
 
