@@ -53,6 +53,10 @@ module GraphQL
       def resolve_type=(new_proc)
         @resolve_type_proc = new_proc || DEFAULT_RESOLVE_TYPE
       end
+
+      def include?(type)
+        possible_types.include?(type)
+      end
     end
 
     # Print the human-readable name of this type
