@@ -2,14 +2,39 @@
 
 ## Defining Types
 
-Use `GraphQL::ObjectType.define { ... }` to define types. Within the block, you can define a few properties:
+### Object Types
 
-- `name`
-- `description`
-- `interfaces` (accepts an array of `InterfaceType`s)
-- `field`, to define a field on this type
+Use `GraphQL::ObjectType.define { ... }` to define types. Within the block, you can:
 
-You also have access to the `types` object, which exposes built-in scalar types (`types.Boolean`, `types.Int`, `types.Float`, `types.String`, `types.ID`)
+- define properties: `name`, `description`, `interfaces`
+- define fields with the `field` helper
+- access the `types` object, which exposes built-in scalar types (`types.Boolean`, `types.Int`, `types.Float`, `types.String`, `types.ID`)
+
+For example:
+
+```ruby
+CityType = ObjectType.define do
+  name "City"
+  description "A large densely populated area"
+  interfaces [LocationInterface, NamedEntityInterface]
+
+  field :name, types.String, "The city's name"
+
+  # `!` marks this field as non-null:
+  field :population, !types.Int, "Number of people who live in this city"
+
+  # This returns a list of `PersonType`s
+  field :mayors, types[PersonType]
+
+  # Avoid the circular dependency by passing a proc
+  # The proc will be called later, returning `CityType`
+  field :sisterCity, -> { CityType }
+end
+```
+
+### Other Types
+
+See the test fixtures for an example: https://github.com/rmosolgo/graphql-ruby/blob/master/spec/support/dairy_app.rb
 
 ## Defining Fields
 
@@ -45,7 +70,6 @@ This field accepts an optional Boolean argument `moderated`, which it uses to fi
 If you want to send errors back in the response, you can return a `GraphQL::ExecutionError` from your field's `resolve` method. This will cause the message to be added to the response, along with the location of that field in the query string. Other fields can be resolved as normal.
 
 For example:
-
 
 ```ruby
 field :errorsIfNegative, types.Int, "Returns an error if the input is less than 0" do

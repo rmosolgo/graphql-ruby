@@ -147,14 +147,14 @@ describe GraphQL::Query do
     describe "whitespace-only" do
       let(:query_string) { " " }
       it "doesn't blow up" do
-        assert_equal({"data"=> {}}, result)
+        assert_equal({}, result)
       end
     end
 
     describe "empty string" do
       let(:query_string) { "" }
       it "doesn't blow up" do
-        assert_equal({"data"=> {}}, result)
+        assert_equal({}, result)
       end
     end
   end
