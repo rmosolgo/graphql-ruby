@@ -67,9 +67,41 @@ This field accepts an optional Boolean argument `moderated`, which it uses to fi
 
 ## Handling Errors
 
-If you want to send errors back in the response, you can return a `GraphQL::ExecutionError` from your field's `resolve` method. This will cause the message to be added to the response, along with the location of that field in the query string. Other fields can be resolved as normal.
+You can rescue errors in two ways:
 
-For example:
+- Set up handlers with `Schema#rescue_from`
+- Return `GraphQL::ExeceptionError`s from your fields
+
+In both cases, the message to be added to the response, along with the location of that field in the query string. Other fields can be resolved as normal.
+
+### Schema-level handlers
+
+To set up handlers, use `Schema#rescue_from`. The handler should return a string that will be inserted into the response. For example, you can set up a handler:
+
+```ruby
+MySchema.rescue_from(ActiveRecord::RecordInvalid) { "Some data could not be saved" }
+```
+
+Then, when a query is executed, that error is rescued and its message is added to the response:
+
+```ruby
+result = MySchema.execute(query_string)
+# {
+#   "data" => {
+#     # other fields may resolve successfully
+#   },
+#   "errors" => [
+#     {
+#       "message" => "Some data could not be saved",
+#       "locations" => [{"line" => 5, "column" => 10}]
+#      }
+#   ]
+# }
+```
+
+### Return errors from fields
+
+You can also return a `GraphQL::ExecutionError` from your field's `resolve` method. For example:
 
 ```ruby
 field :errorsIfNegative, types.Int, "Returns an error if the input is less than 0" do
