@@ -25,6 +25,10 @@ module GraphQL
         def get_finished_value(raw_value)
           if raw_value.nil?
             nil
+          elsif raw_value.is_a?(GraphQL::ExecutionError)
+            raw_value.ast_node = ast_node
+            query.context.errors << raw_value
+            nil
           else
             resolved_type = field.type.resolve_type(raw_value)
             strategy_class = GraphQL::Query::BaseExecution::ValueResolution.get_strategy_for_kind(resolved_type.kind)

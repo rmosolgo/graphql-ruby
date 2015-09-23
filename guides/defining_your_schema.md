@@ -1,6 +1,4 @@
-# Type & Field Helpers
-
-`graphql-ruby` includes some helpers to define valid types and fields, although they aren't required.
+# Defining Your Schema
 
 ## Defining Types
 
@@ -41,3 +39,42 @@ end
 ```
 
 This field accepts an optional Boolean argument `moderated`, which it uses to filter results in the `resolve` method.
+
+## Handling Errors
+
+If you want to send errors back in the response, you can return a `GraphQL::ExecutionError` from your field's `resolve` method. This will cause the message to be added to the response, along with the location of that field in the query string. Other fields can be resolved as normal.
+
+For example:
+
+
+```ruby
+field :errorsIfNegative, types.Int, "Returns an error if the input is less than 0" do
+  argument :number, types.Int
+  resolve -> (object, args, ctx) {
+    input = args[:number]
+    if input < 0
+      # Handle a special case by returning an error:
+      GraphQL::ExecutionError.new("'errorsIfNegative' Can't handle negative inputs")
+    else
+      input
+    end
+  }
+end
+```
+
+This will cause the `"errors"` key in the result to have that message:
+
+```ruby
+result = MySchema.execute(query_string)
+# {
+#   "data" => {
+#     # other fields may resolve successfully
+#   },
+#   "errors" => [
+#     {
+#       "message" => "'errorsIfNegative' Can't handle negative inputs",
+#       "locations" => [{"line" => 5, "column" => 10}]
+#      }
+#   ]  
+# }
+```

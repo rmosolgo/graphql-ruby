@@ -9,10 +9,14 @@ module GraphQL
       # @return [GraphQL::Language::Nodes::Field]
       attr_accessor :ast_node
 
+      # @return [Array<GraphQL::ExecutionError>] errors returned during execution
+      attr_reader :errors
+
       # Make a new context which delegates key lookup to `values`
       # @param [Hash] A hash of arbitrary values which will be accessible at query-time
       def initialize(values:)
         @values = values
+        @errors = []
       end
 
       # Lookup `key` from the hash passed to {Schema#execute} as `context`

@@ -39,7 +39,13 @@ CheeseType = GraphQL::ObjectType.define do
   field :similarCheese, -> { CheeseType }, "Cheeses like this one" do
     argument :source, !types[!DairyAnimalEnum]
     resolve -> (t, a, c) {
-      CHEESES.values.find { |c| c.source == a["source"] }
+      # get the strings out:
+      sources = a["source"].map(&:name)
+      if sources.include?("YAK")
+        GraphQL::ExecutionError.new("No cheeses are made from Yak milk!")
+      else
+        CHEESES.values.find { |c| sources.include?(c.source) }
+      end
     }
   end
 
