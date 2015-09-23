@@ -6,6 +6,18 @@
 
 ### Bug fixes
 
+## 0.9.4 (22 Sept 2015)
+
+### Breaking changes & deprecations
+
+### New features
+
+- Fields can return `GraphQL::ExecutionError`s to add errors to the response
+
+### Bug fixes
+
+- Fix resolution of union types in some queries #41
+
 ## 0.9.3 (15 Sept 2015)
 
 ### Breaking changes & deprecations
