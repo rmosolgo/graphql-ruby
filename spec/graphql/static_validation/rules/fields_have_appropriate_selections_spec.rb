@@ -3,7 +3,7 @@ require 'spec_helper'
 describe GraphQL::StaticValidation::FieldsHaveAppropriateSelections do
   let(:document) { GraphQL.parse("
     query getCheese {
-      okCheese: cheese(id: 1) { fatContent, similarCheeses(source: YAK) { source } }
+      okCheese: cheese(id: 1) { fatContent, similarCheese(source: YAK) { source } }
       missingFieldsCheese: cheese(id: 1)
       illegalSelectionCheese: cheese(id: 1) { id { something, ... someFields } }
     }

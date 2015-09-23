@@ -10,7 +10,7 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
     }
 
     fragment cheeseFields on Cheese {
-      similarCheeses(source: 4.5)
+      similarCheese(source: 4.5)
     }
   |)}
 
@@ -33,7 +33,7 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
     assert_includes(errors, input_object_error)
 
     fragment_error = {
-      "message"=>"Argument source on Field 'similarCheeses' has an invalid value",
+      "message"=>"Argument source on Field 'similarCheese' has an invalid value",
       "locations"=>[{"line"=>10, "column"=>7}]
     }
     assert_includes(errors, fragment_error)

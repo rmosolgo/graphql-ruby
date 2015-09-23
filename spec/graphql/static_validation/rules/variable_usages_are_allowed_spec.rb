@@ -16,9 +16,9 @@ describe GraphQL::StaticValidation::VariableUsagesAreAllowed do
       badCheese:    cheese(id: $badInt)   { source }
       badStrCheese: cheese(id: $badStr)   { source }
       cheese(id: 1) {
-        similarCheeses(source: $goodAnimals)
-        other: similarCheeses(source: $badAnimals)
-        tooDeep: similarCheeses(source: $deepAnimals)
+        similarCheese(source: $goodAnimals)
+        other: similarCheese(source: $badAnimals)
+        tooDeep: similarCheese(source: $deepAnimals)
       }
 
       milk(id: 1) {
@@ -43,11 +43,11 @@ describe GraphQL::StaticValidation::VariableUsagesAreAllowed do
       },
       {
         "message"=>"Nullability mismatch on variable $badAnimals and argument source ([DairyAnimal]! / [DairyAnimal!]!)",
-        "locations"=>[{"line"=>17, "column"=>31}]
+        "locations"=>[{"line"=>17, "column"=>30}]
       },
       {
         "message"=>"List dimension mismatch on variable $deepAnimals and argument source ([[DairyAnimal!]!]! / [DairyAnimal!]!)",
-        "locations"=>[{"line"=>18, "column"=>33}]
+        "locations"=>[{"line"=>18, "column"=>32}]
       }
     ]
     assert_equal(expected, errors)

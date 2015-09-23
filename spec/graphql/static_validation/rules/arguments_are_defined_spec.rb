@@ -8,7 +8,7 @@ describe GraphQL::StaticValidation::ArgumentsAreDefined do
     }
 
     fragment cheeseFields on Cheese {
-      similarCheeses(source: SHEEP, nonsense: 1)
+      similarCheese(source: SHEEP, nonsense: 1)
       id @skip(something: 3.4)
     }
   ")}
@@ -26,7 +26,7 @@ describe GraphQL::StaticValidation::ArgumentsAreDefined do
     assert_includes(errors, query_root_error)
 
     fragment_error = {
-      "message"=>"Field 'similarCheeses' doesn't accept argument nonsense",
+      "message"=>"Field 'similarCheese' doesn't accept argument nonsense",
       "locations"=>[{"line"=>8, "column"=>7}]
     }
     assert_includes(errors, fragment_error)

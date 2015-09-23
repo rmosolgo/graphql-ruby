@@ -9,22 +9,22 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
         nickname: fatContent,
         fatContent
         differentLevel: fatContent
-        similarCheeses(source: $sourceVar)
+        similarCheese(source: $sourceVar)
 
-        similarCow: similarCheeses(source: COW) {
+        similarCow: similarCheese(source: COW) {
           similarCowSource: source,
           differentLevel: fatContent
         }
         ...cheeseFields
         ... on Cheese {
           fatContent: name
-          similarCheeses(source: SHEEP)
+          similarCheese(source: SHEEP)
         }
       }
     }
     fragment cheeseFields on Cheese {
       fatContent,
-      similarCow: similarCheeses(source: COW) { similarCowSource: id, id }
+      similarCow: similarCheese(source: COW) { similarCowSource: id, id }
       id @someFlag
     }
   ")}
@@ -39,7 +39,7 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
       "Field 'id' has a directive argument conflict: [] or [{}]?",              # not sure this is a great way to handle it but here we are!
       "Field 'nickname' has a field conflict: name or fatContent?",             # alias conflict in query
       "Field 'fatContent' has a field conflict: fatContent or name?",           # alias/name conflict in query and fragment
-      "Field 'similarCheeses' has an argument conflict: {\"source\":\"sourceVar\"} or {\"source\":\"SHEEP\"}?", # different arguments
+      "Field 'similarCheese' has an argument conflict: {\"source\":\"sourceVar\"} or {\"source\":\"SHEEP\"}?", # different arguments
       "Field 'similarCowSource' has a field conflict: source or id?",           # nested conflict
     ]
     assert_equal(expected_errors, error_messages)

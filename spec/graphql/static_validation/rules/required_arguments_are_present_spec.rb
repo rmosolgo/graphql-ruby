@@ -8,7 +8,7 @@ describe GraphQL::StaticValidation::RequiredArgumentsArePresent do
     }
 
     fragment cheeseFields on Cheese {
-      similarCheeses(id: 1)
+      similarCheese(id: 1)
       flavor @include(if: true)
       id @skip
     }
@@ -27,7 +27,7 @@ describe GraphQL::StaticValidation::RequiredArgumentsArePresent do
     assert_includes(errors, query_root_error)
 
     fragment_error = {
-      "message"=>"Field 'similarCheeses' is missing required arguments: source",
+      "message"=>"Field 'similarCheese' is missing required arguments: source",
       "locations"=>[{"line"=>8, "column"=>7}]
     }
     assert_includes(errors, fragment_error)

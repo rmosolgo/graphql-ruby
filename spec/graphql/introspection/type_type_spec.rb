@@ -15,7 +15,7 @@ describe GraphQL::Introspection::TypeType do
     {"name"=>"id",          "isDeprecated" => false, "type" => { "name" => "Non-Null", "ofType" => { "name" => "Int"}}},
     {"name"=>"flavor",      "isDeprecated" => false, "type" => { "name" => "Non-Null", "ofType" => { "name" => "String"}}},
     {"name"=>"source",      "isDeprecated" => false, "type" => { "name" => "Non-Null", "ofType" => { "name" => "DairyAnimal"}}},
-    {"name"=>"similarCheeses", "isDeprecated"=>false, "type"=>{"name"=>"Cheese", "ofType"=>nil}},
+    {"name"=>"similarCheese", "isDeprecated"=>false, "type"=>{"name"=>"Cheese", "ofType"=>nil}},
   ]}
 
   let(:dairy_animals) {[

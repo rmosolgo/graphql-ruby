@@ -63,7 +63,7 @@ describe GraphQL::Query do
           maybeNull {
             cheese {
               flavor,
-              similarCheeses(source: [SHEEP]) { flavor }
+              similarCheese(source: [SHEEP]) { flavor }
             }
           }
         }

@@ -36,9 +36,7 @@ CheeseType = GraphQL::ObjectType.define do
     description("Animal which produced the milk for this cheese")
   end
 
-  field :similarCheeses do
-    type -> { CheeseType }
-    description("Cheeses like this one")
+  field :similarCheese, -> { CheeseType }, "Cheeses like this one" do
     argument :source, !types[!DairyAnimalEnum]
     resolve -> (t, a, c) {
       CHEESES.values.find { |c| c.source == a["source"] }
@@ -207,7 +205,7 @@ MutationType = GraphQL::ObjectType.define do
     argument :input, !ReplaceValuesInputType
     resolve -> (o, args, ctx) {
       GLOBAL_VALUES.clear
-      GLOBAL_VALUES += args[:input][:values]
+      GLOBAL_VALUES.push(*args[:input][:values])
       GLOBAL_VALUES
     }
   end
