@@ -7,6 +7,7 @@ class GraphQL::Schema
   # Override these if you don't want the default executor:
   attr_accessor :query_execution_strategy, :mutation_execution_strategy
 
+  attr_reader :middleware
 
   # @param query [GraphQL::ObjectType]  the query root for the schema
   # @param mutation [GraphQL::ObjectType, nil] the mutation root for the schema
@@ -15,6 +16,7 @@ class GraphQL::Schema
     @mutation = mutation
     @directives = DIRECTIVES.reduce({}) { |m, d| m[d.name] = d; m }
     @static_validator = GraphQL::StaticValidation::Validator.new(schema: self)
+    @middleware = []
     # Default to the built-in execution strategy:
     self.query_execution_strategy = GraphQL::Query::SerialExecution
     self.mutation_execution_strategy = GraphQL::Query::SerialExecution
@@ -64,3 +66,4 @@ require 'graphql/schema/implementation_validator'
 require 'graphql/schema/type_reducer'
 require 'graphql/schema/type_map'
 require 'graphql/schema/type_validator'
+require 'graphql/schema/middleware_chain'
