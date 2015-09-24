@@ -89,3 +89,52 @@ result = MySchema.execute(query_string)
 #   ]
 # }
 ```
+
+
+## Middleware
+
+You can use _middleware_ to affect the evaluation of fields in your schema. They function like `before_action`s and `after_action`s in Rails controllers.
+
+A middleware is any object that responds to `#call(*args, next_middleware)`. Inside that method, it should either:
+
+- send `call` to the next middleware to continue the evaluation; or
+- return a value to end the evaluation early.
+
+Middlewares' `#call` is invoked with several arguments:
+
+- `parent_type` is the type whose field is being accessed
+- `parent_object` is the object being exposed by that type
+- `field_definition` is the definition for the field being accessed
+- `field_args` is the hash of arguments passed to the field
+- `query_context` is the context object passed throughout the query
+- `next_middleware` represents the execution chain. Call `#call` to continue evalution.
+
+Add a middleware to a schema by adding to the `#middleware` array.
+
+
+### Example: Authorization
+
+This middleware only continues evaluation if the `current_user` is permitted to read the target object:
+
+```ruby
+class AuthorizationMiddleware
+  def call(parent_type, parent_object, field_definition, field_args, query_context, next_middleware)
+    current_user = query_context[:current_user] # passed in when creating the query
+    if current_user && current_user.can_read?(parent_object)
+      # This user is authorized, so continue execution
+      next_middleware.call
+    else
+      # Silently halt execution
+      nil
+    end
+  end
+end
+```
+
+Then, add the middleware to your schema:
+
+```ruby
+MySchema.middleware << AuthorizationMiddleware.new
+```
+
+Now, all field access will be wrapped by that authorization routine.
