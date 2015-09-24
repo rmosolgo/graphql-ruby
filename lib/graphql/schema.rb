@@ -1,5 +1,7 @@
 # A GraphQL schema which may be queried with {GraphQL::Query}.
 class GraphQL::Schema
+  extend Forwardable
+
   DIRECTIVES = [GraphQL::Directive::SkipDirective, GraphQL::Directive::IncludeDirective]
   DYNAMIC_FIELDS = ["__type", "__typename", "__schema"]
 
@@ -7,6 +9,8 @@ class GraphQL::Schema
   # Override these if you don't want the default executor:
   attr_accessor :query_execution_strategy, :mutation_execution_strategy
 
+  # @return [Array<#call>] Middlewares suitable for MiddlewareChain, applied to fields during execution
+  attr_reader :middleware
 
   # @param query [GraphQL::ObjectType]  the query root for the schema
   # @param mutation [GraphQL::ObjectType, nil] the mutation root for the schema
@@ -15,13 +19,16 @@ class GraphQL::Schema
     @mutation = mutation
     @directives = DIRECTIVES.reduce({}) { |m, d| m[d.name] = d; m }
     @static_validator = GraphQL::StaticValidation::Validator.new(schema: self)
+    @rescue_middleware = GraphQL::Schema::RescueMiddleware.new
+    @middleware = [@rescue_middleware]
     # Default to the built-in execution strategy:
     self.query_execution_strategy = GraphQL::Query::SerialExecution
     self.mutation_execution_strategy = GraphQL::Query::SerialExecution
   end
 
-  # A `{ name => type }` hash of types in this schema
-  # @return [Hash]
+  def_delegators :@rescue_middleware, :rescue_from, :remove_handler
+
+  # @return [GraphQL::Schema::TypeMap] `{ name => type }` pairs of types in this schema
   def types
     @types ||= TypeReducer.find_all([query, mutation, GraphQL::Introspection::SchemaType].compact)
   end
@@ -61,6 +68,8 @@ end
 require 'graphql/schema/each_item_validator'
 require 'graphql/schema/field_validator'
 require 'graphql/schema/implementation_validator'
+require 'graphql/schema/middleware_chain'
+require 'graphql/schema/rescue_middleware'
 require 'graphql/schema/type_reducer'
 require 'graphql/schema/type_map'
 require 'graphql/schema/type_validator'

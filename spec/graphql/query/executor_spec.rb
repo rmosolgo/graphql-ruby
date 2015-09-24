@@ -131,5 +131,30 @@ describe GraphQL::Query::Executor do
         assert_raises(RuntimeError) { result }
       end
     end
+
+    describe "if the schema has a rescue handler" do
+      before do
+        schema.rescue_from(RuntimeError) { "Error was handled!" }
+      end
+
+      after do
+        # remove the handler from the middleware:
+        schema.remove_handler(RuntimeError)
+      end
+
+      it "adds to the errors key" do
+        expected = {
+          "data" => {"error" => nil},
+          "errors"=>[
+            {
+              "message"=>"Error was handled!",
+              "locations" => [{"line"=>1, "column"=>17}]
+            }
+          ]
+        }
+        assert_equal(expected, result)
+      end
+
+    end
   end
 end

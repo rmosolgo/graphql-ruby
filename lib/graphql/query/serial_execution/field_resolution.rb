@@ -22,6 +22,8 @@ module GraphQL
 
         private
 
+        # After getting the value from the field's resolve method,
+        # continue by "finishing" the value, eg. executing sub-fields or coercing values
         def get_finished_value(raw_value)
           if raw_value.nil?
             nil
@@ -38,20 +40,38 @@ module GraphQL
         end
 
 
+        # Get the result of:
+        # - Any middleware on this schema
+        # - The field's resolve method
         def get_raw_value
-          query.context.ast_node = ast_node
-          value = field.resolve(target, arguments, query.context)
-          query.context.ast_node = nil
+          steps = query.schema.middleware + [get_middleware_proc_from_field_resolve]
+          chain = GraphQL::Schema::MiddlewareChain.new(
+            steps: steps,
+            arguments: [parent_type, target, field, arguments, query.context]
+          )
+          chain.call
+        end
 
-          if value == GraphQL::Query::DEFAULT_RESOLVE
-            begin
-              value = target.public_send(ast_node.name)
-            rescue NoMethodError => err
-              raise("Couldn't resolve field '#{ast_node.name}' to #{target.class} '#{target}' (resulted in #{err})")
+
+        # Execute the field's resolve method
+        # then handle the DEFAULT_RESOLVE
+        # @return [Proc] suitable to be the last step in a middleware chain
+        def get_middleware_proc_from_field_resolve
+          -> (_parent_type, parent_object, field_definition, field_args, context, _next) {
+            context.ast_node = ast_node
+            value = field_definition.resolve(parent_object, field_args, context)
+            context.ast_node = nil
+
+            if value == GraphQL::Query::DEFAULT_RESOLVE
+              begin
+                value = target.public_send(ast_node.name)
+              rescue NoMethodError => err
+                raise("Couldn't resolve field '#{ast_node.name}' to #{parent_object.class} '#{parent_object}' (resulted in #{err})")
+              end
             end
-          end
 
-          value
+            value
+          }
         end
       end
     end

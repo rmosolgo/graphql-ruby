@@ -1,5 +1,7 @@
 require_relative './dairy_data'
 
+class NoSuchDairyError < StandardError; end
+
 EdibleInterface = GraphQL::InterfaceType.define do
   name "Edible"
   description "Something you can eat, yum"
@@ -42,7 +44,7 @@ CheeseType = GraphQL::ObjectType.define do
       # get the strings out:
       sources = a["source"].map(&:name)
       if sources.include?("YAK")
-        GraphQL::ExecutionError.new("No cheeses are made from Yak milk!")
+        raise NoSuchDairyError.new("No cheeses are made from Yak milk!")
       else
         CHEESES.values.find { |c| sources.include?(c.source) }
       end
@@ -218,3 +220,4 @@ MutationType = GraphQL::ObjectType.define do
 end
 
 DummySchema = GraphQL::Schema.new(query: QueryType, mutation: MutationType)
+DummySchema.rescue_from(NoSuchDairyError) { |err| err.message  }

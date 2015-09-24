@@ -4,6 +4,9 @@
 
 ### New features
 
+- Add `Schema#middleware` to wrap field access
+- Add `RescueMiddleware` to handle errors during field execution
+
 ### Bug fixes
 
 ## 0.9.4 (22 Sept 2015)

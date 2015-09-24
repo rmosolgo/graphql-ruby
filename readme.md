@@ -97,9 +97,6 @@ If you're building a backend for [Relay](http://facebook.github.io/relay/), you'
   - Incoming enums should be exposed as `EnumValue`s, not `Nodes::Enum`s
 - Big ideas:
   - Use [graphql-parser](https://github.com/shopify/graphql-parser) (Ruby bindings for [libgraphqlparser](https://github.com/graphql/libgraphqlparser)) instead of Parslet
-  - Add instrumentation
-    - Some way to expose what queries are run, what types & fields are accessed, how long things are taking, etc
-    - before-hooks for every field?
 
 ## Goals
 
