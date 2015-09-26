@@ -159,5 +159,5 @@ p JSON.dump(result_hash)
 
 Read more in some other guides:
 
-- [Type & Field Helpers](http://www.rubydoc.info/github/rmosolgo/graphql-ruby/file/guides/type_and_field_helpers.md)
+- [Defining Your Schema](http://www.rubydoc.info/github/rmosolgo/graphql-ruby/file/guides/defining_your_schema.md)
 - [Executing Queries](http://www.rubydoc.info/github/rmosolgo/graphql-ruby/file/guides/executing_queries.md)
