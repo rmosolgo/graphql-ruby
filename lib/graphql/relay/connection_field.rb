@@ -1,5 +1,11 @@
 module GraphQL
   module Relay
+    # Provided a GraphQL field which returns a collection of items,
+    # `ConnectionField.create` modifies that field to expose those items
+    # as a collection.
+    #
+    # The original resolve proc is used to fetch items,
+    # then a connection implementation is fetched with {BaseConnection.connection_for_items}.
     class ConnectionField
       ARGUMENT_DEFINITIONS = [
           [:first, GraphQL::INT_TYPE],
@@ -20,6 +26,8 @@ module GraphQL
       # Turn A GraphQL::Field into a connection by:
       # - Merging in the default arguments
       # - Transforming its resolve function to return a connection object
+      # @param [GraphQL::Field] A field which returns items to be wrapped as a connection
+      # @return [GraphQL::Field] A field which serves a connections
       def self.create(underlying_field)
         underlying_field.arguments = underlying_field.arguments.merge(DEFAULT_ARGUMENTS)
         # TODO: make a public API on GraphQL::Field to expose this proc
@@ -30,6 +38,9 @@ module GraphQL
 
       private
 
+      # Wrap the original resolve proc
+      # so you capture its value, then wrap it in a
+      # connection implementation
       def self.get_connection_resolve(field_name, underlying_resolve)
         -> (obj, args, ctx) {
           items = underlying_resolve.call(obj, args, ctx)
