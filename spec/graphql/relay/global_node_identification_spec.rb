@@ -4,12 +4,34 @@ describe GraphQL::Relay::GlobalNodeIdentification do
   let(:node_identification) { NodeIdentification }
   describe 'NodeField' do
     it 'finds objects by id' do
-      global_id = node_identification.to_global_id("Ship", "1")
-      result = query(%|{node(id: "#{global_id}") { id, ... on Ship { name } }}|)
+      global_id = node_identification.to_global_id("Faction", "1")
+      result = query(%|{
+        node(id: "#{global_id}") {
+          id,
+          ... on Faction {
+            name
+            ships(first: 1) {
+              edges {
+               node {
+                 name
+                 }
+              }
+            }
+          }
+        }
+      }|)
       expected = {"data" => {
-        "node" => {
-          "id" =>   global_id,
-          "name" => "X-Wing"
+        "node"=>{
+          "id"=>"RmFjdGlvbi0x",
+          "name"=>"Alliance to Restore the Republic",
+          "ships"=>{
+            "edges"=>[
+              {"node"=>{
+                  "name" => "X-Wing"
+                }
+              }
+            ]
+          }
         }
       }}
       assert_equal(expected, result)

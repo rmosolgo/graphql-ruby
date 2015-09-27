@@ -72,8 +72,12 @@ describe GraphQL::Relay::RelationConnection do
       result = query(query_string, "after" => last_cursor, "first" => 2)
       assert_equal(["Headquarters"], get_names(result))
 
+      last_cursor = get_last_cursor(result)
+      result = query(query_string, "before" => last_cursor, "last" => 1)
+      assert_equal(["Shield Generator"], get_names(result))
+
       result = query(query_string, "before" => last_cursor, "last" => 2)
-      assert_equal(["Death Star"], get_names(result))
+      assert_equal(["Death Star", "Shield Generator"], get_names(result))
     end
 
     it 'paginates with order' do

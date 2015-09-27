@@ -19,7 +19,7 @@ module GraphQL
         @paged_nodes = begin
           items = sliced_nodes
           first && items = items.first(first)
-          last && items.length > last && items.last(last)
+          last && items.length > last && items = items.last(last)
           items
         end
       end

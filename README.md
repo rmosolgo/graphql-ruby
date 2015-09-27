@@ -44,6 +44,8 @@ Examples:
 
 You can also add custom fields to connection objects: [Example](https://github.com/rmosolgo/graphql-relay-ruby/blob/master/spec/support/star_wars_schema.rb#L36-L43)
 
+At runtime, `graphql-relay` chooses a connection implementation to expose a collection. `graphql-relay` provides `ArrayConnection` and `RelationConnection`, but you can also provide your own with `BaseConnection.register_connection_implementation`.
+
 ### Mutations
 
 Mutations allow Relay to mutate your system. When you define a mutation, you'll be defining:
@@ -71,6 +73,7 @@ Examples:
 ## Todo
 
 - Show how to replace default connection implementations with custom ones
+- Show how to wrap a simple field in a connection field with `ConnectionField.create`
 
 ## More Resources
 
