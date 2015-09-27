@@ -1,8 +1,5 @@
 class GraphQL::DefinitionHelpers::DefinedByConfig::DefinitionConfig
   # Wraps a field definition with a ConnectionField
-  # - applies default fields
-  # - wraps the resolve proc to make a connection
-  #
   def connection(name, type = nil, desc = nil, property: nil, &block)
     underlying_field = field(name, type, desc, property: property, &block)
     connection_field = GraphQL::Relay::ConnectionField.create(underlying_field)

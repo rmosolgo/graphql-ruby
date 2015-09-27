@@ -31,7 +31,10 @@ module GraphQL
         connection_type
       end
 
-      # @return [subclass of BaseConnection] a connection wrapping `items`
+      # Find a connection implementation suitable for exposing `items`
+      #
+      # @param [Object] A collection of items (eg, Array, AR::Relation)
+      # @return [subclass of BaseConnection] a connection Class for wrapping `items`
       def self.connection_for_items(items)
         implementation = CONNECTION_IMPLEMENTATIONS.find do |items_class, connection_class|
           items.is_a?(items_class)
@@ -45,6 +48,8 @@ module GraphQL
 
       # Add `connection_class` as the connection wrapper for `items_class`
       # eg, `RelationConnection` is the implementation for `AR::Relation`
+      # @param [Class] A class representing a collection (eg, Array, AR::Relation)
+      # @param [Class] A class implementing Connection methods
       def self.register_connection_implementation(items_class, connection_class)
         CONNECTION_IMPLEMENTATIONS[items_class] = connection_class
       end
@@ -59,6 +64,16 @@ module GraphQL
       # Provide easy access to provided arguments:
       METHODS_FROM_ARGUMENTS = [:first, :after, :last, :before, :order]
 
+      # @!method first
+      #   The value passed as `first:`, if there was one
+      # @!method after
+      #   The value passed as `after:`, if there was one
+      # @!method last
+      #   The value passed as `last:`, if there was one
+      # @!method before
+      #   The value passed as `before:`, if there was one
+      # @!method order
+      #   The value passed as `order:`, if there was one
       METHODS_FROM_ARGUMENTS.each do |arg_name|
         define_method(arg_name) do
           arguments[arg_name]
@@ -93,11 +108,11 @@ module GraphQL
       private
 
       def paged_nodes
-        raise NotImplementedError, "must items for this connection after paging"
+        raise NotImplementedError, "must return items for this connection after paging"
       end
 
       def sliced_nodes
-        raise NotImplementedError, "must all items for this connection after chopping off first and last"
+        raise NotImplementedError, "must return  all items for this connection after chopping off first and last"
       end
     end
   end

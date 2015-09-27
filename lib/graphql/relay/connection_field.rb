@@ -18,7 +18,7 @@ module GraphQL
       end
 
       # Turn A GraphQL::Field into a connection by:
-      # - Merging in the default argument
+      # - Merging in the default arguments
       # - Transforming its resolve function to return a connection object
       def self.create(underlying_field)
         underlying_field.arguments = underlying_field.arguments.merge(DEFAULT_ARGUMENTS)
