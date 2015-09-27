@@ -77,12 +77,12 @@ module GraphQL
 
       # Used by `pageInfo`
       def has_next_page
-        first && sliced_nodes.count > first
+        !!(first && sliced_nodes.count > first)
       end
 
       # Used by `pageInfo`
       def has_previous_page
-        last && sliced_nodes.count > last
+        !!(last && sliced_nodes.count > last)
       end
 
       # An opaque operation which returns a connection-specific cursor.

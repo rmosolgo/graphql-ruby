@@ -11,7 +11,6 @@ module GraphQL
         @order ||= (super || "id")
       end
 
-
       private
 
       # apply first / last limit results
@@ -19,7 +18,7 @@ module GraphQL
         @paged_nodes = begin
           items = sliced_nodes
           first && items = items.first(first)
-          last && items.length > last && items = items.last(last)
+          last && items.count > last && items = items.last(last)
           items
         end
       end
@@ -71,6 +70,8 @@ module GraphQL
         ["#{name} #{direction_marker} ?", value]
       end
     end
+
+
     if defined?(ActiveRecord)
       BaseConnection.register_connection_implementation(ActiveRecord::Relation, RelationConnection)
     end
