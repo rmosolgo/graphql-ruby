@@ -72,8 +72,10 @@ Examples:
 
 ## Todo
 
-- Show how to replace default connection implementations with custom ones
 - Show how to wrap a simple field in a connection field with `ConnectionField.create`
+- Add a `max_page_size` config for connections?
+- Refactor some RelationConnection issues:
+  - fix [unbounded count in page info](https://github.com/rmosolgo/graphql-relay-ruby/blob/88b3d94f75a6dd4c8b2604743108db31f66f8dcc/lib/graphql/relay/base_connection.rb#L79-L86), [details](https://github.com/rmosolgo/graphql-relay-ruby/issues/1)
 
 ## More Resources
 
