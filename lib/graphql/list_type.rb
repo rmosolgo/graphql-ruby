@@ -12,4 +12,8 @@ class GraphQL::ListType < GraphQL::BaseType
   def kind
     GraphQL::TypeKinds::LIST
   end
+
+  def to_s
+    "[#{of_type.to_s}]"
+  end
 end
