@@ -55,6 +55,7 @@ require 'graphql/introspection'
 require 'graphql/language'
 require 'graphql/directive'
 require 'graphql/schema'
+require 'graphql/schema/printer'
 
 # Order does not matter for these:
 

@@ -59,25 +59,11 @@ module GraphQL
       end
     end
 
-    # Print the human-readable name of this type
+    # Print the human-readable name of this type using the query-string naming pattern
     def to_s
-      Printer.instance.print(self)
+      name
     end
 
     alias :inspect :to_s
-
-    # Print a type, using the query-style naming pattern
-    class Printer
-      include Singleton
-      def print(type)
-        if type.kind.non_null?
-          "#{print(type.of_type)}!"
-        elsif type.kind.list?
-          "[#{print(type.of_type)}]"
-        else
-          type.name
-        end
-      end
-    end
   end
 end
