@@ -1,11 +1,14 @@
 # Changelog
 
+## 0.9.5 (1 Oct 2015)
+
 ### Breaking changes & deprecations
 
 ### New features
 
 - Add `Schema#middleware` to wrap field access
 - Add `RescueMiddleware` to handle errors during field execution
+- Add `Schema::Printer` for printing the schema definition #45
 
 ### Bug fixes
 
