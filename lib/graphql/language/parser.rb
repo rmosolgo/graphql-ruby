@@ -33,11 +33,11 @@ module GraphQL::Language
       selections.as(:selections)
     }
 
-    rule(:operation_definition) { (unnamed_selections | named_operation_definition) }
+    rule(:operation_definition) { (unnamed_selections | typed_operation_definition) }
     rule(:unnamed_selections) { selections.as(:unnamed_selections)}
-    rule(:named_operation_definition) {
+    rule(:typed_operation_definition) {
       operation_type.as(:operation_type) >> space? >>
-      name.as(:name) >> space? >>
+      name.as(:name).maybe >> space? >>
       operation_variable_definitions.maybe.as(:optional_variables).as(:variables) >> space? >>
       directives.maybe.as(:optional_directives).as(:directives) >> space? >>
       selections.as(:selections)
