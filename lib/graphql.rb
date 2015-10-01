@@ -1,6 +1,7 @@
 require "json"
 require "parslet"
 require "singleton"
+require "forwardable"
 
 module GraphQL
   class ParseError < StandardError

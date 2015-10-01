@@ -1,5 +1,3 @@
-require 'forwardable'
-
 # Provide read-only access to arguments by string or symbol names.
 class GraphQL::Query::Arguments
   extend Forwardable

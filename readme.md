@@ -95,6 +95,17 @@ If you're building a backend for [Relay](http://facebook.github.io/relay/), you'
   - Raise if you try to configure an attribute which doesn't suit the type
     - ie, if you try to define `resolve` on an ObjectType, it should somehow raise
   - Incoming enums should be exposed as `EnumValue`s, not `Nodes::Enum`s
+  - Overriding `!` on types breaks ActiveSupport `.blank?`
+
+    ```ruby
+    my_type = GraphQL::ObjectType.define { name("MyType") }
+    # => MyType
+    my_type.present?
+    # => MyType!!
+    my_type.blank?
+    # => MyType!
+    ```
+
 - Big ideas:
   - Use [graphql-parser](https://github.com/shopify/graphql-parser) (Ruby bindings for [libgraphqlparser](https://github.com/graphql/libgraphqlparser)) instead of Parslet
 
