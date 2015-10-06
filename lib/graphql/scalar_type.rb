@@ -1,6 +1,15 @@
 module GraphQL
   # The parent type for scalars, eg {GraphQL::STRING_TYPE}, {GraphQL::INT_TYPE}
   #
+  # @example defining a type for Time
+  #   TimeType = GraphQL::ObjectType.define do
+  #     name "Time"
+  #     description "Time since epoch in seconds"
+  #
+  #     coerce_input ->(value) { Time.at(Float(value)) }
+  #     coerce_result ->(value) { value.to_f }
+  #   end
+  #
   class ScalarType < GraphQL::BaseType
     defined_by_config :name, :coerce, :coerce_input, :coerce_result, :description
     attr_accessor :name, :description
