@@ -30,10 +30,11 @@ describe GraphQL::Query do
   |}
   let(:debug) { false }
   let(:operation_name) { nil }
+  let(:query_variables) { {"cheeseId" => 2} }
   let(:query) { GraphQL::Query.new(
     DummySchema,
     query_string,
-    variables: {"cheeseId" => 2},
+    variables: query_variables,
     debug: debug,
     operation_name: operation_name,
   )}
@@ -191,6 +192,30 @@ describe GraphQL::Query do
       it 'provides access to the AST node' do
         expected = {"data" => {"contextAstNodeName" => "GraphQL::Language::Nodes::Field"}}
         assert_equal(expected, query.result)
+      end
+    end
+  end
+
+  describe "query variables" do
+    let(:query_string) {%|
+      query getCheese($cheeseId: Int!){
+        cheese(id: $cheeseId) { flavor }
+      }
+    |}
+
+    describe "when they can be coerced" do
+      let(:query_variables) { {"cheeseId" => 2.0} }
+
+      it "coerces them on the way in" do
+        assert("Gouda", result["data"]["cheese"]["flavor"])
+      end
+    end
+
+    describe "when they can't be coerced" do
+      let(:query_variables) { {"cheeseId" => "2"} }
+
+      it "raises an error" do
+        assert(result["errors"][0]["message"].include?(%{Couldn't coerce "2" to Int}))
       end
     end
   end

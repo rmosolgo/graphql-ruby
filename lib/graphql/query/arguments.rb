@@ -11,8 +11,11 @@ class GraphQL::Query::Arguments
     end
   end
 
-  def_delegators :@hash, :keys, :values, :inspect, :to_h
+  def_delegators :@hash, :keys, :values, :inspect, :to_h, :key?, :has_key?
 
+  # Find an argument by name.
+  # (Coerce to strings because we use strings internally.)
+  # @param [String, Symbol] Argument name to access
   def [](key)
     @hash[key.to_s]
   end
@@ -21,9 +24,10 @@ class GraphQL::Query::Arguments
 
   def reduce_value(value, arg_defn, variables)
     if value.is_a?(GraphQL::Language::Nodes::VariableIdentifier)
-      value = variables[value.name]
+      raw_value = variables[value.name]
+      value = arg_defn.type.coerce!(raw_value)
     elsif value.is_a?(GraphQL::Language::Nodes::Enum)
-      value = arg_defn.type.coerce(value.name)
+      value = arg_defn.type.coerce!(value.name)
     elsif value.is_a?(GraphQL::Language::Nodes::InputObject)
       wrapped_type = arg_defn.type.unwrap
       value = self.class.new(value.pairs, wrapped_type.input_fields, variables)
