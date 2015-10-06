@@ -7,9 +7,9 @@ class GraphQL::StaticValidation::LiteralValidator
       item_type = type.of_type
       ast_value.all? { |val| validate(val, item_type) }
     elsif type.kind.scalar?
-      !type.coerce(ast_value).nil?
+      !type.coerce_input(ast_value).nil?
     elsif type.kind.enum? && ast_value.is_a?(GraphQL::Language::Nodes::Enum)
-      !type.coerce(ast_value.name).nil?
+      !type.coerce_input(ast_value.name).nil?
     elsif type.kind.input_object? && ast_value.is_a?(GraphQL::Language::Nodes::InputObject)
       fields = type.input_fields
       ast_value.pairs.all? do |value|

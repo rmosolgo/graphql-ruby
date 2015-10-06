@@ -25,9 +25,9 @@ class GraphQL::Query::Arguments
   def reduce_value(value, arg_defn, variables)
     if value.is_a?(GraphQL::Language::Nodes::VariableIdentifier)
       raw_value = variables[value.name]
-      value = arg_defn.type.coerce!(raw_value)
+      value = arg_defn.type.coerce_input!(raw_value)
     elsif value.is_a?(GraphQL::Language::Nodes::Enum)
-      value = arg_defn.type.coerce!(value.name)
+      value = arg_defn.type.coerce_input!(value.name)
     elsif value.is_a?(GraphQL::Language::Nodes::InputObject)
       wrapped_type = arg_defn.type.unwrap
       value = self.class.new(value.pairs, wrapped_type.input_fields, variables)

@@ -29,9 +29,9 @@ module GraphQL
         end
 
         class ScalarResolution < BaseResolution
-          # Apply the scalar's defined `coerce` method to the value
+          # Apply the scalar's defined `coerce_result` method to the value
           def result
-            field_type.coerce(value)
+            field_type.coerce_result(value)
           end
         end
 
@@ -60,7 +60,7 @@ module GraphQL
         class EnumResolution < BaseResolution
           # Get the string name for this enum value
           def result
-             value.to_s
+            field_type.coerce_result(value)
           end
         end
 

@@ -31,7 +31,9 @@ module GraphQL::DefinitionHelpers::DefinedByConfig
       :possible_types, # interface / union
       :default_value, # argument
       :on, # directive
-      :coerce #scalar
+      :coerce, #scalar
+      :coerce_input, #scalar
+      :coerce_result #scalar
 
     attr_reader :fields, :input_fields, :arguments, :values
 
@@ -41,7 +43,7 @@ module GraphQL::DefinitionHelpers::DefinedByConfig
       @on = []
       @fields = {}
       @arguments = {}
-      @values = {}
+      @values = []
       @input_fields = {}
     end
 
@@ -64,8 +66,7 @@ module GraphQL::DefinitionHelpers::DefinedByConfig
 
     # For EnumType
     def value(name, desc = nil, deprecation_reason: nil, value: name)
-      value = GraphQL::EnumType::EnumValue.new(name: name, description: description, deprecation_reason: deprecation_reason, value: value)
-      values[name] = value
+      values << GraphQL::EnumType::EnumValue.new(name: name, description: description, deprecation_reason: deprecation_reason, value: value)
     end
 
     # For InputObjectType
