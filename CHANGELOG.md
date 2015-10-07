@@ -1,5 +1,16 @@
 # Changelog
 
+### Breaking changes & deprecations
+
+### New features
+
+- Scalars can have distinct `coerce_input` and `coerce_result` methods #48
+
+### Bug fixes
+
+- Incoming values are coerced to their proper types before execution
+- Operation name is optional for single-query documents
+
 ## 0.9.5 (1 Oct 2015)
 
 ### Breaking changes & deprecations
