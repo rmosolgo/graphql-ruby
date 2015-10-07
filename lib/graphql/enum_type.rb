@@ -14,8 +14,17 @@ class GraphQL::EnumType < GraphQL::BaseType
   attr_accessor :name, :description, :values
   defined_by_config :name, :description, :values
 
+  def values=(values)
+    @values_by_name = {}
+    @values_by_value = {}
+    values.each do |enum_value|
+      @values_by_name[enum_value.name] = enum_value
+      @values_by_value[enum_value.value] = enum_value
+    end
+  end
+
   def values
-    @values ||= {}
+    @values_by_name
   end
 
   # Define a value within this enum
@@ -40,8 +49,12 @@ class GraphQL::EnumType < GraphQL::BaseType
   #
   # @param value_name [String] the string representation of this enum value
   # @return [Object] the underlying value for this enum value
-  def coerce(value_name)
-    values[value_name].value
+  def coerce_input(value_name)
+    @values_by_name.fetch(value_name).value
+  end
+
+  def coerce_result(value)
+    @values_by_value.fetch(value).name
   end
 
   def to_s
