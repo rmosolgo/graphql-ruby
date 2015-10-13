@@ -98,12 +98,6 @@ CowType = GraphQL::ObjectType.define do
   field :last_produced_dairy, DairyProductUnion
 end
 
-MaybeNullType = GraphQL::ObjectType.define do
-  name "MaybeNull"
-  description "An object whose fields return nil"
-  field :cheese, CheeseType
-end
-
 DairyProductInputType = GraphQL::InputObjectType.define {
   name "DairyProductInput"
   description "Properties for finding a dairy product"

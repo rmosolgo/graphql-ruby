@@ -1,8 +1,3 @@
-module GraphQL
-  module Language
-  end
-end
-
 require 'graphql/language/parser'
 require 'graphql/language/transform'
 require 'graphql/language/nodes'
