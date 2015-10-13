@@ -13,7 +13,7 @@ describe GraphQL::Query do
       }
       fromSource(source: COW) { id }
       fromSheep: fromSource(source: SHEEP) { id }
-      firstSheep: searchDairy(product: {source: SHEEP}) {
+      firstSheep: searchDairy(product: [{source: SHEEP}]) {
         __typename,
         ... dairyFields,
         ... milkFields

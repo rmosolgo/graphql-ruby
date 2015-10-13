@@ -42,7 +42,7 @@ CheeseType = GraphQL::ObjectType.define do
     argument :source, !types[!DairyAnimalEnum]
     resolve -> (t, a, c) {
       # get the strings out:
-      sources = a["source"].map(&:name)
+      sources = a["source"]
       if sources.include?("YAK")
         raise NoSuchDairyError.new("No cheeses are made from Yak milk!")
       else
@@ -160,10 +160,11 @@ QueryType = GraphQL::ObjectType.define do
   field :searchDairy do
     description "Find dairy products matching a description"
     type !DairyProductUnion
-    argument :product, DairyProductInputType
+    # This is a list just for testing 😬
+    argument :product, types[DairyProductInputType]
     resolve -> (t, a, c) {
       products = CHEESES.values + MILKS.values
-      source =  a["product"][:source] # String or sym is ok
+      source =  a["product"][0][:source] # String or Sym is ok
       if !source.nil?
         products = products.select { |p| p.source == source }
       end

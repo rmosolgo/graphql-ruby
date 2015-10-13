@@ -31,6 +31,8 @@ class GraphQL::Query::Arguments
     elsif value.is_a?(GraphQL::Language::Nodes::InputObject)
       wrapped_type = arg_defn.type.unwrap
       value = self.class.new(value.pairs, wrapped_type.input_fields, variables)
+    elsif value.is_a?(Array)
+      value.map { |item| reduce_value(item, arg_defn, variables) }
     else
       value
     end

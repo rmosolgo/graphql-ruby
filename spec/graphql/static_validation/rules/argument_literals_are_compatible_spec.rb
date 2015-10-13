@@ -5,8 +5,8 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
     query getCheese {
       cheese(id: "aasdlkfj") { source }
       cheese(id: 1) { source @skip(if: {id: 1})}
-      yakSource: searchDairy(product: {source: YAK, fatContent: 1.1}) { source }
-      badSource: searchDairy(product: {source: 1.1}) { source }
+      yakSource: searchDairy(product: [{source: YAK, fatContent: 1.1}]) { source }
+      badSource: searchDairy(product: [{source: 1.1}]) { source }
     }
 
     fragment cheeseFields on Cheese {
