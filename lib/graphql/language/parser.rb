@@ -49,7 +49,8 @@ module GraphQL
         value_variable.as(:variable_name) >> space? >>
         str(":") >> space? >>
         type.as(:variable_type) >> space? >>
-        (str("=") >> space? >> value.as(:variable_default_value)).maybe.as(:variable_optional_default_value)}
+        (str("=") >> space? >> value.as(:variable_default_value)).maybe.as(:variable_optional_default_value)
+      }
 
       rule(:selection) { (inline_fragment | fragment_spread | field) >> space? >> separator? }
       rule(:selections) { str("{") >> space? >> selection.repeat(1) >> space? >> str("}")}
@@ -110,7 +111,7 @@ module GraphQL
       rule(:value_enum) { name.as(:enum) }
       rule(:value_variable) { str("$") >> name.as(:variable) }
 
-      rule(:separator?) { (space? >> str(",") >> space?).maybe }
+      rule(:separator?) { space? >> str(",").maybe >> space? }
       rule(:name) { match('[_A-Za-z]') >> match('[_0-9A-Za-z]').repeat(0) }
       rule(:comment) { str("#") >> match('[^\r\n]').repeat(0) }
       rule(:space) { (match('[\s\n]+') | comment).repeat(1) }
