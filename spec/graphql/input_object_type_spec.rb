@@ -11,27 +11,46 @@ describe GraphQL::InputObjectType do
   end
 
   describe "when sent into a query" do
-    let(:query_string) {%|
-    {
-        sheep: searchDairy(product: [{source: SHEEP, fatContent: 0.1}]) {
-          ... cheeseFields
-        }
-        cow: searchDairy(product: [{source: COW}]) {
-          ... cheeseFields
-        }
-    }
+    let(:variables) { {} }
+    let(:result) { DummySchema.execute(query_string, variables: variables) }
 
-    fragment cheeseFields on Cheese {
-      flavor
-    }
-    |}
-    let(:result) { DummySchema.execute(query_string) }
+    describe "list inputs" do
+      let(:query_string) {%|
+        {
+            sheep: searchDairy(product: [{source: SHEEP, fatContent: 0.1}]) {
+              ... cheeseFields
+            }
+            cow: searchDairy(product: [{source: COW}]) {
+              ... cheeseFields
+            }
+        }
 
-    it "converts nested list values" do
-      sheep_value = result["data"]["sheep"]["flavor"]
-      cow_value = result["data"]["cow"]["flavor"]
-      assert_equal("Manchego", sheep_value)
-      assert_equal("Brie", cow_value)
+        fragment cheeseFields on Cheese {
+          flavor
+        }
+      |}
+
+      it "converts items to plain values" do
+        sheep_value = result["data"]["sheep"]["flavor"]
+        cow_value = result["data"]["cow"]["flavor"]
+        assert_equal("Manchego", sheep_value)
+        assert_equal("Brie", cow_value)
+      end
+    end
+
+    describe "scalar inputs" do
+      let(:query_string) {%|
+        {
+          cheese(id: 1.4) {
+            flavor
+          }
+        }
+      |}
+
+      it "converts them to the correct type" do
+        cheese_name = result["data"]["cheese"]["flavor"]
+        assert_equal("Brie", cheese_name)
+      end
     end
   end
 end

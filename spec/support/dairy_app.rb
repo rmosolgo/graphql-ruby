@@ -115,7 +115,11 @@ class FetchField
       description(desc)
       argument :id, id_type
 
-      resolve -> (t, a, c) { data[a["id"].to_i] }
+      resolve -> (t, a, c) {
+        id_string = a["id"].to_s # Cheese has Int type, Milk has ID type :(
+        id, item = data.find { |id, item| id.to_s == id_string }
+        item
+      }
     end
   end
 end

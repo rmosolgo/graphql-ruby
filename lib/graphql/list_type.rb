@@ -13,10 +13,6 @@ class GraphQL::ListType < GraphQL::BaseType
     GraphQL::TypeKinds::LIST
   end
 
-  def coerce_input(value)
-    of_type.coerce_input(value)
-  end
-
   def to_s
     "[#{of_type.to_s}]"
   end
