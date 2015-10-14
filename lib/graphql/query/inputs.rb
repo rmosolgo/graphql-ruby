@@ -15,10 +15,11 @@ module GraphQL
 
       def self.from_arguments(ast_arguments, argument_defns, variables)
         values_hash = {}
-        ast_arguments.each do |arg|
-          arg_defn = argument_defns[arg.name]
-          value = reduce_value(arg.value, arg_defn.type, variables)
-          values_hash[arg.name] = value
+        ast_arguments.each do |ast_arg|
+          arg_defn = argument_defns[ast_arg.name]
+          raw_value = resolve_argument_value(ast_arg, arg_defn, variables)
+          reduced_value = reduce_value(raw_value, arg_defn.type, variables)
+          values_hash[ast_arg.name] = reduced_value
         end
         self.new(values_hash, parent: variables)
       end
@@ -68,6 +69,24 @@ module GraphQL
         else
           raise "Unknown input #{value} of type #{type}"
         end
+      end
+
+      # Prefer values in this order:
+      # - Literal value from the query string
+      # - Variable value from query varibles
+      # - Default value from Argument definition
+      def self.resolve_argument_value(ast_arg, arg_defn, variables)
+        raw_value = ast_arg.value
+
+        if raw_value.is_a?(GraphQL::Language::Nodes::VariableIdentifier)
+          raw_value = variables[raw_value.name]
+        end
+
+        if raw_value.nil?
+          raw_value = arg_defn.default_value
+        end
+
+        raw_value
       end
     end
   end

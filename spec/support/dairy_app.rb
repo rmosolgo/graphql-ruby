@@ -163,7 +163,7 @@ QueryType = GraphQL::ObjectType.define do
     description "Find dairy products matching a description"
     type !DairyProductUnion
     # This is a list just for testing 😬
-    argument :product, types[DairyProductInputType]
+    argument :product, types[DairyProductInputType], default_value: [{"source" => "SHEEP"}]
     resolve -> (t, a, c) {
       products = CHEESES.values + MILKS.values
       source =  a["product"][0][:source] # String or Sym is ok

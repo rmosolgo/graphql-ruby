@@ -31,8 +31,9 @@ describe GraphQL::Query do
   let(:debug) { false }
   let(:operation_name) { nil }
   let(:query_variables) { {"cheeseId" => 2} }
+  let(:schema) { DummySchema }
   let(:query) { GraphQL::Query.new(
-    DummySchema,
+    schema,
     query_string,
     variables: query_variables,
     debug: debug,
@@ -157,6 +158,31 @@ describe GraphQL::Query do
       it "doesn't blow up" do
         assert_equal({}, result)
       end
+    end
+  end
+
+  describe "field argument default values" do
+    let(:query_string) {%|
+      query getCheeses($search: [DairyProductInput]){
+        noVariable: searchDairy(product: $search) {
+          ... on Cheese {
+            flavor
+          }
+        }
+        noArgument: searchDairy {
+          ... on Cheese {
+            flavor
+          }
+        }
+      }
+    |}
+
+    it "uses them when no argument is provided" do
+      default_source = schema.query.fields["searchDairy"].arguments["product"].default_value[0]["source"]
+      assert_equal("SHEEP", default_source)
+      pp result
+      assert_equal("Manchego", result["data"]["noVariable"]["flavor"])
+      assert_equal("Manchego", result["data"]["noArgument"]["flavor"])
     end
   end
 
