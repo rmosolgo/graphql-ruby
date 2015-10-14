@@ -164,11 +164,11 @@ QueryType = GraphQL::ObjectType.define do
     type !DairyProductUnion
     # This is a list just for testing 😬
     argument :product, types[DairyProductInputType], default_value: [{"source" => "SHEEP"}]
-    resolve -> (t, a, c) {
+    resolve -> (t, args, c) {
+      source = args["product"][0][:source] # String or Sym is ok
       products = CHEESES.values + MILKS.values
-      source =  a["product"][0][:source] # String or Sym is ok
       if !source.nil?
-        products = products.select { |p| p.source == source }
+        products = products.select { |pr| pr.source == source }
       end
       products.first
     }

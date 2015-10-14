@@ -177,12 +177,21 @@ describe GraphQL::Query do
       }
     |}
 
-    it "uses them when no argument is provided" do
+    it "has a default value" do
       default_source = schema.query.fields["searchDairy"].arguments["product"].default_value[0]["source"]
       assert_equal("SHEEP", default_source)
-      pp result
-      assert_equal("Manchego", result["data"]["noVariable"]["flavor"])
-      assert_equal("Manchego", result["data"]["noArgument"]["flavor"])
+    end
+
+    describe "when a variable is used, but not provided" do
+      it "uses the default_value" do
+        assert_equal("Manchego", result["data"]["noVariable"]["flavor"])
+      end
+    end
+
+    describe "when the argument isn't passed at all" do
+      it "uses the default value" do
+        assert_equal("Manchego", result["data"]["noArgument"]["flavor"])
+      end
     end
   end
 
