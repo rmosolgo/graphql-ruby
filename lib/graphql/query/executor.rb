@@ -7,7 +7,6 @@ module GraphQL
       # @return [String] the operation to run in {query}
       attr_reader :operation_name
 
-
       def initialize(query, operation_name)
         @query = query
         @operation_name = operation_name

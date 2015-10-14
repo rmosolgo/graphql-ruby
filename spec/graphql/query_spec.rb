@@ -182,5 +182,45 @@ describe GraphQL::Query do
         assert(result["errors"][0]["message"].include?(%{Couldn't coerce "2" to Int}))
       end
     end
+
+    describe "default values" do
+      let(:query_string) {%|
+        query getCheese($cheeseId: Int = 3){
+          cheese(id: $cheeseId) { id, flavor }
+        }
+      |}
+
+      describe "when no value is provided" do
+        let(:query_variables) { {} }
+        it "uses the default" do
+          assert(3, result["data"]["cheese"]["id"])
+          assert("Manchego", result["data"]["cheese"]["flavor"])
+        end
+      end
+
+      describe "when a value is provided" do
+        it "uses the provided variable" do
+          assert(2, result["data"]["cheese"]["id"])
+          assert("Gouda", result["data"]["cheese"]["flavor"])
+        end
+      end
+
+      describe "when complex values" do
+        let(:query_variables) { {"search" => [{"source" => "COW"}]} }
+        let(:query_string) {%|
+          query getCheeses($search: [DairyProductInput]!){
+              cow: searchDairy(product: $search) {
+                ... on Cheese {
+                  flavor
+                }
+              }
+          }
+        |}
+
+        it "coerces recursively" do
+          assert_equal("Brie", result["data"]["cow"]["flavor"])
+        end
+      end
+    end
   end
 end

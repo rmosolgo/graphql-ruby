@@ -10,12 +10,7 @@ module GraphQL
       end
 
       def [](key)
-        key_s = key.to_s
-        if @values.key?(key_s)
-          @values[key_s]
-        else
-          @parent[key_s]
-        end
+        @values.fetch(key.to_s) { |missing_key| @parent[missing_key] }
       end
 
       def self.from_arguments(ast_arguments, argument_defns, variables)
@@ -32,7 +27,7 @@ module GraphQL
         values_hash = {}
         ast_variables.each do |ast_variable|
           if !ast_variable.default_value.nil?
-            variable_type = schema.types[ast_variable.type]
+            variable_type = schema.types[ast_variable.type.name]
             reduced_value = reduce_value(ast_variable.default_value, variable_type)
             values_hash[ast_variable.name] = reduced_value
           end
@@ -42,13 +37,10 @@ module GraphQL
 
       private
 
-
       def self.reduce_value(value, type, variables = nil)
         if value.is_a?(GraphQL::Language::Nodes::VariableIdentifier)
           raw_value = variables[value.name]
           reduce_value(raw_value, type, variables)
-        elsif value.is_a?(GraphQL::Language::Nodes::Enum)
-          value = type.coerce_input!(value.name)
         elsif value.is_a?(GraphQL::Language::Nodes::InputObject)
           wrapped_type = type.unwrap
           value = self.from_arguments(value.pairs, wrapped_type.input_fields, variables)
@@ -58,6 +50,21 @@ module GraphQL
           reduce_value(value, type.of_type, variables)
         elsif type.kind.scalar?
           type.coerce_input!(value)
+        elsif type.kind.input_object? && value.is_a?(Hash)
+          input_values = {}
+          type.input_fields.each do |input_key, input_field_defn|
+            raw_value = value.fetch(input_key, input_field_defn.default_value)
+            reduced_value = reduce_value(raw_value, input_field_defn.type, variables)
+            input_values[input_key] = reduced_value
+          end
+          self.new(input_values, parent: {})
+        elsif type.kind.enum?
+          value_name = if value.is_a?(String)
+            value
+          else
+            value.name # it's a Nodes::Enum
+          end
+          type.coerce_input!(value_name)
         else
           raise "Unknown input #{value} of type #{type}"
         end

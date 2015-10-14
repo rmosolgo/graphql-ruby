@@ -32,12 +32,10 @@ CheeseType = GraphQL::ObjectType.define do
   field :id, !types.Int, "Unique identifier"
   field :flavor, !types.String, "Kind of Cheese"
 
-  # Or can define by block:
-  field :source do
-    type(!DairyAnimalEnum)
-    description("Animal which produced the milk for this cheese")
-  end
+  field :source, !DairyAnimalEnum,
+    "Animal which produced the milk for this cheese"
 
+  # Or can define by block:
   field :similarCheese, -> { CheeseType }, "Cheeses like this one" do
     argument :source, !types[!DairyAnimalEnum]
     resolve -> (t, a, c) {
