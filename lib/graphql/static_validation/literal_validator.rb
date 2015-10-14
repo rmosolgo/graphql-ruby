@@ -17,6 +17,9 @@ class GraphQL::StaticValidation::LiteralValidator
         present_if_required = field_type.kind.non_null? ? !value.nil? : true
         present_if_required && validate(value.value, field_type)
       end
+    elsif ast_value.is_a?(GraphQL::Language::Nodes::VariableIdentifier)
+      # Todo: somehow pass in the document's variable definitions and validate this
+      true
     else
       false
     end

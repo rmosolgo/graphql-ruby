@@ -1,9 +1,16 @@
 class GraphQL::Query
+  class OperationNameMissingError < StandardError
+    def initialize(names)
+      msg = "You must provide an operation name from: #{names.join(", ")}"
+      super(msg)
+    end
+  end
+
   # If a resolve function returns `GraphQL::Query::DEFAULT_RESOLVE`,
   # The executor will send the field's name to the target object
   # and use the result.
   DEFAULT_RESOLVE = :__default_resolve
-  attr_reader :schema, :document, :context, :fragments, :variables, :operations, :debug
+  attr_reader :schema, :document, :context, :fragments, :operations, :debug
 
   # Prepare query `query_string` on `schema`
   # @param schema [GraphQL::Schema]
@@ -17,13 +24,11 @@ class GraphQL::Query
     @schema = schema
     @debug = debug
     @context = Context.new(values: context)
-
-    @variables = variables
     @validate = validate
     @operation_name = operation_name
     @fragments = {}
     @operations = {}
-
+    @provided_variables = variables
     @document = GraphQL.parse(query_string)
     @document.parts.each do |part|
       if part.is_a?(GraphQL::Language::Nodes::FragmentDefinition)
@@ -43,15 +48,38 @@ class GraphQL::Query
     @result ||= Executor.new(self, @operation_name).result
   end
 
+
+  def selected_operation
+    @selected_operation ||= begin
+      if operations.length == 1
+        operations.values.first
+      elsif operations.length == 0
+        nil
+      elsif !operations.key?(@operation_name)
+        raise OperationNameMissingError, operations.keys
+      else
+        operations[@operation_name]
+      end
+    end
+  end
+
+  def variables
+    @variables ||= begin
+      variable_defaults = GraphQL::Query::Inputs.from_variable_definitions(schema, selected_operation.variables)
+      # Prefer provided values, fall back to defaults:
+      variable_chain = GraphQL::Query::Inputs.new(@provided_variables, parent: variable_defaults)
+    end
+  end
+
   private
 
   def validation_errors
-    @validation_errors ||= @schema.static_validator.validate(@document)
+    @validation_errors ||= schema.static_validator.validate(document)
   end
 end
 
-require 'graphql/query/arguments'
 require 'graphql/query/base_execution'
+require 'graphql/query/inputs'
 require 'graphql/query/serial_execution'
 require 'graphql/query/type_resolver'
 require 'graphql/query/directive_chain'

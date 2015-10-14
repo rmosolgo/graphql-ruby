@@ -1,13 +1,6 @@
 module GraphQL
   class Query
     class Executor
-      class OperationNameMissingError < StandardError
-        def initialize(names)
-          msg = "You must provide an operation name from: #{names.join(", ")}"
-          super(msg)
-        end
-      end
-
       # @return [GraphQL::Query] the query being executed
       attr_reader :query
 
@@ -25,19 +18,20 @@ module GraphQL
       # @return [Hash] A GraphQL response, with either a "data" key or an "errors" key
       def result
         execute
-      rescue OperationNameMissingError => err
+      rescue GraphQL::Query::OperationNameMissingError => err
         {"errors" => [{"message" => err.message}]}
       rescue StandardError => err
         query.debug && raise(err)
-        message = "Something went wrong during query execution: #{err}" # \n  #{err.backtrace.join("\n  ")}"
+        message = "Something went wrong during query execution: #{err}" #\n#{err.backtrace.join("\n  ")}"
         {"errors" => [{"message" => message}]}
       end
 
       private
 
       def execute
-        return {} if query.operations.none?
-        operation = find_operation(operation_name, query.operations)
+        operation = query.selected_operation
+        return {} if operation.nil?
+
         if operation.operation_type == "query"
           root_type = query.schema.query
           execution_strategy_class = query.schema.query_execution_strategy
@@ -56,16 +50,6 @@ module GraphQL
         end
 
         result
-      end
-
-      def find_operation(operation_name, operations)
-        if operations.length == 1
-          operations.values.first
-        elsif !operations.key?(operation_name)
-          raise OperationNameMissingError, operations.keys
-        else
-          operations[operation_name]
-        end
       end
     end
   end

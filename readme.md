@@ -105,7 +105,7 @@ If you're building a backend for [Relay](http://facebook.github.io/relay/), you'
     my_type.blank?
     # => MyType!
     ```
-
+- Validate type of variables (see early return in LiteralValidator)
 - Big ideas:
   - Use [graphql-parser](https://github.com/shopify/graphql-parser) (Ruby bindings for [libgraphqlparser](https://github.com/graphql/libgraphqlparser)) instead of Parslet
 

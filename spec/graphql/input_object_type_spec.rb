@@ -15,12 +15,13 @@ describe GraphQL::InputObjectType do
     let(:result) { DummySchema.execute(query_string, variables: variables) }
 
     describe "list inputs" do
+      let(:variables) { {"search" => {"source" => "COW"}} }
       let(:query_string) {%|
-        {
+        query getCheeses($search: DairyProductInput!){
             sheep: searchDairy(product: [{source: SHEEP, fatContent: 0.1}]) {
               ... cheeseFields
             }
-            cow: searchDairy(product: [{source: COW}]) {
+            cow: searchDairy(product: [$search]) {
               ... cheeseFields
             }
         }
@@ -31,6 +32,7 @@ describe GraphQL::InputObjectType do
       |}
 
       it "converts items to plain values" do
+        pp result
         sheep_value = result["data"]["sheep"]["flavor"]
         cow_value = result["data"]["cow"]["flavor"]
         assert_equal("Manchego", sheep_value)
