@@ -38,7 +38,7 @@ module GraphQL
       rule(:unnamed_selections) { selections.as(:unnamed_selections)}
       rule(:typed_operation_definition) {
         operation_type.as(:operation_type) >> space? >>
-        name.as(:name).maybe >> space? >>
+        name.maybe.as(:name) >> space? >>
         operation_variable_definitions.maybe.as(:optional_variables).as(:variables) >> space? >>
         directives.maybe.as(:optional_directives).as(:directives) >> space? >>
         selections.as(:selections)
