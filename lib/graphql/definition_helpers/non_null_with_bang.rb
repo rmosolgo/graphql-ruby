@@ -6,6 +6,6 @@ module GraphQL::DefinitionHelpers::NonNullWithBang
   # Make the type non-null
   # @return [GraphQL::NonNullType] a non-null type which wraps the original type
   def !
-    GraphQL::NonNullType.new(of_type: self)
+    to_non_null_type
   end
 end

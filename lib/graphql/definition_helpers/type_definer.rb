@@ -20,6 +20,6 @@ class GraphQL::DefinitionHelpers::TypeDefiner
   # @param type [Type] A type to be wrapped in a ListType
   # @return [GraphQL::ListType] A ListType wrapping `type`
   def [](type)
-    GraphQL::ListType.new(of_type: type)
+    type.to_list_type
   end
 end

@@ -15,7 +15,7 @@ class GraphQL::StaticValidation::VariableDefaultValuesAreCorrectlyTyped
     if node.type.is_a?(GraphQL::Language::Nodes::NonNullType)
       context.errors << message("Non-null variable $#{node.name} can't have a default value", node)
     else
-      type = context.schema.types[node.type.name]
+      type = context.schema.type_from_ast(node.type)
       if !literal_validator.validate(value, type)
         context.errors << message("Default value for $#{node.name} doesn't match type #{node.type.name}", node)
       end

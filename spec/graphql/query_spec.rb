@@ -163,18 +163,22 @@ describe GraphQL::Query do
 
   describe "field argument default values" do
     let(:query_string) {%|
-      query getCheeses($search: [DairyProductInput]){
+      query getCheeses(
+        $search: [DairyProductInput]
+        $searchWithDefault: [DairyProductInput] = [{source: COW}]
+      ){
         noVariable: searchDairy(product: $search) {
-          ... on Cheese {
-            flavor
-          }
+          ... cheeseFields
         }
         noArgument: searchDairy {
-          ... on Cheese {
-            flavor
-          }
+          ... cheeseFields
         }
+        variableDefault: searchDairy(product: $searchWithDefault) {
+          ... cheeseFields
+        }
+
       }
+      fragment cheeseFields on Cheese { flavor }
     |}
 
     it "has a default value" do
@@ -191,6 +195,12 @@ describe GraphQL::Query do
     describe "when the argument isn't passed at all" do
       it "uses the default value" do
         assert_equal("Manchego", result["data"]["noArgument"]["flavor"])
+      end
+    end
+
+    describe "when the variable has a default" do
+      it "uses the variable default" do
+        assert_equal("Brie", result["data"]["variableDefault"]["flavor"])
       end
     end
   end

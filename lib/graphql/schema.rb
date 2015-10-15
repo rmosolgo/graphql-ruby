@@ -58,6 +58,10 @@ class GraphQL::Schema
     end
   end
 
+  def type_from_ast(ast_node)
+    GraphQL::Schema::TypeExpression.new(self, ast_node).type
+  end
+
   class InvalidTypeError < StandardError
     def initialize(type, errors)
       super("Type #{type.respond_to?(:name) ? type.name :  "Unnamed type" } is invalid: #{errors.join(", ")}")
@@ -70,6 +74,7 @@ require 'graphql/schema/field_validator'
 require 'graphql/schema/implementation_validator'
 require 'graphql/schema/middleware_chain'
 require 'graphql/schema/rescue_middleware'
+require 'graphql/schema/type_expression'
 require 'graphql/schema/type_reducer'
 require 'graphql/schema/type_map'
 require 'graphql/schema/type_validator'

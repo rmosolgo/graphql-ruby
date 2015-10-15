@@ -20,6 +20,16 @@ module GraphQL
       self
     end
 
+    # @return [GraphQL::NonNullType] a non-null version of this type
+    def to_non_null_type
+      GraphQL::NonNullType.new(of_type: self)
+    end
+
+    # @return [GraphQL::ListType] a list version of this type
+    def to_list_type
+      GraphQL::ListType.new(of_type: self)
+    end
+
     module ModifiesAnotherType
       def unwrap
         self.of_type.unwrap

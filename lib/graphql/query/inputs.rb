@@ -28,7 +28,7 @@ module GraphQL
         values_hash = {}
         ast_variables.each do |ast_variable|
           if !ast_variable.default_value.nil?
-            variable_type = schema.types[ast_variable.type.name]
+            variable_type = schema.type_from_ast(ast_variable.type)
             reduced_value = reduce_value(ast_variable.default_value, variable_type)
             values_hash[ast_variable.name] = reduced_value
           end
@@ -66,6 +66,8 @@ module GraphQL
             value.name # it's a Nodes::Enum
           end
           type.coerce_input!(value_name)
+        elsif value.is_a?(self)
+          value # it's already been cleaned up
         else
           raise "Unknown input #{value} of type #{type}"
         end

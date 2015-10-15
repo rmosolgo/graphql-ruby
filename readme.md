@@ -95,8 +95,7 @@ If you're building a backend for [Relay](http://facebook.github.io/relay/), you'
   - Raise if you try to configure an attribute which doesn't suit the type
     - ie, if you try to define `resolve` on an ObjectType, it should somehow raise
   - Clean up file structure in `lib/schema` (don't need serial_execution namespace anymore)
-  - support symbolized default values for input objects
-  - Test `Inputs` coercion directly
+  - Test `Inputs` coercion directly, refactor `Inputs#reduce_value`
   - Overriding `!` on types breaks ActiveSupport `.blank?`
 
     ```ruby
@@ -107,7 +106,7 @@ If you're building a backend for [Relay](http://facebook.github.io/relay/), you'
     my_type.blank?
     # => MyType!
     ```
-- Validate type of variables (see early return in LiteralValidator)
+- Statically validate type of variables (see early return in LiteralValidator)
 - Assert non-null variables are provided to the query at execution-time
 - Big ideas:
   - Use [graphql-parser](https://github.com/shopify/graphql-parser) (Ruby bindings for [libgraphqlparser](https://github.com/graphql/libgraphqlparser)) instead of Parslet
