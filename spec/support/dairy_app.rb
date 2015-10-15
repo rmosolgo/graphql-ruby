@@ -65,6 +65,9 @@ MilkType = GraphQL::ObjectType.define do
   field :fatContent, !types.Float, "Percentage which is milkfat"
   field :flavors, types[types.String], "Chocolate, Strawberry, etc" do
     argument :limit, types.Int
+    resolve -> (milk, args, ctx) {
+      args[:limit] ? milk.flavors.first(args[:limit]) : milk.flavors
+    }
   end
 end
 

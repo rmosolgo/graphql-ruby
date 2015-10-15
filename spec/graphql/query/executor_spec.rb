@@ -154,7 +154,40 @@ describe GraphQL::Query::Executor do
         }
         assert_equal(expected, result)
       end
+    end
+  end
 
+  describe "variable coercion" do
+    describe "for unspecified with default" do
+      let(:query_string) {%| query Q($limit: Int = 2) { milk(id: 1) { flavors(limit: $limit) } } |}
+
+      it "uses the default value" do
+        expected = {
+          "data" => {
+            "milk" => {
+              "flavors" => ["Natural", "Chocolate"],
+            }
+          }
+        }
+        assert_equal(expected, result)
+      end
+    end
+
+    describe "for input object type" do
+      let(:variables) { {"input" => [{ "source" => "SHEEP" }]} }
+      let(:query_string) {%| query Q($input: [DairyProductInput]) { searchDairy(product: $input) { __typename, ... on Cheese { id, source } } } |}
+      it "uses the default value" do
+        expected = {
+          "data" => {
+            "searchDairy" => {
+              "__typename" => "Cheese",
+              "id" => 3,
+              "source" => "SHEEP"
+            }
+          }
+        }
+        assert_equal(expected, result)
+      end
     end
   end
 end

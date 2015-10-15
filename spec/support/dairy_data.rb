@@ -5,9 +5,9 @@ CHEESES = {
   3 => Cheese.new(3, "Manchego", 0.065, "SHEEP")
 }
 
-Milk = Struct.new(:id, :fatContent, :source)
+Milk = Struct.new(:id, :fatContent, :source, :flavors)
 MILKS = {
-  1 => Milk.new(1, 0.04, 1),
+  1 => Milk.new(1, 0.04, 1, ["Natural", "Chocolate", "Strawberry"]),
 }
 
 DAIRY = OpenStruct.new(
