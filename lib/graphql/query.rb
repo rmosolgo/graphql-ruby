@@ -56,6 +56,9 @@ class GraphQL::Query
   end
 
 
+  # This is the operation to run for this query.
+  # If more than one operation is present, it must be named at runtime.
+  # @return [GraphQL::Language::Nodes::OperationDefinition, nil]
   def selected_operation
     @selected_operation ||= begin
       if operations.length == 1
@@ -70,24 +73,17 @@ class GraphQL::Query
     end
   end
 
+  # Determine the values for variables of this query, using default values
+  # if a value isn't provided at runtime.
+  #
+  # Raises if a non-null variable isn't provided at runtime.
+  # @return [GraphQL::Query::Variables] Variables to apply to this query
   def variables
-    @variables ||= begin
-      selected_operation.variables.each_with_object({}) { |ast_variable, memo|
-        variable_type = schema.type_from_ast(ast_variable.type)
-        variable_name = ast_variable.name
-        default_value = ast_variable.default_value
-        provided_value = @provided_variables[variable_name]
-        if !provided_value.nil?
-          graphql_value = GraphQL::Query::RubyInput.coerce(variable_type, provided_value)
-        elsif !default_value.nil?
-          graphql_value = GraphQL::Query::LiteralInput.coerce(variable_type, default_value, {})
-        elsif variable_type.kind.non_null?
-          raise GraphQL::Query::VariableMissingError.new(variable_name, variable_type)
-        end
-
-        memo[variable_name] = graphql_value
-      }
-    end
+    @variables ||= GraphQL::Query::Variables.new(
+      schema,
+      selected_operation.variables,
+      @provided_variables
+    )
   end
 
   private
@@ -99,10 +95,11 @@ end
 
 require 'graphql/query/arguments'
 require 'graphql/query/base_execution'
+require 'graphql/query/context'
+require 'graphql/query/directive_chain'
+require 'graphql/query/executor'
 require 'graphql/query/literal_input'
 require 'graphql/query/ruby_input'
 require 'graphql/query/serial_execution'
 require 'graphql/query/type_resolver'
-require 'graphql/query/directive_chain'
-require 'graphql/query/executor'
-require 'graphql/query/context'
+require 'graphql/query/variables'
