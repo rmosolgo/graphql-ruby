@@ -118,4 +118,9 @@ describe GraphQL::Language::Transform do
     assert_equal("someFlag", res.name)
     assert_equal([], res.arguments, 'gets [] if no args')
   end
+
+  it 'transforms unnamed operations' do
+    assert_equal(1, get_result("query { me }").parts.length)
+    assert_equal(1, get_result("mutation { touch }").parts.length)
+  end
 end
