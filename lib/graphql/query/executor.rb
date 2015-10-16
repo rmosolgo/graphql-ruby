@@ -4,12 +4,8 @@ module GraphQL
       # @return [GraphQL::Query] the query being executed
       attr_reader :query
 
-      # @return [String] the operation to run in {query}
-      attr_reader :operation_name
-
-      def initialize(query, operation_name)
+      def initialize(query)
         @query = query
-        @operation_name = operation_name
       end
 
       # Evalute {operation_name} on {query}. Handle errors by putting them in the "errors" key.

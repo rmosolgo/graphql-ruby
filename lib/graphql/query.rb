@@ -52,7 +52,7 @@ class GraphQL::Query
       return { "errors" => validation_errors }
     end
 
-    @result ||= Executor.new(self, @operation_name).result
+    @result ||= Executor.new(self).result
   end
 
 
@@ -60,17 +60,7 @@ class GraphQL::Query
   # If more than one operation is present, it must be named at runtime.
   # @return [GraphQL::Language::Nodes::OperationDefinition, nil]
   def selected_operation
-    @selected_operation ||= begin
-      if operations.length == 1
-        operations.values.first
-      elsif operations.length == 0
-        nil
-      elsif !operations.key?(@operation_name)
-        raise OperationNameMissingError, operations.keys
-      else
-        operations[@operation_name]
-      end
-    end
+    @selected_operation ||= find_operation(@operations, @operation_name)
   end
 
   # Determine the values for variables of this query, using default values
@@ -90,6 +80,19 @@ class GraphQL::Query
 
   def validation_errors
     @validation_errors ||= schema.static_validator.validate(document)
+  end
+
+
+  def find_operation(operations, operation_name)
+    if operations.length == 1
+      operations.values.first
+    elsif operations.length == 0
+      nil
+    elsif !operations.key?(operation_name)
+      raise OperationNameMissingError, operations.keys
+    else
+      operations[operation_name]
+    end
   end
 end
 
