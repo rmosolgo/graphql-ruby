@@ -1,8 +1,6 @@
 class GraphQL::StaticValidation::FieldsAreDefinedOnType
   include GraphQL::StaticValidation::Message::MessageHelper
 
-  IS_FIELD = Proc.new {|f| f.is_a?(GraphQL::Language::Nodes::Field) }
-
   def validate(context)
     visitor = context.visitor
     visitor[GraphQL::Language::Nodes::Field] << -> (node, parent) {
