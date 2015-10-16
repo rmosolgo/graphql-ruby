@@ -30,7 +30,7 @@ class GraphQL::Query::DirectiveChain
       @result = block.call
     else
       applicable_directives.map do |(ast_directive, directive)|
-        args = GraphQL::Query::Inputs.from_arguments(ast_directive.arguments, directive.arguments, query.variables)
+        args = GraphQL::Query::LiteralInput.from_arguments(ast_directive.arguments, directive.arguments, query.variables)
         @result = directive.resolve(args, block)
       end
       @result ||= {}

@@ -16,4 +16,9 @@ class GraphQL::ListType < GraphQL::BaseType
   def to_s
     "[#{of_type.to_s}]"
   end
+
+  def coerce_input(value)
+    inner_type = of_type
+    value.map { |item| inner_type.coerce_input!(item) }
+  end
 end

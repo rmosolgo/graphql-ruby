@@ -65,9 +65,21 @@ class GraphQL::Query
 
   def variables
     @variables ||= begin
-      variable_defaults = GraphQL::Query::Inputs.from_variable_definitions(schema, selected_operation.variables)
-      # Prefer provided values, fall back to defaults:
-      variable_chain = GraphQL::Query::Inputs.new(@provided_variables, parent: variable_defaults)
+      selected_operation.variables.each_with_object({}) { |ast_variable, memo|
+        variable_type = schema.type_from_ast(ast_variable.type)
+        variable_name = ast_variable.name
+        default_value = ast_variable.default_value
+        provided_value = @provided_variables[variable_name]
+        if !provided_value.nil?
+          # coerce the Ruby value to a GraphQL query value
+          graphql_value = GraphQL::Query::RubyInput.coerce(variable_type, provided_value)
+        elsif !default_value.nil?
+          # coerce the AST value to a GraphQL query value
+          # reduced_value = reduce_value(ast_variable.default_value, variable_type)
+          graphql_value = GraphQL::Query::LiteralInput.coerce(variable_type, default_value, {})
+        end
+        memo[variable_name] = graphql_value
+      }
     end
   end
 
@@ -78,8 +90,10 @@ class GraphQL::Query
   end
 end
 
+require 'graphql/query/arguments'
 require 'graphql/query/base_execution'
-require 'graphql/query/inputs'
+require 'graphql/query/literal_input'
+require 'graphql/query/ruby_input'
 require 'graphql/query/serial_execution'
 require 'graphql/query/type_resolver'
 require 'graphql/query/directive_chain'

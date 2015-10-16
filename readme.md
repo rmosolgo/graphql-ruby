@@ -95,7 +95,6 @@ If you're building a backend for [Relay](http://facebook.github.io/relay/), you'
   - Raise if you try to configure an attribute which doesn't suit the type
     - ie, if you try to define `resolve` on an ObjectType, it should somehow raise
   - Clean up file structure in `lib/schema` (don't need serial_execution namespace anymore)
-  - Test `Inputs` coercion directly, refactor `Inputs#reduce_value`
   - Overriding `!` on types breaks ActiveSupport `.blank?`
 
     ```ruby

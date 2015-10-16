@@ -11,7 +11,7 @@ module GraphQL
           @query = query
           @execution_strategy = execution_strategy
           @field = query.schema.get_field(parent_type, ast_node.name) || raise("No field found on #{parent_type.name} '#{parent_type}' for '#{ast_node.name}'")
-          @arguments = GraphQL::Query::Inputs.from_arguments(ast_node.arguments, field.arguments, query.variables)
+          @arguments = GraphQL::Query::LiteralInput.from_arguments(ast_node.arguments, field.arguments, query.variables)
         end
 
         def result

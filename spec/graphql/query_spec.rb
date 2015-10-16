@@ -237,6 +237,7 @@ describe GraphQL::Query do
 
       describe "when no value is provided" do
         let(:query_variables) { {} }
+
         it "uses the default" do
           assert(3, result["data"]["cheese"]["id"])
           assert("Manchego", result["data"]["cheese"]["flavor"])
@@ -254,11 +255,11 @@ describe GraphQL::Query do
         let(:query_variables) { {"search" => [{"source" => "COW"}]} }
         let(:query_string) {%|
           query getCheeses($search: [DairyProductInput]!){
-              cow: searchDairy(product: $search) {
-                ... on Cheese {
-                  flavor
-                }
+            cow: searchDairy(product: $search) {
+              ... on Cheese {
+                flavor
               }
+            }
           }
         |}
 

@@ -18,4 +18,14 @@ class GraphQL::InputObjectType < GraphQL::BaseType
   def kind
     GraphQL::TypeKinds::INPUT_OBJECT
   end
+
+  def coerce_input(value)
+    input_values = {}
+    input_fields.each do |input_key, input_field_defn|
+      raw_value = value.fetch(input_key, input_field_defn.default_value)
+      field_type = input_field_defn.type
+      input_values[input_key] = field_type.coerce_input!(raw_value)
+    end
+    GraphQL::Query::Arguments.new(input_values)
+  end
 end
