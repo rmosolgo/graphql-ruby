@@ -228,6 +228,15 @@ describe GraphQL::Query do
       end
     end
 
+    describe "when they aren't provided" do
+      let(:query_variables) { {} }
+
+      it "raises an error" do
+        expected = "Variable cheeseId of type Int! can't be null"
+        assert_equal(result["errors"][0]["message"], expected)
+      end
+    end
+
     describe "default values" do
       let(:query_string) {%|
         query getCheese($cheeseId: Int = 3){

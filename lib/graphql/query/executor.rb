@@ -17,7 +17,7 @@ module GraphQL
       # @return [Hash] A GraphQL response, with either a "data" key or an "errors" key
       def result
         execute
-      rescue GraphQL::Query::OperationNameMissingError => err
+      rescue GraphQL::Query::OperationNameMissingError, GraphQL::Query::VariableMissingError => err
         {"errors" => [{"message" => err.message}]}
       rescue StandardError => err
         query.debug && raise(err)

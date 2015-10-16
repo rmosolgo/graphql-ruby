@@ -6,6 +6,13 @@ class GraphQL::Query
     end
   end
 
+  class VariableMissingError < StandardError
+    def initialize(name, type)
+      msg = "Variable #{name} of type #{type} can't be null"
+      super(msg)
+    end
+  end
+
   # If a resolve function returns `GraphQL::Query::DEFAULT_RESOLVE`,
   # The executor will send the field's name to the target object
   # and use the result.
@@ -71,13 +78,13 @@ class GraphQL::Query
         default_value = ast_variable.default_value
         provided_value = @provided_variables[variable_name]
         if !provided_value.nil?
-          # coerce the Ruby value to a GraphQL query value
           graphql_value = GraphQL::Query::RubyInput.coerce(variable_type, provided_value)
         elsif !default_value.nil?
-          # coerce the AST value to a GraphQL query value
-          # reduced_value = reduce_value(ast_variable.default_value, variable_type)
           graphql_value = GraphQL::Query::LiteralInput.coerce(variable_type, default_value, {})
+        elsif variable_type.kind.non_null?
+          raise GraphQL::Query::VariableMissingError.new(variable_name, variable_type)
         end
+
         memo[variable_name] = graphql_value
       }
     end

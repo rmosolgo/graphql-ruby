@@ -106,7 +106,6 @@ If you're building a backend for [Relay](http://facebook.github.io/relay/), you'
     # => MyType!
     ```
 - Statically validate type of variables (see early return in LiteralValidator)
-- Assert non-null variables are provided to the query at execution-time
 - Big ideas:
   - Use [graphql-parser](https://github.com/shopify/graphql-parser) (Ruby bindings for [libgraphqlparser](https://github.com/graphql/libgraphqlparser)) instead of Parslet
   - Revamp the fixture Schema to be more useful (better names, more extensible)
