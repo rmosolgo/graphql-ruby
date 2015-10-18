@@ -4,12 +4,24 @@
 
 ### New features
 
+### Bug fixes
+
+## 0.10.0 (17 Oct 2015)
+
+### Breaking changes & deprecations
+
+### New features
+
 - Scalars can have distinct `coerce_input` and `coerce_result` methods #48
+- Operations don't require a name #54
 
 ### Bug fixes
 
-- Incoming values are coerced to their proper types before execution
-- Operation name is optional for single-query documents
+- Big refactors and fixes to variables and arguments:
+  - Correctly apply argument default values
+  - Correctly apply variable default values
+  - Raise at execution-time if non-null variables are missing
+  - Incoming values are coerced to their proper types before execution
 
 ## 0.9.5 (1 Oct 2015)
 
