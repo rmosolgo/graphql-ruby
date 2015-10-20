@@ -6,10 +6,17 @@ class GraphQL::Query
     end
   end
 
-  class VariableMissingError < StandardError
-    def initialize(name, type)
-      msg = "Variable #{name} of type #{type} can't be null"
+  class VariableValidationError < GraphQL::ExecutionError
+    def initialize(variable_ast, type, reason)
+      msg = "Variable #{variable_ast.name} of type #{type} #{reason}"
       super(msg)
+      self.ast_node = variable_ast
+    end
+  end
+
+  class VariableMissingError < VariableValidationError
+    def initialize(variable_ast, type)
+      super(variable_ast, type, "can't be null")
     end
   end
 
@@ -102,7 +109,6 @@ require 'graphql/query/context'
 require 'graphql/query/directive_chain'
 require 'graphql/query/executor'
 require 'graphql/query/literal_input'
-require 'graphql/query/ruby_input'
 require 'graphql/query/serial_execution'
 require 'graphql/query/type_resolver'
 require 'graphql/query/variables'

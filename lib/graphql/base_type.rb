@@ -76,18 +76,14 @@ module GraphQL
 
     alias :inspect :to_s
 
-    # Coerce `input_value` according to this type's `coerce` method.
-    # Raise an error if the value becomes nil.
-    # @param [Object] Incoming query value
-    # @return [Object] Coerced value for query execution
-    def coerce_input!(input_value)
-      coerced_value = coerce_input(input_value)
+    def valid_input?(value)
+      return true if value.nil?
+      valid_non_null_input?(value)
+    end
 
-      if coerced_value.nil?
-        raise GraphQL::ExecutionError.new("Couldn't coerce #{input_value.inspect} to #{self.unwrap.name}")
-      end
-
-      coerced_value
+    def coerce_input(value)
+      return nil if value.nil?
+      coerce_non_null_input(value)
     end
   end
 end

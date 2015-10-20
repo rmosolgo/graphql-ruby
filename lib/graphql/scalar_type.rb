@@ -2,7 +2,7 @@ module GraphQL
   # The parent type for scalars, eg {GraphQL::STRING_TYPE}, {GraphQL::INT_TYPE}
   #
   # @example defining a type for Time
-  #   TimeType = GraphQL::ObjectType.define do
+  #   TimeType = GraphQL::ScalarType.define do
   #     name "Time"
   #     description "Time since epoch in seconds"
   #
@@ -19,7 +19,11 @@ module GraphQL
       self.coerce_result = proc
     end
 
-    def coerce_input(value)
+    def valid_non_null_input?(value)
+      !coerce_non_null_input(value).nil?
+    end
+
+    def coerce_non_null_input(value)
       @coerce_input_proc.call(value)
     end
 

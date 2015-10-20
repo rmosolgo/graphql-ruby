@@ -19,12 +19,21 @@ class GraphQL::InputObjectType < GraphQL::BaseType
     GraphQL::TypeKinds::INPUT_OBJECT
   end
 
-  def coerce_input(value)
+  def valid_non_null_input?(input)
+    return false unless input.is_a?(Hash) || input.is_a?(GraphQL::Query::Arguments)
+    return false unless input.all? { |name, value| input_fields[name] }
+    input_fields.all? { |name, field| field.type.valid_input?(input[name]) }
+  end
+
+  def coerce_non_null_input(value)
     input_values = {}
     input_fields.each do |input_key, input_field_defn|
-      raw_value = value.fetch(input_key, input_field_defn.default_value)
-      field_type = input_field_defn.type
-      input_values[input_key] = field_type.coerce_input!(raw_value)
+      field_value = value[input_key]
+      field_value = input_field_defn.type.coerce_input(field_value)
+      if field_value.nil?
+        field_value = input_field_defn.default_value
+      end
+      input_values[input_key] = field_value unless field_value.nil?
     end
     GraphQL::Query::Arguments.new(input_values)
   end

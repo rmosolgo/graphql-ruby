@@ -41,6 +41,10 @@ class GraphQL::EnumType < GraphQL::BaseType
     GraphQL::TypeKinds::ENUM
   end
 
+  def valid_non_null_input?(value_name)
+    @values_by_name.key?(value_name)
+  end
+
   # Get the underlying value for this enum value
   #
   # @example get episode value from Enum
@@ -49,7 +53,7 @@ class GraphQL::EnumType < GraphQL::BaseType
   #
   # @param value_name [String] the string representation of this enum value
   # @return [Object] the underlying value for this enum value
-  def coerce_input(value_name)
+  def coerce_non_null_input(value_name)
     @values_by_name.fetch(value_name).value
   end
 

@@ -224,7 +224,7 @@ describe GraphQL::Query do
       let(:query_variables) { {"cheeseId" => "2"} }
 
       it "raises an error" do
-        assert(result["errors"][0]["message"].include?(%{Couldn't coerce "2" to Int}))
+        assert_equal(result["errors"][0]["message"], %{Variable cheeseId of type Int! was provided invalid value "2"})
       end
     end
 
