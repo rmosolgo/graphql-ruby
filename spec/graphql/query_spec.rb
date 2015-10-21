@@ -103,6 +103,7 @@ describe GraphQL::Query do
   describe "merging fragments with different keys" do
     let(:query_string) { %|
       query getCheeseFieldsThroughDairy {
+        ... cheeseFrag3
         dairy {
           ...flavorFragment
           ...fatContentFragment
@@ -124,6 +125,21 @@ describe GraphQL::Query do
           fatContent
         }
       }
+
+      fragment cheeseFrag1 on Query {
+        cheese(id: 1) {
+          id
+        }
+      }
+      fragment cheeseFrag2 on Query {
+        cheese(id: 1) {
+          flavor
+        }
+      }
+      fragment cheeseFrag3 on Query {
+        ... cheeseFrag2
+        ... cheeseFrag1
+      }
     |}
 
     it "should include keys from each fragment" do
@@ -139,7 +155,11 @@ describe GraphQL::Query do
               "fatContent" => 0.04,
             }
           ],
-        }
+        },
+        "cheese" => {
+          "id" => 1,
+          "flavor" => "Brie"
+        },
       }}
       assert_equal(expected, result)
     end

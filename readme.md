@@ -112,6 +112,11 @@ If you're building a backend for [Relay](http://facebook.github.io/relay/), you'
   - __Subscriptions__
     - This is a good chance to make an `Operation` abstraction of which `query`, `mutation` and `subscription` are members
     - For a subscription, `graphql` would send an outbound message to the system (allow the host application to manage its own subscriptions via Pusher, ActionCable, whatever)
+  - Pre-process query strings?
+    - Remove `@skip`-ed things
+    - Inline any fragments
+    - Inline variables?
+
 ## Goals
 
 - Implement the GraphQL spec & support a Relay front end
