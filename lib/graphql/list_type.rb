@@ -18,12 +18,11 @@ class GraphQL::ListType < GraphQL::BaseType
   end
 
   def valid_non_null_input?(value)
-    value = [value] unless value.is_a?(Array)
+    return false unless value.is_a?(Array)
     value.all?{ |item| of_type.valid_input?(item) }
   end
 
   def coerce_non_null_input(value)
-    value = [value] unless value.is_a?(Array)
     value.map{ |item| of_type.coerce_input(item) }
   end
 end
