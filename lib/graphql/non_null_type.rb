@@ -13,6 +13,10 @@ class GraphQL::NonNullType < GraphQL::BaseType
     "Non-Null"
   end
 
+  def valid_input?(value)
+    !value.nil? && of_type.valid_input?(value)
+  end
+
   def coerce_input(value)
     of_type.coerce_input(value)
   end

@@ -2,45 +2,14 @@ module GraphQL
   class Query
     # Turn query string values into something useful for query execution
     class LiteralInput
-      attr_reader :variables, :value, :type
-      def initialize(type, incoming_value, variables)
-        @type = type
-        @value = incoming_value
-        @variables = variables
-      end
-
-      def graphql_value
-        if value.is_a?(GraphQL::Language::Nodes::VariableIdentifier)
-          variables[value.name] # Already cleaned up with RubyInput
-        elsif type.kind.input_object?
-          input_values = {}
-          inner_type = type.unwrap
-          inner_type.input_fields.each do |arg_name, arg_defn|
-            ast_arg = value.pairs.find { |ast_arg| ast_arg.name == arg_name }
-            raw_value = resolve_argument_value(ast_arg, arg_defn, variables)
-            reduced_value = coerce(arg_defn.type, raw_value, variables)
-            input_values[arg_name] = reduced_value
-          end
-          input_values
-        elsif type.kind.list?
-          inner_type = type.of_type
-          value.map { |item| coerce(inner_type, item, variables) }
-        elsif type.kind.non_null?
-          inner_type = type.of_type
-          coerce(inner_type, value, variables)
-        elsif type.kind.scalar?
-          type.coerce_input!(value)
-        elsif type.kind.enum?
-          value_name = value.name # it's a Nodes::Enum
-          type.coerce_input!(value_name)
-        else
-          raise "Unknown input #{value} of type #{type}"
-        end
-      end
-
       def self.coerce(type, value, variables)
-        input = self.new(type, value, variables)
-        input.graphql_value
+        if value.is_a?(Language::Nodes::VariableIdentifier)
+          variables[value.name]
+        elsif value.nil?
+          nil
+        else
+          LiteralKindCoercers::STRATEGIES.fetch(type.kind).coerce(value, type, variables)
+        end
       end
 
       def self.from_arguments(ast_arguments, argument_defns, variables)
@@ -59,31 +28,61 @@ module GraphQL
         GraphQL::Query::Arguments.new(values_hash)
       end
 
-      private
-
-      def coerce(*args)
-        self.class.coerce(*args)
-      end
-
-      def resolve_argument_value(*args)
-        self.class.resolve_argument_value(*args)
-      end
-
-      # Prefer values in this order:
-      # - Literal value from the query string
-      # - Variable value from query varibles
-      # - Default value from Argument definition
-      def self.resolve_argument_value(ast_arg, arg_defn, variables)
-        if !ast_arg.nil?
-          raw_value = ast_arg.value
+      module LiteralKindCoercers
+        module NonNullLiteral
+          def self.coerce(value, type, variables)
+            LiteralInput.coerce(type.of_type, value, variables)
+          end
         end
 
-        if raw_value.nil?
-          raw_value = arg_defn.default_value
+        module ListLiteral
+          def self.coerce(value, type, variables)
+            if value.is_a?(Array)
+              value.map{ |element_ast| LiteralInput.coerce(type.of_type, element_ast, variables) }
+            else
+              [LiteralInput.coerce(type.of_type, value, variables)]
+            end
+          end
         end
 
-        raw_value
+        module InputObjectLiteral
+          def self.coerce(value, type, variables)
+            hash = {}
+            value.pairs.each do |arg|
+              field_type = type.input_fields[arg.name].type
+              hash[arg.name] = LiteralInput.coerce(field_type, arg.value, variables)
+            end
+            type.input_fields.each do |arg_name, arg_defn|
+              if hash[arg_name].nil?
+                value = LiteralInput.coerce(arg_defn.type, arg_defn.default_value, variables)
+                hash[arg_name] = value unless value.nil?
+              end
+            end
+            Arguments.new(hash)
+          end
+        end
+
+        module EnumLiteral
+          def self.coerce(value, type, variables)
+            type.coerce_input(value.name)
+          end
+        end
+
+        module ScalarLiteral
+          def self.coerce(value, type, variables)
+            type.coerce_input(value)
+          end
+        end
+
+        STRATEGIES = {
+          TypeKinds::NON_NULL =>     NonNullLiteral,
+          TypeKinds::LIST =>         ListLiteral,
+          TypeKinds::INPUT_OBJECT => InputObjectLiteral,
+          TypeKinds::ENUM =>         EnumLiteral,
+          TypeKinds::SCALAR =>       ScalarLiteral,
+        }
       end
+      private_constant :LiteralKindCoercers
     end
   end
 end

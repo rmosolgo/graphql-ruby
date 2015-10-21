@@ -189,5 +189,37 @@ describe GraphQL::Query::Executor do
         assert_equal(expected, result)
       end
     end
+
+    describe "for required input object fields" do
+      let(:variables) { {"input" => {} } }
+      let(:query_string) {%| mutation M($input: ReplaceValuesInput!) { replaceValues(input: $input) } |}
+      it "returns a variable validation error" do
+        expected = {
+          "errors"=>[
+            {
+              "message" => "Variable input of type ReplaceValuesInput! was provided invalid value {}",
+              "locations" => [{"line"=>1, "column"=>14}]
+            }
+          ]
+        }
+        assert_equal(expected, result)
+      end
+    end
+
+    describe "for input objects with unknown keys in value" do
+      let(:variables) { {"input" => [{ "foo" => "bar" }]} }
+      let(:query_string) {%| query Q($input: [DairyProductInput]) { searchDairy(product: $input) { __typename, ... on Cheese { id, source } } } |}
+      it "returns a variable validation error" do
+        expected = {
+          "errors"=>[
+            {
+              "message" => "Variable input of type [DairyProductInput] was provided invalid value [{\"foo\":\"bar\"}]",
+              "locations" => [{"line"=>1, "column"=>11}]
+            }
+          ]
+        }
+        assert_equal(expected, result)
+      end
+    end
   end
 end

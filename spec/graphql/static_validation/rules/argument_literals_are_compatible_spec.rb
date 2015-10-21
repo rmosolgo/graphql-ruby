@@ -18,13 +18,19 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
   let(:errors) { validator.validate(document) }
 
   it 'finds undefined arguments to fields and directives' do
-    assert_equal(3, errors.length)
+    assert_equal(4, errors.length)
 
     query_root_error = {
       "message"=>"Argument id on Field 'cheese' has an invalid value",
       "locations"=>[{"line"=>3, "column"=>7}]
     }
     assert_includes(errors, query_root_error)
+
+    directive_error = {
+      "message"=>"Argument if on Directive 'skip' has an invalid value",
+      "locations"=>[{"line"=>4, "column"=>31}]
+    }
+    assert_includes(errors, directive_error)
 
     input_object_error = {
       "message"=>"Argument product on Field 'searchDairy' has an invalid value",

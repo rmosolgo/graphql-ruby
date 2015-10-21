@@ -6,10 +6,10 @@ class GraphQL::StaticValidation::LiteralValidator
     elsif type.kind.list? && ast_value.is_a?(Array)
       item_type = type.of_type
       ast_value.all? { |val| validate(val, item_type) }
-    elsif type.kind.scalar?
-      !type.coerce_input(ast_value).nil?
+    elsif type.kind.scalar? && !ast_value.is_a?(GraphQL::Language::Nodes::AbstractNode) && !ast_value.is_a?(Array)
+      type.valid_input?(ast_value)
     elsif type.kind.enum? && ast_value.is_a?(GraphQL::Language::Nodes::Enum)
-      !type.coerce_input(ast_value.name).nil?
+      type.valid_input?(ast_value.name)
     elsif type.kind.input_object? && ast_value.is_a?(GraphQL::Language::Nodes::InputObject)
       fields = type.input_fields
       ast_value.pairs.all? do |value|
@@ -18,7 +18,6 @@ class GraphQL::StaticValidation::LiteralValidator
         present_if_required && validate(value.value, field_type)
       end
     elsif ast_value.is_a?(GraphQL::Language::Nodes::VariableIdentifier)
-      # Todo: somehow pass in the document's variable definitions and validate this
       true
     else
       false
