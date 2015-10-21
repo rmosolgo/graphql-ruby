@@ -109,7 +109,9 @@ If you're building a backend for [Relay](http://facebook.github.io/relay/), you'
 - Big ideas:
   - Use [graphql-parser](https://github.com/shopify/graphql-parser) (Ruby bindings for [libgraphqlparser](https://github.com/graphql/libgraphqlparser)) instead of Parslet
   - Revamp the fixture Schema to be more useful (better names, more extensible)
-
+  - __Subscriptions__
+    - This is a good chance to make an `Operation` abstraction of which `query`, `mutation` and `subscription` are members
+    - For a subscription, `graphql` would send an outbound message to the system (allow the host application to manage its own subscriptions via Pusher, ActionCable, whatever)
 ## Goals
 
 - Implement the GraphQL spec & support a Relay front end
