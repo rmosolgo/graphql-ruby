@@ -6,6 +6,18 @@
 
 ### Bug fixes
 
+## 0.10.1 (22 Oct 2015)
+
+### Breaking changes & deprecations
+
+### New features
+
+### Bug fixes
+
+- Properly merge fields on fragments within fragments
+- Properly delegate enumerable-ish methods on `Arguments` #56
+- Fix & refactor literal coersion & validation #53
+
 ## 0.10.0 (17 Oct 2015)
 
 ### Breaking changes & deprecations
