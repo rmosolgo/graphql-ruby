@@ -8,7 +8,7 @@ module GraphQL
 
       def initialize(values)
         @values = values.inject({}) do |memo, (inner_key, inner_value)|
-          memo[inner_key] = wrap_value(inner_value)
+          memo[inner_key.to_s] = wrap_value(inner_value)
           memo
         end
       end
@@ -19,7 +19,7 @@ module GraphQL
         @values[key.to_s]
       end
 
-      def_delegators :@values_hash, :keys, :values, :each
+      def_delegators :@values, :keys, :values, :each
 
       private
 
