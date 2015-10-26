@@ -97,7 +97,7 @@ module GraphQL
       rule(:value_input_object) { str("{") >> space? >> value_input_object_pair.repeat(1).as(:input_object) >> space? >> str("}") }
       rule(:value_input_object_pair) { space? >> name.as(:input_object_name) >>  space? >> str(":") >> space? >> value.as(:input_object_value) >> separator? }
       rule(:value_int) { (value_sign? >> match('\d').repeat(1)).as(:int) }
-      rule(:value_string) { str('"') >> value_string_char.repeat.as(:string) >> str('"')}
+      rule(:value_string) { str('"') >> value_string_char.repeat.maybe.as(:optional_string_content).as(:string) >> str('"')}
       rule(:value_string_char) { value_string_escaped_char | value_string_escaped_unicode | value_string_source_char}
       rule(:value_string_escaped_char) { str("\\") >> match('["\/bfnrt]') }
       rule(:value_string_escaped_unicode) { str("\\") >> match('u[\dA-Fa-f]{4}')}

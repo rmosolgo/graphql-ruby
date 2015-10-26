@@ -110,6 +110,7 @@ module GraphQL
         string.gsub!(UTF_8, &UTF_8_REPLACE)
         string
       }
+      rule(optional_string_content: simple(:v)) { v.to_s }
       rule(variable: simple(:v)) { create_node(:VariableIdentifier, name: v.to_s, position_source: v) }
       rule(enum: simple(:v)) { create_node(:Enum, name: v.to_s, position_source: v)}
     end
