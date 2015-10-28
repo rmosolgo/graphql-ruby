@@ -4,3 +4,5 @@ env: CODECLIMATE_REPO_TOKEN=2f9f48e37bd62b78c4b9caeb6539171a9d22aaa025f5cae59794
 rvm:
   - "2.2"
   - "2.1"
+before_script: 'bundle exec appraisal install'
+script: 'bundle exec appraisal rake test'

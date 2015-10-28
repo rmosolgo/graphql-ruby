@@ -20,6 +20,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency "graphql", "~> 0.8"
 
   s.add_development_dependency "activerecord"
+  s.add_development_dependency "appraisal"
   s.add_development_dependency "codeclimate-test-reporter", '~>0.4'
   s.add_development_dependency "pry", "~> 0.10"
   s.add_development_dependency "guard", "~> 2.12"
