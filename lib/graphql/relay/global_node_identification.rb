@@ -11,24 +11,17 @@ module GraphQL
       attr_accessor :object_from_id_proc, :type_from_object_proc
 
       class << self
+        attr_reader :instance
         def new(*args, &block)
-          if @instance.nil?
-            @instance = super
-          else
-            raise("Can't make a second global identifier!")
-          end
-        end
-
-        def instance
-          @instance
+          @instance = super
         end
 
         def from_global_id(id)
-          @instance.from_global_id(id)
+          instance.from_global_id(id)
         end
 
         def to_global_id(type_name, id)
-          @instance.to_global_id(type_name, id)
+          instance.to_global_id(type_name, id)
         end
       end
 

@@ -48,11 +48,11 @@ describe GraphQL::Relay::GlobalNodeIdentification do
   end
 
   describe 'making a second instance' do
-    it 'raises an error' do
-      err = assert_raises(RuntimeError) do
-        GraphQL::Relay::GlobalNodeIdentification.define {}
-      end
-      assert_includes(err.message, "Can't make a second")
+    it 'overrides the first instance' do
+      first_instance = GraphQL::Relay::GlobalNodeIdentification.instance
+      GraphQL::Relay::GlobalNodeIdentification.define {}
+      second_instance = GraphQL::Relay::GlobalNodeIdentification.instance
+      refute_equal(first_instance, second_instance)
     end
   end
 end
