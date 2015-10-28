@@ -29,7 +29,7 @@ module GraphQL
           items = object
 
           if order
-            items = items.order(order_name => order_direction)
+            items = items.order(items.table[order_name].public_send(order_direction))
           end
 
           if after
