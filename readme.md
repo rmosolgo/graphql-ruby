@@ -8,7 +8,11 @@
 
 A Ruby implementation of [GraphQL](http://graphql.org/).
 
- - [Introduction](https://github.com/rmosolgo/graphql-ruby/blob/master/guides/introduction.md)
+ - Guides
+     - [Introduction](https://github.com/rmosolgo/graphql-ruby/blob/master/guides/introduction.md)
+     - [Defining Your Schema](https://github.com/rmosolgo/graphql-ruby/blob/master/guides/defining_your_schema.md)
+     - [Executing Queries](https://github.com/rmosolgo/graphql-ruby/blob/master/guides/executing_queries.md)
+
  - [API Documentation](http://www.rubydoc.info/github/rmosolgo/graphql-ruby)
 
 ## Installation
