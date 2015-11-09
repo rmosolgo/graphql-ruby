@@ -4,7 +4,6 @@ class GraphQL::Schema::TypeReducer
   attr_reader :type, :existing_type_hash
 
   def initialize(type, existing_type_hash)
-    type = type.nil? ? nil : type.unwrap
     validate_type(type)
     if type.respond_to?(:name) && existing_type_hash.fetch(type.name, nil).equal?(type)
       @result = existing_type_hash
@@ -58,7 +57,10 @@ class GraphQL::Schema::TypeReducer
   end
 
   def reduce_type(type, type_hash)
-    self.class.new(type, type_hash).result
+    unless type.is_a?(GraphQL::BaseType)
+      raise GraphQL::Schema::InvalidTypeError.new(type, ["Must be a GraphQL::BaseType"])
+    end
+    self.class.new(type.unwrap, type_hash).result
   end
 
   def validate_type(type)
