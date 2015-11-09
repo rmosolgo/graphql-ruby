@@ -17,7 +17,7 @@ module GraphQL
     #     input_field :name, !types.String
     #     input_field :itemId, !types.ID
     #
-    #     return_field :item, Item
+    #     return_field :item, ItemType
     #
     #     resolve -> (inputs, ctx) {
     #       item = Item.find_by_id(inputs[:id])
