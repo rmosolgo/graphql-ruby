@@ -51,8 +51,20 @@ describe GraphQL::Schema::TypeReducer do
       end
     }
 
-    it 'raises an InvalidTypeError' do
+    let(:another_invalid_type) {
+      GraphQL::ObjectType.define do
+        name "AnotherInvalidType"
+        field :someField, String
+      end
+    }
+
+    it 'raises an InvalidTypeError when passed nil' do
       reducer = GraphQL::Schema::TypeReducer.new(invalid_type, {})
+      assert_raises(GraphQL::Schema::InvalidTypeError) { reducer.result }
+    end
+
+    it 'raises an InvalidTypeError when passed an object that isnt a GraphQL::BaseType' do
+      reducer = GraphQL::Schema::TypeReducer.new(another_invalid_type, {})
       assert_raises(GraphQL::Schema::InvalidTypeError) { reducer.result }
     end
   end
