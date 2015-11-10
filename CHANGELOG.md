@@ -6,6 +6,17 @@
 
 ### Bug fixes
 
+## 0.10.2 (10 Nov 2015)
+
+### Breaking changes & deprecations
+
+### New features
+
+### Bug fixes
+
+- Handle blank strings in queries
+- Raise if a field is configured without a proper type #61
+
 ## 0.10.1 (22 Oct 2015)
 
 ### Breaking changes & deprecations
