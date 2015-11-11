@@ -5,18 +5,22 @@ class GraphQL::Schema
   DIRECTIVES = [GraphQL::Directive::SkipDirective, GraphQL::Directive::IncludeDirective]
   DYNAMIC_FIELDS = ["__type", "__typename", "__schema"]
 
-  attr_reader :query, :mutation, :directives, :static_validator
+  attr_reader :query, :mutation, :subscription, :directives, :static_validator
   # Override these if you don't want the default executor:
-  attr_accessor :query_execution_strategy, :mutation_execution_strategy
+  attr_accessor :query_execution_strategy,
+    :mutation_execution_strategy,
+    :subscription_execution_strategy
 
   # @return [Array<#call>] Middlewares suitable for MiddlewareChain, applied to fields during execution
   attr_reader :middleware
 
   # @param query [GraphQL::ObjectType]  the query root for the schema
-  # @param mutation [GraphQL::ObjectType, nil] the mutation root for the schema
-  def initialize(query:, mutation: nil)
+  # @param mutation [GraphQL::ObjectType] the mutation root for the schema
+  # @param subscription [GraphQL::ObjectType] the subscription root for the schema
+  def initialize(query:, mutation: nil, subscription: nil)
     @query    = query
     @mutation = mutation
+    @subscription = subscription
     @directives = DIRECTIVES.reduce({}) { |m, d| m[d.name] = d; m }
     @static_validator = GraphQL::StaticValidation::Validator.new(schema: self)
     @rescue_middleware = GraphQL::Schema::RescueMiddleware.new
@@ -24,6 +28,7 @@ class GraphQL::Schema
     # Default to the built-in execution strategy:
     self.query_execution_strategy = GraphQL::Query::SerialExecution
     self.mutation_execution_strategy = GraphQL::Query::SerialExecution
+    self.subscription_execution_strategy = GraphQL::Query::SerialExecution
   end
 
   def_delegators :@rescue_middleware, :rescue_from, :remove_handler

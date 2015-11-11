@@ -43,7 +43,7 @@ module GraphQL
         directives.maybe.as(:optional_directives).as(:directives) >> space? >>
         selections.as(:selections)
       }
-      rule(:operation_type) { (str("query") | str("mutation")) }
+      rule(:operation_type) { (str("query") | str("mutation") | str("subscription")) }
       rule(:operation_variable_definitions) { str("(") >> space? >> (operation_variable_definition >> separator?).repeat(1) >> space? >> str(")") }
       rule(:operation_variable_definition) {
         value_variable.as(:variable_name) >> space? >>

@@ -17,4 +17,8 @@ GraphQL::Introspection::SchemaType = GraphQL::ObjectType.define do
   field :mutationType, GraphQL::Introspection::TypeType, "The mutation root of this schema" do
     resolve -> (obj, arg, ctx) { obj.mutation }
   end
+
+  field :subscriptionType, GraphQL::Introspection::TypeType, "The subscription root of this schema" do
+    resolve -> (obj, arg, ctx) { obj.subscription }
+  end
 end

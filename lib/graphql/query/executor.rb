@@ -29,14 +29,11 @@ module GraphQL
         operation = query.selected_operation
         return {} if operation.nil?
 
-        if operation.operation_type == "query"
-          root_type = query.schema.query
-          execution_strategy_class = query.schema.query_execution_strategy
-        elsif operation.operation_type == "mutation"
-          root_type = query.schema.mutation
-          execution_strategy_class = query.schema.mutation_execution_strategy
-        end
+        op_type = operation.operation_type
+        root_type = query.schema.public_send(op_type)
+        execution_strategy_class = query.schema.public_send("#{op_type}_execution_strategy")
         execution_strategy = execution_strategy_class.new
+
         query.context.execution_strategy = execution_strategy
         data_result = execution_strategy.execute(operation, root_type, query)
         result = { "data" => data_result }

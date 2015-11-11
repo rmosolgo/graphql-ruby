@@ -103,6 +103,7 @@ type __Schema {
   directives: [__Directive!]!
   queryType: __Type!
   mutationType: __Type
+  subscriptionType: __Type
 }
 
 type __Type {

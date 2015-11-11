@@ -219,5 +219,16 @@ MutationType = GraphQL::ObjectType.define do
   end
 end
 
-DummySchema = GraphQL::Schema.new(query: QueryType, mutation: MutationType)
+SubscriptionType = GraphQL::ObjectType.define do
+  name "Subscription"
+  field :test, types.String do
+    resolve -> (o, a, c) { "Test" }
+  end
+end
+
+DummySchema = GraphQL::Schema.new(
+  query: QueryType,
+  mutation: MutationType,
+  subscription: SubscriptionType,
+)
 DummySchema.rescue_from(NoSuchDairyError) { |err| err.message  }

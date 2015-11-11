@@ -13,4 +13,11 @@ describe GraphQL::Schema do
       assert_equal(2, rescue_middleware.rescue_table.length)
     end
   end
+
+  describe "#subscription" do
+    it "calls fields on the subscription type" do
+      res = schema.execute("subscription { test }")
+      assert_equal("Test", res["data"]["test"])
+    end
+  end
 end
