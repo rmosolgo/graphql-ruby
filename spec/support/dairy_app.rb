@@ -102,8 +102,11 @@ end
 DairyProductInputType = GraphQL::InputObjectType.define {
   name "DairyProductInput"
   description "Properties for finding a dairy product"
-  input_field :source, DairyAnimalEnum
-  input_field :fatContent, types.Float
+  input_field :source, DairyAnimalEnum do
+    description "Where it came from"
+  end
+
+  input_field :fatContent, types.Float, "How much fat it has"
 }
 
 

@@ -78,7 +78,7 @@ module GraphQL::DefinitionHelpers::DefinedByConfig
       end
       argument.name = name
       type && argument.type = type
-      desc && argument.desc = desc
+      desc && argument.description = desc
       default_value && argument.default_value = default_value
       input_fields[name.to_s] = argument
     end
