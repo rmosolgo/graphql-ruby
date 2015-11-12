@@ -16,7 +16,7 @@ render(json: result)
 If your query contains variables, you can provide their values with the `variables:` keyword.
 
 ```ruby
-query_string = "query getPost($postId: !Int){ post(id: $postId) { title } }"
+query_string = "query getPost($postId: Int!){ post(id: $postId) { title } }"
 result = MySchema.execute(query_string, variables: {"postId" => 2})
 ```
 
