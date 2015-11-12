@@ -7,6 +7,7 @@ module GraphQL
       extend Forwardable
 
       def initialize(values)
+        @hash = values
         @values = values.inject({}) do |memo, (inner_key, inner_value)|
           memo[inner_key.to_s] = wrap_value(inner_value)
           memo
@@ -17,6 +18,12 @@ module GraphQL
       # @return [Object] the argument at that key
       def [](key)
         @values[key.to_s]
+      end
+
+      # Get the original Ruby hash
+      # @return [Hash] the original values hash
+      def to_h
+        @hash
       end
 
       def_delegators :@values, :keys, :values, :each
