@@ -18,4 +18,8 @@ describe GraphQL::Query::Arguments do
     end
     assert_equal([['a', 1], ['b', 2]], pairs)
   end
+
+  it 'returns original Ruby hash values with to_h' do
+    assert_equal({ a: 1, b: 2 }, arguments.to_h)
+  end
 end
