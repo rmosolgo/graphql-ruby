@@ -9,6 +9,10 @@ describe GraphQL::Query::Context do
     field :contextAstNodeName, types.String do
       resolve -> (target, args, ctx) { ctx.ast_node.class.name }
     end
+
+    field :queryName, types.String do
+      resolve -> (target, args, ctx) { ctx.query.class.name }
+    end
   }}
   let(:schema) { GraphQL::Schema.new(query: query_type, mutation: nil)}
   let(:result) { schema.execute(query_string, context: {"some_key" => "some value"})}
@@ -31,6 +35,17 @@ describe GraphQL::Query::Context do
 
     it 'provides access to the AST node' do
       expected = {"data" => {"contextAstNodeName" => "GraphQL::Language::Nodes::Field"}}
+      assert_equal(expected, result)
+    end
+  end
+
+  describe "access to the query" do
+    let(:query_string) { %|
+      query getCtx { queryName }
+    |}
+
+    it 'provides access to the AST node' do
+      expected = {"data" => {"queryName" => "GraphQL::Query"}}
       assert_equal(expected, result)
     end
   end

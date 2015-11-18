@@ -37,7 +37,7 @@ class GraphQL::Query
   def initialize(schema, query_string, context: nil, variables: {}, debug: false, validate: true, operation_name: nil)
     @schema = schema
     @debug = debug
-    @context = Context.new(values: context)
+    @context = Context.new(query: self, values: context)
     @validate = validate
     @operation_name = operation_name
     @fragments = {}
