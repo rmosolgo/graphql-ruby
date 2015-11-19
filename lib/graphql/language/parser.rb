@@ -91,7 +91,7 @@ module GraphQL
         value_enum
       )}
       rule(:value_sign?) { match('[\-\+]').maybe }
-      rule(:value_array) { (str("[") >> (value >> separator?).repeat(0) >> str("]")).as(:array) }
+      rule(:value_array) { (str("[") >> space? >> (value >> separator?).repeat(0) >> str("]")).as(:array) }
       rule(:value_boolean) { (str("true") | str("false")).as(:boolean) }
       rule(:value_float) { (value_sign? >> match('\d').repeat(1) >> str(".") >> match('\d').repeat(1) >> (match("[eE]") >> value_sign? >> match('\d').repeat(1)).maybe).as(:float) }
       rule(:value_input_object) { str("{") >> space? >> value_input_object_pair.repeat(1).as(:input_object) >> space? >> str("}") }

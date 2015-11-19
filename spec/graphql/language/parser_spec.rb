@@ -112,6 +112,7 @@ describe GraphQL::Language::Parser do
 
     it 'gets arrays' do
       assert(parser.value.parse_with_debug('[true, 1, "my string", -5.123e56]'), 'array of values')
+      assert(parser.value.parse_with_debug('[ -5.123e56, $myVar ]'), 'array of values with whitespace')
       assert(parser.value.parse_with_debug('[]'), 'empty array')
       assert(parser.value.parse_with_debug('[[true, 1], ["my string", -5.123e56]]'), 'array of arrays')
     end
