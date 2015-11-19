@@ -50,7 +50,7 @@ describe GraphQL::Relay::GlobalNodeIdentification do
   describe "type_from_object" do
     describe "when the return value is not a BaseType" do
       it "raises an error " do
-        err = assert_raises {
+        err = assert_raises(RuntimeError) {
           GraphQL::Relay::GlobalNodeIdentification.instance.type_from_object(:test_error)
         }
         assert_includes err.message, "not_a_type (Symbol)"
