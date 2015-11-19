@@ -29,6 +29,7 @@ describe GraphQL::Language::Transform do
       # assign fragments:
       fragment personInfo on Person {
         birthdate, name # with fields
+        hobbies(names: [])
       }
 
       fragment petInfo on Pet { isHousebroken, species } # all on one line
