@@ -29,7 +29,7 @@ module GraphQL
       # @param [GraphQL::Field] A field which returns items to be wrapped as a connection
       # @return [GraphQL::Field] A field which serves a connections
       def self.create(underlying_field)
-        underlying_field.arguments = underlying_field.arguments.merge(DEFAULT_ARGUMENTS)
+        underlying_field.arguments = underlying_field.arguments.reverse_merge(DEFAULT_ARGUMENTS)
         # TODO: make a public API on GraphQL::Field to expose this proc
         original_resolve = underlying_field.instance_variable_get(:@resolve_proc)
         underlying_field.resolve = get_connection_resolve(underlying_field.name, original_resolve)

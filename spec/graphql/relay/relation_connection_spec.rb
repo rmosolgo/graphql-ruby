@@ -115,4 +115,37 @@ describe GraphQL::Relay::RelationConnection do
       assert_equal(3, bases.length)
     end
   end
+
+  describe "overriding default order" do
+    let(:query_string) {%|
+      query getBases {
+        empire {
+          basesByName { ... basesFields }
+          bases { ... basesFields }
+        }
+      }
+      fragment basesFields on BaseConnection {
+        edges {
+          node {
+            name
+          }
+        }
+      }
+    |}
+
+    def get_names(result, field_name)
+      bases = result["data"]["empire"][field_name]["edges"]
+      base_names = bases.map { |b| b["node"]["name"] }
+    end
+
+    it "applies the default value" do
+      result = query(query_string)
+
+      bases_by_id   = ["Death Star", "Shield Generator", "Headquarters"]
+      bases_by_name = ["Death Star", "Headquarters", "Shield Generator"]
+
+      assert_equal(bases_by_id, get_names(result, "bases"))
+      assert_equal(bases_by_name, get_names(result, "basesByName"))
+    end
+  end
 end

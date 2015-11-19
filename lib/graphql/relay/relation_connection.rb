@@ -1,6 +1,8 @@
 module GraphQL
   module Relay
     class RelationConnection < BaseConnection
+      DEFAULT_ORDER = "id"
+
       def cursor_from_node(item)
         order_value = item.public_send(order_name)
         cursor_parts = [order, order_value]
@@ -8,7 +10,7 @@ module GraphQL
       end
 
       def order
-        @order ||= (super || "id")
+        @order ||= (super || DEFAULT_ORDER)
       end
 
       private
@@ -64,7 +66,7 @@ module GraphQL
       def order_direction
         @order_direction ||= order.start_with?("-") ? :desc : :asc
       end
-      
+
       def table_name
         @table_name ||= object.table.table_name
       end
