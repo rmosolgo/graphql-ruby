@@ -13,7 +13,11 @@ NodeIdentification = GraphQL::Relay::GlobalNodeIdentification.define do
   end
 
   type_from_object -> (object) do
-    STAR_WARS_DATA["Faction"].values.include?(object) ? Faction : Ship
+    if object == :test_error
+      :not_a_type
+    else
+      STAR_WARS_DATA["Faction"].values.include?(object) ? Faction : Ship
+    end
   end
 end
 

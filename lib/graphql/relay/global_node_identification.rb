@@ -11,7 +11,7 @@ module GraphQL
       attr_accessor :object_from_id_proc, :type_from_object_proc
 
       class << self
-        attr_reader :instance
+        attr_accessor :instance
         def new(*args, &block)
           @instance = super
         end
@@ -66,7 +66,13 @@ module GraphQL
       # Use the provided config to
       # get a type for a given object
       def type_from_object(object)
-        @type_from_object_proc.call(object)
+        type_result = @type_from_object_proc.call(object)
+        if !type_result.is_a?(GraphQL::BaseType)
+          type_str = "#{type_result} (#{type_result.class.name})"
+          raise "type_from_object(#{object}) returned #{type_str}, but it should return a GraphQL type"
+        else
+          type_result
+        end
       end
 
       # Use the provided config to
