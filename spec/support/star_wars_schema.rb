@@ -39,7 +39,7 @@ end
 
 # Define a connection which will wrap an ActiveRecord::Relation.
 # We use an optional block to add fields to the connection type:
-BaseConnection = GraphQL::Relay::RelationConnection.create_type(BaseType) do
+BaseType.define_connection do
   field :totalCount do
     type types.Int
     resolve -> (obj, args, ctx) { obj.object.count }
@@ -65,7 +65,7 @@ Faction = GraphQL::ObjectType.define do
     # You can define arguments here and use them in the connection
     argument :nameIncludes, types.String
   end
-  connection :bases, BaseConnection do
+  connection :bases, BaseType.connection_type do
     # Resolve field should return an Array, the Connection
     # will do the rest!
     resolve -> (obj, args, ctx) {
@@ -78,8 +78,8 @@ Faction = GraphQL::ObjectType.define do
     argument :nameIncludes, types.String
   end
 
-  connection :basesClone, BaseConnection
-  connection :basesByName, BaseConnection, property: :bases do
+  connection :basesClone, BaseType.connection_type
+  connection :basesByName, BaseType.connection_type, property: :bases do
     argument :order, types.String, default_value: "name"
   end
 end
