@@ -18,7 +18,7 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
   let(:validator) { GraphQL::StaticValidation::Validator.new(schema: DummySchema, rules: [GraphQL::StaticValidation::ArgumentLiteralsAreCompatible]) }
   let(:errors) { validator.validate(document) }
 
-  it 'finds undefined arguments to fields and directives' do
+  it 'finds undefined or missing-required arguments to fields and directives' do
     assert_equal(5, errors.length)
 
     query_root_error = {
@@ -34,13 +34,13 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
     assert_includes(errors, directive_error)
 
     input_object_error = {
-      "message"=>"Argument product on Field 'searchDairy' has an invalid value",
+      "message"=>"Argument product on Field 'badSource' has an invalid value",
       "locations"=>[{"line"=>6, "column"=>7}]
     }
     assert_includes(errors, input_object_error)
 
     missing_required_field_error = {
-      "message"=>"Argument product on Field 'searchDairy' has an invalid value",
+      "message"=>"Argument product on Field 'missingSource' has an invalid value",
       "locations"=>[{"line"=>7, "column"=>7}]
     }
     assert_includes(errors, missing_required_field_error)
