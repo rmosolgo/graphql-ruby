@@ -102,7 +102,7 @@ end
 DairyProductInputType = GraphQL::InputObjectType.define {
   name "DairyProductInput"
   description "Properties for finding a dairy product"
-  input_field :source, DairyAnimalEnum do
+  input_field :source, !DairyAnimalEnum do
     description "Where it came from"
   end
 

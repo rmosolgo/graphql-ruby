@@ -103,7 +103,7 @@ describe GraphQL::Introspection::TypeType do
               "description"=>"Properties for finding a dairy product",
               "kind"=>"INPUT_OBJECT",
               "inputFields"=>[
-                {"name"=>"source", "type"=>{ "name" => "DairyAnimal"}, "defaultValue"=>nil},
+                {"name"=>"source", "type"=>{ "name" => "Non-Null"}, "defaultValue"=>nil},
                 {"name"=>"fatContent", "type"=>{ "name" => "Float"}, "defaultValue"=>nil}
               ]
             }

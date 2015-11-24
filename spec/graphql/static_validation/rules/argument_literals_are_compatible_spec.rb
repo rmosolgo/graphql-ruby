@@ -7,6 +7,7 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
       cheese(id: 1) { source @skip(if: {id: 1})}
       yakSource: searchDairy(product: [{source: YAK, fatContent: 1.1}]) { source }
       badSource: searchDairy(product: [{source: 1.1}]) { source }
+      missingSource: searchDairy(product: [{fatContent: 1.1}]) { source }
     }
 
     fragment cheeseFields on Cheese {
@@ -18,7 +19,7 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
   let(:errors) { validator.validate(document) }
 
   it 'finds undefined arguments to fields and directives' do
-    assert_equal(4, errors.length)
+    assert_equal(5, errors.length)
 
     query_root_error = {
       "message"=>"Argument id on Field 'cheese' has an invalid value",
@@ -38,9 +39,15 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
     }
     assert_includes(errors, input_object_error)
 
+    missing_required_field_error = {
+      "message"=>"Argument product on Field 'searchDairy' has an invalid value",
+      "locations"=>[{"line"=>7, "column"=>7}]
+    }
+    assert_includes(errors, missing_required_field_error)
+
     fragment_error = {
       "message"=>"Argument source on Field 'similarCheese' has an invalid value",
-      "locations"=>[{"line"=>10, "column"=>7}]
+      "locations"=>[{"line"=>11, "column"=>7}]
     }
     assert_includes(errors, fragment_error)
   end
