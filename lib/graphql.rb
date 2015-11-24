@@ -22,7 +22,11 @@ module GraphQL
   def self.parse(string, as: nil)
     parser = as ? GraphQL::PARSER.send(as) : GraphQL::PARSER
     tree = parser.parse(string)
-    GraphQL::TRANSFORM.apply(tree)
+    document = GraphQL::TRANSFORM.apply(tree)
+    if !document.is_a?(GraphQL::Language::Nodes::Document)
+      raise("Parse failed! Sorry, somehow we failed to turn this string into a document. Please report this bug!")
+    end
+    document
   rescue Parslet::ParseFailed => error
     line, col = error.cause.source.line_and_column(error.cause.pos)
     raise GraphQL::ParseError.new(error.message, line, col, string)
