@@ -2,8 +2,8 @@ module GraphQL
   module Relay
     # Subclasses must implement:
     #   - {#cursor_from_node}, which returns an opaque cursor for the given item
-    #   - {#sliced_edges}, which slices by `before` & `after`
-    #   - {#paged_edges}, which applies `first` & `last` limits
+    #   - {#sliced_nodes}, which slices by `before` & `after`
+    #   - {#paged_nodes}, which applies `first` & `last` limits
     #
     # In a subclass, you have access to
     #   - {#object}, the object which the connection will wrap
