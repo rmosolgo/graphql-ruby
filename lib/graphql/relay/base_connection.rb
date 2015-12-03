@@ -37,7 +37,7 @@ module GraphQL
       # @return [subclass of BaseConnection] a connection Class for wrapping `items`
       def self.connection_for_items(items)
         implementation = CONNECTION_IMPLEMENTATIONS.find do |items_class_name, connection_class|
-          items.class.name == items_class_name
+          items.class.ancestors.map(&:name).include? items_class_name
         end
         if implementation.nil?
           raise("No connection implementation to wrap #{items.class} (#{items})")
