@@ -66,7 +66,7 @@ module GraphQL::DefinitionHelpers::DefinedByConfig
 
     # For EnumType
     def value(name, desc = nil, deprecation_reason: nil, value: name)
-      values << GraphQL::EnumType::EnumValue.new(name: name, description: description, deprecation_reason: deprecation_reason, value: value)
+      values << GraphQL::EnumType::EnumValue.new(name: name, description: desc, deprecation_reason: deprecation_reason, value: value)
     end
 
     # For InputObjectType
