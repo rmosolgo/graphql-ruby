@@ -36,8 +36,8 @@ module GraphQL
       # @param [Object] A collection of items (eg, Array, AR::Relation)
       # @return [subclass of BaseConnection] a connection Class for wrapping `items`
       def self.connection_for_items(items)
-        implementation = CONNECTION_IMPLEMENTATIONS.find do |items_class, connection_class|
-          items.is_a?(items_class)
+        implementation = CONNECTION_IMPLEMENTATIONS.find do |items_class_name, connection_class|
+          items.class.name == items_class_name
         end
         if implementation.nil?
           raise("No connection implementation to wrap #{items.class} (#{items})")
@@ -51,7 +51,7 @@ module GraphQL
       # @param [Class] A class representing a collection (eg, Array, AR::Relation)
       # @param [Class] A class implementing Connection methods
       def self.register_connection_implementation(items_class, connection_class)
-        CONNECTION_IMPLEMENTATIONS[items_class] = connection_class
+        CONNECTION_IMPLEMENTATIONS[items_class.name] = connection_class
       end
 
       attr_reader :object, :arguments
