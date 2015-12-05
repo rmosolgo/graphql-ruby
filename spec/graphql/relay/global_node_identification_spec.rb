@@ -22,7 +22,7 @@ describe GraphQL::Relay::GlobalNodeIdentification do
       }|)
       expected = {"data" => {
         "node"=>{
-          "id"=>"RmFjdGlvbi0x",
+          "id"=>"RmFjdGlvbi0tLTE=",
           "name"=>"Alliance to Restore the Republic",
           "ships"=>{
             "edges"=>[
@@ -44,6 +44,20 @@ describe GraphQL::Relay::GlobalNodeIdentification do
       type_name, id = node_identification.from_global_id(global_id)
       assert_equal("SomeType", type_name)
       assert_equal("123", id)
+    end
+
+    it "handles ID's and Types with dashes in them" do
+      global_id = node_identification.to_global_id("Type-With-UUID", "250cda0e-a89d-41cf-99e1-2872d89f1100")
+      type_name, id = node_identification.from_global_id(global_id)
+      assert_equal("Type-With-UUID", type_name)
+      assert_equal("250cda0e-a89d-41cf-99e1-2872d89f1100", id)
+    end
+
+    it "raises an error if you try and use a reserved character in the ID" do
+      err = assert_raises(RuntimeError) {
+        node_identification.to_global_id("Best---Thing", "234")
+      }
+      assert_includes err.message, "to_global_id(Best---Thing, 234) contains reserved characters `---`"
     end
   end
 
