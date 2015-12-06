@@ -96,8 +96,7 @@ If you're building a backend for [Relay](http://facebook.github.io/relay/), you'
 ## To Do
 
 - Code clean-up
-  - Raise if you try to configure an attribute which doesn't suit the type
-    - ie, if you try to define `resolve` on an ObjectType, it should somehow raise
+  - Raise if you try to configure an attribute which doesn't suit the type (ie, if you try to define `resolve` on an ObjectType, it should somehow raise)
   - Clean up file structure in `lib/query` (don't need serial_execution namespace anymore)
   - Overriding `!` on types breaks ActiveSupport `.blank?`
 
@@ -109,17 +108,18 @@ If you're building a backend for [Relay](http://facebook.github.io/relay/), you'
     my_type.blank?
     # => MyType!
     ```
+
 - Statically validate type of variables (see early return in LiteralValidator)
 - Big ideas:
-  - Use [graphql-parser](https://github.com/shopify/graphql-parser) (Ruby bindings for [libgraphqlparser](https://github.com/graphql/libgraphqlparser)) instead of Parslet
+  - Use [graphql-parser](https://github.com/shopify/graphql-parser) (Ruby bindings for [libgraphqlparser](https://github.com/graphql/libgraphqlparser)) instead of Parslet ([underway-ish](https://github.com/rmosolgo/graphql-libgraphqlparser-ruby))
   - Revamp the fixture Schema to be more useful (better names, more extensible)
   - __Subscriptions__
     - This is a good chance to make an `Operation` abstraction of which `query`, `mutation` and `subscription` are members
     - For a subscription, `graphql` would send an outbound message to the system (allow the host application to manage its own subscriptions via Pusher, ActionCable, whatever)
-  - Pre-process query strings?
-    - Remove `@skip`-ed things
-    - Inline any fragments
-    - Inline variables?
+- Documentation
+  - Write a "Getting started with Rails"-type blog post
+  - Compile existing articles & slide decks and link to them from a guide
+  - Better docs for graphql-relay-ruby
 
 ## Goals
 
