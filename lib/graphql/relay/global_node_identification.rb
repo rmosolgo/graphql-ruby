@@ -6,8 +6,10 @@ module GraphQL
     # GlobalIdField depends on that, since it calls class methods
     # which delegate to the singleton instance.
     class GlobalNodeIdentification
-      # Just to encode data in the id, use something that won't conflict
-      ID_AND_TYPE_SEPARATOR = "---"
+      class << self
+	attr_accessor :id_separator
+      end
+      self.id_separator = "-"
 
       include GraphQL::DefinitionHelpers::DefinedByConfig
       defined_by_config :object_from_id_proc, :type_from_object_proc
@@ -57,16 +59,16 @@ module GraphQL
       # Create a global ID for type-name & ID
       # (This is an opaque transform)
       def to_global_id(type_name, id)
-        if type_name.include?(ID_AND_TYPE_SEPARATOR) || id.include?(ID_AND_TYPE_SEPARATOR)
-          raise "to_global_id(#{type_name}, #{id}) contains reserved characters `#{ID_AND_TYPE_SEPARATOR}`"
+        if type_name.include?(self.class.id_separator) || id.include?(self.class.id_separator)
+          raise "to_global_id(#{type_name}, #{id}) contains reserved characters `#{self.class.id_separator}`"
         end
-        Base64.strict_encode64([type_name, id].join(ID_AND_TYPE_SEPARATOR))
+        Base64.strict_encode64([type_name, id].join(self.class.id_separator))
       end
 
       # Get type-name & ID from global ID
       # (This reverts the opaque transform)
       def from_global_id(global_id)
-        Base64.decode64(global_id).split(ID_AND_TYPE_SEPARATOR)
+        Base64.decode64(global_id).split(self.class.id_separator)
       end
 
       # Use the provided config to
