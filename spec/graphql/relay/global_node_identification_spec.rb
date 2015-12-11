@@ -38,12 +38,42 @@ describe GraphQL::Relay::GlobalNodeIdentification do
     end
   end
 
+  after do
+    # Set the id_separator back to it's default after each spec, since some of
+    # them change it at runtime
+    GraphQL::Relay::GlobalNodeIdentification.id_separator = "-"
+  end
+
+  describe 'id_separator' do
+    it "allows you to change it at runtime" do
+      GraphQL::Relay::GlobalNodeIdentification.id_separator = "-zomg-"
+
+      assert_equal("-zomg-", GraphQL::Relay::GlobalNodeIdentification.id_separator)
+    end
+  end
+
   describe 'to_global_id / from_global_id ' do
     it 'Converts typename and ID to and from ID' do
       global_id = node_identification.to_global_id("SomeType", "123")
       type_name, id = node_identification.from_global_id(global_id)
       assert_equal("SomeType", type_name)
       assert_equal("123", id)
+    end
+
+    it "allows you to change the id_separator" do
+      GraphQL::Relay::GlobalNodeIdentification.id_separator = "---"
+
+      global_id = node_identification.to_global_id("Type-With-UUID", "250cda0e-a89d-41cf-99e1-2872d89f1100")
+      type_name, id = node_identification.from_global_id(global_id)
+      assert_equal("Type-With-UUID", type_name)
+      assert_equal("250cda0e-a89d-41cf-99e1-2872d89f1100", id)
+    end
+
+    it "raises an error if you try and use a reserved character in the ID" do
+      err = assert_raises(RuntimeError) {
+        node_identification.to_global_id("Best-Thing", "234")
+      }
+      assert_includes err.message, "to_global_id(Best-Thing, 234) contains reserved characters `-`"
     end
   end
 
