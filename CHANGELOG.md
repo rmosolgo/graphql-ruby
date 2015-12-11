@@ -1,5 +1,11 @@
 # graphql-relay
 
+## 0.6.0 (11 Dec 2015)
+
+### Breaking Change
+
+- `GlobalNodeIdentification#object_from_id(id, ctx)` now accepts context as the second argument #9
+
 ## 0.5.1 (11 Dec 2015)
 
 
