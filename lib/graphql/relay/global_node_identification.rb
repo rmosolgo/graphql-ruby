@@ -51,7 +51,7 @@ module GraphQL
           type(ident.interface)
           argument :id, !types.ID
           resolve -> (obj, args, ctx) {
-            ident.object_from_id(args[:id])
+            ident.object_from_id(args[:id], ctx)
           }
         end
       end
@@ -85,8 +85,8 @@ module GraphQL
 
       # Use the provided config to
       # get an object from a UUID
-      def object_from_id(id)
-        @object_from_id_proc.call(id)
+      def object_from_id(id, ctx)
+        @object_from_id_proc.call(id, ctx)
       end
     end
   end

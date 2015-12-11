@@ -7,7 +7,7 @@
 # - an interface for Relay ObjectTypes to implement
 # See global_node_identification.rb for the full API.
 NodeIdentification = GraphQL::Relay::GlobalNodeIdentification.define do
-  object_from_id -> (id) do
+  object_from_id -> (id, ctx) do
     type_name, id = NodeIdentification.from_global_id(id)
     STAR_WARS_DATA[type_name][id]
   end
