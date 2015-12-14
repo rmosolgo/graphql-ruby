@@ -1,5 +1,11 @@
 # graphql-relay
 
+## O.6.1 (14 Dec 2015)
+
+### Bug Fix
+
+- Stringify `id` when passed into `to_global_id`
+
 ## 0.6.0 (11 Dec 2015)
 
 ### Breaking Change
