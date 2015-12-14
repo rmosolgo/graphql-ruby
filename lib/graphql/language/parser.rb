@@ -64,7 +64,7 @@ module GraphQL
       }
 
       rule(:field_alias) { name.as(:alias_name) >> space? >> str(":") >> space? }
-      rule(:field_arguments) { str("(") >> field_argument.repeat(1) >> str(")") }
+      rule(:field_arguments) { str("(") >> space? >> field_argument.repeat(1) >> space? >> str(")") }
       rule(:field_argument) { name.as(:field_argument_name) >> str(":") >> space? >> value.as(:field_argument_value) >> separator? }
 
       rule(:directives) { (directive >> separator?).repeat(1) }

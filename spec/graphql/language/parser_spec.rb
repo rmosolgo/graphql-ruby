@@ -15,7 +15,9 @@ describe GraphQL::Language::Parser do
       $input: SomeInputType = {key: "value"},
     ) @veggie, @healthy(vitamins: true) {
       # change the cucumber
-      changeStuff(thing: $cucumbers) {
+      changeStuff(
+        thing: $cucumbers
+      ) {
         id,
         name,
         ... on Species { color },

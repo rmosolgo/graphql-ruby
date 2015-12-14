@@ -109,6 +109,7 @@ If you're building a backend for [Relay](http://facebook.github.io/relay/), you'
     # => MyType!
     ```
 
+- Accept strings for circular type references
 - Statically validate type of variables (see early return in LiteralValidator)
 - Big ideas:
   - Use [graphql-parser](https://github.com/shopify/graphql-parser) (Ruby bindings for [libgraphqlparser](https://github.com/graphql/libgraphqlparser)) instead of Parslet ([underway-ish](https://github.com/rmosolgo/graphql-libgraphqlparser-ruby))
