@@ -7,7 +7,7 @@ module GraphQL
     # which delegate to the singleton instance.
     class GlobalNodeIdentification
       class << self
-	attr_accessor :id_separator
+        attr_accessor :id_separator
       end
       self.id_separator = "-"
 
@@ -59,10 +59,11 @@ module GraphQL
       # Create a global ID for type-name & ID
       # (This is an opaque transform)
       def to_global_id(type_name, id)
-        if type_name.include?(self.class.id_separator) || id.include?(self.class.id_separator)
+        id_str = id.to_s
+        if type_name.include?(self.class.id_separator) || id_str.include?(self.class.id_separator)
           raise "to_global_id(#{type_name}, #{id}) contains reserved characters `#{self.class.id_separator}`"
         end
-        Base64.strict_encode64([type_name, id].join(self.class.id_separator))
+        Base64.strict_encode64([type_name, id_str].join(self.class.id_separator))
       end
 
       # Get type-name & ID from global ID

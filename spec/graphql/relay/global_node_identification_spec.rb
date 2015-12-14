@@ -54,7 +54,7 @@ describe GraphQL::Relay::GlobalNodeIdentification do
 
   describe 'to_global_id / from_global_id ' do
     it 'Converts typename and ID to and from ID' do
-      global_id = node_identification.to_global_id("SomeType", "123")
+      global_id = node_identification.to_global_id("SomeType", 123)
       type_name, id = node_identification.from_global_id(global_id)
       assert_equal("SomeType", type_name)
       assert_equal("123", id)
