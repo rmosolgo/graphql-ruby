@@ -7,6 +7,7 @@
 
 Helpers for using [`graphql`](https://github.com/rmosolgo/graphql-ruby) with Relay.
 
+[API Documentation](http://www.rubydoc.info/github/rmosolgo/graphql-relay-ruby)
 ## Installation
 
 ```ruby
