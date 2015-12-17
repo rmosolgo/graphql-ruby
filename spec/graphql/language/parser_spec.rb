@@ -25,13 +25,13 @@ describe GraphQL::Language::Parser do
       }
     }
     subscription watchStuff {
-      field, otherField
+      field(emptyObj: {}), otherField
     }
 
     # a fragment:
     fragment family on Species {
       family {
-        name,                                       # name of the family
+        name,                                     # name of the family
         members(first: 3, query: {isPlant: true}) # some of the other examples
       }
     }
@@ -127,6 +127,8 @@ describe GraphQL::Language::Parser do
       assert(parser.value.parse_with_debug('{name: "tomato", calories: 50}'), 'gets scalar values')
       assert(parser.value.parse_with_debug('{listOfValues: [1, 2, [3]], nestedObject: {nestedKey: "nested{Value}"}}'), 'gets complex values')
       assert(parser.value.parse_with_debug('{variableKey: $variableValue}'), 'gets variables')
+      assert(parser.value.parse_with_debug('{}'), 'gets empty')
+      assert(parser.value.parse_with_debug('{  }'), 'gets empty')
     end
 
     it 'gets enums' do

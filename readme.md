@@ -110,6 +110,7 @@ If you're building a backend for [Relay](http://facebook.github.io/relay/), you'
     ```
 
 - Accept strings for circular type references
+- Interface's possible types should be a property of the schema, not the interface
 - Statically validate type of variables (see early return in LiteralValidator)
 - Big ideas:
   - Use [graphql-parser](https://github.com/shopify/graphql-parser) (Ruby bindings for [libgraphqlparser](https://github.com/graphql/libgraphqlparser)) instead of Parslet ([underway-ish](https://github.com/rmosolgo/graphql-libgraphqlparser-ruby))
