@@ -10,6 +10,7 @@ describe GraphQL::StaticValidation::VariableUsagesAreAllowed do
         $goodAnimals: [DairyAnimal!]!,
         $badAnimals: [DairyAnimal]!,
         $deepAnimals: [[DairyAnimal!]!]!,
+        $goodSource: DairyAnimal!,
     ) {
       goodCheese:   cheese(id: $goodInt)  { source }
       okCheese:     cheese(id: $okInt)    { source }
@@ -24,6 +25,10 @@ describe GraphQL::StaticValidation::VariableUsagesAreAllowed do
       milk(id: 1) {
         flavors(limit: $okInt)
       }
+
+      searchDairy(product: [{source: $goodSource}]) {
+        ... on Cheese { id }
+      }
     }
   ')}
 
@@ -35,19 +40,19 @@ describe GraphQL::StaticValidation::VariableUsagesAreAllowed do
     expected = [
       {
         "message"=>"Nullability mismatch on variable $badInt and argument id (Int / Int!)",
-        "locations"=>[{"line"=>13, "column"=>28}]
-      },
-      {
-        "message"=>"Type mismatch on variable $badStr and argument id (String! / Int!)",
         "locations"=>[{"line"=>14, "column"=>28}]
       },
       {
+        "message"=>"Type mismatch on variable $badStr and argument id (String! / Int!)",
+        "locations"=>[{"line"=>15, "column"=>28}]
+      },
+      {
         "message"=>"Nullability mismatch on variable $badAnimals and argument source ([DairyAnimal]! / [DairyAnimal!]!)",
-        "locations"=>[{"line"=>17, "column"=>30}]
+        "locations"=>[{"line"=>18, "column"=>30}]
       },
       {
         "message"=>"List dimension mismatch on variable $deepAnimals and argument source ([[DairyAnimal!]!]! / [DairyAnimal!]!)",
-        "locations"=>[{"line"=>18, "column"=>32}]
+        "locations"=>[{"line"=>19, "column"=>32}]
       }
     ]
     assert_equal(expected, errors)

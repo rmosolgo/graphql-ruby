@@ -22,31 +22,31 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
     assert_equal(5, errors.length)
 
     query_root_error = {
-      "message"=>"Argument id on Field 'cheese' has an invalid value",
+      "message"=>"Argument 'id' on Field 'cheese' has an invalid value",
       "locations"=>[{"line"=>3, "column"=>7}]
     }
     assert_includes(errors, query_root_error)
 
     directive_error = {
-      "message"=>"Argument if on Directive 'skip' has an invalid value",
+      "message"=>"Argument 'if' on Directive 'skip' has an invalid value",
       "locations"=>[{"line"=>4, "column"=>31}]
     }
     assert_includes(errors, directive_error)
 
     input_object_error = {
-      "message"=>"Argument product on Field 'badSource' has an invalid value",
+      "message"=>"Argument 'product' on Field 'badSource' has an invalid value",
       "locations"=>[{"line"=>6, "column"=>7}]
     }
     assert_includes(errors, input_object_error)
 
     missing_required_field_error = {
-      "message"=>"Argument product on Field 'missingSource' has an invalid value",
+      "message"=>"Argument 'product' on Field 'missingSource' has an invalid value",
       "locations"=>[{"line"=>7, "column"=>7}]
     }
     assert_includes(errors, missing_required_field_error)
 
     fragment_error = {
-      "message"=>"Argument source on Field 'similarCheese' has an invalid value",
+      "message"=>"Argument 'source' on Field 'similarCheese' has an invalid value",
       "locations"=>[{"line"=>11, "column"=>7}]
     }
     assert_includes(errors, fragment_error)

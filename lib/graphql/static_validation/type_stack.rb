@@ -24,6 +24,9 @@ class GraphQL::StaticValidation::TypeStack
   # @return [Array<GraphQL::Node::Directive>] directives which have been entered
   attr_reader :directive_definitions
 
+  # @return [Array<GraphQL::Node::Argument>] arguments which have been entered
+  attr_reader :argument_definitions
+
   # @param schema [GraphQL::Schema] the schema whose types to use when climbing this document
   # @param visitor [GraphQL::Language::Visitor] a visitor to follow & watch the types
   def initialize(schema, visitor)
@@ -31,6 +34,7 @@ class GraphQL::StaticValidation::TypeStack
     @object_types = []
     @field_definitions = []
     @directive_definitions = []
+    @argument_definitions = []
     visitor.enter << -> (node, parent) { PUSH_STRATEGIES[node.class].push(self, node) }
     visitor.leave << -> (node, parent) { PUSH_STRATEGIES[node.class].pop(self, node) }
   end
@@ -65,7 +69,7 @@ class GraphQL::StaticValidation::TypeStack
 
   class OperationDefinitionStrategy
     def push(stack, node)
-      # query or mutation
+      # eg, QueryType, MutationType
       object_type = stack.schema.public_send(node.operation_type)
       stack.object_types.push(object_type)
     end
@@ -107,6 +111,33 @@ class GraphQL::StaticValidation::TypeStack
 
     def pop(stack, node)
       stack.directive_definitions.pop
+    end
+  end
+
+  class ArgumentStrategy
+    # Push `argument_defn` onto the stack.
+    # It's possible that `argument_defn` will be nil.
+    # Push it anyways so `pop` has something to pop.
+    def push(stack, node)
+      if stack.argument_definitions.last
+        arg_type = stack.argument_definitions.last.type.unwrap
+        if arg_type.kind.input_object?
+          argument_defn = arg_type.input_fields[node.name]
+        else
+          argument_defn = nil
+        end
+      elsif stack.directive_definitions.last
+        argument_defn = stack.directive_definitions.last.arguments[node.name]
+      elsif stack.field_definitions.last
+        argument_defn = stack.field_definitions.last.arguments[node.name]
+      else
+        argument_defn = nil
+      end
+      stack.argument_definitions.push(argument_defn)
+    end
+
+    def pop(stack, node)
+      stack.argument_definitions.pop
     end
   end
 

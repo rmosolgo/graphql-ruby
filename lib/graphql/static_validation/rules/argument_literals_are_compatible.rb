@@ -10,7 +10,7 @@ class GraphQL::StaticValidation::ArgumentLiteralsAreCompatible < GraphQL::Static
       else
         parent.name
       end
-      context.errors << message("Argument #{node.name} on #{parent.class.name.split("::").last} '#{field_name}' has an invalid value", parent)
+      context.errors << message("Argument '#{node.name}' on #{parent.class.name.split("::").last} '#{field_name}' has an invalid value", parent)
     end
   end
 end

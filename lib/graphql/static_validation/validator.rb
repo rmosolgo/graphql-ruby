@@ -54,12 +54,21 @@ class GraphQL::StaticValidation::Validator
       @type_stack.object_types
     end
 
+    # @return [GraphQL::Field, nil] The most-recently-entered GraphQL::Field, if currently inside one
     def field_definition
       @type_stack.field_definitions.last
     end
 
+    # @return [GraphQL::Directive, nil] The most-recently-entered GraphQL::Directive, if currently inside one
     def directive_definition
       @type_stack.directive_definitions.last
+    end
+
+    # @return [GraphQL::Argument, nil] The most-recently-entered GraphQL::Argument, if currently inside one
+    def argument_definition
+      # Don't get the _last_ one because that's the current one.
+      # Get the second-to-last one, which is the parent of the current one.
+      @type_stack.argument_definitions[-2]
     end
 
     # Don't try to validate dynamic fields

@@ -15,6 +15,10 @@ class GraphQL::StaticValidation::VariableUsagesAreAllowed
         arguments = context.field_definition.arguments
       elsif parent.is_a?(GraphQL::Language::Nodes::Directive)
         arguments = context.directive_definition.arguments
+      elsif parent.is_a?(GraphQL::Language::Nodes::InputObject)
+        arguments = context.argument_definition.type.unwrap.input_fields
+      else
+        raise("Unexpected argument parent: #{parent}")
       end
       var_defn_ast = declared_variables[node.value.name]
       # Might be undefined :(
