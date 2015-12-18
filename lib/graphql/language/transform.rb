@@ -95,7 +95,7 @@ module GraphQL
       rule(array: sequence(:v)) { v }
       rule(array: simple(:v)) { [] } # just `nil`
       rule(boolean: simple(:v)) { v == "true" ? true : false }
-      rule(input_object: sequence(:v)) { create_node(:InputObject, pairs: v, line: v.first.line, col: v.first.col) }
+      rule(input_object: sequence(:v)) { create_node(:InputObject, pairs: v, line: (v.first ? v.first.line : 1), col: (v.first ? v.first.col : 1)) }
       rule(input_object_name: simple(:n), input_object_value: simple(:v)) { create_node(:Argument, name: n.to_s, value: v, position_source: n)}
       rule(input_object_name: simple(:n), input_object_value: sequence(:v)) { create_node(:Argument, name: n.to_s, value: v, position_source: n)}
       rule(int: simple(:v)) { v.to_i }

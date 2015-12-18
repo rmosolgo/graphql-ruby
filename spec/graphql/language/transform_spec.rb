@@ -23,6 +23,7 @@ describe GraphQL::Language::Transform do
           ...personInfo
           someStuff(vars: [1,2,3])
           someOtherStuff(input: {ints: [1,2,3]})
+          someEmptyStuff(emptyObj: {}, emptySpaceObj: { })
         }
       }
 
@@ -107,6 +108,24 @@ describe GraphQL::Language::Transform do
     assert_equal("flag", res.directives.first.name)
     assert_equal('"something"', res.directives.last.arguments.first.value)
     assert_equal(2, res.selections.length)
+  end
+
+  it 'transforms input objects' do
+    res_one_pair    = get_result(%q|{one: 1}|, parse: :value_input_object)
+    res_two_pair    = get_result(%q|{first: "Apple", second: "Banana"}|, parse: :value_input_object)
+    res_empty       = get_result(%q|{}|, parse: :value_input_object)
+    res_empty_space = get_result(%q|{ }|, parse: :value_input_object)
+
+    assert_equal('one', res_one_pair.pairs[0].name)
+    assert_equal(1    , res_one_pair.pairs[0].value)
+
+    assert_equal('first' , res_two_pair.pairs[0].name)
+    assert_equal('Apple' , res_two_pair.pairs[0].value)
+    assert_equal('second', res_two_pair.pairs[1].name)
+    assert_equal('Banana', res_two_pair.pairs[1].value)
+
+    assert_equal([], res_empty.pairs)
+    assert_equal([], res_empty_space.pairs)
   end
 
   it 'transforms directives' do
