@@ -10,6 +10,7 @@
 class GraphQL::InputObjectType < GraphQL::BaseType
   attr_accessor :name, :description, :input_fields
   defined_by_config :name, :description, :input_fields
+  alias :arguments :input_fields
 
   def input_fields=(new_fields)
     @input_fields = GraphQL::DefinitionHelpers::StringNamedHash.new(new_fields).to_h
