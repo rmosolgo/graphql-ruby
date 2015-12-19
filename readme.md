@@ -121,7 +121,6 @@ If you're building a backend for [Relay](http://facebook.github.io/relay/), you'
 - Documentation
   - Write a "Getting started with Rails"-type blog post
   - Compile existing articles & slide decks and link to them from a guide
-  - Better docs for graphql-relay-ruby
 
 ## Goals
 

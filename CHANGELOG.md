@@ -6,6 +6,26 @@
 
 ### Bug fixes
 
+## 0.10.5 (19 Dec 2015)
+
+### Bug fixes
+
+- Accept enum value description in definition #71
+- Correctly parse empty input objects #75
+- Correctly parse arguments preceded by newline
+- Find undefined input object keys during static validation
+
+## 0.10.4 (24 Nov 2015)
+
+### New features
+
+- Add `Arguments#to_h` #66
+
+### Bug fixes
+
+- Accept argument description in definition
+- Correctly parse empty lists
+
 ## 0.10.3 (11 Nov 2015)
 
 ### New features
