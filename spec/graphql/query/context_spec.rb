@@ -45,7 +45,7 @@ describe GraphQL::Query::Context do
     |}
 
     it "provides access to the AST node" do
-      expected = {"data" => {"queryName" => "GraphQL::Query"}}
+      expected = {"data" => {"queryName" => "GraphQL::Query::Proxy"}}
       assert_equal(expected, result)
     end
   end
