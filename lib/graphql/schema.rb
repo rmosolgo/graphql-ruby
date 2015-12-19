@@ -50,9 +50,9 @@ module GraphQL
     # Execute a query on itself.
     # See {Query#initialize} for arguments.
     # @return [Hash] query result, ready to be serialized as JSON
-    def execute(*args)
-      query = GraphQL::Query.new(self, *args)
-      query.result
+    def execute(query_string, context: nil, variables: {}, debug: false, validate: true, operation_name: nil)
+      query = GraphQL::Query.new(self, query_string, debug: debug, validate: validate)
+      query.execute(context: context, variables: variables, operation_name: operation_name)
     end
 
     # Resolve field named `field_name` for type `parent_type`.

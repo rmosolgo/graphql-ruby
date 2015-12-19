@@ -19,11 +19,11 @@ describe GraphQL::Query::SerialExecution::ExecutionContext do
     operation_name: operation_name,
   )}
 
-  let(:query_proxy) {
-    GraphQL::Query::Proxy.new(query, context: {}, variables: query_variables, operation_name: operation_name)
+  let(:query_run) {
+    GraphQL::Query::Run.new(query, context: {}, variables: query_variables, operation_name: operation_name)
   }
   let(:execution_context) {
-    GraphQL::Query::SerialExecution::ExecutionContext.new(query_proxy, nil)
+    GraphQL::Query::SerialExecution::ExecutionContext.new(query_run, nil)
   }
 
   describe "#add_error" do
@@ -32,7 +32,7 @@ describe GraphQL::Query::SerialExecution::ExecutionContext do
 
     it "adds an error on the query context" do
       execution_context.add_error(err)
-      assert_equal(expected, query_proxy.context.errors)
+      assert_equal(expected, query_run.context.errors)
     end
   end
 
