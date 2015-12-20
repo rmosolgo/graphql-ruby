@@ -11,8 +11,6 @@ class GraphQL::StaticValidation::ArgumentsValidator
           return
         else
           parent_defn = arg_defn.type.unwrap
-          puts "#{node}"
-          puts "#{parent_defn}"
           if parent_defn.is_a?(GraphQL::ScalarType)
             return
           end

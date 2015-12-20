@@ -6,6 +6,12 @@
 
 ### Bug fixes
 
+## 0.10.6 (20 Dec 2015)
+
+### Bug fixes
+
+- Remove leftover `puts`es
+
 ## 0.10.5 (19 Dec 2015)
 
 ### Bug fixes
