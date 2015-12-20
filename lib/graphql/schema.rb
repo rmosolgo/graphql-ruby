@@ -16,6 +16,9 @@ module GraphQL
     # @return [Array<#call>] Middlewares suitable for MiddlewareChain, applied to fields during execution
     attr_reader :middleware
 
+    # @return [GraphQL::QueryCache] The default {QueryCache} instance for this schema
+    attr_reader :query_cache
+
     # @param query [GraphQL::ObjectType]  the query root for the schema
     # @param mutation [GraphQL::ObjectType] the mutation root for the schema
     # @param subscription [GraphQL::ObjectType] the subscription root for the schema
@@ -27,6 +30,7 @@ module GraphQL
       @subscription = subscription
       @max_depth = max_depth
       @orphan_types = types
+      @query_cache = GraphQL::QueryCache.new(self)
       @directives = DIRECTIVES.reduce({}) { |m, d| m[d.name] = d; m }
       @static_validator = GraphQL::StaticValidation::Validator.new(schema: self)
       @rescue_middleware = GraphQL::Schema::RescueMiddleware.new
@@ -47,12 +51,24 @@ module GraphQL
       end
     end
 
-    # Execute a query on itself.
+
+    # Execute a query on itself from string _or_ from cache.
     # See {Query#initialize} for arguments.
+    #
+    # @example Execute a query from string
+    #   MySchema.execute("{ viewer { name } }", context: {user: current_user})
+    #
+    # @example Execute an operation from the {QueryCache}
+    #   MySchema.execute(operation_name: "productInfo", variables: {"id" => 1})
+    #
     # @return [Hash] query result, ready to be serialized as JSON
-    def execute(query_string, context: nil, variables: {}, debug: false, validate: true, operation_name: nil)
-      query = GraphQL::Query.new(self, query_string, debug: debug, validate: validate)
-      query.execute(context: context, variables: variables, operation_name: operation_name)
+    def execute(query_string = nil, context: nil, variables: {}, debug: false, validate: true, operation_name: nil)
+      if query_string.nil?
+        query_cache.execute(operation_name, context: context, variables: variables)
+      else
+        query = GraphQL::Query.new(self, query_string, debug: debug, validate: validate)
+        query.execute(context: context, variables: variables, operation_name: operation_name)
+      end
     end
 
     # Resolve field named `field_name` for type `parent_type`.
@@ -81,6 +97,10 @@ module GraphQL
     def possible_types(type_defn)
       @interface_possible_types ||= GraphQL::Schema::PossibleTypes.new(self)
       @interface_possible_types.possible_types(type_defn)
+    end
+
+    def cache(query_string)
+      query_cache.add(query_string)
     end
 
     class InvalidTypeError < GraphQL::Error

@@ -23,6 +23,12 @@ describe GraphQL::QueryCache do
       }
     end
 
+    it "raises on unnamed operation" do
+      assert_raises(GraphQL::QueryCache::OperationNameMissingError) {
+        query_cache.add("{ cheese(id: 2) { flavor } }")
+      }
+    end
+
     it "raises on an invalid query" do
       query_cache.add("query getCheeseOne { cheese(id: 1) { flavor } }")
 

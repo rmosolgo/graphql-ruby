@@ -21,6 +21,11 @@ module GraphQL
       @operations.size
     end
 
+    # Remove all cached queries
+    def clear
+      @operations.clear
+    end
+
     # Cache the operations in this query string
     # @param [String] A GraphQL query for the provided {Schema}
     def add(query_string)
@@ -29,13 +34,15 @@ module GraphQL
       errors = query.validation_errors
       if errors.any?
         raise(InvalidQueryError.new(query.operations.keys, errors))
-      end
-
-      query.operations.each do |name, operation|
-        if @operations.key?(name)
-          raise DuplicateOperationNameError.new(name)
-        else
-          @operations[name] = query
+      elsif query.operations.keys.none?
+        raise(OperationNameMissingError.new)
+      else
+        query.operations.each do |name, operation|
+          if @operations.key?(name)
+            raise DuplicateOperationNameError.new(name)
+          else
+            @operations[name] = query
+          end
         end
       end
       nil
@@ -55,6 +62,12 @@ module GraphQL
     end
 
     class CacheError < StandardError; end
+
+    class OperationNameMissingError < CacheError
+      def initialize
+        super("Can't cache query without an operation name (eg, 'getItem' in  'query getItem { ... }')")
+      end
+    end
 
     class DuplicateOperationNameError < CacheError
       def initialize(op_name)
