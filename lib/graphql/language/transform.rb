@@ -1,31 +1,25 @@
 module GraphQL
   module Language
-    # Extend `Parslet::Context` with a convenience method
-    # for building AST nodes
-    module ParsletContextCreateNode
-      refine Parslet::Context do
-        # @param [Symbol] name of a node constant
-        # @param [Hash] attributes to initialize the {Node} with
-        # @return [GraphQL::Language::Node] a node of type `name` with attributes `attributes`
-        def create_node(name, attributes)
-          node_class = GraphQL::Language::Nodes.const_get(name)
-          node_class.new(attributes)
-        end
-      end
-    end
-
-    using ParsletContextCreateNode
 
     # {Transform} is a [parslet](http://kschiess.github.io/parslet/) transform for for turning the AST into objects in {GraphQL::Language::Nodes} objects.
     class Transform < Parslet::Transform
+
+      # @param [Symbol] name of a node constant
+      # @param [Hash] attributes to initialize the {Node} with
+      # @return [GraphQL::Language::Node] a node of type `name` with attributes `attributes`
+      CREATE_NODE = Proc.new do |name, attributes|
+        node_class = GraphQL::Language::Nodes.const_get(name)
+        node_class.new(attributes)
+      end
+
       def self.optional_sequence(name)
         rule(name => simple(:val)) { [] }
         rule(name => sequence(:val)) { val }
       end
 
       # Document
-      rule(document_parts: sequence(:p)) { create_node(:Document, parts: p, line: (p.first ? p.first.line : 1), col: (p.first ? p.first.col : 1))}
-      rule(document_parts: simple(:p)) { create_node(:Document, parts: [], line: 1, col: 1)}
+      rule(document_parts: sequence(:p)) { CREATE_NODE[:Document, parts: p, line: (p.first ? p.first.line : 1), col: (p.first ? p.first.col : 1)]}
+      rule(document_parts: simple(:p)) { CREATE_NODE[:Document, parts: [], line: 1, col: 1]}
 
       # Fragment Definition
       rule(
@@ -34,20 +28,20 @@ module GraphQL
         type_condition: simple(:type),
         directives:     sequence(:directives),
         selections:     sequence(:selections)
-      ) { create_node(:FragmentDefinition, name: name.to_s, type: type.to_s, directives: directives, selections: selections, position_source: kw)}
+      ) { CREATE_NODE[:FragmentDefinition, name: name.to_s, type: type.to_s, directives: directives, selections: selections, position_source: kw]}
 
       rule(
         fragment_spread_keyword: simple(:kw),
         fragment_spread_name: simple(:n),
         directives:           sequence(:d)
-      ) { create_node(:FragmentSpread, name: n.to_s, directives: d, position_source: kw)}
+      ) { CREATE_NODE[:FragmentSpread, name: n.to_s, directives: d, position_source: kw]}
 
       rule(
         fragment_spread_keyword: simple(:kw),
         inline_fragment_type: simple(:n),
         directives: sequence(:d),
         selections: sequence(:s),
-      ) { create_node(:InlineFragment, type: n.to_s, directives: d, selections: s, position_source: kw)}
+      ) { CREATE_NODE[:InlineFragment, type: n.to_s, directives: d, selections: s, position_source: kw]}
 
       # Operation Definition
       rule(
@@ -56,14 +50,14 @@ module GraphQL
         variables:      sequence(:v),
         directives:     sequence(:d),
         selections:     sequence(:s),
-      ) { create_node(:OperationDefinition, operation_type: ot.to_s, name: n.to_s, variables: v, directives: d, selections: s, position_source: ot) }
+      ) { CREATE_NODE[:OperationDefinition, operation_type: ot.to_s, name: n.to_s, variables: v, directives: d, selections: s, position_source: ot] }
       optional_sequence(:optional_variables)
-      rule(variable_name: simple(:n), variable_type: simple(:t), variable_optional_default_value: simple(:v)) { create_node(:Variable, name: n.name, type: t, default_value: v, line: n.line, col: n.col)}
-      rule(variable_name: simple(:n), variable_type: simple(:t), variable_optional_default_value: sequence(:v)) { create_node(:Variable, name: n.name, type: t, default_value: v, line: n.line, col: n.col)}
+      rule(variable_name: simple(:n), variable_type: simple(:t), variable_optional_default_value: simple(:v)) { CREATE_NODE.(:Variable, name: n.name, type: t, default_value: v, line: n.line, col: n.col)}
+      rule(variable_name: simple(:n), variable_type: simple(:t), variable_optional_default_value: sequence(:v)) { CREATE_NODE.(:Variable, name: n.name, type: t, default_value: v, line: n.line, col: n.col)}
       rule(variable_default_value: simple(:v) ) { v }
       rule(variable_default_value: sequence(:v) ) { v }
       # Query short-hand
-      rule(unnamed_selections: sequence(:s)) { create_node(:OperationDefinition, selections: s, operation_type: "query", name: nil, variables: [], directives: [], line: s.first.line, col: s.first.col)}
+      rule(unnamed_selections: sequence(:s)) { CREATE_NODE[:OperationDefinition, selections: s, operation_type: "query", name: nil, variables: [], directives: [], line: s.first.line, col: s.first.col]}
 
       # Field
       rule(
@@ -72,32 +66,32 @@ module GraphQL
         field_arguments: sequence(:args),
         directives: sequence(:dir),
         selections: sequence(:sel)
-      ) { create_node(:Field, alias: a && a.to_s, name: name.to_s, arguments: args, directives: dir, selections: sel, position_source: [a, name].find { |part| !part.nil? }) }
+      ) { CREATE_NODE[:Field, alias: a && a.to_s, name: name.to_s, arguments: args, directives: dir, selections: sel, position_source: [a, name].find { |part| !part.nil? }] }
 
       rule(alias_name: simple(:a)) { a }
       optional_sequence(:optional_field_arguments)
-      rule(field_argument_name: simple(:n), field_argument_value: simple(:v)) { create_node(:Argument, name: n.to_s, value: v, position_source: n)}
-      rule(field_argument_name: simple(:n), field_argument_value: sequence(:v)) { create_node(:Argument, name: n.to_s, value: v, position_source: n)}
+      rule(field_argument_name: simple(:n), field_argument_value: simple(:v)) { CREATE_NODE[:Argument, name: n.to_s, value: v, position_source: n]}
+      rule(field_argument_name: simple(:n), field_argument_value: sequence(:v)) { CREATE_NODE[:Argument, name: n.to_s, value: v, position_source: n]}
       optional_sequence(:optional_selections)
       optional_sequence(:optional_directives)
 
       # Directive
-      rule(directive_name: simple(:name), directive_arguments: sequence(:args)) { create_node(:Directive, name: name.to_s, arguments: args, position_source: name ) }
-      rule(directive_argument_name: simple(:n), directive_argument_value: simple(:v)) { create_node(:Argument, name: n.to_s, value: v, position_source: n)}
+      rule(directive_name: simple(:name), directive_arguments: sequence(:args)) { CREATE_NODE[:Directive, name: name.to_s, arguments: args, position_source: name ] }
+      rule(directive_argument_name: simple(:n), directive_argument_value: simple(:v)) { CREATE_NODE[:Argument, name: n.to_s, value: v, position_source: n]}
       optional_sequence(:optional_directive_arguments)
 
       # Type Defs
-      rule(type_name: simple(:n))     { create_node(:TypeName, name: n.to_s, position_source: n) }
-      rule(list_type: simple(:t))     { create_node(:ListType, of_type: t, line: t.line, col: t.col)}
-      rule(non_null_type: simple(:t)) { create_node(:NonNullType, of_type: t, line: t.line, col: t.col)}
+      rule(type_name: simple(:n))     { CREATE_NODE[:TypeName, name: n.to_s, position_source: n] }
+      rule(list_type: simple(:t))     { CREATE_NODE[:ListType, of_type: t, line: t.line, col: t.col] }
+      rule(non_null_type: simple(:t)) { CREATE_NODE[:NonNullType, of_type: t, line: t.line, col: t.col] }
 
       # Values
       rule(array: sequence(:v)) { v }
       rule(array: simple(:v)) { [] } # just `nil`
       rule(boolean: simple(:v)) { v == "true" ? true : false }
-      rule(input_object: sequence(:v)) { create_node(:InputObject, pairs: v, line: (v.first ? v.first.line : 1), col: (v.first ? v.first.col : 1)) }
-      rule(input_object_name: simple(:n), input_object_value: simple(:v)) { create_node(:Argument, name: n.to_s, value: v, position_source: n)}
-      rule(input_object_name: simple(:n), input_object_value: sequence(:v)) { create_node(:Argument, name: n.to_s, value: v, position_source: n)}
+      rule(input_object: sequence(:v)) { CREATE_NODE[:InputObject, pairs: v, line: (v.first ? v.first.line : 1), col: (v.first ? v.first.col : 1)] }
+      rule(input_object_name: simple(:n), input_object_value: simple(:v)) { CREATE_NODE[:Argument, name: n.to_s, value: v, position_source: n]}
+      rule(input_object_name: simple(:n), input_object_value: sequence(:v)) { CREATE_NODE[:Argument, name: n.to_s, value: v, position_source: n]}
       rule(int: simple(:v)) { v.to_i }
       rule(float: simple(:v)) { v.to_f }
 
@@ -112,8 +106,8 @@ module GraphQL
         string
       }
       rule(optional_string_content: simple(:v)) { v.to_s }
-      rule(variable: simple(:v)) { create_node(:VariableIdentifier, name: v.to_s, position_source: v) }
-      rule(enum: simple(:v)) { create_node(:Enum, name: v.to_s, position_source: v)}
+      rule(variable: simple(:v)) { CREATE_NODE[:VariableIdentifier, name: v.to_s, position_source: v] }
+      rule(enum: simple(:v)) { CREATE_NODE[:Enum, name: v.to_s, position_source: v] }
     end
   end
 end
