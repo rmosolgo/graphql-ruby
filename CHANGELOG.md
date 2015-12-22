@@ -6,6 +6,16 @@
 
 ### Bug fixes
 
+## 0.10.7 (22 Dec 2015)
+
+### New features
+
+- Support Rubinius
+
+### Bug fixes
+
+- Coerce values into one-item lists for ListTypes
+
 ## 0.10.6 (20 Dec 2015)
 
 ### Bug fixes
