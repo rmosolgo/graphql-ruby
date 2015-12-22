@@ -28,7 +28,7 @@ describe GraphQL::InterfaceType do
     let(:interface) {
       GraphQL::InterfaceType.define do
         resolve_type -> (object) {
-          return :custom_resolve
+          :custom_resolve
         }
       end
     }
