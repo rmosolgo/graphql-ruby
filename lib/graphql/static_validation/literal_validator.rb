@@ -3,9 +3,9 @@ class GraphQL::StaticValidation::LiteralValidator
   def validate(ast_value, type)
     if type.kind.non_null?
       (!ast_value.nil?) && validate(ast_value, type.of_type)
-    elsif type.kind.list? && ast_value.is_a?(Array)
+    elsif type.kind.list?
       item_type = type.of_type
-      ast_value.all? { |val| validate(val, item_type) }
+      ensure_array(ast_value).all? { |val| validate(val, item_type) }
     elsif type.kind.scalar? && !ast_value.is_a?(GraphQL::Language::Nodes::AbstractNode) && !ast_value.is_a?(Array)
       type.valid_input?(ast_value)
     elsif type.kind.enum? && ast_value.is_a?(GraphQL::Language::Nodes::Enum)
@@ -39,6 +39,10 @@ class GraphQL::StaticValidation::LiteralValidator
     ast_node.pairs.all? do |value|
      field_type = fields[value.name].type
      validate(value.value, field_type)
-   end
- end
+    end
+  end
+
+  def ensure_array(value)
+    value.is_a?(Array) ? value : [value]
+  end
 end
