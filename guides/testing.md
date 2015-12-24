@@ -90,7 +90,7 @@ You can access type and field objects from your schema to make sure they're defi
 
 #### Types
 
-Access a type by name from the schema:
+Access a type by name from the schema with {GraphQL::Schema#types}:
 
 ```ruby
 post = MySchema.types["Post"] # => PostType
@@ -98,11 +98,11 @@ post.fields                   # => {"id" => <GraphQL::Field>, ... }
 post.fields.keys              # => ["id", "title", "body", "author", "comments"]
 ```
 
-The returned value is an instance of the type class you used to `.define` it (eg, `GraphQL::ObjectType`, `GraphQL::EnumType`, `GraphQL::InputObjectType`).
+The returned value is an instance of the type class you used to `.define` it (eg, {GraphQL::ObjectType}, {GraphQL::EnumType}, {GraphQL::InputObjectType}).
 
 #### Fields
 
-You can get a type's fields from the `#fields` hash. For example:
+You can get a type's fields from the `GraphQL::ObjectType#fields` hash. For example:
 
 ```ruby
 post_type = MySchema.types["Post"]
@@ -110,7 +110,7 @@ title_field = post_type.fields["title"] #=> <GraphQL::Field>
 title_field.name #=> "title"
 ```
 
-You can test a resolve function by calling `Field#resolve`:
+You can test a resolve function by calling {GraphQL::Field#resolve}:
 
 ```ruby
 # Because this field doesn't use context or variables, simply pass `nil`
@@ -124,13 +124,13 @@ Calling `resolve` in this way does _not_ apply any coercion. (That's only applie
 
 Similarly, you can access:
 
-- `Field#arguments`, which are `String` => `GraphQL::Argument` pairs
-- `Field#type`, the field's return type
-- `InputObjectType#arguments`, which are `String` => `GraphQL::Argument` pairs
-- `EnumType#values`, which are `String` => `GraphQL::EnumType::EnumValue` pairs
-- `InterfaceType#possible_types` and `UnionType#possible_types`, which are lists of types.
+- {GraphQL::Field#arguments}, which are `String` => {GraphQL::Argument} pairs
+- {GraphQL::Field#type}, the field's return type
+- {GraphQL::InputObjectType#arguments}, which are `String` => {GraphQL::Argument} pairs
+- {GraphQL::EnumType#values}, which are `String` => {GraphQL::EnumType::EnumValue} pairs
+- {GraphQL::InterfaceType#possible_types} and {GraphQL::UnionType#possible_types}, which are lists of types.
 
-`BaseType#unwrap` may also be helpful. It returns the "inner-most" type. For example:
+{GraphQL::BaseType#unwrap} may also be helpful. It returns the "inner-most" type. For example:
 
 ```ruby
 required_list_of_strings = GraphQL::NonNullType.new(

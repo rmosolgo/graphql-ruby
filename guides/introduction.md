@@ -13,7 +13,7 @@ Once you've defined your query root and mutation root, you can make a schema:
 ApplicationSchema = GraphQL::Schema.new(query: QueryRoot, mutation: MutationRoot)
 ```
 
-At that time, `graphql-ruby` will inspect all types & fields, ensuring that they implement required behaviors.
+At that time, `graphql-ruby` will validate all types and fields.
 
 ## Getting Started with Types
 
@@ -142,7 +142,6 @@ Schema = GraphQL::Schema.new(query: QueryRoot) # QueryRoot defined above
 query_string = "query getPost { post(id: 1) { id, title, comments { body } } }"
 
 result_hash = Schema.execute(query_string)
-p JSON.dump(result_hash)
 # {
 #   "post" : {
 #     "id" : 1,
