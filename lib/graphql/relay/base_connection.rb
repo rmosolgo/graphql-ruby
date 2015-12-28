@@ -36,8 +36,14 @@ module GraphQL
       # @param [Object] A collection of items (eg, Array, AR::Relation)
       # @return [subclass of BaseConnection] a connection Class for wrapping `items`
       def self.connection_for_items(items)
+        # We check class membership by comparing class names rather than
+        # identity to prevent this from being broken by Rails autoloading.
+        # Changes to the source file for ItemsClass in Rails apps cause it to be
+        # reloaded as a new object, so if we were to use `is_a?` here, it would
+        # no longer match any registered custom connection types.
+        ancestor_names = items.class.ancestors.map(&:name)
         implementation = CONNECTION_IMPLEMENTATIONS.find do |items_class_name, connection_class|
-          items.class.ancestors.map(&:name).include? items_class_name
+          ancestor_names.include? items_class_name
         end
         if implementation.nil?
           raise("No connection implementation to wrap #{items.class} (#{items})")
