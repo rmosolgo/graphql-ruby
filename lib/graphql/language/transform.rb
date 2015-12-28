@@ -71,7 +71,7 @@ module GraphQL
       rule(alias_name: simple(:a)) { a }
       optional_sequence(:optional_field_arguments)
       rule(field_argument_name: simple(:n), field_argument_value: simple(:v)) { CREATE_NODE[:Argument, name: n.to_s, value: v, position_source: n]}
-      rule(field_argument_name: simple(:n), field_argument_value: sequence(:v)) { CREATE_NODE[:Argument, name: n.to_s, value: v, position_source: n]}
+      rule(field_argument_name: simple(:n), field_argument_value: subtree(:v)) { CREATE_NODE[:Argument, name: n.to_s, value: v, position_source: n]}
       optional_sequence(:optional_selections)
       optional_sequence(:optional_directives)
 
@@ -86,7 +86,7 @@ module GraphQL
       rule(non_null_type: simple(:t)) { CREATE_NODE[:NonNullType, of_type: t, line: t.line, col: t.col] }
 
       # Values
-      rule(array: sequence(:v)) { v }
+      rule(array: subtree(:v)) { v }
       rule(array: simple(:v)) { [] } # just `nil`
       rule(boolean: simple(:v)) { v == "true" ? true : false }
       rule(input_object: sequence(:v)) { CREATE_NODE[:InputObject, pairs: v, line: (v.first ? v.first.line : 1), col: (v.first ? v.first.col : 1)] }

@@ -24,6 +24,7 @@ describe GraphQL::Language::Transform do
           someStuff(vars: [1,2,3])
           someOtherStuff(input: {ints: [1,2,3]})
           someEmptyStuff(emptyObj: {}, emptySpaceObj: { })
+          evenMoreStuff(arg: [[1]])
         }
       }
 
