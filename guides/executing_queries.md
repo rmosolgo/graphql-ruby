@@ -47,7 +47,7 @@ Note that `ctx` is not the _same_ hash that's passed to {GraphQL::Schema#execute
 If your query contains multiple operations, you _must_ pass the operation name with the `operation_name:` keyword:
 
 ```ruby
-result = MySchema.execute(query_string, context: {operation_name: "getPersonInfo"})
+result = MySchema.execute(query_string, operation_name: "getPersonInfo")
 ```
 
 If you don't, you'll get an error.
