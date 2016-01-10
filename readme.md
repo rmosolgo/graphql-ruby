@@ -93,6 +93,19 @@ If you're building a backend for [Relay](http://facebook.github.io/relay/), you'
 - A JSON dump of the schema, which you can get by sending [`GraphQL::Introspection::INTROSPECTION_QUERY`](https://github.com/rmosolgo/graphql-ruby/blob/master/lib/graphql/introspection/introspection_query.rb)
 - Relay-specific helpers for GraphQL like Connections, node fields, and global ids. Here's one example of those: [`graphql-relay`](https://github.com/rmosolgo/graphql-relay-ruby)
 
+## Getting Started Tutorials
+
+#### Series: Building a blog in GraphQL and Relay on Rails
+1. **Introduction:** https://medium.com/@gauravtiwari/graphql-and-relay-on-rails-getting-started-955a49d251de
+2. **Part1:** https://medium.com/@gauravtiwari/graphql-and-relay-on-rails-creating-types-and-schema-b3f9b232ccfc
+3. **Part2:**
+https://medium.com/@gauravtiwari/graphql-and-relay-on-rails-first-relay-powered-react-component-cb3f9ee95eca
+
+#### Tutorials
+1. https://medium.com/@khor/relay-facebook-on-rails-8b4af2057152
+2. https://blog.jacobwgillespie.com/from-rest-to-graphql-b4e95e94c26b#.4cjtklrwt
+3. http://mgiroux.me/2015/getting-started-with-rails-graphql-relay/
+4. http://mgiroux.me/2015/uploading-files-using-relay-with-rails/
 
 ## To Do
 
@@ -120,8 +133,6 @@ If you're building a backend for [Relay](http://facebook.github.io/relay/), you'
     - This is a good chance to make an `Operation` abstraction of which `query`, `mutation` and `subscription` are members
     - For a subscription, `graphql` would send an outbound message to the system (allow the host application to manage its own subscriptions via Pusher, ActionCable, whatever)
 - Documentation
-  - Write a "Getting started with Rails"-type blog post
-  - Compile existing articles & slide decks and link to them from a guide
 
 ## Goals
 
