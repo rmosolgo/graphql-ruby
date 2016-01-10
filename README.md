@@ -295,6 +295,18 @@ The resolve proc:
   - Takes `ctx`, which is the query context you passed with the `context:` keyword
   - Must return a hash with keys matching your defined `return_field`s
 
+## Getting Started Tutorials
+
+#### Series: Building a blog in GraphQL and Relay on Rails
+1. **Introduction:** https://medium.com/@gauravtiwari/graphql-and-relay-on-rails-getting-started-955a49d251de
+2. **Part1:** https://medium.com/@gauravtiwari/graphql-and-relay-on-rails-creating-types-and-schema-b3f9b232ccfc
+3. **Part2:**
+https://medium.com/@gauravtiwari/graphql-and-relay-on-rails-first-relay-powered-react-component-cb3f9ee95eca
+
+#### Tutorials
+1. https://medium.com/@khor/relay-facebook-on-rails-8b4af2057152
+2. http://mgiroux.me/2015/getting-started-with-rails-graphql-relay/
+3. http://mgiroux.me/2015/uploading-files-using-relay-with-rails/
 
 ## Todo
 
