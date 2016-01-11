@@ -1,6 +1,6 @@
 # graphql-relay
 
-## O.6.1 (14 Dec 2015)
+## 0.6.1 (14 Dec 2015)
 
 ### Bug Fix
 
