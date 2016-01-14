@@ -11,6 +11,24 @@ describe GraphQL::InterfaceType do
     assert_equal(MilkType, interface.resolve_type(MILKS.values.first))
   end
 
+  it 'handles when interfaces are re-assigned' do
+    iface = GraphQL::InterfaceType.define do
+    end
+    type = GraphQL::ObjectType.define do
+      interfaces [iface]
+    end
+    assert_equal([type], iface.possible_types)
+
+    type.interfaces = []
+    assert_equal([], iface.possible_types)
+
+    type.interfaces = [iface]
+    assert_equal([type], iface.possible_types)
+
+    type.interfaces = [iface]
+    assert_equal([type], iface.possible_types)
+  end
+
   describe 'query evaluation' do
     let(:result) { DummySchema.execute(query_string, context: {}, variables: {"cheeseId" => 2})}
     let(:query_string) {%|
