@@ -33,7 +33,7 @@ describe GraphQL::InterfaceType do
       }
     |}
     it 'gets fields from the type for the given object' do
-      expected = {"data"=>{"favoriteEdible"=>{"fatContent"=>0.04, "origin"=>"England"}}}
+      expected = {"data"=>{"favoriteEdible"=>{"fatContent"=>0.04, "origin"=>"Antiquity"}}}
       assert_equal(expected, result)
     end
   end
