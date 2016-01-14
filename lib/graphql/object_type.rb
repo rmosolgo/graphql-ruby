@@ -31,10 +31,11 @@ class GraphQL::ObjectType < GraphQL::BaseType
 
   #   Shovel this type into each interface's `possible_types` array.
   #
-  #   (There's a bug here: if you define interfaces twice, it won't remove previous definitions.)
   #   @param new_interfaces [Array<GraphQL::Interface>] interfaces that this type implements
   def interfaces=(new_interfaces)
-    new_interfaces.each {|i| i.possible_types << self }
+    @interfaces ||= []
+    (@interfaces - new_interfaces).each { |i| i.possible_types.delete(self) }
+    (new_interfaces - @interfaces).each { |i| i.possible_types << self }
     @interfaces = new_interfaces
   end
 
