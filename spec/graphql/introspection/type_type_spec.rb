@@ -14,6 +14,7 @@ describe GraphQL::Introspection::TypeType do
   let(:cheese_fields) {[
     {"name"=>"id",          "isDeprecated" => false, "type" => { "name" => "Non-Null", "ofType" => { "name" => "Int"}}},
     {"name"=>"flavor",      "isDeprecated" => false, "type" => { "name" => "Non-Null", "ofType" => { "name" => "String"}}},
+    {"name"=>"origin",      "isDeprecated" => false, "type" => { "name" => "Non-Null", "ofType" => { "name" => "String"}}},
     {"name"=>"source",      "isDeprecated" => false, "type" => { "name" => "Non-Null", "ofType" => { "name" => "DairyAnimal"}}},
     {"name"=>"similarCheese", "isDeprecated"=>false, "type"=>{"name"=>"Cheese", "ofType"=>nil}},
   ]}
@@ -38,6 +39,7 @@ describe GraphQL::Introspection::TypeType do
         "fields"=>[
           {"type"=>{"name"=>"Non-Null", "ofType"=>{"name"=>"ID"}}},
           {"type"=>{"name"=>"DairyAnimal", "ofType"=>nil}},
+          {"type"=>{"name"=>"Non-Null", "ofType"=>{"name"=>"String"}}},
           {"type"=>{"name"=>"Non-Null", "ofType"=>{"name"=>"Float"}}},
           {"type"=>{"name"=>"List", "ofType"=>{"name"=>"String"}}},
         ]
