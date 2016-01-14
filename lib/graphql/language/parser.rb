@@ -99,7 +99,7 @@ module GraphQL
       rule(:value_int) { (value_sign? >> match('\d').repeat(1)).as(:int) }
       rule(:value_string) { str('"') >> value_string_char.repeat.maybe.as(:optional_string_content).as(:string) >> str('"')}
       rule(:value_string_char) { value_string_escaped_char | value_string_escaped_unicode | value_string_source_char}
-      rule(:value_string_escaped_char) { str("\\") >> match('["\/bfnrt]') }
+      rule(:value_string_escaped_char) { str("\\") >> match('["\\\\/bfnrt]') }
       rule(:value_string_escaped_unicode) { str("\\") >> match('u[\dA-Fa-f]{4}')}
       rule(:value_string_source_char) { (str('"') | str("\\") | value_string_line_terminator).absent? >> any }
       rule(:value_string_line_terminator) {

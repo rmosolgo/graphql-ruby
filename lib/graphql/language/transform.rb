@@ -95,13 +95,14 @@ module GraphQL
       rule(int: simple(:v)) { v.to_i }
       rule(float: simple(:v)) { v.to_f }
 
-      ESCAPES = /\\(["\\\/bfnrt])/
+      ESCAPES = /\\["\\\/bfnrt]/
+      ESCAPES_REPLACE = { '\\"' => '"', "\\\\" => "\\", "\\/" => '/', "\\b" => "\b", "\\f" => "\f", "\\n" => "\n", "\\r" => "\r", "\\t" => "\t" }
       UTF_8 = /\\u[\da-f]{4}/i
       UTF_8_REPLACE = -> (m) { [m[-4..-1].to_i(16)].pack('U') }
 
       rule(string: simple(:v)) {
         string = v.to_s
-        string.gsub!(ESCAPES, '\1')
+        string.gsub!(ESCAPES, ESCAPES_REPLACE)
         string.gsub!(UTF_8, &UTF_8_REPLACE)
         string
       }

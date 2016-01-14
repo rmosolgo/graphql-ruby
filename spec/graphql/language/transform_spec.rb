@@ -144,4 +144,9 @@ describe GraphQL::Language::Transform do
     assert_equal(1, get_result("query { me }").parts.length)
     assert_equal(1, get_result("mutation { touch }").parts.length)
   end
+
+  it 'transforms escaped characters' do
+    res = get_result("{quoted: \"\\\" \\\\ \\/ \\b \\f \\n \\r \\t\"}", parse: :value_input_object)
+    assert_equal("\" \\ / \b \f \n \r \t", res.pairs[0].value)
+  end
 end
