@@ -24,6 +24,20 @@ describe GraphQL::InterfaceType do
     end
   end
 
+  describe 'mergable query evaluation' do
+    let(:result) { DummySchema.execute(query_string, context: {}, variables: {"cheeseId" => 2})}
+    let(:query_string) {%|
+      query fav {
+        favoriteEdible { fatContent }
+        favoriteEdible { origin }
+      }
+    |}
+    it 'gets fields from the type for the given object' do
+      expected = {"data"=>{"favoriteEdible"=>{"fatContent"=>0.04, "origin"=>"England"}}}
+      assert_equal(expected, result)
+    end
+  end
+
   describe '#resolve_type' do
     let(:interface) {
       GraphQL::InterfaceType.define do

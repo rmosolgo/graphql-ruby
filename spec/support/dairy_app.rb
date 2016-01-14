@@ -6,6 +6,7 @@ EdibleInterface = GraphQL::InterfaceType.define do
   name "Edible"
   description "Something you can eat, yum"
   field :fatContent, !types.Float, "Percentage which is fat", property: :bogus_property
+  field :origin, !types.String, "Place the edible comes from"
 end
 
 AnimalProductInterface = GraphQL::InterfaceType.define do
@@ -31,6 +32,7 @@ CheeseType = GraphQL::ObjectType.define do
   # Can have (name, type, desc)
   field :id, !types.Int, "Unique identifier"
   field :flavor, !types.String, "Kind of Cheese"
+  field :origin, !types.String, "Place the cheese comes from"
 
   field :source, !DairyAnimalEnum,
     "Animal which produced the milk for this cheese"
@@ -62,6 +64,7 @@ MilkType = GraphQL::ObjectType.define do
   interfaces [EdibleInterface, AnimalProductInterface]
   field :id, !types.ID
   field :source, DairyAnimalEnum, "Animal which produced this milk"
+  field :origin, !types.String, "Place the milk comes from"
   field :fatContent, !types.Float, "Percentage which is milkfat"
   field :flavors, types[types.String], "Chocolate, Strawberry, etc" do
     argument :limit, types.Int

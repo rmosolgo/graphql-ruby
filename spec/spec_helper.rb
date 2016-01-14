@@ -8,6 +8,8 @@ require "minitest/reporters"
 require 'pry'
 Minitest::Reporters.use! Minitest::Reporters::SpecReporter.new
 
+Minitest::Spec.make_my_diffs_pretty!
+
 # Filter out Minitest backtrace while allowing backtrace from other libraries
 # to be shown.
 Minitest.backtrace_filter = Minitest::BacktraceFilter.new
