@@ -88,7 +88,7 @@ module GraphQL
         def merge_fields(field1, field2)
           field_type = query.schema.get_field(type, field2.name).type.unwrap
 
-          if field_type.is_a?(GraphQL::ObjectType)
+          if field_type.is_a?(GraphQL::ObjectType) || field_type.is_a?(GraphQL::InterfaceType)
             # create a new ast field node merging selections from each field.
             # Because of static validation, we can assume that name, alias,
             # arguments, and directives are exactly the same for fields 1 and 2.
