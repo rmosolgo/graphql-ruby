@@ -6,6 +6,13 @@
 
 ### Bug fixes
 
+## 0.10.8 (14 Jan 2016)
+
+### Bug fixes
+
+- Fix transform of nested lists #79
+- Fix parse & transform of escaped characters #83
+
 ## 0.10.7 (22 Dec 2015)
 
 ### New features
