@@ -6,6 +6,13 @@
 
 ### Bug fixes
 
+## 0.10.8 (15 Jan 2016)
+
+### Bug fixes
+
+- Handle re-assignment of `ObjectType#interfaces` #84
+- Fix merging queries on interface-typed fields #85
+
 ## 0.10.8 (14 Jan 2016)
 
 ### Bug fixes

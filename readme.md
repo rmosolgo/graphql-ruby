@@ -112,17 +112,6 @@ https://medium.com/@gauravtiwari/graphql-and-relay-on-rails-first-relay-powered-
 - Code clean-up
   - Raise if you try to configure an attribute which doesn't suit the type (ie, if you try to define `resolve` on an ObjectType, it should somehow raise)
   - Clean up file structure in `lib/query` (don't need serial_execution namespace anymore)
-  - Overriding `!` on types breaks ActiveSupport `.blank?`
-
-    ```ruby
-    my_type = GraphQL::ObjectType.define { name("MyType") }
-    # => MyType
-    my_type.present?
-    # => MyType!!
-    my_type.blank?
-    # => MyType!
-    ```
-
 - Accept strings for circular type references
 - Interface's possible types should be a property of the schema, not the interface
 - Statically validate type of variables (see early return in LiteralValidator)
@@ -132,7 +121,6 @@ https://medium.com/@gauravtiwari/graphql-and-relay-on-rails-first-relay-powered-
   - __Subscriptions__
     - This is a good chance to make an `Operation` abstraction of which `query`, `mutation` and `subscription` are members
     - For a subscription, `graphql` would send an outbound message to the system (allow the host application to manage its own subscriptions via Pusher, ActionCable, whatever)
-- Documentation
 
 ## Goals
 
