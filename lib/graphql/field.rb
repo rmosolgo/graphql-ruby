@@ -28,15 +28,14 @@
 #   end
 #
 class GraphQL::Field
-  DEFAULT_RESOLVE = -> (o, a, c) { GraphQL::Query::DEFAULT_RESOLVE }
   include GraphQL::DefinitionHelpers::DefinedByConfig
-  attr_accessor :arguments, :deprecation_reason, :name, :description, :type
+  attr_accessor :arguments, :deprecation_reason, :name, :description, :type, :property
   attr_reader :resolve_proc
-  defined_by_config :arguments, :deprecation_reason, :name, :description, :type, :resolve
+  defined_by_config :arguments, :deprecation_reason, :name, :description, :type, :resolve, :property
 
   def initialize
     @arguments = {}
-    @resolve_proc = DEFAULT_RESOLVE
+    @resolve_proc = build_default_resolver
   end
 
   def arguments(new_arguments=nil)
@@ -63,7 +62,7 @@ class GraphQL::Field
   end
 
   def resolve=(resolve_proc)
-    @resolve_proc = resolve_proc || DEFAULT_RESOLVE
+    @resolve_proc = resolve_proc || build_default_resolver
   end
 
   # Get the return type for this field.
@@ -77,5 +76,18 @@ class GraphQL::Field
 
   def to_s
     "<Field: #{name || "not-named"}>"
+  end
+
+  private
+
+  def build_default_resolver
+    # Note: lambda accesses the current Field via self
+    -> (t, a, c) do
+      if property = self.property
+        t.public_send(property)
+      else
+        GraphQL::Query::DEFAULT_RESOLVE
+      end
+    end
   end
 end

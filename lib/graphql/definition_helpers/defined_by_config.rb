@@ -26,6 +26,7 @@ module GraphQL::DefinitionHelpers::DefinedByConfig
       :interfaces, # object
       :deprecation_reason, # field
       :type, # field / argument
+      :property, # field
       :resolve, # field / directive
       :resolve_type, # interface / union
       :possible_types, # interface / union
@@ -59,7 +60,7 @@ module GraphQL::DefinitionHelpers::DefinedByConfig
       end
       type && field.type = type
       desc && field.description = desc
-      property && field.resolve = -> (t,a,c) { t.public_send(property)}
+      property && field.property = property
       field.name ||= name.to_s
       fields[name.to_s] = field
     end

@@ -24,5 +24,12 @@ describe GraphQL::ObjectType do
       assert_equal(GraphQL::TypeKinds::NON_NULL, field.type.kind)
       assert_equal(GraphQL::TypeKinds::SCALAR, field.type.of_type.kind)
     end
+
+    it 'exposes defined field property' do
+      field_without_prop = CheeseType.fields['flavor']
+      field_with_prop = CheeseType.fields['fatContent']
+      assert_equal(field_without_prop.property, nil)
+      assert_equal(field_with_prop.property, :fat_content)
+    end
   end
 end
