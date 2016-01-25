@@ -58,7 +58,7 @@ class GraphQL::Field
   # @param arguments [Hash] Arguments declared in the query
   # @param context [GraphQL::Query::Context]
   def resolve(object, arguments, context)
-    @resolve_proc.call(object, arguments, context)
+    instance_exec(object, arguments, context, &@resolve_proc)
   end
 
   def resolve=(resolve_proc)

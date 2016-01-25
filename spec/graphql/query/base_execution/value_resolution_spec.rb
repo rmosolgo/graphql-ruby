@@ -43,4 +43,43 @@ describe GraphQL::Query::BaseExecution::ValueResolution do
       assert_equal(expected, result)
     end
   end
+
+  describe "value resolution" do
+    let(:schema) {
+      # raise if self is not a Field
+      ValueQueryType = GraphQL::ObjectType.define do
+        name "Query"
+        field :dairy do
+          type DairyType
+          resolve -> (t, a, c) {
+            raise self.to_s unless self == ValueQueryType.fields["dairy"]
+            DAIRY
+          }
+        end
+      end
+
+      GraphQL::Schema.new(query: ValueQueryType, mutation: MutationType)
+    }
+    let(:query_string) { %|
+      query getDairy {
+        dairy {
+          id
+          ... on Dairy {
+            id
+          }
+          ...repetitiveFragment
+        }
+      }
+      fragment repetitiveFragment on Dairy {
+        id
+      }
+    |}
+
+    it "executes resolution proc in the context of a field" do
+      expected = {"data" => {
+        "dairy" => { "id" => "1" }
+      }}
+      assert_equal(expected, result)
+    end
+  end
 end
