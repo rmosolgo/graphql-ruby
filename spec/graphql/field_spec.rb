@@ -5,6 +5,15 @@ describe GraphQL::Field do
     field = GraphQL::Field.define do
       type(-> { DairyProductUnion })
     end
+
+    assert_equal(DairyProductUnion, field.type)
+  end
+
+  it "accepts a string as a type" do
+    field = GraphQL::Field.define do
+      type("DairyProductUnion")
+    end
+
     assert_equal(DairyProductUnion, field.type)
   end
 

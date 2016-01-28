@@ -26,9 +26,11 @@ CityType = ObjectType.define do
   # This returns a list of `PersonType`s
   field :mayors, types[PersonType]
 
-  # Avoid the circular dependency by passing a proc
-  # The proc will be called later, returning `CityType`
-  field :sisterCity, -> { CityType }
+  # To avoid circular dependencies, pass a String or a Proc for the type.
+  # This string will be looked up in the global namespace
+  field :sisterCity, "CityType"
+  # This proc will be called later, returning `CityType`
+  field :country, -> { CountryType }
 end
 ```
 

@@ -8,6 +8,16 @@
 #     field :name, types.String, "The name of this thing "
 #   end
 #
+# @example handling a circular reference
+#   # If the field's type isn't defined yet, you have two options:
+#
+#   GraphQL::ObjectType.define do
+#     # If you pass a Proc, it will be evaluated at schema build-time
+#     field :city, -> { CityType }
+#     # If you pass a String, it will be looked up in the global namespace at schema build-time
+#     field :country, "CountryType"
+#   end
+#
 # @example creating a field that accesses a different property on the object
 #   GraphQL::ObjectType.define do
 #     # use the `property` option:
@@ -67,11 +77,16 @@ class GraphQL::Field
 
   # Get the return type for this field.
   def type
-    if @type.is_a?(Proc)
+    case @type
+    when Proc
       # lazy-eval it
       @type = @type.call
+    when String
+      # Get a constant by this name
+      @type = Object.const_get(@type)
+    else
+      @type
     end
-    @type
   end
 
   def to_s

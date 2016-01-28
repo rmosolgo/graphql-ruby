@@ -102,6 +102,7 @@ If you're building a backend for [Relay](http://facebook.github.io/relay/), you'
 https://medium.com/@gauravtiwari/graphql-and-relay-on-rails-first-relay-powered-react-component-cb3f9ee95eca
 
 #### Tutorials
+
 1. https://medium.com/@khor/relay-facebook-on-rails-8b4af2057152
 2. https://blog.jacobwgillespie.com/from-rest-to-graphql-b4e95e94c26b#.4cjtklrwt
 3. http://mgiroux.me/2015/getting-started-with-rails-graphql-relay/
@@ -112,7 +113,6 @@ https://medium.com/@gauravtiwari/graphql-and-relay-on-rails-first-relay-powered-
 - Code clean-up
   - Raise if you try to configure an attribute which doesn't suit the type (ie, if you try to define `resolve` on an ObjectType, it should somehow raise)
   - Clean up file structure in `lib/query` (don't need serial_execution namespace anymore)
-- Accept strings for circular type references
 - Interface's possible types should be a property of the schema, not the interface
 - Statically validate type of variables (see early return in LiteralValidator)
 - Big ideas:
