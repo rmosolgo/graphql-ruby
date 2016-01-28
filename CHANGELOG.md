@@ -4,6 +4,9 @@
 
 ### New features
 
+- `Field#property` & `Field#property=` can be used to access & modify the method that will be sent to the underlying object when resolving a field #88
+- When defining a field, you can pass a string for as `type`. It will be looked up in the global namespace.
+
 ### Bug fixes
 
 ## 0.10.9 (15 Jan 2016)
