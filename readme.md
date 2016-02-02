@@ -113,10 +113,14 @@ https://medium.com/@gauravtiwari/graphql-and-relay-on-rails-first-relay-powered-
 - Code clean-up
   - Raise if you try to configure an attribute which doesn't suit the type (ie, if you try to define `resolve` on an ObjectType, it should somehow raise)
   - Clean up file structure in `lib/query` (don't need serial_execution namespace anymore)
+  - make `DefinitionHelpers` more friendly for extension
 - Interface's possible types should be a property of the schema, not the interface
 - Statically validate type of variables (see early return in LiteralValidator)
+- Add docs for shared behaviors & DRY code
 - Big ideas:
-  - Use [graphql-parser](https://github.com/shopify/graphql-parser) (Ruby bindings for [libgraphqlparser](https://github.com/graphql/libgraphqlparser)) instead of Parslet ([underway-ish](https://github.com/rmosolgo/graphql-libgraphqlparser-ruby))
+  - Use a C-level parser instead of a Ruby parser
+    - Refactor `Language::Nodes` to match [libgraphqlparser](https://github.com/graphql/libgraphqlparser) more closely
+    - Write another gem with bindings to libgraphqlparser (or use [graphql-parser](https://github.com/shopify/graphql-parser))
   - Revamp the fixture Schema to be more useful (better names, more extensible)
   - __Subscriptions__
     - This is a good chance to make an `Operation` abstraction of which `query`, `mutation` and `subscription` are members
