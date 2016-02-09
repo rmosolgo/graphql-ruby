@@ -48,7 +48,7 @@ module GraphQL
         module InputObjectLiteral
           def self.coerce(value, type, variables)
             hash = {}
-            value.pairs.each do |arg|
+            value.arguments.each do |arg|
               field_type = type.input_fields[arg.name].type
               hash[arg.name] = LiteralInput.coerce(field_type, arg.value, variables)
             end

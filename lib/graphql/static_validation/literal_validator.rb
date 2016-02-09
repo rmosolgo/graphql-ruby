@@ -29,14 +29,14 @@ class GraphQL::StaticValidation::LiteralValidator
       .values
       .select { |f| f.type.kind.non_null? }
       .map(&:name)
-    present_field_names = ast_node.pairs.map(&:name)
+    present_field_names = ast_node.arguments.map(&:name)
     missing_required_field_names = required_field_names - present_field_names
     missing_required_field_names.none?
   end
 
   def present_input_field_values_are_valid(type, ast_node)
     fields = type.input_fields
-    ast_node.pairs.all? do |value|
+    ast_node.arguments.all? do |value|
      field_type = fields[value.name].type
      validate(value.value, field_type)
     end

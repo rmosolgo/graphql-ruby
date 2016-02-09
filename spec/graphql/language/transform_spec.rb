@@ -45,11 +45,11 @@ describe GraphQL::Language::Transform do
       }
     |
     res = get_result(query, debug: false)
-    assert_equal(4, res.parts.length)
+    assert_equal(4, res.definitions.length)
 
     res = get_result("{ me {id, birthdate} } # query shorthand")
-    assert_equal(1, res.parts.length)
-    assert_equal("me", res.parts.first.selections.first.name)
+    assert_equal(1, res.definitions.length)
+    assert_equal("me", res.definitions.first.selections.first.name)
   end
 
   it 'transforms operation definitions' do
@@ -117,16 +117,16 @@ describe GraphQL::Language::Transform do
     res_empty       = get_result(%q|{}|, parse: :value_input_object)
     res_empty_space = get_result(%q|{ }|, parse: :value_input_object)
 
-    assert_equal('one', res_one_pair.pairs[0].name)
-    assert_equal(1    , res_one_pair.pairs[0].value)
+    assert_equal('one', res_one_pair.arguments[0].name)
+    assert_equal(1    , res_one_pair.arguments[0].value)
 
-    assert_equal('first' , res_two_pair.pairs[0].name)
-    assert_equal('Apple' , res_two_pair.pairs[0].value)
-    assert_equal('second', res_two_pair.pairs[1].name)
-    assert_equal('Banana', res_two_pair.pairs[1].value)
+    assert_equal('first' , res_two_pair.arguments[0].name)
+    assert_equal('Apple' , res_two_pair.arguments[0].value)
+    assert_equal('second', res_two_pair.arguments[1].name)
+    assert_equal('Banana', res_two_pair.arguments[1].value)
 
-    assert_equal([], res_empty.pairs)
-    assert_equal([], res_empty_space.pairs)
+    assert_equal([], res_empty.arguments)
+    assert_equal([], res_empty_space.arguments)
   end
 
   it 'transforms directives' do
@@ -141,12 +141,12 @@ describe GraphQL::Language::Transform do
   end
 
   it 'transforms unnamed operations' do
-    assert_equal(1, get_result("query { me }").parts.length)
-    assert_equal(1, get_result("mutation { touch }").parts.length)
+    assert_equal(1, get_result("query { me }").definitions.length)
+    assert_equal(1, get_result("mutation { touch }").definitions.length)
   end
 
   it 'transforms escaped characters' do
     res = get_result("{quoted: \"\\\" \\\\ \\/ \\b \\f \\n \\r \\t\"}", parse: :value_input_object)
-    assert_equal("\" \\ / \b \f \n \r \t", res.pairs[0].value)
+    assert_equal("\" \\ / \b \f \n \r \t", res.arguments[0].value)
   end
 end

@@ -44,7 +44,7 @@ class GraphQL::Query
     @operations = {}
     @provided_variables = variables
     @document = GraphQL.parse(query_string)
-    @document.parts.each do |part|
+    @document.definitions.each do |part|
       if part.is_a?(GraphQL::Language::Nodes::FragmentDefinition)
         @fragments[part.name] = part
       elsif part.is_a?(GraphQL::Language::Nodes::OperationDefinition)
