@@ -16,12 +16,14 @@ module GraphQL
   end
 
   # Turn a query string into an AST
-  # @param string [String] a GraphQL query string
-  # @param as [Symbol] If you want to use this to parse some _piece_ of a document, pass the rule name (from {GraphQL::Parser})
+  # @param [String] a GraphQL query string
   # @return [GraphQL::Language::Nodes::Document]
-  def self.parse(string, as: nil)
-    parser = as ? GraphQL::PARSER.send(as) : GraphQL::PARSER
-    tree = parser.parse(string)
+  def self.parse(query_string)
+    parse_with_parslet(query_string)
+  end
+
+  def self.parse_with_parslet(string)
+    tree = GraphQL::PARSER.parse(string)
     document = GraphQL::TRANSFORM.apply(tree)
     if !document.is_a?(GraphQL::Language::Nodes::Document)
       raise("Parse failed! Sorry, somehow we failed to turn this string into a document. Please report this bug!")
