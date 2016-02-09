@@ -26,6 +26,7 @@ describe GraphQL::Introspection::SchemaType do
             {"name"=>"cow"},
             {"name"=>"searchDairy"},
             {"name"=>"error"},
+            {"name"=>"executionError"},
             {"name"=>"maybeNull"},
           ]
         },

@@ -18,6 +18,7 @@ describe GraphQL::ExecutionError do
         }
         flavor
       }
+      executionError
     }
 
     fragment similarCheeseFields on Cheese {
@@ -36,7 +37,8 @@ describe GraphQL::ExecutionError do
               "flavor" => "Manchego",
             },
             "flavor" => "Brie",
-            }
+            },
+            "executionError" => nil,
           },
           "errors"=>[
             {
@@ -46,6 +48,10 @@ describe GraphQL::ExecutionError do
             {
               "message"=>"No cheeses are made from Yak milk!",
               "locations"=>[{"line"=>8, "column"=>9}]
+            },
+            {
+              "message"=>"There was an execution error",
+              "locations"=>[{"line"=>16, "column"=>7}]
             },
           ]
         }

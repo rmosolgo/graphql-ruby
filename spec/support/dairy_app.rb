@@ -189,6 +189,11 @@ QueryType = GraphQL::ObjectType.define do
     resolve -> (t, a, c) { raise("This error was raised on purpose") }
   end
 
+  field :executionError do
+    type GraphQL::STRING_TYPE
+    resolve -> (t, a, c) { raise(GraphQL::ExecutionError, "There was an execution error") }
+  end
+
   # To test possibly-null fields
   field :maybeNull, MaybeNullType do
     resolve -> (t, a, c) { OpenStruct.new(cheese: nil) }
