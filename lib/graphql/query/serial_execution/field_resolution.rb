@@ -16,7 +16,13 @@ module GraphQL
 
         def result
           result_name = ast_node.alias || ast_node.name
-          result_value = get_finished_value(get_raw_value)
+          result_value = begin
+            get_finished_value(get_raw_value)
+          rescue GraphQL::ExecutionError => err
+            err.ast_node = ast_node
+            query.context.errors << err
+            nil
+          end
           { result_name => result_value  }
         end
 
@@ -25,18 +31,13 @@ module GraphQL
         # After getting the value from the field's resolve method,
         # continue by "finishing" the value, eg. executing sub-fields or coercing values
         def get_finished_value(raw_value)
-          if raw_value.nil?
-            nil
-          elsif raw_value.is_a?(GraphQL::ExecutionError)
-            raw_value.ast_node = ast_node
-            query.context.errors << raw_value
-            nil
-          else
-            resolved_type = field.type.resolve_type(raw_value)
-            strategy_class = GraphQL::Query::BaseExecution::ValueResolution.get_strategy_for_kind(resolved_type.kind)
-            result_strategy = strategy_class.new(raw_value, resolved_type, target, parent_type, ast_node, query, execution_strategy)
-            result_strategy.result
-          end
+          raise raw_value if raw_value.instance_of?(GraphQL::ExecutionError)
+          return nil if raw_value.nil?
+
+          resolved_type = field.type.resolve_type(raw_value)
+          strategy_class = GraphQL::Query::BaseExecution::ValueResolution.get_strategy_for_kind(resolved_type.kind)
+          result_strategy = strategy_class.new(raw_value, resolved_type, target, parent_type, ast_node, query, execution_strategy)
+          result_strategy.result
         end
 
 

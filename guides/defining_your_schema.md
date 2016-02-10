@@ -92,6 +92,7 @@ result = MySchema.execute(query_string)
 # }
 ```
 
+When explicitly raising the exception, you can raise a GraphQL::ExecutionError with a message to add to the response without specifying an error handler.
 
 ## Middleware
 
