@@ -42,7 +42,7 @@ class GraphQL::StaticValidation::Validator
     def initialize(schema, document)
       @schema = schema
       @document = document
-      @fragments = document.parts.each_with_object({}) do |part, memo|
+      @fragments = document.definitions.each_with_object({}) do |part, memo|
         part.is_a?(GraphQL::Language::Nodes::FragmentDefinition) && memo[part.name] = part
       end
       @errors = []

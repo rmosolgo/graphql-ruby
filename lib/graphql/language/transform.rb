@@ -1,6 +1,5 @@
 module GraphQL
   module Language
-
     # {Transform} is a [parslet](http://kschiess.github.io/parslet/) transform for for turning the AST into objects in {GraphQL::Language::Nodes} objects.
     class Transform < Parslet::Transform
 
@@ -18,8 +17,8 @@ module GraphQL
       end
 
       # Document
-      rule(document_parts: sequence(:p)) { CREATE_NODE[:Document, parts: p, line: (p.first ? p.first.line : 1), col: (p.first ? p.first.col : 1)]}
-      rule(document_parts: simple(:p)) { CREATE_NODE[:Document, parts: [], line: 1, col: 1]}
+      rule(document_parts: sequence(:p)) { CREATE_NODE[:Document, definitions: p, line: (p.first ? p.first.line : 1), col: (p.first ? p.first.col : 1)]}
+      rule(document_parts: simple(:p)) { CREATE_NODE[:Document, definitions: [], line: 1, col: 1]}
 
       # Fragment Definition
       rule(
@@ -52,8 +51,8 @@ module GraphQL
         selections:     sequence(:s),
       ) { CREATE_NODE[:OperationDefinition, operation_type: ot.to_s, name: n.to_s, variables: v, directives: d, selections: s, position_source: ot] }
       optional_sequence(:optional_variables)
-      rule(variable_name: simple(:n), variable_type: simple(:t), variable_optional_default_value: simple(:v)) { CREATE_NODE.(:Variable, name: n.name, type: t, default_value: v, line: n.line, col: n.col)}
-      rule(variable_name: simple(:n), variable_type: simple(:t), variable_optional_default_value: sequence(:v)) { CREATE_NODE.(:Variable, name: n.name, type: t, default_value: v, line: n.line, col: n.col)}
+      rule(variable_name: simple(:n), variable_type: simple(:t), variable_optional_default_value: simple(:v)) { CREATE_NODE.(:VariableDefinition, name: n.name, type: t, default_value: v, line: n.line, col: n.col)}
+      rule(variable_name: simple(:n), variable_type: simple(:t), variable_optional_default_value: sequence(:v)) { CREATE_NODE.(:VariableDefinition, name: n.name, type: t, default_value: v, line: n.line, col: n.col)}
       rule(variable_default_value: simple(:v) ) { v }
       rule(variable_default_value: sequence(:v) ) { v }
       # Query short-hand
@@ -89,7 +88,7 @@ module GraphQL
       rule(array: subtree(:v)) { v }
       rule(array: simple(:v)) { [] } # just `nil`
       rule(boolean: simple(:v)) { v == "true" ? true : false }
-      rule(input_object: sequence(:v)) { CREATE_NODE[:InputObject, pairs: v, line: (v.first ? v.first.line : 1), col: (v.first ? v.first.col : 1)] }
+      rule(input_object: sequence(:v)) { CREATE_NODE[:InputObject, arguments: v, line: (v.first ? v.first.line : 1), col: (v.first ? v.first.col : 1)] }
       rule(input_object_name: simple(:n), input_object_value: simple(:v)) { CREATE_NODE[:Argument, name: n.to_s, value: v, position_source: n]}
       rule(input_object_name: simple(:n), input_object_value: sequence(:v)) { CREATE_NODE[:Argument, name: n.to_s, value: v, position_source: n]}
       rule(int: simple(:v)) { v.to_i }
