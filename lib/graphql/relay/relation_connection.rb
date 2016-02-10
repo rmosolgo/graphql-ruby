@@ -74,7 +74,8 @@ module GraphQL
       def create_order_condition(table, column, value, direction_marker)
         table_name = ActiveRecord::Base.connection.quote_table_name(table)
         name = ActiveRecord::Base.connection.quote_column_name(column)
-        ["#{table_name}.#{name} #{direction_marker} ?", value]
+        casted_value = object.table.engine.columns_hash[column].cast_type.type_cast_from_user(value)
+        ["#{table_name}.#{name} #{direction_marker} ?", casted_value]
       end
     end
 
