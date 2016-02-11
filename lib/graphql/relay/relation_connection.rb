@@ -71,10 +71,17 @@ module GraphQL
         @table_name ||= object.table.table_name
       end
 
+      # When creating the where constraint, cast the value to correct column data type so
+      # active record can send it in correct format to db
       def create_order_condition(table, column, value, direction_marker)
         table_name = ActiveRecord::Base.connection.quote_table_name(table)
         name = ActiveRecord::Base.connection.quote_column_name(column)
-        ["#{table_name}.#{name} #{direction_marker} ?", value]
+        if (ActiveRecord::VERSION::MAJOR == 4 && ActiveRecord::VERSION::MINOR >= 2) || ActiveRecord::VERSION::MAJOR > 4
+          casted_value = object.table.engine.columns_hash[column].cast_type.type_cast_from_user(value)
+        else
+          casted_value = object.table.engine.columns_hash[column].type_cast(value)
+        end
+        ["#{table_name}.#{name} #{direction_marker} ?", casted_value]
       end
     end
 
