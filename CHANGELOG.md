@@ -1,5 +1,12 @@
 # graphql-relay
 
+## 0.6.2 (11 Feb 2015)
+
+### Bug Fix
+
+- Correctly cast values from connection cursors #21
+- Use class _name_ instead of class _object_ when finding a connection implementation (to support Rails autoloading) #16
+
 ## 0.6.1 (14 Dec 2015)
 
 ### Bug Fix
