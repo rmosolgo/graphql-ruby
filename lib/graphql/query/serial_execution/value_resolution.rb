@@ -45,8 +45,8 @@ module GraphQL
           # Resolve it with the "wrapped" type of this list
           def non_null_result
             wrapped_type = field_type.of_type
+            strategy_class = get_strategy_for_kind(wrapped_type.kind)
             value.map do |item|
-              strategy_class = get_strategy_for_kind(wrapped_type.kind)
               inner_strategy = strategy_class.new(item, wrapped_type, target, parent_type, ast_field, query, execution_strategy)
               inner_strategy.result
             end
