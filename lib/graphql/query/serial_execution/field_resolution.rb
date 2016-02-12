@@ -32,14 +32,9 @@ module GraphQL
         # continue by "finishing" the value, eg. executing sub-fields or coercing values
         def get_finished_value(raw_value)
           raise raw_value if raw_value.instance_of?(GraphQL::ExecutionError)
-          if raw_value.nil?
-            raise GraphQL::ExecutionError, "Type mismatch resolving '#{field.name}'" if field.type.kind.non_null?
-            return nil
-          end
 
-          resolved_type = field.type.resolve_type(raw_value)
-          strategy_class = GraphQL::Query::SerialExecution::ValueResolution.get_strategy_for_kind(resolved_type.kind)
-          result_strategy = strategy_class.new(raw_value, resolved_type, target, parent_type, ast_node, query, execution_strategy)
+          strategy_class = GraphQL::Query::SerialExecution::ValueResolution.get_strategy_for_kind(field.type.kind)
+          result_strategy = strategy_class.new(raw_value, field.type, target, parent_type, ast_node, query, execution_strategy)
           result_strategy.result
         end
 

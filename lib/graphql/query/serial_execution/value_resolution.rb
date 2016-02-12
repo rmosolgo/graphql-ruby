@@ -20,6 +20,11 @@ module GraphQL
           end
 
           def result
+            return nil if value.nil?
+            non_null_result
+          end
+
+          def non_null_result
             raise NotImplementedError, "Should return a value based on initialization params"
           end
 
@@ -30,7 +35,7 @@ module GraphQL
 
         class ScalarResolution < BaseResolution
           # Apply the scalar's defined `coerce_result` method to the value
-          def result
+          def non_null_result
             field_type.coerce_result(value)
           end
         end
@@ -38,39 +43,40 @@ module GraphQL
         class ListResolution < BaseResolution
           # For each item in the list,
           # Resolve it with the "wrapped" type of this list
-          def result
+          def non_null_result
             wrapped_type = field_type.of_type
             value.map do |item|
-              resolved_type = wrapped_type.resolve_type(item)
-              strategy_class = get_strategy_for_kind(resolved_type.kind)
-              inner_strategy = strategy_class.new(item, resolved_type, target, parent_type, ast_field, query, execution_strategy)
+              strategy_class = get_strategy_for_kind(wrapped_type.kind)
+              inner_strategy = strategy_class.new(item, wrapped_type, target, parent_type, ast_field, query, execution_strategy)
               inner_strategy.result
             end
           end
         end
 
-        class ObjectResolution < BaseResolution
-          # Resolve the selections on this object
-          def result
-            resolver = execution_strategy.selection_resolution.new(value, field_type, ast_field.selections, query, execution_strategy)
-            resolver.result
+        class HasPossibleTypeResolution < BaseResolution
+          def non_null_result
+            resolved_type = field_type.resolve_type(value)
+            strategy_class = get_strategy_for_kind(resolved_type.kind)
+            inner_strategy = strategy_class.new(value, resolved_type, target, parent_type, ast_field, query, execution_strategy)
+            inner_strategy.result
           end
         end
 
-        class EnumResolution < BaseResolution
-          # Get the string name for this enum value
-          def result
-            field_type.coerce_result(value)
+        class ObjectResolution < BaseResolution
+          # Resolve the selections on this object
+          def non_null_result
+            resolver = execution_strategy.selection_resolution.new(value, field_type, ast_field.selections, query, execution_strategy)
+            resolver.result
           end
         end
 
         class NonNullResolution < BaseResolution
           # Get the "wrapped" type and resolve the value according to that type
           def result
+            raise GraphQL::ExecutionError, "Type mismatch resolving '#{ast_field.name}'" if value.nil?
             wrapped_type = field_type.of_type
-            resolved_type = wrapped_type.resolve_type(value)
-            strategy_class = get_strategy_for_kind(resolved_type.kind)
-            inner_strategy = strategy_class.new(value, resolved_type, target, parent_type, ast_field, query, execution_strategy)
+            strategy_class = get_strategy_for_kind(wrapped_type.kind)
+            inner_strategy = strategy_class.new(value, wrapped_type, target, parent_type, ast_field, query, execution_strategy)
             inner_strategy.result
           end
         end
@@ -79,8 +85,10 @@ module GraphQL
           GraphQL::TypeKinds::SCALAR =>     ScalarResolution,
           GraphQL::TypeKinds::LIST =>       ListResolution,
           GraphQL::TypeKinds::OBJECT =>     ObjectResolution,
-          GraphQL::TypeKinds::ENUM =>       EnumResolution,
+          GraphQL::TypeKinds::ENUM =>       ScalarResolution,
           GraphQL::TypeKinds::NON_NULL =>   NonNullResolution,
+          GraphQL::TypeKinds::INTERFACE =>  HasPossibleTypeResolution,
+          GraphQL::TypeKinds::UNION =>      HasPossibleTypeResolution,
         }
       end
     end
