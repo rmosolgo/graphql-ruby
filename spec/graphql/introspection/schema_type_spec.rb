@@ -28,6 +28,7 @@ describe GraphQL::Introspection::SchemaType do
             {"name"=>"error"},
             {"name"=>"executionError"},
             {"name"=>"maybeNull"},
+            {"name"=>"cantBeNullButIs"},
           ]
         },
         "mutationType"=> {

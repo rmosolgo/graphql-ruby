@@ -198,6 +198,11 @@ QueryType = GraphQL::ObjectType.define do
   field :maybeNull, MaybeNullType do
     resolve -> (t, a, c) { OpenStruct.new(cheese: nil) }
   end
+
+  field :cantBeNullButIs do
+    type !GraphQL::STRING_TYPE
+    resolve -> (t, a, c) { nil }
+  end
 end
 
 GLOBAL_VALUES = []

@@ -132,6 +132,22 @@ describe GraphQL::Query::Executor do
       end
     end
 
+    describe 'if nil is given for a non-null field' do
+      let(:query_string) {%| query noMilk { cantBeNullButIs }|}
+      it 'turns into error messages' do
+        expected = {
+          "data" => { "cantBeNullButIs" => nil },
+          "errors" => [
+            {
+              "message" => "Type mismatch resolving 'cantBeNullButIs'",
+              "locations" => [ { "line" => 1, "column" => 17 } ]
+            }
+          ]
+        }
+        assert_equal(expected, result)
+      end
+    end
+
     describe "if the schema has a rescue handler" do
       before do
         schema.rescue_from(RuntimeError) { "Error was handled!" }
