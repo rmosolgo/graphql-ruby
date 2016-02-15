@@ -1,6 +1,6 @@
 module GraphQL
   class Query
-    class BaseExecution
+    class SerialExecution
       module ValueResolution
         def self.get_strategy_for_kind(kind)
           TYPE_KIND_STRATEGIES[kind] || raise("No value resolution strategy for #{kind}!")
@@ -24,7 +24,7 @@ module GraphQL
           end
 
           def get_strategy_for_kind(*args)
-            GraphQL::Query::BaseExecution::ValueResolution.get_strategy_for_kind(*args)
+            GraphQL::Query::SerialExecution::ValueResolution.get_strategy_for_kind(*args)
           end
         end
 

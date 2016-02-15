@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe GraphQL::Query::BaseExecution::ValueResolution do
+describe GraphQL::Query::SerialExecution::ValueResolution do
   let(:debug) { false }
   let(:query_root) {
     day_of_week_enum = GraphQL::EnumType.define do

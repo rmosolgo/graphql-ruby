@@ -70,7 +70,7 @@ result = MySchema.execute(query_string, validate: false)
 
 ## Custom Execution Strategies
 
-`graphql` includes a serial execution strategy, but you can also create custom strategies to support advanced behavior. See {GraphQL::BaseExecution#initialize} and {GraphQL::BaseExecution#execute} for the required behaviors.
+`graphql` includes a serial execution strategy, but you can also create custom strategies to support advanced behavior. See {GraphQL::SerialExecution#execute} the required behavior.
 
 Then, set your schema to use your custom execution strategy with {GraphQL::Schema#mutation_execution_strategy} or {GraphQL::Schema#query_execution_strategy}
 
