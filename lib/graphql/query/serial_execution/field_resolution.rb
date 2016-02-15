@@ -35,7 +35,7 @@ module GraphQL
           return nil if raw_value.nil?
 
           resolved_type = field.type.resolve_type(raw_value)
-          strategy_class = GraphQL::Query::BaseExecution::ValueResolution.get_strategy_for_kind(resolved_type.kind)
+          strategy_class = GraphQL::Query::SerialExecution::ValueResolution.get_strategy_for_kind(resolved_type.kind)
           result_strategy = strategy_class.new(raw_value, resolved_type, target, parent_type, ast_node, query, execution_strategy)
           result_strategy.result
         end

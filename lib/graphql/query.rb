@@ -104,7 +104,6 @@ class GraphQL::Query
 end
 
 require 'graphql/query/arguments'
-require 'graphql/query/base_execution'
 require 'graphql/query/context'
 require 'graphql/query/directive_chain'
 require 'graphql/query/executor'
