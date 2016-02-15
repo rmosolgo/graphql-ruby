@@ -2,10 +2,16 @@
 
 ### Breaking changes & deprecations
 
+- `GraphQL::Query::BaseExecution` was removed, you should probably extend `SerialExecution` instead #96
+- `GraphQL::Language::Nodes` members no longer raise if they don't get inputs during `initialize` #92
+- `GraphQL.parse` no longer accepts `as:` for parsing partial queries.  #92
+
 ### New features
 
 - `Field#property` & `Field#property=` can be used to access & modify the method that will be sent to the underlying object when resolving a field #88
 - When defining a field, you can pass a string for as `type`. It will be looked up in the global namespace.
+- `Query::Arguments#to_h` unwraps `Arguments` objects recursively
+- If you raise `GraphQL::ExecutionError` during field resolution, it will be rescued and the message will be added to the response's `errors` key. #93
 
 ### Bug fixes
 
