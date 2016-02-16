@@ -18,7 +18,7 @@ module GraphQL
             .reduce({}) { |result, ast_node|
               result.merge(resolve_field(ast_node))
             }
-        rescue GraphQL::NullNonNullError => err
+        rescue GraphQL::InvalidNullError => err
           query.context.errors << err unless err.parent_error?
           nil
         end

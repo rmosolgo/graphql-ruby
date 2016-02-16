@@ -68,7 +68,7 @@ require 'graphql/schema/printer'
 # Order does not matter for these:
 
 require 'graphql/execution_error'
-require 'graphql/null_non_null_error'
+require 'graphql/invalid_null_error'
 require 'graphql/query'
 require 'graphql/repl'
 require 'graphql/static_validation'
