@@ -20,7 +20,7 @@ module GraphQL
           end
 
           def result
-            return nil if value.nil?
+            return nil if value.nil? || value.is_a?(GraphQL::ExecutionError)
             non_null_result
           end
 
@@ -73,7 +73,7 @@ module GraphQL
         class NonNullResolution < BaseResolution
           # Get the "wrapped" type and resolve the value according to that type
           def result
-            raise GraphQL::ExecutionError, "Type mismatch resolving '#{ast_field.name}'" if value.nil?
+            raise GraphQL::NullNonNullError.new(ast_field.name, value) if value.nil? || value.is_a?(GraphQL::ExecutionError)
             wrapped_type = field_type.of_type
             strategy_class = get_strategy_for_kind(wrapped_type.kind)
             inner_strategy = strategy_class.new(value, wrapped_type, target, parent_type, ast_field, query, execution_strategy)
