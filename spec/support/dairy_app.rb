@@ -24,11 +24,16 @@ DairyAnimalEnum = GraphQL::EnumType.define do
   value("YAK",    "Animal with long hair", deprecation_reason: "Out of fashion")
 end
 
+HasPrice = GraphQL::Mixin.define do
+  field :cents, !types.Int 
+  field :currency, !types.String
+end
+
 CheeseType = GraphQL::ObjectType.define do
   name "Cheese"
   description "Cultured dairy product"
   interfaces [EdibleInterface, AnimalProductInterface]
-
+  mixin HasPrice
   # Can have (name, type, desc)
   field :id, !types.Int, "Unique identifier"
   field :flavor, !types.String, "Kind of Cheese"
@@ -62,6 +67,7 @@ MilkType = GraphQL::ObjectType.define do
   name 'Milk'
   description "Dairy beverage"
   interfaces [EdibleInterface, AnimalProductInterface]
+  mixin HasPrice
   field :id, !types.ID
   field :source, DairyAnimalEnum, "Animal which produced this milk"
   field :origin, !types.String, "Place the milk comes from"

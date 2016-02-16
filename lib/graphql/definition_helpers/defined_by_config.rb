@@ -52,6 +52,10 @@ module GraphQL::DefinitionHelpers::DefinedByConfig
       GraphQL::DefinitionHelpers::TypeDefiner.instance
     end
 
+    def mixin(mixin)
+      @fields = mixin.fields.merge(@fields)
+    end
+
     def field(name, type = nil, desc = nil, field: nil, property: nil, &block)
       if block_given?
         field = GraphQL::Field.define(&block)
