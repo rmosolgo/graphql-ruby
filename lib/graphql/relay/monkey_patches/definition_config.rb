@@ -1,8 +1,8 @@
 class GraphQL::DefinitionHelpers::DefinedByConfig::DefinitionConfig
   # Wraps a field definition with a ConnectionField
-  def connection(name, type = nil, desc = nil, property: nil, &block)
+  def connection(name, type = nil, desc = nil, property: nil, max_page_size: nil, &block)
     underlying_field = field(name, type, desc, property: property, &block)
-    connection_field = GraphQL::Relay::ConnectionField.create(underlying_field)
+    connection_field = GraphQL::Relay::ConnectionField.create(underlying_field, max_page_size: max_page_size)
     fields[name.to_s] = connection_field
   end
 

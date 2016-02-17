@@ -16,8 +16,9 @@ module GraphQL
       def paged_nodes
         @paged_nodes = begin
           items = sliced_nodes
-          first && items = items.first(first)
-          last && items.length > last && items.last(last)
+          limit = [first, last, max_page_size].compact.min
+          first && items = items.first(limit)
+          last && items.length > last && items.last(limit)
           items
         end
       end

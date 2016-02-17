@@ -82,6 +82,14 @@ Faction = GraphQL::ObjectType.define do
   connection :basesByName, BaseType.connection_type, property: :bases do
     argument :order, types.String, default_value: "name"
   end
+
+  connection :basesWithMaxLimitRelation, BaseType.connection_type, max_page_size: 2 do
+    resolve -> (object, args, context) { Base.all }
+  end
+
+  connection :basesWithMaxLimitArray, BaseType.connection_type, max_page_size: 2 do
+    resolve -> (object, args, context) { Base.all.to_a }
+  end
 end
 
 # Define a mutation. It will also:

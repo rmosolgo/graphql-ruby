@@ -94,6 +94,44 @@ describe GraphQL::Relay::RelationConnection do
       result = query(query_string, "last" => 1, "nameIncludes" => "ea", "before" => before)
       assert_equal(["Death Star"], get_names(result))
     end
+
+    it "applies the maximum limit for relation connection types" do
+      limit_query_string = %|
+        query getShips($first: Int){
+          empire {
+            basesWithMaxLimitRelation(first: $first) {
+              edges {
+                node {
+                  name
+                }
+              }
+            }
+          }
+        }
+      |
+
+      result = query(limit_query_string, "first" => 3)
+      assert_equal(2, result["data"]["empire"]["basesWithMaxLimitRelation"]["edges"].size)
+    end
+
+    it "applies the maximum limit for relation connection types" do
+      limit_query_string = %|
+        query getShips($first: Int){
+          empire {
+            basesWithMaxLimitArray(first: $first) {
+              edges {
+                node {
+                  name
+                }
+              }
+            }
+          }
+        }
+      |
+
+      result = query(limit_query_string, "first" => 3)
+      assert_equal(2, result["data"]["empire"]["basesWithMaxLimitArray"]["edges"].size)
+    end
   end
 
   describe "without a block" do
