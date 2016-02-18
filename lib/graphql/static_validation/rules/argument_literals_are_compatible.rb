@@ -3,6 +3,7 @@ class GraphQL::StaticValidation::ArgumentLiteralsAreCompatible < GraphQL::Static
     return if node.value.is_a?(GraphQL::Language::Nodes::VariableIdentifier)
     validator = GraphQL::StaticValidation::LiteralValidator.new
     arg_defn = defn.arguments[node.name]
+    return unless arg_defn
     valid = validator.validate(node.value, arg_defn.type)
     if !valid
       kind_of_node = node_type(parent)
