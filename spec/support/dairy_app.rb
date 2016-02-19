@@ -100,6 +100,16 @@ CowType = GraphQL::ObjectType.define do
   field :id, !types.ID
   field :name, types.String
   field :last_produced_dairy, DairyProductUnion
+
+  field :cantBeNullButIs do
+    type !GraphQL::STRING_TYPE
+    resolve -> (t, a, c) { nil }
+  end
+
+  field :cantBeNullButRaisesExecutionError do
+    type !GraphQL::STRING_TYPE
+    resolve -> (t, a, c) { raise GraphQL::ExecutionError, "BOOM" }
+  end
 end
 
 DairyProductInputType = GraphQL::InputObjectType.define {

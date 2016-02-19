@@ -132,6 +132,37 @@ describe GraphQL::Query::Executor do
       end
     end
 
+    describe 'if nil is given for a non-null field' do
+      let(:query_string) {%| query noMilk { cow { name cantBeNullButIs } }|}
+      it 'turns into error message and nulls the entire selection' do
+        expected = {
+          "data" => { "cow" => nil },
+          "errors" => [
+            {
+              "message" => "Cannot return null for non-nullable field cantBeNullButIs"
+            }
+          ]
+        }
+        assert_equal(expected, result)
+      end
+    end
+
+    describe 'if an execution error is raised for a non-null field' do
+      let(:query_string) {%| query noMilk { cow { name cantBeNullButRaisesExecutionError } }|}
+      it 'uses provided error message and nulls the entire selection' do
+        expected = {
+          "data" => { "cow" => nil },
+          "errors" => [
+            {
+              "message" => "BOOM",
+              "locations" => [ { "line" => 1, "column" => 28 } ]
+            }
+          ]
+        }
+        assert_equal(expected, result)
+      end
+    end
+
     describe "if the schema has a rescue handler" do
       before do
         schema.rescue_from(RuntimeError) { "Error was handled!" }

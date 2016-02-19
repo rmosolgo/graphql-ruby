@@ -27,7 +27,7 @@ describe GraphQL::Introspection::SchemaType do
             {"name"=>"searchDairy"},
             {"name"=>"error"},
             {"name"=>"executionError"},
-            {"name"=>"maybeNull"},
+            {"name"=>"maybeNull"}
           ]
         },
         "mutationType"=> {

@@ -21,10 +21,6 @@ class GraphQL::NonNullType < GraphQL::BaseType
     of_type.coerce_input(value)
   end
 
-  def coerce_result(value)
-    of_type.coerce_result(value)
-  end
-
   def kind
     GraphQL::TypeKinds::NON_NULL
   end
