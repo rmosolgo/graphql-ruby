@@ -28,7 +28,7 @@ module GraphQL
     #
     #   MutationType = GraphQL::ObjectType.define do
     #     # The mutation object exposes a field:
-    #     field :updateName, UpdateNameMutation.field
+    #     field :updateName, field: UpdateNameMutation.field
     #   end
     #
     #   # Then query it:
