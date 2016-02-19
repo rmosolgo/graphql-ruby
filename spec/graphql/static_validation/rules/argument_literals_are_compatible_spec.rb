@@ -9,6 +9,7 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
       badSource: searchDairy(product: [{source: 1.1}]) { source }
       missingSource: searchDairy(product: [{fatContent: 1.1}]) { source }
       listCoerce: cheese(id: 1) { similarCheese(source: YAK) }
+      missingInputField: searchDairy(product: [{source: YAK, wacky: 1}])
     }
 
     fragment cheeseFields on Cheese {
@@ -54,7 +55,7 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
 
     fragment_error = {
       "message"=>"Argument 'source' on Field 'similarCheese' has an invalid value",
-      "locations"=>[{"line"=>12, "column"=>7}]
+      "locations"=>[{"line"=>13, "column"=>7}]
     }
     assert_includes(errors, fragment_error)
   end

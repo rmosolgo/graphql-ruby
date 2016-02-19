@@ -37,8 +37,8 @@ class GraphQL::StaticValidation::LiteralValidator
   def present_input_field_values_are_valid(type, ast_node)
     fields = type.input_fields
     ast_node.arguments.all? do |value|
-     field_type = fields[value.name].type
-     validate(value.value, field_type)
+      field = fields[value.name]
+      field ? validate(value.value, field.type) : true
     end
   end
 
