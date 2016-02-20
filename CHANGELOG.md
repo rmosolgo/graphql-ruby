@@ -1,5 +1,12 @@
 # graphql-relay
 
+## 0.7.0 (20 Feb 2015)
+
+### New Feature
+
+- `max_page_size` option for connections
+- Support ActiveSupport 5.0.0.beta2
+
 ## 0.6.2 (11 Feb 2015)
 
 ### Bug Fix
