@@ -77,7 +77,9 @@ module GraphQL
       def create_order_condition(table, column, value, direction_marker)
         table_name = ActiveRecord::Base.connection.quote_table_name(table)
         name = ActiveRecord::Base.connection.quote_column_name(column)
-        if (ActiveRecord::VERSION::MAJOR == 4 && ActiveRecord::VERSION::MINOR >= 2) || ActiveRecord::VERSION::MAJOR > 4
+        if ActiveRecord::VERSION::MAJOR == 5
+          casted_value = object.table.able_to_type_cast? ? object.table.type_cast_for_database(column, value) : value
+        elsif ActiveRecord::VERSION::MAJOR == 4 && ActiveRecord::VERSION::MINOR >= 2
           casted_value = object.table.engine.columns_hash[column].cast_type.type_cast_from_user(value)
         else
           casted_value = object.table.engine.columns_hash[column].type_cast(value)
