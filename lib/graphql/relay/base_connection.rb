@@ -8,6 +8,7 @@ module GraphQL
     # In a subclass, you have access to
     #   - {#object}, the object which the connection will wrap
     #   - {#first}, {#after}, {#last}, {#before} (arguments passed to the field)
+    #   - {#max_page_size} (the specified maximum page size that can be returned from a connection)
     #
     class BaseConnection
       # Just to encode data in the cursor, use something that won't conflict
@@ -60,11 +61,12 @@ module GraphQL
         CONNECTION_IMPLEMENTATIONS[items_class.name] = connection_class
       end
 
-      attr_reader :object, :arguments
+      attr_reader :object, :arguments, :max_page_size
 
-      def initialize(object, arguments)
+      def initialize(object, arguments, max_page_size: nil)
         @object = object
         @arguments = arguments
+        @max_page_size = max_page_size
       end
 
       # Provide easy access to provided arguments:
