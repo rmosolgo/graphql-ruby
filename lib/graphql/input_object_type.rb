@@ -20,10 +20,11 @@ class GraphQL::InputObjectType < GraphQL::BaseType
     GraphQL::TypeKinds::INPUT_OBJECT
   end
 
+  # assert that all present fields are defined
+  # _and_ all defined fields have valid values
   def valid_non_null_input?(input)
-    return false unless input.is_a?(Hash) || input.is_a?(GraphQL::Query::Arguments)
-    return false unless input.all? { |name, value| input_fields[name] }
-    input_fields.all? { |name, field| field.type.valid_input?(input[name]) }
+    input.all? { |name, value| input_fields[name] } &&
+      input_fields.all? { |name, field| field.type.valid_input?(input[name]) }
   end
 
   def coerce_non_null_input(value)

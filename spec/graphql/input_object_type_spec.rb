@@ -10,12 +10,19 @@ describe GraphQL::InputObjectType do
     assert(DairyProductInputType.input_fields["fatContent"])
   end
 
+  describe "input validation" do
+    it "Accepts anything that yields key-value pairs to #all?" do
+      values_obj = MinimumInputObject.new
+      assert DairyProductInputType.valid_non_null_input?(values_obj)
+    end
+  end
+
   describe "when sent into a query" do
     let(:variables) { {} }
     let(:result) { DummySchema.execute(query_string, variables: variables) }
 
     describe "list inputs" do
-      let(:variables) { {"search" => [{"source" => "COW"}]} }
+      let(:variables) { {"search" => [MinimumInputObject.new]} }
       let(:query_string) {%|
         query getCheeses($search: [DairyProductInput]!){
             sheep: searchDairy(product: [{source: SHEEP, fatContent: 0.1}]) {
