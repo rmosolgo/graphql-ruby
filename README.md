@@ -126,6 +126,14 @@ connection :featured_comments, CommentType.connection_type do
 end
 ```
 
+#### Maximum Page Size
+
+You can limit the number of results with `max_page_size:`:
+
+```ruby
+connection :featured_comments, CommentType.connection_type, max_page_size: 50
+```
+
 #### Connection types
 
 You can customize a connection type with `.define_connection`:
@@ -146,9 +154,9 @@ Now, `PostType.connection_type` will include a `totalCount` field.
 
 Maybe you need to make a connection object yourself (for example, to return a connection type from a mutation). You can create a connection object like this:
 
-```
-items = ...   # your collection objects
-args = {}     # stub out arguments for this connection object
+```ruby
+items = [...]     # your collection objects
+args = {}         # stub out arguments for this connection object
 connection_class = GraphQL::Relay::BaseConnection.connection_for_items(items)
 connection_class.new(items, args)
 ```
@@ -310,7 +318,6 @@ https://medium.com/@gauravtiwari/graphql-and-relay-on-rails-first-relay-powered-
 
 ## Todo
 
-- Add a `max_page_size` config for connections?
 - Refactor some RelationConnection issues:
   - fix [unbounded count in page info](https://github.com/rmosolgo/graphql-relay-ruby/blob/88b3d94f75a6dd4c8b2604743108db31f66f8dcc/lib/graphql/relay/base_connection.rb#L79-L86), [details](https://github.com/rmosolgo/graphql-relay-ruby/issues/1)
 

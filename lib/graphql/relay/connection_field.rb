@@ -27,6 +27,7 @@ module GraphQL
       # - Merging in the default arguments
       # - Transforming its resolve function to return a connection object
       # @param [GraphQL::Field] A field which returns items to be wrapped as a connection
+      # @param max_page_size [Integer] The maximum number of items which may be requested (if a larger page is requested, it is limited to this number)
       # @return [GraphQL::Field] A field which serves a connections
       def self.create(underlying_field, max_page_size: nil)
         underlying_field.arguments = DEFAULT_ARGUMENTS.merge(underlying_field.arguments)

@@ -63,6 +63,10 @@ module GraphQL
 
       attr_reader :object, :arguments, :max_page_size
 
+      # Make a connection, wrapping `object`
+      # @param The collection of results
+      # @param Query arguments
+      # @param max_page_size [Int] The maximum number of results to return
       def initialize(object, arguments, max_page_size: nil)
         @object = object
         @arguments = arguments
