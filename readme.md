@@ -114,7 +114,10 @@ https://medium.com/@gauravtiwari/graphql-and-relay-on-rails-first-relay-powered-
   - Raise if you try to configure an attribute which doesn't suit the type (ie, if you try to define `resolve` on an ObjectType, it should somehow raise)
   - make `DefinitionHelpers` more friendly for extension
 - Interface's possible types should be a property of the schema, not the interface
-- Statically validate type of variables (see early return in LiteralValidator)
+- Type lookup should be by type name (to support reloaded constants in Rails code)
+- Add a complexity validator (reject queries if they're too big)
+- Add a custom dump for Relay (it expects default value strings to be double-quoted)
+- Make variable validation provide a specific, useful message
 - Add docs for shared behaviors & DRY code
 - After releasing the next version, use it for [graphql-libgraphqlparser](https://github.com/rmosolgo/graphql-libgraphqlparser-ruby)
 - Big ideas:
