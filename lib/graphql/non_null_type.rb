@@ -17,6 +17,16 @@ class GraphQL::NonNullType < GraphQL::BaseType
     !value.nil? && of_type.valid_input?(value)
   end
 
+  def validate_input(value)
+    if value.nil?
+      result = GraphQL::Query::InputValidationResult.new
+      result.add_problem("Expected value to not be null")
+      result
+    else
+      of_type.validate_input(value)
+    end
+  end
+
   def coerce_input(value)
     of_type.coerce_input(value)
   end

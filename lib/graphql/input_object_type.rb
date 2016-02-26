@@ -27,6 +27,32 @@ class GraphQL::InputObjectType < GraphQL::BaseType
       input_fields.all? { |name, field| field.type.valid_input?(input[name]) }
   end
 
+  def validate_non_null_input(input)
+    # Inputs are only required to provide an `all?` method and a `[]` method. That's not enough
+    # to get detailed errors, so if that's all we got, we can only provide generalized error.
+    # (see spec/support/mimimum_input_object.rb)
+    unless input.is_a?(Enumerable)
+      result = GraphQL::Query::InputValidationResult.new
+      result.add_problem("Invalid input was provided") unless valid_non_null_input?(input)
+      return result
+    end
+
+    result = GraphQL::Query::InputValidationResult.new
+
+    # Items in the input that are unexpected
+    input.reject { |name, value| input_fields[name] }.each do |name, value|
+      result.add_problem("Field is not defined on #{self.name}", [name])
+    end
+
+    # Items in the input that are expected, but have invalid values
+    invalid_fields = input_fields.map do |name, field|
+      field_result = field.type.validate_input(input[name])
+      result.merge_result!(name, field_result) unless field_result.is_valid?
+    end
+
+    result
+  end
+
   def coerce_non_null_input(value)
     input_values = {}
     input_fields.each do |input_key, input_field_defn|

@@ -6,17 +6,43 @@ class GraphQL::Query
     end
   end
 
-  class VariableValidationError < GraphQL::ExecutionError
-    def initialize(variable_ast, type, reason)
-      msg = "Variable #{variable_ast.name} of type #{type} #{reason}"
-      super(msg)
-      self.ast_node = variable_ast
+  class InputValidationResult
+    attr_accessor :problems
+
+    def initialize
+      @problems = []
+    end
+
+    def is_valid?
+      @problems.empty?
+    end
+
+    def add_problem(explanation, path = nil)
+      @problems.push({ 'path' => path || [], 'explanation' => explanation })
+    end
+
+    def merge_result!(path, inner_result)
+      inner_result.problems.each do |p|
+        item_path = [path, *p['path']]
+        add_problem(p['explanation'], item_path)
+      end
     end
   end
 
-  class VariableMissingError < VariableValidationError
-    def initialize(variable_ast, type)
-      super(variable_ast, type, "can't be null")
+  class VariableValidationError < GraphQL::ExecutionError
+    attr_accessor :value, :validation_result
+
+    def initialize(variable_ast, type, value, validation_result)
+      @value = value
+      @validation_result = validation_result
+
+      msg = "Variable #{variable_ast.name} of type #{type} was provided invalid value"
+      super(msg)
+      self.ast_node = variable_ast
+    end
+
+    def to_h
+      super.merge({ 'value' => value, 'problems' => validation_result.problems })
     end
   end
 

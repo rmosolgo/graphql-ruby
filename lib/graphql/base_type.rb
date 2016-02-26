@@ -81,6 +81,11 @@ module GraphQL
       valid_non_null_input?(value)
     end
 
+    def validate_input(value)
+      return GraphQL::Query::InputValidationResult.new if value.nil?
+      validate_non_null_input(value)
+    end
+
     def coerce_input(value)
       return nil if value.nil?
       coerce_non_null_input(value)

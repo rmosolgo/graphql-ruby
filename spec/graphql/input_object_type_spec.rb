@@ -15,6 +15,103 @@ describe GraphQL::InputObjectType do
       values_obj = MinimumInputObject.new
       assert DairyProductInputType.valid_non_null_input?(values_obj)
     end
+
+    describe 'validate_input with non-enumerable input' do
+      it "returns a valid result for MinimumInputObject" do
+        result = DairyProductInputType.validate_input(MinimumInputObject.new)
+        assert(result.is_valid?)
+      end
+
+      it "returns an invalid result for MinimumInvalidInputObject" do
+        result = DairyProductInputType.validate_input(MinimumInvalidInputObject.new)
+        assert(!result.is_valid?)
+      end
+    end
+
+    describe 'validate_input with enumerable input' do
+      describe 'with good input' do
+        let(:input) do
+          {
+            'source' => 'COW',
+            'fatContent' => 0.4
+          }
+        end
+        let(:result) { DairyProductInputType.validate_input(input) }
+
+        it 'returns a valid result' do
+          assert(result.is_valid?)
+        end
+      end
+
+      describe 'with bad enum and float' do
+        let(:result) { DairyProductInputType.validate_input('source' => 'KOALA', 'fatContent' => 'bad_num') }
+
+        it 'returns an invalid result' do
+          assert(!result.is_valid?)
+        end
+
+        it 'has problems with correct paths' do
+          paths = result.problems.map { |p| p['path'] }
+          assert(paths.include?(['source']))
+          assert(paths.include?(['fatContent']))
+        end
+
+        it 'has correct problem explanation' do
+          expected = DairyAnimalEnum.validate_input('KOALA').problems[0]['explanation']
+
+          source_problem = result.problems.detect { |p| p['path'] == ['source'] }
+          actual = source_problem['explanation']
+
+          assert_equal(expected, actual)
+        end
+      end
+
+      describe 'with extra argument' do
+        let(:result) { DairyProductInputType.validate_input('source' => 'COW', 'fatContent' => 0.4, 'isDelicious' => false) }
+
+        it 'returns an invalid result' do
+          assert(!result.is_valid?)
+        end
+
+        it 'has problem with correct path' do
+          paths = result.problems.map { |p| p['path'] }
+          assert_equal(paths, [['isDelicious']])
+        end
+
+        it 'has correct problem explanation' do
+          assert(result.problems[0]['explanation'].include?('Field is not defined'))
+        end
+      end
+
+      describe 'list with one invalid element' do
+        let(:list_type) { GraphQL::ListType.new(of_type: DairyProductInputType) }
+        let(:result) do
+          list_type.validate_input([
+            { 'source' => 'COW', 'fatContent' => 0.4 },
+            { 'source' => 'KOALA', 'fatContent' => 0.4 }
+          ])
+        end
+
+        it 'returns an invalid result' do
+          assert(!result.is_valid?)
+        end
+
+        it 'has one problem' do
+          assert_equal(result.problems.length, 1)
+        end
+
+        it 'has problem with correct path' do
+          path = result.problems[0]['path']
+          assert_equal(path, [1, 'source'])
+        end
+
+        it 'has problem with correct explanation' do
+          expected = DairyAnimalEnum.validate_input('KOALA').problems[0]['explanation']
+          actual = result.problems[0]['explanation']
+          assert_equal(expected, actual)
+        end
+      end
+    end
   end
 
   describe "when sent into a query" do

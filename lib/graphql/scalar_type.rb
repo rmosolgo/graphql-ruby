@@ -23,6 +23,16 @@ module GraphQL
       !coerce_non_null_input(value).nil?
     end
 
+    def validate_non_null_input(value)
+      result = Query::InputValidationResult.new
+
+      unless valid_non_null_input?(value)
+        result.add_problem("Could not coerce value #{JSON.dump(value)} to #{name}")
+      end
+
+      result
+    end
+
     def coerce_non_null_input(value)
       @coerce_input_proc.call(value)
     end

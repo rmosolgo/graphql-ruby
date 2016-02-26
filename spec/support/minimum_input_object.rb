@@ -11,3 +11,16 @@ class MinimumInputObject
     pair[1]
   end
 end
+
+class MinimumInvalidInputObject
+  KEY_VALUE_PAIRS = [["source", "KOALA"], ["fatContent", 0.4]]
+
+  def all?
+    KEY_VALUE_PAIRS.all? { |pair| yield(pair) }
+  end
+
+  def [](key)
+    pair = KEY_VALUE_PAIRS.find { |k, v| k == key }
+    pair[1]
+  end
+end
