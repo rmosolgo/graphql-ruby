@@ -8,15 +8,14 @@ module GraphQL
 
         class BaseResolution
           attr_reader :value, :field_type, :target, :parent_type,
-            :ast_field, :query, :execution_strategy
-          def initialize(value, field_type, target, parent_type, ast_field, query, execution_strategy)
+            :ast_field, :execution_context
+          def initialize(value, field_type, target, parent_type, ast_field, execution_context)
             @value = value
             @field_type = field_type
             @target = target
             @parent_type = parent_type
             @ast_field = ast_field
-            @query = query
-            @execution_strategy = execution_strategy
+            @execution_context = execution_context
           end
 
           def result
@@ -47,7 +46,7 @@ module GraphQL
             wrapped_type = field_type.of_type
             strategy_class = get_strategy_for_kind(wrapped_type.kind)
             value.map do |item|
-              inner_strategy = strategy_class.new(item, wrapped_type, target, parent_type, ast_field, query, execution_strategy)
+              inner_strategy = strategy_class.new(item, wrapped_type, target, parent_type, ast_field, execution_context)
               inner_strategy.result
             end
           end
@@ -57,7 +56,7 @@ module GraphQL
           def non_null_result
             resolved_type = field_type.resolve_type(value)
             strategy_class = get_strategy_for_kind(resolved_type.kind)
-            inner_strategy = strategy_class.new(value, resolved_type, target, parent_type, ast_field, query, execution_strategy)
+            inner_strategy = strategy_class.new(value, resolved_type, target, parent_type, ast_field, execution_context)
             inner_strategy.result
           end
         end
@@ -65,8 +64,12 @@ module GraphQL
         class ObjectResolution < BaseResolution
           # Resolve the selections on this object
           def non_null_result
-            resolver = execution_strategy.selection_resolution.new(value, field_type, ast_field.selections, query, execution_strategy)
-            resolver.result
+            execution_context.strategy.selection_resolution.new(
+              value,
+              field_type,
+              ast_field.selections,
+              execution_context
+            ).result
           end
         end
 
@@ -76,7 +79,7 @@ module GraphQL
             raise GraphQL::InvalidNullError.new(ast_field.name, value) if value.nil? || value.is_a?(GraphQL::ExecutionError)
             wrapped_type = field_type.of_type
             strategy_class = get_strategy_for_kind(wrapped_type.kind)
-            inner_strategy = strategy_class.new(value, wrapped_type, target, parent_type, ast_field, query, execution_strategy)
+            inner_strategy = strategy_class.new(value, wrapped_type, target, parent_type, ast_field, execution_context)
             inner_strategy.result
           end
         end

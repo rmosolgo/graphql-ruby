@@ -10,8 +10,11 @@ module GraphQL
       # @param query_obj [GraphQL::Query] the query object for this execution
       # @return [Hash] a spec-compliant GraphQL result, as a hash
       def execute(ast_operation, root_type, query_obj)
-        resolver = operation_resolution.new(ast_operation, root_type, query_obj, self)
-        resolver.result
+        operation_resolution.new(
+          ast_operation,
+          root_type,
+          ExecutionContext.new(query_obj, self)
+        ).result
       end
 
       def field_resolution
@@ -29,6 +32,7 @@ module GraphQL
   end
 end
 
+require 'graphql/query/serial_execution/execution_context'
 require 'graphql/query/serial_execution/value_resolution'
 require 'graphql/query/serial_execution/field_resolution'
 require 'graphql/query/serial_execution/operation_resolution'

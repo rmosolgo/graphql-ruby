@@ -2,16 +2,20 @@ module GraphQL
   class Query
     class SerialExecution
       class FieldResolution
-        attr_reader :ast_node, :parent_type, :target, :query, :execution_strategy, :field, :arguments
+        attr_reader :ast_node, :parent_type, :target, :execution_context, :field, :arguments
 
-        def initialize(ast_node, parent_type, target, query, execution_strategy)
+        def initialize(ast_node, parent_type, target, execution_context)
           @ast_node = ast_node
           @parent_type = parent_type
           @target = target
-          @query = query
-          @execution_strategy = execution_strategy
-          @field = query.schema.get_field(parent_type, ast_node.name) || raise("No field found on #{parent_type.name} '#{parent_type}' for '#{ast_node.name}'")
-          @arguments = GraphQL::Query::LiteralInput.from_arguments(ast_node.arguments, field.arguments, query.variables)
+          @execution_context = execution_context
+          @field =  execution_context.get_field(parent_type, ast_node.name)
+          raise("No field found on #{parent_type.name} '#{parent_type}' for '#{ast_node.name}'") unless field
+          @arguments = GraphQL::Query::LiteralInput.from_arguments(
+            ast_node.arguments,
+            field.arguments,
+            execution_context.query.variables
+          )
         end
 
         def result
@@ -31,11 +35,11 @@ module GraphQL
         def get_finished_value(raw_value)
           if raw_value.is_a?(GraphQL::ExecutionError)
             raw_value.ast_node = ast_node
-            query.context.errors << raw_value
+            execution_context.add_error(raw_value)
           end
 
           strategy_class = GraphQL::Query::SerialExecution::ValueResolution.get_strategy_for_kind(field.type.kind)
-          result_strategy = strategy_class.new(raw_value, field.type, target, parent_type, ast_node, query, execution_strategy)
+          result_strategy = strategy_class.new(raw_value, field.type, target, parent_type, ast_node, execution_context)
           result_strategy.result
         end
 
@@ -44,10 +48,10 @@ module GraphQL
         # - Any middleware on this schema
         # - The field's resolve method
         def get_raw_value
-          steps = query.schema.middleware + [get_middleware_proc_from_field_resolve]
+          steps = execution_context.query.schema.middleware + [get_middleware_proc_from_field_resolve]
           chain = GraphQL::Schema::MiddlewareChain.new(
             steps: steps,
-            arguments: [parent_type, target, field, arguments, query.context]
+            arguments: [parent_type, target, field, arguments, execution_context.query.context]
           )
           value = chain.call
           raise value if value.instance_of?(GraphQL::ExecutionError)
