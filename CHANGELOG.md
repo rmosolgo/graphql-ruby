@@ -2,6 +2,14 @@
 
 ### Breaking changes & deprecations
 
+### New features
+
+### Bug fixes
+
+## 0.11.0 (28 Feb 2016)
+
+### Breaking changes & deprecations
+
 - `GraphQL::Query::BaseExecution` was removed, you should probably extend `SerialExecution` instead #96
 - `GraphQL::Language::Nodes` members no longer raise if they don't get inputs during `initialize` #92
 - `GraphQL.parse` no longer accepts `as:` for parsing partial queries.  #92
@@ -12,8 +20,12 @@
 - When defining a field, you can pass a string for as `type`. It will be looked up in the global namespace.
 - `Query::Arguments#to_h` unwraps `Arguments` objects recursively
 - If you raise `GraphQL::ExecutionError` during field resolution, it will be rescued and the message will be added to the response's `errors` key. #93
+- Raise an error when non-null fields are `nil` #94
 
 ### Bug fixes
+
+- Accept Rails params as input objects
+- Don't get a runtime error when input contains unknown key #100
 
 ## 0.10.9 (15 Jan 2016)
 
