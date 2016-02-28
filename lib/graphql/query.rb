@@ -24,7 +24,7 @@ class GraphQL::Query
   # The executor will send the field's name to the target object
   # and use the result.
   DEFAULT_RESOLVE = :__default_resolve
-  attr_reader :schema, :document, :context, :fragments, :operations, :debug
+  attr_reader :schema, :document, :context, :fragments, :operations, :debug, :max_depth
 
   # Prepare query `query_string` on `schema`
   # @param schema [GraphQL::Schema]
@@ -34,7 +34,8 @@ class GraphQL::Query
   # @param debug [Boolean] if true, errors are raised, if false, errors are put in the `errors` key
   # @param validate [Boolean] if true, `query_string` will be validated with {StaticValidation::Validator}
   # @param operation_name [String] if the query string contains many operations, this is the one which should be executed
-  def initialize(schema, query_string, context: nil, variables: {}, debug: false, validate: true, operation_name: nil)
+  # @param max_depth [Integer] the maximum depth the query is allowed, will raise if exceeded.
+  def initialize(schema, query_string, context: nil, variables: {}, debug: false, validate: true, operation_name: nil, max_depth: nil)
     @schema = schema
     @debug = debug
     @context = Context.new(query: self, values: context)
@@ -43,6 +44,7 @@ class GraphQL::Query
     @fragments = {}
     @operations = {}
     @provided_variables = variables
+    @max_depth = max_depth
     @document = GraphQL.parse(query_string)
     @document.definitions.each do |part|
       if part.is_a?(GraphQL::Language::Nodes::FragmentDefinition)
