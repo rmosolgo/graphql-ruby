@@ -12,6 +12,8 @@ describe GraphQL::Introspection::TypeType do
   |}
   let(:result) { DummySchema.execute(query_string, context: {}, variables: {"cheeseId" => 2}) }
   let(:cheese_fields) {[
+    {"name"=>"cents",       "isDeprecated" => false, "type" => { "name" => "Non-Null", "ofType" => { "name" => "Int"}}},
+    {"name"=>"currency",    "isDeprecated" => false, "type" => { "name" => "Non-Null", "ofType" => { "name" => "String"}}},
     {"name"=>"id",          "isDeprecated" => false, "type" => { "name" => "Non-Null", "ofType" => { "name" => "Int"}}},
     {"name"=>"flavor",      "isDeprecated" => false, "type" => { "name" => "Non-Null", "ofType" => { "name" => "String"}}},
     {"name"=>"origin",      "isDeprecated" => false, "type" => { "name" => "Non-Null", "ofType" => { "name" => "String"}}},
@@ -37,7 +39,9 @@ describe GraphQL::Introspection::TypeType do
           {"name"=>"AnimalProduct"}
         ],
         "fields"=>[
-          {"type"=>{"name"=>"Non-Null", "ofType"=>{"name"=>"ID"}}},
+          {"type"=>{"name"=>"Non-Null","ofType"=>{"name"=>"Int"}}},
+          {"type"=>{"name"=>"Non-Null","ofType"=>{"name"=>"String"}}},
+          {"type"=>{"name"=>"Non-Null","ofType"=>{"name"=>"ID"}}},
           {"type"=>{"name"=>"DairyAnimal", "ofType"=>nil}},
           {"type"=>{"name"=>"Non-Null", "ofType"=>{"name"=>"String"}}},
           {"type"=>{"name"=>"Non-Null", "ofType"=>{"name"=>"Float"}}},
