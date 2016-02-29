@@ -318,9 +318,6 @@ https://medium.com/@gauravtiwari/graphql-and-relay-on-rails-first-relay-powered-
 
 ## Todo
 
-- Refactor some RelationConnection issues:
-  - fix [unbounded count in page info](https://github.com/rmosolgo/graphql-relay-ruby/blob/88b3d94f75a6dd4c8b2604743108db31f66f8dcc/lib/graphql/relay/base_connection.rb#L79-L86), [details](https://github.com/rmosolgo/graphql-relay-ruby/issues/1)
-
 ## More Resources
 
 - [GraphQL Slack](http://graphql-slack.herokuapp.com), come join us in the `#ruby` channel!
