@@ -2,13 +2,15 @@ module GraphQL
   class Query
     class SerialExecution
       class SelectionResolution
-        attr_reader :target, :type, :selections, :execution_context
+        attr_reader :target, :type, :selections, :execution_context, :depth
 
-        def initialize(target, type, selections, execution_context)
+        def initialize(target, type, selections, execution_context, depth: 1)
           @target = target
           @type = type
           @selections = selections
           @execution_context = execution_context
+          @depth = depth
+          execution_context.depth_check(depth)
         end
 
         def result
@@ -88,7 +90,8 @@ module GraphQL
               ast_node,
               type,
               target,
-              execution_context
+              execution_context,
+              depth: depth + 1
             ).result
           }
           chain.result

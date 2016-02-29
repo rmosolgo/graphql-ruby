@@ -45,6 +45,63 @@ describe GraphQL::Query::Executor do
     end
   end
 
+  describe 'maximum query depth' do
+    let(:query_string) {%|
+      query maxDepth {
+        cheese(id: 1) {
+          source
+          similarCheese(source: COW) {
+            flavor
+            similarCheese(source: COW) {
+              flavor
+            }
+          }
+        }
+      }
+    |}
+
+    let(:debug) { false }
+
+    let(:result) { schema.execute(
+      query_string,
+      variables: {},
+      debug: debug,
+      operation_name: operation_name,
+      max_depth: max_depth
+    )}
+
+    describe 'when query is too deep' do
+      let(:max_depth) { 3 }
+
+      it 'raises a RuntimeError' do
+        expected = {"errors"=>[
+          {"message"=>"Max query depth was exceeded", "locations"=>[]}
+        ]}
+        assert_equal(expected, result)
+      end
+    end
+
+    describe 'when query depth is below maximum' do
+      let(:max_depth) { 4 }
+
+      it 'executes normally' do
+        expected = {
+          "data"=> {
+            "cheese" => {
+              "source" =>"COW",
+              "similarCheese" => {
+                "flavor" => "Brie",
+                "similarCheese"=> {
+                  "flavor" => "Brie"
+                }
+              }
+            }
+          }
+        }
+        assert_equal(expected, result)
+      end
+    end
+  end
 
   describe 'execution order' do
     let(:query_string) {%|

@@ -2,14 +2,15 @@ module GraphQL
   class Query
     class SerialExecution
       class FieldResolution
-        attr_reader :ast_node, :parent_type, :target, :execution_context, :field, :arguments
+        attr_reader :ast_node, :parent_type, :target, :execution_context, :field, :arguments, :depth
 
-        def initialize(ast_node, parent_type, target, execution_context)
+        def initialize(ast_node, parent_type, target, execution_context, depth:)
           @ast_node = ast_node
           @parent_type = parent_type
           @target = target
           @execution_context = execution_context
           @field =  execution_context.get_field(parent_type, ast_node.name)
+          @depth = depth
           raise("No field found on #{parent_type.name} '#{parent_type}' for '#{ast_node.name}'") unless field
           @arguments = GraphQL::Query::LiteralInput.from_arguments(
             ast_node.arguments,
@@ -39,8 +40,15 @@ module GraphQL
           end
 
           strategy_class = GraphQL::Query::SerialExecution::ValueResolution.get_strategy_for_kind(field.type.kind)
-          result_strategy = strategy_class.new(raw_value, field.type, target, parent_type, ast_node, execution_context)
-          result_strategy.result
+          result_strategy = strategy_class.new(
+            raw_value,
+            field.type,
+            target,
+            parent_type,
+            ast_node,
+            execution_context,
+            depth: depth
+          ).result
         end
 
 
