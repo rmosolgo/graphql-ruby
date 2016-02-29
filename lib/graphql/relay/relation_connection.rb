@@ -13,6 +13,15 @@ module GraphQL
         @order ||= (super || DEFAULT_ORDER)
       end
 
+      def has_next_page
+        !!(first && sliced_nodes.limit(first + 1).count > first)
+      end
+
+      # Used by `pageInfo`
+      def has_previous_page
+        !!(last && sliced_nodes.limit(last + 1).count > last)
+      end
+
       private
 
       # apply first / last limit results
