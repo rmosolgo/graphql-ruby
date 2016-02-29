@@ -108,24 +108,6 @@ https://medium.com/@gauravtiwari/graphql-and-relay-on-rails-first-relay-powered-
 3. http://mgiroux.me/2015/getting-started-with-rails-graphql-relay/
 4. http://mgiroux.me/2015/uploading-files-using-relay-with-rails/
 
-## To Do
-
-- Code clean-up
-  - Raise if you try to configure an attribute which doesn't suit the type (ie, if you try to define `resolve` on an ObjectType, it should somehow raise)
-  - make `DefinitionHelpers` more friendly for extension
-- Interface's possible types should be a property of the schema, not the interface
-- Type lookup should be by type name (to support reloaded constants in Rails code)
-- Add a complexity validator (reject queries if they're too big)
-- Add a custom dump for Relay (it expects default value strings to be double-quoted)
-- Make variable validation provide a specific, useful message
-- Add docs for shared behaviors & DRY code
-- After releasing the next version, use it for [graphql-libgraphqlparser](https://github.com/rmosolgo/graphql-libgraphqlparser-ruby)
-- Big ideas:
-  - Revamp the fixture Schema to be more useful (better names, more extensible)
-  - __Subscriptions__
-    - This is a good chance to make an `Operation` abstraction of which `query`, `mutation` and `subscription` are members
-    - For a subscription, `graphql` would send an outbound message to the system (allow the host application to manage its own subscriptions via Pusher, ActionCable, whatever)
-
 ## Goals
 
 - Implement the GraphQL spec & support a Relay front end
@@ -145,8 +127,21 @@ https://medium.com/@gauravtiwari/graphql-and-relay-on-rails-first-relay-powered-
 - [`graphql-batch`](https://github.com/shopify/graphql-batch), a batched query execution strategy
 - [`graphql-parallel`](https://github.com/rmosolgo/graphql-parallel), an asynchronous query execution strategy
 - [Example Relay support](https://github.com/rmosolgo/graphql-relay-ruby) in Ruby
+- [`graphql-libgraphqlparser`](https://github.com/rmosolgo/graphql-libgraphqlparser), bindings to [libgraphqlparser](https://github.com/graphql/libgraphqlparser), a C-level parser.
 
-## P.S.
+## To Do
 
-- Thanks to @sgwilym for the great logo!
-- Definition API heavily inspired by @seanchas's [implementation of GraphQL](https://github.com/seanchas/graphql)
+- Code clean-up
+  - Raise if you try to configure an attribute which doesn't suit the type (ie, if you try to define `resolve` on an ObjectType, it should somehow raise)
+  - make `DefinitionHelpers` more friendly for extension
+- Interface's possible types should be a property of the schema, not the interface
+- Type lookup should be by type name (to support reloaded constants in Rails code)
+- Add a complexity validator (reject queries if they're too big)
+- Add a custom dump for Relay (it expects default value strings to be double-quoted)
+- Make variable validation provide a specific, useful message
+- Add docs for shared behaviors & DRY code
+- Big ideas:
+  - Revamp the fixture Schema to be more useful (better names, more extensible)
+  - __Subscriptions__
+    - This is a good chance to make an `Operation` abstraction of which `query`, `mutation` and `subscription` are members
+    - For a subscription, `graphql` would send an outbound message to the system (allow the host application to manage its own subscriptions via Pusher, ActionCable, whatever)
