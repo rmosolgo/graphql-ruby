@@ -48,7 +48,7 @@ module GraphQL
     module TypeKindPrinters
       module FieldPrinter
         def print_fields(type)
-          type.fields.values.map{ |field| "  #{field.name}#{print_args(field)}: #{field.type}" }.join("\n")
+          type.all_fields.map{ |field| "  #{field.name}#{print_args(field)}: #{field.type}" }.join("\n")
         end
 
         def print_args(field)

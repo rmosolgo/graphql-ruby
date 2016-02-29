@@ -19,15 +19,15 @@ describe GraphQL::Introspection::SchemaType do
         "queryType"=>{
           "fields"=>[
             {"name"=>"cheese"},
-            {"name"=>"milk"},
-            {"name"=>"dairy"},
-            {"name"=>"fromSource"},
-            {"name"=>"favoriteEdible"},
             {"name"=>"cow"},
-            {"name"=>"searchDairy"},
+            {"name"=>"dairy"},
             {"name"=>"error"},
             {"name"=>"executionError"},
-            {"name"=>"maybeNull"}
+            {"name"=>"favoriteEdible"},
+            {"name"=>"fromSource"},
+            {"name"=>"maybeNull"},
+            {"name"=>"milk"},
+            {"name"=>"searchDairy"},
           ]
         },
         "mutationType"=> {

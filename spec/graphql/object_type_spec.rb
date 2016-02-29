@@ -18,18 +18,25 @@ describe GraphQL::ObjectType do
     assert_equal([EdibleInterface, AnimalProductInterface], type.interfaces)
   end
 
-  describe '.fields ' do
+  describe '#get_field ' do
     it 'exposes fields' do
-      field = type.fields["id"]
+      field = type.get_field("id")
       assert_equal(GraphQL::TypeKinds::NON_NULL, field.type.kind)
       assert_equal(GraphQL::TypeKinds::SCALAR, field.type.of_type.kind)
     end
 
     it 'exposes defined field property' do
-      field_without_prop = CheeseType.fields['flavor']
-      field_with_prop = CheeseType.fields['fatContent']
+      field_without_prop = CheeseType.get_field('flavor')
+      field_with_prop = CheeseType.get_field('fatContent')
       assert_equal(field_without_prop.property, nil)
       assert_equal(field_with_prop.property, :fat_content)
+    end
+
+    it "looks up from interfaces" do
+      field_from_self = CheeseType.get_field('fatContent')
+      field_from_iface = MilkType.get_field('fatContent')
+      assert_equal(field_from_self.property, :fat_content)
+      assert_equal(field_from_iface.property, nil)
     end
   end
 end

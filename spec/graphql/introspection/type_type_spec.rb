@@ -12,11 +12,11 @@ describe GraphQL::Introspection::TypeType do
   |}
   let(:result) { DummySchema.execute(query_string, context: {}, variables: {"cheeseId" => 2}) }
   let(:cheese_fields) {[
-    {"name"=>"id",          "isDeprecated" => false, "type" => { "name" => "Non-Null", "ofType" => { "name" => "Int"}}},
     {"name"=>"flavor",      "isDeprecated" => false, "type" => { "name" => "Non-Null", "ofType" => { "name" => "String"}}},
+    {"name"=>"id",          "isDeprecated" => false, "type" => { "name" => "Non-Null", "ofType" => { "name" => "Int"}}},
     {"name"=>"origin",      "isDeprecated" => false, "type" => { "name" => "Non-Null", "ofType" => { "name" => "String"}}},
-    {"name"=>"source",      "isDeprecated" => false, "type" => { "name" => "Non-Null", "ofType" => { "name" => "DairyAnimal"}}},
     {"name"=>"similarCheese", "isDeprecated"=>false, "type"=>{"name"=>"Cheese", "ofType"=>nil}},
+    {"name"=>"source",      "isDeprecated" => false, "type" => { "name" => "Non-Null", "ofType" => { "name" => "DairyAnimal"}}},
   ]}
 
   let(:dairy_animals) {[
@@ -37,11 +37,11 @@ describe GraphQL::Introspection::TypeType do
           {"name"=>"AnimalProduct"}
         ],
         "fields"=>[
-          {"type"=>{"name"=>"Non-Null", "ofType"=>{"name"=>"ID"}}},
-          {"type"=>{"name"=>"DairyAnimal", "ofType"=>nil}},
-          {"type"=>{"name"=>"Non-Null", "ofType"=>{"name"=>"String"}}},
           {"type"=>{"name"=>"Non-Null", "ofType"=>{"name"=>"Float"}}},
           {"type"=>{"name"=>"List", "ofType"=>{"name"=>"String"}}},
+          {"type"=>{"name"=>"Non-Null", "ofType"=>{"name"=>"ID"}}},
+          {"type"=>{"name"=>"Non-Null", "ofType"=>{"name"=>"String"}}},
+          {"type"=>{"name"=>"DairyAnimal", "ofType"=>nil}},
         ]
       },
       "dairyAnimal"=>{
@@ -75,7 +75,7 @@ describe GraphQL::Introspection::TypeType do
     |}
     let(:deprecated_fields) { {"name"=>"fatContent", "isDeprecated"=>true, "type"=>{"name"=>"Non-Null", "ofType"=>{"name"=>"Float"}}} }
     it 'can expose deprecated fields' do
-      new_cheese_fields = cheese_fields + [deprecated_fields]
+      new_cheese_fields = [deprecated_fields] + cheese_fields
       expected = { "data" => {
         "cheeseType" => {
           "name"=> "Cheese",

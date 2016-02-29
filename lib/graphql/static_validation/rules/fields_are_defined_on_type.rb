@@ -19,7 +19,7 @@ class GraphQL::StaticValidation::FieldsAreDefinedOnType
       return GraphQL::Language::Visitor::SKIP
     end
 
-    field =  parent_type.fields[ast_field.name]
+    field =  parent_type.get_field(ast_field.name)
     if field.nil?
       errors << message("Field '#{ast_field.name}' doesn't exist on type '#{parent_type.name}'", parent)
       return GraphQL::Language::Visitor::SKIP

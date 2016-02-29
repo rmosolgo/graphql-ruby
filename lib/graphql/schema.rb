@@ -49,7 +49,7 @@ class GraphQL::Schema
   # Resolve field named `field_name` for type `parent_type`.
   # Handles dynamic fields `__typename`, `__type` and `__schema`, too
   def get_field(parent_type, field_name)
-    defined_field = parent_type.fields[field_name]
+    defined_field = parent_type.get_field(field_name)
     if defined_field
       defined_field
     elsif field_name == "__typename"

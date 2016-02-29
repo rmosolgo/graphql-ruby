@@ -140,6 +140,7 @@ https://medium.com/@gauravtiwari/graphql-and-relay-on-rails-first-relay-powered-
 - Add a custom dump for Relay (it expects default value strings to be double-quoted)
 - Make variable validation provide a specific, useful message
 - Add docs for shared behaviors & DRY code
+- Optimize the pure-Ruby parser (hand-write, RACC?!)
 - Big ideas:
   - Revamp the fixture Schema to be more useful (better names, more extensible)
   - __Subscriptions__

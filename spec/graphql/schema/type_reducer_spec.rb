@@ -5,10 +5,10 @@ describe GraphQL::Schema::TypeReducer do
     reducer = GraphQL::Schema::TypeReducer.new(CheeseType, {})
     expected = {
       "Cheese" => CheeseType,
-      "Int" => GraphQL::INT_TYPE,
+      "Float" => GraphQL::FLOAT_TYPE,
       "String" => GraphQL::STRING_TYPE,
       "DairyAnimal" => DairyAnimalEnum,
-      "Float" => GraphQL::FLOAT_TYPE,
+      "Int" => GraphQL::INT_TYPE,
       "Edible" => EdibleInterface,
       "Milk" => MilkType,
       "ID" => GraphQL::ID_TYPE,
