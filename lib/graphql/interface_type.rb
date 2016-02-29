@@ -26,11 +26,11 @@ class GraphQL::InterfaceType < GraphQL::BaseType
 
   # @return [GraphQL::Field] The defined field for `field_name`
   def get_field(field_name)
-    self.fields[field_name]
+    fields[field_name]
   end
 
   # @return [Array<GraphQL::Field>] All fields on this type
   def all_fields
-    self.fields.values
+    fields.values
   end
 end

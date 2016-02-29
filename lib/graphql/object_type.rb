@@ -50,7 +50,7 @@ class GraphQL::ObjectType < GraphQL::BaseType
 
   # @return [Array<GraphQL::Field>] All fields, including ones inherited from interfaces
   def all_fields
-    interface_fields = interfaces.inject({}) do |memo, iface|
+    interface_fields = interfaces.reduce({}) do |memo, iface|
       memo.merge(iface.fields)
     end
     interface_fields.merge(self.fields).values
@@ -61,7 +61,7 @@ class GraphQL::ObjectType < GraphQL::BaseType
   # Find the _last_ definition for `field_name`
   def get_interface_field(field_name)
     interfaces.reduce(nil) do |memo, iface|
-      iface.fields[field_name] || memo
+      iface.get_field(field_name) || memo
     end
   end
 end
