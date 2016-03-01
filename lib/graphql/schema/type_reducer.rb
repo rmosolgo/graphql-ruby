@@ -30,7 +30,7 @@ class GraphQL::Schema::TypeReducer
   def find_types(type, type_hash)
     type_hash[type.name] = type
     if type.kind.fields?
-      type.fields.each do |name, field|
+      type.all_fields.each do |field|
         reduce_type(field.type, type_hash)
         field.arguments.each do |name, argument|
           reduce_type(argument.type, type_hash)

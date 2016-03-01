@@ -42,4 +42,23 @@ class GraphQL::ObjectType < GraphQL::BaseType
   def kind
     GraphQL::TypeKinds::OBJECT
   end
+
+  # @return [GraphQL::Field] The field definition for `field_name` (may be inherited from interfaces)
+  def get_field(field_name)
+    fields[field_name] || interface_fields[field_name]
+  end
+
+  # @return [Array<GraphQL::Field>] All fields, including ones inherited from interfaces
+  def all_fields
+    interface_fields.merge(self.fields).values
+  end
+
+  private
+
+  # Create a {name => defn} hash for fields inherited from interfaces
+  def interface_fields
+    interfaces.reduce({}) do |memo, iface|
+      memo.merge!(iface.fields)
+    end
+  end
 end

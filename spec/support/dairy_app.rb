@@ -5,7 +5,7 @@ class NoSuchDairyError < StandardError; end
 EdibleInterface = GraphQL::InterfaceType.define do
   name "Edible"
   description "Something you can eat, yum"
-  field :fatContent, !types.Float, "Percentage which is fat", property: :bogus_property
+  field :fatContent, !types.Float, "Percentage which is fat"
   field :origin, !types.String, "Place the edible comes from"
 end
 
@@ -65,7 +65,6 @@ MilkType = GraphQL::ObjectType.define do
   field :id, !types.ID
   field :source, DairyAnimalEnum, "Animal which produced this milk"
   field :origin, !types.String, "Place the milk comes from"
-  field :fatContent, !types.Float, "Percentage which is milkfat"
   field :flavors, types[types.String], "Chocolate, Strawberry, etc" do
     argument :limit, types.Int
     resolve -> (milk, args, ctx) {
