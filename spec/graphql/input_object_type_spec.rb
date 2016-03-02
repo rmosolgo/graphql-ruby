@@ -13,7 +13,7 @@ describe GraphQL::InputObjectType do
   describe "input validation" do
     it "Accepts anything that yields key-value pairs to #all?" do
       values_obj = MinimumInputObject.new
-      assert DairyProductInputType.valid_non_null_input?(values_obj)
+      assert DairyProductInputType.valid_input?(values_obj)
     end
 
     describe 'validate_input with non-enumerable input' do

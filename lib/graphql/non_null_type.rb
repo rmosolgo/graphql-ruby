@@ -14,7 +14,7 @@ class GraphQL::NonNullType < GraphQL::BaseType
   end
 
   def valid_input?(value)
-    !value.nil? && of_type.valid_input?(value)
+    validate_input(value).is_valid?
   end
 
   def validate_input(value)

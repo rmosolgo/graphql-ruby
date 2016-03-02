@@ -17,10 +17,6 @@ class GraphQL::ListType < GraphQL::BaseType
     "[#{of_type.to_s}]"
   end
 
-  def valid_non_null_input?(value)
-    ensure_array(value).all?{ |item| of_type.valid_input?(item) }
-  end
-
   def validate_non_null_input(value)
     result = GraphQL::Query::InputValidationResult.new
 
@@ -28,7 +24,7 @@ class GraphQL::ListType < GraphQL::BaseType
       item_result = of_type.validate_input(item)
       result.merge_result!(index, item_result) unless item_result.is_valid?
     end
-    
+
     result
   end
 

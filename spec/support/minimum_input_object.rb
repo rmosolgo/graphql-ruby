@@ -1,9 +1,11 @@
 # This is the minimum required interface for an input object
 class MinimumInputObject
+  include Enumerable
+
   KEY_VALUE_PAIRS = [["source", "COW"], ["fatContent", 0.4]]
 
-  def all?
-    KEY_VALUE_PAIRS.all? { |pair| yield(pair) }
+  def each(&block)
+    KEY_VALUE_PAIRS.each(&block)
   end
 
   def [](key)
@@ -13,10 +15,12 @@ class MinimumInputObject
 end
 
 class MinimumInvalidInputObject
+  include Enumerable
+
   KEY_VALUE_PAIRS = [["source", "KOALA"], ["fatContent", 0.4]]
 
-  def all?
-    KEY_VALUE_PAIRS.all? { |pair| yield(pair) }
+  def each(&block)
+    KEY_VALUE_PAIRS.each(&block)
   end
 
   def [](key)
