@@ -6,46 +6,6 @@ class GraphQL::Query
     end
   end
 
-  class InputValidationResult
-    attr_accessor :problems
-
-    def initialize
-      @problems = []
-    end
-
-    def is_valid?
-      @problems.empty?
-    end
-
-    def add_problem(explanation, path = nil)
-      @problems.push({ 'path' => path || [], 'explanation' => explanation })
-    end
-
-    def merge_result!(path, inner_result)
-      inner_result.problems.each do |p|
-        item_path = [path, *p['path']]
-        add_problem(p['explanation'], item_path)
-      end
-    end
-  end
-
-  class VariableValidationError < GraphQL::ExecutionError
-    attr_accessor :value, :validation_result
-
-    def initialize(variable_ast, type, value, validation_result)
-      @value = value
-      @validation_result = validation_result
-
-      msg = "Variable #{variable_ast.name} of type #{type} was provided invalid value"
-      super(msg)
-      self.ast_node = variable_ast
-    end
-
-    def to_h
-      super.merge({ 'value' => value, 'problems' => validation_result.problems })
-    end
-  end
-
   # If a resolve function returns `GraphQL::Query::DEFAULT_RESOLVE`,
   # The executor will send the field's name to the target object
   # and use the result.
@@ -137,3 +97,5 @@ require 'graphql/query/literal_input'
 require 'graphql/query/serial_execution'
 require 'graphql/query/type_resolver'
 require 'graphql/query/variables'
+require 'graphql/query/input_validation_result'
+require 'graphql/query/variable_validation_error'
