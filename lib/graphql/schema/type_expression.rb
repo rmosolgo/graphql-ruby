@@ -5,6 +5,7 @@ module GraphQL
         @schema = schema
         @ast_node = ast_node
       end
+
       def type
         @type ||= build_type(@schema, @ast_node)
       end

@@ -1,5 +1,5 @@
-require 'graphql/language/lexer'
-require 'graphql/language/nodes'
-require 'graphql/language/parser'
-require 'graphql/language/token'
-require 'graphql/language/visitor'
+require "graphql/language/lexer"
+require "graphql/language/nodes"
+require "graphql/language/parser"
+require "graphql/language/token"
+require "graphql/language/visitor"

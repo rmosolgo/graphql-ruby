@@ -1,7 +1,7 @@
-require 'spec_helper'
+require "spec_helper"
 
 describe GraphQL::Field do
-  it 'accepts a proc as type' do
+  it "accepts a proc as type" do
     field = GraphQL::Field.define do
       type(-> { DairyProductUnion })
     end
@@ -18,27 +18,28 @@ describe GraphQL::Field do
   end
 
 
-  describe '.property ' do
+  describe ".property " do
     let(:field) do
       GraphQL::Field.define do
-        name 'field_name'
+        name "field_name"
         # satisfies 'can define by config' below
         property :internal_prop
       end
     end
 
-    it 'can define by config' do
+    it "can define by config" do
       assert_equal(field.property, :internal_prop)
     end
 
-    it 'has nil property if not defined' do
+    it "has nil property if not defined" do
       no_prop_field = GraphQL::Field.define { }
       assert_equal(no_prop_field.property, nil)
     end
 
-    describe 'default resolver' do
+    describe "default resolver" do
       def acts_like_default_resolver(field, old_prop, new_prop)
-        object = OpenStruct.new(old_prop => 'old value', new_prop => 'new value', field.name.to_sym => 'unset value')
+        object = OpenStruct.new(old_prop => "old value", new_prop => "new value", field.name.to_sym => "unset value")
+
 
         old_result = field.resolve(object, nil, nil)
         field.property = new_prop
@@ -46,16 +47,16 @@ describe GraphQL::Field do
         field.property = nil
         unset_result = field.resolve(object, nil, nil)
 
-        assert_equal(old_result, 'old value')
-        assert_equal(new_result, 'new value')
-        assert_equal(unset_result, 'unset value')
+        assert_equal(old_result, "old value")
+        assert_equal(new_result, "new value")
+        assert_equal(unset_result, "unset value")
       end
 
-      it 'responds to changes in property' do
+      it "responds to changes in property" do
         acts_like_default_resolver(field, :internal_prop, :new_prop)
       end
 
-      it 'is reassigned if resolve is set to nil' do
+      it "is reassigned if resolve is set to nil" do
         field.resolve = nil
         acts_like_default_resolver(field, :internal_prop, :new_prop)
       end

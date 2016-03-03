@@ -1,6 +1,6 @@
 # Based on the graphql-js example
 # https://github.com/graphql/graphql-js/blob/master/src/__tests__/starWarsSchema.js
-require_relative './star_wars_data'
+require_relative "./star_wars_data"
 
 EpisodeEnum = GraphQL::EnumType.define do
   name("Episode")

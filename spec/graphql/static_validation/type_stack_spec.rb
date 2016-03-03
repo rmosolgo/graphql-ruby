@@ -1,4 +1,4 @@
-require 'spec_helper'
+require "spec_helper"
 
 class TypeCheckValidator
   def self.checks
@@ -24,7 +24,8 @@ describe GraphQL::StaticValidation::TypeStack do
   let(:validator) { GraphQL::StaticValidation::Validator.new(schema: DummySchema, rules: [TypeCheckValidator]) }
   let(:query) { GraphQL::Query.new(DummySchema, query_string) }
 
-  it 'stores up types' do
+
+  it "stores up types" do
     validator.validate(query)
     expected = [
       ["Query", "Cheese"],

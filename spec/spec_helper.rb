@@ -1,11 +1,11 @@
 require "codeclimate-test-reporter"
 CodeClimate::TestReporter.start
-require 'graphql'
+require "graphql"
 require "benchmark"
 require "minitest/autorun"
 require "minitest/focus"
 require "minitest/reporters"
-require 'pry'
+require "pry"
 Minitest::Reporters.use! Minitest::Reporters::SpecReporter.new
 
 Minitest::Spec.make_my_diffs_pretty!

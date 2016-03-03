@@ -5,12 +5,13 @@ module GraphQL
     # Passed into initialization blocks, eg {ObjectType#initialize}, {Field#initialize}
     class TypeDefiner
       include Singleton
-
+      # rubocop:disable Style/MethodName
       def Int;      GraphQL::INT_TYPE;      end
       def String;   GraphQL::STRING_TYPE;   end
       def Float;    GraphQL::FLOAT_TYPE;    end
       def Boolean;  GraphQL::BOOLEAN_TYPE;  end
       def ID;       GraphQL::ID_TYPE;       end
+      # rubocop:enable Style/MethodName
 
       # Make a {ListType} which wraps the input type
       #

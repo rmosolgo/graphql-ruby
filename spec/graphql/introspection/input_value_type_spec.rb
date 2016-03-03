@@ -19,7 +19,7 @@ describe GraphQL::Introspection::InputValueType do
   |}
   let(:result) { DummySchema.execute(query_string)}
 
-  it 'exposes metadata about input objects, giving extra quotes for strings' do
+  it "exposes metadata about input objects, giving extra quotes for strings" do
     expected = { "data" => {
         "__type" => {
           "name"=>"DairyProductInput",

@@ -1,4 +1,4 @@
-require 'spec_helper'
+require "spec_helper"
 
 describe GraphQL::Language::Visitor do
   let(:document) { GraphQL.parse("
@@ -19,7 +19,7 @@ describe GraphQL::Language::Visitor do
     v
   end
 
-  it 'calls hooks during a depth-first tree traversal' do
+  it "calls hooks during a depth-first tree traversal" do
     assert_equal(2, visitor[GraphQL::Language::Nodes::Argument].enter.length)
     visitor.visit(document)
     assert_equal(6, counts[:fields_entered])
@@ -29,8 +29,8 @@ describe GraphQL::Language::Visitor do
     assert(counts[:finished])
   end
 
-  describe 'Visitor::SKIP' do
-    it 'skips the rest of the node' do
+  describe "Visitor::SKIP" do
+    it "skips the rest of the node" do
       visitor[GraphQL::Language::Nodes::Document] << -> (node, parent) { GraphQL::Language::Visitor::SKIP }
       visitor.visit(document)
       assert_equal(0, counts[:fields_entered])

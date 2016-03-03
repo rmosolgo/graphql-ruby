@@ -1,4 +1,4 @@
-require 'spec_helper'
+require "spec_helper"
 
 describe GraphQL::Query do
   let(:query_string) { %|
@@ -43,7 +43,7 @@ describe GraphQL::Query do
   )}
   let(:result) { query.result }
   describe '#result' do
-    it 'returns fields on objects' do
+    it "returns fields on objects" do
       expected = {"data"=> {
           "brie" =>   { "flavor" => "Brie", "taste" => "Brie" },
           "cheese" => {
@@ -82,8 +82,8 @@ describe GraphQL::Query do
     end
   end
 
-  it 'exposes fragments' do
-    assert_equal(GraphQL::Language::Nodes::FragmentDefinition, query.fragments['cheeseFields'].class)
+  it "exposes fragments" do
+    assert_equal(GraphQL::Language::Nodes::FragmentDefinition, query.fragments["cheeseFields"].class)
   end
 
   describe "merging fragments with different keys" do

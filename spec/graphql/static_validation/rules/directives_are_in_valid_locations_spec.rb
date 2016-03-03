@@ -21,8 +21,8 @@ describe GraphQL::StaticValidation::DirectivesAreInValidLocations do
   let(:query) { GraphQL::Query.new(DummySchema, query_string) }
   let(:errors) { validator.validate(query) }
 
-  describe 'invalid directive locations' do
-    it 'makes errors for them' do
+  describe "invalid directive locations" do
+    it "makes errors for them" do
       expected = [
         {
           "message"=> "'@skip' can't be applied to queries (allowed: fields, fragment spreads, inline fragments)",

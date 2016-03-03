@@ -1,4 +1,4 @@
-require_relative './dairy_data'
+require_relative "./dairy_data"
 
 class NoSuchDairyError < StandardError; end
 
@@ -69,7 +69,7 @@ CheeseType = GraphQL::ObjectType.define do
 end
 
 MilkType = GraphQL::ObjectType.define do
-  name 'Milk'
+  name "Milk"
   description "Dairy beverage"
   interfaces [EdibleInterface, AnimalProductInterface]
   field :id, !types.ID
@@ -85,14 +85,14 @@ end
 
 # No actual data; This type is an "orphan", only accessible through Interfaces
 HoneyType = GraphQL::ObjectType.define do
-  name 'Honey'
+  name "Honey"
   description "Sweet, dehydrated bee barf"
   interfaces [EdibleInterface, AnimalProductInterface]
 end
 
 DairyType = GraphQL::ObjectType.define do
-  name 'Dairy'
-  description 'A farm where milk is harvested and cheese is produced'
+  name "Dairy"
+  description "A farm where milk is harvested and cheese is produced"
   field :id, !types.ID
   field :cheese, CheeseType
   field :milks, types[MilkType]
@@ -111,8 +111,8 @@ DairyProductUnion = GraphQL::UnionType.define do
 end
 
 CowType = GraphQL::ObjectType.define do
-  name 'Cow'
-  description 'A farm where milk is harvested and cheese is produced'
+  name "Cow"
+  description "A farm where milk is harvested and cheese is produced"
   field :id, !types.ID
   field :name, types.String
   field :last_produced_dairy, DairyProductUnion

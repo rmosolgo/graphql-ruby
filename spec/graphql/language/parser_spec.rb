@@ -1,4 +1,4 @@
-require 'spec_helper'
+require "spec_helper"
 
 describe GraphQL::Language::Parser do
   let(:document) { GraphQL::Language::Parser.parse(query_string) }
@@ -26,7 +26,7 @@ describe GraphQL::Language::Parser do
     }
   |}
 
-  describe '.parse' do
+  describe ".parse" do
     let(:_query_string) { '
         query getStuff($fragment: Int!, $false: String = "h\"😸i") @skip(ok: 1) {
           myField(
@@ -53,7 +53,7 @@ describe GraphQL::Language::Parser do
         }
       '}
 
-    it 'parses queries' do
+    it "parses queries" do
       assert document
     end
 
@@ -286,7 +286,7 @@ describe GraphQL::Language::Parser do
       err = assert_raises(GraphQL::ParseError) { document }
     end
 
-    it 'correctly identifies parse error location and content' do
+    it "correctly identifies parse error location and content" do
       e = assert_raises(GraphQL::ParseError) do
         GraphQL.parse("
           query getCoupons {

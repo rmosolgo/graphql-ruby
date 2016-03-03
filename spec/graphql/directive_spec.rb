@@ -1,8 +1,8 @@
-require 'spec_helper'
+require "spec_helper"
 
 describe GraphQL::Directive do
   let(:result) { DummySchema.execute(query_string, variables: {"t" => true, "f" => false}) }
-  describe 'on fields' do
+  describe "on fields" do
     let(:query_string) { %|query directives($t: Boolean!, $f: Boolean!) {
       cheese(id: 1) {
         # plain fields:
@@ -23,8 +23,9 @@ describe GraphQL::Directive do
       fragment dontIncludeIdField on Cheese { dontIncludeId: id @include(if: false) }
       fragment skipIdField on Cheese { skipId: id @skip(if: true) }
       fragment dontSkipIdField on Cheese { dontSkipId: id @skip(if: false) }
-    |}
-    it 'intercepts fields' do
+    |
+    }
+    it "intercepts fields" do
       expected = { "data" =>{
         "cheese" => {
           "dontSkipFlavor" => "Brie",
@@ -36,7 +37,7 @@ describe GraphQL::Directive do
       assert_equal(expected, result)
     end
   end
-  describe 'on fragments spreads and inline fragments' do
+  describe "on fragments spreads and inline fragments" do
     let(:query_string) { %|query directives {
       cheese(id: 1) {
         ... skipFlavorField @skip(if: true)
@@ -57,10 +58,9 @@ describe GraphQL::Directive do
       fragment dontIncludeFlavorField on Cheese { dontIncludeFlavor: flavor  }
       fragment skipFlavorField on Cheese { skipFlavor: flavor  }
       fragment dontSkipFlavorField on Cheese { dontSkipFlavor: flavor }
-
     |}
 
-    it 'intercepts fragment spreads' do
+    it "intercepts fragment spreads" do
       expected = { "data" => {
         "cheese" => {
           "dontSkipFlavor" => "Brie",

@@ -18,6 +18,6 @@ DAIRY = OpenStruct.new(
 
 COW = OpenStruct.new(
   id: 1,
-  name: 'Billy',
+  name: "Billy",
   last_produced_dairy: MILKS[1]
 )

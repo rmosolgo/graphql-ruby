@@ -1,4 +1,4 @@
-require 'spec_helper'
+require "spec_helper"
 
 describe GraphQL::Query::SerialExecution::ValueResolution do
   let(:debug) { false }
@@ -17,7 +17,7 @@ describe GraphQL::Query::SerialExecution::ValueResolution do
       name "Query"
       field :tomorrow, day_of_week_enum do
         argument :today, day_of_week_enum
-        resolve ->(obj, args, ctx) { (args['today'] + 1) % 7 }
+        resolve ->(obj, args, ctx) { (args["today"] + 1) % 7 }
       end
     end
   }

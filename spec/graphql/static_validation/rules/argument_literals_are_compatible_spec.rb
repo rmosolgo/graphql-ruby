@@ -1,4 +1,4 @@
-require 'spec_helper'
+require "spec_helper"
 
 describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
   let(:query_string) {%|
@@ -21,7 +21,7 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
   let(:query) { GraphQL::Query.new(DummySchema, query_string) }
   let(:errors) { validator.validate(query) }
 
-  it 'finds undefined or missing-required arguments to fields and directives' do
+  it "finds undefined or missing-required arguments to fields and directives" do
     assert_equal(6, errors.length)
 
     query_root_error = {

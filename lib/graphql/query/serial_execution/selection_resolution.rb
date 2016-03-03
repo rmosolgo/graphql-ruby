@@ -102,7 +102,7 @@ module GraphQL
             selection.name
           end
 
-          memo[name] = if memo.has_key?(name)
+          memo[name] = if memo.key?(name)
             merge_fields(memo[name], selection)
           else
             selection

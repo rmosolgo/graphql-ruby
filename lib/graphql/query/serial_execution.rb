@@ -32,8 +32,8 @@ module GraphQL
   end
 end
 
-require 'graphql/query/serial_execution/execution_context'
-require 'graphql/query/serial_execution/value_resolution'
-require 'graphql/query/serial_execution/field_resolution'
-require 'graphql/query/serial_execution/operation_resolution'
-require 'graphql/query/serial_execution/selection_resolution'
+require "graphql/query/serial_execution/execution_context"
+require "graphql/query/serial_execution/value_resolution"
+require "graphql/query/serial_execution/field_resolution"
+require "graphql/query/serial_execution/operation_resolution"
+require "graphql/query/serial_execution/selection_resolution"

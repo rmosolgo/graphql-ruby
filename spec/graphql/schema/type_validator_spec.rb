@@ -1,4 +1,4 @@
-require 'spec_helper'
+require "spec_helper"
 
 describe GraphQL::Schema::TypeValidator do
   let(:base_type_defn) {
@@ -18,9 +18,9 @@ describe GraphQL::Schema::TypeValidator do
   }
   let(:validator) { GraphQL::Schema::TypeValidator.new }
   let(:errors) { e = []; validator.validate(object, e); e;}
-  describe 'when name isnt defined' do
+  describe "when name isnt defined" do
     let(:type_defn) { base_type_defn.delete_if {|k,v| k == :name }}
-    it 'requires name' do
+    it "requires name" do
       assert_equal(
         ["InvalidType must respond to #name() to be a Type"],
         errors
@@ -28,9 +28,9 @@ describe GraphQL::Schema::TypeValidator do
     end
   end
 
-  describe 'when a method returns nil' do
+  describe "when a method returns nil" do
     let(:type_defn) { base_type_defn.merge(interfaces: nil)}
-    it 'requires name' do
+    it "requires name" do
       assert_equal(
         ["InvalidType must return a value for #interfaces() to be a OBJECT"],
         errors
@@ -59,18 +59,18 @@ describe GraphQL::Schema::TypeValidator do
     }
     let(:errors) { e = []; GraphQL::Schema::TypeValidator.new.validate(object, e); e;}
 
-    describe 'when non-object types' do
+    describe "when non-object types" do
       let(:types) { [DairyProductInputType] }
-      it 'must be must be only object types' do
+      it "must be must be only object types" do
         expected = [
           "Something.possible_types must be objects, but some aren't: DairyProductInput"
         ]
         assert_equal(expected, errors)
       end
     end
-    describe 'when no types' do
+    describe "when no types" do
       let(:types) { [] }
-      it 'must have a type' do
+      it "must have a type" do
         expected = [
           "Union Something must be defined with 1 or more types, not 0!"
         ]
