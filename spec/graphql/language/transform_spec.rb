@@ -113,17 +113,21 @@ describe GraphQL::Language::Transform do
 
   it 'transforms input objects' do
     res_one_pair    = get_result(%q|{one: 1}|, parse: :value_input_object)
-    res_two_pair    = get_result(%q|{first: "Apple", second: "Banana"}|, parse: :value_input_object)
+    res_many_pair   = get_result(%q|{first: "Apple", second: "Banana", third: ORANGE}|, parse: :value_input_object)
     res_empty       = get_result(%q|{}|, parse: :value_input_object)
     res_empty_space = get_result(%q|{ }|, parse: :value_input_object)
 
     assert_equal('one', res_one_pair.arguments[0].name)
     assert_equal(1    , res_one_pair.arguments[0].value)
 
-    assert_equal('first' , res_two_pair.arguments[0].name)
-    assert_equal('Apple' , res_two_pair.arguments[0].value)
-    assert_equal('second', res_two_pair.arguments[1].name)
-    assert_equal('Banana', res_two_pair.arguments[1].value)
+    assert_equal("first" , res_many_pair.arguments[0].name)
+    assert_equal("Apple" , res_many_pair.arguments[0].value)
+    assert_equal("second", res_many_pair.arguments[1].name)
+    assert_equal("Banana", res_many_pair.arguments[1].value)
+
+    assert(res_many_pair.arguments[2].value.is_a?(GraphQL::Language::Nodes::Enum))
+    assert_equal("third",  res_many_pair.arguments[2].name)
+    assert_equal("ORANGE", res_many_pair.arguments[2].value.name)
 
     assert_equal([], res_empty.arguments)
     assert_equal([], res_empty_space.arguments)
