@@ -10,6 +10,8 @@ class GraphQL::StaticValidation::LiteralValidator
       type.valid_input?(ast_value)
     elsif type.kind.enum? && ast_value.is_a?(GraphQL::Language::Nodes::Enum)
       type.valid_input?(ast_value.name)
+    elsif type.kind.enum? && ast_value.is_a?(String)
+      type.valid_input?(ast_value)
     elsif type.kind.input_object? && ast_value.is_a?(GraphQL::Language::Nodes::InputObject)
       required_input_fields_are_present(type, ast_value) &&
         present_input_field_values_are_valid(type, ast_value)

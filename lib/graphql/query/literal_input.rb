@@ -64,7 +64,7 @@ module GraphQL
 
         module EnumLiteral
           def self.coerce(value, type, variables)
-            type.coerce_input(value.name)
+            type.coerce_input(value.is_a?(String) ? value : value.name)
           end
         end
 
