@@ -69,7 +69,13 @@ class GraphQL::Schema
 
   class InvalidTypeError < StandardError
     def initialize(type, errors)
-      super("Type #{type.respond_to?(:name) ? type.name :  "Unnamed type" } is invalid: #{errors.join(", ")}")
+      msg = "Unnamed Type is invalid: #{errors.join(", ")}"
+      if type.respond_to?(:name)
+        msg = "Type #{type.name} is invalid: #{errors.join(", ")}"
+      elsif type.respond_to?(:source_location)
+        msg = "Type is invalid: Proc defined in #{type.source_location.join(':')} #{type.source}. #{errors.join(", ")}"
+      end
+      super(msg)
     end
   end
 end
