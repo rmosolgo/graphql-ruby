@@ -136,9 +136,9 @@ https://medium.com/@gauravtiwari/graphql-and-relay-on-rails-first-relay-powered-
   - make `DefinitionHelpers` more friendly for extension
 - Interface's possible types should be a property of the schema, not the interface
 - Type lookup should be by type name (to support reloaded constants in Rails code)
+- Depth validator should be aware of fragments
 - Add a complexity validator (reject queries if they're too big)
 - Add a custom dump for Relay (it expects default value strings to be double-quoted)
-- Make variable validation provide a specific, useful message
 - Add docs for shared behaviors & DRY code
 - Optimize the pure-Ruby parser (hand-write, RACC?!)
 - Big ideas:
