@@ -20,11 +20,23 @@ class GraphQL::InputObjectType < GraphQL::BaseType
     GraphQL::TypeKinds::INPUT_OBJECT
   end
 
-  # assert that all present fields are defined
-  # _and_ all defined fields have valid values
-  def valid_non_null_input?(input)
-    input.all? { |name, value| input_fields[name] } &&
-      input_fields.all? { |name, field| field.type.valid_input?(input[name]) }
+  def validate_non_null_input(input)
+    fail ArgumentError.new("input must be enumerable") unless input.is_a?(Enumerable)
+
+    result = GraphQL::Query::InputValidationResult.new
+
+    # Items in the input that are unexpected
+    input.reject { |name, value| input_fields[name] }.each do |name, value|
+      result.add_problem("Field is not defined on #{self.name}", [name])
+    end
+
+    # Items in the input that are expected, but have invalid values
+    invalid_fields = input_fields.map do |name, field|
+      field_result = field.type.validate_input(input[name])
+      result.merge_result!(name, field_result) unless field_result.is_valid?
+    end
+
+    result
   end
 
   def coerce_non_null_input(value)

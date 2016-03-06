@@ -41,8 +41,14 @@ class GraphQL::EnumType < GraphQL::BaseType
     GraphQL::TypeKinds::ENUM
   end
 
-  def valid_non_null_input?(value_name)
-    @values_by_name.key?(value_name)
+  def validate_non_null_input(value_name)
+    result = GraphQL::Query::InputValidationResult.new
+
+    unless @values_by_name.key?(value_name)
+      result.add_problem("Expected #{JSON.dump(value_name)} to be one of: #{@values_by_name.keys.join(', ')}")
+    end
+
+    result
   end
 
   # Get the underlying value for this enum value

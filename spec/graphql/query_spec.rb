@@ -244,7 +244,17 @@ describe GraphQL::Query do
       let(:query_variables) { {"cheeseId" => "2"} }
 
       it "raises an error" do
-        assert_equal(result["errors"][0]["message"], %{Variable cheeseId of type Int! was provided invalid value "2"})
+        expected = {
+          "errors" => [
+            {
+              "message" => "Variable cheeseId of type Int! was provided invalid value",
+              "locations"=>[{ "line" => 2, "column" => 24 }],
+              "value" => "2",
+              "problems" => [{ "path" => [], "explanation" => 'Could not coerce value "2" to Int' }]
+            }
+          ]
+        }
+        assert_equal(expected, result)
       end
     end
 
@@ -252,8 +262,17 @@ describe GraphQL::Query do
       let(:query_variables) { {} }
 
       it "raises an error" do
-        expected = "Variable cheeseId of type Int! can't be null"
-        assert_equal(result["errors"][0]["message"], expected)
+        expected = {
+          "errors" => [
+            {
+              "message" => "Variable cheeseId of type Int! was provided invalid value",
+              "locations" => [{"line" => 2, "column" => 24}],
+              "value" => nil,
+              "problems" => [{ "path" => [], "explanation" => "Expected value to not be null" }]
+            }
+          ]
+        }
+        assert_equal(expected, result)
       end
     end
 

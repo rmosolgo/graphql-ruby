@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe GraphQL::Query::Executor do
-  let(:debug) { false }
+  let(:debug) { true }
   let(:operation_name) { nil }
   let(:schema) { DummySchema }
   let(:variables) { {"cheeseId" => 2} }
@@ -221,6 +221,26 @@ describe GraphQL::Query::Executor do
       end
     end
 
+    describe "for required input objects" do
+      let(:variables) { { } }
+      let(:query_string) {%| mutation M($input: ReplaceValuesInput!) { replaceValues(input: $input) } |}
+      it "returns a variable validation error" do
+        expected = {
+          "errors"=>[
+            {
+              "message" => "Variable input of type ReplaceValuesInput! was provided invalid value",
+              "locations" => [{ "line" => 1, "column" => 14 }],
+              "value" => nil,
+              "problems" => [
+                { "path" => [], "explanation" => "Expected value to not be null" }
+              ]
+            }
+          ]
+        }
+        assert_equal(expected, result)
+      end
+    end
+
     describe "for required input object fields" do
       let(:variables) { {"input" => {} } }
       let(:query_string) {%| mutation M($input: ReplaceValuesInput!) { replaceValues(input: $input) } |}
@@ -228,8 +248,12 @@ describe GraphQL::Query::Executor do
         expected = {
           "errors"=>[
             {
-              "message" => "Variable input of type ReplaceValuesInput! was provided invalid value {}",
-              "locations" => [{"line"=>1, "column"=>14}]
+              "message" => "Variable input of type ReplaceValuesInput! was provided invalid value",
+              "locations" => [{ "line" => 1, "column" => 14 }],
+              "value" => {},
+              "problems" => [
+                { "path" => ["values"], "explanation" => "Expected value to not be null" }
+              ]
             }
           ]
         }
@@ -244,8 +268,13 @@ describe GraphQL::Query::Executor do
         expected = {
           "errors"=>[
             {
-              "message" => "Variable input of type [DairyProductInput] was provided invalid value [{\"foo\":\"bar\"}]",
-              "locations" => [{"line"=>1, "column"=>11}]
+              "message" => "Variable input of type [DairyProductInput] was provided invalid value",
+              "locations" => [{ "line" => 1, "column" => 11 }],
+              "value" => [{ "foo" => "bar" }],
+              "problems" => [
+                { "path" => [0, "foo"], "explanation" => "Field is not defined on DairyProductInput" },
+                { "path" => [0, "source"], "explanation" => "Expected value to not be null" }
+              ]
             }
           ]
         }

@@ -16,4 +16,12 @@ describe GraphQL::EnumType do
   it 'has value description' do
     assert_equal("Animal with horns", enum.values['GOAT'].description)
   end
+
+  describe 'validate_input with bad input' do
+    let(:result) { DairyAnimalEnum.validate_input('bad enum') }
+
+    it 'returns an invalid result' do
+      assert(!result.is_valid?)
+    end
+  end
 end

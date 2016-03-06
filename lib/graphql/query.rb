@@ -6,20 +6,6 @@ class GraphQL::Query
     end
   end
 
-  class VariableValidationError < GraphQL::ExecutionError
-    def initialize(variable_ast, type, reason)
-      msg = "Variable #{variable_ast.name} of type #{type} #{reason}"
-      super(msg)
-      self.ast_node = variable_ast
-    end
-  end
-
-  class VariableMissingError < VariableValidationError
-    def initialize(variable_ast, type)
-      super(variable_ast, type, "can't be null")
-    end
-  end
-
   # If a resolve function returns `GraphQL::Query::DEFAULT_RESOLVE`,
   # The executor will send the field's name to the target object
   # and use the result.
@@ -111,3 +97,5 @@ require 'graphql/query/literal_input'
 require 'graphql/query/serial_execution'
 require 'graphql/query/type_resolver'
 require 'graphql/query/variables'
+require 'graphql/query/input_validation_result'
+require 'graphql/query/variable_validation_error'
