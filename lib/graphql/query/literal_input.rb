@@ -55,7 +55,9 @@ module GraphQL
             type.input_fields.each do |arg_name, arg_defn|
               if hash[arg_name].nil?
                 value = LiteralInput.coerce(arg_defn.type, arg_defn.default_value, variables)
-                hash[arg_name] = value unless value.nil?
+                if !value.nil?
+                  hash[arg_name] = value
+                end
               end
             end
             Arguments.new(hash)

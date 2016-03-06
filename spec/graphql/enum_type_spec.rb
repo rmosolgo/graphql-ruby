@@ -21,7 +21,7 @@ describe GraphQL::EnumType do
     let(:result) { DairyAnimalEnum.validate_input('bad enum') }
 
     it 'returns an invalid result' do
-      assert(!result.is_valid?)
+      assert(!result.valid?)
     end
   end
 end

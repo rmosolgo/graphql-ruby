@@ -12,7 +12,7 @@ describe GraphQL::ListType do
     let(:result) { float_list.validate_input([bad_num, 2.0, 3.0]) }
 
     it 'returns an invalid result' do
-      assert(!result.is_valid?)
+      assert(!result.valid?)
     end
 
     it 'has one problem' do

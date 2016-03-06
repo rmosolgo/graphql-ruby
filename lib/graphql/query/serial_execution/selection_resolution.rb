@@ -18,7 +18,7 @@ module GraphQL
               result.merge(resolve_field(ast_node))
             }
         rescue GraphQL::InvalidNullError => err
-          execution_context.add_error(err) unless err.parent_error?
+          err.parent_error? || execution_context.add_error(err)
           nil
         end
 
@@ -56,8 +56,11 @@ module GraphQL
         end
 
         def flatten_fragment(ast_fragment)
-          return {} unless fragment_type_can_apply?(ast_fragment)
-          flatten_and_merge_selections(ast_fragment.selections)
+          if fragment_type_can_apply?(ast_fragment)
+            flatten_and_merge_selections(ast_fragment.selections)
+          else
+            {}
+          end
         end
 
         def fragment_type_can_apply?(ast_fragment)
@@ -68,18 +71,21 @@ module GraphQL
 
         def merge_fields(field1, field2)
           field_type = execution_context.get_field(type, field2.name).type.unwrap
-          return field2 unless field_type.kind.fields?
 
-          # create a new ast field node merging selections from each field.
-          # Because of static validation, we can assume that name, alias,
-          # arguments, and directives are exactly the same for fields 1 and 2.
-          GraphQL::Language::Nodes::Field.new(
-            name: field2.name,
-            alias: field2.alias,
-            arguments: field2.arguments,
-            directives: field2.directives,
-            selections: field1.selections + field2.selections
-          )
+          if field_type.kind.fields?
+            # create a new ast field node merging selections from each field.
+            # Because of static validation, we can assume that name, alias,
+            # arguments, and directives are exactly the same for fields 1 and 2.
+            GraphQL::Language::Nodes::Field.new(
+              name: field2.name,
+              alias: field2.alias,
+              arguments: field2.arguments,
+              directives: field2.directives,
+              selections: field1.selections + field2.selections
+            )
+          else
+            field2
+          end
         end
 
         def resolve_field(ast_node)

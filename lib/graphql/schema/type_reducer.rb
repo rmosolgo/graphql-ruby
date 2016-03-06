@@ -57,10 +57,11 @@ class GraphQL::Schema::TypeReducer
   end
 
   def reduce_type(type, type_hash)
-    unless type.is_a?(GraphQL::BaseType)
+    if type.is_a?(GraphQL::BaseType)
+      self.class.new(type.unwrap, type_hash).result
+    else
       raise GraphQL::Schema::InvalidTypeError.new(type, ["Must be a GraphQL::BaseType"])
     end
-    self.class.new(type.unwrap, type_hash).result
   end
 
   def validate_type(type)

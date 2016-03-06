@@ -28,10 +28,9 @@ module GraphQL
         provided_value = @provided_variables[variable_name]
 
         validation_result = variable_type.validate_input(provided_value)
-        unless validation_result.is_valid?
+        if !validation_result.valid?
           raise GraphQL::Query::VariableValidationError.new(ast_variable, variable_type, provided_value, validation_result)
-        end
-        if provided_value.nil?
+        elsif provided_value.nil?
           GraphQL::Query::LiteralInput.coerce(variable_type, default_value, {})
         else
           variable_type.coerce_input(provided_value)

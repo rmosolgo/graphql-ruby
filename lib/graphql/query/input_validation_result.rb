@@ -2,7 +2,7 @@ class GraphQL::Query
   class InputValidationResult
     attr_accessor :problems
 
-    def is_valid?
+    def valid?
       @problems.nil?
     end
 
@@ -12,7 +12,7 @@ class GraphQL::Query
     end
 
     def merge_result!(path, inner_result)
-      return if inner_result.is_valid?
+      return if inner_result.valid?
 
       inner_result.problems.each do |p|
         item_path = [path, *p['path']]

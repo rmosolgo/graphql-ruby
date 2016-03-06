@@ -44,7 +44,7 @@ class GraphQL::EnumType < GraphQL::BaseType
   def validate_non_null_input(value_name)
     result = GraphQL::Query::InputValidationResult.new
 
-    unless @values_by_name.key?(value_name)
+    if !@values_by_name.key?(value_name)
       result.add_problem("Expected #{JSON.dump(value_name)} to be one of: #{@values_by_name.keys.join(', ')}")
     end
 

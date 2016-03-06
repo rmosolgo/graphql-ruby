@@ -77,7 +77,7 @@ module GraphQL
     alias :inspect :to_s
 
     def valid_input?(value)
-      validate_input(value).is_valid?
+      validate_input(value).valid?
     end
 
     def validate_input(value)

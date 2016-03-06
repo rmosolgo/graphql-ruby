@@ -26,7 +26,7 @@ describe GraphQL::ScalarType do
     let(:result) { GraphQL::INT_TYPE.validate_input(150) }
 
     it 'returns a valid result' do
-      assert(result.is_valid?)
+      assert(result.valid?)
     end
   end
 
@@ -34,7 +34,7 @@ describe GraphQL::ScalarType do
     let(:result) { GraphQL::INT_TYPE.validate_input('bad num') }
 
     it 'returns an invalid result for bad input' do
-      assert(!result.is_valid?)
+      assert(!result.valid?)
     end
 
     it 'has one problem' do

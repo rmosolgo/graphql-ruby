@@ -30,7 +30,9 @@ module GraphQL
     end
 
     def coerce_input=(proc)
-      @coerce_input_proc = proc unless proc.nil?
+      if !proc.nil?
+        @coerce_input_proc = proc
+      end
     end
 
     def coerce_result(value)
@@ -38,7 +40,9 @@ module GraphQL
     end
 
     def coerce_result=(proc)
-      @coerce_result_proc = proc unless proc.nil?
+      if !proc.nil?
+        @coerce_result_proc = proc
+      end
     end
 
     def kind

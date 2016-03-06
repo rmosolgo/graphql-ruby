@@ -10,7 +10,9 @@ module GraphQL
           @target = target
           @execution_context = execution_context
           @field =  execution_context.get_field(parent_type, ast_node.name)
-          raise("No field found on #{parent_type.name} '#{parent_type}' for '#{ast_node.name}'") unless field
+          if @field.nil?
+            raise("No field found on #{parent_type.name} '#{parent_type}' for '#{ast_node.name}'")
+          end
           @arguments = GraphQL::Query::LiteralInput.from_arguments(
             ast_node.arguments,
             field.arguments,

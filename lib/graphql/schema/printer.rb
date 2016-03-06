@@ -57,7 +57,12 @@ module GraphQL
         end
 
         def print_input_value(arg)
-          default_string = " = #{print_value(arg.default_value, arg.type)}" unless arg.default_value.nil?
+          if arg.default_value.nil?
+            default_string = nil
+          else
+            default_string = " = #{print_value(arg.default_value, arg.type)}"
+          end
+
           "#{arg.name}: #{arg.type.to_s}#{default_string}"
         end
 
@@ -98,7 +103,11 @@ module GraphQL
       class ObjectPrinter
         extend FieldPrinter
         def self.print(type)
-          implementations = " implements #{type.interfaces.map(&:to_s).join(", ")}" unless type.interfaces.empty?
+          if type.interfaces.any?
+            implementations = " implements #{type.interfaces.map(&:to_s).join(", ")}"
+          else
+            implementations = nil
+          end
           "type #{type.name}#{implementations} {\n#{print_fields(type)}\n}"
         end
       end

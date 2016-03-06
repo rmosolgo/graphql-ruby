@@ -12,19 +12,20 @@ describe GraphQL::InputObjectType do
 
   describe "input validation" do
     it "Accepts anything that yields key-value pairs to #all?" do
-      values_obj = MinimumInputObject.new
+      values_obj = MinimumInputObject.new({"source" => "COW", "fatContent" => 0.4})
       assert DairyProductInputType.valid_input?(values_obj)
     end
 
     describe 'validate_input with non-enumerable input' do
       it "returns a valid result for MinimumInputObject" do
-        result = DairyProductInputType.validate_input(MinimumInputObject.new)
-        assert(result.is_valid?)
+        result = DairyProductInputType.validate_input(MinimumInputObject.new({"source" => "COW", "fatContent" => 0.4}))
+        assert(result.valid?)
       end
 
       it "returns an invalid result for MinimumInvalidInputObject" do
-        result = DairyProductInputType.validate_input(MinimumInvalidInputObject.new)
-        assert(!result.is_valid?)
+        invalid_input = MinimumInputObject.new({"source" => "KOALA", "fatContent" => 0.4})
+        result = DairyProductInputType.validate_input(invalid_input)
+        assert(!result.valid?)
       end
     end
 
@@ -39,7 +40,7 @@ describe GraphQL::InputObjectType do
         let(:result) { DairyProductInputType.validate_input(input) }
 
         it 'returns a valid result' do
-          assert(result.is_valid?)
+          assert(result.valid?)
         end
       end
 
@@ -47,7 +48,7 @@ describe GraphQL::InputObjectType do
         let(:result) { DairyProductInputType.validate_input('source' => 'KOALA', 'fatContent' => 'bad_num') }
 
         it 'returns an invalid result' do
-          assert(!result.is_valid?)
+          assert(!result.valid?)
         end
 
         it 'has problems with correct paths' do
@@ -70,7 +71,7 @@ describe GraphQL::InputObjectType do
         let(:result) { DairyProductInputType.validate_input('source' => 'COW', 'fatContent' => 0.4, 'isDelicious' => false) }
 
         it 'returns an invalid result' do
-          assert(!result.is_valid?)
+          assert(!result.valid?)
         end
 
         it 'has problem with correct path' do
@@ -93,7 +94,7 @@ describe GraphQL::InputObjectType do
         end
 
         it 'returns an invalid result' do
-          assert(!result.is_valid?)
+          assert(!result.valid?)
         end
 
         it 'has one problem' do
@@ -119,7 +120,7 @@ describe GraphQL::InputObjectType do
     let(:result) { DummySchema.execute(query_string, variables: variables) }
 
     describe "list inputs" do
-      let(:variables) { {"search" => [MinimumInputObject.new]} }
+      let(:variables) { {"search" => [MinimumInputObject.new({"source" => "COW", "fatContent" => 0.4})]} }
       let(:query_string) {%|
         query getCheeses($search: [DairyProductInput]!){
             sheep: searchDairy(product: [{source: SHEEP, fatContent: 0.1}]) {

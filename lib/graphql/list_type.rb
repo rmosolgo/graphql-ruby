@@ -22,7 +22,9 @@ class GraphQL::ListType < GraphQL::BaseType
 
     ensure_array(value).each_with_index do |item, index|
       item_result = of_type.validate_input(item)
-      result.merge_result!(index, item_result) unless item_result.is_valid?
+      if !item_result.valid?
+        result.merge_result!(index, item_result)
+      end
     end
 
     result

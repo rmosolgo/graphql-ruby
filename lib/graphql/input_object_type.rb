@@ -21,19 +21,21 @@ class GraphQL::InputObjectType < GraphQL::BaseType
   end
 
   def validate_non_null_input(input)
-    fail ArgumentError.new("input must be enumerable") unless input.is_a?(Enumerable)
-
     result = GraphQL::Query::InputValidationResult.new
 
     # Items in the input that are unexpected
-    input.reject { |name, value| input_fields[name] }.each do |name, value|
-      result.add_problem("Field is not defined on #{self.name}", [name])
+    input.each do |name, value|
+      if input_fields[name].nil?
+        result.add_problem("Field is not defined on #{self.name}", [name])
+      end
     end
 
     # Items in the input that are expected, but have invalid values
     invalid_fields = input_fields.map do |name, field|
       field_result = field.type.validate_input(input[name])
-      result.merge_result!(name, field_result) unless field_result.is_valid?
+      if !field_result.valid?
+        result.merge_result!(name, field_result)
+      end
     end
 
     result
@@ -41,14 +43,21 @@ class GraphQL::InputObjectType < GraphQL::BaseType
 
   def coerce_non_null_input(value)
     input_values = {}
+
     input_fields.each do |input_key, input_field_defn|
       field_value = value[input_key]
       field_value = input_field_defn.type.coerce_input(field_value)
+
+      # Try getting the default value
       if field_value.nil?
         field_value = input_field_defn.default_value
       end
-      input_values[input_key] = field_value unless field_value.nil?
+
+      if !field_value.nil?
+        input_values[input_key] = field_value
+      end
     end
+
     GraphQL::Query::Arguments.new(input_values)
   end
 end
