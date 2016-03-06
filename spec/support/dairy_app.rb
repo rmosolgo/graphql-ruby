@@ -250,5 +250,6 @@ DummySchema = GraphQL::Schema.new(
   query: QueryType,
   mutation: MutationType,
   subscription: SubscriptionType,
+  max_depth: 5,
 )
 DummySchema.rescue_from(NoSuchDairyError) { |err| err.message  }

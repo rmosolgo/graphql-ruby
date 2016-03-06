@@ -6,6 +6,7 @@ class GraphQL::Schema
   DYNAMIC_FIELDS = ["__type", "__typename", "__schema"]
 
   attr_reader :query, :mutation, :subscription, :directives, :static_validator
+  attr_accessor :max_depth
   # Override these if you don't want the default executor:
   attr_accessor :query_execution_strategy,
     :mutation_execution_strategy,
@@ -17,10 +18,11 @@ class GraphQL::Schema
   # @param query [GraphQL::ObjectType]  the query root for the schema
   # @param mutation [GraphQL::ObjectType] the mutation root for the schema
   # @param subscription [GraphQL::ObjectType] the subscription root for the schema
-  def initialize(query:, mutation: nil, subscription: nil)
+  def initialize(query:, mutation: nil, subscription: nil, max_depth: nil)
     @query    = query
     @mutation = mutation
     @subscription = subscription
+    @max_depth = max_depth
     @directives = DIRECTIVES.reduce({}) { |m, d| m[d.name] = d; m }
     @static_validator = GraphQL::StaticValidation::Validator.new(schema: self)
     @rescue_middleware = GraphQL::Schema::RescueMiddleware.new
