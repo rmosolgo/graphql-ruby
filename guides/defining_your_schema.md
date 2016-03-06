@@ -4,7 +4,7 @@
 
 ### Object Types
 
-Use {GraphQL::ObjectType.define} to define types. Within the block, you can:
+Use `GraphQL::ObjectType.define` to define types. Within the block, you can:
 
 - define properties: `name`, `description`, `interfaces`
 - define fields with the `field` helper
@@ -69,7 +69,7 @@ This field accepts an optional Boolean argument `moderated`, which it uses to fi
 
 ## Handling Errors
 
-You can rescue errors by defining handlers with {Schema#rescue_from}. The handler should return a string that will be inserted into the response. For example, you can set up a handler:
+You can rescue errors by defining handlers with `Schema#rescue_from`. The handler should return a string that will be inserted into the response. For example, you can set up a handler:
 
 ```ruby
 MySchema.rescue_from(ActiveRecord::RecordInvalid) { "Some data could not be saved" }
@@ -92,7 +92,7 @@ result = MySchema.execute(query_string)
 # }
 ```
 
-When explicitly raising the exception, you can raise a GraphQL::ExecutionError with a message to add to the response without specifying an error handler.
+When explicitly raising the exception, you can raise a `GraphQL::ExecutionError` with a message to add to the response without specifying an error handler.
 
 ## Middleware
 
