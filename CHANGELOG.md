@@ -6,6 +6,14 @@
 
 ### Bug fixes
 
+## 0.11.1 (6 Mar 2016)
+
+### New features
+
+- Schema `max_depth:` option #110
+- Improved validation errors for input objects #104
+- Interfaces provide field implementations to object types #108
+
 ## 0.11.0 (28 Feb 2016)
 
 ### Breaking changes & deprecations
