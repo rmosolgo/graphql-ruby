@@ -56,6 +56,19 @@ CoffeeType = GraphQL::ObjectType.define do
 end
 ```
 
+In order for your schema to expose members of an interface, it must be able to determine the GraphQL type for a given Ruby object. `InterfaceType` has a default `resolve_type` definition, or you can provide your own. Here's the default:
+
+```ruby
+BeverageInterface = GraphQL::InterfaceType.define do
+ # ...
+ resolve_type -> (object) {
+   type_name = object.class.name
+   # you can access the interface's `possible_types` inside the proc
+   possible_types.find {|t| t.name == type_name}
+ }
+end
+```
+
 ### Union Types
 
 Unions represent a set of object types which may occur in the same place.
@@ -65,6 +78,19 @@ MediaSearchResultUnion = GraphQL::UnionType.define do
   name "MediaSearchResult"
   description "An object which can be queried by date, location and filesize"
   possible_types [PhotoType, VideoType, AudioType]
+end
+```
+
+In order to expose a union, you must also define how the concrete type of each object can be determined. `UnionType` provides a default, shown here:
+
+```ruby
+MediaSearchResultUnion = GraphQL::UnionType.define do
+  # This is the default if you don't provide a custom `resolve_type` proc:
+  resolve_type -> (object) {
+    type_name = object.class.name
+    # You can access the union's `possible_types` inside the proc
+    possible_types.find {|t| t.name == type_name}
+  }
 end
 ```
 
