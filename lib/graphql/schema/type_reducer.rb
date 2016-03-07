@@ -31,9 +31,9 @@ class GraphQL::Schema::TypeReducer
     type_hash[type.name] = type
     if type.kind.fields?
       type.all_fields.each do |field|
-        reduce_type(field.type, type_hash)
+        reduce_type(field.type, type_hash, "check the #{field.name} field on #{type.name}")
         field.arguments.each do |name, argument|
-          reduce_type(argument.type, type_hash)
+          reduce_type(argument.type, type_hash, "check the #{name} argument for #{field.name} field on #{type.name}")
         end
       end
     end
@@ -49,18 +49,18 @@ class GraphQL::Schema::TypeReducer
     end
     if type.kind.input_object?
       type.input_fields.each do |name, input_field|
-        reduce_type(input_field.type, type_hash)
+        reduce_type(input_field.type, type_hash, "check the #{name} input field on #{type.name}")
       end
     end
 
     type_hash
   end
 
-  def reduce_type(type, type_hash)
+  def reduce_type(type, type_hash, context_message = nil)
     if type.is_a?(GraphQL::BaseType)
       self.class.new(type.unwrap, type_hash).result
     else
-      raise GraphQL::Schema::InvalidTypeError.new(type, ["Must be a GraphQL::BaseType"])
+      raise GraphQL::Schema::InvalidTypeError.new(type, ["Must be a GraphQL::BaseType"], context_message)
     end
   end
 

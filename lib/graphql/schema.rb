@@ -70,8 +70,10 @@ class GraphQL::Schema
   end
 
   class InvalidTypeError < GraphQL::Error
-    def initialize(type, errors)
-      super("Type #{type.respond_to?(:name) ? type.name :  "Unnamed type" } is invalid: #{errors.join(", ")}")
+    def initialize(type, errors, context_message = nil)
+      message = "Type #{type.respond_to?(:name) ? type.name :  "Unnamed type"} (#{type.class.inspect}) is invalid: #{errors.join(", ")}"
+      message << " (#{context_message})" if context_message
+      super(message)
     end
   end
 end
