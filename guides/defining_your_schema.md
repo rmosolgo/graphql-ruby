@@ -1,5 +1,7 @@
 # Defining Your Schema
 
+To define your schema, define types and connect them with fields. Then, initialize your schema with root types (`query` and `mutation`). You can also customize your schema.
+
 ## Defining Types
 
 ### Object Types
@@ -34,9 +36,99 @@ CityType = ObjectType.define do
 end
 ```
 
-### Other Types
+### Interface Types
 
-See the test fixtures for an example: https://github.com/rmosolgo/graphql-ruby/blob/master/spec/support/dairy_app.rb
+Interfaces provided a set of fields to _many_ object types. When an object includes an interface, it gains the default resolve behavior from that interface.
+
+Interfaces are defined with name, description and fields. For example:
+
+```ruby
+BeverageInterface = GraphQL::InterfaceType.define do
+  name "Beverage"
+  field :caffeinated, types.Boolean
+  field :size, BeverageSizeEnum
+end
+
+# Then, object types may include it:
+CoffeeType = GraphQL::ObjectType.define do
+  # ...
+  interfaces([BeverageInterface])
+end
+```
+
+### Union Types
+
+Unions represent a set of object types which may occur in the same place.
+
+```ruby
+MediaSearchResultUnion = GraphQL::UnionType.define do
+  name "MediaSearchResult"
+  description "An object which can be queried by date, location and filesize"
+  possible_types [PhotoType, VideoType, AudioType]
+end
+```
+
+### Enum Types
+
+Enums define a set of values which maybe used as returns or inputs for the schema.
+
+Each member of the enum has a _name_ and a value. By default, the name is used as the value. But you can use `value:` to provide a custom value.
+
+Each member may also have a description.
+
+Values can be _deprecated_ by providing a `deprecation_reason:`.
+
+```ruby
+ShirtSizeEnum = GraphQL::EnumType.define do
+  name "ShirtSize"
+  description "T-shirt size"
+  value "LARGE", "22 inches wide"
+  value "MEDIUM", "20 inches wide"
+  value "SMALL", "18 inches wide"
+  # Custom value:
+  value "X-SMALL", "16 inches wide", value: 0
+  # Deprecated value.
+  value "XX-SMALL", "14 inches wide", deprecation_reason: "Nobody is this size anymore"
+end
+```
+
+### Input Object Types
+
+Input objects are complex objects for fields. They may be passed for read operations (such as search queries) or for mutations (such as update payloads).
+
+Input objects are composed of fields. Their fields may contain:
+
+- scalars (eg, boolean, string, int, float)
+- enums
+- lists
+- input objects
+
+```ruby
+# Place an order with this input, eg:
+# {
+#   model_id: "100",
+#   selections: [
+#     { quantity: 1, size: LARGE },
+#     { quantity: 4, size: MEDIUM },
+#     { quantity: 3, size: SMALL },
+#   ] ,
+# }
+
+ShirtOrderInput = GraphQL::InputObjectType.define do
+  name "ShirtOrder"
+  description "An order for some t-shirts"
+  field :model_id, !types.ID
+  # A list of other inputs:
+  field :selections, -> { types[ShirtOrderSelectionInput] }
+end
+
+ShirtOrderSelectionInput = GraphQL::InputObjectType.define do
+  name "ShirtOrderSelection"
+  description "A quantity & size to order for a given shirt"
+  field :quantity, !types.Int
+  field :size, !ShirtSizeEnum
+end
+```
 
 ## Defining Fields
 
@@ -66,6 +158,20 @@ end
 ```
 
 This field accepts an optional Boolean argument `moderated`, which it uses to filter results in the `resolve` method.
+
+## Defining the Schema
+
+Your schema can be initialized with some options:
+
+```ruby
+MySchema = GraphQL::Schema.new(
+  query: QueryType,       # root type for read-only queries
+  mutation: MutationType, # root type for mutations
+  max_depth: 7,           # if present, the max depth for incoming queries
+)
+```
+
+Additionally, you can define error handling and custom middleware as described below.
 
 ## Handling Errors
 
