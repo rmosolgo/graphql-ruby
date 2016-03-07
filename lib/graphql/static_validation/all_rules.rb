@@ -20,5 +20,5 @@ GraphQL::StaticValidation::ALL_RULES = [
   GraphQL::StaticValidation::VariableDefaultValuesAreCorrectlyTyped,
   GraphQL::StaticValidation::VariablesAreUsedAndDefined,
   GraphQL::StaticValidation::VariableUsagesAreAllowed,
-  GraphQL::StaticValidation::DoesNotExceedMaxDepth,
+  GraphQL::StaticValidation::DocumentDoesNotExceedMaxDepth,
 ]
