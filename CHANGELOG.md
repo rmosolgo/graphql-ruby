@@ -4,6 +4,8 @@
 
 ### New features
 
+- Can override `max_depth:` from `Schema#execute`
+
 ### Bug fixes
 
 ## 0.11.1 (6 Mar 2016)

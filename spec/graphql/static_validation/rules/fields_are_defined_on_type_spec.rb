@@ -12,8 +12,9 @@ describe GraphQL::StaticValidation::FieldsAreDefinedOnType do
   "}
 
   let(:validator) { GraphQL::StaticValidation::Validator.new(schema: DummySchema, rules: [GraphQL::StaticValidation::FieldsAreDefinedOnType]) }
-  let(:errors) { validator.validate(GraphQL.parse(query_string)) }
-  let(:error_messages) { errors.map { |e| e["message" ] }}
+  let(:query) { GraphQL::Query.new(DummySchema, query_string) }
+  let(:errors) { validator.validate(query) }
+  let(:error_messages) { errors.map { |e| e["message"] } }
 
   it "finds fields that are requested on types that don't have that field" do
     expected_errors = [

@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe GraphQL::StaticValidation::FragmentsAreOnCompositeTypes do
-  let(:document) { GraphQL.parse(%|
+  let(:query_string) {%|
     query getCheese {
       cheese(id: 1) {
         ... on Cheese {
@@ -23,10 +23,11 @@ describe GraphQL::StaticValidation::FragmentsAreOnCompositeTypes do
     fragment intFields on Int {
       something
     }
-  |)}
+  |}
 
   let(:validator) { GraphQL::StaticValidation::Validator.new(schema: DummySchema, rules: [GraphQL::StaticValidation::FragmentsAreOnCompositeTypes]) }
-  let(:errors) { validator.validate(document) }
+  let(:query) { GraphQL::Query.new(DummySchema, query_string) }
+  let(:errors) { validator.validate(query) }
 
   it 'requires Object/Union/Interface fragment types' do
     expected = [

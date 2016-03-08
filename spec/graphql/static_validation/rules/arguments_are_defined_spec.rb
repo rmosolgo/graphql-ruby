@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe GraphQL::StaticValidation::ArgumentsAreDefined do
-  let(:document) { GraphQL.parse("
+  let(:query_string) {"
     query getCheese {
       cheese(id: 1) { source }
       cheese(silly: false) { source }
@@ -12,10 +12,11 @@ describe GraphQL::StaticValidation::ArgumentsAreDefined do
       similarCheese(source: SHEEP, nonsense: 1)
       id @skip(something: 3.4)
     }
-  ")}
+  "}
 
   let(:validator) { GraphQL::StaticValidation::Validator.new(schema: DummySchema, rules: [GraphQL::StaticValidation::ArgumentsAreDefined]) }
-  let(:errors) { validator.validate(document) }
+  let(:query) { GraphQL::Query.new(DummySchema, query_string) }
+  let(:errors) { validator.validate(query) }
 
   it 'finds undefined arguments to fields and directives' do
     assert_equal(4, errors.length)

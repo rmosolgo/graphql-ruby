@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
-  let(:document) { GraphQL.parse(%|
+  let(:query_string) {%|
     query getCheese {
       cheese(id: "aasdlkfj") { source }
       cheese(id: 1) { source @skip(if: {id: 1})}
@@ -15,10 +15,11 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
     fragment cheeseFields on Cheese {
       similarCheese(source: 4.5)
     }
-  |)}
+  |}
 
   let(:validator) { GraphQL::StaticValidation::Validator.new(schema: DummySchema, rules: [GraphQL::StaticValidation::ArgumentLiteralsAreCompatible]) }
-  let(:errors) { validator.validate(document) }
+  let(:query) { GraphQL::Query.new(DummySchema, query_string) }
+  let(:errors) { validator.validate(query) }
 
   it 'finds undefined or missing-required arguments to fields and directives' do
     assert_equal(6, errors.length)

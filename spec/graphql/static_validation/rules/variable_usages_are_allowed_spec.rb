@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe GraphQL::StaticValidation::VariableUsagesAreAllowed do
-  let(:document) { GraphQL.parse('
+  let(:query_string) {'
     query getCheese(
         $goodInt: Int = 1,
         $okInt: Int!,
@@ -30,10 +30,11 @@ describe GraphQL::StaticValidation::VariableUsagesAreAllowed do
         ... on Cheese { id }
       }
     }
-  ')}
+  '}
 
   let(:validator) { GraphQL::StaticValidation::Validator.new(schema: DummySchema, rules: [GraphQL::StaticValidation::VariableUsagesAreAllowed]) }
-  let(:errors) { validator.validate(document) }
+  let(:query) { GraphQL::Query.new(DummySchema, query_string) }
+  let(:errors) { validator.validate(query) }
 
   it "finds variables used as arguments but don't match the argument's type" do
     assert_equal(4, errors.length)

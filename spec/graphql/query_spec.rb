@@ -30,6 +30,7 @@ describe GraphQL::Query do
   |}
   let(:debug) { false }
   let(:operation_name) { nil }
+  let(:max_depth) { nil }
   let(:query_variables) { {"cheeseId" => 2} }
   let(:schema) { DummySchema }
   let(:query) { GraphQL::Query.new(
@@ -38,6 +39,7 @@ describe GraphQL::Query do
     variables: query_variables,
     debug: debug,
     operation_name: operation_name,
+    max_depth: max_depth,
   )}
   let(:result) { query.result }
   describe '#result' do
@@ -314,6 +316,20 @@ describe GraphQL::Query do
         it "coerces recursively" do
           assert_equal("Brie", result["data"]["cow"]["flavor"])
         end
+      end
+    end
+  end
+
+  describe "#max_depth" do
+    it "defaults to the schema's max_depth" do
+      assert_equal 5, query.max_depth
+    end
+
+    describe "overriding max_depth" do
+      let(:max_depth) { 12 }
+
+      it "overrides the schema's max_depth" do
+        assert_equal 12, query.max_depth
       end
     end
   end

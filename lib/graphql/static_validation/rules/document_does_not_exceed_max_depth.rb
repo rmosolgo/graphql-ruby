@@ -4,7 +4,7 @@ module GraphQL
       include GraphQL::StaticValidation::Message::MessageHelper
 
       def validate(context)
-        max_allowed_depth = context.schema.max_depth
+        max_allowed_depth = context.query.max_depth
         return if max_allowed_depth.nil?
 
         visitor = context.visitor

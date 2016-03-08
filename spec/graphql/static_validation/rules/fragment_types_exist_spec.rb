@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe GraphQL::StaticValidation::FragmentTypesExist do
-  let(:document) { GraphQL.parse("
+  let(:query_string) {"
     query getCheese {
       cheeese(id: 1) {
         ... on Cheese { source }
@@ -17,10 +17,11 @@ describe GraphQL::StaticValidation::FragmentTypesExist do
     fragment cheeseFields on Cheese {
       fatContent
     }
-  ")}
+  "}
 
   let(:validator) { GraphQL::StaticValidation::Validator.new(schema: DummySchema, rules: [GraphQL::StaticValidation::FragmentTypesExist]) }
-  let(:errors) { validator.validate(document) }
+  let(:query) { GraphQL::Query.new(DummySchema, query_string) }
+  let(:errors) { validator.validate(query) }
 
   it 'finds non-existent types on fragments' do
     assert_equal(2, errors.length)

@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe GraphQL::StaticValidation::VariableDefaultValuesAreCorrectlyTyped do
-  let(:document) { GraphQL.parse('
+  let(:query_string) {%|
     query getCheese(
       $id:        Int = 1,
       $bool:      Boolean = 3.4e24, # can be coerced
@@ -14,10 +14,11 @@ describe GraphQL::StaticValidation::VariableDefaultValuesAreCorrectlyTyped do
     ) {
       cheese(id: $id) { source }
     }
-  ')}
+  |}
 
   let(:validator) { GraphQL::StaticValidation::Validator.new(schema: DummySchema, rules: [GraphQL::StaticValidation::VariableDefaultValuesAreCorrectlyTyped]) }
-  let(:errors) { validator.validate(document) }
+  let(:query) { GraphQL::Query.new(DummySchema, query_string) }
+  let(:errors) { validator.validate(query) }
 
   it "finds default values that don't match their types" do
     expected = [

@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe GraphQL::StaticValidation::FragmentSpreadsArePossible do
-  let(:document) { GraphQL.parse(%|
+  let(:query_string) {%|
     query getCheese {
       cheese(id: 1) {
         ... milkFields
@@ -20,10 +20,11 @@ describe GraphQL::StaticValidation::FragmentSpreadsArePossible do
       fatContent
       ... milkFields
     }
-  |)}
+  |}
 
   let(:validator) { GraphQL::StaticValidation::Validator.new(schema: DummySchema, rules: [GraphQL::StaticValidation::FragmentSpreadsArePossible]) }
-  let(:errors) { validator.validate(document) }
+  let(:query) { GraphQL::Query.new(DummySchema, query_string) }
+  let(:errors) { validator.validate(query) }
 
   it "doesnt allow spreads where they'll never apply" do
     # TODO: more negative, abstract examples here, add stuff to the schema

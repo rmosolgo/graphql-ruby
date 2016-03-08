@@ -3,7 +3,8 @@ require "spec_helper"
 describe GraphQL::StaticValidation::DocumentDoesNotExceedMaxDepth do
   let(:rule) { GraphQL::StaticValidation::DocumentDoesNotExceedMaxDepth }
   let(:validator) { GraphQL::StaticValidation::Validator.new(schema: DummySchema, rules: [rule]) }
-  let(:errors) { validator.validate(GraphQL.parse(query_string)) }
+  let(:query) { GraphQL::Query.new(DummySchema, query_string) }
+  let(:errors) { validator.validate(query) }
 
   let(:query_string) { "
     {
@@ -26,6 +27,13 @@ describe GraphQL::StaticValidation::DocumentDoesNotExceedMaxDepth do
   describe "when the query is deeper than max depth" do
     it "adds an error message for a too-deep query" do
       assert_equal 1, errors.length
+    end
+  end
+
+  describe "when the query specifies a different max_depth" do
+    let(:query) { GraphQL::Query.new(DummySchema, query_string, max_depth: 100) }
+    it "obeys that max_depth" do
+      assert_equal 0, errors.length
     end
   end
 

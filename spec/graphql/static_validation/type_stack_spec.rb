@@ -20,11 +20,12 @@ describe GraphQL::StaticValidation::TypeStack do
     }
     fragment edibleFields on Edible { fatContent @skip(if: false)}
   |}
-  let(:document) { GraphQL.parse(query_string) }
+
   let(:validator) { GraphQL::StaticValidation::Validator.new(schema: DummySchema, rules: [TypeCheckValidator]) }
+  let(:query) { GraphQL::Query.new(DummySchema, query_string) }
 
   it 'stores up types' do
-    validator.validate(document)
+    validator.validate(query)
     expected = [
       ["Query", "Cheese"],
       ["Query", "Cheese", "Non-Null"],

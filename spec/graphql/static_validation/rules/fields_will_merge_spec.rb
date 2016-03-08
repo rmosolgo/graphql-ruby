@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe GraphQL::StaticValidation::FieldsWillMerge do
-  let(:document) { GraphQL.parse("
+  let(:query_string) {"
     query getCheese($sourceVar: DairyAnimal!) {
       cheese(id: 1) {
         id,
@@ -27,10 +27,11 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
       similarCow: similarCheese(source: COW) { similarCowSource: id, id }
       id @someFlag
     }
-  ")}
+  "}
 
   let(:validator) { GraphQL::StaticValidation::Validator.new(schema: DummySchema, rules: [GraphQL::StaticValidation::FieldsWillMerge]) }
-  let(:errors) { validator.validate(document) }
+  let(:query) { GraphQL::Query.new(DummySchema, query_string) }
+  let(:errors) { validator.validate(query) }
   let(:error_messages) { errors.map { |e| e["message" ] }}
 
   it 'finds field naming conflicts' do

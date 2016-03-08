@@ -18,12 +18,12 @@ class GraphQL::StaticValidation::Validator
   # Validate `document` against the schema. Returns an array of message hashes.
   # @param document [GraphQL::Language::Nodes::Document]
   # @return [Array<Hash>]
-  def validate(document)
-    context = GraphQL::StaticValidation::ValidationContext.new(@schema, document)
+  def validate(query)
+    context = GraphQL::StaticValidation::ValidationContext.new(query)
     @rules.each do |rules|
       rules.new.validate(context)
     end
-    context.visitor.visit(document)
+    context.visitor.visit(query.document)
     context.errors.map(&:to_h)
   end
 end

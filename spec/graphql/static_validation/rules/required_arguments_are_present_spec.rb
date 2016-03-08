@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe GraphQL::StaticValidation::RequiredArgumentsArePresent do
-  let(:document) { GraphQL.parse("
+  let(:query_string) {"
     query getCheese {
       cheese(id: 1) { source }
       cheese { source }
@@ -12,10 +12,11 @@ describe GraphQL::StaticValidation::RequiredArgumentsArePresent do
       flavor @include(if: true)
       id @skip
     }
-  ")}
+  "}
 
   let(:validator) { GraphQL::StaticValidation::Validator.new(schema: DummySchema, rules: [GraphQL::StaticValidation::RequiredArgumentsArePresent]) }
-  let(:errors) { validator.validate(document) }
+  let(:query) { GraphQL::Query.new(DummySchema, query_string) }
+  let(:errors) { validator.validate(query) }
 
   it 'finds undefined arguments to fields and directives' do
     assert_equal(3, errors.length)

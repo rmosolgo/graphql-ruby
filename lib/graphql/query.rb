@@ -10,7 +10,7 @@ class GraphQL::Query
   # The executor will send the field's name to the target object
   # and use the result.
   DEFAULT_RESOLVE = :__default_resolve
-  attr_reader :schema, :document, :context, :fragments, :operations, :debug
+  attr_reader :schema, :document, :context, :fragments, :operations, :debug, :max_depth
 
   # Prepare query `query_string` on `schema`
   # @param schema [GraphQL::Schema]
@@ -20,9 +20,10 @@ class GraphQL::Query
   # @param debug [Boolean] if true, errors are raised, if false, errors are put in the `errors` key
   # @param validate [Boolean] if true, `query_string` will be validated with {StaticValidation::Validator}
   # @param operation_name [String] if the query string contains many operations, this is the one which should be executed
-  def initialize(schema, query_string, context: nil, variables: {}, debug: false, validate: true, operation_name: nil)
+  def initialize(schema, query_string, context: nil, variables: {}, debug: false, validate: true, operation_name: nil, max_depth: nil)
     @schema = schema
     @debug = debug
+    @max_depth = max_depth || schema.max_depth
     @context = Context.new(query: self, values: context)
     @validate = validate
     @operation_name = operation_name
@@ -72,7 +73,7 @@ class GraphQL::Query
   private
 
   def validation_errors
-    @validation_errors ||= schema.static_validator.validate(document)
+    @validation_errors ||= schema.static_validator.validate(self)
   end
 
 

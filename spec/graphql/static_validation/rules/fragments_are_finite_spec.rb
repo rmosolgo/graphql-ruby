@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe GraphQL::StaticValidation::FragmentsAreFinite do
-  let(:document) { GraphQL.parse(%|
+  let(:query_string) {%|
     query getCheese {
       cheese(id: 1) {
         ... idField
@@ -22,10 +22,11 @@ describe GraphQL::StaticValidation::FragmentsAreFinite do
     fragment idField on Cheese {
       id
     }
-  |)}
+  |}
 
   let(:validator) { GraphQL::StaticValidation::Validator.new(schema: DummySchema, rules: [GraphQL::StaticValidation::FragmentsAreFinite]) }
-  let(:errors) { validator.validate(document) }
+  let(:query) { GraphQL::Query.new(DummySchema, query_string) }
+  let(:errors) { validator.validate(query) }
 
   it 'doesnt allow infinite loops' do
     expected = [
