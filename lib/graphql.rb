@@ -5,7 +5,10 @@ require "singleton"
 require "forwardable"
 
 module GraphQL
-  class ParseError < StandardError
+  class Error < StandardError
+  end
+
+  class ParseError < Error
     attr_reader :line, :col, :query
     def initialize(message, line, col, query)
       super(message)

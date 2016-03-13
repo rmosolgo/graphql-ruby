@@ -69,7 +69,7 @@ class GraphQL::Schema
     GraphQL::Schema::TypeExpression.new(self, ast_node).type
   end
 
-  class InvalidTypeError < StandardError
+  class InvalidTypeError < GraphQL::Error
     def initialize(type, errors)
       super("Type #{type.respond_to?(:name) ? type.name :  "Unnamed type" } is invalid: #{errors.join(", ")}")
     end

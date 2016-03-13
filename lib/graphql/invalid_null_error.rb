@@ -1,7 +1,7 @@
 module GraphQL
   # Raised automatically when a field's resolve function returns `nil`
   # for a non-null field.
-  class InvalidNullError < RuntimeError
+  class InvalidNullError < GraphQL::Error
     def initialize(field_name, value)
       @field_name = field_name
       @value = value
