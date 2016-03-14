@@ -8,12 +8,15 @@
 #   end
 #
 class GraphQL::InputObjectType < GraphQL::BaseType
-  attr_accessor :name, :description, :input_fields
-  defined_by_config :name, :description, :input_fields
-  alias :arguments :input_fields
+  accepts_definitions input_field: GraphQL::Define::AssignArgument
 
-  def input_fields=(new_fields)
-    @input_fields = GraphQL::DefinitionHelpers::StringNamedHash.new(new_fields).to_h
+  # @return [Hash<String, GraphQL::Argument>] Map String argument names to their {GraphQL::Argument} implementations
+  attr_accessor :arguments
+
+  alias :input_fields :arguments
+
+  def initialize
+    @arguments = {}
   end
 
   def kind
@@ -25,13 +28,13 @@ class GraphQL::InputObjectType < GraphQL::BaseType
 
     # Items in the input that are unexpected
     input.each do |name, value|
-      if input_fields[name].nil?
+      if arguments[name].nil?
         result.add_problem("Field is not defined on #{self.name}", [name])
       end
     end
 
     # Items in the input that are expected, but have invalid values
-    invalid_fields = input_fields.map do |name, field|
+    invalid_fields = arguments.map do |name, field|
       field_result = field.type.validate_input(input[name])
       if !field_result.valid?
         result.merge_result!(name, field_result)
@@ -44,7 +47,7 @@ class GraphQL::InputObjectType < GraphQL::BaseType
   def coerce_non_null_input(value)
     input_values = {}
 
-    input_fields.each do |input_key, input_field_defn|
+    arguments.each do |input_key, input_field_defn|
       field_value = value[input_key]
       field_value = input_field_defn.type.coerce_input(field_value)
 

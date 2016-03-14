@@ -11,7 +11,7 @@
 class GraphQL::UnionType < GraphQL::BaseType
   include GraphQL::BaseType::HasPossibleTypes
   attr_accessor :name, :description, :possible_types
-  defined_by_config :name, :description, :possible_types, :resolve_type
+  accepts_definitions :possible_types, :resolve_type
 
   def kind
     GraphQL::TypeKinds::UNION

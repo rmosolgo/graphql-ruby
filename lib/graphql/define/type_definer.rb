@@ -1,5 +1,5 @@
 module GraphQL
-  module DefinitionHelpers
+  module Define
     # Some conveniences for definining return & argument types.
     #
     # Passed into initialization blocks, eg {ObjectType#initialize}, {Field#initialize}

@@ -1,5 +1,7 @@
 # Used for defined arguments ({Field}, {InputObjectType})
 #
+# {#name} must be a String.
+#
 # @example defining an argument for a field
 #   GraphQL::Field.define do
 #     # ...
@@ -12,7 +14,10 @@
 #   end
 #
 class GraphQL::Argument
-  include GraphQL::DefinitionHelpers::DefinedByConfig
-  defined_by_config :name, :type, :description, :default_value
-  attr_accessor :name, :type, :description, :default_value
+  include GraphQL::Define::InstanceDefinable
+  accepts_definitions :name, :type, :description, :default_value
+  attr_accessor :type, :description, :default_value
+
+  # @return [String] The name of this argument on its {GraphQL::Field} or {GraphQL::InputObjectType}
+  attr_accessor :name
 end

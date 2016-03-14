@@ -11,8 +11,7 @@ module GraphQL
   #   end
   #
   class ScalarType < GraphQL::BaseType
-    defined_by_config :name, :coerce, :coerce_input, :coerce_result, :description
-    attr_accessor :name, :description
+    accepts_definitions :coerce, :coerce_input, :coerce_result
 
     def coerce=(proc)
       self.coerce_input = proc

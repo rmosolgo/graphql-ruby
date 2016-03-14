@@ -20,18 +20,21 @@
 #    end
 #
 class GraphQL::ObjectType < GraphQL::BaseType
-  defined_by_config :name, :description, :interfaces, :fields
-  attr_accessor :name, :description, :interfaces, :fields
+  accepts_definitions :interfaces, field: GraphQL::Define::AssignObjectField
+  attr_accessor :name, :description, :interfaces
 
-  # Define fields to be `new_fields`, normalize with {StringNamedHash}
-  # @param new_fields [Hash] The fields exposed by this type
-  def fields=(new_fields)
-    @fields = GraphQL::DefinitionHelpers::StringNamedHash.new(new_fields).to_h
+  # @return [Hash<String, GraphQL::Field>] Map String fieldnames to their {GraphQL::Field} implementations
+  attr_accessor :fields
+
+  def initialize
+    @fields = {}
+    @interfaces = []
   end
 
-  #   Shovel this type into each interface's `possible_types` array.
+  # Shovel this type into each interface's `possible_types` array.
   #
-  #   @param new_interfaces [Array<GraphQL::Interface>] interfaces that this type implements
+  #
+  # @param new_interfaces [Array<GraphQL::Interface>] interfaces that this type implements
   def interfaces=(new_interfaces)
     @interfaces ||= []
     (@interfaces - new_interfaces).each { |i| i.possible_types.delete(self) }

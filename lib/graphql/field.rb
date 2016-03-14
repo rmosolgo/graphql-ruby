@@ -1,6 +1,6 @@
 # {Field}s belong to {ObjectType}s and {InterfaceType}s.
 #
-# They're usually created with the `field` helper.
+# They're usually created with the `field` helper. If you create it by hand, make sure {#name} is a String.
 #
 #
 # @example creating a field
@@ -38,26 +38,21 @@
 #   end
 #
 class GraphQL::Field
-  include GraphQL::DefinitionHelpers::DefinedByConfig
-  attr_accessor :arguments, :deprecation_reason, :name, :description, :type, :property
+  include GraphQL::Define::InstanceDefinable
+  accepts_definitions :name, :description, :resolve, :type, :property, :deprecation_reason, argument: GraphQL::Define::AssignArgument
+
+  attr_accessor :deprecation_reason, :name, :description, :type, :property
   attr_reader :resolve_proc
-  defined_by_config :arguments, :deprecation_reason, :name, :description, :type, :resolve, :property
+
+  # @return [String] The name of this field on its {GraphQL::ObjectType} (or {GraphQL::InterfaceType})
+  attr_accessor :name
+
+  # @return [Hash<String, GraphQL::Argument>] Map String argument names to their {GraphQL::Argument} implementations
+  attr_accessor :arguments
 
   def initialize
     @arguments = {}
     @resolve_proc = build_default_resolver
-  end
-
-  def arguments(new_arguments=nil)
-    if !new_arguments.nil?
-      self.arguments=(new_arguments)
-    end
-    @arguments
-  end
-
-  # Define the arguments for this field using {StringNamedHash}
-  def arguments=(new_arguments)
-    @arguments = GraphQL::DefinitionHelpers::StringNamedHash.new(new_arguments).to_h
   end
 
   # Get a value for this field
@@ -97,9 +92,10 @@ class GraphQL::Field
 
   def build_default_resolver
     # Note: lambda accesses the current Field via self
-    -> (t, a, c) do
-      if property = self.property
-        t.public_send(property)
+    -> (obj, args, ctx) do
+      property = self.property
+      if property
+        obj.public_send(property)
       else
         GraphQL::Query::DEFAULT_RESOLVE
       end
