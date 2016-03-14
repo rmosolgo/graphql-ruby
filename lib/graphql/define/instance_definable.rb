@@ -11,7 +11,7 @@ module GraphQL
     #   class Car
     #     attr_accessor :make, :model, :all_wheel_drive
     #
-    #     attr_definable(
+    #     accepts_definitions(
     #       # These attrs will be defined with plain setters, `{attr}=`
     #       :make, :model,
     #       # This attr has a custom definition which applies the config to the target
@@ -30,8 +30,8 @@ module GraphQL
     #   subaru_baja.doors #=> [<Door>, <Door>, <Door>, <Door>]
     #
     # @example Extending the definition of a class
-    #   # Modify the already-defined dictionary:
-    #   Car.dictionary[:all_wheel_drive] = -> (target, value) { target.all_wheel_drive = value }
+    #   # Add some definitions:
+    #   Car.accepts_definitions(:all_wheel_drive)
     #
     #   # Use it in a definition
     #   subaru_baja = Car.define do
@@ -57,7 +57,7 @@ module GraphQL
         # Each symbol in `accepts` will be assigned with `{key}=`.
         # The last entry in accepts may be a hash of name-proc pairs for custom definitions.
         def accepts_definitions(*accepts)
-          @own_dictionary = AssignmentDictionary.create(*accepts)
+          @own_dictionary = own_dictionary.merge(AssignmentDictionary.create(*accepts))
         end
 
         # @return [Hash] combined definitions for self and ancestors
