@@ -1,8 +1,10 @@
 module GraphQL
   # The parent for all type classes.
   class BaseType
-    include GraphQL::DefinitionHelpers::NonNullWithBang
-    include GraphQL::DefinitionHelpers::DefinedByConfig
+    include GraphQL::Define::NonNullWithBang
+    include GraphQL::Define::InstanceDefinable
+    attr_accessor :name, :description
+    accepts_definitions :name, :description
 
     # @param other [GraphQL::BaseType] compare to this object
     # @return [Boolean] are these types equivalent? (incl. non-null, list)
@@ -50,7 +52,7 @@ module GraphQL
       # @param object [Object] the object which needs a type to expose it
       # @return [GraphQL::ObjectType] the type which should expose `object`
       def resolve_type(object)
-        instance_exec(object, &@resolve_type_proc)
+        instance_exec(object, &(@resolve_type_proc || DEFAULT_RESOLVE_TYPE))
       end
 
       # The default implementation of {#resolve_type} gets `object.class.name`

@@ -1,5 +1,5 @@
 module GraphQL
-  module DefinitionHelpers
+  module Define
     # Wrap the object in NonNullType in response to `!`
     # @example required Int type
     #   !GraphQL::INT_TYPE

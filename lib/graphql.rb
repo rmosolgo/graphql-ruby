@@ -40,7 +40,7 @@ end
 
 # Order matters for these:
 
-require 'graphql/definition_helpers'
+require 'graphql/define'
 require 'graphql/base_type'
 require 'graphql/object_type'
 

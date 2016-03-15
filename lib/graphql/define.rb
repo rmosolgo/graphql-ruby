@@ -1,0 +1,8 @@
+require "graphql/define/assign_argument"
+require "graphql/define/assign_enum_value"
+require "graphql/define/assign_object_field"
+require "graphql/define/assignment_dictionary"
+require "graphql/define/defined_object_proxy"
+require "graphql/define/instance_definable"
+require "graphql/define/non_null_with_bang"
+require "graphql/define/type_definer"

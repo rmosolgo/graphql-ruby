@@ -11,16 +11,22 @@
 #     value("JAVASCRIPT", "Accidental lingua franca of the web")
 #   end
 class GraphQL::EnumType < GraphQL::BaseType
-  attr_accessor :name, :description, :values
-  defined_by_config :name, :description, :values
+  accepts_definitions value: GraphQL::Define::AssignEnumValue
+
+  def initialize
+    @values_by_name = {}
+    @values_by_value = {}
+  end
 
   def values=(values)
     @values_by_name = {}
     @values_by_value = {}
-    values.each do |enum_value|
-      @values_by_name[enum_value.name] = enum_value
-      @values_by_value[enum_value.value] = enum_value
-    end
+    values.each { |enum_value| add_value(enum_value) }
+  end
+
+  def add_value(enum_value)
+    @values_by_name[enum_value.name] = enum_value
+    @values_by_value[enum_value.value] = enum_value
   end
 
   def values

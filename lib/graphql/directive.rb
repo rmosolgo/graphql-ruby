@@ -3,9 +3,10 @@
 # {Directive} & {DirectiveChain} implement `@skip` and `@include` with
 # minimal impact on query execution.
 class GraphQL::Directive
-  include GraphQL::DefinitionHelpers::DefinedByConfig
+  include GraphQL::Define::InstanceDefinable
+  accepts_definitions :on, :name, :description, :resolve, argument: GraphQL::Define::AssignArgument
+
   attr_accessor :on, :arguments, :name, :description
-  defined_by_config :on, :arguments, :name, :description, :resolve
 
   LOCATIONS = [
     ON_OPERATION =  :on_operation?,
@@ -15,6 +16,10 @@ class GraphQL::Directive
 
   LOCATIONS.each do |location|
     define_method(location) { self.on.include?(location) }
+  end
+
+  def initialize
+    @arguments = {}
   end
 
   def resolve(arguments, proc)
