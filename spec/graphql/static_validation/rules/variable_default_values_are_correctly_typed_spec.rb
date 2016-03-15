@@ -4,7 +4,7 @@ describe GraphQL::StaticValidation::VariableDefaultValuesAreCorrectlyTyped do
   let(:query_string) {%|
     query getCheese(
       $id:        Int = 1,
-      $bool:      Boolean = 3.4e24, # can be coerced
+      $int:       Int = 3.4e24, # can be coerced
       $str:       String!,
       $badFloat:  Float = true,
       $badInt:    Int = "abc",
