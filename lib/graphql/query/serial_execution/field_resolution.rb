@@ -72,7 +72,14 @@ module GraphQL
 
             if value == GraphQL::Query::DEFAULT_RESOLVE
               begin
-                value = target.public_send(ast_node.name)
+                if target.respond_to?(ast_node.name) || !GraphQL::Config.try_underscored_property_names
+                  value = target.public_send(ast_node.name)
+                elsif target.respond_to?(underscored_name = GraphQL::Util.underscore_string(ast_node.name))
+                  value = target.public_send(underscored_name)
+                else
+                  # Fallback just in case #respond_to? was lying
+                  value = target.public_send(ast_node.name)
+                end
               rescue NoMethodError => err
                 raise("Couldn't resolve field '#{ast_node.name}' to #{parent_object.class} '#{parent_object}' (resulted in #{err})")
               end

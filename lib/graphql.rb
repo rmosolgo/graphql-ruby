@@ -40,6 +40,9 @@ end
 
 # Order matters for these:
 
+require 'graphql/config'
+require 'graphql/util'
+
 require 'graphql/definition_helpers'
 require 'graphql/base_type'
 require 'graphql/object_type'
