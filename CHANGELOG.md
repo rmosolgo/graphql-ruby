@@ -2,9 +2,21 @@
 
 ### Breaking changes & deprecations
 
+- `GraphQL::DefinitionConfig` was replaced by `GraphQL::Define` #116
+- Many scalar types are more picky about which inputs they allow (#115). To get the previous behavior, add this to your program:
+
+  ```ruby
+  # Previous coerce behavior for scalars:
+  GraphQL::BOOLEAN_TYPE.coerce = -> (value) { !!value }
+  GraphQL::ID_TYPE.coerce = -> (value) { value.to_s }
+  GraphQL::STRING_TYPE.coerce = ->  (value) { value.to_s }
+  # INT_TYPE and FLOAT_TYPE were unchanged
+  ```
+
 ### New features
 
 - Can override `max_depth:` from `Schema#execute`
+- Base `GraphQL::Error` for all graphql-related errors
 
 ### Bug fixes
 

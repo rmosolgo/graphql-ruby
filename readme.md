@@ -134,18 +134,14 @@ https://medium.com/@gauravtiwari/graphql-and-relay-on-rails-first-relay-powered-
 
 ## To Do
 
-- Code clean-up
-  - Raise if you try to configure an attribute which doesn't suit the type (ie, if you try to define `resolve` on an ObjectType, it should somehow raise)
-  - make `DefinitionHelpers` more friendly for extension
+
 - Interface's possible types should be a property of the schema, not the interface
 - Type lookup should be by type name (to support reloaded constants in Rails code)
-- Depth validator should be aware of fragments
 - Add a complexity validator (reject queries if they're too big)
 - Add a custom dump for Relay (it expects default value strings to be double-quoted)
 - Add docs for shared behaviors & DRY code
 - Optimize the pure-Ruby parser (hand-write, RACC?!)
-- Big ideas:
-  - Revamp the fixture Schema to be more useful (better names, more extensible)
-  - __Subscriptions__
-    - This is a good chance to make an `Operation` abstraction of which `query`, `mutation` and `subscription` are members
-    - For a subscription, `graphql` would send an outbound message to the system (allow the host application to manage its own subscriptions via Pusher, ActionCable, whatever)
+- Revamp the fixture Schema to be more useful (better names, more extensible)
+- __Subscriptions__
+  - This is a good chance to make an `Operation` abstraction of which `query`, `mutation` and `subscription` are members
+  - For a subscription, `graphql` would send an outbound message to the system (allow the host application to manage its own subscriptions via Pusher, ActionCable, whatever)
