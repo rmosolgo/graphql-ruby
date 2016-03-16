@@ -69,15 +69,6 @@ module GraphQL
             context.ast_node = ast_node
             value = field_definition.resolve(parent_object, field_args, context)
             context.ast_node = nil
-
-            if value == GraphQL::Query::DEFAULT_RESOLVE
-              begin
-                value = target.public_send(ast_node.name)
-              rescue NoMethodError => err
-                raise("Couldn't resolve field '#{ast_node.name}' to #{parent_object.class} '#{parent_object}' (resulted in #{err})")
-              end
-            end
-
             value
           }
         end

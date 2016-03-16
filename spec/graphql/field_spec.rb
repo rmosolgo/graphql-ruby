@@ -21,6 +21,7 @@ describe GraphQL::Field do
   describe '.property ' do
     let(:field) do
       GraphQL::Field.define do
+        name 'field_name'
         # satisfies 'can define by config' below
         property :internal_prop
       end
@@ -37,7 +38,7 @@ describe GraphQL::Field do
 
     describe 'default resolver' do
       def acts_like_default_resolver(field, old_prop, new_prop)
-        object = OpenStruct.new(old_prop => 'old value', new_prop => 'new value')
+        object = OpenStruct.new(old_prop => 'old value', new_prop => 'new value', field.name.to_sym => 'unset value')
 
         old_result = field.resolve(object, nil, nil)
         field.property = new_prop
@@ -47,7 +48,7 @@ describe GraphQL::Field do
 
         assert_equal(old_result, 'old value')
         assert_equal(new_result, 'new value')
-        assert_equal(unset_result, GraphQL::Query::DEFAULT_RESOLVE)
+        assert_equal(unset_result, 'unset value')
       end
 
       it 'responds to changes in property' do

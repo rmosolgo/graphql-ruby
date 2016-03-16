@@ -97,7 +97,11 @@ class GraphQL::Field
       if property
         obj.public_send(property)
       else
-        GraphQL::Query::DEFAULT_RESOLVE
+        begin
+          obj.public_send(name)
+        rescue NoMethodError => err
+          raise("Couldn't resolve field '#{name}' to #{obj.class} '#{obj}' (resulted in #{err})")
+        end
       end
     end
   end
