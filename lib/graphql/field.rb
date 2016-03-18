@@ -45,7 +45,7 @@ class GraphQL::Field
   attr_reader :resolve_proc
 
   # @return [String] The name of this field on its {GraphQL::ObjectType} (or {GraphQL::InterfaceType})
-  attr_accessor :name
+  attr_reader :name
 
   # @return [Hash<String, GraphQL::Argument>] Map String argument names to their {GraphQL::Argument} implementations
   attr_accessor :arguments
@@ -84,6 +84,18 @@ class GraphQL::Field
     end
   end
 
+  # You can only set a field's name _once_ -- this to prevent
+  # passing the same {Field} to multiple `.field` calls.
+  #
+  # This is important because {#name} may be used by {#resolve}.
+  def name=(new_name)
+    if @name.nil?
+      @name = new_name
+    else
+      raise("Can't rename an already-named field. (Tried to rename \"#{@name}\" to \"#{new_name}\".) If you're passing a field with the `field:` argument, make sure it's an unused instance of GraphQL::Field.")
+    end
+  end
+
   def to_s
     "<Field: #{name || "not-named"}>"
   end
@@ -91,18 +103,9 @@ class GraphQL::Field
   private
 
   def build_default_resolver
-    # Note: lambda accesses the current Field via self
     -> (obj, args, ctx) do
-      property = self.property
-      if property
-        obj.public_send(property)
-      else
-        begin
-          obj.public_send(name)
-        rescue NoMethodError => err
-          raise("Couldn't resolve field '#{name}' to #{obj.class} '#{obj}' (resulted in #{err})")
-        end
-      end
+      resolve_method = self.property || self.name
+      obj.public_send(resolve_method)
     end
   end
 end

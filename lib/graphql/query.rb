@@ -6,10 +6,6 @@ class GraphQL::Query
     end
   end
 
-  # If a resolve function returns `GraphQL::Query::DEFAULT_RESOLVE`,
-  # The executor will send the field's name to the target object
-  # and use the result.
-  DEFAULT_RESOLVE = :__default_resolve
   attr_reader :schema, :document, :context, :fragments, :operations, :debug, :max_depth
 
   # Prepare query `query_string` on `schema`

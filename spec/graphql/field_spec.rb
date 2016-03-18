@@ -61,4 +61,15 @@ describe GraphQL::Field do
       end
     end
   end
+
+  describe "#name" do
+    it "can't be reassigned" do
+      field = GraphQL::Field.define do
+        name("something")
+      end
+      assert_equal "something", field.name
+      assert_raises { field.name = "somethingelse" }
+      assert_equal "something", field.name
+    end
+  end
 end

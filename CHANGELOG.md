@@ -13,6 +13,9 @@
   # INT_TYPE and FLOAT_TYPE were unchanged
   ```
 
+- `GraphQL::Field`s can't be renamed because `#resolve` may depend on that name. (This was only a problem if you pass the _same_ `GraphQL::Field` instance to `field ... field:` definitions.)
+- `GraphQL::Query::DEFAULT_RESOLVE` was removed. `GraphQL::Field#resolve` handles that behavior.
+
 ### New features
 
 - Can override `max_depth:` from `Schema#execute`

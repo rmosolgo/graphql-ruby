@@ -62,7 +62,6 @@ module GraphQL
 
 
         # Execute the field's resolve method
-        # then handle the DEFAULT_RESOLVE
         # @return [Proc] suitable to be the last step in a middleware chain
         def get_middleware_proc_from_field_resolve
           -> (_parent_type, parent_object, field_definition, field_args, context, _next) {
