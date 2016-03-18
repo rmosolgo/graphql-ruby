@@ -318,6 +318,9 @@ https://medium.com/@gauravtiwari/graphql-and-relay-on-rails-first-relay-powered-
 
 ## Todo
 
+- Allow custom defined ID scheme
+- Allow custom edge fields (per connection type)
+
 ## More Resources
 
 - [GraphQL Slack](http://graphql-slack.herokuapp.com), come join us in the `#ruby` channel!
