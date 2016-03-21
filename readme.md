@@ -134,11 +134,9 @@ https://medium.com/@gauravtiwari/graphql-and-relay-on-rails-first-relay-powered-
 
 ## To Do
 
-
 - Interface's possible types should be a property of the schema, not the interface
 - Type lookup should be by type name (to support reloaded constants in Rails code)
 - Add a complexity validator (reject queries if they're too big)
-- Add a custom dump for Relay (it expects default value strings to be double-quoted)
 - Add docs for shared behaviors & DRY code
 - Optimize the pure-Ruby parser (hand-write, RACC?!)
 - Revamp the fixture Schema to be more useful (better names, more extensible)

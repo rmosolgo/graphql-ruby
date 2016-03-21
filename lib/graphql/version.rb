@@ -1,3 +1,3 @@
 module GraphQL
-  VERSION = "0.11.1"
+  VERSION = "0.12.0"
 end

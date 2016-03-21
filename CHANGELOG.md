@@ -2,6 +2,14 @@
 
 ### Breaking changes & deprecations
 
+### New features
+
+### Bug fixes
+
+## 0.12.0 (20 Mar 2016)
+
+### Breaking changes & deprecations
+
 - `GraphQL::DefinitionConfig` was replaced by `GraphQL::Define` #116
 - Many scalar types are more picky about which inputs they allow (#115). To get the previous behavior, add this to your program:
 
@@ -22,6 +30,8 @@
 - Base `GraphQL::Error` for all graphql-related errors
 
 ### Bug fixes
+
+- Include `""` for String default values (so it's encoded as a GraphQL string literal)
 
 ## 0.11.1 (6 Mar 2016)
 
