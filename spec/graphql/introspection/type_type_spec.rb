@@ -90,28 +90,5 @@ describe GraphQL::Introspection::TypeType do
       }}
       assert_equal(expected, result)
     end
-
-    describe 'input objects' do
-      let(:query_string) {%|
-         query introspectionQuery {
-           __type(name: "DairyProductInput") { name, description, kind, inputFields { name, type { name }, defaultValue } }
-         }
-      |}
-
-      it 'exposes metadata about input objects' do
-        expected = { "data" => {
-            "__type" => {
-              "name"=>"DairyProductInput",
-              "description"=>"Properties for finding a dairy product",
-              "kind"=>"INPUT_OBJECT",
-              "inputFields"=>[
-                {"name"=>"source", "type"=>{ "name" => "Non-Null"}, "defaultValue"=>nil},
-                {"name"=>"fatContent", "type"=>{ "name" => "Float"}, "defaultValue"=>nil}
-              ]
-            }
-          }}
-        assert_equal(expected, result)
-      end
-    end
   end
 end

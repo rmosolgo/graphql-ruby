@@ -118,6 +118,8 @@ DairyProductInputType = GraphQL::InputObjectType.define {
     description "Where it came from"
   end
 
+  input_field :originDairy, types.String, "Dairy which produced it", default_value: "Sugar Hollow Dairy"
+
   input_field :fatContent, types.Float, "How much fat it has"
 }
 
