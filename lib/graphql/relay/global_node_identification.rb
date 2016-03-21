@@ -6,14 +6,13 @@ module GraphQL
     # GlobalIdField depends on that, since it calls class methods
     # which delegate to the singleton instance.
     class GlobalNodeIdentification
+      include GraphQL::Define::InstanceDefinable
+      accepts_definitions(:object_from_id, :type_from_object)
+
       class << self
         attr_accessor :id_separator
       end
       self.id_separator = "-"
-
-      include GraphQL::DefinitionHelpers::DefinedByConfig
-      defined_by_config :object_from_id_proc, :type_from_object_proc
-      attr_accessor :object_from_id_proc, :type_from_object_proc
 
       class << self
         attr_accessor :instance
@@ -84,10 +83,18 @@ module GraphQL
         end
       end
 
+      def type_from_object=(proc)
+        @type_from_object_proc = proc
+      end
+
       # Use the provided config to
       # get an object from a UUID
       def object_from_id(id, ctx)
         @object_from_id_proc.call(id, ctx)
+      end
+
+      def object_from_id=(proc)
+        @object_from_id_proc = proc
       end
     end
   end

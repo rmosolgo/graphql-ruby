@@ -45,9 +45,6 @@ module GraphQL
       def self.get_connection_resolve(field_name, underlying_resolve, max_page_size: nil)
         -> (obj, args, ctx) {
           items = underlying_resolve.call(obj, args, ctx)
-          if items == GraphQL::Query::DEFAULT_RESOLVE
-            items = obj.public_send(field_name)
-          end
           connection_class = GraphQL::Relay::BaseConnection.connection_for_items(items)
           connection_class.new(items, args, max_page_size: max_page_size)
         }

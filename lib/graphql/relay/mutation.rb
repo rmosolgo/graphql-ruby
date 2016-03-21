@@ -48,9 +48,23 @@ module GraphQL
     #    # }}
     #
     class Mutation
-      include GraphQL::DefinitionHelpers::DefinedByConfig
-      defined_by_config :name, :description, :return_fields, :input_fields, :resolve
-      attr_accessor :name, :description, :return_fields, :input_fields
+      include GraphQL::Define::InstanceDefinable
+      accepts_definitions(
+        :name, :description, :resolve,
+        input_field: GraphQL::Define::AssignArgument,
+        return_field: GraphQL::Define::AssignObjectField,
+      )
+      attr_accessor :name, :definition
+      attr_reader :fields, :arguments
+
+      # For backwards compat, but do we need this separate API?
+      alias :return_fields :fields
+      alias :input_fields :arguments
+
+      def initialize
+        @fields = {}
+        @arguments = {}
+      end
 
       def resolve=(proc)
         @resolve_proc = proc
