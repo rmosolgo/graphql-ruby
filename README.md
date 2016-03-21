@@ -97,7 +97,7 @@ NodeIdentification = GraphQL::Relay::GlobalNodeIdentification.define do
 
   # Return a string for re-fetching this object
   to_global_id -> (type_name, id) {
-    "#{type_name.downcase}/#{id}"
+    "#{type_name}/#{id}"
   }
 
   # Based on the incoming string, extract the type_name and id
