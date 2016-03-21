@@ -3,19 +3,16 @@ module GraphQL
   module Relay
     # This object provides helpers for working with global IDs.
     # It's assumed you'll only have 1!
+    #
     # GlobalIdField depends on that, since it calls class methods
     # which delegate to the singleton instance.
+    #
     class GlobalNodeIdentification
       include GraphQL::Define::InstanceDefinable
-      accepts_definitions(:object_from_id, :type_from_object)
+      accepts_definitions(:object_from_id, :type_from_object, :to_global_id, :from_global_id)
 
       class << self
-        attr_accessor :id_separator
-      end
-      self.id_separator = "-"
-
-      class << self
-        attr_accessor :instance
+        attr_accessor :instance, :id_separator
         def new(*args, &block)
           @instance = super
         end
@@ -27,6 +24,13 @@ module GraphQL
         def to_global_id(type_name, id)
           instance.to_global_id(type_name, id)
         end
+      end
+
+      self.id_separator = "-"
+
+      def initialize
+        @to_global_id_proc = DEFAULT_TO_GLOBAL_ID
+        @from_global_id_proc = DEFAULT_FROM_GLOBAL_ID
       end
 
       # Returns `NodeInterface`, which all Relay types must implement
@@ -55,20 +59,36 @@ module GraphQL
         end
       end
 
+      DEFAULT_TO_GLOBAL_ID = -> (type_name, id) {
+        id_str = id.to_s
+        if type_name.include?(self.id_separator) || id_str.include?(self.id_separator)
+          raise "to_global_id(#{type_name}, #{id}) contains reserved characters `#{self.id_separator}`"
+        end
+        Base64.strict_encode64([type_name, id_str].join(self.id_separator))
+      }
+
+      DEFAULT_FROM_GLOBAL_ID = -> (global_id) {
+        Base64.decode64(global_id).split(self.id_separator)
+      }
+
       # Create a global ID for type-name & ID
       # (This is an opaque transform)
       def to_global_id(type_name, id)
-        id_str = id.to_s
-        if type_name.include?(self.class.id_separator) || id_str.include?(self.class.id_separator)
-          raise "to_global_id(#{type_name}, #{id}) contains reserved characters `#{self.class.id_separator}`"
-        end
-        Base64.strict_encode64([type_name, id_str].join(self.class.id_separator))
+        @to_global_id_proc.call(type_name, id)
+      end
+
+      def to_global_id=(proc)
+        @to_global_id_proc = proc
       end
 
       # Get type-name & ID from global ID
       # (This reverts the opaque transform)
       def from_global_id(global_id)
-        Base64.decode64(global_id).split(self.class.id_separator)
+        @from_global_id_proc.call(global_id)
+      end
+
+      def from_global_id=(proc)
+        @from_global_id_proc = proc
       end
 
       # Use the provided config to

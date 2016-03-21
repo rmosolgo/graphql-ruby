@@ -87,6 +87,32 @@ QueryType = GraphQL::ObjectType.define do
 end
 ```
 
+#### Custom UUID Generation
+
+By default, `graphql-relay` uses `Base64.strict_encode64` to generate opaque global ids. You can modify this behavior by providing two configurations. They work together to encode and decode ids:
+
+```ruby
+NodeIdentification = GraphQL::Relay::GlobalNodeIdentification.define do
+  # ...
+
+  # Return a string for re-fetching this object
+  to_global_id -> (type_name, id) {
+    "#{type_name.downcase}/#{id}"
+  }
+
+  # Based on the incoming string, extract the type_name and id
+  from_global_id -> (global_id) {
+    id_parts  = global_id.split("/")
+    type_name = id_parts[0]
+    id        = id_parts[1]
+    # Return *both*:
+    type_name, id
+  }
+end
+```
+
+`graphql-relay` will use those procs for interacting with global ids.
+
 ### Connections
 
 Connections provide pagination and `pageInfo` for `Array`s or `ActiveRecord::Relation`s.
@@ -320,6 +346,8 @@ https://medium.com/@gauravtiwari/graphql-and-relay-on-rails-first-relay-powered-
 
 - Allow custom defined ID scheme
 - Allow custom edge fields (per connection type)
+- `GlobalNodeIdentification.to_global_id` should receive the type name and _object_, not `id`. (Or, maintain the "`type_name, id` in, `type_name, id` out" pattern?)
+- Make GlobalId a property of the schema, not a global
 
 ## More Resources
 

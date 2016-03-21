@@ -59,7 +59,8 @@ STAR_WARS_DATA = {
     id = (idx + 1).to_s
     memo[id] = OpenStruct.new(name: name, id: id)
     memo
-  end
+  end,
+  "Base" => Hash.new { |h, k| h[k] = Base.find(k) }
 }
 
 def STAR_WARS_DATA.create_ship(name, faction_id)

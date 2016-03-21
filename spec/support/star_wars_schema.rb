@@ -8,13 +8,19 @@
 # See global_node_identification.rb for the full API.
 NodeIdentification = GraphQL::Relay::GlobalNodeIdentification.define do
   object_from_id -> (id, ctx) do
-    type_name, id = NodeIdentification.from_global_id(id)
+    # In a normal app, you could call `from_global_id` on your defined object
+    # type_name, id = NodeIdentification.from_global_id(id)
+    #
+    # But to support our testing setup, reach for the global:
+    type_name, id = GraphQL::Relay::GlobalNodeIdentification.from_global_id(id)
     STAR_WARS_DATA[type_name][id]
   end
 
   type_from_object -> (object) do
     if object == :test_error
       :not_a_type
+    elsif object.is_a?(Base)
+      BaseType
     else
       STAR_WARS_DATA["Faction"].values.include?(object) ? Faction : Ship
     end
@@ -131,6 +137,10 @@ QueryType = GraphQL::ObjectType.define do
 
   field :empire, Faction do
     resolve -> (obj, args, ctx) { STAR_WARS_DATA["Faction"]["2"]}
+  end
+
+  field :largestBase, BaseType do
+    resolve -> (obj, args, ctx) { Base.find(13) }
   end
 
   field :node, field: NodeIdentification.field

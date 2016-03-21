@@ -75,6 +75,41 @@ describe GraphQL::Relay::GlobalNodeIdentification do
       }
       assert_includes err.message, "to_global_id(Best-Thing, 234) contains reserved characters `-`"
     end
+
+    describe "custom definitions" do
+      before do
+        @previous_global_node_id = GraphQL::Relay::GlobalNodeIdentification.instance
+        @new_node_id = GraphQL::Relay::GlobalNodeIdentification.define do
+          to_global_id -> (type_name, id) {
+            "#{type_name}/#{id}"
+          }
+
+          from_global_id -> (global_id) {
+            global_id.split("/")
+          }
+        end
+      end
+
+      after do
+        GraphQL::Relay::GlobalNodeIdentification.instance = @previous_global_node_id
+      end
+
+      describe "generating IDs" do
+        it "Applies custom-defined ID generation" do
+          result = query(%| { largestBase { id } }|)
+          generated_id = result["data"]["largestBase"]["id"]
+          assert_equal "Base/13", generated_id
+        end
+      end
+
+      describe "fetching by ID" do
+        it "Deconstructs the ID by the custom proc" do
+          result = query(%| { node(id: "Base/11") { ... on Base { name } } }|)
+          base_name = result["data"]["node"]["name"]
+          assert_equal "Yavin", base_name
+        end
+      end
+    end
   end
 
   describe "type_from_object" do
