@@ -1,5 +1,11 @@
 # graphql-relay
 
+## 0.8.1 (22 Mar 2016)
+
+### Bug Fix
+
+- Accept description for Mutations
+
 ## 0.8.0 (20 Mar 2016)
 
 ### New Feature
