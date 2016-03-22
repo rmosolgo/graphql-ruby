@@ -31,36 +31,36 @@ class GraphQL::Schema::TypeReducer
     type_hash[type.name] = type
     if type.kind.fields?
       type.all_fields.each do |field|
-        reduce_type(field.type, type_hash, "check the #{field.name} field on #{type.name}")
+        reduce_type(field.type, type_hash, "Field #{type.name}.#{field.name}")
         field.arguments.each do |name, argument|
-          reduce_type(argument.type, type_hash, "check the #{name} argument for #{field.name} field on #{type.name}")
+          reduce_type(argument.type, type_hash, "Argument #{name} on #{type.name}.#{field.name}")
         end
       end
     end
     if type.kind.object?
       type.interfaces.each do |interface|
-        reduce_type(interface, type_hash)
+        reduce_type(interface, type_hash, "Interface on #{type.name}")
       end
     end
     if type.kind.resolves?
       type.possible_types.each do |possible_type|
-        reduce_type(possible_type, type_hash)
+        reduce_type(possible_type, type_hash, "Possible type for #{type.name}")
       end
     end
     if type.kind.input_object?
       type.input_fields.each do |name, input_field|
-        reduce_type(input_field.type, type_hash, "check the #{name} input field on #{type.name}")
+        reduce_type(input_field.type, type_hash, "Input field #{type.name}.#{name}")
       end
     end
 
     type_hash
   end
 
-  def reduce_type(type, type_hash, context_message = nil)
+  def reduce_type(type, type_hash, name = nil)
     if type.is_a?(GraphQL::BaseType)
       self.class.new(type.unwrap, type_hash).result
     else
-      raise GraphQL::Schema::InvalidTypeError.new(type, ["Must be a GraphQL::BaseType"], context_message)
+      raise GraphQL::Schema::InvalidTypeError.new(type, name)
     end
   end
 
