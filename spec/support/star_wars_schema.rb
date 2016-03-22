@@ -141,7 +141,7 @@ QueryType = GraphQL::ObjectType.define do
   end
 
   field :largestBase, BaseType do
-    resolve -> (obj, args, ctx) { Base.find(13) }
+    resolve -> (obj, args, ctx) { Base.find(3) }
   end
 
   field :node, field: NodeIdentification.field

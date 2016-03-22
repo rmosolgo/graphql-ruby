@@ -98,13 +98,13 @@ describe GraphQL::Relay::GlobalNodeIdentification do
         it "Applies custom-defined ID generation" do
           result = query(%| { largestBase { id } }|)
           generated_id = result["data"]["largestBase"]["id"]
-          assert_equal "Base/13", generated_id
+          assert_equal "Base/3", generated_id
         end
       end
 
       describe "fetching by ID" do
         it "Deconstructs the ID by the custom proc" do
-          result = query(%| { node(id: "Base/11") { ... on Base { name } } }|)
+          result = query(%| { node(id: "Base/1") { ... on Base { name } } }|)
           base_name = result["data"]["node"]["name"]
           assert_equal "Yavin", base_name
         end
