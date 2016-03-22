@@ -54,7 +54,7 @@ module GraphQL
         input_field: GraphQL::Define::AssignArgument,
         return_field: GraphQL::Define::AssignObjectField,
       )
-      attr_accessor :name, :definition
+      attr_accessor :name, :description
       attr_reader :fields, :arguments
 
       # For backwards compat, but do we need this separate API?

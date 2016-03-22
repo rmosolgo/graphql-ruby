@@ -111,6 +111,7 @@ end
 IntroduceShipMutation = GraphQL::Relay::Mutation.define do
   # Used as the root for derived types:
   name "IntroduceShip"
+  description "Add a ship to this faction"
 
   # Nested under `input` in the query:
   input_field :shipName, !types.String
