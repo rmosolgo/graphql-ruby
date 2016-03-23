@@ -24,8 +24,11 @@ Gem::Specification.new do |s|
   s.add_development_dependency "guard", "~> 2.12"
   s.add_development_dependency "guard-bundler", "~> 2.1"
   s.add_development_dependency "guard-minitest", "~> 2.4"
+  s.add_development_dependency "guard-rake"
   s.add_development_dependency "minitest", "~> 5"
   s.add_development_dependency "minitest-focus", "~> 1.1"
   s.add_development_dependency "minitest-reporters", "~>1.0"
+  s.add_development_dependency "racc", "~> 1.4"
   s.add_development_dependency "rake", "~> 11.0"
+  s.add_development_dependency "rexical", "~> 1.0"
 end

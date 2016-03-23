@@ -32,3 +32,9 @@ task :console do
   ARGV.clear
   IRB.start
 end
+
+task :build_parser do
+  `rm lib/graphql/language/parse.tab.rb lib/graphql/language/lex.rex.rb`
+  `racc lib/graphql/language/parse.y`
+  `rex lib/graphql/language/lex.rex`
+end

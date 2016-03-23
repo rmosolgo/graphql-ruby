@@ -22,7 +22,7 @@ module GraphQL
   # @param [String] a GraphQL query string
   # @return [GraphQL::Language::Nodes::Document]
   def self.parse(query_string)
-    parse_with_parslet(query_string)
+    parse_with_racc(query_string)
   end
 
   def self.parse_with_parslet(string)
@@ -35,6 +35,10 @@ module GraphQL
   rescue Parslet::ParseFailed => error
     line, col = error.cause.source.line_and_column(error.cause.pos)
     raise GraphQL::ParseError.new(error.message, line, col, string)
+  end
+
+  def self.parse_with_racc(string)
+    GraphQL::Language::RaccParser.parse(string)
   end
 end
 
