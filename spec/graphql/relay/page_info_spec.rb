@@ -15,9 +15,9 @@ describe GraphQL::Relay::PageInfo do
   }
 
   let(:query_string) {%|
-    query getShips($first: Int, $after: String, $last: Int, $before: String, $order: String, $nameIncludes: String){
+    query getShips($first: Int, $after: String, $last: Int, $before: String, $nameIncludes: String){
       empire {
-        bases(first: $first, after: $after, last: $last, before: $before, order: $order, nameIncludes: $nameIncludes) {
+        bases(first: $first, after: $after, last: $last, before: $before, nameIncludes: $nameIncludes) {
           edges {
             cursor
           }

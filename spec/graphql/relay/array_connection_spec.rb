@@ -11,9 +11,9 @@ describe GraphQL::Relay::ArrayConnection do
   end
   describe "results" do
     let(:query_string) {%|
-      query getShips($first: Int, $after: String, $last: Int, $before: String, $order: String, $nameIncludes: String){
+      query getShips($first: Int, $after: String, $last: Int, $before: String, $nameIncludes: String){
         rebels {
-          ships(first: $first, after: $after, last: $last, before: $before, order: $order, nameIncludes: $nameIncludes) {
+          ships(first: $first, after: $after, last: $last, before: $before, nameIncludes: $nameIncludes) {
             edges {
               cursor
               node {
@@ -59,22 +59,6 @@ describe GraphQL::Relay::ArrayConnection do
 
       result = query(query_string, "before" => last_cursor, "last" => 2)
       assert_equal(["X-Wing", "Y-Wing"], get_names(result))
-    end
-
-    it 'paginates with order' do
-      result = query(query_string, "first" => 2, "order" => "name")
-      assert_equal(["A-Wing", "Home One"], get_names(result))
-
-      # After the last result, find the next 2:
-      last_cursor = result["data"]["rebels"]["ships"]["edges"].last["cursor"]
-
-      result = query(query_string, "after" => last_cursor, "first" => 2, "order" => "name")
-      assert_equal(["Millenium Falcon", "X-Wing"], get_names(result))
-    end
-
-    it 'paginates with reverse order' do
-      result = query(query_string, "first" => 2, "order" => "-name")
-      assert_equal(["Y-Wing", "X-Wing"], get_names(result))
     end
 
     it 'applies custom arguments' do
