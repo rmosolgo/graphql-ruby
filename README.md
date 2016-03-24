@@ -198,8 +198,6 @@ First, define the custom connection:
 ```ruby
 class SetConnection < BaseConnection
   # derive a cursor from `item`
-  # (it is used to find next & previous nodes,
-  # so it should include `order`)
   def cursor_from_node(item)
     # ...
   end

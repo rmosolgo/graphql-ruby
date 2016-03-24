@@ -87,6 +87,13 @@ Faction = GraphQL::ObjectType.define do
   connection :basesClone, BaseType.connection_type
   connection :basesByName, BaseType.connection_type, property: :bases do
     argument :order, types.String, default_value: "name"
+    resolve -> (obj, args, ctx) {
+      if args[:order].present?
+        obj.bases.order(args[:order])
+      else
+        obj.bases
+      end
+    }
   end
 
   connection :basesWithMaxLimitRelation, BaseType.connection_type, max_page_size: 2 do

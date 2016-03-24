@@ -12,7 +12,6 @@ module GraphQL
           [:after, GraphQL::STRING_TYPE],
           [:last, GraphQL::INT_TYPE],
           [:before, GraphQL::STRING_TYPE],
-          [:order, GraphQL::STRING_TYPE],
         ]
 
       DEFAULT_ARGUMENTS = ARGUMENT_DEFINITIONS.reduce({}) do |memo, arg_defn|
@@ -31,8 +30,7 @@ module GraphQL
       # @return [GraphQL::Field] A field which serves a connections
       def self.create(underlying_field, max_page_size: nil)
         underlying_field.arguments = DEFAULT_ARGUMENTS.merge(underlying_field.arguments)
-        # TODO: make a public API on GraphQL::Field to expose this proc
-        original_resolve = underlying_field.instance_variable_get(:@resolve_proc)
+        original_resolve = underlying_field.resolve_proc
         underlying_field.resolve = get_connection_resolve(underlying_field.name, original_resolve, max_page_size: max_page_size)
         underlying_field
       end
