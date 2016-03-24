@@ -5,12 +5,14 @@ describe GraphQL::Query::Executor do
   let(:operation_name) { nil }
   let(:schema) { DummySchema }
   let(:variables) { {"cheeseId" => 2} }
-  let(:result) { schema.execute(
+  let(:query) { GraphQL::Query.new(
+    schema,
     query_string,
     variables: variables,
     debug: debug,
     operation_name: operation_name,
   )}
+  let(:result) { query.result }
 
   describe "multiple operations" do
     let(:query_string) { %|
@@ -117,11 +119,14 @@ describe GraphQL::Query::Executor do
     let(:query_string) {%| query noMilk { error }|}
     describe 'if debug: false' do
       let(:debug) { false }
+      let(:errors) { query.context.errors }
       it 'turns into error messages' do
         expected = {"errors"=>[
-          {"message"=>"Something went wrong during query execution: This error was raised on purpose"}
+          {"message"=>"Internal error"}
         ]}
         assert_equal(expected, result)
+        assert_equal([RuntimeError], errors.map(&:class))
+        assert_equal("This error was raised on purpose", errors.first.message)
       end
     end
 

@@ -11,9 +11,7 @@ module GraphQL
       hash = {
         "message" => message,
       }
-      if ast_node.nil?
-        hash["locations"] = []
-      else
+      if ast_node
         hash["locations"] = [
           {
             "line" => ast_node.line,
