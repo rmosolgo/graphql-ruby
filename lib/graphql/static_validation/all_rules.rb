@@ -5,6 +5,7 @@
 # don't exist, etc.
 GraphQL::StaticValidation::ALL_RULES = [
   GraphQL::StaticValidation::DirectivesAreDefined,
+  GraphQL::StaticValidation::DirectivesAreInValidLocations,
   GraphQL::StaticValidation::FragmentsAreFinite,
   GraphQL::StaticValidation::FragmentTypesExist,
   GraphQL::StaticValidation::FragmentsAreOnCompositeTypes,

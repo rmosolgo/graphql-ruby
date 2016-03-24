@@ -19,6 +19,7 @@ require 'graphql/introspection/type_type'
 require 'graphql/introspection/arguments_field'
 require 'graphql/introspection/field_type'
 
+require 'graphql/introspection/directive_location_enum'
 require 'graphql/introspection/directive_type'
 require 'graphql/introspection/schema_type'
 require 'graphql/introspection/schema_field'

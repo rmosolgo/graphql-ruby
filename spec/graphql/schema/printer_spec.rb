@@ -70,9 +70,17 @@ type __Directive {
   name: String!
   description: String
   args: [__InputValue!]!
-  onOperation: Boolean!
-  onFragment: Boolean!
-  onField: Boolean!
+  locations: [__DirectiveLocation!]!
+}
+
+enum __DirectiveLocation {
+  QUERY
+  MUTATION
+  SUBSCRIPTION
+  FIELD
+  FRAGMENT_DEFINITION
+  FRAGMENT_SPREAD
+  INLINE_FRAGMENT
 }
 
 type __EnumValue {

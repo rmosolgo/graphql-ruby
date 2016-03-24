@@ -1,7 +1,7 @@
 GraphQL::Directive::IncludeDirective = GraphQL::Directive.define do
   name "include"
   description "Include this part of the query if `if` is true"
-  on([GraphQL::Directive::ON_FIELD, GraphQL::Directive::ON_FRAGMENT])
+  locations([GraphQL::Directive::FIELD, GraphQL::Directive::FRAGMENT_SPREAD, GraphQL::Directive::INLINE_FRAGMENT])
   argument :if, !GraphQL::BOOLEAN_TYPE
 
   resolve -> (arguments, proc) {

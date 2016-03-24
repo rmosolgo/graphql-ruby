@@ -4,19 +4,19 @@
 # minimal impact on query execution.
 class GraphQL::Directive
   include GraphQL::Define::InstanceDefinable
-  accepts_definitions :on, :name, :description, :resolve, argument: GraphQL::Define::AssignArgument
+  accepts_definitions :locations, :name, :description, :resolve, argument: GraphQL::Define::AssignArgument
 
-  attr_accessor :on, :arguments, :name, :description
+  attr_accessor :locations, :arguments, :name, :description
 
   LOCATIONS = [
-    ON_OPERATION =  :on_operation?,
-    ON_FRAGMENT =   :on_fragment?,
-    ON_FIELD =      :on_field?,
+    QUERY =               :QUERY,
+    MUTATION =            :MUTATION,
+    SUBSCRIPTION =        :SUBSCRIPTION,
+    FIELD =               :FIELD,
+    FRAGMENT_DEFINITION = :FRAGMENT_DEFINITION,
+    FRAGMENT_SPREAD =     :FRAGMENT_SPREAD,
+    INLINE_FRAGMENT =     :INLINE_FRAGMENT,
   ]
-
-  LOCATIONS.each do |location|
-    define_method(location) { self.on.include?(location) }
-  end
 
   def initialize
     @arguments = {}
