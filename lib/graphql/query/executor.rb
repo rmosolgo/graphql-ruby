@@ -14,12 +14,12 @@ module GraphQL
       def result
         execute
       rescue GraphQL::ExecutionError => err
+        query.context.errors << err
         {"errors" => [err.to_h]}
-      rescue GraphQL::Query::OperationNameMissingError => err
-        {"errors" => [{"message" => err.message}]}
       rescue StandardError => err
+        query.context.errors << err
         query.debug && raise(err)
-        message = "Something went wrong during query execution: #{err}" #\n#{err.backtrace.join("\n  ")}"
+        message = "Internal error" #\n#{err.backtrace.join("\n  ")}"
         {"errors" => [{"message" => message}]}
       end
 

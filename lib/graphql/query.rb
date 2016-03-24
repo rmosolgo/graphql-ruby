@@ -1,5 +1,5 @@
 class GraphQL::Query
-  class OperationNameMissingError < GraphQL::Error
+  class OperationNameMissingError < GraphQL::ExecutionError
     def initialize(names)
       msg = "You must provide an operation name from: #{names.join(", ")}"
       super(msg)
