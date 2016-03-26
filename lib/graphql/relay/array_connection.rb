@@ -2,7 +2,7 @@ module GraphQL
   module Relay
     class ArrayConnection < BaseConnection
       def cursor_from_node(item)
-        idx = sliced_nodes.find_index(item)
+        idx = starting_offset + sliced_nodes.find_index(item) + 1
         Base64.strict_encode64(idx.to_s)
       end
 
@@ -12,10 +12,7 @@ module GraphQL
       def paged_nodes
         @paged_nodes = begin
           items = sliced_nodes
-          limit = [first, last, max_page_size].compact.min
-          first && items = items.first(limit)
-          last && items.length > last && items.last(limit)
-          items
+          items.first(limit)
         end
       end
 
@@ -23,15 +20,43 @@ module GraphQL
       def sliced_nodes
         @sliced_nodes ||= begin
           items = object
-          after && items = items[(1 + index_from_cursor(after))..-1]
-          before && items = items[0..(index_from_cursor(before) - 1)]
-          items
+          items[starting_offset..-1]
         end
       end
 
       def index_from_cursor(cursor)
-        index = Base64.decode64(cursor)
-        index.to_i
+        Base64.decode64(cursor).to_i
+      end
+
+      def starting_offset
+        @starting_offset = if before
+          [previous_offset, 0].max
+        else
+          previous_offset
+        end
+      end
+
+      def previous_offset
+        @initial_offset ||= if before
+          index_from_cursor(before) - last - 1
+        elsif after
+          index_from_cursor(after)
+        else
+          0
+        end
+      end
+
+      def limit
+        @limit ||= if first
+          [first, max_page_size].compact.min
+        else
+          last_limit = if previous_offset <= 0
+            previous_offset + last
+          else
+            last
+          end
+          [last_limit, max_page_size].compact.min
+        end
       end
     end
     BaseConnection.register_connection_implementation(Array, ArrayConnection)

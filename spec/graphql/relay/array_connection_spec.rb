@@ -48,8 +48,14 @@ describe GraphQL::Relay::ArrayConnection do
     end
 
     it 'slices the result' do
-      result = query(query_string, "first" => 3)
-      assert_equal(["X-Wing", "Y-Wing", "A-Wing"], get_names(result))
+      result = query(query_string, "first" => 1)
+      assert_equal(["X-Wing"], get_names(result))
+
+      # After the last result, find the next 2:
+      last_cursor = get_last_cursor(result)
+
+      result = query(query_string, "after" => last_cursor, "first" => 2)
+      assert_equal(["Y-Wing", "A-Wing"], get_names(result))
 
       # After the last result, find the next 2:
       last_cursor = get_last_cursor(result)
@@ -67,7 +73,7 @@ describe GraphQL::Relay::ArrayConnection do
       assert_equal(2, names.length)
 
       after = get_last_cursor(result)
-      result = query(query_string, "nameIncludes" => "Wing", "after" => after)
+      result = query(query_string, "nameIncludes" => "Wing", "after" => after, "first" => 3)
       names = get_names(result)
       assert_equal(1, names.length)
     end
