@@ -2,7 +2,7 @@ module GraphQL
   module Relay
     class RelationConnection < BaseConnection
       def cursor_from_node(item)
-        offset = initial_offset + paged_nodes_array.index(item) + 1
+        offset = starting_offset + paged_nodes_array.index(item) + 1
         Base64.strict_encode64(offset.to_s)
       end
 
@@ -21,9 +21,7 @@ module GraphQL
       def paged_nodes
         @paged_nodes ||= begin
           items = sliced_nodes
-          limit = [first, last, max_page_size].compact.min
-          items = items.limit(limit)
-          items
+          items.limit(limit)
         end
       end
 
@@ -31,8 +29,7 @@ module GraphQL
       def sliced_nodes
         @sliced_nodes ||= begin
           items = object
-          items = items.offset(initial_offset)
-          items
+          items.offset(starting_offset)
         end
       end
 
@@ -40,20 +37,38 @@ module GraphQL
         Base64.decode64(cursor).to_i
       end
 
-      def initial_offset
+      def starting_offset
         @initial_offset ||= begin
-          if after
-            # The initial offset is in the last cursor
-            offset_from_cursor(after)
-          elsif before
-            # The initial offset
-            prev_offset = offset_from_cursor(before)
-            min_next_offset = prev_offset - last - 1
-            next_offset = [min_next_offset, 0].max
-            next_offset
+          if before
+            [previous_offset, 0].max
           else
-            0
+            previous_offset
           end
+        end
+      end
+
+      # Offset from the previous selection, if there was one
+      # Otherwise, zero
+      def previous_offset
+        @previous_offset ||= if after
+          offset_from_cursor(after)
+        elsif before
+          offset_from_cursor(before) - last - 1
+        else
+          0
+        end
+      end
+
+      def limit
+        @limit ||= if first
+          [first, max_page_size].compact.min
+        else
+          last_limit = if previous_offset <= 0
+            previous_offset + last
+          else
+            last
+          end
+          [last_limit, max_page_size].compact.min
         end
       end
 

@@ -58,11 +58,16 @@ describe GraphQL::Relay::RelationConnection do
       assert_equal(["Headquarters"], get_names(result))
 
       last_cursor = get_last_cursor(result)
+
       result = query(query_string, "before" => last_cursor, "last" => 1)
       assert_equal(["Shield Generator"], get_names(result))
 
       result = query(query_string, "before" => last_cursor, "last" => 2)
       assert_equal(["Death Star", "Shield Generator"], get_names(result))
+
+      result = query(query_string, "before" => last_cursor, "last" => 10)
+      assert_equal(["Death Star", "Shield Generator"], get_names(result))
+
     end
 
     it "applies custom arguments" do
@@ -122,7 +127,7 @@ describe GraphQL::Relay::RelationConnection do
     let(:query_string) {%|
       {
         empire {
-          basesClone {
+          basesClone(first: 10) {
             edges {
               node {
                 name
@@ -142,8 +147,8 @@ describe GraphQL::Relay::RelationConnection do
     let(:query_string) {%|
       query getBases {
         empire {
-          basesByName { ... basesFields }
-          bases { ... basesFields }
+          basesByName(first: 30) { ... basesFields }
+          bases(first: 30) { ... basesFields }
         }
       }
       fragment basesFields on BaseConnection {
