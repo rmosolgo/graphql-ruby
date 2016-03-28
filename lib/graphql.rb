@@ -61,10 +61,10 @@ require 'graphql/float_type'
 require 'graphql/id_type'
 require 'graphql/int_type'
 require 'graphql/string_type'
+require 'graphql/directive'
 
 require 'graphql/introspection'
 require 'graphql/language'
-require 'graphql/directive'
 require 'graphql/schema'
 require 'graphql/schema/printer'
 
