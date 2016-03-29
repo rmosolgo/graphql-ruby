@@ -88,7 +88,7 @@ end
 
 require 'graphql/query/arguments'
 require 'graphql/query/context'
-require 'graphql/query/directive_chain'
+require 'graphql/query/directive_resolution'
 require 'graphql/query/executor'
 require 'graphql/query/literal_input'
 require 'graphql/query/serial_execution'

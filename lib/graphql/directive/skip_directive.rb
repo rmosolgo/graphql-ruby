@@ -5,11 +5,7 @@ GraphQL::Directive::SkipDirective = GraphQL::Directive.define do
 
   argument :if, !GraphQL::BOOLEAN_TYPE
 
-  resolve -> (arguments, proc) {
-    if !arguments["if"]
-      proc.call
-    else
-      nil
-    end
+  include_proc -> (arguments) {
+    !arguments["if"]
   }
 end

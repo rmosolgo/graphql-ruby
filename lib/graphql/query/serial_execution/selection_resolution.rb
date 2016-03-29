@@ -41,18 +41,14 @@ module GraphQL
         end
 
         def flatten_inline_fragment(ast_node)
-          chain = GraphQL::Query::DirectiveChain.new(ast_node, execution_context.query) {
-            flatten_fragment(ast_node)
-          }
-          chain.result
+          return {} unless GraphQL::Query::DirectiveResolution.include_node?(ast_node, execution_context.query)
+          flatten_fragment(ast_node)
         end
 
         def flatten_fragment_spread(ast_node)
+          return {} unless GraphQL::Query::DirectiveResolution.include_node?(ast_node, execution_context.query)
           ast_fragment_defn = execution_context.get_fragment(ast_node.name)
-          chain = GraphQL::Query::DirectiveChain.new(ast_node, execution_context.query) {
-            flatten_fragment(ast_fragment_defn)
-          }
-          chain.result
+          flatten_fragment(ast_fragment_defn)
         end
 
         def flatten_fragment(ast_fragment)
@@ -89,15 +85,13 @@ module GraphQL
         end
 
         def resolve_field(ast_node)
-          chain = GraphQL::Query::DirectiveChain.new(ast_node, execution_context.query) {
-            execution_context.strategy.field_resolution.new(
-              ast_node,
-              type,
-              target,
-              execution_context
-            ).result
-          }
-          chain.result
+          return {} unless GraphQL::Query::DirectiveResolution.include_node?(ast_node, execution_context.query)
+          execution_context.strategy.field_resolution.new(
+            ast_node,
+            type,
+            target,
+            execution_context
+          ).result
         end
 
         def merge_into_result(memo, selection)
