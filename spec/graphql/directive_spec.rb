@@ -27,7 +27,6 @@ describe GraphQL::Directive do
     it 'intercepts fields' do
       expected = { "data" =>{
         "cheese" => {
-          "dontSkipDontIncludeFlavor" => "Brie", #skip has precedence over include
           "dontSkipFlavor" => "Brie",
           "includeFlavor" => "Brie",
           "includeId" => 1,

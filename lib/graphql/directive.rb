@@ -4,7 +4,7 @@
 # minimal impact on query execution.
 class GraphQL::Directive
   include GraphQL::Define::InstanceDefinable
-  accepts_definitions :locations, :name, :description, :resolve, argument: GraphQL::Define::AssignArgument
+  accepts_definitions :locations, :name, :description, :include_proc, argument: GraphQL::Define::AssignArgument
 
   attr_accessor :locations, :arguments, :name, :description
 
@@ -22,12 +22,12 @@ class GraphQL::Directive
     @arguments = {}
   end
 
-  def resolve(arguments, proc)
-    @resolve_proc.call(arguments, proc)
+  def include?(arguments)
+    @include_proc.call(arguments)
   end
 
-  def resolve=(resolve_proc)
-    @resolve_proc = resolve_proc
+  def include_proc=(include_proc)
+    @include_proc = include_proc
   end
 
   def to_s
