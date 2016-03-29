@@ -55,6 +55,26 @@ class GraphQL::ObjectType < GraphQL::BaseType
     interface_fields.merge(self.fields).values
   end
 
+  def input_type
+    tmp_name = self.name
+    tmp_fields = self.fields
+    @input_type ||= GraphQL::InputObjectType.define do
+      name tmp_name + 'Input'
+      description 'Automatically generated input type'
+      tmp_fields.each do |name, field|
+        field_type = field.type
+        if field_type.is_a? GraphQL::ObjectType
+          field_type = field_type.input_type
+        elsif field_type.is_a? GraphQL::ListType
+          if field_type.of_type.is_a? GraphQL::ObjectType
+            field_type = GraphQL::ListType.new(of_type: field_type.of_type.input_type)
+          end
+        end
+        input_field name, field_type
+      end
+    end
+  end
+
   private
 
   # Create a {name => defn} hash for fields inherited from interfaces
