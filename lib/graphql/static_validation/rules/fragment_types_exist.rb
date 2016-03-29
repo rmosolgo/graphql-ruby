@@ -15,6 +15,7 @@ class GraphQL::StaticValidation::FragmentTypesExist
   private
 
   def validate_type_exists(node, context)
+    return unless node.type
     type = context.schema.types.fetch(node.type, nil)
     if type.nil?
       context.errors << message("No such type #{node.type}, so it can't be a fragment condition", node)

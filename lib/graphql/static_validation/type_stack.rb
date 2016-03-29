@@ -52,7 +52,11 @@ class GraphQL::StaticValidation::TypeStack
 
   class FragmentWithTypeStrategy
     def push(stack, node)
-      object_type = stack.schema.types.fetch(node.type, nil)
+      object_type = if node.type
+        stack.schema.types.fetch(node.type, nil)
+      else
+        stack.object_types.last
+      end
       if !object_type.nil?
         object_type = object_type.unwrap
       end
