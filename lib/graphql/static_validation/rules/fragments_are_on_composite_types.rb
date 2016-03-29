@@ -18,6 +18,7 @@ class GraphQL::StaticValidation::FragmentsAreOnCompositeTypes
 
   def validate_type_is_composite(node, context)
     type_name = node.type
+    return unless type_name
     type_def = context.schema.types[type_name]
     if type_def.nil? || !type_def.kind.composite?
       context.errors <<  message("Invalid fragment on type #{type_name} (must be Union, Interface or Object)", node)

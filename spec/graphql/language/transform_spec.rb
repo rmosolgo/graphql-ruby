@@ -153,4 +153,9 @@ describe GraphQL::Language::Transform do
     res = get_result("{quoted: \"\\\" \\\\ \\/ \\b \\f \\n \\r \\t\"}", parse: :value_input_object)
     assert_equal("\" \\ / \b \f \n \r \t", res.arguments[0].value)
   end
+
+  it 'transforms inline fragment optional type condition' do
+    res = get_result("{ ... @skip(if: true) { skippedField }, ... on Pet { isHousebroken } }")
+    assert_equal([nil, "Pet"], res.definitions.first.selections.map(&:type))
+  end
 end

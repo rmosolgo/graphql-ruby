@@ -50,6 +50,8 @@ describe GraphQL::Directive do
         ... on Cheese @skip(if: false) { dontSkipInlineId: id }
         ... on Cheese @include(if: true) { includeInlineId: id }
         ... on Cheese @include(if: false) { dontIncludeInlineId: id }
+        ... @skip(if: true) { skipNoType: id }
+        ... @skip(if: false) { dontSkipNoType: id }
         }
       }
       fragment includeFlavorField on Cheese { includeFlavor: flavor  }
@@ -66,6 +68,7 @@ describe GraphQL::Directive do
           "includeFlavor" => "Brie",
           "dontSkipInlineId" => 1,
           "includeInlineId" => 1,
+          "dontSkipNoType" => 1,
         },
       }}
       assert_equal(expected, result)

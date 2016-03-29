@@ -40,7 +40,7 @@ module GraphQL
         inline_fragment_type: simple(:n),
         directives: sequence(:d),
         selections: sequence(:s),
-      ) { CREATE_NODE[:InlineFragment, type: n.to_s, directives: d, selections: s, position_source: kw]}
+      ) { CREATE_NODE[:InlineFragment, type: n, directives: d, selections: s, position_source: kw]}
 
       # Operation Definition
       rule(

@@ -5,8 +5,9 @@ class GraphQL::StaticValidation::FragmentSpreadsArePossible
 
     context.visitor[GraphQL::Language::Nodes::InlineFragment] << -> (node, parent) {
       fragment_parent = context.object_types[-2]
-      fragment_child = context.object_types.last
-      validate_fragment_in_scope(fragment_parent, fragment_child, node, context)
+      if fragment_child = context.object_types.last
+        validate_fragment_in_scope(fragment_parent, fragment_child, node, context)
+      end
     }
 
     spreads_to_validate = []

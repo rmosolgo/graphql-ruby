@@ -22,6 +22,7 @@ describe GraphQL::Language::Parser do
         name,
         ... on Species { color },
         ... family # background info, of course
+        ... @skip(if: true) { inlineFragSkip },
       }
     }
     subscription watchStuff {

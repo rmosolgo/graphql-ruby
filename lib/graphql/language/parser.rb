@@ -26,10 +26,11 @@ module GraphQL
         directives.maybe.as(:optional_directives).as(:directives)
       }
       rule(:spread) { str("...") }
+      rule(:type_condition) { str("on ") >> name.as(:optional_string_content) }
       # TODO: `on` bug, see spec
       rule(:inline_fragment) {
         spread.as(:fragment_spread_keyword) >> space? >>
-        str("on ") >> name.as(:inline_fragment_type) >> space? >>
+        type_condition.maybe.as(:inline_fragment_type) >> space? >>
         directives.maybe.as(:optional_directives).as(:directives) >> space? >>
         selections.as(:selections)
       }
