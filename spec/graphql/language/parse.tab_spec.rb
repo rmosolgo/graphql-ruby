@@ -12,7 +12,7 @@ describe GraphQL::Language::RaccParser do
       }
 
       ... on OtherType @include(unless: false){
-        field(arg: [true, {key: "value"}])
+        field(arg: [{key: "value", anotherKey: 0.9, anotherAnotherKey: WHATEVER}])
         anotherField
       }
 
@@ -29,7 +29,7 @@ describe GraphQL::Language::RaccParser do
           myField(
             arg1: 4.5,
             arg2: -3,
-            arg3: "hello",
+            arg3: "hello ☀︎ \uD83C\uDF40",
             arg4: 4.5e-12,
             arg5: true
             arg6: $false
@@ -70,7 +70,7 @@ describe GraphQL::Language::RaccParser do
         assert_equal 2, query.variables.length
         assert_equal 3, query.selections.length
         assert_equal 1, query.directives.length
-        # assert_equal [2, 5], [query.line, query.col]
+        assert_equal [2, 5], [query.line, query.col]
       end
 
       it "creates a valid fragment definition" do
@@ -79,7 +79,7 @@ describe GraphQL::Language::RaccParser do
         assert_equal 1, fragment_def.selections.length
         assert_equal "NestedType", fragment_def.type
         assert_equal 1, fragment_def.directives.length
-        # assert_equal [17, 5], fragment_def.position
+        assert_equal [17, 5], fragment_def.position
       end
 
       describe "variable definitions" do
@@ -94,7 +94,6 @@ describe GraphQL::Language::RaccParser do
         end
 
         it "gets position info" do
-          skip
           assert_equal [2, 20], optional_var.position
         end
       end
@@ -115,7 +114,6 @@ describe GraphQL::Language::RaccParser do
         end
 
         it "gets location info" do
-          skip
           assert_equal [3 ,7], leaf_field.position
         end
       end
@@ -134,8 +132,8 @@ describe GraphQL::Language::RaccParser do
           assert_equal "someVar", variable_argument.value.name
         end
 
+
         it "gets position info" do
-          skip
           assert_equal [3, 26], variable_argument.position
         end
       end
@@ -148,7 +146,6 @@ describe GraphQL::Language::RaccParser do
         end
 
         it "gets position info" do
-          skip
           assert_equal [7, 9], fragment_spread.position
         end
       end
@@ -163,7 +160,6 @@ describe GraphQL::Language::RaccParser do
         end
 
         it "gets position info" do
-          skip
           assert_equal [3, 54], variable_directive.position
         end
       end
@@ -177,7 +173,6 @@ describe GraphQL::Language::RaccParser do
         end
 
         it "gets position info" do
-          skip
           assert_equal [10, 7], inline_fragment.position
         end
       end
@@ -262,6 +257,41 @@ describe GraphQL::Language::RaccParser do
     let(:query_string) {%| query doSomething { bogus { } |}
     it "raises a parse error" do
       err = assert_raises(GraphQL::ParseError) { document }
+    end
+
+    it 'correctly identifies parse error location and content' do
+      e = assert_raises(GraphQL::ParseError) do
+        GraphQL.parse("
+          query getCoupons {
+            allCoupons: {data{id}}
+          }
+        ")
+      end
+      assert_includes(e.message, '"{"')
+      assert_includes(e.message, "RCURLY")
+      assert_equal(3, e.line)
+      assert_equal(25, e.col)
+    end
+
+    it "handles unexpected ends" do
+      err = assert_raises { GraphQL.parse("{ ") }
+      assert_equal "Unexpected end of document", err.message
+    end
+  end
+
+  describe "malformed queries" do
+    describe "whitespace-only" do
+      let(:query_string) { " " }
+      it "doesn't blow up" do
+        assert_equal [], document.definitions
+      end
+    end
+
+    describe "empty string" do
+      let(:query_string) { "" }
+      it "doesn't blow up" do
+        assert_equal [], document.definitions
+      end
     end
   end
 end

@@ -21,6 +21,7 @@ rule
             variables:      val[2],
             directives:     val[3],
             selections:     val[4],
+            position_source: val[0],
           }
         )
       }
@@ -28,7 +29,7 @@ rule
         return make_node(
           :OperationDefinition, {
             operation_type: "query",
-            selections: val[0]
+            selections: val[0],
           }
         )
       }
@@ -51,6 +52,7 @@ rule
           name: val[1],
           type: val[3],
           default_value: val[4],
+          position_source: val[0],
         })
       }
 
@@ -86,6 +88,7 @@ rule
                 arguments:    val[1],
                 directives:   val[2],
                 selections:   val[3],
+                position_source: val[0],
               }
             )
           }
@@ -97,6 +100,7 @@ rule
                 arguments:    val[3],
                 directives:   val[4],
                 selections:   val[5],
+                position_source: val[0],
               }
             )
           }
@@ -117,7 +121,7 @@ rule
     | arguments_list argument { val[0] << val[1] }
 
   argument:
-      name COLON input_value { return make_node(:Argument, name: val[0], value: val[2])}
+      name COLON input_value { return make_node(:Argument, name: val[0], value: val[2], position_source: val[0])}
 
   input_value:
       FLOAT       { return val[0].to_f }
@@ -130,7 +134,7 @@ rule
     | object_value
     | enum_value
 
-  variable: VAR_SIGN name { return make_node(:VariableIdentifier, name: val[1]) }
+  variable: VAR_SIGN name { return make_node(:VariableIdentifier, name: val[1], position_source: val[0]) }
 
   list_value:
       RBRACKET LBRACKET                 { return [] }
@@ -141,17 +145,17 @@ rule
     | list_value_list input_value { val[0] << val[1] }
 
   object_value:
-      RCURLY LCURLY                   { return make_node(:InputObject, arguments: [])}
-    | RCURLY object_value_list LCURLY { return make_node(:InputObject, arguments: val[1])}
+      RCURLY LCURLY                   { return make_node(:InputObject, arguments: [], position_source: val[0])}
+    | RCURLY object_value_list LCURLY { return make_node(:InputObject, arguments: val[1], position_source: val[0])}
 
   object_value_list:
       object_value_field                    { return [val[0]] }
     | object_value_list object_value_field  { val[0] << val[1] }
 
   object_value_field:
-      name COLON input_value { return make_node(:Argument, name: val[0], value: val[2])}
+      name COLON input_value { return make_node(:Argument, name: val[0], value: val[2], position_source: val[0])}
 
-  enum_value: IDENTIFIER { return make_node(:Enum, name: val[0])}
+  enum_value: IDENTIFIER { return make_node(:Enum, name: val[0], position_source: val[0])}
 
   directives_list_opt:
       /* none */      { return [] }
@@ -161,17 +165,18 @@ rule
       directive                 { return [val[0]] }
     | directives_list directive { val[0] << val[1] }
 
-  directive: DIR_SIGN name arguments_opt { return make_node(:Directive, name: val[1], arguments: val[2]) }
+  directive: DIR_SIGN name arguments_opt { return make_node(:Directive, name: val[1], arguments: val[2], position_source: val[0]) }
 
   fragment_spread:
-      ELLIPSIS name directives_list_opt { return make_node(:FragmentSpread, name: val[1], directives: val[2]) }
+      ELLIPSIS name directives_list_opt { return make_node(:FragmentSpread, name: val[1], directives: val[2], position_source: val[0]) }
 
   inline_fragment:
     ELLIPSIS ON name directives_list_opt selection_set {
       return make_node(:InlineFragment, {
         type: val[2],
         directives: val[3],
-        selections: val[4]
+        selections: val[4],
+        position_source: val[0]
       })
     }
 
@@ -182,6 +187,7 @@ rule
           type:       val[3],
           directives: val[4],
           selections: val[5],
+          position_source: val[0],
         }
       )
     }
@@ -189,16 +195,55 @@ end
 
 ---- header ----
 
-require_relative './lex.rex'
 
 ---- inner ----
 
-def make_node(node_name, assigns = {})
-  GraphQL::Language::Nodes.const_get(node_name).new(assigns)
+def initialize(query_string)
+  @query_string = query_string
+end
+
+def parse_document
+  @document ||= begin
+    @tokens ||= GraphQL::Language::Lexer.tokenize(@query_string)
+    if @tokens.none?
+      make_node(:Document, definitions: [])
+    else
+      do_parse
+    end
+  end
 end
 
 def self.parse(query_string)
-  self.new.scan_str(query_string)
-rescue Racc::ParseError => error
-  raise GraphQL::ParseError.new(error.message, nil, nil, query_string)
+  self.new(query_string).parse_document
+end
+
+private
+
+def next_token
+  lexer_token = @tokens.shift
+  if lexer_token.nil?
+    nil
+  else
+    [lexer_token.name, lexer_token]
+  end
+end
+
+def on_error(parser_token_id, lexer_token, vstack)
+  if lexer_token == "$"
+    raise GraphQL::ParseError.new("Unexpected end of document", nil, nil, @query_string)
+  else
+    parser_token_name = token_to_str(parser_token_id)
+    line, col = lexer_token.line_and_column
+    raise GraphQL::ParseError.new("Parse error on #{lexer_token.to_s.inspect} (#{parser_token_name}) at [#{line}, #{col}]", line, col, @query_string)
+  end
+end
+
+def make_node(node_name, assigns)
+  assigns.each do |key, value|
+    if key != :position_source && value.is_a?(GraphQL::Language::Token)
+      assigns[key] = value.to_s
+    end
+  end
+
+  GraphQL::Language::Nodes.const_get(node_name).new(assigns)
 end

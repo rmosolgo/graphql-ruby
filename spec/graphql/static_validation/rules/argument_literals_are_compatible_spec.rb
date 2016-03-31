@@ -32,7 +32,7 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
 
     directive_error = {
       "message"=>"Argument 'if' on Directive 'skip' has an invalid value",
-      "locations"=>[{"line"=>4, "column"=>31}]
+      "locations"=>[{"line"=>4, "column"=>30}]
     }
     assert_includes(errors, directive_error)
 
@@ -44,7 +44,7 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
 
     input_object_field_error = {
       "message"=>"Argument 'source' on InputObject 'DairyProductInput' has an invalid value",
-      "locations"=>[{"line"=>6, "column"=>41}]
+      "locations"=>[{"line"=>6, "column"=>40}]
     }
     assert_includes(errors, input_object_field_error)
 

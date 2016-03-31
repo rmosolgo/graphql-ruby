@@ -27,6 +27,6 @@ class GraphQL::StaticValidation::Message
   private
 
   def locations
-    @line.nil? && @col.nil ? [] : [{"line" => @line, "column" => @col}]
+    @line.nil? && @col.nil? ? [] : [{"line" => @line, "column" => @col}]
   end
 end

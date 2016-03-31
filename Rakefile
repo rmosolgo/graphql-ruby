@@ -34,7 +34,7 @@ task :console do
 end
 
 task :build_parser do
-  `rm lib/graphql/language/parse.tab.rb lib/graphql/language/lex.rex.rb`
-  `racc lib/graphql/language/parse.y`
-  `rex lib/graphql/language/lex.rex`
+  `rm lib/graphql/language/racc_parser.rb lib/graphql/language/lexer.rb `
+  `racc lib/graphql/language/parse.y -o lib/graphql/language/racc_parser.rb`
+  `ragel -R lib/graphql/language/lexer.rl`
 end

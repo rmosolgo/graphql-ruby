@@ -14,5 +14,5 @@ end
 
 guard 'rake', task: 'build_parser' do
   watch("lib/graphql/language/parse.y")
-  watch("lib/graphql/language/lex.rex")
+  watch("lib/graphql/language/lexer.rl")
 end

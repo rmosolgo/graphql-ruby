@@ -86,22 +86,6 @@ describe GraphQL::Query do
     assert_equal(GraphQL::Language::Nodes::FragmentDefinition, query.fragments['cheeseFields'].class)
   end
 
-  it 'correctly identifies parse error location' do
-    # "Correct" is a bit of an overstatement. All Parslet errors get surfaced
-    # at the beginning of the query they were in, since Parslet sees the query
-    # as invalid. It would be great to have more granularity here.
-    e = assert_raises(GraphQL::ParseError) do
-      GraphQL.parse("
-        query getCoupons {
-          allCoupons: {data{id}}
-        }
-      ")
-    end
-    assert_equal('Extra input after last repetition at line 2 char 9.', e.message)
-    assert_equal(2, e.line)
-    assert_equal(9, e.col)
-  end
-
   describe "merging fragments with different keys" do
     let(:query_string) { %|
       query getCheeseFieldsThroughDairy {
@@ -164,22 +148,6 @@ describe GraphQL::Query do
         },
       }}
       assert_equal(expected, result)
-    end
-  end
-
-  describe "malformed queries" do
-    describe "whitespace-only" do
-      let(:query_string) { " " }
-      it "doesn't blow up" do
-        assert_equal({}, result)
-      end
-    end
-
-    describe "empty string" do
-      let(:query_string) { "" }
-      it "doesn't blow up" do
-        assert_equal({}, result)
-      end
     end
   end
 
@@ -250,7 +218,7 @@ describe GraphQL::Query do
           "errors" => [
             {
               "message" => "Variable cheeseId of type Int! was provided invalid value",
-              "locations"=>[{ "line" => 2, "column" => 24 }],
+              "locations"=>[{ "line" => 2, "column" => 23 }],
               "value" => "2",
               "problems" => [{ "path" => [], "explanation" => 'Could not coerce value "2" to Int' }]
             }
@@ -268,7 +236,7 @@ describe GraphQL::Query do
           "errors" => [
             {
               "message" => "Variable cheeseId of type Int! was provided invalid value",
-              "locations" => [{"line" => 2, "column" => 24}],
+              "locations" => [{"line" => 2, "column" => 23}],
               "value" => nil,
               "problems" => [{ "path" => [], "explanation" => "Expected value to not be null" }]
             }

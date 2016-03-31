@@ -7,22 +7,61 @@
 require 'racc/parser.rb'
 
 
-require_relative './lex.rex'
 
 module GraphQL
   module Language
     class RaccParser < Racc::Parser
 
-module_eval(<<'...end parse.y/module_eval...', 'parse.y', 195)
+module_eval(<<'...end parse.y/module_eval...', 'parse.y', 200)
 
-def make_node(node_name, assigns = {})
-  GraphQL::Language::Nodes.const_get(node_name).new(assigns)
+def initialize(query_string)
+  @query_string = query_string
+end
+
+def parse_document
+  @document ||= begin
+    @tokens ||= GraphQL::Language::Lexer.tokenize(@query_string)
+    if @tokens.none?
+      make_node(:Document, definitions: [])
+    else
+      do_parse
+    end
+  end
 end
 
 def self.parse(query_string)
-  self.new.scan_str(query_string)
-rescue Racc::ParseError => error
-  raise GraphQL::ParseError.new(error.message, nil, nil, query_string)
+  self.new(query_string).parse_document
+end
+
+private
+
+def next_token
+  lexer_token = @tokens.shift
+  if lexer_token.nil?
+    nil
+  else
+    [lexer_token.name, lexer_token]
+  end
+end
+
+def on_error(parser_token_id, lexer_token, vstack)
+  if lexer_token == "$"
+    raise GraphQL::ParseError.new("Unexpected end of document", nil, nil, @query_string)
+  else
+    parser_token_name = token_to_str(parser_token_id)
+    line, col = lexer_token.line_and_column
+    raise GraphQL::ParseError.new("Parse error on #{lexer_token.to_s.inspect} (#{parser_token_name}) at [#{line}, #{col}]", line, col, @query_string)
+  end
+end
+
+def make_node(node_name, assigns)
+  assigns.each do |key, value|
+    if key != :position_source && value.is_a?(GraphQL::Language::Token)
+      assigns[key] = value.to_s
+    end
+  end
+
+  GraphQL::Language::Nodes.const_get(node_name).new(assigns)
 end
 ...end parse.y/module_eval...
 ##### State transition tables begin ###
@@ -353,6 +392,7 @@ module_eval(<<'.,.,', 'parse.y', 16)
             variables:      val[2],
             directives:     val[3],
             selections:     val[4],
+            position_source: val[0],
           }
         )
       
@@ -360,12 +400,12 @@ module_eval(<<'.,.,', 'parse.y', 16)
   end
 .,.,
 
-module_eval(<<'.,.,', 'parse.y', 27)
+module_eval(<<'.,.,', 'parse.y', 28)
   def _reduce_8(val, _values, result)
             return make_node(
           :OperationDefinition, {
             operation_type: "query",
-            selections: val[0]
+            selections: val[0],
           }
         )
       
@@ -373,7 +413,7 @@ module_eval(<<'.,.,', 'parse.y', 27)
   end
 .,.,
 
-module_eval(<<'.,.,', 'parse.y', 36)
+module_eval(<<'.,.,', 'parse.y', 37)
   def _reduce_9(val, _values, result)
      return nil 
     result
@@ -382,110 +422,111 @@ module_eval(<<'.,.,', 'parse.y', 36)
 
 # reduce 10 omitted
 
-module_eval(<<'.,.,', 'parse.y', 40)
+module_eval(<<'.,.,', 'parse.y', 41)
   def _reduce_11(val, _values, result)
      return [] 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'parse.y', 41)
+module_eval(<<'.,.,', 'parse.y', 42)
   def _reduce_12(val, _values, result)
      return val[1] 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'parse.y', 44)
+module_eval(<<'.,.,', 'parse.y', 45)
   def _reduce_13(val, _values, result)
      return [val[0]] 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'parse.y', 45)
+module_eval(<<'.,.,', 'parse.y', 46)
   def _reduce_14(val, _values, result)
      val[0] << val[1] 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'parse.y', 49)
+module_eval(<<'.,.,', 'parse.y', 50)
   def _reduce_15(val, _values, result)
             return make_node(:VariableDefinition, {
           name: val[1],
           type: val[3],
           default_value: val[4],
+          position_source: val[0],
         })
       
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'parse.y', 57)
+module_eval(<<'.,.,', 'parse.y', 59)
   def _reduce_16(val, _values, result)
      return make_node(:TypeName, name: val[0])
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'parse.y', 58)
+module_eval(<<'.,.,', 'parse.y', 60)
   def _reduce_17(val, _values, result)
      return make_node(:NonNullType, of_type: val[0]) 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'parse.y', 59)
+module_eval(<<'.,.,', 'parse.y', 61)
   def _reduce_18(val, _values, result)
      return make_node(:ListType, of_type: val[1]) 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'parse.y', 62)
+module_eval(<<'.,.,', 'parse.y', 64)
   def _reduce_19(val, _values, result)
      return nil 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'parse.y', 63)
+module_eval(<<'.,.,', 'parse.y', 65)
   def _reduce_20(val, _values, result)
      return val[1] 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'parse.y', 65)
+module_eval(<<'.,.,', 'parse.y', 67)
   def _reduce_21(val, _values, result)
      return val[1] 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'parse.y', 68)
+module_eval(<<'.,.,', 'parse.y', 70)
   def _reduce_22(val, _values, result)
      return [] 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'parse.y', 69)
+module_eval(<<'.,.,', 'parse.y', 71)
   def _reduce_23(val, _values, result)
      return val[0] 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'parse.y', 72)
+module_eval(<<'.,.,', 'parse.y', 74)
   def _reduce_24(val, _values, result)
      return [result] 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'parse.y', 73)
+module_eval(<<'.,.,', 'parse.y', 75)
   def _reduce_25(val, _values, result)
      val[0] << val[1] 
     result
@@ -498,7 +539,7 @@ module_eval(<<'.,.,', 'parse.y', 73)
 
 # reduce 28 omitted
 
-module_eval(<<'.,.,', 'parse.y', 82)
+module_eval(<<'.,.,', 'parse.y', 84)
   def _reduce_29(val, _values, result)
                 return make_node(
               :Field, {
@@ -506,6 +547,7 @@ module_eval(<<'.,.,', 'parse.y', 82)
                 arguments:    val[1],
                 directives:   val[2],
                 selections:   val[3],
+                position_source: val[0],
               }
             )
           
@@ -513,7 +555,7 @@ module_eval(<<'.,.,', 'parse.y', 82)
   end
 .,.,
 
-module_eval(<<'.,.,', 'parse.y', 92)
+module_eval(<<'.,.,', 'parse.y', 95)
   def _reduce_30(val, _values, result)
                 return make_node(
               :Field, {
@@ -522,6 +564,7 @@ module_eval(<<'.,.,', 'parse.y', 92)
                 arguments:    val[3],
                 directives:   val[4],
                 selections:   val[5],
+                position_source: val[0],
               }
             )
           
@@ -539,70 +582,70 @@ module_eval(<<'.,.,', 'parse.y', 92)
 
 # reduce 35 omitted
 
-module_eval(<<'.,.,', 'parse.y', 111)
+module_eval(<<'.,.,', 'parse.y', 115)
   def _reduce_36(val, _values, result)
      return [] 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'parse.y', 112)
+module_eval(<<'.,.,', 'parse.y', 116)
   def _reduce_37(val, _values, result)
      return val[1] 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'parse.y', 115)
+module_eval(<<'.,.,', 'parse.y', 119)
   def _reduce_38(val, _values, result)
      return [val[0]] 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'parse.y', 116)
+module_eval(<<'.,.,', 'parse.y', 120)
   def _reduce_39(val, _values, result)
      val[0] << val[1] 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'parse.y', 119)
+module_eval(<<'.,.,', 'parse.y', 123)
   def _reduce_40(val, _values, result)
-     return make_node(:Argument, name: val[0], value: val[2])
+     return make_node(:Argument, name: val[0], value: val[2], position_source: val[0])
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'parse.y', 122)
+module_eval(<<'.,.,', 'parse.y', 126)
   def _reduce_41(val, _values, result)
      return val[0].to_f 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'parse.y', 123)
+module_eval(<<'.,.,', 'parse.y', 127)
   def _reduce_42(val, _values, result)
      return val[0].to_i 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'parse.y', 124)
+module_eval(<<'.,.,', 'parse.y', 128)
   def _reduce_43(val, _values, result)
      return val[0] 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'parse.y', 125)
+module_eval(<<'.,.,', 'parse.y', 129)
   def _reduce_44(val, _values, result)
      return true 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'parse.y', 126)
+module_eval(<<'.,.,', 'parse.y', 130)
   def _reduce_45(val, _values, result)
      return false 
     result
@@ -617,84 +660,84 @@ module_eval(<<'.,.,', 'parse.y', 126)
 
 # reduce 49 omitted
 
-module_eval(<<'.,.,', 'parse.y', 132)
+module_eval(<<'.,.,', 'parse.y', 136)
   def _reduce_50(val, _values, result)
-     return make_node(:VariableIdentifier, name: val[1]) 
+     return make_node(:VariableIdentifier, name: val[1], position_source: val[0]) 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'parse.y', 135)
+module_eval(<<'.,.,', 'parse.y', 139)
   def _reduce_51(val, _values, result)
      return [] 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'parse.y', 136)
+module_eval(<<'.,.,', 'parse.y', 140)
   def _reduce_52(val, _values, result)
      return val[1] 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'parse.y', 139)
+module_eval(<<'.,.,', 'parse.y', 143)
   def _reduce_53(val, _values, result)
      return [val[0]] 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'parse.y', 140)
+module_eval(<<'.,.,', 'parse.y', 144)
   def _reduce_54(val, _values, result)
      val[0] << val[1] 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'parse.y', 143)
-  def _reduce_55(val, _values, result)
-     return make_node(:InputObject, arguments: [])
-    result
-  end
-.,.,
-
-module_eval(<<'.,.,', 'parse.y', 144)
-  def _reduce_56(val, _values, result)
-     return make_node(:InputObject, arguments: val[1])
-    result
-  end
-.,.,
-
 module_eval(<<'.,.,', 'parse.y', 147)
+  def _reduce_55(val, _values, result)
+     return make_node(:InputObject, arguments: [], position_source: val[0])
+    result
+  end
+.,.,
+
+module_eval(<<'.,.,', 'parse.y', 148)
+  def _reduce_56(val, _values, result)
+     return make_node(:InputObject, arguments: val[1], position_source: val[0])
+    result
+  end
+.,.,
+
+module_eval(<<'.,.,', 'parse.y', 151)
   def _reduce_57(val, _values, result)
      return [val[0]] 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'parse.y', 148)
+module_eval(<<'.,.,', 'parse.y', 152)
   def _reduce_58(val, _values, result)
      val[0] << val[1] 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'parse.y', 151)
+module_eval(<<'.,.,', 'parse.y', 155)
   def _reduce_59(val, _values, result)
-     return make_node(:Argument, name: val[0], value: val[2])
+     return make_node(:Argument, name: val[0], value: val[2], position_source: val[0])
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'parse.y', 153)
+module_eval(<<'.,.,', 'parse.y', 157)
   def _reduce_60(val, _values, result)
-     return make_node(:Enum, name: val[0])
+     return make_node(:Enum, name: val[0], position_source: val[0])
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'parse.y', 156)
+module_eval(<<'.,.,', 'parse.y', 160)
   def _reduce_61(val, _values, result)
      return [] 
     result
@@ -703,53 +746,55 @@ module_eval(<<'.,.,', 'parse.y', 156)
 
 # reduce 62 omitted
 
-module_eval(<<'.,.,', 'parse.y', 160)
+module_eval(<<'.,.,', 'parse.y', 164)
   def _reduce_63(val, _values, result)
      return [val[0]] 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'parse.y', 161)
+module_eval(<<'.,.,', 'parse.y', 165)
   def _reduce_64(val, _values, result)
      val[0] << val[1] 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'parse.y', 163)
+module_eval(<<'.,.,', 'parse.y', 167)
   def _reduce_65(val, _values, result)
-     return make_node(:Directive, name: val[1], arguments: val[2]) 
-    result
-  end
-.,.,
-
-module_eval(<<'.,.,', 'parse.y', 166)
-  def _reduce_66(val, _values, result)
-     return make_node(:FragmentSpread, name: val[1], directives: val[2]) 
+     return make_node(:Directive, name: val[1], arguments: val[2], position_source: val[0]) 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parse.y', 170)
+  def _reduce_66(val, _values, result)
+     return make_node(:FragmentSpread, name: val[1], directives: val[2], position_source: val[0]) 
+    result
+  end
+.,.,
+
+module_eval(<<'.,.,', 'parse.y', 174)
   def _reduce_67(val, _values, result)
           return make_node(:InlineFragment, {
         type: val[2],
         directives: val[3],
-        selections: val[4]
+        selections: val[4],
+        position_source: val[0]
       })
     
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'parse.y', 179)
+module_eval(<<'.,.,', 'parse.y', 184)
   def _reduce_68(val, _values, result)
           return make_node(:FragmentDefinition, {
           name:       val[1],
           type:       val[3],
           directives: val[4],
           selections: val[5],
+          position_source: val[0],
         }
       )
     

@@ -22,10 +22,10 @@ describe GraphQL::StaticValidation::DirectivesAreDefined do
       expected = [
         {
           "message"=>"Directive @nonsense is not defined",
-          "locations"=>[{"line"=>5, "column"=>17}]
+          "locations"=>[{"line"=>5, "column"=>16}]
         }, {
           "message"=>"Directive @moreNonsense is not defined",
-          "locations"=>[{"line"=>7, "column"=>19}]
+          "locations"=>[{"line"=>7, "column"=>18}]
         }
       ]
       assert_equal(expected, errors)
