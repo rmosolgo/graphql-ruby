@@ -15,6 +15,7 @@
        obj.order(args[:order])
      }
    end
+   ```
 
 ### Bug Fix
 
