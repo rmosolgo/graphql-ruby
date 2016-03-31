@@ -16,6 +16,3 @@ Minitest.backtrace_filter = Minitest::BacktraceFilter.new
 
 # # Load support files
 Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each { |f| require f }
-
-require 'parslet'
-require 'parslet/convenience'

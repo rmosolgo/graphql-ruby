@@ -1,5 +1,4 @@
 require "json"
-require "parslet"
 require "set"
 require "singleton"
 require "forwardable"
@@ -25,20 +24,8 @@ module GraphQL
     parse_with_racc(query_string)
   end
 
-  def self.parse_with_parslet(string)
-    tree = GraphQL::PARSER.parse(string)
-    document = GraphQL::TRANSFORM.apply(tree)
-    if !document.is_a?(GraphQL::Language::Nodes::Document)
-      raise("Parse failed! Sorry, somehow we failed to turn this string into a document. Please report this bug!")
-    end
-    document
-  rescue Parslet::ParseFailed => error
-    line, col = error.cause.source.line_and_column(error.cause.pos)
-    raise GraphQL::ParseError.new(error.message, line, col, string)
-  end
-
   def self.parse_with_racc(string)
-    GraphQL::Language::RaccParser.parse(string)
+    GraphQL::Language::Parser.parse(string)
   end
 end
 

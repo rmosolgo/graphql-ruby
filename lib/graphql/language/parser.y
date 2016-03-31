@@ -1,4 +1,4 @@
-class GraphQL::Language::RaccParser
+class GraphQL::Language::Parser
 rule
   target: document
 

@@ -138,7 +138,6 @@ https://medium.com/@gauravtiwari/graphql-and-relay-on-rails-first-relay-powered-
 - Type lookup should be by type name (to support reloaded constants in Rails code)
 - Add a complexity validator (reject queries if they're too big)
 - Add docs for shared behaviors & DRY code
-- Add line & col tracking for RaccParser
 - Revamp the fixture Schema to be more useful (better names, more extensible)
 - __Subscriptions__
   - This is a good chance to make an `Operation` abstraction of which `query`, `mutation` and `subscription` are members

@@ -17,8 +17,6 @@ Gem::Specification.new do |s|
   s.files = Dir["{lib}/**/*", "MIT-LICENSE", "readme.md"]
   s.test_files = Dir["spec/**/*"]
 
-  s.add_runtime_dependency "parslet", "~> 1.6"
-
   s.add_development_dependency "codeclimate-test-reporter", '~>0.4'
   s.add_development_dependency "pry", "~> 0.10"
   s.add_development_dependency "guard", "~> 2.12"
