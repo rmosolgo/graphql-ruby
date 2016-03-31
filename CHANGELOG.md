@@ -1,5 +1,25 @@
 # graphql-relay
 
+## 0.9.0 (30 Mar 2016)
+
+### Breaking change
+
+- Remove the `order` argument from connection fields. This isn't part of the spec and shouldn't have been there in the first place!
+
+  You can implement this behavior with a custom argument, for example:
+
+   ```ruby
+   field :cities, CityType.connection_type do
+     argument :order, types.String, default_value: "name"
+     resolve -> (obj, args, ctx) {
+       obj.order(args[:order])
+     }
+   end
+
+### Bug Fix
+
+- Include the MIT license in the project's source
+
 ## 0.8.1 (22 Mar 2016)
 
 ### Bug Fix
