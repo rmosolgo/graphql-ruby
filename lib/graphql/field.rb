@@ -89,6 +89,8 @@ class GraphQL::Field
   #
   # This is important because {#name} may be used by {#resolve}.
   def name=(new_name)
+    raise ArgumentError.new("GraphQL field names must be strings; cannot use #{new_name.inspect} (#{new_name.class.name}) as a field name.") unless new_name.is_a?(String)
+    
     if @name.nil?
       @name = new_name
     else
