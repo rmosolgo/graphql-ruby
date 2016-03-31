@@ -43,8 +43,8 @@ class GraphQL::StaticValidation::FieldsWillMerge
         else
           visited_fragments << field.name
         end
-        fragment = context.fragments[field.name]
-        next_fields = fragment.selections
+        fragment_defn = context.fragments[field.name]
+        next_fields = fragment_defn ? fragment_defn.selections : []
       else
         name_in_selection = field.alias || field.name
         field_map[name_in_selection] ||= []

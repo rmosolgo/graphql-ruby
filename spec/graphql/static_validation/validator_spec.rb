@@ -45,5 +45,23 @@ describe GraphQL::StaticValidation::Validator do
         assert_equal(1, errors.length)
       end
     end
+
+    describe "fragment spreads with no selections" do
+      let(:query_string) {%|
+        query SimpleQuery {
+          cheese(id: 1) {
+            # OK:
+            ... {
+              id
+            }
+            # NOT OK:
+            ...cheeseFields
+          }
+        }
+      |}
+      it "marks an error" do
+        assert_equal(1, errors.length)
+      end
+    end
   end
 end
