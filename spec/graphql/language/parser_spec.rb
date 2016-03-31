@@ -16,6 +16,9 @@ describe GraphQL::Language::Parser do
         anotherField
       }
 
+      ... {
+        id
+      }
     }
 
     fragment moreNestedFields on NestedType @or(something: "ok") {
@@ -68,7 +71,7 @@ describe GraphQL::Language::Parser do
         assert_equal "getStuff", query.name
         assert_equal "query", query.operation_type
         assert_equal 2, query.variables.length
-        assert_equal 3, query.selections.length
+        assert_equal 4, query.selections.length
         assert_equal 1, query.directives.length
         assert_equal [2, 5], [query.line, query.col]
       end
@@ -79,7 +82,7 @@ describe GraphQL::Language::Parser do
         assert_equal 1, fragment_def.selections.length
         assert_equal "NestedType", fragment_def.type
         assert_equal 1, fragment_def.directives.length
-        assert_equal [17, 5], fragment_def.position
+        assert_equal [20, 5], fragment_def.position
       end
 
       describe "variable definitions" do
@@ -166,10 +169,18 @@ describe GraphQL::Language::Parser do
 
       describe "inline fragments" do
         let(:inline_fragment) { query.selections[2] }
+        let(:typeless_inline_fragment) { query.selections[3] }
+
         it "gets the type and directives" do
           assert_equal "OtherType", inline_fragment.type
           assert_equal 2, inline_fragment.selections.length
           assert_equal 1, inline_fragment.directives.length
+        end
+
+        it "gets inline fragments without type conditions" do
+          assert_equal nil, typeless_inline_fragment.type
+          assert_equal 1, typeless_inline_fragment.selections.length
+          assert_equal 0, typeless_inline_fragment.directives.length
         end
 
         it "gets position info" do
