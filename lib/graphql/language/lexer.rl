@@ -72,6 +72,14 @@ module GraphQL
         run_lexer(query_string)
       end
 
+      # Replace any escaped unicode or whitespace with the _actual_ characters
+      # To avoid allocating more strings, this modifies the string passed into it
+      def self.replace_escaped_characters_in_place(raw_string)
+        raw_string.gsub!(ESCAPES, ESCAPES_REPLACE)
+        raw_string.gsub!(UTF_8, &UTF_8_REPLACE)
+        nil
+      end
+
       private
 
       %% write data;
@@ -126,8 +134,7 @@ module GraphQL
 
       def self.emit_string(ts, te, meta)
         value = meta[:data][ts...te].pack("c*").force_encoding("UTF-8")
-        value.gsub!(ESCAPES, ESCAPES_REPLACE)
-        value.gsub!(UTF_8, &UTF_8_REPLACE)
+        replace_escaped_characters_in_place(value)
 
         meta[:tokens] << GraphQL::Language::Token.new(
           name: :STRING,

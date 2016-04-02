@@ -12,10 +12,18 @@ module GraphQL
         run_lexer(query_string)
       end
 
+      # Replace any escaped unicode or whitespace with the _actual_ characters
+      # To avoid allocating more strings, this modifies the string passed into it
+      def self.replace_escaped_characters_in_place(raw_string)
+        raw_string.gsub!(ESCAPES, ESCAPES_REPLACE)
+        raw_string.gsub!(UTF_8, &UTF_8_REPLACE)
+        nil
+      end
+
       private
 
       
-# line 19 "lib/graphql/language/lexer.rb"
+# line 27 "lib/graphql/language/lexer.rb"
 class << self
 	attr_accessor :_graphql_lexer_actions
 	private :_graphql_lexer_actions, :_graphql_lexer_actions=
@@ -220,7 +228,7 @@ end
 self.graphql_lexer_en_main = 9;
 
 
-# line 78 "lib/graphql/language/lexer.rl"
+# line 86 "lib/graphql/language/lexer.rl"
 
       def self.run_lexer(query_string)
         data = query_string.unpack("c*")
@@ -234,7 +242,7 @@ self.graphql_lexer_en_main = 9;
         }
 
         
-# line 238 "lib/graphql/language/lexer.rb"
+# line 246 "lib/graphql/language/lexer.rb"
 begin
 	p ||= 0
 	pe ||= data.length
@@ -244,14 +252,14 @@ begin
 	act = 0
 end
 
-# line 91 "lib/graphql/language/lexer.rl"
+# line 99 "lib/graphql/language/lexer.rl"
 
         emit_token = -> (name) {
           emit(name, ts, te, meta)
         }
 
         
-# line 255 "lib/graphql/language/lexer.rb"
+# line 263 "lib/graphql/language/lexer.rb"
 begin
 	_klen, _trans, _keys, _acts, _nacts = nil
 	_goto_level = 0
@@ -285,7 +293,7 @@ begin
 		begin
 ts = p
 		end
-# line 289 "lib/graphql/language/lexer.rb"
+# line 297 "lib/graphql/language/lexer.rb"
 		end # from state action switch
 	end
 	if _trigger_goto
@@ -556,7 +564,7 @@ end
  emit_token.call(:IDENTIFIER) end
 end 
 			end
-# line 560 "lib/graphql/language/lexer.rb"
+# line 568 "lib/graphql/language/lexer.rb"
 			end # action switch
 		end
 	end
@@ -581,7 +589,7 @@ when 1 then
 		begin
 act = 0
 		end
-# line 585 "lib/graphql/language/lexer.rb"
+# line 593 "lib/graphql/language/lexer.rb"
 		end # to state action switch
 	end
 	if _trigger_goto
@@ -612,7 +620,7 @@ end
 	end
 	end
 
-# line 97 "lib/graphql/language/lexer.rl"
+# line 105 "lib/graphql/language/lexer.rl"
 
         meta[:tokens]
       end
@@ -645,8 +653,7 @@ end
 
       def self.emit_string(ts, te, meta)
         value = meta[:data][ts...te].pack("c*").force_encoding("UTF-8")
-        value.gsub!(ESCAPES, ESCAPES_REPLACE)
-        value.gsub!(UTF_8, &UTF_8_REPLACE)
+        replace_escaped_characters_in_place(value)
 
         meta[:tokens] << GraphQL::Language::Token.new(
           name: :STRING,
