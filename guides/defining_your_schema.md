@@ -143,16 +143,16 @@ Input objects are composed of fields. Their fields may contain:
 ShirtOrderInput = GraphQL::InputObjectType.define do
   name "ShirtOrder"
   description "An order for some t-shirts"
-  field :model_id, !types.ID
+  input_field :model_id, !types.ID
   # A list of other inputs:
-  field :selections, -> { types[ShirtOrderSelectionInput] }
+  input_field :selections, -> { types[ShirtOrderSelectionInput] }
 end
 
 ShirtOrderSelectionInput = GraphQL::InputObjectType.define do
   name "ShirtOrderSelection"
   description "A quantity & size to order for a given shirt"
-  field :quantity, !types.Int
-  field :size, !ShirtSizeEnum
+  input_field :quantity, !types.Int
+  input_field :size, !ShirtSizeEnum
 end
 ```
 
