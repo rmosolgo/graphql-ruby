@@ -27,6 +27,9 @@ describe GraphQL::Relay::RelationConnection do
           node {
             name
           }
+        },
+        pageInfo {
+          hasNextPage
         }
       }
     |}
@@ -82,6 +85,12 @@ describe GraphQL::Relay::RelationConnection do
 
       result = query(query_string, "last" => 1, "nameIncludes" => "ea", "before" => before)
       assert_equal(["Death Star"], get_names(result))
+    end
+
+    it 'works without first/last/after/before' do
+      result = query(query_string)
+
+      assert_equal(false, result["data"]["empire"]["bases"]["pageInfo"]["hasNextPage"])
     end
 
     it "applies the maximum limit for relation connection types" do
