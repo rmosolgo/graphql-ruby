@@ -1,9 +1,5 @@
-require 'graphql/language/parser'
-require 'graphql/language/transform'
+require 'graphql/language/lexer'
 require 'graphql/language/nodes'
+require 'graphql/language/parser'
+require 'graphql/language/token'
 require 'graphql/language/visitor'
-
-module GraphQL
-  TRANSFORM = GraphQL::Language::Transform.new
-  PARSER = GraphQL::Language::Parser.new
-end

@@ -26,11 +26,11 @@ describe GraphQL::StaticValidation::DirectivesAreInValidLocations do
       expected = [
         {
           "message"=> "'@skip' can't be applied to queries (allowed: fields, fragment spreads, inline fragments)",
-          "locations"=>[{"line"=>2, "column"=>22}]
+          "locations"=>[{"line"=>2, "column"=>21}]
         },
         {
           "message"=>"'@skip' can't be applied to fragment definitions (allowed: fields, fragment spreads, inline fragments)",
-          "locations"=>[{"line"=>12, "column"=>34}]
+          "locations"=>[{"line"=>12, "column"=>33}]
         },
       ]
       assert_equal(expected, errors)

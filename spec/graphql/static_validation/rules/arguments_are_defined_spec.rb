@@ -29,7 +29,7 @@ describe GraphQL::StaticValidation::ArgumentsAreDefined do
 
     input_obj_record = {
       "message"=>"InputObject 'DairyProductInput' doesn't accept argument 'wacky'",
-      "locations"=>[{"line"=>5, "column"=>30}]
+      "locations"=>[{"line"=>5, "column"=>29}]
     }
     assert_includes(errors, input_obj_record)
 
@@ -41,7 +41,7 @@ describe GraphQL::StaticValidation::ArgumentsAreDefined do
 
     directive_error = {
       "message"=>"Directive 'skip' doesn't accept argument 'something'",
-      "locations"=>[{"line"=>10, "column"=>11}]
+      "locations"=>[{"line"=>10, "column"=>10}]
     }
     assert_includes(errors, directive_error)
   end

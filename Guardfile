@@ -11,3 +11,8 @@ guard :minitest do
   watch(%r{^spec/spec_helper\.rb})  { 'spec' }
   watch(%r{^spec/support/.*\.rb})   { 'spec' }
 end
+
+guard 'rake', task: 'build_parser' do
+  watch("lib/graphql/language/parser.y")
+  watch("lib/graphql/language/lexer.rl")
+end

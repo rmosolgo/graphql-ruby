@@ -1,139 +1,308 @@
 require 'spec_helper'
 
 describe GraphQL::Language::Parser do
-  let(:parser) { GraphQL::PARSER }
+  let(:document) { GraphQL::Language::Parser.parse(query_string) }
+  let(:query_string) {%|
+    query getStuff($someVar: Int = 1, $anotherVar: [String!] ) @skip(if: false) {
+      myField: someField(someArg: $someVar, ok: 1.4) @skip(if: $anotherVar) @thing(or: "Whatever")
 
-  it 'parses documents' do
-    assert(parser.parse_with_debug(%|
-    # let's make a big query:
-    # a read-only:
-    query getStuff {id, name @skip(if: true)}
-    # a mutation:
-    mutation changeStuff(
-      $override: Boolean = true,
-      $cucumbers: [Vegetable]!,
-      $input: SomeInputType = {key: "value"},
-    ) @veggie, @healthy(vitamins: true) {
-      # change the cucumber
-      changeStuff(
-        thing: $cucumbers
-      ) {
-        id,
-        name,
-        ... on Species { color },
-        ... family # background info, of course
-        ... @skip(if: true) { inlineFragSkip },
+      anotherField(someArg: [1,2,3]) {
+        nestedField
+        ... moreNestedFields @skip(if: true)
       }
-    }
-    subscription watchStuff {
-      field(emptyObj: {}), otherField
-    }
 
-    # a fragment:
-    fragment family on Species {
-      family {
-        name,                                     # name of the family
-        members(first: 3, query: {isPlant: true}) # some of the other examples
+      ... on OtherType @include(unless: false){
+        field(arg: [{key: "value", anotherKey: 0.9, anotherAnotherKey: WHATEVER}])
+        anotherField
+      }
+
+      ... {
+        id
       }
     }
 
-    fragment nonsense on NonsenseType @skip(if: true) { bogus }
-    |), 'gets a document with lots of comments')
+    fragment moreNestedFields on NestedType @or(something: "ok") {
+      anotherNestedField
+    }
+  |}
 
-    assert(parser.parse_with_debug("{fields, only, inThisOne}"), 'fetch-only query')
-  end
+  describe '.parse' do
+    let(:_query_string) { '
+        query getStuff($fragment: Int!, $false: String = "h\"😸i") @skip(ok: 1) {
+          myField(
+            arg1: 4.5,
+            arg2: -3,
+            arg3: "hello ☀︎ \uD83C\uDF40",
+            arg4: 4.5e-12,
+            arg5: true
+            arg6: $false
+            arg7: [true, false],
+            arg8: {key: "val", ok: true, whatever: $fragment}
+            arg9: ENUM_VALUE
+          ) {
+            aliasName: childField @skip(on: true)
+            ... description
+          },
+          # Comment!
+          #
+          otherField
+        }
 
+        fragment thingStuff on Thing {
+          whatever
+        }
+      '}
 
-  it 'parses operation definitions' do
-    assert(parser.operation_definition.parse_with_debug(%|{id, name, ...people}|), "just a selection")
-    assert(parser.operation_definition.parse_with_debug(%|query personStuff {id, name, ...people, ... stuff}|), "named fetch")
-    assert(parser.operation_definition.parse_with_debug(%|subscription personStuff @flagDirective {id, name, ...people}|), "with a directive")
-    assert(parser.operation_definition.parse_with_debug(%|mutation changeStuff($stuff: Int = 1 $things: [SomeType]! = [{something: 1}, {something: 2}], $another: Sometype = {something: 3}) { id }|), "mutation with arguments")
-    assert(parser.operation_definition.parse_with_debug(%|mutation { id }|), "unnamed")
-  end
-
-  it 'parses fragment definitions' do
-    assert(parser.fragment_definition.parse_with_debug(%|fragment nutritionFacts on Food { fat, sodium, carbohydrates, vitamins { a, b } }|))
-    assert(parser.fragment_definition.parse_with_debug(%|fragment nutritionFacts on Food @directive(key: 1) { fat, sodium, carbohydrates, vitamins { a, b } }|), 'gets directives')
-  end
-
-  it 'parses selections' do
-    assert(parser.selections.parse_with_debug(%|{id, name, people { count }}|), 'gets nested fields')
-    assert(parser.selections.parse_with_debug(%|{id, ... myFragment }|), 'gets fragment spreads')
-    assert(parser.selections.parse_with_debug(%|{id, ... on User @myFlag { name, photo } }|), 'gets inline fragments')
-    assert(parser.selections.parse_with_debug(%|{id @skip(if: true), ... myFragment @include(if: $something)}|), 'gets directives')
-  end
-
-  it 'parses directives' do
-    assert(parser.directives.parse_with_debug("@doSomething"), 'gets without argument')
-    assert(parser.directives.parse_with_debug('@doSomething(why: "\"forSomeReason\"")'), 'gets with argument')
-    assert(parser.directives.parse_with_debug('@myFlag, @doSomething(why: "forSomeReason")'), 'gets multiple')
-  end
-
-  it 'parses fields' do
-    assert(parser.field.parse_with_debug(%|myField { name, id }|), 'gets subselections')
-    assert(parser.field.parse_with_debug(%{myAlias: myField}), 'gets an alias')
-    assert(parser.field.parse_with_debug(%{myField(intKey: 1, floatKey: 1.1e5)}), 'gets arguments')
-    assert(parser.field.parse_with_debug('myAlias: myField(stringKey: "\"my_string\"", emptyStringKey: "", boolKey: false, objKey: { key : true }, otherObjKey: {key: true})'), 'gets alias and arguments')
-    assert(parser.field.parse_with_debug(%|myField @withFlag, @skip(if: true) { name, id }|), 'gets with directive')
-  end
-
-  it 'parses variable definitions' do
-    assert(parser.operation_variable_definition.parse_with_debug("$myVar: Boolean = true"), "it gets variables with defaults")
-    assert(parser.operation_variable_definition.parse_with_debug("$myVar: [Int]"), "it gets list variables")
-    assert(parser.operation_variable_definition.parse_with_debug("$myVar: Elephant!"), "it gets non-null variables")
-    assert(parser.operation_variable_definition.parse_with_debug("$myVar: [Food]!"), "it gets non-null list variables")
-    assert(parser.operation_variable_definitions.parse_with_debug(%|($myVar: Elephant!, $myList: [Float], $myString: String = "Cheese")|), "it gets a list of defns")
-  end
-
-  describe 'value' do
-    it 'gets ints' do
-      assert(parser.value.parse_with_debug("100"), 'positive')
-      assert(parser.value.parse_with_debug("-9"), 'negative')
-      assert(parser.value.parse_with_debug("0"), 'zero')
+    it 'parses queries' do
+      assert document
     end
 
-    it 'gets floats' do
-      assert(parser.value.parse_with_debug("1.14"), 'no exponent')
-      assert(parser.value.parse_with_debug("6.7e-9"), 'negative exponent')
-      assert(parser.value.parse_with_debug("6.7e+9"), 'positive exponent')
-      assert(parser.value.parse_with_debug("0.4e12"), 'exponent')
-      assert(parser.value.parse_with_debug("6.7E+9"), 'big e')
+    describe "visited nodes" do
+      let(:query) { document.definitions.first }
+      let(:fragment_def) { document.definitions.last }
+
+      it "creates a valid document" do
+        assert document.is_a?(GraphQL::Language::Nodes::Document)
+        assert_equal 2, document.definitions.length
+      end
+
+      it "creates a valid operation" do
+        assert query.is_a?(GraphQL::Language::Nodes::OperationDefinition)
+        assert_equal "getStuff", query.name
+        assert_equal "query", query.operation_type
+        assert_equal 2, query.variables.length
+        assert_equal 4, query.selections.length
+        assert_equal 1, query.directives.length
+        assert_equal [2, 5], [query.line, query.col]
+      end
+
+      it "creates a valid fragment definition" do
+        assert fragment_def.is_a?(GraphQL::Language::Nodes::FragmentDefinition)
+        assert_equal "moreNestedFields", fragment_def.name
+        assert_equal 1, fragment_def.selections.length
+        assert_equal "NestedType", fragment_def.type
+        assert_equal 1, fragment_def.directives.length
+        assert_equal [20, 5], fragment_def.position
+      end
+
+      describe "variable definitions" do
+        let(:optional_var) { query.variables.first }
+        it "gets name and type" do
+          assert_equal "someVar", optional_var.name
+          assert_equal "Int", optional_var.type.name
+        end
+
+        it "gets default value" do
+          assert_equal 1, optional_var.default_value
+        end
+
+        it "gets position info" do
+          assert_equal [2, 20], optional_var.position
+        end
+      end
+
+      describe "fields" do
+        let(:leaf_field) { query.selections.first }
+        let(:parent_field) { query.selections[1] }
+
+        it "gets name, alias, arguments and directives" do
+          assert_equal "someField", leaf_field.name
+          assert_equal "myField", leaf_field.alias
+          assert_equal 2, leaf_field.directives.length
+          assert_equal 2, leaf_field.arguments.length
+        end
+
+        it "gets nested fields" do
+          assert_equal 2, parent_field.selections.length
+        end
+
+        it "gets location info" do
+          assert_equal [3 ,7], leaf_field.position
+        end
+      end
+
+      describe "arguments" do
+        let(:literal_argument) { query.selections.first.arguments.last }
+        let(:variable_argument) { query.selections.first.arguments.first }
+
+        it "gets name and literal value" do
+          assert_equal "ok", literal_argument.name
+          assert_equal 1.4, literal_argument.value
+        end
+
+        it "gets name and variable value" do
+          assert_equal "someArg", variable_argument.name
+          assert_equal "someVar", variable_argument.value.name
+        end
+
+
+        it "gets position info" do
+          assert_equal [3, 26], variable_argument.position
+        end
+      end
+
+      describe "fragment spreads" do
+        let(:fragment_spread) { query.selections[1].selections.last }
+        it "gets the name and directives" do
+          assert_equal "moreNestedFields", fragment_spread.name
+          assert_equal 1, fragment_spread.directives.length
+        end
+
+        it "gets position info" do
+          assert_equal [7, 9], fragment_spread.position
+        end
+      end
+
+      describe "directives" do
+        let(:variable_directive) { query.selections.first.directives.first }
+
+        it "gets the name and arguments" do
+          assert_equal "skip", variable_directive.name
+          assert_equal "if", variable_directive.arguments.first.name
+          assert_equal 1, variable_directive.arguments.length
+        end
+
+        it "gets position info" do
+          assert_equal [3, 54], variable_directive.position
+        end
+      end
+
+      describe "inline fragments" do
+        let(:inline_fragment) { query.selections[2] }
+        let(:typeless_inline_fragment) { query.selections[3] }
+
+        it "gets the type and directives" do
+          assert_equal "OtherType", inline_fragment.type
+          assert_equal 2, inline_fragment.selections.length
+          assert_equal 1, inline_fragment.directives.length
+        end
+
+        it "gets inline fragments without type conditions" do
+          assert_equal nil, typeless_inline_fragment.type
+          assert_equal 1, typeless_inline_fragment.selections.length
+          assert_equal 0, typeless_inline_fragment.directives.length
+        end
+
+        it "gets position info" do
+          assert_equal [10, 7], inline_fragment.position
+        end
+      end
+
+      describe "inputs" do
+        let(:query_string) {%|
+          {
+            field(
+              int: 3,
+              float: 4.7e-24,
+              bool: false,
+              string: "☀︎🏆\\n escaped \\" unicode \\u00b6 /",
+              enum: ENUM_NAME,
+              array: [7, 8, 9]
+              object: {a: [1,2,3], b: {c: "4"}}
+            )
+          }
+        |}
+
+        let(:inputs) { document.definitions.first.selections.first.arguments }
+
+        it "parses ints" do
+          assert_equal 3, inputs[0].value
+        end
+
+        it "parses floats" do
+          assert_equal 0.47e-23, inputs[1].value
+        end
+
+        it "parses booleans" do
+          assert_equal false, inputs[2].value
+        end
+
+        it "parses UTF-8 strings" do
+          assert_equal %|☀︎🏆\n escaped " unicode ¶ /|, inputs[3].value
+        end
+
+        it "parses enums" do
+          assert_instance_of GraphQL::Language::Nodes::Enum, inputs[4].value
+          assert_equal "ENUM_NAME", inputs[4].value.name
+        end
+
+        it "parses arrays" do
+          assert_equal [7,8,9], inputs[5].value
+        end
+
+        it "parses objects" do
+          obj = inputs[6].value
+          assert_equal "a", obj.arguments[0].name
+          assert_equal [1,2,3], obj.arguments[0].value
+          assert_equal "b", obj.arguments[1].name
+          assert_equal "c", obj.arguments[1].value.arguments[0].name
+          assert_equal "4", obj.arguments[1].value.arguments[0].value
+        end
+      end
     end
 
-    it 'gets booleans' do
-      assert(parser.value.parse_with_debug("true"))
-      assert(parser.value.parse_with_debug("false"))
+    describe "unnamed queries" do
+      let(:query_string) {%|
+        { name, age, height }
+      |}
+      let(:operation) { document.definitions.first }
+
+      it "parses unnamed queries" do
+        assert_equal 1, document.definitions.length
+        assert_equal "query", operation.operation_type
+        assert_equal nil, operation.name
+        assert_equal 3, operation.selections.length
+      end
     end
 
-    it 'gets strings' do
-      assert(parser.value.parse_with_debug('"my string"'), "plain strings")
-      assert(parser.value.parse_with_debug('""'), "empty strings")
-      assert(parser.value.parse_with_debug('"\"Hi!\"\n"'), "escaped strings")
-      assert(parser.value.parse_with_debug('"\u0025\u0026"'), "escaped unicode")
+    describe "introspection query" do
+      let(:query_string) { GraphQL::Introspection::INTROSPECTION_QUERY }
+
+      it "parses a big ol' query" do
+        assert(document)
+      end
+    end
+  end
+
+  describe "errors" do
+    let(:query_string) {%| query doSomething { bogus { } |}
+    it "raises a parse error" do
+      err = assert_raises(GraphQL::ParseError) { document }
     end
 
-    it 'gets arrays' do
-      assert(parser.value.parse_with_debug('[true, 1, "my string", -5.123e56]'), 'array of values')
-      assert(parser.value.parse_with_debug('[ -5.123e56, $myVar ]'), 'array of values with whitespace')
-      assert(parser.value.parse_with_debug('[]'), 'empty array')
-      assert(parser.value.parse_with_debug('[[true, 1], ["my string", -5.123e56]]'), 'array of arrays')
+    it 'correctly identifies parse error location and content' do
+      e = assert_raises(GraphQL::ParseError) do
+        GraphQL.parse("
+          query getCoupons {
+            allCoupons: {data{id}}
+          }
+        ")
+      end
+      assert_includes(e.message, '"{"')
+      assert_includes(e.message, "RCURLY")
+      assert_equal(3, e.line)
+      assert_equal(25, e.col)
     end
 
-    it 'gets variables' do
-      assert(parser.value.parse_with_debug('$myVariable'), 'gets named variables')
+    it "handles unexpected ends" do
+      err = assert_raises { GraphQL.parse("{ ") }
+      assert_equal "Unexpected end of document", err.message
+    end
+  end
+
+  describe "malformed queries" do
+    describe "whitespace-only" do
+      let(:query_string) { " " }
+      it "doesn't blow up" do
+        assert_equal [], document.definitions
+      end
     end
 
-    it 'gets objects' do
-      assert(parser.value.parse_with_debug('{name: "tomato", calories: 50}'), 'gets scalar values')
-      assert(parser.value.parse_with_debug('{listOfValues: [1, 2, [3]], nestedObject: {nestedKey: "nested{Value}"}}'), 'gets complex values')
-      assert(parser.value.parse_with_debug('{variableKey: $variableValue}'), 'gets variables')
-      assert(parser.value.parse_with_debug('{}'), 'gets empty')
-      assert(parser.value.parse_with_debug('{  }'), 'gets empty')
-    end
-
-    it 'gets enums' do
-      assert(parser.value.parse_with_debug("MY_ENUM"), 'gets enums')
+    describe "empty string" do
+      let(:query_string) { "" }
+      it "doesn't blow up" do
+        assert_equal [], document.definitions
+      end
     end
   end
 end

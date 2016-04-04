@@ -3,8 +3,8 @@ require "spec_helper"
 describe GraphQL::Schema::TypeExpression do
   let(:schema) { DummySchema }
   let(:ast_node) {
-    ast = GraphQL::PARSER.type.parse(type_name)
-    GraphQL::TRANSFORM.apply(ast)
+    document = GraphQL.parse("query dostuff($var: #{type_name}) { id } ")
+    document.definitions.first.variables.first.type
   }
   let(:type_expression) { GraphQL::Schema::TypeExpression.new(schema, ast_node) }
 
