@@ -59,7 +59,7 @@ module GraphQL
         @limit ||= if first
            first
          else
-           if previous_offset <= 0
+           if previous_offset < 0
              previous_offset + (last ? last : 0)
            else
              last
