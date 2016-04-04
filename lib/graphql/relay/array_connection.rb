@@ -47,7 +47,7 @@ module GraphQL
 
       def previous_offset
         @initial_offset ||= if before
-          index_from_cursor(before) - last - 1
+          index_from_cursor(before) - (last ? last : 0) - 1
         elsif after
           index_from_cursor(after)
         else
