@@ -119,6 +119,14 @@ describe GraphQL::Language::Parser do
         it "gets location info" do
           assert_equal [3 ,7], leaf_field.position
         end
+
+        describe "when the arguments list is empty" do
+          let(:query_string) { "{ field() }"}
+          let(:field) { query.selections.first }
+          it "has zero arguments" do
+            assert_equal 0, field.arguments.length
+          end
+        end
       end
 
       describe "arguments" do

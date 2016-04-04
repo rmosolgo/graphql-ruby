@@ -114,6 +114,7 @@ rule
 
   arguments_opt:
       /* none */                    { return [] }
+    | RPAREN LPAREN                 { return [] }
     | RPAREN arguments_list LPAREN  { return val[1] }
 
   arguments_list:
