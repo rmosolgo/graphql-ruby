@@ -65,7 +65,9 @@ rule
       /* none */          { return nil }
     | EQUALS input_value  { return val[1] }
 
-  selection_set: RCURLY selection_list LCURLY { return val[1] }
+  selection_set:
+      RCURLY LCURLY                { return [] }
+    | RCURLY selection_list LCURLY { return val[1] }
 
   selection_set_opt:
       /* none */    { return [] }
