@@ -20,6 +20,8 @@ describe GraphQL::StaticValidation::VariableUsagesAreAllowed do
         similarCheese(source: $goodAnimals)
         other: similarCheese(source: $badAnimals)
         tooDeep: similarCheese(source: $deepAnimals)
+        nullableCheese(source: $goodAnimals)
+        deeplyNullableCheese(source: $deepAnimals)
       }
 
       milk(id: 1) {
