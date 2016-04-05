@@ -12,8 +12,10 @@ describe GraphQL::Introspection::TypeType do
   |}
   let(:result) { DummySchema.execute(query_string, context: {}, variables: {"cheeseId" => 2}) }
   let(:cheese_fields) {[
+    {"name"=>"deeplyNullableCheese", "isDeprecated"=>false, "type"=>{"name"=>"Cheese", "ofType"=>nil}},
     {"name"=>"flavor",      "isDeprecated" => false, "type" => { "name" => "Non-Null", "ofType" => { "name" => "String"}}},
     {"name"=>"id",          "isDeprecated" => false, "type" => { "name" => "Non-Null", "ofType" => { "name" => "Int"}}},
+    {"name"=>"nullableCheese", "isDeprecated"=>false, "type"=>{"name"=>"Cheese", "ofType"=>nil}},
     {"name"=>"origin",      "isDeprecated" => false, "type" => { "name" => "Non-Null", "ofType" => { "name" => "String"}}},
     {"name"=>"similarCheese", "isDeprecated"=>false, "type"=>{"name"=>"Cheese", "ofType"=>nil}},
     {"name"=>"source",      "isDeprecated" => false, "type" => { "name" => "Non-Null", "ofType" => { "name" => "DairyAnimal"}}},
@@ -75,7 +77,7 @@ describe GraphQL::Introspection::TypeType do
     |}
     let(:deprecated_fields) { {"name"=>"fatContent", "isDeprecated"=>true, "type"=>{"name"=>"Non-Null", "ofType"=>{"name"=>"Float"}}} }
     it 'can expose deprecated fields' do
-      new_cheese_fields = [deprecated_fields] + cheese_fields
+      new_cheese_fields = ([deprecated_fields] + cheese_fields).sort_by { |f| f['name'] }
       expected = { "data" => {
         "cheeseType" => {
           "name"=> "Cheese",

@@ -78,6 +78,9 @@ class GraphQL::StaticValidation::VariableUsagesAreAllowed
     if arg_type.kind.non_null? && !var_type.kind.non_null?
       false
     elsif arg_type.kind.wraps? && var_type.kind.wraps?
+      # If var_type is a non-null wrapper for a type, and arg_type is nullable, peel off the wrapper
+      # That way, a var_type of `[DairyAnimal]!` works with an arg_type of `[DairyAnimal]`
+      var_type = var_type.of_type if var_type.kind.non_null? && !arg_type.kind.non_null?
       non_null_levels_match(arg_type.of_type, var_type.of_type)
     else
       true

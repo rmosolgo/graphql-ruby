@@ -51,6 +51,16 @@ CheeseType = GraphQL::ObjectType.define do
     }
   end
 
+  field :nullableCheese, -> { CheeseType }, "Cheeses like this one" do
+    argument :source, types[!DairyAnimalEnum]
+    resolve -> (t, a, c) { raise("NotImplemented") }
+  end
+
+  field :deeplyNullableCheese, -> { CheeseType }, "Cheeses like this one" do
+    argument :source, types[types[DairyAnimalEnum]]
+    resolve -> (t, a, c) { raise("NotImplemented") }
+  end
+
   field :fatContent, property: :fat_content do
     type(!GraphQL::FLOAT_TYPE)
     description("Percentage which is milkfat")
