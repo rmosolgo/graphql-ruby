@@ -129,7 +129,7 @@ rule
   input_value:
       FLOAT       { return val[0].to_f }
     | INT         { return val[0].to_i }
-    | STRING      { return val[0] }
+    | STRING      { return val[0].to_s }
     | TRUE        { return true }
     | FALSE       { return false }
     | variable
