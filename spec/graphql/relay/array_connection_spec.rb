@@ -77,5 +77,11 @@ describe GraphQL::Relay::ArrayConnection do
       names = get_names(result)
       assert_equal(1, names.length)
     end
+
+    it 'works without first/last/after/before' do
+      result = query(query_string)
+
+      assert_equal(false, result["data"]["rebels"]["ships"]["pageInfo"]["hasNextPage"])
+    end
   end
 end
