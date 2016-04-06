@@ -13,12 +13,8 @@ module GraphQL
         @paged_nodes = begin
           items = sliced_nodes
 
-          final_limit = if limit || max_page_size
-            [limit, max_page_size].compact.min
-          end
-
-          if final_limit
-            items.first(final_limit)
+          if limit
+            items.first(limit)
           else
             items
           end
@@ -46,25 +42,28 @@ module GraphQL
       end
 
       def previous_offset
-        @initial_offset ||= if before
-          index_from_cursor(before) - (last ? last : 0) - 1
-        elsif after
+        @previous_offset ||= if after
           index_from_cursor(after)
+        elsif before
+          index_from_cursor(before) - (last ? last : 0) - 1
         else
           0
         end
       end
 
       def limit
-        @limit ||= if first
-           first
-         else
-           if previous_offset < 0
-             previous_offset + (last ? last : 0)
-           else
-             last
-           end
-         end
+        @limit ||= begin
+          limit_from_arguments = if first
+            first
+          else
+            if previous_offset < 0
+              previous_offset + (last ? last : 0)
+            else
+              last
+            end
+          end
+          [limit_from_arguments, max_page_size].compact.min
+        end
       end
     end
     BaseConnection.register_connection_implementation(Array, ArrayConnection)
