@@ -1,5 +1,12 @@
 # graphql-relay
 
+## 0.9.1 (6 Apr 2016)
+
+### Bug Fix
+
+- Respond to connection fields without any pagination arguments
+- Limit by `max_page_size` even when no arguments are present
+
 ## 0.9.0 (30 Mar 2016)
 
 ### Breaking change

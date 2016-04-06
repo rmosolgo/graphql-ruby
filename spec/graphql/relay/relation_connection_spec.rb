@@ -90,7 +90,7 @@ describe GraphQL::Relay::RelationConnection do
     it 'works without first/last/after/before' do
       result = query(query_string)
 
-      assert_equal(result["data"]["empire"]["bases"]["totalCount"], result["data"]["empire"]["bases"]["edges"].length)
+      assert_equal(3, result["data"]["empire"]["bases"]["edges"].length)
     end
 
     it "applies the maximum limit for relation connection types" do
@@ -131,7 +131,7 @@ describe GraphQL::Relay::RelationConnection do
       assert_equal(2, result["data"]["empire"]["basesWithMaxLimitArray"]["edges"].size)
 
       result = query(limit_query_string)
-      assert_equal(2, result["data"]["empire"]["basesWithMaxLimitArray"]["edges"].size)
+      assert_equal(2, result["data"]["empire"]["basesWithMaxLimitArray"]["edges"].size, "it works without arguments")
     end
   end
 

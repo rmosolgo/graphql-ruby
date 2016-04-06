@@ -82,6 +82,7 @@ describe GraphQL::Relay::ArrayConnection do
       result = query(query_string)
 
       assert_equal(false, result["data"]["rebels"]["ships"]["pageInfo"]["hasNextPage"])
+      assert_equal(5, result["data"]["rebels"]["ships"]["edges"].length)
     end
   end
 end
