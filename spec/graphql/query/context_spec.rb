@@ -49,4 +49,12 @@ describe GraphQL::Query::Context do
       assert_equal(expected, result)
     end
   end
+
+  describe "empty values" do
+    let(:context) { GraphQL::Query::Context.new(query: '', values: nil) }
+
+    it 'returns nil for any key' do
+      assert_equal(nil, context[:some_key])
+    end
+  end
 end

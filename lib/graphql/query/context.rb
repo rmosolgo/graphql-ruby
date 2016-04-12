@@ -20,7 +20,7 @@ module GraphQL
       # @param values [Hash] A hash of arbitrary values which will be accessible at query-time
       def initialize(query:, values:)
         @query = query
-        @values = values
+        @values = values || {}
         @errors = []
       end
 
