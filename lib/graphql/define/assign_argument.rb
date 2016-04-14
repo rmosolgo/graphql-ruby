@@ -10,8 +10,11 @@ module GraphQL
         end
         argument.name = name.to_s
         argument.type = type
-        argument.description = description
-        argument.default_value = default_value
+
+        description && argument.description = description
+        # check nil because false is a valid value
+        default_value != nil && argument.default_value = default_value
+
         target.arguments[name.to_s] = argument
       end
     end
