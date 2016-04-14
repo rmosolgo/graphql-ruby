@@ -125,12 +125,22 @@ DairyProductInputType = GraphQL::InputObjectType.define {
   name "DairyProductInput"
   description "Properties for finding a dairy product"
   input_field :source, !DairyAnimalEnum do
+    # ensure we can define description in block
     description "Where it came from"
   end
 
-  input_field :originDairy, types.String, "Dairy which produced it", default_value: "Sugar Hollow Dairy"
+  input_field :originDairy, types.String, "Dairy which produced it", default_value: "Sugar Hollow Dairy" do
+    description   "Ignored because arg takes precedence"
+    default_value "Ignored because keyword arg takes precedence"
+  end
 
-  input_field :fatContent, types.Float, "How much fat it has"
+  input_field :fatContent, types.Float, "How much fat it has" do
+    # ensure we can define default in block
+    default_value 0.3
+  end
+
+  # ensure default can be false
+  input_field :organic, types.Boolean, default_value: false
 }
 
 

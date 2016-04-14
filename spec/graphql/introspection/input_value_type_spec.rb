@@ -12,6 +12,7 @@ describe GraphQL::Introspection::InputValueType do
            name,
            type { name },
            defaultValue
+           description
          }
        }
      }
@@ -25,9 +26,14 @@ describe GraphQL::Introspection::InputValueType do
           "description"=>"Properties for finding a dairy product",
           "kind"=>"INPUT_OBJECT",
           "inputFields"=>[
-            {"name"=>"source", "type"=>{ "name" => "Non-Null"}, "defaultValue"=>nil},
-            {"name"=>"originDairy", "type"=>{ "name" => "String"}, "defaultValue"=>"\"Sugar Hollow Dairy\""},
-            {"name"=>"fatContent", "type"=>{ "name" => "Float"}, "defaultValue"=>nil}
+            {"name"=>"source", "type"=>{ "name" => "Non-Null"}, "defaultValue"=>nil,
+             "description" => "Where it came from"},
+            {"name"=>"originDairy", "type"=>{ "name" => "String"}, "defaultValue"=>"\"Sugar Hollow Dairy\"",
+             "description" => "Dairy which produced it"},
+            {"name"=>"fatContent", "type"=>{ "name" => "Float"}, "defaultValue"=>"0.3",
+             "description" => "How much fat it has"},
+            {"name"=>"organic", "type"=>{ "name" => "Boolean"}, "defaultValue"=>"false",
+             "description" => nil}
           ]
         }
       }}
