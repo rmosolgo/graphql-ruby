@@ -80,7 +80,9 @@ module GraphQL
             wrapped_type = field_type.of_type
             strategy_class = get_strategy_for_kind(wrapped_type.kind)
             inner_strategy = strategy_class.new(value, wrapped_type, target, parent_type, ast_field, execution_context)
-            inner_strategy.result
+            value = inner_strategy.result
+            raise GraphQL::InvalidNullError.new(ast_field.name, nil) if value.nil?
+            value
           end
         end
 

@@ -2,6 +2,11 @@ require_relative './dairy_data'
 
 class NoSuchDairyError < StandardError; end
 
+AlwaysNilType = GraphQL::ScalarType.define do
+  name "AlwaysNilType"
+  coerce ->(value) { nil }
+end
+
 EdibleInterface = GraphQL::InterfaceType.define do
   name "Edible"
   description "Something you can eat, yum"
@@ -118,6 +123,11 @@ CowType = GraphQL::ObjectType.define do
   field :cantBeNullButRaisesExecutionError do
     type !GraphQL::STRING_TYPE
     resolve -> (t, a, c) { raise GraphQL::ExecutionError, "BOOM" }
+  end
+
+  field :cantBeNullButIsOnCoersion do
+    type !AlwaysNilType
+    resolve -> (t, a, c) { "This will be coerced to nil." }
   end
 end
 
