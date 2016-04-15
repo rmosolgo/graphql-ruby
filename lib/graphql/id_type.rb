@@ -1,6 +1,6 @@
 GraphQL::ID_TYPE = GraphQL::ScalarType.define do
   name "ID"
-  coerce_result -> (value) { value.to_s }
+  coerce_result -> (value) { value.nil? ? nil : value.to_s }
   coerce_input -> (value) {
     case value
     when String, Fixnum, Bignum

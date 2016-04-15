@@ -33,8 +33,8 @@ module GraphQL
         end
 
         class ScalarResolution < BaseResolution
-          # Apply the scalar's defined `coerce_result` method to the value
-          def non_null_result
+          def result
+            return nil if value.is_a?(GraphQL::ExecutionError)
             field_type.coerce_result(value)
           end
         end
