@@ -1,25 +1,34 @@
 require 'spec_helper'
 
 describe GraphQL::ScalarType do
-  let(:scalar) {
+  let(:custom_scalar) {
     GraphQL::ScalarType.define do
       name "BigInt"
-      coerce_input ->(value) { Integer(value) }
+      coerce_input ->(value) { value =~ /\d+/ ? Integer(value) : nil }
       coerce_result ->(value) { value.to_s }
     end
   }
   let(:bignum) { 2 ** 128 }
 
   it 'coerces nil into nil' do
-    assert_equal(nil, scalar.coerce_input(nil))
+    assert_equal(nil, custom_scalar.coerce_input(nil))
   end
 
   it 'coerces input into objects' do
-    assert_equal(bignum, scalar.coerce_input(bignum.to_s))
+    assert_equal(bignum, custom_scalar.coerce_input(bignum.to_s))
   end
 
   it 'coerces result value for serialization' do
-    assert_equal(bignum.to_s, scalar.coerce_result(bignum))
+    assert_equal(bignum.to_s, custom_scalar.coerce_result(bignum))
+  end
+
+  describe "custom scalar errors" do
+    let(:result) { custom_scalar.validate_input("xyz") }
+
+    it "returns an invalid result" do
+      assert !result.valid?
+      assert_equal 'Could not coerce value "xyz" to BigInt', result.problems[0]['explanation']
+    end
   end
 
   describe 'validate_input with good input' do

@@ -139,6 +139,7 @@ https://medium.com/@gauravtiwari/graphql-and-relay-on-rails-first-relay-powered-
 - Add a complexity validator (reject queries if they're too big)
 - Add docs for shared behaviors & DRY code
 - Revamp the fixture Schema to be more useful (better names, more extensible)
+- Fix when a field's type is left out `field :name, "This is the name field"`
 - __Subscriptions__
   - This is a good chance to make an `Operation` abstraction of which `query`, `mutation` and `subscription` are members
   - For a subscription, `graphql` would send an outbound message to the system (allow the host application to manage its own subscriptions via Pusher, ActionCable, whatever)
