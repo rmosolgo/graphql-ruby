@@ -168,6 +168,21 @@ describe GraphQL::Query::Executor do
       end
     end
 
+    describe 'if a non-nil value coerces to nil for a non-null field' do
+      let(:query_string) {%| query noMilk { cow { name cantBeNullButIsOnCoersion } }|}
+      it 'turns into error message and nulls the entire selection' do
+        expected = {
+          "data" => { "cow" => nil },
+          "errors" => [
+            {
+              "message" => "Cannot return null for non-nullable field cantBeNullButIsOnCoersion"
+            }
+          ]
+        }
+        assert_equal(expected, result)
+      end
+    end
+
     describe "if the schema has a rescue handler" do
       before do
         schema.rescue_from(RuntimeError) { "Error was handled!" }
