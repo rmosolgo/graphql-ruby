@@ -6,4 +6,4 @@ env: CODECLIMATE_REPO_TOKEN=f5b27b2e25d3f4e199bb2566fb4fd4507144a004c71d4aa33a32
 rvm:
   - "2.2"
   - "2.1"
-  - "rbx-2"
+  - "rbx"
