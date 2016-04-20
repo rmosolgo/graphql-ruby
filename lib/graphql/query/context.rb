@@ -15,11 +15,15 @@ module GraphQL
       # @return [GraphQL::Query] The query whose context this is
       attr_reader :query
 
+      # @return [GraphQL::Schema]
+      attr_reader :schema
+
       # Make a new context which delegates key lookup to `values`
       # @param query [GraphQL::Query] the query who owns this context
       # @param values [Hash] A hash of arbitrary values which will be accessible at query-time
       def initialize(query:, values:)
         @query = query
+        @schema = query.schema
         @values = values || {}
         @errors = []
       end

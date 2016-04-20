@@ -19,7 +19,7 @@ module GraphQL
       rescue StandardError => err
         query.context.errors << err
         query.debug && raise(err)
-        message = "Internal error" #\n#{err.backtrace.join("\n  ")}"
+        message = "Internal error" # : #{err} \n#{err.backtrace.join("\n  ")}"
         {"errors" => [{"message" => message}]}
       end
 

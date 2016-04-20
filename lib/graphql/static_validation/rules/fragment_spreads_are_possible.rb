@@ -30,20 +30,20 @@ class GraphQL::StaticValidation::FragmentSpreadsArePossible
   private
 
   def validate_fragment_in_scope(parent_type, child_type, node, context)
-    intersecting_types = get_possible_types(parent_type) & get_possible_types(child_type)
+    intersecting_types = get_possible_types(parent_type, context.schema) & get_possible_types(child_type, context.schema)
     if intersecting_types.none?
       name = node.respond_to?(:name) ? " #{node.name}" : ""
       context.errors << message("Fragment#{name} on #{child_type.name} can't be spread inside #{parent_type.name}", node)
     end
   end
 
-  def get_possible_types(type)
+  def get_possible_types(type, schema)
     if type.kind.wraps?
-      get_possible_types(type.of_type)
+      get_possible_types(type.of_type, schema)
     elsif type.kind.object?
       [type]
     elsif type.kind.resolves?
-      type.possible_types
+      schema.possible_types(type)
     else
       []
     end

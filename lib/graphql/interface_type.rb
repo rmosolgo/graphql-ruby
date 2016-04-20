@@ -24,11 +24,6 @@ class GraphQL::InterfaceType < GraphQL::BaseType
     GraphQL::TypeKinds::INTERFACE
   end
 
-  # @return [Array<GraphQL::ObjectType>] Types which declare that they implement this interface
-  def possible_types
-    @possible_types ||= []
-  end
-
   # @return [GraphQL::Field] The defined field for `field_name`
   def get_field(field_name)
     fields[field_name]

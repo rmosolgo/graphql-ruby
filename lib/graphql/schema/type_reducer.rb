@@ -42,7 +42,7 @@ class GraphQL::Schema::TypeReducer
         reduce_type(interface, type_hash, "Interface on #{type.name}")
       end
     end
-    if type.kind.resolves?
+    if type.kind.union?
       type.possible_types.each do |possible_type|
         reduce_type(possible_type, type_hash, "Possible type for #{type.name}")
       end

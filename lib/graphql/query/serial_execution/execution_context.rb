@@ -2,15 +2,16 @@ module GraphQL
   class Query
     class SerialExecution
       class ExecutionContext
-        attr_reader :query, :strategy
+        attr_reader :query, :schema, :strategy
 
         def initialize(query, strategy)
           @query = query
+          @schema = query.schema
           @strategy = strategy
         end
 
         def get_type(type)
-          @query.schema.types[type]
+          @schema.types[type]
         end
 
         def get_fragment(name)
@@ -18,7 +19,7 @@ module GraphQL
         end
 
         def get_field(type, name)
-          @query.schema.get_field(type, name)
+          @schema.get_field(type, name)
         end
 
         def add_error(err)
