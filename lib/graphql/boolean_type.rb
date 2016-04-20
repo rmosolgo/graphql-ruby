@@ -5,5 +5,5 @@ GraphQL::BOOLEAN_TYPE = GraphQL::ScalarType.define do
   name "Boolean"
 
   coerce_input -> (value) { ALLOWED_INPUTS.include?(value) ? value : nil }
-  coerce_result -> (value) { !!value }
+  coerce_result -> (value) { value.nil? ? nil : !!value }
 end
