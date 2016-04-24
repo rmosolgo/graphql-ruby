@@ -3,7 +3,7 @@
 
   IDENTIFIER =    [_A-Za-z][_0-9A-Za-z]*;
   NEWLINE =       [\c\r\n];
-  BLANK   =       (' ' | ',')+;
+  BLANK   =       [, \t]+;
   COMMENT =       '#' [^\n\r]*;
   INT =           '-'? ('0'|[1-9][0-9]*);
   FLOAT_DECIMAL = '.'[0-9]+;

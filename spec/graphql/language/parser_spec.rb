@@ -306,18 +306,26 @@ describe GraphQL::Language::Parser do
     end
   end
 
-  describe "malformed queries" do
-    describe "whitespace-only" do
+
+  describe "whitespace" do
+    describe "whitespace-only queries" do
       let(:query_string) { " " }
       it "doesn't blow up" do
         assert_equal [], document.definitions
       end
     end
 
-    describe "empty string" do
+    describe "empty string queries" do
       let(:query_string) { "" }
       it "doesn't blow up" do
         assert_equal [], document.definitions
+      end
+    end
+
+    describe "using tabs as whitespace" do
+      let(:query_string) { "\t{\t\tid, \tname}"}
+      it "parses the query" do
+        assert_equal 1, document.definitions.length
       end
     end
   end
