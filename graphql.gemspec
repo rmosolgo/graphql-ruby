@@ -23,6 +23,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency "guard-bundler", "~> 2.1"
   s.add_development_dependency "guard-minitest", "~> 2.4"
   s.add_development_dependency "guard-rake"
+  s.add_development_dependency "listen", "~> 3.0.0"
   s.add_development_dependency "minitest", "~> 5"
   s.add_development_dependency "minitest-focus", "~> 1.1"
   s.add_development_dependency "minitest-reporters", "~>1.0"
