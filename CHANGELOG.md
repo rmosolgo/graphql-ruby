@@ -2,6 +2,25 @@
 
 ### Breaking changes & deprecations
 
+- In some cases, an object type is only connected to the Query (or Mutation) root by being a member of an interface.
+
+  In these cases, bugs happen, especially with Rails development mode. (And sometimes, the bugs don't appear until you deploy to a production environment!)
+
+  So, in a case like this:
+
+  ```
+  QueryType -> (exposes) -> SomeInterface -> (includes member) -> SomeObjectType
+  ```
+
+  SomeObjectType must be passed to the schema explicitly:
+
+  ```ruby
+  Schema.new(
+    # ...
+    types: [SomeObjectType]
+  )
+  ```
+
 ### New features
 
 ### Bug fixes

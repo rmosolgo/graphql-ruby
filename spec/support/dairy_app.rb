@@ -73,6 +73,13 @@ MilkType = GraphQL::ObjectType.define do
   end
 end
 
+# No actual data; This type is an "orphan", only accessible through Interfaces
+HoneyType = GraphQL::ObjectType.define do
+  name 'Honey'
+  description "Sweet, dehydrated bee barf"
+  interfaces [EdibleInterface, AnimalProductInterface]
+end
+
 DairyType = GraphQL::ObjectType.define do
   name 'Dairy'
   description 'A farm where milk is harvested and cheese is produced'

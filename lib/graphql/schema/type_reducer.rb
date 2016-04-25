@@ -21,8 +21,13 @@ class GraphQL::Schema::TypeReducer
   def self.find_all(types)
     type_map = GraphQL::Schema::TypeMap.new
     types.reduce(type_map) do |memo, type|
-      self.new(type, memo).result
+      type_map.safely_discovered_types << type
+      self.new(type.unwrap, memo).result
     end
+    type_map.warnings.each do |warning|
+      warn(warning)
+    end
+    type_map
   end
 
   private
@@ -34,22 +39,29 @@ class GraphQL::Schema::TypeReducer
         reduce_type(field.type, type_hash)
         field.arguments.each do |name, argument|
           reduce_type(argument.type, type_hash)
+          safely_discovered(type_hash, argument.type)
         end
+        safely_discovered(type_hash, field.type)
       end
     end
     if type.kind.object?
       type.interfaces.each do |interface|
         reduce_type(interface, type_hash)
+        safely_discovered(type_hash, interface)
       end
     end
     if type.kind.resolves?
       type.possible_types.each do |possible_type|
         reduce_type(possible_type, type_hash)
+        if type.kind.union?
+          safely_discovered(type_hash, possible_type)
+        end
       end
     end
     if type.kind.input_object?
       type.input_fields.each do |name, input_field|
         reduce_type(input_field.type, type_hash)
+        safely_discovered(type_hash, input_field.type)
       end
     end
 
@@ -70,6 +82,14 @@ class GraphQL::Schema::TypeReducer
     type_validator.validate(type, errors)
     if errors.any?
       raise GraphQL::Schema::InvalidTypeError.new(type, errors)
+    end
+  end
+
+  def safely_discovered(type_hash, type)
+    inner_type = type.unwrap
+    if !type_hash.safely_discovered_types.include?(inner_type)
+
+      type_hash.safely_discovered_types << inner_type
     end
   end
 end

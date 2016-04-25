@@ -18,11 +18,14 @@ class GraphQL::Schema
   # @param query [GraphQL::ObjectType]  the query root for the schema
   # @param mutation [GraphQL::ObjectType] the mutation root for the schema
   # @param subscription [GraphQL::ObjectType] the subscription root for the schema
-  def initialize(query:, mutation: nil, subscription: nil, max_depth: nil)
+  # @param max_depth [Integer] maximum query nesting (if it's greater, raise an error)
+  # @param types [Array<GraphQL::BaseType>] additional types to include in this schema
+  def initialize(query:, mutation: nil, subscription: nil, max_depth: nil, types: [])
     @query    = query
     @mutation = mutation
     @subscription = subscription
     @max_depth = max_depth
+    @orphan_types = types
     @directives = DIRECTIVES.reduce({}) { |m, d| m[d.name] = d; m }
     @static_validator = GraphQL::StaticValidation::Validator.new(schema: self)
     @rescue_middleware = GraphQL::Schema::RescueMiddleware.new
@@ -37,7 +40,10 @@ class GraphQL::Schema
 
   # @return [GraphQL::Schema::TypeMap] `{ name => type }` pairs of types in this schema
   def types
-    @types ||= TypeReducer.find_all([query, mutation, GraphQL::Introspection::SchemaType].compact)
+    @types ||= begin
+      all_types = @orphan_types + [query, mutation, GraphQL::Introspection::SchemaType]
+      TypeReducer.find_all(all_types.compact)
+    end
   end
 
   # Execute a query on itself.

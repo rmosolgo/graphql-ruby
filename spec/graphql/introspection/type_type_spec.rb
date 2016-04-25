@@ -57,7 +57,7 @@ describe GraphQL::Introspection::TypeType do
       "animalProduct" => {
         "name"=>"AnimalProduct",
         "kind"=>"INTERFACE",
-        "possibleTypes"=>[{"name"=>"Cheese"}, {"name"=>"Milk"}],
+        "possibleTypes"=>[{"name"=>"Cheese"}, {"name"=>"Milk"}, {"name"=>"Honey"}],
         "fields"=>[
           {"name"=>"source"},
         ]
