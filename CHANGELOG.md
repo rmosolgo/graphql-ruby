@@ -8,18 +8,33 @@
 
   So, in a case like this:
 
-  ```
-  QueryType -> (exposes) -> SomeInterface -> (includes member) -> SomeObjectType
+  ```ruby
+  HatInterface = GraphQL::ObjectType.define do
+    # ...
+  end
+
+  FezType = GraphQL::ObjectType.define do
+    # ...
+    interfaces [HatInterface]
+  end
+
+  QueryType = GraphQL::ObjectType.define do
+    field :randomHat, HatInterface # ...
+  end
   ```
 
-  SomeObjectType must be passed to the schema explicitly:
+  `FezType` can only be discovered by `QueryType` _through_ `HatInterface`. If `fez_type.rb` hasn't been loaded by Rails, `HatInterface.possible_types` will be empty!
+
+  Now, `FezType` must be passed to the schema explicitly:
 
   ```ruby
   Schema.new(
     # ...
-    types: [SomeObjectType]
+    types: [FezType]
   )
   ```
+
+  Since the type is passed directly to the schema, it will be loaded right away!
 
 ### New features
 
