@@ -1,7 +1,7 @@
-require 'spec_helper'
+require "spec_helper"
 
 describe GraphQL::Schema::TypeReducer do
-  it 'finds types from a single type and its fields' do
+  it "finds types from a single type and its fields" do
     reducer = GraphQL::Schema::TypeReducer.new(CheeseType, {})
     expected = {
       "Cheese" => CheeseType,
@@ -16,12 +16,12 @@ describe GraphQL::Schema::TypeReducer do
     assert_equal(expected, reducer.result)
   end
 
-  it 'finds type from arguments' do
+  it "finds type from arguments" do
     reducer = GraphQL::Schema::TypeReducer.new(QueryType, {})
     assert_equal(DairyProductInputType, reducer.result["DairyProductInput"])
   end
 
-  it 'finds types from nested InputObjectTypes' do
+  it "finds types from nested InputObjectTypes" do
     type_child = GraphQL::InputObjectType.define do
       name "InputTypeChild"
       input_field :someField, GraphQL::STRING_TYPE
@@ -41,7 +41,7 @@ describe GraphQL::Schema::TypeReducer do
     assert_equal(expected, reducer.result)
   end
 
-  describe 'when a type is invalid' do
+  describe "when a type is invalid" do
     let(:invalid_type) {
       GraphQL::ObjectType.define do
         name "InvalidType"
@@ -56,18 +56,18 @@ describe GraphQL::Schema::TypeReducer do
       end
     }
 
-    it 'raises an InvalidTypeError when passed nil' do
+    it "raises an InvalidTypeError when passed nil" do
       reducer = GraphQL::Schema::TypeReducer.new(invalid_type, {})
       assert_raises(GraphQL::Schema::InvalidTypeError) { reducer.result }
     end
 
-    it 'raises an InvalidTypeError when passed an object that isnt a GraphQL::BaseType' do
+    it "raises an InvalidTypeError when passed an object that isnt a GraphQL::BaseType" do
       reducer = GraphQL::Schema::TypeReducer.new(another_invalid_type, {})
       assert_raises(GraphQL::Schema::InvalidTypeError) { reducer.result }
     end
   end
 
-  describe 'when a schema has multiple types with the same name' do
+  describe "when a schema has multiple types with the same name" do
     let(:type_1) {
       GraphQL::ObjectType.define do
         name "MyType"
@@ -78,15 +78,15 @@ describe GraphQL::Schema::TypeReducer do
         name "MyType"
       end
     }
-    it 'raises an error' do
+    it "raises an error" do
       assert_raises(RuntimeError) {
         GraphQL::Schema::TypeReducer.find_all([type_1, type_2])
       }
     end
   end
 
-  describe 'when getting a type which doesnt exist' do
-    it 'raises an error' do
+  describe "when getting a type which doesnt exist" do
+    it "raises an error" do
       type_map = GraphQL::Schema::TypeReducer.find_all([])
       assert_raises(RuntimeError) { type_map["SomeType"] }
     end

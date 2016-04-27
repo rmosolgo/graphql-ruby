@@ -1,4 +1,4 @@
-require 'spec_helper'
+require "spec_helper"
 
 describe GraphQL::UnionType do
   let(:type_1) { OpenStruct.new(kind: GraphQL::TypeKinds::OBJECT)}
@@ -12,11 +12,12 @@ describe GraphQL::UnionType do
       possible_types(types)
     }
   }
-  it 'has a name' do
+  it "has a name" do
     assert_equal("MyUnion", union.name)
   end
 
-  it 'infers type from an object' do
+
+  it "infers type from an object" do
     assert_equal(CheeseType, DairyProductUnion.resolve_type(CHEESES[1], OpenStruct.new(schema: DummySchema)))
   end
 

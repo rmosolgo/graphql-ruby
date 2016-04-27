@@ -1,4 +1,4 @@
-require 'spec_helper'
+require "spec_helper"
 
 describe GraphQL::Query::SerialExecution::ExecutionContext do
   let(:query_string) { %|
@@ -34,22 +34,22 @@ describe GraphQL::Query::SerialExecution::ExecutionContext do
 
   describe "get_type" do
     it "returns the respective type from the schema" do
-      type = execution_context.get_type('Dairy')
+      type = execution_context.get_type("Dairy")
       assert_equal(DairyType, type)
     end
   end
 
   describe "get_field" do
     it "returns the respective field from the schema" do
-      field = execution_context.get_field(DairyType, 'cheese')
-      assert_equal('cheese', field.name)
+      field = execution_context.get_field(DairyType, "cheese")
+      assert_equal("cheese", field.name)
     end
   end
 
   describe "get_fragment" do
     it "returns a fragment on the query by name" do
-      fragment = execution_context.get_fragment('cheeseFields')
-      assert_equal('cheeseFields', fragment.name)
+      fragment = execution_context.get_fragment("cheeseFields")
+      assert_equal("cheeseFields", fragment.name)
     end
   end
 end

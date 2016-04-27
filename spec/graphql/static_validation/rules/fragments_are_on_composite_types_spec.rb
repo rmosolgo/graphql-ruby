@@ -1,4 +1,4 @@
-require 'spec_helper'
+require "spec_helper"
 
 describe GraphQL::StaticValidation::FragmentsAreOnCompositeTypes do
   let(:query_string) {%|
@@ -29,7 +29,7 @@ describe GraphQL::StaticValidation::FragmentsAreOnCompositeTypes do
   let(:query) { GraphQL::Query.new(DummySchema, query_string) }
   let(:errors) { validator.validate(query) }
 
-  it 'requires Object/Union/Interface fragment types' do
+  it "requires Object/Union/Interface fragment types" do
     expected = [
       {
         "message"=>"Invalid fragment on type Boolean (must be Union, Interface or Object)",

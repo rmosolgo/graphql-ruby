@@ -22,7 +22,7 @@ describe GraphQL::Query::Context do
       query getCtx { context(key: "some_key") }
     |}
 
-    it 'passes context to fields' do
+    it "passes context to fields" do
       expected = {"data" => {"context" => "some value"}}
       assert_equal(expected, result)
     end
@@ -33,7 +33,7 @@ describe GraphQL::Query::Context do
       query getCtx { contextAstNodeName }
     |}
 
-    it 'provides access to the AST node' do
+    it "provides access to the AST node" do
       expected = {"data" => {"contextAstNodeName" => "GraphQL::Language::Nodes::Field"}}
       assert_equal(expected, result)
     end
@@ -44,7 +44,7 @@ describe GraphQL::Query::Context do
       query getCtx { queryName }
     |}
 
-    it 'provides access to the AST node' do
+    it "provides access to the AST node" do
       expected = {"data" => {"queryName" => "GraphQL::Query"}}
       assert_equal(expected, result)
     end
@@ -53,7 +53,7 @@ describe GraphQL::Query::Context do
   describe "empty values" do
     let(:context) { GraphQL::Query::Context.new(query: OpenStruct.new(schema: schema), values: nil) }
 
-    it 'returns nil for any key' do
+    it "returns nil for any key" do
       assert_equal(nil, context[:some_key])
     end
   end

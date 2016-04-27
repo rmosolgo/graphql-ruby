@@ -1,4 +1,4 @@
-require 'spec_helper'
+require "spec_helper"
 
 describe GraphQL::StaticValidation::FieldsAreDefinedOnType do
   let(:query_string) { "
@@ -26,10 +26,10 @@ describe GraphQL::StaticValidation::FieldsAreDefinedOnType do
     assert_equal(expected_errors, error_messages)
   end
 
-  describe 'on interfaces' do
+  describe "on interfaces" do
     let(:query_string) { "query getStuff { favoriteEdible { amountThatILikeIt } }"}
 
-    it 'finds invalid fields' do
+    it "finds invalid fields" do
       expected_errors = [
         {"message"=>"Field 'amountThatILikeIt' doesn't exist on type 'Edible'", "locations"=>[{"line"=>1, "column"=>18}]}
       ]
@@ -37,7 +37,7 @@ describe GraphQL::StaticValidation::FieldsAreDefinedOnType do
     end
   end
 
-  describe 'on unions' do
+  describe "on unions" do
     let(:query_string) { "
       query notOnUnion { favoriteEdible { ...dpFields } }
       fragment dbFields on DairyProduct { source }
@@ -45,7 +45,7 @@ describe GraphQL::StaticValidation::FieldsAreDefinedOnType do
     "}
 
 
-    it 'doesnt allow selections on unions' do
+    it "doesnt allow selections on unions" do
       expected_errors = [
         {
           "message"=>"Selections can't be made directly on unions (see selections on DairyProduct)",

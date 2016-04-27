@@ -1,4 +1,4 @@
-require 'spec_helper'
+require "spec_helper"
 
 describe GraphQL::ExecutionError do
   let(:result) { DummySchema.execute(query_string) }

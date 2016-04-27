@@ -1,4 +1,4 @@
-require 'spec_helper'
+require "spec_helper"
 
 describe GraphQL::Query::Executor do
   let(:debug) { true }
@@ -48,7 +48,7 @@ describe GraphQL::Query::Executor do
   end
 
 
-  describe 'execution order' do
+  describe "execution order" do
     let(:query_string) {%|
       mutation setInOrder {
         first:  pushValue(value: 1)
@@ -58,7 +58,7 @@ describe GraphQL::Query::Executor do
       }
     |}
 
-    it 'executes mutations in order' do
+    it "executes mutations in order" do
       expected = {"data"=>{
           "first"=> [1],
           "second"=>[1, 5],
@@ -70,7 +70,7 @@ describe GraphQL::Query::Executor do
   end
 
 
-  describe 'fragment resolution' do
+  describe "fragment resolution" do
     let(:schema) {
       # we will raise if the dairy field is resolved more than one time
       resolved = false
@@ -105,7 +105,7 @@ describe GraphQL::Query::Executor do
       }
     |}
 
-    it 'resolves each field only one time, even when present in multiple fragments' do
+    it "resolves each field only one time, even when present in multiple fragments" do
       expected = {"data" => {
         "dairy" => { "id" => "1" }
       }}
@@ -115,12 +115,14 @@ describe GraphQL::Query::Executor do
   end
 
 
-  describe 'runtime errors' do
+  describe "runtime errors" do
     let(:query_string) {%| query noMilk { error }|}
-    describe 'if debug: false' do
+
+    describe "if debug: false" do
       let(:debug) { false }
       let(:errors) { query.context.errors }
-      it 'turns into error messages' do
+
+      it "turns into error messages" do
         expected = {"errors"=>[
           {"message"=>"Internal error"}
         ]}
@@ -130,16 +132,16 @@ describe GraphQL::Query::Executor do
       end
     end
 
-    describe 'if debug: true' do
+    describe "if debug: true" do
       let(:debug) { true }
-      it 'raises error' do
+      it "raises error" do
         assert_raises(RuntimeError) { result }
       end
     end
 
-    describe 'if nil is given for a non-null field' do
+    describe "if nil is given for a non-null field" do
       let(:query_string) {%| query noMilk { cow { name cantBeNullButIs } }|}
-      it 'turns into error message and nulls the entire selection' do
+      it "turns into error message and nulls the entire selection" do
         expected = {
           "data" => { "cow" => nil },
           "errors" => [
@@ -152,9 +154,9 @@ describe GraphQL::Query::Executor do
       end
     end
 
-    describe 'if an execution error is raised for a non-null field' do
+    describe "if an execution error is raised for a non-null field" do
       let(:query_string) {%| query noMilk { cow { name cantBeNullButRaisesExecutionError } }|}
-      it 'uses provided error message and nulls the entire selection' do
+      it "uses provided error message and nulls the entire selection" do
         expected = {
           "data" => { "cow" => nil },
           "errors" => [

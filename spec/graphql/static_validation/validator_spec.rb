@@ -1,13 +1,15 @@
-require 'spec_helper'
+require "spec_helper"
 
 describe GraphQL::StaticValidation::Validator do
   let(:validator) { GraphQL::StaticValidation::Validator.new(schema: DummySchema) }
   let(:query) { GraphQL::Query.new(DummySchema, query_string) }
   let(:errors) { validator.validate(query) }
 
-  describe 'validation order' do
 
-    describe 'fields & arguments' do
+  describe "validation order" do
+    let(:document) { GraphQL.parse(query_string)}
+
+    describe "fields & arguments" do
       let(:query_string) { %|
         query getCheese($id: Int!) {
           cheese(id: $undefinedVar, bogusArg: true) {
@@ -23,13 +25,13 @@ describe GraphQL::StaticValidation::Validator do
         }
       |}
 
-      it 'handles args on invalid fields' do
+      it "handles args on invalid fields" do
         # nonsenseField, nonsenseArg, bogusField, bogusArg, undefinedVar
         assert_equal(5, errors.length)
       end
     end
 
-    describe 'infinite fragments' do
+    describe "infinite fragments" do
       let(:query_string) { %|
         query getCheese {
           cheese(id: 1) {
@@ -41,7 +43,7 @@ describe GraphQL::StaticValidation::Validator do
         }
       |}
 
-      it 'handles infinite fragment spreads' do
+      it "handles infinite fragment spreads" do
         assert_equal(1, errors.length)
       end
     end

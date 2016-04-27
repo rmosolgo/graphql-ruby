@@ -1,4 +1,4 @@
-require 'spec_helper'
+require "spec_helper"
 
 describe GraphQL::StaticValidation::FieldsWillMerge do
   let(:query_string) {"
@@ -34,7 +34,7 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
   let(:errors) { validator.validate(query) }
   let(:error_messages) { errors.map { |e| e["message" ] }}
 
-  it 'finds field naming conflicts' do
+  it "finds field naming conflicts" do
     expected_errors = [
       "Field 'id' has a directive conflict: [] or [someFlag]?",                 # different directives
       "Field 'id' has a directive argument conflict: [] or [{}]?",              # not sure this is a great way to handle it but here we are!

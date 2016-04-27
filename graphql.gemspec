@@ -3,21 +3,21 @@ $LOAD_PATH.push File.expand_path("../lib", __FILE__)
 require "graphql/version"
 
 Gem::Specification.new do |s|
-  s.name        = 'graphql'
+  s.name        = "graphql"
   s.version     = GraphQL::VERSION
   s.date        = Date.today.to_s
   s.summary     = "A GraphQL server implementation for Ruby"
   s.description = "A GraphQL server implementation for Ruby. Includes schema definition, query parsing, static validation, type definition, and query execution."
-  s.homepage    = 'http://github.com/rmosolgo/graphql-ruby'
+  s.homepage    = "http://github.com/rmosolgo/graphql-ruby"
   s.authors     = ["Robert Mosolgo"]
-  s.email       = ['rdmosolgo@gmail.com']
+  s.email       = ["rdmosolgo@gmail.com"]
   s.license     = "MIT"
-  s.required_ruby_version = '>= 2.1.0' # bc optional keyword args
+  s.required_ruby_version = ">= 2.1.0" # bc optional keyword args
 
   s.files = Dir["{lib}/**/*", "MIT-LICENSE", "readme.md"]
   s.test_files = Dir["spec/**/*"]
 
-  s.add_development_dependency "codeclimate-test-reporter", '~>0.4'
+  s.add_development_dependency "codeclimate-test-reporter", "~>0.4"
   s.add_development_dependency "pry", "~> 0.10"
   s.add_development_dependency "guard", "~> 2.12"
   s.add_development_dependency "guard-bundler", "~> 2.1"

@@ -1,4 +1,4 @@
-require 'spec_helper'
+require "spec_helper"
 
 describe GraphQL::StaticValidation::FragmentSpreadsArePossible do
   let(:query_string) {%|

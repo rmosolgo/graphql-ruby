@@ -1,4 +1,4 @@
-require 'spec_helper'
+require "spec_helper"
 
 describe GraphQL::StaticValidation::DirectivesAreDefined do
   let(:query_string) {"
@@ -17,8 +17,8 @@ describe GraphQL::StaticValidation::DirectivesAreDefined do
   let(:query) { GraphQL::Query.new(DummySchema, query_string) }
   let(:errors) { validator.validate(query) }
 
-  describe 'non-existent directives' do
-    it 'makes errors for them' do
+  describe "non-existent directives" do
+    it "makes errors for them" do
       expected = [
         {
           "message"=>"Directive @nonsense is not defined",

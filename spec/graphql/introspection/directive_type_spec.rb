@@ -1,4 +1,4 @@
-require 'spec_helper'
+require "spec_helper"
 
 describe GraphQL::Introspection::DirectiveType do
   let(:query_string) {%|
@@ -10,7 +10,7 @@ describe GraphQL::Introspection::DirectiveType do
   |}
   let(:result) { DummySchema.execute(query_string) }
 
-  it 'shows directive info ' do
+  it "shows directive info " do
     expected = { "data" => {
       "__schema" => {
         "directives" => [

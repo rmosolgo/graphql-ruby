@@ -1,4 +1,4 @@
-require 'spec_helper'
+require "spec_helper"
 
 describe GraphQL::StaticValidation::FragmentTypesExist do
   let(:query_string) {"
@@ -23,7 +23,7 @@ describe GraphQL::StaticValidation::FragmentTypesExist do
   let(:query) { GraphQL::Query.new(DummySchema, query_string) }
   let(:errors) { validator.validate(query) }
 
-  it 'finds non-existent types on fragments' do
+  it "finds non-existent types on fragments" do
     assert_equal(2, errors.length)
     inline_fragment_error =  {
       "message"=>"No such type Something, so it can't be a fragment condition",

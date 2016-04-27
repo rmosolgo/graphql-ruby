@@ -1,4 +1,4 @@
-require 'spec_helper'
+require "spec_helper"
 
 describe GraphQL::StaticValidation::FragmentsAreFinite do
   let(:query_string) {%|
@@ -28,7 +28,7 @@ describe GraphQL::StaticValidation::FragmentsAreFinite do
   let(:query) { GraphQL::Query.new(DummySchema, query_string) }
   let(:errors) { validator.validate(query) }
 
-  it 'doesnt allow infinite loops' do
+  it "doesnt allow infinite loops" do
     expected = [
       {
         "message"=>"Fragment sourceField contains an infinite loop",

@@ -1,4 +1,4 @@
-require 'spec_helper'
+require "spec_helper"
 
 describe GraphQL::Schema::MiddlewareChain do
   let(:step_1) { -> (step_values, next_step) { step_values << 1; next_step.call } }
