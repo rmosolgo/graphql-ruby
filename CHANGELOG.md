@@ -2,6 +2,14 @@
 
 ### Breaking changes & deprecations
 
+### New features
+
+### Bug fixes
+
+## 0.12.1 (26 Apr 2016)
+
+### Breaking changes & deprecations
+
 - In some cases, an object type is only connected to the Query (or Mutation) root by being a member of an interface.
 
   In these cases, bugs happen, especially with Rails development mode. (And sometimes, the bugs don't appear until you deploy to a production environment!)
