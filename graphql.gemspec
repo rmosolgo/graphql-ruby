@@ -29,5 +29,4 @@ Gem::Specification.new do |s|
   s.add_development_dependency "minitest-reporters", "~>1.0"
   s.add_development_dependency "racc", "~> 1.4"
   s.add_development_dependency "rake", "~> 11.0"
-  s.add_development_dependency "rexical", "~> 1.0"
 end
