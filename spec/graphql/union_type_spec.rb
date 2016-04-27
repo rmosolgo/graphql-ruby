@@ -17,7 +17,7 @@ describe GraphQL::UnionType do
   end
 
   it 'infers type from an object' do
-    assert_equal(CheeseType, DairyProductUnion.resolve_type(CHEESES[1]))
+    assert_equal(CheeseType, DairyProductUnion.resolve_type(CHEESES[1], OpenStruct.new(schema: DummySchema)))
   end
 
   it '#include? returns true if type in in possible_types' do

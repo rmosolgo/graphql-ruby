@@ -26,7 +26,7 @@ class GraphQL::Schema::TypeValidator
       end
     end
 
-    if type.kind.resolves?
+    if type.kind.union?
       implementation.must_respond_to(:resolve_type)
       implementation.must_respond_to(:possible_types, as: kind_name) do |possible_types|
         each_item_validator.validate(possible_types, as: "#{type_name}.possible_types", must_be: "objects") { |t| t.kind.object? }

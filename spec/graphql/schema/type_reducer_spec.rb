@@ -10,8 +10,6 @@ describe GraphQL::Schema::TypeReducer do
       "DairyAnimal" => DairyAnimalEnum,
       "Int" => GraphQL::INT_TYPE,
       "Edible" => EdibleInterface,
-      "Milk" => MilkType,
-      "ID" => GraphQL::ID_TYPE,
       "AnimalProduct" => AnimalProductInterface,
     }
     assert_equal(expected.keys, reducer.result.keys)
@@ -91,6 +89,12 @@ describe GraphQL::Schema::TypeReducer do
     it 'raises an error' do
       type_map = GraphQL::Schema::TypeReducer.find_all([])
       assert_raises(RuntimeError) { type_map["SomeType"] }
+    end
+  end
+
+  describe "when a field is only accessible through an interface" do
+    it "is found through Schema.new(types:)" do
+      assert_equal HoneyType, DummySchema.types["Honey"]
     end
   end
 end

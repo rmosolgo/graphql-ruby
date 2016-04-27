@@ -16,4 +16,8 @@ class GraphQL::UnionType < GraphQL::BaseType
   def kind
     GraphQL::TypeKinds::UNION
   end
+
+  def include?(child_type_defn)
+    possible_types.include?(child_type_defn)
+  end
 end

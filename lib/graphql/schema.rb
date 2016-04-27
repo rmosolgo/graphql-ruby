@@ -18,11 +18,14 @@ class GraphQL::Schema
   # @param query [GraphQL::ObjectType]  the query root for the schema
   # @param mutation [GraphQL::ObjectType] the mutation root for the schema
   # @param subscription [GraphQL::ObjectType] the subscription root for the schema
-  def initialize(query:, mutation: nil, subscription: nil, max_depth: nil)
+  # @param max_depth [Integer] maximum query nesting (if it's greater, raise an error)
+  # @param types [Array<GraphQL::BaseType>] additional types to include in this schema
+  def initialize(query:, mutation: nil, subscription: nil, max_depth: nil, types: [])
     @query    = query
     @mutation = mutation
     @subscription = subscription
     @max_depth = max_depth
+    @orphan_types = types
     @directives = DIRECTIVES.reduce({}) { |m, d| m[d.name] = d; m }
     @static_validator = GraphQL::StaticValidation::Validator.new(schema: self)
     @rescue_middleware = GraphQL::Schema::RescueMiddleware.new
@@ -37,7 +40,10 @@ class GraphQL::Schema
 
   # @return [GraphQL::Schema::TypeMap] `{ name => type }` pairs of types in this schema
   def types
-    @types ||= TypeReducer.find_all([query, mutation, GraphQL::Introspection::SchemaType].compact)
+    @types ||= begin
+      all_types = @orphan_types + [query, mutation, GraphQL::Introspection::SchemaType]
+      TypeReducer.find_all(all_types.compact)
+    end
   end
 
   # Execute a query on itself.
@@ -69,6 +75,13 @@ class GraphQL::Schema
     GraphQL::Schema::TypeExpression.new(self, ast_node).type
   end
 
+  # @param type_defn [GraphQL::InterfaceType, GraphQL::UnionType] the type whose members you want to retrieve
+  # @return [Array<GraphQL::ObjectType>] types which belong to `type_defn` in this schema
+  def possible_types(type_defn)
+    @interface_possible_types ||= GraphQL::Schema::PossibleTypes.new(self)
+    @interface_possible_types.possible_types(type_defn)
+  end
+
   class InvalidTypeError < GraphQL::Error
     def initialize(type, name)
       super("#{name} has an invalid type: must be an instance of GraphQL::BaseType, not #{type.class.inspect} (#{type.inspect})")
@@ -80,6 +93,7 @@ require 'graphql/schema/each_item_validator'
 require 'graphql/schema/field_validator'
 require 'graphql/schema/implementation_validator'
 require 'graphql/schema/middleware_chain'
+require 'graphql/schema/possible_types'
 require 'graphql/schema/rescue_middleware'
 require 'graphql/schema/type_expression'
 require 'graphql/schema/type_reducer'

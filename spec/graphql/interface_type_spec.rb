@@ -2,35 +2,18 @@ require 'spec_helper'
 
 describe GraphQL::InterfaceType do
   let(:interface) { EdibleInterface }
+  let(:dummy_query_context) { OpenStruct.new(schema: DummySchema) }
   it 'has possible types' do
-    assert_equal([CheeseType, MilkType], interface.possible_types)
+    assert_equal([CheeseType, HoneyType, MilkType], DummySchema.possible_types(interface))
   end
 
   it 'resolves types for objects' do
-    assert_equal(CheeseType, interface.resolve_type(CHEESES.values.first))
-    assert_equal(MilkType, interface.resolve_type(MILKS.values.first))
-  end
-
-  it 'handles when interfaces are re-assigned' do
-    iface = GraphQL::InterfaceType.define do
-    end
-    type = GraphQL::ObjectType.define do
-      interfaces [iface]
-    end
-    assert_equal([type], iface.possible_types)
-
-    type.interfaces = []
-    assert_equal([], iface.possible_types)
-
-    type.interfaces = [iface]
-    assert_equal([type], iface.possible_types)
-
-    type.interfaces = [iface]
-    assert_equal([type], iface.possible_types)
+    assert_equal(CheeseType, interface.resolve_type(CHEESES.values.first, dummy_query_context))
+    assert_equal(MilkType, interface.resolve_type(MILKS.values.first, dummy_query_context))
   end
 
   describe 'query evaluation' do
-    let(:result) { DummySchema.execute(query_string, context: {}, variables: {"cheeseId" => 2})}
+    let(:result) { DummySchema.execute(query_string, variables: {"cheeseId" => 2})}
     let(:query_string) {%|
       query fav {
         favoriteEdible { fatContent }
@@ -42,8 +25,8 @@ describe GraphQL::InterfaceType do
     end
   end
 
-  describe 'mergable query evaluation' do
-    let(:result) { DummySchema.execute(query_string, context: {}, variables: {"cheeseId" => 2})}
+  describe 'mergeable query evaluation' do
+    let(:result) { DummySchema.execute(query_string, variables: {"cheeseId" => 2})}
     let(:query_string) {%|
       query fav {
         favoriteEdible { fatContent }
@@ -59,14 +42,14 @@ describe GraphQL::InterfaceType do
   describe '#resolve_type' do
     let(:interface) {
       GraphQL::InterfaceType.define do
-        resolve_type -> (object) {
+        resolve_type -> (object, ctx) {
           :custom_resolve
         }
       end
     }
 
     it 'can be overriden in the definition' do
-      assert_equal(interface.resolve_type(123), :custom_resolve)
+      assert_equal(interface.resolve_type(123, nil), :custom_resolve)
     end
   end
 end

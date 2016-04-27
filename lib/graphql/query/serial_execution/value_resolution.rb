@@ -54,7 +54,7 @@ module GraphQL
 
         class HasPossibleTypeResolution < BaseResolution
           def non_null_result
-            resolved_type = field_type.resolve_type(value)
+            resolved_type = field_type.resolve_type(value, execution_context)
             strategy_class = get_strategy_for_kind(resolved_type.kind)
             inner_strategy = strategy_class.new(value, resolved_type, target, parent_type, ast_field, execution_context)
             inner_strategy.result
