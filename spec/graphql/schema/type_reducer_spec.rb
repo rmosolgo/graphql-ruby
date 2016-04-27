@@ -1,8 +1,9 @@
 require 'spec_helper'
 
 describe GraphQL::Schema::TypeReducer do
+  let(:type_map) { GraphQL::Schema::TypeMap.new }
   it 'finds types from a single type and its fields' do
-    reducer = GraphQL::Schema::TypeReducer.new(CheeseType, {})
+    reducer = GraphQL::Schema::TypeReducer.new(CheeseType, type_map)
     expected = {
       "Cheese" => CheeseType,
       "Float" => GraphQL::FLOAT_TYPE,
@@ -13,13 +14,14 @@ describe GraphQL::Schema::TypeReducer do
       "Milk" => MilkType,
       "ID" => GraphQL::ID_TYPE,
       "AnimalProduct" => AnimalProductInterface,
+      "Honey" => HoneyType,
     }
     assert_equal(expected.keys, reducer.result.keys)
-    assert_equal(expected, reducer.result)
+    assert_equal(expected, reducer.result.to_h)
   end
 
   it 'finds type from arguments' do
-    reducer = GraphQL::Schema::TypeReducer.new(QueryType, {})
+    reducer = GraphQL::Schema::TypeReducer.new(QueryType, type_map)
     assert_equal(DairyProductInputType, reducer.result["DairyProductInput"])
   end
 
@@ -34,13 +36,13 @@ describe GraphQL::Schema::TypeReducer do
       input_field :child, type_child
     end
 
-    reducer = GraphQL::Schema::TypeReducer.new(type_parent, {})
+    reducer = GraphQL::Schema::TypeReducer.new(type_parent, type_map)
     expected = {
       "InputTypeParent" => type_parent,
       "InputTypeChild" => type_child,
       "String" => GraphQL::STRING_TYPE
     }
-    assert_equal(expected, reducer.result)
+    assert_equal(expected, reducer.result.to_h)
   end
 
   describe 'when a type is invalid' do
@@ -59,12 +61,12 @@ describe GraphQL::Schema::TypeReducer do
     }
 
     it 'raises an InvalidTypeError when passed nil' do
-      reducer = GraphQL::Schema::TypeReducer.new(invalid_type, {})
+      reducer = GraphQL::Schema::TypeReducer.new(invalid_type, type_map)
       assert_raises(GraphQL::Schema::InvalidTypeError) { reducer.result }
     end
 
     it 'raises an InvalidTypeError when passed an object that isnt a GraphQL::BaseType' do
-      reducer = GraphQL::Schema::TypeReducer.new(another_invalid_type, {})
+      reducer = GraphQL::Schema::TypeReducer.new(another_invalid_type, type_map)
       assert_raises(GraphQL::Schema::InvalidTypeError) { reducer.result }
     end
   end
@@ -91,6 +93,23 @@ describe GraphQL::Schema::TypeReducer do
     it 'raises an error' do
       type_map = GraphQL::Schema::TypeReducer.find_all([])
       assert_raises(RuntimeError) { type_map["SomeType"] }
+    end
+  end
+
+  describe "when a type can only be inferred through an interface" do
+    it "logs a warning" do
+      out, err = capture_io do
+         GraphQL::Schema::TypeReducer.find_all([EdibleInterface])
+      end
+      assert_match /Type "Milk" was inferred from an interface/, err
+      assert_match /Type "Honey" was inferred from an interface/, err
+    end
+
+    it "is ok if the types are passed in explicitly" do
+      out, err = capture_io do
+         GraphQL::Schema::TypeReducer.find_all([EdibleInterface, HoneyType, MilkType])
+      end
+      assert_equal "", err
     end
   end
 end

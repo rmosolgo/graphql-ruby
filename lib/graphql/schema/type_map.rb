@@ -8,10 +8,14 @@ module GraphQL
     # If you want a type, but want to handle the undefined case, use {#fetch}.
     class TypeMap
       extend Forwardable
-      def_delegators :@storage, :key?, :keys, :values
+      def_delegators :@storage, :key?, :keys, :values, :fetch, :to_h
+
+      # Used for detecting deprecated interface member inferrance
+      attr_accessor :safely_discovered_types
 
       def initialize
         @storage = {}
+        @safely_discovered_types = []
       end
 
       def [](key)
@@ -26,8 +30,11 @@ module GraphQL
         end
       end
 
-      def fetch(key, fallback_value)
-        @storage.key?(key) ? @storage[key] : fallback_value
+      def warnings
+        interface_only_types = @storage.values - safely_discovered_types
+        interface_only_types.map do |unsafe_type|
+          "Type \"#{unsafe_type}\" was inferred from an interface's #possible_types. This won't be supported in the next version of GraphQL. Pass this type with the `types:` argument to `Schema.new` instead!"
+        end
       end
     end
   end

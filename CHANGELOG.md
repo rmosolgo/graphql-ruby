@@ -2,6 +2,40 @@
 
 ### Breaking changes & deprecations
 
+- In some cases, an object type is only connected to the Query (or Mutation) root by being a member of an interface.
+
+  In these cases, bugs happen, especially with Rails development mode. (And sometimes, the bugs don't appear until you deploy to a production environment!)
+
+  So, in a case like this:
+
+  ```ruby
+  HatInterface = GraphQL::ObjectType.define do
+    # ...
+  end
+
+  FezType = GraphQL::ObjectType.define do
+    # ...
+    interfaces [HatInterface]
+  end
+
+  QueryType = GraphQL::ObjectType.define do
+    field :randomHat, HatInterface # ...
+  end
+  ```
+
+  `FezType` can only be discovered by `QueryType` _through_ `HatInterface`. If `fez_type.rb` hasn't been loaded by Rails, `HatInterface.possible_types` will be empty!
+
+  Now, `FezType` must be passed to the schema explicitly:
+
+  ```ruby
+  Schema.new(
+    # ...
+    types: [FezType]
+  )
+  ```
+
+  Since the type is passed directly to the schema, it will be loaded right away!
+
 ### New features
 
 ### Bug fixes
