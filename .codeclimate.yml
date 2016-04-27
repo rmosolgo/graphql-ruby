@@ -1,0 +1,3 @@
+exclude_paths:
+- lib/graphql/language/lexer.rb
+- lib/graphql/language/parser.rb
