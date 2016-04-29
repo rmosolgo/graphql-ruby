@@ -346,6 +346,7 @@ https://medium.com/@gauravtiwari/graphql-and-relay-on-rails-first-relay-powered-
 - `GlobalNodeIdentification.to_global_id` should receive the type name and _object_, not `id`. (Or, maintain the "`type_name, id` in, `type_name, id` out" pattern?)
 - Make GlobalId a property of the schema, not a global
 - Reduce duplication in ArrayConnection / RelationConnection
+- Improve API for creating edges (better RANGE_ADD support)
 
 ## More Resources
 
