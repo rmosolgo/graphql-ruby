@@ -17,7 +17,8 @@ module GraphQL
       end
 
       # Run the next step in the chain, passing in arguments and handle to the next step
-      def call
+      def call(next_arguments = @arguments)
+        @arguments = next_arguments
         next_step = steps.shift
         next_middleware = self
         next_step.call(*arguments, next_middleware)
