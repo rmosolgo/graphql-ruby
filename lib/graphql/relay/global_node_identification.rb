@@ -95,9 +95,9 @@ module GraphQL
       # get a type for a given object
       def type_from_object(object)
         type_result = @type_from_object_proc.call(object)
-        if !type_result.is_a?(GraphQL::BaseType)
-          return nil if type_result.nil?
-
+        if type_result.nil?
+          nil
+        elsif !type_result.is_a?(GraphQL::BaseType)
           type_str = "#{type_result} (#{type_result.class.name})"
           raise "type_from_object(#{object}) returned #{type_str}, but it should return a GraphQL type"
         else

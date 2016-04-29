@@ -21,8 +21,12 @@ NodeIdentification = GraphQL::Relay::GlobalNodeIdentification.define do
       :not_a_type
     elsif object.is_a?(Base)
       BaseType
+    elsif STAR_WARS_DATA["Faction"].values.include?(object)
+      Faction
+    elsif STAR_WARS_DATA["Ship"].values.include?(object)
+      Ship
     else
-      STAR_WARS_DATA["Faction"].values.include?(object) ? Faction : Ship
+      nil
     end
   end
 end
