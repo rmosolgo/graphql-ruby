@@ -1,5 +1,17 @@
 # graphql-relay
 
+## 0.9.3 (29 Apr 2016)
+
+### Bug Fix
+
+- Fix Node interface to support GraphQL 0.13.0+
+
+## 0.9.2 (29 Apr 2016)
+
+### Bug Fix
+
+- Fix Node interface when type_from_object returns nil
+
 ## 0.9.1 (6 Apr 2016)
 
 ### Bug Fix

@@ -40,7 +40,7 @@ module GraphQL
           GraphQL::InterfaceType.define do
             name "Node"
             field :id, !types.ID
-            resolve_type -> (obj) {
+            resolve_type -> (obj, schema) {
               ident.type_from_object(obj)
             }
           end
