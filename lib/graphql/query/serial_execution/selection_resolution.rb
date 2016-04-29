@@ -60,10 +60,13 @@ module GraphQL
         end
 
         def fragment_type_can_apply?(ast_fragment)
-          return true unless ast_fragment.type
-          child_type = execution_context.get_type(ast_fragment.type)
-          resolved_type = GraphQL::Query::TypeResolver.new(target, child_type, type, execution_context.query.context).type
-          !resolved_type.nil?
+          if ast_fragment.type.nil?
+            true
+          else
+            child_type = execution_context.get_type(ast_fragment.type)
+            resolved_type = GraphQL::Query::TypeResolver.new(target, child_type, type, execution_context.query.context).type
+            !resolved_type.nil?
+          end
         end
 
         def merge_fields(field1, field2)

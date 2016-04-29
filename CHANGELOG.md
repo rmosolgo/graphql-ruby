@@ -2,6 +2,14 @@
 
 ### Breaking changes & deprecations
 
+### New features
+
+### Bug fixes
+
+## 0.13.0 (29 Apr 2016)
+
+### Breaking changes & deprecations
+
 - "Dangling" object types are not loaded into the schema. The must be passed in `GraphQL::Schema.new(types: [...])`. (This was deprecated in 0.12.1)
 
 ### New features
@@ -12,6 +20,7 @@
 - Support inline fragments without type condition #123
 - Support multiple schemas composed of the same types #142
 - Accept argument `description` and `default_value` in the block #138
+- Middlewares can send _new_ arguments to subsequent middlewares #129
 
 ### Bug fixes
 
