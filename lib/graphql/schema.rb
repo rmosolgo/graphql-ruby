@@ -99,6 +99,8 @@ module GraphQL
       @interface_possible_types.possible_types(type_defn)
     end
 
+    # Add operations from `query_string` into the {QueryCache}. They can be executed by name later.
+    # @param query_string [String] the GraphQL query whose operations will be cached
     def cache(query_string)
       query_cache.add(query_string)
     end

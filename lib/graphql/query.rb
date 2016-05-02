@@ -13,29 +13,24 @@ module GraphQL
     # Prepare query `query_string` on `schema`
     # @param schema [GraphQL::Schema]
     # @param query_string [String]
-    # @param context [#[]] an arbitrary hash of values which you can access in {GraphQL::Field#resolve}
-    # @param variables [Hash] values for `$variables` in the query
     # @param debug [Boolean] if true, errors are raised, if false, errors are put in the `errors` key
     # @param validate [Boolean] if true, `query_string` will be validated with {StaticValidation::Validator}
     # @param operation_name [String] if the query string contains many operations, this is the one which should be executed
+    # @param variables [Hash] values for `$variables` in the query
+    # @param context [#[]] an arbitrary hash of values which you can access in {GraphQL::Field#resolve}
     def initialize(schema, query_string, context: nil, variables: nil, debug: false, validate: true, operation_name: nil, max_depth: nil)
       @schema = schema
       @debug = debug
       @max_depth = max_depth || schema.max_depth
-      if context
-        warn("Initializing a Query with context is deprecated, pass the context to `execute` instead.")
-        @provided_context = context
-      end
       @validate = validate
       @operation_name = operation_name
       @fragments = {}
       @operations = {}
-      if variables
-        warn("Initializing a Query with variables is deprecated, pass the context to `execute` instead.")
-        @provided_variables = variables
-      else
-        @provided_variables = {}
-      end
+
+      # If the query is a one-off & triggered with Query.new, it may have these values:
+      @provided_context = context
+      @provided_variables = variables
+
       @document = GraphQL.parse(query_string)
       @document.definitions.each do |part|
         if part.is_a?(GraphQL::Language::Nodes::FragmentDefinition)
@@ -48,7 +43,6 @@ module GraphQL
 
     # Get the result for this query, executing it once
     def result
-      warn("Query#result is deprecated, use Schema#execute instead")
       @result ||= execute(
         variables: @provided_variables,
         context: @provided_context,
@@ -57,6 +51,10 @@ module GraphQL
     end
 
     # Execute the query string with the provided variables & context
+    # @param variables [Hash{String => Object}] Values for `$`-variables in the query
+    # @param context [#[]] Arbitrary key-value object which is accessible during query resolution
+    # @param operation_name [String] The name of the operation to run (required if the query string has multiple operations)
+    # @return [Hash] Query result with "data" and "errors" keys
     def execute(variables: {}, context: nil, operation_name: nil)
       if @validate && validation_errors.any?
         return { "errors" => validation_errors }

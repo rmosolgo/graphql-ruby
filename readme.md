@@ -126,6 +126,7 @@ If you're building a backend for [Relay](http://facebook.github.io/relay/), you'
 - Revamp the fixture Schema to be more useful (better names, more extensible)
 - Fix when a field's type is left out `field :name, "This is the name field"`
 - Revisit error handling & `debug:` option
+- Trying to send a `mutation` without a MutationType gives `no method #unwrap for nil`
 - __Subscriptions__
   - This is a good chance to make an `Operation` abstraction of which `query`, `mutation` and `subscription` are members
   - For a subscription, `graphql` would send an outbound message to the system (allow the host application to manage its own subscriptions via Pusher, ActionCable, whatever)

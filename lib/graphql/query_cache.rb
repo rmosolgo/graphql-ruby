@@ -8,7 +8,7 @@ module GraphQL
   #   MySchema.cache_query(query_string)
   #
   # @example Executing a cached query
-  #   MySchema.execute(nil, operation_name: op_name, variables: variables, context: ctx)
+  #   MySchema.execute(operation_name: op_name, variables: variables, context: ctx)
   #
   class QueryCache
     def initialize(schema)
