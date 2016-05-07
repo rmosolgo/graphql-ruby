@@ -31,6 +31,9 @@
 
   QUOTED_STRING = QUOTE STRING_CHAR* QUOTE;
 
+  # catch-all for anything else. must be at the bottom for precedence.
+  UNKNOWN_CHAR =         /./;
+
   main := |*
     INT           => { emit_token.call(:INT) };
     FLOAT         => { emit_token.call(:FLOAT) };
@@ -60,6 +63,8 @@
 
     BLANK   => { meta[:col] += te - ts };
     COMMENT => { meta[:col] += te - ts };
+
+    UNKNOWN_CHAR => { emit_token.call(:UNKNOWN_CHAR) };
 
   *|;
 }%%

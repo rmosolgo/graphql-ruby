@@ -316,7 +316,7 @@ describe GraphQL::Language::Parser do
         GraphQL.parse("{ field; }")
       end
 
-      assert_includes(e.message, "unrecognized character")
+      assert_includes(e.message, "Parse error on \";\"")
     end
 
     it "rejects control characters" do
