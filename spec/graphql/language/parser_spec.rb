@@ -324,7 +324,7 @@ describe GraphQL::Language::Parser do
         GraphQL.parse("{ \afield }")
       end
 
-      assert_includes(e.message, "unrecognized character")
+      assert_includes(e.message, "Parse error on \"\\a\"")
     end
 
     it "rejects partial BOM" do
@@ -332,7 +332,7 @@ describe GraphQL::Language::Parser do
         GraphQL.parse("{ \xeffield }")
       end
 
-      assert_includes(e.message, "unrecognized character")
+      assert_includes(e.message, "Parse error on \"\\xEF\"")
     end
 
     it "rejects vertical tabs" do
@@ -340,7 +340,7 @@ describe GraphQL::Language::Parser do
         GraphQL.parse("{ \vfield }")
       end
 
-      assert_includes(e.message, "unrecognized character")
+      assert_includes(e.message, "Parse error on \"\\v\"")
     end
 
     it "rejects form feed" do
@@ -348,7 +348,7 @@ describe GraphQL::Language::Parser do
         GraphQL.parse("{ \ffield }")
       end
 
-      assert_includes(e.message, "unrecognized character")
+      assert_includes(e.message, "Parse error on \"\\f\"")
     end
 
     it "rejects no break space" do
@@ -356,7 +356,7 @@ describe GraphQL::Language::Parser do
         GraphQL.parse("{ \xa0field }")
       end
 
-      assert_includes(e.message, "unrecognized character")
+      assert_includes(e.message, "Parse error on \"\\xA0\"")
     end
 
     it "rejects unterminated strings" do
