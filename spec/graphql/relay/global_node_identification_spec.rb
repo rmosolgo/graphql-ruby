@@ -87,6 +87,8 @@ describe GraphQL::Relay::GlobalNodeIdentification do
           from_global_id -> (global_id) {
             global_id.split("/")
           }
+
+          description "Hello, World!"
         end
       end
 
@@ -107,6 +109,12 @@ describe GraphQL::Relay::GlobalNodeIdentification do
           result = query(%| { node(id: "Base/1") { ... on Base { name } } }|)
           base_name = result["data"]["node"]["name"]
           assert_equal "Yavin", base_name
+        end
+      end
+
+      describe "setting a description" do
+        it "allows you to set a description" do
+          assert_equal "Hello, World!", @new_node_id.field.description
         end
       end
     end
