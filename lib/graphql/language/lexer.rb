@@ -652,15 +652,24 @@ end
 
       def self.emit_string(ts, te, meta)
         value = meta[:data][ts...te].pack("c*").force_encoding("UTF-8")
-        replace_escaped_characters_in_place(value)
+        if value =~ /\\u|\\./
+          meta[:tokens] << GraphQL::Language::Token.new(
+            name: :BAD_UNICODE_ESCAPE,
+            value: value,
+            line: meta[:line],
+            col: meta[:col],
+          )
+        else
+          replace_escaped_characters_in_place(value)
 
-        meta[:tokens] << GraphQL::Language::Token.new(
-          name: :STRING,
-          value: value,
-          line: meta[:line],
-          col: meta[:col],
-        )
-        meta[:col] += te - ts
+          meta[:tokens] << GraphQL::Language::Token.new(
+            name: :STRING,
+            value: value,
+            line: meta[:line],
+            col: meta[:col],
+          )
+          meta[:col] += te - ts
+        end
       end
     end
   end

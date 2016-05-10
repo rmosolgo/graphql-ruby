@@ -378,7 +378,7 @@ describe GraphQL::Language::Parser do
         GraphQL.parse("{ field(arg:\"\\x\") }")
       end
 
-      assert_includes(e.message, "bad escape sequence")
+      assert_includes(e.message, "Parse error on bad Unicode escape sequence")
     end
 
     it "rejects incomplete escape sequence in strings" do
