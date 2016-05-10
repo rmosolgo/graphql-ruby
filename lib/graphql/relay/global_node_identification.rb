@@ -9,7 +9,8 @@ module GraphQL
     #
     class GlobalNodeIdentification
       include GraphQL::Define::InstanceDefinable
-      accepts_definitions(:object_from_id, :type_from_object, :to_global_id, :from_global_id)
+      accepts_definitions(:object_from_id, :type_from_object, :to_global_id, :from_global_id, :description)
+      attr_accessor :description
 
       class << self
         attr_accessor :instance, :id_separator
@@ -56,6 +57,7 @@ module GraphQL
           resolve -> (obj, args, ctx) {
             ident.object_from_id(args[:id], ctx)
           }
+          description ident.description
         end
       end
 
