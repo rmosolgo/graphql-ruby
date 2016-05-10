@@ -422,7 +422,7 @@ describe GraphQL::Language::Parser do
         GraphQL.parse("fragment on on on { on }")
       end
 
-      assert_includes(e.message, "unexpected on")
+      assert_includes(e.message, "Parse error on \"on\"")
     end
 
     it "rejects fragment spread of 'on'" do

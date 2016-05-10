@@ -114,6 +114,12 @@ rule
     | FALSE
     | ON
 
+  name_without_on:
+      IDENTIFIER
+    | FRAGMENT
+    | TRUE
+    | FALSE
+
   arguments_opt:
       /* none */                    { return [] }
     | RPAREN LPAREN                 { return [] }
@@ -192,7 +198,7 @@ rule
       }
 
   fragment_definition:
-    FRAGMENT name ON name directives_list_opt selection_set {
+    FRAGMENT name ON name_without_on directives_list_opt selection_set {
       return make_node(:FragmentDefinition, {
           name:       val[1],
           type:       val[3],
