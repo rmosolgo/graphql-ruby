@@ -13,6 +13,7 @@
   FRAGMENT =      'fragment';
   TRUE =          'true';
   FALSE =         'false';
+  NULL =          'null';
   RCURLY =        '{';
   LCURLY =        '}';
   RPAREN =        '(';
@@ -41,6 +42,7 @@
     FRAGMENT      => { emit_token.call(:FRAGMENT) };
     TRUE          => { emit_token.call(:TRUE) };
     FALSE         => { emit_token.call(:FALSE) };
+    NULL          => { emit_token.call(:NULL) };
     RCURLY        => { emit_token.call(:RCURLY) };
     LCURLY        => { emit_token.call(:LCURLY) };
     RPAREN        => { emit_token.call(:RPAREN) };

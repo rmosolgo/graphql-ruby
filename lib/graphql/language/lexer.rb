@@ -1,7 +1,7 @@
 
 # line 1 "lib/graphql/language/lexer.rl"
 
-# line 70 "lib/graphql/language/lexer.rl"
+# line 72 "lib/graphql/language/lexer.rl"
 
 
 
@@ -30,16 +30,16 @@ class << self
 end
 self._graphql_lexer_actions = [
 	0, 1, 0, 1, 1, 1, 2, 1, 
-	12, 1, 13, 1, 14, 1, 15, 1, 
-	16, 1, 17, 1, 18, 1, 19, 1, 
-	20, 1, 21, 1, 22, 1, 23, 1, 
-	24, 1, 25, 1, 26, 1, 27, 1, 
-	28, 1, 29, 1, 30, 1, 31, 1, 
-	32, 1, 33, 1, 34, 1, 35, 2, 
+	13, 1, 14, 1, 15, 1, 16, 1, 
+	17, 1, 18, 1, 19, 1, 20, 1, 
+	21, 1, 22, 1, 23, 1, 24, 1, 
+	25, 1, 26, 1, 27, 1, 28, 1, 
+	29, 1, 30, 1, 31, 1, 32, 1, 
+	33, 1, 34, 1, 35, 1, 36, 2, 
 	2, 3, 2, 2, 4, 2, 2, 5, 
 	2, 2, 6, 2, 2, 7, 2, 2, 
 	8, 2, 2, 9, 2, 2, 10, 2, 
-	2, 11
+	2, 11, 2, 2, 12
 ]
 
 class << self
@@ -47,10 +47,11 @@ class << self
 	private :_graphql_lexer_key_offsets, :_graphql_lexer_key_offsets=
 end
 self._graphql_lexer_key_offsets = [
-	0, 2, 4, 6, 8, 12, 13, 44, 
-	47, 49, 51, 54, 61, 63, 69, 76, 
-	77, 84, 93, 101, 109, 117, 125, 133, 
-	141, 149, 157, 165, 173, 181, 189
+	0, 2, 4, 6, 8, 12, 13, 45, 
+	48, 50, 52, 55, 62, 64, 70, 77, 
+	78, 85, 94, 102, 110, 118, 126, 134, 
+	142, 150, 158, 166, 174, 182, 190, 198, 
+	206, 214
 ]
 
 class << self
@@ -62,27 +63,30 @@ self._graphql_lexer_trans_keys = [
 	43, 45, 48, 57, 46, 9, 10, 13, 
 	32, 33, 34, 35, 36, 40, 41, 44, 
 	45, 46, 48, 58, 61, 64, 91, 93, 
-	95, 102, 111, 116, 123, 125, 49, 57, 
-	65, 90, 97, 122, 9, 32, 44, 34, 
-	92, 10, 13, 48, 49, 57, 43, 45, 
-	46, 69, 101, 48, 57, 48, 57, 43, 
-	45, 69, 101, 48, 57, 43, 45, 46, 
-	69, 101, 48, 57, 46, 95, 48, 57, 
-	65, 90, 97, 122, 95, 97, 114, 48, 
-	57, 65, 90, 98, 122, 95, 108, 48, 
-	57, 65, 90, 97, 122, 95, 115, 48, 
-	57, 65, 90, 97, 122, 95, 101, 48, 
-	57, 65, 90, 97, 122, 95, 97, 48, 
-	57, 65, 90, 98, 122, 95, 103, 48, 
-	57, 65, 90, 97, 122, 95, 109, 48, 
-	57, 65, 90, 97, 122, 95, 101, 48, 
-	57, 65, 90, 97, 122, 95, 110, 48, 
-	57, 65, 90, 97, 122, 95, 116, 48, 
-	57, 65, 90, 97, 122, 95, 110, 48, 
-	57, 65, 90, 97, 122, 95, 114, 48, 
-	57, 65, 90, 97, 122, 95, 117, 48, 
-	57, 65, 90, 97, 122, 95, 101, 48, 
-	57, 65, 90, 97, 122, 0
+	95, 102, 110, 111, 116, 123, 125, 49, 
+	57, 65, 90, 97, 122, 9, 32, 44, 
+	34, 92, 10, 13, 48, 49, 57, 43, 
+	45, 46, 69, 101, 48, 57, 48, 57, 
+	43, 45, 69, 101, 48, 57, 43, 45, 
+	46, 69, 101, 48, 57, 46, 95, 48, 
+	57, 65, 90, 97, 122, 95, 97, 114, 
+	48, 57, 65, 90, 98, 122, 95, 108, 
+	48, 57, 65, 90, 97, 122, 95, 115, 
+	48, 57, 65, 90, 97, 122, 95, 101, 
+	48, 57, 65, 90, 97, 122, 95, 97, 
+	48, 57, 65, 90, 98, 122, 95, 103, 
+	48, 57, 65, 90, 97, 122, 95, 109, 
+	48, 57, 65, 90, 97, 122, 95, 101, 
+	48, 57, 65, 90, 97, 122, 95, 110, 
+	48, 57, 65, 90, 97, 122, 95, 116, 
+	48, 57, 65, 90, 97, 122, 95, 117, 
+	48, 57, 65, 90, 97, 122, 95, 108, 
+	48, 57, 65, 90, 97, 122, 95, 108, 
+	48, 57, 65, 90, 97, 122, 95, 110, 
+	48, 57, 65, 90, 97, 122, 95, 114, 
+	48, 57, 65, 90, 97, 122, 95, 117, 
+	48, 57, 65, 90, 97, 122, 95, 101, 
+	48, 57, 65, 90, 97, 122, 0
 ]
 
 class << self
@@ -90,10 +94,11 @@ class << self
 	private :_graphql_lexer_single_lengths, :_graphql_lexer_single_lengths=
 end
 self._graphql_lexer_single_lengths = [
-	2, 2, 0, 0, 2, 1, 25, 3, 
+	2, 2, 0, 0, 2, 1, 26, 3, 
 	2, 2, 1, 5, 0, 4, 5, 1, 
 	1, 3, 2, 2, 2, 2, 2, 2, 
-	2, 2, 2, 2, 2, 2, 2
+	2, 2, 2, 2, 2, 2, 2, 2, 
+	2, 2
 ]
 
 class << self
@@ -104,7 +109,8 @@ self._graphql_lexer_range_lengths = [
 	0, 0, 1, 1, 1, 0, 3, 0, 
 	0, 0, 1, 1, 1, 1, 1, 0, 
 	3, 3, 3, 3, 3, 3, 3, 3, 
-	3, 3, 3, 3, 3, 3, 3
+	3, 3, 3, 3, 3, 3, 3, 3, 
+	3, 3
 ]
 
 class << self
@@ -112,10 +118,11 @@ class << self
 	private :_graphql_lexer_index_offsets, :_graphql_lexer_index_offsets=
 end
 self._graphql_lexer_index_offsets = [
-	0, 3, 6, 8, 10, 14, 16, 45, 
-	49, 52, 55, 58, 65, 67, 73, 80, 
-	82, 87, 94, 100, 106, 112, 118, 124, 
-	130, 136, 142, 148, 154, 160, 166
+	0, 3, 6, 8, 10, 14, 16, 46, 
+	50, 53, 56, 59, 66, 68, 74, 81, 
+	83, 88, 95, 101, 107, 113, 119, 125, 
+	131, 137, 143, 149, 155, 161, 167, 173, 
+	179, 185
 ]
 
 class << self
@@ -128,23 +135,25 @@ self._graphql_lexer_indicies = [
 	12, 13, 13, 12, 14, 15, 16, 17, 
 	18, 19, 12, 20, 21, 22, 24, 25, 
 	26, 28, 29, 27, 30, 31, 32, 33, 
-	34, 23, 27, 27, 11, 12, 12, 12, 
-	35, 2, 3, 1, 36, 36, 16, 22, 
-	23, 37, 8, 8, 39, 40, 40, 5, 
-	38, 5, 41, 8, 8, 40, 40, 7, 
-	41, 8, 8, 39, 40, 40, 23, 38, 
-	42, 37, 27, 27, 27, 27, 0, 27, 
-	44, 45, 27, 27, 27, 43, 27, 46, 
-	27, 27, 27, 43, 27, 47, 27, 27, 
-	27, 43, 27, 48, 27, 27, 27, 43, 
-	27, 49, 27, 27, 27, 43, 27, 50, 
-	27, 27, 27, 43, 27, 51, 27, 27, 
-	27, 43, 27, 52, 27, 27, 27, 43, 
-	27, 53, 27, 27, 27, 43, 27, 54, 
-	27, 27, 27, 43, 27, 55, 27, 27, 
-	27, 43, 27, 56, 27, 27, 27, 43, 
-	27, 57, 27, 27, 27, 43, 27, 58, 
-	27, 27, 27, 43, 0
+	34, 35, 23, 27, 27, 11, 12, 12, 
+	12, 36, 2, 3, 1, 37, 37, 16, 
+	22, 23, 38, 8, 8, 40, 41, 41, 
+	5, 39, 5, 42, 8, 8, 41, 41, 
+	7, 42, 8, 8, 40, 41, 41, 23, 
+	39, 43, 38, 27, 27, 27, 27, 0, 
+	27, 45, 46, 27, 27, 27, 44, 27, 
+	47, 27, 27, 27, 44, 27, 48, 27, 
+	27, 27, 44, 27, 49, 27, 27, 27, 
+	44, 27, 50, 27, 27, 27, 44, 27, 
+	51, 27, 27, 27, 44, 27, 52, 27, 
+	27, 27, 44, 27, 53, 27, 27, 27, 
+	44, 27, 54, 27, 27, 27, 44, 27, 
+	55, 27, 27, 27, 44, 27, 56, 27, 
+	27, 27, 44, 27, 57, 27, 27, 27, 
+	44, 27, 58, 27, 27, 27, 44, 27, 
+	59, 27, 27, 27, 44, 27, 60, 27, 
+	27, 27, 44, 27, 61, 27, 27, 27, 
+	44, 27, 62, 27, 27, 27, 44, 0
 ]
 
 class << self
@@ -156,10 +165,10 @@ self._graphql_lexer_trans_targs = [
 	2, 6, 6, 6, 7, 6, 6, 8, 
 	9, 6, 6, 6, 10, 15, 11, 14, 
 	6, 6, 6, 16, 6, 6, 17, 27, 
-	28, 6, 6, 6, 6, 6, 6, 3, 
-	4, 6, 5, 6, 18, 21, 19, 20, 
-	16, 22, 23, 24, 25, 26, 16, 16, 
-	29, 30, 16
+	30, 31, 6, 6, 6, 6, 6, 6, 
+	3, 4, 6, 5, 6, 18, 21, 19, 
+	20, 16, 22, 23, 24, 25, 26, 16, 
+	28, 29, 16, 16, 32, 33, 16
 ]
 
 class << self
@@ -167,14 +176,14 @@ class << self
 	private :_graphql_lexer_trans_actions, :_graphql_lexer_trans_actions=
 end
 self._graphql_lexer_trans_actions = [
-	53, 0, 21, 0, 73, 0, 49, 58, 
-	0, 51, 27, 35, 0, 33, 31, 79, 
+	53, 0, 21, 0, 76, 0, 49, 58, 
+	0, 51, 27, 35, 0, 33, 31, 82, 
 	0, 23, 11, 13, 0, 5, 55, 55, 
-	19, 29, 25, 76, 15, 17, 0, 0, 
-	0, 7, 9, 43, 45, 47, 37, 0, 
-	0, 39, 0, 41, 0, 0, 0, 0, 
-	70, 0, 0, 0, 0, 0, 64, 61, 
-	0, 0, 67
+	19, 29, 25, 79, 15, 17, 0, 0, 
+	0, 0, 7, 9, 43, 45, 47, 37, 
+	0, 0, 39, 0, 41, 0, 0, 0, 
+	0, 70, 0, 0, 0, 0, 0, 64, 
+	0, 0, 73, 61, 0, 0, 67
 ]
 
 class << self
@@ -185,7 +194,8 @@ self._graphql_lexer_to_state_actions = [
 	0, 0, 0, 0, 0, 0, 1, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
-	0, 0, 0, 0, 0, 0, 0
+	0, 0, 0, 0, 0, 0, 0, 0, 
+	0, 0
 ]
 
 class << self
@@ -196,7 +206,8 @@ self._graphql_lexer_from_state_actions = [
 	0, 0, 0, 0, 0, 0, 3, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
-	0, 0, 0, 0, 0, 0, 0
+	0, 0, 0, 0, 0, 0, 0, 0, 
+	0, 0
 ]
 
 class << self
@@ -204,10 +215,11 @@ class << self
 	private :_graphql_lexer_eof_trans, :_graphql_lexer_eof_trans=
 end
 self._graphql_lexer_eof_trans = [
-	1, 1, 1, 7, 1, 10, 0, 36, 
-	1, 37, 38, 39, 42, 42, 39, 38, 
-	1, 44, 44, 44, 44, 44, 44, 44, 
-	44, 44, 44, 44, 44, 44, 44
+	1, 1, 1, 7, 1, 10, 0, 37, 
+	1, 38, 39, 40, 43, 43, 40, 39, 
+	1, 45, 45, 45, 45, 45, 45, 45, 
+	45, 45, 45, 45, 45, 45, 45, 45, 
+	45, 45
 ]
 
 class << self
@@ -229,7 +241,7 @@ end
 self.graphql_lexer_en_main = 6;
 
 
-# line 91 "lib/graphql/language/lexer.rl"
+# line 93 "lib/graphql/language/lexer.rl"
 
       def self.run_lexer(query_string)
         data = query_string.unpack("c*")
@@ -243,7 +255,7 @@ self.graphql_lexer_en_main = 6;
         }
 
         
-# line 247 "lib/graphql/language/lexer.rb"
+# line 259 "lib/graphql/language/lexer.rb"
 begin
 	p ||= 0
 	pe ||= data.length
@@ -253,14 +265,14 @@ begin
 	act = 0
 end
 
-# line 104 "lib/graphql/language/lexer.rl"
+# line 106 "lib/graphql/language/lexer.rl"
 
         emit_token = -> (name) {
           emit(name, ts, te, meta)
         }
 
         
-# line 264 "lib/graphql/language/lexer.rb"
+# line 276 "lib/graphql/language/lexer.rb"
 begin
 	_klen, _trans, _keys, _acts, _nacts = nil
 	_goto_level = 0
@@ -290,7 +302,7 @@ begin
 		begin
 ts = p
 		end
-# line 294 "lib/graphql/language/lexer.rb"
+# line 306 "lib/graphql/language/lexer.rb"
 		end # from state action switch
 	end
 	if _trigger_goto
@@ -363,121 +375,125 @@ when 2 then
 te = p+1
 		end
 when 3 then
-# line 38 "lib/graphql/language/lexer.rl"
+# line 39 "lib/graphql/language/lexer.rl"
 		begin
 act = 1;		end
 when 4 then
-# line 39 "lib/graphql/language/lexer.rl"
+# line 40 "lib/graphql/language/lexer.rl"
 		begin
 act = 2;		end
 when 5 then
-# line 40 "lib/graphql/language/lexer.rl"
+# line 41 "lib/graphql/language/lexer.rl"
 		begin
 act = 3;		end
 when 6 then
-# line 41 "lib/graphql/language/lexer.rl"
+# line 42 "lib/graphql/language/lexer.rl"
 		begin
 act = 4;		end
 when 7 then
-# line 42 "lib/graphql/language/lexer.rl"
+# line 43 "lib/graphql/language/lexer.rl"
 		begin
 act = 5;		end
 when 8 then
-# line 43 "lib/graphql/language/lexer.rl"
+# line 44 "lib/graphql/language/lexer.rl"
 		begin
 act = 6;		end
 when 9 then
-# line 51 "lib/graphql/language/lexer.rl"
+# line 45 "lib/graphql/language/lexer.rl"
 		begin
-act = 14;		end
+act = 7;		end
 when 10 then
-# line 57 "lib/graphql/language/lexer.rl"
+# line 53 "lib/graphql/language/lexer.rl"
 		begin
-act = 20;		end
+act = 15;		end
 when 11 then
-# line 67 "lib/graphql/language/lexer.rl"
+# line 59 "lib/graphql/language/lexer.rl"
 		begin
-act = 24;		end
+act = 21;		end
 when 12 then
-# line 44 "lib/graphql/language/lexer.rl"
+# line 69 "lib/graphql/language/lexer.rl"
+		begin
+act = 25;		end
+when 13 then
+# line 46 "lib/graphql/language/lexer.rl"
 		begin
 te = p+1
  begin  emit_token.call(:RCURLY)  end
 		end
-when 13 then
-# line 45 "lib/graphql/language/lexer.rl"
+when 14 then
+# line 47 "lib/graphql/language/lexer.rl"
 		begin
 te = p+1
  begin  emit_token.call(:LCURLY)  end
 		end
-when 14 then
-# line 46 "lib/graphql/language/lexer.rl"
+when 15 then
+# line 48 "lib/graphql/language/lexer.rl"
 		begin
 te = p+1
  begin  emit_token.call(:RPAREN)  end
 		end
-when 15 then
-# line 47 "lib/graphql/language/lexer.rl"
+when 16 then
+# line 49 "lib/graphql/language/lexer.rl"
 		begin
 te = p+1
  begin  emit_token.call(:LPAREN)  end
 		end
-when 16 then
-# line 48 "lib/graphql/language/lexer.rl"
+when 17 then
+# line 50 "lib/graphql/language/lexer.rl"
 		begin
 te = p+1
  begin  emit_token.call(:RBRACKET)  end
 		end
-when 17 then
-# line 49 "lib/graphql/language/lexer.rl"
+when 18 then
+# line 51 "lib/graphql/language/lexer.rl"
 		begin
 te = p+1
  begin  emit_token.call(:LBRACKET)  end
 		end
-when 18 then
-# line 50 "lib/graphql/language/lexer.rl"
+when 19 then
+# line 52 "lib/graphql/language/lexer.rl"
 		begin
 te = p+1
  begin  emit_token.call(:COLON)  end
 		end
-when 19 then
-# line 51 "lib/graphql/language/lexer.rl"
+when 20 then
+# line 53 "lib/graphql/language/lexer.rl"
 		begin
 te = p+1
  begin  emit_string(ts + 1, te - 1, meta)  end
 		end
-when 20 then
-# line 52 "lib/graphql/language/lexer.rl"
+when 21 then
+# line 54 "lib/graphql/language/lexer.rl"
 		begin
 te = p+1
  begin  emit_token.call(:VAR_SIGN)  end
 		end
-when 21 then
-# line 53 "lib/graphql/language/lexer.rl"
+when 22 then
+# line 55 "lib/graphql/language/lexer.rl"
 		begin
 te = p+1
  begin  emit_token.call(:DIR_SIGN)  end
 		end
-when 22 then
-# line 54 "lib/graphql/language/lexer.rl"
+when 23 then
+# line 56 "lib/graphql/language/lexer.rl"
 		begin
 te = p+1
  begin  emit_token.call(:ELLIPSIS)  end
 		end
-when 23 then
-# line 55 "lib/graphql/language/lexer.rl"
+when 24 then
+# line 57 "lib/graphql/language/lexer.rl"
 		begin
 te = p+1
  begin  emit_token.call(:EQUALS)  end
 		end
-when 24 then
-# line 56 "lib/graphql/language/lexer.rl"
+when 25 then
+# line 58 "lib/graphql/language/lexer.rl"
 		begin
 te = p+1
  begin  emit_token.call(:BANG)  end
 		end
-when 25 then
-# line 59 "lib/graphql/language/lexer.rl"
+when 26 then
+# line 61 "lib/graphql/language/lexer.rl"
 		begin
 te = p+1
  begin 
@@ -485,38 +501,32 @@ te = p+1
       meta[:col] = 1
      end
 		end
-when 26 then
-# line 67 "lib/graphql/language/lexer.rl"
+when 27 then
+# line 69 "lib/graphql/language/lexer.rl"
 		begin
 te = p+1
  begin  emit_token.call(:UNKNOWN_CHAR)  end
-		end
-when 27 then
-# line 38 "lib/graphql/language/lexer.rl"
-		begin
-te = p
-p = p - 1; begin  emit_token.call(:INT)  end
 		end
 when 28 then
 # line 39 "lib/graphql/language/lexer.rl"
 		begin
 te = p
-p = p - 1; begin  emit_token.call(:FLOAT)  end
+p = p - 1; begin  emit_token.call(:INT)  end
 		end
 when 29 then
-# line 57 "lib/graphql/language/lexer.rl"
+# line 40 "lib/graphql/language/lexer.rl"
+		begin
+te = p
+p = p - 1; begin  emit_token.call(:FLOAT)  end
+		end
+when 30 then
+# line 59 "lib/graphql/language/lexer.rl"
 		begin
 te = p
 p = p - 1; begin  emit_token.call(:IDENTIFIER)  end
 		end
-when 30 then
-# line 64 "lib/graphql/language/lexer.rl"
-		begin
-te = p
-p = p - 1; begin  meta[:col] += te - ts  end
-		end
 when 31 then
-# line 65 "lib/graphql/language/lexer.rl"
+# line 66 "lib/graphql/language/lexer.rl"
 		begin
 te = p
 p = p - 1; begin  meta[:col] += te - ts  end
@@ -525,21 +535,27 @@ when 32 then
 # line 67 "lib/graphql/language/lexer.rl"
 		begin
 te = p
-p = p - 1; begin  emit_token.call(:UNKNOWN_CHAR)  end
+p = p - 1; begin  meta[:col] += te - ts  end
 		end
 when 33 then
-# line 38 "lib/graphql/language/lexer.rl"
+# line 69 "lib/graphql/language/lexer.rl"
+		begin
+te = p
+p = p - 1; begin  emit_token.call(:UNKNOWN_CHAR)  end
+		end
+when 34 then
+# line 39 "lib/graphql/language/lexer.rl"
 		begin
  begin p = ((te))-1; end
  begin  emit_token.call(:INT)  end
 		end
-when 34 then
-# line 67 "lib/graphql/language/lexer.rl"
+when 35 then
+# line 69 "lib/graphql/language/lexer.rl"
 		begin
  begin p = ((te))-1; end
  begin  emit_token.call(:UNKNOWN_CHAR)  end
 		end
-when 35 then
+when 36 then
 # line 1 "NONE"
 		begin
 	case act
@@ -561,18 +577,21 @@ when 35 then
 	when 6 then
 	begin begin p = ((te))-1; end
  emit_token.call(:FALSE) end
-	when 14 then
+	when 7 then
+	begin begin p = ((te))-1; end
+ emit_token.call(:NULL) end
+	when 15 then
 	begin begin p = ((te))-1; end
  emit_string(ts + 1, te - 1, meta) end
-	when 20 then
+	when 21 then
 	begin begin p = ((te))-1; end
  emit_token.call(:IDENTIFIER) end
-	when 24 then
+	when 25 then
 	begin begin p = ((te))-1; end
  emit_token.call(:UNKNOWN_CHAR) end
 end 
 			end
-# line 576 "lib/graphql/language/lexer.rb"
+# line 595 "lib/graphql/language/lexer.rb"
 			end # action switch
 		end
 	end
@@ -592,7 +611,7 @@ when 0 then
 # line 1 "NONE"
 		begin
 ts = nil;		end
-# line 596 "lib/graphql/language/lexer.rb"
+# line 615 "lib/graphql/language/lexer.rb"
 		end # to state action switch
 	end
 	if _trigger_goto
@@ -619,7 +638,7 @@ end
 	end
 	end
 
-# line 110 "lib/graphql/language/lexer.rl"
+# line 112 "lib/graphql/language/lexer.rl"
 
         meta[:tokens]
       end

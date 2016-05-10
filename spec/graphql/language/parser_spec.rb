@@ -433,12 +433,12 @@ describe GraphQL::Language::Parser do
       assert_includes(e.message, "unexpected }")
     end
 
-    it "rejects null" do
+    it "rejects null value" do
       e = assert_raises(GraphQL::ParseError) do
         GraphQL.parse("{ fieldWithNullableStringInput(input: null) }")
       end
 
-      assert_includes(e.message, "unexpected null")
+      assert_includes(e.message, "Parse error on \"null\"")
     end
   end
 
