@@ -3,10 +3,10 @@ module GraphQL
     # Starting from a given type, discover other types in the system by
     # traversing that type's fields, possible_types, etc
     class TypeReducer
-      attr_reader :type, :existing_type_hash
+      attr_reader :type, :existing_type_hash, :name
 
-      def initialize(type, existing_type_hash)
-        validate_type(type)
+      def initialize(type, existing_type_hash, name = nil)
+        @name = name
         if type.respond_to?(:name) && existing_type_hash.fetch(type.name, nil).equal?(type)
           @result = existing_type_hash
         else
@@ -23,13 +23,14 @@ module GraphQL
       def self.find_all(types)
         type_map = GraphQL::Schema::TypeMap.new
         types.reduce(type_map) do |memo, type|
-          self.new(type, memo).result
+          self.new(type, memo, type.name).result
         end
       end
 
       private
 
       def find_types(type, type_hash)
+        validate_type(type, name)
         type_hash[type.name] = type
         if type.kind.fields?
           type.all_fields.each do |field|
@@ -58,20 +59,20 @@ module GraphQL
         type_hash
       end
 
-      def reduce_type(type, type_hash, name = nil)
+      def reduce_type(type, type_hash, name)
         if type.is_a?(GraphQL::BaseType)
-          self.class.new(type.unwrap, type_hash).result
+          inner_type = type.unwrap
+          self.class.new(inner_type, type_hash, name).result
         else
-          raise GraphQL::Schema::InvalidTypeError.new(type, name)
+          message = "#{name} has an invalid type: must be an instance of GraphQL::BaseType, not #{type.class.inspect} (#{type.inspect})"
+          raise GraphQL::Schema::InvalidTypeError.new(message)
         end
       end
 
-      def validate_type(type)
-        errors = []
-        type_validator = GraphQL::Schema::TypeValidator.new
-        type_validator.validate(type, errors)
-        if errors.any?
-          raise GraphQL::Schema::InvalidTypeError.new(type, errors)
+      def validate_type(type, name)
+        error_message = GraphQL::Schema::Validation.validate(type)
+        if error_message
+          raise GraphQL::Schema::InvalidTypeError.new("#{name} is invalid: #{error_message}")
         end
       end
     end

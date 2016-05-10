@@ -90,9 +90,7 @@ module GraphQL
     #
     # This is important because {#name} may be used by {#resolve}.
     def name=(new_name)
-      if !new_name.is_a?(String)
-        raise ArgumentError.new("GraphQL field names must be strings; cannot use #{new_name.inspect} (#{new_name.class.name}) as a field name.") unless new_name.is_a?(String)
-      elsif @name.nil?
+      if @name.nil?
         @name = new_name
       else
         raise("Can't rename an already-named field. (Tried to rename \"#{@name}\" to \"#{new_name}\".) If you're passing a field with the `field:` argument, make sure it's an unused instance of GraphQL::Field.")

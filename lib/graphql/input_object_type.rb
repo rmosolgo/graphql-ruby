@@ -9,7 +9,10 @@ module GraphQL
   #   end
   #
   class InputObjectType < GraphQL::BaseType
-    accepts_definitions input_field: GraphQL::Define::AssignArgument
+    accepts_definitions(
+      input_field: GraphQL::Define::AssignArgument,
+      argument: GraphQL::Define::AssignArgument
+    )
 
     # @return [Hash<String, GraphQL::Argument>] Map String argument names to their {GraphQL::Argument} implementations
     attr_accessor :arguments
