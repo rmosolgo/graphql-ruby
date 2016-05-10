@@ -1,6 +1,12 @@
 # graphql-relay
 
-## 0.9.3 (29 Apr 2016)
+## 0.9.5
+
+### New Feature
+
+- Root `id` field may have a description #43
+
+## 0.9.4 (29 Apr 2016)
 
 ### Bug Fix
 

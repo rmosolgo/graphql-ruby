@@ -347,6 +347,7 @@ https://medium.com/@gauravtiwari/graphql-and-relay-on-rails-first-relay-powered-
 - Make GlobalId a property of the schema, not a global
 - Reduce duplication in ArrayConnection / RelationConnection
 - Improve API for creating edges (better RANGE_ADD support)
+- If the new edge isn't a member of the connection's objects, raise a nice error
 
 ## More Resources
 
