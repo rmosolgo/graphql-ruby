@@ -373,14 +373,6 @@ describe GraphQL::Language::Parser do
       assert_includes(e.message, "unterminated string")
     end
 
-    it "rejects control characters in strings" do
-      e = assert_raises(GraphQL::ParseError) do
-        GraphQL.parse("{ field(arg:\"\b\") }")
-      end
-
-      assert_includes(e.message, "unrecognized character")
-    end
-
     it "rejects bad escape sequence in strings" do
       e = assert_raises(GraphQL::ParseError) do
         GraphQL.parse("{ field(arg:\"\\x\") }")
