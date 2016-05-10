@@ -430,7 +430,7 @@ describe GraphQL::Language::Parser do
         GraphQL.parse("{ ...on }")
       end
 
-      assert_includes(e.message, "unexpected }")
+      assert_includes(e.message, "Parse error on \"}\"")
     end
 
     it "rejects null value" do
