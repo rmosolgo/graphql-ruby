@@ -364,13 +364,13 @@ describe GraphQL::Language::Parser do
         GraphQL.parse("\"")
       end
 
-      assert_includes(e.message, "unterminated string")
+      assert_includes(e.message, "Parse error on \"\\\"\"")
 
       e = assert_raises(GraphQL::ParseError) do
         GraphQL.parse("\"\n\"")
       end
 
-      assert_includes(e.message, "unterminated string")
+      assert_includes(e.message, "Parse error on \"\\n\"")
     end
 
     it "rejects bad escape sequence in strings" do
