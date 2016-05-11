@@ -108,10 +108,7 @@ rule
           }
 
   name:
-      IDENTIFIER
-    | FRAGMENT
-    | TRUE
-    | FALSE
+      name_without_on
     | ON
 
   name_without_on:
