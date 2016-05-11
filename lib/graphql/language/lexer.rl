@@ -157,8 +157,9 @@ module GraphQL
             line: meta[:line],
             col: meta[:col],
           )
-          meta[:col] += te - ts
         end
+
+        meta[:col] += te - ts
       end
     end
   end
