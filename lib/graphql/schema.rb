@@ -2,8 +2,8 @@ require "graphql/schema/invalid_type_error"
 require "graphql/schema/middleware_chain"
 require "graphql/schema/rescue_middleware"
 require "graphql/schema/possible_types"
+require "graphql/schema/reduce_types"
 require "graphql/schema/type_expression"
-require "graphql/schema/type_reducer"
 require "graphql/schema/type_map"
 require "graphql/schema/validation"
 
@@ -52,7 +52,7 @@ module GraphQL
     def types
       @types ||= begin
         all_types = @orphan_types + [query, mutation, GraphQL::Introspection::SchemaType]
-        TypeReducer.find_all(all_types.compact)
+        GraphQL::Schema::ReduceTypes.reduce(all_types.compact)
       end
     end
 
@@ -82,7 +82,7 @@ module GraphQL
     end
 
     def type_from_ast(ast_node)
-      GraphQL::Schema::TypeExpression.new(self, ast_node).type
+      GraphQL::Schema::TypeExpression.build_type(self, ast_node)
     end
 
     # @param type_defn [GraphQL::InterfaceType, GraphQL::UnionType] the type whose members you want to retrieve
