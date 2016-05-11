@@ -13,6 +13,7 @@
   FRAGMENT =      'fragment';
   TRUE =          'true';
   FALSE =         'false';
+  NULL =          'null';
   RCURLY =        '{';
   LCURLY =        '}';
   RPAREN =        '(';
@@ -31,6 +32,9 @@
 
   QUOTED_STRING = QUOTE STRING_CHAR* QUOTE;
 
+  # catch-all for anything else. must be at the bottom for precedence.
+  UNKNOWN_CHAR =         /./;
+
   main := |*
     INT           => { emit_token.call(:INT) };
     FLOAT         => { emit_token.call(:FLOAT) };
@@ -38,6 +42,7 @@
     FRAGMENT      => { emit_token.call(:FRAGMENT) };
     TRUE          => { emit_token.call(:TRUE) };
     FALSE         => { emit_token.call(:FALSE) };
+    NULL          => { emit_token.call(:NULL) };
     RCURLY        => { emit_token.call(:RCURLY) };
     LCURLY        => { emit_token.call(:LCURLY) };
     RPAREN        => { emit_token.call(:RPAREN) };
@@ -60,6 +65,8 @@
 
     BLANK   => { meta[:col] += te - ts };
     COMMENT => { meta[:col] += te - ts };
+
+    UNKNOWN_CHAR => { emit_token.call(:UNKNOWN_CHAR) };
 
   *|;
 }%%
@@ -134,14 +141,24 @@ module GraphQL
 
       def self.emit_string(ts, te, meta)
         value = meta[:data][ts...te].pack("c*").force_encoding("UTF-8")
-        replace_escaped_characters_in_place(value)
+        if value =~ /\\u|\\./ && value !~ ESCAPES
+          meta[:tokens] << GraphQL::Language::Token.new(
+            name: :BAD_UNICODE_ESCAPE,
+            value: value,
+            line: meta[:line],
+            col: meta[:col],
+          )
+        else
+          replace_escaped_characters_in_place(value)
 
-        meta[:tokens] << GraphQL::Language::Token.new(
-          name: :STRING,
-          value: value,
-          line: meta[:line],
-          col: meta[:col],
-        )
+          meta[:tokens] << GraphQL::Language::Token.new(
+            name: :STRING,
+            value: value,
+            line: meta[:line],
+            col: meta[:col],
+          )
+        end
+
         meta[:col] += te - ts
       end
     end

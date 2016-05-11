@@ -108,11 +108,14 @@ rule
           }
 
   name:
+      name_without_on
+    | ON
+
+  name_without_on:
       IDENTIFIER
     | FRAGMENT
     | TRUE
     | FALSE
-    | ON
 
   arguments_opt:
       /* none */                    { return [] }
@@ -171,7 +174,7 @@ rule
   directive: DIR_SIGN name arguments_opt { return make_node(:Directive, name: val[1], arguments: val[2], position_source: val[0]) }
 
   fragment_spread:
-      ELLIPSIS name directives_list_opt { return make_node(:FragmentSpread, name: val[1], directives: val[2], position_source: val[0]) }
+      ELLIPSIS name_without_on directives_list_opt { return make_node(:FragmentSpread, name: val[1], directives: val[2], position_source: val[0]) }
 
   inline_fragment:
       ELLIPSIS ON name directives_list_opt selection_set {
@@ -192,7 +195,7 @@ rule
       }
 
   fragment_definition:
-    FRAGMENT name ON name directives_list_opt selection_set {
+    FRAGMENT name ON name_without_on directives_list_opt selection_set {
       return make_node(:FragmentDefinition, {
           name:       val[1],
           type:       val[3],
@@ -248,7 +251,11 @@ def on_error(parser_token_id, lexer_token, vstack)
       raise GraphQL::ParseError.new("Parse Error on unknown token: {token_id: #{parser_token_id}, lexer_token: #{lexer_token}} from #{@query_string}", nil, nil, @query_string)
     else
       line, col = lexer_token.line_and_column
-      raise GraphQL::ParseError.new("Parse error on #{lexer_token.to_s.inspect} (#{parser_token_name}) at [#{line}, #{col}]", line, col, @query_string)
+      if lexer_token.name == :BAD_UNICODE_ESCAPE
+        raise GraphQL::ParseError.new("Parse error on bad Unicode escape sequence: #{lexer_token.to_s.inspect} (#{parser_token_name}) at [#{line}, #{col}]", line, col, @query_string)
+      else
+        raise GraphQL::ParseError.new("Parse error on #{lexer_token.to_s.inspect} (#{parser_token_name}) at [#{line}, #{col}]", line, col, @query_string)
+      end
     end
   end
 end

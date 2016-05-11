@@ -215,6 +215,7 @@ describe GraphQL::Language::Parser do
               enum: ENUM_NAME,
               array: [7, 8, 9]
               object: {a: [1,2,3], b: {c: "4"}}
+              unicode_bom: "\xef\xbb\xbfquery"
             )
           }
         |}
@@ -253,6 +254,11 @@ describe GraphQL::Language::Parser do
           assert_equal "b", obj.arguments[1].name
           assert_equal "c", obj.arguments[1].value.arguments[0].name
           assert_equal "4", obj.arguments[1].value.arguments[0].value
+        end
+
+        it "parses unicode bom" do
+          obj = inputs[7].value
+          assert_equal %|\xef\xbb\xbfquery|, inputs[7].value
         end
       end
     end
@@ -303,6 +309,136 @@ describe GraphQL::Language::Parser do
     it "handles unexpected ends" do
       err = assert_raises { GraphQL.parse("{ ") }
       assert_equal "Unexpected end of document", err.message
+    end
+
+    it "rejects unsupported characters" do
+      e = assert_raises(GraphQL::ParseError) do
+        GraphQL.parse("{ field; }")
+      end
+
+      assert_includes(e.message, "Parse error on \";\"")
+    end
+
+    it "rejects control characters" do
+      e = assert_raises(GraphQL::ParseError) do
+        GraphQL.parse("{ \afield }")
+      end
+
+      assert_includes(e.message, "Parse error on \"\\a\"")
+    end
+
+    it "rejects partial BOM" do
+      e = assert_raises(GraphQL::ParseError) do
+        GraphQL.parse("{ \xeffield }")
+      end
+
+      assert_includes(e.message, "Parse error on \"\\xEF\"")
+    end
+
+    it "rejects vertical tabs" do
+      e = assert_raises(GraphQL::ParseError) do
+        GraphQL.parse("{ \vfield }")
+      end
+
+      assert_includes(e.message, "Parse error on \"\\v\"")
+    end
+
+    it "rejects form feed" do
+      e = assert_raises(GraphQL::ParseError) do
+        GraphQL.parse("{ \ffield }")
+      end
+
+      assert_includes(e.message, "Parse error on \"\\f\"")
+    end
+
+    it "rejects no break space" do
+      e = assert_raises(GraphQL::ParseError) do
+        GraphQL.parse("{ \xa0field }")
+      end
+
+      assert_includes(e.message, "Parse error on \"\\xA0\"")
+    end
+
+    it "rejects unterminated strings" do
+      e = assert_raises(GraphQL::ParseError) do
+        GraphQL.parse("\"")
+      end
+
+      assert_includes(e.message, "Parse error on \"\\\"\"")
+
+      e = assert_raises(GraphQL::ParseError) do
+        GraphQL.parse("\"\n\"")
+      end
+
+      assert_includes(e.message, "Parse error on \"\\n\"")
+    end
+
+    it "rejects bad escape sequence in strings" do
+      e = assert_raises(GraphQL::ParseError) do
+        GraphQL.parse("{ field(arg:\"\\x\") }")
+      end
+
+      assert_includes(e.message, "Parse error on bad Unicode escape sequence")
+    end
+
+    it "rejects incomplete escape sequence in strings" do
+      e = assert_raises(GraphQL::ParseError) do
+        GraphQL.parse("{ field(arg:\"\\u1\") }")
+      end
+
+      assert_includes(e.message, "bad Unicode escape sequence")
+    end
+
+    it "rejects unicode escape with bad chars" do
+      e = assert_raises(GraphQL::ParseError) do
+        GraphQL.parse("{ field(arg:\"\\u0XX1\") }")
+      end
+
+      assert_includes(e.message, "bad Unicode escape sequence")
+
+      e = assert_raises(GraphQL::ParseError) do
+        GraphQL.parse("{ field(arg:\"\\uXXXX\") }")
+      end
+
+      assert_includes(e.message, "bad Unicode escape sequence")
+
+
+      e = assert_raises(GraphQL::ParseError) do
+        GraphQL.parse("{ field(arg:\"\\uFXXX\") }")
+      end
+
+      assert_includes(e.message, "bad Unicode escape sequence")
+
+
+      e = assert_raises(GraphQL::ParseError) do
+        GraphQL.parse("{ field(arg:\"\\uXXXF\") }")
+      end
+
+      assert_includes(e.message, "bad Unicode escape sequence")
+    end
+
+    it "rejects fragments named 'on'" do
+      e = assert_raises(GraphQL::ParseError) do
+        GraphQL.parse("fragment on on on { on }")
+      end
+
+      assert_includes(e.message, "Parse error on \"on\"")
+    end
+
+    it "rejects fragment spread of 'on'" do
+      e = assert_raises(GraphQL::ParseError) do
+        GraphQL.parse("{ ...on }")
+      end
+
+      assert_includes(e.message, "Parse error on \"}\"")
+    end
+
+    it "rejects null value" do
+      e = assert_raises(GraphQL::ParseError) do
+        GraphQL.parse("{ fieldWithNullableStringInput(input: null) }")
+      end
+
+      assert_includes(e.message, "Parse error on \"null\"")
     end
   end
 
