@@ -120,8 +120,10 @@ describe GraphQL::Query::Executor do
 
     describe "if debug: false" do
       let(:debug) { false }
-      let(:errors) { query.context.errors }
-
+      # TODO: Nobody should ever know about Query::Run
+      let(:query_run) { GraphQL::Query::Run.new(query, context: {}, variables: variables, operation_name: operation_name)}
+      let(:errors) { query_run.context.errors }
+      let(:result) { GraphQL::Query::Executor.new(query_run).result }
       it "turns into error messages" do
         expected = {"errors"=>[
           {"message"=>"Internal error"}

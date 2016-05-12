@@ -30,12 +30,12 @@ describe GraphQL::Schema::MiddlewareChain do
 
     describe "when a step provides alternate arguments" do
       it "passes the new arguments to the next step" do
-        step_1 = -> (test_arg, next_step) { assert_equal(test_arg, 'HELLO'); next_step.call(['WORLD']) }
-        step_2 = -> (test_arg, next_step) { assert_equal(test_arg, 'WORLD'); test_arg }
+        step_1 = -> (test_arg, next_step) { assert_equal(test_arg, "HELLO"); next_step.call(["WORLD"]) }
+        step_2 = -> (test_arg, next_step) { assert_equal(test_arg, "WORLD"); test_arg }
 
-        chain = GraphQL::Schema::MiddlewareChain.new(steps: [step_1, step_2], arguments: ['HELLO'])
+        chain = GraphQL::Schema::MiddlewareChain.new(steps: [step_1, step_2], arguments: ["HELLO"])
         result = chain.call
-        assert_equal(result, 'WORLD')
+        assert_equal(result, "WORLD")
       end
     end
   end

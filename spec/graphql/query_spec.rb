@@ -33,15 +33,13 @@ describe GraphQL::Query do
   let(:max_depth) { nil }
   let(:query_variables) { {"cheeseId" => 2} }
   let(:schema) { DummySchema }
-  let(:query) { GraphQL::Query.new(
-    schema,
-    query_string,
+  let(:query) { GraphQL::Query.new(schema, query_string, debug: debug, max_depth: max_depth) }
+
+  let(:result) { query.execute(
     variables: query_variables,
-    debug: debug,
     operation_name: operation_name,
-    max_depth: max_depth,
   )}
-  let(:result) { query.result }
+
   describe '#result' do
     it "returns fields on objects" do
       expected = {"data"=> {

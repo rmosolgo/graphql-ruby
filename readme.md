@@ -13,6 +13,7 @@ A Ruby implementation of [GraphQL](http://graphql.org/).
      - [Defining Your Schema](http://www.rubydoc.info/github/rmosolgo/graphql-ruby/file/guides/defining_your_schema.md)
      - [Executing Queries](http://www.rubydoc.info/github/rmosolgo/graphql-ruby/file/guides/executing_queries.md)
      - [Testing](http://www.rubydoc.info/github/rmosolgo/graphql-ruby/file/guides/testing.md)
+     - [Server-Side Query Cache](https://github.com/rmosolgo/graphql-ruby/blob/master/guides/server_side_queries.md)
 
  - [API Documentation](http://www.rubydoc.info/github/rmosolgo/graphql-ruby)
 
@@ -125,6 +126,7 @@ If you're building a backend for [Relay](http://facebook.github.io/relay/), you'
 - Revamp the fixture Schema to be more useful (better names, more extensible)
 - Fix when a field's type is left out `field :name, "This is the name field"`
 - Revisit error handling & `debug:` option
+- Trying to send a `mutation` without a MutationType gives `no method #unwrap for nil`
 - __Subscriptions__
   - This is a good chance to make an `Operation` abstraction of which `query`, `mutation` and `subscription` are members
   - For a subscription, `graphql` would send an outbound message to the system (allow the host application to manage its own subscriptions via Pusher, ActionCable, whatever)

@@ -8,26 +8,29 @@ module GraphQL
       end
     end
 
-    attr_reader :schema, :document, :context, :fragments, :operations, :debug, :max_depth
+    attr_reader :schema, :document, :fragments, :operations, :debug, :max_depth
 
     # Prepare query `query_string` on `schema`
     # @param schema [GraphQL::Schema]
     # @param query_string [String]
-    # @param context [#[]] an arbitrary hash of values which you can access in {GraphQL::Field#resolve}
-    # @param variables [Hash] values for `$variables` in the query
     # @param debug [Boolean] if true, errors are raised, if false, errors are put in the `errors` key
     # @param validate [Boolean] if true, `query_string` will be validated with {StaticValidation::Validator}
     # @param operation_name [String] if the query string contains many operations, this is the one which should be executed
-    def initialize(schema, query_string, context: nil, variables: {}, debug: false, validate: true, operation_name: nil, max_depth: nil)
+    # @param variables [Hash] values for `$variables` in the query
+    # @param context [#[]] an arbitrary hash of values which you can access in {GraphQL::Field#resolve}
+    def initialize(schema, query_string, context: nil, variables: nil, debug: false, validate: true, operation_name: nil, max_depth: nil)
       @schema = schema
       @debug = debug
       @max_depth = max_depth || schema.max_depth
-      @context = Context.new(query: self, values: context)
       @validate = validate
       @operation_name = operation_name
       @fragments = {}
       @operations = {}
+
+      # If the query is a one-off & triggered with Query.new, it may have these values:
+      @provided_context = context
       @provided_variables = variables
+
       @document = GraphQL.parse(query_string)
       @document.definitions.each do |part|
         if part.is_a?(GraphQL::Language::Nodes::FragmentDefinition)
@@ -40,51 +43,36 @@ module GraphQL
 
     # Get the result for this query, executing it once
     def result
-      if @validate && validation_errors.any?
-        return { "errors" => validation_errors }
-      end
-
-      @result ||= Executor.new(self).result
-    end
-
-
-    # This is the operation to run for this query.
-    # If more than one operation is present, it must be named at runtime.
-    # @return [GraphQL::Language::Nodes::OperationDefinition, nil]
-    def selected_operation
-      @selected_operation ||= find_operation(@operations, @operation_name)
-    end
-
-    # Determine the values for variables of this query, using default values
-    # if a value isn't provided at runtime.
-    #
-    # Raises if a non-null variable isn't provided at runtime.
-    # @return [GraphQL::Query::Variables] Variables to apply to this query
-    def variables
-      @variables ||= GraphQL::Query::Variables.new(
-        schema,
-        selected_operation.variables,
-        @provided_variables
+      @result ||= execute(
+        variables: @provided_variables,
+        context: @provided_context,
+        operation_name: @operation_name
       )
     end
 
-    private
-
-    def validation_errors
-      @validation_errors ||= schema.static_validator.validate(self)
+    # Execute the query string with the provided variables & context
+    # @param variables [Hash{String => Object}] Values for `$`-variables in the query
+    # @param context [#[]] Arbitrary key-value object which is accessible during query resolution
+    # @param operation_name [String] The name of the operation to run (required if the query string has multiple operations)
+    # @return [Hash] Query result with "data" and "errors" keys
+    def execute(variables: {}, context: nil, operation_name: nil)
+      if @validate && validation_errors.any?
+        return { "errors" => validation_errors }
+      else
+        query_run = GraphQL::Query::Run.new(
+          self,
+          context: context,
+          variables: variables,
+          operation_name: operation_name,
+        )
+        GraphQL::Query::Executor.new(query_run).result
+      end
     end
 
-
-    def find_operation(operations, operation_name)
-      if operations.length == 1
-        operations.values.first
-      elsif operations.length == 0
-        nil
-      elsif !operations.key?(operation_name)
-        raise OperationNameMissingError, operations.keys
-      else
-        operations[operation_name]
-      end
+    # Errors as a result of static validation
+    # @return [Array<Hash>] Error hashes with `message`, `line` and `column`.
+    def validation_errors
+      @validation_errors ||= schema.static_validator.validate(self)
     end
   end
 end
@@ -94,6 +82,7 @@ require "graphql/query/context"
 require "graphql/query/directive_resolution"
 require "graphql/query/executor"
 require "graphql/query/literal_input"
+require "graphql/query/run"
 require "graphql/query/serial_execution"
 require "graphql/query/type_resolver"
 require "graphql/query/variables"

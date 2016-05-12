@@ -18,7 +18,7 @@ module GraphQL
       end
 
       # Validate `document` against the schema. Returns an array of message hashes.
-      # @param document [GraphQL::Language::Nodes::Document]
+      # @param query [GraphQL::Query]
       # @return [Array<Hash>]
       def validate(query)
         context = GraphQL::StaticValidation::ValidationContext.new(query)
