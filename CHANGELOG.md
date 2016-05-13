@@ -4,7 +4,12 @@
 
 ### New features
 
+- `GraphQL::Language::Nodes::Document#to_query_string` will re-serialize a query AST #151
+
 ### Bug fixes
+
+- Improved parse error messages #149
+- Improved build-time validation #150
 
 ## 0.13.0 (29 Apr 2016)
 

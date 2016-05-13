@@ -23,32 +23,6 @@ describe GraphQL::Language::Generation do
   |}
 
   describe ".generate" do
-    let(:_query_string) { '
-        query getStuff($fragment: Int!, $false: String = "h\"😸i") @skip(ok: 1) {
-          myField(
-            arg1: 4.5,
-            arg2: -3,
-            arg3: "hello ☀︎ \uD83C\uDF40",
-            arg4: 4.5e-12,
-            arg5: true
-            arg6: $false
-            arg7: [true, false],
-            arg8: {key: "val", ok: true, whatever: $fragment}
-            arg9: ENUM_VALUE
-          ) {
-            aliasName: childField @skip(on: true)
-            ... description
-          },
-          # Comment!
-          #
-          otherField
-        }
-
-        fragment thingStuff on Thing {
-          whatever
-        }
-      '}
-
     it "generates query string" do
       assert_equal query_string.gsub(/^    /, "").strip, document.to_query_string
     end

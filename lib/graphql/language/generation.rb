@@ -1,15 +1,5 @@
-require "graphql/language/nodes"
-
 module GraphQL
   module Language
-    module Nodes
-      class Document < AbstractNode
-        def to_query_string
-          Generation.generate(self)
-        end
-      end
-    end
-
     module Generation
       def self.generate(node, indent: "")
         case node

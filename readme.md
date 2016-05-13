@@ -123,7 +123,6 @@ If you're building a backend for [Relay](http://facebook.github.io/relay/), you'
 - Add a complexity validator (reject queries if they're too big)
 - Add docs for shared behaviors & DRY code
 - Revamp the fixture Schema to be more useful (better names, more extensible)
-- Fix when a field's type is left out `field :name, "This is the name field"`
 - Revisit error handling & `debug:` option
 - __Subscriptions__
   - This is a good chance to make an `Operation` abstraction of which `query`, `mutation` and `subscription` are members

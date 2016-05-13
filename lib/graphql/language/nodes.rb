@@ -42,6 +42,10 @@ module GraphQL
         def position
           [line, col]
         end
+
+        def to_query_string
+          Generation.generate(self)
+        end
       end
 
       class WrapperType < AbstractNode
