@@ -279,7 +279,8 @@ module GraphQL
         end
 
         def to_query_string(indent: "")
-          out = "#{indent}#{operation_type} #{name}"
+          out = "#{indent}#{operation_type}"
+          out << " #{name}" if name
           out << "(#{variables.map(&:to_query_string).join(", ")})" if variables.any?
           out << generate_directives(directives)
           out << generate_selections(selections, indent: indent)
