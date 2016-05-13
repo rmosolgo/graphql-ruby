@@ -1,8 +1,11 @@
 require "spec_helper"
 
-describe GraphQL::Schema::TypeReducer do
+describe GraphQL::Schema::ReduceTypes do
+  def reduce_types(types)
+    GraphQL::Schema::ReduceTypes.reduce(types)
+  end
+
   it "finds types from a single type and its fields" do
-    reducer = GraphQL::Schema::TypeReducer.new(CheeseType, {})
     expected = {
       "Cheese" => CheeseType,
       "Float" => GraphQL::FLOAT_TYPE,
@@ -12,13 +15,14 @@ describe GraphQL::Schema::TypeReducer do
       "Edible" => EdibleInterface,
       "AnimalProduct" => AnimalProductInterface,
     }
-    assert_equal(expected.keys, reducer.result.keys)
-    assert_equal(expected, reducer.result)
+    result = reduce_types([CheeseType])
+    assert_equal(expected.keys, result.keys)
+    assert_equal(expected, result.to_h)
   end
 
   it "finds type from arguments" do
-    reducer = GraphQL::Schema::TypeReducer.new(QueryType, {})
-    assert_equal(DairyProductInputType, reducer.result["DairyProductInput"])
+    result = reduce_types([QueryType])
+    assert_equal(DairyProductInputType, result["DairyProductInput"])
   end
 
   it "finds types from nested InputObjectTypes" do
@@ -32,13 +36,13 @@ describe GraphQL::Schema::TypeReducer do
       input_field :child, type_child
     end
 
-    reducer = GraphQL::Schema::TypeReducer.new(type_parent, {})
+    result = reduce_types([type_parent])
     expected = {
       "InputTypeParent" => type_parent,
       "InputTypeChild" => type_child,
       "String" => GraphQL::STRING_TYPE
     }
-    assert_equal(expected, reducer.result)
+    assert_equal(expected, result.to_h)
   end
 
   describe "when a type is invalid" do
@@ -57,13 +61,11 @@ describe GraphQL::Schema::TypeReducer do
     }
 
     it "raises an InvalidTypeError when passed nil" do
-      reducer = GraphQL::Schema::TypeReducer.new(invalid_type, {})
-      assert_raises(GraphQL::Schema::InvalidTypeError) { reducer.result }
+      assert_raises(GraphQL::Schema::InvalidTypeError) {  reduce_types([invalid_type]) }
     end
 
     it "raises an InvalidTypeError when passed an object that isnt a GraphQL::BaseType" do
-      reducer = GraphQL::Schema::TypeReducer.new(another_invalid_type, {})
-      assert_raises(GraphQL::Schema::InvalidTypeError) { reducer.result }
+      assert_raises(GraphQL::Schema::InvalidTypeError) {  reduce_types([another_invalid_type]) }
     end
   end
 
@@ -80,14 +82,14 @@ describe GraphQL::Schema::TypeReducer do
     }
     it "raises an error" do
       assert_raises(RuntimeError) {
-        GraphQL::Schema::TypeReducer.find_all([type_1, type_2])
+        reduce_types([type_1, type_2])
       }
     end
   end
 
   describe "when getting a type which doesnt exist" do
     it "raises an error" do
-      type_map = GraphQL::Schema::TypeReducer.find_all([])
+      type_map = reduce_types([])
       assert_raises(RuntimeError) { type_map["SomeType"] }
     end
   end
