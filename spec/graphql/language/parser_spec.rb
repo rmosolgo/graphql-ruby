@@ -57,6 +57,29 @@ describe GraphQL::Language::Parser do
       assert document
     end
 
+    it "serializes document as query string" do
+      qs = <<-GRAPHQL.gsub(/^        /, "").chomp
+        query getStuff($someVar: Int = 1, $anotherVar: [String!]) @skip(if: false) {
+          myField: someField(someArg: $someVar, ok: 1.4) @skip(if: $anotherVar) @thing(or: "Whatever")
+          anotherField(someArg: [1, 2, 3]) {
+            nestedField
+            ... moreNestedFields @skip(if: true)
+          }
+          ... on OtherType @include(unless: false) {
+            field(arg: [{key: "value", anotherKey: 0.9, anotherAnotherKey: WHATEVER}])
+            anotherField
+          }
+          ... {
+            id
+          }
+        }
+        fragment moreNestedFields on NestedType @or(something: "ok") {
+          anotherNestedField
+        }
+      GRAPHQL
+      assert_equal qs, document.to_query_string
+    end
+
     describe "visited nodes" do
       let(:query) { document.definitions.first }
       let(:fragment_def) { document.definitions.last }
