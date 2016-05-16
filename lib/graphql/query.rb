@@ -18,7 +18,9 @@ module GraphQL
     # @param debug [Boolean] if true, errors are raised, if false, errors are put in the `errors` key
     # @param validate [Boolean] if true, `query_string` will be validated with {StaticValidation::Validator}
     # @param operation_name [String] if the query string contains many operations, this is the one which should be executed
-    def initialize(schema, query_string, context: nil, variables: {}, debug: false, validate: true, operation_name: nil, max_depth: nil)
+    def initialize(schema, query_string = nil, document: nil, context: nil, variables: {}, debug: false, validate: true, operation_name: nil, max_depth: nil)
+      fail ArgumentError, "a query string or document is required" unless query_string || document
+
       @schema = schema
       @debug = debug
       @max_depth = max_depth || schema.max_depth
@@ -28,7 +30,8 @@ module GraphQL
       @fragments = {}
       @operations = {}
       @provided_variables = variables
-      @document = GraphQL.parse(query_string)
+
+      @document = document || GraphQL.parse(query_string)
       @document.definitions.each do |part|
         if part.is_a?(GraphQL::Language::Nodes::FragmentDefinition)
           @fragments[part.name] = part

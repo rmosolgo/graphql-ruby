@@ -33,6 +33,8 @@ describe GraphQL::Query do
   let(:max_depth) { nil }
   let(:query_variables) { {"cheeseId" => 2} }
   let(:schema) { DummySchema }
+  let(:document) { GraphQL.parse(query_string) }
+
   let(:query) { GraphQL::Query.new(
     schema,
     query_string,
@@ -42,6 +44,50 @@ describe GraphQL::Query do
     max_depth: max_depth,
   )}
   let(:result) { query.result }
+
+  describe "when passed no query string or document" do
+    it 'fails with an ArgumentError' do
+      -> {
+        GraphQL::Query.new(
+          schema,
+          variables: query_variables,
+          debug: debug,
+          operation_name: operation_name,
+          max_depth: max_depth,
+        )
+      }.must_raise ArgumentError
+    end
+  end
+
+  describe "when passed a document instance" do
+    let(:query) { GraphQL::Query.new(
+      schema,
+      document: document,
+      variables: query_variables,
+      debug: debug,
+      operation_name: operation_name,
+      max_depth: max_depth,
+    )}
+
+    it "runs the query using the already parsed document" do
+      expected = {"data"=> {
+        "brie" =>   { "flavor" => "Brie", "taste" => "Brie" },
+        "cheese" => {
+          "__typename" => "Cheese",
+          "id" => 2,
+          "flavor" => "Gouda",
+          "fatContent" => 0.3,
+          "cheeseKind" => "Gouda",
+        },
+        "fromSource" => [{ "id" => 1 }, {"id" => 2}],
+        "fromSheep"=>[{"id"=>3}],
+        "firstSheep" => { "__typename" => "Cheese", "flavor" => "Manchego" },
+        "favoriteEdible"=>{"__typename"=>"Milk", "fatContent"=>0.04},
+    }}
+    assert_equal(expected, result)
+    end
+  end
+
   describe '#result' do
     it "returns fields on objects" do
       expected = {"data"=> {
