@@ -55,6 +55,15 @@ module GraphQL
         class HasPossibleTypeResolution < BaseResolution
           def non_null_result
             resolved_type = field_type.resolve_type(value, execution_context)
+
+            if resolved_type.nil?
+              raise(
+                "The value returned for field #{ast_field.name} on #{parent_type} could not be resolved "\
+                "to one of the possible types for #{field_type}. (Did you forget to define a resolve_type proc?)\n"\
+                "Value: #{value}"
+              )
+            end
+
             strategy_class = get_strategy_for_kind(resolved_type.kind)
             inner_strategy = strategy_class.new(value, resolved_type, target, parent_type, ast_field, execution_context)
             inner_strategy.result
