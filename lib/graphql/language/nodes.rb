@@ -46,6 +46,11 @@ module GraphQL
         def to_query_string
           Generation.generate(self)
         end
+
+        def freeze
+          children.each(&:freeze)
+          super
+        end
       end
 
       class WrapperType < AbstractNode

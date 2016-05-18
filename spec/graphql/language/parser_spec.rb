@@ -31,6 +31,16 @@ describe GraphQL::Language::Parser do
       assert document
     end
 
+    it "freeze deep freezes child nodes" do
+      refute document.frozen?
+      refute document.definitions.first.frozen?
+
+      document.freeze
+
+      assert document.frozen?
+      assert document.definitions.first.frozen?
+    end
+
     describe "visited nodes" do
       let(:query) { document.definitions.first }
       let(:fragment_def) { document.definitions.last }
