@@ -38,6 +38,7 @@ describe GraphQL::Language::Parser do
       document.freeze
 
       assert document.frozen?
+      assert document.definitions.frozen?
       assert document.definitions.first.frozen?
     end
 

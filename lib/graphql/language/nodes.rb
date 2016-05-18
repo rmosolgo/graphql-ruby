@@ -48,7 +48,7 @@ module GraphQL
         end
 
         def freeze
-          children.each(&:freeze)
+          self.class.child_attributes.each { |attr_name| public_send(attr_name).each(&:freeze).freeze }
           super
         end
       end
