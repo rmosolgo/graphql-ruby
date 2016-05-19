@@ -200,6 +200,9 @@ FavoriteFieldDefn = Proc.new {
 QueryType = GraphQL::ObjectType.define do
   name "Query"
   description "Query root of the system"
+  field :root, types.String do
+    resolve ->(root_value, args, c) { root_value }
+  end
   field :cheese, field: FetchField.create(type: CheeseType, data: CHEESES)
   field :milk, field: FetchField.create(type: MilkType, data: MILKS, id_type: !types.ID)
   field :dairy, field: SingletonField.create(type: DairyType, data: DAIRY)
