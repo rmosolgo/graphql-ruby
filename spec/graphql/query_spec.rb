@@ -128,6 +128,11 @@ describe GraphQL::Query do
     end
   end
 
+  it "uses root_value as the object for the root type" do
+    result = GraphQL::Query.new(schema, '{ root }', root_value: "I am root").result
+    assert_equal 'I am root', result.fetch('data').fetch('root')
+  end
+
   it "exposes fragments" do
     assert_equal(GraphQL::Language::Nodes::FragmentDefinition, query.fragments["cheeseFields"].class)
   end
