@@ -56,12 +56,8 @@ module GraphQL
           def non_null_result
             resolved_type = field_type.resolve_type(value, execution_context)
 
-            if resolved_type.nil?
-              raise(
-                "The value returned for field #{ast_field.name} on #{parent_type} could not be resolved "\
-                "to one of the possible types for #{field_type}. (Did you forget to define a resolve_type proc?)\n"\
-                "Value: #{value}"
-              )
+            unless resolved_type.is_a?(GraphQL::ObjectType)
+              raise GraphQL::ObjectType::UnresolvedTypeError.new(ast_field.name, field_type, parent_type)
             end
 
             strategy_class = get_strategy_for_kind(resolved_type.kind)
