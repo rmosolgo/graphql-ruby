@@ -8,10 +8,10 @@ module GraphQL
     # then a connection implementation is fetched with {BaseConnection.connection_for_items}.
     class ConnectionField
       ARGUMENT_DEFINITIONS = [
-          [:first, GraphQL::INT_TYPE],
-          [:after, GraphQL::STRING_TYPE],
-          [:last, GraphQL::INT_TYPE],
-          [:before, GraphQL::STRING_TYPE],
+          ["first", GraphQL::INT_TYPE],
+          ["after", GraphQL::STRING_TYPE],
+          ["last", GraphQL::INT_TYPE],
+          ["before", GraphQL::STRING_TYPE],
         ]
 
       DEFAULT_ARGUMENTS = ARGUMENT_DEFINITIONS.reduce({}) do |memo, arg_defn|
