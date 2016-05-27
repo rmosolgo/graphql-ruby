@@ -119,11 +119,11 @@ If you're building a backend for [Relay](http://facebook.github.io/relay/), you'
 
 ## To Do
 
-- Type lookup should be by type name (to support reloaded constants in Rails code)
+- __1.0 items:__
+  - Support type name for field types
+  - Revisit error handling & `debug:` option
 - Add a complexity validator (reject queries if they're too big)
 - Add docs for shared behaviors & DRY code
-- Revamp the fixture Schema to be more useful (better names, more extensible)
-- Revisit error handling & `debug:` option
 - __Subscriptions__
   - This is a good chance to make an `Operation` abstraction of which `query`, `mutation` and `subscription` are members
   - For a subscription, `graphql` would send an outbound message to the system (allow the host application to manage its own subscriptions via Pusher, ActionCable, whatever)
