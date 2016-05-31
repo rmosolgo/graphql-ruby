@@ -1,15 +1,20 @@
 # Changelog
 
+## 0.14.0 (31 May 2016)
+
 ### Breaking changes & deprecations
 
 ### New features
 
 - `GraphQL::Language::Nodes::Document#to_query_string` will re-serialize a query AST #151
+- Accept `root_value:` when running a query #157
+- Accept a `GraphQL::Language::Nodes::Document` to `Query.new` (this allows you to cache parsed queries on the server) #152
 
 ### Bug fixes
 
 - Improved parse error messages #149
 - Improved build-time validation #150
+- Raise a meaningful error when a Union or Interface can't be resolved during query execution #155
 
 ## 0.13.0 (29 Apr 2016)
 
