@@ -13,11 +13,21 @@ describe GraphQL::Query::SerialExecution::ValueResolution do
       value("SATURDAY", value: 5)
       value("SUNDAY", value: 6)
     end
+
+    interface = GraphQL::InterfaceType.define do
+      name "SomeInterface"
+      field :someField, !types.Int
+      resolve_type ->(obj, ctx) { nil }
+    end
+
     GraphQL::ObjectType.define do
       name "Query"
       field :tomorrow, day_of_week_enum do
         argument :today, day_of_week_enum
         resolve ->(obj, args, ctx) { (args["today"] + 1) % 7 }
+      end
+      field :misbehavedInterface, interface do
+        resolve ->(obj, args, ctx) { Object.new }
       end
     end
   }
@@ -41,6 +51,19 @@ describe GraphQL::Query::SerialExecution::ValueResolution do
         }
       }
       assert_equal(expected, result)
+    end
+  end
+
+  describe "interface type resolution" do
+    let(:debug) { true }
+    let(:query_string) { %|
+      {
+        misbehavedInterface { someField }
+      }
+    |}
+
+    it "raises an error if it cannot resolve the type of an interface" do
+      assert_raises(GraphQL::ObjectType::UnresolvedTypeError) { result }
     end
   end
 end
