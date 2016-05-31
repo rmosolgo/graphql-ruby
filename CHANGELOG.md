@@ -1,5 +1,15 @@
 # graphql-relay
 
+## 0.10.0 (31 May 2016)
+
+### New Feature
+
+- Support `graphql` 0.14.0 #47
+
+## Bug Fix
+
+- Use strings as argument names, not symbols #47
+
 ## 0.9.5
 
 ### New Feature
