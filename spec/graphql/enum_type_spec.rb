@@ -8,6 +8,10 @@ describe GraphQL::EnumType do
     assert_equal(1, enum.coerce_input("COW"))
   end
 
+  it "coerces invalid names to nil" do
+    assert_equal(nil, enum.coerce_input("YAKKITY"))
+  end
+
   it "coerces result values to value's value" do
     assert_equal("YAK", enum.coerce_result("YAK"))
     assert_equal("COW", enum.coerce_result(1))
