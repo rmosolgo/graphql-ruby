@@ -22,11 +22,7 @@ module GraphQL
 
         def result
           result_name = ast_node.alias || ast_node.name
-          raw_value = begin
-            get_raw_value
-          rescue GraphQL::ExecutionError => err
-            err
-          end
+          raw_value = get_raw_value
           { result_name => get_finished_value(raw_value) }
         end
 
@@ -49,15 +45,17 @@ module GraphQL
         # Get the result of:
         # - Any middleware on this schema
         # - The field's resolve method
+        # If the middleware chain returns a GraphQL::ExecutionError, its message
+        # is added to the "errors" key.
         def get_raw_value
           steps = execution_context.query.schema.middleware + [get_middleware_proc_from_field_resolve]
           chain = GraphQL::Schema::MiddlewareChain.new(
             steps: steps,
             arguments: [parent_type, target, field, arguments, execution_context.query.context]
           )
-          value = chain.call
-          raise value if value.instance_of?(GraphQL::ExecutionError)
-          value
+          chain.call
+        rescue GraphQL::ExecutionError => err
+          err
         end
 
 
