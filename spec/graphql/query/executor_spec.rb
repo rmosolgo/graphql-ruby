@@ -1,7 +1,6 @@
 require "spec_helper"
 
 describe GraphQL::Query::Executor do
-  let(:debug) { true }
   let(:operation_name) { nil }
   let(:schema) { DummySchema }
   let(:variables) { {"cheeseId" => 2} }
@@ -9,7 +8,6 @@ describe GraphQL::Query::Executor do
     schema,
     query_string,
     variables: variables,
-    debug: debug,
     operation_name: operation_name,
   )}
   let(:result) { query.result }

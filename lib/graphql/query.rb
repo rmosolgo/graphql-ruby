@@ -8,28 +8,20 @@ module GraphQL
       end
     end
 
-    attr_reader :schema, :document, :context, :fragments, :operations, :debug, :root_value, :max_depth
+    attr_reader :schema, :document, :context, :fragments, :operations, :root_value, :max_depth
 
     # Prepare query `query_string` on `schema`
     # @param schema [GraphQL::Schema]
     # @param query_string [String]
     # @param context [#[]] an arbitrary hash of values which you can access in {GraphQL::Field#resolve}
     # @param variables [Hash] values for `$variables` in the query
-    # @param debug [Boolean] DEPRECATED if true, errors are raised, if false, errors are put in the `errors` key
     # @param validate [Boolean] if true, `query_string` will be validated with {StaticValidation::Validator}
     # @param operation_name [String] if the query string contains many operations, this is the one which should be executed
     # @param root_value [Object] the object used to resolve fields on the root type
-    def initialize(schema, query_string = nil, document: nil, context: nil, variables: {}, debug: nil, validate: true, operation_name: nil, root_value: nil, max_depth: nil)
+    def initialize(schema, query_string = nil, document: nil, context: nil, variables: {}, validate: true, operation_name: nil, root_value: nil, max_depth: nil)
       fail ArgumentError, "a query string or document is required" unless query_string || document
 
       @schema = schema
-      if debug == false
-        warn("Muffling errors with `debug: false` is deprecated and will be removed. For a similar behavior, use `MySchema.middleware << GraphQL::Schema::CatchallMiddleware`.")
-      elsif debug == true
-        warn("`debug:` will be removed from a future GraphQL version (and raising errors will be the default behavior, like `debug: true`)")
-      end
-      @debug = debug || false
-
       @max_depth = max_depth || schema.max_depth
       @context = Context.new(query: self, values: context)
       @root_value = root_value

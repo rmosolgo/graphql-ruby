@@ -28,7 +28,6 @@ describe GraphQL::Query do
        ... on Milk   { source }
     }
   |}
-  let(:debug) { false }
   let(:operation_name) { nil }
   let(:max_depth) { nil }
   let(:query_variables) { {"cheeseId" => 2} }
@@ -39,7 +38,6 @@ describe GraphQL::Query do
     schema,
     query_string,
     variables: query_variables,
-    debug: debug,
     operation_name: operation_name,
     max_depth: max_depth,
   )}
@@ -51,7 +49,6 @@ describe GraphQL::Query do
         GraphQL::Query.new(
           schema,
           variables: query_variables,
-          debug: debug,
           operation_name: operation_name,
           max_depth: max_depth,
         )
@@ -64,7 +61,6 @@ describe GraphQL::Query do
       schema,
       document: document,
       variables: query_variables,
-      debug: debug,
       operation_name: operation_name,
       max_depth: max_depth,
     )}
