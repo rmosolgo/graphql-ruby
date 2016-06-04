@@ -16,11 +16,6 @@ module GraphQL
       rescue GraphQL::ExecutionError => err
         query.context.errors << err
         {"errors" => [err.to_h]}
-      rescue StandardError => err
-        query.context.errors << err
-        query.debug && raise(err)
-        message = "Internal error" # : #{err} \n#{err.backtrace.join("\n  ")}"
-        {"errors" => [{"message" => message}]}
       end
 
       private

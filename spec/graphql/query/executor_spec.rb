@@ -118,25 +118,8 @@ describe GraphQL::Query::Executor do
   describe "runtime errors" do
     let(:query_string) {%| query noMilk { error }|}
 
-    describe "if debug: false" do
-      let(:debug) { false }
-      let(:errors) { query.context.errors }
-
-      it "turns into error messages" do
-        expected = {"errors"=>[
-          {"message"=>"Internal error"}
-        ]}
-        assert_equal(expected, result)
-        assert_equal([RuntimeError], errors.map(&:class))
-        assert_equal("This error was raised on purpose", errors.first.message)
-      end
-    end
-
-    describe "if debug: true" do
-      let(:debug) { true }
-      it "raises error" do
-        assert_raises(RuntimeError) { result }
-      end
+    it "raises error" do
+      assert_raises(RuntimeError) { result }
     end
 
     describe "if nil is given for a non-null field" do
