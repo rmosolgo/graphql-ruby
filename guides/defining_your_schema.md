@@ -31,7 +31,7 @@ CityType = ObjectType.define do
   # To avoid circular dependencies, pass a String or a Proc for the type.
   # This string will be looked up in the global namespace
   field :sisterCity, "CityType"
-  # This proc will be called later, returning `CityType`
+  # This proc will be called later, returning `CountryType`
   field :country, -> { CountryType }
 end
 ```
@@ -61,9 +61,10 @@ In order for your schema to expose members of an interface, it must be able to d
 ```ruby
 BeverageInterface = GraphQL::InterfaceType.define do
  # ...
- resolve_type -> (object) {
+ resolve_type -> (object, ctx) {
    type_name = object.class.name
    # you can access the interface's `possible_types` inside the proc
+   possible_types = ctx.schema.possible_types(self)
    possible_types.find {|t| t.name == type_name}
  }
 end
@@ -86,7 +87,7 @@ In order to expose a union, you must also define how the concrete type of each o
 ```ruby
 MediaSearchResultUnion = GraphQL::UnionType.define do
   # This is the default if you don't provide a custom `resolve_type` proc:
-  resolve_type -> (object) {
+  resolve_type -> (object, ctx) {
     type_name = object.class.name
     # You can access the union's `possible_types` inside the proc
     possible_types.find {|t| t.name == type_name}
