@@ -21,7 +21,7 @@ module GraphQL
             arg_value = coerce(arg_defn.type, ast_arg.value, variables)
           end
           if arg_value.nil?
-            arg_value = arg_defn.default_value
+            arg_value = arg_defn.type.coerce_input(arg_defn.default_value)
           end
           values_hash[arg_name] = arg_value
         end

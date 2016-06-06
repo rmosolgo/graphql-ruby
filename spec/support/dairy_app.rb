@@ -185,7 +185,7 @@ end
 SourceFieldDefn = Proc.new {
   type GraphQL::ListType.new(of_type: CheeseType)
   description "Cheese from source"
-  argument :source, !DairyAnimalEnum
+  argument :source, DairyAnimalEnum, default_value: "COW"
   resolve -> (target, arguments, context) {
     CHEESES.values.select{ |c| c.source == arguments["source"] }
   }
