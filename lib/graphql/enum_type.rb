@@ -67,6 +67,7 @@ module GraphQL
     # @param value_name [String] the string representation of this enum value
     # @return [Object] the underlying value for this enum value
     def coerce_non_null_input(value_name)
+      return nil unless @values_by_name.key?(value_name)
       @values_by_name.fetch(value_name).value
     end
 
