@@ -217,7 +217,9 @@ describe GraphQL::Query do
         variableDefault: searchDairy(product: $searchWithDefault) {
           ... cheeseFields
         }
-
+        convertedDefault: fromSource {
+          ... cheeseFields
+        }
       }
       fragment cheeseFields on Cheese { flavor }
     |}
@@ -242,6 +244,12 @@ describe GraphQL::Query do
     describe "when the variable has a default" do
       it "uses the variable default" do
         assert_equal("Brie", result["data"]["variableDefault"]["flavor"])
+      end
+    end
+
+    describe "when the variable has a default needing conversion" do
+      it "uses the converted variable default" do
+        assert_equal([{"flavor" => "Brie"}, {"flavor" => "Gouda"}], result["data"]["convertedDefault"])
       end
     end
   end
