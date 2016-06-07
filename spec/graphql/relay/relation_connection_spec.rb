@@ -187,4 +187,93 @@ describe GraphQL::Relay::RelationConnection do
       assert_equal(bases_by_name, get_names(result, "basesByName"))
     end
   end
+
+  describe "with a Sequel::Dataset" do
+    def get_names(result)
+      ships = result["data"]["empire"]["basesAsSequelDataset"]["edges"]
+      names = ships.map { |e| e["node"]["name"] }
+    end
+
+    def get_last_cursor(result)
+      result["data"]["empire"]["basesAsSequelDataset"]["edges"].last["cursor"]
+    end
+
+    describe "results" do
+      let(:query_string) {%|
+        query getShips($first: Int, $after: String, $last: Int, $before: String,  $nameIncludes: String){
+          empire {
+            basesAsSequelDataset(first: $first, after: $after, last: $last, before: $before, nameIncludes: $nameIncludes) {
+              ... basesConnection
+            }
+          }
+        }
+
+        fragment basesConnection on BaseConnection {
+          totalCount,
+          edges {
+            cursor
+            node {
+              name
+            }
+          },
+          pageInfo {
+            hasNextPage
+          }
+        }
+      |}
+
+      it 'limits the result' do
+        result = query(query_string, "first" => 2)
+        assert_equal(2, get_names(result).length)
+
+        result = query(query_string, "first" => 3)
+        assert_equal(3, get_names(result).length)
+      end
+
+      it 'provides custom fileds on the connection type' do
+        result = query(query_string, "first" => 2)
+        assert_equal(
+          Base.where(faction_id: 2).count,
+          result["data"]["empire"]["basesAsSequelDataset"]["totalCount"]
+        )
+      end
+
+      it 'slices the result' do
+        result = query(query_string, "first" => 2)
+        assert_equal(["Death Star", "Shield Generator"], get_names(result))
+
+        # After the last result, find the next 2:
+        last_cursor = get_last_cursor(result)
+
+        result = query(query_string, "after" => last_cursor, "first" => 2)
+        assert_equal(["Headquarters"], get_names(result))
+
+        last_cursor = get_last_cursor(result)
+
+        result = query(query_string, "before" => last_cursor, "last" => 1)
+        assert_equal(["Shield Generator"], get_names(result))
+
+        result = query(query_string, "before" => last_cursor, "last" => 2)
+        assert_equal(["Death Star", "Shield Generator"], get_names(result))
+
+        result = query(query_string, "before" => last_cursor, "last" => 10)
+        assert_equal(["Death Star", "Shield Generator"], get_names(result))
+
+      end
+
+      it "applies custom arguments" do
+        result = query(query_string, "first" => 1, "nameIncludes" => "ea")
+        assert_equal(["Death Star"], get_names(result))
+
+        after = get_last_cursor(result)
+
+        result = query(query_string, "first" => 2, "nameIncludes" => "ea", "after" => after )
+        assert_equal(["Headquarters"], get_names(result))
+        before = get_last_cursor(result)
+
+        result = query(query_string, "last" => 1, "nameIncludes" => "ea", "before" => before)
+        assert_equal(["Death Star"], get_names(result))
+      end
+    end
+  end
 end

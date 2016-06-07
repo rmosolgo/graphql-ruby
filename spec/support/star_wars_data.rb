@@ -12,7 +12,8 @@ names = [
 
 ## Set up "Bases" in ActiveRecord
 # ActiveRecord::Base.logger = Logger.new(STDOUT)
-ActiveRecord::Base.establish_connection(adapter: "sqlite3", database: ":memory:")
+`rm -f ./_test_.db`
+ActiveRecord::Base.establish_connection(adapter: "sqlite3", database: "./_test_.db")
 
 ActiveRecord::Schema.define do
   self.verbose = false
@@ -31,6 +32,11 @@ Base.create!(name: "Echo Base", planet: "Hoth", faction_id: 1)
 Base.create!(name: "Death Star", planet: nil, faction_id: 2)
 Base.create!(name: "Shield Generator", planet: "Endor", faction_id: 2)
 Base.create!(name: "Headquarters", planet: "Coruscant", faction_id: 2)
+
+# Also, set up Bases with Sequel
+DB = Sequel.sqlite("./_test_.db")
+class SequelBase < Sequel::Model(:bases)
+end
 
 rebels  = OpenStruct.new({
   id: '1',

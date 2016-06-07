@@ -1,7 +1,8 @@
 Gemfile.lock
 gemfiles/*.lock
 pkg/
-
+# Test database
+*.db
 .bundle/
 vendor/
 .idea/

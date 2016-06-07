@@ -5,7 +5,8 @@
 [![Code Climate](https://codeclimate.com/github/rmosolgo/graphql-relay-ruby/badges/gpa.svg)](https://codeclimate.com/github/rmosolgo/graphql-relay-ruby)
 [![Test Coverage](https://codeclimate.com/github/rmosolgo/graphql-relay-ruby/badges/coverage.svg)](https://codeclimate.com/github/rmosolgo/graphql-relay-ruby/coverage)
 
-Helpers for using [`graphql`](https://github.com/rmosolgo/graphql-ruby) with Relay.
+Helpers for using [`graphql`](https://github.com/rmosolgo/graphql-ruby) with Relay. Includes support for serving Relay connections from `Array`s, `ActiveRecord::Relation`s and `Sequel::Dataset`s.
+
 
 [API Documentation](http://www.rubydoc.info/github/rmosolgo/graphql-relay-ruby)
 ## Installation
@@ -115,7 +116,7 @@ end
 
 ### Connections
 
-Connections provide pagination and `pageInfo` for `Array`s or `ActiveRecord::Relation`s.
+Connections provide pagination and `pageInfo` for `Array`s,  `ActiveRecord::Relation`s or `Sequel::Dataset`s.
 
 #### Connection fields
 
@@ -236,7 +237,6 @@ field = GraphQL::Field.new
 # ... define the field
 connection_field = GraphQL::Relay::ConnectionField.create(field)
 ```
-
 
 ### Mutations
 
