@@ -107,6 +107,17 @@ Faction = GraphQL::ObjectType.define do
   connection :basesWithMaxLimitArray, BaseType.connection_type, max_page_size: 2 do
     resolve -> (object, args, context) { Base.all.to_a }
   end
+
+  connection :basesAsSequelDataset, BaseType.connection_type do
+    argument :nameIncludes, types.String
+    resolve -> (obj, args, ctx) {
+      all_bases = SequelBase.where(faction_id: obj.id)
+      if args[:nameIncludes]
+        all_bases = all_bases.where("name LIKE ?", "%#{args[:nameIncludes]}%")
+      end
+      all_bases
+    }
+  end
 end
 
 # Define a mutation. It will also:

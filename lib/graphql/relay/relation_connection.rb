@@ -1,5 +1,9 @@
 module GraphQL
   module Relay
+    # A connection implementation to expose SQL collection objects.
+    # It works for:
+    # - `ActiveRecord::Relation`
+    # - `Sequel::Dataset`
     class RelationConnection < BaseConnection
       def cursor_from_node(item)
         offset = starting_offset + paged_nodes_array.index(item) + 1
@@ -92,6 +96,9 @@ module GraphQL
 
     if defined?(ActiveRecord)
       BaseConnection.register_connection_implementation(ActiveRecord::Relation, RelationConnection)
+    end
+    if defined?(Sequel)
+      BaseConnection.register_connection_implementation(Sequel::Dataset, RelationConnection)
     end
   end
 end
