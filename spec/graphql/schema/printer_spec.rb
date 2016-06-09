@@ -71,6 +71,9 @@ type __Directive {
   description: String
   args: [__InputValue!]!
   locations: [__DirectiveLocation!]!
+  onOperation: Boolean!
+  onFragment: Boolean!
+  onField: Boolean!
 }
 
 enum __DirectiveLocation {

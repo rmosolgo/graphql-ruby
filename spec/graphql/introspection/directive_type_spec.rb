@@ -4,7 +4,15 @@ describe GraphQL::Introspection::DirectiveType do
   let(:query_string) {%|
     query getDirectives {
       __schema {
-        directives { name, args { name, type { name, ofType { name } } }, locations }
+        directives {
+          name,
+          args { name, type { name, ofType { name } } },
+          locations
+          # Deprecated fields:
+          onField
+          onFragment
+          onOperation
+        }
       }
     }
   |}
@@ -20,6 +28,9 @@ describe GraphQL::Introspection::DirectiveType do
               {"name"=>"if", "type"=>{"name"=>"Non-Null", "ofType"=>{"name"=>"Boolean"}}}
             ],
             "locations"=>["FIELD", "FRAGMENT_SPREAD", "INLINE_FRAGMENT"],
+            "onField" => true,
+            "onFragment" => true,
+            "onOperation" => false,
           },
           {
             "name" => "include",
@@ -27,6 +38,9 @@ describe GraphQL::Introspection::DirectiveType do
               {"name"=>"if", "type"=>{"name"=>"Non-Null", "ofType"=>{"name"=>"Boolean"}}}
             ],
             "locations"=>["FIELD", "FRAGMENT_SPREAD", "INLINE_FRAGMENT"],
+            "onField" => true,
+            "onFragment" => true,
+            "onOperation" => false,
           },
         ]
       }
