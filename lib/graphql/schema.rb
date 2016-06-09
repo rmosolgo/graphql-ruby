@@ -51,7 +51,7 @@ module GraphQL
     # @return [GraphQL::Schema::TypeMap] `{ name => type }` pairs of types in this schema
     def types
       @types ||= begin
-        all_types = @orphan_types + [query, mutation, GraphQL::Introspection::SchemaType]
+        all_types = @orphan_types + [query, mutation, subscription, GraphQL::Introspection::SchemaType]
         GraphQL::Schema::ReduceTypes.reduce(all_types.compact)
       end
     end
