@@ -202,10 +202,13 @@ Additionally, you can define error handling and custom middleware as described b
 
 ## Handling Errors
 
-You can rescue errors by defining handlers with `Schema#rescue_from`. The handler should return a string that will be inserted into the response. For example, you can set up a handler:
+You can rescue errors by defining handlers with `Schema#rescue_from`. The handler receives the error instance and it should return a string. The returned string will be added to the `"errors"` key.
+
+For example, you can set up a handler:
 
 ```ruby
-MySchema.rescue_from(ActiveRecord::RecordInvalid) { "Some data could not be saved" }
+# The error instance is yielded to the block:
+MySchema.rescue_from(ActiveRecord::RecordInvalid) { |error| "Some data could not be saved" }
 ```
 
 Then, when a query is executed, that error is rescued and its message is added to the response:

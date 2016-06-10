@@ -52,14 +52,6 @@ result = MySchema.execute(query_string, operation_name: "getPersonInfo")
 
 If you don't, you'll get an error.
 
-## Debug
-
-By default, `graphql-ruby` rescues any error during execution and puts it in the response's `"errors"` key. You can disable this with `debug: true`, which will cause any error to be raised.
-
-```ruby
-result = MySchema.execute(query_string, debug: true)
-```
-
 ## Validation
 
 By default, `graphql-ruby` performs validation on incoming query strings. If you want to disable this, pass `validate: false`. No guarantees it won't blow up :)
