@@ -30,6 +30,18 @@ module GraphQL
     def to_s
       "<GraphQL::Directive #{name}>"
     end
+
+    def on_field?
+      locations.include?(FIELD)
+    end
+
+    def on_fragment?
+      locations.include?(FRAGMENT_SPREAD) && locations.include?(INLINE_FRAGMENT)
+    end
+
+    def on_operation?
+      locations.include?(QUERY) && locations.include?(MUTATION) && locations.include?(SUBSCRIPTION)
+    end
   end
 end
 
