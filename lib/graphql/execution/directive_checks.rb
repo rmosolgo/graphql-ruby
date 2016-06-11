@@ -5,8 +5,20 @@ module GraphQL
     module DirectiveChecks
       SKIP = "skip"
       INCLUDE = "include"
+      DEFER = "defer"
+      STREAM = "stream"
 
       module_function
+
+      # @return [Boolean] Should this AST node be deferred?
+      def defer?(irep_node)
+        irep_node.directives.any? { |dir| dir.parent.ast_node == irep_node.ast_node && dir.name == DEFER }
+      end
+
+      # @return [Boolean] Should this AST node be streamed?
+      def stream?(irep_node)
+        irep_node.directives.any? { |dir| dir.name == STREAM }
+      end
 
       # @return [Boolean] Should this node be included in the query?
       def include?(directive_irep_nodes, query)

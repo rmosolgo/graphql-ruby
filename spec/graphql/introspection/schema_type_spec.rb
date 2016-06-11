@@ -21,6 +21,7 @@ describe GraphQL::Introspection::SchemaType do
             {"name"=>"allDairy"},
             {"name"=>"allEdible"},
             {"name"=>"cheese"},
+            {"name"=>"cheeses"},
             {"name"=>"cow"},
             {"name"=>"dairy"},
             {"name"=>"deepNonNull"},

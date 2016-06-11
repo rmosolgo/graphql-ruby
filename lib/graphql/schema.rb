@@ -69,7 +69,15 @@ module GraphQL
       :query_analyzers, :middleware, :instrumenters
 
     BUILT_IN_TYPES = Hash[[INT_TYPE, STRING_TYPE, FLOAT_TYPE, BOOLEAN_TYPE, ID_TYPE].map{ |type| [type.name, type] }]
-    DIRECTIVES = [GraphQL::Directive::IncludeDirective, GraphQL::Directive::SkipDirective, GraphQL::Directive::DeprecatedDirective]
+
+    DIRECTIVES = [
+      GraphQL::Directive::SkipDirective,
+      GraphQL::Directive::IncludeDirective,
+      GraphQL::Directive::DeprecatedDirective,
+      GraphQL::Directive::DeferDirective,
+      GraphQL::Directive::StreamDirective,
+    ]
+
     DYNAMIC_FIELDS = ["__type", "__typename", "__schema"]
 
     attr_reader :static_validator, :object_from_id_proc, :id_from_object_proc, :resolve_type_proc
@@ -93,7 +101,7 @@ module GraphQL
       @id_from_object_proc = nil
       @instrumenters = Hash.new { |h, k| h[k] = [] }
       # Default to the built-in execution strategy:
-      @query_execution_strategy = GraphQL::Query::SerialExecution
+      @query_execution_strategy = GraphQL::Execution::DeferredExecution
       @mutation_execution_strategy = GraphQL::Query::SerialExecution
       @subscription_execution_strategy = GraphQL::Query::SerialExecution
     end
