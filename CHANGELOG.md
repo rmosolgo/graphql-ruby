@@ -6,6 +6,12 @@
 
 ### Bug fixes
 
+## 0.15.0 (11 Jun 2016)
+
+### Breaking changes & deprecations
+
+- Remove `debug:` option, propagate all errors. #161
+
 ## 0.14.1 (11 Jun 2016)
 
 ### Breaking changes & deprecations

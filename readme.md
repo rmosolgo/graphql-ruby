@@ -120,7 +120,7 @@ If you're building a backend for [Relay](http://facebook.github.io/relay/), you'
 ## To Do
 
 - __1.0 items:__
-  - Support type name for field types
+  - Support type name for field types?
 - Add a complexity validator (reject queries if they're too big)
 - Add docs for shared behaviors & DRY code
 - __Subscriptions__
