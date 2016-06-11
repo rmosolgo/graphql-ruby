@@ -8,19 +8,14 @@ module GraphQL
         @query = query
       end
 
-      # Evalute {operation_name} on {query}. Handle errors by putting them in the "errors" key.
-      # (Or, if `query.debug`, by re-raising them.)
+      # Evalute {operation_name} on {query}.
+      # Handle {GraphQL::ExecutionError}s by putting them in the "errors" key.
       # @return [Hash] A GraphQL response, with either a "data" key or an "errors" key
       def result
         execute
       rescue GraphQL::ExecutionError => err
         query.context.errors << err
         {"errors" => [err.to_h]}
-      rescue StandardError => err
-        query.context.errors << err
-        query.debug && raise(err)
-        message = "Internal error" # : #{err} \n#{err.backtrace.join("\n  ")}"
-        {"errors" => [{"message" => message}]}
       end
 
       private

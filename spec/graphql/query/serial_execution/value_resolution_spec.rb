@@ -1,7 +1,6 @@
 require "spec_helper"
 
 describe GraphQL::Query::SerialExecution::ValueResolution do
-  let(:debug) { false }
   let(:query_root) {
     day_of_week_enum = GraphQL::EnumType.define do
       name "DayOfWeek"
@@ -34,7 +33,6 @@ describe GraphQL::Query::SerialExecution::ValueResolution do
   let(:schema) { GraphQL::Schema.new(query: query_root) }
   let(:result) { schema.execute(
     query_string,
-    debug: debug,
   )}
 
   describe "enum resolution" do
@@ -55,7 +53,6 @@ describe GraphQL::Query::SerialExecution::ValueResolution do
   end
 
   describe "interface type resolution" do
-    let(:debug) { true }
     let(:query_string) { %|
       {
         misbehavedInterface { someField }

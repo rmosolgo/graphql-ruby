@@ -121,7 +121,6 @@ If you're building a backend for [Relay](http://facebook.github.io/relay/), you'
 
 - __1.0 items:__
   - Support type name for field types
-  - Revisit error handling & `debug:` option
 - Add a complexity validator (reject queries if they're too big)
 - Add docs for shared behaviors & DRY code
 - __Subscriptions__

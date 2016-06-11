@@ -7,7 +7,6 @@ describe GraphQL::Query::SerialExecution::ExecutionContext do
     }
     fragment cheeseFields on Cheese { flavor }
   |}
-  let(:debug) { false }
   let(:operation_name) { nil }
   let(:query_variables) { {"cheeseId" => 2} }
   let(:schema) { DummySchema }
@@ -15,7 +14,6 @@ describe GraphQL::Query::SerialExecution::ExecutionContext do
     schema,
     query_string,
     variables: query_variables,
-    debug: debug,
     operation_name: operation_name,
   )}
   let(:execution_context) {
