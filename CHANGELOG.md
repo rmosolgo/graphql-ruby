@@ -1,5 +1,29 @@
 # Changelog
 
+### Breaking changes & deprecations
+
+### New features
+
+### Bug fixes
+
+## 0.14.1 (11 Jun 2016)
+
+### Breaking changes & deprecations
+
+- `debug:` is deprecated (#165). Propagating errors (`debug: true`) will become the default behavior. You can get a similar implementation of error gobbling with `CatchallMiddleware`. Add it to your schema:
+
+    ```ruby
+    MySchema.middleware << GraphQL::Schema::CatchallMiddleware
+    ```
+
+### New features
+
+### Bug fixes
+
+- Restore previous introspection fields on DirectiveType as deprecated #164
+- Apply coercion to input default values #162
+- Proper Enum behavior when a value isn't found
+
 ## 0.14.0 (31 May 2016)
 
 ### Breaking changes & deprecations
