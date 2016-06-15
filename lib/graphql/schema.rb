@@ -92,5 +92,31 @@ module GraphQL
       @interface_possible_types ||= GraphQL::Schema::PossibleTypes.new(self)
       @interface_possible_types.possible_types(type_defn)
     end
+
+    def root_type_for_operation(operation)
+      case operation
+      when "query"
+        query
+      when "mutation"
+        mutation
+      when "subscription"
+        subscription
+      else
+        raise ArgumentError, "unknown operation type: #{operation}"
+      end
+    end
+
+    def execution_strategy_for_operation(operation)
+      case operation
+      when "query"
+        query_execution_strategy
+      when "mutation"
+        mutation_execution_strategy
+      when "subscription"
+        subscription_execution_strategy
+      else
+        raise ArgumentError, "unknown operation type: #{operation}"
+      end
+    end
   end
 end
