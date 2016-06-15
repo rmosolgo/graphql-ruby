@@ -6,6 +6,12 @@
 
 ### Bug fixes
 
+## 0.14.2 (15 Jun 2016)
+
+### Bug fixes
+
+- Whitelist operation types in `lexer.rb`
+
 ## 0.14.1 (11 Jun 2016)
 
 ### Breaking changes & deprecations
