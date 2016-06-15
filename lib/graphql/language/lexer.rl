@@ -14,6 +14,9 @@
   TRUE =          'true';
   FALSE =         'false';
   NULL =          'null';
+  QUERY =         'query';
+  MUTATION =      'mutation';
+  SUBSCRIPTION =  'subscription';
   RCURLY =        '{';
   LCURLY =        '}';
   RPAREN =        '(';
@@ -43,6 +46,9 @@
     TRUE          => { emit_token.call(:TRUE) };
     FALSE         => { emit_token.call(:FALSE) };
     NULL          => { emit_token.call(:NULL) };
+    QUERY         => { emit_token.call(:QUERY) };
+    MUTATION      => { emit_token.call(:MUTATION) };
+    SUBSCRIPTION  => { emit_token.call(:SUBSCRIPTION) };
     RCURLY        => { emit_token.call(:RCURLY) };
     LCURLY        => { emit_token.call(:LCURLY) };
     RPAREN        => { emit_token.call(:RPAREN) };

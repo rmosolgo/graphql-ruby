@@ -116,6 +116,9 @@ rule
     | FRAGMENT
     | TRUE
     | FALSE
+    | QUERY
+    | MUTATION
+    | SUBSCRIPTION
 
   arguments_opt:
       /* none */                    { return [] }
