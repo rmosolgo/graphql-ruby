@@ -13,7 +13,7 @@ rule
     | fragment_definition
 
   operation_definition:
-      name operation_name_opt variable_definitions_opt directives_list_opt selection_set {
+      operation_type operation_name_opt variable_definitions_opt directives_list_opt selection_set {
         return  make_node(
           :OperationDefinition, {
             operation_type: val[0],
@@ -33,6 +33,11 @@ rule
           }
         )
       }
+
+  operation_type:
+      QUERY
+    | MUTATION
+    | SUBSCRIPTION
 
   operation_name_opt:
       /* none */ { return nil }
