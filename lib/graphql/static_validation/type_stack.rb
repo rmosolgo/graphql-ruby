@@ -76,7 +76,7 @@ module GraphQL
       class OperationDefinitionStrategy
         def push(stack, node)
           # eg, QueryType, MutationType
-          object_type = stack.schema.public_send(node.operation_type)
+          object_type = stack.schema.root_type_for_operation(node.operation_type)
           stack.object_types.push(object_type)
         end
 
