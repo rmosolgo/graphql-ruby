@@ -124,6 +124,7 @@ If you're building a backend for [Relay](http://facebook.github.io/relay/), you'
 - Add a complexity validator (reject queries if they're too big)
 - Add docs for shared behaviors & DRY code
 - Proper error on unknown directive
+- Non-nulls should _propagate_ to the next non-null field (all the way up to data, if need be)
 - __Subscriptions__
   - This is a good chance to make an `Operation` abstraction of which `query`, `mutation` and `subscription` are members
   - For a subscription, `graphql` would send an outbound message to the system (allow the host application to manage its own subscriptions via Pusher, ActionCable, whatever)
