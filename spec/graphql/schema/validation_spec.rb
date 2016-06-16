@@ -83,7 +83,7 @@ describe GraphQL::Schema::Validation do
     let(:invalid_interfaces_object) {
       GraphQL::ObjectType.define do
         name "InvalidInterfaces"
-        interfaces({a: 1})
+        interfaces(55)
       end
     }
     let(:invalid_interface_member_object) {
@@ -101,7 +101,7 @@ describe GraphQL::Schema::Validation do
     }
 
     it "requires an Array for interfaces" do
-      assert_error_includes invalid_interfaces_object, "must be an Array of GraphQL::InterfaceType, not a Hash"
+      assert_error_includes invalid_interfaces_object, "must be an Array of GraphQL::InterfaceType, not a Fixnum"
       assert_error_includes invalid_interface_member_object, "must contain GraphQL::InterfaceType, not Symbol"
     end
 

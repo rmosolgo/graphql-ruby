@@ -42,7 +42,7 @@ module GraphQL
     include GraphQL::Define::InstanceDefinable
     accepts_definitions :name, :description, :resolve, :type, :property, :deprecation_reason, argument: GraphQL::Define::AssignArgument
 
-    attr_accessor :deprecation_reason, :name, :description, :type, :property
+    attr_accessor :deprecation_reason, :name, :description, :property
     attr_reader :resolve_proc
 
     # @return [String] The name of this field on its {GraphQL::ObjectType} (or {GraphQL::InterfaceType})
@@ -71,18 +71,14 @@ module GraphQL
       @resolve_proc = resolve_proc || build_default_resolver
     end
 
+    def type=(new_return_type)
+      @clean_type = nil
+      @dirty_type = new_return_type
+    end
+
     # Get the return type for this field.
     def type
-      case @type
-      when Proc
-        # lazy-eval it
-        @type = @type.call
-      when String
-        # Get a constant by this name
-        @type = Object.const_get(@type)
-      else
-        @type
-      end
+      @clean_type ||= GraphQL::BaseType.resolve_related_type(@dirty_type)
     end
 
     # You can only set a field's name _once_ -- this to prevent
