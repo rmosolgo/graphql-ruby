@@ -27,7 +27,7 @@ end
 CheeseType = GraphQL::ObjectType.define do
   name "Cheese"
   description "Cultured dairy product"
-  interfaces [EdibleInterface, AnimalProductInterface]
+  interfaces ["EdibleInterface", -> { AnimalProductInterface }]
 
   # Can have (name, type, desc)
   field :id, !types.Int, "Unique identifier"
@@ -107,7 +107,7 @@ end
 DairyProductUnion = GraphQL::UnionType.define do
   name "DairyProduct"
   description "Kinds of food made from milk"
-  possible_types [MilkType, CheeseType]
+  possible_types ["MilkType", -> { CheeseType }]
 end
 
 CowType = GraphQL::ObjectType.define do

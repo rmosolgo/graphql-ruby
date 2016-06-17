@@ -88,5 +88,21 @@ module GraphQL
       return nil if value.nil?
       coerce_non_null_input(value)
     end
+
+    # During schema definition, types can be defined inside procs or as strings.
+    # This function converts it to a type instance
+    # @return [GraphQL::BaseType]
+    def self.resolve_related_type(type_arg)
+      case type_arg
+      when Proc
+        # lazy-eval it
+        type_arg.call
+      when String
+        # Get a constant by this name
+        Object.const_get(type_arg)
+      else
+        type_arg
+      end
+    end
   end
 end
