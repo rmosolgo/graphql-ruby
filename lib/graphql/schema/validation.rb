@@ -90,7 +90,7 @@ module GraphQL
         FIELDS_ARE_VALID = Rules.assert_named_items_are_valid("field", -> (type) { type.all_fields })
 
         HAS_ONE_OR_MORE_POSSIBLE_TYPES = -> (type) {
-          type.possible_types.length > 1 ? nil : "must have at least one possible type"
+          type.possible_types.length >= 1 ? nil : "must have at least one possible type"
         }
 
         NAME_IS_STRING = Rules.assert_property(:name, String)
