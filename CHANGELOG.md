@@ -6,6 +6,16 @@
 
 ### Bug fixes
 
+## 0.15.2 (16 Jun 2016)
+
+### New features
+
+- Support lazy type arguments in Object's `interfaces` and Union's `possible_types` #169
+
+### Bug fixes
+
+- Support single-member Unions, as per the spec #170
+
 ## 0.15.1 (15 Jun 2016)
 
 ### Bug fixes
