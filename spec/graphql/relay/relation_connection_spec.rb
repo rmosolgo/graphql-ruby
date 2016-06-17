@@ -20,7 +20,7 @@ describe GraphQL::Relay::RelationConnection do
         }
       }
 
-      fragment basesConnection on BaseConnection {
+      fragment basesConnection on BasesConnectionWithTotalCount {
         totalCount,
         edges {
           cursor
@@ -160,10 +160,17 @@ describe GraphQL::Relay::RelationConnection do
       query getBases {
         empire {
           basesByName(first: 30) { ... basesFields }
-          bases(first: 30) { ... basesFields }
+          bases(first: 30) { ... basesFields2 }
         }
       }
       fragment basesFields on BaseConnection {
+        edges {
+          node {
+            name
+          }
+        }
+      }
+      fragment basesFields2 on BasesConnectionWithTotalCount {
         edges {
           node {
             name
@@ -179,7 +186,6 @@ describe GraphQL::Relay::RelationConnection do
 
     it "applies the default value" do
       result = query(query_string)
-
       bases_by_id   = ["Death Star", "Shield Generator", "Headquarters"]
       bases_by_name = ["Death Star", "Headquarters", "Shield Generator"]
 
@@ -208,7 +214,7 @@ describe GraphQL::Relay::RelationConnection do
           }
         }
 
-        fragment basesConnection on BaseConnection {
+        fragment basesConnection on BasesConnectionWithTotalCount {
           totalCount,
           edges {
             cursor

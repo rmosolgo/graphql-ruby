@@ -10,9 +10,9 @@ names = [
   'Executor',
 ]
 
-## Set up "Bases" in ActiveRecord
 # ActiveRecord::Base.logger = Logger.new(STDOUT)
 `rm -f ./_test_.db`
+# Set up "Bases" in ActiveRecord
 ActiveRecord::Base.establish_connection(adapter: "sqlite3", database: "./_test_.db")
 
 ActiveRecord::Schema.define do

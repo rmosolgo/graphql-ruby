@@ -14,23 +14,9 @@ module GraphQL
       # Just to encode data in the cursor, use something that won't conflict
       CURSOR_SEPARATOR = "---"
 
-      # Map of collection classes -> connection_classes
-      # eg Array -> ArrayConnection
+      # Map of collection class names -> connection_classes
+      # eg {"Array" => ArrayConnection}
       CONNECTION_IMPLEMENTATIONS = {}
-
-      # Create a connection which exposes edges of this type
-      def self.create_type(wrapped_type, &block)
-        edge_type = wrapped_type.edge_type
-
-        connection_type = ObjectType.define do
-          name("#{wrapped_type.name}Connection")
-          field :edges, types[edge_type]
-          field :pageInfo, PageInfo, property: :page_info
-          block && instance_eval(&block)
-        end
-
-        connection_type
-      end
 
       # Find a connection implementation suitable for exposing `items`
       #
@@ -61,16 +47,18 @@ module GraphQL
         CONNECTION_IMPLEMENTATIONS[items_class.name] = connection_class
       end
 
-      attr_reader :object, :arguments, :max_page_size
+      attr_reader :object, :arguments, :max_page_size, :parent
 
       # Make a connection, wrapping `object`
       # @param The collection of results
       # @param Query arguments
       # @param max_page_size [Int] The maximum number of results to return
-      def initialize(object, arguments, max_page_size: nil)
+      # @param parent [Object] The object which this collection belongs to
+      def initialize(object, arguments, max_page_size: nil, parent: nil)
         @object = object
         @arguments = arguments
         @max_page_size = max_page_size
+        @parent = parent
       end
 
       # Provide easy access to provided arguments:
@@ -92,9 +80,10 @@ module GraphQL
         end
       end
 
-      # Wrap nodes in {Edge}s so they expose cursors.
-      def edges
-        @edges ||= paged_nodes.map { |item| Edge.new(item, self) }
+      # These are the items to render for this connection,
+      # probably wrapped by {GraphQL::Relay::Edge}
+      def edge_nodes
+        @edge_nodes ||= paged_nodes
       end
 
       # Support the `pageInfo` field

@@ -1,16 +1,21 @@
 class GraphQL::BaseType
+  # Get the default connection type for this object type
   def connection_type
     @connection_type ||= define_connection
   end
 
-  def edge_type
-    @edge_type ||= GraphQL::Relay::Edge.create_type(self)
+  # Define a custom connection type for this object type
+  def define_connection(**kwargs, &block)
+    GraphQL::Relay::ConnectionType.create_type(self, **kwargs, &block)
   end
 
-  def define_connection(&block)
-    if !@connection_type.nil?
-      raise("#{name}'s connection type was already defined, can't redefine it!")
-    end
-    @connection_type = GraphQL::Relay::BaseConnection.create_type(self, &block)
+  # Get the default edge type for this object type
+  def edge_type
+    @edge_type ||= define_edge
+  end
+
+  # Define a custom edge type for this object type
+  def define_edge(**kwargs, &block)
+    GraphQL::Relay::EdgeType.create_type(self, **kwargs, &block)
   end
 end
