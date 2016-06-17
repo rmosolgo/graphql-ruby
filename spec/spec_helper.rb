@@ -17,5 +17,5 @@ Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each { |f| require f }
 
 
 def query(string, variables={})
-  GraphQL::Query.new(StarWarsSchema, string, variables: variables, debug: true).result
+  GraphQL::Query.new(StarWarsSchema, string, variables: variables).result
 end
