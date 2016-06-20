@@ -1,12 +1,33 @@
 # graphql-relay
 
+## 0.11.0 (19 Jun 2016)
+
+### Breaking Changes
+
+- `BaseType.define_connection` no longer caches the result to use as the default `BaseType.connection_type`. Now, store the result of `.define_connection` in a variable and pass that variable into the schema:
+
+    ```ruby
+    # Capture the returned type:
+    SomethingCustomConnectionType = SomethingType.define_connection { ... }
+
+    DifferentThingType = GraphQL::ObjectType.define do
+      # And pass it to the connection helper:
+      connection :somethings, SomethingCustomConnectionType
+    end
+    ```
+
+### New Features
+
+- Support for custom edge types / classes #50
+- Support for multiple connection classes #50
+
 ## 0.10.0 (31 May 2016)
 
 ### New Feature
 
 - Support `graphql` 0.14.0 #47
 
-## Bug Fix
+### Bug Fix
 
 - Use strings as argument names, not symbols #47
 
