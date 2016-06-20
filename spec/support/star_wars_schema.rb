@@ -47,12 +47,35 @@ BaseType = GraphQL::ObjectType.define do
   field :planet, types.String
 end
 
-# Define a connection which will wrap an ActiveRecord::Relation.
-# We use an optional block to add fields to the connection type:
-BaseType.define_connection do
+# Use an optional block to add fields to the connection type:
+BaseConnectionWithTotalCountType = BaseType.define_connection do
+  name "BasesConnectionWithTotalCount"
   field :totalCount do
     type types.Int
     resolve -> (obj, args, ctx) { obj.object.count }
+  end
+end
+
+class CustomBaseEdge < GraphQL::Relay::Edge
+  def upcased_name
+    node.name.upcase
+  end
+end
+
+CustomBaseEdgeType = BaseType.define_edge do
+  name "CustomBaseEdge"
+  field :upcasedName, types.String, property: :upcased_name
+  field :edgeClassName, types.String do
+    resolve -> (obj, args, ctx) { obj.class.name }
+  end
+end
+
+CustomEdgeBaseConnectionType = BaseType.define_connection(edge_class: CustomBaseEdge, edge_type: CustomBaseEdgeType) do
+  name "CustomEdgeBaseConnection"
+
+  field :totalCountTimes100 do
+    type types.Int
+    resolve -> (obj, args, ctx) { obj.object.count * 100 }
   end
 end
 
@@ -75,7 +98,7 @@ Faction = GraphQL::ObjectType.define do
     # You can define arguments here and use them in the connection
     argument :nameIncludes, types.String
   end
-  connection :bases, BaseType.connection_type do
+  connection :bases, BaseConnectionWithTotalCountType do
     # Resolve field should return an Array, the Connection
     # will do the rest!
     resolve -> (obj, args, ctx) {
@@ -108,7 +131,7 @@ Faction = GraphQL::ObjectType.define do
     resolve -> (object, args, context) { Base.all.to_a }
   end
 
-  connection :basesAsSequelDataset, BaseType.connection_type do
+  connection :basesAsSequelDataset, BaseConnectionWithTotalCountType do
     argument :nameIncludes, types.String
     resolve -> (obj, args, ctx) {
       all_bases = SequelBase.where(faction_id: obj.id)
@@ -118,6 +141,8 @@ Faction = GraphQL::ObjectType.define do
       all_bases
     }
   end
+
+  connection :basesWithCustomEdge, CustomEdgeBaseConnectionType, property: :bases
 end
 
 # Define a mutation. It will also:

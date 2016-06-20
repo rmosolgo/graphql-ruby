@@ -137,6 +137,9 @@ You can also define custom arguments and a custom resolve function for connectio
 
 ```ruby
 connection :featured_comments, CommentType.connection_type do
+  # Use a name to disambiguate this from `CommentType.connection_type`
+  name "CommentConnectionWithSince"
+
   # Add an argument:
   argument :since, types.String
 
@@ -166,16 +169,119 @@ connection :featured_comments, CommentType.connection_type, max_page_size: 50
 You can customize a connection type with `.define_connection`:
 
 ```ruby
-PostType.define_connection do
+PostConnectionWithTotalCountType = PostType.define_connection do
   field :totalCount do
     type types.Int
     # `obj` is the Connection, `obj.object` is the collection of Posts
     resolve -> (obj, args, ctx) { obj.object.count }
   end
 end
+
 ```
 
-Now, `PostType.connection_type` will include a `totalCount` field.
+Now, you can use `PostConnectionWithTotalCountType` to define a connection with the "totalCount" field:
+
+```ruby
+AuthorType = GraphQL::ObjectType.define do
+  # Use the custom connection type:
+  connection :posts, PostConnectionWithTotalCountType
+end
+```
+
+#### Custom edge types
+
+If you need custom fields on `edge`s, you can define an edge type and pass it to a connection:
+
+```ruby
+# Person => Membership => Team
+MembershipSinceEdgeType = BaseType.define_edge do
+  name "MembershipSinceEdge"
+  field :memberSince, types.Int, "The date that this person joined this team" do
+    resolve -> (obj, args, ctx) {
+      obj # => GraphQL::Relay::Edge instnce
+      person = obj.parent
+      team = obj.node
+      membership = Membership.where(person: person, team: team).first
+      membership.created_at.to_i
+    }
+  end
+end
+```
+
+Then, pass the edge type when defining the connection type:
+
+```ruby
+TeamMembershipsConnectionType = TeamType.define_connection(edge_type: MembershipSinceEdgeType) do
+  # Use a name so it doesn't conflict with "TeamConnection"
+  name "TeamMembershipsConnection"
+end
+```
+
+Now, you can query custom fields on the `edge`:
+
+```graphql
+{
+  me {
+    teams {
+      edge {
+        memberSince     # <= Here's your custom field
+        node {
+          teamName: name
+        }
+      }
+    }
+  }
+}
+```
+
+#### Custom Edge classes
+
+For more robust custom edges, you can define a custom edge class. It will be `obj` in the edge type's resolve function. For example, to define a membership edge:
+
+```ruby
+# Make sure to familiarize yourself with GraphQL::Relay::Edge --
+# you have to avoid naming conflicts here!
+class MembershipSinceEdge < GraphQL::Relay::Edge
+  # Cache `membership` to avoid multiple DB queries
+  def membership
+    @membership ||= begin
+      # "parent" and "node" are passed in from the surrounding Connection,
+      # See `Edge#initialize` for details
+      person = self.parent
+      team = self.node
+      Membership.where(person: person, team: team).first
+    end
+  end
+
+  def member_since
+    membership.created_at.to_i
+  end
+
+  def leader?
+    membership.leader?
+  end
+end
+```
+
+Then, hook it up with custom edge type and custom connection type:
+
+```ruby
+# Person => Membership => Team
+MembershipSinceEdgeType = BaseType.define_edge do
+  name "MembershipSinceEdge"
+  field :memberSince, types.Int, "The date that this person joined this team", property: :member_since
+  field :isPrimary, types.Boolean, "Is this person the team leader?". property: :primary?
+  end
+end
+
+TeamMembershipsConnectionType = TeamType.define_connection(
+    edge_class: MembershipSinceEdge,
+    edge_type: MembershipSinceEdgeType,
+  ) do
+  # Use a name so it doesn't conflict with "TeamConnection"
+  name "TeamMembershipsConnection"
+end
+```
 
 #### Connection objects
 
@@ -342,7 +448,6 @@ https://medium.com/@gauravtiwari/graphql-and-relay-on-rails-first-relay-powered-
 
 ## Todo
 
-- Allow custom edge fields (per connection type)
 - `GlobalNodeIdentification.to_global_id` should receive the type name and _object_, not `id`. (Or, maintain the "`type_name, id` in, `type_name, id` out" pattern?)
 - Make GlobalId a property of the schema, not a global
 - Reduce duplication in ArrayConnection / RelationConnection
