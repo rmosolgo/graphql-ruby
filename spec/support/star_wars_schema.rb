@@ -7,12 +7,8 @@
 # - an interface for Relay ObjectTypes to implement
 # See global_node_identification.rb for the full API.
 NodeIdentification = GraphQL::Relay::GlobalNodeIdentification.define do
-  object_from_id -> (id, ctx) do
-    # In a normal app, you could call `from_global_id` on your defined object
-    # type_name, id = NodeIdentification.from_global_id(id)
-    #
-    # But to support our testing setup, reach for the global:
-    type_name, id = GraphQL::Relay::GlobalNodeIdentification.from_global_id(id)
+  object_from_id -> (node_id, ctx) do
+    type_name, id = NodeIdentification.from_global_id(node_id)
     STAR_WARS_DATA[type_name][id]
   end
 
@@ -201,3 +197,4 @@ MutationType = GraphQL::ObjectType.define do
 end
 
 StarWarsSchema = GraphQL::Schema.new(query: QueryType, mutation: MutationType)
+StarWarsSchema.node_identification = NodeIdentification

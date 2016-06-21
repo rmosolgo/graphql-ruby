@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe GraphQL::Relay::GlobalNodeIdentification do
-  let(:node_identification) { NodeIdentification }
+  let(:node_identification) { StarWarsSchema.node_identification }
   describe 'NodeField' do
     it 'finds objects by id' do
       global_id = node_identification.to_global_id("Faction", "1")
@@ -77,9 +77,8 @@ describe GraphQL::Relay::GlobalNodeIdentification do
     end
 
     describe "custom definitions" do
-      before do
-        @previous_global_node_id = GraphQL::Relay::GlobalNodeIdentification.instance
-        @new_node_id = GraphQL::Relay::GlobalNodeIdentification.define do
+      let(:custom_node_identification) {
+        ident = GraphQL::Relay::GlobalNodeIdentification.define do
           to_global_id -> (type_name, id) {
             "#{type_name}/#{id}"
           }
@@ -88,12 +87,22 @@ describe GraphQL::Relay::GlobalNodeIdentification do
             global_id.split("/")
           }
 
+          object_from_id -> (node_id, ctx) do
+            type_name, id = ident.from_global_id(node_id)
+            STAR_WARS_DATA[type_name][id]
+          end
+
           description "Hello, World!"
         end
+      }
+
+      before do
+        @prev_node_identification = StarWarsSchema.node_identification
+        StarWarsSchema.node_identification = custom_node_identification
       end
 
       after do
-        GraphQL::Relay::GlobalNodeIdentification.instance = @previous_global_node_id
+        StarWarsSchema.node_identification = @prev_node_identification
       end
 
       describe "generating IDs" do
@@ -114,17 +123,16 @@ describe GraphQL::Relay::GlobalNodeIdentification do
 
       describe "setting a description" do
         it "allows you to set a description" do
-          assert_equal "Hello, World!", @new_node_id.field.description
+          assert_equal "Hello, World!", custom_node_identification.field.description
         end
       end
     end
   end
 
   describe "type_from_object" do
-
     describe "when the return value is nil" do
       it "returns nil" do
-        result = GraphQL::Relay::GlobalNodeIdentification.instance.type_from_object(123)
+        result = node_identification.type_from_object(123)
         assert_equal(nil, result)
       end
     end
@@ -132,26 +140,10 @@ describe GraphQL::Relay::GlobalNodeIdentification do
     describe "when the return value is not a BaseType" do
       it "raises an error " do
         err = assert_raises(RuntimeError) {
-          GraphQL::Relay::GlobalNodeIdentification.instance.type_from_object(:test_error)
+          node_identification.type_from_object(:test_error)
         }
         assert_includes err.message, "not_a_type (Symbol)"
       end
-    end
-  end
-
-  describe 'making a second instance' do
-    before do
-      @first_instance = GraphQL::Relay::GlobalNodeIdentification.instance
-    end
-
-    after do
-      GraphQL::Relay::GlobalNodeIdentification.instance = @first_instance
-    end
-
-    it 'overrides the first instance' do
-      GraphQL::Relay::GlobalNodeIdentification.define {}
-      second_instance = GraphQL::Relay::GlobalNodeIdentification.instance
-      refute_equal(@first_instance, second_instance)
     end
   end
 end

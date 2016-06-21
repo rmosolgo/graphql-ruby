@@ -13,18 +13,7 @@ module GraphQL
       attr_accessor :description
 
       class << self
-        attr_accessor :instance, :id_separator
-        def new(*args, &block)
-          @instance = super
-        end
-
-        def from_global_id(id)
-          instance.from_global_id(id)
-        end
-
-        def to_global_id(type_name, id)
-          instance.to_global_id(type_name, id)
-        end
+        attr_accessor :id_separator
       end
 
       self.id_separator = "-"
@@ -55,7 +44,7 @@ module GraphQL
           type(ident.interface)
           argument :id, !types.ID
           resolve -> (obj, args, ctx) {
-            ident.object_from_id(args[:id], ctx)
+            ctx.query.schema.node_identification.object_from_id(args[:id], ctx)
           }
           description ident.description
         end

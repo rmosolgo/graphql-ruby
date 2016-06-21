@@ -10,7 +10,7 @@ module GraphQL
         self.arguments = {}
         self.type = !GraphQL::ID_TYPE
         self.resolve = -> (obj, args, ctx) {
-          GraphQL::Relay::GlobalNodeIdentification.to_global_id(type_name, obj.public_send(property))
+          ctx.query.schema.node_identification.to_global_id(type_name, obj.public_send(property))
         }
       end
     end
