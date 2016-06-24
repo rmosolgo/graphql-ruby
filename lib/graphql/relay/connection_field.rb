@@ -44,7 +44,7 @@ module GraphQL
         -> (obj, args, ctx) {
           items = underlying_resolve.call(obj, args, ctx)
           connection_class = GraphQL::Relay::BaseConnection.connection_for_items(items)
-          connection_class.new(items, args, max_page_size: max_page_size)
+          connection_class.new(items, args, max_page_size: max_page_size, parent: obj)
         }
       end
     end

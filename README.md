@@ -453,6 +453,7 @@ https://medium.com/@gauravtiwari/graphql-and-relay-on-rails-first-relay-powered-
 - Reduce duplication in ArrayConnection / RelationConnection
 - Improve API for creating edges (better RANGE_ADD support)
 - If the new edge isn't a member of the connection's objects, raise a nice error
+- Rename `Connection#object` => `Connection#collection` with deprecation
 
 ## More Resources
 
