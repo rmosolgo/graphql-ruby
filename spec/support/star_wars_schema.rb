@@ -60,11 +60,16 @@ class CustomBaseEdge < GraphQL::Relay::Edge
   def upcased_name
     node.name.upcase
   end
+
+  def upcased_parent_name
+    parent.name.upcase
+  end
 end
 
 CustomBaseEdgeType = BaseType.define_edge do
   name "CustomBaseEdge"
   field :upcasedName, types.String, property: :upcased_name
+  field :upcasedParentName, types.String, property: :upcased_parent_name
   field :edgeClassName, types.String do
     resolve -> (obj, args, ctx) { obj.class.name }
   end

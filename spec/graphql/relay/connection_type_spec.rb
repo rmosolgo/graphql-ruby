@@ -10,6 +10,7 @@ describe GraphQL::Relay::ConnectionType do
               totalCountTimes100
               edges {
                 upcasedName
+                upcasedParentName
                 edgeClassName
                 node {
                   name
@@ -27,6 +28,9 @@ describe GraphQL::Relay::ConnectionType do
         assert_equal ["YAVIN", "ECHO BASE"] , bases["edges"].map { |e| e["upcasedName"] }
         assert_equal ["Yavin", "Echo Base"] , bases["edges"].map { |e| e["node"]["name"] }
         assert_equal ["CustomBaseEdge", "CustomBaseEdge"] , bases["edges"].map { |e| e["edgeClassName"] }
+        upcased_rebels_name = "ALLIANCE TO RESTORE THE REPUBLIC"
+        assert_equal [upcased_rebels_name, upcased_rebels_name] , bases["edges"].map { |e| e["upcasedParentName"] }
+
       end
     end
   end
