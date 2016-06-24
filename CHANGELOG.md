@@ -1,5 +1,11 @@
 # graphql-relay
 
+## 0.11.1 (24 Jun 2016)
+
+### Bug Fix
+
+- Correctly pass parent object to Connections #53
+
 ## 0.11.0 (19 Jun 2016)
 
 ### Breaking Changes
