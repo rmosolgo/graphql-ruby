@@ -120,14 +120,13 @@ If you're building a backend for [Relay](http://facebook.github.io/relay/), you'
 
 ## To Do
 
-- __1.0 items:__
-  - Non-nulls should _propagate_ to the next non-null field (all the way up to data, if need be)
 - Subscriptions
   - Is there something to do at the graphql-ruby level to make this easier for specific implementations?
 - Accept type name as `type` argument?
   - Goal: accept `field :post, "Post"` to look up a type named `"Post"` in the schema
   - Problem: how does a field know which schema to look up the name from?
   - Problem: how can we load types in Rails without accessing the constant?
+  - Maybe support by third-party library? `type("Post!")` could implement "type_missing", keeps `graphql-ruby` very simple
 - Customizable complexity validator
   - Types / fields can define their "weight" in a query
   - Queries can be executed with a "max weight", or Schema can have a default

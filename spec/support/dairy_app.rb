@@ -150,6 +150,17 @@ DairyProductInputType = GraphQL::InputObjectType.define {
   input_field :organic, types.Boolean, default_value: false
 }
 
+DeepNonNullType = GraphQL::ObjectType.define do
+  name "DeepNonNull"
+  field :nonNullInt, !types.Int do
+    argument :returning, types.Int
+    resolve -> (obj, args, ctx) { args[:returning] }
+  end
+
+  field :deepNonNull, -> { DeepNonNullType.to_non_null_type } do
+    resolve -> (obj, args, ctx) { :deepNonNull }
+  end
+end
 
 class FetchField
   def self.create(type:, data:, id_type: !GraphQL::INT_TYPE)
@@ -238,6 +249,10 @@ QueryType = GraphQL::ObjectType.define do
   # To test possibly-null fields
   field :maybeNull, MaybeNullType do
     resolve -> (t, a, c) { OpenStruct.new(cheese: nil) }
+  end
+
+  field :deepNonNull, !DeepNonNullType do
+    resolve -> (o, a, c) { :deepNonNull }
   end
 end
 
