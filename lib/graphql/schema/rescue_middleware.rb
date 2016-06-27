@@ -12,7 +12,7 @@ module GraphQL
       end
 
       # @example Rescue from not-found by telling the user
-      #   MySchema.rescue_from(ActiveRecord::NotFound) { "An item could not be found" }
+      #   MySchema.rescue_from(ActiveRecord::RecordNotFound) { "An item could not be found" }
       #
       # @param [Class] a class of error to rescue from
       # @yield [err] A handler to return a message for this error instance
