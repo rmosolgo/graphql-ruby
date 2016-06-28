@@ -83,8 +83,7 @@ module GraphQL
     #
     # Created with {EnumType#value}
     class EnumValue
-      attr_reader :name, :value
-      attr_accessor :description, :deprecation_reason
+      attr_accessor :name, :description, :deprecation_reason, :value
       def initialize(name:, description:, deprecation_reason:, value:)
         @name = name
         @description = description
