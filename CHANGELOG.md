@@ -6,6 +6,12 @@
 
 ### Bug fixes
 
+## 0.15.3 (28 Jun 2016)
+
+### New features
+
+- `EnumValue`s can receive their properties after instantiation #171
+
 ## 0.15.2 (16 Jun 2016)
 
 ### New features

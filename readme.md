@@ -120,11 +120,15 @@ If you're building a backend for [Relay](http://facebook.github.io/relay/), you'
 ## To Do
 
 - __1.0 items:__
-  - Support type name for field types?
-- Add a complexity validator (reject queries if they're too big)
+  - Non-nulls should _propagate_ to the next non-null field (all the way up to data, if need be)
 - Add docs for shared behaviors & DRY code
-- Proper error on unknown directive
-- Non-nulls should _propagate_ to the next non-null field (all the way up to data, if need be)
-- __Subscriptions__
-  - This is a good chance to make an `Operation` abstraction of which `query`, `mutation` and `subscription` are members
-  - For a subscription, `graphql` would send an outbound message to the system (allow the host application to manage its own subscriptions via Pusher, ActionCable, whatever)
+- Subscriptions
+  - Is there something to do at the graphql-ruby level to make this easier for specific implementations?
+- Accept type name as `type` argument?
+  - Goal: accept `field :post, "Post"` to look up a type named `"Post"` in the schema
+  - Problem: how does a field know which schema to look up the name from?
+  - Problem: how can we load types in Rails without accessing the constant?
+- Customizable complexity validator
+  - Types / fields can define their "weight" in a query
+  - Queries can be executed with a "max weight", or Schema can have a default
+  - During validation, we make sure the query doesn't exceed "max weight"
