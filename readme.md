@@ -13,6 +13,7 @@ A Ruby implementation of [GraphQL](http://graphql.org/).
      - [Defining Your Schema](http://www.rubydoc.info/github/rmosolgo/graphql-ruby/file/guides/defining_your_schema.md)
      - [Executing Queries](http://www.rubydoc.info/github/rmosolgo/graphql-ruby/file/guides/executing_queries.md)
      - [Testing](http://www.rubydoc.info/github/rmosolgo/graphql-ruby/file/guides/testing.md)
+     - [Code Reuse](http://www.rubydoc.info/github/rmosolgo/graphql-ruby/file/guides/code_reuse.md)
 
  - [API Documentation](http://www.rubydoc.info/github/rmosolgo/graphql-ruby)
 
@@ -121,7 +122,6 @@ If you're building a backend for [Relay](http://facebook.github.io/relay/), you'
 
 - __1.0 items:__
   - Non-nulls should _propagate_ to the next non-null field (all the way up to data, if need be)
-- Add docs for shared behaviors & DRY code
 - Subscriptions
   - Is there something to do at the graphql-ruby level to make this easier for specific implementations?
 - Accept type name as `type` argument?
