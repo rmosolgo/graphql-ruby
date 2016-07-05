@@ -132,3 +132,4 @@ If you're building a backend for [Relay](http://facebook.github.io/relay/), you'
   - Types / fields can define their "weight" in a query
   - Queries can be executed with a "max weight", or Schema can have a default
   - During validation, we make sure the query doesn't exceed "max weight"
+- If we eval'd `define { ... }` blocks _lazily_, would that work around all circular dependency issues?
