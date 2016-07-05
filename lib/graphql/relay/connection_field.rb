@@ -8,16 +8,18 @@ module GraphQL
     # then a connection implementation is fetched with {BaseConnection.connection_for_items}.
     class ConnectionField
       ARGUMENT_DEFINITIONS = [
-          ["first", GraphQL::INT_TYPE],
-          ["after", GraphQL::STRING_TYPE],
-          ["last", GraphQL::INT_TYPE],
-          ["before", GraphQL::STRING_TYPE],
+          ["first", GraphQL::INT_TYPE, "Returns the first _n_ elements from the list."],
+          ["after", GraphQL::STRING_TYPE, "Returns the elements in the list that come after the specified global ID."],
+          ["last", GraphQL::INT_TYPE, "Returns the last _n_ elements from the list."],
+          ["before", GraphQL::STRING_TYPE, "Returns the elements in the list that come before the specified global ID."],
         ]
 
       DEFAULT_ARGUMENTS = ARGUMENT_DEFINITIONS.reduce({}) do |memo, arg_defn|
         argument = GraphQL::Argument.new
-        argument.name = arg_defn[0]
-        argument.type = arg_defn[1]
+        name, type, description = arg_defn
+        argument.name = name
+        argument.type = type
+        argument.description = description
         memo[argument.name.to_s] = argument
         memo
       end
