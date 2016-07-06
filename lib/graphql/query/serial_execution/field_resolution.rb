@@ -22,8 +22,17 @@ module GraphQL
 
         def result
           result_name = ast_node.alias || ast_node.name
-          raw_value = get_raw_value
-          { result_name => get_finished_value(raw_value) }
+          begin
+            raw_value = get_raw_value
+            { result_name => get_finished_value(raw_value) }
+          rescue GraphQL::InvalidNullError => err
+            if field.type.kind.non_null?
+              raise(err)
+            else
+              err.parent_error? || execution_context.add_error(err)
+              {result_name => nil}
+            end
+          end
         end
 
         private
