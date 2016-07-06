@@ -22,7 +22,8 @@ module GraphQL
   #
   class ObjectType < GraphQL::BaseType
     accepts_definitions :interfaces, field: GraphQL::Define::AssignObjectField
-    attr_accessor :name, :description
+    attr_accessor :name, :description, :resolved_class_name
+    accepts_definitions :resolved_class_name
 
     # @return [Hash<String, GraphQL::Field>] Map String fieldnames to their {GraphQL::Field} implementations
     attr_accessor :fields

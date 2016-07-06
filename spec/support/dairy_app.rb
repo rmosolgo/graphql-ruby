@@ -128,6 +128,12 @@ CowType = GraphQL::ObjectType.define do
   end
 end
 
+PostType = GraphQL::ObjectType.define do
+  name "Post"
+  resolved_class_name "Acme::Post"
+  description "A blog post with a namespaced model"
+end
+
 DairyProductInputType = GraphQL::InputObjectType.define {
   name "DairyProductInput"
   description "Properties for finding a dairy product"
