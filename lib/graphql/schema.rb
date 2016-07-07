@@ -51,12 +51,12 @@ module GraphQL
 
     def_delegators :@rescue_middleware, :rescue_from, :remove_handler
 
-    # @return [GraphQL::Schema::TypeMap] `{ name => type }` pairs of types in this schema
+    # @return [GraphQL::Schema::TypeMap] `{ type_name => type }` pairs of types in this schema
     def types
       @types ||= GraphQL::Schema::ReduceTypes.reduce(all_types)
     end
 
-    # @return [GraphQL::Schema::TypeMap] `{ name => (resolved_class_name || name) }` pairs of types in this schema
+    # @return [GraphQL::Schema::TypeMap] `{ type_name => class_name }` pairs of types in this schema
     def resolved_class_names
       @resolved_class_names ||= GraphQL::Schema::ReduceResolvedClassNames.reduce(all_types)
     end
