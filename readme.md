@@ -32,7 +32,7 @@ $ bundle install
 
 ## Overview
 
-#### Declare types & build a schema
+### Declare types & build a schema
 
 ```ruby
 # Declare a type...
@@ -65,7 +65,19 @@ Schema = GraphQL::Schema.new(
 )
 ```
 
-#### Execute queries
+### Namespace support
+
+If namespace support is required, you may use the optional `resolved_class_name` in the type definition:
+
+```ruby
+# Declare a type...
+PostType = GraphQL::ObjectType.define do
+  name "Post"
+  resolved_class_name "Acme::Post"
+end
+```
+
+### Execute queries
 
 Execute GraphQL queries on a given schema, from a query string.
 
@@ -81,7 +93,7 @@ result_hash = Schema.execute(query_string)
 # }
 ```
 
-#### Use with Relay
+### Use with Relay
 
 If you're building a backend for [Relay](http://facebook.github.io/relay/), you'll need:
 
