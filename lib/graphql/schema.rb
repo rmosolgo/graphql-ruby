@@ -22,8 +22,8 @@ module GraphQL
     attr_accessor :max_depth
     # Override these if you don't want the default executor:
     attr_accessor :query_execution_strategy,
-                  :mutation_execution_strategy,
-                  :subscription_execution_strategy
+      :mutation_execution_strategy,
+      :subscription_execution_strategy
 
     # @return [Array<#call>] Middlewares suitable for MiddlewareChain, applied to fields during execution
     attr_reader :middleware
@@ -34,7 +34,7 @@ module GraphQL
     # @param max_depth [Integer] maximum query nesting (if it's greater, raise an error)
     # @param types [Array<GraphQL::BaseType>] additional types to include in this schema
     def initialize(query:, mutation: nil, subscription: nil, max_depth: nil, types: [])
-      @query = query
+      @query    = query
       @mutation = mutation
       @subscription = subscription
       @max_depth = max_depth
@@ -51,14 +51,14 @@ module GraphQL
 
     def_delegators :@rescue_middleware, :rescue_from, :remove_handler
 
-    # @return [GraphQL::Schema::TypeMap] `{ name => type }` pairs of types in this schema
-    def types
-      @types ||= GraphQL::Schema::ReduceTypes.reduce(all_types)
-    end
-
     # @return [GraphQL::Schema::TypeMap] `{ name => (resolved_class_name || name) }` pairs of types in this schema
     def resolved_class_names
       @resolved_class_names ||= GraphQL::Schema::ReduceResolvedClassNames.reduce(all_types)
+    end
+
+    def all_types
+      all_types = @orphan_types + [query, mutation, subscription, GraphQL::Introspection::SchemaType]
+      all_types.compact
     end
 
     # Execute a query on itself.
@@ -99,35 +99,35 @@ module GraphQL
 
     def root_type_for_operation(operation)
       case operation
-        when "query"
-          query
-        when "mutation"
-          mutation
-        when "subscription"
-          subscription
-        else
-          raise ArgumentError, "unknown operation type: #{operation}"
+      when "query"
+        query
+      when "mutation"
+        mutation
+      when "subscription"
+        subscription
+      else
+        raise ArgumentError, "unknown operation type: #{operation}"
       end
     end
 
     def execution_strategy_for_operation(operation)
       case operation
-        when "query"
-          query_execution_strategy
-        when "mutation"
-          mutation_execution_strategy
-        when "subscription"
-          subscription_execution_strategy
-        else
-          raise ArgumentError, "unknown operation type: #{operation}"
+      when "query"
+        query_execution_strategy
+      when "mutation"
+        mutation_execution_strategy
+      when "subscription"
+        subscription_execution_strategy
+      else
+        raise ArgumentError, "unknown operation type: #{operation}"
       end
     end
 
     private
 
-    def all_types
-      all_types = @orphan_types + [query, mutation, subscription, GraphQL::Introspection::SchemaType]
-      all_types.compact
+    # @return [GraphQL::Schema::TypeMap] `{ name => type }` pairs of types in this schema
+    def types
+      @types ||= GraphQL::Schema::ReduceTypes.reduce(all_types)
     end
   end
 end
