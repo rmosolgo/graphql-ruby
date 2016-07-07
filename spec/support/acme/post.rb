@@ -1,5 +1,4 @@
 module Acme
-  class Post
-
+  class Post < Struct.new(:id, :title)
   end
 end

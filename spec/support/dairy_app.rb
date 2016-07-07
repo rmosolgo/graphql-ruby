@@ -221,6 +221,7 @@ QueryType = GraphQL::ObjectType.define do
     resolve ->(root_value, args, c) { root_value }
   end
   field :cheese, field: FetchField.create(type: CheeseType, data: CHEESES)
+  field :post, field: FetchField.create(type: PostType, data: POSTS)
   field :milk, field: FetchField.create(type: MilkType, data: MILKS, id_type: !types.ID)
   field :dairy, field: SingletonField.create(type: DairyType, data: DAIRY)
   field :fromSource, &SourceFieldDefn

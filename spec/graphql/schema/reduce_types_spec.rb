@@ -23,6 +23,7 @@ describe GraphQL::Schema::ReduceTypes do
   it "finds type from arguments" do
     result = reduce_types([QueryType])
     assert_equal(DairyProductInputType, result["DairyProductInput"])
+    assert_equal(PostType, result["Post"])
   end
 
   it "finds types from nested InputObjectTypes" do

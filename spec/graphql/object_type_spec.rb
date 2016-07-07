@@ -44,11 +44,6 @@ describe GraphQL::ObjectType do
   end
 
   describe "namespaced" do
-    # PostType = GraphQL::ObjectType.define do
-    #   name "Post"
-    #   resolved_class_name "Acme::Post"
-    #   description "A blog post with a namespaced model"
-    # end
     let(:type) { PostType }
 
     it "has a name" do
