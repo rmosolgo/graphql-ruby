@@ -1,5 +1,11 @@
 # graphql-relay
 
+## 0.11.2 (6 Jul 2016)
+
+### New Features
+
+- Include description for built-in objects #55
+
 ## 0.11.1 (24 Jun 2016)
 
 ### Bug Fix
