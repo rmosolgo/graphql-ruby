@@ -8,7 +8,7 @@ module GraphQL
       end
     end
 
-    attr_reader :schema, :document, :context, :fragments, :operations, :root_value, :max_depth
+    attr_reader :schema, :document, :context, :fragments, :operations, :root_value, :max_depth, :query_string
 
     # Prepare query `query_string` on `schema`
     # @param schema [GraphQL::Schema]
@@ -40,6 +40,7 @@ module GraphQL
       @fragments = {}
       @operations = {}
       @provided_variables = variables
+      @query_string = query_string
 
       @document = document || GraphQL.parse(query_string)
       @document.definitions.each do |part|
