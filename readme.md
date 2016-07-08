@@ -14,6 +14,8 @@ A Ruby implementation of [GraphQL](http://graphql.org/).
      - [Executing Queries](http://www.rubydoc.info/github/rmosolgo/graphql-ruby/file/guides/executing_queries.md)
      - [Testing](http://www.rubydoc.info/github/rmosolgo/graphql-ruby/file/guides/testing.md)
      - [Code Reuse](http://www.rubydoc.info/github/rmosolgo/graphql-ruby/file/guides/code_reuse.md)
+     - [Security](http://www.rubydoc.info/github/rmosolgo/graphql-ruby/file/guides/security.md)
+
 
  - [API Documentation](http://www.rubydoc.info/github/rmosolgo/graphql-ruby)
 
@@ -127,8 +129,4 @@ If you're building a backend for [Relay](http://facebook.github.io/relay/), you'
   - Problem: how does a field know which schema to look up the name from?
   - Problem: how can we load types in Rails without accessing the constant?
   - Maybe support by third-party library? `type("Post!")` could implement "type_missing", keeps `graphql-ruby` very simple
-- Customizable complexity validator
-  - Types / fields can define their "weight" in a query
-  - Queries can be executed with a "max weight", or Schema can have a default
-  - During validation, we make sure the query doesn't exceed "max weight"
 - If we eval'd `define { ... }` blocks _lazily_, would that work around all circular dependency issues?

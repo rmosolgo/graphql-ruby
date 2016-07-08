@@ -56,12 +56,14 @@ require "graphql/directive"
 
 require "graphql/introspection"
 require "graphql/language"
+require "graphql/analysis"
 require "graphql/schema"
 require "graphql/schema/printer"
 
 # Order does not matter for these:
 
 require "graphql/execution_error"
+require "graphql/analysis_error"
 require "graphql/invalid_null_error"
 require "graphql/query"
 require "graphql/static_validation"

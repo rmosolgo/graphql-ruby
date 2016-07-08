@@ -18,11 +18,21 @@ module GraphQL
     # @param validate [Boolean] if true, `query_string` will be validated with {StaticValidation::Validator}
     # @param operation_name [String] if the query string contains many operations, this is the one which should be executed
     # @param root_value [Object] the object used to resolve fields on the root type
-    def initialize(schema, query_string = nil, document: nil, context: nil, variables: {}, validate: true, operation_name: nil, root_value: nil, max_depth: nil)
+    # @param max_depth [Numeric] the maximum number of nested selections allowed for this query (falls back to schema-level value)
+    # @param max_complexity [Numeric] the maximum field complexity for this query (falls back to schema-level value)
+    def initialize(schema, query_string = nil, document: nil, context: nil, variables: {}, validate: true, operation_name: nil, root_value: nil, max_depth: nil, max_complexity: nil)
       fail ArgumentError, "a query string or document is required" unless query_string || document
 
       @schema = schema
       @max_depth = max_depth || schema.max_depth
+      @max_complexity = max_complexity || schema.max_complexity
+      @query_reducers = schema.query_reducers.dup
+      if @max_depth
+        @query_reducers << GraphQL::Analysis::MaxQueryDepth.new(@max_depth)
+      end
+      if @max_complexity
+        @query_reducers << GraphQL::Analysis::MaxQueryComplexity.new(@max_complexity)
+      end
       @context = Context.new(query: self, values: context)
       @root_value = root_value
       @validate = validate
@@ -43,11 +53,14 @@ module GraphQL
 
     # Get the result for this query, executing it once
     def result
-      if @validate && validation_errors.any?
-        return { "errors" => validation_errors }
+      @result ||= begin
+        if @validate && validation_errors.any?
+          { "errors" => validation_errors }
+        else
+          Executor.new(self).result
+        end
       end
 
-      @result ||= Executor.new(self).result
     end
 
 
@@ -74,7 +87,9 @@ module GraphQL
     private
 
     def validation_errors
-      @validation_errors ||= schema.static_validator.validate(self)
+      @validation_errors ||= begin
+        analysis_errors + schema.static_validator.validate(self)
+      end
     end
 
 
@@ -87,6 +102,17 @@ module GraphQL
         raise OperationNameMissingError, operations.keys
       else
         operations[operation_name]
+      end
+    end
+
+    def analysis_errors
+      @analysis_errors ||= begin
+        if @query_reducers.any?
+          reduce_results = GraphQL::Analysis.reduce_query(self, @query_reducers)
+          reduce_results.select { |r| r.is_a?(GraphQL::AnalysisError) }.map(&:to_h)
+        else
+          []
+        end
       end
     end
   end

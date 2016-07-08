@@ -29,7 +29,7 @@ module GraphQL
         end
 
         @errors = []
-        @visitor = GraphQL::Language::Visitor.new
+        @visitor = GraphQL::Language::Visitor.new(document)
         @type_stack = GraphQL::StaticValidation::TypeStack.new(schema, visitor)
       end
 

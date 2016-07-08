@@ -17,15 +17,15 @@ module GraphQL
         @rules = rules
       end
 
-      # Validate `document` against the schema. Returns an array of message hashes.
-      # @param document [GraphQL::Language::Nodes::Document]
+      # Validate `query` against the schema. Returns an array of message hashes.
+      # @param query [GraphQL::Query]
       # @return [Array<Hash>]
       def validate(query)
         context = GraphQL::StaticValidation::ValidationContext.new(query)
         @rules.each do |rules|
           rules.new.validate(context)
         end
-        context.visitor.visit(query.document)
+        context.visitor.visit
         context.errors.map(&:to_h)
       end
     end
