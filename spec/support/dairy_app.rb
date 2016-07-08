@@ -181,15 +181,23 @@ class FetchField
 end
 
 class SingletonField
-  def self.create(type:, data:)
-    desc = "Find the only #{type.name}"
-    return_type = type
-    GraphQL::Field.define do
-      type(return_type)
-      description(desc)
+  def initialize(name, type:, data:)
+    @name = name
+    @type = type
+    @data = data
+  end
 
-      resolve -> (t, a, c) {data}
-    end
+
+  def to_proc
+    return_type = @type
+    field_name = @name
+    return_value = @data
+    -> (types) {
+      name(field_name.to_s)
+      type(return_type)
+      description("Find the only #{return_type.name}")
+      resolve -> (t, a, c) { return_value }
+    }
   end
 end
 
@@ -216,10 +224,10 @@ QueryType = GraphQL::ObjectType.define do
   end
   field :cheese, field: FetchField.create(type: CheeseType, data: CHEESES)
   field :milk, field: FetchField.create(type: MilkType, data: MILKS, id_type: !types.ID)
-  field :dairy, field: SingletonField.create(type: DairyType, data: DAIRY)
+  field &SingletonField.new(:dairy, type: DairyType, data: DAIRY)
   field :fromSource, &SourceFieldDefn
   field :favoriteEdible, &FavoriteFieldDefn
-  field :cow, field: SingletonField.create(type: CowType, data: COW)
+  field &SingletonField.new(:cow, type: CowType, data: COW)
   field :searchDairy do
     description "Find dairy products matching a description"
     type !DairyProductUnion
