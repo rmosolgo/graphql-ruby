@@ -62,6 +62,7 @@ module GraphQL
       def assert_under_max_depth(context, max_allowed_depth, depths, fragments)
         context.operations.each do |op_name, operation|
           op_depth = get_total_depth(op_name, depths, fragments)
+          context.results[:depth_reached] = op_depth
           if op_depth > max_allowed_depth
             op_name ||= "operation"
             context.errors << message("#{op_name} has depth of #{op_depth}, which exceeds max depth of #{max_allowed_depth}", operation)

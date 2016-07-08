@@ -11,7 +11,7 @@ module GraphQL
     # It also provides limited access to the {TypeStack} instance,
     # which tracks state as you climb in and out of different fields.
     class ValidationContext
-      attr_reader :query, :schema, :document, :errors, :visitor, :fragments, :operations
+      attr_reader :query, :schema, :document, :errors, :visitor, :fragments, :operations, :results
       def initialize(query)
         @query = query
         @schema = query.schema
@@ -29,6 +29,7 @@ module GraphQL
         end
 
         @errors = []
+        @results = {}
         @visitor = GraphQL::Language::Visitor.new
         @type_stack = GraphQL::StaticValidation::TypeStack.new(schema, visitor)
       end

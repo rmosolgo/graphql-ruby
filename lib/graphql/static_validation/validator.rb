@@ -26,6 +26,7 @@ module GraphQL
           rules.new.validate(context)
         end
         context.visitor.visit(query.document)
+        @schema.validation_results.merge!(context.results)
         context.errors.map(&:to_h)
       end
     end
