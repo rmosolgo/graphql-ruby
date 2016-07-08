@@ -57,4 +57,14 @@ describe GraphQL::Query::Context do
       assert_equal(nil, context[:some_key])
     end
   end
+
+  describe "assigning values" do
+    let(:context) { GraphQL::Query::Context.new(query: OpenStruct.new(schema: schema), values: nil) }
+
+    it "allows you to assign new contexts" do
+      assert_equal(nil, context[:some_key])
+      context[:some_key] = "wow!"
+      assert_equal("wow!", context[:some_key])
+    end
+  end
 end
