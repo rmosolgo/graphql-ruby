@@ -2,7 +2,7 @@ require "spec_helper"
 
 describe GraphQL::Analysis::QueryDepth do
   let(:depths) { [] }
-  let(:query_depth) { GraphQL::Analysis::QueryDepth.new { |max_depth|  depths << max_depth } }
+  let(:query_depth) { GraphQL::Analysis::QueryDepth.new { |query, max_depth|  depths << query << max_depth } }
   let(:reduce_result) { GraphQL::Analysis.reduce_query(query, [query_depth]) }
   let(:query) { GraphQL::Query.new(DummySchema, query_string) }
 
@@ -30,7 +30,7 @@ describe GraphQL::Analysis::QueryDepth do
 
     it "finds the max depth" do
       reduce_result
-      assert_equal depths, [4]
+      assert_equal depths, [query, 4]
     end
   end
 
@@ -65,7 +65,7 @@ describe GraphQL::Analysis::QueryDepth do
 
     it "finds the max depth" do
       reduce_result
-      assert_equal depths, [4]
+      assert_equal depths, [query, 4]
     end
   end
 end

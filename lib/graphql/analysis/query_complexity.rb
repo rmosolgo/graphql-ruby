@@ -41,7 +41,7 @@ module GraphQL
 
       def final_value(reduced_value)
         total_complexity = reduced_value[:complexity_stack].pop.reduce(&:+)
-        @complexity_handler.call(total_complexity)
+        @complexity_handler.call(reduced_value[:query], total_complexity)
       end
 
       private

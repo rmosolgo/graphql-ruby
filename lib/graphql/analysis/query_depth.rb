@@ -17,6 +17,7 @@ module GraphQL
           max_depth: 0,
           current_depth: 0,
           skip_current_scope: false,
+          query: query,
         }
       end
 
@@ -46,7 +47,7 @@ module GraphQL
       end
 
       def final_value(reduced_value)
-        @depth_handler.call(reduced_value[:max_depth])
+        @depth_handler.call(reduced_value[:query], reduced_value[:max_depth])
       end
     end
   end

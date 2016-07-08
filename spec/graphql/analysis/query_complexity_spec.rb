@@ -2,7 +2,7 @@ require "spec_helper"
 
 describe GraphQL::Analysis::QueryComplexity do
   let(:complexities) { [] }
-  let(:query_complexity) { GraphQL::Analysis::QueryComplexity.new { |complexity|  complexities << complexity } }
+  let(:query_complexity) { GraphQL::Analysis::QueryComplexity.new { |this_query, complexity|  complexities << this_query << complexity } }
   let(:reduce_result) { GraphQL::Analysis.reduce_query(query, [query_complexity]) }
   let(:query) { GraphQL::Query.new(DummySchema, query_string) }
 
@@ -30,7 +30,7 @@ describe GraphQL::Analysis::QueryComplexity do
 
     it "sums the complexity" do
       reduce_result
-      assert_equal complexities, [7]
+      assert_equal complexities, [query, 7]
     end
   end
 
@@ -66,7 +66,7 @@ describe GraphQL::Analysis::QueryComplexity do
 
     it "counts all fragment usages, not the definitions" do
       reduce_result
-      assert_equal complexities, [10]
+      assert_equal complexities, [query, 10]
     end
   end
 
@@ -112,7 +112,7 @@ describe GraphQL::Analysis::QueryComplexity do
     it "sums the complexity" do
       reduce_result
       # 10 from `complexity`, `0.3` from `value`
-      assert_equal complexities, [10.3]
+      assert_equal complexities, [query, 10.3]
     end
   end
 end

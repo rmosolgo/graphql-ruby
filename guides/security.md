@@ -74,7 +74,7 @@ MySchema.execute(query_string, max_complexity: nil)
 To get a feeling for complexity of queries in your system, you can use the `QueryComplexity` query reducer. Hook it up to log out values from each query:
 
 ```ruby
-log_query_complexity = GraphQL::Analysis::QueryComplexity.new { |complexity| Rails.logger.info("[GraphQL Query Complexity] #{complexity}")}
+log_query_complexity = GraphQL::Analysis::QueryComplexity.new { |query, complexity| Rails.logger.info("[GraphQL Query Complexity] #{complexity}  | staff? #{query.context[:current_user].staff?}")}
 MySchema.query_reducers << log_query_complexity
 ```
 
@@ -103,7 +103,7 @@ MySchema.execute(query_string, max_depth: nil)
 To get a feeling for depth of queries in your system, you can use the `QueryDepth` query reducer. Hook it up to log out values from each query:
 
 ```ruby
-log_query_depth = GraphQL::Analysis::QueryDepth.new { |depth| Rails.logger.info("[GraphQL Query Depth] #{depth}")}
+log_query_depth = GraphQL::Analysis::QueryDepth.new { |query, depth| Rails.logger.info("[GraphQL Query Depth] #{depth} || staff?  #{query.context[:current_user].staff?}")}
 MySchema.query_reducers << log_query_depth
 ```
 
