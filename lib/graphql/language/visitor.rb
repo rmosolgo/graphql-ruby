@@ -51,10 +51,10 @@ module GraphQL
       def visit_node(node, parent)
         begin_hooks_result = begin_visit(node, parent)
         if begin_hooks_result
-          node.children.reduce(true) { |memo, child| memo && visit_node(child, node) }
-          if @follow_fragments && node.is_a?(GraphQL::Language::Nodes::FragmentSpread)
+          child_result = node.children.reduce(true) { |memo, child| memo && visit_node(child, node) }
+          if child_result && @follow_fragments && node.is_a?(GraphQL::Language::Nodes::FragmentSpread)
             frag_defn = fragments[node.name]
-            visit_node(frag_defn, node)
+            frag_defn && visit_node(frag_defn, node)
           end
         end
         end_visit(node, parent)

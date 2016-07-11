@@ -68,6 +68,42 @@ describe GraphQL::Analysis::QueryComplexity do
       reduce_result
       assert_equal complexities, [query, 10]
     end
+
+    describe "mutually exclusive object types" do
+      let(:query_string) {%|
+        {
+          favoriteEdible {
+            fatContent
+
+            ... on Edible {
+              origin
+            }
+
+            ... on Cheese {
+              id
+              flavor
+            }
+
+            ... milkFields
+            ... cheeseFields
+          }
+        }
+
+        fragment milkFields on Milk {
+          source
+          flavors
+        }
+
+        fragment cheeseFields on Cheese {
+          source
+        }
+      |}
+
+      it "gets the max among options" do
+        reduce_result
+        assert_equal 6, complexities.last
+      end
+    end
   end
 
   describe "custom complexities" do

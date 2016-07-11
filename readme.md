@@ -122,11 +122,19 @@ If you're building a backend for [Relay](http://facebook.github.io/relay/), you'
 
 ## To Do
 
-- Subscriptions
-  - Is there something to do at the graphql-ruby level to make this easier for specific implementations?
+- __1.0 issues__:
+  - Migrate `StaticValidation` to use `Analysis`
 - Accept type name as `type` argument?
   - Goal: accept `field :post, "Post"` to look up a type named `"Post"` in the schema
   - Problem: how does a field know which schema to look up the name from?
   - Problem: how can we load types in Rails without accessing the constant?
   - Maybe support by third-party library? `type("Post!")` could implement "type_missing", keeps `graphql-ruby` very simple
 - If we eval'd `define { ... }` blocks _lazily_, would that work around all circular dependency issues?
+- `QueryComplexity` improvements:
+  - Better detection of union / interface possibilities? Right now they're summed
+  - If a field is requested on an object, then in a fragment, should it count twice?
+  - Implement without following fragments
+- Type check improvements:
+  - Use catch-all type/field/argument definitions instead of terminating traversal
+  - Reduce ad-hoc traversals?
+- If a field is requested _without_ an alias, then _with_ an alias, can we reuse the resolved value?
