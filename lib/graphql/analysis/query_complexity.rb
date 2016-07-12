@@ -21,7 +21,7 @@ module GraphQL
       def initial_value(query)
         {
           query: query,
-          complexities_on_type: [TypeComplexity.new],
+          complexities_on_type: [TypeComplexity.new(query)],
         }
       end
 
@@ -29,11 +29,15 @@ module GraphQL
         case irep_node.ast_node
         when GraphQL::Language::Nodes::Field
           if visit_type == :enter
-            memo[:complexities_on_type].push(TypeComplexity.new)
+            memo[:complexities_on_type].push(TypeComplexity.new(memo[:query]))
           else
             type_complexities = memo[:complexities_on_type].pop
-            child_complexity = type_complexities.max_possible_complexity
-            own_complexity = get_complexity(irep_node, memo[:query], child_complexity)
+            own_complexity = if GraphQL::Query::DirectiveResolution.include_node?(irep_node, memo[:query])
+              child_complexity = type_complexities.max_possible_complexity
+              get_complexity(irep_node, memo[:query], child_complexity)
+            else
+              0
+            end
             memo[:complexities_on_type].last.merge(irep_node.on_types, own_complexity)
           end
         end
@@ -52,7 +56,7 @@ module GraphQL
       # Get a complexity value for a field,
       # by getting the number or calling its proc
       def get_complexity(irep_node, query, child_complexity)
-        field_defn = irep_node.field
+        field_defn = irep_node.definition
         defined_complexity = field_defn.complexity
         case defined_complexity
         when Proc
@@ -65,20 +69,50 @@ module GraphQL
         end
       end
 
+      # Selections on an object may apply differently depending on what is _actually_ returned by the resolve function.
+      # Find the maximum possible complexity among those combinations.
       class TypeComplexity
-        def initialize
+        def initialize(query)
           @types = Hash.new { |h, k| h[k] = 0 }
-          @total_complexity = 0
+          @schema = query.schema
         end
+
         def max_possible_complexity
-          @total_complexity + (@types.any? ? @types.values.max : 0)
+          max_complexity = 0
+
+          @types.each do |type_defn, own_complexity|
+            type_complexity = @types.reduce(0) do |memo, (other_type, other_complexity)|
+              if types_overlap?(type_defn, other_type)
+                memo + other_complexity
+              else
+                memo
+              end
+            end
+
+            if type_complexity > max_complexity
+              max_complexity = type_complexity
+            end
+          end
+          max_complexity
         end
 
         def merge(types, complexity)
-          if types.all? { |t| t.kind.object? }
-            types.each { |t| @types[t] += complexity }
+          types.each { |t| @types[t] += complexity }
+        end
+
+        private
+        # True if:
+        # - type_1 is type_2
+        # - type_1 is a member of type_2's possible types
+        def types_overlap?(type_1, type_2)
+          if type_1 == type_2
+            true
+          elsif type_2.kind.union?
+            type_2.include?(type_1)
+          elsif type_1.kind.object? && type_2.kind.interface?
+            type_1.interfaces.include?(type_2)
           else
-            @total_complexity += complexity
+            false
           end
         end
       end

@@ -48,7 +48,7 @@ describe GraphQL::InternalRepresentation::Rewrite do
     it "gets dynamic field definitions" do
       cheese_field = rewrite_result[nil].children["cheese"]
       typename_field = cheese_field.children["typename"]
-      assert_equal "__typename", typename_field.field.name
+      assert_equal "__typename", typename_field.definition.name
     end
   end
 

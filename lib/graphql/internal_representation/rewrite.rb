@@ -1,6 +1,11 @@
 module GraphQL
   module InternalRepresentation
     # Convert an AST into a tree of {InternalRepresentation::Node}s
+    #
+    # This rides along with {StaticValidation}, building a tree of nodes.
+    #
+    # However, if any errors occurred during validation, the resulting tree is bogus.
+    #  (For example, `nil` could have been pushed instead of a type.)
     class Rewrite
       include GraphQL::Language
 
@@ -23,6 +28,7 @@ module GraphQL
 
       def validate(context)
         visitor = context.visitor
+
         visitor[Nodes::OperationDefinition].enter << -> (ast_node, prev_ast_node) {
           node = Node.new(
             return_type: context.type_definition.unwrap,
@@ -31,6 +37,7 @@ module GraphQL
           @nodes.push(node)
           @operations[ast_node.name] = node
         }
+
         visitor[Nodes::Field].enter << -> (ast_node, prev_ast_node) {
           parent_node = @nodes.last
           node_name = ast_node.alias || ast_node.name
@@ -39,22 +46,40 @@ module GraphQL
               return_type: context.type_definition && context.type_definition.unwrap,
               ast_node: ast_node,
               name: node_name,
-              field: context.field_definition,
-              directives: ast_node.directives + @parent_directives.flatten
+              definition: context.field_definition,
             )
           end
           node.on_types << context.parent_type_definition.unwrap
           @nodes.push(node)
+          @parent_directives.push([])
         }
 
         visitor[Nodes::InlineFragment].enter << -> (ast_node, prev_ast_node) {
-          @parent_directives << ast_node.directives
+          @parent_directives << []
+        }
+
+        visitor[Nodes::Directive].enter << -> (ast_node, prev_ast_node) {
+          # It could be a query error where a directive is somewhere it shouldn't be
+          if @parent_directives.any?
+            @parent_directives.last << Node.new(
+              name: ast_node.name,
+              ast_node: ast_node,
+              definition: context.directive_definition,
+            )
+          end
         }
 
         visitor[Nodes::FragmentSpread].enter << -> (ast_node, prev_ast_node) {
           # Record _both sides_ of the dependency
-          @nodes.last.spreads << ast_node
-          @fragment_spreads[ast_node.name] << @nodes.last
+          spread_node = Node.new(
+            name: ast_node.name,
+            ast_node: ast_node,
+          )
+          parent_node = @nodes.last
+          parent_node.spreads.push(spread_node)
+          @fragment_spreads[ast_node.name].push(parent_node)
+          @nodes.push(spread_node)
+          @parent_directives.push([])
         }
 
         visitor[Nodes::FragmentDefinition].enter << -> (ast_node, prev_ast_node) {
@@ -71,6 +96,12 @@ module GraphQL
           @parent_directives.pop
         }
 
+        visitor[Nodes::FragmentSpread].leave  << -> (ast_node, prev_ast_node) {
+          spread_node = @nodes.pop
+          spread_node.directives.merge(@parent_directives.flatten)
+          @parent_directives.pop
+        }
+
         visitor[Nodes::FragmentDefinition].leave << -> (ast_node, prev_ast_node) {
           frag_node = @nodes.pop
           if frag_node.spreads.none?
@@ -83,7 +114,9 @@ module GraphQL
         }
 
         visitor[Nodes::Field].leave << -> (ast_node, prev_ast_node) {
-          @nodes.pop
+          field_node = @nodes.pop
+          field_node.directives.merge(@parent_directives.flatten)
+          @parent_directives.pop
         }
 
         visitor[Nodes::Document].leave << -> (ast_node, prev_ast_node) {
@@ -93,11 +126,11 @@ module GraphQL
             fragment_usages = @fragment_spreads[fragment_node.name]
             while dependent_node = fragment_usages.pop
               # remove self from dependent_node.spreads
-              rejected_ast_nodes = dependent_node.spreads.select { |spr| spr.name == fragment_node.name }
-              rejected_ast_nodes.each { |r_node| dependent_node.spreads.delete(r_node) }
+              rejected_spread_nodes = dependent_node.spreads.select { |spr| spr.name == fragment_node.name }
+              rejected_spread_nodes.each { |r_node| dependent_node.spreads.delete(r_node) }
 
               # resolve the dependency (merge into dependent node)
-              deep_merge(dependent_node, fragment_node, rejected_ast_nodes.first.directives)
+              deep_merge(dependent_node, fragment_node, rejected_spread_nodes.first.directives)
 
               if dependent_node.spreads.none? && dependent_node.ast_node.is_a?(Nodes::FragmentDefinition)
                 @independent_fragments.push(dependent_node)
@@ -109,18 +142,20 @@ module GraphQL
 
       private
 
+      # Merge the chilren from `fragment_node` into `parent_node`. Merge `directives` into each of those fields.
       def deep_merge(parent_node, fragment_node, directives)
         fragment_node.children.each do |name, child_node|
           deep_merge_child(parent_node, name, child_node, directives)
         end
       end
 
+      # Merge `node` into `parent_node`'s children, as `name`, applying `extra_directives`
       def deep_merge_child(parent_node, name, node, extra_directives)
-        child_node = parent_node.children[name] ||= node
+        child_node = parent_node.children[name] ||= node.dup
         node.children.each do |merge_child_name, merge_child_node|
           deep_merge_child(child_node, merge_child_name, merge_child_node, [])
         end
-        child_node.directives.push(*extra_directives)
+        child_node.directives.merge(extra_directives)
       end
     end
   end

@@ -23,22 +23,19 @@ module GraphQL
 
       def call(memo, visit_type, irep_node)
         if irep_node.ast_node.is_a?(GraphQL::Language::Nodes::Field)
-          if irep_node.field.nil?
-            p irep_node
-          end
           if visit_type == :enter
-            if GraphQL::Schema::DYNAMIC_FIELDS.include?(irep_node.field.name)
+            if GraphQL::Schema::DYNAMIC_FIELDS.include?(irep_node.definition.name)
               # Don't validate introspection fields
               memo[:skip_current_scope] = true
             elsif memo[:skip_current_scope]
               # we're inside an introspection query
-            else
+            elsif GraphQL::Query::DirectiveResolution.include_node?(irep_node, memo[:query])
               memo[:current_depth] += 1
             end
           else
-            if GraphQL::Schema::DYNAMIC_FIELDS.include?(irep_node.field.name)
+            if GraphQL::Schema::DYNAMIC_FIELDS.include?(irep_node.definition.name)
               memo[:skip_current_scope] = false
-            else
+            elsif GraphQL::Query::DirectiveResolution.include_node?(irep_node, memo[:query])
               if memo[:max_depth] < memo[:current_depth]
                 memo[:max_depth] = memo[:current_depth]
               end

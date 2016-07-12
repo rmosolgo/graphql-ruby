@@ -100,15 +100,18 @@ module GraphQL
       end
     end
 
+    # Node-level cache for calculating arguments. Used during execution and query analysis.
+    # @return [GraphQL::Query::Arguments] Arguments for this node, merging default values, literal values and query variables
     def arguments_for(irep_node)
       @arguments_cache[irep_node] ||= begin
         GraphQL::Query::LiteralInput.from_arguments(
           irep_node.ast_node.arguments,
-          irep_node.field.arguments,
+          irep_node.definition.arguments,
           self.variables
         )
       end
     end
+
     private
 
     def perform_validation

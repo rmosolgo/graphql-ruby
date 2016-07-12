@@ -24,12 +24,14 @@ module GraphQL
         context = GraphQL::StaticValidation::ValidationContext.new(query)
         rewrite = GraphQL::InternalRepresentation::Rewrite.new
 
+        # Put this first so its enters and exits are always called
         rewrite.validate(context)
         @rules.each do |rules|
           rules.new.validate(context)
         end
 
         context.visitor.visit
+
         {
           errors: context.errors.map(&:to_h),
           # If there were errors, the irep is garbage

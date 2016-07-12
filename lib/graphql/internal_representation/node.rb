@@ -3,12 +3,12 @@ require "set"
 module GraphQL
   module InternalRepresentation
     class Node
-      def initialize(ast_node:, return_type:, on_types: Set.new, name: nil, field: nil, children: {}, spreads: [], directives: [])
+      def initialize(ast_node:, return_type: nil, on_types: Set.new, name: nil, definition: nil, children: {}, spreads: [], directives: Set.new)
         @ast_node = ast_node
         @return_type = return_type
         @on_types = on_types
         @name = name
-        @field = field
+        @definition = definition
         @children = children
         @spreads = spreads
         @directives = directives
@@ -19,11 +19,11 @@ module GraphQL
       attr_reader :spreads
 
       # These are the compiled directives from fragment spreads, inline fragments, and the field itself
-      # @return [Array<GraphQL::Language::Nodes::Directive>]
+      # @return [Set<GraphQL::Language::Nodes::Directive>]
       attr_reader :directives
 
-      # @return [GraphQL::Field] The definition to use to execute this node
-      attr_reader :field
+      # @return [GraphQL::Field, GraphQL::Directive] The definition to use to execute this node
+      attr_reader :definition
 
       # @return [String] the name to use for the result in the response hash
       attr_reader :name
@@ -57,11 +57,24 @@ module GraphQL
 
       def inspect(indent = 0)
         own_indent = " " * indent
-        self_inspect = "#{own_indent}<Node #{name} (#{field ? field.name + ": " : ""}{#{on_types.to_a.join("|")}} -> #{return_type})>"
+        self_inspect = "#{own_indent}<Node #{name} (#{definition ? definition.name + ": " : ""}{#{on_types.to_a.join("|")}} -> #{return_type})>"
         if children.any?
           self_inspect << " {\n#{children.values.map { |n| n.inspect(indent + 2 )}.join("\n")}\n#{own_indent}}"
         end
         self_inspect
+      end
+
+      def dup
+        self.class.new({
+          ast_node: ast_node,
+          return_type: return_type,
+          on_types: on_types,
+          name: name,
+          definition: definition,
+          children: children,
+          spreads: spreads,
+          directives: directives,
+        })
       end
     end
   end

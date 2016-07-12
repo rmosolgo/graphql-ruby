@@ -57,7 +57,7 @@ module GraphQL
             resolved_type = field_type.resolve_type(value, execution_context)
 
             unless resolved_type.is_a?(GraphQL::ObjectType)
-              raise GraphQL::ObjectType::UnresolvedTypeError.new(irep_node.field.name, field_type, parent_type)
+              raise GraphQL::ObjectType::UnresolvedTypeError.new(irep_node.definition.name, field_type, parent_type)
             end
 
             strategy_class = get_strategy_for_kind(resolved_type.kind)
@@ -82,7 +82,7 @@ module GraphQL
           # Get the "wrapped" type and resolve the value according to that type
           def result
             if value.nil? || value.is_a?(GraphQL::ExecutionError)
-              raise GraphQL::InvalidNullError.new(irep_node.field.name, value)
+              raise GraphQL::InvalidNullError.new(irep_node.definition.name, value)
             else
               wrapped_type = field_type.of_type
               strategy_class = get_strategy_for_kind(wrapped_type.kind)
