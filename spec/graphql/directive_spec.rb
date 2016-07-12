@@ -25,6 +25,7 @@ describe GraphQL::Directive do
       fragment dontSkipIdField on Cheese { dontSkipId: id @skip(if: false) }
     |
     }
+
     it "intercepts fields" do
       expected = { "data" =>{
         "cheese" => {

@@ -49,6 +49,8 @@ module GraphQL
           @operations[part.name] = part
         end
       end
+
+      @arguments_cache = {}
     end
 
     # Get the result for this query, executing it once
@@ -98,6 +100,15 @@ module GraphQL
       end
     end
 
+    def arguments_for(irep_node)
+      @arguments_cache[irep_node] ||= begin
+        GraphQL::Query::LiteralInput.from_arguments(
+          irep_node.ast_node.arguments,
+          irep_node.field.arguments,
+          self.variables
+        )
+      end
+    end
     private
 
     def perform_validation

@@ -3,18 +3,24 @@ require "set"
 module GraphQL
   module InternalRepresentation
     class Node
-      def initialize(ast_node:, return_type:, on_types: Set.new, name: nil, field: nil, children: {}, spreads: [])
+      def initialize(ast_node:, return_type:, on_types: Set.new, name: nil, field: nil, children: {}, spreads: [], directives: [])
         @ast_node = ast_node
         @return_type = return_type
         @on_types = on_types
         @name = name
         @field = field
         @children = children
-        @spreads = []
+        @spreads = spreads
+        @directives = directives
       end
 
-      # @return [Array<String>] Fragment names that were spread in this node
+      # Note: by the time this gets out of the Rewrite phase, this will be empty -- it's emptied out when fragments are merged back in
+      # @return [Array<GraphQL::Language::Nodes::FragmentSpreads>] Fragment names that were spread in this node
       attr_reader :spreads
+
+      # These are the compiled directives from fragment spreads, inline fragments, and the field itself
+      # @return [Array<GraphQL::Language::Nodes::Directive>]
+      attr_reader :directives
 
       # @return [GraphQL::Field] The definition to use to execute this node
       attr_reader :field

@@ -7,11 +7,11 @@ describe GraphQL::Analysis do
     end
 
     def before_operation_definition(memo, irep_node)
-      memo + [irep_node.return_type.unwrap]
+      memo + [irep_node.return_type]
     end
 
     def before_field(memo, irep_node)
-      memo + [irep_node.return_type.unwrap]
+      memo + [irep_node.return_type]
     end
   end
 

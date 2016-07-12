@@ -56,12 +56,7 @@ module GraphQL
         defined_complexity = field_defn.complexity
         case defined_complexity
         when Proc
-          # TODO: de-dup with query execution
-          args = GraphQL::Query::LiteralInput.from_arguments(
-            irep_node.ast_node.arguments,
-            field_defn.arguments,
-            query.variables
-          )
+          args = query.arguments_for(irep_node)
           defined_complexity.call(query.context, args, child_complexity)
         when Numeric
           defined_complexity + (child_complexity || 0)
