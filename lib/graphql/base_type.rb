@@ -89,6 +89,13 @@ module GraphQL
       coerce_non_null_input(value)
     end
 
+    # Types with fields may override this
+    # @param name [String] field name to lookup for this type
+    # @return [GraphQL::Field, nil]
+    def get_field(name)
+      nil
+    end
+
     # During schema definition, types can be defined inside procs or as strings.
     # This function converts it to a type instance
     # @return [GraphQL::BaseType]

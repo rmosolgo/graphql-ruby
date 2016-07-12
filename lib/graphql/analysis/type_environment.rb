@@ -22,6 +22,12 @@ module GraphQL
         @type_definitions.last
       end
 
+      # This is where the current field was looked up
+      # @return [GraphQL::BaseType] The type which exposed the current field
+      def parent_type_definition
+        @type_definitions[-2]
+      end
+
       # @return [GraphQL::Field] The definition of currently-entered field
       def current_field_definition
         @field_definitions.last

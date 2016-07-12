@@ -63,6 +63,10 @@ describe GraphQL::Analysis::MaxQueryDepth do
   end
 
   describe "when a fragment exceeds max depth" do
+    before do
+      DummySchema.max_depth = 4
+    end
+
     let(:query_string) { "
       {
         cheese(id: 1) {

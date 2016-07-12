@@ -10,13 +10,13 @@ describe GraphQL::Analysis::QueryDepth do
     let(:query_string) {%|
       {
         # depth of 2
-        cheese(id: 1) {
+        cheese1: cheese(id: 1) {
           id
           flavor
         }
 
         # depth of 4
-        cheese(id: 2) {
+        cheese2: cheese(id: 2) {
           similarCheese(source: SHEEP) {
             ... on Cheese {
               similarCheese(source: SHEEP) {
@@ -38,13 +38,13 @@ describe GraphQL::Analysis::QueryDepth do
     let(:query_string) {%|
       {
         # depth of 2
-        cheese(id: 1) {
+        cheese1: cheese(id: 1) {
           id
           flavor
         }
 
         # depth of 4
-        cheese(id: 2) {
+        cheese2: cheese(id: 2) {
           ... cheeseFields1
         }
       }

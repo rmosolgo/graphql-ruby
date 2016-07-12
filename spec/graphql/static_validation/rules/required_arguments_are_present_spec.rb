@@ -16,7 +16,7 @@ describe GraphQL::StaticValidation::RequiredArgumentsArePresent do
 
   let(:validator) { GraphQL::StaticValidation::Validator.new(schema: DummySchema, rules: [GraphQL::StaticValidation::RequiredArgumentsArePresent]) }
   let(:query) { GraphQL::Query.new(DummySchema, query_string) }
-  let(:errors) { validator.validate(query) }
+  let(:errors) { validator.validate(query)[:errors] }
 
   it "finds undefined arguments to fields and directives" do
     assert_equal(3, errors.length)

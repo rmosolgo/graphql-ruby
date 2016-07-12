@@ -37,6 +37,16 @@ module GraphQL
         @type_stack.object_types
       end
 
+      # @return [GraphQL::BaseType] The current object type
+      def type_definition
+        object_types.last
+      end
+
+      # @return [GraphQL::BaseType] The type which the current type came from
+      def parent_type_definition
+        object_types[-2]
+      end
+
       # @return [GraphQL::Field, nil] The most-recently-entered GraphQL::Field, if currently inside one
       def field_definition
         @type_stack.field_definitions.last

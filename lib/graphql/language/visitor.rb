@@ -22,9 +22,8 @@ module GraphQL
       # @return [Array<Proc>] Hooks to call when leaving _any_ node
       attr_reader :leave
 
-      def initialize(document, follow_fragments: false)
+      def initialize(document)
         @document = document
-        @follow_fragments = follow_fragments
         @visitors = {}
         @enter = []
         @leave = []
@@ -49,13 +48,9 @@ module GraphQL
       private
 
       def visit_node(node, parent)
-        begin_hooks_result = begin_visit(node, parent)
-        if begin_hooks_result
-          child_result = node.children.reduce(true) { |memo, child| memo && visit_node(child, node) }
-          if child_result && @follow_fragments && node.is_a?(GraphQL::Language::Nodes::FragmentSpread)
-            frag_defn = fragments[node.name]
-            frag_defn && visit_node(frag_defn, node)
-          end
+        begin_hooks_ok = begin_visit(node, parent)
+        if begin_hooks_ok
+          node.children.reduce(true) { |memo, child| memo && visit_node(child, node) }
         end
         end_visit(node, parent)
       end
@@ -76,15 +71,6 @@ module GraphQL
       # If one of the visitors returns SKIP, stop visiting this node
       def self.apply_hooks(hooks, node, parent)
         hooks.reduce(true) { |memo, proc| memo && (proc.call(node, parent) != SKIP) }
-      end
-
-      # @return [Hash<String, GraphQL::Language::Nodes::FragmentDefinition>]
-      def fragments
-        @fragments ||= @document.definitions.each_with_object({}) do |defn, memo|
-          if defn.is_a?(GraphQL::Language::Nodes::FragmentDefinition)
-            memo[defn.name] = defn
-          end
-        end
       end
 
       # Collect `enter` and `leave` hooks for classes in {GraphQL::Language::Nodes}

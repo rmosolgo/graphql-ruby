@@ -17,55 +17,24 @@ module GraphQL
 
       # State for the query complexity calcuation:
       # - `query` is needed for variables, then passed to handler
-      # - `is_counting_complexity` is true during operations, but false during fragment definitions
-      # - `complexity_stack` holds complexity scores for nodes in the tree
-      # - `fragments_within_field` holds fragment type complexities for a given selection set
+      # - `complexities_on_type` holds complexity scores for nodes in the tree
       def initial_value(query)
         {
           query: query,
-          is_counting_complexity: false,
-          complexity_stack: [
-            # Document-level scores:
-            [],
-          ],
-          fragments_within_field: [],
+          complexities_on_type: [TypeComplexity.new],
         }
       end
 
-      def call(memo, visit_type, type_env, node, prev_node)
-        case node
-        when GraphQL::Language::Nodes::OperationDefinition
-          if visit_type == :enter
-            memo[:is_counting_complexity] = true
-          else
-            # Don't count complexity inside root fragment spreads,
-            # since they'll be visited by the `follow_fragments`
-            memo[:is_counting_complexity] = false
-          end
+      def call(memo, visit_type, irep_node)
+        case irep_node.ast_node
         when GraphQL::Language::Nodes::Field
-          if !memo[:is_counting_complexity]
-            # We're inside a fragment defn, which is counted
-            # when following fragments
-          elsif visit_type == :enter
-            memo[:complexity_stack].push([])
-            memo[:fragments_within_field].push(FragmentComplexity.new)
+          if visit_type == :enter
+            memo[:complexities_on_type].push(TypeComplexity.new)
           else
-            fragment_complexity = memo[:fragments_within_field].pop.max_possible_complexity
-            fields_complexity = memo[:complexity_stack].pop.reduce(&:+) || 0
-            child_complexity = fragment_complexity + fields_complexity
-            own_complexity = get_complexity(type_env.current_field_definition, node, memo[:query], child_complexity)
-            memo[:complexity_stack].last.push(own_complexity)
-          end
-        when GraphQL::Language::Nodes::FragmentDefinition, GraphQL::Language::Nodes::InlineFragment
-          if !memo[:is_counting_complexity]
-            # We're inside a fragment defn, which is counted
-            # when following fragments
-          elsif visit_type == :enter
-            memo[:complexity_stack].push([])
-          else
-            child_complexities = memo[:complexity_stack].pop
-            child_complexity = child_complexities.reduce(&:+) || 0
-            memo[:fragments_within_field].last[type_env.current_type_definition] += child_complexity
+            type_complexities = memo[:complexities_on_type].pop
+            child_complexity = type_complexities.max_possible_complexity
+            own_complexity = get_complexity(irep_node, memo[:query], child_complexity)
+            memo[:complexities_on_type].last.merge(irep_node.on_types, own_complexity)
           end
         end
         memo
@@ -74,7 +43,7 @@ module GraphQL
       # Send the query and complexity to the block
       # @return [Object, GraphQL::AnalysisError] Whatever the handler returns
       def final_value(reduced_value)
-        total_complexity = reduced_value[:complexity_stack].pop.reduce(&:+)
+        total_complexity = reduced_value[:complexities_on_type].pop.max_possible_complexity
         @complexity_handler.call(reduced_value[:query], total_complexity)
       end
 
@@ -82,12 +51,14 @@ module GraphQL
 
       # Get a complexity value for a field,
       # by getting the number or calling its proc
-      def get_complexity(field_defn, ast_node, query, child_complexity)
+      def get_complexity(irep_node, query, child_complexity)
+        field_defn = irep_node.field
         defined_complexity = field_defn.complexity
         case defined_complexity
         when Proc
+          # TODO: de-dup with query execution
           args = GraphQL::Query::LiteralInput.from_arguments(
-            ast_node.arguments,
+            irep_node.ast_node.arguments,
             field_defn.arguments,
             query.variables
           )
@@ -99,35 +70,21 @@ module GraphQL
         end
       end
 
-      # Rule out mutually-exclusive fragments
-      # - Find the max among object types (since an object can't be more than one type)
-      # - Sum union/interfaces types (could this be improved?)
-      class FragmentComplexity
+      class TypeComplexity
         def initialize
-          @type_complexities = Hash.new { |h, k| h[k] = 0 }
+          @types = Hash.new { |h, k| h[k] = 0 }
+          @total_complexity = 0
         end
-
-        def [](type)
-          @type_complexities[type]
-        end
-
-        def []=(type, complexity)
-          @type_complexities[type] = complexity
-        end
-
         def max_possible_complexity
-          max_object_complexity = 0
-          union_interface_complexity = 0
-          @type_complexities.each do |type, complexity|
-            if type.kind.object?
-              if complexity > max_object_complexity
-                max_object_complexity = complexity
-              end
-            else
-              union_interface_complexity += complexity
-            end
+          @total_complexity + (@types.any? ? @types.values.max : 0)
+        end
+
+        def merge(types, complexity)
+          if types.all? { |t| t.kind.object? }
+            types.each { |t| @types[t] += complexity }
+          else
+            @total_complexity += complexity
           end
-          max_object_complexity + union_interface_complexity
         end
       end
     end

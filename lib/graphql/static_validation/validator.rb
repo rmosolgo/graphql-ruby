@@ -22,11 +22,19 @@ module GraphQL
       # @return [Array<Hash>]
       def validate(query)
         context = GraphQL::StaticValidation::ValidationContext.new(query)
+        rewrite = GraphQL::InternalRepresentation::Rewrite.new
+
+        rewrite.validate(context)
         @rules.each do |rules|
           rules.new.validate(context)
         end
+
         context.visitor.visit
-        context.errors.map(&:to_h)
+        {
+          errors: context.errors.map(&:to_h),
+          # If there were errors, the irep is garbage
+          irep: context.errors.none? ? rewrite.operations : nil,
+        }
       end
     end
   end

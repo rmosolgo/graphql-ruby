@@ -5,36 +5,38 @@ module GraphQL
     # @param reducers [Array<[#call]>]
     # @return [Array<Any>]
     def reduce_query(query, reducers)
-      visitor = GraphQL::Language::Visitor.new(query.document, follow_fragments: true)
-      type_env = GraphQL::Analysis::TypeEnvironment.new(query.schema)
-      reducers = [type_env.enter] + reducers + [type_env.leave]
       reducers_and_values = reducers.map { |r| initialize_reducer(r, query) }
-      # Set up reducers:
-      visitor.enter << pass_nodes_to_reducers(:enter, type_env, reducers_and_values)
-      visitor.leave << pass_nodes_to_reducers(:leave, type_env, reducers_and_values)
-      # Actually run the reducers:
-      visitor.visit
-      # Return the array of reduced values, but not the type environment's result
-      user_defined_reducers_and_values = reducers_and_values[1..-1]
-      user_defined_reducers_and_values.map { |(r, value)| finalize_reducer(r, value) }
+
+      irep = query.internal_representation
+
+      irep.each do |name, op_node|
+        reduce_node(op_node, reducers_and_values)
+      end
+
+      reducers_and_values.map { |(r, value)| finalize_reducer(r, value) }
     end
 
     private
 
     module_function
 
-    # @param visit_type [Symbol] `:enter` or `:exit`
-    # @param type_env [GraphQL::Analysis::TypeEnvironment]
-    # @param reducers [Array<[#call]>] things to `.call` on each AST node
-    # @return [Proc] A proc that calls each of `reducers` with `visit_type, node, parent_node`
-    def pass_nodes_to_reducers(visit_type, type_env, reducers_and_values)
-      -> (ast_node, parent_ast_node) do
-        reducers_and_values.each do |reducer_and_value|
-          reducer = reducer_and_value[0]
-          memo = reducer_and_value[1]
-          next_memo = reducer.call(memo, visit_type, type_env, ast_node, parent_ast_node)
-          reducer_and_value[1] = next_memo
-        end
+    def reduce_node(irep_node, reducers_and_values)
+      reducers_and_values.each do |reducer_and_value|
+        reducer = reducer_and_value[0]
+        memo = reducer_and_value[1]
+        next_memo = reducer.call(memo, :enter, irep_node)
+        reducer_and_value[1] = next_memo
+      end
+
+      irep_node.children.each do |name, child_irep_node|
+        reduce_node(child_irep_node, reducers_and_values)
+      end
+
+      reducers_and_values.each do |reducer_and_value|
+        reducer = reducer_and_value[0]
+        memo = reducer_and_value[1]
+        next_memo = reducer.call(memo, :leave, irep_node)
+        reducer_and_value[1] = next_memo
       end
     end
 

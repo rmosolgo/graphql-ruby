@@ -54,8 +54,8 @@ module GraphQL
     # Get the result for this query, executing it once
     def result
       @result ||= begin
-        if @validate && validation_errors.any?
-          { "errors" => validation_errors }
+        if @validate && (validation_errors.any? || analysis_errors.any?)
+          { "errors" => validation_errors + analysis_errors}
         else
           Executor.new(self).result
         end
@@ -84,12 +84,27 @@ module GraphQL
       )
     end
 
-    private
+    def internal_representation
+      @internal_representation ||= begin
+        perform_validation
+        @internal_representation
+      end
+    end
 
     def validation_errors
       @validation_errors ||= begin
-        analysis_errors + schema.static_validator.validate(self)
+        perform_validation
+        @validation_errors
       end
+    end
+
+    private
+
+    def perform_validation
+      validation_result = schema.static_validator.validate(self)
+      @validation_errors = validation_result[:errors]
+      @internal_representation = validation_result[:irep]
+      nil
     end
 
 
@@ -107,7 +122,10 @@ module GraphQL
 
     def analysis_errors
       @analysis_errors ||= begin
-        if @query_reducers.any?
+        if validation_errors.any?
+          # Can't reduce an invalid query
+          []
+        elsif @query_reducers.any?
           reduce_results = GraphQL::Analysis.reduce_query(self, @query_reducers)
           reduce_results.select { |r| r.is_a?(GraphQL::AnalysisError) }.map(&:to_h)
         else

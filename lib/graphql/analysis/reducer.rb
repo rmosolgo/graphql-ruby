@@ -48,11 +48,11 @@ module GraphQL
         }
       }
 
-      def call(memo, visit_type, type_env, ast_node, parent_ast_node)
-        method_name = VISIT_METHODS[visit_type][ast_node.class]
+      def call(memo, visit_type, irep_node)
+        method_name = VISIT_METHODS[visit_type][irep_node.ast_node.class]
 
         if respond_to?(method_name)
-          self.public_send(method_name, memo, type_env, ast_node, parent_ast_node)
+          self.public_send(method_name, memo, irep_node)
         else
           memo
         end

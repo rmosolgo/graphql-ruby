@@ -10,13 +10,13 @@ describe GraphQL::Analysis::QueryComplexity do
     let(:query_string) {%|
       {
         # complexity of 3
-        cheese(id: 1) {
+        cheese1: cheese(id: 1) {
           id
           flavor
         }
 
         # complexity of 4
-        cheese(id: 2) {
+        cheese2: cheese(id: 2) {
           similarCheese(source: SHEEP) {
             ... on Cheese {
               similarCheese(source: SHEEP) {
@@ -38,27 +38,27 @@ describe GraphQL::Analysis::QueryComplexity do
     let(:query_string) {%|
       {
         # complexity of 3
-        cheese(id: 1) {
+        cheese1: cheese(id: 1) {
           id
           flavor
         }
 
         # complexity of 7
-        cheese(id: 2) {
+        cheese2: cheese(id: 2) {
           ... cheeseFields1
           ... cheeseFields2
         }
       }
 
       fragment cheeseFields1 on Cheese {
-        similarCheese(source: COW) {
+        similarCow: similarCheese(source: COW) {
           id
           ... cheeseFields2
         }
       }
 
       fragment cheeseFields2 on Cheese {
-        similarCheese(source: SHEEP) {
+        similarSheep: similarCheese(source: SHEEP) {
           id
         }
       }

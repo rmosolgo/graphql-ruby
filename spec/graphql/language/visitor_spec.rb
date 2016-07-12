@@ -16,10 +16,9 @@ describe GraphQL::Language::Visitor do
     fragment cheeseFields on Cheese { flavor }
     ")}
   let(:counts) { {fields_entered: 0, arguments_entered: 0, arguments_left: 0, argument_names: []} }
-  let(:follow_fragments) { false }
 
   let(:visitor) do
-    v = GraphQL::Language::Visitor.new(document, follow_fragments: follow_fragments)
+    v = GraphQL::Language::Visitor.new(document)
     v[GraphQL::Language::Nodes::Field] << -> (node, parent) { counts[:fields_entered] += 1 }
     # two ways to set up enter hooks:
     v[GraphQL::Language::Nodes::Argument] <<       -> (node, parent) { counts[:argument_names] << node.name }
@@ -38,16 +37,6 @@ describe GraphQL::Language::Visitor do
     assert_equal(2, counts[:arguments_left])
     assert_equal(["id", "first"], counts[:argument_names])
     assert(counts[:finished])
-  end
-
-  describe "following fragments" do
-    let(:follow_fragments) { true }
-    it "follows fragments from their spreads" do
-      visitor.visit
-      # This is one greater than the previous example
-      # because it visited the cheeseFields fragment twice
-      assert_equal(7, counts[:fields_entered])
-    end
   end
 
   describe "Visitor::SKIP" do

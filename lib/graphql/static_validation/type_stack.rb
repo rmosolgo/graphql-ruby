@@ -89,18 +89,14 @@ module GraphQL
         def push(stack, node)
           parent_type = stack.object_types.last
           parent_type = parent_type.unwrap
-          if parent_type.kind.fields?
-            field_class = stack.schema.get_field(parent_type, node.name)
-            stack.field_definitions.push(field_class)
-            if !field_class.nil?
-              next_object_type = field_class.type
-              stack.object_types.push(next_object_type)
-            else
-              stack.object_types.push(nil)
-            end
+
+          field_definition = stack.schema.get_field(parent_type, node.name)
+          stack.field_definitions.push(field_definition)
+          if !field_definition.nil?
+            next_object_type = field_definition.type
+            stack.object_types.push(next_object_type)
           else
-            stack.field_definitions.push(nil)
-            stack.object_types.push(parent_type)
+            stack.object_types.push(nil)
           end
         end
 

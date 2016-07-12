@@ -6,20 +6,20 @@ describe GraphQL::Analysis do
       []
     end
 
-    def before_operation_definition(memo, type_env, node, prev_node)
-      memo + [type_env.current_type_definition]
+    def before_operation_definition(memo, irep_node)
+      memo + [irep_node.return_type.unwrap]
     end
 
-    def before_field(memo, type_env, node, prev_node)
-      memo + [type_env.current_type_definition]
+    def before_field(memo, irep_node)
+      memo + [irep_node.return_type.unwrap]
     end
   end
 
   describe ".reduce_query" do
     let(:node_counter) {
-      -> (memo, visit_type, type_env, node, prev_node) {
+      -> (memo, visit_type, irep_node) {
         memo ||= Hash.new { |h,k| h[k] = 0 }
-        visit_type == :enter && memo[node.class] += 1
+        visit_type == :enter && memo[irep_node.ast_node.class] += 1
         memo
       }
     }
@@ -41,10 +41,8 @@ describe GraphQL::Analysis do
       expected_visited_types = [QueryType, CheeseType, GraphQL::INT_TYPE, GraphQL::STRING_TYPE]
       assert_equal expected_visited_types, collected_types
       expected_node_counts = {
-        GraphQL::Language::Nodes::Document => 1,
         GraphQL::Language::Nodes::OperationDefinition => 1,
         GraphQL::Language::Nodes::Field => 3,
-        GraphQL::Language::Nodes::Argument => 1
       }
       assert_equal expected_node_counts, node_counts
     end
