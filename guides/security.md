@@ -75,7 +75,7 @@ To get a feeling for complexity of queries in your system, you can use the `Quer
 
 ```ruby
 log_query_complexity = GraphQL::Analysis::QueryComplexity.new { |query, complexity| Rails.logger.info("[GraphQL Query Complexity] #{complexity}  | staff? #{query.context[:current_user].staff?}")}
-MySchema.query_reducers << log_query_complexity
+MySchema.query_analyzers << log_query_complexity
 ```
 
 ## Prevent deeply-nested queries
@@ -104,7 +104,7 @@ To get a feeling for depth of queries in your system, you can use the `QueryDept
 
 ```ruby
 log_query_depth = GraphQL::Analysis::QueryDepth.new { |query, depth| Rails.logger.info("[GraphQL Query Depth] #{depth} || staff?  #{query.context[:current_user].staff?}")}
-MySchema.query_reducers << log_query_depth
+MySchema.query_analyzers << log_query_depth
 ```
 
 ## Only execute predefined queries

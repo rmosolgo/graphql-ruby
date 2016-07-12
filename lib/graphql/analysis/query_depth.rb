@@ -3,7 +3,7 @@ module GraphQL
     # A query reducer for measuring the depth of a given query.
     #
     # @example Logging the depth of a query
-    #   Schema.query_reducers << GraphQL::Analysis::QueryDepth.new { |depth|  puts "GraphQL query depth: #{depth}" }
+    #   Schema.query_analyzers << GraphQL::Analysis::QueryDepth.new { |depth|  puts "GraphQL query depth: #{depth}" }
     #   Schema.execute(query_str)
     #   # GraphQL query depth: 8
     #

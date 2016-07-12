@@ -3,7 +3,7 @@ require "spec_helper"
 describe GraphQL::Analysis::QueryComplexity do
   let(:complexities) { [] }
   let(:query_complexity) { GraphQL::Analysis::QueryComplexity.new { |this_query, complexity|  complexities << this_query << complexity } }
-  let(:reduce_result) { GraphQL::Analysis.reduce_query(query, [query_complexity]) }
+  let(:reduce_result) { GraphQL::Analysis.analyze_query(query, [query_complexity]) }
   let(:query) { GraphQL::Query.new(DummySchema, query_string) }
 
   describe "simple queries" do
@@ -104,7 +104,35 @@ describe GraphQL::Analysis::QueryComplexity do
         assert_equal 6, complexities.last
       end
     end
+
+    describe "redundant fields" do
+      let(:query_string) {%|
+      {
+        favoriteEdible {
+          fatContent
+          # this is executed separately and counts separately:
+          aliasedFatContent: fatContent
+
+          ... on Edible {
+            fatContent
+          }
+
+          ... edibleFields
+        }
+      }
+
+      fragment edibleFields on Edible {
+        fatContent
+      }
+      |}
+
+      it "only counts them once" do
+        reduce_result
+        assert_equal 3, complexities.last
+      end
+    end
   end
+
 
   describe "custom complexities" do
     let(:query) { GraphQL::Query.new(complexity_schema, query_string) }

@@ -7,7 +7,7 @@ module GraphQL
     # @example Assert max depth of 10
     #   # DON'T actually do this, graphql-ruby
     #   # Does this for you based on your `max_depth` setting
-    #   MySchema.query_reducers << GraphQL::Analysis::MaxQueryDepth.new(10)
+    #   MySchema.query_analyzers << GraphQL::Analysis::MaxQueryDepth.new(10)
     #
     class MaxQueryDepth < GraphQL::Analysis::QueryDepth
       def initialize(max_depth)

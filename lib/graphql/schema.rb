@@ -16,7 +16,7 @@ module GraphQL
     DIRECTIVES = [GraphQL::Directive::SkipDirective, GraphQL::Directive::IncludeDirective]
     DYNAMIC_FIELDS = ["__type", "__typename", "__schema"]
 
-    attr_reader :query, :mutation, :subscription, :directives, :static_validator, :query_reducers
+    attr_reader :query, :mutation, :subscription, :directives, :static_validator, :query_analyzers
     attr_accessor :max_depth
     attr_accessor :max_complexity
 
@@ -44,7 +44,7 @@ module GraphQL
       @static_validator = GraphQL::StaticValidation::Validator.new(schema: self)
       @rescue_middleware = GraphQL::Schema::RescueMiddleware.new
       @middleware = [@rescue_middleware]
-      @query_reducers = []
+      @query_analyzers = []
       # Default to the built-in execution strategy:
       self.query_execution_strategy = GraphQL::Query::SerialExecution
       self.mutation_execution_strategy = GraphQL::Query::SerialExecution

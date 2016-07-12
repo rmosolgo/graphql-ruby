@@ -3,7 +3,7 @@ module GraphQL
     # Calculate the complexity of a query, using {Field#complexity} values.
     #
     # @example Log the complexity of incoming queries
-    #   MySchema.query_reducers << GraphQL::AnalysisQueryComplexity.new do |query, complexity|
+    #   MySchema.query_analyzers << GraphQL::AnalysisQueryComplexity.new do |query, complexity|
     #     Rails.logger.info("Complexity: #{complexity}")
     #   end
     #

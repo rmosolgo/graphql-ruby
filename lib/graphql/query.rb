@@ -26,12 +26,12 @@ module GraphQL
       @schema = schema
       @max_depth = max_depth || schema.max_depth
       @max_complexity = max_complexity || schema.max_complexity
-      @query_reducers = schema.query_reducers.dup
+      @query_analyzers = schema.query_analyzers.dup
       if @max_depth
-        @query_reducers << GraphQL::Analysis::MaxQueryDepth.new(@max_depth)
+        @query_analyzers << GraphQL::Analysis::MaxQueryDepth.new(@max_depth)
       end
       if @max_complexity
-        @query_reducers << GraphQL::Analysis::MaxQueryComplexity.new(@max_complexity)
+        @query_analyzers << GraphQL::Analysis::MaxQueryComplexity.new(@max_complexity)
       end
       @context = Context.new(query: self, values: context)
       @root_value = root_value
@@ -136,8 +136,8 @@ module GraphQL
         if validation_errors.any?
           # Can't reduce an invalid query
           []
-        elsif @query_reducers.any?
-          reduce_results = GraphQL::Analysis.reduce_query(self, @query_reducers)
+        elsif @query_analyzers.any?
+          reduce_results = GraphQL::Analysis.analyze_query(self, @query_analyzers)
           reduce_results.select { |r| r.is_a?(GraphQL::AnalysisError) }.map(&:to_h)
         else
           []

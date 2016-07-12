@@ -1,21 +1,21 @@
 require "spec_helper"
 
 describe GraphQL::Analysis do
-  class TypeCollector < GraphQL::Analysis::Reducer
+  class TypeCollector
     def initial_value(query)
       []
     end
 
-    def before_operation_definition(memo, irep_node)
-      memo + [irep_node.return_type]
-    end
-
-    def before_field(memo, irep_node)
-      memo + [irep_node.return_type]
+    def call(memo, visit_type, irep_node)
+      if visit_type == :enter
+        memo + [irep_node.return_type]
+      else
+        memo
+      end
     end
   end
 
-  describe ".reduce_query" do
+  describe ".analyze_query" do
     let(:node_counter) {
       -> (memo, visit_type, irep_node) {
         memo ||= Hash.new { |h,k| h[k] = 0 }
@@ -24,8 +24,8 @@ describe GraphQL::Analysis do
       }
     }
     let(:type_collector) { TypeCollector.new }
-    let(:reducers) { [type_collector, node_counter] }
-    let(:reduce_result) { GraphQL::Analysis.reduce_query(query, reducers) }
+    let(:analyzers) { [type_collector, node_counter] }
+    let(:reduce_result) { GraphQL::Analysis.analyze_query(query, analyzers) }
     let(:query) { GraphQL::Query.new(DummySchema, query_string) }
     let(:query_string) {%|
       {
@@ -36,7 +36,7 @@ describe GraphQL::Analysis do
       }
     |}
 
-    it "calls the defined reducers" do
+    it "calls the defined analyzers" do
       collected_types, node_counts = reduce_result
       expected_visited_types = [QueryType, CheeseType, GraphQL::INT_TYPE, GraphQL::STRING_TYPE]
       assert_equal expected_visited_types, collected_types

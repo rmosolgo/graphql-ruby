@@ -2,40 +2,39 @@ module GraphQL
   module Analysis
     module_function
     # @param query [GraphQL::Query]
-    # @param reducers [Array<[#call]>]
+    # @param analyzers [Array<[#call]>]
     # @return [Array<Any>]
-    def reduce_query(query, reducers)
-      reducers_and_values = reducers.map { |r| initialize_reducer(r, query) }
+    def analyze_query(query, analyzers)
+      analyzers_and_values = analyzers.map { |r| initialize_reducer(r, query) }
 
       irep = query.internal_representation
 
       irep.each do |name, op_node|
-        reduce_node(op_node, reducers_and_values)
+        reduce_node(op_node, analyzers_and_values)
       end
 
-      reducers_and_values.map { |(r, value)| finalize_reducer(r, value) }
+      analyzers_and_values.map { |(r, value)| finalize_reducer(r, value) }
     end
 
     private
 
     module_function
 
-    def reduce_node(irep_node, reducers_and_values)
-      reducers_and_values.each do |reducer_and_value|
-        reducer = reducer_and_value[0]
-        memo = reducer_and_value[1]
-        next_memo = reducer.call(memo, :enter, irep_node)
-        reducer_and_value[1] = next_memo
-      end
+    def reduce_node(irep_node, analyzers_and_values)
+      visit_analyzers(:enter, irep_node, analyzers_and_values)
 
       irep_node.children.each do |name, child_irep_node|
-        reduce_node(child_irep_node, reducers_and_values)
+        reduce_node(child_irep_node, analyzers_and_values)
       end
 
-      reducers_and_values.each do |reducer_and_value|
+      visit_analyzers(:leave, irep_node, analyzers_and_values)
+    end
+
+    def visit_analyzers(visit_type, irep_node, analyzers_and_values)
+      analyzers_and_values.each do |reducer_and_value|
         reducer = reducer_and_value[0]
         memo = reducer_and_value[1]
-        next_memo = reducer.call(memo, :leave, irep_node)
+        next_memo = reducer.call(memo, visit_type, irep_node)
         reducer_and_value[1] = next_memo
       end
     end

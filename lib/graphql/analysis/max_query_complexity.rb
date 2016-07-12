@@ -7,7 +7,7 @@ module GraphQL
     # @example Assert max complexity of 10
     #   # DON'T actually do this, graphql-ruby
     #   # Does this for you based on your `max_complexity` setting
-    #   MySchema.query_reducers << GraphQL::Analysis::MaxQueryComplexity.new(10)
+    #   MySchema.query_analyzers << GraphQL::Analysis::MaxQueryComplexity.new(10)
     #
     class MaxQueryComplexity < GraphQL::Analysis::QueryComplexity
       def initialize(max_complexity)
