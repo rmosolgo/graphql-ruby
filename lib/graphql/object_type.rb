@@ -24,7 +24,7 @@ module GraphQL
     accepts_definitions :interfaces, field: GraphQL::Define::AssignObjectField
     attr_accessor :name, :description
 
-    # @return [Hash<String, GraphQL::Field>] Map String fieldnames to their {GraphQL::Field} implementations
+    # @return [Hash<String => GraphQL::Field>] Map String fieldnames to their {GraphQL::Field} implementations
     attr_accessor :fields
 
     def initialize

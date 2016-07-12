@@ -66,7 +66,7 @@ module GraphQL
     # @return [String] The name of this field on its {GraphQL::ObjectType} (or {GraphQL::InterfaceType})
     attr_reader :name
 
-    # @return [Hash<String, GraphQL::Argument>] Map String argument names to their {GraphQL::Argument} implementations
+    # @return [Hash<String => GraphQL::Argument>] Map String argument names to their {GraphQL::Argument} implementations
     attr_accessor :arguments
 
     # @return [Numeric, Proc] The complexity for this field (default: 1), as a constant or a proc like `-> (query_ctx, args, child_complexity) { } # Numeric`

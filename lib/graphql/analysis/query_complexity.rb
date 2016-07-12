@@ -17,19 +17,19 @@ module GraphQL
 
       # State for the query complexity calcuation:
       # - `query` is needed for variables, then passed to handler
-      # - `complexities_on_type` holds complexity scores for nodes in the tree
+      # - `complexities_on_type` holds complexity scores for each type in an IRep node
       def initial_value(query)
         {
           query: query,
-          complexities_on_type: [TypeComplexity.new(query)],
+          complexities_on_type: [TypeComplexity.new],
         }
       end
 
+      # Implement the query analyzer API
       def call(memo, visit_type, irep_node)
-        case irep_node.ast_node
-        when GraphQL::Language::Nodes::Field
+        if irep_node.ast_node.is_a?(GraphQL::Language::Nodes::Field)
           if visit_type == :enter
-            memo[:complexities_on_type].push(TypeComplexity.new(memo[:query]))
+            memo[:complexities_on_type].push(TypeComplexity.new)
           else
             type_complexities = memo[:complexities_on_type].pop
             own_complexity = if GraphQL::Query::DirectiveResolution.include_node?(irep_node, memo[:query])
@@ -72,11 +72,11 @@ module GraphQL
       # Selections on an object may apply differently depending on what is _actually_ returned by the resolve function.
       # Find the maximum possible complexity among those combinations.
       class TypeComplexity
-        def initialize(query)
+        def initialize
           @types = Hash.new { |h, k| h[k] = 0 }
-          @schema = query.schema
         end
 
+        # Return the max possible complexity for types in this selection
         def max_possible_complexity
           max_complexity = 0
 
@@ -96,6 +96,7 @@ module GraphQL
           max_complexity
         end
 
+        # Store the complexity score for each of `types`
         def merge(types, complexity)
           types.each { |t| @types[t] += complexity }
         end

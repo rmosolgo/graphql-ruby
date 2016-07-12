@@ -9,17 +9,19 @@ module GraphQL
     class Rewrite
       include GraphQL::Language
 
-      # @return [Hash<String, InternalRepresentation::Node>] internal representation of each query root (operation, fragment)
+      # @return [Hash<String => InternalRepresentation::Node>] internal representation of each query root (operation, fragment)
       attr_reader :operations
 
       def initialize
-        # { String => Node }
+        # { String => Node } Tracks the roots of the query
         @operations = {}
         @fragments = {}
         # [String...] fragments which don't have fragments inside them
         @independent_fragments = []
+        # Tracks the current node during traversal
         # Stack<InternalRepresentation::Node>
         @nodes = []
+        # This tracks dependencies from fragment to Node where it was used
         # { frag_name => [dependent_node, dependent_node]}
         @fragment_spreads = Hash.new { |h, k| h[k] = []}
         # [Nodes::Directive ... ] directive affecting the current scope
@@ -41,6 +43,9 @@ module GraphQL
         visitor[Nodes::Field].enter << -> (ast_node, prev_ast_node) {
           parent_node = @nodes.last
           node_name = ast_node.alias || ast_node.name
+          # This node might not be novel, eg inside an inline fragment
+          # but it could contain new type information, which is captured below.
+          # (StaticValidation ensures that merging fields is fair game)
           node = parent_node.children[node_name] ||= begin
             Node.new(
               return_type: context.type_definition && context.type_definition.unwrap,
@@ -49,13 +54,13 @@ module GraphQL
               definition: context.field_definition,
             )
           end
-          node.on_types << context.parent_type_definition.unwrap
+          node.on_types.add(context.parent_type_definition.unwrap)
           @nodes.push(node)
           @parent_directives.push([])
         }
 
         visitor[Nodes::InlineFragment].enter << -> (ast_node, prev_ast_node) {
-          @parent_directives << []
+          @parent_directives.push([])
         }
 
         visitor[Nodes::Directive].enter << -> (ast_node, prev_ast_node) {
@@ -76,7 +81,9 @@ module GraphQL
             ast_node: ast_node,
           )
           parent_node = @nodes.last
+          # The parent node has a reference to the fragment
           parent_node.spreads.push(spread_node)
+          # And keep a reference from the fragment to the parent node
           @fragment_spreads[ast_node.name].push(parent_node)
           @nodes.push(spread_node)
           @parent_directives.push([])
@@ -97,12 +104,17 @@ module GraphQL
         }
 
         visitor[Nodes::FragmentSpread].leave  << -> (ast_node, prev_ast_node) {
+          # Capture any directives that apply to this spread
+          # so that they can be applied to fields when
+          # the fragment is merged in later
           spread_node = @nodes.pop
           spread_node.directives.merge(@parent_directives.flatten)
           @parent_directives.pop
         }
 
         visitor[Nodes::FragmentDefinition].leave << -> (ast_node, prev_ast_node) {
+          # This fragment doesn't depend on any others,
+          # we should save it as the starting point for dependency resolution
           frag_node = @nodes.pop
           if frag_node.spreads.none?
             @independent_fragments << frag_node
@@ -114,6 +126,9 @@ module GraphQL
         }
 
         visitor[Nodes::Field].leave << -> (ast_node, prev_ast_node) {
+          # Pop this field's node
+          # and record any directives that were visited
+          # during this field & before it (eg, inline fragments)
           field_node = @nodes.pop
           field_node.directives.merge(@parent_directives.flatten)
           @parent_directives.pop
