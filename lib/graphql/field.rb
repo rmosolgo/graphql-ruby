@@ -38,13 +38,13 @@ module GraphQL
   #   end
   #
   # @example Custom complexity values
-  #   field :expensive_calculation, !types.Int do
-  #     # Constant value:
-  #     complexity 10
-  #   end
+  #   # Complexity can be a number or a proc.
   #
+  #   # Complexity can be defined with a keyword:
+  #   field :expensive_calculation, !types.Int, complexity: 10
+  #
+  #   # Or inside the block:
   #   field :expensive_calculation_2, !types.Int do
-  #     # Dynamic value:
   #     complexity -> (ctx, args, child_complexity) { ctx[:current_user].staff? ? 0 : 10 }
   #   end
   #

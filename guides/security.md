@@ -21,13 +21,11 @@ This way, you won't hit your database for 1000 items!
 
 ## Prevent complex queries
 
-Fields have a "complexity" value which can be configured in their definition. For example:
+Fields have a "complexity" value which can be configured in their definition. It can be a constant (numeric) value, or a proc. It can be defined as a keyword _or_ inside the configuration block. For example:
 
 ```ruby
 # Constant complexity:
-field :top_score, types.Int do
-  complexity 10
-end
+field :top_score, types.Int, complexity: 10
 
 # Dynamic complexity:
 field :top_scorers, types[PlayerType] do

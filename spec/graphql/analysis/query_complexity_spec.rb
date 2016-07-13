@@ -193,8 +193,7 @@ describe GraphQL::Analysis::QueryComplexity do
     let(:complexity_schema) {
       complexity_type = GraphQL::ObjectType.define do
         name "Complexity"
-        field :value, types.Int do
-          complexity 0.1
+        field :value, types.Int, complexity: 0.1 do
           resolve -> (obj, args, ctx) { obj }
         end
         field :complexity, -> { complexity_type } do
