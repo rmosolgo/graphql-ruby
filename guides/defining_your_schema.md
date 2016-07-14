@@ -277,3 +277,31 @@ MySchema.middleware << AuthorizationMiddleware.new
 ```
 
 Now, all field access will be wrapped by that authorization routine.
+
+## Query Analyzers
+
+Query analyzers are like middleware for the validation phase. They're called at each node of the query's internal representation (see `GraphQL::InternalRepresentation::Node`). If they return a `GraphQL::AnalysisError`, the query won't be run and the error will be added to the response's `errors` key.
+
+The minimal API is `.call(memo, visit_type, internal_representation_node)`. For example:
+
+```ruby
+ast_node_logger = -> (memo, visit_type, internal_representation_node) {
+  if visit_type == :enter
+    puts "Visiting #{internal_representation_node.name}!"
+  end
+}
+MySchema.query_analyzers << ast_node_logger
+```
+
+Whatever `.call(...)` returns will be passed as `memo` for the next visit.
+
+The analyzer can implement a few other methods. If they're present, they'll be called:
+
+- `.initial_value(query)` will be called to generate an initial value for `memo`
+- `.final_value(memo)` will be called _after_ visiting the the query
+
+If the last value of `memo` (or the return of `.final_value`) is a `GraphQL::AnalysisError`, the query won't be executed and the error will be added to the `errors` key of the response.
+
+`graphql-ruby` includes a few query analyzers:
+- `GraphQL::Analysis::QueryDepth` and `GraphQL::Analysis::QueryComplexity` for inspecting query depth and complexity
+- `GraphQL::Analysis::MaxQueryDepth` and `GraphQL::Analysis::MaxQueryComplexity` are used internally to implement `max_depth:` and `max_complexity:` options

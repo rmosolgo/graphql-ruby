@@ -13,7 +13,7 @@ describe GraphQL::StaticValidation::FragmentsAreUsed do
 
   let(:validator) { GraphQL::StaticValidation::Validator.new(schema: DummySchema, rules: [GraphQL::StaticValidation::FragmentsAreUsed]) }
   let(:query) { GraphQL::Query.new(DummySchema, query_string) }
-  let(:errors) { validator.validate(query) }
+  let(:errors) { validator.validate(query)[:errors] }
 
   it "adds errors for unused fragment definitions" do
     assert_includes(errors, {"message"=>"Fragment unusedFields was defined, but not used", "locations"=>[{"line"=>8, "column"=>5}]})

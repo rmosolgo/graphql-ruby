@@ -8,13 +8,13 @@ module GraphQL
 
         class BaseResolution
           attr_reader :value, :field_type, :target, :parent_type,
-            :ast_field, :execution_context
-          def initialize(value, field_type, target, parent_type, ast_field, execution_context)
+            :irep_node, :execution_context
+          def initialize(value, field_type, target, parent_type, irep_node, execution_context)
             @value = value
             @field_type = field_type
             @target = target
             @parent_type = parent_type
-            @ast_field = ast_field
+            @irep_node = irep_node
             @execution_context = execution_context
           end
 
@@ -46,7 +46,7 @@ module GraphQL
             wrapped_type = field_type.of_type
             strategy_class = get_strategy_for_kind(wrapped_type.kind)
             value.map do |item|
-              inner_strategy = strategy_class.new(item, wrapped_type, target, parent_type, ast_field, execution_context)
+              inner_strategy = strategy_class.new(item, wrapped_type, target, parent_type, irep_node, execution_context)
               inner_strategy.result
             end
           end
@@ -57,11 +57,11 @@ module GraphQL
             resolved_type = field_type.resolve_type(value, execution_context)
 
             unless resolved_type.is_a?(GraphQL::ObjectType)
-              raise GraphQL::ObjectType::UnresolvedTypeError.new(ast_field.name, field_type, parent_type)
+              raise GraphQL::ObjectType::UnresolvedTypeError.new(irep_node.definition.name, field_type, parent_type)
             end
 
             strategy_class = get_strategy_for_kind(resolved_type.kind)
-            inner_strategy = strategy_class.new(value, resolved_type, target, parent_type, ast_field, execution_context)
+            inner_strategy = strategy_class.new(value, resolved_type, target, parent_type, irep_node, execution_context)
             inner_strategy.result
           end
         end
@@ -72,7 +72,7 @@ module GraphQL
             execution_context.strategy.selection_resolution.new(
               value,
               field_type,
-              ast_field.selections,
+              irep_node,
               execution_context
             ).result
           end
@@ -82,11 +82,11 @@ module GraphQL
           # Get the "wrapped" type and resolve the value according to that type
           def result
             if value.nil? || value.is_a?(GraphQL::ExecutionError)
-              raise GraphQL::InvalidNullError.new(ast_field.name, value)
+              raise GraphQL::InvalidNullError.new(irep_node.definition.name, value)
             else
               wrapped_type = field_type.of_type
               strategy_class = get_strategy_for_kind(wrapped_type.kind)
-              inner_strategy = strategy_class.new(value, wrapped_type, target, parent_type, ast_field, execution_context)
+              inner_strategy = strategy_class.new(value, wrapped_type, target, parent_type, irep_node, execution_context)
               inner_strategy.result
             end
           end

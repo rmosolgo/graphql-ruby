@@ -23,7 +23,6 @@ module GraphQL
       GraphQL::StaticValidation::VariableDefaultValuesAreCorrectlyTyped,
       GraphQL::StaticValidation::VariablesAreUsedAndDefined,
       GraphQL::StaticValidation::VariableUsagesAreAllowed,
-      GraphQL::StaticValidation::DocumentDoesNotExceedMaxDepth,
     ]
   end
 end

@@ -4,12 +4,12 @@ module GraphQL
     #
     # @example Create a visitor, add hooks, then search a document
     #   total_field_count = 0
-    #   visitor = GraphQL::Language::Visitor.new
+    #   visitor = GraphQL::Language::Visitor.new(document)
     #   # Whenever you find a field, increment the field count:
     #   visitor[GraphQL::Language::Nodes::Field] << -> (node) { total_field_count += 1 }
     #   # When we finish, print the field count:
     #   visitor[GraphQL::Language::Nodes::Document].leave << -> (node) { p total_field_count }
-    #   visitor.visit(document)
+    #   visitor.visit
     #   # => 6
     #
     class Visitor
@@ -22,7 +22,8 @@ module GraphQL
       # @return [Array<Proc>] Hooks to call when leaving _any_ node
       attr_reader :leave
 
-      def initialize
+      def initialize(document)
+        @document = document
         @visitors = {}
         @enter = []
         @leave = []
@@ -38,16 +39,21 @@ module GraphQL
         @visitors[node_class] ||= NodeVisitor.new
       end
 
-      # Visit `root` and all children, applying hooks as you go
-      # @param root [GraphQL::Language::Nodes::AbstractNode] some node to start parsing on
+      # Visit `document` and all children, applying hooks as you go
       # @return [void]
-      def visit(root, parent=nil)
-        begin_visit(root, parent) &&
-          root.children.reduce(true) { |memo, child| memo && visit(child, root) }
-        end_visit(root, parent)
+      def visit
+        visit_node(@document, nil)
       end
 
       private
+
+      def visit_node(node, parent)
+        begin_hooks_ok = begin_visit(node, parent)
+        if begin_hooks_ok
+          node.children.reduce(true) { |memo, child| memo && visit_node(child, node) }
+        end
+        end_visit(node, parent)
+      end
 
       def begin_visit(node, parent)
         self.class.apply_hooks(enter, node, parent)

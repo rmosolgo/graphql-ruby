@@ -9,11 +9,13 @@ module GraphQL
       # @param root_type [GraphQL::ObjectType] either the query type or the mutation type
       # @param query_obj [GraphQL::Query] the query object for this execution
       # @return [Hash] a spec-compliant GraphQL result, as a hash
-      def execute(ast_operation, root_type, query_obj)
+      def execute(ast_operation, root_type, query_object)
+        irep_root = query_object.internal_representation[ast_operation.name]
+
         operation_resolution.new(
-          ast_operation,
+          irep_root,
           root_type,
-          ExecutionContext.new(query_obj, self)
+          ExecutionContext.new(query_object, self)
         ).result
       end
 

@@ -3,7 +3,6 @@ module GraphQL
   #
   # They're usually created with the `field` helper. If you create it by hand, make sure {#name} is a String.
   #
-  #
   # @example creating a field
   #   GraphQL::ObjectType.define do
   #     field :name, types.String, "The name of this thing "
@@ -38,20 +37,43 @@ module GraphQL
   #     field :name, field: name_field
   #   end
   #
+  # @example Custom complexity values
+  #   # Complexity can be a number or a proc.
+  #
+  #   # Complexity can be defined with a keyword:
+  #   field :expensive_calculation, !types.Int, complexity: 10
+  #
+  #   # Or inside the block:
+  #   field :expensive_calculation_2, !types.Int do
+  #     complexity -> (ctx, args, child_complexity) { ctx[:current_user].staff? ? 0 : 10 }
+  #   end
+  #
+  # @example Calculating the complexity of a list field
+  #   field :items, types[ItemType] do
+  #     argument :limit, !types.Int
+  #     # Mulitply the child complexity by the possible items on the list
+  #     complexity -> (ctx, args, child_complexity) { child_complexity * args[:limit] }
+  #   end
+  #
   class Field
     include GraphQL::Define::InstanceDefinable
-    accepts_definitions :name, :description, :resolve, :type, :property, :deprecation_reason, argument: GraphQL::Define::AssignArgument
+    accepts_definitions :name, :description, :resolve, :type, :property, :deprecation_reason, :complexity, argument: GraphQL::Define::AssignArgument
 
     attr_accessor :deprecation_reason, :name, :description, :property
+
     attr_reader :resolve_proc
 
     # @return [String] The name of this field on its {GraphQL::ObjectType} (or {GraphQL::InterfaceType})
     attr_reader :name
 
-    # @return [Hash<String, GraphQL::Argument>] Map String argument names to their {GraphQL::Argument} implementations
+    # @return [Hash<String => GraphQL::Argument>] Map String argument names to their {GraphQL::Argument} implementations
     attr_accessor :arguments
 
+    # @return [Numeric, Proc] The complexity for this field (default: 1), as a constant or a proc like `-> (query_ctx, args, child_complexity) { } # Numeric`
+    attr_accessor :complexity
+
     def initialize
+      @complexity = 1
       @arguments = {}
       @resolve_proc = build_default_resolver
     end

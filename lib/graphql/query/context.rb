@@ -5,9 +5,11 @@ module GraphQL
     class Context
       attr_accessor :execution_strategy
 
-      # The {GraphQL::Language::Nodes::Field} for the currently-executing field.
-      # @return [GraphQL::Language::Nodes::Field]
+      # @return [GraphQL::Language::Nodes::Field] The AST node for the currently-executing field
       attr_accessor :ast_node
+
+      # @return [GraphQL::InternalRepresentation::Node] The internal representation for this query node
+      attr_accessor :irep_node
 
       # @return [Array<GraphQL::ExecutionError>] errors returned during execution
       attr_reader :errors
@@ -28,11 +30,12 @@ module GraphQL
         @errors = []
       end
 
-      # Lookup `key` from the hash passed to {Schema#execute} as `context`
+      # Lookup `key` from the hash passed to {Schema#execute} as `context:`
       def [](key)
         @values[key]
       end
 
+      # Reassign `key` to the hash passed to {Schema#execute} as `context:`
       def []=(key, value)
         @values[key] = value
       end

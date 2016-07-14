@@ -36,7 +36,7 @@ describe GraphQL::StaticValidation::VariableUsagesAreAllowed do
 
   let(:validator) { GraphQL::StaticValidation::Validator.new(schema: DummySchema, rules: [GraphQL::StaticValidation::VariableUsagesAreAllowed]) }
   let(:query) { GraphQL::Query.new(DummySchema, query_string) }
-  let(:errors) { validator.validate(query) }
+  let(:errors) { validator.validate(query)[:errors] }
 
   it "finds variables used as arguments but don't match the argument's type" do
     assert_equal(4, errors.length)

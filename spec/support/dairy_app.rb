@@ -83,11 +83,17 @@ MilkType = GraphQL::ObjectType.define do
   end
 end
 
+SweetenerInterface = GraphQL::InterfaceType.define do
+  name "Sweetener"
+  field :sweetness, types.Int
+end
+
 # No actual data; This type is an "orphan", only accessible through Interfaces
 HoneyType = GraphQL::ObjectType.define do
   name "Honey"
   description "Sweet, dehydrated bee barf"
-  interfaces [EdibleInterface, AnimalProductInterface]
+  field :flowerType, types.String, "What flower this honey came from"
+  interfaces [EdibleInterface, AnimalProductInterface, SweetenerInterface]
 end
 
 DairyType = GraphQL::ObjectType.define do
