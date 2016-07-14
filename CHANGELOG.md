@@ -6,6 +6,26 @@
 
 ### Bug fixes
 
+## 0.16.0 (14 Jul 2016)
+
+### Breaking changes & deprecations
+
+- I don't _know_ that this breaks anything, but  `GraphQL::Query::SerialExecution` now iterates over a tree of `GraphQL::InternalRepresentation::Node`s instead of an AST (`GraphQL::Language::Nodes::Document`).
+
+### New features
+
+- Query context keys can be assigned with `Context#[]=` #178
+- Cancel further field resolution with `TimeoutMiddleware` #179
+- Add `GraphQL::InternalRepresentation` for normalizing queries from AST #180
+- Analyze the query before running it #180
+- Assign complexity cost to fields, enforce max complexity before running it #180
+- Log max complexity or max depth with `MaxComplexity` or `MaxDepth` analyzers #180
+- Query context exposes `#irep_node`, the internal representation of the current node #180
+
+### Bug fixes
+
+- Non-null errors are propagated to the next nullable field, all the way up to `data` #174
+
 ## 0.15.3 (28 Jun 2016)
 
 ### New features

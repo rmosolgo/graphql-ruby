@@ -19,7 +19,7 @@ end
 
 This way, you won't hit your database for 1000 items!
 
-## Limiting execution time
+## Enforce a timeout
 
 You can apply a timeout to query execution with `TimeoutMiddleware`. For example:
 
@@ -30,6 +30,14 @@ MySchema.middleware << GraphQL::Schema::TimeoutMiddleware.new(max_seconds: 2)
 After `max_seconds`, no new fields will be resolved. Instead, errors will be added to the `errors` key for fields that weren't resolved.
 
 __Note__ that this does not _interrupt_ field execution. If you're making external calls (eg, HTTP requests or database queries), make sure to use a "lower level" timeout for the specific operation.
+
+To log the error, pass a block to the middleware:
+
+```ruby
+MySchema.middleware << GraphQL::Schema::TimeoutMiddleware.new(max_seconds: 2) do |err, query|
+  Rails.logger.info("GraphQL Timeout: #{query.query_string}")
+end
+```
 
 ## Prevent complex queries
 
