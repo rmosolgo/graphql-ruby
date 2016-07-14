@@ -133,6 +133,10 @@ describe GraphQL::Query do
     assert_equal(GraphQL::Language::Nodes::FragmentDefinition, query.fragments["cheeseFields"].class)
   end
 
+  it "exposes the original string" do
+    assert_equal(query_string, query.query_string)
+  end
+
   describe "merging fragments with different keys" do
     let(:query_string) { %|
       query getCheeseFieldsThroughDairy {
