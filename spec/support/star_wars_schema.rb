@@ -84,25 +84,26 @@ CustomEdgeBaseConnectionType = BaseType.define_connection(edge_class: CustomBase
   end
 end
 
+FactionShipsField = GraphQL::Field.define do
+  # Resolve field should return an Array, the Connection
+  # will do the rest!
+  resolve -> (obj, args, ctx) {
+    all_ships = obj.ships.map {|ship_id| STAR_WARS_DATA["Ship"][ship_id] }
+    if args[:nameIncludes]
+      all_ships = all_ships.select { |ship| ship.name.include?(args[:nameIncludes])}
+    end
+    all_ships
+  }
+  # You can define arguments here and use them in the connection
+  argument :nameIncludes, types.String
+end
 
 Faction = GraphQL::ObjectType.define do
   name "Faction"
   interfaces [NodeIdentification.interface]
   field :id, field: GraphQL::Relay::GlobalIdField.new("Faction")
   field :name, types.String
-  connection :ships, Ship.connection_type do
-    # Resolve field should return an Array, the Connection
-    # will do the rest!
-    resolve -> (obj, args, ctx) {
-      all_ships = obj.ships.map {|ship_id| STAR_WARS_DATA["Ship"][ship_id] }
-      if args[:nameIncludes]
-        all_ships = all_ships.select { |ship| ship.name.include?(args[:nameIncludes])}
-      end
-      all_ships
-    }
-    # You can define arguments here and use them in the connection
-    argument :nameIncludes, types.String
-  end
+  connection :ships, Ship.connection_type, field: FactionShipsField
   connection :bases, BaseConnectionWithTotalCountType do
     # Resolve field should return an Array, the Connection
     # will do the rest!
