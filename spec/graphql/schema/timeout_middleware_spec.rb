@@ -2,6 +2,7 @@ require "spec_helper"
 
 describe GraphQL::Schema::TimeoutMiddleware do
   let(:max_seconds) { 2 }
+  let(:timeout_middleware) {  GraphQL::Schema::TimeoutMiddleware.new(max_seconds: 2) }
   let(:timeout_schema) {
 
     sleep_for_seconds_resolve = -> (obj, args, ctx) {
@@ -35,7 +36,7 @@ describe GraphQL::Schema::TimeoutMiddleware do
     end
 
     schema = GraphQL::Schema.new(query: query_type)
-    schema.middleware << GraphQL::Schema::TimeoutMiddleware.new(max_seconds: 2)
+    schema.middleware << timeout_middleware
     schema
   }
 
@@ -153,6 +154,27 @@ describe GraphQL::Schema::TimeoutMiddleware do
 
       assert_equal expected_data, result["data"]
       assert_equal expected_errors, result["errors"]
+    end
+  end
+
+  describe "with a custom block" do
+    let(:timeout_middleware) {
+      GraphQL::Schema::TimeoutMiddleware.new(max_seconds: 2) do |err, query|
+        raise("Query timed out after 2s: #{query.class.name}")
+      end
+    }
+    let(:query_string) {%|
+      {
+        a: sleepFor(seconds: 0.7)
+        b: sleepFor(seconds: 0.7)
+        c: sleepFor(seconds: 0.7)
+        d: sleepFor(seconds: 0.7)
+        e: sleepFor(seconds: 0.7)
+      }
+    |}
+
+    it "calls the block" do
+      assert_raises(RuntimeError) { result }
     end
   end
 end

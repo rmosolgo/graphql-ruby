@@ -19,6 +19,18 @@ end
 
 This way, you won't hit your database for 1000 items!
 
+## Limiting execution time
+
+You can apply a timeout to query execution with `TimeoutMiddleware`. For example:
+
+```ruby
+MySchema.middleware << GraphQL::Schema::TimeoutMiddleware.new(max_seconds: 2)
+```
+
+After `max_seconds`, no new fields will be resolved. Instead, errors will be added to the `errors` key for fields that weren't resolved.
+
+__Note__ that this does not _interrupt_ field execution. If you're making external calls (eg, HTTP requests or database queries), make sure to use a "lower level" timeout for the specific operation.
+
 ## Prevent complex queries
 
 Fields have a "complexity" value which can be configured in their definition. It can be a constant (numeric) value, or a proc. It can be defined as a keyword _or_ inside the configuration block. For example:
