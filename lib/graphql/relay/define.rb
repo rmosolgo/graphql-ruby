@@ -2,8 +2,8 @@ module GraphQL
   module Relay
     module Define
       module AssignConnection
-        def self.call(type_defn, name, type = nil, desc = nil, property: nil, max_page_size: nil, &block)
-          underlying_field = GraphQL::Define::AssignObjectField.call(type_defn, name, type, desc, property: property, &block)
+        def self.call(type_defn, name, type = nil, desc = nil, property: nil, field: nil, max_page_size: nil, &block)
+          underlying_field = GraphQL::Define::AssignObjectField.call(type_defn, name, type, desc, property: property, field: field, &block)
           connection_field = GraphQL::Relay::ConnectionField.create(underlying_field, max_page_size: max_page_size)
           type_defn.fields[name.to_s] = connection_field
         end
