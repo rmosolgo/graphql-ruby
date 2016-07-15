@@ -33,6 +33,7 @@ module GraphQL
 
       def call(parent_type, parent_object, field_definition, field_args, query_context, next_middleware)
         timeout_at = query_context[@context_key] ||= Time.now + @max_seconds
+
         if timeout_at < Time.now
           on_timeout(parent_type, parent_object, field_definition, field_args, query_context)
         else

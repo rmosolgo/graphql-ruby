@@ -1,8 +1,8 @@
 require "spec_helper"
 
 describe GraphQL::Schema::TimeoutMiddleware do
-  let(:max_seconds) { 2 }
-  let(:timeout_middleware) {  GraphQL::Schema::TimeoutMiddleware.new(max_seconds: 2) }
+  let(:max_seconds) { 1 }
+  let(:timeout_middleware) {  GraphQL::Schema::TimeoutMiddleware.new(max_seconds: max_seconds) }
   let(:timeout_schema) {
 
     sleep_for_seconds_resolve = -> (obj, args, ctx) {
@@ -45,18 +45,18 @@ describe GraphQL::Schema::TimeoutMiddleware do
   describe "timeout part-way through" do
     let(:query_string) {%|
       {
-        a: sleepFor(seconds: 0.7)
-        b: sleepFor(seconds: 0.7)
-        c: sleepFor(seconds: 0.7)
-        d: sleepFor(seconds: 0.7)
-        e: sleepFor(seconds: 0.7)
+        a: sleepFor(seconds: 0.4)
+        b: sleepFor(seconds: 0.4)
+        c: sleepFor(seconds: 0.4)
+        d: sleepFor(seconds: 0.4)
+        e: sleepFor(seconds: 0.4)
       }
     |}
     it "returns a partial response and error messages" do
       expected_data = {
-        "a"=>0.7,
-        "b"=>0.7,
-        "c"=>0.7,
+        "a"=>0.4,
+        "b"=>0.4,
+        "c"=>0.4,
         "d"=>nil,
         "e"=>nil,
       }
@@ -79,11 +79,11 @@ describe GraphQL::Schema::TimeoutMiddleware do
   describe "timeout in nested fields" do
     let(:query_string) {%|
     {
-      a: nestedSleep(seconds: 1) {
+      a: nestedSleep(seconds: 0.3) {
         seconds
-        b: nestedSleep(seconds: 0.4) {
+        b: nestedSleep(seconds: 0.3) {
           seconds
-          c: nestedSleep(seconds: 0.4) {
+          c: nestedSleep(seconds: 0.3) {
             seconds
             d: nestedSleep(seconds: 0.4) {
               seconds
@@ -96,14 +96,15 @@ describe GraphQL::Schema::TimeoutMiddleware do
       }
     }
     |}
+
     it "returns a partial response and error messages" do
       expected_data = {
         "a" => {
-          "seconds" => 1.0,
+          "seconds" => 0.3,
           "b" => {
-            "seconds" => 0.4,
+            "seconds" => 0.3,
             "c" => {
-              "seconds"=>0.4,
+              "seconds"=>0.3,
               "d" => {
                 "seconds"=>nil,
                 "e"=>nil
@@ -131,17 +132,17 @@ describe GraphQL::Schema::TimeoutMiddleware do
   describe "long-running fields" do
     let(:query_string) {%|
       {
-        a: sleepFor(seconds: 0.7)
-        b: sleepFor(seconds: 0.7)
-        c: sleepFor(seconds: 1.5)
+        a: sleepFor(seconds: 0.2)
+        b: sleepFor(seconds: 0.2)
+        c: sleepFor(seconds: 0.8)
         d: sleepFor(seconds: 0.1)
       }
     |}
     it "doesn't terminate long-running field execution" do
       expected_data = {
-        "a"=>0.7,
-        "b"=>0.7,
-        "c"=>1.5,
+        "a"=>0.2,
+        "b"=>0.2,
+        "c"=>0.8,
         "d"=>nil,
       }
 
@@ -159,17 +160,17 @@ describe GraphQL::Schema::TimeoutMiddleware do
 
   describe "with a custom block" do
     let(:timeout_middleware) {
-      GraphQL::Schema::TimeoutMiddleware.new(max_seconds: 2) do |err, query|
+      GraphQL::Schema::TimeoutMiddleware.new(max_seconds: max_seconds) do |err, query|
         raise("Query timed out after 2s: #{query.class.name}")
       end
     }
     let(:query_string) {%|
       {
-        a: sleepFor(seconds: 0.7)
-        b: sleepFor(seconds: 0.7)
-        c: sleepFor(seconds: 0.7)
-        d: sleepFor(seconds: 0.7)
-        e: sleepFor(seconds: 0.7)
+        a: sleepFor(seconds: 0.4)
+        b: sleepFor(seconds: 0.4)
+        c: sleepFor(seconds: 0.4)
+        d: sleepFor(seconds: 0.4)
+        e: sleepFor(seconds: 0.4)
       }
     |}
 
