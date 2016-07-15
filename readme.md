@@ -128,8 +128,6 @@ If you're building a backend for [Relay](http://facebook.github.io/relay/), you'
   - Problem: how can we load types in Rails without accessing the constant?
   - Maybe support by third-party library? `type("Post!")` could implement "type_missing", keeps `graphql-ruby` very simple
 - If we eval'd `define { ... }` blocks _lazily_, would that work around all circular dependency issues?
-- `QueryComplexity` improvements:
-  - Better detection of union / interface possibilities? Right now they're summed
 - Type check improvements:
   - Use catch-all type/field/argument definitions instead of terminating traversal
   - Reduce ad-hoc traversals?
