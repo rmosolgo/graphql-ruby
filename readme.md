@@ -127,7 +127,6 @@ If you're building a backend for [Relay](http://facebook.github.io/relay/), you'
   - Problem: how does a field know which schema to look up the name from?
   - Problem: how can we load types in Rails without accessing the constant?
   - Maybe support by third-party library? `type("Post!")` could implement "type_missing", keeps `graphql-ruby` very simple
-- If we eval'd `define { ... }` blocks _lazily_, would that work around all circular dependency issues?
 - Type check improvements:
   - Use catch-all type/field/argument definitions instead of terminating traversal
   - Reduce ad-hoc traversals?

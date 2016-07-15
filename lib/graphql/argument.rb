@@ -17,9 +17,14 @@ module GraphQL
   class Argument
     include GraphQL::Define::InstanceDefinable
     accepts_definitions :name, :type, :description, :default_value
-    attr_accessor :type, :description, :default_value
+    lazy_defined_attr_accessor :type, :description, :default_value
 
     # @return [String] The name of this argument on its {GraphQL::Field} or {GraphQL::InputObjectType}
-    attr_accessor :name
+    def name
+      ensure_defined
+      @name
+    end
+
+    attr_writer :name
   end
 end

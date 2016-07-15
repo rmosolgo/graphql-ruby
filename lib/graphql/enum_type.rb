@@ -19,10 +19,10 @@ module GraphQL
       @values_by_value = {}
     end
 
-    def values=(values)
+    def values=(new_values)
       @values_by_name = {}
       @values_by_value = {}
-      values.each { |enum_value| add_value(enum_value) }
+      new_values.each { |enum_value| add_value(enum_value) }
     end
 
     def add_value(enum_value)
@@ -31,17 +31,8 @@ module GraphQL
     end
 
     def values
+      ensure_defined
       @values_by_name
-    end
-
-    # Define a value within this enum
-    # @deprecated use {.define} API instead
-    # @param name [String] the string representation of this value
-    # @param description [String]
-    # @param deprecation_reason [String] if provided, `deprecated?` will be true
-    # @param value [Object] the underlying value for this enum value
-    def value(name, description=nil, deprecation_reason: nil, value: name)
-      values[name] = EnumValue.new(name: name, description: description, deprecation_reason: deprecation_reason, value: value)
     end
 
     def kind
@@ -49,6 +40,7 @@ module GraphQL
     end
 
     def validate_non_null_input(value_name)
+      ensure_defined
       result = GraphQL::Query::InputValidationResult.new
 
       if !@values_by_name.key?(value_name)
@@ -67,11 +59,16 @@ module GraphQL
     # @param value_name [String] the string representation of this enum value
     # @return [Object] the underlying value for this enum value
     def coerce_non_null_input(value_name)
-      return nil unless @values_by_name.key?(value_name)
-      @values_by_name.fetch(value_name).value
+      ensure_defined
+      if @values_by_name.key?(value_name)
+        @values_by_name.fetch(value_name).value
+      else
+        nil
+      end
     end
 
     def coerce_result(value)
+      ensure_defined
       @values_by_value.fetch(value).name
     end
 
