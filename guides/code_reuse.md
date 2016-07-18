@@ -10,7 +10,7 @@ Besides reducing duplicate code, these approaches also allow you to test parts o
 
 ## Resolver classes
 
-(Originally described by AlphaSights at https://m.alphasights.com/graphql-ruby-clean-up-your-query-type-d7ab05a47084.)
+(Originally described by AlphaSights at https://m.alphasights.com/graphql-ruby-clean-up-your-query-type-d7ab05a47084)
 
 Many examples use a Proc literal for a field's `resolve`, for example:
 
@@ -56,7 +56,7 @@ end
 
 field :name, types.String do
   resolve(MethodCallResolver.new(:name))
-end  
+end
 ```
 
 Or, you can generate the `resolve` Proc dynamically:
