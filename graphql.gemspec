@@ -17,6 +17,9 @@ Gem::Specification.new do |s|
   s.files = Dir["{lib}/**/*", "MIT-LICENSE", "readme.md"]
   s.test_files = Dir["spec/**/*"]
 
+
+  s.add_development_dependency "activerecord"
+  s.add_development_dependency "appraisal"
   s.add_development_dependency "codeclimate-test-reporter", "~>0.4"
   s.add_development_dependency "pry", "~> 0.10"
   s.add_development_dependency "guard", "~> 2.12"
@@ -29,4 +32,6 @@ Gem::Specification.new do |s|
   s.add_development_dependency "minitest-reporters", "~>1.0"
   s.add_development_dependency "racc", "~> 1.4"
   s.add_development_dependency "rake", "~> 11.0"
+  s.add_development_dependency "sequel"
+  s.add_development_dependency "sqlite3"
 end

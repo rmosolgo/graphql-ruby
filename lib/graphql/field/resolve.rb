@@ -5,17 +5,51 @@ module GraphQL
       module_function
 
       # @param [GraphQL::Field] A field that needs a resolve proc
-      # @return [Proc] A resolve proc for this field, based on its config
+      # @return [Proc] A resolver for this field, based on its config
       def create_proc(field)
         if field.property
-          method_name = field.property.to_sym
-          -> (obj, args, ctx) { obj.public_send(method_name) }
+          MethodResolve.new(field.property.to_sym)
         elsif !field.hash_key.nil?
-          key = field.hash_key
-          -> (obj, args, ctx) { obj[key] }
+          HashKeyResolve.new(field.hash_key)
         else
-          # Name might be defined later, so make the lookup at query-time:
-          -> (obj, args, ctx) { obj.public_send(field.name) }
+          NameResolve.new(field)
+        end
+      end
+
+      class BuiltInResolve
+      end
+
+      # Resolve the field by `public_send`ing `@method_name`
+      class MethodResolve < BuiltInResolve
+        def initialize(method_name)
+          @method_name = method_name
+        end
+
+        def call(obj, args, ctx)
+          obj.public_send(@method_name)
+        end
+      end
+
+      # Resolve the field by looking up `@hash_key` with `#[]`
+      class HashKeyResolve < BuiltInResolve
+        def initialize(hash_key)
+          @hash_key = hash_key
+        end
+
+        def call(obj, args, ctx)
+          obj[@hash_key]
+        end
+      end
+
+      # Call the field's name at query-time since
+      # it might have changed
+      class NameResolve < BuiltInResolve
+        def initialize(field)
+          @field = field
+        end
+
+        def call(obj, args, ctx)
+          obj.public_send(@field.name)
         end
       end
     end

@@ -16,8 +16,14 @@ module GraphQL
         end
 
         desc && field.description = desc
-        property && field.property = property
-        hash_key && field.hash_key = hash_key
+
+        # If the field's resolve proc was defined in the config block,
+        # don't override it with `property` or `hash_key`
+        if field.resolve_proc.is_a?(GraphQL::Field::Resolve::BuiltInResolve)
+          property && field.property = property
+          hash_key && field.hash_key = hash_key
+        end
+
         complexity && field.complexity = complexity
         deprecation_reason && field.deprecation_reason = deprecation_reason
         field.name ||= name.to_s

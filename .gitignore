@@ -1,5 +1,7 @@
 .ruby-version
 doc/
 .yardoc/
+.bundle/
 pkg/
 Gemfile.lock
+*.db
