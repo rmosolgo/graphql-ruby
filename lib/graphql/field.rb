@@ -1,3 +1,5 @@
+require "graphql/field/resolve"
+
 module GraphQL
   # {Field}s belong to {ObjectType}s and {InterfaceType}s.
   #
@@ -132,9 +134,23 @@ module GraphQL
       ensure_defined
       if @name.nil?
         @name = new_name
-      else
+      elsif @name != new_name
         raise("Can't rename an already-named field. (Tried to rename \"#{@name}\" to \"#{new_name}\".) If you're passing a field with the `field:` argument, make sure it's an unused instance of GraphQL::Field.")
       end
+    end
+
+    # @param new_property [Symbol] A method to call to resolve this field. Overrides the existing resolve proc.
+    def property=(new_property)
+      ensure_defined
+      @property = new_property
+      self.resolve = nil # reset resolve proc
+    end
+
+    # @param new_hash_key [Symbol] A key to access with `#[key]` to resolve this field. Overrides the existing resolve proc.
+    def hash_key=(new_hash_key)
+      ensure_defined
+      @hash_key = new_hash_key
+      self.resolve = nil # reset resolve proc
     end
 
     def to_s
@@ -144,14 +160,7 @@ module GraphQL
     private
 
     def build_default_resolver
-      -> (obj, args, ctx) do
-        if !self.hash_key.nil?
-          obj[self.hash_key]
-        else
-          resolve_method = self.property || self.name
-          obj.public_send(resolve_method)
-        end
-      end
+      GraphQL::Field::Resolve.create_proc(self)
     end
   end
 end

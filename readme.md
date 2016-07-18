@@ -130,5 +130,4 @@ If you're building a backend for [Relay](http://facebook.github.io/relay/), you'
 - Type check improvements:
   - Use catch-all type/field/argument definitions instead of terminating traversal
   - Reduce ad-hoc traversals?
-- Improve `Field` to calculate the best resolve proc ahead of time?
 - Merge `graphql-relay-ruby` into this Repo so that they can stay in sync?
