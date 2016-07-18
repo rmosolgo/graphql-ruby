@@ -360,4 +360,16 @@ describe GraphQL::Query do
       end
     end
   end
+
+  describe "querying literal enum value 'on'" do
+    let(:query_string) {%|
+      query {
+        animals(animalType: on)
+      }
+    |}
+
+    it "doesn't raise any exceptions" do
+      result
+    end
+  end
 end
