@@ -37,8 +37,8 @@ CheeseType = GraphQL::ObjectType.define do
   field :source, !DairyAnimalEnum,
     "Animal which produced the milk for this cheese"
 
-  # Or can define by block:
-  field :similarCheese, CheeseType, "Cheeses like this one" do
+  # Or can define by block, `resolve ->` should override `property:`
+  field :similarCheese, CheeseType, "Cheeses like this one", property: :nonsense  do
     argument :source, !types[!DairyAnimalEnum]
     resolve -> (t, a, c) {
       # get the strings out:
