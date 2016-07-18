@@ -34,7 +34,9 @@ Global ids (or UUIDs) provide refetching & global identification for Relay.
 
 #### UUID Lookup
 
-Use `GraphQL::Relay::GlobalNodeIdentification` helper by defining `object_from_id(global_id, ctx)` & `type_from_object(object)`. The resulting `NodeIdentification` object is in your schema _and_ internally by `GraphQL::Relay`.
+Use `GraphQL::Relay::GlobalNodeIdentification` helper by defining `object_from_id(global_id, ctx)` & `type_from_object(object)`. Then, assign the result to `Schema#node_identification` so that it can be used for query execution.
+
+For example, define a node identification helper:
 
 
 ```ruby
@@ -57,6 +59,14 @@ NodeIdentification = GraphQL::Relay::GlobalNodeIdentification.define do
     end
   end
 end
+```
+
+Then assign it to the schema:
+
+```ruby
+MySchema = GraphQL::Schema.new(...)
+# Assign your node identification helper:
+MySchema.node_identification = NodeIdentification
 ```
 
 #### UUID fields
@@ -110,6 +120,10 @@ NodeIdentification = GraphQL::Relay::GlobalNodeIdentification.define do
     type_name, id
   }
 end
+
+# ...
+
+MySchema.node_identification = NodeIdentification
 ```
 
 `graphql-relay` will use those procs for interacting with global ids.
@@ -443,7 +457,6 @@ The resolve proc:
 ## Todo
 
 - `GlobalNodeIdentification.to_global_id` should receive the type name and _object_, not `id`. (Or, maintain the "`type_name, id` in, `type_name, id` out" pattern?)
-- Make GlobalId a property of the schema, not a global
 - Reduce duplication in ArrayConnection / RelationConnection
 - Improve API for creating edges (better RANGE_ADD support)
 - If the new edge isn't a member of the connection's objects, raise a nice error
