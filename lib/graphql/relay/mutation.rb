@@ -54,8 +54,8 @@ module GraphQL
         input_field: GraphQL::Define::AssignArgument,
         return_field: GraphQL::Define::AssignObjectField,
       )
-      attr_accessor :name, :description
-      attr_reader :fields, :arguments
+      lazy_defined_attr_accessor :name, :description
+      lazy_defined_attr_accessor :fields, :arguments
 
       # For backwards compat, but do we need this separate API?
       alias :return_fields :fields
@@ -67,11 +67,13 @@ module GraphQL
       end
 
       def resolve=(proc)
+        ensure_defined
         @resolve_proc = proc
       end
 
       def field
         @field ||= begin
+          ensure_defined
           field_return_type = self.return_type
           field_input_type = self.input_type
           field_resolve_proc = -> (obj, args, ctx){
@@ -88,6 +90,7 @@ module GraphQL
 
       def return_type
         @return_type ||= begin
+          ensure_defined
           mutation_name = name
           type_name = "#{mutation_name}Payload"
           type_fields = return_fields
@@ -104,6 +107,7 @@ module GraphQL
 
       def input_type
         @input_type ||= begin
+          ensure_defined
           mutation_name = name
           type_name = "#{mutation_name}Input"
           type_fields = input_fields

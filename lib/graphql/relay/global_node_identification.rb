@@ -10,7 +10,7 @@ module GraphQL
     class GlobalNodeIdentification
       include GraphQL::Define::InstanceDefinable
       accepts_definitions(:object_from_id, :type_from_object, :to_global_id, :from_global_id, :description)
-      attr_accessor :description
+      lazy_defined_attr_accessor :description
 
       class << self
         attr_accessor :id_separator
@@ -26,6 +26,7 @@ module GraphQL
       # Returns `NodeInterface`, which all Relay types must implement
       def interface
         @interface ||= begin
+          ensure_defined
           ident = self
           GraphQL::InterfaceType.define do
             name "Node"
@@ -39,6 +40,7 @@ module GraphQL
 
       # Returns a field for finding objects from a global ID, which Relay needs
       def field
+        ensure_defined
         ident = self
         GraphQL::Field.define do
           type(ident.interface)
@@ -65,26 +67,31 @@ module GraphQL
       # Create a global ID for type-name & ID
       # (This is an opaque transform)
       def to_global_id(type_name, id)
+        ensure_defined
         @to_global_id_proc.call(type_name, id)
       end
 
       def to_global_id=(proc)
+        ensure_defined
         @to_global_id_proc = proc
       end
 
       # Get type-name & ID from global ID
       # (This reverts the opaque transform)
       def from_global_id(global_id)
+        ensure_defined
         @from_global_id_proc.call(global_id)
       end
 
       def from_global_id=(proc)
+        ensure_defined
         @from_global_id_proc = proc
       end
 
       # Use the provided config to
       # get a type for a given object
       def type_from_object(object)
+        ensure_defined
         type_result = @type_from_object_proc.call(object)
         if type_result.nil?
           nil
@@ -97,16 +104,19 @@ module GraphQL
       end
 
       def type_from_object=(proc)
+        ensure_defined
         @type_from_object_proc = proc
       end
 
       # Use the provided config to
       # get an object from a UUID
       def object_from_id(id, ctx)
+        ensure_defined
         @object_from_id_proc.call(id, ctx)
       end
 
       def object_from_id=(proc)
+        ensure_defined
         @object_from_id_proc = proc
       end
     end
