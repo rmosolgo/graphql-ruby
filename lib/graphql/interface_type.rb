@@ -15,7 +15,7 @@ module GraphQL
     include GraphQL::BaseType::HasPossibleTypes
     accepts_definitions :resolve_type, field: GraphQL::Define::AssignObjectField
 
-    attr_accessor :fields
+    lazy_defined_attr_accessor :fields
 
     def initialize
       @fields = {}

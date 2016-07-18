@@ -59,18 +59,33 @@ module GraphQL
     include GraphQL::Define::InstanceDefinable
     accepts_definitions :name, :description, :resolve, :type, :property, :deprecation_reason, :complexity, argument: GraphQL::Define::AssignArgument
 
-    attr_accessor :deprecation_reason, :name, :description, :property
+    lazy_defined_attr_accessor :deprecation_reason, :description, :property
 
     attr_reader :resolve_proc
 
     # @return [String] The name of this field on its {GraphQL::ObjectType} (or {GraphQL::InterfaceType})
-    attr_reader :name
+    def name
+      ensure_defined
+      @name
+    end
+
+    attr_writer :name
 
     # @return [Hash<String => GraphQL::Argument>] Map String argument names to their {GraphQL::Argument} implementations
-    attr_accessor :arguments
+    def arguments
+      ensure_defined
+      @arguments
+    end
+
+    attr_writer :arguments
 
     # @return [Numeric, Proc] The complexity for this field (default: 1), as a constant or a proc like `-> (query_ctx, args, child_complexity) { } # Numeric`
-    attr_accessor :complexity
+    def complexity
+      ensure_defined
+      @complexity
+    end
+
+    attr_writer :complexity
 
     def initialize
       @complexity = 1
@@ -86,7 +101,8 @@ module GraphQL
     # @param arguments [Hash] Arguments declared in the query
     # @param context [GraphQL::Query::Context]
     def resolve(object, arguments, context)
-      @resolve_proc.call(object, arguments, context)
+      ensure_defined
+      resolve_proc.call(object, arguments, context)
     end
 
     def resolve=(resolve_proc)
@@ -100,7 +116,10 @@ module GraphQL
 
     # Get the return type for this field.
     def type
-      @clean_type ||= GraphQL::BaseType.resolve_related_type(@dirty_type)
+      @clean_type ||= begin
+        ensure_defined
+        GraphQL::BaseType.resolve_related_type(@dirty_type)
+      end
     end
 
     # You can only set a field's name _once_ -- this to prevent

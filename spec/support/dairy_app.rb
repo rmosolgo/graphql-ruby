@@ -27,7 +27,7 @@ end
 CheeseType = GraphQL::ObjectType.define do
   name "Cheese"
   description "Cultured dairy product"
-  interfaces ["EdibleInterface", -> { AnimalProductInterface }]
+  interfaces [EdibleInterface, AnimalProductInterface]
 
   # Can have (name, type, desc)
   field :id, !types.Int, "Unique identifier"
@@ -38,7 +38,7 @@ CheeseType = GraphQL::ObjectType.define do
     "Animal which produced the milk for this cheese"
 
   # Or can define by block:
-  field :similarCheese, -> { CheeseType }, "Cheeses like this one" do
+  field :similarCheese, CheeseType, "Cheeses like this one" do
     argument :source, !types[!DairyAnimalEnum]
     resolve -> (t, a, c) {
       # get the strings out:
@@ -51,12 +51,12 @@ CheeseType = GraphQL::ObjectType.define do
     }
   end
 
-  field :nullableCheese, -> { CheeseType }, "Cheeses like this one" do
+  field :nullableCheese, CheeseType, "Cheeses like this one" do
     argument :source, types[!DairyAnimalEnum]
     resolve -> (t, a, c) { raise("NotImplemented") }
   end
 
-  field :deeplyNullableCheese, -> { CheeseType }, "Cheeses like this one" do
+  field :deeplyNullableCheese, CheeseType, "Cheeses like this one" do
     argument :source, types[types[DairyAnimalEnum]]
     resolve -> (t, a, c) { raise("NotImplemented") }
   end
@@ -113,6 +113,7 @@ end
 DairyProductUnion = GraphQL::UnionType.define do
   name "DairyProduct"
   description "Kinds of food made from milk"
+  # Test that these forms of declaration still work:
   possible_types ["MilkType", -> { CheeseType }]
 end
 
@@ -163,7 +164,7 @@ DeepNonNullType = GraphQL::ObjectType.define do
     resolve -> (obj, args, ctx) { args[:returning] }
   end
 
-  field :deepNonNull, -> { DeepNonNullType.to_non_null_type } do
+  field :deepNonNull, DeepNonNullType.to_non_null_type do
     resolve -> (obj, args, ctx) { :deepNonNull }
   end
 end

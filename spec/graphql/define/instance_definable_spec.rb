@@ -10,12 +10,12 @@ module Garden
   end
 
   class Vegetable
-    attr_accessor :name, :start_planting_on, :end_planting_on
     include GraphQL::Define::InstanceDefinable
+    lazy_defined_attr_accessor :name, :start_planting_on, :end_planting_on
     accepts_definitions :name, plant_between: DefinePlantBetween
 
     # definition added later:
-    attr_accessor :height
+    lazy_defined_attr_accessor :height
   end
 end
 

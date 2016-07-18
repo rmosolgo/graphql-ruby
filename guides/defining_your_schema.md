@@ -27,12 +27,7 @@ CityType = ObjectType.define do
 
   # This returns a list of `PersonType`s
   field :mayors, types[PersonType]
-
-  # To avoid circular dependencies, pass a String or a Proc for the type.
-  # This string will be looked up in the global namespace
-  field :sisterCity, "CityType"
-  # This proc will be called later, returning `CountryType`
-  field :country, -> { CountryType }
+  field :sisterCity, CityType
 end
 ```
 
@@ -146,7 +141,7 @@ ShirtOrderInput = GraphQL::InputObjectType.define do
   description "An order for some t-shirts"
   input_field :model_id, !types.ID
   # A list of other inputs:
-  input_field :selections, -> { types[ShirtOrderSelectionInput] }
+  input_field :selections, types[ShirtOrderSelectionInput]
 end
 
 ShirtOrderSelectionInput = GraphQL::InputObjectType.define do
@@ -164,6 +159,22 @@ Usually, you'll define fields while defining a type. The most common case define
 ```ruby
 field :name, types.String, "The name of this thing"
 ```
+
+### Options
+
+A field definition may include some options:
+
+```ruby
+field :name, types.String, "The name of this thing",
+  # Mark the field as deprecated:
+  deprecation_reason: "Nobody calls it by name anymore",
+  # Use a different getter method to resolve this field:
+  property: :given_name,
+  # Count this field as "10" when assessing the cost of running a query
+  complexity: 10
+```
+
+### Block Definition
 
 For a more complex definition, you can also pass a definition block. Within the block, you can define `name`, `type`, `description`, `resolve`, and `argument`. For example:
 
@@ -185,6 +196,42 @@ end
 ```
 
 This field accepts an optional Boolean argument `moderated`, which it uses to filter results in the `resolve` method.
+
+### Passing an existing field
+
+You can provide a pre-made `GraphQL::Field` object to define a field:
+
+```ruby
+name_field = GraphQL::Field.define do
+  # ...
+end
+
+# ...
+
+field :name, field: name_field
+```
+
+This operation __is destructive__, so you need to use a new `GraphQL::Field` object for each field definition. (The `GraphQL::Field` receives a "name" from the `field` definition.)
+
+## Referencing Types
+
+Some parts of schema definition take types as an input. There are two good ways to provide types:
+
+1. __By value__. Pass a variable which holds the type.
+
+   ```ruby
+   # constant
+   field :team, TeamType
+   # local variable
+   field :stadium, stadium_type
+   ```
+
+2. __By proc__, which will be lazy-evaluated to look up a type.
+
+   ```ruby
+   field :team, -> { TeamType }
+   field :stadium, -> { LookupTypeForModel.lookup(Stadium) }
+   ```
 
 ## Defining the Schema
 

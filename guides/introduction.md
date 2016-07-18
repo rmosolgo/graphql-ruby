@@ -125,13 +125,11 @@ We should also add a `comments` field to `PostType`:
 ```ruby
 PostType = GraphQL::ObjectType.new do |t, types, field|
   # ... existing code ...
-  field :comments, -> { !types[!CommentType] }, "Responses to this post"
+  field :comments, !types[!CommentType], "Responses to this post"
 end
 ```
 
 `types[SomeType]` means that this field returns a _list_ of `SomeType`.
-
-`PostType` and `CommentType` have a circular dependency. To deal with this, wrap one of the types in a lambda with `-> { ... }`. The lambda will be evaluated when the schema is built (and after CommentType has been defined).
 
 ## Executing a Query
 

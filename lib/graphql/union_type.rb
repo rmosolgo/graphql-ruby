@@ -11,7 +11,6 @@ module GraphQL
   #
   class UnionType < GraphQL::BaseType
     include GraphQL::BaseType::HasPossibleTypes
-    attr_accessor :name, :description
     accepts_definitions :possible_types, :resolve_type
 
     def kind
@@ -29,6 +28,7 @@ module GraphQL
 
     def possible_types
       @clean_possible_types ||= begin
+        ensure_defined
         @dirty_possible_types.map { |type| GraphQL::BaseType.resolve_related_type(type) }
       rescue
         @dirty_possible_types

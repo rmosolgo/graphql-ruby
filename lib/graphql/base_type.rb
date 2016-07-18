@@ -3,8 +3,8 @@ module GraphQL
   class BaseType
     include GraphQL::Define::NonNullWithBang
     include GraphQL::Define::InstanceDefinable
-    attr_accessor :name, :description
     accepts_definitions :name, :description
+    lazy_defined_attr_accessor :name, :description
 
     # @param other [GraphQL::BaseType] compare to this object
     # @return [Boolean] are these types equivalent? (incl. non-null, list)
@@ -53,6 +53,7 @@ module GraphQL
       # @param ctx [GraphQL::Query::Context]
       # @return [GraphQL::ObjectType] the type which should expose `object`
       def resolve_type(object, ctx)
+        ensure_defined
         instance_exec(object, ctx, &(@resolve_type_proc || DEFAULT_RESOLVE_TYPE))
       end
 
