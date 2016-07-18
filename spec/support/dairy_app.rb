@@ -210,6 +210,7 @@ SourceFieldDefn = Proc.new {
 }
 
 FavoriteFieldDefn = GraphQL::Field.define do
+  name "favoriteEdible"
   description "My favorite food"
   type EdibleInterface
   resolve -> (t, a, c) { MILKS[1] }
