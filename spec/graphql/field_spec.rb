@@ -89,4 +89,22 @@ describe GraphQL::Field do
       assert_equal "QueryType is invalid: field :symbol_name name must return String, not Symbol (:symbol_name)", err.message
     end
   end
+
+  describe "#hash_key" do
+    let(:source_field) { MilkType.get_field("source") }
+    after { source_field.hash_key = :source }
+
+    it "looks up a value with obj[hash_key]" do
+      resolved_source = source_field.resolve({source: "Abc", "source" => "Xyz"}, nil, nil)
+      assert_equal :source, source_field.hash_key
+      assert_equal "Abc", resolved_source
+    end
+
+    it "can be reassigned" do
+      source_field.hash_key = "source"
+      resolved_source = source_field.resolve({source: "Abc", "source" => "Xyz"}, nil, nil)
+      assert_equal "source", source_field.hash_key
+      assert_equal "Xyz", resolved_source
+    end
+  end
 end

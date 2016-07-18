@@ -57,9 +57,9 @@ module GraphQL
   #
   class Field
     include GraphQL::Define::InstanceDefinable
-    accepts_definitions :name, :description, :resolve, :type, :property, :deprecation_reason, :complexity, argument: GraphQL::Define::AssignArgument
+    accepts_definitions :name, :description, :resolve, :type, :property, :deprecation_reason, :complexity, :hash_key, argument: GraphQL::Define::AssignArgument
 
-    lazy_defined_attr_accessor :deprecation_reason, :description, :property
+    lazy_defined_attr_accessor :deprecation_reason, :description, :property, :hash_key
 
     attr_reader :resolve_proc
 
@@ -145,8 +145,12 @@ module GraphQL
 
     def build_default_resolver
       -> (obj, args, ctx) do
-        resolve_method = self.property || self.name
-        obj.public_send(resolve_method)
+        if !self.hash_key.nil?
+          obj[self.hash_key]
+        else
+          resolve_method = self.property || self.name
+          obj.public_send(resolve_method)
+        end
       end
     end
   end

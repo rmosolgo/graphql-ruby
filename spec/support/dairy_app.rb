@@ -73,7 +73,7 @@ MilkType = GraphQL::ObjectType.define do
   description "Dairy beverage"
   interfaces [EdibleInterface, AnimalProductInterface]
   field :id, !types.ID
-  field :source, DairyAnimalEnum, "Animal which produced this milk"
+  field :source, DairyAnimalEnum, "Animal which produced this milk", hash_key: :source
   field :origin, !types.String, "Place the milk comes from"
   field :flavors, types[types.String], "Chocolate, Strawberry, etc" do
     argument :limit, types.Int
