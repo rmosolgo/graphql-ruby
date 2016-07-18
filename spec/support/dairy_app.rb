@@ -22,6 +22,7 @@ DairyAnimalEnum = GraphQL::EnumType.define do
   value("GOAT",   "Animal with horns")
   value("SHEEP",  "Animal with wool")
   value("YAK",    "Animal with long hair", deprecation_reason: "Out of fashion")
+  value("on",     "Very rare animal")
 end
 
 CheeseType = GraphQL::ObjectType.define do
@@ -261,6 +262,11 @@ QueryType = GraphQL::ObjectType.define do
 
   field :deepNonNull, !DeepNonNullType do
     resolve -> (o, a, c) { :deepNonNull }
+  end
+
+  field :animals, !types.String do
+    argument :animalType, DairyAnimalEnum
+    resolve -> (o, a, c) { a[:animalType].to_s }
   end
 end
 
