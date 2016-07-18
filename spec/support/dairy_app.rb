@@ -209,11 +209,11 @@ SourceFieldDefn = Proc.new {
   }
 }
 
-FavoriteFieldDefn = Proc.new {
+FavoriteFieldDefn = GraphQL::Field.define do
   description "My favorite food"
   type EdibleInterface
   resolve -> (t, a, c) { MILKS[1] }
-}
+end
 
 QueryType = GraphQL::ObjectType.define do
   name "Query"
@@ -225,7 +225,7 @@ QueryType = GraphQL::ObjectType.define do
   field :milk, field: FetchField.create(type: MilkType, data: MILKS, id_type: !types.ID)
   field :dairy, field: SingletonField.create(type: DairyType, data: DAIRY)
   field :fromSource, &SourceFieldDefn
-  field :favoriteEdible, &FavoriteFieldDefn
+  field :favoriteEdible, FavoriteFieldDefn
   field :cow, field: SingletonField.create(type: CowType, data: COW)
   field :searchDairy do
     description "Find dairy products matching a description"

@@ -208,7 +208,7 @@ end
 
 # ...
 
-field :name, field: name_field
+field :name, name_field
 ```
 
 This operation __is destructive__, so you need to use a new `GraphQL::Field` object for each field definition. (The `GraphQL::Field` receives a "name" from the `field` definition.)

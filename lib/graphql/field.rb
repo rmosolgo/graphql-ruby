@@ -106,10 +106,12 @@ module GraphQL
     end
 
     def resolve=(resolve_proc)
+      ensure_defined
       @resolve_proc = resolve_proc || build_default_resolver
     end
 
     def type=(new_return_type)
+      ensure_defined
       @clean_type = nil
       @dirty_type = new_return_type
     end
@@ -127,6 +129,7 @@ module GraphQL
     #
     # This is important because {#name} may be used by {#resolve}.
     def name=(new_name)
+      ensure_defined
       if @name.nil?
         @name = new_name
       else
