@@ -169,7 +169,15 @@ rule
   object_value_field:
       name COLON input_value { return make_node(:Argument, name: val[0], value: val[2], position_source: val[0])}
 
-  enum_value: IDENTIFIER { return make_node(:Enum, name: val[0], position_source: val[0])}
+  enum_value: enum_name { return make_node(:Enum, name: val[0], position_source: val[0])}
+
+  enum_name: /* any identifier, but not "true", "false" or "null" */
+      IDENTIFIER
+    | FRAGMENT
+    | ON
+    | QUERY
+    | MUTATION
+    | SUBSCRIPTION
 
   directives_list_opt:
       /* none */      { return [] }
