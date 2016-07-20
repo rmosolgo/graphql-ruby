@@ -22,6 +22,9 @@ describe GraphQL::Relay::ArrayConnection do
             }
             pageInfo {
               hasNextPage
+              hasPreviousPage
+              startCursor
+              endCursor
             }
           }
         }
@@ -33,6 +36,9 @@ describe GraphQL::Relay::ArrayConnection do
       number_of_ships = get_names(result).length
       assert_equal(2, number_of_ships)
       assert_equal(true, result["data"]["rebels"]["ships"]["pageInfo"]["hasNextPage"])
+      assert_equal(false, result["data"]["rebels"]["ships"]["pageInfo"]["hasPreviousPage"])
+      assert_equal("MQ==", result["data"]["rebels"]["ships"]["pageInfo"]["startCursor"])
+      assert_equal("Mg==", result["data"]["rebels"]["ships"]["pageInfo"]["endCursor"])
 
       result = query(query_string, "first" => 3)
       number_of_ships = get_names(result).length
@@ -42,9 +48,15 @@ describe GraphQL::Relay::ArrayConnection do
     it 'provides pageInfo' do
       result = query(query_string, "first" => 2)
       assert_equal(true, result["data"]["rebels"]["ships"]["pageInfo"]["hasNextPage"])
+      assert_equal(false, result["data"]["rebels"]["ships"]["pageInfo"]["hasPreviousPage"])
+      assert_equal("MQ==", result["data"]["rebels"]["ships"]["pageInfo"]["startCursor"])
+      assert_equal("Mg==", result["data"]["rebels"]["ships"]["pageInfo"]["endCursor"])
 
       result = query(query_string, "first" => 100)
       assert_equal(false, result["data"]["rebels"]["ships"]["pageInfo"]["hasNextPage"])
+      assert_equal(false, result["data"]["rebels"]["ships"]["pageInfo"]["hasPreviousPage"])
+      assert_equal("MQ==", result["data"]["rebels"]["ships"]["pageInfo"]["startCursor"])
+      assert_equal("NQ==", result["data"]["rebels"]["ships"]["pageInfo"]["endCursor"])
     end
 
     it 'slices the result' do
@@ -82,6 +94,9 @@ describe GraphQL::Relay::ArrayConnection do
       result = query(query_string)
 
       assert_equal(false, result["data"]["rebels"]["ships"]["pageInfo"]["hasNextPage"])
+      assert_equal(false, result["data"]["rebels"]["ships"]["pageInfo"]["hasPreviousPage"])
+      assert_equal("MQ==", result["data"]["rebels"]["ships"]["pageInfo"]["startCursor"])
+      assert_equal("NQ==", result["data"]["rebels"]["ships"]["pageInfo"]["endCursor"])
       assert_equal(5, result["data"]["rebels"]["ships"]["edges"].length)
     end
   end
