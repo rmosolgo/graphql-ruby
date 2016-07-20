@@ -1,10 +1,12 @@
 module GraphQL
   module Language
     module Generation
-      def self.generate(node, indent: "")
+      extend self
+
+      def generate(node, indent: "")
         case node
         when Nodes::Document
-          node.definitions.map { |d| generate(d) }.join("\n")
+          node.definitions.map { |d| generate(d) }.join("\n\n")
         when Nodes::Argument
           "#{node.name}: #{generate(node.value)}"
         when Nodes::Directive
@@ -53,10 +55,49 @@ module GraphQL
           "#{node.name}"
         when Nodes::VariableDefinition
           out = "$#{node.name}: #{generate(node.type)}"
-          out << " = #{generate(node.default_value)}" if node.default_value
+          out << " = #{generate(node.default_value)}" unless node.default_value.nil?
           out
         when Nodes::VariableIdentifier
           "$#{node.name}"
+        when Nodes::SchemaDefinition
+          out = "schema {\n"
+          out << "  query: #{node.query}\n" if node.query
+          out << "  mutation: #{node.mutation}\n" if node.mutation
+          out << "  subscription: #{node.subscription}\n" if node.subscription
+          out << "}"
+        when Nodes::ScalarTypeDefinition
+          "scalar #{node.name}"
+        when Nodes::ObjectTypeDefinition
+          out = "type #{node.name}"
+          out << " implements " << node.interfaces.join(", ") unless node.interfaces.empty?
+          out << generate_field_definitions(node.fields)
+        when Nodes::InputValueDefinition
+          out = "#{node.name}: #{generate(node.type)}"
+          out << " = #{generate(node.default_value)}" unless node.default_value.nil?
+          out
+        when Nodes::FieldDefinition
+          out = node.name
+          unless node.arguments.empty?
+            out << "(" << node.arguments.map{ |arg| generate(arg) }.join(", ") << ")"
+          end
+          out << ": #{generate(node.type)}"
+        when Nodes::InterfaceTypeDefinition
+          out = "interface #{node.name}"
+          out << generate_field_definitions(node.fields)
+        when Nodes::UnionTypeDefinition
+          "union #{node.name} = " + node.types.join(" | ")
+        when Nodes::EnumTypeDefinition
+          out = "enum #{node.name} {\n"
+          node.values.each do |value|
+            out << "  #{value}\n"
+          end
+          out << "}"
+        when Nodes::InputObjectTypeDefinition
+          out = "input #{node.name} {\n"
+          node.fields.each do |field|
+            out << "  #{generate(field)}\n"
+          end
+          out << "}"
         when Nodes::AbstractNode
           node.to_query_string(indent: indent)
         when FalseClass, Float, Integer, NilClass, String, TrueClass
@@ -64,13 +105,15 @@ module GraphQL
         when Array
           "[#{node.map { |v| generate(v) }.join(", ")}]"
         when Hash
-          "{#{node.map { |k, v| "#{k}: #{generate(v)}" }.join(", ")}}"
+          "{ #{node.map { |k, v| "#{k}: #{generate(v)}" }.join(", ")} }"
         else
           raise TypeError
         end
       end
 
-      def self.generate_directives(directives)
+      private
+
+      def generate_directives(directives)
         if directives.any?
           directives.map { |d| " #{generate(d)}" }.join
         else
@@ -78,7 +121,7 @@ module GraphQL
         end
       end
 
-      def self.generate_selections(selections, indent: "")
+      def generate_selections(selections, indent: "")
         if selections.any?
           out = " {\n"
           selections.each do |selection|
@@ -88,6 +131,14 @@ module GraphQL
         else
           ""
         end
+      end
+
+      def generate_field_definitions(fields)
+        out = " {\n"
+        fields.each do |field|
+          out << "  #{generate(field)}\n"
+        end
+        out << "}"
       end
     end
   end

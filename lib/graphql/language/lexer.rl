@@ -17,6 +17,14 @@
   QUERY =         'query';
   MUTATION =      'mutation';
   SUBSCRIPTION =  'subscription';
+  SCHEMA =        'schema';
+  SCALAR =        'scalar';
+  TYPE =          'type';
+  IMPLEMENTS =    'implements';
+  INTERFACE =     'interface';
+  UNION =         'union';
+  ENUM =          'enum';
+  INPUT =         'input';
   RCURLY =        '{';
   LCURLY =        '}';
   RPAREN =        '(';
@@ -32,6 +40,7 @@
   ELLIPSIS =      '...';
   EQUALS =        '=';
   BANG =          '!';
+  PIPE =          '|';
 
   QUOTED_STRING = QUOTE STRING_CHAR* QUOTE;
 
@@ -49,6 +58,14 @@
     QUERY         => { emit_token.call(:QUERY) };
     MUTATION      => { emit_token.call(:MUTATION) };
     SUBSCRIPTION  => { emit_token.call(:SUBSCRIPTION) };
+    SCHEMA        => { emit_token.call(:SCHEMA) };
+    SCALAR        => { emit_token.call(:SCALAR) };
+    TYPE          => { emit_token.call(:TYPE) };
+    IMPLEMENTS    => { emit_token.call(:IMPLEMENTS) };
+    INTERFACE     => { emit_token.call(:INTERFACE) };
+    UNION         => { emit_token.call(:UNION) };
+    ENUM          => { emit_token.call(:ENUM) };
+    INPUT         => { emit_token.call(:INPUT) };
     RCURLY        => { emit_token.call(:RCURLY) };
     LCURLY        => { emit_token.call(:LCURLY) };
     RPAREN        => { emit_token.call(:RPAREN) };
@@ -62,6 +79,7 @@
     ELLIPSIS      => { emit_token.call(:ELLIPSIS) };
     EQUALS        => { emit_token.call(:EQUALS) };
     BANG          => { emit_token.call(:BANG) };
+    PIPE          => { emit_token.call(:PIPE) };
     IDENTIFIER    => { emit_token.call(:IDENTIFIER) };
 
     NEWLINE => {

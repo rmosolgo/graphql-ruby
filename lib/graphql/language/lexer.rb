@@ -1,7 +1,7 @@
 
 # line 1 "lib/graphql/language/lexer.rl"
 
-# line 78 "lib/graphql/language/lexer.rl"
+# line 96 "lib/graphql/language/lexer.rl"
 
 
 
@@ -30,17 +30,20 @@ class << self
 end
 self._graphql_lexer_actions = [
 	0, 1, 0, 1, 1, 1, 2, 1, 
-	16, 1, 17, 1, 18, 1, 19, 1, 
-	20, 1, 21, 1, 22, 1, 23, 1, 
 	24, 1, 25, 1, 26, 1, 27, 1, 
 	28, 1, 29, 1, 30, 1, 31, 1, 
 	32, 1, 33, 1, 34, 1, 35, 1, 
-	36, 1, 37, 1, 38, 1, 39, 2, 
-	2, 3, 2, 2, 4, 2, 2, 5, 
-	2, 2, 6, 2, 2, 7, 2, 2, 
-	8, 2, 2, 9, 2, 2, 10, 2, 
-	2, 11, 2, 2, 12, 2, 2, 13, 
-	2, 2, 14, 2, 2, 15
+	36, 1, 37, 1, 38, 1, 39, 1, 
+	40, 1, 41, 1, 42, 1, 43, 1, 
+	44, 1, 45, 1, 46, 1, 47, 1, 
+	48, 2, 2, 3, 2, 2, 4, 2, 
+	2, 5, 2, 2, 6, 2, 2, 7, 
+	2, 2, 8, 2, 2, 9, 2, 2, 
+	10, 2, 2, 11, 2, 2, 12, 2, 
+	2, 13, 2, 2, 14, 2, 2, 15, 
+	2, 2, 16, 2, 2, 17, 2, 2, 
+	18, 2, 2, 19, 2, 2, 20, 2, 
+	2, 21, 2, 2, 22, 2, 2, 23
 ]
 
 class << self
@@ -48,13 +51,18 @@ class << self
 	private :_graphql_lexer_key_offsets, :_graphql_lexer_key_offsets=
 end
 self._graphql_lexer_key_offsets = [
-	0, 2, 4, 6, 8, 12, 13, 48, 
-	51, 53, 55, 58, 65, 67, 73, 80, 
-	81, 88, 97, 105, 113, 121, 129, 137, 
-	145, 153, 161, 169, 177, 185, 193, 201, 
-	209, 217, 225, 233, 241, 249, 257, 265, 
-	273, 281, 289, 297, 305, 313, 321, 329, 
-	337, 345, 353, 361, 369, 377, 385, 393
+	0, 2, 4, 6, 8, 12, 13, 52, 
+	55, 57, 59, 62, 69, 71, 77, 84, 
+	85, 92, 100, 108, 116, 125, 133, 141, 
+	149, 157, 165, 173, 181, 189, 197, 206, 
+	214, 222, 230, 238, 246, 254, 262, 270, 
+	279, 287, 295, 303, 311, 319, 327, 335, 
+	343, 351, 359, 367, 375, 383, 391, 399, 
+	407, 415, 423, 431, 439, 447, 455, 463, 
+	472, 481, 489, 497, 505, 513, 521, 529, 
+	537, 545, 553, 561, 569, 577, 585, 593, 
+	601, 609, 618, 626, 634, 642, 650, 658, 
+	666, 674
 ]
 
 class << self
@@ -66,39 +74,68 @@ self._graphql_lexer_trans_keys = [
 	43, 45, 48, 57, 46, 9, 10, 13, 
 	32, 33, 34, 35, 36, 40, 41, 44, 
 	45, 46, 48, 58, 61, 64, 91, 93, 
-	95, 102, 109, 110, 111, 113, 115, 116, 
-	123, 125, 49, 57, 65, 90, 97, 122, 
-	9, 32, 44, 34, 92, 10, 13, 48, 
-	49, 57, 43, 45, 46, 69, 101, 48, 
-	57, 48, 57, 43, 45, 69, 101, 48, 
-	57, 43, 45, 46, 69, 101, 48, 57, 
-	46, 95, 48, 57, 65, 90, 97, 122, 
-	95, 97, 114, 48, 57, 65, 90, 98, 
+	95, 101, 102, 105, 109, 110, 111, 113, 
+	115, 116, 117, 123, 124, 125, 49, 57, 
+	65, 90, 97, 122, 9, 32, 44, 34, 
+	92, 10, 13, 48, 49, 57, 43, 45, 
+	46, 69, 101, 48, 57, 48, 57, 43, 
+	45, 69, 101, 48, 57, 43, 45, 46, 
+	69, 101, 48, 57, 46, 95, 48, 57, 
+	65, 90, 97, 122, 95, 110, 48, 57, 
+	65, 90, 97, 122, 95, 117, 48, 57, 
+	65, 90, 97, 122, 95, 109, 48, 57, 
+	65, 90, 97, 122, 95, 97, 114, 48, 
+	57, 65, 90, 98, 122, 95, 108, 48, 
+	57, 65, 90, 97, 122, 95, 115, 48, 
+	57, 65, 90, 97, 122, 95, 101, 48, 
+	57, 65, 90, 97, 122, 95, 97, 48, 
+	57, 65, 90, 98, 122, 95, 103, 48, 
+	57, 65, 90, 97, 122, 95, 109, 48, 
+	57, 65, 90, 97, 122, 95, 101, 48, 
+	57, 65, 90, 97, 122, 95, 110, 48, 
+	57, 65, 90, 97, 122, 95, 116, 48, 
+	57, 65, 90, 97, 122, 95, 109, 110, 
+	48, 57, 65, 90, 97, 122, 95, 112, 
+	48, 57, 65, 90, 97, 122, 95, 108, 
+	48, 57, 65, 90, 97, 122, 95, 101, 
+	48, 57, 65, 90, 97, 122, 95, 109, 
+	48, 57, 65, 90, 97, 122, 95, 101, 
+	48, 57, 65, 90, 97, 122, 95, 110, 
+	48, 57, 65, 90, 97, 122, 95, 116, 
+	48, 57, 65, 90, 97, 122, 95, 115, 
+	48, 57, 65, 90, 97, 122, 95, 112, 
+	116, 48, 57, 65, 90, 97, 122, 95, 
+	117, 48, 57, 65, 90, 97, 122, 95, 
+	116, 48, 57, 65, 90, 97, 122, 95, 
+	101, 48, 57, 65, 90, 97, 122, 95, 
+	114, 48, 57, 65, 90, 97, 122, 95, 
+	102, 48, 57, 65, 90, 97, 122, 95, 
+	97, 48, 57, 65, 90, 98, 122, 95, 
+	99, 48, 57, 65, 90, 97, 122, 95, 
+	101, 48, 57, 65, 90, 97, 122, 95, 
+	117, 48, 57, 65, 90, 97, 122, 95, 
+	116, 48, 57, 65, 90, 97, 122, 95, 
+	97, 48, 57, 65, 90, 98, 122, 95, 
+	116, 48, 57, 65, 90, 97, 122, 95, 
+	105, 48, 57, 65, 90, 97, 122, 95, 
+	111, 48, 57, 65, 90, 97, 122, 95, 
+	110, 48, 57, 65, 90, 97, 122, 95, 
+	117, 48, 57, 65, 90, 97, 122, 95, 
+	108, 48, 57, 65, 90, 97, 122, 95, 
+	108, 48, 57, 65, 90, 97, 122, 95, 
+	110, 48, 57, 65, 90, 97, 122, 95, 
+	117, 48, 57, 65, 90, 97, 122, 95, 
+	101, 48, 57, 65, 90, 97, 122, 95, 
+	114, 48, 57, 65, 90, 97, 122, 95, 
+	121, 48, 57, 65, 90, 97, 122, 95, 
+	99, 117, 48, 57, 65, 90, 97, 122, 
+	95, 97, 104, 48, 57, 65, 90, 98, 
 	122, 95, 108, 48, 57, 65, 90, 97, 
-	122, 95, 115, 48, 57, 65, 90, 97, 
-	122, 95, 101, 48, 57, 65, 90, 97, 
 	122, 95, 97, 48, 57, 65, 90, 98, 
-	122, 95, 103, 48, 57, 65, 90, 97, 
-	122, 95, 109, 48, 57, 65, 90, 97, 
-	122, 95, 101, 48, 57, 65, 90, 97, 
-	122, 95, 110, 48, 57, 65, 90, 97, 
-	122, 95, 116, 48, 57, 65, 90, 97, 
-	122, 95, 117, 48, 57, 65, 90, 97, 
-	122, 95, 116, 48, 57, 65, 90, 97, 
-	122, 95, 97, 48, 57, 65, 90, 98, 
-	122, 95, 116, 48, 57, 65, 90, 97, 
-	122, 95, 105, 48, 57, 65, 90, 97, 
-	122, 95, 111, 48, 57, 65, 90, 97, 
-	122, 95, 110, 48, 57, 65, 90, 97, 
-	122, 95, 117, 48, 57, 65, 90, 97, 
-	122, 95, 108, 48, 57, 65, 90, 97, 
-	122, 95, 108, 48, 57, 65, 90, 97, 
-	122, 95, 110, 48, 57, 65, 90, 97, 
-	122, 95, 117, 48, 57, 65, 90, 97, 
-	122, 95, 101, 48, 57, 65, 90, 97, 
 	122, 95, 114, 48, 57, 65, 90, 97, 
-	122, 95, 121, 48, 57, 65, 90, 97, 
-	122, 95, 117, 48, 57, 65, 90, 97, 
+	122, 95, 101, 48, 57, 65, 90, 97, 
+	122, 95, 109, 48, 57, 65, 90, 97, 
+	122, 95, 97, 48, 57, 65, 90, 98, 
 	122, 95, 98, 48, 57, 65, 90, 97, 
 	122, 95, 115, 48, 57, 65, 90, 97, 
 	122, 95, 99, 48, 57, 65, 90, 97, 
@@ -109,10 +146,16 @@ self._graphql_lexer_trans_keys = [
 	122, 95, 105, 48, 57, 65, 90, 97, 
 	122, 95, 111, 48, 57, 65, 90, 97, 
 	122, 95, 110, 48, 57, 65, 90, 97, 
-	122, 95, 114, 48, 57, 65, 90, 97, 
-	122, 95, 117, 48, 57, 65, 90, 97, 
-	122, 95, 101, 48, 57, 65, 90, 97, 
-	122, 0
+	122, 95, 114, 121, 48, 57, 65, 90, 
+	97, 122, 95, 117, 48, 57, 65, 90, 
+	97, 122, 95, 101, 48, 57, 65, 90, 
+	97, 122, 95, 112, 48, 57, 65, 90, 
+	97, 122, 95, 101, 48, 57, 65, 90, 
+	97, 122, 95, 110, 48, 57, 65, 90, 
+	97, 122, 95, 105, 48, 57, 65, 90, 
+	97, 122, 95, 111, 48, 57, 65, 90, 
+	97, 122, 95, 110, 48, 57, 65, 90, 
+	97, 122, 0
 ]
 
 class << self
@@ -120,13 +163,18 @@ class << self
 	private :_graphql_lexer_single_lengths, :_graphql_lexer_single_lengths=
 end
 self._graphql_lexer_single_lengths = [
-	2, 2, 0, 0, 2, 1, 29, 3, 
+	2, 2, 0, 0, 2, 1, 33, 3, 
 	2, 2, 1, 5, 0, 4, 5, 1, 
-	1, 3, 2, 2, 2, 2, 2, 2, 
+	1, 2, 2, 2, 3, 2, 2, 2, 
+	2, 2, 2, 2, 2, 2, 3, 2, 
+	2, 2, 2, 2, 2, 2, 2, 3, 
 	2, 2, 2, 2, 2, 2, 2, 2, 
 	2, 2, 2, 2, 2, 2, 2, 2, 
+	2, 2, 2, 2, 2, 2, 2, 3, 
+	3, 2, 2, 2, 2, 2, 2, 2, 
 	2, 2, 2, 2, 2, 2, 2, 2, 
-	2, 2, 2, 2, 2, 2, 2, 2
+	2, 3, 2, 2, 2, 2, 2, 2, 
+	2, 2
 ]
 
 class << self
@@ -140,7 +188,12 @@ self._graphql_lexer_range_lengths = [
 	3, 3, 3, 3, 3, 3, 3, 3, 
 	3, 3, 3, 3, 3, 3, 3, 3, 
 	3, 3, 3, 3, 3, 3, 3, 3, 
-	3, 3, 3, 3, 3, 3, 3, 3
+	3, 3, 3, 3, 3, 3, 3, 3, 
+	3, 3, 3, 3, 3, 3, 3, 3, 
+	3, 3, 3, 3, 3, 3, 3, 3, 
+	3, 3, 3, 3, 3, 3, 3, 3, 
+	3, 3, 3, 3, 3, 3, 3, 3, 
+	3, 3
 ]
 
 class << self
@@ -148,61 +201,18 @@ class << self
 	private :_graphql_lexer_index_offsets, :_graphql_lexer_index_offsets=
 end
 self._graphql_lexer_index_offsets = [
-	0, 3, 6, 8, 10, 14, 16, 49, 
-	53, 56, 59, 62, 69, 71, 77, 84, 
-	86, 91, 98, 104, 110, 116, 122, 128, 
-	134, 140, 146, 152, 158, 164, 170, 176, 
-	182, 188, 194, 200, 206, 212, 218, 224, 
-	230, 236, 242, 248, 254, 260, 266, 272, 
-	278, 284, 290, 296, 302, 308, 314, 320
-]
-
-class << self
-	attr_accessor :_graphql_lexer_indicies
-	private :_graphql_lexer_indicies, :_graphql_lexer_indicies=
-end
-self._graphql_lexer_indicies = [
-	2, 3, 1, 4, 3, 1, 5, 0, 
-	7, 6, 8, 8, 5, 0, 10, 9, 
-	12, 13, 13, 12, 14, 15, 16, 17, 
-	18, 19, 12, 20, 21, 22, 24, 25, 
-	26, 28, 29, 27, 30, 31, 32, 33, 
-	34, 35, 36, 37, 38, 23, 27, 27, 
-	11, 12, 12, 12, 39, 2, 3, 1, 
-	40, 40, 16, 22, 23, 41, 8, 8, 
-	43, 44, 44, 5, 42, 5, 45, 8, 
-	8, 44, 44, 7, 45, 8, 8, 43, 
-	44, 44, 23, 42, 46, 41, 27, 27, 
-	27, 27, 0, 27, 48, 49, 27, 27, 
-	27, 47, 27, 50, 27, 27, 27, 47, 
-	27, 51, 27, 27, 27, 47, 27, 52, 
-	27, 27, 27, 47, 27, 53, 27, 27, 
-	27, 47, 27, 54, 27, 27, 27, 47, 
-	27, 55, 27, 27, 27, 47, 27, 56, 
-	27, 27, 27, 47, 27, 57, 27, 27, 
-	27, 47, 27, 58, 27, 27, 27, 47, 
-	27, 59, 27, 27, 27, 47, 27, 60, 
-	27, 27, 27, 47, 27, 61, 27, 27, 
-	27, 47, 27, 62, 27, 27, 27, 47, 
-	27, 63, 27, 27, 27, 47, 27, 64, 
-	27, 27, 27, 47, 27, 65, 27, 27, 
-	27, 47, 27, 66, 27, 27, 27, 47, 
-	27, 67, 27, 27, 27, 47, 27, 68, 
-	27, 27, 27, 47, 27, 69, 27, 27, 
-	27, 47, 27, 70, 27, 27, 27, 47, 
-	27, 71, 27, 27, 27, 47, 27, 72, 
-	27, 27, 27, 47, 27, 73, 27, 27, 
-	27, 47, 27, 74, 27, 27, 27, 47, 
-	27, 75, 27, 27, 27, 47, 27, 76, 
-	27, 27, 27, 47, 27, 77, 27, 27, 
-	27, 47, 27, 78, 27, 27, 27, 47, 
-	27, 79, 27, 27, 27, 47, 27, 80, 
-	27, 27, 27, 47, 27, 81, 27, 27, 
-	27, 47, 27, 82, 27, 27, 27, 47, 
-	27, 83, 27, 27, 27, 47, 27, 84, 
-	27, 27, 27, 47, 27, 85, 27, 27, 
-	27, 47, 27, 86, 27, 27, 27, 47, 
-	27, 87, 27, 27, 27, 47, 0
+	0, 3, 6, 8, 10, 14, 16, 53, 
+	57, 60, 63, 66, 73, 75, 81, 88, 
+	90, 95, 101, 107, 113, 120, 126, 132, 
+	138, 144, 150, 156, 162, 168, 174, 181, 
+	187, 193, 199, 205, 211, 217, 223, 229, 
+	236, 242, 248, 254, 260, 266, 272, 278, 
+	284, 290, 296, 302, 308, 314, 320, 326, 
+	332, 338, 344, 350, 356, 362, 368, 374, 
+	381, 388, 394, 400, 406, 412, 418, 424, 
+	430, 436, 442, 448, 454, 460, 466, 472, 
+	478, 484, 491, 497, 503, 509, 515, 521, 
+	527, 533
 ]
 
 class << self
@@ -210,17 +220,85 @@ class << self
 	private :_graphql_lexer_trans_targs, :_graphql_lexer_trans_targs=
 end
 self._graphql_lexer_trans_targs = [
-	6, 0, 6, 1, 8, 12, 6, 13, 
-	2, 6, 6, 6, 7, 6, 6, 8, 
-	9, 6, 6, 6, 10, 15, 11, 14, 
-	6, 6, 6, 16, 6, 6, 17, 27, 
-	34, 37, 38, 42, 53, 6, 6, 6, 
-	6, 6, 6, 3, 4, 6, 5, 6, 
-	18, 21, 19, 20, 16, 22, 23, 24, 
-	25, 26, 16, 28, 29, 30, 31, 32, 
-	33, 16, 35, 36, 16, 16, 39, 40, 
-	41, 16, 43, 44, 45, 46, 47, 48, 
-	49, 50, 51, 52, 16, 54, 55, 16
+	6, 1, 0, 8, 1, 0, 12, 6, 
+	13, 6, 2, 2, 12, 6, 6, 6, 
+	7, 6, 6, 7, 6, 8, 9, 6, 
+	6, 6, 7, 10, 15, 11, 6, 6, 
+	6, 6, 6, 16, 17, 20, 30, 48, 
+	55, 58, 59, 63, 81, 86, 6, 6, 
+	6, 14, 16, 16, 6, 7, 7, 7, 
+	6, 6, 1, 0, 6, 6, 9, 11, 
+	14, 6, 2, 2, 3, 4, 4, 12, 
+	6, 12, 6, 2, 2, 4, 4, 13, 
+	6, 2, 2, 3, 4, 4, 14, 6, 
+	5, 6, 16, 16, 16, 16, 6, 16, 
+	18, 16, 16, 16, 6, 16, 19, 16, 
+	16, 16, 6, 16, 16, 16, 16, 16, 
+	6, 16, 21, 24, 16, 16, 16, 6, 
+	16, 22, 16, 16, 16, 6, 16, 23, 
+	16, 16, 16, 6, 16, 16, 16, 16, 
+	16, 6, 16, 25, 16, 16, 16, 6, 
+	16, 26, 16, 16, 16, 6, 16, 27, 
+	16, 16, 16, 6, 16, 28, 16, 16, 
+	16, 6, 16, 29, 16, 16, 16, 6, 
+	16, 16, 16, 16, 16, 6, 16, 31, 
+	39, 16, 16, 16, 6, 16, 32, 16, 
+	16, 16, 6, 16, 33, 16, 16, 16, 
+	6, 16, 34, 16, 16, 16, 6, 16, 
+	35, 16, 16, 16, 6, 16, 36, 16, 
+	16, 16, 6, 16, 37, 16, 16, 16, 
+	6, 16, 38, 16, 16, 16, 6, 16, 
+	16, 16, 16, 16, 6, 16, 40, 42, 
+	16, 16, 16, 6, 16, 41, 16, 16, 
+	16, 6, 16, 16, 16, 16, 16, 6, 
+	16, 43, 16, 16, 16, 6, 16, 44, 
+	16, 16, 16, 6, 16, 45, 16, 16, 
+	16, 6, 16, 46, 16, 16, 16, 6, 
+	16, 47, 16, 16, 16, 6, 16, 16, 
+	16, 16, 16, 6, 16, 49, 16, 16, 
+	16, 6, 16, 50, 16, 16, 16, 6, 
+	16, 51, 16, 16, 16, 6, 16, 52, 
+	16, 16, 16, 6, 16, 53, 16, 16, 
+	16, 6, 16, 54, 16, 16, 16, 6, 
+	16, 16, 16, 16, 16, 6, 16, 56, 
+	16, 16, 16, 6, 16, 57, 16, 16, 
+	16, 6, 16, 16, 16, 16, 16, 6, 
+	16, 16, 16, 16, 16, 6, 16, 60, 
+	16, 16, 16, 6, 16, 61, 16, 16, 
+	16, 6, 16, 62, 16, 16, 16, 6, 
+	16, 16, 16, 16, 16, 6, 16, 64, 
+	71, 16, 16, 16, 6, 16, 65, 68, 
+	16, 16, 16, 6, 16, 66, 16, 16, 
+	16, 6, 16, 67, 16, 16, 16, 6, 
+	16, 16, 16, 16, 16, 6, 16, 69, 
+	16, 16, 16, 6, 16, 70, 16, 16, 
+	16, 6, 16, 16, 16, 16, 16, 6, 
+	16, 72, 16, 16, 16, 6, 16, 73, 
+	16, 16, 16, 6, 16, 74, 16, 16, 
+	16, 6, 16, 75, 16, 16, 16, 6, 
+	16, 76, 16, 16, 16, 6, 16, 77, 
+	16, 16, 16, 6, 16, 78, 16, 16, 
+	16, 6, 16, 79, 16, 16, 16, 6, 
+	16, 80, 16, 16, 16, 6, 16, 16, 
+	16, 16, 16, 6, 16, 82, 84, 16, 
+	16, 16, 6, 16, 83, 16, 16, 16, 
+	6, 16, 16, 16, 16, 16, 6, 16, 
+	85, 16, 16, 16, 6, 16, 16, 16, 
+	16, 16, 6, 16, 87, 16, 16, 16, 
+	6, 16, 88, 16, 16, 16, 6, 16, 
+	89, 16, 16, 16, 6, 16, 16, 16, 
+	16, 16, 6, 6, 6, 6, 6, 6, 
+	6, 6, 6, 6, 6, 6, 6, 6, 
+	6, 6, 6, 6, 6, 6, 6, 6, 
+	6, 6, 6, 6, 6, 6, 6, 6, 
+	6, 6, 6, 6, 6, 6, 6, 6, 
+	6, 6, 6, 6, 6, 6, 6, 6, 
+	6, 6, 6, 6, 6, 6, 6, 6, 
+	6, 6, 6, 6, 6, 6, 6, 6, 
+	6, 6, 6, 6, 6, 6, 6, 6, 
+	6, 6, 6, 6, 6, 6, 6, 6, 
+	6, 6, 6, 6, 6, 6, 6, 6, 
+	6, 6, 6, 6, 0
 ]
 
 class << self
@@ -228,17 +306,85 @@ class << self
 	private :_graphql_lexer_trans_actions, :_graphql_lexer_trans_actions=
 end
 self._graphql_lexer_trans_actions = [
-	53, 0, 21, 0, 85, 0, 49, 58, 
-	0, 51, 27, 35, 0, 33, 31, 91, 
-	0, 23, 11, 13, 0, 5, 55, 55, 
-	19, 29, 25, 88, 15, 17, 0, 0, 
-	0, 0, 0, 0, 0, 7, 9, 43, 
-	45, 47, 37, 0, 0, 39, 0, 41, 
-	0, 0, 0, 0, 70, 0, 0, 0, 
-	0, 0, 64, 0, 0, 0, 0, 0, 
-	0, 79, 0, 0, 73, 61, 0, 0, 
-	0, 76, 0, 0, 0, 0, 0, 0, 
-	0, 0, 0, 0, 82, 0, 0, 67
+	21, 0, 0, 111, 0, 0, 0, 55, 
+	60, 51, 0, 0, 0, 55, 27, 53, 
+	0, 35, 35, 0, 31, 117, 0, 23, 
+	11, 13, 0, 0, 5, 57, 19, 29, 
+	25, 15, 17, 114, 0, 0, 0, 0, 
+	0, 0, 0, 0, 0, 0, 7, 33, 
+	9, 57, 114, 114, 37, 0, 0, 0, 
+	45, 21, 0, 0, 47, 47, 0, 57, 
+	57, 49, 0, 0, 0, 0, 0, 0, 
+	39, 0, 41, 0, 0, 0, 0, 60, 
+	41, 0, 0, 0, 0, 0, 57, 39, 
+	0, 49, 114, 114, 114, 114, 55, 114, 
+	0, 114, 114, 114, 43, 114, 0, 114, 
+	114, 114, 43, 114, 105, 114, 114, 114, 
+	43, 114, 0, 0, 114, 114, 114, 43, 
+	114, 0, 114, 114, 114, 43, 114, 0, 
+	114, 114, 114, 43, 114, 72, 114, 114, 
+	114, 43, 114, 0, 114, 114, 114, 43, 
+	114, 0, 114, 114, 114, 43, 114, 0, 
+	114, 114, 114, 43, 114, 0, 114, 114, 
+	114, 43, 114, 0, 114, 114, 114, 43, 
+	114, 66, 114, 114, 114, 43, 114, 0, 
+	0, 114, 114, 114, 43, 114, 0, 114, 
+	114, 114, 43, 114, 0, 114, 114, 114, 
+	43, 114, 0, 114, 114, 114, 43, 114, 
+	0, 114, 114, 114, 43, 114, 0, 114, 
+	114, 114, 43, 114, 0, 114, 114, 114, 
+	43, 114, 0, 114, 114, 114, 43, 114, 
+	96, 114, 114, 114, 43, 114, 0, 0, 
+	114, 114, 114, 43, 114, 0, 114, 114, 
+	114, 43, 114, 108, 114, 114, 114, 43, 
+	114, 0, 114, 114, 114, 43, 114, 0, 
+	114, 114, 114, 43, 114, 0, 114, 114, 
+	114, 43, 114, 0, 114, 114, 114, 43, 
+	114, 0, 114, 114, 114, 43, 114, 99, 
+	114, 114, 114, 43, 114, 0, 114, 114, 
+	114, 43, 114, 0, 114, 114, 114, 43, 
+	114, 0, 114, 114, 114, 43, 114, 0, 
+	114, 114, 114, 43, 114, 0, 114, 114, 
+	114, 43, 114, 0, 114, 114, 114, 43, 
+	114, 81, 114, 114, 114, 43, 114, 0, 
+	114, 114, 114, 43, 114, 0, 114, 114, 
+	114, 43, 114, 75, 114, 114, 114, 43, 
+	114, 63, 114, 114, 114, 43, 114, 0, 
+	114, 114, 114, 43, 114, 0, 114, 114, 
+	114, 43, 114, 0, 114, 114, 114, 43, 
+	114, 78, 114, 114, 114, 43, 114, 0, 
+	0, 114, 114, 114, 43, 114, 0, 0, 
+	114, 114, 114, 43, 114, 0, 114, 114, 
+	114, 43, 114, 0, 114, 114, 114, 43, 
+	114, 90, 114, 114, 114, 43, 114, 0, 
+	114, 114, 114, 43, 114, 0, 114, 114, 
+	114, 43, 114, 87, 114, 114, 114, 43, 
+	114, 0, 114, 114, 114, 43, 114, 0, 
+	114, 114, 114, 43, 114, 0, 114, 114, 
+	114, 43, 114, 0, 114, 114, 114, 43, 
+	114, 0, 114, 114, 114, 43, 114, 0, 
+	114, 114, 114, 43, 114, 0, 114, 114, 
+	114, 43, 114, 0, 114, 114, 114, 43, 
+	114, 0, 114, 114, 114, 43, 114, 84, 
+	114, 114, 114, 43, 114, 0, 0, 114, 
+	114, 114, 43, 114, 0, 114, 114, 114, 
+	43, 114, 69, 114, 114, 114, 43, 114, 
+	0, 114, 114, 114, 43, 114, 93, 114, 
+	114, 114, 43, 114, 0, 114, 114, 114, 
+	43, 114, 0, 114, 114, 114, 43, 114, 
+	0, 114, 114, 114, 43, 114, 102, 114, 
+	114, 114, 43, 55, 55, 55, 51, 55, 
+	53, 45, 55, 47, 49, 39, 41, 41, 
+	39, 49, 55, 43, 43, 43, 43, 43, 
+	43, 43, 43, 43, 43, 43, 43, 43, 
+	43, 43, 43, 43, 43, 43, 43, 43, 
+	43, 43, 43, 43, 43, 43, 43, 43, 
+	43, 43, 43, 43, 43, 43, 43, 43, 
+	43, 43, 43, 43, 43, 43, 43, 43, 
+	43, 43, 43, 43, 43, 43, 43, 43, 
+	43, 43, 43, 43, 43, 43, 43, 43, 
+	43, 43, 43, 43, 43, 43, 43, 43, 
+	43, 43, 43, 43, 0
 ]
 
 class << self
@@ -252,7 +398,12 @@ self._graphql_lexer_to_state_actions = [
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
-	0, 0, 0, 0, 0, 0, 0, 0
+	0, 0, 0, 0, 0, 0, 0, 0, 
+	0, 0, 0, 0, 0, 0, 0, 0, 
+	0, 0, 0, 0, 0, 0, 0, 0, 
+	0, 0, 0, 0, 0, 0, 0, 0, 
+	0, 0, 0, 0, 0, 0, 0, 0, 
+	0, 0
 ]
 
 class << self
@@ -266,7 +417,12 @@ self._graphql_lexer_from_state_actions = [
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
-	0, 0, 0, 0, 0, 0, 0, 0
+	0, 0, 0, 0, 0, 0, 0, 0, 
+	0, 0, 0, 0, 0, 0, 0, 0, 
+	0, 0, 0, 0, 0, 0, 0, 0, 
+	0, 0, 0, 0, 0, 0, 0, 0, 
+	0, 0, 0, 0, 0, 0, 0, 0, 
+	0, 0
 ]
 
 class << self
@@ -274,13 +430,18 @@ class << self
 	private :_graphql_lexer_eof_trans, :_graphql_lexer_eof_trans=
 end
 self._graphql_lexer_eof_trans = [
-	1, 1, 1, 7, 1, 10, 0, 40, 
-	1, 41, 42, 43, 46, 46, 43, 42, 
-	1, 48, 48, 48, 48, 48, 48, 48, 
-	48, 48, 48, 48, 48, 48, 48, 48, 
-	48, 48, 48, 48, 48, 48, 48, 48, 
-	48, 48, 48, 48, 48, 48, 48, 48, 
-	48, 48, 48, 48, 48, 48, 48, 48
+	555, 555, 555, 543, 555, 545, 0, 546, 
+	555, 548, 554, 553, 552, 552, 553, 554, 
+	555, 628, 628, 628, 628, 628, 628, 628, 
+	628, 628, 628, 628, 628, 628, 628, 628, 
+	628, 628, 628, 628, 628, 628, 628, 628, 
+	628, 628, 628, 628, 628, 628, 628, 628, 
+	628, 628, 628, 628, 628, 628, 628, 628, 
+	628, 628, 628, 628, 628, 628, 628, 628, 
+	628, 628, 628, 628, 628, 628, 628, 628, 
+	628, 628, 628, 628, 628, 628, 628, 628, 
+	628, 628, 628, 628, 628, 628, 628, 628, 
+	628, 628
 ]
 
 class << self
@@ -302,7 +463,7 @@ end
 self.graphql_lexer_en_main = 6;
 
 
-# line 99 "lib/graphql/language/lexer.rl"
+# line 117 "lib/graphql/language/lexer.rl"
 
       def self.run_lexer(query_string)
         data = query_string.unpack("c*")
@@ -316,7 +477,7 @@ self.graphql_lexer_en_main = 6;
         }
 
         
-# line 320 "lib/graphql/language/lexer.rb"
+# line 481 "lib/graphql/language/lexer.rb"
 begin
 	p ||= 0
 	pe ||= data.length
@@ -326,14 +487,14 @@ begin
 	act = 0
 end
 
-# line 112 "lib/graphql/language/lexer.rl"
+# line 130 "lib/graphql/language/lexer.rl"
 
         emit_token = -> (name) {
           emit(name, ts, te, meta)
         }
 
         
-# line 337 "lib/graphql/language/lexer.rb"
+# line 498 "lib/graphql/language/lexer.rb"
 begin
 	_klen, _trans, _keys, _acts, _nacts = nil
 	_goto_level = 0
@@ -363,7 +524,7 @@ begin
 		begin
 ts = p
 		end
-# line 367 "lib/graphql/language/lexer.rb"
+# line 528 "lib/graphql/language/lexer.rb"
 		end # from state action switch
 	end
 	if _trigger_goto
@@ -418,7 +579,6 @@ ts = p
 	     _trans += _klen
 	  end
 	end while false
-	_trans = _graphql_lexer_indicies[_trans]
 	end
 	if _goto_level <= _eof_trans
 	cs = _graphql_lexer_trans_targs[_trans]
@@ -436,137 +596,175 @@ when 2 then
 te = p+1
 		end
 when 3 then
-# line 42 "lib/graphql/language/lexer.rl"
+# line 51 "lib/graphql/language/lexer.rl"
 		begin
 act = 1;		end
 when 4 then
-# line 43 "lib/graphql/language/lexer.rl"
+# line 52 "lib/graphql/language/lexer.rl"
 		begin
 act = 2;		end
 when 5 then
-# line 44 "lib/graphql/language/lexer.rl"
+# line 53 "lib/graphql/language/lexer.rl"
 		begin
 act = 3;		end
 when 6 then
-# line 45 "lib/graphql/language/lexer.rl"
+# line 54 "lib/graphql/language/lexer.rl"
 		begin
 act = 4;		end
 when 7 then
-# line 46 "lib/graphql/language/lexer.rl"
+# line 55 "lib/graphql/language/lexer.rl"
 		begin
 act = 5;		end
 when 8 then
-# line 47 "lib/graphql/language/lexer.rl"
+# line 56 "lib/graphql/language/lexer.rl"
 		begin
 act = 6;		end
 when 9 then
-# line 48 "lib/graphql/language/lexer.rl"
+# line 57 "lib/graphql/language/lexer.rl"
 		begin
 act = 7;		end
 when 10 then
-# line 49 "lib/graphql/language/lexer.rl"
+# line 58 "lib/graphql/language/lexer.rl"
 		begin
 act = 8;		end
 when 11 then
-# line 50 "lib/graphql/language/lexer.rl"
+# line 59 "lib/graphql/language/lexer.rl"
 		begin
 act = 9;		end
 when 12 then
-# line 51 "lib/graphql/language/lexer.rl"
+# line 60 "lib/graphql/language/lexer.rl"
 		begin
 act = 10;		end
 when 13 then
-# line 59 "lib/graphql/language/lexer.rl"
+# line 61 "lib/graphql/language/lexer.rl"
 		begin
-act = 18;		end
+act = 11;		end
 when 14 then
+# line 62 "lib/graphql/language/lexer.rl"
+		begin
+act = 12;		end
+when 15 then
+# line 63 "lib/graphql/language/lexer.rl"
+		begin
+act = 13;		end
+when 16 then
+# line 64 "lib/graphql/language/lexer.rl"
+		begin
+act = 14;		end
+when 17 then
 # line 65 "lib/graphql/language/lexer.rl"
 		begin
-act = 24;		end
-when 15 then
-# line 75 "lib/graphql/language/lexer.rl"
+act = 15;		end
+when 18 then
+# line 66 "lib/graphql/language/lexer.rl"
 		begin
-act = 28;		end
-when 16 then
-# line 52 "lib/graphql/language/lexer.rl"
+act = 16;		end
+when 19 then
+# line 67 "lib/graphql/language/lexer.rl"
+		begin
+act = 17;		end
+when 20 then
+# line 68 "lib/graphql/language/lexer.rl"
+		begin
+act = 18;		end
+when 21 then
+# line 76 "lib/graphql/language/lexer.rl"
+		begin
+act = 26;		end
+when 22 then
+# line 83 "lib/graphql/language/lexer.rl"
+		begin
+act = 33;		end
+when 23 then
+# line 93 "lib/graphql/language/lexer.rl"
+		begin
+act = 37;		end
+when 24 then
+# line 69 "lib/graphql/language/lexer.rl"
 		begin
 te = p+1
  begin  emit_token.call(:RCURLY)  end
 		end
-when 17 then
-# line 53 "lib/graphql/language/lexer.rl"
+when 25 then
+# line 70 "lib/graphql/language/lexer.rl"
 		begin
 te = p+1
  begin  emit_token.call(:LCURLY)  end
 		end
-when 18 then
-# line 54 "lib/graphql/language/lexer.rl"
+when 26 then
+# line 71 "lib/graphql/language/lexer.rl"
 		begin
 te = p+1
  begin  emit_token.call(:RPAREN)  end
 		end
-when 19 then
-# line 55 "lib/graphql/language/lexer.rl"
+when 27 then
+# line 72 "lib/graphql/language/lexer.rl"
 		begin
 te = p+1
  begin  emit_token.call(:LPAREN)  end
 		end
-when 20 then
-# line 56 "lib/graphql/language/lexer.rl"
+when 28 then
+# line 73 "lib/graphql/language/lexer.rl"
 		begin
 te = p+1
  begin  emit_token.call(:RBRACKET)  end
 		end
-when 21 then
-# line 57 "lib/graphql/language/lexer.rl"
+when 29 then
+# line 74 "lib/graphql/language/lexer.rl"
 		begin
 te = p+1
  begin  emit_token.call(:LBRACKET)  end
 		end
-when 22 then
-# line 58 "lib/graphql/language/lexer.rl"
+when 30 then
+# line 75 "lib/graphql/language/lexer.rl"
 		begin
 te = p+1
  begin  emit_token.call(:COLON)  end
 		end
-when 23 then
-# line 59 "lib/graphql/language/lexer.rl"
+when 31 then
+# line 76 "lib/graphql/language/lexer.rl"
 		begin
 te = p+1
  begin  emit_string(ts + 1, te - 1, meta)  end
 		end
-when 24 then
-# line 60 "lib/graphql/language/lexer.rl"
+when 32 then
+# line 77 "lib/graphql/language/lexer.rl"
 		begin
 te = p+1
  begin  emit_token.call(:VAR_SIGN)  end
 		end
-when 25 then
-# line 61 "lib/graphql/language/lexer.rl"
+when 33 then
+# line 78 "lib/graphql/language/lexer.rl"
 		begin
 te = p+1
  begin  emit_token.call(:DIR_SIGN)  end
 		end
-when 26 then
-# line 62 "lib/graphql/language/lexer.rl"
+when 34 then
+# line 79 "lib/graphql/language/lexer.rl"
 		begin
 te = p+1
  begin  emit_token.call(:ELLIPSIS)  end
 		end
-when 27 then
-# line 63 "lib/graphql/language/lexer.rl"
+when 35 then
+# line 80 "lib/graphql/language/lexer.rl"
 		begin
 te = p+1
  begin  emit_token.call(:EQUALS)  end
 		end
-when 28 then
-# line 64 "lib/graphql/language/lexer.rl"
+when 36 then
+# line 81 "lib/graphql/language/lexer.rl"
 		begin
 te = p+1
  begin  emit_token.call(:BANG)  end
 		end
-when 29 then
-# line 67 "lib/graphql/language/lexer.rl"
+when 37 then
+# line 82 "lib/graphql/language/lexer.rl"
+		begin
+te = p+1
+ begin  emit_token.call(:PIPE)  end
+		end
+when 38 then
+# line 85 "lib/graphql/language/lexer.rl"
 		begin
 te = p+1
  begin 
@@ -574,61 +772,61 @@ te = p+1
       meta[:col] = 1
      end
 		end
-when 30 then
-# line 75 "lib/graphql/language/lexer.rl"
+when 39 then
+# line 93 "lib/graphql/language/lexer.rl"
 		begin
 te = p+1
  begin  emit_token.call(:UNKNOWN_CHAR)  end
 		end
-when 31 then
-# line 42 "lib/graphql/language/lexer.rl"
+when 40 then
+# line 51 "lib/graphql/language/lexer.rl"
 		begin
 te = p
 p = p - 1; begin  emit_token.call(:INT)  end
 		end
-when 32 then
-# line 43 "lib/graphql/language/lexer.rl"
+when 41 then
+# line 52 "lib/graphql/language/lexer.rl"
 		begin
 te = p
 p = p - 1; begin  emit_token.call(:FLOAT)  end
 		end
-when 33 then
-# line 65 "lib/graphql/language/lexer.rl"
+when 42 then
+# line 83 "lib/graphql/language/lexer.rl"
 		begin
 te = p
 p = p - 1; begin  emit_token.call(:IDENTIFIER)  end
 		end
-when 34 then
-# line 72 "lib/graphql/language/lexer.rl"
+when 43 then
+# line 90 "lib/graphql/language/lexer.rl"
 		begin
 te = p
 p = p - 1; begin  meta[:col] += te - ts  end
 		end
-when 35 then
-# line 73 "lib/graphql/language/lexer.rl"
+when 44 then
+# line 91 "lib/graphql/language/lexer.rl"
 		begin
 te = p
 p = p - 1; begin  meta[:col] += te - ts  end
 		end
-when 36 then
-# line 75 "lib/graphql/language/lexer.rl"
+when 45 then
+# line 93 "lib/graphql/language/lexer.rl"
 		begin
 te = p
 p = p - 1; begin  emit_token.call(:UNKNOWN_CHAR)  end
 		end
-when 37 then
-# line 42 "lib/graphql/language/lexer.rl"
+when 46 then
+# line 51 "lib/graphql/language/lexer.rl"
 		begin
  begin p = ((te))-1; end
  begin  emit_token.call(:INT)  end
 		end
-when 38 then
-# line 75 "lib/graphql/language/lexer.rl"
+when 47 then
+# line 93 "lib/graphql/language/lexer.rl"
 		begin
  begin p = ((te))-1; end
  begin  emit_token.call(:UNKNOWN_CHAR)  end
 		end
-when 39 then
+when 48 then
 # line 1 "NONE"
 		begin
 	case act
@@ -662,18 +860,42 @@ when 39 then
 	when 10 then
 	begin begin p = ((te))-1; end
  emit_token.call(:SUBSCRIPTION) end
+	when 11 then
+	begin begin p = ((te))-1; end
+ emit_token.call(:SCHEMA) end
+	when 12 then
+	begin begin p = ((te))-1; end
+ emit_token.call(:SCALAR) end
+	when 13 then
+	begin begin p = ((te))-1; end
+ emit_token.call(:TYPE) end
+	when 14 then
+	begin begin p = ((te))-1; end
+ emit_token.call(:IMPLEMENTS) end
+	when 15 then
+	begin begin p = ((te))-1; end
+ emit_token.call(:INTERFACE) end
+	when 16 then
+	begin begin p = ((te))-1; end
+ emit_token.call(:UNION) end
+	when 17 then
+	begin begin p = ((te))-1; end
+ emit_token.call(:ENUM) end
 	when 18 then
 	begin begin p = ((te))-1; end
+ emit_token.call(:INPUT) end
+	when 26 then
+	begin begin p = ((te))-1; end
  emit_string(ts + 1, te - 1, meta) end
-	when 24 then
+	when 33 then
 	begin begin p = ((te))-1; end
  emit_token.call(:IDENTIFIER) end
-	when 28 then
+	when 37 then
 	begin begin p = ((te))-1; end
  emit_token.call(:UNKNOWN_CHAR) end
 end 
 			end
-# line 677 "lib/graphql/language/lexer.rb"
+# line 899 "lib/graphql/language/lexer.rb"
 			end # action switch
 		end
 	end
@@ -693,7 +915,7 @@ when 0 then
 # line 1 "NONE"
 		begin
 ts = nil;		end
-# line 697 "lib/graphql/language/lexer.rb"
+# line 919 "lib/graphql/language/lexer.rb"
 		end # to state action switch
 	end
 	if _trigger_goto
@@ -720,7 +942,7 @@ end
 	end
 	end
 
-# line 118 "lib/graphql/language/lexer.rl"
+# line 136 "lib/graphql/language/lexer.rl"
 
         meta[:tokens]
       end

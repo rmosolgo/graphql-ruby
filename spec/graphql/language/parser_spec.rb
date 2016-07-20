@@ -263,6 +263,121 @@ describe GraphQL::Language::Parser do
         assert(document)
       end
     end
+
+    describe "schema" do
+      it "parses the test schema" do
+        schema = DummySchema
+        schema_string = GraphQL::Schema::Printer.print_schema(schema)
+        document = GraphQL::Language::Parser.parse(schema_string)
+
+        assert_equal schema_string, document.to_query_string
+      end
+
+      it "parses mimal schema definition" do
+        document = GraphQL::Language::Parser.parse('schema { query: QueryRoot }')
+
+        schema = document.definitions.first
+        assert_equal 'QueryRoot', schema.query
+        assert_equal nil, schema.mutation
+        assert_equal nil, schema.subscription
+      end
+
+      it "parses full schema definitions" do
+        document = GraphQL::Language::Parser.parse('
+          schema {
+            query: QueryRoot
+            mutation: MutationRoot
+            subscription: SubscriptionRoot
+          }
+        ')
+
+        schema = document.definitions.first
+        assert_equal 'QueryRoot', schema.query
+        assert_equal 'MutationRoot', schema.mutation
+        assert_equal 'SubscriptionRoot', schema.subscription
+      end
+
+      it "parses object types" do
+        document = GraphQL::Language::Parser.parse('
+          type Comment implements Node {
+            id: ID!
+          }
+        ')
+
+        type = document.definitions.first
+        assert_equal GraphQL::Language::Nodes::ObjectTypeDefinition, type.class
+        assert_equal 'Comment', type.name
+        assert_equal ['Node'], type.interfaces
+        assert_equal ['id'], type.fields.map(&:name)
+        assert_equal [], type.fields[0].arguments
+        assert_equal 'ID', type.fields[0].type.of_type.name
+      end
+
+      it "parses field arguments" do
+        document = GraphQL::Language::Parser.parse('
+          type Mutation {
+            post(id: ID!, data: PostData = { message: "First!1!", type: BLOG, tags: ["Test", "Annoying"] }): Post
+          }
+        ')
+
+        field = document.definitions.first.fields.first
+        assert_equal ['id', 'data'], field.arguments.map(&:name)
+        data_arg = field.arguments[1]
+        assert_equal 'PostData', data_arg.type.name
+        assert_equal ['message', 'type', 'tags'], data_arg.default_value.arguments.map(&:name)
+        tags_arg = data_arg.default_value.arguments[2]
+        assert_equal ['Test', 'Annoying'], tags_arg.value
+      end
+
+      it "parses scalar types" do
+        document = GraphQL::Language::Parser.parse('scalar DateTime')
+
+        type = document.definitions.first
+        assert_equal GraphQL::Language::Nodes::ScalarTypeDefinition, type.class
+        assert_equal 'DateTime', type.name
+      end
+
+      it "parses interface types" do
+        document = GraphQL::Language::Parser.parse('
+          interface Node {
+            id: ID!
+          }
+        ')
+
+        type = document.definitions.first
+        assert_equal GraphQL::Language::Nodes::InterfaceTypeDefinition, type.class
+        assert_equal 'Node', type.name
+        assert_equal ['id'], type.fields.map(&:name)
+        assert_equal [], type.fields[0].arguments
+        assert_equal 'ID', type.fields[0].type.of_type.name
+      end
+
+      it "parses enum types" do
+        document = GraphQL::Language::Parser.parse('
+          enum DogCommand { SIT, DOWN, HEEL }
+        ')
+
+        type = document.definitions.first
+        assert_equal GraphQL::Language::Nodes::EnumTypeDefinition, type.class
+        assert_equal 'DogCommand', type.name
+        assert_equal ['SIT', 'DOWN', 'HEEL'], type.values
+      end
+
+      it "parses input object types" do
+        document = GraphQL::Language::Parser.parse('
+          input EmptyMutationInput {
+            clientMutationId: String
+          }
+        ')
+
+        type = document.definitions.first
+        assert_equal GraphQL::Language::Nodes::InputObjectTypeDefinition, type.class
+        assert_equal 'EmptyMutationInput', type.name
+        assert_equal ['clientMutationId'], type.fields.map(&:name)
+        assert_equal 'String', type.fields[0].type.name
+        assert_equal nil, type.fields[0].default_value
+      end
+    end
   end
 
   describe "errors" do
