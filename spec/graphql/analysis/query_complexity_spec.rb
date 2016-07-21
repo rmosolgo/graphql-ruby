@@ -191,28 +191,47 @@ describe GraphQL::Analysis::QueryComplexity do
   describe "custom complexities" do
     let(:query) { GraphQL::Query.new(complexity_schema, query_string) }
     let(:complexity_schema) {
-      complexity_type = GraphQL::ObjectType.define do
-        name "Complexity"
+      complexity_interface = GraphQL::InterfaceType.define do
+        name "ComplexityInterface"
+        field :value, types.Int
+      end
+
+      single_complexity_type = GraphQL::ObjectType.define do
+        name "SingleComplexity"
         field :value, types.Int, complexity: 0.1 do
           resolve -> (obj, args, ctx) { obj }
         end
-        field :complexity, -> { complexity_type } do
+        field :complexity, single_complexity_type do
           argument :value, types.Int
           complexity -> (ctx, args, child_complexity) { args[:value] + child_complexity }
           resolve -> (obj, args, ctx) { args[:value] }
         end
+        interfaces [complexity_interface]
+      end
+
+      double_complexity_type = GraphQL::ObjectType.define do
+        name "DoubleComplexity"
+        field :value, types.Int, complexity: 4 do
+          resolve -> (obj, args, ctx) { obj }
+        end
+        interfaces [complexity_interface]
       end
 
       query_type = GraphQL::ObjectType.define do
         name "Query"
-        field :complexity, -> { complexity_type } do
+        field :complexity, single_complexity_type do
           argument :value, types.Int
           complexity -> (ctx, args, child_complexity) { args[:value] + child_complexity }
           resolve -> (obj, args, ctx) { args[:value] }
         end
+
+        field :innerComplexity, complexity_interface do
+          argument :value, types.Int
+          resolve -> (obj, args, ctx) { args[:value] }
+        end
       end
 
-      GraphQL::Schema.new(query: query_type)
+      GraphQL::Schema.new(query: query_type, types: [double_complexity_type])
     }
     let(:query_string) {%|
       {
@@ -230,6 +249,23 @@ describe GraphQL::Analysis::QueryComplexity do
       reduce_result
       # 10 from `complexity`, `0.3` from `value`
       assert_equal complexities, [query, 10.3]
+    end
+
+    describe "same field on multiple types" do
+      let(:query_string) {%|
+      {
+        innerComplexity(value: 2) {
+          ... on SingleComplexity { value }
+          ... on DoubleComplexity { value }
+        }
+      }
+      |}
+
+      it "picks them max for those fields" do
+        reduce_result
+        # 1 for innerComplexity + 4 for DoubleComplexity.value
+        assert_equal complexities, [query, 5]
+      end
     end
   end
 end

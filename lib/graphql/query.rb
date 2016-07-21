@@ -51,7 +51,7 @@ module GraphQL
         end
       end
 
-      @arguments_cache = {}
+      @arguments_cache = Hash.new { |h, k| h[k] = {} }
     end
 
     # Get the result for this query, executing it once
@@ -103,11 +103,11 @@ module GraphQL
 
     # Node-level cache for calculating arguments. Used during execution and query analysis.
     # @return [GraphQL::Query::Arguments] Arguments for this node, merging default values, literal values and query variables
-    def arguments_for(irep_node)
-      @arguments_cache[irep_node] ||= begin
+    def arguments_for(irep_node, definition)
+      @arguments_cache[irep_node][definition] ||= begin
         GraphQL::Query::LiteralInput.from_arguments(
           irep_node.ast_node.arguments,
-          irep_node.definition.arguments,
+          definition.arguments,
           self.variables
         )
       end

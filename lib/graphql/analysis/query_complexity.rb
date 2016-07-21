@@ -38,7 +38,7 @@ module GraphQL
             else
               0
             end
-            memo[:complexities_on_type].last.merge(irep_node.on_types, own_complexity)
+            memo[:complexities_on_type].last.merge(irep_node.definitions, own_complexity)
           end
         end
         memo
@@ -56,17 +56,24 @@ module GraphQL
       # Get a complexity value for a field,
       # by getting the number or calling its proc
       def get_complexity(irep_node, query, child_complexity)
-        field_defn = irep_node.definition
-        defined_complexity = field_defn.complexity
-        case defined_complexity
-        when Proc
-          args = query.arguments_for(irep_node)
-          defined_complexity.call(query.context, args, child_complexity)
-        when Numeric
-          defined_complexity + (child_complexity || 0)
-        else
-          raise("Invalid complexity: #{defined_complexity.inspect} on #{field_defn.name}")
+        max_possible_complexity = 0
+        irep_node.definitions.each do |type_defn, field_defn|
+          defined_complexity = field_defn.complexity
+          type_cpx = case defined_complexity
+          when Proc
+            args = query.arguments_for(irep_node, field_defn)
+            defined_complexity.call(query.context, args, child_complexity)
+          when Numeric
+            defined_complexity + (child_complexity || 0)
+          else
+            raise("Invalid complexity: #{defined_complexity.inspect} on #{field_defn.name}")
+          end
+
+          if type_cpx > max_possible_complexity
+            max_possible_complexity = type_cpx
+          end
         end
+        max_possible_complexity
       end
 
       # Selections on an object may apply differently depending on what is _actually_ returned by the resolve function.
@@ -97,8 +104,8 @@ module GraphQL
         end
 
         # Store the complexity score for each of `types`
-        def merge(types, complexity)
-          types.each { |t| @types[t] += complexity }
+        def merge(definitions, complexity)
+          definitions.each { |type_defn, field_defn| @types[type_defn] += complexity }
         end
 
         private

@@ -35,6 +35,7 @@ module GraphQL
           node = Node.new(
             return_type: context.type_definition.unwrap,
             ast_node: ast_node,
+            name: ast_node.name,
           )
           @nodes.push(node)
           @operations[ast_node.name] = node
@@ -51,10 +52,11 @@ module GraphQL
               return_type: context.type_definition && context.type_definition.unwrap,
               ast_node: ast_node,
               name: node_name,
-              definition: context.field_definition,
+              definition_name: ast_node.name,
             )
           end
-          node.on_types.add(context.parent_type_definition.unwrap)
+          object_type = context.parent_type_definition.unwrap
+          node.definitions[object_type] = context.field_definition
           @nodes.push(node)
           @parent_directives.push([])
         }
@@ -68,8 +70,9 @@ module GraphQL
           if @parent_directives.any?
             @parent_directives.last << Node.new(
               name: ast_node.name,
+              definition_name: ast_node.name,
               ast_node: ast_node,
-              definition: context.directive_definition,
+              definitions: [context.directive_definition]
             )
           end
         }
@@ -167,7 +170,7 @@ module GraphQL
       # Merge `node` into `parent_node`'s children, as `name`, applying `extra_directives`
       def deep_merge_child(parent_node, name, node, extra_directives)
         child_node = parent_node.children[name] ||= node.dup
-        child_node.on_types.merge(node.on_types)
+        child_node.definitions.merge!(node.definitions)
         node.children.each do |merge_child_name, merge_child_node|
           deep_merge_child(child_node, merge_child_name, merge_child_node, [])
         end

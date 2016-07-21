@@ -18,8 +18,9 @@ module GraphQL
           @query.fragments[name]
         end
 
-        def get_field(type, name)
-          @schema.get_field(type, name)
+        def get_field(type, irep_node)
+          # fall back for dynamic fields (eg __typename)
+          irep_node.definitions[type] || @schema.get_field(type, irep_node.definition_name) || raise("No field found on #{type.name} for '#{irep_node.definition_name}' (#{irep_node.ast_node.name})")
         end
 
         def add_error(err)

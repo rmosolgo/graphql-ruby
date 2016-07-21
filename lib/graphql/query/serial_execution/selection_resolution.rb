@@ -32,7 +32,7 @@ module GraphQL
         end
 
         def applies_to_type?(irep_node, type, target)
-          irep_node.on_types.any? { |child_type|
+          irep_node.definitions.any? { |child_type, field_defn|
             GraphQL::Query::TypeResolver.new(target, child_type, type, execution_context.query.context).type
           }
         end

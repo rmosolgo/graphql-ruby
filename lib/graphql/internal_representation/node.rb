@@ -3,12 +3,13 @@ require "set"
 module GraphQL
   module InternalRepresentation
     class Node
-      def initialize(ast_node:, return_type: nil, on_types: Set.new, name: nil, definition: nil, children: {}, spreads: [], directives: Set.new)
+      def initialize(ast_node: nil, return_type: nil, name: nil, definition_name: nil, definitions: {}, children: {}, spreads: [], directives: Set.new)
+        # Make sure these are kept in sync with #dup
         @ast_node = ast_node
         @return_type = return_type
-        @on_types = on_types
         @name = name
-        @definition = definition
+        @definition_name = definition_name
+        @definitions = definitions
         @children = children
         @spreads = spreads
         @directives = directives
@@ -22,32 +23,33 @@ module GraphQL
       # @return [Set<GraphQL::Language::Nodes::Directive>]
       attr_reader :directives
 
-      # @return [GraphQL::Field, GraphQL::Directive] The definition to use to execute this node
-      attr_reader :definition
+      # @return [String] the name for this node's definition ({#name} may be a field's alias, this is always the name)
+      attr_reader :definition_name
 
-      # @return [String] the name to use for the result in the response hash
-      attr_reader :name
-
-      # @return [GraphQL::Language::Nodes::AbstractNode] The AST node (or one of the nodes) where this was derived from
-      attr_reader :ast_node
-
-      # This may come from the previous field's return value or an explicitly-typed fragment
+      # A cache of type-field pairs for executing & analyzing this node
+      #
       # @example On-type from previous return value
       # {
       #   person(id: 1) {
-      #     firstName # => on_type is person
+      #     firstName # => defined type is person
       #   }
       # }
       # @example On-type from explicit type condition
       # {
       #   node(id: $nodeId) {
       #     ... on Nameable {
-      #       firstName # => on_type is Nameable
+      #       firstName # => defined type is Nameable
       #     }
       #   }
       # }
-      # @return [Set<GraphQL::ObjectType, GraphQL::InterfaceType>] the types this field applies to
-      attr_reader :on_types
+      # @return [Hash<GraphQL::BaseType => GraphQL::Field>] definitions to use for each possible type
+      attr_reader :definitions
+
+      # @return [String] the name to use for the result in the response hash
+      attr_reader :name
+
+      # @return [GraphQL::Language::Nodes::AbstractNode] The AST node (or one of the nodes) where this was derived from
+      attr_reader :ast_node
 
       # @return [GraphQL::BaseType]
       attr_reader :return_type
@@ -62,19 +64,6 @@ module GraphQL
           self_inspect << " {\n#{children.values.map { |n| n.inspect(indent + 2 )}.join("\n")}\n#{own_indent}}"
         end
         self_inspect
-      end
-
-      def dup
-        self.class.new({
-          ast_node: ast_node,
-          return_type: return_type,
-          on_types: on_types,
-          name: name,
-          definition: definition,
-          children: children,
-          spreads: spreads,
-          directives: directives,
-        })
       end
     end
   end

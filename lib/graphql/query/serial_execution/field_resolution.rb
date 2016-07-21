@@ -9,11 +9,8 @@ module GraphQL
           @parent_type = parent_type
           @target = target
           @execution_context = execution_context
-          @field = execution_context.get_field(parent_type, irep_node.definition.name)
-          if @field.nil?
-            raise("No field found on #{parent_type.name} '#{parent_type}' for '#{ast_node.name}'")
-          end
-          @arguments = execution_context.query.arguments_for(irep_node)
+          @field = execution_context.get_field(parent_type, irep_node)
+          @arguments = execution_context.query.arguments_for(irep_node, @field)
         end
 
         def result

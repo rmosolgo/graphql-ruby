@@ -26,12 +26,12 @@ describe GraphQL::InternalRepresentation::Rewrite do
       assert_equal QueryType, op_node.return_type
       first_field = op_node.children.values.first
       assert_equal 3, first_field.children.length
-      assert_equal [QueryType], first_field.on_types.to_a
+      assert_equal [QueryType], first_field.definitions.keys
       assert_equal CheeseType, first_field.return_type
 
       second_field = op_node.children.values.last
       assert_equal 1, second_field.children.length
-      assert_equal [QueryType], second_field.on_types.to_a
+      assert_equal [QueryType], second_field.definitions.keys
       assert_equal CheeseType, second_field.return_type
     end
   end
@@ -48,7 +48,8 @@ describe GraphQL::InternalRepresentation::Rewrite do
     it "gets dynamic field definitions" do
       cheese_field = rewrite_result[nil].children["cheese"]
       typename_field = cheese_field.children["typename"]
-      assert_equal "__typename", typename_field.definition.name
+      assert_equal "__typename", typename_field.definitions.values.first.name
+      assert_equal "__typename", typename_field.definition_name
     end
   end
 
@@ -112,9 +113,9 @@ describe GraphQL::InternalRepresentation::Rewrite do
       similar_sheep_field = similar_cow_field.children["similarCheese"]
       assert_equal ["flavor", "source"], similar_sheep_field.children.keys
 
-      assert_equal Set.new([EdibleInterface]), cheese_field.children["origin"].on_types
-      assert_equal Set.new([CheeseType, EdibleInterface]), cheese_field.children["fatContent"].on_types
-      assert_equal Set.new([CheeseType]), cheese_field.children["flavor"].on_types
+      assert_equal [EdibleInterface], cheese_field.children["origin"].definitions.keys
+      assert_equal [CheeseType, EdibleInterface], cheese_field.children["fatContent"].definitions.keys
+      assert_equal [CheeseType], cheese_field.children["flavor"].definitions.keys
     end
   end
 end
