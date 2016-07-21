@@ -1,5 +1,35 @@
 # graphql-relay
 
+### Breaking Changes
+
+### Deprecations
+
+### New Features
+
+### Bug Fix
+
+## 0.12.0 (21 Jul 2016)
+
+### Breaking Changes
+
+- Don't cache a global node identification config #51
+
+  To migrate, assign your node identification helper to the schema:
+
+  ```ruby
+  NodeIdentification = GraphQL::Relay::GlobalNodeIdentification.define { ... }
+  MySchema.node_identification = NodeIdentification
+  ```
+
+### New Features
+
+- Support lazy definition blocks from graphql-ruby 0.17
+- Add `startCursor` and `endCursor` to `PageInfo` #60
+
+### Bug Fix
+
+- Support `field:` keyword for connection helper #58
+
 ## 0.11.2 (6 Jul 2016)
 
 ### New Features
