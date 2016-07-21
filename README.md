@@ -117,7 +117,7 @@ NodeIdentification = GraphQL::Relay::GlobalNodeIdentification.define do
     type_name = id_parts[0]
     id        = id_parts[1]
     # Return *both*:
-    type_name, id
+    [type_name, id]
   }
 end
 
