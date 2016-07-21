@@ -6,6 +6,12 @@
 
 ### Bug fixes
 
+## 0.16.1 (20 Jul 2016)
+
+### Bug fixes
+
+- Fix merging fragments on Union types (see #190, broken from #180)
+
 ## 0.16.0 (14 Jul 2016)
 
 ### Breaking changes & deprecations
