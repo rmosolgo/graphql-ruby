@@ -6,6 +6,14 @@ describe GraphQL::Relay::RelationConnection do
     names = ships.map { |e| e["node"]["name"] }
   end
 
+  def get_page_info(result)
+    result["data"]["empire"]["bases"]["pageInfo"]
+  end
+
+  def get_first_cursor(result)
+    result["data"]["empire"]["bases"]["edges"].first["cursor"]
+  end
+
   def get_last_cursor(result)
     result["data"]["empire"]["bases"]["edges"].last["cursor"]
   end
@@ -30,6 +38,9 @@ describe GraphQL::Relay::RelationConnection do
         },
         pageInfo {
           hasNextPage
+          hasPreviousPage
+          startCursor
+          endCursor
         }
       }
     |}
@@ -37,12 +48,24 @@ describe GraphQL::Relay::RelationConnection do
     it 'limits the result' do
       result = query(query_string, "first" => 2)
       assert_equal(2, get_names(result).length)
+      assert_equal(true, get_page_info(result)["hasNextPage"])
+      assert_equal(false, get_page_info(result)["hasPreviousPage"])
+      assert_equal("MQ==", get_page_info(result)["startCursor"])
+      assert_equal("Mg==", get_page_info(result)["endCursor"])
+      assert_equal("MQ==", get_first_cursor(result))
+      assert_equal("Mg==", get_last_cursor(result))
 
       result = query(query_string, "first" => 3)
       assert_equal(3, get_names(result).length)
+      assert_equal(false, get_page_info(result)["hasNextPage"])
+      assert_equal(false, get_page_info(result)["hasPreviousPage"])
+      assert_equal("MQ==", get_page_info(result)["startCursor"])
+      assert_equal("Mw==", get_page_info(result)["endCursor"])
+      assert_equal("MQ==", get_first_cursor(result))
+      assert_equal("Mw==", get_last_cursor(result))
     end
 
-    it 'provides custom fileds on the connection type' do
+    it 'provides custom fields on the connection type' do
       result = query(query_string, "first" => 2)
       assert_equal(
         Base.where(faction_id: 2).count,
@@ -200,6 +223,14 @@ describe GraphQL::Relay::RelationConnection do
       names = ships.map { |e| e["node"]["name"] }
     end
 
+    def get_page_info(result)
+      result["data"]["empire"]["basesAsSequelDataset"]["pageInfo"]
+    end
+
+    def get_first_cursor(result)
+      result["data"]["empire"]["basesAsSequelDataset"]["edges"].first["cursor"]
+    end
+
     def get_last_cursor(result)
       result["data"]["empire"]["basesAsSequelDataset"]["edges"].last["cursor"]
     end
@@ -224,6 +255,9 @@ describe GraphQL::Relay::RelationConnection do
           },
           pageInfo {
             hasNextPage
+            hasPreviousPage
+            startCursor
+            endCursor
           }
         }
       |}
@@ -231,12 +265,24 @@ describe GraphQL::Relay::RelationConnection do
       it 'limits the result' do
         result = query(query_string, "first" => 2)
         assert_equal(2, get_names(result).length)
+        assert_equal(true, get_page_info(result)["hasNextPage"])
+        assert_equal(false, get_page_info(result)["hasPreviousPage"])
+        assert_equal("MQ==", get_page_info(result)["startCursor"])
+        assert_equal("Mg==", get_page_info(result)["endCursor"])
+        assert_equal("MQ==", get_first_cursor(result))
+        assert_equal("Mg==", get_last_cursor(result))
 
         result = query(query_string, "first" => 3)
         assert_equal(3, get_names(result).length)
+        assert_equal(false, get_page_info(result)["hasNextPage"])
+        assert_equal(false, get_page_info(result)["hasPreviousPage"])
+        assert_equal("MQ==", get_page_info(result)["startCursor"])
+        assert_equal("Mw==", get_page_info(result)["endCursor"])
+        assert_equal("MQ==", get_first_cursor(result))
+        assert_equal("Mw==", get_last_cursor(result))
       end
 
-      it 'provides custom fileds on the connection type' do
+      it 'provides custom fields on the connection type' do
         result = query(query_string, "first" => 2)
         assert_equal(
           Base.where(faction_id: 2).count,

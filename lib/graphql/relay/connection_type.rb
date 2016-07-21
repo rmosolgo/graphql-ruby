@@ -14,7 +14,7 @@ module GraphQL
               obj.edge_nodes.map { |item| edge_class.new(item, obj) }
             }
           end
-          field :pageInfo, PageInfo, property: :page_info
+          field :pageInfo, !PageInfo, property: :page_info
           block && instance_eval(&block)
         end
 

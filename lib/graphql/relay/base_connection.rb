@@ -101,6 +101,24 @@ module GraphQL
         !!(last && sliced_nodes.count > last)
       end
 
+      # Used by `pageInfo`
+      def start_cursor
+        if start_node = (respond_to?(:paged_nodes_array, true) ? paged_nodes_array : paged_nodes).first
+          return cursor_from_node(start_node)
+        else
+          return nil
+        end
+      end
+
+      # Used by `pageInfo`
+      def end_cursor
+        if end_node = (respond_to?(:paged_nodes_array, true) ? paged_nodes_array : paged_nodes).last
+          return cursor_from_node(end_node)
+        else
+          return nil
+        end
+      end
+
       # An opaque operation which returns a connection-specific cursor.
       def cursor_from_node(object)
         raise NotImplementedError, "must return a cursor for this object/connection pair"
