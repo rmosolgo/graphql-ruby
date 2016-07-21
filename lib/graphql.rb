@@ -3,6 +3,9 @@ require "set"
 require "singleton"
 require "forwardable"
 
+# Don't require this by default, but users can require this for relay support:
+# require "graphql/relay"
+
 module GraphQL
   class Error < StandardError
   end
