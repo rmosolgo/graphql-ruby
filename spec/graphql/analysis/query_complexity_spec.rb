@@ -132,7 +132,7 @@ describe GraphQL::Analysis::QueryComplexity do
 
       it "gets the max among options" do
         reduce_result
-        assert_equal 5, complexities.last
+        assert_equal 6, complexities.last
       end
     end
 

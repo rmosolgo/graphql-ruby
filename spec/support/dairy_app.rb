@@ -243,6 +243,10 @@ QueryType = GraphQL::ObjectType.define do
     }
   end
 
+  field :allDairy, types[DairyProductUnion] do
+    resolve -> (obj, args, ctx) { CHEESES.values + MILKS.values }
+  end
+
   field :error do
     description "Raise an error"
     type GraphQL::STRING_TYPE
