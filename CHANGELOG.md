@@ -1,10 +1,33 @@
 # Changelog
 
-### Breaking changes & deprecations
+### Breaking changes
+
+### Deprecations
 
 ### New features
 
 ### Bug fixes
+
+## 0.17.0 (21 Jul 2016)
+
+### Breaking changes
+
+- `InternalRepresentation::Node` API changes:
+
+  - `#definition_name` returns the field name on field nodes (while `#name` may have an alias)
+  - `#definitions` returns `{type => field}` pairs for possible fields on this node
+  - `#definition` is gone, it is equivalent to `node.definitions.values.first`
+  - `#on_types` is gone, it is equivalent to `node.definitions.keys`
+
+### New features
+
+- Accept `hash_key:` field option
+- Call `.define { }` block lazily, so `-> { }` is not needed for circular references #182
+
+### Bug fixes
+
+- Support `on` as an Enum value
+- If the same field is requested on multiple types, choose the maximum complexity among them (not the first)
 
 ## 0.16.1 (20 Jul 2016)
 
