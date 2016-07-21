@@ -167,6 +167,7 @@ module GraphQL
       # Merge `node` into `parent_node`'s children, as `name`, applying `extra_directives`
       def deep_merge_child(parent_node, name, node, extra_directives)
         child_node = parent_node.children[name] ||= node.dup
+        child_node.on_types.merge(node.on_types)
         node.children.each do |merge_child_name, merge_child_node|
           deep_merge_child(child_node, merge_child_name, merge_child_node, [])
         end
