@@ -4,6 +4,7 @@ After you define your schema, you can evaluate queries with `GraphQL::Schema#exe
 
 At the simplest, you can evaluate a query from string against a schema:
 
+
 ```ruby
 # let's pretend it's a Rails controller!
 query_string = params[:query]

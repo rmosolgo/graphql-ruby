@@ -9,3 +9,5 @@ gemfiles/*.lock
 .bundle/
 vendor/
 .idea/
+site/tmp/
+**/*.log

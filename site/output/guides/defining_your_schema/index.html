@@ -1,0 +1,358 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>GraphQL Ruby</title>
+    <link rel="stylesheet" href="/stylesheet.css">
+    <!-- you don't need to keep this, but it's cool for stats! -->
+    <meta name="generator" content="Nanoc 4.2.3">
+  </head>
+  <body class="hack">
+    <div class="container">
+      <div style="display: flex; justify-content: center;">
+<strong style="white-space: pre; line-height: 1.1em; display: inline-block;">
+    ▄██████▄     ▄████████    ▄████████    ▄███████▄    ▄█    █▄    ████████▄    ▄█
+   ███    ███   ███    ███   ███    ███   ███    ███   ███    ███   ███    ███  ███
+   ███    █▀    ███    ███   ███    ███   ███    ███   ███    ███   ███    ███  ███
+  ▄███         ▄███▄▄▄▄██▀   ███    ███   ███    ███  ▄███▄▄▄▄███▄▄ ███    ███  ███
+ ▀▀███ ████▄  ▀▀███▀▀▀▀▀   ▀███████████ ▀█████████▀  ▀▀███▀▀▀▀███▀  ███    ███  ███
+   ███    ███ ▀███████████   ███    ███   ███          ███    ███   ███    ███  ███
+   ███    ███   ███    ███   ███    ███   ███          ███    ███   ███  ▀ ███  ███▌    ▄
+   ████████▀    ███    ███   ███    █▀   ▄████▀        ███    █▀     ▀██████▀▄█ █████▄▄██
+                ███    ███                                                      ▀
+</strong>
+      </div>
+      <p style="text-align: center;">A GraphQL server implementation for Ruby</p>
+
+      <div class="grid -between">
+        <div class="cell -3of12">
+          <h3><a href="/">Readme</a></h3>
+          <h3>Guides</h3>
+          <ul>
+            <li><a href="/guides/introduction/">Introduction</a></li>
+            <li><a href="/guides/defining_your_schema/">Defining a Schema</a></li>
+            <li><a href="/guides/executing_queries/">Executing Queries</a></li>
+            <li><a href="/guides/code_reuse/">Code Reuse</a></li>
+            <li><a href="/guides/security/">Security</a></li>
+            <li><a href="/guides/testing/">Testing</a></li>
+          </ul>
+          <h3><a href="http://www.rubydoc.info/github/rmosolgo/graphql-ruby">API Docs</a></h3>
+          <h3><a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a></h3>
+        </div>
+        <div class="cell -9of12">
+          <h1>Defining Your Schema</h1>
+
+<p>To define your schema, define types and connect them with fields. Then, initialize your schema with root types (<code>query</code> and <code>mutation</code>). You can also customize your schema.</p>
+
+<h2>Defining Types</h2>
+
+<h3>Object Types</h3>
+
+<p>Use <code>GraphQL::ObjectType.define</code> to define types. Within the block, you can:</p>
+
+<ul>
+<li>define properties: <code>name</code>, <code>description</code>, <code>interfaces</code></li>
+<li>define fields with the <code>field</code> helper</li>
+<li>access the <code>types</code> object, which exposes built-in scalar types (<code>types.Boolean</code>, <code>types.Int</code>, <code>types.Float</code>, <code>types.String</code>, <code>types.ID</code>)</li>
+</ul>
+
+<p>For example:</p>
+<pre class="highlight ruby"><code><span class="no">CityType</span> <span class="o">=</span> <span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+  <span class="nb">name</span> <span class="s2">"City"</span>
+  <span class="n">description</span> <span class="s2">"A large densely populated area"</span>
+  <span class="n">interfaces</span> <span class="p">[</span><span class="no">LocationInterface</span><span class="p">,</span> <span class="no">NamedEntityInterface</span><span class="p">]</span>
+
+  <span class="n">field</span> <span class="ss">:name</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">String</span><span class="p">,</span> <span class="s2">"The city's name"</span>
+
+  <span class="c1"># `!` marks this field as non-null:</span>
+  <span class="n">field</span> <span class="ss">:population</span><span class="p">,</span> <span class="o">!</span><span class="n">types</span><span class="o">.</span><span class="no">Int</span><span class="p">,</span> <span class="s2">"Number of people who live in this city"</span>
+
+  <span class="c1"># This returns a list of `PersonType`s</span>
+  <span class="n">field</span> <span class="ss">:mayors</span><span class="p">,</span> <span class="n">types</span><span class="p">[</span><span class="no">PersonType</span><span class="p">]</span>
+  <span class="n">field</span> <span class="ss">:sisterCity</span><span class="p">,</span> <span class="no">CityType</span>
+<span class="k">end</span>
+</code></pre>
+<h3>Interface Types</h3>
+
+<p>Interfaces provided a set of fields to <em>many</em> object types. When an object includes an interface, it gains the default resolve behavior from that interface.</p>
+
+<p>Interfaces are defined with name, description and fields. For example:</p>
+<pre class="highlight ruby"><code><span class="no">BeverageInterface</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">InterfaceType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+  <span class="nb">name</span> <span class="s2">"Beverage"</span>
+  <span class="n">field</span> <span class="ss">:caffeinated</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">Boolean</span>
+  <span class="n">field</span> <span class="ss">:size</span><span class="p">,</span> <span class="no">BeverageSizeEnum</span>
+<span class="k">end</span>
+
+<span class="c1"># Then, object types may include it:</span>
+<span class="no">CoffeeType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+  <span class="c1"># ...</span>
+  <span class="n">interfaces</span><span class="p">([</span><span class="no">BeverageInterface</span><span class="p">])</span>
+<span class="k">end</span>
+</code></pre>
+<p>In order for your schema to expose members of an interface, it must be able to determine the GraphQL type for a given Ruby object. <code>InterfaceType</code> has a default <code>resolve_type</code> definition, or you can provide your own. Here&#39;s the default:</p>
+<pre class="highlight ruby"><code><span class="no">BeverageInterface</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">InterfaceType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+ <span class="c1"># ...</span>
+ <span class="n">resolve_type</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">object</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
+   <span class="n">type_name</span> <span class="o">=</span> <span class="n">object</span><span class="p">.</span><span class="nf">class</span><span class="p">.</span><span class="nf">name</span>
+   <span class="c1"># you can access the interface's `possible_types` inside the proc</span>
+   <span class="n">possible_types</span> <span class="o">=</span> <span class="n">ctx</span><span class="p">.</span><span class="nf">schema</span><span class="p">.</span><span class="nf">possible_types</span><span class="p">(</span><span class="nb">self</span><span class="p">)</span>
+   <span class="n">possible_types</span><span class="p">.</span><span class="nf">find</span> <span class="p">{</span><span class="o">|</span><span class="n">t</span><span class="o">|</span> <span class="n">t</span><span class="p">.</span><span class="nf">name</span> <span class="o">==</span> <span class="n">type_name</span><span class="p">}</span>
+ <span class="p">}</span>
+<span class="k">end</span>
+</code></pre>
+<h3>Union Types</h3>
+
+<p>Unions represent a set of object types which may occur in the same place.</p>
+<pre class="highlight ruby"><code><span class="no">MediaSearchResultUnion</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">UnionType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+  <span class="nb">name</span> <span class="s2">"MediaSearchResult"</span>
+  <span class="n">description</span> <span class="s2">"An object which can be queried by date, location and filesize"</span>
+  <span class="n">possible_types</span> <span class="p">[</span><span class="no">PhotoType</span><span class="p">,</span> <span class="no">VideoType</span><span class="p">,</span> <span class="no">AudioType</span><span class="p">]</span>
+<span class="k">end</span>
+</code></pre>
+<p>In order to expose a union, you must also define how the concrete type of each object can be determined. <code>UnionType</code> provides a default, shown here:</p>
+<pre class="highlight ruby"><code><span class="no">MediaSearchResultUnion</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">UnionType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+  <span class="c1"># This is the default if you don't provide a custom `resolve_type` proc:</span>
+  <span class="n">resolve_type</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">object</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">type_name</span> <span class="o">=</span> <span class="n">object</span><span class="p">.</span><span class="nf">class</span><span class="p">.</span><span class="nf">name</span>
+    <span class="c1"># You can access the union's `possible_types` inside the proc</span>
+    <span class="n">possible_types</span><span class="p">.</span><span class="nf">find</span> <span class="p">{</span><span class="o">|</span><span class="n">t</span><span class="o">|</span> <span class="n">t</span><span class="p">.</span><span class="nf">name</span> <span class="o">==</span> <span class="n">type_name</span><span class="p">}</span>
+  <span class="p">}</span>
+<span class="k">end</span>
+</code></pre>
+<h3>Enum Types</h3>
+
+<p>Enums define a set of values which maybe used as returns or inputs for the schema.</p>
+
+<p>Each member of the enum has a <em>name</em> and a value. By default, the name is used as the value. But you can use <code>value:</code> to provide a custom value.</p>
+
+<p>Each member may also have a description.</p>
+
+<p>Values can be <em>deprecated</em> by providing a <code>deprecation_reason:</code>.</p>
+<pre class="highlight ruby"><code><span class="no">ShirtSizeEnum</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">EnumType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+  <span class="nb">name</span> <span class="s2">"ShirtSize"</span>
+  <span class="n">description</span> <span class="s2">"T-shirt size"</span>
+  <span class="n">value</span> <span class="s2">"LARGE"</span><span class="p">,</span> <span class="s2">"22 inches wide"</span>
+  <span class="n">value</span> <span class="s2">"MEDIUM"</span><span class="p">,</span> <span class="s2">"20 inches wide"</span>
+  <span class="n">value</span> <span class="s2">"SMALL"</span><span class="p">,</span> <span class="s2">"18 inches wide"</span>
+  <span class="c1"># Custom value:</span>
+  <span class="n">value</span> <span class="s2">"X-SMALL"</span><span class="p">,</span> <span class="s2">"16 inches wide"</span><span class="p">,</span> <span class="ss">value: </span><span class="mi">0</span>
+  <span class="c1"># Deprecated value.</span>
+  <span class="n">value</span> <span class="s2">"XX-SMALL"</span><span class="p">,</span> <span class="s2">"14 inches wide"</span><span class="p">,</span> <span class="ss">deprecation_reason: </span><span class="s2">"Nobody is this size anymore"</span>
+<span class="k">end</span>
+</code></pre>
+<h3>Input Object Types</h3>
+
+<p>Input objects are complex objects for fields. They may be passed for read operations (such as search queries) or for mutations (such as update payloads).</p>
+
+<p>Input objects are composed of fields. Their fields may contain:</p>
+
+<ul>
+<li>scalars (eg, boolean, string, int, float)</li>
+<li>enums</li>
+<li>lists</li>
+<li>input objects</li>
+</ul>
+<pre class="highlight ruby"><code><span class="c1"># Place an order with this input, eg:</span>
+<span class="c1"># {</span>
+<span class="c1">#   model_id: "100",</span>
+<span class="c1">#   selections: [</span>
+<span class="c1">#     { quantity: 1, size: LARGE },</span>
+<span class="c1">#     { quantity: 4, size: MEDIUM },</span>
+<span class="c1">#     { quantity: 3, size: SMALL },</span>
+<span class="c1">#   ] ,</span>
+<span class="c1"># }</span>
+
+<span class="no">ShirtOrderInput</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">InputObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+  <span class="nb">name</span> <span class="s2">"ShirtOrder"</span>
+  <span class="n">description</span> <span class="s2">"An order for some t-shirts"</span>
+  <span class="n">input_field</span> <span class="ss">:model_id</span><span class="p">,</span> <span class="o">!</span><span class="n">types</span><span class="o">.</span><span class="no">ID</span>
+  <span class="c1"># A list of other inputs:</span>
+  <span class="n">input_field</span> <span class="ss">:selections</span><span class="p">,</span> <span class="n">types</span><span class="p">[</span><span class="no">ShirtOrderSelectionInput</span><span class="p">]</span>
+<span class="k">end</span>
+
+<span class="no">ShirtOrderSelectionInput</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">InputObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+  <span class="nb">name</span> <span class="s2">"ShirtOrderSelection"</span>
+  <span class="n">description</span> <span class="s2">"A quantity &amp; size to order for a given shirt"</span>
+  <span class="n">input_field</span> <span class="ss">:quantity</span><span class="p">,</span> <span class="o">!</span><span class="n">types</span><span class="o">.</span><span class="no">Int</span>
+  <span class="n">input_field</span> <span class="ss">:size</span><span class="p">,</span> <span class="o">!</span><span class="no">ShirtSizeEnum</span>
+<span class="k">end</span>
+</code></pre>
+<h2>Defining Fields</h2>
+
+<p>Usually, you&#39;ll define fields while defining a type. The most common case defines a field name, type, and description. For example:</p>
+<pre class="highlight ruby"><code><span class="n">field</span> <span class="ss">:name</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">String</span><span class="p">,</span> <span class="s2">"The name of this thing"</span>
+</code></pre>
+<h3>Options</h3>
+
+<p>A field definition may include some options:</p>
+<pre class="highlight ruby"><code><span class="n">field</span> <span class="ss">:name</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">String</span><span class="p">,</span> <span class="s2">"The name of this thing"</span><span class="p">,</span>
+  <span class="c1"># Mark the field as deprecated:</span>
+  <span class="ss">deprecation_reason: </span><span class="s2">"Nobody calls it by name anymore"</span><span class="p">,</span>
+  <span class="c1"># Use a different getter method to resolve this field:</span>
+  <span class="ss">property: :given_name</span><span class="p">,</span>
+  <span class="c1"># Count this field as "10" when assessing the cost of running a query</span>
+  <span class="ss">complexity: </span><span class="mi">10</span>
+</code></pre>
+<h3>Block Definition</h3>
+
+<p>For a more complex definition, you can also pass a definition block. Within the block, you can define <code>name</code>, <code>type</code>, <code>description</code>, <code>resolve</code>, and <code>argument</code>. For example:</p>
+<pre class="highlight ruby"><code><span class="n">field</span> <span class="ss">:comments</span> <span class="k">do</span>
+  <span class="n">type</span> <span class="o">!</span><span class="n">types</span><span class="p">[</span><span class="o">!</span><span class="no">CommentType</span><span class="p">]</span>
+
+  <span class="n">description</span> <span class="s2">"Comments on this Post"</span>
+
+  <span class="n">argument</span> <span class="ss">:moderated</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">Boolean</span><span class="p">,</span> <span class="ss">default_value: </span><span class="kp">true</span>
+
+  <span class="n">resolve</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="k">do</span>
+     <span class="no">Comment</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span>
+       <span class="ss">post_id: </span><span class="n">obj</span><span class="p">.</span><span class="nf">id</span><span class="p">,</span>
+       <span class="ss">moderated: </span><span class="n">args</span><span class="p">[</span><span class="s2">"moderated"</span><span class="p">]</span>
+     <span class="p">)</span>
+   <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<p>This field accepts an optional Boolean argument <code>moderated</code>, which it uses to filter results in the <code>resolve</code> method.</p>
+
+<h3>Passing an existing field</h3>
+
+<p>You can provide a pre-made <code>GraphQL::Field</code> object to define a field:</p>
+<pre class="highlight ruby"><code><span class="n">name_field</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Field</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+  <span class="c1"># ...</span>
+<span class="k">end</span>
+
+<span class="c1"># ...</span>
+
+<span class="n">field</span> <span class="ss">:name</span><span class="p">,</span> <span class="n">name_field</span>
+</code></pre>
+<p>This operation <strong>is destructive</strong>, so you need to use a new <code>GraphQL::Field</code> object for each field definition. (The <code>GraphQL::Field</code> receives a &quot;name&quot; from the <code>field</code> definition.)</p>
+
+<h2>Referencing Types</h2>
+
+<p>Some parts of schema definition take types as an input. There are two good ways to provide types:</p>
+
+<ol>
+<li><strong>By value</strong>. Pass a variable which holds the type.</li>
+</ol>
+<pre class="highlight ruby"><code>   <span class="c1"># constant</span>
+   <span class="n">field</span> <span class="ss">:team</span><span class="p">,</span> <span class="no">TeamType</span>
+   <span class="c1"># local variable</span>
+   <span class="n">field</span> <span class="ss">:stadium</span><span class="p">,</span> <span class="n">stadium_type</span>
+</code></pre>
+<ol>
+<li><strong>By proc</strong>, which will be lazy-evaluated to look up a type.</li>
+</ol>
+<pre class="highlight ruby"><code>   <span class="n">field</span> <span class="ss">:team</span><span class="p">,</span> <span class="o">-&gt;</span> <span class="p">{</span> <span class="no">TeamType</span> <span class="p">}</span>
+   <span class="n">field</span> <span class="ss">:stadium</span><span class="p">,</span> <span class="o">-&gt;</span> <span class="p">{</span> <span class="no">LookupTypeForModel</span><span class="p">.</span><span class="nf">lookup</span><span class="p">(</span><span class="no">Stadium</span><span class="p">)</span> <span class="p">}</span>
+</code></pre>
+<h2>Defining the Schema</h2>
+
+<p>Your schema can be initialized with some options:</p>
+<pre class="highlight ruby"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span>
+  <span class="ss">query: </span><span class="no">QueryType</span><span class="p">,</span>       <span class="c1"># root type for read-only queries</span>
+  <span class="ss">mutation: </span><span class="no">MutationType</span><span class="p">,</span> <span class="c1"># root type for mutations</span>
+  <span class="ss">max_depth: </span><span class="mi">7</span><span class="p">,</span>           <span class="c1"># if present, the max depth for incoming queries</span>
+<span class="p">)</span>
+</code></pre>
+<p>Additionally, you can define error handling and custom middleware as described below.</p>
+
+<h2>Handling Errors</h2>
+
+<p>You can rescue errors by defining handlers with <code>Schema#rescue_from</code>. The handler receives the error instance and it should return a string. The returned string will be added to the <code>&quot;errors&quot;</code> key.</p>
+
+<p>For example, you can set up a handler:</p>
+<pre class="highlight ruby"><code><span class="c1"># The error instance is yielded to the block:</span>
+<span class="no">MySchema</span><span class="p">.</span><span class="nf">rescue_from</span><span class="p">(</span><span class="no">ActiveRecord</span><span class="o">::</span><span class="no">RecordInvalid</span><span class="p">)</span> <span class="p">{</span> <span class="o">|</span><span class="n">error</span><span class="o">|</span> <span class="s2">"Some data could not be saved"</span> <span class="p">}</span>
+</code></pre>
+<p>Then, when a query is executed, that error is rescued and its message is added to the response:</p>
+<pre class="highlight ruby"><code><span class="n">result</span> <span class="o">=</span> <span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="n">query_string</span><span class="p">)</span>
+<span class="c1"># {</span>
+<span class="c1">#   "data" =&gt; {</span>
+<span class="c1">#     # other fields may resolve successfully</span>
+<span class="c1">#   },</span>
+<span class="c1">#   "errors" =&gt; [</span>
+<span class="c1">#     {</span>
+<span class="c1">#       "message" =&gt; "Some data could not be saved",</span>
+<span class="c1">#       "locations" =&gt; [{"line" =&gt; 5, "column" =&gt; 10}]</span>
+<span class="c1">#      }</span>
+<span class="c1">#   ]</span>
+<span class="c1"># }</span>
+</code></pre>
+<p>When explicitly raising the exception, you can raise a <code>GraphQL::ExecutionError</code> with a message to add to the response without specifying an error handler.</p>
+
+<h2>Middleware</h2>
+
+<p>You can use <em>middleware</em> to affect the evaluation of fields in your schema. They function like <code>before_action</code>s and <code>after_action</code>s in Rails controllers.</p>
+
+<p>A middleware is any object that responds to <code>#call(*args, next_middleware)</code>. Inside that method, it should either:</p>
+
+<ul>
+<li>send <code>call</code> to the next middleware to continue the evaluation; or</li>
+<li>return a value to end the evaluation early.</li>
+</ul>
+
+<p>Middlewares&#39; <code>#call</code> is invoked with several arguments:</p>
+
+<ul>
+<li><code>parent_type</code> is the type whose field is being accessed</li>
+<li><code>parent_object</code> is the object being exposed by that type</li>
+<li><code>field_definition</code> is the definition for the field being accessed</li>
+<li><code>field_args</code> is the hash of arguments passed to the field</li>
+<li><code>query_context</code> is the context object passed throughout the query</li>
+<li><code>next_middleware</code> represents the execution chain. Call <code>#call</code> to continue evalution.</li>
+</ul>
+
+<p>Add a middleware to a schema by adding to the <code>#middleware</code> array.</p>
+
+<h3>Example: Authorization</h3>
+
+<p>This middleware only continues evaluation if the <code>current_user</code> is permitted to read the target object:</p>
+<pre class="highlight ruby"><code><span class="k">class</span> <span class="nc">AuthorizationMiddleware</span>
+  <span class="k">def</span> <span class="nf">call</span><span class="p">(</span><span class="n">parent_type</span><span class="p">,</span> <span class="n">parent_object</span><span class="p">,</span> <span class="n">field_definition</span><span class="p">,</span> <span class="n">field_args</span><span class="p">,</span> <span class="n">query_context</span><span class="p">,</span> <span class="n">next_middleware</span><span class="p">)</span>
+    <span class="n">current_user</span> <span class="o">=</span> <span class="n">query_context</span><span class="p">[</span><span class="ss">:current_user</span><span class="p">]</span> <span class="c1"># passed in when creating the query</span>
+    <span class="k">if</span> <span class="n">current_user</span> <span class="o">&amp;&amp;</span> <span class="n">current_user</span><span class="p">.</span><span class="nf">can_read?</span><span class="p">(</span><span class="n">parent_object</span><span class="p">)</span>
+      <span class="c1"># This user is authorized, so continue execution</span>
+      <span class="n">next_middleware</span><span class="p">.</span><span class="nf">call</span>
+    <span class="k">else</span>
+      <span class="c1"># Silently halt execution</span>
+      <span class="kp">nil</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<p>Then, add the middleware to your schema:</p>
+<pre class="highlight ruby"><code><span class="no">MySchema</span><span class="p">.</span><span class="nf">middleware</span> <span class="o">&lt;&lt;</span> <span class="no">AuthorizationMiddleware</span><span class="p">.</span><span class="nf">new</span>
+</code></pre>
+<p>Now, all field access will be wrapped by that authorization routine.</p>
+
+<h2>Query Analyzers</h2>
+
+<p>Query analyzers are like middleware for the validation phase. They&#39;re called at each node of the query&#39;s internal representation (see <code>GraphQL::InternalRepresentation::Node</code>). If they return a <code>GraphQL::AnalysisError</code>, the query won&#39;t be run and the error will be added to the response&#39;s <code>errors</code> key.</p>
+
+<p>The minimal API is <code>.call(memo, visit_type, internal_representation_node)</code>. For example:</p>
+<pre class="highlight ruby"><code><span class="n">ast_node_logger</span> <span class="o">=</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">memo</span><span class="p">,</span> <span class="n">visit_type</span><span class="p">,</span> <span class="n">internal_representation_node</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">if</span> <span class="n">visit_type</span> <span class="o">==</span> <span class="ss">:enter</span>
+    <span class="nb">puts</span> <span class="s2">"Visiting </span><span class="si">#{</span><span class="n">internal_representation_node</span><span class="p">.</span><span class="nf">name</span><span class="si">}</span><span class="s2">!"</span>
+  <span class="k">end</span>
+<span class="p">}</span>
+<span class="no">MySchema</span><span class="p">.</span><span class="nf">query_analyzers</span> <span class="o">&lt;&lt;</span> <span class="n">ast_node_logger</span>
+</code></pre>
+<p>Whatever <code>.call(...)</code> returns will be passed as <code>memo</code> for the next visit.</p>
+
+<p>The analyzer can implement a few other methods. If they&#39;re present, they&#39;ll be called:</p>
+
+<ul>
+<li><code>.initial_value(query)</code> will be called to generate an initial value for <code>memo</code></li>
+<li><code>.final_value(memo)</code> will be called <em>after</em> visiting the the query</li>
+</ul>
+
+<p>If the last value of <code>memo</code> (or the return of <code>.final_value</code>) is a <code>GraphQL::AnalysisError</code>, the query won&#39;t be executed and the error will be added to the <code>errors</code> key of the response.</p>
+
+<p><code>graphql-ruby</code> includes a few query analyzers:
+- <code>GraphQL::Analysis::QueryDepth</code> and <code>GraphQL::Analysis::QueryComplexity</code> for inspecting query depth and complexity
+- <code>GraphQL::Analysis::MaxQueryDepth</code> and <code>GraphQL::Analysis::MaxQueryComplexity</code> are used internally to implement <code>max_depth:</code> and <code>max_complexity:</code> options</p>
+
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
