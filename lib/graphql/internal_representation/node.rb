@@ -59,9 +59,9 @@ module GraphQL
 
       def inspect(indent = 0)
         own_indent = " " * indent
-        self_inspect = "#{own_indent}<Node #{name} (#{definition ? definition.name + ": " : ""}{#{on_types.to_a.join("|")}} -> #{return_type})>"
+        self_inspect = "#{own_indent}<Node #{name} (#{definition_name}: {#{definitions.keys.join("|")}} -> #{return_type})>"
         if children.any?
-          self_inspect << " {\n#{children.values.map { |n| n.inspect(indent + 2 )}.join("\n")}\n#{own_indent}}"
+          self_inspect << " {\n#{children.values.map { |n| n.inspect(indent + 2)}.join("\n")}\n#{own_indent}}"
         end
         self_inspect
       end

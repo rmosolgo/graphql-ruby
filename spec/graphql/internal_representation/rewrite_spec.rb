@@ -33,6 +33,7 @@ describe GraphQL::InternalRepresentation::Rewrite do
       assert_equal 1, second_field.children.length
       assert_equal [QueryType], second_field.definitions.keys
       assert_equal CheeseType, second_field.return_type
+      assert second_field.inspect.is_a?(String)
     end
   end
 
