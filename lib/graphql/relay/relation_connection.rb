@@ -94,10 +94,10 @@ module GraphQL
     end
 
 
-    if defined?(ActiveRecord)
+    if defined?(ActiveRecord::Relation)
       BaseConnection.register_connection_implementation(ActiveRecord::Relation, RelationConnection)
     end
-    if defined?(Sequel)
+    if defined?(Sequel::Dataset)
       BaseConnection.register_connection_implementation(Sequel::Dataset, RelationConnection)
     end
   end
