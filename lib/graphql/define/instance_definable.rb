@@ -44,12 +44,36 @@ module GraphQL
         base.extend(ClassMethods)
       end
 
+      # Set the definition block for this instance.
+      # It can be run later with {#ensure_defined}
+      def definition_proc=(defn_block)
+        @definition_proc = defn_block
+      end
+
+      private
+
+      # Run the definition block if it hasn't been run yet.
+      # This can only be run once: the block is deleted after it's used.
+      # You have to call this before using any value which could
+      # come from the definition block.
+      # @return [void]
+      def ensure_defined
+        if @definition_proc
+          defn_proc = @definition_proc
+          @definition_proc = nil
+          proxy = DefinedObjectProxy.new(self, self.class.dictionary)
+          proxy.instance_eval(&defn_proc)
+        end
+        nil
+      end
+
       module ClassMethods
-        # Define an instance of this class using its {.definitions}.
+        # Prepare the defintion for an instance of this class using its {.definitions}.
+        # Note that the block is not called right away -- instead, it's deferred until
+        # one of the defined fields is needed.
         def define(&block)
           instance = self.new
-          proxy = DefinedObjectProxy.new(instance, dictionary)
-          block && proxy.instance_eval(&block)
+          instance.definition_proc = block
           instance
         end
 
@@ -58,6 +82,23 @@ module GraphQL
         # The last entry in accepts may be a hash of name-proc pairs for custom definitions.
         def accepts_definitions(*accepts)
           @own_dictionary = own_dictionary.merge(AssignmentDictionary.create(*accepts))
+        end
+
+        # Define a reader and writer for each of `attr_names` which
+        # ensures that the definition block was called before accessing it.
+        def lazy_defined_attr_accessor(*attr_names)
+          attr_names.each do |attr_name|
+            ivar_name = :"@#{attr_name}"
+            define_method(attr_name) do
+              ensure_defined
+              instance_variable_get(ivar_name)
+            end
+
+            define_method("#{attr_name}=") do |new_value|
+              ensure_defined
+              instance_variable_set(ivar_name, new_value)
+            end
+          end
         end
 
         # @return [Hash] combined definitions for self and ancestors

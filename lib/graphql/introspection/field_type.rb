@@ -7,6 +7,6 @@ GraphQL::Introspection::FieldType = GraphQL::ObjectType.define do
   field :isDeprecated, !types.Boolean, "Is this field deprecated?" do
     resolve -> (obj, a, c) { !!obj.deprecation_reason }
   end
-  field :args, field: GraphQL::Introspection::ArgumentsField
+  field :args, GraphQL::Introspection::ArgumentsField
   field :deprecationReason, types.String,  "Why this field was deprecated", property: :deprecation_reason
 end

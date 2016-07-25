@@ -14,8 +14,12 @@ module GraphQL
       argument: GraphQL::Define::AssignArgument
     )
 
-    # @return [Hash<String, GraphQL::Argument>] Map String argument names to their {GraphQL::Argument} implementations
-    attr_accessor :arguments
+    # @return [Hash<String => GraphQL::Argument>] Map String argument names to their {GraphQL::Argument} implementations
+    def arguments
+      ensure_defined
+      @arguments
+    end
+    attr_writer :arguments
 
     alias :input_fields :arguments
 

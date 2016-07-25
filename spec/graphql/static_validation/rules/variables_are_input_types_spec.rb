@@ -15,7 +15,7 @@ describe GraphQL::StaticValidation::VariablesAreInputTypes do
 
   let(:validator) { GraphQL::StaticValidation::Validator.new(schema: DummySchema, rules: [GraphQL::StaticValidation::VariablesAreInputTypes]) }
   let(:query) { GraphQL::Query.new(DummySchema, query_string) }
-  let(:errors) { validator.validate(query) }
+  let(:errors) { validator.validate(query)[:errors] }
 
   it "finds variables whose types are invalid" do
     expected = [

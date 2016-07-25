@@ -9,7 +9,9 @@ describe GraphQL::Query::Context do
     field :contextAstNodeName, types.String do
       resolve -> (target, args, ctx) { ctx.ast_node.class.name }
     end
-
+    field :contextIrepNodeName, types.String do
+      resolve -> (target, args, ctx) { ctx.irep_node.class.name }
+    end
     field :queryName, types.String do
       resolve -> (target, args, ctx) { ctx.query.class.name }
     end
@@ -39,6 +41,17 @@ describe GraphQL::Query::Context do
     end
   end
 
+  describe "access to the InternalRepresentation node" do
+    let(:query_string) { %|
+      query getCtx { contextIrepNodeName }
+    |}
+
+    it "provides access to the AST node" do
+      expected = {"data" => {"contextIrepNodeName" => "GraphQL::InternalRepresentation::Node"}}
+      assert_equal(expected, result)
+    end
+  end
+
   describe "access to the query" do
     let(:query_string) { %|
       query getCtx { queryName }
@@ -55,6 +68,16 @@ describe GraphQL::Query::Context do
 
     it "returns nil for any key" do
       assert_equal(nil, context[:some_key])
+    end
+  end
+
+  describe "assigning values" do
+    let(:context) { GraphQL::Query::Context.new(query: OpenStruct.new(schema: schema), values: nil) }
+
+    it "allows you to assign new contexts" do
+      assert_equal(nil, context[:some_key])
+      context[:some_key] = "wow!"
+      assert_equal("wow!", context[:some_key])
     end
   end
 end

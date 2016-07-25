@@ -3,7 +3,7 @@ module GraphQL
     include GraphQL::Define::InstanceDefinable
     accepts_definitions :locations, :name, :description, :include_proc, argument: GraphQL::Define::AssignArgument
 
-    attr_accessor :locations, :arguments, :name, :description
+    lazy_defined_attr_accessor :locations, :arguments, :name, :description, :include_proc
 
     LOCATIONS = [
       QUERY =               :QUERY,
@@ -20,11 +20,7 @@ module GraphQL
     end
 
     def include?(arguments)
-      @include_proc.call(arguments)
-    end
-
-    def include_proc=(include_proc)
-      @include_proc = include_proc
+      include_proc.call(arguments)
     end
 
     def to_s

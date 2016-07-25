@@ -28,4 +28,47 @@ describe GraphQL::UnionType do
   it '#include? returns false if type is not in possible_types' do
     assert_equal(false, union.include?(type_3))
   end
+
+  describe "list of union type" do
+    describe "fragment spreads" do
+      let(:result) { DummySchema.execute(query_string) }
+      let(:query_string) {%|
+        {
+          allDairy {
+            __typename
+            ... milkFields
+            ... cheeseFields
+          }
+        }
+        fragment milkFields on Milk {
+          id
+          source
+          origin
+          flavors
+        }
+
+        fragment cheeseFields on Cheese {
+          id
+          source
+          origin
+          flavor
+        }
+      |}
+
+      it "resolves the right fragment on the right item" do
+        all_dairy = result["data"]["allDairy"]
+        cheeses = all_dairy.first(3)
+        cheeses.each do |cheese|
+          assert_equal "Cheese", cheese["__typename"]
+          assert_equal ["__typename", "id", "source", "origin", "flavor"], cheese.keys
+        end
+
+        milks = all_dairy.last(1)
+        milks.each do |milk|
+          assert_equal "Milk", milk["__typename"]
+          assert_equal ["__typename", "id", "source", "origin", "flavors"], milk.keys
+        end
+      end
+    end
+  end
 end

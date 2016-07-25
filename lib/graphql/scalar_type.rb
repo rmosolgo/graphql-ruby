@@ -27,6 +27,7 @@ module GraphQL
     end
 
     def coerce_non_null_input(value)
+      ensure_defined
       @coerce_input_proc.call(value)
     end
 
@@ -37,6 +38,7 @@ module GraphQL
     end
 
     def coerce_result(value)
+      ensure_defined
       @coerce_result_proc.call(value)
     end
 

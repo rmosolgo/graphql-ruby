@@ -27,7 +27,7 @@ end
 CheeseType = GraphQL::ObjectType.define do
   name "Cheese"
   description "Cultured dairy product"
-  interfaces ["EdibleInterface", -> { AnimalProductInterface }]
+  interfaces [EdibleInterface, AnimalProductInterface]
 
   # Can have (name, type, desc)
   field :id, !types.Int, "Unique identifier"
@@ -37,8 +37,8 @@ CheeseType = GraphQL::ObjectType.define do
   field :source, !DairyAnimalEnum,
     "Animal which produced the milk for this cheese"
 
-  # Or can define by block:
-  field :similarCheese, -> { CheeseType }, "Cheeses like this one" do
+  # Or can define by block, `resolve ->` should override `property:`
+  field :similarCheese, CheeseType, "Cheeses like this one", property: :nonsense  do
     argument :source, !types[!DairyAnimalEnum]
     resolve -> (t, a, c) {
       # get the strings out:
@@ -51,12 +51,12 @@ CheeseType = GraphQL::ObjectType.define do
     }
   end
 
-  field :nullableCheese, -> { CheeseType }, "Cheeses like this one" do
+  field :nullableCheese, CheeseType, "Cheeses like this one" do
     argument :source, types[!DairyAnimalEnum]
     resolve -> (t, a, c) { raise("NotImplemented") }
   end
 
-  field :deeplyNullableCheese, -> { CheeseType }, "Cheeses like this one" do
+  field :deeplyNullableCheese, CheeseType, "Cheeses like this one" do
     argument :source, types[types[DairyAnimalEnum]]
     resolve -> (t, a, c) { raise("NotImplemented") }
   end
@@ -73,7 +73,7 @@ MilkType = GraphQL::ObjectType.define do
   description "Dairy beverage"
   interfaces [EdibleInterface, AnimalProductInterface]
   field :id, !types.ID
-  field :source, DairyAnimalEnum, "Animal which produced this milk"
+  field :source, DairyAnimalEnum, "Animal which produced this milk", hash_key: :source
   field :origin, !types.String, "Place the milk comes from"
   field :flavors, types[types.String], "Chocolate, Strawberry, etc" do
     argument :limit, types.Int
@@ -83,11 +83,17 @@ MilkType = GraphQL::ObjectType.define do
   end
 end
 
+SweetenerInterface = GraphQL::InterfaceType.define do
+  name "Sweetener"
+  field :sweetness, types.Int
+end
+
 # No actual data; This type is an "orphan", only accessible through Interfaces
 HoneyType = GraphQL::ObjectType.define do
   name "Honey"
   description "Sweet, dehydrated bee barf"
-  interfaces [EdibleInterface, AnimalProductInterface]
+  field :flowerType, types.String, "What flower this honey came from"
+  interfaces [EdibleInterface, AnimalProductInterface, SweetenerInterface]
 end
 
 DairyType = GraphQL::ObjectType.define do
@@ -107,6 +113,7 @@ end
 DairyProductUnion = GraphQL::UnionType.define do
   name "DairyProduct"
   description "Kinds of food made from milk"
+  # Test that these forms of declaration still work:
   possible_types ["MilkType", -> { CheeseType }]
 end
 
@@ -163,7 +170,7 @@ DeepNonNullType = GraphQL::ObjectType.define do
     resolve -> (obj, args, ctx) { args[:returning] }
   end
 
-  field :deepNonNull, -> { DeepNonNullType.to_non_null_type } do
+  field :deepNonNull, DeepNonNullType.to_non_null_type do
     resolve -> (obj, args, ctx) { :deepNonNull }
   end
 end
@@ -208,11 +215,12 @@ SourceFieldDefn = Proc.new {
   }
 }
 
-FavoriteFieldDefn = Proc.new {
+FavoriteFieldDefn = GraphQL::Field.define do
+  name "favoriteEdible"
   description "My favorite food"
   type EdibleInterface
   resolve -> (t, a, c) { MILKS[1] }
-}
+end
 
 QueryType = GraphQL::ObjectType.define do
   name "Query"
@@ -225,7 +233,7 @@ QueryType = GraphQL::ObjectType.define do
   field :milk, field: FetchField.create(type: MilkType, data: MILKS, id_type: !types.ID)
   field :dairy, field: SingletonField.create(type: DairyType, data: DAIRY)
   field :fromSource, &SourceFieldDefn
-  field :favoriteEdible, &FavoriteFieldDefn
+  field :favoriteEdible, FavoriteFieldDefn
   field :cow, field: SingletonField.create(type: CowType, data: COW)
   field :searchDairy do
     description "Find dairy products matching a description"
@@ -240,6 +248,10 @@ QueryType = GraphQL::ObjectType.define do
       end
       products.first
     }
+  end
+
+  field :allDairy, types[DairyProductUnion] do
+    resolve -> (obj, args, ctx) { CHEESES.values + MILKS.values }
   end
 
   field :error do

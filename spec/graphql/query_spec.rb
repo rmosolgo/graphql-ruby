@@ -45,14 +45,14 @@ describe GraphQL::Query do
 
   describe "when passed no query string or document" do
     it 'fails with an ArgumentError' do
-      -> {
+      assert_raises(ArgumentError) {
         GraphQL::Query.new(
           schema,
           variables: query_variables,
           operation_name: operation_name,
           max_depth: max_depth,
         )
-      }.must_raise ArgumentError
+      }
     end
   end
 
@@ -131,6 +131,10 @@ describe GraphQL::Query do
 
   it "exposes fragments" do
     assert_equal(GraphQL::Language::Nodes::FragmentDefinition, query.fragments["cheeseFields"].class)
+  end
+
+  it "exposes the original string" do
+    assert_equal(query_string, query.query_string)
   end
 
   describe "merging fragments with different keys" do

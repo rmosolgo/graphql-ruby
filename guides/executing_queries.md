@@ -60,30 +60,6 @@ By default, `graphql-ruby` performs validation on incoming query strings. If you
 result = MySchema.execute(query_string, validate: false)
 ```
 
-## Max Depth
-
-To prevent excessive queries, you can define a default max depth on your schema. For example:
-
-```ruby
-MySchema = GraphQL::Schema.new(
-  # ...
-  max_depth: 6
-)
-```
-
-You can also provide a value when executing a query. If present, it overrides the default. For example:
-
-```ruby
-if current_user.admin?
-  max_depth = 10
-else
-  # Fall back to schema's default:
-  max_depth = nil
-end
-
-MySchema.execute(query_string, max_depth: max_depth)
-```
-
 ## Custom Execution Strategies
 
 `graphql` includes a serial execution strategy, but you can also create custom strategies to support advanced behavior. See `GraphQL::SerialExecution#execute` the required behavior.

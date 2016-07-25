@@ -17,16 +17,26 @@ module GraphQL
         @rules = rules
       end
 
-      # Validate `document` against the schema. Returns an array of message hashes.
-      # @param document [GraphQL::Language::Nodes::Document]
+      # Validate `query` against the schema. Returns an array of message hashes.
+      # @param query [GraphQL::Query]
       # @return [Array<Hash>]
       def validate(query)
         context = GraphQL::StaticValidation::ValidationContext.new(query)
+        rewrite = GraphQL::InternalRepresentation::Rewrite.new
+
+        # Put this first so its enters and exits are always called
+        rewrite.validate(context)
         @rules.each do |rules|
           rules.new.validate(context)
         end
-        context.visitor.visit(query.document)
-        context.errors.map(&:to_h)
+
+        context.visitor.visit
+
+        {
+          errors: context.errors.map(&:to_h),
+          # If there were errors, the irep is garbage
+          irep: context.errors.none? ? rewrite.operations : nil,
+        }
       end
     end
   end

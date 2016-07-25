@@ -190,6 +190,7 @@ describe GraphQL::Language::Parser do
               array: [7, 8, 9]
               object: {a: [1,2,3], b: {c: "4"}}
               unicode_bom: "\xef\xbb\xbfquery"
+              keywordEnum: on
             )
           }
         |}
@@ -233,6 +234,10 @@ describe GraphQL::Language::Parser do
         it "parses unicode bom" do
           obj = inputs[7].value
           assert_equal %|\xef\xbb\xbfquery|, inputs[7].value
+        end
+
+        it "parses enum 'on''" do
+          assert_equal "on", inputs[8].value.name
         end
       end
     end

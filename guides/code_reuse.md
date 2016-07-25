@@ -104,7 +104,7 @@ end
 You can also define fields for associated objects. You'll need a way to access them programmatically.
 
 ```ruby
-# Hash<Model, GraphQL::ObjectType>
+# Hash<Model => GraphQL::ObjectType>
 MODEL_TO_TYPE = {}
 
 def create_type(model_class)

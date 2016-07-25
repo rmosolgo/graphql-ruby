@@ -29,12 +29,22 @@ module GraphQL
         end
 
         @errors = []
-        @visitor = GraphQL::Language::Visitor.new
+        @visitor = GraphQL::Language::Visitor.new(document)
         @type_stack = GraphQL::StaticValidation::TypeStack.new(schema, visitor)
       end
 
       def object_types
         @type_stack.object_types
+      end
+
+      # @return [GraphQL::BaseType] The current object type
+      def type_definition
+        object_types.last
+      end
+
+      # @return [GraphQL::BaseType] The type which the current type came from
+      def parent_type_definition
+        object_types[-2]
       end
 
       # @return [GraphQL::Field, nil] The most-recently-entered GraphQL::Field, if currently inside one

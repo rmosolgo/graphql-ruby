@@ -5,6 +5,7 @@ require "graphql/schema/rescue_middleware"
 require "graphql/schema/possible_types"
 require "graphql/schema/base_reducer"
 require "graphql/schema/reduce_types"
+require "graphql/schema/timeout_middleware"
 require "graphql/schema/reduce_resolved_class_names"
 require "graphql/schema/type_expression"
 require "graphql/schema/type_map"
@@ -18,12 +19,14 @@ module GraphQL
     DIRECTIVES = [GraphQL::Directive::SkipDirective, GraphQL::Directive::IncludeDirective]
     DYNAMIC_FIELDS = ["__type", "__typename", "__schema"]
 
-    attr_reader :query, :mutation, :subscription, :directives, :static_validator
+    attr_reader :query, :mutation, :subscription, :directives, :static_validator, :query_analyzers
     attr_accessor :max_depth
+    attr_accessor :max_complexity
+
     # Override these if you don't want the default executor:
     attr_accessor :query_execution_strategy,
-                  :mutation_execution_strategy,
-                  :subscription_execution_strategy
+      :mutation_execution_strategy,
+      :subscription_execution_strategy
 
     # @return [Array<#call>] Middlewares suitable for MiddlewareChain, applied to fields during execution
     attr_reader :middleware
@@ -33,16 +36,18 @@ module GraphQL
     # @param subscription [GraphQL::ObjectType] the subscription root for the schema
     # @param max_depth [Integer] maximum query nesting (if it's greater, raise an error)
     # @param types [Array<GraphQL::BaseType>] additional types to include in this schema
-    def initialize(query:, mutation: nil, subscription: nil, max_depth: nil, types: [])
-      @query = query
+    def initialize(query:, mutation: nil, subscription: nil, max_depth: nil, max_complexity: nil, types: [])
+      @query    = query
       @mutation = mutation
       @subscription = subscription
       @max_depth = max_depth
+      @max_complexity = max_complexity
       @orphan_types = types
       @directives = DIRECTIVES.reduce({}) { |m, d| m[d.name] = d; m }
       @static_validator = GraphQL::StaticValidation::Validator.new(schema: self)
       @rescue_middleware = GraphQL::Schema::RescueMiddleware.new
       @middleware = [@rescue_middleware]
+      @query_analyzers = []
       # Default to the built-in execution strategy:
       self.query_execution_strategy = GraphQL::Query::SerialExecution
       self.mutation_execution_strategy = GraphQL::Query::SerialExecution
@@ -99,27 +104,27 @@ module GraphQL
 
     def root_type_for_operation(operation)
       case operation
-        when "query"
-          query
-        when "mutation"
-          mutation
-        when "subscription"
-          subscription
-        else
-          raise ArgumentError, "unknown operation type: #{operation}"
+      when "query"
+        query
+      when "mutation"
+        mutation
+      when "subscription"
+        subscription
+      else
+        raise ArgumentError, "unknown operation type: #{operation}"
       end
     end
 
     def execution_strategy_for_operation(operation)
       case operation
-        when "query"
-          query_execution_strategy
-        when "mutation"
-          mutation_execution_strategy
-        when "subscription"
-          subscription_execution_strategy
-        else
-          raise ArgumentError, "unknown operation type: #{operation}"
+      when "query"
+        query_execution_strategy
+      when "mutation"
+        mutation_execution_strategy
+      when "subscription"
+        subscription_execution_strategy
+      else
+        raise ArgumentError, "unknown operation type: #{operation}"
       end
     end
 

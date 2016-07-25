@@ -3,8 +3,8 @@ module GraphQL
   class BaseType
     include GraphQL::Define::NonNullWithBang
     include GraphQL::Define::InstanceDefinable
-    attr_accessor :name, :description
     accepts_definitions :name, :description
+    lazy_defined_attr_accessor :name, :description
 
     # @param other [GraphQL::BaseType] compare to this object
     # @return [Boolean] are these types equivalent? (incl. non-null, list)
@@ -53,6 +53,7 @@ module GraphQL
       # @param ctx [GraphQL::Query::Context]
       # @return [GraphQL::ObjectType] the type which should expose `object`
       def resolve_type(object, ctx)
+        ensure_defined
         instance_exec(object, ctx, &(@resolve_type_proc || DEFAULT_RESOLVE_TYPE))
       end
 
@@ -87,6 +88,13 @@ module GraphQL
     def coerce_input(value)
       return nil if value.nil?
       coerce_non_null_input(value)
+    end
+
+    # Types with fields may override this
+    # @param name [String] field name to lookup for this type
+    # @return [GraphQL::Field, nil]
+    def get_field(name)
+      nil
     end
 
     # During schema definition, types can be defined inside procs or as strings.

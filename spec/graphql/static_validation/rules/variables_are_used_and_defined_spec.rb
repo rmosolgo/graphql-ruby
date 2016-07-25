@@ -31,7 +31,7 @@ describe GraphQL::StaticValidation::VariablesAreUsedAndDefined do
 
   let(:validator) { GraphQL::StaticValidation::Validator.new(schema: DummySchema, rules: [GraphQL::StaticValidation::VariablesAreUsedAndDefined]) }
   let(:query) { GraphQL::Query.new(DummySchema, query_string) }
-  let(:errors) { validator.validate(query) }
+  let(:errors) { validator.validate(query)[:errors] }
 
   it "finds variables which are used-but-not-defined or defined-but-not-used" do
     expected = [

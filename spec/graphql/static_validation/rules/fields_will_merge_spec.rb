@@ -31,7 +31,7 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
 
   let(:validator) { GraphQL::StaticValidation::Validator.new(schema: DummySchema, rules: [GraphQL::StaticValidation::FieldsWillMerge]) }
   let(:query) { GraphQL::Query.new(DummySchema, query_string) }
-  let(:errors) { validator.validate(query) }
+  let(:errors) { validator.validate(query)[:errors] }
   let(:error_messages) { errors.map { |e| e["message" ] }}
 
   it "finds field naming conflicts" do

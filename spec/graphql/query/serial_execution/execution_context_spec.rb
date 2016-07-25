@@ -39,7 +39,8 @@ describe GraphQL::Query::SerialExecution::ExecutionContext do
 
   describe "get_field" do
     it "returns the respective field from the schema" do
-      field = execution_context.get_field(DairyType, "cheese")
+      irep_node = OpenStruct.new(definition_name: "cheese", definitions: {DairyType => DairyType.fields["cheese"]})
+      field = execution_context.get_field(DairyType, irep_node)
       assert_equal("cheese", field.name)
     end
   end

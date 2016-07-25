@@ -1,10 +1,59 @@
 # Changelog
 
-### Breaking changes & deprecations
+### Breaking changes
+
+### Deprecations
 
 ### New features
 
 ### Bug fixes
+
+## 0.17.0 (21 Jul 2016)
+
+### Breaking changes
+
+- `InternalRepresentation::Node` API changes:
+
+  - `#definition_name` returns the field name on field nodes (while `#name` may have an alias)
+  - `#definitions` returns `{type => field}` pairs for possible fields on this node
+  - `#definition` is gone, it is equivalent to `node.definitions.values.first`
+  - `#on_types` is gone, it is equivalent to `node.definitions.keys`
+
+### New features
+
+- Accept `hash_key:` field option
+- Call `.define { }` block lazily, so `-> { }` is not needed for circular references #182
+
+### Bug fixes
+
+- Support `on` as an Enum value
+- If the same field is requested on multiple types, choose the maximum complexity among them (not the first)
+
+## 0.16.1 (20 Jul 2016)
+
+### Bug fixes
+
+- Fix merging fragments on Union types (see #190, broken from #180)
+
+## 0.16.0 (14 Jul 2016)
+
+### Breaking changes & deprecations
+
+- I don't _know_ that this breaks anything, but  `GraphQL::Query::SerialExecution` now iterates over a tree of `GraphQL::InternalRepresentation::Node`s instead of an AST (`GraphQL::Language::Nodes::Document`).
+
+### New features
+
+- Query context keys can be assigned with `Context#[]=` #178
+- Cancel further field resolution with `TimeoutMiddleware` #179
+- Add `GraphQL::InternalRepresentation` for normalizing queries from AST #180
+- Analyze the query before running it #180
+- Assign complexity cost to fields, enforce max complexity before running it #180
+- Log max complexity or max depth with `MaxComplexity` or `MaxDepth` analyzers #180
+- Query context exposes `#irep_node`, the internal representation of the current node #180
+
+### Bug fixes
+
+- Non-null errors are propagated to the next nullable field, all the way up to `data` #174
 
 ## 0.15.3 (28 Jun 2016)
 

@@ -18,6 +18,7 @@ describe GraphQL::Introspection::SchemaType do
         "types" => DummySchema.types.values.map { |t| t.name.nil? ? (p t; raise("no name for #{t}")) : {"name" => t.name} },
         "queryType"=>{
           "fields"=>[
+            {"name"=>"allDairy"},
             {"name"=>"cheese"},
             {"name"=>"cow"},
             {"name"=>"dairy"},
