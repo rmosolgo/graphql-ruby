@@ -8,6 +8,12 @@
 
 ### Bug fixes
 
+## 0.17.1 (26 Jul 2016)
+
+### Bug fixes
+
+- Fix `InternalRepresentation::Node#inspect`
+
 ## 0.17.0 (21 Jul 2016)
 
 ### Breaking changes
