@@ -8,6 +8,12 @@
 
 ### Bug fixes
 
+## 0.17.2 (26 Jul 2016)
+
+### Bug fixes
+
+- Correctly spread fragments when nested inside other fragments #194
+
 ## 0.17.1 (26 Jul 2016)
 
 ### Bug fixes
