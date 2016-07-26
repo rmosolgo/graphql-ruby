@@ -68,9 +68,17 @@ describe GraphQL::InternalRepresentation::Rewrite do
           fatContent
           origin
         }
+
         ... cheeseFields
 
         ... similarCheeseField
+      }
+
+      cheese2: cheese(id: 2) {
+        similarCheese(source: COW) {
+          id
+        }
+        ... cheese2Fields
       }
     }
 
@@ -100,6 +108,18 @@ describe GraphQL::InternalRepresentation::Rewrite do
         }
       }
     }
+
+    fragment cheese2InnerFields on Cheese {
+      id
+      fatContent
+    }
+
+    fragment cheese2Fields on Cheese {
+      similarCheese(source: COW) {
+        ... cheese2InnerFields
+      }
+    }
+
     |}
 
     it "puts all fragment members as children" do
@@ -117,6 +137,10 @@ describe GraphQL::InternalRepresentation::Rewrite do
       assert_equal [EdibleInterface], cheese_field.children["origin"].definitions.keys
       assert_equal [CheeseType, EdibleInterface], cheese_field.children["fatContent"].definitions.keys
       assert_equal [CheeseType], cheese_field.children["flavor"].definitions.keys
+
+      # nested spread inside fragment definition:
+      cheese_2_field = op_node.children["cheese2"].children["similarCheese"]
+      assert_equal ["id", "fatContent"], cheese_2_field.children.keys
     end
   end
 end

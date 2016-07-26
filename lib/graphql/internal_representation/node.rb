@@ -3,12 +3,13 @@ require "set"
 module GraphQL
   module InternalRepresentation
     class Node
-      def initialize(ast_node: nil, return_type: nil, name: nil, definition_name: nil, definitions: {}, children: {}, spreads: [], directives: Set.new)
+      def initialize(parent:, ast_node: nil, return_type: nil, name: nil, definition_name: nil, definitions: {}, children: {}, spreads: [], directives: Set.new)
         # Make sure these are kept in sync with #dup
         @ast_node = ast_node
         @return_type = return_type
         @name = name
         @definition_name = definition_name
+        @parent = parent
         @definitions = definitions
         @children = children
         @spreads = spreads
@@ -16,7 +17,7 @@ module GraphQL
       end
 
       # Note: by the time this gets out of the Rewrite phase, this will be empty -- it's emptied out when fragments are merged back in
-      # @return [Array<GraphQL::Language::Nodes::FragmentSpreads>] Fragment names that were spread in this node
+      # @return [Array<GraphQL::InternalRepresentation::Node>] Fragment names that were spread in this node
       attr_reader :spreads
 
       # These are the compiled directives from fragment spreads, inline fragments, and the field itself
@@ -56,6 +57,20 @@ module GraphQL
 
       # @return [Array<GraphQL::Query::Node>]
       attr_reader :children
+
+      # @return [GraphQL::InternalRepresentation::Node] The node which this node is a child of
+      attr_reader :parent
+
+      # @return [GraphQL::InternalRepresentation::Node] The root node which this node is a (perhaps-distant) child of, or `self` if this is a root node
+      def owner
+        @owner ||= begin
+          if parent.nil?
+            self
+          else
+            parent.owner
+          end
+        end
+      end
 
       def inspect(indent = 0)
         own_indent = " " * indent

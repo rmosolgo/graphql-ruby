@@ -36,6 +36,7 @@ module GraphQL
             return_type: context.type_definition.unwrap,
             ast_node: ast_node,
             name: ast_node.name,
+            parent: nil,
           )
           @nodes.push(node)
           @operations[ast_node.name] = node
@@ -53,6 +54,7 @@ module GraphQL
               ast_node: ast_node,
               name: node_name,
               definition_name: ast_node.name,
+              parent: parent_node,
             )
           end
           object_type = context.parent_type_definition.unwrap
@@ -72,18 +74,21 @@ module GraphQL
               name: ast_node.name,
               definition_name: ast_node.name,
               ast_node: ast_node,
-              definitions: [context.directive_definition]
+              definitions: [context.directive_definition],
+              # This isn't used, the directive may have many parents in the case of inline fragment
+              parent: nil,
             )
           end
         }
 
         visitor[Nodes::FragmentSpread].enter << -> (ast_node, prev_ast_node) {
+          parent_node = @nodes.last
           # Record _both sides_ of the dependency
           spread_node = Node.new(
+            parent: parent_node,
             name: ast_node.name,
             ast_node: ast_node,
           )
-          parent_node = @nodes.last
           # The parent node has a reference to the fragment
           parent_node.spreads.push(spread_node)
           # And keep a reference from the fragment to the parent node
@@ -94,6 +99,7 @@ module GraphQL
 
         visitor[Nodes::FragmentDefinition].enter << -> (ast_node, prev_ast_node) {
           node = Node.new(
+            parent: nil,
             name: ast_node.name,
             return_type: context.type_definition,
             ast_node: ast_node,
@@ -119,7 +125,7 @@ module GraphQL
           # This fragment doesn't depend on any others,
           # we should save it as the starting point for dependency resolution
           frag_node = @nodes.pop
-          if frag_node.spreads.none?
+          if !any_fragment_spreads?(frag_node)
             @independent_fragments << frag_node
           end
         }
@@ -149,9 +155,9 @@ module GraphQL
 
               # resolve the dependency (merge into dependent node)
               deep_merge(dependent_node, fragment_node, rejected_spread_nodes.first.directives)
-
-              if dependent_node.spreads.none? && dependent_node.ast_node.is_a?(Nodes::FragmentDefinition)
-                @independent_fragments.push(dependent_node)
+              owner = dependent_node.owner
+              if owner.ast_node.is_a?(Nodes::FragmentDefinition) && !any_fragment_spreads?(owner)
+                @independent_fragments.push(owner)
               end
             end
           end
@@ -175,6 +181,11 @@ module GraphQL
           deep_merge_child(child_node, merge_child_name, merge_child_node, [])
         end
         child_node.directives.merge(extra_directives)
+      end
+
+      # return true if node or _any_ children have a fragment spread
+      def any_fragment_spreads?(node)
+        node.spreads.any? || node.children.any? { |name, node| any_fragment_spreads?(node) }
       end
     end
   end
