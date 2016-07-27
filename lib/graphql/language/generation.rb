@@ -76,7 +76,7 @@ module GraphQL
           out << " = #{generate(node.default_value)}" unless node.default_value.nil?
           out
         when Nodes::FieldDefinition
-          out = node.name
+          out = node.name.dup
           unless node.arguments.empty?
             out << "(" << node.arguments.map{ |arg| generate(arg) }.join(", ") << ")"
           end

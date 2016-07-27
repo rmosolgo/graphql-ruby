@@ -39,5 +39,25 @@ describe GraphQL::Language::Generation do
         assert_equal query_string.gsub(/^        /, "").strip, document.to_query_string
       end
     end
+
+    describe "schema" do
+      let(:query_string) {%|
+        schema {
+          query: Query
+        }
+
+        type Query {
+          field: String!
+        }
+      |}
+
+      it "generate" do
+        assert_equal query_string.gsub(/^        /, "").strip, document.to_query_string
+      end
+
+      it "doesn't mutate the document" do
+        assert_equal document.to_query_string, document.to_query_string
+      end
+    end
   end
 end
