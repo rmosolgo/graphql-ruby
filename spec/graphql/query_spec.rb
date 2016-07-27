@@ -130,12 +130,8 @@ describe GraphQL::Query do
 
       type Query { foo: String }
     '
-    begin
-      GraphQL::Query.new(schema, query_string)
-      flunk "Expected an exception"
-    rescue GraphQL::ExecutionError => exc
-      assert_equal "GraphQL query cannot contain a schema definition", exc.message
-    end
+    exc = assert_raises(GraphQL::ExecutionError) { GraphQL::Query.new(schema, query_string) }
+    assert_equal "GraphQL query cannot contain a schema definition", exc.message
   end
 
   it "uses root_value as the object for the root type" do
