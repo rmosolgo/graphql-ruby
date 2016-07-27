@@ -53,8 +53,8 @@ module GraphQL
         @previous_offset ||= if after
           index_from_cursor(after)
         elsif before
-          page_size = (last ? [last, max_page_size].compact.min : 0)
-          index_from_cursor(before) - page_size - 1
+          prev_page_size = [max_page_size, last].compact.min || 0
+          index_from_cursor(before) - prev_page_size - 1
         else
           0
         end

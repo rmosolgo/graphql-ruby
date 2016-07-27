@@ -102,10 +102,18 @@ describe GraphQL::Relay::ArrayConnection do
     end
 
     describe "applying max_page_size" do
+      def get_names(result)
+        result["data"]["rebels"]["bases"]["edges"].map { |e| e["node"]["name"] }
+      end
+
+      def get_page_info(result)
+        result["data"]["rebels"]["bases"]["pageInfo"]
+      end
+
       let(:query_string) {%|
         query getShips($first: Int, $after: String, $last: Int, $before: String){
           rebels {
-            ships: shipsWithMaxPageSize(first: $first, after: $after, last: $last, before: $before) {
+            bases: basesWithMaxLimitArray(first: $first, after: $after, last: $last, before: $before) {
               edges {
                 cursor
                 node {
@@ -115,8 +123,6 @@ describe GraphQL::Relay::ArrayConnection do
               pageInfo {
                 hasNextPage
                 hasPreviousPage
-                startCursor
-                endCursor
               }
             }
           }
@@ -125,24 +131,33 @@ describe GraphQL::Relay::ArrayConnection do
 
       it "applies to queries by `first`" do
         result = query(query_string, "first" => 100)
-        assert_equal(2, result["data"]["rebels"]["ships"]["edges"].size)
-        assert_equal(true, result["data"]["rebels"]["ships"]["pageInfo"]["hasNextPage"])
+        assert_equal(["Yavin", "Echo Base"], get_names(result))
+        assert_equal(true, get_page_info(result)["hasNextPage"])
 
+        # Max page size is applied _without_ `first`, also
         result = query(query_string)
-        assert_equal(2, result["data"]["rebels"]["ships"]["edges"].size, "it works without arguments")
-        assert_equal(false, result["data"]["rebels"]["ships"]["pageInfo"]["hasNextPage"], "hasNextPage is false when first is not specified")
+        assert_equal(["Yavin", "Echo Base"], get_names(result))
+        assert_equal(false, get_page_info(result)["hasNextPage"], "hasNextPage is false when first is not specified")
       end
 
       it "applies to queries by `last`" do
-        result = query(query_string, "last" => 100, "before" => "NQ==")
-        assert_equal(2, result["data"]["rebels"]["ships"]["edges"].size)
-        assert_equal(["A-Wing", "Millenium Falcon"], get_names(result))
-        assert_equal(true, result["data"]["rebels"]["ships"]["pageInfo"]["hasPreviousPage"])
+        last_cursor = "Ng=="
+        second_to_last_two_names = ["Death Star", "Shield Generator"]
+        result = query(query_string, "last" => 100, "before" => last_cursor)
+        assert_equal(second_to_last_two_names, get_names(result))
+        assert_equal(true, get_page_info(result)["hasPreviousPage"])
 
-        result = query(query_string, "before" => "NA==")
-        assert_equal(2, result["data"]["rebels"]["ships"]["edges"].size, "it works without arguments")
-        assert_equal(["Millenium Falcon", "Home One"], get_names(result))
-        assert_equal(false, result["data"]["rebels"]["ships"]["pageInfo"]["hasPreviousPage"], "hasPreviousPage is false when last is not specified")
+        result = query(query_string, "before" => last_cursor)
+        assert_equal(second_to_last_two_names, get_names(result))
+        assert_equal(false, get_page_info(result)["hasPreviousPage"], "hasPreviousPage is false when last is not specified")
+
+        third_cursor = "Mw=="
+        first_and_second_names = ["Yavin", "Echo Base"]
+        result = query(query_string, "last" => 100, "before" => third_cursor)
+        assert_equal(first_and_second_names, get_names(result))
+
+        result = query(query_string, "before" => third_cursor)
+        assert_equal(first_and_second_names, get_names(result))
       end
     end
   end
