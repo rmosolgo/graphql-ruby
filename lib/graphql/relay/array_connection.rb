@@ -6,6 +6,14 @@ module GraphQL
         Base64.strict_encode64(idx.to_s)
       end
 
+      def has_next_page
+        !!(first && sliced_nodes.count > limit)
+      end
+
+      def has_previous_page
+        !!(last && starting_offset > 0)
+      end
+
       private
 
       # apply first / last limit results
@@ -45,7 +53,8 @@ module GraphQL
         @previous_offset ||= if after
           index_from_cursor(after)
         elsif before
-          index_from_cursor(before) - (last ? last : 0) - 1
+          page_size = (last ? [last, max_page_size].compact.min : 0)
+          index_from_cursor(before) - page_size - 1
         else
           0
         end

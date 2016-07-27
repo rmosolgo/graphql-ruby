@@ -116,45 +116,62 @@ describe GraphQL::Relay::RelationConnection do
       assert_equal(3, result["data"]["empire"]["bases"]["edges"].length)
     end
 
-    it "applies the maximum limit for relation connection types" do
-      limit_query_string = %|
-        query getShips($first: Int){
+    describe "applying max_page_size" do
+      let(:query_string) {%|
+        query getBases($first: Int, $after: String, $last: Int, $before: String){
           empire {
-            basesWithMaxLimitRelation(first: $first) {
-              edges {
-                node {
-                  name
-                }
-              }
+            bases: basesWithMaxLimitRelation(first: $first, after: $after, last: $last, before: $before) {
+              ... basesConnection
             }
           }
         }
-      |
 
-      result = query(limit_query_string, "first" => 3)
-      assert_equal(2, result["data"]["empire"]["basesWithMaxLimitRelation"]["edges"].size)
-    end
-
-    it "applies the maximum limit for relation connection types" do
-      limit_query_string = %|
-        query getShips($first: Int){
-          empire {
-            basesWithMaxLimitArray(first: $first) {
-              edges {
-                node {
-                  name
-                }
-              }
+        fragment basesConnection on BaseConnection {
+          edges {
+            cursor
+            node {
+              name
             }
+          },
+          pageInfo {
+            hasNextPage
+            hasPreviousPage
+            startCursor
+            endCursor
           }
         }
-      |
+      |}
 
-      result = query(limit_query_string, "first" => 3)
-      assert_equal(2, result["data"]["empire"]["basesWithMaxLimitArray"]["edges"].size)
+      it "applies to queries by `first`" do
+        result = query(query_string, "first" => 100)
+        assert_equal(2, result["data"]["empire"]["bases"]["edges"].size)
+        assert_equal(true, result["data"]["empire"]["bases"]["pageInfo"]["hasNextPage"])
 
-      result = query(limit_query_string)
-      assert_equal(2, result["data"]["empire"]["basesWithMaxLimitArray"]["edges"].size, "it works without arguments")
+        # Max page size is applied _without_ `first`, also
+        result = query(query_string)
+        assert_equal(2, result["data"]["empire"]["bases"]["edges"].size)
+        assert_equal(false, result["data"]["empire"]["bases"]["pageInfo"]["hasNextPage"], "hasNextPage is false when first is not specified")
+      end
+
+      it "applies to queries by `last`" do
+        last_cursor = "Ng=="
+        second_to_last_two_names = ["Death Star", "Shield Generator"]
+        result = query(query_string, "last" => 100, "before" => last_cursor)
+        assert_equal(second_to_last_two_names, get_names(result))
+        assert_equal(true, result["data"]["empire"]["bases"]["pageInfo"]["hasPreviousPage"])
+
+        result = query(query_string, "before" => last_cursor)
+        assert_equal(second_to_last_two_names, get_names(result))
+        assert_equal(false, result["data"]["empire"]["bases"]["pageInfo"]["hasPreviousPage"], "hasPreviousPage is false when last is not specified")
+
+        third_cursor = "Mw=="
+        first_and_second_names = ["Yavin", "Echo Base"]
+        result = query(query_string, "last" => 100, "before" => third_cursor)
+        assert_equal(first_and_second_names, get_names(result))
+
+        result = query(query_string, "before" => third_cursor)
+        assert_equal(first_and_second_names, get_names(result))
+      end
     end
   end
 

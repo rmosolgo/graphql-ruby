@@ -11,12 +11,11 @@ module GraphQL
       end
 
       def has_next_page
-        exceeds_limit?(first)
+        !!(first && sliced_nodes.limit(limit + 1).count > limit)
       end
 
-      # Used by `pageInfo`
       def has_previous_page
-        exceeds_limit?(last)
+        !!(last && starting_offset > 0)
       end
 
       private
@@ -42,7 +41,7 @@ module GraphQL
       end
 
       def starting_offset
-        @initial_offset ||= begin
+        @starting_offset ||= begin
           if before
             [previous_offset, 0].max
           else
@@ -57,7 +56,8 @@ module GraphQL
         @previous_offset ||= if after
           offset_from_cursor(after)
         elsif before
-          offset_from_cursor(before) - (last ? last : 0) - 1
+          prev_page_size = [max_page_size, last].compact.min || 0
+          offset_from_cursor(before) - prev_page_size - 1
         else
           0
         end
@@ -84,12 +84,6 @@ module GraphQL
 
       def paged_nodes_array
         @paged_nodes_array ||= paged_nodes.to_a
-      end
-
-      # Returns true if the limit is specified
-      # and there are more items that follow
-      def exceeds_limit?(limit_value)
-        !!(limit_value && sliced_nodes.limit(limit_value + 1).count > limit_value)
       end
     end
 

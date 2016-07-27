@@ -15,6 +15,7 @@ describe GraphQL::Relay::ConnectionType do
                 node {
                   name
                 }
+                cursor
               }
             }
           }
@@ -24,13 +25,12 @@ describe GraphQL::Relay::ConnectionType do
       it "uses the custom edge and custom connection" do
         result = query(query_string)
         bases = result["data"]["rebels"]["basesWithCustomEdge"]
-        assert_equal 200, bases["totalCountTimes100"]
-        assert_equal ["YAVIN", "ECHO BASE"] , bases["edges"].map { |e| e["upcasedName"] }
-        assert_equal ["Yavin", "Echo Base"] , bases["edges"].map { |e| e["node"]["name"] }
-        assert_equal ["CustomBaseEdge", "CustomBaseEdge"] , bases["edges"].map { |e| e["edgeClassName"] }
+        assert_equal 300, bases["totalCountTimes100"]
+        assert_equal ["YAVIN", "ECHO BASE", "SECRET HIDEOUT"] , bases["edges"].map { |e| e["upcasedName"] }
+        assert_equal ["Yavin", "Echo Base", "Secret Hideout"] , bases["edges"].map { |e| e["node"]["name"] }
+        assert_equal ["CustomBaseEdge"] , bases["edges"].map { |e| e["edgeClassName"] }.uniq
         upcased_rebels_name = "ALLIANCE TO RESTORE THE REPUBLIC"
-        assert_equal [upcased_rebels_name, upcased_rebels_name] , bases["edges"].map { |e| e["upcasedParentName"] }
-
+        assert_equal [upcased_rebels_name] , bases["edges"].map { |e| e["upcasedParentName"] }.uniq
       end
     end
   end

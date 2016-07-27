@@ -14,7 +14,7 @@ describe GraphQL::Relay::PageInfo do
   end
 
   let(:cursor_of_last_base) {
-    result = query(query_string, "first" => 3)
+    result = query(query_string, "first" => 100)
     last_cursor = get_last_cursor(result)
   }
 

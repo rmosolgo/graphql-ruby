@@ -29,6 +29,7 @@ end
 
 Base.create!(name: "Yavin", planet: "Yavin 4", faction_id: 1)
 Base.create!(name: "Echo Base", planet: "Hoth", faction_id: 1)
+Base.create!(name: "Secret Hideout", planet: "Dantooine", faction_id: 1)
 Base.create!(name: "Death Star", planet: nil, faction_id: 2)
 Base.create!(name: "Shield Generator", planet: "Endor", faction_id: 2)
 Base.create!(name: "Headquarters", planet: "Coruscant", faction_id: 2)
