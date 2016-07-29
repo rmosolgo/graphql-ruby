@@ -66,6 +66,10 @@ describe GraphQL::Schema::Printer do
   describe ".print_introspection_schema" do
     it "returns the schema as a string for the introspection types" do
       expected = <<SCHEMA
+schema {
+  query: Query
+}
+
 type __Directive {
   name: String!
   description: String
@@ -147,6 +151,10 @@ SCHEMA
   describe ".print_schema" do
     it "returns the schema as a string for the defined types" do
       expected = <<SCHEMA
+schema {
+  query: Query
+}
+
 enum Choice {
   FOO
   BAR

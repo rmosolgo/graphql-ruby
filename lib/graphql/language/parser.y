@@ -11,6 +11,7 @@ rule
   definition:
       operation_definition
     | fragment_definition
+    | type_system_definition
 
   operation_definition:
       operation_type operation_name_opt variable_definitions_opt directives_list_opt selection_set {
@@ -52,7 +53,7 @@ rule
     | variable_definitions_list variable_definition { val[0] << val[1] }
 
   variable_definition:
-      VAR_SIGN name COLON variable_definition_type_name variable_definition_default_value_opt {
+      VAR_SIGN name COLON type default_value_opt {
         return make_node(:VariableDefinition, {
           name: val[1],
           type: val[3],
@@ -61,12 +62,12 @@ rule
         })
       }
 
-  variable_definition_type_name:
-      name                                            { return make_node(:TypeName, name: val[0])}
-    | variable_definition_type_name BANG              { return make_node(:NonNullType, of_type: val[0]) }
-    | RBRACKET variable_definition_type_name LBRACKET { return make_node(:ListType, of_type: val[1]) }
+  type:
+      name                   { return make_node(:TypeName, name: val[0])}
+    | type BANG              { return make_node(:NonNullType, of_type: val[0]) }
+    | RBRACKET type LBRACKET { return make_node(:ListType, of_type: val[1]) }
 
-  variable_definition_default_value_opt:
+  default_value_opt:
       /* none */          { return nil }
     | EQUALS input_value  { return val[1] }
 
@@ -116,14 +117,38 @@ rule
       name_without_on
     | ON
 
+  schema_keyword:
+      SCHEMA
+    | SCALAR
+    | TYPE
+    | IMPLEMENTS
+    | INTERFACE
+    | UNION
+    | ENUM
+    | INPUT
+
   name_without_on:
       IDENTIFIER
     | FRAGMENT
     | TRUE
     | FALSE
-    | QUERY
-    | MUTATION
-    | SUBSCRIPTION
+    | operation_type
+    | schema_keyword
+
+  enum_name: /* any identifier, but not "true", "false" or "null" */
+      IDENTIFIER
+    | FRAGMENT
+    | ON
+    | operation_type
+    | schema_keyword
+
+  name_list:
+      name             { return [val[0].to_s]}
+    | name_list name   { val[0] << val[1].to_s }
+
+  enum_name_list:
+      enum_name                  { return [val[0].to_s]}
+    | enum_name_list enum_name   { return val[0] << val[1].to_s }
 
   arguments_opt:
       /* none */                    { return [] }
@@ -171,14 +196,6 @@ rule
 
   enum_value: enum_name { return make_node(:Enum, name: val[0], position_source: val[0])}
 
-  enum_name: /* any identifier, but not "true", "false" or "null" */
-      IDENTIFIER
-    | FRAGMENT
-    | ON
-    | QUERY
-    | MUTATION
-    | SUBSCRIPTION
-
   directives_list_opt:
       /* none */      { return [] }
     | directives_list
@@ -221,6 +238,86 @@ rule
         }
       )
     }
+
+
+  type_system_definition:
+     schema_definition
+   | type_definition
+
+  schema_definition:
+      SCHEMA RCURLY operation_type_definition_list LCURLY { return make_node(:SchemaDefinition, val[2]) }
+
+  operation_type_definition_list:
+      operation_type_definition
+    | operation_type_definition_list operation_type_definition { return val[0].merge(val[1]) }
+
+  operation_type_definition:
+      operation_type COLON name { return { val[0].to_s.to_sym => val[2] } }
+
+  type_definition:
+      scalar_type_definition
+    | object_type_definition
+    | interface_type_definition
+    | union_type_definition
+    | enum_type_definition
+    | input_object_type_definition
+
+  scalar_type_definition: SCALAR name { return make_node(:ScalarTypeDefinition, name: val[1]) }
+
+  object_type_definition:
+      TYPE name implements_opt RCURLY field_definition_list LCURLY {
+        return make_node(:ObjectTypeDefinition, name: val[1], interfaces: val[2], fields: val[4])
+      }
+
+  implements_opt:
+      /* none */ { return [] }
+    | IMPLEMENTS name_list { return val[1] }
+
+  input_value_definition:
+      name COLON type default_value_opt {
+        return make_node(:InputValueDefinition, name: val[0], type: val[2], default_value: val[3])
+      }
+
+  input_value_definition_list:
+      input_value_definition                             { return [val[0]] }
+    | input_value_definition_list input_value_definition { val[0] << val[1] }
+
+  arguments_definitions_opt:
+      /* none */ { return [] }
+    | RPAREN input_value_definition_list LPAREN { return val[1] }
+
+  field_definition:
+      name arguments_definitions_opt COLON type {
+        return make_node(:FieldDefinition, name: val[0], arguments: val[1], type: val[3])
+      }
+
+  field_definition_list:
+      field_definition                       { return [val[0]] }
+    | field_definition_list field_definition { val[0] << val[1] }
+
+  interface_type_definition:
+      INTERFACE name RCURLY field_definition_list LCURLY {
+        return make_node(:InterfaceTypeDefinition, name: val[1], fields: val[3])
+      }
+
+  union_members:
+      name                    { return [val[0].to_s]}
+    | union_members PIPE name { val[0] << val[2].to_s }
+
+  union_type_definition:
+      UNION name EQUALS union_members {
+        return make_node(:UnionTypeDefinition, name: val[1], types: val[3])
+      }
+
+  enum_type_definition:
+      ENUM name RCURLY enum_name_list LCURLY {
+         return make_node(:EnumTypeDefinition, name: val[1], values: val[3])
+      }
+
+  input_object_type_definition:
+      INPUT name RCURLY input_value_definition_list LCURLY {
+        return make_node(:InputObjectTypeDefinition, name: val[1], fields: val[3])
+      }
 end
 
 ---- header ----

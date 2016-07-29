@@ -199,6 +199,81 @@ module GraphQL
       end
 
       class VariableIdentifier < NameOnlyNode; end
+
+
+      class SchemaDefinition < AbstractNode
+        attr_accessor :query, :mutation, :subscription
+        def initialize_node(query: nil, mutation: nil, subscription: nil)
+          @query = query
+          @mutation = mutation
+          @subscription = subscription
+        end
+      end
+
+      class ScalarTypeDefinition < NameOnlyNode; end
+
+      class ObjectTypeDefinition < AbstractNode
+        attr_accessor :name, :interfaces, :fields
+        child_attributes :fields
+        def initialize_node(name:, interfaces:, fields:)
+          @name = name
+          @interfaces = interfaces || []
+          @fields = fields
+        end
+      end
+
+      class InputValueDefinition < AbstractNode
+        attr_accessor :name, :type, :default_value
+        def initialize_node(name:, type:, default_value: nil)
+          @name = name
+          @type = type
+          @default_value = default_value
+        end
+      end
+
+      class FieldDefinition < AbstractNode
+        attr_accessor :name, :arguments, :type
+        child_attributes :arguments
+        def initialize_node(name:, arguments:, type:)
+          @name = name
+          @arguments = arguments
+          @type = type
+        end
+      end
+
+      class InterfaceTypeDefinition < AbstractNode
+        attr_accessor :name, :fields
+        child_attributes :fields
+        def initialize_node(name:, fields:)
+          @name = name
+          @fields = fields
+        end
+      end
+
+      class UnionTypeDefinition < AbstractNode
+        attr_accessor :name, :types
+        def initialize_node(name:, types:)
+          @name = name
+          @types = types
+        end
+      end
+
+      class EnumTypeDefinition < AbstractNode
+        attr_accessor :name, :values
+        def initialize_node(name:, values:)
+          @name = name
+          @values = values
+        end
+      end
+
+      class InputObjectTypeDefinition < AbstractNode
+        attr_accessor :name, :fields
+        child_attributes :fields
+        def initialize_node(name:, fields:)
+          @name = name
+          @fields = fields
+        end
+      end
     end
   end
 end

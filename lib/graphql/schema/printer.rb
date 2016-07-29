@@ -28,7 +28,17 @@ module GraphQL
 
       def print_filtered_schema(schema, type_filter)
         types = schema.types.values.select{ |type| type_filter.call(type) }.sort_by(&:name)
-        types.map{ |type| print_type(type) }.join("\n\n")
+        type_definitions = types.map{ |type| print_type(type) }
+
+        [print_schema_definition(schema)].concat(type_definitions).join("\n\n")
+      end
+
+      def print_schema_definition(schema)
+        operations = [:query, :mutation, :subscription].map do |operation_type|
+          object_type = schema.public_send(operation_type)
+          "  #{operation_type}: #{object_type.name}\n" if object_type
+        end.compact.join
+        "schema {\n#{operations}}"
       end
 
       BUILTIN_SCALARS = Set.new(["String", "Boolean", "Int", "Float", "ID"])
@@ -122,7 +132,7 @@ module GraphQL
 
         class UnionPrinter
           def self.print(type)
-            "union #{type.name} = #{type.possible_types.map(&:to_s).join(" | ")}\n}"
+            "union #{type.name} = #{type.possible_types.map(&:to_s).join(" | ")}"
           end
         end
 

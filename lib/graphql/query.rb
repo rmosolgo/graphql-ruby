@@ -48,6 +48,8 @@ module GraphQL
           @fragments[part.name] = part
         elsif part.is_a?(GraphQL::Language::Nodes::OperationDefinition)
           @operations[part.name] = part
+        else
+          raise GraphQL::ExecutionError, "GraphQL query cannot contain a schema definition"
         end
       end
 
