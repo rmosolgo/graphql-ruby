@@ -52,4 +52,13 @@ describe GraphQL::Define::InstanceDefinable do
       assert_equal Date.new(2000, 6, 1), tomato.end_planting_on
     end
   end
+
+  describe ".define with keywords" do
+    it "applies definitions from keywords" do
+      okra = Garden::Vegetable.define(name: "Okra", plant_between: Date.new(2000, 5, 1)..Date.new(2000, 7, 1))
+      assert_equal "Okra", okra.name
+      assert_equal Date.new(2000, 5, 1), okra.start_planting_on
+      assert_equal Date.new(2000, 7, 1), okra.end_planting_on
+    end
+  end
 end

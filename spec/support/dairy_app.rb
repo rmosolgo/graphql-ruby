@@ -38,7 +38,7 @@ CheeseType = GraphQL::ObjectType.define do
     "Animal which produced the milk for this cheese"
 
   # Or can define by block, `resolve ->` should override `property:`
-  field :similarCheese, CheeseType, "Cheeses like this one", property: :nonsense  do
+  field :similarCheese, CheeseType, "Cheeses like this one", property: :this_should_be_overriden  do
     argument :source, !types[!DairyAnimalEnum]
     resolve -> (t, a, c) {
       # get the strings out:
@@ -61,11 +61,12 @@ CheeseType = GraphQL::ObjectType.define do
     resolve -> (t, a, c) { raise("NotImplemented") }
   end
 
-  field :fatContent, property: :fat_content do
-    type(!GraphQL::FLOAT_TYPE)
-    description("Percentage which is milkfat")
-    deprecation_reason("Diet fashion has changed")
-  end
+  # Keywords can be used for definition methods
+  field :fatContent,
+    property: :fat_content,
+    type: !GraphQL::FLOAT_TYPE,
+    description: "Percentage which is milkfat",
+    deprecation_reason: "Diet fashion has changed"
 end
 
 MilkType = GraphQL::ObjectType.define do

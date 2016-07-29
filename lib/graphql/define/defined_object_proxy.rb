@@ -1,9 +1,9 @@
 module GraphQL
   module Define
     class DefinedObjectProxy
-      def initialize(target, dictionary)
+      def initialize(target)
         @target = target
-        @dictionary = dictionary
+        @dictionary = target.class.dictionary
       end
 
       def types

@@ -154,7 +154,7 @@ module GraphQL
     end
 
     def to_s
-      "<Field: #{name || "not-named"}>"
+      "<Field name:#{name || "not-named"} desc:#{description} resolve:#{resolve_proc}>"
     end
 
     private

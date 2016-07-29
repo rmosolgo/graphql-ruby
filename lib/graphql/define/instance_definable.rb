@@ -61,7 +61,7 @@ module GraphQL
         if @definition_proc
           defn_proc = @definition_proc
           @definition_proc = nil
-          proxy = DefinedObjectProxy.new(self, self.class.dictionary)
+          proxy = DefinedObjectProxy.new(self)
           proxy.instance_eval(&defn_proc)
         end
         nil
@@ -71,9 +71,19 @@ module GraphQL
         # Prepare the defintion for an instance of this class using its {.definitions}.
         # Note that the block is not called right away -- instead, it's deferred until
         # one of the defined fields is needed.
-        def define(&block)
+        def define(**kwargs, &block)
           instance = self.new
-          instance.definition_proc = block
+
+          instance.definition_proc = -> (obj) {
+            kwargs.each do |keyword, value|
+              public_send(keyword, value)
+            end
+
+            if block
+              instance_eval(&block)
+            end
+          }
+
           instance
         end
 
