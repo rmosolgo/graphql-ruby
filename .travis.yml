@@ -7,3 +7,5 @@ rvm:
   - "2.2"
   - "2.1"
   - "rbx"
+before_script: 'bundle exec appraisal install'
+script: 'bundle exec appraisal rake test'
