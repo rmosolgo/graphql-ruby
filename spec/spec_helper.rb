@@ -6,6 +6,10 @@ require "minitest/autorun"
 require "minitest/focus"
 require "minitest/reporters"
 require "pry"
+require "sqlite3"
+require "active_record"
+require "sequel"
+require "graphql/relay"
 Minitest::Reporters.use! Minitest::Reporters::SpecReporter.new
 
 Minitest::Spec.make_my_diffs_pretty!
@@ -16,3 +20,7 @@ Minitest.backtrace_filter = Minitest::BacktraceFilter.new
 
 # # Load support files
 Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each { |f| require f }
+
+def query(string, variables={})
+  GraphQL::Query.new(StarWarsSchema, string, variables: variables).result
+end
