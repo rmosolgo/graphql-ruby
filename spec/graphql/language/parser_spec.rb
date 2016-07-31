@@ -401,7 +401,7 @@ describe GraphQL::Language::Parser do
     end
 
     it "handles unexpected ends" do
-      err = assert_raises { GraphQL.parse("{ ") }
+      err = assert_raises(GraphQL::ParseError) { GraphQL.parse("{ ") }
       assert_equal "Unexpected end of document", err.message
     end
 

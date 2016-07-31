@@ -9,7 +9,7 @@ describe GraphQL::Argument do
       end
     end
 
-    err = assert_raises {
+    err = assert_raises(GraphQL::Schema::InvalidTypeError) {
       schema = GraphQL::Schema.new(query: query_type)
       schema.types
     }

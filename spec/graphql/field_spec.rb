@@ -69,7 +69,7 @@ describe GraphQL::Field do
         name("something")
       end
       assert_equal "something", field.name
-      assert_raises { field.name = "somethingelse" }
+      assert_raises(RuntimeError) { field.name = "somethingelse" }
       assert_equal "something", field.name
     end
 
