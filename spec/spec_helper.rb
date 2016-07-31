@@ -1,15 +1,15 @@
 require "codeclimate-test-reporter"
 CodeClimate::TestReporter.start
+require "sqlite3"
+require "active_record"
+require "sequel"
+require "graphql/relay"
 require "graphql"
 require "benchmark"
 require "minitest/autorun"
 require "minitest/focus"
 require "minitest/reporters"
 require "pry"
-require "sqlite3"
-require "active_record"
-require "sequel"
-require "graphql/relay"
 Minitest::Reporters.use! Minitest::Reporters::SpecReporter.new
 
 Minitest::Spec.make_my_diffs_pretty!

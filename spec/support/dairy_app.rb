@@ -217,7 +217,7 @@ FavoriteFieldDefn = GraphQL::Field.define do
   resolve -> (t, a, c) { MILKS[1] }
 end
 
-QueryType = GraphQL::ObjectType.define do
+DairyAppQueryType = GraphQL::ObjectType.define do
   name "Query"
   description "Query root of the system"
   field :root, types.String do
@@ -276,7 +276,7 @@ ReplaceValuesInputType = GraphQL::InputObjectType.define do
   input_field :values, !types[!types.Int]
 end
 
-MutationType = GraphQL::ObjectType.define do
+DairyAppMutationType = GraphQL::ObjectType.define do
   name "Mutation"
   description "The root for mutations in this schema"
   field :pushValue, !types[!types.Int] do
@@ -307,8 +307,8 @@ SubscriptionType = GraphQL::ObjectType.define do
 end
 
 DummySchema = GraphQL::Schema.new(
-  query: QueryType,
-  mutation: MutationType,
+  query: DairyAppQueryType,
+  mutation: DairyAppMutationType,
   subscription: SubscriptionType,
   max_depth: 5,
   types: [HoneyType],
