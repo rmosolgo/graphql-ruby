@@ -15,6 +15,7 @@ A Ruby implementation of [GraphQL](http://graphql.org/).
      - [Testing](http://www.rubydoc.info/github/rmosolgo/graphql-ruby/file/guides/testing.md)
      - [Code Reuse](http://www.rubydoc.info/github/rmosolgo/graphql-ruby/file/guides/code_reuse.md)
      - [Security](http://www.rubydoc.info/github/rmosolgo/graphql-ruby/file/guides/security.md)
+     - [Relay](http://www.rubydoc.info/github/rmosolgo/graphql-ruby/file/guides/relay.md)
 
 
  - [API Documentation](http://www.rubydoc.info/github/rmosolgo/graphql-ruby)
@@ -88,7 +89,7 @@ result_hash = Schema.execute(query_string)
 If you're building a backend for [Relay](http://facebook.github.io/relay/), you'll need:
 
 - A JSON dump of the schema, which you can get by sending [`GraphQL::Introspection::INTROSPECTION_QUERY`](https://github.com/rmosolgo/graphql-ruby/blob/master/lib/graphql/introspection/introspection_query.rb)
-- Relay-specific helpers for GraphQL like Connections, node fields, and global ids. Here's one example of those: [`graphql-relay`](https://github.com/rmosolgo/graphql-relay-ruby)
+- Relay-specific helpers for GraphQL, see [`GraphQL::Relay`](http://www.rubydoc.info/github/rmosolgo/graphql-ruby/file/guides/relay.md)
 
 ## Goals
 
@@ -109,7 +110,6 @@ If you're building a backend for [Relay](http://facebook.github.io/relay/), you'
 
 - `graphql-ruby` + Rails demo ([src](https://github.com/rmosolgo/graphql-ruby-demo) / [heroku](http://graphql-ruby-demo.herokuapp.com))
 - [`graphql-batch`](https://github.com/shopify/graphql-batch), a batched query execution strategy
-- [Example Relay support](https://github.com/rmosolgo/graphql-relay-ruby) in Ruby
 - [`graphql-libgraphqlparser`](https://github.com/rmosolgo/graphql-libgraphqlparser), bindings to [libgraphqlparser](https://github.com/graphql/libgraphqlparser), a C-level parser.
 
 ### Blog Posts
@@ -130,4 +130,9 @@ If you're building a backend for [Relay](http://facebook.github.io/relay/), you'
 - Type check improvements:
   - Use catch-all type/field/argument definitions instead of terminating traversal
   - Reduce ad-hoc traversals?
-- Merge `graphql-relay-ruby` into this Repo so that they can stay in sync?
+- Relay:
+  - `GlobalNodeIdentification.to_global_id` should receive the type name and _object_, not `id`. (Or, maintain the "`type_name, id` in, `type_name, id` out" pattern?)
+  - Reduce duplication in ArrayConnection / RelationConnection
+  - Improve API for creating edges (better RANGE_ADD support)
+  - If the new edge isn't a member of the connection's objects, raise a nice error
+  - Rename `Connection#object` => `Connection#collection` with deprecation

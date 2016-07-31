@@ -1,38 +1,19 @@
-# graphql-relay
-
-[![Gem Version](https://badge.fury.io/rb/graphql-relay.svg)](http://badge.fury.io/rb/graphql-relay)
-[![Build Status](https://travis-ci.org/rmosolgo/graphql-relay-ruby.svg?branch=master)](https://travis-ci.org/rmosolgo/graphql-relay-ruby)
-[![Code Climate](https://codeclimate.com/github/rmosolgo/graphql-relay-ruby/badges/gpa.svg)](https://codeclimate.com/github/rmosolgo/graphql-relay-ruby)
-[![Test Coverage](https://codeclimate.com/github/rmosolgo/graphql-relay-ruby/badges/coverage.svg)](https://codeclimate.com/github/rmosolgo/graphql-relay-ruby/coverage)
+# GraphQL::Relay
 
 Helpers for using [`graphql`](https://github.com/rmosolgo/graphql-ruby) with Relay. Includes support for serving Relay connections from `Array`s, `ActiveRecord::Relation`s and `Sequel::Dataset`s.
 
-
-[API Documentation](http://www.rubydoc.info/github/rmosolgo/graphql-relay-ruby)
-## Installation
-
-```ruby
-gem "graphql-relay"
-```
-
-```
-bundle install
-```
-
-## Usage
-
-`graphql-relay` provides several helpers for making a Relay-compliant GraphQL endpoint in Ruby:
+`GraphQL::Relay` provides several helpers for making a Relay-compliant GraphQL endpoint in Ruby:
 
 - [global ids](#global-ids) support Relay's UUID-based refetching
 - [connections](#connections) implement Relay's pagination
 - [mutations](#mutations) allow Relay to mutate your system predictably
 
 
-### Global Ids
+## Global Ids
 
 Global ids (or UUIDs) provide refetching & global identification for Relay.
 
-#### UUID Lookup
+### UUID Lookup
 
 Use `GraphQL::Relay::GlobalNodeIdentification` helper by defining `object_from_id(global_id, ctx)` & `type_from_object(object)`. Then, assign the result to `Schema#node_identification` so that it can be used for query execution.
 
@@ -69,7 +50,7 @@ MySchema = GraphQL::Schema.new(...)
 MySchema.node_identification = NodeIdentification
 ```
 
-#### UUID fields
+### UUID fields
 
 ObjectTypes in your schema should implement `NodeIdentification.interface` with the `global_id_field` helper, for example:
 
@@ -84,7 +65,7 @@ PostType = GraphQL::ObjectType.define do
 end
 ```
 
-#### `node` field (find-by-UUID)
+### `node` field (find-by-UUID)
 
 You should also add a field to your root query type for Relay to re-fetch objects:
 
@@ -98,9 +79,9 @@ QueryType = GraphQL::ObjectType.define do
 end
 ```
 
-#### Custom UUID Generation
+### Custom UUID Generation
 
-By default, `graphql-relay` uses `Base64.strict_encode64` to generate opaque global ids. You can modify this behavior by providing two configurations. They work together to encode and decode ids:
+By default, `GraphQL::Relay` uses `Base64.strict_encode64` to generate opaque global ids. You can modify this behavior by providing two configurations. They work together to encode and decode ids:
 
 ```ruby
 NodeIdentification = GraphQL::Relay::GlobalNodeIdentification.define do
@@ -126,13 +107,13 @@ end
 MySchema.node_identification = NodeIdentification
 ```
 
-`graphql-relay` will use those procs for interacting with global ids.
+`GraphQL::Relay` will use those procs for interacting with global ids.
 
-### Connections
+## Connections
 
 Connections provide pagination and `pageInfo` for `Array`s,  `ActiveRecord::Relation`s or `Sequel::Dataset`s.
 
-#### Connection fields
+### Connection fields
 
 To define a connection field, use the `connection` helper. For a return type, get a type's `.connection_type`. For example:
 
@@ -170,7 +151,7 @@ connection :featured_comments, CommentType.connection_type do
 end
 ```
 
-#### Maximum Page Size
+### Maximum Page Size
 
 You can limit the number of results with `max_page_size:`:
 
@@ -178,7 +159,7 @@ You can limit the number of results with `max_page_size:`:
 connection :featured_comments, CommentType.connection_type, max_page_size: 50
 ```
 
-#### Connection types
+### Connection types
 
 You can customize a connection type with `.define_connection`:
 
@@ -202,7 +183,7 @@ AuthorType = GraphQL::ObjectType.define do
 end
 ```
 
-#### Custom edge types
+### Custom edge types
 
 If you need custom fields on `edge`s, you can define an edge type and pass it to a connection:
 
@@ -248,7 +229,7 @@ Now, you can query custom fields on the `edge`:
 }
 ```
 
-#### Custom Edge classes
+### Custom Edge classes
 
 For more robust custom edges, you can define a custom edge class. It will be `obj` in the edge type's resolve function. For example, to define a membership edge:
 
@@ -297,7 +278,7 @@ TeamMembershipsConnectionType = TeamType.define_connection(
 end
 ```
 
-#### Connection objects
+### Connection objects
 
 Maybe you need to make a connection object yourself (for example, to return a connection type from a mutation). You can create a connection object like this:
 
@@ -310,7 +291,7 @@ connection_class.new(items, args)
 
 `.connection_for_items` will return RelationConnection or ArrayConnection depending on `items`, then you can make a new connection
 
-#### Custom connections
+### Custom connections
 
 You can define a custom connection class and add it to `GraphQL::Relay`.
 
@@ -346,7 +327,7 @@ GraphQL::Relay::BaseConnection.register_connection_implementation(Set, SetConnec
 
 At runtime, `GraphQL::Relay` will use `SetConnection` to expose `Set`s.
 
-#### Creating connection fields by hand
+### Creating connection fields by hand
 
 If you need lower-level access to Connection fields, you can create them programmatically. Given a `GraphQL::Field` which returns a collection of items, you can turn it into a connection field with `ConnectionField.create`.
 
@@ -358,11 +339,11 @@ field = GraphQL::Field.new
 connection_field = GraphQL::Relay::ConnectionField.create(field)
 ```
 
-### Mutations
+## Mutations
 
 Mutations allow Relay to mutate your system. They conform to a strict API which makes them predictable to the client.
 
-### Mutation root
+## Mutation root
 
 To add mutations to your GraphQL schema, define a mutation type and pass it to your schema:
 
@@ -382,7 +363,7 @@ MySchema = GraphQL::Schema.new(
 
 Like `QueryType`, `MutationType` is a root of the schema.
 
-### Mutation fields
+## Mutation fields
 
 Members of `MutationType` are _mutation fields_. For GraphQL in general, mutation fields are identical to query fields _except_ that they have side-effects (which mutate application state, eg, update the database).
 
@@ -399,7 +380,7 @@ MutationType = GraphQL::ObjectType.define do
 end
 ```
 
-### Relay mutations
+## Relay mutations
 
 To define a mutation, use `GraphQL::Relay::Mutation.define`. Inside the block, you should configure:
   - `name`, which will name the mutation field & derived types
@@ -446,24 +427,3 @@ The resolve proc:
   - Takes `inputs`, which is a hash whose keys are the ones defined by `input_field`
   - Takes `ctx`, which is the query context you passed with the `context:` keyword
   - Must return a hash with keys matching your defined `return_field`s
-
-## Tutorials
-
-- Building a blog in GraphQL and Relay on Rails [Introduction](https://medium.com/@gauravtiwari/graphql-and-relay-on-rails-getting-started-955a49d251de), [Part 1](https://medium.com/@gauravtiwari/graphql-and-relay-on-rails-creating-types-and-schema-b3f9b232ccfc), [Part 2](https://medium.com/@gauravtiwari/graphql-and-relay-on-rails-first-relay-powered-react-component-cb3f9ee95eca)
-- https://medium.com/@khor/relay-facebook-on-rails-8b4af2057152
-- http://mgiroux.me/2015/getting-started-with-rails-graphql-relay/
-- http://mgiroux.me/2015/uploading-files-using-relay-with-rails/
-
-## Todo
-
-- `GlobalNodeIdentification.to_global_id` should receive the type name and _object_, not `id`. (Or, maintain the "`type_name, id` in, `type_name, id` out" pattern?)
-- Reduce duplication in ArrayConnection / RelationConnection
-- Improve API for creating edges (better RANGE_ADD support)
-- If the new edge isn't a member of the connection's objects, raise a nice error
-- Rename `Connection#object` => `Connection#collection` with deprecation
-
-## More Resources
-
-- [GraphQL Slack](http://graphql-slack.herokuapp.com), come join us in the `#ruby` channel!
-- [`graphql`](https://github.com/rmosolgo/graphql-ruby) Ruby gem
-- [`graphql-relay-js`](https://github.com/graphql/graphql-relay-js) JavaScript helpers for GraphQL and Relay
