@@ -3,7 +3,6 @@ CodeClimate::TestReporter.start
 require "sqlite3"
 require "active_record"
 require "sequel"
-require "graphql/relay"
 require "graphql"
 require "benchmark"
 require "minitest/autorun"

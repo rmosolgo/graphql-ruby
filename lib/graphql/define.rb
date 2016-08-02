@@ -1,5 +1,7 @@
 require "graphql/define/assign_argument"
+require "graphql/define/assign_connection"
 require "graphql/define/assign_enum_value"
+require "graphql/define/assign_global_id_field"
 require "graphql/define/assign_object_field"
 require "graphql/define/assignment_dictionary"
 require "graphql/define/defined_object_proxy"

@@ -26,6 +26,9 @@ module GraphQL
       :mutation_execution_strategy,
       :subscription_execution_strategy
 
+    # @return [GraphQL::Relay::GlobalNodeIdentification] the node identification instance for this schema, when using Relay
+    attr_accessor :node_identification
+
     # @return [Array<#call>] Middlewares suitable for MiddlewareChain, applied to fields during execution
     attr_reader :middleware
 

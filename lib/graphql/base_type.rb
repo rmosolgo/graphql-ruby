@@ -3,7 +3,11 @@ module GraphQL
   class BaseType
     include GraphQL::Define::NonNullWithBang
     include GraphQL::Define::InstanceDefinable
-    accepts_definitions :name, :description
+    accepts_definitions :name, :description, {
+        connection: GraphQL::Define::AssignConnection,
+        global_id_field: GraphQL::Define::AssignGlobalIdField,
+      }
+
     lazy_defined_attr_accessor :name, :description
 
     # @param other [GraphQL::BaseType] compare to this object
@@ -111,6 +115,26 @@ module GraphQL
       else
         type_arg
       end
+    end
+
+    # Get the default connection type for this object type
+    def connection_type
+      @connection_type ||= define_connection
+    end
+
+    # Define a custom connection type for this object type
+    def define_connection(**kwargs, &block)
+      GraphQL::Relay::ConnectionType.create_type(self, **kwargs, &block)
+    end
+
+    # Get the default edge type for this object type
+    def edge_type
+      @edge_type ||= define_edge
+    end
+
+    # Define a custom edge type for this object type
+    def define_edge(**kwargs, &block)
+      GraphQL::Relay::EdgeType.create_type(self, **kwargs, &block)
     end
   end
 end
