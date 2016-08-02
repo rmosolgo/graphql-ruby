@@ -3,3 +3,9 @@ doc/
 .yardoc/
 pkg/
 Gemfile.lock
+gemfiles/*.lock
+# Test database
+*.db
+.bundle/
+vendor/
+.idea/

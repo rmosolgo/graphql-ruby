@@ -1,71 +1,78 @@
-luke = OpenStruct.new({
-  id: "1000",
-  name: "Luke Skywalker",
-  friends: ["1002", "1003", "2000", "2001"],
-  appearsIn: [4, 5, 6],
-  homePlanet: "Tatooine",
+
+names = [
+  'X-Wing',
+  'Y-Wing',
+  'A-Wing',
+  'Millenium Falcon',
+  'Home One',
+  'TIE Fighter',
+  'TIE Interceptor',
+  'Executor',
+]
+
+# ActiveRecord::Base.logger = Logger.new(STDOUT)
+`rm -f ./_test_.db`
+# Set up "Bases" in ActiveRecord
+ActiveRecord::Base.establish_connection(adapter: "sqlite3", database: "./_test_.db")
+
+ActiveRecord::Schema.define do
+  self.verbose = false
+  create_table :bases do |t|
+    t.column :name, :string
+    t.column :planet, :string
+    t.column :faction_id, :integer
+  end
+end
+
+class Base < ActiveRecord::Base
+end
+
+Base.create!(name: "Yavin", planet: "Yavin 4", faction_id: 1)
+Base.create!(name: "Echo Base", planet: "Hoth", faction_id: 1)
+Base.create!(name: "Secret Hideout", planet: "Dantooine", faction_id: 1)
+Base.create!(name: "Death Star", planet: nil, faction_id: 2)
+Base.create!(name: "Shield Generator", planet: "Endor", faction_id: 2)
+Base.create!(name: "Headquarters", planet: "Coruscant", faction_id: 2)
+
+# Also, set up Bases with Sequel
+DB = Sequel.sqlite("./_test_.db")
+class SequelBase < Sequel::Model(:bases)
+end
+
+rebels  = OpenStruct.new({
+  id: '1',
+  name: 'Alliance to Restore the Republic',
+  ships:  ['1', '2', '3', '4', '5'],
+  bases: Base.where(faction_id: 1),
+  basesClone: Base.where(faction_id: 1),
 })
 
-vader = OpenStruct.new({
-  id: "1001",
-  name: "Darth Vader",
-  friends: ["1004"],
-  appearsIn: [4, 5, 6],
-  homePlanet: "Tatooine",
+
+empire = OpenStruct.new({
+  id: '2',
+  name: 'Galactic Empire',
+  ships: ['6', '7', '8'],
+  bases: Base.where(faction_id: 2),
+  basesClone: Base.where(faction_id: 2),
 })
 
-han = OpenStruct.new({
-  id: "1002",
-  name: "Han Solo",
-  friends: ["1000", "1003", "2001"],
-  appearsIn: [4, 5, 6],
-})
-
-leia = OpenStruct.new({
-  id: "1003",
-  name: "Leia Organa",
-  friends: ["1000", "1002", "2000", "2001"],
-  appearsIn: [4, 5, 6],
-  homePlanet: "Alderaan",
-})
-
-tarkin = OpenStruct.new({
-  id: "1004",
-  name: "Wilhuff Tarkin",
-  friends: ["1001"],
-  appearsIn: [4],
-})
-
-HUMAN_DATA = {
-  "1000" => luke,
-  "1001" => vader,
-  "1002" => han,
-  "1003" => leia,
-  "1004" => tarkin,
+STAR_WARS_DATA = {
+  "Faction" => {
+    "1" => rebels,
+    "2" => empire,
+  },
+  "Ship" => names.each_with_index.reduce({}) do |memo, (name, idx)|
+    id = (idx + 1).to_s
+    memo[id] = OpenStruct.new(name: name, id: id)
+    memo
+  end,
+  "Base" => Hash.new { |h, k| h[k] = Base.find(k) }
 }
 
-threepio = OpenStruct.new({
-  id: "2000",
-  name: "C-3PO",
-  friends: ["1000", "1002", "1003", "2001"],
-  appearsIn: [4, 5, 6],
-  primaryFunction: "Protocol",
-})
-
-artoo = OpenStruct.new({
-  id: "2001",
-  name: "R2-D2",
-  friends: ["1000", "1002", "1003"],
-  appearsIn: [4, 5, 6],
-  primaryFunction: "Astromech",
-})
-
-DROID_DATA = {
-  "2000" => threepio,
-  "2001" => artoo,
-}
-
-# Get friends from IDs
-GET_FRIENDS = -> (obj, args, ctx) do
-  obj.friends.map { |id| HUMAN_DATA[id] || DROID_DATA[id]}
+def STAR_WARS_DATA.create_ship(name, faction_id)
+  new_id = (self["Ship"].keys.map(&:to_i).max + 1).to_s
+  new_ship = OpenStruct.new(id: new_id, name: name)
+  self["Ship"][new_id] = new_ship
+  self["Faction"][faction_id]["ships"] << new_id
+  new_ship
 end

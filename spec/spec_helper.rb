@@ -1,5 +1,9 @@
 require "codeclimate-test-reporter"
 CodeClimate::TestReporter.start
+require "sqlite3"
+require "active_record"
+require "sequel"
+require "graphql/relay"
 require "graphql"
 require "benchmark"
 require "minitest/autorun"
@@ -16,3 +20,7 @@ Minitest.backtrace_filter = Minitest::BacktraceFilter.new
 
 # # Load support files
 Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each { |f| require f }
+
+def query(string, variables={})
+  GraphQL::Query.new(StarWarsSchema, string, variables: variables).result
+end

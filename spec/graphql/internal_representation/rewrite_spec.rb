@@ -23,15 +23,15 @@ describe GraphQL::InternalRepresentation::Rewrite do
       op_node = rewrite_result["getCheeses"]
 
       assert_equal 2, op_node.children.length
-      assert_equal QueryType, op_node.return_type
+      assert_equal DairyAppQueryType, op_node.return_type
       first_field = op_node.children.values.first
       assert_equal 3, first_field.children.length
-      assert_equal [QueryType], first_field.definitions.keys
+      assert_equal [DairyAppQueryType], first_field.definitions.keys
       assert_equal CheeseType, first_field.return_type
 
       second_field = op_node.children.values.last
       assert_equal 1, second_field.children.length
-      assert_equal [QueryType], second_field.definitions.keys
+      assert_equal [DairyAppQueryType], second_field.definitions.keys
       assert_equal CheeseType, second_field.return_type
       assert second_field.inspect.is_a?(String)
     end

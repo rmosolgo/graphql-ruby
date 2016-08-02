@@ -21,7 +21,7 @@ describe GraphQL::Schema::ReduceTypes do
   end
 
   it "finds type from arguments" do
-    result = reduce_types([QueryType])
+    result = reduce_types([DairyAppQueryType])
     assert_equal(DairyProductInputType, result["DairyProductInput"])
   end
 
