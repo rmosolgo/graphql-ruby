@@ -1,6 +1,16 @@
 # GraphQL::Relay
 
-Helpers for using [`graphql`](https://github.com/rmosolgo/graphql-ruby) with Relay. Includes support for serving Relay connections from `Array`s, `ActiveRecord::Relation`s and `Sequel::Dataset`s.
+## `graphql-relay` gem
+
+__Note__: For graphql versions `< 0.18`, you must include:
+
+```
+gem "graphql-relay"
+```
+
+Starting in `0.18`, `GraphQL::Relay` will be bundled with `graphql`.
+
+------------------------------
 
 `GraphQL::Relay` provides several helpers for making a Relay-compliant GraphQL endpoint in Ruby:
 
