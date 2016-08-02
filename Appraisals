@@ -1,3 +1,7 @@
+appraise 'rails_3.2' do
+  gem 'activerecord', '~> 3.2.21'
+end
+
 appraise 'rails_4.0' do
   gem 'activerecord', '~> 4.0.13'
   gem 'minitest'
