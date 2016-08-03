@@ -73,7 +73,10 @@ module GraphQL
     # If more than one operation is present, it must be named at runtime.
     # @return [GraphQL::Language::Nodes::OperationDefinition, nil]
     def selected_operation
-      @selected_operation ||= find_operation(@operations, @operation_name)
+      @selected_operation ||= begin
+        perform_validation
+        @selected_operation
+      end
     end
 
     # Determine the values for variables of this query, using default values
@@ -118,9 +121,18 @@ module GraphQL
     private
 
     def perform_validation
+      @selected_operation = find_operation(@operations, @operation_name)
       validation_result = schema.static_validator.validate(self)
       @validation_errors = validation_result[:errors]
       @internal_representation = validation_result[:irep]
+      if @validation_errors.none?
+        # Accessing variables will raise errors if there are any :S
+        variables
+      end
+      nil
+    rescue GraphQL::Query::OperationNameMissingError, GraphQL::Query::VariableValidationError => err
+      @validation_errors = [err.to_h]
+      @internal_representation = nil
       nil
     end
 

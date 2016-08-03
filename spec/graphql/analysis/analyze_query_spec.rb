@@ -26,7 +26,8 @@ describe GraphQL::Analysis do
     let(:type_collector) { TypeCollector.new }
     let(:analyzers) { [type_collector, node_counter] }
     let(:reduce_result) { GraphQL::Analysis.analyze_query(query, analyzers) }
-    let(:query) { GraphQL::Query.new(DummySchema, query_string) }
+    let(:variables) { {} }
+    let(:query) { GraphQL::Query.new(DummySchema, query_string, variables: variables) }
     let(:query_string) {%|
       {
         cheese(id: 1) {
@@ -45,6 +46,34 @@ describe GraphQL::Analysis do
         GraphQL::Language::Nodes::Field => 3,
       }
       assert_equal expected_node_counts, node_counts
+    end
+
+    describe "when a variable is missing" do
+      let(:query_string) {%|
+        query something($cheeseId: Int!){
+          cheese(id: $cheeseId) {
+            id
+            flavor
+          }
+        }
+      |}
+      let(:variable_accessor) { -> (memo, visit_type, irep_node) { query.variables["cheeseId"] } }
+
+      before do
+        @previous_query_analyzers = DummySchema.query_analyzers.dup
+        DummySchema.query_analyzers.clear
+        DummySchema.query_analyzers << variable_accessor
+      end
+
+      after do
+        DummySchema.query_analyzers.clear
+        DummySchema.query_analyzers.push(*@previous_query_analyzers)
+      end
+
+      it "returns an error" do
+        error = query.result["errors"].first
+        assert_equal "Variable cheeseId of type Int! was provided invalid value", error["message"]
+      end
     end
   end
 end
