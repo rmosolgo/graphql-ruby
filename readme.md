@@ -128,8 +128,12 @@ If you're building a backend for [Relay](http://facebook.github.io/relay/), you'
   - Problem: how can we load types in Rails without accessing the constant?
   - Maybe support by third-party library? `type("Post!")` could implement "type_missing", keeps `graphql-ruby` very simple
 - Type check improvements:
+  - Include `path: [...]` in validation errors
   - Use catch-all type/field/argument definitions instead of terminating traversal
   - Reduce ad-hoc traversals?
+- Add Rails-y argument validations, eg `less_than: 100`, `max_length: 255`, `one_of: [...]`
+  - Must be customizable
+- Refactor `Query#perform_validation`, how can that be organized better?
 - Relay:
   - `GlobalNodeIdentification.to_global_id` should receive the type name and _object_, not `id`. (Or, maintain the "`type_name, id` in, `type_name, id` out" pattern?)
   - Reduce duplication in ArrayConnection / RelationConnection
