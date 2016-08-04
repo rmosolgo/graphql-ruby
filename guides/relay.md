@@ -8,7 +8,7 @@ __Note__: For graphql versions `< 0.18`, you must include:
 gem "graphql-relay"
 ```
 
-Starting in `0.18`, `GraphQL::Relay` will be bundled with `graphql`.
+Starting in `0.18`, `GraphQL::Relay` is part of `graphql`.
 
 ------------------------------
 

@@ -8,6 +8,26 @@
 
 ### Bug fixes
 
+## 0.18.0 (4 Aug 2016)
+
+### Breaking changes
+
+- `graphql-relay` has been merged with `graphql`, you should remove `graphql-relay` from your gemfile. #195
+
+### Deprecations
+
+### New features
+
+- `GraphQL.parse` can turn schema definitions into a `GraphQL::Language::Nodes::Document`. The document can be stringified again with `Document#to_query_string` #191
+- Validation errors include a `path` to the part of the query where the error was found #198
+- `.define` also accepts keywords for each helper method, eg `GraphQL::ObjectType.define(name: "PostType", ...)`
+
+### Bug fixes
+
+- `global_id_field`s have default complexity of 1, not `nil`
+- Relay `pageInfo` is correct for connections limited by `max_page_size`
+- Rescue invalid variable errors & missing operation name errors during query analysis
+
 ## 0.17.2 (26 Jul 2016)
 
 ### Bug fixes
