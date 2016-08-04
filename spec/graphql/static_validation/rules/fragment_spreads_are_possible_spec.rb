@@ -31,15 +31,18 @@ describe GraphQL::StaticValidation::FragmentSpreadsArePossible do
     expected = [
       {
         "message"=>"Fragment on Milk can't be spread inside Cheese",
-        "locations"=>[{"line"=>6, "column"=>9}]
+        "locations"=>[{"line"=>6, "column"=>9}],
+        "path"=>["query getCheese", "cheese", "... on Milk"],
       },
       {
         "message"=>"Fragment milkFields on Milk can't be spread inside Cheese",
-        "locations"=>[{"line"=>4, "column"=>9}]
+        "locations"=>[{"line"=>4, "column"=>9}],
+        "path"=>["query getCheese", "cheese", "... milkFields"],
       },
       {
         "message"=>"Fragment milkFields on Milk can't be spread inside Cheese",
-        "locations"=>[{"line"=>18, "column"=>7}]
+        "locations"=>[{"line"=>18, "column"=>7}],
+        "path"=>["fragment cheeseFields", "... milkFields"],
       }
     ]
     assert_equal(expected, errors)

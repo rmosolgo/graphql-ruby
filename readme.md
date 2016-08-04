@@ -127,10 +127,13 @@ If you're building a backend for [Relay](http://facebook.github.io/relay/), you'
   - Problem: how does a field know which schema to look up the name from?
   - Problem: how can we load types in Rails without accessing the constant?
   - Maybe support by third-party library? `type("Post!")` could implement "type_missing", keeps `graphql-ruby` very simple
-- Type check improvements:
+- StaticValidation improvements
   - Include `path: [...]` in validation errors
   - Use catch-all type/field/argument definitions instead of terminating traversal
   - Reduce ad-hoc traversals?
+  - Validators are order-dependent, is this a smell?
+  - Tests for interference between validators are poor
+  - Maybe this is a candidate for a rewrite? Can it somehow work more closely with query analysis? Somehow support the `Query#perform_validation` refactor?
 - Add Rails-y argument validations, eg `less_than: 100`, `max_length: 255`, `one_of: [...]`
   - Must be customizable
 - Refactor `Query#perform_validation`, how can that be organized better?

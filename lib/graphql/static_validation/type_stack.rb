@@ -29,6 +29,9 @@ module GraphQL
       # @return [Array<GraphQL::Node::Argument>] arguments which have been entered
       attr_reader :argument_definitions
 
+      # @return [Array<String>] fields which have been entered (by their AST name)
+      attr_reader :path
+
       # @param schema [GraphQL::Schema] the schema whose types to use when climbing this document
       # @param visitor [GraphQL::Language::Visitor] a visitor to follow & watch the types
       def initialize(schema, visitor)
@@ -37,6 +40,7 @@ module GraphQL
         @field_definitions = []
         @directive_definitions = []
         @argument_definitions = []
+        @path = []
         visitor.enter << -> (node, parent) { PUSH_STRATEGIES[node.class].push(self, node) }
         visitor.leave << -> (node, parent) { PUSH_STRATEGIES[node.class].pop(self, node) }
       end
@@ -63,25 +67,38 @@ module GraphQL
             object_type = object_type.unwrap
           end
           stack.object_types.push(object_type)
+          push_path_member(stack, node)
         end
 
         def pop(stack, node)
           stack.object_types.pop
+          stack.path.pop
         end
       end
 
-      class FragmentDefinitionStrategy < FragmentWithTypeStrategy; end
-      class InlineFragmentStrategy < FragmentWithTypeStrategy; end
+      class FragmentDefinitionStrategy < FragmentWithTypeStrategy
+        def push_path_member(stack, node)
+          stack.path.push("fragment #{node.name}")
+        end
+      end
+
+      class InlineFragmentStrategy < FragmentWithTypeStrategy
+        def push_path_member(stack, node)
+          stack.path.push("...#{node.type ? " on #{node.type}" : ""}")
+        end
+      end
 
       class OperationDefinitionStrategy
         def push(stack, node)
           # eg, QueryType, MutationType
           object_type = stack.schema.root_type_for_operation(node.operation_type)
           stack.object_types.push(object_type)
+          stack.path.push("#{node.operation_type}#{node.name ? " #{node.name}" : ""}")
         end
 
         def pop(stack, node)
           stack.object_types.pop
+          stack.path.pop
         end
       end
 
@@ -98,11 +115,13 @@ module GraphQL
           else
             stack.object_types.push(nil)
           end
+          stack.path.push(node.alias || node.name)
         end
 
         def pop(stack, node)
           stack.field_definitions.pop
           stack.object_types.pop
+          stack.path.pop
         end
       end
 
@@ -137,10 +156,22 @@ module GraphQL
             argument_defn = nil
           end
           stack.argument_definitions.push(argument_defn)
+          stack.path.push(node.name)
         end
 
         def pop(stack, node)
           stack.argument_definitions.pop
+          stack.path.pop
+        end
+      end
+
+      class FragmentSpreadStrategy
+        def push(stack, node)
+          stack.path.push("... #{node.name}")
+        end
+
+        def pop(stack, node)
+          stack.path.pop
         end
       end
 

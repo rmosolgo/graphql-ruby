@@ -22,7 +22,7 @@ module GraphQL
 
       def find_conflicts(field_map, context)
         field_map.each do |name, ast_fields|
-          comparison = FieldDefinitionComparison.new(name, ast_fields)
+          comparison = FieldDefinitionComparison.new(name, ast_fields, context)
           context.errors.push(*comparison.errors)
 
 
@@ -63,27 +63,27 @@ module GraphQL
         include GraphQL::StaticValidation::Message::MessageHelper
         NAMED_VALUES = [GraphQL::Language::Nodes::Enum, GraphQL::Language::Nodes::VariableIdentifier]
         attr_reader :errors
-        def initialize(name, defs)
+        def initialize(name, defs, context)
           errors = []
 
           names = defs.map(&:name).uniq
           if names.length != 1
-            errors << message("Field '#{name}' has a field conflict: #{names.join(" or ")}?", defs.first)
+            errors << message("Field '#{name}' has a field conflict: #{names.join(" or ")}?", defs.first, context: context)
           end
 
           args = defs.map { |defn| reduce_list(defn.arguments)}.uniq
           if args.length != 1
-            errors << message("Field '#{name}' has an argument conflict: #{args.map {|a| JSON.dump(a) }.join(" or ")}?", defs.first)
+            errors << message("Field '#{name}' has an argument conflict: #{args.map {|a| JSON.dump(a) }.join(" or ")}?", defs.first, context: context)
           end
 
           directive_names = defs.map { |defn| defn.directives.map(&:name) }.uniq
           if directive_names.length != 1
-            errors << message("Field '#{name}' has a directive conflict: #{directive_names.map {|names| "[#{names.join(", ")}]"}.join(" or ")}?", defs.first)
+            errors << message("Field '#{name}' has a directive conflict: #{directive_names.map {|names| "[#{names.join(", ")}]"}.join(" or ")}?", defs.first, context: context)
           end
 
           directive_args = defs.map {|defn| defn.directives.map {|d| reduce_list(d.arguments) } }.uniq
           if directive_args.length != 1
-            errors << message("Field '#{name}' has a directive argument conflict: #{directive_args.map {|args| JSON.dump(args)}.join(" or ")}?", defs.first)
+            errors << message("Field '#{name}' has a directive argument conflict: #{directive_args.map {|args| JSON.dump(args)}.join(" or ")}?", defs.first, context: context)
           end
 
           @errors = errors

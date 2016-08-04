@@ -20,7 +20,7 @@ module GraphQL
         return unless node.type
         type = context.schema.types.fetch(node.type, nil)
         if type.nil?
-          context.errors << message("No such type #{node.type}, so it can't be a fragment condition", node)
+          context.errors << message("No such type #{node.type}, so it can't be a fragment condition", node, context: context)
           GraphQL::Language::Visitor::SKIP
         end
       end

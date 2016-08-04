@@ -44,11 +44,11 @@ module GraphQL
         arg_inner_type = arg_defn_type.unwrap
 
         if var_inner_type != arg_inner_type
-          context.errors << create_error("Type mismatch", var_type, ast_var, arg_defn, arg_node)
+          context.errors << create_error("Type mismatch", var_type, ast_var, arg_defn, arg_node, context)
         elsif list_dimension(var_type) != list_dimension(arg_defn_type)
-          context.errors << create_error("List dimension mismatch", var_type, ast_var, arg_defn, arg_node)
+          context.errors << create_error("List dimension mismatch", var_type, ast_var, arg_defn, arg_node, context)
         elsif !non_null_levels_match(arg_defn_type, var_type)
-          context.errors << create_error("Nullability mismatch", var_type, ast_var, arg_defn, arg_node)
+          context.errors << create_error("Nullability mismatch", var_type, ast_var, arg_defn, arg_node, context)
         end
       end
 
@@ -62,8 +62,8 @@ module GraphQL
         end
       end
 
-      def create_error(error_message, var_type, ast_var, arg_defn, arg_node)
-        message("#{error_message} on variable $#{ast_var.name} and argument #{arg_node.name} (#{var_type.to_s} / #{arg_defn.type.to_s})", arg_node)
+      def create_error(error_message, var_type, ast_var, arg_defn, arg_node, context)
+        message("#{error_message} on variable $#{ast_var.name} and argument #{arg_node.name} (#{var_type.to_s} / #{arg_defn.type.to_s})", arg_node, context: context)
       end
 
       def list_dimension(type)
