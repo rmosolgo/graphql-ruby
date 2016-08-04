@@ -30,8 +30,7 @@ end
 Ship = GraphQL::ObjectType.define do
   name "Ship"
   interfaces [NodeIdentification.interface]
-  # Explict alternative to `global_id_field` helper:
-  field :id, field: GraphQL::Relay::GlobalIdField.new("Ship")
+  global_id_field :id
   field :name, types.String
 end
 
@@ -83,7 +82,8 @@ end
 Faction = GraphQL::ObjectType.define do
   name "Faction"
   interfaces [NodeIdentification.interface]
-  field :id, field: GraphQL::Relay::GlobalIdField.new("Faction")
+
+  field :id, !types.ID, resolve: GraphQL::Relay::GlobalIdResolve.new(type_name: "Faction", property: :id)
   field :name, types.String
   connection :ships, Ship.connection_type do
     resolve -> (obj, args, ctx) {

@@ -187,6 +187,30 @@ describe GraphQL::Analysis::QueryComplexity do
     end
   end
 
+  describe "relay types" do
+    let(:query) { GraphQL::Query.new(StarWarsSchema, query_string) }
+    let(:query_string) {%|
+    {
+      rebels {
+        ships {
+          edges {
+            node {
+              id
+            }
+          }
+          pageInfo {
+            hasNextPage
+          }
+        }
+      }
+    }
+    |}
+
+    it "gets the complexity" do
+      reduce_result
+      assert_equal 7, complexities.last
+    end
+  end
 
   describe "custom complexities" do
     let(:query) { GraphQL::Query.new(complexity_schema, query_string) }
