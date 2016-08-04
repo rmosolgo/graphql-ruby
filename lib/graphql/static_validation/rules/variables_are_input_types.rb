@@ -15,7 +15,7 @@ module GraphQL
         type_name = get_type_name(node.type)
         type = context.schema.types[type_name]
         if !type.kind.input?
-          context.errors << message("#{type.name} isn't a valid input type (on $#{node.name})", node)
+          context.errors << message("#{type.name} isn't a valid input type (on $#{node.name})", node, context: context)
         end
       end
 

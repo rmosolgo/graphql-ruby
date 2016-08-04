@@ -37,15 +37,18 @@ describe GraphQL::StaticValidation::VariablesAreUsedAndDefined do
     expected = [
       {
         "message"=>"Variable $notUsedVar is declared by getCheese but not used",
-        "locations"=>[{"line"=>2, "column"=>5}]
+        "locations"=>[{"line"=>2, "column"=>5}],
+        "path"=>["query getCheese"],
       },
       {
         "message"=>"Variable $undefinedVar is used by getCheese but not declared",
-        "locations"=>[{"line"=>11, "column"=>29}]
+        "locations"=>[{"line"=>11, "column"=>29}],
+        "path"=>["query getCheese", "cheese", "whatever", "undefined"],
       },
       {
         "message"=>"Variable $undefinedFragmentVar is used by innerCheeseFields but not declared",
-        "locations"=>[{"line"=>24, "column"=>26}]
+        "locations"=>[{"line"=>24, "column"=>26}],
+        "path"=>["fragment innerCheeseFields", "source", "notDefined"],
       },
     ]
     assert_equal(expected, errors)

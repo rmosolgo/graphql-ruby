@@ -32,11 +32,13 @@ describe GraphQL::StaticValidation::FragmentsAreFinite do
     expected = [
       {
         "message"=>"Fragment sourceField contains an infinite loop",
-        "locations"=>[{"line"=>10, "column"=>5}]
+        "locations"=>[{"line"=>10, "column"=>5}],
+        "path"=>["fragment sourceField"],
       },
       {
         "message"=>"Fragment flavorField contains an infinite loop",
-        "locations"=>[{"line"=>15, "column"=>5}]
+        "locations"=>[{"line"=>15, "column"=>5}],
+        "path"=>["fragment flavorField"],
       }
     ]
     assert_equal(expected, errors)

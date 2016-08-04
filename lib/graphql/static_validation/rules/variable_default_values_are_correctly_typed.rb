@@ -15,11 +15,11 @@ module GraphQL
       def validate_default_value(node, literal_validator, context)
         value = node.default_value
         if node.type.is_a?(GraphQL::Language::Nodes::NonNullType)
-          context.errors << message("Non-null variable $#{node.name} can't have a default value", node)
+          context.errors << message("Non-null variable $#{node.name} can't have a default value", node, context: context)
         else
           type = context.schema.type_from_ast(node.type)
           if !literal_validator.validate(value, type)
-            context.errors << message("Default value for $#{node.name} doesn't match type #{type}", node)
+            context.errors << message("Default value for $#{node.name} doesn't match type #{type}", node, context: context)
           end
         end
       end

@@ -52,6 +52,11 @@ module GraphQL
         @type_stack.field_definitions.last
       end
 
+      # @return [Array<String>] Field names to get to the current field
+      def path
+        @type_stack.path.dup
+      end
+
       # @return [GraphQL::Directive, nil] The most-recently-entered GraphQL::Directive, if currently inside one
       def directive_definition
         @type_stack.directive_definitions.last

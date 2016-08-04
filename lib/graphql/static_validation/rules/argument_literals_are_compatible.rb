@@ -10,7 +10,7 @@ module GraphQL
         if !valid
           kind_of_node = node_type(parent)
           error_arg_name = parent_name(parent, defn)
-          context.errors << message("Argument '#{node.name}' on #{kind_of_node} '#{error_arg_name}' has an invalid value", parent)
+          context.errors << message("Argument '#{node.name}' on #{kind_of_node} '#{error_arg_name}' has an invalid value", parent, context: context)
         end
       end
     end

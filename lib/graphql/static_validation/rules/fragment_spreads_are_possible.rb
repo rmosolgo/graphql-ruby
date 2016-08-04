@@ -9,7 +9,7 @@ module GraphQL
           fragment_parent = context.object_types[-2]
           fragment_child = context.object_types.last
           if fragment_child
-            validate_fragment_in_scope(fragment_parent, fragment_child, node, context)
+            validate_fragment_in_scope(fragment_parent, fragment_child, node, context, context.path)
           end
         }
 
@@ -17,26 +17,25 @@ module GraphQL
 
         context.visitor[GraphQL::Language::Nodes::FragmentSpread] << -> (node, parent) {
           fragment_parent = context.object_types.last
-          spreads_to_validate << [node, fragment_parent]
+          spreads_to_validate << FragmentSpread.new(node: node, parent_type: fragment_parent, path: context.path)
         }
 
-        context.visitor[GraphQL::Language::Nodes::Document].leave << -> (node, parent) {
-          spreads_to_validate.each do |spread_values|
-            node, fragment_parent = spread_values
-            fragment_child_name = context.fragments[node.name].type
+        context.visitor[GraphQL::Language::Nodes::Document].leave << -> (doc_node, parent) {
+          spreads_to_validate.each do |frag_spread|
+            fragment_child_name = context.fragments[frag_spread.node.name].type
             fragment_child = context.schema.types[fragment_child_name]
-            validate_fragment_in_scope(fragment_parent, fragment_child, node, context)
+            validate_fragment_in_scope(frag_spread.parent_type, fragment_child, frag_spread.node, context, frag_spread.path)
           end
         }
       end
 
       private
 
-      def validate_fragment_in_scope(parent_type, child_type, node, context)
+      def validate_fragment_in_scope(parent_type, child_type, node, context, path)
         intersecting_types = get_possible_types(parent_type, context.schema) & get_possible_types(child_type, context.schema)
         if intersecting_types.none?
           name = node.respond_to?(:name) ? " #{node.name}" : ""
-          context.errors << message("Fragment#{name} on #{child_type.name} can't be spread inside #{parent_type.name}", node)
+          context.errors << message("Fragment#{name} on #{child_type.name} can't be spread inside #{parent_type.name}", node, path: path)
         end
       end
 
@@ -49,6 +48,15 @@ module GraphQL
           schema.possible_types(type)
         else
           []
+        end
+      end
+
+      class FragmentSpread
+        attr_reader :node, :parent_type, :path
+        def initialize(node:, parent_type:, path:)
+          @node = node
+          @parent_type = parent_type
+          @path = path
         end
       end
     end

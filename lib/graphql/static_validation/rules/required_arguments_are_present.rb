@@ -30,7 +30,7 @@ module GraphQL
 
         missing_names = required_argument_names - present_argument_names
         if missing_names.any?
-          context.errors << message("#{ast_node.class.name.split("::").last} '#{ast_node.name}' is missing required arguments: #{missing_names.join(", ")}", ast_node)
+          context.errors << message("#{ast_node.class.name.split("::").last} '#{ast_node.name}' is missing required arguments: #{missing_names.join(", ")}", ast_node, context: context)
         end
       end
     end

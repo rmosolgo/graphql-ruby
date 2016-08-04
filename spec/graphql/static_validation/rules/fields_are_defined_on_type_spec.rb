@@ -31,7 +31,11 @@ describe GraphQL::StaticValidation::FieldsAreDefinedOnType do
 
     it "finds invalid fields" do
       expected_errors = [
-        {"message"=>"Field 'amountThatILikeIt' doesn't exist on type 'Edible'", "locations"=>[{"line"=>1, "column"=>18}]}
+        {
+          "message"=>"Field 'amountThatILikeIt' doesn't exist on type 'Edible'",
+          "locations"=>[{"line"=>1, "column"=>18}],
+          "path"=>["query getStuff", "favoriteEdible", "amountThatILikeIt"],
+        }
       ]
       assert_equal(expected_errors, errors)
     end
@@ -51,7 +55,8 @@ describe GraphQL::StaticValidation::FieldsAreDefinedOnType do
           "message"=>"Selections can't be made directly on unions (see selections on DairyProduct)",
           "locations"=>[
             {"line"=>3, "column"=>7}
-          ]
+          ],
+          "path"=>["fragment dbFields", "source"],
         }
       ]
       assert_equal(expected_errors, errors)
