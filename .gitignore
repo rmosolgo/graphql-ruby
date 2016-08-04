@@ -10,4 +10,5 @@ gemfiles/*.lock
 vendor/
 .idea/
 site/tmp/
+site/output/
 **/*.log
