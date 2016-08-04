@@ -37,7 +37,7 @@ desc "Build the site, copy it to the gh-pages branch, and push the gh-pages bran
 task :deploy_site do
   # TODO: use master branch instead of site
   `git checkout gh-pages`
-  `git checkout site -- site/`
+  `git checkout site -- site/ Gemfile`
   Dir.chdir "site" do
     `nanoc`
   end
