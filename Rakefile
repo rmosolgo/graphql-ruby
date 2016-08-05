@@ -36,14 +36,12 @@ end
 desc "Build the site, copy it to the gh-pages branch, and push the gh-pages branch"
 task :deploy_site do
   # TODO: use master branch instead of site
-  `git checkout gh-pages`
-  `git checkout site -- site/ Gemfile`
-  Dir.chdir "site" do
-    `nanoc`
-  end
-  `cp -r site/output/ ./`
-  `git add -A`
-  `git commit -m "deploy site to gh-pages (automatic)"`
-  `git push origin gh-pages`
-  `git checkout site`
+  `git checkout gh-pages` &&
+    `git checkout site -- site/ Gemfile` &&
+    (Dir.chdir("site") { `nanoc` }) &&
+    `cp -r site/output/graphql-ruby/ ./` &&
+    `git add -A` &&
+    `git commit -m "deploy site to gh-pages (automatic)"` &&
+    `git push origin gh-pages` &&
+    `git checkout site`
 end
