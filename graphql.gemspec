@@ -34,4 +34,9 @@ Gem::Specification.new do |s|
   s.add_development_dependency "appraisal"
   s.add_development_dependency "sequel"
   s.add_development_dependency "sqlite3"
+  # website development
+  s.add_development_dependency "adsf"
+  s.add_development_dependency "nanoc"
+  s.add_development_dependency "redcarpet"
+  s.add_development_dependency "rouge"
 end

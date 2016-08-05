@@ -1,0 +1,1 @@
+include Nanoc::Helpers::LinkTo

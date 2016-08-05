@@ -1,0 +1,48 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>GraphQL Ruby</title>
+    <link rel="stylesheet" href="/graphql-ruby/stylesheet.css">
+    <!-- you don't need to keep this, but it's cool for stats! -->
+    <meta name="generator" content="Nanoc <%= Nanoc::VERSION %>">
+  </head>
+  <body class="hack">
+    <div class="container">
+      <div style="display: flex; justify-content: center;">
+<strong style="white-space: pre; line-height: 1.1em; display: inline-block; font-size: 8px;">
+    ▄██████▄     ▄████████    ▄████████    ▄███████▄    ▄█    █▄    ████████▄    ▄█
+   ███    ███   ███    ███   ███    ███   ███    ███   ███    ███   ███    ███  ███
+   ███    █▀    ███    ███   ███    ███   ███    ███   ███    ███   ███    ███  ███
+  ▄███         ▄███▄▄▄▄██▀   ███    ███   ███    ███  ▄███▄▄▄▄███▄▄ ███    ███  ███
+ ▀▀███ ████▄  ▀▀███▀▀▀▀▀   ▀███████████ ▀█████████▀  ▀▀███▀▀▀▀███▀  ███    ███  ███
+   ███    ███ ▀███████████   ███    ███   ███          ███    ███   ███    ███  ███
+   ███    ███   ███    ███   ███    ███   ███          ███    ███   ███  ▀ ███  ███▌    ▄
+   ████████▀    ███    ███   ███    █▀   ▄████▀        ███    █▀     ▀██████▀▄█ █████▄▄██
+                ███    ███                                                      ▀
+</strong>
+      </div>
+      <p style="text-align: center;">A GraphQL server implementation for Ruby</p>
+
+      <div class="grid -between">
+        <div class="cell -3of12">
+          <h3><%= link_to "Readme", "/" %></h3>
+          <h3>Guides</h3>
+          <ul>
+            <li><%= link_to "Introduction", "/graphql-ruby/guides/introduction/" %></li>
+            <li><%= link_to "Defining a Schema", "/graphql-ruby/guides/defining_your_schema/" %></li>
+            <li><%= link_to "Executing Queries", "/graphql-ruby/guides/executing_queries/" %></li>
+            <li><%= link_to "Code Reuse", "/graphql-ruby/guides/code_reuse/" %></li>
+            <li><%= link_to "Security", "/graphql-ruby/guides/security/" %></li>
+            <li><%= link_to "Testing", "/graphql-ruby/guides/testing/" %></li>
+          </ul>
+          <h3><%= link_to "API Docs", "http://www.rubydoc.info/github/rmosolgo/graphql-ruby" %></h3>
+          <h3><%= link_to "Source Code", "https://github.com/rmosolgo/graphql-ruby" %></h3>
+        </div>
+        <div class="cell -9of12">
+          <%= yield %>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

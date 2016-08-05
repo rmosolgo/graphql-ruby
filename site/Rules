@@ -1,0 +1,25 @@
+#!/usr/bin/env ruby
+
+compile '/**/*.html' do
+  filter :erb
+  layout '/default.*'
+end
+
+compile '/**/*.md' do
+ filter :highlighted_markdown
+ layout '/default.*'
+end
+
+route '/**/*.{html,md}' do
+  if item.identifier =~ '/index.*'
+    '/index.html'
+  else
+    item.identifier.without_ext + '/index.html'
+  end
+end
+
+compile '/**/*' do
+  write item.identifier.to_s
+end
+
+layout '/**/*', :erb
