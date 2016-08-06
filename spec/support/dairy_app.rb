@@ -2,6 +2,9 @@ require_relative "./dairy_data"
 
 class NoSuchDairyError < StandardError; end
 
+GraphQL::Field.accepts_definitions(joins: GraphQL::Define.assign_metadata_key(:joins))
+GraphQL::BaseType.accepts_definitions(class_names: GraphQL::Define.assign_metadata_key(:class_names))
+
 EdibleInterface = GraphQL::InterfaceType.define do
   name "Edible"
   description "Something you can eat, yum"
@@ -26,6 +29,7 @@ end
 
 CheeseType = GraphQL::ObjectType.define do
   name "Cheese"
+  class_names ["Cheese"]
   description "Cultured dairy product"
   interfaces [EdibleInterface, AnimalProductInterface]
 
@@ -39,6 +43,8 @@ CheeseType = GraphQL::ObjectType.define do
 
   # Or can define by block, `resolve ->` should override `property:`
   field :similarCheese, CheeseType, "Cheeses like this one", property: :this_should_be_overriden  do
+    # metadata test
+    joins [:cheeses, :milks]
     argument :source, !types[!DairyAnimalEnum]
     resolve -> (t, a, c) {
       # get the strings out:

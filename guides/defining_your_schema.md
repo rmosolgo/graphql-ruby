@@ -352,3 +352,40 @@ If the last value of `memo` (or the return of `.final_value`) is a `GraphQL::Ana
 `graphql-ruby` includes a few query analyzers:
 - `GraphQL::Analysis::QueryDepth` and `GraphQL::Analysis::QueryComplexity` for inspecting query depth and complexity
 - `GraphQL::Analysis::MaxQueryDepth` and `GraphQL::Analysis::MaxQueryComplexity` are used internally to implement `max_depth:` and `max_complexity:` options
+
+## Extending type and field definitions
+
+Types, fields, and arguments have a `metadata` hash which accepts values during definition.
+
+First, make a custom definition:
+
+```ruby
+GraphQL::ObjectType.accepts_definitions resolves_to_class_names: GraphQL::Define.assign_metadata_key(:resolves_to_class_names)
+# or:
+# GraphQL::Field.accepts_definitions(...)
+# GraphQL::Argument.accepts_definitions(...)
+```
+
+
+Then, use the custom definition:
+
+```ruby
+Post = GraphQL::ObjectType.define do
+  # ...
+  resolves_to_class_names ["Post", "StaffUpdate"]
+end
+```
+
+Access `type.metadata` later:
+
+```ruby
+SearchResultUnion = GraphQL::Union.define do
+  # ...
+  # Use the type's declared `resolves_to_class_names`
+  # to figure out if `obj` is a member of that type
+  resolve_type -> (obj, ctx) {
+    class_name = obj.class.name
+    possible_types.find { |type| type.metadata[:resolves_to_class_names].include?(class_name) }
+  }
+end
+```

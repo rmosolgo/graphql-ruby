@@ -17,7 +17,6 @@ describe GraphQL::Field do
     assert_equal(DairyProductUnion, field.type)
   end
 
-
   describe ".property " do
     let(:field) do
       GraphQL::Field.define do
@@ -105,6 +104,13 @@ describe GraphQL::Field do
       resolved_source = source_field.resolve({source: "Abc", "source" => "Xyz"}, nil, nil)
       assert_equal "source", source_field.hash_key
       assert_equal "Xyz", resolved_source
+    end
+  end
+
+  describe "#metadata" do
+    it "accepts user-defined metadata" do
+      similar_cheese_field = CheeseType.get_field("similarCheese")
+      assert_equal [:cheeses, :milks], similar_cheese_field.metadata[:joins]
     end
   end
 end

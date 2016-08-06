@@ -21,4 +21,8 @@ describe GraphQL::BaseType do
       GraphQL::ListType.new(of_type: !MilkType)
     )
   end
+
+  it "Accepts arbitrary metadata" do
+    assert_equal ["Cheese"], CheeseType.metadata[:class_names]
+  end
 end
