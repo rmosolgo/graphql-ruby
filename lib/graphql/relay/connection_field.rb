@@ -43,11 +43,7 @@ module GraphQL
       # so you capture its value, then wrap it in a
       # connection implementation
       def self.get_connection_resolve(field_name, underlying_resolve, max_page_size: nil)
-        -> (obj, args, ctx) {
-          items = underlying_resolve.call(obj, args, ctx)
-          connection_class = GraphQL::Relay::BaseConnection.connection_for_items(items)
-          connection_class.new(items, args, max_page_size: max_page_size, parent: obj)
-        }
+        GraphQL::Relay::ConnectionResolve.new(field_name, underlying_resolve, max_page_size: max_page_size)
       end
     end
   end
