@@ -122,13 +122,7 @@ If you're building a backend for [Relay](http://facebook.github.io/relay/), you'
 
 ## To Do
 
-- Accept type name as `type` argument?
-  - Goal: accept `field :post, "Post"` to look up a type named `"Post"` in the schema
-  - Problem: how does a field know which schema to look up the name from?
-  - Problem: how can we load types in Rails without accessing the constant?
-  - Maybe support by third-party library? `type("Post!")` could implement "type_missing", keeps `graphql-ruby` very simple
 - StaticValidation improvements
-  - Include `path: [...]` in validation errors
   - Use catch-all type/field/argument definitions instead of terminating traversal
   - Reduce ad-hoc traversals?
   - Validators are order-dependent, is this a smell?
