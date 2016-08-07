@@ -75,5 +75,45 @@ describe GraphQL::Analysis do
         assert_equal "Variable cheeseId of type Int! was provided invalid value", error["message"]
       end
     end
+
+    describe "when processing fields" do
+      let(:connection_counter) {
+        -> (memo, visit_type, irep_node) {
+          memo ||= Hash.new { |h,k| h[k] = 0 }
+          if visit_type == :enter
+            if irep_node.ast_node.is_a?(GraphQL::Language::Nodes::Field)
+              irep_node.definitions.each do |type_defn, field_defn|
+                if field_defn.resolve_proc.is_a?(GraphQL::Relay::ConnectionResolve)
+                  memo["connection"] += 1
+                else
+                  memo["field"] += 1
+                end
+              end
+            end
+          end
+          memo
+        }
+      }
+      let(:analyzers) { [connection_counter] }
+      let(:reduce_result) { GraphQL::Analysis.analyze_query(query, analyzers) }
+      let(:query) { GraphQL::Query.new(StarWarsSchema, query_string, variables: variables) }
+      let(:query_string) {%|
+        query getBases {
+          empire {
+            basesByName(first: 30) { edges { cursor } }
+            bases(first: 30) { edges { cursor } }
+          }
+        }
+      |}
+
+      it "knows which fields are connections" do
+        connection_counts = reduce_result.first
+        expected_connection_counts = {
+          "field" => 5,
+          "connection" => 2
+        }
+        assert_equal expected_connection_counts, connection_counts
+      end
+    end
   end
 end
