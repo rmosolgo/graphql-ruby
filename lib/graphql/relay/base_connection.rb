@@ -6,11 +6,13 @@ module GraphQL
     #   - {#paged_nodes}, which applies `first` & `last` limits
     #
     # In a subclass, you have access to
-    #   - {#object}, the object which the connection will wrap
+    #   - {#nodes}, the collection which the connection will wrap
     #   - {#first}, {#after}, {#last}, {#before} (arguments passed to the field)
     #   - {#max_page_size} (the specified maximum page size that can be returned from a connection)
     #
     class BaseConnection
+      extend Gem::Deprecate
+
       # Just to encode data in the cursor, use something that won't conflict
       CURSOR_SEPARATOR = "---"
 
@@ -18,48 +20,56 @@ module GraphQL
       # eg {"Array" => ArrayConnection}
       CONNECTION_IMPLEMENTATIONS = {}
 
-      # Find a connection implementation suitable for exposing `items`
-      #
-      # @param [Object] A collection of items (eg, Array, AR::Relation)
-      # @return [subclass of BaseConnection] a connection Class for wrapping `items`
-      def self.connection_for_items(items)
-        # We check class membership by comparing class names rather than
-        # identity to prevent this from being broken by Rails autoloading.
-        # Changes to the source file for ItemsClass in Rails apps cause it to be
-        # reloaded as a new object, so if we were to use `is_a?` here, it would
-        # no longer match any registered custom connection types.
-        ancestor_names = items.class.ancestors.map(&:name)
-        implementation = CONNECTION_IMPLEMENTATIONS.find do |items_class_name, connection_class|
-          ancestor_names.include? items_class_name
+      class << self
+        extend Gem::Deprecate
+
+        # Find a connection implementation suitable for exposing `nodes`
+        #
+        # @param [Object] A collection of nodes (eg, Array, AR::Relation)
+        # @return [subclass of BaseConnection] a connection Class for wrapping `nodes`
+        def connection_for_nodes(nodes)
+          # Check for class _names_ because classes can be redefined in Rails development
+          ancestor_names = nodes.class.ancestors.map(&:name)
+          implementation = CONNECTION_IMPLEMENTATIONS.find do |nodes_class_name, connection_class|
+            ancestor_names.include? nodes_class_name
+          end
+          if implementation.nil?
+            raise("No connection implementation to wrap #{nodes.class} (#{nodes})")
+          else
+            implementation[1]
+          end
         end
-        if implementation.nil?
-          raise("No connection implementation to wrap #{items.class} (#{items})")
-        else
-          implementation[1]
+
+        # Add `connection_class` as the connection wrapper for `nodes_class`
+        # eg, `RelationConnection` is the implementation for `AR::Relation`
+        # @param [Class] A class representing a collection (eg, Array, AR::Relation)
+        # @param [Class] A class implementing Connection methods
+        def register_connection_implementation(nodes_class, connection_class)
+          CONNECTION_IMPLEMENTATIONS[nodes_class.name] = connection_class
         end
+
+        # @deprecated use {#connection_for_nodes} instead
+        alias :connection_for_items :connection_for_nodes
+        deprecate(:connection_for_items, :connection_for_nodes, 2016, 9)
       end
 
-      # Add `connection_class` as the connection wrapper for `items_class`
-      # eg, `RelationConnection` is the implementation for `AR::Relation`
-      # @param [Class] A class representing a collection (eg, Array, AR::Relation)
-      # @param [Class] A class implementing Connection methods
-      def self.register_connection_implementation(items_class, connection_class)
-        CONNECTION_IMPLEMENTATIONS[items_class.name] = connection_class
-      end
+      attr_reader :nodes, :arguments, :max_page_size, :parent
 
-      attr_reader :object, :arguments, :max_page_size, :parent
-
-      # Make a connection, wrapping `object`
-      # @param The collection of results
+      # Make a connection, wrapping `nodes`
+      # @param [Object] The collection of nodes
       # @param Query arguments
       # @param max_page_size [Int] The maximum number of results to return
       # @param parent [Object] The object which this collection belongs to
-      def initialize(object, arguments, max_page_size: nil, parent: nil)
-        @object = object
+      def initialize(nodes, arguments, max_page_size: nil, parent: nil)
+        @nodes = nodes
         @arguments = arguments
         @max_page_size = max_page_size
         @parent = parent
       end
+
+      # @deprecated use {#nodes} instead
+      alias :object :nodes
+      deprecate(:object, :nodes, 2016, 9)
 
       # Provide easy access to provided arguments:
       METHODS_FROM_ARGUMENTS = [:first, :after, :last, :before, :order]
@@ -80,7 +90,7 @@ module GraphQL
         end
       end
 
-      # These are the items to render for this connection,
+      # These are the nodes to render for this connection,
       # probably wrapped by {GraphQL::Relay::Edge}
       def edge_nodes
         @edge_nodes ||= paged_nodes
@@ -127,11 +137,11 @@ module GraphQL
       private
 
       def paged_nodes
-        raise NotImplementedError, "must return items for this connection after paging"
+        raise NotImplementedError, "must return nodes for this connection after paging"
       end
 
       def sliced_nodes
-        raise NotImplementedError, "must return  all items for this connection after chopping off first and last"
+        raise NotImplementedError, "must return  all nodes for this connection after chopping off first and last"
       end
     end
   end

@@ -8,6 +8,19 @@
 
 ### Bug fixes
 
+## 0.18.1 (7 Aug 2016)
+
+### Deprecations
+
+- Unify `Relay` naming around `nodes` as the items of a connection:
+  - `Relay::BaseConnection.connection_for_nodes` replaces `Relay::BaseConnection.connection_for_items`
+  - `Relay::BaseConnection#nodes` replaces `Relay::BaseConnection#object`
+
+### New features
+
+- Connection fields' `.resolve_proc` is an instance of `Relay::ConnectionResolve` #204
+- Types, fields and arguments can store arbitrary values in their `metadata` hashes #203
+
 ## 0.18.0 (4 Aug 2016)
 
 ### Breaking changes

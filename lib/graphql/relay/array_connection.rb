@@ -18,7 +18,7 @@ module GraphQL
 
       # apply first / last limit results
       def paged_nodes
-        @paged_nodes = begin
+        @paged_nodes ||= begin
           items = sliced_nodes
 
           if limit
@@ -31,10 +31,7 @@ module GraphQL
 
       # Apply cursors to edges
       def sliced_nodes
-        @sliced_nodes ||= begin
-          items = object
-          items[starting_offset..-1]
-        end
+        @sliced_nodes ||= nodes[starting_offset..-1]
       end
 
       def index_from_cursor(cursor)

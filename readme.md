@@ -142,4 +142,3 @@ If you're building a backend for [Relay](http://facebook.github.io/relay/), you'
   - Reduce duplication in ArrayConnection / RelationConnection
   - Improve API for creating edges (better RANGE_ADD support)
   - If the new edge isn't a member of the connection's objects, raise a nice error
-  - Rename `Connection#object` => `Connection#collection` with deprecation

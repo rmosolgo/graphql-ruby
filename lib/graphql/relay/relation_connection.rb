@@ -22,18 +22,12 @@ module GraphQL
 
       # apply first / last limit results
       def paged_nodes
-        @paged_nodes ||= begin
-          items = sliced_nodes
-          items.limit(limit)
-        end
+        @paged_nodes ||= sliced_nodes.limit(limit)
       end
 
       # Apply cursors to edges
       def sliced_nodes
-        @sliced_nodes ||= begin
-          items = object
-          items.offset(starting_offset)
-        end
+        @sliced_nodes ||= nodes.offset(starting_offset)
       end
 
       def offset_from_cursor(cursor)

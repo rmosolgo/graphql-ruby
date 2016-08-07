@@ -47,7 +47,7 @@ BaseConnectionWithTotalCountType = BaseType.define_connection do
   name "BasesConnectionWithTotalCount"
   field :totalCount do
     type types.Int
-    resolve -> (obj, args, ctx) { obj.object.count }
+    resolve -> (obj, args, ctx) { obj.nodes.count }
   end
 end
 
@@ -75,7 +75,7 @@ CustomEdgeBaseConnectionType = BaseType.define_connection(edge_class: CustomBase
 
   field :totalCountTimes100 do
     type types.Int
-    resolve -> (obj, args, ctx) { obj.object.count * 100 }
+    resolve -> (obj, args, ctx) { obj.nodes.count * 100 }
   end
 end
 
