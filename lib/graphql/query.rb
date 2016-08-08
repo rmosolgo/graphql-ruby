@@ -1,3 +1,14 @@
+require "graphql/query/arguments"
+require "graphql/query/context"
+require "graphql/query/directive_resolution"
+require "graphql/query/executor"
+require "graphql/query/literal_input"
+require "graphql/query/serial_execution"
+require "graphql/query/type_resolver"
+require "graphql/query/variables"
+require "graphql/query/input_validation_result"
+require "graphql/query/variable_validation_error"
+
 module GraphQL
   # A combination of query string and {Schema} instance which can be reduced to a {#result}.
   class Query
@@ -164,14 +175,3 @@ module GraphQL
     end
   end
 end
-
-require "graphql/query/arguments"
-require "graphql/query/context"
-require "graphql/query/directive_resolution"
-require "graphql/query/executor"
-require "graphql/query/literal_input"
-require "graphql/query/serial_execution"
-require "graphql/query/type_resolver"
-require "graphql/query/variables"
-require "graphql/query/input_validation_result"
-require "graphql/query/variable_validation_error"
