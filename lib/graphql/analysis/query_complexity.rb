@@ -32,11 +32,11 @@ module GraphQL
             memo[:complexities_on_type].push(TypeComplexity.new)
           else
             type_complexities = memo[:complexities_on_type].pop
-            own_complexity = if GraphQL::Query::DirectiveResolution.include_node?(irep_node, memo[:query])
+            own_complexity = if GraphQL::Execution::DirectiveChecks.skip?(irep_node, memo[:query])
+              0
+            else
               child_complexity = type_complexities.max_possible_complexity
               get_complexity(irep_node, memo[:query], child_complexity)
-            else
-              0
             end
             memo[:complexities_on_type].last.merge(irep_node.definitions, own_complexity)
           end

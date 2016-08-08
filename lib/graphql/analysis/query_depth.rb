@@ -29,13 +29,13 @@ module GraphQL
               memo[:skip_current_scope] = true
             elsif memo[:skip_current_scope]
               # we're inside an introspection query
-            elsif GraphQL::Query::DirectiveResolution.include_node?(irep_node, memo[:query])
+            elsif GraphQL::Execution::DirectiveChecks.include?(irep_node, memo[:query])
               memo[:current_depth] += 1
             end
           else
             if GraphQL::Schema::DYNAMIC_FIELDS.include?(irep_node.definition_name)
               memo[:skip_current_scope] = false
-            elsif GraphQL::Query::DirectiveResolution.include_node?(irep_node, memo[:query])
+            elsif GraphQL::Execution::DirectiveChecks.include?(irep_node, memo[:query])
               if memo[:max_depth] < memo[:current_depth]
                 memo[:max_depth] = memo[:current_depth]
               end

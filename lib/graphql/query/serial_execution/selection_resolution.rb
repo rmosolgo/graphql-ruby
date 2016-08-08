@@ -13,7 +13,7 @@ module GraphQL
 
         def result
           irep_node.children.each_with_object({}) do |(name, irep_node), memo|
-            if included_by_directives?(irep_node, execution_context.query) && applies_to_type?(irep_node, type, target)
+            if GraphQL::Execution::DirectiveChecks.include?(irep_node, execution_context.query) && applies_to_type?(irep_node, type, target)
               field_result = execution_context.strategy.field_resolution.new(
                 irep_node,
                 type,
@@ -27,13 +27,9 @@ module GraphQL
 
         private
 
-        def included_by_directives?(irep_node, query)
-          GraphQL::Query::DirectiveResolution.include_node?(irep_node, query)
-        end
-
         def applies_to_type?(irep_node, type, target)
           irep_node.definitions.any? { |child_type, field_defn|
-            GraphQL::Query::TypeResolver.new(target, child_type, type, execution_context.query.context).type
+            GraphQL::Execution::Typecast.compatible?(target, child_type, type, execution_context.query.context)
           }
         end
       end
