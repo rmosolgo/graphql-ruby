@@ -47,16 +47,16 @@ task :deploy_site do
   # TODO: use master branch instead of site
   Dir.chdir("site") do
     system "bundle exec nanoc compile"
-    Dir.mktmpdir do |tmp|
-      system "mv output/* #{tmp}"
-      system "git checkout gh-pages"
-      system "rm -rf *"
-      system "mv #{tmp}/* ."
-      system "git add ."
-      system "git commit -am 'deploy site to gh-pages (automatic)'"
-      system "git push origin gh-pages --force"
-      system "git checkout master"
-      system "echo yolo"
-    end
+  end
+  Dir.mktmpdir do |tmp|
+    system "mv site/output/* #{tmp}"
+    system "git checkout gh-pages"
+    system "rm -rf *"
+    system "mv #{tmp}/* ."
+    system "git add ."
+    system "git commit -am 'deploy site to gh-pages (automatic)'"
+    system "git push origin gh-pages --force"
+    system "git checkout master"
+    system "echo yolo"
   end
 end
