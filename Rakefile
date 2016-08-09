@@ -46,7 +46,7 @@ desc "Build the site, copy it to the gh-pages branch, and push the gh-pages bran
 task :deploy_site do
   # TODO: use master branch instead of site
   Dir.chdir("site") do
-    `bundle exec nanoc compile`
+    system "bundle exec nanoc compile"
     Dir.mktmpdir do |tmp|
       system "mv output/* #{tmp}"
       system "git checkout gh-pages"
