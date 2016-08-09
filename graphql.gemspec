@@ -39,4 +39,5 @@ Gem::Specification.new do |s|
   s.add_development_dependency "nanoc"
   s.add_development_dependency "redcarpet"
   s.add_development_dependency "rouge"
+  s.add_development_dependency "html-proofer"
 end

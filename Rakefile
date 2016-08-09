@@ -11,6 +11,8 @@ end
 
 task(default: :test)
 
+task :test => :html_proofer
+
 def load_gem_and_dummy
   $:.push File.expand_path("../lib", __FILE__)
   $:.push File.expand_path("../spec", __FILE__)
@@ -31,6 +33,13 @@ task :build_parser do
   `rm lib/graphql/language/parser.rb lib/graphql/language/lexer.rb `
   `racc lib/graphql/language/parser.y -o lib/graphql/language/parser.rb`
   `ragel -R lib/graphql/language/lexer.rl`
+end
+
+desc "Test the generated HTML files"
+task :html_proofer do
+  require "html-proofer"
+  `bundle exec nanoc compile`
+  HTMLProofer.check_directory("./site/output").run
 end
 
 desc "Build the site, copy it to the gh-pages branch, and push the gh-pages branch"
