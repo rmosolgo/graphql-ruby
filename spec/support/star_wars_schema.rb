@@ -77,6 +77,8 @@ CustomEdgeBaseConnectionType = BaseType.define_connection(edge_class: CustomBase
     type types.Int
     resolve -> (obj, args, ctx) { obj.nodes.count * 100 }
   end
+
+  field :fieldName, types.String, resolve: -> (obj, args, ctx) { obj.field.name }
 end
 
 Faction = GraphQL::ObjectType.define do

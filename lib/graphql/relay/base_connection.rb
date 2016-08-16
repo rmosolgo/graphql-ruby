@@ -53,7 +53,7 @@ module GraphQL
         deprecate(:connection_for_items, :connection_for_nodes, 2016, 9)
       end
 
-      attr_reader :nodes, :arguments, :max_page_size, :parent
+      attr_reader :nodes, :arguments, :max_page_size, :parent, :field
 
       # Make a connection, wrapping `nodes`
       # @param [Object] The collection of nodes
