@@ -33,7 +33,7 @@ module GraphQL
       def self.create(underlying_field, max_page_size: nil)
         underlying_field.arguments = DEFAULT_ARGUMENTS.merge(underlying_field.arguments)
         original_resolve = underlying_field.resolve_proc
-        underlying_field.resolve = GraphQL::Relay::ConnectionResolve.new(underlying_field.name, original_resolve, max_page_size: max_page_size)
+        underlying_field.resolve = GraphQL::Relay::ConnectionResolve.new(underlying_field, original_resolve, max_page_size: max_page_size)
         underlying_field
       end
     end

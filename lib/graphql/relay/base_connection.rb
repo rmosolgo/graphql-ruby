@@ -60,11 +60,11 @@ module GraphQL
       # @param Query arguments
       # @param max_page_size [Int] The maximum number of results to return
       # @param parent [Object] The object which this collection belongs to
-      def initialize(nodes, arguments, field_name: field_name, max_page_size: nil, parent: nil)
+      def initialize(nodes, arguments, field: field, max_page_size: nil, parent: nil)
         @nodes = nodes
         @arguments = arguments
         @max_page_size = max_page_size
-        @field_name = field_name
+        @field = field
         @parent = parent
       end
 
