@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+ulimit -n 2048
+
+bundle install
+
+cd site
+
+bundle exec nanoc compile
+bundle exec nanoc view
