@@ -10,7 +10,7 @@ module GraphQL
       def call(obj, args, ctx)
         nodes = @underlying_resolve.call(obj, args, ctx)
         connection_class = GraphQL::Relay::BaseConnection.connection_for_nodes(nodes)
-        connection_class.new(nodes, args, max_page_size: @max_page_size, field_name: @field_name, parent: obj)
+        connection_class.new(nodes, args, field_name: @field_name, max_page_size: @max_page_size, parent: obj)
       end
     end
   end
