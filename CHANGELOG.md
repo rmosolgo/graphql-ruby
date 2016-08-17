@@ -8,6 +8,12 @@
 
 ### Bug fixes
 
+## 0.18.2 (17 Aug 2016)
+
+### New features
+
+- Connection objects expose the `GraphQL::Field` that created them via `Connection#field` #206
+
 ## 0.18.1 (7 Aug 2016)
 
 ### Deprecations
