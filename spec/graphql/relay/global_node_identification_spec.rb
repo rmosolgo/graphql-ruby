@@ -5,7 +5,7 @@ describe GraphQL::Relay::GlobalNodeIdentification do
   describe 'NodeField' do
     it 'finds objects by id' do
       global_id = node_identification.to_global_id("Faction", "1")
-      result = query(%|{
+      result = star_wars_query(%|{
         node(id: "#{global_id}") {
           id,
           ... on Faction {
@@ -107,7 +107,7 @@ describe GraphQL::Relay::GlobalNodeIdentification do
 
       describe "generating IDs" do
         it "Applies custom-defined ID generation" do
-          result = query(%| { largestBase { id } }|)
+          result = star_wars_query(%| { largestBase { id } }|)
           generated_id = result["data"]["largestBase"]["id"]
           assert_equal "Base/3", generated_id
         end
@@ -115,7 +115,7 @@ describe GraphQL::Relay::GlobalNodeIdentification do
 
       describe "fetching by ID" do
         it "Deconstructs the ID by the custom proc" do
-          result = query(%| { node(id: "Base/1") { ... on Base { name } } }|)
+          result = star_wars_query(%| { node(id: "Base/1") { ... on Base { name } } }|)
           base_name = result["data"]["node"]["name"]
           assert_equal "Yavin", base_name
         end

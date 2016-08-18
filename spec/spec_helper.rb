@@ -20,6 +20,6 @@ Minitest.backtrace_filter = Minitest::BacktraceFilter.new
 # # Load support files
 Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each { |f| require f }
 
-def query(string, variables={})
+def star_wars_query(string, variables={})
   GraphQL::Query.new(StarWarsSchema, string, variables: variables).result
 end
