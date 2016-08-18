@@ -1,15 +1,15 @@
 module GraphQL
   class Schema
-    module ReduceTypes
-      class TypeReducer < BaseReducer
+    module ReduceResolvedClassNames
+      class ResolvedClassNameReducer < BaseReducer
         def reduce_value(type)
-          type
+          type.resolved_class_name || type.name
         end
 
         protected
 
         def should_visit?(type, type_hash)
-          !type_hash.fetch(type.name, nil).equal?(type)
+          type_hash.fetch(type.name, nil).equal?(nil) && type.is_a?(GraphQL::ObjectType)
         end
       end
 
@@ -17,7 +17,7 @@ module GraphQL
       # @return [GraphQL::Schema::TypeMap] `{name => Type}` pairs derived from `types`
       def self.reduce(types)
         type_map = GraphQL::Schema::TypeMap.new
-        reducer = TypeReducer.new
+        reducer = ResolvedClassNameReducer.new
         types.each do |type|
           reducer.reduce_type(type, type_map, type.name)
         end

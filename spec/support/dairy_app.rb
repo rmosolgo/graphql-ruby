@@ -142,6 +142,12 @@ CowType = GraphQL::ObjectType.define do
   end
 end
 
+PostType = GraphQL::ObjectType.define do
+  name "Post"
+  resolved_class_name "Acme::Post"
+  description "A blog post with a namespaced model"
+end
+
 DairyProductInputType = GraphQL::InputObjectType.define {
   name "DairyProductInput"
   description "Properties for finding a dairy product"
@@ -230,6 +236,7 @@ DairyAppQueryType = GraphQL::ObjectType.define do
     resolve ->(root_value, args, c) { root_value }
   end
   field :cheese, field: FetchField.create(type: CheeseType, data: CHEESES)
+  field :post, field: FetchField.create(type: PostType, data: POSTS)
   field :milk, field: FetchField.create(type: MilkType, data: MILKS, id_type: !types.ID)
   field :dairy, field: SingletonField.create(type: DairyType, data: DAIRY)
   field :fromSource, &SourceFieldDefn

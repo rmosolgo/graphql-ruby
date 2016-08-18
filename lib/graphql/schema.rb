@@ -3,8 +3,10 @@ require "graphql/schema/invalid_type_error"
 require "graphql/schema/middleware_chain"
 require "graphql/schema/rescue_middleware"
 require "graphql/schema/possible_types"
+require "graphql/schema/base_reducer"
 require "graphql/schema/reduce_types"
 require "graphql/schema/timeout_middleware"
+require "graphql/schema/reduce_resolved_class_names"
 require "graphql/schema/type_expression"
 require "graphql/schema/type_map"
 require "graphql/schema/validation"
@@ -57,12 +59,14 @@ module GraphQL
 
     def_delegators :@rescue_middleware, :rescue_from, :remove_handler
 
-    # @return [GraphQL::Schema::TypeMap] `{ name => type }` pairs of types in this schema
+    # @return [GraphQL::Schema::TypeMap] `{ type_name => type }` pairs of types in this schema
     def types
-      @types ||= begin
-        all_types = @orphan_types + [query, mutation, subscription, GraphQL::Introspection::SchemaType]
-        GraphQL::Schema::ReduceTypes.reduce(all_types.compact)
-      end
+      @types ||= GraphQL::Schema::ReduceTypes.reduce(all_types)
+    end
+
+    # @return [GraphQL::Schema::TypeMap] `{ type_name => class_name }` pairs of types in this schema
+    def resolved_class_names
+      @resolved_class_names ||= GraphQL::Schema::ReduceResolvedClassNames.reduce(all_types)
     end
 
     # Execute a query on itself.
@@ -125,6 +129,13 @@ module GraphQL
       else
         raise ArgumentError, "unknown operation type: #{operation}"
       end
+    end
+
+    private
+
+    def all_types
+      all_types = @orphan_types + [query, mutation, subscription, GraphQL::Introspection::SchemaType]
+      all_types.compact
     end
   end
 end

@@ -21,3 +21,9 @@ COW = OpenStruct.new(
   name: "Billy",
   last_produced_dairy: MILKS[1]
 )
+
+POSTS = {
+    1 => Acme::Post.new(1, "I"),
+    2 => Acme::Post.new(2, "Like"),
+    3 => Acme::Post.new(3, "Cheese")
+}
