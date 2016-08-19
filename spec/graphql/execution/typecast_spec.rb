@@ -22,6 +22,10 @@ describe GraphQL::Execution::Typecast do
   end
 
   it "resolve correctly when potential type is an Interface and current type implements it" do
+    assert GraphQL::Execution::Typecast.compatible?(CHEESES[1], EdibleInterface, CheeseType, context)
+  end
+
+  it "resolve correctly when potential type is an Interface and current type implements it" do
     assert GraphQL::Execution::Typecast.compatible?(MILKS[1], EdibleInterface, CheeseType, context)
   end
 
