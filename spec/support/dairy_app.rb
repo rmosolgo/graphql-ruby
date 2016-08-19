@@ -5,6 +5,12 @@ class NoSuchDairyError < StandardError; end
 GraphQL::Field.accepts_definitions(joins: GraphQL::Define.assign_metadata_key(:joins))
 GraphQL::BaseType.accepts_definitions(class_names: GraphQL::Define.assign_metadata_key(:class_names))
 
+LocalProductInterface = GraphQL::InterfaceType.define do
+  name "LocalProduct"
+  description "Something that comes from somewhere"
+  field :origin, !types.String, "Place the thing comes from"
+end
+
 EdibleInterface = GraphQL::InterfaceType.define do
   name "Edible"
   description "Something you can eat, yum"
@@ -16,6 +22,12 @@ AnimalProductInterface = GraphQL::InterfaceType.define do
   name "AnimalProduct"
   description "Comes from an animal, no joke"
   field :source, !types.String, "Animal which produced this product"
+end
+
+BeverageUnion = GraphQL::UnionType.define do
+  name "Beverage"
+  description "Something you can drink"
+  possible_types [MilkType]
 end
 
 DairyAnimalEnum = GraphQL::EnumType.define do
@@ -31,7 +43,7 @@ CheeseType = GraphQL::ObjectType.define do
   name "Cheese"
   class_names ["Cheese"]
   description "Cultured dairy product"
-  interfaces [EdibleInterface, AnimalProductInterface]
+  interfaces [EdibleInterface, AnimalProductInterface, LocalProductInterface]
 
   # Can have (name, type, desc)
   field :id, !types.Int, "Unique identifier"
@@ -78,7 +90,7 @@ end
 MilkType = GraphQL::ObjectType.define do
   name "Milk"
   description "Dairy beverage"
-  interfaces [EdibleInterface, AnimalProductInterface]
+  interfaces [EdibleInterface, AnimalProductInterface, LocalProductInterface]
   field :id, !types.ID
   field :source, DairyAnimalEnum, "Animal which produced this milk", hash_key: :source
   field :origin, !types.String, "Place the milk comes from"
@@ -317,6 +329,6 @@ DummySchema = GraphQL::Schema.new(
   mutation: DairyAppMutationType,
   subscription: SubscriptionType,
   max_depth: 5,
-  types: [HoneyType],
+  types: [HoneyType, BeverageUnion],
 )
 DummySchema.rescue_from(NoSuchDairyError) { |err| err.message  }

@@ -12,10 +12,10 @@ describe GraphQL::UnionType do
       possible_types(types)
     }
   }
+
   it "has a name" do
     assert_equal("MyUnion", union.name)
   end
-
 
   it "infers type from an object" do
     assert_equal(CheeseType, DairyProductUnion.resolve_type(CHEESES[1], OpenStruct.new(schema: DummySchema)))
@@ -27,6 +27,33 @@ describe GraphQL::UnionType do
 
   it '#include? returns false if type is not in possible_types' do
     assert_equal(false, union.include?(type_3))
+  end
+
+  describe "typecasting from union to union" do
+    let(:result) { DummySchema.execute(query_string) }
+    let(:query_string) {%|
+      {
+        allDairy {
+          dairyName: __typename
+          ... on Beverage {
+            bevName: __typename
+            ... on Milk {
+              flavors
+            }
+          }
+        }
+      }
+    |}
+
+    it "casts if the object belongs to both unions" do
+      expected_result = [
+        {"dairyName"=>"Cheese"},
+        {"dairyName"=>"Cheese"},
+        {"dairyName"=>"Cheese"},
+        {"dairyName"=>"Milk", "bevName"=>"Milk", "flavors"=>["Natural", "Chocolate", "Strawberry"]},
+      ]
+      assert_equal expected_result, result["data"]["allDairy"]
+    end
   end
 
   describe "list of union type" do
