@@ -9,6 +9,11 @@ LocalProductInterface = GraphQL::InterfaceType.define do
   name "LocalProduct"
   description "Something that comes from somewhere"
   field :origin, !types.String, "Place the thing comes from"
+  # This is a "bug" in the dummy app:
+  # it should actually check the incoming object to determine the type.
+  # But this is here so we can check _where_ misbehaving resolve_type
+  # functions wreak their havoc.
+  resolve_type -> (o, c) { MilkType }
 end
 
 EdibleInterface = GraphQL::InterfaceType.define do
@@ -263,6 +268,10 @@ DairyAppQueryType = GraphQL::ObjectType.define do
   end
 
   field :allDairy, types[DairyProductUnion] do
+    resolve -> (obj, args, ctx) { CHEESES.values + MILKS.values }
+  end
+
+  field :allEdible, types[EdibleInterface] do
     resolve -> (obj, args, ctx) { CHEESES.values + MILKS.values }
   end
 

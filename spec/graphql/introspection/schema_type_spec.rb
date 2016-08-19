@@ -19,6 +19,7 @@ describe GraphQL::Introspection::SchemaType do
         "queryType"=>{
           "fields"=>[
             {"name"=>"allDairy"},
+            {"name"=>"allEdible"},
             {"name"=>"cheese"},
             {"name"=>"cow"},
             {"name"=>"dairy"},
