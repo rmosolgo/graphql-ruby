@@ -25,8 +25,11 @@ describe GraphQL::Execution::Typecast do
     assert GraphQL::Execution::Typecast.compatible?(CHEESES[1], EdibleInterface, CheeseType, context)
   end
 
-  it "resolve correctly when potential type is an Interface and current type implements it" do
-    assert GraphQL::Execution::Typecast.compatible?(MILKS[1], EdibleInterface, CheeseType, context)
+  it "doesn't cast if the object doesn't resove to the possible type" do
+    assert !GraphQL::Execution::Typecast.compatible?(MILKS[1], EdibleInterface, CheeseType, context)
   end
 
+  it "casts an Interface to an Interface when the object implements both interfaces" do
+    assert GraphQL::Execution::Typecast.compatible?(MILKS[1], LocalProductInterface, EdibleInterface, context)
+  end
 end

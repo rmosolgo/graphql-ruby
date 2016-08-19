@@ -12,6 +12,12 @@ EdibleInterface = GraphQL::InterfaceType.define do
   field :origin, !types.String, "Place the edible comes from"
 end
 
+LocalProductInterface = GraphQL::InterfaceType.define do
+  name "LocalProduct"
+  description "Something that comes from somewhere"
+  field :origin, !types.String, "Place the thing comes from"
+end
+
 AnimalProductInterface = GraphQL::InterfaceType.define do
   name "AnimalProduct"
   description "Comes from an animal, no joke"
@@ -31,7 +37,7 @@ CheeseType = GraphQL::ObjectType.define do
   name "Cheese"
   class_names ["Cheese"]
   description "Cultured dairy product"
-  interfaces [EdibleInterface, AnimalProductInterface]
+  interfaces [EdibleInterface, AnimalProductInterface, LocalProductInterface]
 
   # Can have (name, type, desc)
   field :id, !types.Int, "Unique identifier"
@@ -78,7 +84,7 @@ end
 MilkType = GraphQL::ObjectType.define do
   name "Milk"
   description "Dairy beverage"
-  interfaces [EdibleInterface, AnimalProductInterface]
+  interfaces [EdibleInterface, AnimalProductInterface, LocalProductInterface]
   field :id, !types.ID
   field :source, DairyAnimalEnum, "Animal which produced this milk", hash_key: :source
   field :origin, !types.String, "Place the milk comes from"
