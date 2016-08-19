@@ -53,4 +53,29 @@ describe GraphQL::InterfaceType do
       assert_equal(interface.resolve_type(123, nil), :custom_resolve)
     end
   end
+
+  describe "fragments" do
+    let(:query_string) {%|
+    {
+      favoriteEdible {
+        fatContent
+        ... on LocalProduct {
+          origin
+        }
+      }
+    }
+    |}
+    let(:result) { DummySchema.execute(query_string) }
+
+    it "can apply interface fragments to an interface" do
+      expected_result = { "data" => {
+        "favoriteEdible" => {
+          "fatContent" => 0.04,
+          "origin" => "Antiquity",
+        }
+      } }
+
+      assert_equal(expected_result, result)
+    end
+  end
 end
