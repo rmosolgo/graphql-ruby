@@ -27,9 +27,9 @@ module GraphQL
 
         private
 
-        def applies_to_type?(irep_node, type, target)
-          irep_node.definitions.any? { |child_type, field_defn|
-            GraphQL::Execution::Typecast.compatible?(target, child_type, type, execution_context.query.context)
+        def applies_to_type?(irep_node, current_type, value)
+          irep_node.definitions.any? { |potential_type, field_defn|
+            GraphQL::Execution::Typecast.compatible?(value, current_type, potential_type, execution_context.query.context)
           }
         end
       end
