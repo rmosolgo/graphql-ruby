@@ -8,42 +8,44 @@ describe GraphQL::Execution::Typecast do
   let(:context) { GraphQL::Query::Context.new(query: OpenStruct.new(schema: schema), values: nil) }
 
   def compatible?(*args)
-     GraphQL::Execution::Typecast.compatible?(*args)
-   end
+    GraphQL::Execution::Typecast.compatible?(*args)
+  end
+
   it "resolves correctly when both types are the same" do
-    assert compatible?(milk_value, MilkType, MilkType, context)
-    assert !compatible?(milk_value, MilkType, CheeseType, context)
+    assert compatible?(MilkType, MilkType, context)
+
+    assert !compatible?(MilkType, CheeseType, context)
   end
 
   it "resolves a union type to a matching member" do
-    assert compatible?(milk_value, DairyProductUnion, MilkType, context)
-    assert compatible?(cheese_value, DairyProductUnion, CheeseType, context)
+    assert compatible?(DairyProductUnion, MilkType, context)
+    assert compatible?(DairyProductUnion, CheeseType, context)
 
-    assert !compatible?(cheese_value, DairyProductUnion, MilkType, context)
-    assert !compatible?(nil, DairyProductUnion, MilkType, context)
+    assert !compatible?(DairyProductUnion, GraphQL::INT_TYPE, context)
+    assert !compatible?(DairyProductUnion, HoneyType, context)
   end
 
   it "resolves correcty when potential type is UnionType and current type is a member of that union" do
-    assert compatible?(milk_value, MilkType, DairyProductUnion, context)
-    assert compatible?(cheese_value, CheeseType, DairyProductUnion, context)
+    assert compatible?(MilkType, DairyProductUnion, context)
+    assert compatible?(CheeseType, DairyProductUnion, context)
 
-    # assert !compatible?(nil, CheeseType, DairyProductUnion, context)
-    # assert !compatible?(cheese_value, MilkType, DairyProductUnion, context)
+    assert !compatible?(QueryType, DairyProductUnion, context)
+    assert !compatible?(EdibleInterface, DairyProductUnion, context)
   end
 
   it "resolves an object type to one of its interfaces" do
-    assert compatible?(cheese_value, CheeseType, EdibleInterface, context)
-    assert compatible?(milk_value, MilkType, EdibleInterface, context)
+    assert compatible?(CheeseType, EdibleInterface, context)
+    assert compatible?(MilkType, EdibleInterface, context)
 
-    # assert !compatible?(nil, MilkType, EdibleInterface, context)
-    # assert !compatible?(milk_value, CheeseType, EdibleInterface, context)
+    assert !compatible?(QueryType, EdibleInterface, context)
+    assert !compatible?(LocalProductInterface, EdibleInterface, context)
   end
 
   it "resolves an interface to a matching member" do
-    assert compatible?(cheese_value, EdibleInterface, CheeseType, context)
-    assert compatible?(milk_value, EdibleInterface, MilkType, context)
+    assert compatible?(EdibleInterface, CheeseType, context)
+    assert compatible?(EdibleInterface, MilkType, context)
 
-    assert !compatible?(nil, EdibleInterface, MilkType, context)
-    assert !compatible?(cheese_value, EdibleInterface, MilkType, context)
+    assert !compatible?(EdibleInterface, GraphQL::STRING_TYPE, context)
+    assert !compatible?(EdibleInterface, DairyProductInputType, context)
   end
 end
