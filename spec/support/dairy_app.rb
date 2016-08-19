@@ -18,6 +18,12 @@ EdibleInterface = GraphQL::InterfaceType.define do
   field :origin, !types.String, "Place the edible comes from"
 end
 
+LocalProductInterface = GraphQL::InterfaceType.define do
+  name "LocalProduct"
+  description "Something that comes from somewhere"
+  field :origin, !types.String, "Place the thing comes from"
+end
+
 AnimalProductInterface = GraphQL::InterfaceType.define do
   name "AnimalProduct"
   description "Comes from an animal, no joke"
