@@ -24,6 +24,12 @@ AnimalProductInterface = GraphQL::InterfaceType.define do
   field :source, !types.String, "Animal which produced this product"
 end
 
+BeverageUnion = GraphQL::UnionType.define do
+  name "Beverage"
+  description "Something you can drink"
+  possible_types [MilkType]
+end
+
 DairyAnimalEnum = GraphQL::EnumType.define do
   name "DairyAnimal"
   description "An animal which can yield milk"
@@ -323,6 +329,6 @@ DummySchema = GraphQL::Schema.new(
   mutation: DairyAppMutationType,
   subscription: SubscriptionType,
   max_depth: 5,
-  types: [HoneyType],
+  types: [HoneyType, BeverageUnion],
 )
 DummySchema.rescue_from(NoSuchDairyError) { |err| err.message  }
