@@ -15,7 +15,7 @@ describe GraphQL::ObjectType do
   end
 
   it "may have interfaces" do
-    assert_equal([EdibleInterface, AnimalProductInterface], type.interfaces)
+    assert_equal([EdibleInterface, AnimalProductInterface, LocalProductInterface], type.interfaces)
   end
 
   describe '#get_field ' do

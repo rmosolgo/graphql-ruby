@@ -14,6 +14,7 @@ describe GraphQL::Schema::ReduceTypes do
       "Int" => GraphQL::INT_TYPE,
       "Edible" => EdibleInterface,
       "AnimalProduct" => AnimalProductInterface,
+      "LocalProduct" => LocalProductInterface,
     }
     result = reduce_types([CheeseType])
     assert_equal(expected.keys, result.keys)

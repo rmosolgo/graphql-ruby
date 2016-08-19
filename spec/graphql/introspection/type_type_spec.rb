@@ -36,7 +36,8 @@ describe GraphQL::Introspection::TypeType do
       "milkType"=>{
         "interfaces"=>[
           {"name"=>"Edible"},
-          {"name"=>"AnimalProduct"}
+          {"name"=>"AnimalProduct"},
+          {"name"=>"LocalProduct"},
         ],
         "fields"=>[
           {"type"=>{"name"=>"Non-Null", "ofType"=>{"name"=>"Float"}}},
