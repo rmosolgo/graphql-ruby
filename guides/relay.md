@@ -295,11 +295,30 @@ Maybe you need to make a connection object yourself (for example, to return a co
 ```ruby
 items = [...]     # your collection objects
 args = {}         # stub out arguments for this connection object
+field = nil # optional field name
 connection_class = GraphQL::Relay::BaseConnection.connection_for_nodes(items)
-connection_class.new(items, args)
+connection_class.new(items, args, field: field)
 ```
 
 `.connection_for_nodes` will return RelationConnection or ArrayConnection depending on `items`, then you can make a new connection
+
+
+### Relation Connection objects [ActiveRecord or Sequel]
+
+For relation connection
+
+```ruby
+object = {} # your newly created object
+items = [...]     # your collection objects
+args = {}         # stub out arguments for this connection object
+field = nil # optional field name
+items_connection = GraphQL::Relay::RelationConnection.new(
+  items,
+  args,
+  field: field
+)
+edge = GraphQL::Relay::Edge.new(object, items_connection)
+```
 
 ### Custom connections
 
