@@ -177,7 +177,7 @@ IntroduceShipMutation = GraphQL::Relay::Mutation.define do
   input_field :factionId, !types.ID
 
   # Result may have access to these fields:
-  return_field :ship, Ship
+  return_field :shipEdge, Ship.edge_type
   return_field :faction, Faction
 
   # Here's the mutation operation:
@@ -185,7 +185,10 @@ IntroduceShipMutation = GraphQL::Relay::Mutation.define do
     faction_id = inputs["factionId"]
     ship = STAR_WARS_DATA.create_ship(inputs["shipName"], faction_id)
     faction = STAR_WARS_DATA["Faction"][faction_id]
-    { ship: ship, faction: faction }
+    connection_class = GraphQL::Relay::BaseConnection.connection_for_nodes(faction.ships)
+    ships_connection = connection_class.new(faction.ships, inputs)
+    ship_edge = GraphQL::Relay::Edge.new(ship, ships_connection)
+    { shipEdge: ship_edge, faction: faction }
   }
 end
 
