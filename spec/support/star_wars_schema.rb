@@ -11,20 +11,6 @@ NodeIdentification = GraphQL::Relay::GlobalNodeIdentification.define do
     type_name, id = NodeIdentification.from_global_id(node_id)
     STAR_WARS_DATA[type_name][id]
   end
-
-  type_from_object -> (object) do
-    if object == :test_error
-      :not_a_type
-    elsif object.is_a?(Base)
-      BaseType
-    elsif STAR_WARS_DATA["Faction"].values.include?(object)
-      Faction
-    elsif STAR_WARS_DATA["Ship"].values.include?(object)
-      Ship
-    else
-      nil
-    end
-  end
 end
 
 Ship = GraphQL::ObjectType.define do
@@ -215,5 +201,21 @@ MutationType = GraphQL::ObjectType.define do
   field :introduceShip, field: IntroduceShipMutation.field
 end
 
-StarWarsSchema = GraphQL::Schema.define(query: QueryType, mutation: MutationType)
-StarWarsSchema.node_identification = NodeIdentification
+StarWarsSchema = GraphQL::Schema.define do
+  query(QueryType)
+  mutation(MutationType)
+  node_identification(NodeIdentification)
+  resolve_type -> (object) {
+    if object == :test_error
+      :not_a_type
+    elsif object.is_a?(Base)
+      BaseType
+    elsif STAR_WARS_DATA["Faction"].values.include?(object)
+      Faction
+    elsif STAR_WARS_DATA["Ship"].values.include?(object)
+      Ship
+    else
+      nil
+    end
+  }
+end

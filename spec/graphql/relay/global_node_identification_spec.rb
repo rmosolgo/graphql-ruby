@@ -128,22 +128,4 @@ describe GraphQL::Relay::GlobalNodeIdentification do
       end
     end
   end
-
-  describe "type_from_object" do
-    describe "when the return value is nil" do
-      it "returns nil" do
-        result = node_identification.type_from_object(123)
-        assert_equal(nil, result)
-      end
-    end
-
-    describe "when the return value is not a BaseType" do
-      it "raises an error " do
-        err = assert_raises(RuntimeError) {
-          node_identification.type_from_object(:test_error)
-        }
-        assert_includes err.message, "not_a_type (Symbol)"
-      end
-    end
-  end
 end

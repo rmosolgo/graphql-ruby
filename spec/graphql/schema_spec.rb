@@ -20,4 +20,22 @@ describe GraphQL::Schema do
       assert_equal("Test", res["data"]["test"])
     end
   end
+
+  describe "#resolve_type" do
+    describe "when the return value is nil" do
+      it "returns nil" do
+        result = StarWarsSchema.resolve_type(123)
+        assert_equal(nil, result)
+      end
+    end
+
+    describe "when the return value is not a BaseType" do
+      it "raises an error " do
+        err = assert_raises(RuntimeError) {
+          StarWarsSchema.resolve_type(:test_error)
+        }
+        assert_includes err.message, "not_a_type (Symbol)"
+      end
+    end
+  end
 end

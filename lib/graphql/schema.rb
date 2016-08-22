@@ -161,6 +161,7 @@ module GraphQL
       GraphQL::Schema::TypeExpression.build_type(self, ast_node)
     end
 
+    # TODO: when `resolve_type` is schema level, can this be removed?
     # @param type_defn [GraphQL::InterfaceType, GraphQL::UnionType] the type whose members you want to retrieve
     # @return [Array<GraphQL::ObjectType>] types which belong to `type_defn` in this schema
     def possible_types(type_defn)
@@ -199,6 +200,7 @@ module GraphQL
     # This is required for unions and interfaces (include Relay's node interface)
     # @return [GraphQL::ObjectType] The type for exposing `object` in GraphQL
     def resolve_type(object)
+      ensure_defined
       type_result = @resolve_type_proc.call(object)
       if type_result.nil?
         nil
@@ -211,6 +213,7 @@ module GraphQL
     end
 
     def resolve_type=(new_resolve_type_proc)
+      ensure_defined
       @resolve_type_proc = new_resolve_type_proc
     end
   end

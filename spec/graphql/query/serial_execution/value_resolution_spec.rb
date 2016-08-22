@@ -1,7 +1,7 @@
 require "spec_helper"
 
 describe GraphQL::Query::SerialExecution::ValueResolution do
-  let(:query_root) {
+  let(:schema) {
     day_of_week_enum = GraphQL::EnumType.define do
       name "DayOfWeek"
       value("MONDAY", value: 0)
@@ -16,10 +16,9 @@ describe GraphQL::Query::SerialExecution::ValueResolution do
     interface = GraphQL::InterfaceType.define do
       name "SomeInterface"
       field :someField, !types.Int
-      resolve_type ->(obj, ctx) { nil }
     end
 
-    GraphQL::ObjectType.define do
+    query_root = GraphQL::ObjectType.define do
       name "Query"
       field :tomorrow, day_of_week_enum do
         argument :today, day_of_week_enum
@@ -29,8 +28,13 @@ describe GraphQL::Query::SerialExecution::ValueResolution do
         resolve ->(obj, args, ctx) { Object.new }
       end
     end
+
+    GraphQL::Schema.define do
+      query(query_root)
+      resolve_type -> (obj) { nil }
+    end
   }
-  let(:schema) { GraphQL::Schema.define(query: query_root) }
+
   let(:result) { schema.execute(
     query_string,
   )}
