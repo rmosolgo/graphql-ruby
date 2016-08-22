@@ -64,7 +64,7 @@ result = MySchema.execute(query_string, validate: false)
 
 `graphql` includes a serial execution strategy, but you can also create custom strategies to support advanced behavior. See `GraphQL::SerialExecution#execute` the required behavior.
 
-Then, set your schema to use your custom execution strategy with `GraphQL::Schema#mutation_execution_strategy` or `GraphQL::Schema#query_execution_strategy`
+Then, set your schema to use your custom execution strategy with `GraphQL::Schema#{query|mutation|subscription}_execution_strategy`
 
 For example:
 
@@ -81,7 +81,9 @@ end
 
 # ... define your types ...
 
-MySchema = GraphQL::Schema.new(query: MyQueryType, mutation: MyMutationType)
-# Use your custom strategy:
-MySchema.query_execution_strategy = CustomQueryExecutionStrategy
+MySchema = GraphQL::Schema.define do
+  query MyQueryType
+  mutation MyMutationType
+  # Use your custom strategy:
+  query_execution_strategy = CustomQueryExecutionStrategy
 ```

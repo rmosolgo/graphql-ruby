@@ -55,9 +55,11 @@ end
 Then assign it to the schema:
 
 ```ruby
-MySchema = GraphQL::Schema.new(...)
-# Assign your node identification helper:
-MySchema.node_identification = NodeIdentification
+MySchema = GraphQL::Schema.define do
+  # ...
+  # Declare your node identification helper:
+  node_identification NodeIdentification
+end
 ```
 
 ### UUID fields
@@ -365,10 +367,10 @@ MutationType = GraphQL::ObjectType.define do
 end
 
 # and pass it to the schema
-MySchema = GraphQL::Schema.new(
-  query: QueryType,
-  mutation: MutationType
-)
+MySchema = GraphQL::Schema.define do
+  query QueryType,
+  mutation MutationType
+end
 ```
 
 Like `QueryType`, `MutationType` is a root of the schema.

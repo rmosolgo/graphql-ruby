@@ -3,8 +3,8 @@ module GraphQL
     # Used to convert your {GraphQL::Schema} to a GraphQL schema string
     #
     # @example print your schema to standard output
-    #   Schema = GraphQL::Schema.new(query: QueryType)
-    #   puts GraphQL::Schema::Printer.print_schema(Schema)
+    #   MySchema = GraphQL::Schema.define(query: QueryType)
+    #   puts GraphQL::Schema::Printer.print_schema(MySchema)
     #
     module Printer
       extend self
@@ -20,7 +20,7 @@ module GraphQL
         query_root = ObjectType.define do
           name "Query"
         end
-        schema = Schema.new(query: query_root)
+        schema = GraphQL::Schema.define(query: query_root)
         print_filtered_schema(schema, method(:is_introspection_type))
       end
 

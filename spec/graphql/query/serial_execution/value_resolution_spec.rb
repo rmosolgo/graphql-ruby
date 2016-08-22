@@ -30,7 +30,7 @@ describe GraphQL::Query::SerialExecution::ValueResolution do
       end
     end
   }
-  let(:schema) { GraphQL::Schema.new(query: query_root) }
+  let(:schema) { GraphQL::Schema.define(query: query_root) }
   let(:result) { schema.execute(
     query_string,
   )}

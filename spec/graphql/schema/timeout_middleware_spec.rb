@@ -35,7 +35,7 @@ describe GraphQL::Schema::TimeoutMiddleware do
       end
     end
 
-    schema = GraphQL::Schema.new(query: query_type)
+    schema = GraphQL::Schema.define(query: query_type)
     schema.middleware << timeout_middleware
     schema
   }

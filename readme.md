@@ -62,10 +62,10 @@ QueryType = GraphQL::ObjectType.define do
 end
 
 # Then create your schema
-Schema = GraphQL::Schema.new(
-  query: QueryType,
-  max_depth: 8,
-)
+Schema = GraphQL::Schema.define do
+  query QueryType,
+  max_depth 8,
+end
 ```
 
 #### Execute queries

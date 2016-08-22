@@ -70,10 +70,10 @@ end
 Then, define your `max_complexity` at the schema-level:
 
 ```ruby
-MySchema = GraphQL::Schema.new(
+MySchema = GraphQL::Schema.define do
  # ...
- max_complexity: 100
-)
+ max_complexity 100
+end
 ```
 
 Or, at the query-level, which overrides the schema-level setting:
@@ -102,10 +102,10 @@ You can also reject queries based on the depth of their nesting. You can define 
 
 ```ruby
 # Schema-level:
-MySchema = GraphQL::Schema.new(
+MySchema = GraphQL::Schema.define do
   # ...
   max_depth: 10
-)
+end
 
 # Query-level, which overrides the schema-level setting:
 MySchema.execute(query_string, max_depth: 10)
