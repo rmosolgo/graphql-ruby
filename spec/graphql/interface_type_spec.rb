@@ -77,5 +77,29 @@ describe GraphQL::InterfaceType do
 
       assert_equal(expected_result, result)
     end
+
+    describe "filtering members by type" do
+      let(:query_string) {%|
+      {
+        allEdible {
+          __typename
+          ... on LocalProduct {
+            origin
+          }
+        }
+      }
+      |}
+
+      it "only applies fields to the right object" do
+        expected_data = [
+          {"__typename"=>"Cheese", "origin"=>"France"},
+          {"__typename"=>"Cheese", "origin"=>"Netherlands"},
+          {"__typename"=>"Cheese", "origin"=>"Spain"},
+          {"__typename"=>"Milk", "origin"=>"Antiquity"},
+        ]
+
+        assert_equal expected_data, result["data"]["allEdible"]
+      end
+    end
   end
 end
