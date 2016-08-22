@@ -295,29 +295,33 @@ Maybe you need to make a connection object yourself (for example, to return a co
 ```ruby
 items = [...]     # your collection objects
 args = {}         # stub out arguments for this connection object
-field = nil # optional field name
 connection_class = GraphQL::Relay::BaseConnection.connection_for_nodes(items)
-connection_class.new(items, args, field: field)
+connection_class.new(items, args)
 ```
 
 `.connection_for_nodes` will return RelationConnection or ArrayConnection depending on `items`, then you can make a new connection
 
-
-### Relation Connection objects [ActiveRecord or Sequel]
-
-For relation connection
+**For relation connection [ActiveRecord or Sequel]**,
 
 ```ruby
 object = {} # your newly created object
-items = [...]     # your collection objects
+items = [...]     # your AR or sequel collection objects
 args = {}         # stub out arguments for this connection object
-field = nil # optional field name
 items_connection = GraphQL::Relay::RelationConnection.new(
   items,
-  args,
-  field: field
+  args
 )
 edge = GraphQL::Relay::Edge.new(object, items_connection)
+```
+
+Additionally, connections may be provided with the GraphQL::Field that created them. This may be used for custom introspection or instrumentation. For example,
+
+```ruby
+  Schema.get_field(TodoListType, "todos")
+  # => #<GraphQL::Field name="todos">
+  context.irep_node.definitions[TodoListType]
+  # => #<GraphQL::Field name="todos">
+  # although this one may not work with fields on interfaces
 ```
 
 ### Custom connections
