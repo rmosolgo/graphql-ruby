@@ -12,6 +12,10 @@ module GraphQL
       accepts_definitions(:object_from_id, :type_from_object, :to_global_id, :from_global_id, :description)
       lazy_defined_attr_accessor :description
 
+      # Memoize the schema to support deprecated node_ident-level resolve functions
+      # TODO: remove after Schema.resolve_type is required
+      attr_accessor :schema
+
       class << self
         attr_accessor :id_separator
       end
@@ -28,12 +32,20 @@ module GraphQL
         @interface ||= begin
           ensure_defined
           ident = self
-          GraphQL::InterfaceType.define do
-            name "Node"
-            field :id, !types.ID
-            resolve_type -> (obj, schema) {
-              ident.type_from_object(obj)
-            }
+          if @type_from_object_proc
+            # TODO: remove after Schema.resolve_type is required
+            GraphQL::InterfaceType.define do
+              name "Node"
+              field :id, !types.ID
+              resolve_type -> (obj, ctx) {
+                ident.type_from_object(obj)
+              }
+            end
+          else
+            GraphQL::InterfaceType.define do
+              name "Node"
+              field :id, !types.ID
+            end
           end
         end
       end
@@ -90,22 +102,23 @@ module GraphQL
 
       # Use the provided config to
       # get a type for a given object
+      # TODO: remove after Schema.resolve_type is required
       def type_from_object(object)
         ensure_defined
-        type_result = @type_from_object_proc.call(object)
-        if type_result.nil?
-          nil
-        elsif !type_result.is_a?(GraphQL::BaseType)
-          type_str = "#{type_result} (#{type_result.class.name})"
-          raise "type_from_object(#{object}) returned #{type_str}, but it should return a GraphQL type"
-        else
-          type_result
+        warn("type_from_object(object) is deprecated; use Schema.resolve_type(object) instead")
+
+        if @type_from_object_proc
+          schema.resolve_type = @type_from_object_proc
+          @type_from_object_proc = nil
         end
+
+        schema.resolve_type(object)
       end
 
-      def type_from_object=(proc)
+      def type_from_object=(new_type_from_object_proc)
         ensure_defined
-        @type_from_object_proc = proc
+        warn("type_from_object(object) is deprecated; use Schema.resolve_type(object) instead")
+        @type_from_object_proc = new_type_from_object_proc
       end
 
       # Use the provided config to
