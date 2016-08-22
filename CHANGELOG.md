@@ -8,6 +8,13 @@
 
 ### Bug fixes
 
+## 0.18.3 (22 Aug 2016)
+
+### Bug fixes
+
+- `Connection.new(:field)` is optional, not required #215
+- 0.18.2 introduced a more restrictive approach to resolving interfaces & unions; revert that approach #212
+
 ## 0.18.2 (17 Aug 2016)
 
 ### New features
