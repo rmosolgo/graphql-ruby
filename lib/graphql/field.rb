@@ -72,6 +72,16 @@ module GraphQL
   #     }
   #   end
   #
+  # Only certain types maybe used for inputs:
+  #
+  # - Scalars
+  # - Enums
+  # - Input Objects
+  # - Lists of those types
+  #
+  # Input types may also be non-null -- in that case, the query will fail
+  # if the input is not present.
+  #
   # ## Complexity
   #
   # Fields can have _complexity_ values which describe the computation cost of resolving the field.
