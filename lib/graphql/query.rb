@@ -63,30 +63,33 @@ module GraphQL
       end
 
       @arguments_cache = Hash.new { |h, k| h[k] = {} }
+      @validation_errors = []
+      @analysis_errors = []
+      @internal_representation = {}
+      valid?
     end
 
     # Get the result for this query, executing it once
     def result
       @result ||= begin
-        if @validate && (validation_errors.any? || analysis_errors.any?)
-          { "errors" => validation_errors + analysis_errors}
+        if !valid?
+          all_errors = validation_errors + analysis_errors
+          if all_errors.any?
+            { "errors" => all_errors }
+          else
+            nil
+          end
         else
           Executor.new(self).result
         end
       end
-
     end
 
 
     # This is the operation to run for this query.
     # If more than one operation is present, it must be named at runtime.
     # @return [GraphQL::Language::Nodes::OperationDefinition, nil]
-    def selected_operation
-      @selected_operation ||= begin
-        perform_validation
-        @selected_operation
-      end
-    end
+    attr_reader :selected_operation
 
     # Determine the values for variables of this query, using default values
     # if a value isn't provided at runtime.
@@ -101,19 +104,16 @@ module GraphQL
       )
     end
 
-    def internal_representation
-      @internal_representation ||= begin
-        perform_validation
-        @internal_representation
-      end
-    end
+    # @return [Hash<String, nil => GraphQL::InternalRepresentation::Node] Operation name -> Irep node pairs
+    attr_reader :internal_representation
 
-    def validation_errors
-      @validation_errors ||= begin
-        perform_validation
-        @validation_errors
-      end
-    end
+    # TODO this should probably contain error instances, not hashes
+    # @return [Array<Hash>] Static validation errors for the query string
+    attr_reader :validation_errors
+
+    # TODO this should probably contain error instances, not hashes
+    # @return [Array<Hash>] Errors for this particular query run (eg, exceeds max complexity)
+    attr_reader :analysis_errors
 
     # Node-level cache for calculating arguments. Used during execution and query analysis.
     # @return [GraphQL::Query::Arguments] Arguments for this node, merging default values, literal values and query variables
@@ -127,24 +127,55 @@ module GraphQL
       end
     end
 
+    # @return [GraphQL::Language::Nodes::Document, nil]
+    def selected_operation
+      @selected_operation ||= find_operation(@operations, @operation_name)
+    end
+
+    def valid?
+      @valid ||= if @validate
+        document_valid? && query_possible? && query_valid?
+      else
+        true
+      end
+    end
+
     private
 
-    def perform_validation
-      @selected_operation = find_operation(@operations, @operation_name)
+
+    # Assert that the passed-in query string is internally consistent
+    def document_valid?
       validation_result = schema.static_validator.validate(self)
       @validation_errors = validation_result[:errors]
       @internal_representation = validation_result[:irep]
-      if @validation_errors.none?
-        # Accessing variables will raise errors if there are any :S
-        variables
-      end
-      nil
-    rescue GraphQL::Query::OperationNameMissingError, GraphQL::Query::VariableValidationError => err
-      @validation_errors = [err.to_h]
-      @internal_representation = nil
-      nil
+      @validation_errors.none?
     end
 
+    # Given that the document is valid, do we have what we need to
+    # execute the document this time?
+    # - Is there an operation to run?
+    # - Are all variables accounted for?
+    def query_possible?
+      !selected_operation.nil? && variables
+      true
+    rescue GraphQL::Query::OperationNameMissingError, GraphQL::Query::VariableValidationError => err
+      @validation_errors << err.to_h
+      false
+    end
+
+    # Given that we _could_ execute this query, _should_ we?
+    # - Does it violate any query analyzers?
+    def query_valid?
+      @analysis_errors = begin
+        if @query_analyzers.any?
+          reduce_results = GraphQL::Analysis.analyze_query(self, @query_analyzers)
+          reduce_results.select { |r| r.is_a?(GraphQL::AnalysisError) }.map(&:to_h)
+        else
+          []
+        end
+      end
+      @analysis_errors.none?
+    end
 
     def find_operation(operations, operation_name)
       if operations.length == 1
@@ -155,20 +186,6 @@ module GraphQL
         raise OperationNameMissingError, operations.keys
       else
         operations[operation_name]
-      end
-    end
-
-    def analysis_errors
-      @analysis_errors ||= begin
-        if validation_errors.any?
-          # Can't reduce an invalid query
-          []
-        elsif @query_analyzers.any?
-          reduce_results = GraphQL::Analysis.analyze_query(self, @query_analyzers)
-          reduce_results.select { |r| r.is_a?(GraphQL::AnalysisError) }.map(&:to_h)
-        else
-          []
-        end
       end
     end
   end

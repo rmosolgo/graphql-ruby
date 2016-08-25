@@ -35,10 +35,9 @@ describe GraphQL::StaticValidation::FragmentsAreUsed do
     let(:query_string) {%|
       # I am a comment.
     |}
-    let(:document) { GraphQL.parse(query_string) }
-    let(:result) { DummySchema.execute(document: document) }
+    let(:result) { DummySchema.execute(query_string) }
     it "handles them gracefully" do
-      assert_equal nil, result
+      assert_equal({}, result)
     end
   end
 end
