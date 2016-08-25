@@ -199,11 +199,11 @@ If you need custom fields on `edge`s, you can define an edge type and pass it to
 
 ```ruby
 # Person => Membership => Team
-MembershipSinceEdgeType = BaseType.define_edge do
+MembershipSinceEdgeType = TeamType.define_edge do
   name "MembershipSinceEdge"
   field :memberSince, types.Int, "The date that this person joined this team" do
     resolve -> (obj, args, ctx) {
-      obj # => GraphQL::Relay::Edge instnce
+      obj # => GraphQL::Relay::Edge instance
       person = obj.parent
       team = obj.node
       membership = Membership.where(person: person, team: team).first
