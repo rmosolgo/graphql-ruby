@@ -8,6 +8,16 @@
 
 ### Bug fixes
 
+## 0.18.4 (25 Aug 2016)
+
+### New features
+
+- `InvalidNullError`s expose a proper `#message` #217
+
+### Bug fixes
+
+- Return an empty result for queries with no operations #219
+
 ## 0.18.3 (22 Aug 2016)
 
 ### Bug fixes
