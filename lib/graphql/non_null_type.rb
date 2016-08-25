@@ -1,7 +1,32 @@
 module GraphQL
-  # A non-null type wraps another type.
+  # A non-null type modifies another type.
   #
-  # Get the underlying type with {#unwrap}
+  # Non-null types can be created with `!` (`InnerType!`)
+  # or {BaseType#to_non_null_type} (`InnerType.to_non_null_type`)
+  #
+  # For return types, it says that the returned value will _always_ be present.
+  #
+  # @example A field which _always_ returns an error
+  #   field :items, !ItemType
+  #   # or
+  #   field :items, ItemType.to_non_null_type
+  #
+  # (If the application fails to return a value, {InvalidNullError} will be raised.)
+  #
+  # For input types, it says that the incoming value _must_ be provided by the query.
+  #
+  # @example A field which _requires_ a string input
+  #   field :newNames do
+  #     # ...
+  #     argument :values, !types.String
+  #     # or
+  #     argument :values, types.String.to_non_null_type
+  #   end
+  #
+  # (If a value isn't provided, {Query::VariableValidationError} will be raised).
+  #
+  # Given a non-null type, you can always get the underlying type with {#unwrap}.
+  #
   class NonNullType < GraphQL::BaseType
     include GraphQL::BaseType::ModifiesAnotherType
 

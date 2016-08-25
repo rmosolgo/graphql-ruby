@@ -1,7 +1,28 @@
 module GraphQL
-  # A list type wraps another type.
+  # A list type modifies another type.
   #
-  # Get the underlying type with {#unwrap}
+  # List types can be created with the type helper (`types[InnerType]`)
+  # or {BaseType#to_list_type} (`InnerType.to_list_type`)
+  #
+  # For return types, it says that the returned value will be a list of the modified.
+  #
+  # @example A field which returns a list of items
+  #   field :items, types[ItemType]
+  #   # or
+  #   field :items, ItemType.to_list_type
+  #
+  # For input types, it says that the incoming value will be a list of the modified type.
+  #
+  # @example A field which accepts a list of strings
+  #   field :newNames do
+  #     # ...
+  #     argument :values, types[types.String]
+  #     # or
+  #     argument :values, types.String.to_list_type
+  #   end
+  #
+  # Given a list type, you can always get the underlying type with {#unwrap}.
+  #
   class ListType < GraphQL::BaseType
     include GraphQL::BaseType::ModifiesAnotherType
     attr_reader :of_type, :name
@@ -31,11 +52,9 @@ module GraphQL
       result
     end
 
-
     def coerce_non_null_input(value)
       ensure_array(value).map{ |item| of_type.coerce_input(item) }
     end
-
 
     private
 

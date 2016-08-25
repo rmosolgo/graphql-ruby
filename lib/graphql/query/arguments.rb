@@ -14,7 +14,7 @@ module GraphQL
         end
       end
 
-      # @param [String, Symbol] name or index of value to access
+      # @param key [String, Symbol] name or index of value to access
       # @return [Object] the argument at that key
       def [](key)
         @argument_values[key.to_s]

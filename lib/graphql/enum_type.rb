@@ -122,7 +122,7 @@ module GraphQL
 
     # A value within an {EnumType}
     #
-    # Created with {EnumType#value}
+    # Created with the `value` helper
     class EnumValue
       attr_accessor :name, :description, :deprecation_reason, :value
       def initialize(name:, description:, deprecation_reason:, value:)
