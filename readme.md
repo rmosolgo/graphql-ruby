@@ -127,10 +127,9 @@ If you're building a backend for [Relay](http://facebook.github.io/relay/), you'
   - Reduce ad-hoc traversals?
   - Validators are order-dependent, is this a smell?
   - Tests for interference between validators are poor
-  - Maybe this is a candidate for a rewrite? Can it somehow work more closely with query analysis? Somehow support the `Query#perform_validation` refactor?
+  - Maybe this is a candidate for a rewrite?
 - Add Rails-y argument validations, eg `less_than: 100`, `max_length: 255`, `one_of: [...]`
   - Must be customizable
-- Refactor `Query#perform_validation`, how can that be organized better?
 - Relay:
   - `GlobalNodeIdentification.to_global_id` should receive the type name and _object_, not `id`. (Or, maintain the "`type_name, id` in, `type_name, id` out" pattern?)
   - Reduce duplication in ArrayConnection / RelationConnection
