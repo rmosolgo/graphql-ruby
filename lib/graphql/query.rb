@@ -65,8 +65,8 @@ module GraphQL
       @arguments_cache = Hash.new { |h, k| h[k] = {} }
       @validation_errors = []
       @analysis_errors = []
-      @internal_representation = {}
-      valid?
+      @internal_representation = nil
+      @was_validated = false
     end
 
     # Get the result for this query, executing it once
@@ -105,15 +105,25 @@ module GraphQL
     end
 
     # @return [Hash<String, nil => GraphQL::InternalRepresentation::Node] Operation name -> Irep node pairs
-    attr_reader :internal_representation
+    def internal_representation
+      valid?
+      @internal_representation
+    end
 
     # TODO this should probably contain error instances, not hashes
     # @return [Array<Hash>] Static validation errors for the query string
-    attr_reader :validation_errors
+    def validation_errors
+      valid?
+      @validation_errors
+    end
+
 
     # TODO this should probably contain error instances, not hashes
     # @return [Array<Hash>] Errors for this particular query run (eg, exceeds max complexity)
-    attr_reader :analysis_errors
+    def analysis_errors
+      valid?
+      @analysis_errors
+    end
 
     # Node-level cache for calculating arguments. Used during execution and query analysis.
     # @return [GraphQL::Query::Arguments] Arguments for this node, merging default values, literal values and query variables
@@ -133,15 +143,19 @@ module GraphQL
     end
 
     def valid?
-      @valid ||= if @validate
-        document_valid? && query_possible? && query_valid?
-      else
-        true
+      if !@was_validated
+        @was_validated = true
+        @valid = if @validate
+          document_valid? && query_possible? && query_valid?
+        else
+          true
+        end
       end
+
+      @valid
     end
 
     private
-
 
     # Assert that the passed-in query string is internally consistent
     def document_valid?
