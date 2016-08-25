@@ -30,4 +30,15 @@ describe GraphQL::StaticValidation::FragmentsAreUsed do
       "path"=>["query getCheese", "... undefinedFields"]
     })
   end
+
+  describe "queries that are comments" do
+    let(:query_string) {%|
+      # I am a comment.
+    |}
+    let(:document) { GraphQL.parse(query_string) }
+    let(:result) { DummySchema.execute(document: document) }
+    it "handles them gracefully" do
+      assert_equal nil, result
+    end
+  end
 end
