@@ -5,39 +5,77 @@ module GraphQL
   #
   # They're usually created with the `field` helper. If you create it by hand, make sure {#name} is a String.
   #
-  # @example creating a field
+  # A field must have a return type, but if you want to defer the return type calculation until later,
+  # you can pass a proc for the return type. That proc will be called when the schema is defined.
+  #
+  # @example Lazy type resolution
+  #   # If the field's type isn't defined yet, you can pass a proc
+  #   field :city, -> { TypeForModelName.find("City") }
+  #
+  # For complex field definition, you can pass a block to the `field` helper, eg `field :name do ... end`.
+  # This block is equivalent to calling `GraphQL::Field.define { ... }`.
+  #
+  # @example Defining a field with a block
+  #   field :city, CityType do
+  #     # field definition continues inside the block
+  #   end
+  #
+  # ## Resolve
+  #
+  # Fields have `resolve` functions to determine their values at query-time.
+  # The default implementation is to call a method on the object based on the field name.
+  #
+  # @example Create a field which calls a method with the same name.
   #   GraphQL::ObjectType.define do
   #     field :name, types.String, "The name of this thing "
   #   end
   #
-  # @example handling a circular reference
-  #   # If the field's type isn't defined yet, you have two options:
+  # You can specify a custom proc with the `resolve` helper.
   #
-  #   GraphQL::ObjectType.define do
-  #     # If you pass a Proc, it will be evaluated at schema build-time
-  #     field :city, -> { CityType }
-  #     # If you pass a String, it will be looked up in the global namespace at schema build-time
-  #     field :country, "CountryType"
-  #   end
+  # There are some shortcuts for common `resolve` implementations:
+  #   - Provide `property:` to call a method with a different name than the field name
+  #   - Provide `hash_key:` to resolve the field by doing a key lookup, eg `obj[:my_hash_key]`
   #
-  # @example creating a field that accesses a different property on the object
+  # @example Create a field that calls a different method on the object
   #   GraphQL::ObjectType.define do
-  #     # use the `property` option:
+  #     # use the `property` keyword:
   #     field :firstName, types.String, property: :first_name
   #   end
   #
-  # @example defining a field, then attaching it to a type
-  #   name_field = GraphQL::Field.define do
-  #     name("Name")
-  #     type(!types.String)
-  #     description("The name of this thing")
-  #     resolve -> (object, arguments, context) { object.name }
+  # @example Create a field looks up with `[hash_key]`
+  #   GraphQL::ObjectType.define do
+  #     # use the `hash_key` keyword:
+  #     field :firstName, types.String, hash_key: :first_name
   #   end
   #
-  #   NamedType = GraphQL::ObjectType.define do
-  #     # use the `field` option:
-  #     field :name, field: name_field
+  # ## Arguments
+  #
+  # Fields can take inputs; they're called arguments. You can define them with the `argument` helper.
+  #
+  # @example Create a field with an argument
+  #   field :students, types[StudentType] do
+  #     argument :grade, types.Int
+  #     resolve -> (obj, args, ctx) {
+  #       Student.where(grade: args[:grade])
+  #     }
   #   end
+  #
+  # They can have default values which will be provided to `resolve` if the query doesn't include a value.
+  #
+  # @example Argument with a default value
+  #   field :events, types[EventType] do
+  #     # by default, don't include past events
+  #     argument :includePast, types.Boolean, default_value: false
+  #     resolve -> (obj, args, ctx) {
+  #       args[:includePast] # => false if no value was provided in the query
+  #       # ...
+  #     }
+  #   end
+  #
+  # ## Complexity
+  #
+  # Fields can have _complexity_ values which describe the computation cost of resolving the field.
+  # You can provide the complexity as a constant with `complexity:` or as a proc, with the `complexity` helper.
   #
   # @example Custom complexity values
   #   # Complexity can be a number or a proc.
@@ -57,12 +95,26 @@ module GraphQL
   #     complexity -> (ctx, args, child_complexity) { child_complexity * args[:limit] }
   #   end
   #
+  # @example Creating a field, then assigning it to a type
+  #   name_field = GraphQL::Field.define do
+  #     name("Name")
+  #     type(!types.String)
+  #     description("The name of this thing")
+  #     resolve -> (object, arguments, context) { object.name }
+  #   end
+  #
+  #   NamedType = GraphQL::ObjectType.define do
+  #     # The second argument may be a GraphQL::Field
+  #     field :name, name_field
+  #   end
+  #
   class Field
     include GraphQL::Define::InstanceDefinable
     accepts_definitions :name, :description, :resolve, :type, :property, :deprecation_reason, :complexity, :hash_key, argument: GraphQL::Define::AssignArgument
 
     lazy_defined_attr_accessor :deprecation_reason, :description, :property, :hash_key
 
+    # @return [<#call(obj, args,ctx)>] A proc-like object which can be called to return the field's value
     attr_reader :resolve_proc
 
     # @return [String] The name of this field on its {GraphQL::ObjectType} (or {GraphQL::InterfaceType})

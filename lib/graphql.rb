@@ -18,7 +18,7 @@ module GraphQL
   end
 
   # Turn a query string into an AST
-  # @param [String] a GraphQL query string
+  # @param query_string [String] a GraphQL query string
   # @return [GraphQL::Language::Nodes::Document]
   def self.parse(query_string)
     parse_with_racc(query_string)
