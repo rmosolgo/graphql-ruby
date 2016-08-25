@@ -9,9 +9,9 @@ module GraphQL
   #     argument :favoriteFood, types.String, "Favorite thing to eat", default_value: "pizza"
   #   end
   #
-  # @example defining an input field for an {InputObjectType}
+  # @example defining an argument for an {InputObjectType}
   #   GraphQL::InputObjectType.define do
-  #     input_field :newName, !types.String
+  #     argument :newName, !types.String
   #   end
   #
   class Argument

@@ -4,7 +4,7 @@ module GraphQL
     module Resolve
       module_function
 
-      # @param [GraphQL::Field] A field that needs a resolve proc
+      # @param field [GraphQL::Field] A field that needs a resolve proc
       # @return [Proc] A resolver for this field, based on its config
       def create_proc(field)
         if field.property

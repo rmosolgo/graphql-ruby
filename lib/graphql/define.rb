@@ -19,7 +19,7 @@ module GraphQL
     #   # After definition, read the key from metadata
     #   PostType.metadata[:resolves_to_class_names] # => [...]
     #
-    # @param [Object] the key to assign in metadata
+    # @param key [Object] the key to assign in metadata
     # @return [#call(defn, value)] an assignment for `.accepts_definitions` which writes `key` to `#metadata`
     def self.assign_metadata_key(key)
       GraphQL::Define::InstanceDefinable::AssignMetadataKey.new(key)

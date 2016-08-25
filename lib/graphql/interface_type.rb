@@ -1,7 +1,12 @@
 module GraphQL
-  # A collection of types which implement the same fields
+  # An Interface contains a collection of types which implement some of the same fields.
   #
-  # @example An interface with three required fields
+  # Interfaces can have fields, defined with `field`, just like an object type.
+  #
+  # Objects which implement this field _inherit_ field definitions from the interface.
+  # An object type can override the inherited definition by redefining that field.
+  #
+  # @example An interface with three fields
   #   DeviceInterface = GraphQL::InterfaceType.define do
   #     name("Device")
   #     description("Hardware devices for computing")
@@ -9,6 +14,11 @@ module GraphQL
   #     field :ram, types.String
   #     field :processor, ProcessorType
   #     field :release_year, types.Int
+  #   end
+  #
+  # @example Implementing an interface with an object type
+  #   Laptoptype = GraphQL::ObjectType.define do
+  #     interfaces [DeviceInterface]
   #   end
   #
   class InterfaceType < GraphQL::BaseType

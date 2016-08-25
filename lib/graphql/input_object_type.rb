@@ -1,12 +1,26 @@
 module GraphQL
-  # A complex input type for a field argument.
+  # {InputObjectType}s are key-value inputs for fields.
+  #
+  # Input objects have _arguments_ which are identical to {GraphQL::Field} arguments.
+  # They map names to types and support default values.
+  # Their input types can be any input types, including {InputObjectType}s.
   #
   # @example An input type with name and number
   #   PlayerInput = GraphQL::InputObjectType.define do
   #     name("Player")
-  #     input_field :name, !types.String
-  #     input_field :number, !types.Int
+  #     argument :name, !types.String
+  #     argument :number, !types.Int
   #   end
+  #
+  # In a `resolve` function, you can access the values by making nested lookups on `args`.
+  #
+  # @example Accessing input values in a resolve function
+  #   resolve -> (obj, args, ctx) {
+  #     args[:player][:name]    # => "Tony Gwynn"
+  #     args[:player][:number]  # => 19
+  #     args[:player].to_h      # { "name" => "Tony Gwynn", "number" => 19 }
+  #     # ...
+  #   }
   #
   class InputObjectType < GraphQL::BaseType
     accepts_definitions(

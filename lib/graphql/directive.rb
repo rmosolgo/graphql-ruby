@@ -1,4 +1,10 @@
 module GraphQL
+  # Directives are server-defined hooks for modifying execution.
+  #
+  # Two directives are included out-of-the-box:
+  # - `@skip(if: ...)` Skips the tagged field if the value of `if` is true
+  # - `@include(if: ...)` Includes the tagged field _only_ if `if` is true
+  #
   class Directive
     include GraphQL::Define::InstanceDefinable
     accepts_definitions :locations, :name, :description, :include_proc, argument: GraphQL::Define::AssignArgument
