@@ -7,13 +7,13 @@ module GraphQL
   #
   # `GraphQL` comes with standard built-in scalars:
   #
-  # Constant | `.define` helper
-  # =========|==================
-  # `GraphQL::STRING_TYPE` | `types.String`
-  # `GraphQL::INT_TYPE` | `types.Int`
-  # `GraphQL::FLOAT_TYPE` | `types.Float`
-  # `GraphQL::ID_TYPE` | `types.ID`
-  # `GraphQL::BOOLEAN_TYPE` | `types.Boolean`
+  # |Constant | `.define` helper|
+  # |-------|--------|
+  # |`GraphQL::STRING_TYPE` | `types.String`|
+  # |`GraphQL::INT_TYPE` | `types.Int`|
+  # |`GraphQL::FLOAT_TYPE` | `types.Float`|
+  # |`GraphQL::ID_TYPE` | `types.ID`|
+  # |`GraphQL::BOOLEAN_TYPE` | `types.Boolean`|
   #
   # (`types` is an instance of `GraphQL::Definition::TypeDefiner`; `.String`, `.Float`, etc are methods which return built-in scalars.)
   #

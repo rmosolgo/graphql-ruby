@@ -1,9 +1,15 @@
 module GraphQL
-  # A finite set of possible values, represented in query strings with
-  # SCREAMING_CASE_NAMES
+  # Represents a collection of related values.
+  # By convention, enum names are `SCREAMING_CASE_NAMES`,
+  # but other identifiers are supported too.
+  #
+  # You can use as return types _or_ as inputs.
+  #
+  # By default, enums are passed to `resolve` functions as
+  # the strings that identify them, but you can provide a
+  # custom Ruby value with the `value:` keyword.
   #
   # @example An enum of programming languages
-  #
   #   LanguageEnum = GraphQL::EnumType.define do
   #     name "Languages"
   #     description "Programming languages for Web projects"
@@ -11,6 +17,44 @@ module GraphQL
   #     value("RUBY", "A very dynamic language aimed at programmer happiness")
   #     value("JAVASCRIPT", "Accidental lingua franca of the web")
   #   end
+  #
+  # @example Using an enum as a return type
+  #    field :favoriteLanguage, LanguageEnum, "This person's favorite coding language"
+  #    # ...
+  #    # In a query:
+  #    Schema.execute("{ coder(id: 1) { favoriteLanguage } }")
+  #    # { "data" => { "coder" => { "favoriteLanguage" => "RUBY" } } }
+  #
+  # @example Defining an enum input
+  #    field :coders, types[CoderType] do
+  #      argument :knowing, types[LanguageType]
+  #      resolve -> (obj, args, ctx) {
+  #        Coder.where(language: args[:knowing])
+  #      }
+  #    end
+  #
+  # @example Using an enum as input
+  #   {
+  #     # find coders who know Python and Ruby
+  #     coders(knowing: [PYTHON, RUBY]) {
+  #       name
+  #       hourlyRate
+  #     }
+  #   }
+  #
+  # @example Enum whose values are different in Ruby-land
+  #   GraphQL::EnumType.define do
+  #     # ...
+  #     # use the `value:` keyword:
+  #     value("RUBY", "Lisp? Smalltalk?", value: :rb)
+  #   end
+  #
+  #   # Now, resolve functions will receive `:rb` instead of `"RUBY"`
+  #   field :favoriteLanguage, LanguageEnum
+  #   resolve -> (obj, args, ctx) {
+  #     args[:favoriteLanguage] # => :rb
+  #   }
+  #
   class EnumType < GraphQL::BaseType
     accepts_definitions value: GraphQL::Define::AssignEnumValue
 
