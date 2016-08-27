@@ -8,6 +8,66 @@
 
 ### Bug fixes
 
+## 0.18.5 (27 Aug 2016)
+
+### Deprecations
+
+- `Schema.new` is deprecated; use `Schema.define` instead.
+
+  Before:
+
+  ```ruby
+  schema = GraphQL::Schema.new(query: QueryType, mutation: MutationType, max_complexity: 100)
+  schema.global_node_identification = MyGlobalID
+  schema.rescue_from(ActiveRecord::RecordNotFound) { |err| "..." }
+  ```
+
+  After:
+
+  ```ruby
+  schema = GraphQL::Schema.define do
+    query QueryType
+    mutation MutationType
+    max_complexity 100
+    global_node_identification MyGlobalID
+    rescue_from(ActiveRecord::RecordNotFound) { |err| "..." }
+  end
+  ```
+
+  This unifies the disparate methods of configuring a schema and provides new, more flexible design space. It also adds `#metadata` to schemas for user-defined storage.
+
+- `UnionType#resolve_type`, `InterfaceType#resolve_type`, and `GlobalNodeIdentification#type_from_object` are deprecated, unify them into `Schema#resolve_type` instead.
+
+  Before:
+
+  ```ruby
+  GraphQL::Relay::GlobalNodeIdentification.define do
+    type_from_object -> (obj) { ... }
+  end
+
+  GraphQL::InterfaceType.define do
+    resolve_type -> (obj, ctx) { ... }
+  end
+  ```
+
+  After:
+
+  ```ruby
+  GraphQL::Schema.define do
+    resolve_type -> (obj, ctx) { ... }
+  end
+  ```
+
+  This simplifies type inference and prevents unexpected behavior when different parts of the schema resolve types differently.
+
+### New features
+
+- Include expected type in Argument errors #221
+- Define schemas with `Schema.define` #208
+- Define a global object-to-type function with `Schema#resolve_type` #216
+
+### Bug fixes
+
 ## 0.18.4 (25 Aug 2016)
 
 ### New features
