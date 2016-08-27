@@ -25,42 +25,42 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
     assert_equal(6, errors.length)
 
     query_root_error = {
-      "message"=>"Argument 'id' on Field 'cheese' has an invalid value",
+      "message"=>"Argument 'id' on Field 'cheese' has an invalid value. Expected type 'Int!'.",
       "locations"=>[{"line"=>3, "column"=>7}],
       "path"=>["query getCheese", "cheese", "id"],
     }
     assert_includes(errors, query_root_error)
 
     directive_error = {
-      "message"=>"Argument 'if' on Directive 'skip' has an invalid value",
+      "message"=>"Argument 'if' on Directive 'skip' has an invalid value. Expected type 'Boolean!'.",
       "locations"=>[{"line"=>4, "column"=>30}],
       "path"=>["query getCheese", "cheese", "source", "if"],
     }
     assert_includes(errors, directive_error)
 
     input_object_error = {
-      "message"=>"Argument 'product' on Field 'badSource' has an invalid value",
+      "message"=>"Argument 'product' on Field 'badSource' has an invalid value. Expected type '[DairyProductInput]'.",
       "locations"=>[{"line"=>6, "column"=>7}],
       "path"=>["query getCheese", "badSource", "product"],
     }
     assert_includes(errors, input_object_error)
 
     input_object_field_error = {
-      "message"=>"Argument 'source' on InputObject 'DairyProductInput' has an invalid value",
+      "message"=>"Argument 'source' on InputObject 'DairyProductInput' has an invalid value. Expected type 'DairyAnimal!'.",
       "locations"=>[{"line"=>6, "column"=>40}],
       "path"=>["query getCheese", "badSource", "product", "source"],
     }
     assert_includes(errors, input_object_field_error)
 
     missing_required_field_error = {
-      "message"=>"Argument 'product' on Field 'missingSource' has an invalid value",
+      "message"=>"Argument 'product' on Field 'missingSource' has an invalid value. Expected type '[DairyProductInput]'.",
       "locations"=>[{"line"=>7, "column"=>7}],
       "path"=>["query getCheese", "missingSource", "product"],
     }
     assert_includes(errors, missing_required_field_error)
 
     fragment_error = {
-      "message"=>"Argument 'source' on Field 'similarCheese' has an invalid value",
+      "message"=>"Argument 'source' on Field 'similarCheese' has an invalid value. Expected type '[DairyAnimal!]!'.",
       "locations"=>[{"line"=>13, "column"=>7}],
       "path"=>["fragment cheeseFields", "similarCheese", "source"],
     }
