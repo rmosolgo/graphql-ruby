@@ -1,12 +1,5 @@
 module GraphQL
-  # An object type has _fields_ which expose values from your application.
-  # The fields are _typed_. Fields may return object types (including the same object type).
-  #
-  # See {GraphQL::Field} for details about defining fields.
-  #
-  # Objects which fulfill many of the same fields may implement _interfaces_, see {GraphQL::InterfaceType}.
-  #
-  # ObjectTypes which occur in the same place in the schema may be grouped in a {GraphQL::UnionType}.
+  # This type exposes fields on an object.
   #
   # @example defining a type for your IMDB clone
   #   MovieType = GraphQL::ObjectType.define do

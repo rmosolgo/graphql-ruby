@@ -51,16 +51,15 @@ CoffeeType = GraphQL::ObjectType.define do
 end
 ```
 
-In order for your schema to expose members of an interface, it must be able to determine the GraphQL type for a given Ruby object. `InterfaceType` has a default `resolve_type` definition, or you can provide your own. Here's the default:
+In order for your schema to expose members of an interface, it must be able to determine the GraphQL type for a given Ruby object. You must define `resolve_type` in your schema:
 
 ```ruby
-BeverageInterface = GraphQL::InterfaceType.define do
+MySchema = GraphQL::Schema.define do
  # ...
  resolve_type -> (object, ctx) {
+   # for example, look up types by class name
    type_name = object.class.name
-   # you can access the interface's `possible_types` inside the proc
-   possible_types = ctx.schema.possible_types(self)
-   possible_types.find {|t| t.name == type_name}
+   MySchema.types[type_name]
  }
 end
 ```
@@ -77,18 +76,7 @@ MediaSearchResultUnion = GraphQL::UnionType.define do
 end
 ```
 
-In order to expose a union, you must also define how the concrete type of each object can be determined. `UnionType` provides a default, shown here:
-
-```ruby
-MediaSearchResultUnion = GraphQL::UnionType.define do
-  # This is the default if you don't provide a custom `resolve_type` proc:
-  resolve_type -> (object, ctx) {
-    type_name = object.class.name
-    # You can access the union's `possible_types` inside the proc
-    possible_types.find {|t| t.name == type_name}
-  }
-end
-```
+In order to expose a union, you must also define how the concrete type of each object can be determined. This is defined with `Schema`'s `resolve_type` function (see Interface docs).
 
 ### Enum Types
 
@@ -379,13 +367,13 @@ end
 Access `type.metadata` later:
 
 ```ruby
-SearchResultUnion = GraphQL::Union.define do
+MySchema = GraphQL::Schema.define do
   # ...
   # Use the type's declared `resolves_to_class_names`
   # to figure out if `obj` is a member of that type
   resolve_type -> (obj, ctx) {
     class_name = obj.class.name
-    possible_types.find { |type| type.metadata[:resolves_to_class_names].include?(class_name) }
+    MySchema.types.values.find { |type| type.metadata[:resolves_to_class_names].include?(class_name) }
   }
 end
 ```

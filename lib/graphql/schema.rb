@@ -48,7 +48,7 @@ module GraphQL
       :query_execution_strategy, :mutation_execution_strategy, :subscription_execution_strategy,
       :max_depth, :max_complexity,
       :node_identification,
-      :orphan_types,
+      :orphan_types, :resolve_type,
       query_analyzer: -> (schema, analyzer) { schema.query_analyzers << analyzer },
       middleware: -> (schema, middleware) { schema.middleware << middleware },
       rescue_from: -> (schema, err_class, &block) { schema.rescue_from(err_class, &block)}
@@ -57,13 +57,13 @@ module GraphQL
       :query, :mutation, :subscription,
       :query_execution_strategy, :mutation_execution_strategy, :subscription_execution_strategy,
       :max_depth, :max_complexity,
-      :node_identification,
       :orphan_types,
       :query_analyzers, :middleware
 
 
     DIRECTIVES = [GraphQL::Directive::SkipDirective, GraphQL::Directive::IncludeDirective]
     DYNAMIC_FIELDS = ["__type", "__typename", "__schema"]
+    RESOLVE_TYPE_PROC_REQUIRED = -> (obj) { raise("Schema.resolve_type is undefined, can't resolve type for #{obj}") }
 
     attr_reader :directives, :static_validator
 
@@ -71,6 +71,11 @@ module GraphQL
     def node_identification
       ensure_defined
       @node_identification
+    end
+
+    def node_identification=(new_node_ident)
+      new_node_ident.schema = self
+      @node_identification = new_node_ident
     end
 
     # @return [Array<#call>] Middlewares suitable for MiddlewareChain, applied to fields during execution
@@ -99,6 +104,7 @@ module GraphQL
       @rescue_middleware = GraphQL::Schema::RescueMiddleware.new
       @middleware = [@rescue_middleware]
       @query_analyzers = []
+      @resolve_type_proc = RESOLVE_TYPE_PROC_REQUIRED
       # Default to the built-in execution strategy:
       @query_execution_strategy = GraphQL::Query::SerialExecution
       @mutation_execution_strategy = GraphQL::Query::SerialExecution
@@ -155,6 +161,7 @@ module GraphQL
       GraphQL::Schema::TypeExpression.build_type(self, ast_node)
     end
 
+    # TODO: when `resolve_type` is schema level, can this be removed?
     # @param type_defn [GraphQL::InterfaceType, GraphQL::UnionType] the type whose members you want to retrieve
     # @return [Array<GraphQL::ObjectType>] types which belong to `type_defn` in this schema
     def possible_types(type_defn)
@@ -187,6 +194,27 @@ module GraphQL
       else
         raise ArgumentError, "unknown operation type: #{operation}"
       end
+    end
+
+    # Determine the GraphQL type for a given object.
+    # This is required for unions and interfaces (include Relay's node interface)
+    # @return [GraphQL::ObjectType] The type for exposing `object` in GraphQL
+    def resolve_type(object, ctx)
+      ensure_defined
+      type_result = @resolve_type_proc.call(object, ctx)
+      if type_result.nil?
+        nil
+      elsif !type_result.is_a?(GraphQL::BaseType)
+        type_str = "#{type_result} (#{type_result.class.name})"
+        raise "resolve_type(#{object}) returned #{type_str}, but it should return a GraphQL type"
+      else
+        type_result
+      end
+    end
+
+    def resolve_type=(new_resolve_type_proc)
+      ensure_defined
+      @resolve_type_proc = new_resolve_type_proc
     end
   end
 end

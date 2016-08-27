@@ -49,6 +49,17 @@ module GraphQL
     end
 
     module HasPossibleTypes
+
+      # If a (deprecated) `resolve_type` function was provided, call that and warn.
+      # Otherwise call `schema.resolve_type` (the proper behavior)
+      def legacy_resolve_type(object, ctx)
+        if @resolve_type_proc
+          resolve_type(object, ctx)
+        else
+          ctx.schema.resolve_type(object, ctx)
+        end
+      end
+
       # Return the implementing type for `object`.
       # The default implementation assumes that there's a type with the same name as `object.class.name`.
       # Maybe you'll need to override this in your own interfaces!
@@ -58,6 +69,7 @@ module GraphQL
       # @return [GraphQL::ObjectType] the type which should expose `object`
       def resolve_type(object, ctx)
         ensure_defined
+        warn_resolve_type_deprecated
         instance_exec(object, ctx, &(@resolve_type_proc || DEFAULT_RESOLVE_TYPE))
       end
 
@@ -69,7 +81,12 @@ module GraphQL
       }
 
       def resolve_type=(new_proc)
+        warn_resolve_type_deprecated
         @resolve_type_proc = new_proc || DEFAULT_RESOLVE_TYPE
+      end
+
+      def warn_resolve_type_deprecated
+        warn("#{self.name}.resolve_type is deprecated; define Schema.resolve_type instead")
       end
     end
 
