@@ -31,7 +31,7 @@ describe GraphQL::Query::SerialExecution::ValueResolution do
 
     GraphQL::Schema.define do
       query(query_root)
-      resolve_type -> (obj) { nil }
+      resolve_type -> (obj, ctx) { nil }
     end
   }
 

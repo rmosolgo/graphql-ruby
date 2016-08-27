@@ -199,9 +199,9 @@ module GraphQL
     # Determine the GraphQL type for a given object.
     # This is required for unions and interfaces (include Relay's node interface)
     # @return [GraphQL::ObjectType] The type for exposing `object` in GraphQL
-    def resolve_type(object)
+    def resolve_type(object, ctx)
       ensure_defined
-      type_result = @resolve_type_proc.call(object)
+      type_result = @resolve_type_proc.call(object, ctx)
       if type_result.nil?
         nil
       elsif !type_result.is_a?(GraphQL::BaseType)

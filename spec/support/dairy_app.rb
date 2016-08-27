@@ -342,7 +342,7 @@ DummySchema = GraphQL::Schema.define do
 
   rescue_from(NoSuchDairyError) { |err| err.message  }
 
-  resolve_type -> (obj) {
+  resolve_type -> (obj, ctx) {
     DummySchema.types[obj.class.name]
   }
 end

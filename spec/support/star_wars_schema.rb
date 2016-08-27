@@ -205,7 +205,7 @@ StarWarsSchema = GraphQL::Schema.define do
   query(QueryType)
   mutation(MutationType)
   node_identification(NodeIdentification)
-  resolve_type -> (object) {
+  resolve_type -> (object, ctx) {
     if object == :test_error
       :not_a_type
     elsif object.is_a?(Base)

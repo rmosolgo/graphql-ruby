@@ -56,7 +56,7 @@ module GraphQL
         if @resolve_type_proc
           resolve_type(object, ctx)
         else
-          ctx.schema.resolve_type(object)
+          ctx.schema.resolve_type(object, ctx)
         end
       end
 
