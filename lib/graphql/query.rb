@@ -50,7 +50,6 @@ module GraphQL
       @operations = {}
       @provided_variables = variables
       @query_string = query_string
-
       @document = document || GraphQL.parse(query_string)
       @document.definitions.each do |part|
         if part.is_a?(GraphQL::Language::Nodes::FragmentDefinition)

@@ -60,7 +60,7 @@ describe GraphQL::Schema::Printer do
       end
     end
 
-    GraphQL::Schema.new(query: query_root)
+    GraphQL::Schema.define(query: query_root)
   }
 
   describe ".print_introspection_schema" do

@@ -238,11 +238,11 @@ Some parts of schema definition take types as an input. There are two good ways 
 Your schema can be initialized with some options:
 
 ```ruby
-MySchema = GraphQL::Schema.new(
-  query: QueryType,       # root type for read-only queries
-  mutation: MutationType, # root type for mutations
-  max_depth: 7,           # if present, the max depth for incoming queries
-)
+MySchema = GraphQL::Schema.define do
+  query QueryType,       # root type for read-only queries
+  mutation MutationType, # root type for mutations
+  max_depth 7,           # if present, the max depth for incoming queries
+end
 ```
 
 Additionally, you can define error handling and custom middleware as described below.

@@ -1,7 +1,6 @@
 require "json"
 require "set"
 require "singleton"
-require "forwardable"
 
 module GraphQL
   class Error < StandardError

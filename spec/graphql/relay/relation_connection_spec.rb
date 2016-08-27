@@ -46,7 +46,7 @@ describe GraphQL::Relay::RelationConnection do
     |}
 
     it 'limits the result' do
-      result = query(query_string, "first" => 2)
+      result = star_wars_query(query_string, "first" => 2)
       assert_equal(2, get_names(result).length)
       assert_equal(true, get_page_info(result)["hasNextPage"])
       assert_equal(false, get_page_info(result)["hasPreviousPage"])
@@ -55,7 +55,7 @@ describe GraphQL::Relay::RelationConnection do
       assert_equal("MQ==", get_first_cursor(result))
       assert_equal("Mg==", get_last_cursor(result))
 
-      result = query(query_string, "first" => 3)
+      result = star_wars_query(query_string, "first" => 3)
       assert_equal(3, get_names(result).length)
       assert_equal(false, get_page_info(result)["hasNextPage"])
       assert_equal(false, get_page_info(result)["hasPreviousPage"])
@@ -66,7 +66,7 @@ describe GraphQL::Relay::RelationConnection do
     end
 
     it 'provides custom fields on the connection type' do
-      result = query(query_string, "first" => 2)
+      result = star_wars_query(query_string, "first" => 2)
       assert_equal(
         Base.where(faction_id: 2).count,
         result["data"]["empire"]["bases"]["totalCount"]
@@ -74,44 +74,44 @@ describe GraphQL::Relay::RelationConnection do
     end
 
     it 'slices the result' do
-      result = query(query_string, "first" => 2)
+      result = star_wars_query(query_string, "first" => 2)
       assert_equal(["Death Star", "Shield Generator"], get_names(result))
 
       # After the last result, find the next 2:
       last_cursor = get_last_cursor(result)
 
-      result = query(query_string, "after" => last_cursor, "first" => 2)
+      result = star_wars_query(query_string, "after" => last_cursor, "first" => 2)
       assert_equal(["Headquarters"], get_names(result))
 
       last_cursor = get_last_cursor(result)
 
-      result = query(query_string, "before" => last_cursor, "last" => 1)
+      result = star_wars_query(query_string, "before" => last_cursor, "last" => 1)
       assert_equal(["Shield Generator"], get_names(result))
 
-      result = query(query_string, "before" => last_cursor, "last" => 2)
+      result = star_wars_query(query_string, "before" => last_cursor, "last" => 2)
       assert_equal(["Death Star", "Shield Generator"], get_names(result))
 
-      result = query(query_string, "before" => last_cursor, "last" => 10)
+      result = star_wars_query(query_string, "before" => last_cursor, "last" => 10)
       assert_equal(["Death Star", "Shield Generator"], get_names(result))
 
     end
 
     it "applies custom arguments" do
-      result = query(query_string, "first" => 1, "nameIncludes" => "ea")
+      result = star_wars_query(query_string, "first" => 1, "nameIncludes" => "ea")
       assert_equal(["Death Star"], get_names(result))
 
       after = get_last_cursor(result)
 
-      result = query(query_string, "first" => 2, "nameIncludes" => "ea", "after" => after )
+      result = star_wars_query(query_string, "first" => 2, "nameIncludes" => "ea", "after" => after )
       assert_equal(["Headquarters"], get_names(result))
       before = get_last_cursor(result)
 
-      result = query(query_string, "last" => 1, "nameIncludes" => "ea", "before" => before)
+      result = star_wars_query(query_string, "last" => 1, "nameIncludes" => "ea", "before" => before)
       assert_equal(["Death Star"], get_names(result))
     end
 
     it 'works without first/last/after/before' do
-      result = query(query_string)
+      result = star_wars_query(query_string)
 
       assert_equal(3, result["data"]["empire"]["bases"]["edges"].length)
     end
@@ -143,12 +143,12 @@ describe GraphQL::Relay::RelationConnection do
       |}
 
       it "applies to queries by `first`" do
-        result = query(query_string, "first" => 100)
+        result = star_wars_query(query_string, "first" => 100)
         assert_equal(2, result["data"]["empire"]["bases"]["edges"].size)
         assert_equal(true, result["data"]["empire"]["bases"]["pageInfo"]["hasNextPage"])
 
         # Max page size is applied _without_ `first`, also
-        result = query(query_string)
+        result = star_wars_query(query_string)
         assert_equal(2, result["data"]["empire"]["bases"]["edges"].size)
         assert_equal(false, result["data"]["empire"]["bases"]["pageInfo"]["hasNextPage"], "hasNextPage is false when first is not specified")
       end
@@ -156,20 +156,20 @@ describe GraphQL::Relay::RelationConnection do
       it "applies to queries by `last`" do
         last_cursor = "Ng=="
         second_to_last_two_names = ["Death Star", "Shield Generator"]
-        result = query(query_string, "last" => 100, "before" => last_cursor)
+        result = star_wars_query(query_string, "last" => 100, "before" => last_cursor)
         assert_equal(second_to_last_two_names, get_names(result))
         assert_equal(true, result["data"]["empire"]["bases"]["pageInfo"]["hasPreviousPage"])
 
-        result = query(query_string, "before" => last_cursor)
+        result = star_wars_query(query_string, "before" => last_cursor)
         assert_equal(second_to_last_two_names, get_names(result))
         assert_equal(false, result["data"]["empire"]["bases"]["pageInfo"]["hasPreviousPage"], "hasPreviousPage is false when last is not specified")
 
         third_cursor = "Mw=="
         first_and_second_names = ["Yavin", "Echo Base"]
-        result = query(query_string, "last" => 100, "before" => third_cursor)
+        result = star_wars_query(query_string, "last" => 100, "before" => third_cursor)
         assert_equal(first_and_second_names, get_names(result))
 
-        result = query(query_string, "before" => third_cursor)
+        result = star_wars_query(query_string, "before" => third_cursor)
         assert_equal(first_and_second_names, get_names(result))
       end
     end
@@ -189,7 +189,7 @@ describe GraphQL::Relay::RelationConnection do
         }
     }|}
     it "uses default resolve" do
-      result = query(query_string)
+      result = star_wars_query(query_string)
       bases = result["data"]["empire"]["basesClone"]["edges"]
       assert_equal(3, bases.length)
     end
@@ -225,7 +225,7 @@ describe GraphQL::Relay::RelationConnection do
     end
 
     it "applies the default value" do
-      result = query(query_string)
+      result = star_wars_query(query_string)
       bases_by_id   = ["Death Star", "Shield Generator", "Headquarters"]
       bases_by_name = ["Death Star", "Headquarters", "Shield Generator"]
 
@@ -280,7 +280,7 @@ describe GraphQL::Relay::RelationConnection do
       |}
 
       it 'limits the result' do
-        result = query(query_string, "first" => 2)
+        result = star_wars_query(query_string, "first" => 2)
         assert_equal(2, get_names(result).length)
         assert_equal(true, get_page_info(result)["hasNextPage"])
         assert_equal(false, get_page_info(result)["hasPreviousPage"])
@@ -289,7 +289,7 @@ describe GraphQL::Relay::RelationConnection do
         assert_equal("MQ==", get_first_cursor(result))
         assert_equal("Mg==", get_last_cursor(result))
 
-        result = query(query_string, "first" => 3)
+        result = star_wars_query(query_string, "first" => 3)
         assert_equal(3, get_names(result).length)
         assert_equal(false, get_page_info(result)["hasNextPage"])
         assert_equal(false, get_page_info(result)["hasPreviousPage"])
@@ -300,7 +300,7 @@ describe GraphQL::Relay::RelationConnection do
       end
 
       it 'provides custom fields on the connection type' do
-        result = query(query_string, "first" => 2)
+        result = star_wars_query(query_string, "first" => 2)
         assert_equal(
           Base.where(faction_id: 2).count,
           result["data"]["empire"]["basesAsSequelDataset"]["totalCount"]
@@ -308,39 +308,39 @@ describe GraphQL::Relay::RelationConnection do
       end
 
       it 'slices the result' do
-        result = query(query_string, "first" => 2)
+        result = star_wars_query(query_string, "first" => 2)
         assert_equal(["Death Star", "Shield Generator"], get_names(result))
 
         # After the last result, find the next 2:
         last_cursor = get_last_cursor(result)
 
-        result = query(query_string, "after" => last_cursor, "first" => 2)
+        result = star_wars_query(query_string, "after" => last_cursor, "first" => 2)
         assert_equal(["Headquarters"], get_names(result))
 
         last_cursor = get_last_cursor(result)
 
-        result = query(query_string, "before" => last_cursor, "last" => 1)
+        result = star_wars_query(query_string, "before" => last_cursor, "last" => 1)
         assert_equal(["Shield Generator"], get_names(result))
 
-        result = query(query_string, "before" => last_cursor, "last" => 2)
+        result = star_wars_query(query_string, "before" => last_cursor, "last" => 2)
         assert_equal(["Death Star", "Shield Generator"], get_names(result))
 
-        result = query(query_string, "before" => last_cursor, "last" => 10)
+        result = star_wars_query(query_string, "before" => last_cursor, "last" => 10)
         assert_equal(["Death Star", "Shield Generator"], get_names(result))
 
       end
 
       it "applies custom arguments" do
-        result = query(query_string, "first" => 1, "nameIncludes" => "ea")
+        result = star_wars_query(query_string, "first" => 1, "nameIncludes" => "ea")
         assert_equal(["Death Star"], get_names(result))
 
         after = get_last_cursor(result)
 
-        result = query(query_string, "first" => 2, "nameIncludes" => "ea", "after" => after )
+        result = star_wars_query(query_string, "first" => 2, "nameIncludes" => "ea", "after" => after )
         assert_equal(["Headquarters"], get_names(result))
         before = get_last_cursor(result)
 
-        result = query(query_string, "last" => 1, "nameIncludes" => "ea", "before" => before)
+        result = star_wars_query(query_string, "last" => 1, "nameIncludes" => "ea", "before" => before)
         assert_equal(["Death Star"], get_names(result))
       end
     end

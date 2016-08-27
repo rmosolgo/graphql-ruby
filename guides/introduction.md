@@ -10,7 +10,10 @@ A GraphQL system exposes your application to the world according to its _schema_
 Once you've defined your query root and mutation root, you can make a schema:
 
 ```ruby
-ApplicationSchema = GraphQL::Schema.new(query: QueryRoot, mutation: MutationRoot)
+ApplicationSchema = GraphQL::Schema.define do
+  query QueryRoot
+  mutation MutationRoot
+end
 ```
 
 At that time, `graphql-ruby` will validate all types and fields.
@@ -80,7 +83,9 @@ The query root has one field, `post`,  which finds a `Post` by ID. The `resolve`
 Lastly, create the schema:
 
 ```ruby
-Schema = GraphQL::Schema.new(query: QueryRoot)
+Schema = GraphQL::Schema.define do
+  query QueryRoot
+end
 ```
 
 This schema could handle queries like:
@@ -136,7 +141,10 @@ end
 After defining your schema, you can evaluate queries with `GraphQL::Query`. For example:
 
 ```ruby
-Schema = GraphQL::Schema.new(query: QueryRoot) # QueryRoot defined above
+Schema = GraphQL::Schema.define do
+  query QueryRoot # QueryRoot defined above
+end
+
 query_string = "query getPost { post(id: 1) { id, title, comments { body } } }"
 
 result_hash = Schema.execute(query_string)

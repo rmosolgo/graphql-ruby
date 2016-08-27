@@ -215,5 +215,5 @@ MutationType = GraphQL::ObjectType.define do
   field :introduceShip, field: IntroduceShipMutation.field
 end
 
-StarWarsSchema = GraphQL::Schema.new(query: QueryType, mutation: MutationType)
+StarWarsSchema = GraphQL::Schema.define(query: QueryType, mutation: MutationType)
 StarWarsSchema.node_identification = NodeIdentification

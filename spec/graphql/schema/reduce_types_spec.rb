@@ -96,7 +96,7 @@ describe GraphQL::Schema::ReduceTypes do
   end
 
   describe "when a field is only accessible through an interface" do
-    it "is found through Schema.new(types:)" do
+    it "is found through Schema.define(types:)" do
       assert_equal HoneyType, DummySchema.types["Honey"]
     end
   end
