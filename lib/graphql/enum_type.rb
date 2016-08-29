@@ -56,7 +56,7 @@ module GraphQL
   #   }
   #
   class EnumType < GraphQL::BaseType
-    accepts_definitions value: GraphQL::Define::AssignEnumValue
+    accepts_definitions :values, value: GraphQL::Define::AssignEnumValue
 
     def initialize
       @values_by_name = {}
@@ -124,6 +124,10 @@ module GraphQL
     #
     # Created with the `value` helper
     class EnumValue
+      def self.define(name:, description: nil, deprecation_reason: nil, value: nil)
+        new(name: name, description: description, deprecation_reason: deprecation_reason, value: value)
+      end
+
       attr_accessor :name, :description, :deprecation_reason, :value
       def initialize(name:, description:, deprecation_reason:, value:)
         @name = name
