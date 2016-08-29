@@ -17,6 +17,12 @@ describe GraphQL::Field do
     assert_equal(DairyProductUnion, field.type)
   end
 
+  it "accepts arguments definition" do
+    number = GraphQL::Argument.define(name: :number, type: -> { GraphQL::INT_TYPE })
+    field = GraphQL::Field.define(type: DairyProductUnion, arguments: [number])
+    assert_equal([number], field.arguments)
+  end
+
   describe ".property " do
     let(:field) do
       GraphQL::Field.define do
