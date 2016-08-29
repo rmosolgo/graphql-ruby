@@ -28,4 +28,11 @@ describe GraphQL::EnumType do
       assert(!result.valid?)
     end
   end
+
+  it "accepts values array" do
+    cow = GraphQL::EnumType::EnumValue.define(name: "COW")
+    goat = GraphQL::EnumType::EnumValue.define(name: "GOAT")
+    enum = GraphQL::EnumType.define(name: "DairyAnimal", values: [cow, goat])
+    assert_equal({ "COW" => cow, "GOAT" => goat }, enum.values)
+  end
 end

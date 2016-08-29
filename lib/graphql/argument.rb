@@ -26,5 +26,19 @@ module GraphQL
     end
 
     attr_writer :name
+
+    def type=(new_return_type)
+      ensure_defined
+      @clean_type = nil
+      @dirty_type = new_return_type
+    end
+
+    # Get the return type for this field.
+    def type
+      @clean_type ||= begin
+        ensure_defined
+        GraphQL::BaseType.resolve_related_type(@dirty_type)
+      end
+    end
   end
 end

@@ -120,7 +120,7 @@ module GraphQL
   #
   class Field
     include GraphQL::Define::InstanceDefinable
-    accepts_definitions :name, :description, :resolve, :type, :property, :deprecation_reason, :complexity, :hash_key, argument: GraphQL::Define::AssignArgument
+    accepts_definitions :name, :description, :resolve, :type, :property, :deprecation_reason, :complexity, :hash_key, :arguments, argument: GraphQL::Define::AssignArgument
 
     lazy_defined_attr_accessor :deprecation_reason, :description, :property, :hash_key
 

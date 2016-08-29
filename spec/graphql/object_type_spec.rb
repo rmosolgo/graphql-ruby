@@ -18,6 +18,12 @@ describe GraphQL::ObjectType do
     assert_equal([EdibleInterface, AnimalProductInterface, LocalProductInterface], type.interfaces)
   end
 
+  it "accepts fields definition" do
+    last_produced_dairy = GraphQL::Field.define(name: :last_produced_dairy, type: DairyProductUnion)
+    cow_type = GraphQL::ObjectType.define(name: "Cow", fields: [last_produced_dairy])
+    assert_equal([last_produced_dairy], cow_type.fields)
+  end
+
   describe '#get_field ' do
     it "exposes fields" do
       field = type.get_field("id")

@@ -24,6 +24,7 @@ module GraphQL
   #
   class InputObjectType < GraphQL::BaseType
     accepts_definitions(
+      :arguments,
       input_field: GraphQL::Define::AssignArgument,
       argument: GraphQL::Define::AssignArgument
     )
