@@ -1,15 +1,14 @@
-# If you create your own GraphQL parser,
-# you can verify it using these tests.
-#
-# require 'graphql/language/parser_tests'
-#
-# describe MyParser do
-#   include GraphQL::Language::ParserTests
-#   subject { MyParser }
-# end
-
 module GraphQL
   module Language
+    # If you create your own GraphQL parser, can verify it using these tests.
+    #
+    # @example Include these tests in a Minitest suite
+    #   require 'graphql/language/parser_tests'
+    #
+    #   describe MyParser do
+    #     include GraphQL::Language::ParserTests
+    #     subject { MyParser }
+    #   end
     module ParserTests
       def self.included(test)
         test.send(:describe, "Parser Tests") do
