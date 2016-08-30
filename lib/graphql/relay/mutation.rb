@@ -80,7 +80,7 @@ module GraphQL
             results_hash = @resolve_proc.call(args[:input], ctx)
             Result.new(arguments: args, result: results_hash)
           }
-          GraphQL::Field.define do
+          GraphQL::Field.define(description: self.description) do
             type(field_return_type)
             argument :input, !field_input_type
             resolve(field_resolve_proc)
