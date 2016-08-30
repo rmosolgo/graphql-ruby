@@ -17,8 +17,13 @@
   Before:
 
   ```ruby
-  schema = GraphQL::Schema.new(query: QueryType, mutation: MutationType, max_complexity: 100)
-  schema.global_node_identification = MyGlobalID
+  schema = GraphQL::Schema.new(
+    query: QueryType,
+    mutation: MutationType,
+    max_complexity: 100,
+    types: [ExtraType, OtherType]
+  )
+  schema.node_identification = MyGlobalID
   schema.rescue_from(ActiveRecord::RecordNotFound) { |err| "..." }
   ```
 
@@ -29,8 +34,10 @@
     query QueryType
     mutation MutationType
     max_complexity 100
-    global_node_identification MyGlobalID
+    node_identification MyGlobalID
     rescue_from(ActiveRecord::RecordNotFound) { |err| "..." }
+    # Types was renamed to `orphan_types` to avoid conflict with the `types` helper
+    orphan_types [ExtraType, OtherType]
   end
   ```
 
