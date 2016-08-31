@@ -4,7 +4,7 @@ describe GraphQL::Execution::Typecast do
   let(:milk_value) { MILKS[1] }
   let(:cheese_value) { CHEESES[1] }
 
-  let(:schema) { DummySchema }
+  let(:schema) { DairySchema }
   let(:context) { GraphQL::Query::Context.new(query: OpenStruct.new(schema: schema), values: nil) }
 
   def compatible?(*args)

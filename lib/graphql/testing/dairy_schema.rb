@@ -333,7 +333,7 @@ SubscriptionType = GraphQL::ObjectType.define do
   end
 end
 
-DummySchema = GraphQL::Schema.define do
+DairySchema = GraphQL::Schema.define do
   query DairyAppQueryType
   mutation DairyAppMutationType
   subscription SubscriptionType
@@ -343,6 +343,6 @@ DummySchema = GraphQL::Schema.define do
   rescue_from(NoSuchDairyError) { |err| err.message  }
 
   resolve_type -> (obj, ctx) {
-    DummySchema.types[obj.class.name]
+    DairySchema.types[obj.class.name]
   }
 end

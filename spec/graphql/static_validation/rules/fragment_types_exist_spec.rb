@@ -19,8 +19,8 @@ describe GraphQL::StaticValidation::FragmentTypesExist do
     }
   "}
 
-  let(:validator) { GraphQL::StaticValidation::Validator.new(schema: DummySchema, rules: [GraphQL::StaticValidation::FragmentTypesExist]) }
-  let(:query) { GraphQL::Query.new(DummySchema, query_string) }
+  let(:validator) { GraphQL::StaticValidation::Validator.new(schema: DairySchema, rules: [GraphQL::StaticValidation::FragmentTypesExist]) }
+  let(:query) { GraphQL::Query.new(DairySchema, query_string) }
   let(:errors) { validator.validate(query)[:errors] }
 
   it "finds non-existent types on fragments" do

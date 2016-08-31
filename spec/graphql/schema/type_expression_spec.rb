@@ -1,7 +1,7 @@
 require "spec_helper"
 
 describe GraphQL::Schema::TypeExpression do
-  let(:schema) { DummySchema }
+  let(:schema) { DairySchema }
   let(:ast_node) {
     document = GraphQL.parse("query dostuff($var: #{type_name}) { id } ")
     document.definitions.first.variables.first.type

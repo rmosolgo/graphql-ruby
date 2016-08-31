@@ -1,7 +1,7 @@
 require "spec_helper"
 
 describe GraphQL::Schema do
-  let(:schema) { DummySchema }
+  let(:schema) { DairySchema }
 
   describe "#rescue_from" do
     let(:rescue_middleware) { schema.middleware.first }

@@ -17,6 +17,7 @@ Minitest::Spec.make_my_diffs_pretty!
 # to be shown.
 Minitest.backtrace_filter = Minitest::BacktraceFilter.new
 
+require 'graphql/testing/dairy_schema'
 # # Load support files
 Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each { |f| require f }
 

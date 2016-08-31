@@ -1,12 +1,14 @@
+require_relative './dairy_schema'
+
 module GraphQL
-  module Language
+  module Testing
     # If you create your own GraphQL parser, can verify it using these tests.
     #
     # @example Include these tests in a Minitest suite
-    #   require 'graphql/language/parser_tests'
+    #   require 'graphql/testing/parser_tests'
     #
     #   describe MyParser do
-    #     include GraphQL::Language::ParserTests
+    #     include GraphQL::Testing::ParserTests
     #     subject { MyParser }
     #   end
     module ParserTests
@@ -277,7 +279,7 @@ module GraphQL
 
             describe "schema" do
               it "parses the test schema" do
-                schema = DummySchema
+                schema = DairySchema
                 schema_string = GraphQL::Schema::Printer.print_schema(schema)
                 document = subject.parse(schema_string)
 

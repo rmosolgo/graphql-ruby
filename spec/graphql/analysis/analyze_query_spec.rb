@@ -27,7 +27,7 @@ describe GraphQL::Analysis do
     let(:analyzers) { [type_collector, node_counter] }
     let(:reduce_result) { GraphQL::Analysis.analyze_query(query, analyzers) }
     let(:variables) { {} }
-    let(:query) { GraphQL::Query.new(DummySchema, query_string, variables: variables) }
+    let(:query) { GraphQL::Query.new(DairySchema, query_string, variables: variables) }
     let(:query_string) {%|
       {
         cheese(id: 1) {
@@ -60,14 +60,14 @@ describe GraphQL::Analysis do
       let(:variable_accessor) { -> (memo, visit_type, irep_node) { query.variables["cheeseId"] } }
 
       before do
-        @previous_query_analyzers = DummySchema.query_analyzers.dup
-        DummySchema.query_analyzers.clear
-        DummySchema.query_analyzers << variable_accessor
+        @previous_query_analyzers = DairySchema.query_analyzers.dup
+        DairySchema.query_analyzers.clear
+        DairySchema.query_analyzers << variable_accessor
       end
 
       after do
-        DummySchema.query_analyzers.clear
-        DummySchema.query_analyzers.push(*@previous_query_analyzers)
+        DairySchema.query_analyzers.clear
+        DairySchema.query_analyzers.push(*@previous_query_analyzers)
       end
 
       it "returns an error" do

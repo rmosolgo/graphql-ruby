@@ -10,7 +10,7 @@ describe GraphQL::Query::Variables do
   |}
   let(:ast_variables) { GraphQL.parse(query_string).definitions.first.variables }
   let(:variables) { GraphQL::Query::Variables.new(
-    DummySchema,
+    DairySchema,
     ast_variables,
     provided_variables)
   }
