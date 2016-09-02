@@ -47,4 +47,8 @@ describe GraphQL::Relay::Mutation do
     new_ship_name = result["data"]["introduceShip"]["shipEdge"]["node"]["name"]
     assert_equal("Bagel", new_ship_name)
   end
+
+  it "applies the description to the derived field" do
+    assert_equal "Add a ship to this faction", IntroduceShipMutation.field.description
+  end
 end
