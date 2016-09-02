@@ -135,3 +135,5 @@ If you're building a backend for [Relay](http://facebook.github.io/relay/), you'
   - Reduce duplication in ArrayConnection / RelationConnection
   - Improve API for creating edges (better RANGE_ADD support)
   - If the new edge isn't a member of the connection's objects, raise a nice error
+- Missing Enum value should raise a descriptive error, not "key not found"
+- `args` should whitelist keys -- if you request a key that isn't defined for the field, it should 💥
