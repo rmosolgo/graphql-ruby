@@ -258,6 +258,9 @@ DairyAppQueryType = GraphQL::ObjectType.define do
     resolve -> (obj, args, ctx) { CHEESES.values }
   end
   field :milk, field: FetchField.create(type: MilkType, data: MILKS, id_type: !types.ID)
+  field :milks, types[MilkType] do
+    resolve -> (obj, args, ctx) { MILKS.values }
+  end
   field :dairy, field: SingletonField.create(type: DairyType, data: DAIRY)
   field :fromSource, &SourceFieldDefn
   field :favoriteEdible, FavoriteFieldDefn

@@ -265,6 +265,22 @@ describe GraphQL::Execution::DeferredExecution do
       assert_equal({"id"=>3}, collector.patches[3][:value])
     end
 
+    describe "lists inside @streamed lists" do
+      let(:query_string) {%|
+      {
+        milks @stream {
+          flavors
+        }
+      }
+      |}
+
+      it "streams the outer list but sends the inner list wholesale" do
+        result
+        # One with an empty list, then 2 patches
+        assert_equal(3, collector.patches.length)
+      end
+    end
+
     describe "nested defers" do
       let(:query_string) {%|
       {
