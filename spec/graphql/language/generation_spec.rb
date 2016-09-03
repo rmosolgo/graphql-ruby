@@ -7,7 +7,7 @@ describe GraphQL::Language::Generation do
       myField: someField(someArg: $someVar, ok: 1.4) @skip(if: $anotherVar) @thing(or: "Whatever")
       anotherField(someArg: [1, 2, 3]) {
         nestedField
-        ... moreNestedFields @skip(if: $skipNested)
+        ...moreNestedFields @skip(if: $skipNested)
       }
       ... on OtherType @include(unless: false) {
         field(arg: [{ key: "value", anotherKey: 0.9, anotherAnotherKey: WHATEVER }])

@@ -29,7 +29,7 @@ module GraphQL
           out
 
         when Nodes::FragmentSpread
-          out = "#{indent}... #{node.name}"
+          out = "#{indent}...#{node.name}"
           out << generate_directives(node.directives)
           out
         when Nodes::InlineFragment
