@@ -65,7 +65,7 @@ module GraphQL
             InterfaceType.define(
               name: type["name"],
               description: type["description"],
-              fields: Hash[type["fields"].map { |field|
+              fields: Hash[(type["fields"] || []).map { |field|
                 [field["name"], define_type(field.merge("kind" => "FIELD"), type_resolver)]
               }]
             )
@@ -81,6 +81,9 @@ module GraphQL
             ObjectType.define(
               name: type["name"],
               description: type["description"],
+              interfaces: (type["interfaces"] || []).map { |interface|
+                define_type(interface.merge("kind" => "INTERFACE"), type_resolver)
+              },
               fields: Hash[type["fields"].map { |field|
                 [field["name"], define_type(field.merge("kind" => "FIELD"), type_resolver)]
               }]
