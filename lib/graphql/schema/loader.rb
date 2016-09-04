@@ -22,9 +22,13 @@ module GraphQL
           types[type_object.name] = type_object
         end
 
-        query = types.fetch(schema.fetch("queryType").fetch("name"))
+        kargs = {}
+        [:query, :mutation, :subscription].each do |root|
+          type = schema["#{root}Type"]
+          kargs[root] = types.fetch(type.fetch("name")) if type
+        end
 
-        Schema.new(query: query, types: types.values)
+        Schema.define(**kargs)
       end
 
       class << self

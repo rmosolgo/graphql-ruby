@@ -76,7 +76,17 @@ describe GraphQL::Schema::Loader do
       end
     end
 
-    GraphQL::Schema.define(query: query_root)
+    PingMutation = GraphQL::Relay::Mutation.define do
+      name "Ping"
+    end
+
+    mutation_root = GraphQL::ObjectType.define do
+      name "Mutation"
+      # The mutation object exposes a field:
+      field :ping, field: PingMutation.field
+    end
+
+    GraphQL::Schema.define(query: query_root, mutation: mutation_root)
   }
 
   let(:schema_json) {
