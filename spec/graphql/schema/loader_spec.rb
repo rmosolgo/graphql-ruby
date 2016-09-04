@@ -76,7 +76,7 @@ describe GraphQL::Schema::Loader do
       end
     end
 
-    GraphQL::Schema.new(query: query_root)
+    GraphQL::Schema.define(query: query_root)
   }
 
   let(:schema_json) {
