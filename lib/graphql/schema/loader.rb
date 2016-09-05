@@ -22,7 +22,7 @@ module GraphQL
           types[type_object.name] = type_object
         end
 
-        kargs = {}
+        kargs = { :orphan_types => types.values }
         [:query, :mutation, :subscription].each do |root|
           type = schema["#{root}Type"]
           kargs[root] = types.fetch(type.fetch("name")) if type
@@ -82,7 +82,7 @@ module GraphQL
               name: type["name"],
               description: type["description"],
               interfaces: (type["interfaces"] || []).map { |interface|
-                define_type(interface.merge("kind" => "INTERFACE"), type_resolver)
+                type_resolver.call(interface)
               },
               fields: Hash[type["fields"].map { |field|
                 [field["name"], define_type(field.merge("kind" => "FIELD"), type_resolver)]
