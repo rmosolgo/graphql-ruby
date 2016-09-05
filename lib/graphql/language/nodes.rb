@@ -32,7 +32,17 @@ module GraphQL
             .flatten
         end
 
+        def scalars
+          self.class.scalar_attributes
+            .map { |attr_name| public_send(attr_name) }
+        end
+
         class << self
+          def scalar_attributes(*attr_names)
+            @scalar_attributes ||= []
+            @scalar_attributes += attr_names
+          end
+
           def child_attributes(*attr_names)
             @child_attributes ||= []
             @child_attributes += attr_names
@@ -50,6 +60,8 @@ module GraphQL
 
       class WrapperType < AbstractNode
         attr_accessor :of_type
+        scalar_attributes :of_type
+
         def initialize_node(of_type: nil)
           @of_type = of_type
         end
@@ -61,6 +73,8 @@ module GraphQL
 
       class NameOnlyNode < AbstractNode
         attr_accessor :name
+        scalar_attributes :name
+
         def initialize_node(name: nil)
           @name = name
         end
@@ -73,6 +87,7 @@ module GraphQL
 
       class Argument < AbstractNode
         attr_accessor :name, :value
+        scalar_attributes :name, :value
 
         def initialize_node(name: nil, value: nil)
           @name = name
@@ -86,6 +101,7 @@ module GraphQL
 
       class Directive < AbstractNode
         attr_accessor :name, :arguments
+        scalar_attributes :name
         child_attributes :arguments
 
         def initialize_node(name: nil, arguments: [])
@@ -107,6 +123,7 @@ module GraphQL
 
       class Field < AbstractNode
         attr_accessor :name, :alias, :arguments, :directives, :selections
+        scalar_attributes :name, :alias
         child_attributes :arguments, :directives, :selections
 
         def initialize_node(name: nil, arguments: [], directives: [], selections: [], **kwargs)
@@ -121,6 +138,7 @@ module GraphQL
 
       class FragmentDefinition < AbstractNode
         attr_accessor :name, :type, :directives, :selections
+        scalar_attributes :name, :type
         child_attributes :directives, :selections
 
         def initialize_node(name: nil, type: nil, directives: [], selections: [])
@@ -133,6 +151,7 @@ module GraphQL
 
       class FragmentSpread < AbstractNode
         attr_accessor :name, :directives
+        scalar_attributes :name
         child_attributes :directives
 
         def initialize_node(name: nil, directives: [])
@@ -143,6 +162,7 @@ module GraphQL
 
       class InlineFragment < AbstractNode
         attr_accessor :type, :directives, :selections
+        scalar_attributes :type
         child_attributes :directives, :selections
 
         def initialize_node(type: nil, directives: [], selections: [])
@@ -176,6 +196,7 @@ module GraphQL
 
       class OperationDefinition < AbstractNode
         attr_accessor :operation_type, :name, :variables, :directives, :selections
+        scalar_attributes :operation_type, :name
         child_attributes :variables, :directives, :selections
 
         def initialize_node(operation_type: nil, name: nil, variables: [], directives: [], selections: [])
@@ -191,6 +212,8 @@ module GraphQL
 
       class VariableDefinition < AbstractNode
         attr_accessor :name, :type, :default_value
+        scalar_attributes :name, :type, :default_value
+
         def initialize_node(name: nil, type: nil, default_value: nil)
           @name = name
           @type = type
@@ -203,6 +226,8 @@ module GraphQL
 
       class SchemaDefinition < AbstractNode
         attr_accessor :query, :mutation, :subscription
+        scalar_attributes :query, :mutation, :subscription
+
         def initialize_node(query: nil, mutation: nil, subscription: nil)
           @query = query
           @mutation = mutation
@@ -214,7 +239,9 @@ module GraphQL
 
       class ObjectTypeDefinition < AbstractNode
         attr_accessor :name, :interfaces, :fields
-        child_attributes :fields
+        scalar_attributes :name
+        child_attributes :interfaces, :fields
+
         def initialize_node(name:, interfaces:, fields:)
           @name = name
           @interfaces = interfaces || []
@@ -224,6 +251,8 @@ module GraphQL
 
       class InputValueDefinition < AbstractNode
         attr_accessor :name, :type, :default_value
+        scalar_attributes :name, :type, :default_value
+
         def initialize_node(name:, type:, default_value: nil)
           @name = name
           @type = type
@@ -233,7 +262,9 @@ module GraphQL
 
       class FieldDefinition < AbstractNode
         attr_accessor :name, :arguments, :type
+        scalar_attributes :name, :type
         child_attributes :arguments
+
         def initialize_node(name:, arguments:, type:)
           @name = name
           @arguments = arguments
@@ -243,7 +274,9 @@ module GraphQL
 
       class InterfaceTypeDefinition < AbstractNode
         attr_accessor :name, :fields
+        scalar_attributes :name
         child_attributes :fields
+
         def initialize_node(name:, fields:)
           @name = name
           @fields = fields
@@ -252,6 +285,9 @@ module GraphQL
 
       class UnionTypeDefinition < AbstractNode
         attr_accessor :name, :types
+        scalar_attributes :name
+        child_attributes :types
+
         def initialize_node(name:, types:)
           @name = name
           @types = types
@@ -260,6 +296,9 @@ module GraphQL
 
       class EnumTypeDefinition < AbstractNode
         attr_accessor :name, :values
+        scalar_attributes :name
+        child_attributes :values
+
         def initialize_node(name:, values:)
           @name = name
           @values = values
@@ -268,7 +307,9 @@ module GraphQL
 
       class InputObjectTypeDefinition < AbstractNode
         attr_accessor :name, :fields
+        scalar_attributes :name
         child_attributes :fields
+
         def initialize_node(name:, fields:)
           @name = name
           @fields = fields
