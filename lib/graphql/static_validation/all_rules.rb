@@ -9,6 +9,7 @@ module GraphQL
       GraphQL::StaticValidation::DirectivesAreDefined,
       GraphQL::StaticValidation::DirectivesAreInValidLocations,
       GraphQL::StaticValidation::FragmentsAreFinite,
+      GraphQL::StaticValidation::FragmentsAreNamed,
       GraphQL::StaticValidation::FragmentsAreUsed,
       GraphQL::StaticValidation::FragmentTypesExist,
       GraphQL::StaticValidation::FragmentsAreOnCompositeTypes,
