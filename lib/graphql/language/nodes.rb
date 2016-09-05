@@ -25,6 +25,12 @@ module GraphQL
           raise NotImplementedError
         end
 
+        def eql?(other)
+          other.is_a?(self.class) &&
+            other.scalars.eql?(self.scalars) &&
+            other.children.eql?(self.children)
+        end
+
         # @return [GraphQL::Language::Nodes::AbstractNode] all nodes in the tree below this one
         def children
           self.class.child_attributes
