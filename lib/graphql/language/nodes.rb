@@ -38,6 +38,11 @@ module GraphQL
         end
 
         class << self
+          def inherited(subclass)
+            subclass.scalar_attributes(*@scalar_attributes)
+            subclass.child_attributes(*@child_attributes)
+          end
+
           def scalar_attributes(*attr_names)
             @scalar_attributes ||= []
             @scalar_attributes += attr_names
