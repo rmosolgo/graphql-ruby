@@ -241,7 +241,7 @@ rule
 
   fragment_name_opt:
       /* none */ { return nil }
-    | name
+    | name_without_on
 
   type_system_definition:
      schema_definition
