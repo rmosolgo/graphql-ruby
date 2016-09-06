@@ -8,6 +8,24 @@
 
 ### Bug fixes
 
+## 0.18.7 (6 Sep 2016)
+
+### New features
+
+- Support parsing nameless fragments (but not executing them) #232
+
+### Bug fixes
+
+- Allow `__type(name: "Whatever")` to return null, as per the spec #233
+- Include a Relay mutation's description with a mutation field #225
+
+## 0.18.6 (29 Aug 2016)
+
+### New features
+
+- ` GraphQL::Schema::Loader.load(schema_json)` turns an introspection result into a `GraphQL::Schema` #207
+- `.define` accepts plural definitions for: object fields, interface fields field arguments, enum values #222
+
 ## 0.18.5 (27 Aug 2016)
 
 ### Deprecations
