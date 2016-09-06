@@ -45,6 +45,22 @@ describe GraphQL::Schema::Loader do
       field :body, !types.String
     end
 
+    media_type = GraphQL::InterfaceType.define do
+      name "Media"
+      description "!!!"
+      field :type, !types.String
+    end
+
+    video_type = GraphQL::ObjectType.define do
+      name "Video"
+      interfaces [media_type]
+    end
+
+    audio_type = GraphQL::ObjectType.define do
+      name "Audio"
+      interfaces [media_type]
+    end
+
     post_type = GraphQL::ObjectType.define do
       name "Post"
       description "A blog post"
@@ -53,6 +69,7 @@ describe GraphQL::Schema::Loader do
       field :title, !types.String
       field :body, !types.String
       field :comments, types[!comment_type]
+      field :attachment, media_type
     end
 
     content_type = GraphQL::UnionType.define do
@@ -76,7 +93,16 @@ describe GraphQL::Schema::Loader do
       end
     end
 
-    GraphQL::Schema.new(query: query_root)
+    ping_mutation = GraphQL::Relay::Mutation.define do
+      name "Ping"
+    end
+
+    mutation_root = GraphQL::ObjectType.define do
+      name "Mutation"
+      field :ping, field: ping_mutation.field
+    end
+
+    GraphQL::Schema.define(query: query_root, mutation: mutation_root, orphan_types: [audio_type, video_type])
   }
 
   let(:schema_json) {

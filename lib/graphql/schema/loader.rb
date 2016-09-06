@@ -22,9 +22,13 @@ module GraphQL
           types[type_object.name] = type_object
         end
 
-        query = types.fetch(schema.fetch("queryType").fetch("name"))
+        kargs = { :orphan_types => types.values }
+        [:query, :mutation, :subscription].each do |root|
+          type = schema["#{root}Type"]
+          kargs[root] = types.fetch(type.fetch("name")) if type
+        end
 
-        Schema.new(query: query, types: types.values)
+        Schema.define(**kargs)
       end
 
       class << self
@@ -61,7 +65,7 @@ module GraphQL
             InterfaceType.define(
               name: type["name"],
               description: type["description"],
-              fields: Hash[type["fields"].map { |field|
+              fields: Hash[(type["fields"] || []).map { |field|
                 [field["name"], define_type(field.merge("kind" => "FIELD"), type_resolver)]
               }]
             )
@@ -77,6 +81,9 @@ module GraphQL
             ObjectType.define(
               name: type["name"],
               description: type["description"],
+              interfaces: (type["interfaces"] || []).map { |interface|
+                type_resolver.call(interface)
+              },
               fields: Hash[type["fields"].map { |field|
                 [field["name"], define_type(field.merge("kind" => "FIELD"), type_resolver)]
               }]
