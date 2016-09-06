@@ -6,9 +6,9 @@ module GraphQL
         GraphQL::Field.define do
           name("__type")
           description("A type in the GraphQL system")
-          type(!GraphQL::Introspection::TypeType)
+          type(GraphQL::Introspection::TypeType)
           argument :name, !types.String
-          resolve -> (o, args, c) { type_hash[args["name"]] }
+          resolve -> (o, args, c) { type_hash.fetch(args["name"], nil) }
         end
       end
     end

@@ -8,6 +8,7 @@ describe GraphQL::Introspection::TypeType do
        dairyAnimal:   __type(name: "DairyAnimal") { name, kind, enumValues(includeDeprecated: false) { name, isDeprecated } }
        dairyProduct:  __type(name: "DairyProduct") { name, kind, possibleTypes { name } }
        animalProduct: __type(name: "AnimalProduct") { name, kind, possibleTypes { name }, fields { name } }
+       missingType:   __type(name: "NotAType") { name }
      }
   |}
   let(:result) { DummySchema.execute(query_string, context: {}, variables: {"cheeseId" => 2}) }
@@ -64,7 +65,8 @@ describe GraphQL::Introspection::TypeType do
         "fields"=>[
           {"name"=>"source"},
         ]
-      }
+      },
+      "missingType" => nil,
     }}
     assert_equal(expected, result)
   end
