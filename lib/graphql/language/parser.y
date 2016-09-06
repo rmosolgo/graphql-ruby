@@ -228,7 +228,7 @@ rule
       }
 
   fragment_definition:
-    FRAGMENT name ON name_without_on directives_list_opt selection_set {
+    FRAGMENT fragment_name_opt ON name_without_on directives_list_opt selection_set {
       return make_node(:FragmentDefinition, {
           name:       val[1],
           type:       val[3],
@@ -239,6 +239,9 @@ rule
       )
     }
 
+  fragment_name_opt:
+      /* none */ { return nil }
+    | name_without_on
 
   type_system_definition:
      schema_definition

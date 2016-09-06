@@ -65,5 +65,17 @@ describe GraphQL::StaticValidation::Validator do
         assert_equal(1, errors.length)
       end
     end
+
+    describe "fragments with no names" do
+      let(:query_string) {%|
+        fragment on Cheese {
+          id
+          flavor
+        }
+      |}
+      it "marks an error" do
+        assert_equal(1, errors.length)
+      end
+    end
   end
 end

@@ -38,7 +38,7 @@ module GraphQL
       end
 
       def find_difference(fragments, allowed_fragment_names)
-        fragments.select {|f| !allowed_fragment_names.include?(f.name) }
+        fragments.select {|f| f.name && !allowed_fragment_names.include?(f.name) }
       end
 
       class FragmentInstance
