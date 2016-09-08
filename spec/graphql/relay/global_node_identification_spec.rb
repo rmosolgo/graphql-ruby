@@ -52,6 +52,28 @@ describe GraphQL::Relay::GlobalNodeIdentification do
     end
   end
 
+  describe "type_from_object" do
+    it "works even though it's deprecated" do
+      thing_type = GraphQL::ObjectType.define do
+        name "Thing"
+        global_id_field :id
+        field :object_id, types.Int
+      end
+
+      node_ident = GraphQL::Relay::GlobalNodeIdentification.define do
+        type_from_object -> (obj) { thing_type }
+      end
+
+      schema = GraphQL::Schema.define do
+        node_identification(node_ident)
+      end
+
+      schema.send(:ensure_defined)
+      assert_equal thing_type, node_ident.type_from_object(nil)
+      assert_equal thing_type, schema.resolve_type(nil, nil)
+    end
+  end
+
   describe 'to_global_id / from_global_id ' do
     it 'Converts typename and ID to and from ID' do
       global_id = node_identification.to_global_id("SomeType", 123)

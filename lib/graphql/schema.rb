@@ -63,7 +63,7 @@ module GraphQL
 
     DIRECTIVES = [GraphQL::Directive::SkipDirective, GraphQL::Directive::IncludeDirective]
     DYNAMIC_FIELDS = ["__type", "__typename", "__schema"]
-    RESOLVE_TYPE_PROC_REQUIRED = -> (obj) { raise("Schema.resolve_type is undefined, can't resolve type for #{obj}") }
+    RESOLVE_TYPE_PROC_REQUIRED = -> (obj, ctx) { raise("Schema.resolve_type is undefined, can't resolve type for #{obj.inspect}") }
 
     attr_reader :directives, :static_validator
 
