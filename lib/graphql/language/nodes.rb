@@ -26,6 +26,7 @@ module GraphQL
         end
 
         def eql?(other)
+          return true if equal?(other)
           other.is_a?(self.class) &&
             other.scalars.eql?(self.scalars) &&
             other.children.eql?(self.children)
