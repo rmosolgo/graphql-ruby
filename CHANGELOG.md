@@ -8,6 +8,16 @@
 
 ### Bug fixes
 
+## 0.18.8 (6 Sep 2016)
+
+### New features
+
+- AST nodes now respond to `#eql?(other)` to test value equality #231
+
+### Bug fixes
+
+- The `connection` helper no longer adds a duplicate field #235
+
 ## 0.18.7 (6 Sep 2016)
 
 ### New features
