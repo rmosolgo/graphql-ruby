@@ -8,6 +8,12 @@
 
 ### Bug fixes
 
+## 0.18.9 (6 Sep 2016)
+
+### Bug fixes
+
+- fix backward compatibility for `type_from_object` #238
+
 ## 0.18.8 (6 Sep 2016)
 
 ### New features
