@@ -108,11 +108,12 @@ module GraphQL
         warn("type_from_object(object) is deprecated; use Schema.resolve_type(object) instead")
 
         if @type_from_object_proc
-          schema.resolve_type = @type_from_object_proc
+          type_from_obj = @type_from_object_proc
+          schema.resolve_type = -> (obj, ctx) { type_from_obj.call(obj) }
           @type_from_object_proc = nil
         end
 
-        schema.resolve_type(object)
+        schema.resolve_type(object, nil)
       end
 
       def type_from_object=(new_type_from_object_proc)
