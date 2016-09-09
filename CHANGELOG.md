@@ -8,6 +8,12 @@
 
 ### Bug fixes
 
+## 0.18.10 (9 Sep 2016)
+
+### New features
+
+- Assign `#mutation` on objects which are derived from a `Relay::Mutation` #239
+
 ## 0.18.9 (6 Sep 2016)
 
 ### Bug fixes
