@@ -21,10 +21,16 @@ module GraphQL
   #   end
   #
   class ObjectType < GraphQL::BaseType
-    accepts_definitions :interfaces, :fields, field: GraphQL::Define::AssignObjectField
+    accepts_definitions :interfaces, :fields, :mutation, field: GraphQL::Define::AssignObjectField
 
-    # @return [Hash<String => GraphQL::Field>] Map String fieldnames to their {GraphQL::Field} implementations
-    lazy_defined_attr_accessor :fields
+    lazy_defined_attr_accessor :fields, :mutation
+
+    # @!attribute fields
+    #   @return [Hash<String => GraphQL::Field>] Map String fieldnames to their {GraphQL::Field} implementations
+
+    # @!attribute mutation
+    #   @return [GraphQL::Relay::Mutation, nil] The mutation this field was derived from, if it was derived from a mutation
+
 
     def initialize
       @fields = {}

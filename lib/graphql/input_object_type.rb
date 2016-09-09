@@ -24,10 +24,15 @@ module GraphQL
   #
   class InputObjectType < GraphQL::BaseType
     accepts_definitions(
-      :arguments,
+      :arguments, :mutation,
       input_field: GraphQL::Define::AssignArgument,
       argument: GraphQL::Define::AssignArgument
     )
+
+    lazy_defined_attr_accessor :mutation
+
+    # @!attribute mutation
+    #   @return [GraphQL::Relay::Mutation, nil] The mutation this field was derived from, if it was derived from a mutation
 
     # @return [Hash<String => GraphQL::Argument>] Map String argument names to their {GraphQL::Argument} implementations
     def arguments

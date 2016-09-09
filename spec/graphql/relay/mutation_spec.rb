@@ -51,4 +51,10 @@ describe GraphQL::Relay::Mutation do
   it "applies the description to the derived field" do
     assert_equal "Add a ship to this faction", IntroduceShipMutation.field.description
   end
+
+  it "inserts itself into the derived objects' metadata" do
+    assert_equal IntroduceShipMutation, IntroduceShipMutation.field.mutation
+    assert_equal IntroduceShipMutation, IntroduceShipMutation.return_type.mutation
+    assert_equal IntroduceShipMutation, IntroduceShipMutation.input_type.mutation
+  end
 end

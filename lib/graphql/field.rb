@@ -120,9 +120,13 @@ module GraphQL
   #
   class Field
     include GraphQL::Define::InstanceDefinable
-    accepts_definitions :name, :description, :resolve, :type, :property, :deprecation_reason, :complexity, :hash_key, :arguments, argument: GraphQL::Define::AssignArgument
+    accepts_definitions :name, :description, :deprecation_reason,
+      :resolve, :type, :arguments,
+      :property, :hash_key, :complexity, :mutation,
+      argument: GraphQL::Define::AssignArgument
 
-    lazy_defined_attr_accessor :deprecation_reason, :description, :property, :hash_key
+
+    lazy_defined_attr_accessor :deprecation_reason, :description, :property, :hash_key, :mutation
 
     # @return [<#call(obj, args,ctx)>] A proc-like object which can be called to return the field's value
     attr_reader :resolve_proc
@@ -142,6 +146,9 @@ module GraphQL
     end
 
     attr_writer :arguments
+
+    # @!attribute mutation
+    #   @return [GraphQL::Relay::Mutation, nil] The mutation this field was derived from, if it was derived from a mutation
 
     # @return [Numeric, Proc] The complexity for this field (default: 1), as a constant or a proc like `-> (query_ctx, args, child_complexity) { } # Numeric`
     def complexity
