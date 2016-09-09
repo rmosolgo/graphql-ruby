@@ -277,8 +277,7 @@ Then, hook it up with custom edge type and custom connection type:
 MembershipSinceEdgeType = BaseType.define_edge do
   name "MembershipSinceEdge"
   field :memberSince, types.Int, "The date that this person joined this team", property: :member_since
-  field :isPrimary, types.Boolean, "Is this person the team leader?". property: :primary?
-  end
+  field :isPrimary, types.Boolean, "Is this person the team leader?", property: :primary?
 end
 
 TeamMembershipsConnectionType = TeamType.define_connection(
@@ -303,10 +302,10 @@ connection_class.new(items, args)
 
 `.connection_for_nodes` will return RelationConnection or ArrayConnection depending on `items`, then you can make a new connection
 
-**For relation connection [ActiveRecord or Sequel]**,
+For specifying a connection based on an `ActiveRecord::Relation` or `Sequel::Dataset`:
 
 ```ruby
-object = {} # your newly created object
+object = {}       # your newly created object
 items = [...]     # your AR or sequel collection objects
 args = {}         # stub out arguments for this connection object
 items_connection = GraphQL::Relay::RelationConnection.new(
