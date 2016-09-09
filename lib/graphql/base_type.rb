@@ -10,6 +10,12 @@ module GraphQL
 
     lazy_defined_attr_accessor :name, :description
 
+    # @!attribute name
+    #   @return [String] the name of this type, must be unique within a Schema
+
+    # @!attribute description
+    #  @return [String, nil] a description for this type
+
     # @param other [GraphQL::BaseType] compare to this object
     # @return [Boolean] are these types equivalent? (incl. non-null, list)
     def ==(other)

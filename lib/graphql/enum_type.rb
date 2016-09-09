@@ -63,17 +63,20 @@ module GraphQL
       @values_by_value = {}
     end
 
+    # @param new_values [Array<EnumValue>] The set of values contained in this type
     def values=(new_values)
       @values_by_name = {}
       @values_by_value = {}
       new_values.each { |enum_value| add_value(enum_value) }
     end
 
+    # @param enum_value [EnumValue] A value to add to this type's set of values
     def add_value(enum_value)
       @values_by_name[enum_value.name] = enum_value
       @values_by_value[enum_value.value] = enum_value
     end
 
+    # @return [Hash<String => EnumValue>] `{name => value}` pairs contained in this type
     def values
       ensure_defined
       @values_by_name

@@ -126,37 +126,23 @@ module GraphQL
       argument: GraphQL::Define::AssignArgument
 
 
-    lazy_defined_attr_accessor :deprecation_reason, :description, :property, :hash_key, :mutation
+    lazy_defined_attr_accessor :name, :deprecation_reason, :description, :property, :hash_key, :mutation, :arguments, :complexity
 
-    # @return [<#call(obj, args,ctx)>] A proc-like object which can be called to return the field's value
+    # @!attribute [r] resolve_proc
+    #   @return [<#call(obj, args,ctx)>] A proc-like object which can be called to return the field's value
     attr_reader :resolve_proc
 
-    # @return [String] The name of this field on its {GraphQL::ObjectType} (or {GraphQL::InterfaceType})
-    def name
-      ensure_defined
-      @name
-    end
+    # @!attribute name
+    #   @return [String] The name of this field on its {GraphQL::ObjectType} (or {GraphQL::InterfaceType})
 
-    attr_writer :name
-
-    # @return [Hash<String => GraphQL::Argument>] Map String argument names to their {GraphQL::Argument} implementations
-    def arguments
-      ensure_defined
-      @arguments
-    end
-
-    attr_writer :arguments
+    # @!attribute arguments
+    #   @return [Hash<String => GraphQL::Argument>] Map String argument names to their {GraphQL::Argument} implementations
 
     # @!attribute mutation
     #   @return [GraphQL::Relay::Mutation, nil] The mutation this field was derived from, if it was derived from a mutation
 
-    # @return [Numeric, Proc] The complexity for this field (default: 1), as a constant or a proc like `-> (query_ctx, args, child_complexity) { } # Numeric`
-    def complexity
-      ensure_defined
-      @complexity
-    end
-
-    attr_writer :complexity
+    # @!attribute complexity
+    #   @return [Numeric, Proc] The complexity for this field (default: 1), as a constant or a proc like `-> (query_ctx, args, child_complexity) { } # Numeric`
 
     def initialize
       @complexity = 1
@@ -176,9 +162,12 @@ module GraphQL
       resolve_proc.call(object, arguments, context)
     end
 
-    def resolve=(resolve_proc)
+    # Provide a new callable for this field's resolve function. If `nil`,
+    # a new resolve proc will be build based on its {#name}, {#property} or {#hash_key}.
+    # @param new_resolve_proc [<#call(obj, args, ctx)>, nil]
+    def resolve=(new_resolve_proc)
       ensure_defined
-      @resolve_proc = resolve_proc || build_default_resolver
+      @resolve_proc = new_resolve_proc || build_default_resolver
     end
 
     def type=(new_return_type)

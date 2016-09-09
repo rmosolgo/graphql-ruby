@@ -57,7 +57,7 @@ module GraphQL
       :query, :mutation, :subscription,
       :query_execution_strategy, :mutation_execution_strategy, :subscription_execution_strategy,
       :max_depth, :max_complexity,
-      :orphan_types,
+      :orphan_types, :node_identification,
       :query_analyzers, :middleware
 
 
@@ -67,22 +67,16 @@ module GraphQL
 
     attr_reader :directives, :static_validator
 
-    # @return [GraphQL::Relay::GlobalNodeIdentification] the node identification instance for this schema, when using Relay
-    def node_identification
-      ensure_defined
-      @node_identification
-    end
+    # @!attribute node_identification
+    #   @return [GraphQL::Relay::GlobalNodeIdentification] the node identification instance for this schema, when using Relay
 
     def node_identification=(new_node_ident)
       new_node_ident.schema = self
       @node_identification = new_node_ident
     end
 
-    # @return [Array<#call>] Middlewares suitable for MiddlewareChain, applied to fields during execution
-    def middleware
-      ensure_defined
-      @middleware
-    end
+    # @!attribute [r] middleware
+    #   @return [Array<#call>] Middlewares suitable for MiddlewareChain, applied to fields during execution
 
     # @param query [GraphQL::ObjectType]  the query root for the schema
     # @param mutation [GraphQL::ObjectType] the mutation root for the schema
