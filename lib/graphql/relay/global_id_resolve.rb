@@ -8,7 +8,7 @@ module GraphQL
 
       def call(obj, args, ctx)
         id_value = obj.public_send(@property)
-        ctx.query.schema.node_identification.to_global_id(@type_name, id_value)
+        ctx.query.schema.to_global_id(@type_name, id_value)
       end
     end
   end

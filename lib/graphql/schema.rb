@@ -49,6 +49,7 @@ module GraphQL
       :max_depth, :max_complexity,
       :node_identification,
       :orphan_types, :resolve_type,
+      :object_from_id, :to_global_id, :from_global_id,
       query_analyzer: -> (schema, analyzer) { schema.query_analyzers << analyzer },
       middleware: -> (schema, middleware) { schema.middleware << middleware },
       rescue_from: -> (schema, err_class, &block) { schema.rescue_from(err_class, &block)}
@@ -65,7 +66,12 @@ module GraphQL
     DYNAMIC_FIELDS = ["__type", "__typename", "__schema"]
     RESOLVE_TYPE_PROC_REQUIRED = -> (obj, ctx) { raise("Schema.resolve_type is undefined, can't resolve type for #{obj.inspect}") }
 
-    attr_reader :directives, :static_validator
+    DEFAULT_ID_SEPARATOR = "-"
+
+    # @return [String] Used to join typename & ID by the default global ID generation function
+    attr_accessor :id_separator
+
+    attr_reader :directives, :static_validator, :object_from_id_proc, :to_global_id_proc, :from_global_id_proc
 
     # @!attribute node_identification
     #   @return [GraphQL::Relay::GlobalNodeIdentification] the node identification instance for this schema, when using Relay
@@ -99,6 +105,10 @@ module GraphQL
       @middleware = [@rescue_middleware]
       @query_analyzers = []
       @resolve_type_proc = RESOLVE_TYPE_PROC_REQUIRED
+      @id_separator = DEFAULT_ID_SEPARATOR
+      @to_global_id_proc = ToGlobalId.new(self)
+      @from_global_id_proc = FromGlobalId.new(self)
+      @object_from_id_proc = nil
       # Default to the built-in execution strategy:
       @query_execution_strategy = GraphQL::Query::SerialExecution
       @mutation_execution_strategy = GraphQL::Query::SerialExecution
@@ -209,6 +219,68 @@ module GraphQL
     def resolve_type=(new_resolve_type_proc)
       ensure_defined
       @resolve_type_proc = new_resolve_type_proc
+    end
+
+    # Get type-name & ID from global ID
+    # (This reverts the opaque transform)
+    def from_global_id(global_id)
+      ensure_defined
+      @from_global_id_proc.call(global_id)
+    end
+
+    def from_global_id=(proc)
+      ensure_defined
+      @from_global_id_proc = proc
+    end
+
+    # Use the provided config to
+    # get an object from a UUID
+    def object_from_id(id, ctx)
+      ensure_defined
+      @object_from_id_proc.call(id, ctx)
+    end
+
+    def object_from_id=(proc)
+      ensure_defined
+      @object_from_id_proc = proc
+    end
+
+    # Create a global ID for type-name & ID
+    # (This is an opaque transform)
+    def to_global_id(type_name, id)
+      ensure_defined
+      @to_global_id_proc.call(type_name, id)
+    end
+
+    def to_global_id=(proc)
+      ensure_defined
+      @to_global_id_proc = proc
+    end
+
+    class ToGlobalId
+      def initialize(schema)
+        @schema = schema
+      end
+
+      def call(type_name, id)
+        id_str = id.to_s
+        id_separator = @schema.id_separator
+        if type_name.include?(id_separator) || id_str.include?(id_separator)
+          raise "to_global_id(#{type_name}, #{id}) contains reserved characters `#{id_separator}`"
+        end
+
+        Base64.strict_encode64([type_name, id_str].join(id_separator))
+      end
+    end
+
+    class FromGlobalId
+      def initialize(schema)
+        @schema = schema
+      end
+
+      def call(global_id)
+        Base64.decode64(global_id).split(@schema.id_separator)
+      end
     end
   end
 end
