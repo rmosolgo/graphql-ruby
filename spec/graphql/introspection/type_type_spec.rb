@@ -36,8 +36,8 @@ describe GraphQL::Introspection::TypeType do
       },
       "milkType"=>{
         "interfaces"=>[
-          {"name"=>"Edible"},
           {"name"=>"AnimalProduct"},
+          {"name"=>"Edible"},
           {"name"=>"LocalProduct"},
         ],
         "fields"=>[
@@ -56,7 +56,7 @@ describe GraphQL::Introspection::TypeType do
       "dairyProduct"=>{
         "name"=>"DairyProduct",
         "kind"=>"UNION",
-        "possibleTypes"=>[{"name"=>"Milk"}, {"name"=>"Cheese"}],
+        "possibleTypes"=>[{"name"=>"Cheese"}, {"name"=>"Milk"},],
       },
       "animalProduct" => {
         "name"=>"AnimalProduct",
@@ -111,10 +111,10 @@ describe GraphQL::Introspection::TypeType do
               "description"=>"Properties for finding a dairy product",
               "kind"=>"INPUT_OBJECT",
               "inputFields"=>[
-                {"name"=>"source", "type"=>{ "name" => "Non-Null"}, "defaultValue"=>nil},
-                {"name"=>"originDairy", "type"=>{"name"=>"String"}, "defaultValue"=>"\"Sugar Hollow Dairy\""},
                 {"name"=>"fatContent", "type"=>{ "name" => "Float"}, "defaultValue"=>"0.3"},
                 {"name"=>"organic", "type"=>{ "name" => "Boolean"}, "defaultValue"=>"false"},
+                {"name"=>"originDairy", "type"=>{"name"=>"String"}, "defaultValue"=>"\"Sugar Hollow Dairy\""},
+                {"name"=>"source", "type"=>{ "name" => "Non-Null"}, "defaultValue"=>nil},
               ]
             }
           }}

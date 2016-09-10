@@ -142,8 +142,8 @@ describe GraphQL::Schema::Loader do
       when GraphQL::EnumType
         assert_equal expected_type.name, actual_type.name
         assert_equal expected_type.description, actual_type.description
-        assert_equal expected_type.values.keys, actual_type.values.keys
-        assert_deep_equal expected_type.values.values, actual_type.values.values
+        assert_equal expected_type.values.keys.sort, actual_type.values.keys.sort
+        assert_deep_equal expected_type.values.values.sort_by(&:name), actual_type.values.values.sort_by(&:name)
 
       when GraphQL::EnumType::EnumValue
         assert_equal expected_type.name, actual_type.name
@@ -155,8 +155,8 @@ describe GraphQL::Schema::Loader do
         assert_deep_equal expected_type.type, actual_type.type
 
       when GraphQL::InputObjectType
-        assert_equal expected_type.arguments.keys, actual_type.arguments.keys
-        assert_deep_equal expected_type.arguments.values, actual_type.arguments.values
+        assert_equal expected_type.arguments.keys.sort, actual_type.arguments.keys.sort
+        assert_deep_equal expected_type.arguments.values.sort_by(&:name), actual_type.arguments.values.sort_by(&:name)
 
       when GraphQL::NonNullType, GraphQL::ListType
         assert_deep_equal expected_type.of_type, actual_type.of_type

@@ -13,9 +13,15 @@ describe GraphQL::Introspection::SchemaType do
   let(:result) { DummySchema.execute(query_string) }
 
   it "exposes the schema" do
+    expected_type_names = DummySchema
+      .types
+      .values
+      .sort_by(&:name)
+      .map { |t| t.name.nil? ? (p t; raise("no name for #{t}")) : {"name" => t.name} }
+
     expected = { "data" => {
       "__schema" => {
-        "types" => DummySchema.types.values.map { |t| t.name.nil? ? (p t; raise("no name for #{t}")) : {"name" => t.name} },
+        "types" => expected_type_names,
         "queryType"=>{
           "fields"=>[
             {"name"=>"allDairy"},
