@@ -129,6 +129,10 @@ module GraphQL
         def initialize_node(definitions: [])
           @definitions = definitions
         end
+
+        def slice_definition(name)
+          GraphQL::Language::DefinitionSlice.slice(self, name)
+        end
       end
 
       class Enum < NameOnlyNode; end
