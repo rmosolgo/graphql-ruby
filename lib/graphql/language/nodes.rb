@@ -68,6 +68,20 @@ module GraphQL
         def to_query_string
           Generation.generate(self)
         end
+
+        def freeze
+          self.class.child_attributes.each do |attr_name|
+            public_send(attr_name).freeze.each(&:freeze)
+          end
+
+          self.class.scalar_attributes.each do |attr_name|
+            if object = public_send(attr_name)
+              object.freeze
+            end
+          end
+          
+          super
+        end
       end
 
       class WrapperType < AbstractNode
