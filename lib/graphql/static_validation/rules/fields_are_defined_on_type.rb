@@ -23,7 +23,7 @@ module GraphQL
 
         field =  parent_type.get_field(ast_field.name)
         if field.nil?
-          context.errors << message("Field '#{ast_field.name}' doesn't exist on type '#{parent_type.name}'", parent, context: context)
+          context.errors << message("Field '#{ast_field.name}' doesn't exist on type '#{parent_type.name}'", ast_field, context: context)
           return GraphQL::Language::Visitor::SKIP
         end
       end
