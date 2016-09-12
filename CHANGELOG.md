@@ -8,6 +8,22 @@
 
 ### Bug fixes
 
+## 0.18.11 (11 Sep 2016)
+
+### Breaking changes
+
+### Deprecations
+
+### New features
+
+- `GraphQL::Language::Nodes::Document#slice(operation_name)` finds that operation and its dependencies and puts them in a new `Document` #241
+
+### Bug fixes
+
+- Validation errors for non-existent fields have the location of the field usage, not the parent field #247
+- Properly `require "forwardable"` #242
+- Remove `ALLOWED_CONSTANTS` for boolean input, use a plain comparison #240
+
 ## 0.18.10 (9 Sep 2016)
 
 ### New features
