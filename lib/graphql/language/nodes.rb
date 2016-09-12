@@ -160,6 +160,10 @@ module GraphQL
         def initialize_node(definitions: [])
           @definitions = definitions
         end
+
+        def slice_definition(name)
+          GraphQL::Language::DefinitionSlice.slice(self, name)
+        end
       end
 
       # An enum value. The string is available as {#name}.
