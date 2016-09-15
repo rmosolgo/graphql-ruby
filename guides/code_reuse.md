@@ -6,7 +6,7 @@ Here are a few techniques for code reuse with graphql-ruby:
 
 - [Resolver classes](#resolver-classes)
 - [Dynamically defining types](#dynamically-defining-types)
-- [Functional composition and `resolve`](#functional-composition-and-resolve)
+- [Functional composition and `resolve`](#functional-composition--resolve)
 
 Besides reducing duplicate code, these approaches also allow you to test parts of your schema in isolation.
 

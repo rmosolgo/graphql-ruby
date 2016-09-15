@@ -11,6 +11,8 @@ end
 
 task(default: :test)
 
+task :test => :html_proofer
+
 def load_gem_and_dummy
   $:.push File.expand_path("../lib", __FILE__)
   $:.push File.expand_path("../spec", __FILE__)
@@ -24,6 +26,16 @@ task :console do
   load_gem_and_dummy
   ARGV.clear
   IRB.start
+end
+
+desc "Test the generated HTML files"
+task :html_proofer do
+  require "html-proofer"
+  system "bundle exec jekyll build"
+  config = {
+    :assume_extension => true
+  }
+  HTMLProofer.check_directory("./_site", config).run
 end
 
 task :serve do
