@@ -33,6 +33,7 @@ describe GraphQL::Query::Arguments do
         argument :a, types.Int
         argument :b, types.Int, default_value: 2
         argument :c, types.Int
+        argument :d, types.Int
       end
 
       query = GraphQL::ObjectType.define do
@@ -52,7 +53,7 @@ describe GraphQL::Query::Arguments do
       GraphQL::Schema.define(query: query)
     }
 
-    it "detects missing keys" do
+    it "detects missing keys by string or symbol" do
       assert_equal true, arguments.key?(:a)
       assert_equal true, arguments.key?("a")
       assert_equal false, arguments.key?(:f)
@@ -65,29 +66,25 @@ describe GraphQL::Query::Arguments do
       last_args = arg_values.last
 
       assert_equal true, last_args.key?(:a)
-      assert_equal true, last_args.key?("a")
       # This is present from default value:
       assert_equal true, last_args.key?(:b)
-      assert_equal true, last_args.key?("b")
-
       assert_equal false, last_args.key?(:c)
-      assert_equal false, last_args.key?("c")
     end
 
     it "works from variables" do
-      variables = { "arg" => { "a" => 1 } }
+      variables = { "arg" => { "a" => 1, "d" => nil } }
       schema.execute("query ArgTest($arg: TestInput){ argTest(d: $arg) }", variables: variables)
 
       test_inputs = arg_values.last["d"]
 
       assert_equal true, test_inputs.key?(:a)
-      assert_equal true, test_inputs.key?("a")
       # This is present from default value:
       assert_equal true, test_inputs.key?(:b)
-      assert_equal true, test_inputs.key?("b")
 
       assert_equal false, test_inputs.key?(:c)
-      assert_equal false, test_inputs.key?("c")
+      # This _was_ present in the variables,
+      # but it was nil, which is not allowed in GraphQL
+      assert_equal false, test_inputs.key?(:d)
     end
 
     it "works with variable default values" do
@@ -96,12 +93,11 @@ describe GraphQL::Query::Arguments do
       test_defaults = arg_values.last["d"]
 
       assert_equal true, test_defaults.key?(:a)
-      assert_equal true, test_defaults.key?("a")
-      # This is present from default value:
+      # This is present from default val
       assert_equal true, test_defaults.key?(:b)
-      assert_equal true, test_defaults.key?("b")
+
       assert_equal false, test_defaults.key?(:c)
-      assert_equal false, test_defaults.key?("c")
+      assert_equal false, test_defaults.key?(:d)
     end
   end
 end
