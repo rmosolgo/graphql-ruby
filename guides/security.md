@@ -11,7 +11,7 @@ field :items, types[ItemType] do
   argument :limit, types.Int, default_value: 20
   resolve -> (obj, args, ctx) {
     # Cap the number of items at 30
-    limit = [args[:limit], 30].max
+    limit = [args[:limit], 30].min
     obj.items.limit(limit)
   }
 end
