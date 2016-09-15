@@ -9,3 +9,7 @@ gemfiles/*.lock
 .bundle/
 vendor/
 .idea/
+
+_site
+.sass-cache
+.jekyll-metadata
