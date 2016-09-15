@@ -20,6 +20,12 @@ module GraphQL
         @argument_values[key.to_s]
       end
 
+      # @param key [String, Symbol] name of value to access
+      # @return [Boolean] true if the argument was present in this field
+      def key?(key)
+        @argument_values.key?(key.to_s)
+      end
+
       # Get the original Ruby hash
       # @return [Hash] the original values hash
       def to_h
