@@ -1,4 +1,6 @@
-# Testing a GraphQL Schema
+---
+title: Testing a GraphQL Schema
+---
 
 There are a few ways to test the behavior of your GraphQL schema:
 
@@ -170,7 +172,7 @@ describe MySchema do
 
   describe "a specific query" do
     # provide a query string for `result`
-    let(:query_string) {%|{ viewer { name } }|}
+    let(:query_string) { %|{ viewer { name } }| }
 
     context "when there's no current user" do
       it "is nil" do
@@ -181,9 +183,9 @@ describe MySchema do
 
     context "when there's a current user" do
       # override `context`
-      let(:context) {{
+      let(:context) {
         current_user: User.new(name: "ABC")
-      }}
+      }
 
       it "shows the user's name" do
         user_name = result["data"]["viewer"]["name"]

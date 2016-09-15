@@ -1,4 +1,6 @@
-# GraphQL Security
+---
+title: GraphQL Security
+---
 
 Since a GraphQL endpoint provides arbitrary access to your application, you should employ safeguards to prevent large queries from swamping your system.
 

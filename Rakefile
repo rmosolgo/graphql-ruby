@@ -27,9 +27,7 @@ task :console do
 end
 
 task :serve do
-  Dir.chdir("guides") do
-    system "jekyll serve"
-  end
+  system "jekyll serve --config '_config.yml,guides/_config.dev.yml'"
 end
 
 desc "Use Racc & Ragel to regenerate parser.rb & lexer.rb from configuration files"

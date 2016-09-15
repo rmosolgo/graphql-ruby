@@ -1,4 +1,6 @@
-# GraphQL::Relay
+---
+title: GraphQL::Relay
+---
 
 ## `graphql-relay` gem
 

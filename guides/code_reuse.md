@@ -1,4 +1,6 @@
-# Code Reuse with GraphQL
+---
+title: Code Reuse with GraphQL
+---
 
 Here are a few techniques for code reuse with graphql-ruby:
 
