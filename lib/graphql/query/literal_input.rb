@@ -16,14 +16,25 @@ module GraphQL
         values_hash = {}
         argument_defns.each do |arg_name, arg_defn|
           ast_arg = ast_arguments.find { |ast_arg| ast_arg.name == arg_name }
-          arg_value = nil
-          if ast_arg
-            arg_value = coerce(arg_defn.type, ast_arg.value, variables)
+          arg_default_value = arg_defn.type.coerce_input(arg_defn.default_value)
+          if ast_arg.nil? && arg_default_value.nil?
+            # If it wasn't in the document,
+            # and there's no provided default,
+            # then don't pass it to the resolve function
+            next
+          else
+            arg_value = nil
+
+            if ast_arg
+              arg_value = coerce(arg_defn.type, ast_arg.value, variables)
+            end
+
+            if arg_value.nil?
+              arg_value = arg_default_value
+            end
+
+            values_hash[arg_name] = arg_value
           end
-          if arg_value.nil?
-            arg_value = arg_defn.type.coerce_input(arg_defn.default_value)
-          end
-          values_hash[arg_name] = arg_value
         end
         GraphQL::Query::Arguments.new(values_hash)
       end
