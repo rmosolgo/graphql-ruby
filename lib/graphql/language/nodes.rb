@@ -10,6 +10,11 @@ module GraphQL
       class AbstractNode
         attr_accessor :line, :col
 
+        # This value is not assigned by the parser -- it must be assigned later.
+        # TODO: where's the code for doing this?
+        # @return [Array<String>] selection path to this node
+        attr_accessor :path
+
         # Initialize a node by extracting its position,
         # then calling the class's `initialize_node` method.
         # @param options [Hash] Initial attributes for this node
