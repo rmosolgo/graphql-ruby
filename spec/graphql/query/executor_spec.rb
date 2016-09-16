@@ -2,7 +2,7 @@ require "spec_helper"
 
 describe GraphQL::Query::Executor do
   let(:operation_name) { nil }
-  let(:schema) { DummySchema }
+  let(:schema) { DairySchema }
   let(:variables) { {"cheeseId" => 2} }
   let(:query) { GraphQL::Query.new(
     schema,

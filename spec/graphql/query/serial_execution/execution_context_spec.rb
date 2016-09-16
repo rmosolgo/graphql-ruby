@@ -9,7 +9,7 @@ describe GraphQL::Query::SerialExecution::ExecutionContext do
   |}
   let(:operation_name) { nil }
   let(:query_variables) { {"cheeseId" => 2} }
-  let(:schema) { DummySchema }
+  let(:schema) { DairySchema }
   let(:query) { GraphQL::Query.new(
     schema,
     query_string,

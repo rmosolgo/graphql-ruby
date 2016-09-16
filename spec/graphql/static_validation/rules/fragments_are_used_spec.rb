@@ -11,8 +11,8 @@ describe GraphQL::StaticValidation::FragmentsAreUsed do
     fragment unusedFields on Cheese { is, not, used }
   "}
 
-  let(:validator) { GraphQL::StaticValidation::Validator.new(schema: DummySchema, rules: [GraphQL::StaticValidation::FragmentsAreUsed]) }
-  let(:query) { GraphQL::Query.new(DummySchema, query_string) }
+  let(:validator) { GraphQL::StaticValidation::Validator.new(schema: DairySchema, rules: [GraphQL::StaticValidation::FragmentsAreUsed]) }
+  let(:query) { GraphQL::Query.new(DairySchema, query_string) }
   let(:errors) { validator.validate(query)[:errors] }
 
   it "adds errors for unused fragment definitions" do
@@ -35,7 +35,7 @@ describe GraphQL::StaticValidation::FragmentsAreUsed do
     let(:query_string) {%|
       # I am a comment.
     |}
-    let(:result) { DummySchema.execute(query_string) }
+    let(:result) { DairySchema.execute(query_string) }
     it "handles them gracefully" do
       assert_equal({}, result)
     end

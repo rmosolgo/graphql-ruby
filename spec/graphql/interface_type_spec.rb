@@ -2,14 +2,14 @@ require "spec_helper"
 
 describe GraphQL::InterfaceType do
   let(:interface) { EdibleInterface }
-  let(:dummy_query_context) { OpenStruct.new(schema: DummySchema) }
+  let(:dummy_query_context) { OpenStruct.new(schema: DairySchema) }
 
   it "has possible types" do
-    assert_equal([CheeseType, HoneyType, MilkType], DummySchema.possible_types(interface))
+    assert_equal([CheeseType, HoneyType, MilkType], DairySchema.possible_types(interface))
   end
 
   describe "query evaluation" do
-    let(:result) { DummySchema.execute(query_string, variables: {"cheeseId" => 2})}
+    let(:result) { DairySchema.execute(query_string, variables: {"cheeseId" => 2})}
     let(:query_string) {%|
       query fav {
         favoriteEdible { fatContent }
@@ -22,7 +22,7 @@ describe GraphQL::InterfaceType do
   end
 
   describe "mergable query evaluation" do
-    let(:result) { DummySchema.execute(query_string, variables: {"cheeseId" => 2})}
+    let(:result) { DairySchema.execute(query_string, variables: {"cheeseId" => 2})}
     let(:query_string) {%|
       query fav {
         favoriteEdible { fatContent }
@@ -46,7 +46,7 @@ describe GraphQL::InterfaceType do
       }
     }
     |}
-    let(:result) { DummySchema.execute(query_string) }
+    let(:result) { DairySchema.execute(query_string) }
 
     it "can apply interface fragments to an interface" do
       expected_result = { "data" => {

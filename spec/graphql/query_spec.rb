@@ -31,7 +31,7 @@ describe GraphQL::Query do
   let(:operation_name) { nil }
   let(:max_depth) { nil }
   let(:query_variables) { {"cheeseId" => 2} }
-  let(:schema) { DummySchema }
+  let(:schema) { DairySchema }
   let(:document) { GraphQL.parse(query_string) }
 
   let(:query) { GraphQL::Query.new(

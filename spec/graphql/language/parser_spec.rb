@@ -1,8 +1,8 @@
 require "spec_helper"
-require 'graphql/language/parser_tests'
+require 'graphql/testing/parser_tests'
 
 describe GraphQL::Language::Parser do
-  include GraphQL::Language::ParserTests
+  include GraphQL::Testing::ParserTests
   subject { GraphQL::Language::Parser }
 
   describe "anonymous fragment extension" do

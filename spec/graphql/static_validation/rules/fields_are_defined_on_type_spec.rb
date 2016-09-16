@@ -11,8 +11,8 @@ describe GraphQL::StaticValidation::FieldsAreDefinedOnType do
     fragment cheeseFields on Cheese { fatContent, hogwashField }
   "}
 
-  let(:validator) { GraphQL::StaticValidation::Validator.new(schema: DummySchema, rules: [GraphQL::StaticValidation::FieldsAreDefinedOnType]) }
-  let(:query) { GraphQL::Query.new(DummySchema, query_string) }
+  let(:validator) { GraphQL::StaticValidation::Validator.new(schema: DairySchema, rules: [GraphQL::StaticValidation::FieldsAreDefinedOnType]) }
+  let(:query) { GraphQL::Query.new(DairySchema, query_string) }
   let(:errors) { validator.validate(query)[:errors] }
   let(:error_messages) { errors.map { |e| e["message"] } }
 

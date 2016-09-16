@@ -17,8 +17,8 @@ describe GraphQL::StaticValidation::DirectivesAreInValidLocations do
     }
   "}
 
-  let(:validator) { GraphQL::StaticValidation::Validator.new(schema: DummySchema, rules: [GraphQL::StaticValidation::DirectivesAreInValidLocations]) }
-  let(:query) { GraphQL::Query.new(DummySchema, query_string) }
+  let(:validator) { GraphQL::StaticValidation::Validator.new(schema: DairySchema, rules: [GraphQL::StaticValidation::DirectivesAreInValidLocations]) }
+  let(:query) { GraphQL::Query.new(DairySchema, query_string) }
   let(:errors) { validator.validate(query)[:errors] }
 
   describe "invalid directive locations" do
