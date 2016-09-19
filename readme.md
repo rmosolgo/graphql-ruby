@@ -140,3 +140,13 @@ If you're building a backend for [Relay](http://facebook.github.io/relay/), you'
 - Fix middleware
   - Handle out-of-bounds lookup, eg `graphql-batch`
   - Handle non-serial execution, eg `@defer`
+- Support non-instance-eval `.define`, eg `.define { |defn| ... }`
+- First-class promise support
+  - like `graphql-batch` but more local
+  - support promises in connection resolves
+- Add immutable transformation API to AST
+  - Support working with AST as data
+  - Adding fields to selections (`__typename` can go anywhere, others are type-specific)
+  - Renaming fragments from local names to unique names
+- Support AST subclasses? This would be hard, I think classes are used as hash keys in many places.
+- Support object deep-copy (schema, type, field, argument)? To support multiple schemas based on the same types.
