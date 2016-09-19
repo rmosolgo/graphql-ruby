@@ -33,7 +33,7 @@ module GraphQL
 
         visitor[Nodes::OperationDefinition].enter << -> (ast_node, prev_ast_node) {
           node = Node.new(
-            return_type: context.type_definition.unwrap,
+            return_type: context.type_definition && context.type_definition.unwrap,
             ast_node: ast_node,
             name: ast_node.name,
             parent: nil,
