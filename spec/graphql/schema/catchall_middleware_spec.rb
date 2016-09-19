@@ -22,6 +22,7 @@ describe GraphQL::Schema::CatchallMiddleware do
           {
             "message"=>"Internal error",
             "locations"=>[{"line"=>1, "column"=>17}],
+            "path"=>["error"]
           },
         ]
       }

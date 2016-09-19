@@ -6,6 +6,10 @@ module GraphQL
     # @return [GraphQL::Language::Nodes::Field] the field where the error occured
     attr_accessor :ast_node
 
+    # @return [String] an array describing the JSON-path into the execution
+    # response which corresponds to this error.
+    attr_accessor :path
+
     # @return [Hash] An entry for the response's "errors" key
     def to_h
       hash = {
@@ -18,6 +22,9 @@ module GraphQL
             "column" => ast_node.col,
           }
         ]
+      end
+      if path
+        hash["path"] = path
       end
       hash
     end

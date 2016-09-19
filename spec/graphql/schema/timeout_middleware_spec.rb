@@ -64,11 +64,13 @@ describe GraphQL::Schema::TimeoutMiddleware do
       expected_errors =  [
         {
           "message"=>"Timeout on Query.sleepFor",
-          "locations"=>[{"line"=>6, "column"=>9}]
+          "locations"=>[{"line"=>6, "column"=>9}],
+          "path"=>["d"]
         },
         {
           "message"=>"Timeout on Query.sleepFor",
-          "locations"=>[{"line"=>7, "column"=>9}]
+          "locations"=>[{"line"=>7, "column"=>9}],
+          "path"=>["e"]
         },
       ]
       assert_equal expected_data, result["data"]
@@ -116,11 +118,13 @@ describe GraphQL::Schema::TimeoutMiddleware do
       expected_errors = [
         {
           "message"=>"Timeout on NestedSleep.seconds",
-          "locations"=>[{"line"=>10, "column"=>15}]
+          "locations"=>[{"line"=>10, "column"=>15}],
+          "path"=>["a", "b", "c", "d", "seconds"]
         },
         {
           "message"=>"Timeout on NestedSleep.nestedSleep",
-          "locations"=>[{"line"=>11, "column"=>15}]
+          "locations"=>[{"line"=>11, "column"=>15}],
+          "path"=>["a", "b", "c", "d", "e"]
         },
       ]
 
@@ -149,7 +153,8 @@ describe GraphQL::Schema::TimeoutMiddleware do
       expected_errors = [
         {
           "message"=>"Timeout on Query.sleepFor",
-          "locations"=>[{"line"=>6, "column"=>9}]
+          "locations"=>[{"line"=>6, "column"=>9}],
+          "path"=>["d"]
         },
       ]
 

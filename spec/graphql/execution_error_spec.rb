@@ -43,15 +43,18 @@ describe GraphQL::ExecutionError do
           "errors"=>[
             {
               "message"=>"No cheeses are made from Yak milk!",
-              "locations"=>[{"line"=>5, "column"=>9}]
+              "locations"=>[{"line"=>5, "column"=>9}],
+              "path"=>["cheese", "error1"]
             },
             {
               "message"=>"No cheeses are made from Yak milk!",
-              "locations"=>[{"line"=>8, "column"=>9}]
+              "locations"=>[{"line"=>8, "column"=>9}],
+              "path"=>["cheese", "error2"]
             },
             {
               "message"=>"There was an execution error",
-              "locations"=>[{"line"=>16, "column"=>7}]
+              "locations"=>[{"line"=>16, "column"=>7}],
+              "path"=>["executionError"]
             },
           ]
         }
