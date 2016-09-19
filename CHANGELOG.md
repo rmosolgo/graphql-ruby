@@ -8,6 +8,12 @@
 
 ### Bug fixes
 
+## 0.18.13 (19 Sep 2016)
+
+### Bug fixes
+
+- Find infinite loops in nested contexts, too #258
+
 ## 0.18.12 (19 Sep 2016)
 
 ### New features
