@@ -1,0 +1,20 @@
+title: GraphQL Ruby
+baseurl:
+url: "https://rmosolgo.github.io/graphql-ruby"
+
+exclude:
+  - .gitignore
+
+# Build settings
+markdown:         kramdown
+highlighter:      rouge
+
+kramdown:
+  auto_ids: true
+
+defaults:
+  -
+    scope:
+      path: ""
+    values:
+      layout: "default"

@@ -29,13 +29,18 @@ task :console do
 end
 
 desc "Test the generated HTML files"
-task :html_proofer do
+task :html_proofer => :'site:generate_readme_index' do
   require "html-proofer"
-  system "bundle exec jekyll build"
+
+  Dir.chdir("guides") do
+    system "bundle exec jekyll build"
+  end
+
   config = {
     :assume_extension => true
   }
-  HTMLProofer.check_directory("./_site", config).run
+
+  HTMLProofer.check_directory("./guides/_site", config).run
 end
 
 desc "Use Racc & Ragel to regenerate parser.rb & lexer.rb from configuration files"
@@ -46,13 +51,33 @@ task :build_parser do
 end
 
 namespace :site do
+  task :generate_readme_index do
+    File.open("guides/index.md", "w") do |fo|
+      fo.puts "---\npermalink: \"/\"\n---\n"
+      File.foreach("readme.md") do |li|
+        fo.puts li
+      end
+    end
+  end
+
   desc "View the documentation site locally"
-  task :serve do
-    system "jekyll serve --config '_config.yml,guides/_config.dev.yml'"
+  task :serve => :generate_readme_index do
+    require "jekyll"
+
+    # Generate the site in server mode.
+    puts "Running Jekyll..."
+    options = {
+      "source"      => File.expand_path("guides"),
+      "destination" => File.expand_path("guides/_site"),
+      "watch"       => true,
+      "serving"     => true
+    }
+    Jekyll::Commands::Build.process(options)
+    Jekyll::Commands::Serve.process(options)
   end
 
   desc "Commit the local site to the gh-pages branch and publish to GitHub Pages"
-  task :publish do
+  task :publish => :generate_readme_index do
     # Ensure the gh-pages dir exists so we can generate into it.
     puts "Checking for gh-pages dir..."
     unless File.exist?("./gh-pages")
@@ -61,7 +86,7 @@ namespace :site do
     end
 
     # Ensure latest gh-pages branch history.
-    Dir.chdir('gh-pages') do
+    Dir.chdir("gh-pages") do
       sh "git checkout gh-pages"
       sh "git pull origin gh-pages"
     end
@@ -91,13 +116,13 @@ namespace :site do
     File.open('gh-pages/.nojekyll', 'wb') { |f| f.puts(":dog: food.") }
 
     # Commit and push.
-    puts "Committing and pushing to GitHub Pages..."
-    sha = `git rev-parse HEAD`.strip
-    Dir.chdir('gh-pages') do
-      sh "git add ."
-      sh "git commit --allow-empty -m 'Updating to #{sha}.'"
-      sh "git push origin gh-pages"
-    end
-    puts 'Done.'
+    # puts "Committing and pushing to GitHub Pages..."
+    # sha = `git rev-parse HEAD`.strip
+    # Dir.chdir('gh-pages') do
+    #   sh "git add ."
+    #   sh "git commit --allow-empty -m 'Updating to #{sha}.'"
+    #   sh "git push origin gh-pages"
+    # end
+    # puts 'Done.'
   end
 end
