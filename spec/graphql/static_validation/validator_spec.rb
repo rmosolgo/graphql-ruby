@@ -39,7 +39,9 @@ describe GraphQL::StaticValidation::Validator do
           }
         }
         fragment cheeseFields on Cheese {
-          id, ... cheeseFields
+          ... on Cheese {
+            id, ... cheeseFields
+          }
         }
       |}
 

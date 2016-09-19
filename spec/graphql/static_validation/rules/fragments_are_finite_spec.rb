@@ -6,7 +6,9 @@ describe GraphQL::StaticValidation::FragmentsAreFinite do
       cheese(id: 1) {
         ... idField
         ... sourceField
-        ... flavorField
+        similarCheese {
+          ... flavorField
+        }
       }
     }
 
@@ -17,7 +19,9 @@ describe GraphQL::StaticValidation::FragmentsAreFinite do
     }
     fragment flavorField on Cheese {
       flavor,
-      ... sourceField
+      similarCheese {
+        ... sourceField
+      }
     }
     fragment idField on Cheese {
       id
@@ -32,12 +36,12 @@ describe GraphQL::StaticValidation::FragmentsAreFinite do
     expected = [
       {
         "message"=>"Fragment sourceField contains an infinite loop",
-        "locations"=>[{"line"=>10, "column"=>5}],
+        "locations"=>[{"line"=>12, "column"=>5}],
         "path"=>["fragment sourceField"],
       },
       {
         "message"=>"Fragment flavorField contains an infinite loop",
-        "locations"=>[{"line"=>15, "column"=>5}],
+        "locations"=>[{"line"=>17, "column"=>5}],
         "path"=>["fragment flavorField"],
       }
     ]
