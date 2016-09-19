@@ -97,7 +97,7 @@ If you're building a backend for [Relay](http://facebook.github.io/relay/), you'
 - __Report bugs__ by posting a description, full stack trace, and all relevant code in a  [GitHub issue](https://github.com/rmosolgo/graphql-ruby/issues).
 - __Features & patches__ are welcome! Consider discussing it in an [issue](https://github.com/rmosolgo/graphql-ruby/issues) or in the [#ruby channel on Slack](https://graphql-slack.herokuapp.com/) to make sure we're on the same page.
 - __Run the tests__ with `rake test` or start up guard with `bundle exec guard`.
-- __Build the site__ with `rake serve`, then visit `localhost:4000`.
+- __Build the site__ with `rake site:serve`, then visit `localhost:4000`.
 
 ## Related Projects
 
