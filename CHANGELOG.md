@@ -8,11 +8,19 @@
 
 ### Bug fixes
 
+## 0.18.12 (19 Sep 2016)
+
+### New features
+
+- `GraphQL::Analysis::FieldUsage` can be used to check for deprecated fields in the query analysis phase #245
+
+### Bug fixes
+
+- If a schema receives a query on `mutation` or `subscription` but that root doesn't exist, return a validation error #254
+- `Query::Arguments#to_h` only includes keys that were provided in the query or have a default value #251
+
+
 ## 0.18.11 (11 Sep 2016)
-
-### Breaking changes
-
-### Deprecations
 
 ### New features
 
