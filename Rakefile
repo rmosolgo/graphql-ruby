@@ -116,13 +116,13 @@ namespace :site do
     File.open('gh-pages/.nojekyll', 'wb') { |f| f.puts(":dog: food.") }
 
     # Commit and push.
-    # puts "Committing and pushing to GitHub Pages..."
-    # sha = `git rev-parse HEAD`.strip
-    # Dir.chdir('gh-pages') do
-    #   sh "git add ."
-    #   sh "git commit --allow-empty -m 'Updating to #{sha}.'"
-    #   sh "git push origin gh-pages"
-    # end
-    # puts 'Done.'
+    puts "Committing and pushing to GitHub Pages..."
+    sha = `git rev-parse HEAD`.strip
+    Dir.chdir('gh-pages') do
+      sh "git add ."
+      sh "git commit --allow-empty -m 'Updating to #{sha}.'"
+      sh "git push origin gh-pages"
+    end
+    puts 'Done.'
   end
 end
