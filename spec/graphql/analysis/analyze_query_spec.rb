@@ -203,6 +203,8 @@ describe GraphQL::Analysis do
         "locations"=>[{"line"=>5, "column"=>11}]
       }
 
+      assert_nil data
+
       assert_equal id_error_response["message"], id_error_hash["message"]
       assert_equal id_error_response["locations"], id_error_hash["locations"]
 
