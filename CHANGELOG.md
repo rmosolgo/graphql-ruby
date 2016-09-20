@@ -8,6 +8,21 @@
 
 ### Bug fixes
 
+## 0.18.14 (20 Sep 2016)
+
+### Breaking changes
+
+- Directives are no longer considered as "conflicts" in query validation. This is in conformity with the spec, but a change for graphql-ruby #263
+
+### Features
+
+- Query analyzers may emit errors by raising `GraphQL::AnalysisError`s during `#call` or returning a single error or an array of errors from `#final_value` #262
+
+### Bug fixes
+
+- Merge fields even when `@skip` / `@include` are not identical #263
+- Fix possible infinite loop in `FieldsWillMerge` validation #261
+
 ## 0.18.13 (19 Sep 2016)
 
 ### Bug fixes
