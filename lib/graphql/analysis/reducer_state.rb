@@ -16,7 +16,8 @@ module GraphQL
         @errors << err
       end
 
-      # If the reducer accepts `final_value`, send it the last memo value.
+      # Respond with any errors, if found. Otherwise, if the reducer accepts
+      # `final_value`, send it the last memo value.
       # Otherwise, use the last value from the traversal.
       # @return [Any] final memo value
       def finalize_reducer
@@ -33,7 +34,7 @@ module GraphQL
 
       # If the reducer has an `initial_value` method, call it and store
       # the result as `memo`. Otherwise, use `nil` as memo.
-      # @return [Array<(#call, Any)>] reducer-memo pairs
+      # @return [Any] initial memo value
       def initialize_reducer(reducer, query)
         if reducer.respond_to?(:initial_value)
           reducer.initial_value(query)
