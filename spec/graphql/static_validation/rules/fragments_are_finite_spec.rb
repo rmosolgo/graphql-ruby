@@ -20,7 +20,9 @@ describe GraphQL::StaticValidation::FragmentsAreFinite do
     fragment flavorField on Cheese {
       flavor,
       similarCheese {
-        ... sourceField
+        ... on Cheese {
+          ... sourceField
+        }
       }
     }
     fragment idField on Cheese {

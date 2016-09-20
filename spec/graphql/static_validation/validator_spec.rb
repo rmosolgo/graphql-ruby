@@ -48,6 +48,37 @@ describe GraphQL::StaticValidation::Validator do
       it "handles infinite fragment spreads" do
         assert_equal(1, errors.length)
       end
+
+      describe "nested spreads" do
+        let(:query_string) {%|
+        {
+          allEdible {
+            ... on Cheese {
+              ... cheeseFields
+            }
+          }
+        }
+
+        fragment cheeseFields on Cheese {
+          similarCheese(source: COW) {
+            similarCheese(source: COW) {
+              ... cheeseFields
+            }
+          }
+        }
+        |}
+
+        it "finds an error on the nested spread" do
+          expected = [
+            {
+              "message"=>"Fragment cheeseFields contains an infinite loop",
+              "locations"=>[{"line"=>10, "column"=>9}],
+              "path"=>["fragment cheeseFields"]
+            }
+          ]
+          assert_equal(expected, errors)
+        end
+      end
     end
 
     describe "fragment spreads with no selections" do
