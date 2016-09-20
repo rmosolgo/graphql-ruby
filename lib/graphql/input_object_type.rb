@@ -76,8 +76,14 @@ module GraphQL
         field_value = input_field_defn.type.coerce_input(field_value)
 
         # Try getting the default value
-        if field_value.nil?
-          field_value = input_field_defn.default_value
+        # First, assume that the default_value contains un-coerced input
+        if field_value.nil? && !input_field_defn.default_value.nil?
+          field_value = input_field_defn.type.coerce_input(input_field_defn.default_value)
+
+          # If it's still nil, then it must have already-coerced input
+          if field_value.nil?
+            field_value = input_field_defn.default_value
+          end
         end
 
         if !field_value.nil?
