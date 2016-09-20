@@ -128,7 +128,7 @@ describe GraphQL::Analysis do
       def call(memo, visit_type, irep_node)
         if visit_type == :enter
           if irep_node.ast_node.name == "id"
-            raise GraphQL::AnalysisError.new("Don't use the flavor field.", irep_node.ast_node)
+            raise GraphQL::AnalysisError.new("Don't use the id field.", irep_node.ast_node)
           end
         end
         memo
@@ -169,15 +169,37 @@ describe GraphQL::Analysis do
         }
       }
     |}
+    let(:schema) { DummySchema }
+    let(:result) { schema.execute(query_string) }
+    let(:query_string) {%|
+      {
+        cheese(id: 1) {
+          id
+          flavor
+        }
+      }
+    |}
+
+    before do
+      @previous_query_analyzers = DummySchema.query_analyzers.dup
+      DummySchema.query_analyzers.clear
+      DummySchema.query_analyzers << id_catcher << flavor_catcher
+    end
+
+    after do
+      DummySchema.query_analyzers.clear
+      DummySchema.query_analyzers.push(*@previous_query_analyzers)
+    end
 
     it "groups all errors together" do
-      id_error, flavor_error = reduce_result
+      data = result["data"]
+      errors = result["errors"]
 
-      id_error_hash = id_error.to_h
-      flavor_error_hash = flavor_error.to_h
+      id_error_hash = errors[0]
+      flavor_error_hash = errors[1]
 
       id_error_response = {
-        "message"=>"Don't use the flavor field.",
+        "message"=>"Don't use the id field.",
         "locations"=>[{"line"=>4, "column"=>11}]
       }
       flavor_error_response = {
