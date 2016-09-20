@@ -6,6 +6,11 @@ module GraphQL
     # @return [GraphQL::Language::Nodes::Field] the field where the error occured
     attr_accessor :ast_node
 
+    def initialize(message, ast_node: nil)
+      @ast_node = ast_node
+      super(message)
+    end
+
     # @return [Hash] An entry for the response's "errors" key
     def to_h
       hash = {
