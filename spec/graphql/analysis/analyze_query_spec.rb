@@ -18,8 +18,12 @@ describe GraphQL::Analysis do
   describe ".analyze_query" do
     let(:node_counter) {
       -> (memo, visit_type, irep_node) {
-        memo ||= Hash.new { |h,k| h[k] = 0 }
-        visit_type == :enter && memo[irep_node.ast_node.class] += 1
+        memo ||= Hash.new
+        class_name = irep_node.ast_node.class
+        if visit_type == :enter
+          memo[class_name] ||= 0
+          memo[class_name] += 1
+        end
         memo
       }
     }
@@ -79,14 +83,16 @@ describe GraphQL::Analysis do
     describe "when processing fields" do
       let(:connection_counter) {
         -> (memo, visit_type, irep_node) {
-          memo ||= Hash.new { |h,k| h[k] = 0 }
+          memo ||= Hash.new
           if visit_type == :enter
             if irep_node.ast_node.is_a?(GraphQL::Language::Nodes::Field)
               irep_node.definitions.each do |type_defn, field_defn|
                 if field_defn.resolve_proc.is_a?(GraphQL::Relay::ConnectionResolve)
-                  memo["connection"] += 1
+                  memo[:connection] ||= 0
+                  memo[:connection] += 1
                 else
-                  memo["field"] += 1
+                  memo[:field] ||= 0
+                  memo[:field] += 1
                 end
               end
             end
@@ -109,11 +115,81 @@ describe GraphQL::Analysis do
       it "knows which fields are connections" do
         connection_counts = reduce_result.first
         expected_connection_counts = {
-          "field" => 5,
-          "connection" => 2
+          :field => 5,
+          :connection => 2
         }
         assert_equal expected_connection_counts, connection_counts
       end
+    end
+  end
+
+  describe ".visit_analyzers" do
+    class IdCatcher
+      def call(memo, visit_type, irep_node)
+        if visit_type == :enter
+          if irep_node.ast_node.name == "id"
+            raise GraphQL::AnalysisError.new("Don't use the flavor field.", irep_node.ast_node)
+          end
+        end
+        memo
+      end
+    end
+
+    class FlavorCatcher
+      def initial_value(query)
+        {
+          :errors => []
+        }
+      end
+
+      def call(memo, visit_type, irep_node)
+        if visit_type == :enter
+          if irep_node.ast_node.name == "flavor"
+            memo[:errors] << GraphQL::AnalysisError.new("Don't use the flavor field.", irep_node.ast_node)
+          end
+        end
+        memo
+      end
+
+      def final_value(memo)
+        memo[:errors]
+      end
+    end
+
+    let(:id_catcher) { IdCatcher.new }
+    let(:flavor_catcher) { FlavorCatcher.new }
+    let(:analyzers) { [id_catcher, flavor_catcher] }
+    let(:reduce_result) { GraphQL::Analysis.analyze_query(query, analyzers) }
+    let(:query) { GraphQL::Query.new(DummySchema, query_string) }
+    let(:query_string) {%|
+      {
+        cheese(id: 1) {
+          id
+          flavor
+        }
+      }
+    |}
+
+    it "groups all errors together" do
+      id_error, flavor_error = reduce_result
+
+      id_error_hash = id_error.to_h
+      flavor_error_hash = flavor_error.to_h
+
+      id_error_response = {
+        "message"=>"Don't use the flavor field.",
+        "locations"=>[{"line"=>4, "column"=>11}]
+      }
+      flavor_error_response = {
+        "message"=>"Don't use the flavor field.",
+        "locations"=>[{"line"=>5, "column"=>11}]
+      }
+
+      assert_equal id_error_response["message"], id_error_hash["message"]
+      assert_equal id_error_response["locations"], id_error_hash["locations"]
+
+      assert_equal flavor_error_response["message"], flavor_error_hash["message"]
+      assert_equal flavor_error_response["locations"], flavor_error_hash["locations"]
     end
   end
 end

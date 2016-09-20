@@ -1,6 +1,9 @@
 module GraphQL
   module Analysis
     module_function
+
+    attr_reader :errors
+
     # Visit `query`'s internal representation, calling `analyzers` along the way.
     #
     # - First, query analyzers are initialized by calling `.initial_value(query)`, if they respond to that method.
@@ -13,6 +16,8 @@ module GraphQL
     # @param analyzers [Array<#call>] Objects that respond to `#call(memo, visit_type, irep_node)`
     # @return [Array<Any>] Results from those analyzers
     def analyze_query(query, analyzers)
+      @errors = []
+
       analyzers_and_values = analyzers.map { |r| initialize_reducer(r, query) }
 
       irep = query.internal_representation
@@ -21,7 +26,11 @@ module GraphQL
         reduce_node(op_node, analyzers_and_values)
       end
 
-      analyzers_and_values.map { |(r, value)| finalize_reducer(r, value) }
+      if !@errors.blank?
+        @errors.flatten
+      else
+        analyzers_and_values.map { |(r, value)| finalize_reducer(r, value) }
+      end
     end
 
     private
@@ -43,7 +52,18 @@ module GraphQL
       analyzers_and_values.each do |reducer_and_value|
         reducer = reducer_and_value[0]
         memo = reducer_and_value[1]
-        next_memo = reducer.call(memo, visit_type, irep_node)
+
+        begin
+          next_memo = reducer.call(memo, visit_type, irep_node)
+        rescue GraphQL::AnalysisError => e
+          @errors << e
+        end
+
+        if next_memo.is_a?(Hash) && next_memo[:errors].present?
+          @errors << next_memo[:errors]
+          next_memo[:errors] = []
+        end
+
         reducer_and_value[1] = next_memo
       end
     end
@@ -63,7 +83,9 @@ module GraphQL
     # Otherwise, use the last value from the traversal.
     # @return [Any] final memo value
     def finalize_reducer(reducer, reduced_value)
-      if reducer.respond_to?(:final_value)
+      if @errors.present?
+        @errors
+      elsif reducer.respond_to?(:final_value)
         reducer.final_value(reduced_value)
       else
         reduced_value
