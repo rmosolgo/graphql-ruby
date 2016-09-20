@@ -19,14 +19,14 @@ describe GraphQL::StaticValidation::FieldsHaveAppropriateSelections do
     illegal_selection_error = {
       "message"=>"Selections can't be made on scalars (field 'id' returns Int but has selections [something, someFields])",
       "locations"=>[{"line"=>5, "column"=>47}],
-      "path"=>["query getCheese", "illegalSelectionCheese", "id"],
+      "fields"=>["query getCheese", "illegalSelectionCheese", "id"],
     }
     assert_includes(errors, illegal_selection_error, "finds illegal selections on scalarss")
 
     selection_required_error = {
       "message"=>"Objects must have selections (field 'cheese' returns Cheese but has no selections)",
       "locations"=>[{"line"=>4, "column"=>7}],
-      "path"=>["query getCheese", "missingFieldsCheese"],
+      "fields"=>["query getCheese", "missingFieldsCheese"],
     }
     assert_includes(errors, selection_required_error, "finds objects without selections")
   end
