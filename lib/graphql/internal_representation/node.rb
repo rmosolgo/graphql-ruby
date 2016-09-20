@@ -73,12 +73,13 @@ module GraphQL
       end
 
       def path
-        if parent
-          parent.path + [name]
-        else
-          []
-        end
+        path = parent ? parent.path.dup : []
+        path << name if name
+        path << @index if @index
+        path
       end
+
+      attr_writer :index
 
       def inspect(indent = 0)
         own_indent = " " * indent
