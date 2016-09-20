@@ -124,7 +124,7 @@ describe GraphQL::Analysis do
       def call(memo, visit_type, irep_node)
         if visit_type == :enter
           if irep_node.ast_node.name == "id"
-            raise GraphQL::AnalysisError.new("Don't use the id field.", irep_node.ast_node)
+            raise GraphQL::AnalysisError.new("Don't use the id field.", ast_node: irep_node.ast_node)
           end
         end
         memo
@@ -141,7 +141,7 @@ describe GraphQL::Analysis do
       def call(memo, visit_type, irep_node)
         if visit_type == :enter
           if irep_node.ast_node.name == "flavor"
-            memo[:errors] << GraphQL::AnalysisError.new("Don't use the flavor field.", irep_node.ast_node)
+            memo[:errors] << GraphQL::AnalysisError.new("Don't use the flavor field.", ast_node: irep_node.ast_node)
           end
         end
         memo
