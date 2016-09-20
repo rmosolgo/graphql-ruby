@@ -7,11 +7,9 @@ GraphQL::Introspection::InputValueType = GraphQL::ObjectType.define do
   field :defaultValue, types.String, "The value applied if no other value is provided" do
     resolve -> (obj, args, ctx) {
       value = obj.default_value
-      if value.is_a?(String)
-        "\"#{value}\""
-      else
-        value
-      end
+      # TODO: Only scalars respond to coerce_result
+      return nil unless obj.type.respond_to?(:coerce_result)
+      value ? JSON.dump(obj.type.coerce_result(value)) : nil
     }
   end
 end
