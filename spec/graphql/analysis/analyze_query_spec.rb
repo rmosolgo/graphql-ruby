@@ -18,12 +18,8 @@ describe GraphQL::Analysis do
   describe ".analyze_query" do
     let(:node_counter) {
       -> (memo, visit_type, irep_node) {
-        memo ||= Hash.new
-        class_name = irep_node.ast_node.class
-        if visit_type == :enter
-          memo[class_name] ||= 0
-          memo[class_name] += 1
-        end
+        memo ||= Hash.new { |h,k| h[k] = 0 }
+        visit_type == :enter && memo[irep_node.ast_node.class] += 1
         memo
       }
     }
@@ -83,7 +79,7 @@ describe GraphQL::Analysis do
     describe "when processing fields" do
       let(:connection_counter) {
         -> (memo, visit_type, irep_node) {
-          memo ||= Hash.new
+          memo ||= Hash.new { |h,k| h[k] = 0 }
           if visit_type == :enter
             if irep_node.ast_node.is_a?(GraphQL::Language::Nodes::Field)
               irep_node.definitions.each do |type_defn, field_defn|
