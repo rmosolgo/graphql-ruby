@@ -1,7 +1,6 @@
 module GraphQL
   module Analysis
     module_function
-
     # Visit `query`'s internal representation, calling `analyzers` along the way.
     #
     # - First, query analyzers are initialized by calling `.initial_value(query)`, if they respond to that method.
