@@ -13,33 +13,34 @@ module GraphQL
         visitor[GraphQL::Language::Nodes::Document].leave << -> (node, parent) {
           has_selections.each { |node|
             field_map = gather_fields_by_name(node.selections, {}, [], context)
-            find_conflicts(field_map, context)
+            find_conflicts(field_map, [], context)
           }
         }
       end
 
       private
 
-      def find_conflicts(field_map, context)
+      def find_conflicts(field_map, visited_fragments, context)
         field_map.each do |name, ast_fields|
           comparison = FieldDefinitionComparison.new(name, ast_fields, context)
           context.errors.push(*comparison.errors)
 
 
           subfield_map = {}
-          visited_fragments = []
           ast_fields.each do |defn|
             gather_fields_by_name(defn.selections, subfield_map, visited_fragments, context)
           end
-          find_conflicts(subfield_map, context)
+
+          find_conflicts(subfield_map, visited_fragments, context)
         end
       end
 
       def gather_fields_by_name(fields, field_map, visited_fragments, context)
         fields.each do |field|
-          if field.is_a?(GraphQL::Language::Nodes::InlineFragment)
+          case field
+          when GraphQL::Language::Nodes::InlineFragment
             next_fields = field.selections
-          elsif field.is_a?(GraphQL::Language::Nodes::FragmentSpread)
+          when GraphQL::Language::Nodes::FragmentSpread
             if visited_fragments.include?(field.name)
               next
             else
@@ -47,11 +48,13 @@ module GraphQL
             end
             fragment_defn = context.fragments[field.name]
             next_fields = fragment_defn ? fragment_defn.selections : []
-          else
+          when GraphQL::Language::Nodes::Field
             name_in_selection = field.alias || field.name
             field_map[name_in_selection] ||= []
             field_map[name_in_selection].push(field)
             next_fields = []
+          else
+            raise "Unexpected field for merging: #{field}"
           end
           gather_fields_by_name(next_fields, field_map, visited_fragments, context)
         end
