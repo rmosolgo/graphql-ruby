@@ -355,7 +355,7 @@ In a query analyzer, you can handle an error in one of two ways:
 
     def call(memo, visit_type, irep_node)
       if visit_type == :enter
-        memo[:errors] << GraphQL::AnalysisError.new("Just error!", irep_node.ast_node)
+        memo[:errors] << GraphQL::AnalysisError.new("Just error!", ast_node: irep_node.ast_node)
         end
       end
       memo
@@ -369,7 +369,7 @@ In a query analyzer, you can handle an error in one of two ways:
     ``` ruby
     def call(memo, visit_type, irep_node)
       if visit_type == :enter
-        raise GraphQL::AnalysisError.new("Just error!", irep_node.ast_node)
+        raise GraphQL::AnalysisError.new("Just error!", ast_node: irep_node.ast_node)
       end
       memo
     end
