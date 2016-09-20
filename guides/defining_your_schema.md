@@ -341,6 +341,40 @@ If the last value of `memo` (or the return of `.final_value`) is a `GraphQL::Ana
 - `GraphQL::Analysis::QueryDepth` and `GraphQL::Analysis::QueryComplexity` for inspecting query depth and complexity
 - `GraphQL::Analysis::MaxQueryDepth` and `GraphQL::Analysis::MaxQueryComplexity` are used internally to implement `max_depth:` and `max_complexity:` options
 
+### Handling errors
+
+In a query analyzer, you can handle an error in one of two ways:
+
+* You can choose to create an `:errors` key on your memo object. Then, you can push any errors onto it, and return that memoized error:
+    ``` ruby
+    def initial_value(query)
+      {
+        :errors => []
+      }
+    end
+
+    def call(memo, visit_type, irep_node)
+      if visit_type == :enter
+        memo[:errors] << GraphQL::AnalysisError.new("Just error!", ast_node: irep_node.ast_node)
+        end
+      end
+      memo
+    end
+
+    def final_value(memo)
+      memo[:errors]
+    end
+    ```
+* You can also `raise GraphQL::AnalysisError`:
+    ``` ruby
+    def call(memo, visit_type, irep_node)
+      if visit_type == :enter
+        raise GraphQL::AnalysisError.new("Just error!", ast_node: irep_node.ast_node)
+      end
+      memo
+    end
+    ```
+
 ## Extending type and field definitions
 
 Types, fields, and arguments have a `metadata` hash which accepts values during definition.
