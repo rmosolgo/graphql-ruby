@@ -41,6 +41,7 @@ describe GraphQL::Introspection::TypeType do
           {"name"=>"LocalProduct"},
         ],
         "fields"=>[
+          {"type"=>{"name"=>"String", "ofType"=>nil}},
           {"type"=>{"name"=>"Non-Null", "ofType"=>{"name"=>"Float"}}},
           {"type"=>{"name"=>"List", "ofType"=>{"name"=>"String"}}},
           {"type"=>{"name"=>"Non-Null", "ofType"=>{"name"=>"ID"}}},

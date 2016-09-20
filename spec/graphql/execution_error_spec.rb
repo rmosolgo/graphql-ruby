@@ -18,6 +18,15 @@ describe GraphQL::ExecutionError do
         }
         flavor
       }
+      allDairy {
+        ... on Cheese {
+          flavor
+        }
+        ... on Milk {
+          source
+          executionError
+        }
+      }
       executionError
     }
 
@@ -38,6 +47,12 @@ describe GraphQL::ExecutionError do
             },
             "flavor" => "Brie",
             },
+            "allDairy" => [
+              { "flavor" => "Brie" },
+              { "flavor" => "Gouda" },
+              { "flavor" => "Manchego" },
+              { "source" => "COW", "executionError" => nil }
+            ],
             "executionError" => nil,
           },
           "errors"=>[
@@ -53,7 +68,12 @@ describe GraphQL::ExecutionError do
             },
             {
               "message"=>"There was an execution error",
-              "locations"=>[{"line"=>16, "column"=>7}],
+              "locations"=>[{"line"=>22, "column"=>11}],
+              "path"=>["allDairy", 3, "executionError"]
+            },
+            {
+              "message"=>"There was an execution error",
+              "locations"=>[{"line"=>25, "column"=>7}],
               "path"=>["executionError"]
             },
           ]
