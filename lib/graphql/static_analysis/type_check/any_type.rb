@@ -12,6 +12,19 @@ module GraphQL
       # when we lose type information, we insert {AnyType}
       # (until we can regain some info, eg fragment types)
       module AnyType
+        module_function
+
+        def unwrap
+          self
+        end
+
+        def get_field(name)
+          AnyField
+        end
+
+        def kind
+          AnyTypeKind
+        end
       end
     end
   end

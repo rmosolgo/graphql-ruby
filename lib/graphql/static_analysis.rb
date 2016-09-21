@@ -29,9 +29,9 @@ module GraphQL
     # Initialize a new analysis, which will
     # be triggered by visiting the document
     # @return [GraphQL::StaticAnalysis::Analysis]
-    def self.prepare(visitor)
+    def self.prepare(visitor, schema: nil)
       rules = ALL_RULES
-      Analysis.new(visitor: visitor, rules: rules)
+      Analysis.new(visitor: visitor, rules: rules, schema: schema)
     end
 
     # These rules require a document _only_, not a schema.
@@ -65,10 +65,17 @@ module GraphQL
         variable_usages_visitor = VariableUsages.mount(visitor)
         definition_dependencies = DefinitionDependencies.mount(visitor)
 
+        if schema
+          type_check = TypeCheck.new(self)
+          type_check.mount(visitor)
+          rule_instances << type_check
+        end
+
         visitor[GraphQL::Language::Nodes::Document].leave << -> (node, prev_node) {
           @dependencies = definition_dependencies.dependency_map
           @variable_usages = variable_usages_visitor.usages(dependencies: dependencies)
           rule_instances.each { |rule| @errors.concat(rule.errors) }
+
         }
       end
     end

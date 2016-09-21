@@ -24,22 +24,3 @@ Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each { |f| require f }
 def star_wars_query(string, variables={})
   GraphQL::Query.new(StarWarsSchema, string, variables: variables).result
 end
-
-module StaticAnalysisHelpers
-  def get_errors(query_string)
-    query_ast = GraphQL.parse(query_string)
-    visitor = GraphQL::Language::Visitor.new(query_ast)
-    analysis = GraphQL::StaticAnalysis.prepare(visitor)
-    visitor.visit
-    analysis.errors
-  end
-
-  def assert_errors(query_string, *expected_error_messages)
-    errors = get_errors(query_string)
-    messages = errors.map(&:message)
-    expected_error_messages.each do |expected_message|
-      assert_includes(messages, expected_message)
-    end
-    assert_equal(expected_error_messages.length, messages.length, "Found the expected number of errors")
-  end
-end

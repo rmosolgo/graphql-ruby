@@ -168,7 +168,7 @@ module GraphQL
 
     def root_type_for_operation(operation)
       case operation
-      when "query"
+      when "query", nil
         query
       when "mutation"
         mutation

@@ -1,4 +1,9 @@
+require "graphql/static_analysis/type_check/any_argument"
+require "graphql/static_analysis/type_check/any_field"
+require "graphql/static_analysis/type_check/any_input"
 require "graphql/static_analysis/type_check/any_type"
+require "graphql/static_analysis/type_check/any_type_kind"
+require "graphql/static_analysis/type_check/required_arguments"
 
 module GraphQL
   module StaticAnalysis
@@ -22,26 +27,159 @@ module GraphQL
     # - [ ] Variables are Input Types
     # - [ ] Variable Usages are Allowed
     class TypeCheck
-      include GraphQL::Language::Nodes
+      include GraphQL::Language
 
-      def self.mount(visitor)
-        type_checker = self.new
-        type_checker.mount(visitor)
-        type_checker
-      end
+      # @return [Array<GraphQL::StaticAnalysis::AnalysisError>] Errors found during typecheck
+      attr_reader :errors
+
+      attr_reader :schema
 
       def initialize(analysis)
         @analysis = analysis
         @schema = analysis.schema # TODO: or AnySchema
+        @errors = []
       end
 
       def mount(visitor)
-        visitor[OperationDefinition] << -> (node, prev_node) {
+        # As we enter types via selections,
+        # they'll be pushed on this array.
+        # As we exit, they get popped off.
+        # [Array<GraphQL::BaseType>]
+        type_stack = []
+
+        # This holds the fields you've entered
+        # [Array<GraphQL::Field>]
+        field_stack = []
+
+        # When you enter a field, push an entry
+        # on this list. Then on the way out,
+        # make sure you weren't missing any required arguments.
+        # [Array<Array<String>>]
+        observed_arguments_stack = []
+
+        # This tracks entered arguments.
+        # You can get the last argument type for
+        # nested input objects.
+        # [Array<GraphQL::Argument>]
+        argument_stack = []
+
+        visitor[Nodes::OperationDefinition] << -> (node, prev_node) {
+          # When you enter an operation definition:
+          # - Check for the corresponding root type
+          # - If it doesn't exist, push an error and choose AnyType
+          # - Push the root type
+          root_type = schema.root_type_for_operation(node.operation_type)
+          if root_type.nil?
+            errors << AnalysisError.new(
+              %|Root type doesn't exist for operation: "#{node.operation_type}"|,
+              nodes: [node]
+            )
+            root_type = AnyType
+          end
+          type_stack << root_type
+        }
+
+        visitor[Nodes::OperationDefinition].leave << -> (node, prev_node) {
+          # Pop the root type
+          type_stack.pop
+        }
+
+        visitor[Nodes::Field] << -> (node, prev_node) {
+          # Find the field definition & field type and push them
+          # If you can't find it, push AnyField instead
+          parent_type = type_stack.last
+
+          field_defn = schema.get_field(parent_type, node.name)
+          if field_defn.nil?
+            errors << AnalysisError.new(
+              %|Field "#{node.name}" doesn't exist on "#{parent_type.name}"|,
+              nodes: [node]
+            )
+            field_defn = AnyField
+          end
+
+          field_type = field_defn.type.unwrap
+
+          if !field_type.kind.fields? && node.selections.any?
+            owner_name = "#{parent_type.name}.#{field_defn.name}"
+            errors << AnalysisError.new(
+              %|Type "#{field_type.name}" can't have selections, see "#{owner_name}"|,
+              nodes: node.selections
+            )
+            # Stuff is about to get wacky, let's ignore it
+            field_defn = AnyField
+            field_type = field_defn.type
+          end
+
+          field_stack << field_defn
+          type_stack << field_type
+          observed_arguments_stack << []
 
         }
 
-        visitor[Field] << -> (node, prev_node) {
+        visitor[Nodes::Field].leave << -> (node, prev_node) {
+          # Pop the field's type & defn
+          type_stack.pop
+          field_defn = field_stack.pop
+          observed_argument_names = observed_arguments_stack.pop
+          parent = type_stack.last
+          errors.concat(RequiredArguments.find_errors(parent, field_defn, node, observed_argument_names))
+        }
 
+        visitor[Nodes::Argument] << -> (node, prev_node) {
+          # Get the corresponding argument defn for this node.
+          # If there is one, mark it as observed
+          # If there isn't one, get AnyArgument
+          # Type-check its literal value or variable.
+
+          # This could be an argument coming from any of these places:
+          if argument_stack.any?
+            parent = argument_stack.last.type.unwrap
+          else
+            parent = field_stack.last
+          end
+
+          argument_defn = parent.get_argument(node.name)
+
+          if argument_defn.nil?
+            case parent
+            when GraphQL::Field
+              # The _last_ one is the current field's type, so go back two
+              # to get the parent object for that field:
+              parent_type = type_stack[-2]
+              parent_name = %|Field "#{parent_type.name}.#{parent.name}"|
+            when GraphQL::InputObjectType
+              parent_name = %|Input Object "#{parent.name}"|
+            end
+            errors << AnalysisError.new(
+              %|#{parent_name} doesn't accept "#{node.name}" as an argument|,
+              nodes: [node]
+            )
+            argument_defn = AnyArgument
+          else
+            observed_arguments_stack.last << argument_defn.name
+            # TODO type-check argument
+          end
+          argument_stack << argument_defn
+        }
+
+        visitor[Nodes::Argument].leave << -> (node, prev_node) {
+          # Remove yourself from the stack
+          argument_stack.pop
+        }
+
+        visitor[Nodes::InputObject] << -> (node, prev_node) {
+          # Prepare to validate required fields:
+          observed_arguments_stack << []
+          # Please excuse me while I borrow this:
+          type_stack << argument_stack.last.type.unwrap
+        }
+
+        visitor[Nodes::InputObject].leave << -> (node, prev_node) {
+          # pop yourself, and assert that your required fields were present
+          input_object_type = type_stack.pop
+          observed_argument_names = observed_arguments_stack.pop
+          errors.concat(RequiredArguments.find_errors(nil, input_object_type, node, observed_argument_names))
         }
       end
     end
