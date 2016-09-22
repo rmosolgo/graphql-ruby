@@ -73,7 +73,7 @@ module GraphQL
       end
 
       def path
-        path = parent ? parent.path.dup : []
+        path = parent ? parent.path : []
         path << name if name
         path << @index if @index
         path
