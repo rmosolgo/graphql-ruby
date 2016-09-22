@@ -58,7 +58,7 @@ module GraphQL
                   name: enum["name"],
                   description: enum["description"],
                   deprecation_reason: enum["deprecationReason"],
-                  value: enum["value"]
+                  value: enum["name"]
                 )
               })
           when "INTERFACE"

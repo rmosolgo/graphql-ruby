@@ -138,7 +138,7 @@ module GraphQL
         @name = name
         @description = description
         @deprecation_reason = deprecation_reason
-        @value = value || name
+        @value = value
       end
     end
   end
