@@ -115,6 +115,8 @@ module GraphQL
     end
 
     def coerce_result(value)
+      return nil if value.nil?
+
       ensure_defined
       @values_by_value.fetch(value).name
     end
@@ -136,7 +138,7 @@ module GraphQL
         @name = name
         @description = description
         @deprecation_reason = deprecation_reason
-        @value = value
+        @value = value || name
       end
     end
   end

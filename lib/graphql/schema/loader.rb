@@ -102,7 +102,7 @@ module GraphQL
               name: type["name"],
               type: type_resolver.call(type["type"]),
               description: type["description"],
-              default_value: type["defaultValue"]
+              default_value: type["defaultValue"] ? JSON.parse(type["defaultValue"], quirks_mode: true) : nil
             )
           when "SCALAR"
             case type.fetch("name")

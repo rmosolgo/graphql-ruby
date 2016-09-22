@@ -100,10 +100,16 @@ module GraphQL
 
         DEFAULT_VALUE_IS_VALID_FOR_TYPE = -> (type) {
           if !type.default_value.nil?
-            coerced_value = type.type.coerce_result(type.default_value)
+            coerced_value = begin
+              type.type.coerce_result(type.default_value)
+            rescue => ex
+              ex
+            end
 
-            if coerced_value.nil?
-              "default value #{type.default_value.inspect} is not valid for type #{type.type}"
+            if coerced_value.nil? || coerced_value.is_a?(Exception)
+              msg = "default value #{type.default_value.inspect} is not valid for type #{type.type}"
+              msg += " (#{coerced_value})" if coerced_value.is_a?(Exception)
+              msg
             end
           end
         }

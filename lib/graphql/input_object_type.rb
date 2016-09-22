@@ -89,6 +89,8 @@ module GraphQL
     end
 
     def coerce_result(value)
+      return nil if value.nil?
+
       # Allow the application to provide values as :symbols, and convert them to the strings
       value = value.reduce({}) { |memo, (k, v)| memo[k.to_s] = v; memo }
 

@@ -57,6 +57,7 @@ module GraphQL
     end
 
     def coerce_result(value)
+      return nil if value.nil?
       ensure_array(value).map { |item| of_type.coerce_result(item) }
     end
 

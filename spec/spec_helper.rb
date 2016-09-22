@@ -9,6 +9,7 @@ require "minitest/autorun"
 require "minitest/focus"
 require "minitest/reporters"
 require "pry"
+require 'pry-stack_explorer'
 Minitest::Reporters.use! Minitest::Reporters::SpecReporter.new
 
 Minitest::Spec.make_my_diffs_pretty!
