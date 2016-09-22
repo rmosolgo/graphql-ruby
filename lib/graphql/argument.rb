@@ -36,9 +36,5 @@ module GraphQL
         GraphQL::BaseType.resolve_related_type(@dirty_type)
       end
     end
-
-    def default_value=(value)
-      @default_value = value
-    end
   end
 end

@@ -106,9 +106,9 @@ module GraphQL
               ex
             end
 
-            if coerced_value.nil? || coerced_value.is_a?(Exception)
+            if coerced_value.nil? || coerced_value.is_a?(StandardError)
               msg = "default value #{type.default_value.inspect} is not valid for type #{type.type}"
-              msg += " (#{coerced_value})" if coerced_value.is_a?(Exception)
+              msg += " (#{coerced_value})" if coerced_value.is_a?(StandardError)
               msg
             end
           end
