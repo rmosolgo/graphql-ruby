@@ -38,7 +38,7 @@ describe GraphQL::StaticAnalysis::TypeCheck do
         query_string,
         %|Type "CalculationResult" must have selections on a member type, see "Operation.perform"|,
         %|Type "Operation" must have selections, see "Query.operation"|,
-        %|Type "CalculationSuccess" must have selections, see "Operation.perform"|,
+        %|Type "CalculationSuccess" must have selections, see inline fragment on "CalculationSuccess"|,
       )
     end
 

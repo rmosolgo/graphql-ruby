@@ -4,6 +4,7 @@ require "graphql/static_analysis/type_check/any_input"
 require "graphql/static_analysis/type_check/any_type"
 require "graphql/static_analysis/type_check/any_type_kind"
 require "graphql/static_analysis/type_check/required_arguments"
+require "graphql/static_analysis/type_check/valid_selections"
 
 module GraphQL
   module StaticAnalysis
@@ -28,9 +29,6 @@ module GraphQL
     # - [ ] Variable Usages are Allowed
     class TypeCheck
       include GraphQL::Language
-
-      DYNAMIC_FIELD_PREFIX = "__"
-      NO_ERRORS = []
 
       # @return [Array<GraphQL::StaticAnalysis::AnalysisError>] Errors found during typecheck
       attr_reader :errors
@@ -102,37 +100,10 @@ module GraphQL
           end
 
           field_type = field_defn.type.unwrap
-          field_selections = node.selections.select { |s| s.is_a?(Nodes::Field) }
-          user_field_selections = field_selections.select { |s| !s.name.start_with?(DYNAMIC_FIELD_PREFIX) }
-          field_type_kind = field_type.kind
-          error_nodes = NO_ERRORS
-          error_message = nil
-
-          if !field_type_kind.composite? && node.selections.any?
-            # It's a scalar with selections
-            error_message = "can't have selections"
-            error_nodes = node.selections
-          elsif !field_type_kind.fields? && user_field_selections.any?
-            # It's a union with direct selections
-            error_message = "can't have direct selections, use a fragment spread to access members instead"
-            error_nodes = user_field_selections
-          elsif !field_type_kind.scalar? && node.selections.none?
-            if field_type_kind.fields?
-              # It's an object or interface with no selections
-              error_message = "must have selections"
-            else
-              # It's a union with no selections
-              error_message = "must have selections on a member type"
-            end
-            error_nodes = [node]
-          end
-
-          if error_message
-            owner_name = "#{parent_type.name}.#{field_defn.name}"
-            errors << AnalysisError.new(
-            %|Type "#{field_type.name}" #{error_message}, see "#{owner_name}"|,
-            nodes: error_nodes
-            )
+          owner_name = %|"#{parent_type.name}.#{field_defn.name}"|
+          selection_errors = ValidSelections.errors_for_selections(owner_name, field_type, node)
+          if selection_errors.any?
+            errors.concat(selection_errors)
             # Stuff is about to get wacky, let's ignore it
             field_defn = AnyField
             field_type = field_defn.type
@@ -221,6 +192,17 @@ module GraphQL
               next_type = AnyType
             end
             type_stack << next_type
+          end
+
+          # Either the type from the condition, or the one from the surrounding selection
+          parent_type = type_stack.last
+
+          # If we failed to find a type, the parent type is AnyType,
+          # so there won't be any errors and the typename won't show up
+          owner_name = "inline fragment#{node.type ? " on \"#{node.type}\"" : ""}"
+          selection_errors = ValidSelections.errors_for_selections(owner_name, parent_type, node)
+          if selection_errors.any?
+            errors.concat(selection_errors)
           end
         }
 
