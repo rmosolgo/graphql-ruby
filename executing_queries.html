@@ -1,0 +1,135 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>GraphQL Ruby</title>
+    <link rel="stylesheet" href="/graphql-ruby/css/main.css">
+    <link rel="icon" href="/graphql-ruby/graphql-ruby-icon.png">
+    <meta name="generator">
+  </head>
+  <body class="hack">
+    <div class="container">
+      <div style="display: flex; justify-content: center;">
+<strong style="white-space: pre; line-height: 1.1em; display: inline-block; font-size: 8px;">
+    ▄██████▄     ▄████████    ▄████████    ▄███████▄    ▄█    █▄    ████████▄    ▄█
+   ███    ███   ███    ███   ███    ███   ███    ███   ███    ███   ███    ███  ███
+   ███    █▀    ███    ███   ███    ███   ███    ███   ███    ███   ███    ███  ███
+  ▄███         ▄███▄▄▄▄██▀   ███    ███   ███    ███  ▄███▄▄▄▄███▄▄ ███    ███  ███
+ ▀▀███ ████▄  ▀▀███▀▀▀▀▀   ▀███████████ ▀█████████▀  ▀▀███▀▀▀▀███▀  ███    ███  ███
+   ███    ███ ▀███████████   ███    ███   ███          ███    ███   ███    ███  ███
+   ███    ███   ███    ███   ███    ███   ███          ███    ███   ███  ▀ ███  ███▌    ▄
+   ████████▀    ███    ███   ███    █▀   ▄████▀        ███    █▀     ▀██████▀▄█ █████▄▄██
+                ███    ███                                                      ▀
+</strong>
+      </div>
+      <p style="text-align: center;">A GraphQL server implementation for Ruby</p>
+
+      <div class="grid -between">
+        <div class="cell -3of12">
+          <h3><a href="/graphql-ruby">Readme</a></h3>
+          <h3>Guides</h3>
+          <ul>
+            <li><a href="/graphql-ruby/introduction">Introduction</a></li>
+            <li><a href="/graphql-ruby/defining_your_schema">Defining a Schema</a></li>
+            <li><a href="/graphql-ruby/executing_queries">Executing Queries</a></li>
+            <li><a href="/graphql-ruby/code_reuse">Code Reuse</a></li>
+            <li><a href="/graphql-ruby/security">Security</a></li>
+            <li><a href="/graphql-ruby/testing">Testing</a></li>
+          </ul>
+          <h3><a href="http://www.rubydoc.info/github/rmosolgo/graphql-ruby">API Docs</a></h3>
+          <h3><a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a></h3>
+        </div>
+        <div class="cell -9of12">
+          <p>After you define your schema, you can evaluate queries with <code class="highlighter-rouge">GraphQL::Schema#execute</code>.</p>
+
+<p>At the simplest, you can evaluate a query from string against a schema:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="c1"># let's pretend it's a Rails controller!</span>
+<span class="n">query_string</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="ss">:query</span><span class="p">]</span>
+<span class="n">result</span> <span class="o">=</span> <span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="n">query_string</span><span class="p">)</span>
+<span class="n">render</span><span class="p">(</span><span class="ss">json: </span><span class="n">result</span><span class="p">)</span>
+</code></pre>
+</div>
+
+<h2 id="variables">Variables</h2>
+
+<p>If your query contains variables, you can provide their values with the <code class="highlighter-rouge">variables:</code> keyword.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="n">query_string</span> <span class="o">=</span> <span class="s2">"query getPost($postId: Int!){ post(id: $postId) { title } }"</span>
+<span class="n">result</span> <span class="o">=</span> <span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="n">query_string</span><span class="p">,</span> <span class="ss">variables: </span><span class="p">{</span><span class="s2">"postId"</span> <span class="o">=&gt;</span> <span class="mi">2</span><span class="p">})</span>
+</code></pre>
+</div>
+
+<p><code class="highlighter-rouge">variables</code> keys should be strings, whose names match the variables, without <code class="highlighter-rouge">$</code>.</p>
+
+<h2 id="context">Context</h2>
+
+<p>You can pass an arbitrary hash of information into the query with the <code class="highlighter-rouge">context:</code> keyword.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="n">result</span> <span class="o">=</span> <span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="n">query_string</span><span class="p">,</span> <span class="ss">context: </span><span class="p">{</span><span class="ss">current_user: </span><span class="n">current_user</span><span class="p">})</span>
+</code></pre>
+</div>
+
+<p>These values will be accessible by key inside <code class="highlighter-rouge">resolve</code> functions. For example, this field only returns a value if the current user has high enough permissions:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="no">SecretStringField</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Field</span><span class="p">.</span><span class="nf">new</span> <span class="k">do</span> <span class="o">|</span><span class="n">f</span><span class="o">|</span>
+  <span class="n">f</span><span class="p">.</span><span class="nf">type</span> <span class="o">!</span><span class="no">GraphQL</span><span class="o">::</span><span class="no">STRING_TYPE</span>
+  <span class="n">f</span><span class="p">.</span><span class="nf">description</span> <span class="s2">"A string that's only visible to authorized users"</span>
+  <span class="n">f</span><span class="p">.</span><span class="nf">resolve</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span> <span class="n">ctx</span><span class="p">[</span><span class="ss">:current_user</span><span class="p">].</span><span class="nf">authorized?</span> <span class="p">?</span> <span class="n">obj</span><span class="p">.</span><span class="nf">secret_string</span> <span class="p">:</span> <span class="kp">nil</span> <span class="p">}</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<p>Note that <code class="highlighter-rouge">ctx</code> is not the <em>same</em> hash that’s passed to <code class="highlighter-rouge">GraphQL::Schema#execute</code>. <code class="highlighter-rouge">ctx</code> is an instance of <code class="highlighter-rouge">GraphQL::Query::Context</code>, which exposes the provided hash and may <em>also</em> contain other information about the query.</p>
+
+<h2 id="operation-name">Operation name</h2>
+
+<p>If your query contains multiple operations, you <em>must</em> pass the operation name with the <code class="highlighter-rouge">operation_name:</code> keyword:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="n">result</span> <span class="o">=</span> <span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="n">query_string</span><span class="p">,</span> <span class="ss">operation_name: </span><span class="s2">"getPersonInfo"</span><span class="p">)</span>
+</code></pre>
+</div>
+
+<p>If you don’t, you’ll get an error.</p>
+
+<h2 id="validation">Validation</h2>
+
+<p>By default, <code class="highlighter-rouge">graphql-ruby</code> performs validation on incoming query strings. If you want to disable this, pass <code class="highlighter-rouge">validate: false</code>. No guarantees it won’t blow up :)</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="n">result</span> <span class="o">=</span> <span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="n">query_string</span><span class="p">,</span> <span class="ss">validate: </span><span class="kp">false</span><span class="p">)</span>
+</code></pre>
+</div>
+
+<h2 id="custom-execution-strategies">Custom Execution Strategies</h2>
+
+<p><code class="highlighter-rouge">graphql</code> includes a serial execution strategy, but you can also create custom strategies to support advanced behavior. See <code class="highlighter-rouge">GraphQL::SerialExecution#execute</code> the required behavior.</p>
+
+<p>Then, set your schema to use your custom execution strategy with <code class="highlighter-rouge">GraphQL::Schema#{query|mutation|subscription}_execution_strategy</code></p>
+
+<p>For example:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="k">class</span> <span class="nc">CustomQueryExecutionStrategy</span>
+  <span class="k">def</span> <span class="nf">initialize</span>
+    <span class="c1"># ...</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="n">operation_name</span><span class="p">,</span> <span class="n">root_type</span><span class="p">,</span> <span class="n">query</span><span class="p">)</span>
+    <span class="c1"># ...</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="c1"># ... define your types ...</span>
+
+<span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+  <span class="n">query</span> <span class="no">MyQueryType</span>
+  <span class="n">mutation</span> <span class="no">MyMutationType</span>
+  <span class="c1"># Use your custom strategy:</span>
+  <span class="n">query_execution_strategy</span> <span class="o">=</span> <span class="no">CustomQueryExecutionStrategy</span>
+</code></pre>
+</div>
+
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

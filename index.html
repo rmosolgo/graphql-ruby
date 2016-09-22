@@ -1,0 +1,233 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>GraphQL Ruby</title>
+    <link rel="stylesheet" href="/graphql-ruby/css/main.css">
+    <link rel="icon" href="/graphql-ruby/graphql-ruby-icon.png">
+    <meta name="generator">
+  </head>
+  <body class="hack">
+    <div class="container">
+      <div style="display: flex; justify-content: center;">
+<strong style="white-space: pre; line-height: 1.1em; display: inline-block; font-size: 8px;">
+    ▄██████▄     ▄████████    ▄████████    ▄███████▄    ▄█    █▄    ████████▄    ▄█
+   ███    ███   ███    ███   ███    ███   ███    ███   ███    ███   ███    ███  ███
+   ███    █▀    ███    ███   ███    ███   ███    ███   ███    ███   ███    ███  ███
+  ▄███         ▄███▄▄▄▄██▀   ███    ███   ███    ███  ▄███▄▄▄▄███▄▄ ███    ███  ███
+ ▀▀███ ████▄  ▀▀███▀▀▀▀▀   ▀███████████ ▀█████████▀  ▀▀███▀▀▀▀███▀  ███    ███  ███
+   ███    ███ ▀███████████   ███    ███   ███          ███    ███   ███    ███  ███
+   ███    ███   ███    ███   ███    ███   ███          ███    ███   ███  ▀ ███  ███▌    ▄
+   ████████▀    ███    ███   ███    █▀   ▄████▀        ███    █▀     ▀██████▀▄█ █████▄▄██
+                ███    ███                                                      ▀
+</strong>
+      </div>
+      <p style="text-align: center;">A GraphQL server implementation for Ruby</p>
+
+      <div class="grid -between">
+        <div class="cell -3of12">
+          <h3><a href="/graphql-ruby">Readme</a></h3>
+          <h3>Guides</h3>
+          <ul>
+            <li><a href="/graphql-ruby/introduction">Introduction</a></li>
+            <li><a href="/graphql-ruby/defining_your_schema">Defining a Schema</a></li>
+            <li><a href="/graphql-ruby/executing_queries">Executing Queries</a></li>
+            <li><a href="/graphql-ruby/code_reuse">Code Reuse</a></li>
+            <li><a href="/graphql-ruby/security">Security</a></li>
+            <li><a href="/graphql-ruby/testing">Testing</a></li>
+          </ul>
+          <h3><a href="http://www.rubydoc.info/github/rmosolgo/graphql-ruby">API Docs</a></h3>
+          <h3><a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a></h3>
+        </div>
+        <div class="cell -9of12">
+          <h1 id="graphql-img-srchttpscloudgithubusercontentcomassets22317659094460cb43861e-3b66-11e5-9fbf-71066ff3ab13png-height40-altgraphql-ruby">graphql <img src="https://cloud.githubusercontent.com/assets/2231765/9094460/cb43861e-3b66-11e5-9fbf-71066ff3ab13.png" height="40" alt="graphql-ruby" /></h1>
+
+<p><a href="https://travis-ci.org/rmosolgo/graphql-ruby"><img src="https://travis-ci.org/rmosolgo/graphql-ruby.svg?branch=master" alt="Build Status" /></a>
+<a href="https://rubygems.org/gems/graphql"><img src="https://badge.fury.io/rb/graphql.svg" alt="Gem Version" /></a>
+<a href="https://codeclimate.com/github/rmosolgo/graphql-ruby"><img src="https://codeclimate.com/github/rmosolgo/graphql-ruby/badges/gpa.svg" alt="Code Climate" /></a>
+<a href="https://codeclimate.com/github/rmosolgo/graphql-ruby"><img src="https://codeclimate.com/github/rmosolgo/graphql-ruby/badges/coverage.svg" alt="Test Coverage" /></a>
+<a href="http://rmosolgo.github.io/react-badges/"><img src="https://cloud.githubusercontent.com/assets/2231765/6766607/d07992c6-cfc9-11e4-813f-d9240714dd50.png" alt="built with love" /></a></p>
+
+<p>A Ruby implementation of <a href="http://graphql.org/">GraphQL</a>.</p>
+
+<ul>
+  <li><a href="https://rmosolgo.github.io/graphql-ruby">Website</a></li>
+  <li><a href="http://www.rubydoc.info/github/rmosolgo/graphql-ruby">API Documentation</a></li>
+</ul>
+
+<h2 id="installation">Installation</h2>
+
+<p>Install from RubyGems by adding it to your <code class="highlighter-rouge">Gemfile</code>, then bundling.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="c1"># Gemfile</span>
+<span class="n">gem</span> <span class="s1">'graphql'</span>
+</code></pre>
+</div>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>$ bundle install
+</code></pre>
+</div>
+
+<h2 id="overview">Overview</h2>
+
+<h4 id="declare-types--build-a-schema">Declare types &amp; build a schema</h4>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="c1"># Declare a type...</span>
+<span class="no">PostType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+  <span class="nb">name</span> <span class="s2">"Post"</span>
+  <span class="n">description</span> <span class="s2">"A blog post"</span>
+
+  <span class="n">field</span> <span class="ss">:id</span><span class="p">,</span> <span class="o">!</span><span class="n">types</span><span class="o">.</span><span class="no">ID</span>
+  <span class="n">field</span> <span class="ss">:title</span><span class="p">,</span> <span class="o">!</span><span class="n">types</span><span class="o">.</span><span class="no">String</span>
+  <span class="n">field</span> <span class="ss">:body</span><span class="p">,</span> <span class="o">!</span><span class="n">types</span><span class="o">.</span><span class="no">String</span>
+  <span class="n">field</span> <span class="ss">:comments</span><span class="p">,</span> <span class="n">types</span><span class="p">[</span><span class="o">!</span><span class="no">CommentType</span><span class="p">]</span>
+<span class="k">end</span>
+
+<span class="c1"># ...and a query root</span>
+<span class="no">QueryType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+  <span class="nb">name</span> <span class="s2">"Query"</span>
+  <span class="n">description</span> <span class="s2">"The query root of this schema"</span>
+
+  <span class="n">field</span> <span class="ss">:post</span> <span class="k">do</span>
+    <span class="n">type</span> <span class="no">PostType</span>
+    <span class="n">argument</span> <span class="ss">:id</span><span class="p">,</span> <span class="o">!</span><span class="n">types</span><span class="o">.</span><span class="no">ID</span>
+    <span class="n">resolve</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span> <span class="no">Post</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="s2">"id"</span><span class="p">])</span> <span class="p">}</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="c1"># Then create your schema</span>
+<span class="no">Schema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+  <span class="n">query</span> <span class="no">QueryType</span>
+  <span class="n">max_depth</span> <span class="mi">8</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<h4 id="execute-queries">Execute queries</h4>
+
+<p>Execute GraphQL queries on a given schema, from a query string.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="n">result_hash</span> <span class="o">=</span> <span class="no">Schema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="n">query_string</span><span class="p">)</span>
+<span class="c1"># {</span>
+<span class="c1">#   "data" =&gt; {</span>
+<span class="c1">#     "post" =&gt; {</span>
+<span class="c1">#        "id" =&gt; 1,</span>
+<span class="c1">#        "title" =&gt; "GraphQL is nice"</span>
+<span class="c1">#     }</span>
+<span class="c1">#   }</span>
+<span class="c1"># }</span>
+</code></pre>
+</div>
+
+<h4 id="use-with-relay">Use with Relay</h4>
+
+<p>If you’re building a backend for <a href="http://facebook.github.io/relay/">Relay</a>, you’ll need:</p>
+
+<ul>
+  <li>A JSON dump of the schema, which you can get by sending <a href="https://github.com/rmosolgo/graphql-ruby/blob/master/lib/graphql/introspection/introspection_query.rb"><code class="highlighter-rouge">GraphQL::Introspection::INTROSPECTION_QUERY</code></a></li>
+  <li>Relay-specific helpers for GraphQL, see <a href="http://www.rubydoc.info/github/rmosolgo/graphql-ruby/file/guides/relay.md"><code class="highlighter-rouge">GraphQL::Relay</code></a></li>
+</ul>
+
+<h2 id="goals">Goals</h2>
+
+<ul>
+  <li>Implement the GraphQL spec &amp; support a Relay front end</li>
+  <li>Provide idiomatic, plain-Ruby API with similarities to reference implementation where possible</li>
+  <li>Support Ruby on Rails and Relay</li>
+</ul>
+
+<h2 id="getting-involved">Getting Involved</h2>
+
+<ul>
+  <li><strong>Say hi &amp; ask questions</strong> in the <a href="https://graphql-slack.herokuapp.com/">#ruby channel on Slack</a> or <a href="https://twitter.com/rmosolgo">on Twitter</a>!</li>
+  <li><strong>Report bugs</strong> by posting a description, full stack trace, and all relevant code in a  <a href="https://github.com/rmosolgo/graphql-ruby/issues">GitHub issue</a>.</li>
+  <li><strong>Features &amp; patches</strong> are welcome! Consider discussing it in an <a href="https://github.com/rmosolgo/graphql-ruby/issues">issue</a> or in the <a href="https://graphql-slack.herokuapp.com/">#ruby channel on Slack</a> to make sure we’re on the same page.</li>
+  <li><strong>Run the tests</strong> with <code class="highlighter-rouge">rake test</code> or start up guard with <code class="highlighter-rouge">bundle exec guard</code>.</li>
+  <li><strong>Build the site</strong> with <code class="highlighter-rouge">rake site:serve</code>, then visit <code class="highlighter-rouge">localhost:4000</code>.</li>
+</ul>
+
+<h2 id="related-projects">Related Projects</h2>
+
+<h3 id="code">Code</h3>
+
+<ul>
+  <li><code class="highlighter-rouge">graphql-ruby</code> + Rails demo (<a href="https://github.com/rmosolgo/graphql-ruby-demo">src</a> / <a href="http://graphql-ruby-demo.herokuapp.com">heroku</a>)</li>
+  <li><a href="https://github.com/shopify/graphql-batch"><code class="highlighter-rouge">graphql-batch</code></a>, a batched query execution strategy</li>
+  <li><a href="https://github.com/rmosolgo/graphql-libgraphqlparser-ruby"><code class="highlighter-rouge">graphql-libgraphqlparser</code></a>, bindings to <a href="https://github.com/graphql/libgraphqlparser">libgraphqlparser</a>, a C-level parser.</li>
+</ul>
+
+<h3 id="blog-posts">Blog Posts</h3>
+
+<ul>
+  <li>Building a blog in GraphQL and Relay on Rails <a href="https://medium.com/@gauravtiwari/graphql-and-relay-on-rails-getting-started-955a49d251de">Introduction</a>, <a href="https://medium.com/@gauravtiwari/graphql-and-relay-on-rails-creating-types-and-schema-b3f9b232ccfc">Part 1</a>, <a href="https://medium.com/@gauravtiwari/graphql-and-relay-on-rails-first-relay-powered-react-component-cb3f9ee95eca">Part 2</a></li>
+  <li>https://medium.com/@khor/relay-facebook-on-rails-8b4af2057152</li>
+  <li>https://blog.jacobwgillespie.com/from-rest-to-graphql-b4e95e94c26b#.4cjtklrwt</li>
+  <li>http://mgiroux.me/2015/getting-started-with-rails-graphql-relay/</li>
+  <li>http://mgiroux.me/2015/uploading-files-using-relay-with-rails/</li>
+</ul>
+
+<h2 id="to-do">To Do</h2>
+
+<ul>
+  <li>StaticValidation improvements
+    <ul>
+      <li>Use catch-all type/field/argument definitions instead of terminating traversal</li>
+      <li>Reduce ad-hoc traversals?</li>
+      <li>Validators are order-dependent, is this a smell?</li>
+      <li>Tests for interference between validators are poor</li>
+      <li>Maybe this is a candidate for a rewrite?</li>
+    </ul>
+  </li>
+  <li>Add Rails-y argument validations, eg <code class="highlighter-rouge">less_than: 100</code>, <code class="highlighter-rouge">max_length: 255</code>, <code class="highlighter-rouge">one_of: [...]</code>
+    <ul>
+      <li>Must be customizable</li>
+    </ul>
+  </li>
+  <li>Relay:
+    <ul>
+      <li><code class="highlighter-rouge">GlobalNodeIdentification.to_global_id</code> should receive the type name and <em>object</em>, not <code class="highlighter-rouge">id</code>. (Or, maintain the “<code class="highlighter-rouge">type_name, id</code> in, <code class="highlighter-rouge">type_name, id</code> out” pattern?)</li>
+      <li>Reduce duplication in ArrayConnection / RelationConnection</li>
+      <li>Improve API for creating edges (better RANGE_ADD support)</li>
+      <li>If the new edge isn’t a member of the connection’s objects, raise a nice error</li>
+    </ul>
+  </li>
+  <li>Missing Enum value should raise a descriptive error, not “key not found”</li>
+  <li><code class="highlighter-rouge">args</code> should whitelist keys – if you request a key that isn’t defined for the field, it should 💥</li>
+  <li>Fix middleware
+    <ul>
+      <li>Handle out-of-bounds lookup, eg <code class="highlighter-rouge">graphql-batch</code></li>
+      <li>Handle non-serial execution, eg <code class="highlighter-rouge">@defer</code></li>
+    </ul>
+  </li>
+  <li>Support non-instance-eval <code class="highlighter-rouge">.define</code>, eg <code class="highlighter-rouge">.define { |defn| ... }</code></li>
+  <li>First-class promise support
+    <ul>
+      <li>like <code class="highlighter-rouge">graphql-batch</code> but more local</li>
+      <li>support promises in connection resolves</li>
+    </ul>
+  </li>
+  <li>Add immutable transformation API to AST
+    <ul>
+      <li>Support working with AST as data</li>
+      <li>Adding fields to selections (<code class="highlighter-rouge">__typename</code> can go anywhere, others are type-specific)</li>
+      <li>Renaming fragments from local names to unique names</li>
+    </ul>
+  </li>
+  <li>Support AST subclasses? This would be hard, I think classes are used as hash keys in many places.</li>
+  <li>Support object deep-copy (schema, type, field, argument)? To support multiple schemas based on the same types.</li>
+  <li>Improve the website
+    <ul>
+      <li>Feature the logo in the header</li>
+      <li>Split <code class="highlighter-rouge">readme.md</code> into <code class="highlighter-rouge">index.md</code> (a homepage with code samples) and a technical readme (how to install, link to homepage)</li>
+      <li>Move “Related projects” to a guide</li>
+      <li>Revisit guides, maybe split them into smaller, more specific pages</li>
+      <li>Put guide titles into the <code class="highlighter-rouge">&lt;title /&gt;</code></li>
+    </ul>
+  </li>
+</ul>
+
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

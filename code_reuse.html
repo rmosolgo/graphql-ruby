@@ -1,0 +1,235 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>GraphQL Ruby</title>
+    <link rel="stylesheet" href="/graphql-ruby/css/main.css">
+    <link rel="icon" href="/graphql-ruby/graphql-ruby-icon.png">
+    <meta name="generator">
+  </head>
+  <body class="hack">
+    <div class="container">
+      <div style="display: flex; justify-content: center;">
+<strong style="white-space: pre; line-height: 1.1em; display: inline-block; font-size: 8px;">
+    ▄██████▄     ▄████████    ▄████████    ▄███████▄    ▄█    █▄    ████████▄    ▄█
+   ███    ███   ███    ███   ███    ███   ███    ███   ███    ███   ███    ███  ███
+   ███    █▀    ███    ███   ███    ███   ███    ███   ███    ███   ███    ███  ███
+  ▄███         ▄███▄▄▄▄██▀   ███    ███   ███    ███  ▄███▄▄▄▄███▄▄ ███    ███  ███
+ ▀▀███ ████▄  ▀▀███▀▀▀▀▀   ▀███████████ ▀█████████▀  ▀▀███▀▀▀▀███▀  ███    ███  ███
+   ███    ███ ▀███████████   ███    ███   ███          ███    ███   ███    ███  ███
+   ███    ███   ███    ███   ███    ███   ███          ███    ███   ███  ▀ ███  ███▌    ▄
+   ████████▀    ███    ███   ███    █▀   ▄████▀        ███    █▀     ▀██████▀▄█ █████▄▄██
+                ███    ███                                                      ▀
+</strong>
+      </div>
+      <p style="text-align: center;">A GraphQL server implementation for Ruby</p>
+
+      <div class="grid -between">
+        <div class="cell -3of12">
+          <h3><a href="/graphql-ruby">Readme</a></h3>
+          <h3>Guides</h3>
+          <ul>
+            <li><a href="/graphql-ruby/introduction">Introduction</a></li>
+            <li><a href="/graphql-ruby/defining_your_schema">Defining a Schema</a></li>
+            <li><a href="/graphql-ruby/executing_queries">Executing Queries</a></li>
+            <li><a href="/graphql-ruby/code_reuse">Code Reuse</a></li>
+            <li><a href="/graphql-ruby/security">Security</a></li>
+            <li><a href="/graphql-ruby/testing">Testing</a></li>
+          </ul>
+          <h3><a href="http://www.rubydoc.info/github/rmosolgo/graphql-ruby">API Docs</a></h3>
+          <h3><a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a></h3>
+        </div>
+        <div class="cell -9of12">
+          <p>Here are a few techniques for code reuse with graphql-ruby:</p>
+
+<ul>
+  <li><a href="#resolver-classes">Resolver classes</a></li>
+  <li><a href="#dynamically-defining-types">Dynamically defining types</a></li>
+  <li><a href="#functional-composition--resolve">Functional composition and <code class="highlighter-rouge">resolve</code></a></li>
+</ul>
+
+<p>Besides reducing duplicate code, these approaches also allow you to test parts of your schema in isolation.</p>
+
+<h2 id="resolver-classes">Resolver classes</h2>
+
+<p>(Originally described by AlphaSights at https://m.alphasights.com/graphql-ruby-clean-up-your-query-type-d7ab05a47084.)</p>
+
+<p>Many examples use a Proc literal for a field’s <code class="highlighter-rouge">resolve</code>, for example:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:name</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">String</span> <span class="k">do</span>
+  <span class="c1"># Resolve taking a Proc literal:</span>
+  <span class="n">resolve</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span> <span class="n">obj</span><span class="p">.</span><span class="nf">name</span> <span class="p">}</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<p>However, you can pass <em>any</em> object to <code class="highlighter-rouge">resolve(...)</code>, so long as it responds to <code class="highlighter-rouge">.call(obj, args, ctx)</code>.</p>
+
+<p>This means you can pass in a module:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="k">module</span> <span class="nn">NameResolver</span>
+  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">call</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span>
+    <span class="n">obj</span><span class="p">.</span><span class="nf">name</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="c1"># ...</span>
+
+<span class="n">field</span> <span class="ss">:name</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">String</span> <span class="k">do</span>
+  <span class="n">resolve</span><span class="p">(</span><span class="no">NameResolver</span><span class="p">)</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<p>Or, you can pass an instance of a class:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MethodCallResolver</span>
+  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">method_name</span><span class="p">)</span>
+    <span class="vi">@method_name</span> <span class="o">=</span> <span class="n">method_name</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">call</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span>
+    <span class="n">obj</span><span class="p">.</span><span class="nf">public_send</span><span class="p">(</span><span class="vi">@method_name</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="c1"># ...</span>
+
+<span class="n">field</span> <span class="ss">:name</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">String</span> <span class="k">do</span>
+  <span class="n">resolve</span><span class="p">(</span><span class="no">MethodCallResolver</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="ss">:name</span><span class="p">))</span>
+<span class="k">end</span>  
+</code></pre>
+</div>
+
+<p>Or, you can generate the <code class="highlighter-rouge">resolve</code> Proc dynamically:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="c1"># @return [Proc] A resolve proc which calls `method_name` on `obj`</span>
+<span class="k">def</span> <span class="nf">resolve_with_method</span><span class="p">(</span><span class="n">method_name</span><span class="p">)</span>
+  <span class="o">-&gt;</span> <span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span> <span class="n">obj</span><span class="p">.</span><span class="nf">public_send</span><span class="p">(</span><span class="n">method_name</span><span class="p">)</span> <span class="p">}</span>
+<span class="k">end</span>
+
+<span class="c1"># ...</span>
+
+<span class="n">field</span> <span class="ss">:name</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">String</span> <span class="k">do</span>
+  <span class="n">resolve</span><span class="p">(</span><span class="n">resolve_with_method</span><span class="p">(</span><span class="ss">:name</span><span class="p">))</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<h2 id="dynamically-defining-types">Dynamically defining types</h2>
+
+<p>Many examples show how to use <code class="highlighter-rouge">.define</code> and store the result in a Ruby constant:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="no">PostType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span> <span class="p">.</span><span class="nf">.</span><span class="p">.</span> <span class="nf">end</span>
+</code></pre>
+</div>
+
+<p>However, you can call <code class="highlighter-rouge">.define</code> anytime and store the result anywhere. For example, you can define a method which creates types:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="k">def</span> <span class="nf">create_type</span><span class="p">(</span><span class="n">model_class</span><span class="p">)</span>
+  <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+    <span class="nb">name</span><span class="p">(</span><span class="n">model_class</span><span class="p">.</span><span class="nf">name</span><span class="p">)</span>
+    <span class="n">description</span><span class="p">(</span><span class="s2">"Generated programmatically from model: </span><span class="si">#{</span><span class="n">model_class</span><span class="p">.</span><span class="nf">name</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="c1"># Make a field for each column:</span>
+    <span class="n">model_class</span><span class="p">.</span><span class="nf">columns</span><span class="p">.</span><span class="nf">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">column</span><span class="o">|</span>
+      <span class="n">field</span><span class="p">(</span><span class="n">column</span><span class="p">.</span><span class="nf">name</span><span class="p">,</span> <span class="n">convert_type</span><span class="p">(</span><span class="n">column</span><span class="p">.</span><span class="nf">type</span><span class="p">))</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="k">def</span> <span class="nf">convert_type</span><span class="p">(</span><span class="n">database_type</span><span class="p">)</span>
+  <span class="c1"># return a GraphQL type for `database_type`</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<p>You can also define fields for associated objects. You’ll need a way to access them programmatically.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="c1"># Hash&lt;Model =&gt; GraphQL::ObjectType&gt;</span>
+<span class="no">MODEL_TO_TYPE</span> <span class="o">=</span> <span class="p">{}</span>
+
+<span class="k">def</span> <span class="nf">create_type</span><span class="p">(</span><span class="n">model_class</span><span class="p">)</span>
+  <span class="c1"># ...</span>
+  <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+    <span class="c1"># ...</span>
+    <span class="c1"># Make a field for associations</span>
+    <span class="n">model_class</span><span class="p">.</span><span class="nf">associations</span><span class="p">.</span><span class="nf">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">association</span><span class="o">|</span>
+      <span class="c1"># The proc will be eval'd later - by that time, there will be a type in the lookup hash</span>
+      <span class="n">field</span><span class="p">(</span><span class="n">association</span><span class="p">.</span><span class="nf">name</span><span class="p">,</span> <span class="o">-&gt;</span> <span class="p">{</span> <span class="no">MODEL_TO_TYPE</span><span class="p">[</span><span class="n">association</span><span class="p">.</span><span class="nf">associated_model</span><span class="p">]</span> <span class="p">})</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="n">all_models_in_application</span><span class="p">.</span><span class="nf">each</span> <span class="p">{</span> <span class="o">|</span><span class="n">model_class</span><span class="o">|</span> <span class="no">MODEL_TO_TYPE</span><span class="p">[</span><span class="n">model_class</span><span class="p">]</span> <span class="o">=</span> <span class="n">create_type</span><span class="p">(</span><span class="n">model_class</span><span class="p">)</span> <span class="p">}</span>
+</code></pre>
+</div>
+
+<p>There is one caveat to using <code class="highlighter-rouge">.define</code>. The block is called with <code class="highlighter-rouge">instance_eval</code>, so <code class="highlighter-rouge">self</code> is a definition proxy, not the outer <code class="highlighter-rouge">self</code>. For this reason, you may need to assign values to local variables, then use them in <code class="highlighter-rouge">.define</code>. (<code class="highlighter-rouge">.define</code> has access to the local scope, but not the outer <code class="highlighter-rouge">self</code>.)</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="k">class</span> <span class="nc">DynamicTypeDefinition</span>
+  <span class="kp">attr_reader</span> <span class="ss">:model</span>
+  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+    <span class="vi">@model</span> <span class="o">=</span> <span class="n">model</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">to_graphql_type</span>
+    <span class="c1"># This doesn't work because `model` is actually `self.model`, which doesn't work inside `.define`</span>
+    <span class="c1"># GraphQL::ObjectType.define do</span>
+    <span class="c1">#   name(model.name)</span>
+    <span class="c1"># end</span>
+    <span class="c1">#</span>
+    <span class="c1"># Instead, assign a local variable first:</span>
+    <span class="n">model_name</span> <span class="o">=</span> <span class="n">model</span><span class="p">.</span><span class="nf">name</span>
+    <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+      <span class="nb">name</span><span class="p">(</span><span class="n">model_name</span><span class="p">)</span>
+    <span class="k">end</span>
+    <span class="c1"># 👌</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<h2 id="functional-composition--resolve">Functional composition &amp; <code class="highlighter-rouge">resolve</code></h2>
+
+<p>You can modify procs by wrapping them in other procs. This is a simple way to combine elements for a <code class="highlighter-rouge">resolve</code> function.</p>
+
+<p>For example, you can wrap a proc with authorization logic:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="k">module</span> <span class="nn">Auth</span>
+  <span class="c1"># Wrap resolve_proc in a check that `ctx[:current_user].can_read?(item_name)`</span>
+  <span class="c1">#</span>
+  <span class="c1"># @yield [obj, args, ctx] Field resolution parameters</span>
+  <span class="c1"># @yieldreturn [Object] The return value for this field</span>
+  <span class="c1"># @return [Proc] the passed-in block, modified to check for `can_read?(item_name)`</span>
+  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">can_read</span><span class="p">(</span><span class="n">item_name</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">block</span><span class="p">)</span>
+    <span class="o">-&gt;</span> <span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="k">do</span>
+      <span class="k">if</span> <span class="n">ctx</span><span class="p">[</span><span class="ss">:current_user</span><span class="p">].</span><span class="nf">can_read?</span><span class="p">(</span><span class="n">item_name</span><span class="p">)</span>
+        <span class="c1"># continue to the next call:</span>
+        <span class="n">block</span><span class="p">.</span><span class="nf">call</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span>
+      <span class="k">else</span>
+        <span class="kp">nil</span>
+      <span class="k">end</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="c1"># ...</span>
+
+<span class="no">QueryType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+  <span class="n">field</span> <span class="ss">:findPost</span><span class="p">,</span> <span class="no">PostType</span> <span class="k">do</span>
+    <span class="n">argument</span> <span class="ss">:id</span><span class="p">,</span> <span class="o">!</span><span class="n">types</span><span class="o">.</span><span class="no">Int</span>
+    <span class="n">resolve</span> <span class="no">Auth</span><span class="p">.</span><span class="nf">can_read</span><span class="p">(</span><span class="ss">:post</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="o">|</span>
+      <span class="no">Post</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="ss">:id</span><span class="p">])</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<p>Now, the inner proc will only be called if the outer proc calls it.</p>
+
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
