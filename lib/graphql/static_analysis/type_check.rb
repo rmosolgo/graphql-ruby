@@ -29,6 +29,9 @@ module GraphQL
     class TypeCheck
       include GraphQL::Language
 
+      DYNAMIC_FIELD_PREFIX = "__"
+      NO_ERRORS = []
+
       # @return [Array<GraphQL::StaticAnalysis::AnalysisError>] Errors found during typecheck
       attr_reader :errors
 
@@ -63,7 +66,7 @@ module GraphQL
         # [Array<GraphQL::Argument>]
         argument_stack = []
 
-        visitor[Nodes::OperationDefinition] << -> (node, prev_node) {
+        visitor[Nodes::OperationDefinition].enter << -> (node, prev_node) {
           # When you enter an operation definition:
           # - Check for the corresponding root type
           # - If it doesn't exist, push an error and choose AnyType
@@ -84,7 +87,7 @@ module GraphQL
           type_stack.pop
         }
 
-        visitor[Nodes::Field] << -> (node, prev_node) {
+        visitor[Nodes::Field].enter << -> (node, prev_node) {
           # Find the field definition & field type and push them
           # If you can't find it, push AnyField instead
           parent_type = type_stack.last
@@ -99,12 +102,36 @@ module GraphQL
           end
 
           field_type = field_defn.type.unwrap
+          field_selections = node.selections.select { |s| s.is_a?(Nodes::Field) }
+          user_field_selections = field_selections.select { |s| !s.name.start_with?(DYNAMIC_FIELD_PREFIX) }
+          field_type_kind = field_type.kind
+          error_nodes = NO_ERRORS
+          error_message = nil
 
-          if !field_type.kind.fields? && node.selections.any?
+          if !field_type_kind.composite? && node.selections.any?
+            # It's a scalar with selections
+            error_message = "can't have selections"
+            error_nodes = node.selections
+          elsif !field_type_kind.fields? && user_field_selections.any?
+            # It's a union with direct selections
+            error_message = "can't have direct selections, use a fragment spread to access members instead"
+            error_nodes = user_field_selections
+          elsif !field_type_kind.scalar? && node.selections.none?
+            if field_type_kind.fields?
+              # It's an object or interface with no selections
+              error_message = "must have selections"
+            else
+              # It's a union with no selections
+              error_message = "must have selections on a member type"
+            end
+            error_nodes = [node]
+          end
+
+          if error_message
             owner_name = "#{parent_type.name}.#{field_defn.name}"
             errors << AnalysisError.new(
-              %|Type "#{field_type.name}" can't have selections, see "#{owner_name}"|,
-              nodes: node.selections
+            %|Type "#{field_type.name}" #{error_message}, see "#{owner_name}"|,
+            nodes: error_nodes
             )
             # Stuff is about to get wacky, let's ignore it
             field_defn = AnyField
@@ -126,7 +153,7 @@ module GraphQL
           errors.concat(RequiredArguments.find_errors(parent, field_defn, node, observed_argument_names))
         }
 
-        visitor[Nodes::Argument] << -> (node, prev_node) {
+        visitor[Nodes::Argument].enter << -> (node, prev_node) {
           # Get the corresponding argument defn for this node.
           # If there is one, mark it as observed
           # If there isn't one, get AnyArgument
@@ -168,7 +195,7 @@ module GraphQL
           argument_stack.pop
         }
 
-        visitor[Nodes::InputObject] << -> (node, prev_node) {
+        visitor[Nodes::InputObject].enter << -> (node, prev_node) {
           # Prepare to validate required fields:
           observed_arguments_stack << []
           # Please excuse me while I borrow this:
@@ -180,6 +207,28 @@ module GraphQL
           input_object_type = type_stack.pop
           observed_argument_names = observed_arguments_stack.pop
           errors.concat(RequiredArguments.find_errors(nil, input_object_type, node, observed_argument_names))
+        }
+
+        visitor[Nodes::InlineFragment].enter << -> (node, prev_node) {
+          # There may be new type information
+          if node.type
+            next_type = schema.types.fetch(node.type, nil)
+            if next_type.nil?
+              errors << AnalysisError.new(
+                %|Type "#{node.type}" doesn't exist, so it can't be used as a fragment type|,
+                nodes: [node]
+              )
+              next_type = AnyType
+            end
+            type_stack << next_type
+          end
+        }
+
+        visitor[Nodes::InlineFragment].leave << -> (node, prev_node) {
+          # If this node pushed a type, pop it
+          if node.type
+            type_stack.pop
+          end
         }
       end
     end

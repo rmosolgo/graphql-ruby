@@ -20,15 +20,51 @@ module StaticAnalysisHelpers
     def self.call(obj, args, ctx)
       # todo
     end
+
+    ADDITION =        -> (operands) { operands[:lhs] + operands[:rhs] }
+    SUBTRACTION =     -> (operands) { operands[:lhs] - operands[:rhs] }
+    MULTIPLICATION =  -> (operands) { operands[:lhs] * operands[:rhs] }
+    DIVISION =        -> (operands) { operands[:lhs] / operands[:rhs] }
   end
 
-  ResultType = GraphQL::ObjectType.define do
-    name "Result"
+  OperationInterface = GraphQL::InterfaceType.define do
+    name "Operation"
+    field :perform, CalculationResultUnion do
+      argument :operands, !OperandsInput
+      resolve -> (obj, args, ctx) {
+        obj.call(args[:operands])
+      }
+    end
+  end
+
+  OperationNameEnum = GraphQL::EnumType.define do
+    name "OperationName"
+    value "ADDITION",       value: Calculation::ADDITION
+    value "SUBTRACTION",    value: Calculation::SUBTRACTION
+    value "MULTIPLICATION", value: Calculation::MULTIPLICATION
+    value "DIVISION",       value: Calculation::DIVISION
+  end
+
+  CalculationSuccessType = GraphQL::ObjectType.define do
+    name "CalculationSuccess"
     field :value, !types.Int
-    field :calculate, !ResultType do
+    field :calculate, !CalculationResultUnion do
       argument :expression, !ExpressionInput
       resolve(Calculation)
     end
+  end
+
+  CalculationErrorType = GraphQL::ObjectType.define do
+    name "CalculationError"
+    field :message, !types.String
+  end
+
+  CalculationResultUnion = GraphQL::UnionType.define do
+    name "CalculationResult"
+    possible_types [
+      CalculationSuccessType,
+      CalculationErrorType,
+    ]
   end
 
   OperandsInput = GraphQL::InputObjectType.define do
@@ -47,15 +83,20 @@ module StaticAnalysisHelpers
 
   QueryType = GraphQL::ObjectType.define do
     name "Query"
-    field :addInt, ResultType do
+    field :addInt, CalculationSuccessType do
       argument :lhs, !types.Int
       argument :rhs, !types.Int
       resolve -> (o, a, c) { a[:lhs] + a[:rhs] }
     end
 
-    field :calculate, ResultType do
+    field :calculate, CalculationResultUnion do
       argument :expression, !ExpressionInput
       resolve(Calculation)
+    end
+
+    field :operation, OperationInterface do
+      argument :type, !OperationNameEnum
+      resolve -> (obj, args, ctx) { args[:type] }
     end
   end
 

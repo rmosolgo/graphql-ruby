@@ -15,6 +15,10 @@ module GraphQL
         def arguments
           ARGUMENTS
         end
+
+        def get_argument(name)
+          AnyArgument
+        end
       end
     end
   end
