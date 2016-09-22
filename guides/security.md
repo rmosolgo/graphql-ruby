@@ -106,7 +106,7 @@ You can also reject queries based on the depth of their nesting. You can define 
 # Schema-level:
 MySchema = GraphQL::Schema.define do
   # ...
-  max_depth: 10
+  max_depth 10
 end
 
 # Query-level, which overrides the schema-level setting:
