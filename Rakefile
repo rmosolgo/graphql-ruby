@@ -11,8 +11,6 @@ end
 
 task(default: :test)
 
-task :test => :html_proofer
-
 def load_gem_and_dummy
   $:.push File.expand_path("../lib", __FILE__)
   $:.push File.expand_path("../spec", __FILE__)
@@ -28,20 +26,7 @@ task :console do
   IRB.start
 end
 
-desc "Test the generated HTML files"
-task :html_proofer => :'site:generate_readme_index' do
-  require "html-proofer"
 
-  Dir.chdir("guides") do
-    system "bundle exec jekyll build"
-  end
-
-  config = {
-    :assume_extension => true
-  }
-
-  HTMLProofer.check_directory("./guides/_site", config).run
-end
 
 desc "Use Racc & Ragel to regenerate parser.rb & lexer.rb from configuration files"
 task :build_parser do
@@ -77,7 +62,7 @@ namespace :site do
   end
 
   desc "Commit the local site to the gh-pages branch and publish to GitHub Pages"
-  task :publish => :generate_readme_index do
+  task :publish => [:generate_readme_index, :html_proofer] do
     # Ensure the gh-pages dir exists so we can generate into it.
     puts "Checking for gh-pages dir..."
     unless File.exist?("./gh-pages")
@@ -124,5 +109,20 @@ namespace :site do
       sh "git push origin gh-pages"
     end
     puts 'Done.'
+  end
+
+  desc "Test the generated HTML files"
+  task :html_proofer => :generate_readme_index do
+    require "html-proofer"
+
+    Dir.chdir("guides") do
+      system "bundle exec jekyll build"
+    end
+
+    config = {
+      :assume_extension => true
+    }
+
+    HTMLProofer.check_directory("./guides/_site", config).run
   end
 end
