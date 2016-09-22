@@ -3,6 +3,10 @@ require "spec_helper"
 describe GraphQL::StaticAnalysis do
   include StaticAnalysisHelpers
 
+  def assert_errors_without_schema(query_string, *error_messages)
+    assert_errors(query_string, *error_messages, schema: nil)
+  end
+
   describe "kitchen sink" do
     it "finds every error"
   end
@@ -15,7 +19,7 @@ describe GraphQL::StaticAnalysis do
         a(a: 1, b: 1) @directive(c: 1, c: 2, c: 3, d: 4)
       }|
 
-      assert_errors(
+      assert_errors_without_schema(
         query_string,
         'Arguments must be unique, but "a" is provided 2 times',
         'Arguments must be unique, but "c" is provided 3 times',
@@ -28,7 +32,7 @@ describe GraphQL::StaticAnalysis do
         field(input: {nested: {a: 1, a: 2, a: 3}})
       }|
 
-      assert_errors(
+      assert_errors_without_schema(
         query_string,
         'Arguments must be unique, but "a" is provided 3 times',
       )
@@ -46,7 +50,7 @@ describe GraphQL::StaticAnalysis do
       fragment frag3 on Type { ... frag1 }
       |
 
-      assert_errors(query_string, "Some definitions contain cycles: getStuff, getStuff2, frag1, frag2, frag3")
+      assert_errors_without_schema(query_string, "Some definitions contain cycles: getStuff, getStuff2, frag1, frag2, frag3")
     end
 
     it "requires unique names" do
@@ -55,7 +59,7 @@ describe GraphQL::StaticAnalysis do
       fragment frag1 on Type { stuff }
       fragment frag1 on Type { things }
       |
-      assert_errors(query_string, "Fragment names must be unique, but frag1 is not unique")
+      assert_errors_without_schema(query_string, "Fragment names must be unique, but frag1 is not unique")
     end
 
     it "requires spreads to have definitions" do
@@ -64,7 +68,7 @@ describe GraphQL::StaticAnalysis do
       fragment frag1 on Type { stuff }
       fragment frag2 on Type { things }
       |
-      assert_errors(query_string, "Query uses undefined fragments: frag3")
+      assert_errors_without_schema(query_string, "Query uses undefined fragments: frag3")
     end
 
     it "requires definitions to be used" do
@@ -75,7 +79,7 @@ describe GraphQL::StaticAnalysis do
       fragment frag3 on Type { something }
       fragment frag4 on Type { something }
       |
-      assert_errors(query_string, "Fragments are defined but unused: frag4, frag2")
+      assert_errors_without_schema(query_string, "Fragments are defined but unused: frag4, frag2")
     end
 
   end
@@ -87,7 +91,7 @@ describe GraphQL::StaticAnalysis do
           stuff(a: $a, b: $b)
         }
       |
-      assert_errors(query_string, "Variable name must be unique: $b")
+      assert_errors_without_schema(query_string, "Variable name must be unique: $b")
     end
 
     it "requires variables to be used" do
@@ -105,7 +109,7 @@ describe GraphQL::StaticAnalysis do
         }
       |
 
-      assert_errors(query_string, "Variable must be used: $a")
+      assert_errors_without_schema(query_string, "Variable must be used: $a")
     end
 
     it "requires variables to be defined" do
@@ -122,7 +126,7 @@ describe GraphQL::StaticAnalysis do
           stuff(a: $a, b: $b, c: $c)
         }
       |
-      assert_errors(
+      assert_errors_without_schema(
         query_string,
         "Variable must be defined: $b",
         "Variable must be defined: $c",
@@ -136,7 +140,7 @@ describe GraphQL::StaticAnalysis do
         query FirstQuery { stuff }
         query SecondQuery { stuff }
       |
-      assert_errors(query_string) # none
+      assert_errors_without_schema(query_string) # none
 
       query_string = %|
         query FirstQuery { stuff }
@@ -146,7 +150,7 @@ describe GraphQL::StaticAnalysis do
         query ThirdQuery { stuff }
       |
 
-      assert_errors(
+      assert_errors_without_schema(
         query_string,
         "Operation names must be unique, but FirstQuery is not unique",
         "Operation names must be unique, but SecondQuery is not unique",
@@ -154,13 +158,13 @@ describe GraphQL::StaticAnalysis do
     end
 
     it "allows one anonymous operation" do
-      assert_errors("{ stuff }") # none
-      assert_errors("{ stuff } { things }", "A document must not have more than one anonymous operation")
+      assert_errors_without_schema("{ stuff }") # none
+      assert_errors_without_schema("{ stuff } { things }", "A document must not have more than one anonymous operation")
     end
 
     it "doesn't allow anonymous and named operations" do
       query_string = "{ stuff } query Things { things }"
-      assert_errors(query_string, "A document must not mix anonymous operations with named operations")
+      assert_errors_without_schema(query_string, "A document must not mix anonymous operations with named operations")
     end
   end
 end

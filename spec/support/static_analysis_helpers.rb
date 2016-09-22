@@ -1,5 +1,5 @@
 module StaticAnalysisHelpers
-  def get_errors(query_string, schema: AnalysisSchema)
+  def get_errors(query_string, schema:)
     query_ast = GraphQL.parse(query_string)
     visitor = GraphQL::Language::Visitor.new(query_ast)
     analysis = GraphQL::StaticAnalysis.prepare(visitor, schema: schema)
@@ -7,8 +7,8 @@ module StaticAnalysisHelpers
     analysis.errors
   end
 
-  def assert_errors(query_string, *expected_error_messages)
-    errors = get_errors(query_string)
+  def assert_errors(query_string, *expected_error_messages, schema: AnalysisSchema)
+    errors = get_errors(query_string, schema: schema)
     messages = errors.map(&:message)
     expected_error_messages.each do |expected_message|
       assert_includes(messages, expected_message)
