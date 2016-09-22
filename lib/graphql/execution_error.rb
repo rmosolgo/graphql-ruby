@@ -10,6 +10,11 @@ module GraphQL
     # response which corresponds to this error.
     attr_accessor :path
 
+    def initialize(message, ast_node: nil)
+      @ast_node = ast_node
+      super(message)
+    end
+
     # @return [Hash] An entry for the response's "errors" key
     def to_h
       hash = {

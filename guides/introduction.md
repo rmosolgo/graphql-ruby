@@ -1,4 +1,6 @@
-# Introduction to `graphql-ruby`
+---
+title: Introduction to `graphql-ruby`
+---
 
 A GraphQL system exposes your application to the world according to its _schema_. A schema includes:
 

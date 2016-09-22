@@ -182,7 +182,10 @@ module GraphQL
       @analysis_errors = begin
         if @query_analyzers.any?
           reduce_results = GraphQL::Analysis.analyze_query(self, @query_analyzers)
-          reduce_results.select { |r| r.is_a?(GraphQL::AnalysisError) }.map(&:to_h)
+          reduce_results
+          .flatten # accept n-dimensional array
+          .select { |r| r.is_a?(GraphQL::AnalysisError) }
+          .map(&:to_h)
         else
           []
         end

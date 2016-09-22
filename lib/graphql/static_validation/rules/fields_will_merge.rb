@@ -79,16 +79,6 @@ module GraphQL
             errors << message("Field '#{name}' has an argument conflict: #{args.map {|a| JSON.dump(a) }.join(" or ")}?", defs.first, context: context)
           end
 
-          directive_names = defs.map { |defn| defn.directives.map(&:name) }.uniq
-          if directive_names.length != 1
-            errors << message("Field '#{name}' has a directive conflict: #{directive_names.map {|names| "[#{names.join(", ")}]"}.join(" or ")}?", defs.first, context: context)
-          end
-
-          directive_args = defs.map {|defn| defn.directives.map {|d| reduce_list(d.arguments) } }.uniq
-          if directive_args.length != 1
-            errors << message("Field '#{name}' has a directive argument conflict: #{directive_args.map {|args| JSON.dump(args)}.join(" or ")}?", defs.first, context: context)
-          end
-
           @errors = errors
         end
 

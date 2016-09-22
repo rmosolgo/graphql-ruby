@@ -1,4 +1,4 @@
-# graphql <img src="https://cloud.githubusercontent.com/assets/2231765/9094460/cb43861e-3b66-11e5-9fbf-71066ff3ab13.png" height=40 alt="graphql-ruby"/>
+# graphql <img src="https://cloud.githubusercontent.com/assets/2231765/9094460/cb43861e-3b66-11e5-9fbf-71066ff3ab13.png" height="40" alt="graphql-ruby"/>
 
 [![Build Status](https://travis-ci.org/rmosolgo/graphql-ruby.svg?branch=master)](https://travis-ci.org/rmosolgo/graphql-ruby)
 [![Gem Version](https://badge.fury.io/rb/graphql.svg)](https://rubygems.org/gems/graphql)
@@ -8,16 +8,7 @@
 
 A Ruby implementation of [GraphQL](http://graphql.org/).
 
- - Guides
-     - [Introduction](http://www.rubydoc.info/github/rmosolgo/graphql-ruby/file/guides/introduction.md)
-     - [Defining Your Schema](http://www.rubydoc.info/github/rmosolgo/graphql-ruby/file/guides/defining_your_schema.md)
-     - [Executing Queries](http://www.rubydoc.info/github/rmosolgo/graphql-ruby/file/guides/executing_queries.md)
-     - [Testing](http://www.rubydoc.info/github/rmosolgo/graphql-ruby/file/guides/testing.md)
-     - [Code Reuse](http://www.rubydoc.info/github/rmosolgo/graphql-ruby/file/guides/code_reuse.md)
-     - [Security](http://www.rubydoc.info/github/rmosolgo/graphql-ruby/file/guides/security.md)
-     - [Relay](http://www.rubydoc.info/github/rmosolgo/graphql-ruby/file/guides/relay.md)
-
-
+ - [Website](https://rmosolgo.github.io/graphql-ruby)
  - [API Documentation](http://www.rubydoc.info/github/rmosolgo/graphql-ruby)
 
 ## Installation
@@ -103,6 +94,7 @@ If you're building a backend for [Relay](http://facebook.github.io/relay/), you'
 - __Report bugs__ by posting a description, full stack trace, and all relevant code in a  [GitHub issue](https://github.com/rmosolgo/graphql-ruby/issues).
 - __Features & patches__ are welcome! Consider discussing it in an [issue](https://github.com/rmosolgo/graphql-ruby/issues) or in the [#ruby channel on Slack](https://graphql-slack.herokuapp.com/) to make sure we're on the same page.
 - __Run the tests__ with `rake test` or start up guard with `bundle exec guard`.
+- __Build the site__ with `rake site:serve`, then visit `localhost:4000`.
 
 ## Related Projects
 
@@ -110,7 +102,7 @@ If you're building a backend for [Relay](http://facebook.github.io/relay/), you'
 
 - `graphql-ruby` + Rails demo ([src](https://github.com/rmosolgo/graphql-ruby-demo) / [heroku](http://graphql-ruby-demo.herokuapp.com))
 - [`graphql-batch`](https://github.com/shopify/graphql-batch), a batched query execution strategy
-- [`graphql-libgraphqlparser`](https://github.com/rmosolgo/graphql-libgraphqlparser), bindings to [libgraphqlparser](https://github.com/graphql/libgraphqlparser), a C-level parser.
+- [`graphql-libgraphqlparser`](https://github.com/rmosolgo/graphql-libgraphqlparser-ruby), bindings to [libgraphqlparser](https://github.com/graphql/libgraphqlparser), a C-level parser.
 
 ### Blog Posts
 
@@ -150,3 +142,9 @@ If you're building a backend for [Relay](http://facebook.github.io/relay/), you'
   - Renaming fragments from local names to unique names
 - Support AST subclasses? This would be hard, I think classes are used as hash keys in many places.
 - Support object deep-copy (schema, type, field, argument)? To support multiple schemas based on the same types.
+- Improve the website
+  - Feature the logo in the header
+  - Split `readme.md` into `index.md` (a homepage with code samples) and a technical readme (how to install, link to homepage)
+  - Move "Related projects" to a guide
+  - Revisit guides, maybe split them into smaller, more specific pages
+  - Put guide titles into the `<title />`

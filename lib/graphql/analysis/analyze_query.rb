@@ -13,15 +13,15 @@ module GraphQL
     # @param analyzers [Array<#call>] Objects that respond to `#call(memo, visit_type, irep_node)`
     # @return [Array<Any>] Results from those analyzers
     def analyze_query(query, analyzers)
-      analyzers_and_values = analyzers.map { |r| initialize_reducer(r, query) }
+      reducer_states = analyzers.map { |r| ReducerState.new(r, query) }
 
       irep = query.internal_representation
 
       irep.each do |name, op_node|
-        reduce_node(op_node, analyzers_and_values)
+        reduce_node(op_node, reducer_states)
       end
 
-      analyzers_and_values.map { |(r, value)| finalize_reducer(r, value) }
+      reducer_states.map { |r| r.finalize_reducer }
     end
 
     private
@@ -29,44 +29,21 @@ module GraphQL
     module_function
 
     # Enter the node, visit its children, then leave the node.
-    def reduce_node(irep_node, analyzers_and_values)
-      visit_analyzers(:enter, irep_node, analyzers_and_values)
+    def reduce_node(irep_node, reducer_states)
+      visit_analyzers(:enter, irep_node, reducer_states)
 
       irep_node.children.each do |name, child_irep_node|
-        reduce_node(child_irep_node, analyzers_and_values)
+        reduce_node(child_irep_node, reducer_states)
       end
 
-      visit_analyzers(:leave, irep_node, analyzers_and_values)
+      visit_analyzers(:leave, irep_node, reducer_states)
     end
 
-    def visit_analyzers(visit_type, irep_node, analyzers_and_values)
-      analyzers_and_values.each do |reducer_and_value|
-        reducer = reducer_and_value[0]
-        memo = reducer_and_value[1]
-        next_memo = reducer.call(memo, visit_type, irep_node)
-        reducer_and_value[1] = next_memo
-      end
-    end
+    def visit_analyzers(visit_type, irep_node, reducer_states)
+      reducer_states.each do |reducer_state|
+        next_memo = reducer_state.call(visit_type, irep_node)
 
-    # If the reducer has an `initial_value` method, call it and store
-    # the result as `memo`. Otherwise, use `nil` as memo.
-    # @return [Array<(#call, Any)>] reducer-memo pairs
-    def initialize_reducer(reducer, query)
-      if reducer.respond_to?(:initial_value)
-        [reducer, reducer.initial_value(query)]
-      else
-        [reducer, nil]
-      end
-    end
-
-    # If the reducer accepts `final_value`, send it the last memo value.
-    # Otherwise, use the last value from the traversal.
-    # @return [Any] final memo value
-    def finalize_reducer(reducer, reduced_value)
-      if reducer.respond_to?(:final_value)
-        reducer.final_value(reduced_value)
-      else
-        reduced_value
+        reducer_state.memo = next_memo
       end
     end
   end
