@@ -1,4 +1,4 @@
-# graphql <img src="https://cloud.githubusercontent.com/assets/2231765/9094460/cb43861e-3b66-11e5-9fbf-71066ff3ab13.png" height=40 alt="graphql-ruby"/>
+# graphql <img src="https://cloud.githubusercontent.com/assets/2231765/9094460/cb43861e-3b66-11e5-9fbf-71066ff3ab13.png" height="40" alt="graphql-ruby"/>
 
 [![Build Status](https://travis-ci.org/rmosolgo/graphql-ruby.svg?branch=master)](https://travis-ci.org/rmosolgo/graphql-ruby)
 [![Gem Version](https://badge.fury.io/rb/graphql.svg)](https://rubygems.org/gems/graphql)
@@ -142,3 +142,9 @@ If you're building a backend for [Relay](http://facebook.github.io/relay/), you'
   - Renaming fragments from local names to unique names
 - Support AST subclasses? This would be hard, I think classes are used as hash keys in many places.
 - Support object deep-copy (schema, type, field, argument)? To support multiple schemas based on the same types.
+- Improve the website
+  - Feature the logo in the header
+  - Split `readme.md` into `index.md` (a homepage with code samples) and a technical readme (how to install, link to homepage)
+  - Move "Related projects" to a guide
+  - Revisit guides, maybe split them into smaller, more specific pages
+  - Put guide titles into the `<title />`
