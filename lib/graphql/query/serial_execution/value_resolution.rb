@@ -45,11 +45,13 @@ module GraphQL
           def non_null_result
             wrapped_type = field_type.of_type
             strategy_class = get_strategy_for_kind(wrapped_type.kind)
-            value.each_with_index.map do |item, index|
+            result = value.each_with_index.map do |item, index|
               irep_node.index = index
               inner_strategy = strategy_class.new(item, wrapped_type, target, parent_type, irep_node, execution_context)
               inner_strategy.result
             end
+            irep_node.index = nil
+            result
           end
         end
 
