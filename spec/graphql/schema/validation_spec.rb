@@ -34,7 +34,7 @@ describe GraphQL::Schema::Validation do
         name "InvalidArgument"
         type !types[!GraphQL::INT_TYPE]
         argument :invalid do
-          type GraphQL::STRING_TYPE
+          type GraphQL::FLOAT_TYPE
           default_value [1,2,3]
         end
       end
@@ -53,7 +53,7 @@ describe GraphQL::Schema::Validation do
     end
 
     it "applies validation to its member Arguments" do
-      assert_error_includes invalid_argument_member_field, "default value [1, 2, 3] is not valid for type String"
+      assert_error_includes invalid_argument_member_field, "default value [1, 2, 3] is not valid for type Float"
     end
   end
 
@@ -159,7 +159,7 @@ describe GraphQL::Schema::Validation do
         name "InvalidArgumentMember"
         argument :nonsense do
           type GraphQL::FLOAT_TYPE
-          default_value "xyz"
+          default_value ["xyz"]
         end
       end
     }
@@ -169,7 +169,7 @@ describe GraphQL::Schema::Validation do
     end
 
     it "applies validation to its member Arguments" do
-      assert_error_includes invalid_argument_member_input, "default value \"xyz\" is not valid for type Float"
+      assert_error_includes invalid_argument_member_input, "default value [\"xyz\"] is not valid for type Float"
     end
   end
 
@@ -180,15 +180,15 @@ describe GraphQL::Schema::Validation do
         field :invalid do
           type GraphQL::BOOLEAN_TYPE
           argument :invalid do
-            type GraphQL::STRING_TYPE
-            default_value 4.56
+            type GraphQL::FLOAT_TYPE
+            default_value ["123"]
           end
         end
       end
     }
 
     it "validates fields" do
-      assert_error_includes invalid_field_interface, "default value 4.56 is not valid for type String"
+      assert_error_includes invalid_field_interface, "default value [\"123\"] is not valid for type Float"
     end
   end
 
@@ -210,10 +210,6 @@ describe GraphQL::Schema::Validation do
 
     it "requires the type is a Base type" do
       assert_error_includes untyped_argument, "must be a valid input type (Scalar or InputObject), not Symbol"
-    end
-
-    it "requires the default value is compatible" do
-      assert_error_includes invalid_default_argument, 'default value "abc" is not valid for type Int'
     end
   end
 end
