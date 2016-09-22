@@ -1,4 +1,6 @@
-# Defining Your Schema
+---
+title: Defining Your Schema
+---
 
 To define your schema, define types and connect them with fields. Then, initialize your schema with root types (`query` and `mutation`). You can also customize your schema.
 

@@ -1,4 +1,7 @@
-# Executing Queries with `graphql-ruby`
+---
+title: Executing Queries with `graphql-ruby`
+
+---
 
 After you define your schema, you can evaluate queries with `GraphQL::Schema#execute`.
 
