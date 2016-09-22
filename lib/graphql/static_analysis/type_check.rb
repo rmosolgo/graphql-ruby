@@ -201,9 +201,7 @@ module GraphQL
           # so there won't be any errors and the typename won't show up
           owner_name = "inline fragment#{node.type ? " on \"#{node.type}\"" : ""}"
           selection_errors = ValidSelections.errors_for_selections(owner_name, parent_type, node)
-          if selection_errors.any?
-            errors.concat(selection_errors)
-          end
+          errors.concat(selection_errors)
         }
 
         visitor[Nodes::InlineFragment].leave << -> (node, prev_node) {
@@ -211,6 +209,27 @@ module GraphQL
           if node.type
             type_stack.pop
           end
+        }
+
+        visitor[Nodes::FragmentDefinition].enter << -> (node, prev_node) {
+          next_type = schema.types.fetch(node.type, nil)
+          if next_type.nil?
+            errors << AnalysisError.new(
+              %|Type "#{node.type}" doesn't exist, so it can't be used as a fragment type|,
+              nodes: [node]
+            )
+            next_type = AnyType
+          end
+          type_stack << next_type
+
+          owner_name = "fragment \"#{node.name}\""
+          selection_errors = ValidSelections.errors_for_selections(owner_name, next_type, node)
+          errors.concat(selection_errors)
+        }
+
+        visitor[Nodes::FragmentDefinition].leave << -> (node, prev_node) {
+          # Remove type condition
+          type_stack.pop
         }
       end
     end

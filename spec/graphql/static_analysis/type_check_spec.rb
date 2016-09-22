@@ -28,10 +28,13 @@ describe GraphQL::StaticAnalysis::TypeCheck do
           perform(operands: {lhs: 1, rhs: 2}) { ... on CalculationSuccess { value } }
           perform(operands: {lhs: 1, rhs: 2}) { ... on CalculationSuccess { } }
           perform(operands: {lhs: 1, rhs: 2})
+          ... operationFields
         }
 
         operation(type: SUBTRACTION)
+
       }
+      fragment operationFields on Operation { }
       |
 
       assert_errors(
@@ -39,6 +42,7 @@ describe GraphQL::StaticAnalysis::TypeCheck do
         %|Type "CalculationResult" must have selections on a member type, see "Operation.perform"|,
         %|Type "Operation" must have selections, see "Query.operation"|,
         %|Type "CalculationSuccess" must have selections, see inline fragment on "CalculationSuccess"|,
+        %|Type "Operation" must have selections, see fragment "operationFields"|,
       )
     end
 
