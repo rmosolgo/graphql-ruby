@@ -4,8 +4,4 @@ GraphQL::Directive::SkipDirective = GraphQL::Directive.define do
   locations([GraphQL::Directive::FIELD, GraphQL::Directive::FRAGMENT_SPREAD, GraphQL::Directive::INLINE_FRAGMENT])
 
   argument :if, !GraphQL::BOOLEAN_TYPE
-
-  include_proc -> (arguments) {
-    !arguments["if"]
-  }
 end

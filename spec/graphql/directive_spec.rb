@@ -1,7 +1,8 @@
 require "spec_helper"
 
 describe GraphQL::Directive do
-  let(:result) { DummySchema.execute(query_string, variables: {"t" => true, "f" => false}) }
+  let(:variables) { {"t" => true, "f" => false} }
+  let(:result) { DummySchema.execute(query_string, variables: variables) }
   describe "on fields" do
     let(:query_string) { %|query directives($t: Boolean!, $f: Boolean!) {
       cheese(id: 1) {
@@ -72,6 +73,143 @@ describe GraphQL::Directive do
         },
       }}
       assert_equal(expected, result)
+    end
+  end
+  describe "merging @skip and @include" do
+    let(:field_included?) { r = result["data"]["cheese"]; r.has_key?('flavor') && r.has_key?('withVariables') }
+    let(:skip?) { false }
+    let(:include?) { true }
+    let(:variables) { {"skip" => skip?, "include" => include?} }
+    let(:query_string) {"
+      query getCheese ($include: Boolean!, $skip: Boolean!) {
+        cheese(id: 1) {
+          flavor @include(if: #{include?}) @skip(if: #{skip?}),
+          withVariables: flavor @include(if: $include) @skip(if: $skip)
+        }
+      }
+    "}
+    # behavior as defined in
+    # https://github.com/facebook/graphql/blob/master/spec/Section%203%20--%20Type%20System.md#include
+    describe "when @skip=false and @include=true" do
+      let(:skip?) { false }
+      let(:include?) { true }
+      it "is included" do assert field_included? end
+    end
+    describe "when @skip=false and @include=false" do
+      let(:skip?) { false }
+      let(:include?) { false }
+      it "is not included" do assert !field_included? end
+    end
+    describe "when @skip=true and @include=true" do
+      let(:skip?) { true }
+      let(:include?) { true }
+      it "is not included" do assert !field_included? end
+    end
+    describe "when @skip=true and @include=false" do
+      let(:skip?) { true }
+      let(:include?) { false }
+      it "is not included" do assert !field_included? end
+    end
+    describe "when evaluating skip on query selection and fragment" do
+      describe "with @skip" do
+        let(:query_string) {"
+          query getCheese ($skip: Boolean!) {
+            cheese(id: 1) {
+              flavor,
+              withVariables: flavor,
+              ...F0
+            }
+          }
+          fragment F0 on Cheese {
+            flavor @skip(if: #{skip?})
+            withVariables: flavor @skip(if: $skip)
+          }
+        "}
+        describe "and @skip=false" do
+          let(:skip?) { false }
+          it "is included" do assert field_included? end
+        end
+        describe "and @skip=true" do
+          let(:skip?) { true }
+          it "is included" do assert field_included? end
+        end
+      end      
+    end
+    describe "when evaluating conflicting @skip and @include on query selection and fragment" do
+      let(:query_string) {"
+        query getCheese ($include: Boolean!, $skip: Boolean!) {
+          cheese(id: 1) {
+            ... on Cheese @include(if: #{include?}) {
+              flavor
+            }
+            withVariables: flavor @include(if: $include),
+            ...F0
+          }
+        }
+        fragment F0 on Cheese {
+          flavor @skip(if: #{skip?}),
+          withVariables: flavor @skip(if: $skip)
+        }
+      "}
+      describe "when @skip=false and @include=true" do
+        let(:skip?) { false }
+        let(:include?) { true }
+        it "is included" do assert field_included? end
+      end
+      describe "when @skip=false and @include=false" do
+        let(:skip?) { false }
+        let(:include?) { false }
+        it "is included" do assert field_included? end
+      end
+      describe "when @skip=true and @include=true" do
+        let(:skip?) { true }
+        let(:include?) { true }
+        it "is included" do assert field_included? end
+      end
+      describe "when @skip=true and @include=false" do
+        let(:skip?) { true }
+        let(:include?) { false }
+        it "is not included" do
+          assert !field_included?
+        end
+      end
+    end
+
+    describe "when handling multiple fields at the same level" do
+      describe "when at least one occurrence would be included" do
+        let(:query_string) {"
+          query getCheese ($include: Boolean!, $skip: Boolean!) {
+            cheese(id: 1) {
+              ... on Cheese {
+                flavor
+              }
+              flavor @include(if: #{include?}),
+              flavor @skip(if: #{skip?}),
+              withVariables: flavor,
+              withVariables: flavor @include(if: $include),
+              withVariables: flavor @skip(if: $skip)
+            }
+          }
+        "}
+        let(:skip?) { true }
+        let(:include?) { false }
+        it "is included" do assert field_included? end
+      end
+      describe "when no occurrence would be included" do
+        let(:query_string) {"
+          query getCheese ($include: Boolean!, $skip: Boolean!) {
+            cheese(id: 1) {
+              flavor @include(if: #{include?}),
+              flavor @skip(if: #{skip?}),
+              withVariables: flavor @include(if: $include),
+              withVariables: flavor @skip(if: $skip)
+            }
+          }
+        "}
+        let(:skip?) { true }
+        let(:include?) { false }
+        it "is not included" do assert !field_included? end
+      end
     end
   end
 end

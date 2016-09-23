@@ -10,22 +10,31 @@ module GraphQL
 
       # This covers `@include(if:)` & `@skip(if:)`
       # @return [Boolean] Should this node be skipped altogether?
-      def skip?(irep_node, query)
-        irep_node.directives.each do |directive_node|
-          if directive_node.name == SKIP || directive_node.name == INCLUDE
-            directive_defn = directive_node.definitions.first
-            args = query.arguments_for(directive_node, directive_defn)
-            if !directive_defn.include?(args)
-              return true
-            end
-          end
-        end
-        false
+      def skip?(ast_node, query)
+        !include?(ast_node, query)
       end
 
       # @return [Boolean] Should this node be included in the query?
-      def include?(irep_node, query)
-        !skip?(irep_node, query)
+      def include?(directive_irep_nodes, query)
+        directive_irep_nodes.each do |directive_irep_node|
+          name = directive_irep_node.name
+          directive_defn = query.schema.directives[name]
+          case name
+          when SKIP
+            args = query.arguments_for(directive_irep_node, directive_defn)
+            if args['if'] == true
+              return false
+            end
+          when INCLUDE
+            args = query.arguments_for(directive_irep_node, directive_defn)
+            if args['if'] == false
+              return false
+            end
+          else
+            # Undefined directive, or one we don't care about
+          end
+        end
+        true
       end
     end
   end
