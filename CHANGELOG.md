@@ -8,6 +8,23 @@
 
 ### Bug fixes
 
+## 0.18.15 (20 Sep 2016)
+
+### Breaking changes
+
+- Validation errors no longer have a `"path"` key in their JSON. It was renamed to `"fields"` #264
+- `@skip` and `@include` over multiple selections are handled according to the spec: if the same field is selected multiple times and _one or more_ of them would be included, the field will be present in the response. Previously, if _one or more_ of them would be skipped, it was absent from the response. #256
+
+### New features
+
+- Execution errors include a `"path"` key which points to the field in the response where the error occurred. #259
+- Parsing directives from the Schema language is now supported #273
+
+
+### Bug fixes
+
+- `@skip` and `@include` over multiple selections are now handled according to the spec #256
+
 ## 0.18.14 (20 Sep 2016)
 
 ### Breaking changes
