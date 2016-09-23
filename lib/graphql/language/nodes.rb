@@ -334,84 +334,112 @@ module GraphQL
         end
       end
 
-      class ScalarTypeDefinition < NameOnlyNode; end
+      class ScalarTypeDefinition < AbstractNode
+        attr_accessor :name, :directives
+        scalar_attributes :name
+        child_attributes :directives
+
+        def initialize_node(name:, directives: [])
+          @name = name
+          @directives = directives
+        end
+      end
 
       class ObjectTypeDefinition < AbstractNode
-        attr_accessor :name, :interfaces, :fields
+        attr_accessor :name, :interfaces, :fields, :directives
         scalar_attributes :name
-        child_attributes :interfaces, :fields
+        child_attributes :interfaces, :fields, :directives
 
-        def initialize_node(name:, interfaces:, fields:)
+        def initialize_node(name:, interfaces:, fields:, directives: [])
           @name = name
           @interfaces = interfaces || []
+          @directives = directives
           @fields = fields
         end
       end
 
       class InputValueDefinition < AbstractNode
-        attr_accessor :name, :type, :default_value
+        attr_accessor :name, :type, :default_value, :directives
         scalar_attributes :name, :type, :default_value
+        child_attributes :directives
 
-        def initialize_node(name:, type:, default_value: nil)
+        def initialize_node(name:, type:, default_value: nil, directives: [])
           @name = name
           @type = type
           @default_value = default_value
+          @directives = directives
         end
       end
 
       class FieldDefinition < AbstractNode
-        attr_accessor :name, :arguments, :type
+        attr_accessor :name, :arguments, :type, :directives
         scalar_attributes :name, :type
-        child_attributes :arguments
+        child_attributes :arguments, :directives
 
-        def initialize_node(name:, arguments:, type:)
+        def initialize_node(name:, arguments:, type:, directives: [])
           @name = name
           @arguments = arguments
           @type = type
+          @directives = directives
         end
       end
 
       class InterfaceTypeDefinition < AbstractNode
-        attr_accessor :name, :fields
+        attr_accessor :name, :fields, :directives
         scalar_attributes :name
-        child_attributes :fields
+        child_attributes :fields, :directives
 
-        def initialize_node(name:, fields:)
+        def initialize_node(name:, fields:, directives: [])
           @name = name
           @fields = fields
+          @directives = directives
         end
       end
 
       class UnionTypeDefinition < AbstractNode
-        attr_accessor :name, :types
+        attr_accessor :name, :types, :directives
         scalar_attributes :name
-        child_attributes :types
+        child_attributes :types, :directives
 
-        def initialize_node(name:, types:)
+        def initialize_node(name:, types:, directives: [])
           @name = name
           @types = types
+          @directives = directives
         end
       end
 
       class EnumTypeDefinition < AbstractNode
-        attr_accessor :name, :values
+        attr_accessor :name, :values, :directives
         scalar_attributes :name
-        child_attributes :values
+        child_attributes :values, :directives
 
-        def initialize_node(name:, values:)
+        def initialize_node(name:, values:, directives: [])
           @name = name
           @values = values
+          @directives = directives
+        end
+      end
+
+      class EnumValueDefinition < AbstractNode
+        attr_accessor :name, :directives
+        scalar_attributes :name
+        child_attributes :directives
+
+        def initialize_node(name:, directives: [])
+          @name = name
+          @directives = directives
         end
       end
 
       class InputObjectTypeDefinition < AbstractNode
-        attr_accessor :name, :fields
+        attr_accessor :name, :fields, :directives
         scalar_attributes :name
         child_attributes :fields
 
-        def initialize_node(name:, fields:)
+        def initialize_node(name:, fields:, directives: [])
           @name = name
           @fields = fields
+          @directives = directives
         end
       end
     end

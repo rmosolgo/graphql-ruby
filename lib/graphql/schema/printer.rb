@@ -94,7 +94,7 @@ module GraphQL
                 field_type = type.input_fields.fetch(field_name.to_s).type
                 "#{field_name}: #{print_value(field_value, field_type)}"
               }.join(", ")
-              "{ #{fields} }"
+              "{#{fields}}"
             when NonNullType
               print_value(value, type.of_type)
             when ListType

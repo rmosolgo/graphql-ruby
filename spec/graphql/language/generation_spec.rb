@@ -10,7 +10,7 @@ describe GraphQL::Language::Generation do
         ...moreNestedFields @skip(if: $skipNested)
       }
       ... on OtherType @include(unless: false) {
-        field(arg: [{ key: "value", anotherKey: 0.9, anotherAnotherKey: WHATEVER }])
+        field(arg: [{key: "value", anotherKey: 0.9, anotherAnotherKey: WHATEVER}])
         anotherField
       }
       ... {
@@ -31,7 +31,7 @@ describe GraphQL::Language::Generation do
     describe "inputs" do
       let(:query_string) {%|
         query {
-          field(int: 3, float: 4.7e-24, bool: false, string: "☀︎🏆\\n escaped \\" unicode ¶ /", enum: ENUM_NAME, array: [7, 8, 9], object: { a: [1, 2, 3], b: { c: "4" } }, unicode_bom: "\xef\xbb\xbfquery")
+          field(int: 3, float: 4.7e-24, bool: false, string: "☀︎🏆\\n escaped \\" unicode ¶ /", enum: ENUM_NAME, array: [7, 8, 9], object: {a: [1, 2, 3], b: {c: "4"}}, unicode_bom: "\xef\xbb\xbfquery")
         }
       |}
 
@@ -41,15 +41,63 @@ describe GraphQL::Language::Generation do
     end
 
     describe "schema" do
-      let(:query_string) {%|
+      # From: https://github.com/graphql/graphql-js/blob/a725499b155285c2e33647a93393c82689b20b0f/src/language/__tests__/schema-kitchen-sink.graphql
+      let(:query_string) {<<-schema
         schema {
-          query: Query
+          query: QueryType
+          mutation: MutationType
         }
 
-        type Query {
-          field: String!
+        type Foo implements Bar {
+          one: Type
+          two(argument: InputType!): Type
+          three(argument: InputType, other: String): Int
+          four(argument: String = "string"): String
+          five(argument: [String] = ["string", "string"]): String
+          six(argument: InputType = {key: "value"}): Type
         }
-      |}
+
+        type AnnotatedObject @onObject(arg: "value") {
+          annotatedField(arg: Type = "default" @onArg): Type @onField
+        }
+
+        interface Bar {
+          one: Type
+          four(argument: String = "string"): String
+        }
+
+        interface AnnotatedInterface @onInterface {
+          annotatedField(arg: Type @onArg): Type @onField
+        }
+
+        union Feed = Story | Article | Advert
+
+        union AnnotatedUnion @onUnion = A | B
+
+        scalar CustomScalar
+
+        scalar AnnotatedScalar @onScalar
+
+        enum Site {
+          DESKTOP
+          MOBILE
+        }
+
+        enum AnnotatedEnum @onEnum {
+          ANNOTATED_VALUE @onEnumValue
+          OTHER_VALUE
+        }
+
+        input InputType {
+          key: String!
+          answer: Int = 42
+        }
+
+        input AnnotatedInput @onInputObjectType {
+          annotatedField: Type @onField
+        }
+      schema
+      }
 
       it "generate" do
         assert_equal query_string.gsub(/^        /, "").strip, document.to_query_string

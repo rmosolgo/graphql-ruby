@@ -279,6 +279,7 @@ module GraphQL
               it "parses the test schema" do
                 schema = DummySchema
                 schema_string = GraphQL::Schema::Printer.print_schema(schema)
+
                 document = subject.parse(schema_string)
 
                 assert_equal schema_string, document.to_query_string
@@ -324,6 +325,28 @@ module GraphQL
                 assert_equal 'ID', type.fields[0].type.of_type.name
               end
 
+              it "parses object types with directives" do
+                document = subject.parse('
+                  type Comment implements Node @deprecated(reason: "No longer supported") {
+                    id: ID!
+                  }
+                ')
+
+                type = document.definitions.first
+                assert_equal GraphQL::Language::Nodes::ObjectTypeDefinition, type.class
+                assert_equal 'Comment', type.name
+                assert_equal ['Node'], type.interfaces
+                assert_equal ['id'], type.fields.map(&:name)
+                assert_equal [], type.fields[0].arguments
+                assert_equal 'ID', type.fields[0].type.of_type.name
+                assert_equal 1, type.directives.length
+
+                deprecated_directive = type.directives[0]
+                assert_equal 'deprecated', deprecated_directive.name
+                assert_equal 'reason', deprecated_directive.arguments[0].name
+                assert_equal 'No longer supported', deprecated_directive.arguments[0].value
+              end
+
               it "parses field arguments" do
                 document = subject.parse('
                   type Mutation {
@@ -340,12 +363,43 @@ module GraphQL
                 assert_equal ['Test', 'Annoying'], tags_arg.value
               end
 
+              it "parses field arguments with directives" do
+                document = subject.parse('
+                  type Mutation {
+                    post(id: ID! @deprecated(reason: "No longer supported"), data: String): Post
+                  }
+                ')
+
+                field = document.definitions.first.fields.first
+                assert_equal ['id', 'data'], field.arguments.map(&:name)
+                id_arg = field.arguments[0]
+
+                deprecated_directive = id_arg.directives[0]
+                assert_equal 'deprecated', deprecated_directive.name
+                assert_equal 'reason', deprecated_directive.arguments[0].name
+                assert_equal 'No longer supported', deprecated_directive.arguments[0].value
+              end
+
               it "parses scalar types" do
                 document = subject.parse('scalar DateTime')
 
                 type = document.definitions.first
                 assert_equal GraphQL::Language::Nodes::ScalarTypeDefinition, type.class
                 assert_equal 'DateTime', type.name
+              end
+
+              it "parses scalar types with directives" do
+                document = subject.parse('scalar DateTime @deprecated(reason: "No longer supported")')
+
+                type = document.definitions.first
+                assert_equal GraphQL::Language::Nodes::ScalarTypeDefinition, type.class
+                assert_equal 'DateTime', type.name
+                assert_equal 1, type.directives.length
+
+                deprecated_directive = type.directives[0]
+                assert_equal 'deprecated', deprecated_directive.name
+                assert_equal 'reason', deprecated_directive.arguments[0].name
+                assert_equal 'No longer supported', deprecated_directive.arguments[0].value
               end
 
               it "parses interface types" do
@@ -363,15 +417,68 @@ module GraphQL
                 assert_equal 'ID', type.fields[0].type.of_type.name
               end
 
+              it "parses interface types with directives" do
+                document = subject.parse('
+                  interface Node @deprecated(reason: "No longer supported") {
+                    id: ID!
+                  }
+                ')
+
+                type = document.definitions.first
+                assert_equal GraphQL::Language::Nodes::InterfaceTypeDefinition, type.class
+                assert_equal 'Node', type.name
+                assert_equal 1, type.directives.length
+
+                deprecated_directive = type.directives[0]
+                assert_equal 'deprecated', deprecated_directive.name
+                assert_equal 'reason', deprecated_directive.arguments[0].name
+                assert_equal 'No longer supported', deprecated_directive.arguments[0].value
+              end
+
               it "parses enum types" do
                 document = subject.parse('
-                  enum DogCommand { SIT, DOWN, HEEL }
+                  enum DogCommand {
+                    SIT
+                    DOWN @deprecated(reason: "No longer supported")
+                    HEEL
+                  }
                 ')
 
                 type = document.definitions.first
                 assert_equal GraphQL::Language::Nodes::EnumTypeDefinition, type.class
                 assert_equal 'DogCommand', type.name
-                assert_equal ['SIT', 'DOWN', 'HEEL'], type.values
+                assert_equal 3, type.values.length
+
+                assert_equal 'SIT', type.values[0].name
+                assert_equal [], type.values[0].directives
+
+                assert_equal 'DOWN', type.values[1].name
+                assert_equal 1, type.values[1].directives.length
+                deprecated_directive = type.values[1].directives[0]
+                assert_equal 'deprecated', deprecated_directive.name
+                assert_equal 'reason', deprecated_directive.arguments[0].name
+                assert_equal 'No longer supported', deprecated_directive.arguments[0].value
+
+                assert_equal 'HEEL', type.values[2].name
+                assert_equal [], type.values[2].directives
+              end
+
+              it "parses enum types with directives" do
+                document = subject.parse('
+                  enum DogCommand @deprecated(reason: "No longer supported") {
+                    SIT
+                  }
+                ')
+
+                type = document.definitions.first
+                assert_equal GraphQL::Language::Nodes::EnumTypeDefinition, type.class
+                assert_equal 'DogCommand', type.name
+                assert_equal 1, type.directives.length
+
+                deprecated_directive = type.directives[0]
+                assert_equal 'deprecated', deprecated_directive.name
+                assert_equal 'reason', deprecated_directive.arguments[0].name
+                assert_equal 'No longer supported', deprecated_directive.arguments[0].value
               end
 
               it "parses input object types" do
@@ -387,6 +494,28 @@ module GraphQL
                 assert_equal ['clientMutationId'], type.fields.map(&:name)
                 assert_equal 'String', type.fields[0].type.name
                 assert_equal nil, type.fields[0].default_value
+              end
+
+              it "parses input object types with directives" do
+                document = subject.parse('
+                  input EmptyMutationInput @deprecated(reason: "No longer supported") {
+                    clientMutationId: String
+                  }
+                ')
+
+                type = document.definitions.first
+                assert_equal GraphQL::Language::Nodes::InputObjectTypeDefinition, type.class
+                assert_equal 'EmptyMutationInput', type.name
+                assert_equal ['clientMutationId'], type.fields.map(&:name)
+                assert_equal 'String', type.fields[0].type.name
+                assert_equal nil, type.fields[0].default_value
+                assert_equal 1, type.directives.length
+
+                deprecated_directive = type.directives[0]
+                assert_equal 'deprecated', deprecated_directive.name
+                assert_equal 'reason', deprecated_directive.arguments[0].name
+                assert_equal 'No longer supported', deprecated_directive.arguments[0].value
+
               end
             end
           end
