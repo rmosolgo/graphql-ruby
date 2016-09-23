@@ -22,17 +22,17 @@ describe GraphQL::StaticValidation::VariablesAreInputTypes do
       {
         "message"=>"AnimalProduct isn't a valid input type (on $interface)",
         "locations"=>[{"line"=>5, "column"=>7}],
-        "path"=>["query getCheese"],
+        "fields"=>["query getCheese"],
       },
       {
         "message"=>"Milk isn't a valid input type (on $object)",
         "locations"=>[{"line"=>6, "column"=>7}],
-        "path"=>["query getCheese"],
+        "fields"=>["query getCheese"],
       },
       {
         "message"=>"Cheese isn't a valid input type (on $objects)",
         "locations"=>[{"line"=>7, "column"=>7}],
-        "path"=>["query getCheese"],
+        "fields"=>["query getCheese"],
       }
     ]
     assert_equal(expected, errors)

@@ -24,21 +24,21 @@ describe GraphQL::StaticValidation::RequiredArgumentsArePresent do
     query_root_error = {
       "message"=>"Field 'cheese' is missing required arguments: id",
       "locations"=>[{"line"=>4, "column"=>7}],
-      "path"=>["query getCheese", "cheese"],
+      "fields"=>["query getCheese", "cheese"],
     }
     assert_includes(errors, query_root_error)
 
     fragment_error = {
       "message"=>"Field 'similarCheese' is missing required arguments: source",
       "locations"=>[{"line"=>8, "column"=>7}],
-      "path"=>["fragment cheeseFields", "similarCheese"],
+      "fields"=>["fragment cheeseFields", "similarCheese"],
     }
     assert_includes(errors, fragment_error)
 
     directive_error = {
       "message"=>"Directive 'skip' is missing required arguments: if",
       "locations"=>[{"line"=>10, "column"=>10}],
-      "path"=>["fragment cheeseFields", "id"],
+      "fields"=>["fragment cheeseFields", "id"],
     }
     assert_includes(errors, directive_error)
   end
