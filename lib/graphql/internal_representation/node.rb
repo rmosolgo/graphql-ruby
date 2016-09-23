@@ -72,6 +72,15 @@ module GraphQL
         end
       end
 
+      def path
+        path = parent ? parent.path : []
+        path << name if name
+        path << @index if @index
+        path
+      end
+
+      attr_writer :index
+
       def inspect(indent = 0)
         own_indent = " " * indent
         self_inspect = "#{own_indent}<Node #{name} (#{definition_name}: {#{definitions.keys.join("|")}} -> #{return_type})>"

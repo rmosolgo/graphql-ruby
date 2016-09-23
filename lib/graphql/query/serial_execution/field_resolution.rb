@@ -35,6 +35,7 @@ module GraphQL
         def get_finished_value(raw_value)
           if raw_value.is_a?(GraphQL::ExecutionError)
             raw_value.ast_node = irep_node.ast_node
+            raw_value.path = irep_node.path
             execution_context.add_error(raw_value)
           end
 

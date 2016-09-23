@@ -143,7 +143,8 @@ describe GraphQL::Query::Executor do
           "errors" => [
             {
               "message" => "BOOM",
-              "locations" => [ { "line" => 1, "column" => 28 } ]
+              "locations" => [ { "line" => 1, "column" => 28 } ],
+              "path" => ["noMilk", "cow", "cantBeNullButRaisesExecutionError"]
             }
           ]
         }
@@ -167,7 +168,8 @@ describe GraphQL::Query::Executor do
           "errors"=>[
             {
               "message"=>"Error was handled!",
-              "locations" => [{"line"=>1, "column"=>17}]
+              "locations" => [{"line"=>1, "column"=>17}],
+              "path"=>["noMilk", "error"]
             }
           ]
         }

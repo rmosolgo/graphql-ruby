@@ -18,6 +18,28 @@ describe GraphQL::ExecutionError do
         }
         flavor
       }
+      allDairy {
+        ... on Cheese {
+          flavor
+        }
+        ... on Milk {
+          source
+          executionError
+        }
+      }
+      dairy {
+        milks {
+          source
+          executionError
+          allDairy {
+            __typename
+            ... on Milk {
+              origin
+              executionError
+            }
+          }
+        }
+      }
       executionError
     }
 
@@ -38,20 +60,58 @@ describe GraphQL::ExecutionError do
             },
             "flavor" => "Brie",
             },
+            "allDairy" => [
+              { "flavor" => "Brie" },
+              { "flavor" => "Gouda" },
+              { "flavor" => "Manchego" },
+              { "source" => "COW", "executionError" => nil }
+            ],
+            "dairy" => {
+              "milks" => [
+                {
+                  "source" => "COW",
+                  "executionError" => nil,
+                  "allDairy" => [
+                    { "__typename" => "Cheese" },
+                    { "__typename" => "Cheese" },
+                    { "__typename" => "Cheese" },
+                    { "__typename" => "Milk", "origin" => "Antiquity", "executionError" => nil }
+                  ]
+                }
+              ]
+            },
             "executionError" => nil,
           },
           "errors"=>[
             {
               "message"=>"No cheeses are made from Yak milk!",
-              "locations"=>[{"line"=>5, "column"=>9}]
+              "locations"=>[{"line"=>5, "column"=>9}],
+              "path"=>["cheese", "error1"]
             },
             {
               "message"=>"No cheeses are made from Yak milk!",
-              "locations"=>[{"line"=>8, "column"=>9}]
+              "locations"=>[{"line"=>8, "column"=>9}],
+              "path"=>["cheese", "error2"]
             },
             {
               "message"=>"There was an execution error",
-              "locations"=>[{"line"=>16, "column"=>7}]
+              "locations"=>[{"line"=>22, "column"=>11}],
+              "path"=>["allDairy", 3, "executionError"]
+            },
+            {
+              "message"=>"There was an execution error",
+              "locations"=>[{"line"=>28, "column"=>11}],
+              "path"=>["dairy", "milks", 0, "executionError"]
+            },
+            {
+              "message"=>"There was an execution error",
+              "locations"=>[{"line"=>33, "column"=>15}],
+              "path"=>["dairy", "milks", 0, "allDairy", 3, "executionError"]
+            },
+            {
+              "message"=>"There was an execution error",
+              "locations"=>[{"line"=>38, "column"=>7}],
+              "path"=>["executionError"]
             },
           ]
         }

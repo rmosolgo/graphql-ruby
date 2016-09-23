@@ -105,6 +105,14 @@ MilkType = GraphQL::ObjectType.define do
       args[:limit] ? milk.flavors.first(args[:limit]) : milk.flavors
     }
   end
+  field :executionError do
+    type GraphQL::STRING_TYPE
+    resolve -> (t, a, c) { raise(GraphQL::ExecutionError, "There was an execution error") }
+  end
+
+  field :allDairy, -> { types[DairyProductUnion] } do
+    resolve -> (obj, args, ctx) { CHEESES.values + MILKS.values }
+  end
 end
 
 SweetenerInterface = GraphQL::InterfaceType.define do
