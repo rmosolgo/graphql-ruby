@@ -1,9 +1,12 @@
 require "graphql/static_analysis/type_check/any_argument"
+require "graphql/static_analysis/type_check/any_directive"
 require "graphql/static_analysis/type_check/any_field"
 require "graphql/static_analysis/type_check/any_input"
 require "graphql/static_analysis/type_check/any_type"
 require "graphql/static_analysis/type_check/any_type_kind"
 require "graphql/static_analysis/type_check/required_arguments"
+require "graphql/static_analysis/type_check/valid_arguments"
+require "graphql/static_analysis/type_check/valid_directives"
 require "graphql/static_analysis/type_check/valid_selections"
 
 module GraphQL
@@ -64,6 +67,19 @@ module GraphQL
         # [Array<GraphQL::Argument>]
         argument_stack = []
 
+        # When you find an argument used by a root-level
+        # node, push it here. We'll validate later
+        # when we know all the dependencies
+        # Each entry is `{node:, defn:, parent_defn:}`
+        # [Hash<Definition => Array<Hash>>]
+        arguments_by_root = Hash.new { |h, k| h[k] = [] }
+
+        # Put the current root here, so we can figure out how arguments are used
+        root_node = nil
+
+        # Put the current directive here -- there can only ever be one
+        current_directive_defn = nil
+
         visitor[Nodes::OperationDefinition].enter << -> (node, prev_node) {
           # When you enter an operation definition:
           # - Check for the corresponding root type
@@ -77,6 +93,7 @@ module GraphQL
             )
             root_type = AnyType
           end
+          root_node = node
           type_stack << root_type
         }
 
@@ -131,10 +148,10 @@ module GraphQL
           # Type-check its literal value or variable.
 
           # This could be an argument coming from any of these places:
-          if argument_stack.any?
-            parent = argument_stack.last.type.unwrap
+          parent = if argument_stack.any?
+            argument_stack.last.type.unwrap
           else
-            parent = field_stack.last
+            current_directive_defn || field_stack.last
           end
 
           argument_defn = parent.get_argument(node.name)
@@ -148,6 +165,8 @@ module GraphQL
               parent_name = %|Field "#{parent_type.name}.#{parent.name}"|
             when GraphQL::InputObjectType
               parent_name = %|Input Object "#{parent.name}"|
+            when GraphQL::Directive
+              parent_name = %|Directive "@#{parent.name}"|
             end
             errors << AnalysisError.new(
               %|#{parent_name} doesn't accept "#{node.name}" as an argument|,
@@ -156,8 +175,9 @@ module GraphQL
             argument_defn = AnyArgument
           else
             observed_arguments_stack.last << argument_defn.name
-            # TODO type-check argument
           end
+          # Push this argument here so we can check it later
+          arguments_by_root[root_node] << {node: node, defn: argument_defn, parent_defn: parent}
           argument_stack << argument_defn
         }
 
@@ -225,11 +245,40 @@ module GraphQL
           owner_name = "fragment \"#{node.name}\""
           selection_errors = ValidSelections.errors_for_selections(owner_name, next_type, node)
           errors.concat(selection_errors)
+          root_node = node
         }
 
         visitor[Nodes::FragmentDefinition].leave << -> (node, prev_node) {
           # Remove type condition
           type_stack.pop
+        }
+
+        visitor[Nodes::Directive].enter << -> (node, prev_node) {
+          current_directive_defn = schema.directives[node.name]
+          if current_directive_defn.nil?
+            errors << AnalysisError.new(
+              %|Directive "@#{node.name}" is not defined|,
+              nodes: [node]
+            )
+            current_directive_defn = AnyDirective
+          else
+            errors.concat(ValidDirectives.location_errors(current_directive_defn, node, prev_node))
+          end
+          observed_arguments_stack << []
+        }
+
+        visitor[Nodes::Directive].leave << -> (node, prev_node) {
+          current_directive_defn = nil
+          observed_arguments_stack.pop
+        }
+
+        visitor[Nodes::Document].leave << -> (node, prev_node) {
+          variables = @analysis.variable_usages
+          arguments_by_root.each do |root_node, arguments|
+            arguments.each do |argument|
+              errors.concat(ValidArguments.errors_for_argument(variables, root_node, argument[:parent_defn], argument[:defn], argument[:node]))
+            end
+          end
         }
       end
     end

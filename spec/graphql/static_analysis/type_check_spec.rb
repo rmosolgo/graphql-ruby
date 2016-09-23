@@ -98,7 +98,19 @@ describe GraphQL::StaticAnalysis::TypeCheck do
       )
     end
 
-    it "requires valid literal inputs"
+    it "requires valid literal inputs" do
+      query_string = %|
+      {
+        badString: addInt(rhs: "1aa", lhs: 2) { value }
+        badFloat: addInt(rhs: ENUM, lhs: 2) { value }
+      }
+      |
+      assert_errors(
+        query_string,
+        %|Argument "rhs" on field "addInt" has an invalid value, expected type "Int!" but received "1aa"|,
+        %|Argument "rhs" on field "addInt" has an invalid value, expected type "Int!" but received ENUM|
+      )
+    end
 
     it "checks for required arguments" do
       query_string = %|
@@ -126,9 +138,46 @@ describe GraphQL::StaticAnalysis::TypeCheck do
   end
 
   describe "directives" do
-    it "requires defined directives"
-    it "requires valid locations"
-    it "requires defined arguments"
+    it "requires defined directives" do
+      query_string = %|
+      {
+        addInt(lhs: 2, rhs: 1) { value @nonsense(if: true) }
+      }
+      |
+      assert_errors(
+        query_string,
+        %|Directive "@nonsense" is not defined|
+      )
+    end
+
+    it "requires valid locations" do
+      query_string = %|
+      query doStuff @skip(if: true) {
+        ... frag
+      }
+      fragment frag on Query @include(if: true) {
+        addInt(lhs: 2, rhs: 1) { value }
+      }
+      |
+
+      assert_errors(
+        query_string,
+        %|Directive "@skip" can't be applied to queries (allowed: fields, fragment spreads, inline fragments)|,
+        %|Directive "@include" can't be applied to fragment definitions (allowed: fields, fragment spreads, inline fragments)|,
+      )
+    end
+
+    it "requires defined arguments" do
+      query_string = %|
+      {
+        addInt(lhs: 2, rhs: 1) @skip(if: false) { value @skip(nonsense: true) }
+      }|
+
+      assert_errors(
+        query_string,
+        %|Directive "@skip" doesn't accept "nonsense" as an argument|
+      )
+    end
   end
 
   describe "fragments" do
@@ -153,12 +202,5 @@ describe GraphQL::StaticAnalysis::TypeCheck do
         %|Root type doesn't exist for operation: "mutation"|,
       )
     end
-  end
-
-  describe "error handling" do
-    it "can recover from missing type condition"
-    it "can recover from missing root type"
-    it "can recover from missing field"
-    it "can recover from missing argument"
   end
 end

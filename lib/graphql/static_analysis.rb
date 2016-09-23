@@ -53,30 +53,39 @@ module GraphQL
     # then you can ask for its errors,
     # which will contain errors for _all_ the rules.
     class Analysis
-      attr_reader :errors, :visitor, :definition_names, :dependencies, :variable_usages, :schema
+      attr_reader :visitor, :definition_names, :dependencies, :variable_usages, :schema
 
       def initialize(visitor:, rules:, schema: nil)
         @visitor = visitor
         @schema = schema
-        rule_instances = rules.map { |rule_class| rule_class.new(self) }
-        @errors = []
+        @rule_instances = rules.map { |rule_class| rule_class.new(self) }
 
         @definition_names = DefinitionNames.mount(visitor)
         variable_usages_visitor = VariableUsages.mount(visitor)
         definition_dependencies = DefinitionDependencies.mount(visitor)
 
-        if schema
-          type_check = TypeCheck.new(self)
-          type_check.mount(visitor)
-          rule_instances << type_check
-        end
-
         visitor[GraphQL::Language::Nodes::Document].leave << -> (node, prev_node) {
           @dependencies = definition_dependencies.dependency_map
           @variable_usages = variable_usages_visitor.usages(dependencies: dependencies)
-          rule_instances.each { |rule| @errors.concat(rule.errors) }
-
         }
+
+        # Mount this _after_ the above hook, so that type_check
+        # will have access to dependencies and variables
+        if schema
+          type_check = TypeCheck.new(self)
+          type_check.mount(visitor)
+          @rule_instances << type_check
+        end
+      end
+
+      # You have to run the visitor before calling this.
+      # @return [Array<AnalysisError>]
+      def errors
+        @errors ||= begin
+          errs = []
+          @rule_instances.each { |rule| errs.concat(rule.errors) }
+          errs
+        end
       end
     end
   end
