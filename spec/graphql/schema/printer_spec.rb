@@ -13,6 +13,7 @@ describe GraphQL::Schema::Printer do
 
       value "FOO"
       value "BAR"
+      value "BAZ", deprecation_reason: 'Use "BAR".'
     end
 
     sub_input_type = GraphQL::InputObjectType.define do
@@ -46,6 +47,7 @@ describe GraphQL::Schema::Printer do
       field :title, !types.String
       field :body, !types.String
       field :comments, types[!comment_type]
+      field :comments_count, !types.Int, deprecation_reason: 'Use "comments".'
     end
 
     query_root = GraphQL::ObjectType.define do
@@ -70,14 +72,20 @@ schema {
   query: Query
 }
 
+directive @skip(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
+
+directive @include(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
+
+directive @deprecated(reason: String! = \"No longer supported\") on FIELD_DEFINITION | ENUM_VALUE
+
 type __Directive {
   name: String!
   description: String
   args: [__InputValue!]!
   locations: [__DirectiveLocation!]!
-  onOperation: Boolean!
-  onFragment: Boolean!
-  onField: Boolean!
+  onOperation: Boolean! @deprecated(reason: \"Moved to 'locations' field\")
+  onFragment: Boolean! @deprecated(reason: \"Moved to 'locations' field\")
+  onField: Boolean! @deprecated(reason: \"Moved to 'locations' field\")
 }
 
 enum __DirectiveLocation {
@@ -85,9 +93,11 @@ enum __DirectiveLocation {
   MUTATION
   SUBSCRIPTION
   FIELD
+  FIELD_DEFINITION
   FRAGMENT_DEFINITION
   FRAGMENT_SPREAD
   INLINE_FRAGMENT
+  ENUM_VALUE
 }
 
 type __EnumValue {
@@ -158,6 +168,7 @@ schema {
 enum Choice {
   FOO
   BAR
+  BAZ @deprecated(reason: "Use \\\"BAR\\\".")
 }
 
 type Comment implements Node {
@@ -173,6 +184,7 @@ type Post {
   title: String!
   body: String!
   comments: [Comment!]
+  comments_count: Int! @deprecated(reason: \"Use \\\"comments\\\".\")
 }
 
 type Query {
