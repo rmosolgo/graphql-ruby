@@ -13,7 +13,7 @@ module GraphQL
 
         def result
           irep_node.children.each_with_object({}) do |(name, irep_node), memo|
-            if GraphQL::Execution::DirectiveChecks.include?(irep_node, execution_context.query) && applies_to_type?(irep_node, type)
+            if irep_node.included? && applies_to_type?(irep_node, type)
               field_result = execution_context.strategy.field_resolution.new(
                 irep_node,
                 type,

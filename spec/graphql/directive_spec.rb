@@ -139,7 +139,9 @@ describe GraphQL::Directive do
       let(:query_string) {"
         query getCheese ($include: Boolean!, $skip: Boolean!) {
           cheese(id: 1) {
-            flavor @include(if: #{include?}),
+            ... on Cheese @include(if: #{include?}) {
+              flavor
+            }
             withVariables: flavor @include(if: $include),
             ...F0
           }
@@ -167,16 +169,20 @@ describe GraphQL::Directive do
       describe "when @skip=true and @include=false" do
         let(:skip?) { true }
         let(:include?) { false }
-        it "is not included" do assert !field_included? end
+        it "is not included" do
+          assert !field_included?
+        end
       end
     end
 
     describe "when handling multiple fields at the same level" do
-      describe "when at least one occurance would be included" do
+      describe "when at least one occurrence would be included" do
         let(:query_string) {"
           query getCheese ($include: Boolean!, $skip: Boolean!) {
             cheese(id: 1) {
-              flavor,
+              ... on Cheese {
+                flavor
+              }
               flavor @include(if: #{include?}),
               flavor @skip(if: #{skip?}),
               withVariables: flavor,
@@ -189,7 +195,7 @@ describe GraphQL::Directive do
         let(:include?) { false }
         it "is included" do assert field_included? end
       end
-      describe "when no occurance would be included" do
+      describe "when no occurrence would be included" do
         let(:query_string) {"
           query getCheese ($include: Boolean!, $skip: Boolean!) {
             cheese(id: 1) {

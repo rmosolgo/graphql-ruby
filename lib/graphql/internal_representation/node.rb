@@ -3,7 +3,7 @@ require "set"
 module GraphQL
   module InternalRepresentation
     class Node
-      def initialize(parent:, ast_node: nil, return_type: nil, name: nil, definition_name: nil, definitions: {}, children: {}, spreads: [], directives: Set.new)
+      def initialize(parent:, ast_node: nil, return_type: nil, name: nil, definition_name: nil, definitions: {}, children: {}, spreads: [], directives: Set.new, included: true)
         # Make sure these are kept in sync with #dup
         @ast_node = ast_node
         @return_type = return_type
@@ -14,6 +14,7 @@ module GraphQL
         @children = children
         @spreads = spreads
         @directives = directives
+        @included = included
       end
 
       # Note: by the time this gets out of the Rewrite phase, this will be empty -- it's emptied out when fragments are merged back in
@@ -58,6 +59,14 @@ module GraphQL
       # @return [Array<GraphQL::Query::Node>]
       attr_reader :children
 
+      # @return [Boolean] false if every field for this node included `@skip(if: true)`
+      attr_accessor :included
+      alias :included? :included
+
+      def skipped?
+        !@included
+      end
+
       # @return [GraphQL::InternalRepresentation::Node] The node which this node is a child of
       attr_reader :parent
 
@@ -74,7 +83,7 @@ module GraphQL
 
       def inspect(indent = 0)
         own_indent = " " * indent
-        self_inspect = "#{own_indent}<Node #{name} (#{definition_name}: {#{definitions.keys.join("|")}} -> #{return_type})>"
+        self_inspect = "#{own_indent}<Node #{name} #{skipped? ? "(skipped)" : ""}(#{definition_name}: {#{definitions.keys.join("|")}} -> #{return_type})>"
         if children.any?
           self_inspect << " {\n#{children.values.map { |n| n.inspect(indent + 2)}.join("\n")}\n#{own_indent}}"
         end

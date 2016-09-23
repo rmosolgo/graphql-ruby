@@ -18,10 +18,13 @@ module GraphQL
       # State for the query complexity calcuation:
       # - `query` is needed for variables, then passed to handler
       # - `complexities_on_type` holds complexity scores for each type in an IRep node
+      # - `skip_depth` increments for each skipped node, then decrements on the way out.
+      #   While it's greater than `0`, we're visiting a skipped part of the query.
       def initial_value(query)
         {
           query: query,
           complexities_on_type: [TypeComplexity.new],
+          skip_depth: 0,
         }
       end
 
@@ -29,16 +32,22 @@ module GraphQL
       def call(memo, visit_type, irep_node)
         if irep_node.ast_node.is_a?(GraphQL::Language::Nodes::Field)
           if visit_type == :enter
-            memo[:complexities_on_type].push(TypeComplexity.new)
-          else
-            type_complexities = memo[:complexities_on_type].pop
-            own_complexity = if GraphQL::Execution::DirectiveChecks.skip?(irep_node, memo[:query])
-              0
-            else
-              child_complexity = type_complexities.max_possible_complexity
-              get_complexity(irep_node, memo[:query], child_complexity)
+            if irep_node.skipped?
+              memo[:skip_depth] += 1
+            elsif memo[:skip_depth] == 0
+              memo[:complexities_on_type].push(TypeComplexity.new)
             end
-            memo[:complexities_on_type].last.merge(irep_node.definitions, own_complexity)
+          else
+            if memo[:skip_depth] > 0
+              if irep_node.skipped?
+                memo[:skip_depth] -= 1
+              end
+            else
+              type_complexities = memo[:complexities_on_type].pop
+              child_complexity = type_complexities.max_possible_complexity
+              own_complexity = get_complexity(irep_node, memo[:query], child_complexity)
+              memo[:complexities_on_type].last.merge(irep_node.definitions, own_complexity)
+            end
           end
         end
         memo
