@@ -21,7 +21,9 @@ module GraphQL
         when Nodes::Argument
           "#{node.name}: #{generate(node.value)}"
         when Nodes::Directive
-          "@#{node.name}(#{node.arguments.map { |a| generate(a) }.join(", ")})"
+          out = "@#{node.name}"
+          out << "(#{node.arguments.map { |a| generate(a) }.join(", ")})" if node.arguments.any?
+          out
         when Nodes::Enum
           "#{node.name}"
         when Nodes::Field
@@ -77,34 +79,46 @@ module GraphQL
           out << "  subscription: #{node.subscription}\n" if node.subscription
           out << "}"
         when Nodes::ScalarTypeDefinition
-          "scalar #{node.name}"
+          out = "scalar #{node.name}"
+          out << generate_directives(node.directives)
         when Nodes::ObjectTypeDefinition
           out = "type #{node.name}"
+          out << generate_directives(node.directives)
           out << " implements " << node.interfaces.join(", ") unless node.interfaces.empty?
           out << generate_field_definitions(node.fields)
         when Nodes::InputValueDefinition
           out = "#{node.name}: #{generate(node.type)}"
           out << " = #{generate(node.default_value)}" unless node.default_value.nil?
-          out
+          out << generate_directives(node.directives)
         when Nodes::FieldDefinition
           out = node.name.dup
           unless node.arguments.empty?
             out << "(" << node.arguments.map{ |arg| generate(arg) }.join(", ") << ")"
           end
           out << ": #{generate(node.type)}"
+          out << generate_directives(node.directives)
         when Nodes::InterfaceTypeDefinition
           out = "interface #{node.name}"
+          out << generate_directives(node.directives)
           out << generate_field_definitions(node.fields)
         when Nodes::UnionTypeDefinition
-          "union #{node.name} = " + node.types.join(" | ")
+          out = "union #{node.name}"
+          out << generate_directives(node.directives)
+          out << " = " + node.types.join(" | ")
         when Nodes::EnumTypeDefinition
-          out = "enum #{node.name} {\n"
+          out = "enum #{node.name}#{generate_directives(node.directives)} {\n"
           node.values.each do |value|
-            out << "  #{value}\n"
+            out << generate(value)
           end
           out << "}"
+        when Nodes::EnumValueDefinition
+          out = "  #{node.name}"
+          out << generate_directives(node.directives)
+          out << "\n"
         when Nodes::InputObjectTypeDefinition
-          out = "input #{node.name} {\n"
+          out = "input #{node.name}"
+          out << generate_directives(node.directives)
+          out << " {\n"
           node.fields.each do |field|
             out << "  #{generate(field)}\n"
           end
@@ -116,7 +130,7 @@ module GraphQL
         when Array
           "[#{node.map { |v| generate(v) }.join(", ")}]"
         when Hash
-          "{ #{node.map { |k, v| "#{k}: #{generate(v)}" }.join(", ")} }"
+          "{#{node.map { |k, v| "#{k}: #{generate(v)}" }.join(", ")}}"
         else
           raise TypeError
         end

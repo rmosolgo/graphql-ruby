@@ -176,7 +176,7 @@ type Post {
 }
 
 type Query {
-  post(id: ID!, varied: Varied = { id: \"123\", int: 234, float: 2.3, enum: FOO, sub: [{ string: \"str\" }] }): Post
+  post(id: ID!, varied: Varied = {id: \"123\", int: 234, float: 2.3, enum: FOO, sub: [{string: \"str\"}]}): Post
 }
 
 input Sub {
