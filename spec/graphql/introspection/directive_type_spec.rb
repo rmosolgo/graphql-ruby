@@ -23,7 +23,7 @@ describe GraphQL::Introspection::DirectiveType do
       "__schema" => {
         "directives" => [
           {
-            "name" => "skip",
+            "name" => "include",
             "args" => [
               {"name"=>"if", "type"=>{"name"=>"Non-Null", "ofType"=>{"name"=>"Boolean"}}}
             ],
@@ -33,7 +33,7 @@ describe GraphQL::Introspection::DirectiveType do
             "onOperation" => false,
           },
           {
-            "name" => "include",
+            "name" => "skip",
             "args" => [
               {"name"=>"if", "type"=>{"name"=>"Non-Null", "ofType"=>{"name"=>"Boolean"}}}
             ],

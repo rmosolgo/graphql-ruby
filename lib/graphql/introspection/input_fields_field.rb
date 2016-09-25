@@ -4,7 +4,7 @@ GraphQL::Introspection::InputFieldsField = GraphQL::Field.define do
   type types[!GraphQL::Introspection::InputValueType]
   resolve -> (target, a, c) {
     if target.kind.input_object?
-      target.input_fields.values
+      target.input_fields.values.sort_by(&:name)
     else
       nil
     end

@@ -3,11 +3,11 @@ GraphQL::Introspection::SchemaType = GraphQL::ObjectType.define do
   description "A GraphQL schema"
 
   field :types, !types[!GraphQL::Introspection::TypeType], "Types in this schema" do
-    resolve -> (obj, arg, ctx) { obj.types.values }
+    resolve -> (obj, arg, ctx) { obj.types.values.sort_by(&:name) }
   end
 
   field :directives, !types[!GraphQL::Introspection::DirectiveType], "Directives in this schema" do
-    resolve -> (obj, arg, ctx) { obj.directives.values }
+    resolve -> (obj, arg, ctx) { obj.directives.values.sort_by(&:name) }
   end
 
   field :queryType, !GraphQL::Introspection::TypeType, "The query root of this schema" do

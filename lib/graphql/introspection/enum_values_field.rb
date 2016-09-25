@@ -8,6 +8,6 @@ GraphQL::Introspection::EnumValuesField = GraphQL::Field.define do
     if !arguments["includeDeprecated"]
       fields = fields.select {|f| !f.deprecation_reason }
     end
-    fields
+    fields.sort_by(&:name)
   end
 end
