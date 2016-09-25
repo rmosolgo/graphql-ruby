@@ -535,7 +535,7 @@ module GraphQL
                 ")
               end
               assert_includes(e.message, '"{"')
-              assert_includes(e.message, "RCURLY")
+              assert_includes(e.message, "LCURLY")
               assert_equal(3, e.line)
               assert_equal(33, e.col)
             end
