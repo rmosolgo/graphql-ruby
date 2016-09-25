@@ -46,7 +46,7 @@ rule
 
   variable_definitions_opt:
       /* none */                              { return [] }
-    | RPAREN variable_definitions_list LPAREN { return val[1] }
+    | LPAREN variable_definitions_list RPAREN { return val[1] }
 
   variable_definitions_list:
       variable_definition                           { return [val[0]] }
@@ -65,15 +65,15 @@ rule
   type:
       name                   { return make_node(:TypeName, name: val[0])}
     | type BANG              { return make_node(:NonNullType, of_type: val[0]) }
-    | RBRACKET type LBRACKET { return make_node(:ListType, of_type: val[1]) }
+    | LBRACKET type RBRACKET { return make_node(:ListType, of_type: val[1]) }
 
   default_value_opt:
       /* none */          { return nil }
     | EQUALS input_value  { return val[1] }
 
   selection_set:
-      RCURLY LCURLY                { return [] }
-    | RCURLY selection_list LCURLY { return val[1] }
+      LCURLY RCURLY                { return [] }
+    | LCURLY selection_list RCURLY { return val[1] }
 
   selection_set_opt:
       /* none */    { return [] }
@@ -155,8 +155,8 @@ rule
 
   arguments_opt:
       /* none */                    { return [] }
-    | RPAREN LPAREN                 { return [] }
-    | RPAREN arguments_list LPAREN  { return val[1] }
+    | LPAREN RPAREN                 { return [] }
+    | LPAREN arguments_list RPAREN  { return val[1] }
 
   arguments_list:
       argument                { return [val[0]] }
@@ -179,16 +179,16 @@ rule
   variable: VAR_SIGN name { return make_node(:VariableIdentifier, name: val[1], position_source: val[0]) }
 
   list_value:
-      RBRACKET LBRACKET                 { return [] }
-    | RBRACKET list_value_list LBRACKET { return val[1] }
+      LBRACKET RBRACKET                 { return [] }
+    | LBRACKET list_value_list RBRACKET { return val[1] }
 
   list_value_list:
       input_value                 { return [val[0]] }
     | list_value_list input_value { val[0] << val[1] }
 
   object_value:
-      RCURLY LCURLY                   { return make_node(:InputObject, arguments: [], position_source: val[0])}
-    | RCURLY object_value_list LCURLY { return make_node(:InputObject, arguments: val[1], position_source: val[0])}
+      LCURLY RCURLY                   { return make_node(:InputObject, arguments: [], position_source: val[0])}
+    | LCURLY object_value_list RCURLY { return make_node(:InputObject, arguments: val[1], position_source: val[0])}
 
   object_value_list:
       object_value_field                    { return [val[0]] }
@@ -251,7 +251,7 @@ rule
    | type_definition
 
   schema_definition:
-      SCHEMA RCURLY operation_type_definition_list LCURLY { return make_node(:SchemaDefinition, val[2]) }
+      SCHEMA LCURLY operation_type_definition_list RCURLY { return make_node(:SchemaDefinition, val[2]) }
 
   operation_type_definition_list:
       operation_type_definition
@@ -271,7 +271,7 @@ rule
   scalar_type_definition: SCALAR name directives_list_opt { return make_node(:ScalarTypeDefinition, name: val[1], directives: val[2]) }
 
   object_type_definition:
-      TYPE name implements_opt directives_list_opt RCURLY field_definition_list LCURLY {
+      TYPE name implements_opt directives_list_opt LCURLY field_definition_list RCURLY {
         return make_node(:ObjectTypeDefinition, name: val[1], interfaces: val[2], directives: val[3], fields: val[5])
       }
 
@@ -290,7 +290,7 @@ rule
 
   arguments_definitions_opt:
       /* none */ { return [] }
-    | RPAREN input_value_definition_list LPAREN { return val[1] }
+    | LPAREN input_value_definition_list RPAREN { return val[1] }
 
   field_definition:
       name arguments_definitions_opt COLON type directives_list_opt {
@@ -302,7 +302,7 @@ rule
     | field_definition_list field_definition { val[0] << val[1] }
 
   interface_type_definition:
-      INTERFACE name directives_list_opt RCURLY field_definition_list LCURLY {
+      INTERFACE name directives_list_opt LCURLY field_definition_list RCURLY {
         return make_node(:InterfaceTypeDefinition, name: val[1], directives: val[2], fields: val[4])
       }
 
@@ -316,12 +316,12 @@ rule
       }
 
   enum_type_definition:
-      ENUM name directives_list_opt RCURLY enum_value_definitions LCURLY {
+      ENUM name directives_list_opt LCURLY enum_value_definitions RCURLY {
          return make_node(:EnumTypeDefinition, name: val[1], directives: val[2], values: val[4])
       }
 
   input_object_type_definition:
-      INPUT name directives_list_opt RCURLY input_value_definition_list LCURLY {
+      INPUT name directives_list_opt LCURLY input_value_definition_list RCURLY {
         return make_node(:InputObjectTypeDefinition, name: val[1], directives: val[2], fields: val[4])
       }
 end
