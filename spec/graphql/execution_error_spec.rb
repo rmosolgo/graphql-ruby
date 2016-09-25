@@ -118,4 +118,57 @@ describe GraphQL::ExecutionError do
       assert_equal(expected_result, result)
     end
   end
+
+  describe "named query when returned from a field" do
+    let(:query_string) {%|
+    query MilkQuery {
+      dairy {
+        milks {
+          source
+          executionError
+          allDairy {
+            __typename
+            ... on Milk {
+              origin
+              executionError
+            }
+          }
+        }
+      }
+    }
+    |}
+    it "the error is inserted into the errors key and the rest of the query is fulfilled" do
+      expected_result = {
+        "data"=>{
+            "dairy" => {
+              "milks" => [
+                {
+                  "source" => "COW",
+                  "executionError" => nil,
+                  "allDairy" => [
+                    { "__typename" => "Cheese" },
+                    { "__typename" => "Cheese" },
+                    { "__typename" => "Cheese" },
+                    { "__typename" => "Milk", "origin" => "Antiquity", "executionError" => nil }
+                  ]
+                }
+              ]
+            }
+          },
+          "errors"=>[
+            {
+              "message"=>"There was an execution error",
+              "locations"=>[{"line"=>6, "column"=>11}],
+              "path"=>["dairy", "milks", 0, "executionError"]
+            },
+            {
+              "message"=>"There was an execution error",
+              "locations"=>[{"line"=>11, "column"=>15}],
+              "path"=>["dairy", "milks", 0, "allDairy", 3, "executionError"]
+            }
+          ]
+        }
+      assert_equal(expected_result, result)
+    end
+  end
 end
