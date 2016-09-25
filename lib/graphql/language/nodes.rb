@@ -142,6 +142,18 @@ module GraphQL
         end
       end
 
+      class DirectiveDefinition < AbstractNode
+        attr_accessor :name, :arguments, :locations
+        scalar_attributes :name
+        child_attributes :arguments, :locations
+
+        def initialize_node(name: nil, arguments: [], locations: [])
+          @name = name
+          @arguments = arguments
+          @locations = locations
+        end
+      end
+
       # This is the AST root for normal queries
       #
       # @example Deriving a document by parsing a string
