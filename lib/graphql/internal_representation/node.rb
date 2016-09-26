@@ -82,10 +82,14 @@ module GraphQL
       end
 
       def path
-        path = parent ? parent.path : []
-        path << name if name
-        path << @index if @index
-        path
+        if parent
+          path = parent.path
+          path << name
+          path << @index if @index
+          path
+        else
+          []
+        end
       end
 
       attr_writer :index
