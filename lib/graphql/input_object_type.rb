@@ -89,15 +89,14 @@ module GraphQL
     end
 
     def coerce_result(value)
-      return nil if value.nil?
-
       # Allow the application to provide values as :symbols, and convert them to the strings
       value = value.reduce({}) { |memo, (k, v)| memo[k.to_s] = v; memo }
 
       result = {}
 
       arguments.each do |input_key, input_field_defn|
-        result[input_key] = input_field_defn.type.coerce_result(value[input_key])
+        input_value = value[input_key]
+        result[input_key] = input_value.nil? ? nil : input_field_defn.type.coerce_result(input_value)
       end
 
       result

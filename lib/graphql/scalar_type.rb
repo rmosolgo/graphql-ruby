@@ -61,8 +61,6 @@ module GraphQL
     end
 
     def coerce_result(value)
-      return nil if value.nil?
-
       ensure_defined
       @coerce_result_proc ? @coerce_result_proc.call(value) : value
     end

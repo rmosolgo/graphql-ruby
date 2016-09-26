@@ -115,8 +115,6 @@ module GraphQL
     end
 
     def coerce_result(value)
-      return nil if value.nil?
-
       ensure_defined
       @values_by_value.fetch(value).name
     end
