@@ -81,17 +81,28 @@ module GraphQL
         attr_reader :unused_dependencies
 
         def initialize
-          @storage = Hash.new { |h, k| h[k] = [] }
+          @dependencies = Hash.new { |h, k| h[k] = [] }
           @cyclical_definitions = []
           @unmet_dependencies = Hash.new { |h, k| h[k] = [] }
           @unused_dependencies = []
         end
 
-        def keys; @storage.keys; end
+        def keys; @dependencies.keys; end
 
+        # Visit each operation-fragment pair
+        # @yieldparam defn [GraphQL::Language::Nodes::OperationDefinition]
+        # @yieldparam dep [GraphQL::Language::Nodes::FragmentDefinition]
+        def each_dependency
+          @dependencies.each do |defn, deps|
+            deps.each do |dep|
+              yield(defn, dep)
+            end
+          end
+          nil
+        end
         # @return [Array<GraphQL::Language::Nodes::AbstractNode>] dependencies for `definition_node`
         def [](definition_node)
-          @storage[definition_node]
+          @dependencies[definition_node]
         end
       end
 

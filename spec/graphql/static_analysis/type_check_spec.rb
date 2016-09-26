@@ -132,9 +132,99 @@ describe GraphQL::StaticAnalysis::TypeCheck do
   end
 
   describe "variables" do
-    it "requires input types"
-    it "requires compatible default values"
-    it "requires valid usage, even on nested spreads"
+    it "requires defined, valid input types" do
+      query_string = %|
+      query AddStuff(
+        $leftA: Operation,
+        $rightA: Int!,
+        $leftB: Nonsense,
+        $rightB: Int = 5,
+      ) {
+        addInt(lhs: $leftA, rhs: $rightA) { value }
+        addInt(lhs: $leftB, rhs: $rightB) { value }
+      }
+      |
+
+      assert_errors(
+        query_string,
+        %|Type "Operation" for "$leftA" isn't a valid input (must be INPUT_OBJECT, SCALAR, or ENUM, not INTERFACE)|,
+        %|Unknown type "Nonsense" can't be used for variable "$leftB"|,
+      )
+    end
+
+    it "requires compatible default values" do
+      query_string = %|
+      query AddStuff(
+        $leftA: Operation = 1
+        $rightA: Int! = 3
+        $leftB: Int = 5.0
+        $rightB: Int = "5"
+        $expressionGood: Expression = {add: {lhs: 1, rhs: 2}}
+        $expressionBad:  Expression = {add: {lhs: 1.0, rhs: true}}
+      ) {
+        addInt(lhs: $leftA, rhs: $rightA) { value }
+        addInt(lhs: $leftB, rhs: $rightB) { value }
+        calculate(expression: $expressionGood) {
+          ... on CalculationSuccess {
+            calculate(expression: $expressionBad) { ... on CalculationSuccess { value } }
+          }
+        }
+      }
+      |
+      assert_errors(
+        query_string,
+        # This one should _not_ get an error for the default value:
+        %|Type "Operation" for "$leftA" isn't a valid input (must be INPUT_OBJECT, SCALAR, or ENUM, not INTERFACE)|,
+        %|Non-null variable "$rightA" can't have a default value|,
+        %|Variable "$expressionBad" default value {add: {lhs: 1.0, rhs: true}} doesn't match type Expression|,
+        %|Variable "$rightB" default value "5" doesn't match type Int|,
+      )
+    end
+
+    it "requires valid usage, even on nested spreads" do
+      query_string = %|
+      query AddStuff(
+        $leftA: Float = 3.0,
+        $rightA: Int!,
+        $leftB: Int,
+        $rightB: Int = 5,
+      ) {
+        addInt(lhs: $leftA, rhs: $rightA) { value }
+        ... frag1
+      }
+
+      query AddStuff2(
+        $leftB: Int!
+        $rightB: OperationName
+        $listOfInts: [[Int]]!
+        $operationName: OperationName
+      ) {
+        ... frag2
+        ... frag3
+      }
+      fragment frag1 on Query { ... frag2 }
+      fragment frag2 on Query {
+        addInt(lhs: $leftB, rhs: $rightB) { value }
+      }
+      fragment frag3 on Query {
+        ... on Query {
+          ... {
+            reduce(ints: $listOfInts, operation: $operationName)
+          }
+        }
+      }
+      |
+
+      assert_errors(
+        query_string,
+        %|Type mismatch on variable "$leftA" and argument "lhs" (Float / Int!)|,
+        %|Nullability mismatch on variable "$leftB" and argument "lhs" (Int / Int!)|,
+        %|List dimension mismatch on variable "$listOfInts" and argument "ints" ([[Int]]! / [Int!]!)|,
+        %|Nullability mismatch on variable "$operationName" and argument "operation" (OperationName / OperationName!)|,
+        # One usage of `$rightB` is correct
+        %|Type mismatch on variable "$rightB" and argument "rhs" (OperationName / Int!)|,
+      )
+    end
   end
 
   describe "directives" do

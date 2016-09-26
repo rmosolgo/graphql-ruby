@@ -98,6 +98,15 @@ module StaticAnalysisHelpers
       argument :type, !OperationNameEnum
       resolve -> (obj, args, ctx) { args[:type] }
     end
+
+    field :reduce, !types.Float do
+      description "Reduce some integers to a float"
+      argument :ints, !types[!types.Int]
+      argument :operation, !OperationNameEnum
+      resolve -> (o, a, c) {
+        # todo: use the specified operation to reduce the array
+      }
+    end
   end
 
   AnalysisSchema = GraphQL::Schema.define do

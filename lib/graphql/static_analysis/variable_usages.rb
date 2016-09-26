@@ -47,7 +47,23 @@ module GraphQL
         }
       end
 
-      # @return [Hash] map AST nodes to {used:, defined:} hashes
+
+      # Based on `dependencies`, for each operation definition:
+      # - Find variable usages, and group them by name
+      # - Find variable definitions and group them by name
+      # @example A usage hash
+      #  {
+      #    operation_definition_node => {
+      #      used: {
+      #        "var_name" => [usage_node, usage_node],
+      #      },
+      #      defined: {
+      #         "var_name" => [defn_node],
+      #      }
+      #    }
+      #  }
+      # Then return them in a map of `node => {used:, defined:}`.
+      # @return [Hash<GraphQL::Language::Nodes::OperationDefintion => Hash>] map AST nodes to {used:, defined:} hashes
       def usages(dependencies:)
 
         usage_map = {}

@@ -25,6 +25,14 @@ module GraphQL
         def kind
           AnyTypeKind
         end
+
+        def to_non_null_type
+          self
+        end
+
+        def to_list_type
+          self
+        end
       end
     end
   end

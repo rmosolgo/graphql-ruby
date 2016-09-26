@@ -5,9 +5,12 @@ require "graphql/static_analysis/type_check/any_input"
 require "graphql/static_analysis/type_check/any_type"
 require "graphql/static_analysis/type_check/any_type_kind"
 require "graphql/static_analysis/type_check/required_arguments"
+require "graphql/static_analysis/type_check/type_comparison"
 require "graphql/static_analysis/type_check/valid_arguments"
 require "graphql/static_analysis/type_check/valid_directives"
+require "graphql/static_analysis/type_check/valid_literal"
 require "graphql/static_analysis/type_check/valid_selections"
+require "graphql/static_analysis/type_check/valid_variables"
 
 module GraphQL
   module StaticAnalysis
@@ -274,9 +277,18 @@ module GraphQL
 
         visitor[Nodes::Document].leave << -> (node, prev_node) {
           variables = @analysis.variable_usages
+          dependencies = @analysis.dependencies
+          variables.each do |op_defn, variable_data|
+            variable_data[:defined].each do |variable_name, definitions|
+              definitions.each do |defn_node|
+                errors.concat(ValidVariables.definition_errors(variable_name, defn_node, schema))
+              end
+            end
+          end
+
           arguments_by_root.each do |root_node, arguments|
             arguments.each do |argument|
-              errors.concat(ValidArguments.errors_for_argument(variables, root_node, argument[:parent_defn], argument[:defn], argument[:node]))
+              errors.concat(ValidArguments.errors_for_argument(schema, variables, dependencies, root_node, argument[:parent_defn], argument[:defn], argument[:node]))
             end
           end
         }

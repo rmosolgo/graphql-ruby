@@ -96,6 +96,10 @@ module GraphQL
           @of_type = of_type
         end
 
+        def unwrap
+          @of_type.unwrap
+        end
+
         def children
           [].freeze
         end
@@ -314,7 +318,11 @@ module GraphQL
       end
 
       # A type name, used for variable definitions
-      class TypeName < NameOnlyNode; end
+      class TypeName < NameOnlyNode
+        def unwrap
+          self
+        end
+      end
 
       # An operation-level query variable
       class VariableDefinition < AbstractNode
