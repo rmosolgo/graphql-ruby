@@ -7,5 +7,5 @@ GraphQL::Directive::DeprecatedDirective = GraphQL::Directive.define do
     "suggestion for how to access supported similar data. Formatted "\
     "in [Markdown](https://daringfireball.net/projects/markdown/)."
 
-  argument :reason, !GraphQL::STRING_TYPE, reason_description, default_value: "No longer supported"
+  argument :reason, !GraphQL::STRING_TYPE, reason_description, default_value: GraphQL::Directive::DEFAULT_DEPRECATION_REASON
 end

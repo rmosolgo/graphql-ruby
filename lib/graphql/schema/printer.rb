@@ -73,7 +73,10 @@ module GraphQL
           def print_deprecated(field_or_enum_value)
             return unless field_or_enum_value.deprecation_reason
 
-            if field_or_enum_value.deprecation_reason == ''
+            case field_or_enum_value.deprecation_reason
+            when nil
+              ''
+            when '', GraphQL::Directive::DEFAULT_DEPRECATION_REASON
               ' @deprecated'
             else
               " @deprecated(reason: #{field_or_enum_value.deprecation_reason.to_s.inspect})"

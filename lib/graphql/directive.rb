@@ -23,6 +23,8 @@ module GraphQL
       ENUM_VALUE =          :ENUM_VALUE,
     ]
 
+    DEFAULT_DEPRECATION_REASON = 'No longer supported'
+
     def initialize
       @arguments = {}
     end

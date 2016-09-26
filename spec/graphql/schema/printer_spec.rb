@@ -14,6 +14,7 @@ describe GraphQL::Schema::Printer do
       value "FOO"
       value "BAR"
       value "BAZ", deprecation_reason: 'Use "BAR".'
+      value "WOZ", deprecation_reason: GraphQL::Directive::DEFAULT_DEPRECATION_REASON
     end
 
     sub_input_type = GraphQL::InputObjectType.define do
@@ -169,6 +170,7 @@ enum Choice {
   FOO
   BAR
   BAZ @deprecated(reason: "Use \\\"BAR\\\".")
+  WOZ @deprecated
 }
 
 type Comment implements Node {
