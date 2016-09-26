@@ -16,7 +16,7 @@ module GraphQL
         values_hash = {}
         argument_defns.each do |arg_name, arg_defn|
           ast_arg = ast_arguments.find { |ast_arg| ast_arg.name == arg_name }
-          arg_default_value = arg_defn.default_value          
+          arg_default_value = arg_defn.default_value
           if ast_arg.nil? && arg_default_value.nil?
             # If it wasn't in the document,
             # and there's no provided default,
