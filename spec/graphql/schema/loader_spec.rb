@@ -30,7 +30,7 @@ describe GraphQL::Schema::Loader do
       name "Varied"
       input_field :id, types.ID
       input_field :int, types.Int
-      input_field :bigint, big_int_type
+      input_field :bigint, big_int_type, default_value: 2**54
       input_field :float, types.Float
       input_field :bool, types.Boolean
       input_field :enum, choice_type
@@ -43,6 +43,10 @@ describe GraphQL::Schema::Loader do
       interfaces [node_type]
 
       field :body, !types.String
+
+      field :fieldWithArg, types.Int do
+        argument :bigint, big_int_type, default_value: 2**54
+      end
     end
 
     media_type = GraphQL::InterfaceType.define do
