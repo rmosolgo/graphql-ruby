@@ -64,4 +64,21 @@ describe GraphQL::StaticValidation::VariableUsagesAreAllowed do
     ]
     assert_equal(expected, errors)
   end
+
+
+  describe "variables with the same name" do
+    let(:query_string) {%|
+      query first($int: String) { ... frag1 }
+      query second($int: Int!) { ... frag1 }
+
+      fragment frag1 on Query { cheese(id: $int) { flavor } }
+    |}
+
+    it "finds an error on the first occurrence of the name" do
+      # Here are two variables with the same name but different types
+      # The first use is invalid, but the second is valid
+      # We should get an error for the first usage (but we don't)
+      assert_equal 1, errors.length
+    end
+  end
 end
