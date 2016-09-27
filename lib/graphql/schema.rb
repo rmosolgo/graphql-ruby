@@ -61,7 +61,7 @@ module GraphQL
       :query_analyzers, :middleware
 
 
-    DIRECTIVES = [GraphQL::Directive::SkipDirective, GraphQL::Directive::IncludeDirective]
+    DIRECTIVES = [GraphQL::Directive::SkipDirective, GraphQL::Directive::IncludeDirective, GraphQL::Directive::DeprecatedDirective]
     DYNAMIC_FIELDS = ["__type", "__typename", "__schema"]
     RESOLVE_TYPE_PROC_REQUIRED = -> (obj, ctx) { raise("Schema.resolve_type is undefined, can't resolve type for #{obj.inspect}") }
 

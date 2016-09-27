@@ -12,7 +12,7 @@ module GraphQL
       # Return a GraphQL schema string for the defined types in the schema
       # @param schema [GraphQL::Schema]
       def print_schema(schema)
-        print_filtered_schema(schema, method(:is_defined_type))
+        print_filtered_schema(schema, lambda { |n| !is_spec_directive(n) }, method(:is_defined_type))
       end
 
       # Return the GraphQL schema string for the introspection type system
@@ -21,16 +21,20 @@ module GraphQL
           name "Query"
         end
         schema = GraphQL::Schema.define(query: query_root)
-        print_filtered_schema(schema, method(:is_introspection_type))
+        print_filtered_schema(schema, method(:is_spec_directive), method(:is_introspection_type))
       end
 
       private
 
-      def print_filtered_schema(schema, type_filter)
+      def print_filtered_schema(schema, directive_filter, type_filter)
+        directives = schema.directives.values.select{ |directive| directive_filter.call(directive) }
+        directive_definitions = directives.map{ |directive| print_directive(directive) }
+
         types = schema.types.values.select{ |type| type_filter.call(type) }.sort_by(&:name)
         type_definitions = types.map{ |type| print_type(type) }
 
-        [print_schema_definition(schema)].concat(type_definitions).join("\n\n")
+        [print_schema_definition(schema)].concat(directive_definitions)
+                                         .concat(type_definitions).join("\n\n")
       end
 
       def print_schema_definition(schema)
@@ -44,6 +48,10 @@ module GraphQL
       BUILTIN_SCALARS = Set.new(["String", "Boolean", "Int", "Float", "ID"])
       private_constant :BUILTIN_SCALARS
 
+      def is_spec_directive(directive)
+        ['skip', 'include', 'deprecated'].include?(directive.name)
+      end
+
       def is_introspection_type(type)
         type.name.start_with?("__")
       end
@@ -56,12 +64,27 @@ module GraphQL
         TypeKindPrinters::STRATEGIES.fetch(type.kind).print(type)
       end
 
-      module TypeKindPrinters
-        module FieldPrinter
-          def print_fields(type)
-            type.all_fields.map{ |field| "  #{field.name}#{print_args(field)}: #{field.type}" }.join("\n")
-          end
+      def print_directive(directive)
+        TypeKindPrinters::DirectivePrinter.print(directive)
+      end
 
+      module TypeKindPrinters
+        module DeprecatedPrinter
+          def print_deprecated(field_or_enum_value)
+            return unless field_or_enum_value.deprecation_reason
+
+            case field_or_enum_value.deprecation_reason
+            when nil
+              ''
+            when '', GraphQL::Directive::DEFAULT_DEPRECATION_REASON
+              ' @deprecated'
+            else
+              " @deprecated(reason: #{field_or_enum_value.deprecation_reason.to_s.inspect})"
+            end
+          end
+        end
+
+        module ArgsPrinter
           def print_args(field)
             return if field.arguments.empty?
             "(#{field.arguments.values.map{ |arg| print_input_value(arg) }.join(", ")})"
@@ -105,6 +128,24 @@ module GraphQL
           end
         end
 
+        module FieldPrinter
+          include DeprecatedPrinter
+          include ArgsPrinter
+          def print_fields(type)
+            type.all_fields.map{ |field|
+              "  #{field.name}#{print_args(field)}: #{field.type}#{print_deprecated(field)}"
+            }.join("\n")
+          end
+        end
+
+        class DirectivePrinter
+          extend ArgsPrinter
+          def self.print(directive)
+            "directive @#{directive.name}#{print_args(directive)} "\
+            "on #{directive.locations.join(' | ')}"
+          end
+        end
+
         class ScalarPrinter
           def self.print(type)
             "scalar #{type.name}"
@@ -137,8 +178,9 @@ module GraphQL
         end
 
         class EnumPrinter
+          extend DeprecatedPrinter
           def self.print(type)
-            values = type.values.values.map{ |v| "  #{v.name}" }.join("\n")
+            values = type.values.values.map{ |v| "  #{v.name}#{print_deprecated(v)}" }.join("\n")
             "enum #{type.name} {\n#{values}\n}"
           end
         end

@@ -42,6 +42,16 @@ describe GraphQL::Introspection::DirectiveType do
             "onFragment" => true,
             "onOperation" => false,
           },
+          {
+            "name" => "deprecated",
+            "args" => [
+              {"name"=>"reason", "type"=>{"name"=>"Non-Null", "ofType"=>{"name"=>"String"}}}
+            ],
+            "locations"=>["FIELD_DEFINITION", "ENUM_VALUE"],
+            "onField" => false,
+            "onFragment" => false,
+            "onOperation" => false,
+          },
         ]
       }
     }}
