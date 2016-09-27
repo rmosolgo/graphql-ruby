@@ -53,7 +53,11 @@ module GraphQL
     end
 
     def coerce_non_null_input(value)
-      ensure_array(value).map{ |item| of_type.coerce_input(item) }
+      ensure_array(value).map { |item| of_type.coerce_input(item) }
+    end
+
+    def coerce_result(value)
+      ensure_array(value).map { |item| item.nil? ? nil : of_type.coerce_result(item) }
     end
 
     private

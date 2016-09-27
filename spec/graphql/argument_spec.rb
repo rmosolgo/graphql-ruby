@@ -15,7 +15,7 @@ describe GraphQL::Argument do
     }
 
     expected_error = %|Query is invalid: field "invalid" argument "invalid" default value ["123"] is not valid for type Float|
-    assert_equal expected_error, err.message
+    assert_includes err.message, expected_error
   end
 
   it "accepts proc type" do

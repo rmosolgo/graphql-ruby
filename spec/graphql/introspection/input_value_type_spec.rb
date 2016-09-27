@@ -39,4 +39,27 @@ describe GraphQL::Introspection::InputValueType do
       }}
     assert_equal(expected, result)
   end
+
+  let(:cheese_type) {
+    DummySchema.execute(%|
+      {
+        __type(name: "Cheese") {
+          fields {
+            name
+            args {
+              name
+              defaultValue
+            }
+          }
+        }
+      }
+    |)
+  }
+
+  it "converts default values to GraphQL values" do
+    field = cheese_type['data']['__type']['fields'].detect { |f| f['name'] == 'similarCheese' }
+    arg = field['args'].detect { |a| a['name'] == 'source' }
+
+    assert_equal('["COW"]', arg['defaultValue'])
+  end
 end

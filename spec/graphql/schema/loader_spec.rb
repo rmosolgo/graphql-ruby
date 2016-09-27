@@ -11,7 +11,7 @@ describe GraphQL::Schema::Loader do
     choice_type = GraphQL::EnumType.define do
       name "Choice"
 
-      value "FOO"
+      value "FOO", value: :foo
       value "BAR"
     end
 
@@ -30,7 +30,7 @@ describe GraphQL::Schema::Loader do
       name "Varied"
       input_field :id, types.ID
       input_field :int, types.Int
-      input_field :bigint, big_int_type
+      input_field :bigint, big_int_type, default_value: 2**54
       input_field :float, types.Float
       input_field :bool, types.Boolean
       input_field :enum, choice_type
@@ -43,6 +43,10 @@ describe GraphQL::Schema::Loader do
       interfaces [node_type]
 
       field :body, !types.String
+
+      field :fieldWithArg, types.Int do
+        argument :bigint, big_int_type, default_value: 2**54
+      end
     end
 
     media_type = GraphQL::InterfaceType.define do
@@ -85,7 +89,7 @@ describe GraphQL::Schema::Loader do
       field :post do
         type post_type
         argument :id, !types.ID
-        argument :varied, variant_input_type, default_value: { id: "123", int: 234, float: 2.3, enum: "FOO", sub: [{ string: "str" }] }
+        argument :varied, variant_input_type, default_value: { id: "123", int: 234, float: 2.3, enum: :foo, sub: [{ string: "str" }] }
       end
 
       field :content do
@@ -166,8 +170,37 @@ describe GraphQL::Schema::Loader do
       end
     end
 
+    let(:loaded_schema) { GraphQL::Schema::Loader.load(schema_json) }
+
     it "returns the schema" do
-      assert_deep_equal(schema, GraphQL::Schema::Loader.load(schema_json))
+      assert_deep_equal(schema, loaded_schema)
+    end
+
+    it "can export the loaded schema" do
+      assert loaded_schema.execute(GraphQL::Introspection::INTROSPECTION_QUERY)
+    end
+
+    it "sets correct default values on custom scalar arguments" do
+      type = loaded_schema.types["Comment"]
+      field = type.fields['fieldWithArg']
+      arg = field.arguments['bigint']
+
+      assert_equal((2**54).to_s, arg.default_value)
+    end
+
+    it "sets correct default values on custom scalar input fields" do
+      type = loaded_schema.types["Varied"]
+      field = type.input_fields['bigint']
+
+      assert_equal((2**54).to_s, field.default_value)
+    end
+
+    it "sets correct default values for complex field arguments" do
+      type = loaded_schema.types['Query']
+      field = type.fields['post']
+      arg = field.arguments['varied']
+
+      assert_equal arg.default_value, { 'id' => "123", 'bigint' => nil, 'bool' => nil, 'int' => 234, 'float' => 2.3, 'enum' => "FOO", 'sub' => [{ 'string' => "str" }] }
     end
   end
 end

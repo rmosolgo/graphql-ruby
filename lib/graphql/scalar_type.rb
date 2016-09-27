@@ -62,7 +62,7 @@ module GraphQL
 
     def coerce_result(value)
       ensure_defined
-      @coerce_result_proc.call(value)
+      @coerce_result_proc ? @coerce_result_proc.call(value) : value
     end
 
     def coerce_result=(proc)

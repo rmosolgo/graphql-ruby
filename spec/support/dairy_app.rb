@@ -62,7 +62,7 @@ CheeseType = GraphQL::ObjectType.define do
   field :similarCheese, CheeseType, "Cheeses like this one", property: :this_should_be_overriden  do
     # metadata test
     joins [:cheeses, :milks]
-    argument :source, !types[!DairyAnimalEnum]
+    argument :source, !types[!DairyAnimalEnum], default_value: [1]
     resolve -> (t, a, c) {
       # get the strings out:
       sources = a["source"]
@@ -235,7 +235,7 @@ end
 SourceFieldDefn = Proc.new {
   type GraphQL::ListType.new(of_type: CheeseType)
   description "Cheese from source"
-  argument :source, DairyAnimalEnum, default_value: "COW"
+  argument :source, DairyAnimalEnum, default_value: 1
   resolve -> (target, arguments, context) {
     CHEESES.values.select{ |c| c.source == arguments["source"] }
   }
