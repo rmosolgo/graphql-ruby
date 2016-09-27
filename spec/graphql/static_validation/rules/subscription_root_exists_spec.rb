@@ -1,6 +1,8 @@
 require "spec_helper"
 
 describe GraphQL::StaticValidation::SubscriptionRootExists do
+  include StaticValidationHelpers
+
   let(:query_string) {%|
     subscription {
       test
@@ -17,10 +19,6 @@ describe GraphQL::StaticValidation::SubscriptionRootExists do
       query query_root
     end
   }
-
-  let(:validator) { GraphQL::StaticValidation::Validator.new(schema: schema, rules: [GraphQL::StaticValidation::SubscriptionRootExists]) }
-  let(:query) { GraphQL::Query.new(schema, query_string) }
-  let(:errors) { validator.validate(query)[:errors] }
 
   it "errors when a subscription is performed on a schema without a subscription root" do
     assert_equal(1, errors.length)

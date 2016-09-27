@@ -1,6 +1,8 @@
 require "spec_helper"
 
 describe GraphQL::StaticValidation::VariableUsagesAreAllowed do
+  include StaticValidationHelpers
+
   let(:query_string) {'
     query getCheese(
         $goodInt: Int = 1,
@@ -17,11 +19,11 @@ describe GraphQL::StaticValidation::VariableUsagesAreAllowed do
       badCheese:    cheese(id: $badInt)   { source }
       badStrCheese: cheese(id: $badStr)   { source }
       cheese(id: 1) {
-        similarCheese(source: $goodAnimals)
-        other: similarCheese(source: $badAnimals)
-        tooDeep: similarCheese(source: $deepAnimals)
-        nullableCheese(source: $goodAnimals)
-        deeplyNullableCheese(source: $deepAnimals)
+        similarCheese(source: $goodAnimals) { source }
+        other: similarCheese(source: $badAnimals) { source }
+        tooDeep: similarCheese(source: $deepAnimals) { source }
+        nullableCheese(source: $goodAnimals) { source }
+        deeplyNullableCheese(source: $deepAnimals) { source }
       }
 
       milk(id: 1) {
@@ -33,10 +35,6 @@ describe GraphQL::StaticValidation::VariableUsagesAreAllowed do
       }
     }
   '}
-
-  let(:validator) { GraphQL::StaticValidation::Validator.new(schema: DummySchema, rules: [GraphQL::StaticValidation::VariableUsagesAreAllowed]) }
-  let(:query) { GraphQL::Query.new(DummySchema, query_string) }
-  let(:errors) { validator.validate(query)[:errors] }
 
   it "finds variables used as arguments but don't match the argument's type" do
     assert_equal(4, errors.length)

@@ -1,6 +1,7 @@
 require "spec_helper"
 
 describe GraphQL::StaticValidation::DirectivesAreDefined do
+  include StaticValidationHelpers
   let(:query_string) {"
     query getCheese {
       okCheese: cheese(id: 1) {
@@ -12,11 +13,6 @@ describe GraphQL::StaticValidation::DirectivesAreDefined do
       }
     }
   "}
-
-  let(:validator) { GraphQL::StaticValidation::Validator.new(schema: DummySchema, rules: [GraphQL::StaticValidation::DirectivesAreDefined]) }
-  let(:query) { GraphQL::Query.new(DummySchema, query_string) }
-  let(:errors) { validator.validate(query)[:errors] }
-
   describe "non-existent directives" do
     it "makes errors for them" do
       expected = [

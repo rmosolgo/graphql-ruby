@@ -1,6 +1,7 @@
 require "spec_helper"
 
 describe GraphQL::StaticValidation::FragmentsAreUsed do
+  include StaticValidationHelpers
   let(:query_string) {"
     query getCheese {
       name,
@@ -10,10 +11,6 @@ describe GraphQL::StaticValidation::FragmentsAreUsed do
     fragment cheeseFields on Cheese { fatContent }
     fragment unusedFields on Cheese { is, not, used }
   "}
-
-  let(:validator) { GraphQL::StaticValidation::Validator.new(schema: DummySchema, rules: [GraphQL::StaticValidation::FragmentsAreUsed]) }
-  let(:query) { GraphQL::Query.new(DummySchema, query_string) }
-  let(:errors) { validator.validate(query)[:errors] }
 
   it "adds errors for unused fragment definitions" do
     assert_includes(errors, {

@@ -1,6 +1,8 @@
 require "spec_helper"
 
 describe GraphQL::StaticValidation::FragmentsAreOnCompositeTypes do
+  include StaticValidationHelpers
+
   let(:query_string) {%|
     query getCheese {
       cheese(id: 1) {
@@ -12,7 +14,9 @@ describe GraphQL::StaticValidation::FragmentsAreOnCompositeTypes do
         }
         ... intFields
         ... on DairyProduct {
-          name
+          ... on Cheese {
+            flavor
+          }
         }
         ... on DairyProductInput {
           something
@@ -25,10 +29,6 @@ describe GraphQL::StaticValidation::FragmentsAreOnCompositeTypes do
     }
   |}
 
-  let(:validator) { GraphQL::StaticValidation::Validator.new(schema: DummySchema, rules: [GraphQL::StaticValidation::FragmentsAreOnCompositeTypes]) }
-  let(:query) { GraphQL::Query.new(DummySchema, query_string) }
-  let(:errors) { validator.validate(query)[:errors] }
-
   it "requires Object/Union/Interface fragment types" do
     expected = [
       {
@@ -38,12 +38,12 @@ describe GraphQL::StaticValidation::FragmentsAreOnCompositeTypes do
       },
       {
         "message"=>"Invalid fragment on type DairyProductInput (must be Union, Interface or Object)",
-        "locations"=>[{"line"=>14, "column"=>9}],
+        "locations"=>[{"line"=>16, "column"=>9}],
         "fields"=>["query getCheese", "cheese", "... on DairyProductInput"],
       },
       {
         "message"=>"Invalid fragment on type Int (must be Union, Interface or Object)",
-        "locations"=>[{"line"=>20, "column"=>5}],
+        "locations"=>[{"line"=>22, "column"=>5}],
         "fields"=>["fragment intFields"],
       },
     ]

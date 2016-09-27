@@ -1,6 +1,8 @@
 require "spec_helper"
 
 describe GraphQL::StaticValidation::VariablesAreInputTypes do
+  include StaticValidationHelpers
+
   let(:query_string) {'
     query getCheese(
       $id:        Int = 1,
@@ -10,31 +12,27 @@ describe GraphQL::StaticValidation::VariablesAreInputTypes do
       $objects:   [Cheese]!,
     ) {
       cheese(id: $id) { source }
+      __type(name: $str) { name }
     }
   '}
 
-  let(:validator) { GraphQL::StaticValidation::Validator.new(schema: DummySchema, rules: [GraphQL::StaticValidation::VariablesAreInputTypes]) }
-  let(:query) { GraphQL::Query.new(DummySchema, query_string) }
-  let(:errors) { validator.validate(query)[:errors] }
-
   it "finds variables whose types are invalid" do
-    expected = [
-      {
-        "message"=>"AnimalProduct isn't a valid input type (on $interface)",
-        "locations"=>[{"line"=>5, "column"=>7}],
-        "fields"=>["query getCheese"],
-      },
-      {
-        "message"=>"Milk isn't a valid input type (on $object)",
-        "locations"=>[{"line"=>6, "column"=>7}],
-        "fields"=>["query getCheese"],
-      },
-      {
-        "message"=>"Cheese isn't a valid input type (on $objects)",
-        "locations"=>[{"line"=>7, "column"=>7}],
-        "fields"=>["query getCheese"],
-      }
-    ]
-    assert_equal(expected, errors)
+    assert_includes(errors, {
+      "message"=>"AnimalProduct isn't a valid input type (on $interface)",
+      "locations"=>[{"line"=>5, "column"=>7}],
+      "fields"=>["query getCheese"],
+    })
+
+    assert_includes(errors, {
+      "message"=>"Milk isn't a valid input type (on $object)",
+      "locations"=>[{"line"=>6, "column"=>7}],
+      "fields"=>["query getCheese"],
+    })
+
+    assert_includes(errors, {
+      "message"=>"Cheese isn't a valid input type (on $objects)",
+      "locations"=>[{"line"=>7, "column"=>7}],
+      "fields"=>["query getCheese"],
+    })
   end
 end

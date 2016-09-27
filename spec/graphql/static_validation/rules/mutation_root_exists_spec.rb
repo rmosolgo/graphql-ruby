@@ -1,6 +1,8 @@
 require "spec_helper"
 
 describe GraphQL::StaticValidation::MutationRootExists do
+  include StaticValidationHelpers
+
   let(:query_string) {%|
     mutation addBagel {
       introduceShip(input: {shipName: "Bagel"}) {
@@ -22,10 +24,6 @@ describe GraphQL::StaticValidation::MutationRootExists do
       query query_root
     end
   }
-
-  let(:validator) { GraphQL::StaticValidation::Validator.new(schema: schema, rules: [GraphQL::StaticValidation::MutationRootExists]) }
-  let(:query) { GraphQL::Query.new(schema, query_string) }
-  let(:errors) { validator.validate(query)[:errors] }
 
   it "errors when a mutation is performed on a schema without a mutation root" do
     assert_equal(1, errors.length)

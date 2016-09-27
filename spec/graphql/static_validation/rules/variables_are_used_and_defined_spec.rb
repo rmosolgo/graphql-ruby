@@ -1,37 +1,40 @@
 require "spec_helper"
 
 describe GraphQL::StaticValidation::VariablesAreUsedAndDefined do
+  include StaticValidationHelpers
+
   let(:query_string) {'
     query getCheese(
-      $usedVar: Int,
-      $usedInnerVar: String,
-      $usedInlineFragmentVar: Boolean,
-      $usedFragmentVar: Int,
-      $notUsedVar: Float,
+      $usedVar: Int!,
+      $usedInnerVar: [DairyAnimal!]!,
+      $usedInlineFragmentVar: Int!,
+      $usedFragmentVar: Int!,
+      $notUsedVar: Int!,
     ) {
-      cheese(id: $usedVar) {
-        source(str: $usedInnerVar)
-        whatever(undefined: $undefinedVar)
-        ... on Cheese {
-          something(bool: $usedInlineFragmentVar)
-        }
-        ... outerCheeseFields
+      c1: cheese(id: $usedVar) {
+        __typename
       }
+      ... on Query {
+        c2: cheese(id: $usedInlineFragmentVar) {
+          similarCheese(source: $usedInnerVar) { __typename }
+        }
+
+      }
+
+      c3: cheese(id: $undefinedVar) { __typename }
+
+      ... outerCheeseFields
     }
 
-    fragment outerCheeseFields on Cheese {
+    fragment outerCheeseFields on Query {
       ... innerCheeseFields
     }
 
-    fragment innerCheeseFields on Cheese {
-      source(notDefined: $undefinedFragmentVar)
-      someField(someArg: $usedFragmentVar)
+    fragment innerCheeseFields on Query {
+      c4: cheese(id: $undefinedFragmentVar) { __typename }
+      c5: cheese(id: $usedFragmentVar) { __typename }
     }
   '}
-
-  let(:validator) { GraphQL::StaticValidation::Validator.new(schema: DummySchema, rules: [GraphQL::StaticValidation::VariablesAreUsedAndDefined]) }
-  let(:query) { GraphQL::Query.new(DummySchema, query_string) }
-  let(:errors) { validator.validate(query)[:errors] }
 
   it "finds variables which are used-but-not-defined or defined-but-not-used" do
     expected = [
@@ -42,15 +45,16 @@ describe GraphQL::StaticValidation::VariablesAreUsedAndDefined do
       },
       {
         "message"=>"Variable $undefinedVar is used by getCheese but not declared",
-        "locations"=>[{"line"=>11, "column"=>29}],
-        "fields"=>["query getCheese", "cheese", "whatever", "undefined"],
+        "locations"=>[{"line"=>19, "column"=>22}],
+        "fields"=>["query getCheese", "c3", "id"],
       },
       {
         "message"=>"Variable $undefinedFragmentVar is used by innerCheeseFields but not declared",
-        "locations"=>[{"line"=>24, "column"=>26}],
-        "fields"=>["fragment innerCheeseFields", "source", "notDefined"],
+        "locations"=>[{"line"=>29, "column"=>22}],
+        "fields"=>["fragment innerCheeseFields", "c4", "id"],
       },
     ]
+
     assert_equal(expected, errors)
   end
 end

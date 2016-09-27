@@ -23,8 +23,10 @@ module GraphQL
         context.visitor[GraphQL::Language::Nodes::Document].leave << -> (doc_node, parent) {
           spreads_to_validate.each do |frag_spread|
             fragment_child_name = context.fragments[frag_spread.node.name].type
-            fragment_child = context.schema.types[fragment_child_name]
-            validate_fragment_in_scope(frag_spread.parent_type, fragment_child, frag_spread.node, context, frag_spread.path)
+            fragment_child = context.schema.types.fetch(fragment_child_name, nil) # Might be non-existent type name
+            if fragment_child
+              validate_fragment_in_scope(frag_spread.parent_type, fragment_child, frag_spread.node, context, frag_spread.path)
+            end
           end
         }
       end
@@ -32,6 +34,10 @@ module GraphQL
       private
 
       def validate_fragment_in_scope(parent_type, child_type, node, context, path)
+        if !child_type.kind.fields?
+          # It's not a valid fragment type, this error was handled someplace else
+          return
+        end
         intersecting_types = get_possible_types(parent_type, context.schema) & get_possible_types(child_type, context.schema)
         if intersecting_types.none?
           name = node.respond_to?(:name) ? " #{node.name}" : ""

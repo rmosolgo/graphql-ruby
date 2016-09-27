@@ -1,6 +1,7 @@
 require "spec_helper"
 
 describe GraphQL::StaticValidation::DirectivesAreInValidLocations do
+  include StaticValidationHelpers
   let(:query_string) {"
     query getCheese @skip(if: true) {
       okCheese: cheese(id: 1) {
@@ -8,6 +9,7 @@ describe GraphQL::StaticValidation::DirectivesAreInValidLocations do
         source
         ... on Cheese @skip(if: true) {
           flavor
+          ... whatever
         }
       }
     }
@@ -16,10 +18,6 @@ describe GraphQL::StaticValidation::DirectivesAreInValidLocations do
       id
     }
   "}
-
-  let(:validator) { GraphQL::StaticValidation::Validator.new(schema: DummySchema, rules: [GraphQL::StaticValidation::DirectivesAreInValidLocations]) }
-  let(:query) { GraphQL::Query.new(DummySchema, query_string) }
-  let(:errors) { validator.validate(query)[:errors] }
 
   describe "invalid directive locations" do
     it "makes errors for them" do
@@ -31,7 +29,7 @@ describe GraphQL::StaticValidation::DirectivesAreInValidLocations do
         },
         {
           "message"=>"'@skip' can't be applied to fragment definitions (allowed: fields, fragment spreads, inline fragments)",
-          "locations"=>[{"line"=>12, "column"=>33}],
+          "locations"=>[{"line"=>13, "column"=>33}],
            "fields"=>["fragment whatever"],
         },
       ]

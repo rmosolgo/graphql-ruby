@@ -1,22 +1,19 @@
 require "spec_helper"
 
 describe GraphQL::StaticValidation::RequiredArgumentsArePresent do
+  include StaticValidationHelpers
   let(:query_string) {"
     query getCheese {
-      cheese(id: 1) { source }
+      okCheese: cheese(id: 1) { ...cheeseFields }
       cheese { source }
     }
 
     fragment cheeseFields on Cheese {
-      similarCheese(id: 1)
+      similarCheese() { __typename }
       flavor @include(if: true)
       id @skip
     }
   "}
-
-  let(:validator) { GraphQL::StaticValidation::Validator.new(schema: DummySchema, rules: [GraphQL::StaticValidation::RequiredArgumentsArePresent]) }
-  let(:query) { GraphQL::Query.new(DummySchema, query_string) }
-  let(:errors) { validator.validate(query)[:errors] }
 
   it "finds undefined arguments to fields and directives" do
     assert_equal(3, errors.length)

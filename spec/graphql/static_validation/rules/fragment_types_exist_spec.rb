@@ -1,6 +1,8 @@
 require "spec_helper"
 
 describe GraphQL::StaticValidation::FragmentTypesExist do
+  include StaticValidationHelpers
+
   let(:query_string) {"
     query getCheese {
       cheese(id: 1) {
@@ -18,10 +20,6 @@ describe GraphQL::StaticValidation::FragmentTypesExist do
       fatContent
     }
   "}
-
-  let(:validator) { GraphQL::StaticValidation::Validator.new(schema: DummySchema, rules: [GraphQL::StaticValidation::FragmentTypesExist]) }
-  let(:query) { GraphQL::Query.new(DummySchema, query_string) }
-  let(:errors) { validator.validate(query)[:errors] }
 
   it "finds non-existent types on fragments" do
     assert_equal(2, errors.length)

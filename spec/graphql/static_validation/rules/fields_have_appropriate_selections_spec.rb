@@ -1,6 +1,7 @@
 require "spec_helper"
 
 describe GraphQL::StaticValidation::FieldsHaveAppropriateSelections do
+  include StaticValidationHelpers
   let(:query_string) {"
     query getCheese {
       okCheese: cheese(id: 1) { fatContent, similarCheese(source: YAK) { source } }
@@ -8,10 +9,6 @@ describe GraphQL::StaticValidation::FieldsHaveAppropriateSelections do
       illegalSelectionCheese: cheese(id: 1) { id { something, ... someFields } }
     }
   "}
-
-  let(:validator) { GraphQL::StaticValidation::Validator.new(schema: DummySchema, rules: [GraphQL::StaticValidation::FieldsHaveAppropriateSelections]) }
-  let(:query) { GraphQL::Query.new(DummySchema, query_string) }
-  let(:errors) { validator.validate(query)[:errors] }
 
   it "adds errors for selections on scalars" do
     assert_equal(2, errors.length)
