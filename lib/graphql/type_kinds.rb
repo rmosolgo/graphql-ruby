@@ -37,6 +37,17 @@ module GraphQL
       NON_NULL =      TypeKind.new("NON_NULL", wraps: true),
     ]
 
+    TYPE_KIND_DESCRIPTIONS = {
+      SCALAR:       'Indicates this type is a scalar.',
+      OBJECT:       'Indicates this type is an object. `fields` and `interfaces` are valid fields.',
+      INTERFACE:    'Indicates this type is an interface. `fields` and `possibleTypes` are valid fields.',
+      UNION:        'Indicates this type is a union. `possibleTypes` is a valid field.',
+      ENUM:         'Indicates this type is an enum. `enumValues` is a valid field.',
+      INPUT_OBJECT: 'Indicates this type is an input object. `inputFields` is a valid field.',
+      LIST:         'Indicates this type is a list. `ofType` is a valid field.',
+      NON_NULL:     'Indicates this type is a non-null. `ofType` is a valid field.',
+    }
+
     KIND_NAMES = TYPE_KINDS.map(&:name)
     class TypeKind
       KIND_NAMES.each do |kind_name|

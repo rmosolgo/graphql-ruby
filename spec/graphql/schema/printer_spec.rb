@@ -82,11 +82,11 @@ directive @deprecated(reason: String = \"No longer supported\") on FIELD_DEFINIT
 type __Directive {
   name: String!
   description: String
-  args: [__InputValue!]!
   locations: [__DirectiveLocation!]!
-  onOperation: Boolean! @deprecated(reason: \"Moved to 'locations' field\")
-  onFragment: Boolean! @deprecated(reason: \"Moved to 'locations' field\")
-  onField: Boolean! @deprecated(reason: \"Moved to 'locations' field\")
+  args: [__InputValue!]!
+  onOperation: Boolean! @deprecated(reason: \"Use `locations`.\")
+  onFragment: Boolean! @deprecated(reason: \"Use `locations`.\")
+  onField: Boolean! @deprecated(reason: \"Use `locations`.\")
 }
 
 enum __DirectiveLocation {
@@ -94,26 +94,35 @@ enum __DirectiveLocation {
   MUTATION
   SUBSCRIPTION
   FIELD
-  FIELD_DEFINITION
   FRAGMENT_DEFINITION
   FRAGMENT_SPREAD
   INLINE_FRAGMENT
+  SCHEMA
+  SCALAR
+  OBJECT
+  FIELD_DEFINITION
+  ARGUMENT_DEFINITION
+  INTERFACE
+  UNION
+  ENUM
   ENUM_VALUE
+  INPUT_OBJECT
+  INPUT_FIELD_DEFINITION
 }
 
 type __EnumValue {
   name: String!
   description: String
-  deprecationReason: String
   isDeprecated: Boolean!
+  deprecationReason: String
 }
 
 type __Field {
   name: String!
   description: String
+  args: [__InputValue!]!
   type: __Type!
   isDeprecated: Boolean!
-  args: [__InputValue!]!
   deprecationReason: String
 }
 
@@ -126,10 +135,10 @@ type __InputValue {
 
 type __Schema {
   types: [__Type!]!
-  directives: [__Directive!]!
   queryType: __Type!
   mutationType: __Type
   subscriptionType: __Type
+  directives: [__Directive!]!
 }
 
 type __Type {

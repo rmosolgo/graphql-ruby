@@ -1,11 +1,16 @@
 GraphQL::Introspection::DirectiveType = GraphQL::ObjectType.define do
   name "__Directive"
-  description "A query directive in this schema"
-  field :name, !types.String, "The name of this directive"
-  field :description, types.String, "The description for this type"
-  field :args, field: GraphQL::Introspection::ArgumentsField
+  description "A Directive provides a way to describe alternate runtime execution and type validation behavior in a GraphQL document."\
+              "\n\n"\
+              "In some cases, you need to provide options to alter GraphQL's execution behavior "\
+              "in ways field arguments will not suffice, such as conditionally including or "\
+              "skipping a field. Directives provide this by describing additional information "\
+              "to the executor."
+  field :name, !types.String
+  field :description, types.String
   field :locations, !types[!GraphQL::Introspection::DirectiveLocationEnum]
-  field :onOperation, !types.Boolean, "Does this directive apply to operations?", deprecation_reason: "Moved to 'locations' field", property: :on_operation?
-  field :onFragment, !types.Boolean, "Does this directive apply to fragments?", deprecation_reason: "Moved to 'locations' field", property: :on_fragment?
-  field :onField, !types.Boolean, "Does this directive apply to fields?", deprecation_reason: "Moved to 'locations' field", property: :on_field?
+  field :args, field: GraphQL::Introspection::ArgumentsField
+  field :onOperation, !types.Boolean, deprecation_reason: "Use `locations`.", property: :on_operation?
+  field :onFragment, !types.Boolean, deprecation_reason: "Use `locations`.", property: :on_fragment?
+  field :onField, !types.Boolean, deprecation_reason: "Use `locations`.", property: :on_field?
 end
