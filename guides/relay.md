@@ -2,19 +2,7 @@
 title: GraphQL::Relay
 ---
 
-## `graphql-relay` gem
-
-__Note__: For graphql versions `< 0.18`, you must include:
-
-```
-gem "graphql-relay"
-```
-
-Starting in `0.18`, `GraphQL::Relay` is part of `graphql`.
-
-------------------------------
-
-`GraphQL::Relay` provides several helpers for making a Relay-compliant GraphQL endpoint in Ruby:
+Since version `0.18.0`, `GraphQL::Relay` provides several helpers for making a Relay-compliant GraphQL endpoint in Ruby:
 
 - [global ids](#global-ids) support Relay's UUID-based refetching
 - [connections](#connections) implement Relay's pagination
@@ -23,105 +11,93 @@ Starting in `0.18`, `GraphQL::Relay` is part of `graphql`.
 
 ## Global Ids
 
-Global ids (or UUIDs) provide refetching & global identification for Relay.
+Global ids (or UUIDs) support two features in Relay:
 
-### UUID Lookup
+- __Caching__: Unique IDs are used as primary keys in Relay's client-side cache.
+- __Refetching__: Relay uses unique IDs to refetch objects when it determines that its cache is stale. (It uses the `Query.node` field to refetch objects.)
 
-Use `GraphQL::Relay::GlobalNodeIdentification` helper by defining `object_from_id(global_id, ctx)` & `type_from_object(object)`. Then, assign the result to `Schema#node_identification` so that it can be used for query execution.
+### Defining UUIDs
 
-For example, define a node identification helper:
-
-
-```ruby
-NodeIdentification = GraphQL::Relay::GlobalNodeIdentification.define do
-  # Given a UUID & the query context,
-  # return the corresponding application object
-  object_from_id -> (id, ctx) do
-    type_name, id = NodeIdentification.from_global_id(id)
-    # "Post" -> Post.find(id)
-    Object.const_get(type_name).find(id)
-  end
-
-  # Given an application object,
-  # return a GraphQL ObjectType to expose that object
-  type_from_object -> (object) do
-    if object.is_a?(Post)
-      PostType
-    else
-      CommentType
-    end
-  end
-end
-```
-
-Then assign it to the schema:
+You must provide a function for generating UUIDs and fetching objects with them. In your schema, define `id_from_object` and `object_from_id`:
 
 ```ruby
 MySchema = GraphQL::Schema.define do
-  # ...
-  # Declare your node identification helper:
-  node_identification NodeIdentification
+  id_from_object = -> (object, type_definition, query_ctx) {
+    # Call your application's UUID method here
+    # It should return a string
+    MyApp::GlobalId.encrypt(object.class.name, object.id)
+  }
+
+  object_from_id = -> (id, query_ctx) {
+    class_name, item_id = MyApp::GlobalId.decrypt(id)
+    # "Post" => Post.find(id)
+    Object.const_get(class_name).find(item_id)
+  }
+end
+```
+
+An unencrypted ID generator is provided in the gem. It uses `Base64` to encode values. You can use it like this:
+
+```ruby
+MySchema = GraphQL::Schema.define do
+  # Create UUIDs by joining the type name & ID, then base64-encoding it
+  id_from_object = -> (object, type_definition, query_ctx) {
+    GraphQL::Schema::UniqueWithinType.encode(type_definition.name, object.id)
+  }
+
+  object_from_id = -> (id, query_ctx) {
+    type_name, item_id = GraphQL::Schema::UniqueWithinType.decode(id)
+    # Now, based on `type_name` and `id`
+    # find an object in your application
+    # ....
+  }
 end
 ```
 
 ### UUID fields
 
-ObjectTypes in your schema should implement `NodeIdentification.interface` with the `global_id_field` helper, for example:
+To participate in Relay's caching and refetching, objects must do two things:
+
+- Implement the `"Node"` interface
+- Define an `"id"` field which returns a UUID
+
+To implement the node interface, include `GraphQL::Relay::Node.interface` in your list of interfaces:
 
 ```ruby
 PostType = GraphQL::ObjectType.define do
   name "Post"
-  interfaces [NodeIdentification.interface]
-  # `id` exposes the UUID
-  global_id_field :id
-
+  # Implement the "Node" interface for Relay
+  interfaces [GraphQL::Relay::Node.interface]
   # ...
 end
 ```
 
+To add a UUID field named `"id"`, use the `global_id_field` helper:
+
+```ruby
+PostType = GraphQL::ObjectType.define do
+  name "Post"
+  # ...
+  # `id` exposes the UUID
+  global_id_field :id
+  # ...
+end
+```
+
+Now, `PostType` can participate in Relay's UUID-based features.
+
 ### `node` field (find-by-UUID)
 
-You should also add a field to your root query type for Relay to re-fetch objects:
+You should also provide a root-level `node` field so that Relay can refetch objects from your schema. It is provided as `GraphQL::Relay::Node.field`, so you can attach it like this:
 
 ```ruby
 QueryType = GraphQL::ObjectType.define do
   name "Query"
   # Used by Relay to lookup objects by UUID:
-  field :node, field: NodeIdentification.field
-
+  field :node, GraphQL::Relay::Node.field
   # ...
 end
 ```
-
-### Custom UUID Generation
-
-By default, `GraphQL::Relay` uses `Base64.strict_encode64` to generate opaque global ids. You can modify this behavior by providing two configurations. They work together to encode and decode ids:
-
-```ruby
-NodeIdentification = GraphQL::Relay::GlobalNodeIdentification.define do
-  # ...
-
-  # Return a string for re-fetching this object
-  to_global_id -> (type_name, id) {
-    "#{type_name}/#{id}"
-  }
-
-  # Based on the incoming string, extract the type_name and id
-  from_global_id -> (global_id) {
-    id_parts  = global_id.split("/")
-    type_name = id_parts[0]
-    id        = id_parts[1]
-    # Return *both*:
-    [type_name, id]
-  }
-end
-
-# ...
-
-MySchema.node_identification = NodeIdentification
-```
-
-`GraphQL::Relay` will use those procs for interacting with global ids.
 
 ## Connections
 

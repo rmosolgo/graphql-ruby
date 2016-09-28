@@ -123,7 +123,6 @@ If you're building a backend for [Relay](http://facebook.github.io/relay/), you'
 - Add Rails-y argument validations, eg `less_than: 100`, `max_length: 255`, `one_of: [...]`
   - Must be customizable
 - Relay:
-  - `GlobalNodeIdentification.to_global_id` should receive the type name and _object_, not `id`. (Or, maintain the "`type_name, id` in, `type_name, id` out" pattern?) ([in progress?](https://github.com/rmosolgo/graphql-ruby/pull/243))
   - Reduce duplication in ArrayConnection / RelationConnection
   - Improve API for creating edges (better RANGE_ADD support)
   - If the new edge isn't a member of the connection's objects, raise a nice error
