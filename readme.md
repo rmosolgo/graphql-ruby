@@ -114,7 +114,7 @@ If you're building a backend for [Relay](http://facebook.github.io/relay/), you'
 
 ## To Do
 
-- StaticValidation improvements
+- StaticValidation improvements ([in progress](https://github.com/rmosolgo/graphql-ruby/pull/268))
   - Use catch-all type/field/argument definitions instead of terminating traversal
   - Reduce ad-hoc traversals?
   - Validators are order-dependent, is this a smell?
@@ -123,17 +123,17 @@ If you're building a backend for [Relay](http://facebook.github.io/relay/), you'
 - Add Rails-y argument validations, eg `less_than: 100`, `max_length: 255`, `one_of: [...]`
   - Must be customizable
 - Relay:
-  - `GlobalNodeIdentification.to_global_id` should receive the type name and _object_, not `id`. (Or, maintain the "`type_name, id` in, `type_name, id` out" pattern?)
+  - `GlobalNodeIdentification.to_global_id` should receive the type name and _object_, not `id`. (Or, maintain the "`type_name, id` in, `type_name, id` out" pattern?) ([in progress?](https://github.com/rmosolgo/graphql-ruby/pull/243))
   - Reduce duplication in ArrayConnection / RelationConnection
   - Improve API for creating edges (better RANGE_ADD support)
   - If the new edge isn't a member of the connection's objects, raise a nice error
 - Missing Enum value should raise a descriptive error, not "key not found"
 - `args` should whitelist keys -- if you request a key that isn't defined for the field, it should 💥
-- Fix middleware
+- Fix middleware ([discussion](https://github.com/rmosolgo/graphql-ruby/issues/186))
   - Handle out-of-bounds lookup, eg `graphql-batch`
   - Handle non-serial execution, eg `@defer`
 - Support non-instance-eval `.define`, eg `.define { |defn| ... }`
-- First-class promise support
+- First-class promise support ([discussion](https://github.com/rmosolgo/graphql-ruby/issues/274))
   - like `graphql-batch` but more local
   - support promises in connection resolves
 - Add immutable transformation API to AST
@@ -141,10 +141,12 @@ If you're building a backend for [Relay](http://facebook.github.io/relay/), you'
   - Adding fields to selections (`__typename` can go anywhere, others are type-specific)
   - Renaming fragments from local names to unique names
 - Support AST subclasses? This would be hard, I think classes are used as hash keys in many places.
-- Support object deep-copy (schema, type, field, argument)? To support multiple schemas based on the same types.
+- Support object deep-copy (schema, type, field, argument)? To support multiple schemas based on the same types. ([discussion](https://github.com/rmosolgo/graphql-ruby/issues/269))
 - Improve the website
   - Feature the logo in the header
   - Split `readme.md` into `index.md` (a homepage with code samples) and a technical readme (how to install, link to homepage)
   - Move "Related projects" to a guide
   - Revisit guides, maybe split them into smaller, more specific pages
   - Put guide titles into the `<title />`
+- Document encrypted & versioned cursors
+- Eager load `Schema#types` after `.define { ... }`
