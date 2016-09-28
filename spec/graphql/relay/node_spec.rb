@@ -4,6 +4,10 @@ describe GraphQL::Relay::Node do
   describe ".field" do
     describe "Custom global IDs" do
       before do
+        # TODO: make the schema eager-load so we can remove this
+        # Ensure the schema is defined:
+        StarWarsSchema.types
+
         @previous_id_from_object_proc = StarWarsSchema.id_from_object_proc
         @previous_object_from_id_proc = StarWarsSchema.object_from_id_proc
 
