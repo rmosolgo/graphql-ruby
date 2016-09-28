@@ -1,0 +1,27 @@
+require "spec_helper"
+
+describe GraphQL::Schema::UniqueWithinType do
+  describe 'encode / decode' do
+    it 'Converts typename and ID to and from ID' do
+      global_id = GraphQL::Schema::UniqueWithinType.encode("SomeType", 123)
+      type_name, id = GraphQL::Schema::UniqueWithinType.decode(global_id)
+      assert_equal("SomeType", type_name)
+      assert_equal("123", id)
+    end
+
+    it "allows you to specify the separator" do
+      custom_separator = "---"
+      global_id = GraphQL::Schema::UniqueWithinType.encode("Type-With-UUID", "250cda0e-a89d-41cf-99e1-2872d89f1100", separator: custom_separator)
+      type_name, id = GraphQL::Schema::UniqueWithinType.decode(global_id, separator: custom_separator)
+      assert_equal("Type-With-UUID", type_name)
+      assert_equal("250cda0e-a89d-41cf-99e1-2872d89f1100", id)
+    end
+
+    it "raises an error if you try and use a reserved character in the ID" do
+      err = assert_raises(RuntimeError) {
+        GraphQL::Schema::UniqueWithinType.encode("Best-Thing", "234")
+      }
+      assert_includes err.message, "encode(Best-Thing, 234) contains reserved characters `-`"
+    end
+  end
+end

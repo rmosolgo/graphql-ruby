@@ -7,6 +7,7 @@ require "graphql/schema/reduce_types"
 require "graphql/schema/timeout_middleware"
 require "graphql/schema/type_expression"
 require "graphql/schema/type_map"
+require "graphql/schema/unique_within_type"
 require "graphql/schema/validation"
 
 module GraphQL
@@ -49,7 +50,7 @@ module GraphQL
       :max_depth, :max_complexity,
       :node_identification,
       :orphan_types, :resolve_type,
-      :object_from_id, :to_global_id, :from_global_id,
+      :object_from_id, :id_from_object,
       query_analyzer: -> (schema, analyzer) { schema.query_analyzers << analyzer },
       middleware: -> (schema, middleware) { schema.middleware << middleware },
       rescue_from: -> (schema, err_class, &block) { schema.rescue_from(err_class, &block)}
@@ -71,7 +72,7 @@ module GraphQL
     # @return [String] Used to join typename & ID by the default global ID generation function
     attr_accessor :id_separator
 
-    attr_reader :directives, :static_validator, :object_from_id_proc, :to_global_id_proc, :from_global_id_proc
+    attr_reader :directives, :static_validator, :object_from_id_proc, :id_from_object_proc
 
     # @!attribute node_identification
     #   @return [GraphQL::Relay::GlobalNodeIdentification] the node identification instance for this schema, when using Relay
@@ -105,9 +106,6 @@ module GraphQL
       @middleware = [@rescue_middleware]
       @query_analyzers = []
       @resolve_type_proc = RESOLVE_TYPE_PROC_REQUIRED
-      @id_separator = DEFAULT_ID_SEPARATOR
-      @to_global_id_proc = ToGlobalId.new(self)
-      @from_global_id_proc = FromGlobalId.new(self)
       @object_from_id_proc = nil
       # Default to the built-in execution strategy:
       @query_execution_strategy = GraphQL::Query::SerialExecution
@@ -202,6 +200,8 @@ module GraphQL
 
     # Determine the GraphQL type for a given object.
     # This is required for unions and interfaces (include Relay's node interface)
+    # @param object [Any] An application object which GraphQL is currently resolving on
+    # @param ctx [GraphQL::Query::Context] The context for the current query
     # @return [GraphQL::ObjectType] The type for exposing `object` in GraphQL
     def resolve_type(object, ctx)
       ensure_defined
@@ -221,66 +221,34 @@ module GraphQL
       @resolve_type_proc = new_resolve_type_proc
     end
 
-    # Get type-name & ID from global ID
-    # (This reverts the opaque transform)
-    def from_global_id(global_id)
-      ensure_defined
-      @from_global_id_proc.call(global_id)
-    end
-
-    def from_global_id=(proc)
-      ensure_defined
-      @from_global_id_proc = proc
-    end
-
-    # Use the provided config to
-    # get an object from a UUID
+    # Fetch an application object by its unique id
+    # @param id [String] A unique identifier, provided previously by this GraphQL schema
+    # @param ctx [GraphQL::Query::Context] The context for the current query
+    # @return [Any] The application object identified by `id`
     def object_from_id(id, ctx)
       ensure_defined
       @object_from_id_proc.call(id, ctx)
     end
 
-    def object_from_id=(proc)
+    # @param new_proc [#call] A new callable for fetching objects by ID
+    def object_from_id=(new_proc)
       ensure_defined
-      @object_from_id_proc = proc
+      @object_from_id_proc = new_proc
     end
 
-    # Create a global ID for type-name & ID
-    # (This is an opaque transform)
-    def to_global_id(type_name, id)
+    # Get a unique identifier from this object
+    # @param object [Any] An application object
+    # @param ctx [GraphQL::Query::Context] the context for the current query
+    # @return [String] a unique identifier for `object` which clients can use to refetch it
+    def id_from_object(type, object, ctx)
       ensure_defined
-      @to_global_id_proc.call(type_name, id)
+      @id_from_object_proc.call(type, object, ctx)
     end
 
-    def to_global_id=(proc)
+    # @param new_proc [#call] A new callable for generating unique IDs
+    def id_from_object=(new_proc)
       ensure_defined
-      @to_global_id_proc = proc
-    end
-
-    class ToGlobalId
-      def initialize(schema)
-        @schema = schema
-      end
-
-      def call(type_name, id)
-        id_str = id.to_s
-        id_separator = @schema.id_separator
-        if type_name.include?(id_separator) || id_str.include?(id_separator)
-          raise "to_global_id(#{type_name}, #{id}) contains reserved characters `#{id_separator}`"
-        end
-
-        Base64.strict_encode64([type_name, id_str].join(id_separator))
-      end
-    end
-
-    class FromGlobalId
-      def initialize(schema)
-        @schema = schema
-      end
-
-      def call(global_id)
-        Base64.decode64(global_id).split(@schema.id_separator)
-      end
+      @id_from_object_proc = new_proc
     end
   end
 end

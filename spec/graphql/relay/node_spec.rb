@@ -4,21 +4,22 @@ describe GraphQL::Relay::Node do
   describe ".field" do
     describe "Custom global IDs" do
       before do
-        @previous_to_global_id = StarWarsSchema.to_global_id_proc
-        @previous_from_global_id = StarWarsSchema.from_global_id_proc
+        @previous_id_from_object_proc = StarWarsSchema.id_from_object_proc
+        @previous_object_from_id_proc = StarWarsSchema.object_from_id_proc
 
-        StarWarsSchema.to_global_id = -> (type_name, id) {
-          "#{type_name}/#{id}"
+        StarWarsSchema.id_from_object = -> (obj, type_name, ctx) {
+          "#{type_name}/#{obj.id}"
         }
 
-        StarWarsSchema.from_global_id = -> (global_id) {
-          global_id.split("/")
+        StarWarsSchema.object_from_id = -> (global_id, ctx) {
+          type_name, id = global_id.split("/")
+          STAR_WARS_DATA[type_name][id]
         }
       end
 
       after do
-        StarWarsSchema.to_global_id = @previous_to_global_id
-        StarWarsSchema.from_global_id = @previous_from_global_id
+        StarWarsSchema.id_from_object = @previous_id_from_object_proc
+        StarWarsSchema.object_from_id = @previous_object_from_id_proc
       end
 
       it "Deconstructs the ID by the custom proc" do
@@ -46,9 +47,9 @@ describe GraphQL::Relay::Node do
 
 
     it 'finds objects by id' do
-      global_id = StarWarsSchema.to_global_id("Faction", "1")
+      id = GraphQL::Schema::UniqueWithinType.encode("Faction", "1")
       result = star_wars_query(%|{
-        node(id: "#{global_id}") {
+        node(id: "#{id}") {
           id,
           ... on Faction {
             name
