@@ -249,6 +249,7 @@ rule
   type_system_definition:
      schema_definition
    | type_definition
+   | directive_definition
 
   schema_definition:
       SCHEMA LCURLY operation_type_definition_list RCURLY { return make_node(:SchemaDefinition, val[2]) }
@@ -324,6 +325,15 @@ rule
       INPUT name directives_list_opt LCURLY input_value_definition_list RCURLY {
         return make_node(:InputObjectTypeDefinition, name: val[1], directives: val[2], fields: val[4])
       }
+
+  directive_definition:
+      DIRECTIVE DIR_SIGN name arguments_definitions_opt ON directive_locations {
+        return make_node(:DirectiveDefinition, name: val[2], arguments: val[3], locations: val[5])
+      }
+
+  directive_locations:
+      name                          { return [val[0].to_s] }
+    | directive_locations PIPE name { val[0] << val[2].to_s }
 end
 
 ---- header ----

@@ -40,7 +40,6 @@ module GraphQL
           out << generate_directives(node.directives)
           out << generate_selections(node.selections, indent: indent)
           out
-
         when Nodes::FragmentSpread
           out = "#{indent}...#{node.name}"
           out << generate_directives(node.directives)
@@ -123,6 +122,10 @@ module GraphQL
             out << "  #{generate(field)}\n"
           end
           out << "}"
+        when Nodes::DirectiveDefinition
+          out = "directive @#{node.name}"
+          out << "(#{node.arguments.map { |a| generate(a) }.join(", ")})" if node.arguments.any?
+          out << " on #{node.locations.join(' | ')}"
         when Nodes::AbstractNode
           node.to_query_string(indent: indent)
         when FalseClass, Float, Integer, NilClass, String, TrueClass

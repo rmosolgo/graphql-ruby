@@ -380,6 +380,25 @@ module GraphQL
                 assert_equal 'No longer supported', deprecated_directive.arguments[0].value
               end
 
+              it "parses directive definition" do
+                document = subject.parse('
+                  directive @include(if: Boolean!)
+                    on FIELD
+                    | FRAGMENT_SPREAD
+                    | INLINE_FRAGMENT
+                ')
+
+                type = document.definitions.first
+                assert_equal GraphQL::Language::Nodes::DirectiveDefinition, type.class
+                assert_equal 'include', type.name
+
+                assert_equal 1, type.arguments.length
+                assert_equal 'if', type.arguments[0].name
+                assert_equal 'Boolean', type.arguments[0].type.of_type.name
+
+                assert_equal ['FIELD', 'FRAGMENT_SPREAD', 'INLINE_FRAGMENT'], type.locations
+              end
+
               it "parses scalar types" do
                 document = subject.parse('scalar DateTime')
 

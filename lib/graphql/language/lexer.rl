@@ -31,6 +31,7 @@
   RPAREN =        ')';
   LBRACKET =      '[';
   RBRACKET =      ']';
+  DIRECTIVE =     'directive';
   COLON =         ':';
   QUOTE =         '"';
   ESCAPED_QUOTE = '\\"';
@@ -66,6 +67,7 @@
     UNION         => { emit_token.call(:UNION) };
     ENUM          => { emit_token.call(:ENUM) };
     INPUT         => { emit_token.call(:INPUT) };
+    DIRECTIVE     => { emit_token.call(:DIRECTIVE) };
     RCURLY        => { emit_token.call(:RCURLY) };
     LCURLY        => { emit_token.call(:LCURLY) };
     RPAREN        => { emit_token.call(:RPAREN) };

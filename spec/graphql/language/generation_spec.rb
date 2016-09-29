@@ -96,6 +96,10 @@ describe GraphQL::Language::Generation do
         input AnnotatedInput @onInputObjectType {
           annotatedField: Type @onField
         }
+
+        directive @skip(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
+
+        directive @include(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
       schema
       }
 
