@@ -1,16 +1,19 @@
 GraphQL::Introspection::TypeType = GraphQL::ObjectType.define do
   name "__Type"
-  description "A type in the GraphQL schema"
+  description "The fundamental unit of any GraphQL Schema is the type. There are many kinds of types in "\
+              "GraphQL as represented by the `__TypeKind` enum.\n\n"\
+              "Depending on the kind of a type, certain fields describe information about that type. "\
+              "Scalar types provide no information beyond a name and description, while "\
+              "Enum types provide their values. Object and Interface types provide the fields "\
+              "they describe. Abstract types, Union and Interface, provide the Object types "\
+              "possible at runtime. List and NonNull types compose other types."
 
-  field :name, types.String,  "The name of this type"
-  field :description, types.String, "What this type represents"
-
+  field :name, types.String
+  field :description, types.String
   field :kind do
     type !GraphQL::Introspection::TypeKindEnum
-    description "The kind of this type"
     resolve -> (target, a, c) { target.kind.name }
   end
-
   field :fields,          field: GraphQL::Introspection::FieldsField
   field :ofType,          field: GraphQL::Introspection::OfTypeField
   field :inputFields,     field: GraphQL::Introspection::InputFieldsField

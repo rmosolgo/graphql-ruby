@@ -1,5 +1,4 @@
 GraphQL::Introspection::EnumValuesField = GraphQL::Field.define do
-  description "Values for this enum"
   type types[!GraphQL::Introspection::EnumValueType]
   argument :includeDeprecated, types.Boolean, default_value: false
   resolve -> (object, arguments, context) do

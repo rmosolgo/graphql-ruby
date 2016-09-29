@@ -1,12 +1,13 @@
 GraphQL::Introspection::FieldType = GraphQL::ObjectType.define do
   name "__Field"
-  description "Field on a GraphQL type"
-  field :name, !types.String, "The name for accessing this field"
-  field :description, types.String, "The description of this field"
-  field :type, !GraphQL::Introspection::TypeType, "The return type of this field"
-  field :isDeprecated, !types.Boolean, "Is this field deprecated?" do
+  description "Object and Interface types are described by a list of Fields, each of which has "\
+              "a name, potentially a list of arguments, and a return type."
+  field :name, !types.String
+  field :description, types.String
+  field :args, GraphQL::Introspection::ArgumentsField
+  field :type, !GraphQL::Introspection::TypeType
+  field :isDeprecated, !types.Boolean do
     resolve -> (obj, a, c) { !!obj.deprecation_reason }
   end
-  field :args, GraphQL::Introspection::ArgumentsField
-  field :deprecationReason, types.String,  "Why this field was deprecated", property: :deprecation_reason
+  field :deprecationReason, types.String, property: :deprecation_reason
 end

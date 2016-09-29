@@ -1,5 +1,4 @@
 GraphQL::Introspection::FieldsField = GraphQL::Field.define do
-  description "List of fields on this object"
   type -> { types[!GraphQL::Introspection::FieldType] }
   argument :includeDeprecated, GraphQL::BOOLEAN_TYPE, default_value: false
   resolve -> (object, arguments, context) {

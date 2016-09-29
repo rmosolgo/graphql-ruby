@@ -45,7 +45,7 @@ describe GraphQL::Introspection::DirectiveType do
           {
             "name" => "deprecated",
             "args" => [
-              {"name"=>"reason", "type"=>{"name"=>"Non-Null", "ofType"=>{"name"=>"String"}}}
+              {"name"=>"reason", "type"=>{"name"=>"String", "ofType"=>nil}}
             ],
             "locations"=>["FIELD_DEFINITION", "ENUM_VALUE"],
             "onField" => false,
