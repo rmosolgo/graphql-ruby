@@ -1,14 +1,12 @@
 module GraphQL
   module Relay
     class GlobalIdResolve
-      def initialize(type_name:, property:)
-        @property = property
-        @type_name = type_name
+      def initialize(type:)
+        @type = type
       end
 
       def call(obj, args, ctx)
-        id_value = obj.public_send(@property)
-        ctx.query.schema.node_identification.to_global_id(@type_name, id_value)
+        ctx.query.schema.id_from_object(obj, @type, ctx)
       end
     end
   end

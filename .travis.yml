@@ -18,5 +18,6 @@ matrix:
     gemfile: gemfiles/rails_4.2.gemfile
   - rvm: "2.3.0"
     gemfile: gemfiles/rails_5.0.gemfile
+  allow_failures:
   - rvm: "rbx-2" # Seems like Travis doesn't have an Rbx that runs 5.0 yet
     gemfile: gemfiles/rails_4.2.gemfile

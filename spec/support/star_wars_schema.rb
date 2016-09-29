@@ -1,28 +1,16 @@
 # Adapted from graphql-relay-js
 # https://github.com/graphql/graphql-relay-js/blob/master/src/__tests__/starWarsSchema.js
 
-# This object exposes helpers for working with global IDs:
-# - global id creation & "decrypting"
-# - a find-object-by-global ID field
-# - an interface for Relay ObjectTypes to implement
-# See global_node_identification.rb for the full API.
-NodeIdentification = GraphQL::Relay::GlobalNodeIdentification.define do
-  object_from_id -> (node_id, ctx) do
-    type_name, id = NodeIdentification.from_global_id(node_id)
-    STAR_WARS_DATA[type_name][id]
-  end
-end
-
 Ship = GraphQL::ObjectType.define do
   name "Ship"
-  interfaces [NodeIdentification.interface]
+  interfaces [GraphQL::Relay::Node.interface]
   global_id_field :id
   field :name, types.String
 end
 
 BaseType = GraphQL::ObjectType.define do
   name "Base"
-  interfaces [NodeIdentification.interface]
+  interfaces [GraphQL::Relay::Node.interface]
   global_id_field :id
   field :name, types.String
   field :planet, types.String
@@ -69,9 +57,9 @@ end
 
 Faction = GraphQL::ObjectType.define do
   name "Faction"
-  interfaces [NodeIdentification.interface]
+  interfaces [GraphQL::Relay::Node.interface]
 
-  field :id, !types.ID, resolve: GraphQL::Relay::GlobalIdResolve.new(type_name: "Faction", property: :id)
+  field :id, !types.ID, resolve: GraphQL::Relay::GlobalIdResolve.new(type: Faction)
   field :name, types.String
   connection :ships, Ship.connection_type do
     resolve -> (obj, args, ctx) {
@@ -192,7 +180,7 @@ QueryType = GraphQL::ObjectType.define do
     resolve -> (obj, args, ctx) { Base.find(3) }
   end
 
-  field :node, field: NodeIdentification.field
+  field :node, GraphQL::Relay::Node.field
 end
 
 MutationType = GraphQL::ObjectType.define do
@@ -204,7 +192,7 @@ end
 StarWarsSchema = GraphQL::Schema.define do
   query(QueryType)
   mutation(MutationType)
-  node_identification(NodeIdentification)
+
   resolve_type -> (object, ctx) {
     if object == :test_error
       :not_a_type
@@ -218,4 +206,13 @@ StarWarsSchema = GraphQL::Schema.define do
       nil
     end
   }
+
+  object_from_id -> (node_id, ctx) do
+    type_name, id = GraphQL::Schema::UniqueWithinType.decode(node_id)
+    STAR_WARS_DATA[type_name][id]
+  end
+
+  id_from_object -> (object, type, ctx) do
+    GraphQL::Schema::UniqueWithinType.encode(type.name, object.id)
+  end
 end

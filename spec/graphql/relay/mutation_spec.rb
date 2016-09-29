@@ -33,7 +33,7 @@ describe GraphQL::Relay::Mutation do
         "shipEdge" => {
           "node" => {
             "name" => "Bagel",
-            "id" => NodeIdentification.to_global_id("Ship", "9"),
+            "id" => GraphQL::Schema::UniqueWithinType.encode("Ship", "9"),
           },
         },
         "faction" => {"name" => STAR_WARS_DATA["Faction"]["1"].name }

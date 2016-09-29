@@ -7,6 +7,7 @@ require "graphql/schema/reduce_types"
 require "graphql/schema/timeout_middleware"
 require "graphql/schema/type_expression"
 require "graphql/schema/type_map"
+require "graphql/schema/unique_within_type"
 require "graphql/schema/validation"
 
 module GraphQL
@@ -49,6 +50,7 @@ module GraphQL
       :max_depth, :max_complexity,
       :node_identification,
       :orphan_types, :resolve_type,
+      :object_from_id, :id_from_object,
       query_analyzer: -> (schema, analyzer) { schema.query_analyzers << analyzer },
       middleware: -> (schema, middleware) { schema.middleware << middleware },
       rescue_from: -> (schema, err_class, &block) { schema.rescue_from(err_class, &block)}
@@ -65,7 +67,12 @@ module GraphQL
     DYNAMIC_FIELDS = ["__type", "__typename", "__schema"]
     RESOLVE_TYPE_PROC_REQUIRED = -> (obj, ctx) { raise("Schema.resolve_type is undefined, can't resolve type for #{obj.inspect}") }
 
-    attr_reader :directives, :static_validator
+    DEFAULT_ID_SEPARATOR = "-"
+
+    # @return [String] Used to join typename & ID by the default global ID generation function
+    attr_accessor :id_separator
+
+    attr_reader :directives, :static_validator, :object_from_id_proc, :id_from_object_proc
 
     # @!attribute node_identification
     #   @return [GraphQL::Relay::GlobalNodeIdentification] the node identification instance for this schema, when using Relay
@@ -99,6 +106,7 @@ module GraphQL
       @middleware = [@rescue_middleware]
       @query_analyzers = []
       @resolve_type_proc = RESOLVE_TYPE_PROC_REQUIRED
+      @object_from_id_proc = nil
       # Default to the built-in execution strategy:
       @query_execution_strategy = GraphQL::Query::SerialExecution
       @mutation_execution_strategy = GraphQL::Query::SerialExecution
@@ -192,6 +200,8 @@ module GraphQL
 
     # Determine the GraphQL type for a given object.
     # This is required for unions and interfaces (include Relay's node interface)
+    # @param object [Any] An application object which GraphQL is currently resolving on
+    # @param ctx [GraphQL::Query::Context] The context for the current query
     # @return [GraphQL::ObjectType] The type for exposing `object` in GraphQL
     def resolve_type(object, ctx)
       ensure_defined
@@ -209,6 +219,36 @@ module GraphQL
     def resolve_type=(new_resolve_type_proc)
       ensure_defined
       @resolve_type_proc = new_resolve_type_proc
+    end
+
+    # Fetch an application object by its unique id
+    # @param id [String] A unique identifier, provided previously by this GraphQL schema
+    # @param ctx [GraphQL::Query::Context] The context for the current query
+    # @return [Any] The application object identified by `id`
+    def object_from_id(id, ctx)
+      ensure_defined
+      @object_from_id_proc.call(id, ctx)
+    end
+
+    # @param new_proc [#call] A new callable for fetching objects by ID
+    def object_from_id=(new_proc)
+      ensure_defined
+      @object_from_id_proc = new_proc
+    end
+
+    # Get a unique identifier from this object
+    # @param object [Any] An application object
+    # @param ctx [GraphQL::Query::Context] the context for the current query
+    # @return [String] a unique identifier for `object` which clients can use to refetch it
+    def id_from_object(type, object, ctx)
+      ensure_defined
+      @id_from_object_proc.call(type, object, ctx)
+    end
+
+    # @param new_proc [#call] A new callable for generating unique IDs
+    def id_from_object=(new_proc)
+      ensure_defined
+      @id_from_object_proc = new_proc
     end
   end
 end

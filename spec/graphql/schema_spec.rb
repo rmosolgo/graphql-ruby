@@ -2,6 +2,7 @@ require "spec_helper"
 
 describe GraphQL::Schema do
   let(:schema) { DummySchema }
+  let(:relay_schema)  { StarWarsSchema }
 
   describe "#rescue_from" do
     let(:rescue_middleware) { schema.middleware.first }
@@ -24,7 +25,7 @@ describe GraphQL::Schema do
   describe "#resolve_type" do
     describe "when the return value is nil" do
       it "returns nil" do
-        result = StarWarsSchema.resolve_type(123, nil)
+        result = relay_schema.resolve_type(123, nil)
         assert_equal(nil, result)
       end
     end
@@ -32,7 +33,7 @@ describe GraphQL::Schema do
     describe "when the return value is not a BaseType" do
       it "raises an error " do
         err = assert_raises(RuntimeError) {
-          StarWarsSchema.resolve_type(:test_error, nil)
+          relay_schema.resolve_type(:test_error, nil)
         }
         assert_includes err.message, "not_a_type (Symbol)"
       end
