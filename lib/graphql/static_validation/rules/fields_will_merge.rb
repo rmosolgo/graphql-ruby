@@ -76,7 +76,7 @@ module GraphQL
 
           args = defs.map { |defn| reduce_list(defn.arguments)}.uniq
           if args.length != 1
-            errors << message("Field '#{name}' has an argument conflict: #{args.map {|a| JSON.dump(a) }.join(" or ")}?", defs.first, context: context)
+            errors << message("Field '#{name}' has an argument conflict: #{args.map {|a| print_arg(a) }.join(" or ")}?", defs.first, context: context)
           end
 
           @errors = errors
@@ -84,6 +84,14 @@ module GraphQL
 
         private
 
+        def print_arg(arg)
+          case arg
+          when GraphQL::Language::Nodes::VariableIdentifier
+            "$#{arg.name}"
+          else
+            JSON.dump(arg)
+          end
+        end
         # Turn AST tree into a hash
         # can't look up args, the names just have to match
         def reduce_list(args)

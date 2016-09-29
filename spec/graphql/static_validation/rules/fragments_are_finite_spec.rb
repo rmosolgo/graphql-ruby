@@ -1,12 +1,14 @@
 require "spec_helper"
 
 describe GraphQL::StaticValidation::FragmentsAreFinite do
+  include StaticValidationHelpers
+
   let(:query_string) {%|
     query getCheese {
       cheese(id: 1) {
         ... idField
         ... sourceField
-        similarCheese {
+        similarCheese(source: SHEEP) {
           ... flavorField
         }
       }
@@ -19,7 +21,7 @@ describe GraphQL::StaticValidation::FragmentsAreFinite do
     }
     fragment flavorField on Cheese {
       flavor,
-      similarCheese {
+      similarCheese(source: SHEEP) {
         ... on Cheese {
           ... sourceField
         }
@@ -29,10 +31,6 @@ describe GraphQL::StaticValidation::FragmentsAreFinite do
       id
     }
   |}
-
-  let(:validator) { GraphQL::StaticValidation::Validator.new(schema: DummySchema, rules: [GraphQL::StaticValidation::FragmentsAreFinite]) }
-  let(:query) { GraphQL::Query.new(DummySchema, query_string) }
-  let(:errors) { validator.validate(query)[:errors] }
 
   it "doesnt allow infinite loops" do
     expected = [

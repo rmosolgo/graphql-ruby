@@ -1,33 +1,32 @@
 require "spec_helper"
 
 describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
+  include StaticValidationHelpers
+
   let(:query_string) {%|
     query getCheese {
-      cheese(id: "aasdlkfj") { source }
-      cheese(id: 1) { source @skip(if: {id: 1})}
-      yakSource: searchDairy(product: [{source: COW, fatContent: 1.1}]) { source }
-      badSource: searchDairy(product: [{source: 1.1}]) { source }
-      missingSource: searchDairy(product: [{fatContent: 1.1}]) { source }
-      listCoerce: cheese(id: 1) { similarCheese(source: YAK) }
-      missingInputField: searchDairy(product: [{source: YAK, wacky: 1}])
+      stringCheese: cheese(id: "aasdlkfj") { ...cheeseFields }
+      cheese(id: 1) { source @skip(if: "whatever") }
+      yakSource: searchDairy(product: [{source: COW, fatContent: 1.1}]) { __typename }
+      badSource: searchDairy(product: [{source: 1.1}]) { __typename }
+      missingSource: searchDairy(product: [{fatContent: 1.1}]) { __typename }
+      listCoerce: cheese(id: 1) { similarCheese(source: YAK) { __typename } }
+      missingInputField: searchDairy(product: [{source: YAK, wacky: 1}]) { __typename }
     }
 
     fragment cheeseFields on Cheese {
-      similarCheese(source: 4.5)
+      similarCheese(source: 4.5) { __typename }
     }
   |}
 
-  let(:validator) { GraphQL::StaticValidation::Validator.new(schema: DummySchema, rules: [GraphQL::StaticValidation::ArgumentLiteralsAreCompatible]) }
-  let(:query) { GraphQL::Query.new(DummySchema, query_string) }
-  let(:errors) { validator.validate(query)[:errors] }
-
   it "finds undefined or missing-required arguments to fields and directives" do
-    assert_equal(6, errors.length)
+    # `wacky` above is handled by ArgumentsAreDefined, so only 6 are tested below
+    assert_equal(7, errors.length)
 
     query_root_error = {
-      "message"=>"Argument 'id' on Field 'cheese' has an invalid value. Expected type 'Int!'.",
+      "message"=>"Argument 'id' on Field 'stringCheese' has an invalid value. Expected type 'Int!'.",
       "locations"=>[{"line"=>3, "column"=>7}],
-      "fields"=>["query getCheese", "cheese", "id"],
+      "fields"=>["query getCheese", "stringCheese", "id"],
     }
     assert_includes(errors, query_root_error)
 

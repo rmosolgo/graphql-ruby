@@ -1,25 +1,25 @@
 require "spec_helper"
 
 describe GraphQL::StaticValidation::ArgumentsAreDefined do
+  include StaticValidationHelpers
+
   let(:query_string) {"
     query getCheese {
-      cheese(id: 1) { source }
-      cheese(silly: false) { source }
-      searchDairy(product: [{wacky: 1}])
+      okCheese: cheese(id: 1) { source }
+      cheese(silly: false, id: 2) { source }
+      searchDairy(product: [{wacky: 1}]) { ...cheeseFields }
     }
 
     fragment cheeseFields on Cheese {
-      similarCheese(source: SHEEP, nonsense: 1)
-      id @skip(something: 3.4)
+      similarCheese(source: SHEEP, nonsense: 1) { __typename }
+      id @skip(something: 3.4, if: false)
     }
   "}
 
-  let(:validator) { GraphQL::StaticValidation::Validator.new(schema: DummySchema, rules: [GraphQL::StaticValidation::ArgumentsAreDefined]) }
-  let(:query) { GraphQL::Query.new(DummySchema, query_string) }
-  let(:errors) { validator.validate(query)[:errors] }
-
   it "finds undefined arguments to fields and directives" do
-    assert_equal(4, errors.length)
+    # There's an extra error here, the unexpected argument on "DairyProductInput"
+    # triggers _another_ error that the field expected a different type
+    assert_equal(5, errors.length)
 
     query_root_error = {
       "message"=>"Field 'cheese' doesn't accept argument 'silly'",

@@ -1,20 +1,16 @@
 require "spec_helper"
 
 describe GraphQL::StaticValidation::FieldsAreDefinedOnType do
+  include StaticValidationHelpers
   let(:query_string) { "
-    query getCheese($sourceVar: DairyAnimal!) {
+    query getCheese {
       notDefinedField { name }
-      cheese(id: 1) { nonsenseField, flavor }
+      cheese(id: 1) { nonsenseField, flavor ...cheeseFields }
       fromSource(source: COW) { bogusField }
     }
 
     fragment cheeseFields on Cheese { fatContent, hogwashField }
   "}
-
-  let(:validator) { GraphQL::StaticValidation::Validator.new(schema: DummySchema, rules: [GraphQL::StaticValidation::FieldsAreDefinedOnType]) }
-  let(:query) { GraphQL::Query.new(DummySchema, query_string) }
-  let(:errors) { validator.validate(query)[:errors] }
-  let(:error_messages) { errors.map { |e| e["message"] } }
 
   it "finds fields that are requested on types that don't have that field" do
     expected_errors = [
@@ -58,9 +54,9 @@ describe GraphQL::StaticValidation::FieldsAreDefinedOnType do
 
   describe "on unions" do
     let(:query_string) { "
-      query notOnUnion { favoriteEdible { ...dpFields } }
-      fragment dbFields on DairyProduct { source }
-      fragment dbIndirectFields on DairyProduct { ... on Cheese { source } }
+      query notOnUnion { favoriteEdible { ...dpFields ...dpIndirectFields } }
+      fragment dpFields on DairyProduct { source }
+      fragment dpIndirectFields on DairyProduct { ... on Cheese { source } }
     "}
 
 
@@ -71,7 +67,7 @@ describe GraphQL::StaticValidation::FieldsAreDefinedOnType do
           "locations"=>[
             {"line"=>3, "column"=>7}
           ],
-          "fields"=>["fragment dbFields", "source"],
+          "fields"=>["fragment dpFields", "source"],
         }
       ]
       assert_equal(expected_errors, errors)
