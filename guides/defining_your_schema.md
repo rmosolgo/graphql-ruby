@@ -162,6 +162,8 @@ field :name, types.String, "The name of this thing",
   property: :given_name,
   # Count this field as "10" when assessing the cost of running a query
   complexity: 10
+  # Specify the hash key when the object being defined is a Hash:
+  hash_key: :name
 ```
 
 ### Block Definition
