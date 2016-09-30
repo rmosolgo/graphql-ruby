@@ -40,19 +40,7 @@
           <h3><a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a></h3>
         </div>
         <div class="cell -9of12">
-          <h2 id="graphql-relay-gem"><code class="highlighter-rouge">graphql-relay</code> gem</h2>
-
-<p><strong>Note</strong>: For graphql versions <code class="highlighter-rouge">&lt; 0.18</code>, you must include:</p>
-
-<div class="highlighter-rouge"><pre class="highlight"><code>gem "graphql-relay"
-</code></pre>
-</div>
-
-<p>Starting in <code class="highlighter-rouge">0.18</code>, <code class="highlighter-rouge">GraphQL::Relay</code> is part of <code class="highlighter-rouge">graphql</code>.</p>
-
-<hr />
-
-<p><code class="highlighter-rouge">GraphQL::Relay</code> provides several helpers for making a Relay-compliant GraphQL endpoint in Ruby:</p>
+          <p>Since version <code class="highlighter-rouge">0.18.0</code>, <code class="highlighter-rouge">GraphQL::Relay</code> provides several helpers for making a Relay-compliant GraphQL endpoint in Ruby:</p>
 
 <ul>
   <li><a href="#global-ids">global ids</a> support Relay’s UUID-based refetching</li>
@@ -62,104 +50,97 @@
 
 <h2 id="global-ids">Global Ids</h2>
 
-<p>Global ids (or UUIDs) provide refetching &amp; global identification for Relay.</p>
+<p>Global ids (or UUIDs) support two features in Relay:</p>
 
-<h3 id="uuid-lookup">UUID Lookup</h3>
+<ul>
+  <li><strong>Caching</strong>: Unique IDs are used as primary keys in Relay’s client-side cache.</li>
+  <li><strong>Refetching</strong>: Relay uses unique IDs to refetch objects when it determines that its cache is stale. (It uses the <code class="highlighter-rouge">Query.node</code> field to refetch objects.)</li>
+</ul>
 
-<p>Use <code class="highlighter-rouge">GraphQL::Relay::GlobalNodeIdentification</code> helper by defining <code class="highlighter-rouge">object_from_id(global_id, ctx)</code> &amp; <code class="highlighter-rouge">type_from_object(object)</code>. Then, assign the result to <code class="highlighter-rouge">Schema#node_identification</code> so that it can be used for query execution.</p>
+<h3 id="defining-uuids">Defining UUIDs</h3>
 
-<p>For example, define a node identification helper:</p>
+<p>You must provide a function for generating UUIDs and fetching objects with them. In your schema, define <code class="highlighter-rouge">id_from_object</code> and <code class="highlighter-rouge">object_from_id</code>:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="no">NodeIdentification</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Relay</span><span class="o">::</span><span class="no">GlobalNodeIdentification</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
-  <span class="c1"># Given a UUID &amp; the query context,</span>
-  <span class="c1"># return the corresponding application object</span>
-  <span class="n">object_from_id</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="nb">id</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="k">do</span>
-    <span class="n">type_name</span><span class="p">,</span> <span class="nb">id</span> <span class="o">=</span> <span class="no">NodeIdentification</span><span class="p">.</span><span class="nf">from_global_id</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span>
-    <span class="c1"># "Post" -&gt; Post.find(id)</span>
-    <span class="no">Object</span><span class="p">.</span><span class="nf">const_get</span><span class="p">(</span><span class="n">type_name</span><span class="p">).</span><span class="nf">find</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span>
-  <span class="k">end</span>
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+  <span class="n">id_from_object</span> <span class="o">=</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">object</span><span class="p">,</span> <span class="n">type_definition</span><span class="p">,</span> <span class="n">query_ctx</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1"># Call your application's UUID method here</span>
+    <span class="c1"># It should return a string</span>
+    <span class="no">MyApp</span><span class="o">::</span><span class="no">GlobalId</span><span class="p">.</span><span class="nf">encrypt</span><span class="p">(</span><span class="n">object</span><span class="p">.</span><span class="nf">class</span><span class="p">.</span><span class="nf">name</span><span class="p">,</span> <span class="n">object</span><span class="p">.</span><span class="nf">id</span><span class="p">)</span>
+  <span class="p">}</span>
 
-  <span class="c1"># Given an application object,</span>
-  <span class="c1"># return a GraphQL ObjectType to expose that object</span>
-  <span class="n">type_from_object</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">object</span><span class="p">)</span> <span class="k">do</span>
-    <span class="k">if</span> <span class="n">object</span><span class="p">.</span><span class="nf">is_a?</span><span class="p">(</span><span class="no">Post</span><span class="p">)</span>
-      <span class="no">PostType</span>
-    <span class="k">else</span>
-      <span class="no">CommentType</span>
-    <span class="k">end</span>
-  <span class="k">end</span>
+  <span class="n">object_from_id</span> <span class="o">=</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="nb">id</span><span class="p">,</span> <span class="n">query_ctx</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">class_name</span><span class="p">,</span> <span class="n">item_id</span> <span class="o">=</span> <span class="no">MyApp</span><span class="o">::</span><span class="no">GlobalId</span><span class="p">.</span><span class="nf">decrypt</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span>
+    <span class="c1"># "Post" =&gt; Post.find(id)</span>
+    <span class="no">Object</span><span class="p">.</span><span class="nf">const_get</span><span class="p">(</span><span class="n">class_name</span><span class="p">).</span><span class="nf">find</span><span class="p">(</span><span class="n">item_id</span><span class="p">)</span>
+  <span class="p">}</span>
 <span class="k">end</span>
 </code></pre>
 </div>
 
-<p>Then assign it to the schema:</p>
+<p>An unencrypted ID generator is provided in the gem. It uses <code class="highlighter-rouge">Base64</code> to encode values. You can use it like this:</p>
 
 <div class="highlighter-rouge"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
-  <span class="c1"># ...</span>
-  <span class="c1"># Declare your node identification helper:</span>
-  <span class="n">node_identification</span> <span class="no">NodeIdentification</span>
+  <span class="c1"># Create UUIDs by joining the type name &amp; ID, then base64-encoding it</span>
+  <span class="n">id_from_object</span> <span class="o">=</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">object</span><span class="p">,</span> <span class="n">type_definition</span><span class="p">,</span> <span class="n">query_ctx</span><span class="p">)</span> <span class="p">{</span>
+    <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">UniqueWithinType</span><span class="p">.</span><span class="nf">encode</span><span class="p">(</span><span class="n">type_definition</span><span class="p">.</span><span class="nf">name</span><span class="p">,</span> <span class="n">object</span><span class="p">.</span><span class="nf">id</span><span class="p">)</span>
+  <span class="p">}</span>
+
+  <span class="n">object_from_id</span> <span class="o">=</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="nb">id</span><span class="p">,</span> <span class="n">query_ctx</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">type_name</span><span class="p">,</span> <span class="n">item_id</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">UniqueWithinType</span><span class="p">.</span><span class="nf">decode</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span>
+    <span class="c1"># Now, based on `type_name` and `id`</span>
+    <span class="c1"># find an object in your application</span>
+    <span class="c1"># ....</span>
+  <span class="p">}</span>
 <span class="k">end</span>
 </code></pre>
 </div>
 
 <h3 id="uuid-fields">UUID fields</h3>
 
-<p>ObjectTypes in your schema should implement <code class="highlighter-rouge">NodeIdentification.interface</code> with the <code class="highlighter-rouge">global_id_field</code> helper, for example:</p>
+<p>To participate in Relay’s caching and refetching, objects must do two things:</p>
+
+<ul>
+  <li>Implement the <code class="highlighter-rouge">"Node"</code> interface</li>
+  <li>Define an <code class="highlighter-rouge">"id"</code> field which returns a UUID</li>
+</ul>
+
+<p>To implement the node interface, include <code class="highlighter-rouge">GraphQL::Relay::Node.interface</code> in your list of interfaces:</p>
 
 <div class="highlighter-rouge"><pre class="highlight"><code><span class="no">PostType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="nb">name</span> <span class="s2">"Post"</span>
-  <span class="n">interfaces</span> <span class="p">[</span><span class="no">NodeIdentification</span><span class="p">.</span><span class="nf">interface</span><span class="p">]</span>
-  <span class="c1"># `id` exposes the UUID</span>
-  <span class="n">global_id_field</span> <span class="ss">:id</span>
-
+  <span class="c1"># Implement the "Node" interface for Relay</span>
+  <span class="n">interfaces</span> <span class="p">[</span><span class="no">GraphQL</span><span class="o">::</span><span class="no">Relay</span><span class="o">::</span><span class="no">Node</span><span class="p">.</span><span class="nf">interface</span><span class="p">]</span>
   <span class="c1"># ...</span>
 <span class="k">end</span>
 </code></pre>
 </div>
 
+<p>To add a UUID field named <code class="highlighter-rouge">"id"</code>, use the <code class="highlighter-rouge">global_id_field</code> helper:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="no">PostType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+  <span class="nb">name</span> <span class="s2">"Post"</span>
+  <span class="c1"># ...</span>
+  <span class="c1"># `id` exposes the UUID</span>
+  <span class="n">global_id_field</span> <span class="ss">:id</span>
+  <span class="c1"># ...</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<p>Now, <code class="highlighter-rouge">PostType</code> can participate in Relay’s UUID-based features.</p>
+
 <h3 id="node-field-find-by-uuid"><code class="highlighter-rouge">node</code> field (find-by-UUID)</h3>
 
-<p>You should also add a field to your root query type for Relay to re-fetch objects:</p>
+<p>You should also provide a root-level <code class="highlighter-rouge">node</code> field so that Relay can refetch objects from your schema. It is provided as <code class="highlighter-rouge">GraphQL::Relay::Node.field</code>, so you can attach it like this:</p>
 
 <div class="highlighter-rouge"><pre class="highlight"><code><span class="no">QueryType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="nb">name</span> <span class="s2">"Query"</span>
   <span class="c1"># Used by Relay to lookup objects by UUID:</span>
-  <span class="n">field</span> <span class="ss">:node</span><span class="p">,</span> <span class="ss">field: </span><span class="no">NodeIdentification</span><span class="p">.</span><span class="nf">field</span>
-
+  <span class="n">field</span> <span class="ss">:node</span><span class="p">,</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Relay</span><span class="o">::</span><span class="no">Node</span><span class="p">.</span><span class="nf">field</span>
   <span class="c1"># ...</span>
 <span class="k">end</span>
 </code></pre>
 </div>
-
-<h3 id="custom-uuid-generation">Custom UUID Generation</h3>
-
-<p>By default, <code class="highlighter-rouge">GraphQL::Relay</code> uses <code class="highlighter-rouge">Base64.strict_encode64</code> to generate opaque global ids. You can modify this behavior by providing two configurations. They work together to encode and decode ids:</p>
-
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="no">NodeIdentification</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Relay</span><span class="o">::</span><span class="no">GlobalNodeIdentification</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
-  <span class="c1"># ...</span>
-
-  <span class="c1"># Return a string for re-fetching this object</span>
-  <span class="n">to_global_id</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">type_name</span><span class="p">,</span> <span class="nb">id</span><span class="p">)</span> <span class="p">{</span>
-    <span class="s2">"</span><span class="si">#{</span><span class="n">type_name</span><span class="si">}</span><span class="s2">/</span><span class="si">#{</span><span class="nb">id</span><span class="si">}</span><span class="s2">"</span>
-  <span class="p">}</span>
-
-  <span class="c1"># Based on the incoming string, extract the type_name and id</span>
-  <span class="n">from_global_id</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">global_id</span><span class="p">)</span> <span class="p">{</span>
-    <span class="n">id_parts</span>  <span class="o">=</span> <span class="n">global_id</span><span class="p">.</span><span class="nf">split</span><span class="p">(</span><span class="s2">"/"</span><span class="p">)</span>
-    <span class="n">type_name</span> <span class="o">=</span> <span class="n">id_parts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="nb">id</span>        <span class="o">=</span> <span class="n">id_parts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-    <span class="c1"># Return *both*:</span>
-    <span class="p">[</span><span class="n">type_name</span><span class="p">,</span> <span class="nb">id</span><span class="p">]</span>
-  <span class="p">}</span>
-<span class="k">end</span>
-
-<span class="c1"># ...</span>
-
-<span class="no">MySchema</span><span class="p">.</span><span class="nf">node_identification</span> <span class="o">=</span> <span class="no">NodeIdentification</span>
-</code></pre>
-</div>
-
-<p><code class="highlighter-rouge">GraphQL::Relay</code> will use those procs for interacting with global ids.</p>
 
 <h2 id="connections">Connections</h2>
 

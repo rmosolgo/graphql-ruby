@@ -169,7 +169,7 @@
 <h2 id="to-do">To Do</h2>
 
 <ul>
-  <li>StaticValidation improvements
+  <li>StaticValidation improvements (<a href="https://github.com/rmosolgo/graphql-ruby/pull/268">in progress</a>)
     <ul>
       <li>Use catch-all type/field/argument definitions instead of terminating traversal</li>
       <li>Reduce ad-hoc traversals?</li>
@@ -185,7 +185,6 @@
   </li>
   <li>Relay:
     <ul>
-      <li><code class="highlighter-rouge">GlobalNodeIdentification.to_global_id</code> should receive the type name and <em>object</em>, not <code class="highlighter-rouge">id</code>. (Or, maintain the “<code class="highlighter-rouge">type_name, id</code> in, <code class="highlighter-rouge">type_name, id</code> out” pattern?)</li>
       <li>Reduce duplication in ArrayConnection / RelationConnection</li>
       <li>Improve API for creating edges (better RANGE_ADD support)</li>
       <li>If the new edge isn’t a member of the connection’s objects, raise a nice error</li>
@@ -193,14 +192,14 @@
   </li>
   <li>Missing Enum value should raise a descriptive error, not “key not found”</li>
   <li><code class="highlighter-rouge">args</code> should whitelist keys – if you request a key that isn’t defined for the field, it should 💥</li>
-  <li>Fix middleware
+  <li>Fix middleware (<a href="https://github.com/rmosolgo/graphql-ruby/issues/186">discussion</a>)
     <ul>
       <li>Handle out-of-bounds lookup, eg <code class="highlighter-rouge">graphql-batch</code></li>
       <li>Handle non-serial execution, eg <code class="highlighter-rouge">@defer</code></li>
     </ul>
   </li>
   <li>Support non-instance-eval <code class="highlighter-rouge">.define</code>, eg <code class="highlighter-rouge">.define { |defn| ... }</code></li>
-  <li>First-class promise support
+  <li>First-class promise support (<a href="https://github.com/rmosolgo/graphql-ruby/issues/274">discussion</a>)
     <ul>
       <li>like <code class="highlighter-rouge">graphql-batch</code> but more local</li>
       <li>support promises in connection resolves</li>
@@ -214,7 +213,7 @@
     </ul>
   </li>
   <li>Support AST subclasses? This would be hard, I think classes are used as hash keys in many places.</li>
-  <li>Support object deep-copy (schema, type, field, argument)? To support multiple schemas based on the same types.</li>
+  <li>Support object deep-copy (schema, type, field, argument)? To support multiple schemas based on the same types. (<a href="https://github.com/rmosolgo/graphql-ruby/issues/269">discussion</a>)</li>
   <li>Improve the website
     <ul>
       <li>Feature the logo in the header</li>
@@ -224,6 +223,8 @@
       <li>Put guide titles into the <code class="highlighter-rouge">&lt;title /&gt;</code></li>
     </ul>
   </li>
+  <li>Document encrypted &amp; versioned cursors</li>
+  <li>Eager load <code class="highlighter-rouge">Schema#types</code> after <code class="highlighter-rouge">.define { ... }</code></li>
 </ul>
 
         </div>
