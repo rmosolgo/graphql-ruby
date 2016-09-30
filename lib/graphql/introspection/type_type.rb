@@ -8,16 +8,16 @@ GraphQL::Introspection::TypeType = GraphQL::ObjectType.define do
               "they describe. Abstract types, Union and Interface, provide the Object types "\
               "possible at runtime. List and NonNull types compose other types."
 
-  field :name, types.String
-  field :description, types.String
   field :kind do
     type !GraphQL::Introspection::TypeKindEnum
     resolve ->(target, a, c) { target.kind.name }
   end
+  field :name, types.String
+  field :description, types.String
   field :fields,          field: GraphQL::Introspection::FieldsField
-  field :ofType,          field: GraphQL::Introspection::OfTypeField
-  field :inputFields,     field: GraphQL::Introspection::InputFieldsField
+  field :interfaces,      field: GraphQL::Introspection::InterfacesField
   field :possibleTypes,   field: GraphQL::Introspection::PossibleTypesField
   field :enumValues,      field: GraphQL::Introspection::EnumValuesField
-  field :interfaces,      field: GraphQL::Introspection::InterfacesField
+  field :inputFields,     field: GraphQL::Introspection::InputFieldsField
+  field :ofType,          field: GraphQL::Introspection::OfTypeField
 end

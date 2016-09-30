@@ -175,15 +175,15 @@ type __Schema {
 }
 
 type __Type {
+  kind: __TypeKind!
   name: String
   description: String
-  kind: __TypeKind!
   fields(includeDeprecated: Boolean = false): [__Field!]
-  ofType: __Type
-  inputFields: [__InputValue!]
+  interfaces: [__Type!]
   possibleTypes: [__Type!]
   enumValues(includeDeprecated: Boolean = false): [__EnumValue!]
-  interfaces: [__Type!]
+  inputFields: [__InputValue!]
+  ofType: __Type
 }
 
 enum __TypeKind {
