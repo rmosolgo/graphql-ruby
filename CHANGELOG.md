@@ -8,6 +8,140 @@
 
 ### Bug fixes
 
+## 0.19.0 (30 Sep 2016)
+
+### Breaking changes
+
+- `GraphQL::Relay::GlobalNodeIdentification` was removed. Its features were moved to `GraphQL::Schema` or `GraphQL::Relay::Node`. The new hooks support more robust & flexible global IDs. #243
+
+  - Relay's `"Node"` interface and `node(id: "...")` field were both moved to `GraphQL::Relay::Node`. To use them in your schema, call `.field` and `.interface`. For example:
+
+    ```ruby
+    # Adding a Relay-compliant `node` field:
+    field :node, GraphQL::Relay::Node.field
+    ```
+
+    ```ruby
+    # This object type implements Relay's `Node` interface:
+    interfaces [GraphQL::Relay::Node.interface]
+    ```
+
+  - UUID hooks were renamed and moved to `GraphQL::Schema`. You should define `id_from_object` and `object_from_id` in your `Schema.define { ... }` block. For example:
+
+    ```ruby
+    MySchema = GraphQL::Schema.define do
+      # Fetch an object by UUID
+      object_from_id = (id, ctx) -> {
+        MyApp::RelayLookup.find(id)
+      }
+      # Generate a UUID for this object
+      id_from_object = (obj, type_defn, ctx) {
+        MyApp::RelayLookup.to_id(obj)
+      }
+    end
+    ```
+
+  - The new hooks have no default implementation. To use the previous default, use `GraphQL::Schema::UniqueWithinType`, for example:
+
+      ```ruby
+      MySchema = GraphQL::Schema.define do
+        object_from_id = (id, ctx) -> {
+          # Break the id into its parts:
+          type_name, object_id = GraphQL::Schema::UniqueWithinType.decode(id)
+          # Fetch the identified object
+          # ...
+        }
+
+        id_from_object = (obj, type_defn, ctx) {
+          # Provide the the type name & the object's `id`:
+          GraphQL::Schema::UniqueWithinType.encode(type_defn.name, obj.id)
+        }
+      end
+      ```
+
+      If you were using a custom `id_separator`, it's now accepted as an input to `UniqueWithinType`'s  methods, as `separator:`. For example:
+
+      ```ruby
+      # use "---" as a ID separator
+      GraphQL::Schema::UniqueWithinType.encode(type_name, object_id, separator: "---")
+      GraphQL::Schema::UniqueWithinType.decode(relay_id, separator: "---")
+      ```
+
+  - `type_from_object` was previously deprecated and has been replaced by `Schema#resolve_type`. You should define this hook in your schema to return a type definition for a given object:
+
+    ```ruby
+    MySchema = GraphQL::Schema.define do
+      # ...
+      resolve_type = -> (obj, ctx) {
+        # based on `obj` and `ctx`,
+        # figure out which GraphQL type to use
+        # and return the type
+      }
+    end
+    ```
+
+  - `Schema#node_identification` has been removed.
+
+- `Argument` default values have been changed to be consistent with `InputObjectType` default values. #267
+
+  Previously, arguments expected GraphQL values as `default_value`s. Now, they expect application values.   (`InputObjectType`s always worked this way.)
+
+  Consider an enum like this one, where custom values are provided:
+
+  ```ruby
+  PowerStateEnum = GraphQL::EnumType.define do
+    name "PowerState"
+    value("ON", value: 1)
+    value("OFF", value: 0)
+  end
+  ```
+
+  __Previously__, enum _names_ were provided as default values, for example:
+
+  ```ruby
+  field :setPowerState, PowerStateEnum do
+    # Previously, the string name went here:
+    argument :newValue, default_value: "ON"
+  end
+  ```
+
+  __Now__, enum _values_ are provided as default values, for example:
+
+  ```ruby
+  field :setPowerState, PowerStateEnum do
+    # Now, use the application value as `default_value`:
+    argument :newValue, default_value: 1
+  end
+  ```
+
+  Note that if you __don't have custom values__, then there's no change, because the name and value are the same.
+
+  Here are types that are affected by this change:
+
+  - Custom scalars (previously, the `default_value` was a string, now it should be the application value, eg `Date` or `BigDecimal`)
+  - Enums with custom `value:`s (previously, the `default_value` was the name, now it's the value)
+
+  If you can't replace `default_value`s, you can also use a type's `#coerce_input` method to translate a GraphQL value into an application value. For example:
+
+  ```ruby
+  # Using a custom scalar, "Date"
+  # PREVIOUSLY, provide a string:
+  argument :starts_on, DateType, default_value: "2016-01-01"
+  # NOW, transform the string into a Date:
+  argument :starts_on, DateType, default_value: DateType.coerce_input("2016-01-01")
+  ```
+
+### New features
+
+- Support `@deprecated` in the Schema language #275
+- Support `directive` definitions in the Schema language  #280
+- Use the same introspection field descriptions as `graphql-js` #284
+
+### Bug fixes
+
+- Operation name is no longer present in execution error `"path"` values #276
+- Default values are correctly dumped & reloaded in the Schema language #267
+
 ## 0.18.15 (20 Sep 2016)
 
 ### Breaking changes
