@@ -6,6 +6,7 @@ require "graphql/static_analysis/type_check/any_type"
 require "graphql/static_analysis/type_check/any_type_kind"
 require "graphql/static_analysis/type_check/required_arguments"
 require "graphql/static_analysis/type_check/type_comparison"
+require "graphql/static_analysis/type_check/type_condition"
 require "graphql/static_analysis/type_check/valid_arguments"
 require "graphql/static_analysis/type_check/valid_directives"
 require "graphql/static_analysis/type_check/valid_literal"
@@ -207,47 +208,36 @@ module GraphQL
           # There may be new type information
           if node.type
             next_type = schema.types.fetch(node.type, nil)
-            if next_type.nil?
-              errors << AnalysisError.new(
-                %|Type "#{node.type}" doesn't exist, so it can't be used as a fragment type|,
-                nodes: [node]
-              )
+            owner_name = "inline fragment#{node.type ? " on \"#{node.type}\"" : ""}"
+            type_errors = TypeCondition.errors_for_type_condition(node, next_type, owner_name)
+            if type_errors.any?
+              errors.concat(type_errors)
               next_type = AnyType
             end
-            type_stack << next_type
+          else
+            # If the inline fragment doesn't have a type condition,
+            # push the same type again
+            next_type = type_stack.last
           end
 
-          # Either the type from the condition, or the one from the surrounding selection
-          parent_type = type_stack.last
-
-          # If we failed to find a type, the parent type is AnyType,
-          # so there won't be any errors and the typename won't show up
-          owner_name = "inline fragment#{node.type ? " on \"#{node.type}\"" : ""}"
-          selection_errors = ValidSelections.errors_for_selections(owner_name, parent_type, node)
-          errors.concat(selection_errors)
+          type_stack << next_type
         }
 
         visitor[Nodes::InlineFragment].leave << -> (node, prev_node) {
-          # If this node pushed a type, pop it
-          if node.type
-            type_stack.pop
-          end
+          # Either the type condition, or the same as the surrounding type
+          type_stack.pop
         }
 
         visitor[Nodes::FragmentDefinition].enter << -> (node, prev_node) {
+          owner_name = "fragment \"#{node.name}\""
           next_type = schema.types.fetch(node.type, nil)
-          if next_type.nil?
-            errors << AnalysisError.new(
-              %|Type "#{node.type}" doesn't exist, so it can't be used as a fragment type|,
-              nodes: [node]
-            )
+          type_errors = TypeCondition.errors_for_type_condition(node, next_type, owner_name)
+          if type_errors.any?
+            errors.concat(type_errors)
             next_type = AnyType
           end
-          type_stack << next_type
 
-          owner_name = "fragment \"#{node.name}\""
-          selection_errors = ValidSelections.errors_for_selections(owner_name, next_type, node)
-          errors.concat(selection_errors)
+          type_stack << next_type
           root_node = node
         }
 

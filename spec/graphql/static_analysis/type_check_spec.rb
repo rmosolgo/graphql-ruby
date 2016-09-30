@@ -271,10 +271,104 @@ describe GraphQL::StaticAnalysis::TypeCheck do
   end
 
   describe "fragments" do
-    it "requires defined, composite types for fragment type conditions"
-    it "requires fields for fragment selections"
-    it "requires that spreads are possible"
-    it "requires that object spreads in object scope are the same type"
+    it "requires defined, composite types for fragment definition type conditions" do
+      query_string = %|
+      query {
+        addInt(lhs: 1, rhs: 2) {
+          ...f1
+          ...f2
+          ...f3
+          ...f4
+        }
+      }
+
+      fragment f1 on Int { nonsense }
+      fragment f2 on Nonsense { nonsense }
+      fragment f3 on CalculationResult {
+        # This is an error
+        value
+        # This is ok
+        ... on CalculationError { message }
+      }
+      # This is OK
+      fragment f4 on CalculationSuccess { value }
+      |
+
+      assert_errors(
+        query_string,
+        %|Type "Int" can't have selections, see fragment "f1"|,
+        %|Type "Nonsense" doesn't exist, so it can't be used as a fragment type|,
+        %|Type "CalculationResult" can't have direct selections, use a fragment spread to access members instead, see fragment "f3"|,
+      )
+    end
+
+    it "requires defined, composite types for inline fragment type conditions" do
+      query_string = %|
+      query {
+        addInt(lhs: 1, rhs: 2) {
+          # OK
+          ... { __typename }
+          ... on CalculationSuccess { value }
+          # Not OK
+          ... on Int { nonsense }
+          ... on Nonsense { nonsense }
+          ... on CalculationResult {
+            value
+            # This is ok
+            ... on CalculationError { message }
+          }
+        }
+      }
+      |
+
+      assert_errors(
+        query_string,
+        %|Type "Int" can't have selections, see inline fragment on "Int"|,
+        %|Type "Nonsense" doesn't exist, so it can't be used as a fragment type|,
+        %|Type "CalculationResult" can't have direct selections, use a fragment spread to access members instead, see inline fragment on "CalculationResult"|,
+      )
+    end
+
+    it "requires fields for fragment selections" do
+      query_string = %|
+      query {
+        addInt(lhs: 1, rhs: 2) { ...f1 }
+      }
+      fragment f1 on CalculationSuccess { }
+      |
+
+      assert_errors(
+        query_string,
+        %|Type "CalculationSuccess" must have selections, see fragment "f1"|,
+      )
+    end
+
+    it "requires fields for inline fragments" do
+      query_string = %|
+      query {
+        addInt(lhs: 1, rhs: 2) { ... on CalculationSuccess { } }
+      }
+      |
+
+      assert_errors(
+        query_string,
+        %|Type "CalculationSuccess" must have selections, see inline fragment on "CalculationSuccess"|,
+      )
+    end
+
+    it "requires that object spreads in object scope are the same type" do
+      query_string = %|
+      {
+        addInt(lhs: 1, rhs: 2) { ...f1 ...f2 }
+      }
+      fragment f1 on CalculationSuccess { value }
+      fragment f2 on CalculationError { message }
+      |
+      assert_errors(
+        query_string,
+        %|f2 can't be spread|,
+      )
+    end
     it "requires that object spreads in abstract scope are members of the abstract scope"
     it "requires that abstract spreads in object scope contain the object"
     it "requires that abstract spreads in abstract scopes have some types in common"
