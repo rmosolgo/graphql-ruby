@@ -75,6 +75,25 @@ module GraphQL
         @metadata ||= {}
       end
 
+      # Mutate this instance using functions from its {.definition}s.
+      # Keywords or helpers in the block correspond to keys given to `accepts_definitions`.
+      #
+      # Note that the block is not called right away -- instead, it's deferred until
+      # one of the defined fields is needed.
+      # @return [void]
+      def define(**kwargs, &block)
+        @definition_proc = -> (obj) {
+          kwargs.each do |keyword, value|
+            public_send(keyword, value)
+          end
+
+          if block
+            instance_eval(&block)
+          end
+        }
+        nil
+      end
+
       private
 
       # Run the definition block if it hasn't been run yet.
@@ -93,22 +112,13 @@ module GraphQL
       end
 
       module ClassMethods
-        # Prepare the defintion for an instance of this class using its {.definitions}.
-        # Note that the block is not called right away -- instead, it's deferred until
-        # one of the defined fields is needed.
+        # Create a new instance
+        # and prepare a definition using its {.definitions}.
+        # @param kwargs [Hash] Key-value pairs corresponding to defininitions from `accepts_definitions`
+        # @param block [Proc] Block which calls helper methods from `accepts_definitions`
         def define(**kwargs, &block)
           instance = self.new
-
-          instance.definition_proc = -> (obj) {
-            kwargs.each do |keyword, value|
-              public_send(keyword, value)
-            end
-
-            if block
-              instance_eval(&block)
-            end
-          }
-
+          instance.define(**kwargs, &block)
           instance
         end
 

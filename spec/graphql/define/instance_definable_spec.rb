@@ -62,6 +62,17 @@ describe GraphQL::Define::InstanceDefinable do
     end
   end
 
+  describe "#define" do
+    it "applies new definitions to an object" do
+      okra = Garden::Vegetable.define(name: "Okra", plant_between: Date.new(2000, 5, 1)..Date.new(2000, 7, 1))
+      assert_equal "Okra", okra.name
+      okra.define(name: "Gumbo")
+      assert_equal "Gumbo", okra.name
+      okra.define { name "Okra" }
+      assert_equal "Okra", okra.name
+    end
+  end
+
   describe "#metadata" do
     it "gets values from definitions" do
       arugula = Garden::Vegetable.define(name: "Arugula", color: :green)
