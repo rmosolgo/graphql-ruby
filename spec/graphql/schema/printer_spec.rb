@@ -106,9 +106,9 @@ schema {
   query: Root
 }
 
-directive @skip(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
-
 directive @include(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
+
+directive @skip(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
 
 directive @deprecated(reason: String = \"No longer supported\") on FIELD_DEFINITION | ENUM_VALUE
 
