@@ -48,7 +48,6 @@ module GraphQL
       :query, :mutation, :subscription,
       :query_execution_strategy, :mutation_execution_strategy, :subscription_execution_strategy,
       :max_depth, :max_complexity,
-      :node_identification,
       :orphan_types, :resolve_type,
       :object_from_id, :id_from_object,
       query_analyzer: -> (schema, analyzer) { schema.query_analyzers << analyzer },
@@ -59,7 +58,7 @@ module GraphQL
       :query, :mutation, :subscription,
       :query_execution_strategy, :mutation_execution_strategy, :subscription_execution_strategy,
       :max_depth, :max_complexity,
-      :orphan_types, :node_identification,
+      :orphan_types,
       :query_analyzers, :middleware
 
     DIRECTIVES = [GraphQL::Directive::SkipDirective, GraphQL::Directive::IncludeDirective, GraphQL::Directive::DeprecatedDirective]
@@ -69,14 +68,6 @@ module GraphQL
     ID_FROM_OBJECT_PROC_REQUIRED = -> (obj, type, ctx) { raise(NotImplementedError, "Schema.id_from_object is undefined, can't return an ID for #{obj.inspect}") }
 
     attr_reader :directives, :static_validator, :object_from_id_proc, :id_from_object_proc
-
-    # @!attribute node_identification
-    #   @return [GraphQL::Relay::GlobalNodeIdentification] the node identification instance for this schema, when using Relay
-
-    def node_identification=(new_node_ident)
-      new_node_ident.schema = self
-      @node_identification = new_node_ident
-    end
 
     # @!attribute [r] middleware
     #   @return [Array<#call>] Middlewares suitable for MiddlewareChain, applied to fields during execution
