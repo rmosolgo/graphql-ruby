@@ -31,11 +31,11 @@
     ```ruby
     MySchema = GraphQL::Schema.define do
       # Fetch an object by UUID
-      object_from_id = -> (id, ctx) {
+      object_from_id -> (id, ctx) {
         MyApp::RelayLookup.find(id)
       }
       # Generate a UUID for this object
-      id_from_object = -> (obj, type_defn, ctx) {
+      id_from_object -> (obj, type_defn, ctx) {
         MyApp::RelayLookup.to_id(obj)
       }
     end
@@ -45,14 +45,14 @@
 
       ```ruby
       MySchema = GraphQL::Schema.define do
-        object_from_id = -> (id, ctx) {
+        object_from_id -> (id, ctx) {
           # Break the id into its parts:
           type_name, object_id = GraphQL::Schema::UniqueWithinType.decode(id)
           # Fetch the identified object
           # ...
         }
 
-        id_from_object = -> (obj, type_defn, ctx) {
+        id_from_object -> (obj, type_defn, ctx) {
           # Provide the the type name & the object's `id`:
           GraphQL::Schema::UniqueWithinType.encode(type_defn.name, obj.id)
         }
@@ -72,7 +72,7 @@
     ```ruby
     MySchema = GraphQL::Schema.define do
       # ...
-      resolve_type = -> (obj, ctx) {
+      resolve_type -> (obj, ctx) {
         # based on `obj` and `ctx`,
         # figure out which GraphQL type to use
         # and return the type
