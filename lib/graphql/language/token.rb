@@ -4,13 +4,15 @@ module GraphQL
     # Contains type, value and position data.
     class Token
       # @return [Symbol] The kind of token this is
-      attr_reader :name
+      attr_reader :name, :prev_token, :line
+      attr_accessor :next_token
 
-      def initialize(value:, name:, line:, col:)
+      def initialize(value:, name:, line:, col:, prev_token:)
         @name = name
         @value = value
         @line = line
         @col = col
+        @prev_token = prev_token
       end
 
       def to_s; @value; end
