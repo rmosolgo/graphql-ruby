@@ -3,6 +3,7 @@ require "spec_helper"
 describe GraphQL::Schema do
   let(:schema) { DummySchema }
   let(:relay_schema)  { StarWarsSchema }
+  let(:empty_schema) { GraphQL::Schema.define }
 
   describe "#rescue_from" do
     let(:rescue_middleware) { schema.middleware.first }
@@ -36,6 +37,34 @@ describe GraphQL::Schema do
           relay_schema.resolve_type(:test_error, nil)
         }
         assert_includes err.message, "not_a_type (Symbol)"
+      end
+    end
+
+    describe "when the hook wasn't implemented" do
+      it "raises not implemented" do
+        assert_raises(NotImplementedError) {
+          empty_schema.resolve_type(nil, nil)
+        }
+      end
+    end
+  end
+
+  describe "object_from_id" do
+    describe "when the hook wasn't implemented" do
+      it "raises not implemented" do
+        assert_raises(NotImplementedError) {
+          empty_schema.object_from_id(nil, nil)
+        }
+      end
+    end
+  end
+
+  describe "id_from_object" do
+    describe "when the hook wasn't implemented" do
+      it "raises not implemented" do
+        assert_raises(NotImplementedError) {
+          empty_schema.id_from_object(nil, nil, nil)
+        }
       end
     end
   end

@@ -1,8 +1,8 @@
 require "graphql/schema/catchall_middleware"
 require "graphql/schema/invalid_type_error"
 require "graphql/schema/middleware_chain"
-require "graphql/schema/rescue_middleware"
 require "graphql/schema/possible_types"
+require "graphql/schema/rescue_middleware"
 require "graphql/schema/reduce_types"
 require "graphql/schema/timeout_middleware"
 require "graphql/schema/type_expression"
@@ -62,15 +62,11 @@ module GraphQL
       :orphan_types, :node_identification,
       :query_analyzers, :middleware
 
-
     DIRECTIVES = [GraphQL::Directive::SkipDirective, GraphQL::Directive::IncludeDirective, GraphQL::Directive::DeprecatedDirective]
     DYNAMIC_FIELDS = ["__type", "__typename", "__schema"]
-    RESOLVE_TYPE_PROC_REQUIRED = -> (obj, ctx) { raise("Schema.resolve_type is undefined, can't resolve type for #{obj.inspect}") }
-
-    DEFAULT_ID_SEPARATOR = "-"
-
-    # @return [String] Used to join typename & ID by the default global ID generation function
-    attr_accessor :id_separator
+    RESOLVE_TYPE_PROC_REQUIRED = -> (obj, ctx) { raise(NotImplementedError, "Schema.resolve_type is undefined, can't resolve type for #{obj.inspect}") }
+    OBJECT_FROM_ID_PROC_REQUIRED = -> (id, ctx) { raise(NotImplementedError, "Schema.object_from_id is undefined, can't fetch object for #{id.inspect}") }
+    ID_FROM_OBJECT_PROC_REQUIRED = -> (obj, type, ctx) { raise(NotImplementedError, "Schema.id_from_object is undefined, can't return an ID for #{obj.inspect}") }
 
     attr_reader :directives, :static_validator, :object_from_id_proc, :id_from_object_proc
 
@@ -106,7 +102,8 @@ module GraphQL
       @middleware = [@rescue_middleware]
       @query_analyzers = []
       @resolve_type_proc = RESOLVE_TYPE_PROC_REQUIRED
-      @object_from_id_proc = nil
+      @object_from_id_proc = OBJECT_FROM_ID_PROC_REQUIRED
+      @id_from_object_proc = ID_FROM_OBJECT_PROC_REQUIRED
       # Default to the built-in execution strategy:
       @query_execution_strategy = GraphQL::Query::SerialExecution
       @mutation_execution_strategy = GraphQL::Query::SerialExecution
