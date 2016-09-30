@@ -8,7 +8,7 @@ module GraphQL
       # @param type_name [String]
       # @param object_value [Any]
       # @return [String] a unique, opaque ID generated as a function of the two inputs
-      def encode(type_name, object_value, separator: DEFAULT_ID_SEPARATOR)
+      def encode(type_name, object_value, separator: DEFAULT_SEPARATOR)
         object_value_str = object_value.to_s
 
         if type_name.include?(separator) || object_value_str.include?(separator)
