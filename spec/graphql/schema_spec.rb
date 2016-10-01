@@ -47,6 +47,25 @@ describe GraphQL::Schema do
         }
       end
     end
+
+    describe "when a schema is defined with abstract types, but no resolve type hook" do
+      it "raises not implemented" do
+        interface = GraphQL::InterfaceType.define do
+          name "SomeInterface"
+        end
+
+        query_type = GraphQL::ObjectType.define do
+          name "Query"
+          field :something, interface
+        end
+
+        assert_raises(RuntimeError) {
+          GraphQL::Schema.define do
+            query(query_type)
+          end
+        }
+      end
+    end
   end
 
   describe "object_from_id" do
@@ -57,6 +76,10 @@ describe GraphQL::Schema do
         }
       end
     end
+
+    describe "when a schema is defined with a node field, but no hook" do
+      it "raises not implemented"
+    end
   end
 
   describe "id_from_object" do
@@ -66,6 +89,10 @@ describe GraphQL::Schema do
           empty_schema.id_from_object(nil, nil, nil)
         }
       end
+    end
+
+    describe "when a schema is defined with a node field, but no hook" do
+      it "raises not implemented"
     end
   end
 end

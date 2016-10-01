@@ -91,6 +91,7 @@ module GraphQL
       private
 
       def exception_message
+        # TODO: more descriptive message -- what did it get or not get?
         "The value returned for field #{field_name} on #{parent_type} could not be resolved "\
         "to one of the possible types for #{field_type}."
       end

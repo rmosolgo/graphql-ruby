@@ -82,6 +82,9 @@ module GraphQL
       # one of the defined fields is needed.
       # @return [void]
       def define(**kwargs, &block)
+        # make sure the previous definition_proc was executed:
+        ensure_defined
+
         @definition_proc = -> (obj) {
           kwargs.each do |keyword, value|
             public_send(keyword, value)

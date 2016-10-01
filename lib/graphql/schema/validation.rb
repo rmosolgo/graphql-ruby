@@ -125,6 +125,14 @@ module GraphQL
             "type must be a valid input type (Scalar or InputObject), not #{outer_type.class} (#{outer_type})"
           end
         }
+
+        SCHEMA_CAN_RESOLVE_TYPES = -> (schema) {
+          if schema.types.values.any? { |type| type.kind.resolves? } && schema.resolve_type_proc.nil?
+            "schema contains Interfaces or Unions, so you must define a `resolve_type (obj, ctx) -> { ... }` function"
+          else
+            # :+1:
+          end
+        }
       end
 
       # A mapping of `{Class => [Proc, Proc...]}` pairs.
@@ -164,6 +172,9 @@ module GraphQL
         ],
         GraphQL::InterfaceType => [
           Rules::FIELDS_ARE_VALID,
+        ],
+        GraphQL::Schema => [
+          Rules::SCHEMA_CAN_RESOLVE_TYPES,
         ],
       }
     end
