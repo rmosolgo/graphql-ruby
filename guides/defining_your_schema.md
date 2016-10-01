@@ -231,9 +231,9 @@ Your schema can be initialized with some options:
 
 ```ruby
 MySchema = GraphQL::Schema.define do
-  query QueryType,       # root type for read-only queries
-  mutation MutationType, # root type for mutations
-  max_depth 7,           # if present, the max depth for incoming queries
+  query QueryType       # root type for read-only queries
+  mutation MutationType # root type for mutations
+  max_depth 7           # if present, the max depth for incoming queries
 end
 ```
 
