@@ -91,10 +91,62 @@ module GraphQL
           end
         end
 
+        module DescriptionPrinter
+          def print_description(definition, indentation='', first_in_block=true)
+            return '' unless definition.description
+
+            lines = definition.description.split("\n")
+
+            description = indentation != '' && !first_in_block ? "\n" : ""
+
+            lines.each do |line|
+              if line == ''
+                description << "#{indentation}#\n"
+              else
+                sublines = break_line(line, 120 - indentation.length)
+                sublines.each do |subline|
+                  description << "#{indentation}# #{subline}\n"
+                end
+              end
+            end
+
+            description
+          end
+
+          def break_line(line, length)
+            return [line] if line.length < length + 5
+
+            parts = line.split(Regexp.new("((?: |^).{15,#{length - 40}}(?= |$))"))
+            return [line] if parts.length < 4
+
+            sublines = [parts.slice!(0, 3).join]
+
+            parts.each_with_index do |part, i|
+              next if i % 2 == 1
+              sublines << "#{part[1..-1]}#{parts[i + 1]}"
+            end
+
+            sublines
+          end
+        end
+
         module ArgsPrinter
-          def print_args(field)
+          include DescriptionPrinter
+          def print_args(field, indentation = '')
             return if field.arguments.empty?
-            "(#{field.arguments.values.map{ |arg| print_input_value(arg) }.join(", ")})"
+
+            field_arguments = field.arguments.values
+
+            if field_arguments.all?{ |arg| !arg.description }
+              return "(#{field_arguments.map{ |arg| print_input_value(arg) }.join(", ")})"
+            end
+
+            out = "(\n"
+            out << field_arguments.map.with_index{ |arg, i|
+              "#{print_description(arg, "  #{indentation}", i == 0)}  #{indentation}"\
+              "#{print_input_value(arg)}"
+            }.join("\n")
+            out << "\n)"
           end
 
           def print_input_value(arg)
@@ -138,64 +190,87 @@ module GraphQL
         module FieldPrinter
           include DeprecatedPrinter
           include ArgsPrinter
+          include DescriptionPrinter
           def print_fields(type)
-            type.all_fields.map{ |field|
-              "  #{field.name}#{print_args(field)}: #{field.type}#{print_deprecated(field)}"
+            type.all_fields.map.with_index{ |field, i|
+              "#{print_description(field, '  ', i == 0)}"\
+              "  #{field.name}#{print_args(field, '  ')}: #{field.type}#{print_deprecated(field)}"
             }.join("\n")
           end
         end
 
         class DirectivePrinter
           extend ArgsPrinter
+          extend DescriptionPrinter
           def self.print(directive)
+            "#{print_description(directive)}"\
             "directive @#{directive.name}#{print_args(directive)} "\
             "on #{directive.locations.join(' | ')}"
           end
         end
 
         class ScalarPrinter
+          extend DescriptionPrinter
           def self.print(type)
+            "#{print_description(type)}"\
             "scalar #{type.name}"
           end
         end
 
         class ObjectPrinter
           extend FieldPrinter
+          extend DescriptionPrinter
           def self.print(type)
             if type.interfaces.any?
               implementations = " implements #{type.interfaces.map(&:to_s).join(", ")}"
             else
               implementations = nil
             end
-            "type #{type.name}#{implementations} {\n#{print_fields(type)}\n}"
+
+            "#{print_description(type)}"\
+            "type #{type.name}#{implementations} {\n"\
+            "#{print_fields(type)}\n"\
+            "}"
           end
         end
 
         class InterfacePrinter
           extend FieldPrinter
+          extend DescriptionPrinter
           def self.print(type)
+            "#{print_description(type)}"\
             "interface #{type.name} {\n#{print_fields(type)}\n}"
           end
         end
 
         class UnionPrinter
+          extend DescriptionPrinter
           def self.print(type)
+            "#{print_description(type)}"\
             "union #{type.name} = #{type.possible_types.map(&:to_s).join(" | ")}"
           end
         end
 
         class EnumPrinter
           extend DeprecatedPrinter
+          extend DescriptionPrinter
           def self.print(type)
             values = type.values.values.map{ |v| "  #{v.name}#{print_deprecated(v)}" }.join("\n")
+            values = type.values.values.map.with_index { |v, i|
+              "#{print_description(v, '  ', i == 0)}"\
+              "  #{v.name}#{print_deprecated(v)}"
+            }.join("\n")
+            "#{print_description(type)}"\
             "enum #{type.name} {\n#{values}\n}"
           end
         end
 
         class InputObjectPrinter
           extend FieldPrinter
+          extend DescriptionPrinter
           def self.print(type)
             fields = type.input_fields.values.map{ |field| "  #{print_input_value(field)}" }.join("\n")
+            "#{print_description(type)}"\
             "input #{type.name} {\n#{fields}\n}"
           end
         end
