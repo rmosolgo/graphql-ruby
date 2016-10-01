@@ -148,7 +148,7 @@ rule
     | name_list name   { val[0] << make_node(:TypeName, name: val[1]) }
 
   enum_value_definition:
-    enum_name directives_list_opt { return make_node(:EnumValueDefinition, name: val[0], directives: val[1]) }
+    enum_name directives_list_opt { return make_node(:EnumValueDefinition, name: val[0], directives: val[1], description: get_description(val[0])) }
 
   enum_value_definitions:
       enum_value_definition                        { return [val[0]] }
@@ -274,7 +274,7 @@ rule
 
   object_type_definition:
       TYPE name implements_opt directives_list_opt LCURLY field_definition_list RCURLY {
-        return make_node(:ObjectTypeDefinition, name: val[1], interfaces: val[2], directives: val[3], fields: val[5])
+        return make_node(:ObjectTypeDefinition, name: val[1], interfaces: val[2], directives: val[3], fields: val[5], description: get_description(val[0]))
       }
 
   implements_opt:
@@ -283,7 +283,7 @@ rule
 
   input_value_definition:
       name COLON type default_value_opt directives_list_opt {
-        return make_node(:InputValueDefinition, name: val[0], type: val[2], default_value: val[3], directives: val[4])
+        return make_node(:InputValueDefinition, name: val[0], type: val[2], default_value: val[3], directives: val[4], description: get_description(val[0]))
       }
 
   input_value_definition_list:
@@ -296,7 +296,7 @@ rule
 
   field_definition:
       name arguments_definitions_opt COLON type directives_list_opt {
-        return make_node(:FieldDefinition, name: val[0], arguments: val[1], type: val[3], directives: val[4])
+        return make_node(:FieldDefinition, name: val[0], arguments: val[1], type: val[3], directives: val[4], description: get_description(val[0]))
       }
 
   field_definition_list:
@@ -305,7 +305,7 @@ rule
 
   interface_type_definition:
       INTERFACE name directives_list_opt LCURLY field_definition_list RCURLY {
-        return make_node(:InterfaceTypeDefinition, name: val[1], directives: val[2], fields: val[4])
+        return make_node(:InterfaceTypeDefinition, name: val[1], directives: val[2], fields: val[4], description: get_description(val[0]))
       }
 
   union_members:
@@ -314,22 +314,22 @@ rule
 
   union_type_definition:
       UNION name directives_list_opt EQUALS union_members {
-        return make_node(:UnionTypeDefinition, name: val[1], directives: val[2], types: val[4])
+        return make_node(:UnionTypeDefinition, name: val[1], directives: val[2], types: val[4], description: get_description(val[0]))
       }
 
   enum_type_definition:
       ENUM name directives_list_opt LCURLY enum_value_definitions RCURLY {
-         return make_node(:EnumTypeDefinition, name: val[1], directives: val[2], values: val[4])
+         return make_node(:EnumTypeDefinition, name: val[1], directives: val[2], values: val[4], description: get_description(val[0]))
       }
 
   input_object_type_definition:
       INPUT name directives_list_opt LCURLY input_value_definition_list RCURLY {
-        return make_node(:InputObjectTypeDefinition, name: val[1], directives: val[2], fields: val[4])
+        return make_node(:InputObjectTypeDefinition, name: val[1], directives: val[2], fields: val[4], description: get_description(val[0]))
       }
 
   directive_definition:
       DIRECTIVE DIR_SIGN name arguments_definitions_opt ON directive_locations {
-        return make_node(:DirectiveDefinition, name: val[2], arguments: val[3], locations: val[5])
+        return make_node(:DirectiveDefinition, name: val[2], arguments: val[3], locations: val[5], description: get_description(val[0]))
       }
 
   directive_locations:
@@ -370,6 +370,24 @@ def next_token
   else
     [lexer_token.name, lexer_token]
   end
+end
+
+def get_description(token)
+  comments = []
+
+  loop do
+    token = token.prev_token
+
+    break if token.nil?
+    break if token.name != :COMMENT
+    break if token.next_token.line != token.line + 1
+
+    comments << token.to_s[2..-1] || ""
+  end
+
+  return nil if comments.empty?
+
+  comments.reverse.join("\n")
 end
 
 def on_error(parser_token_id, lexer_token, vstack)

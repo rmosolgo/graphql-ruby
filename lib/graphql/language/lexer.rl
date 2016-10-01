@@ -83,6 +83,7 @@
     BANG          => { emit_token.call(:BANG) };
     PIPE          => { emit_token.call(:PIPE) };
     IDENTIFIER    => { emit_token.call(:IDENTIFIER) };
+    COMMENT       => { record_comment(ts, te, meta) };
 
     NEWLINE => {
       meta[:line] += 1
@@ -90,7 +91,6 @@
     };
 
     BLANK   => { meta[:col] += te - ts };
-    COMMENT => { meta[:col] += te - ts };
 
     UNKNOWN_CHAR => { emit_token.call(:UNKNOWN_CHAR) };
 
@@ -137,6 +137,21 @@ module GraphQL
         %% write exec;
 
         meta[:tokens]
+      end
+
+      def self.record_comment(ts, te, meta)
+        token = GraphQL::Language::Token.new(
+          name: :COMMENT,
+          value: meta[:data][ts...te].pack("c*"),
+          line: meta[:line],
+          col: meta[:col],
+          prev_token: @previous_token,
+        )
+
+        @previous_token.next_token = token if @previous_token
+        @previous_token = token
+
+        meta[:col] += te - ts
       end
 
       def self.emit(token_name, ts, te, meta)

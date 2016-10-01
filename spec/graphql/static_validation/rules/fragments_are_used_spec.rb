@@ -4,7 +4,7 @@ describe GraphQL::StaticValidation::FragmentsAreUsed do
   include StaticValidationHelpers
   let(:query_string) {"
     query getCheese {
-      name,
+      name
       ...cheeseFields
       ...undefinedFields
     }

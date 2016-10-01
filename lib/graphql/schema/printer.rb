@@ -269,7 +269,10 @@ module GraphQL
           extend FieldPrinter
           extend DescriptionPrinter
           def self.print(type)
-            fields = type.input_fields.values.map{ |field| "  #{print_input_value(field)}" }.join("\n")
+            fields = type.input_fields.values.map.with_index{ |field, i|
+              "#{print_description(field, "  ", i == 0)}"\
+              "  #{print_input_value(field)}"
+            }.join("\n")
             "#{print_description(type)}"\
             "input #{type.name} {\n#{fields}\n}"
           end

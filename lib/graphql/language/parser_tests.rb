@@ -275,6 +275,90 @@ module GraphQL
               end
             end
 
+            describe "schema with comments" do
+              let(:query_string) {%|
+                # Schema at beginning of file
+
+                schema {
+                  query: Hello
+                }
+
+                # Comment between two definitions are omitted
+
+                # This is a directive
+                directive @foo(
+                  # It has an argument
+                  arg: Int
+                ) on FIELD
+
+                # Multiline comment
+                #
+                # With an enum
+                enum Color {
+                  RED
+
+                  # Not a creative color
+                  GREEN
+                  BLUE
+                }
+
+                # What a great type
+                type Hello {
+                  # And a field to boot
+                  str: String
+                }
+
+                # Comment for input object types
+                input Car {
+                  # Color of the car
+                  color: String!
+                }
+
+                # Comment for interface definitions
+                interface Vehicle {
+                  # Amount of wheels
+                  wheels: Int!
+                }
+
+                # Comment at the end of schema
+              |}
+
+              it "parses successfully" do
+                document = subject.parse(query_string)
+
+                assert_equal 6, document.definitions.size
+
+                schema_definition = document.definitions.shift
+                assert_equal GraphQL::Language::Nodes::SchemaDefinition, schema_definition.class
+
+                directive_definition = document.definitions.shift
+                assert_equal GraphQL::Language::Nodes::DirectiveDefinition, directive_definition.class
+                assert_equal 'This is a directive', directive_definition.description
+
+                enum_type_definition = document.definitions.shift
+                assert_equal GraphQL::Language::Nodes::EnumTypeDefinition, enum_type_definition.class
+                assert_equal "Multiline comment\n\nWith an enum", enum_type_definition.description
+
+                assert_nil enum_type_definition.values[0].description
+                assert_equal 'Not a creative color', enum_type_definition.values[1].description
+
+                object_type_definition = document.definitions.shift
+                assert_equal GraphQL::Language::Nodes::ObjectTypeDefinition, object_type_definition.class
+                assert_equal 'What a great type', object_type_definition.description
+                assert_equal 'And a field to boot', object_type_definition.fields[0].description
+
+                input_object_type_definition = document.definitions.shift
+                assert_equal GraphQL::Language::Nodes::InputObjectTypeDefinition, input_object_type_definition.class
+                assert_equal 'Comment for input object types', input_object_type_definition.description
+                assert_equal 'Color of the car', input_object_type_definition.fields[0].description
+
+                interface_type_definition = document.definitions.shift
+                assert_equal GraphQL::Language::Nodes::InterfaceTypeDefinition, interface_type_definition.class
+                assert_equal 'Comment for interface definitions', interface_type_definition.description
+                assert_equal 'Amount of wheels', interface_type_definition.fields[0].description
+              end
+            end
+
             describe "schema" do
               it "parses the test schema" do
                 schema = DummySchema

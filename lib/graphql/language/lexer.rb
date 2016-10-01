@@ -333,7 +333,7 @@ self._graphql_lexer_trans_actions = [
 	25, 17, 15, 117, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 9, 
 	33, 7, 57, 117, 117, 37, 0, 0, 
-	0, 45, 21, 0, 0, 47, 47, 0, 
+	0, 47, 21, 0, 0, 45, 45, 0, 
 	57, 57, 49, 0, 0, 0, 0, 0, 
 	0, 39, 0, 41, 0, 0, 0, 0, 
 	60, 41, 0, 0, 0, 0, 0, 57, 
@@ -400,7 +400,7 @@ self._graphql_lexer_trans_actions = [
 	117, 43, 117, 0, 117, 117, 117, 43, 
 	117, 0, 117, 117, 117, 43, 117, 102, 
 	117, 117, 117, 43, 55, 55, 55, 51, 
-	55, 53, 45, 55, 47, 49, 39, 41, 
+	55, 53, 47, 55, 45, 49, 39, 41, 
 	41, 39, 49, 55, 43, 43, 43, 43, 
 	43, 43, 43, 43, 43, 43, 43, 43, 
 	43, 43, 43, 43, 43, 43, 43, 43, 
@@ -798,7 +798,7 @@ te = p+1
  begin  emit_token.call(:PIPE)  end
 		end
 when 39 then
-# line 87 "lib/graphql/language/lexer.rl"
+# line 88 "lib/graphql/language/lexer.rl"
 		begin
 te = p+1
  begin 
@@ -831,10 +831,10 @@ te = p
 p = p - 1; begin  emit_token.call(:IDENTIFIER)  end
 		end
 when 44 then
-# line 92 "lib/graphql/language/lexer.rl"
+# line 86 "lib/graphql/language/lexer.rl"
 		begin
 te = p
-p = p - 1; begin  meta[:col] += te - ts  end
+p = p - 1; begin  record_comment(ts, te, meta)  end
 		end
 when 45 then
 # line 93 "lib/graphql/language/lexer.rl"
@@ -982,6 +982,21 @@ end
 # line 138 "lib/graphql/language/lexer.rl"
 
         meta[:tokens]
+      end
+
+      def self.record_comment(ts, te, meta)
+        token = GraphQL::Language::Token.new(
+          name: :COMMENT,
+          value: meta[:data][ts...te].pack("c*"),
+          line: meta[:line],
+          col: meta[:col],
+          prev_token: @previous_token,
+        )
+
+        @previous_token.next_token = token if @previous_token
+        @previous_token = token
+
+        meta[:col] += te - ts
       end
 
       def self.emit(token_name, ts, te, meta)

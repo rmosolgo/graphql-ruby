@@ -44,6 +44,24 @@ def next_token
   end
 end
 
+def get_description(token)
+  comments = []
+
+  loop do
+    token = token.prev_token
+
+    break if token.nil?
+    break if token.name != :COMMENT
+    break if token.next_token.line != token.line + 1
+
+    comments << token.to_s[2..-1] || ""
+  end
+
+  return nil if comments.empty?
+
+  comments.reverse.join("\n")
+end
+
 def on_error(parser_token_id, lexer_token, vstack)
   if lexer_token == "$"
     raise GraphQL::ParseError.new("Unexpected end of document", nil, nil, @query_string)
@@ -1060,7 +1078,7 @@ module_eval(<<'.,.,', 'parser.y', 147)
 
 module_eval(<<'.,.,', 'parser.y', 150)
   def _reduce_60(val, _values, result)
-     return make_node(:EnumValueDefinition, name: val[0], directives: val[1]) 
+     return make_node(:EnumValueDefinition, name: val[0], directives: val[1], description: get_description(val[0])) 
     result
   end
 .,.,
@@ -1378,7 +1396,7 @@ module_eval(<<'.,.,', 'parser.y', 272)
 
 module_eval(<<'.,.,', 'parser.y', 276)
   def _reduce_114(val, _values, result)
-            return make_node(:ObjectTypeDefinition, name: val[1], interfaces: val[2], directives: val[3], fields: val[5])
+            return make_node(:ObjectTypeDefinition, name: val[1], interfaces: val[2], directives: val[3], fields: val[5], description: get_description(val[0]))
       
     result
   end
@@ -1400,7 +1418,7 @@ module_eval(<<'.,.,', 'parser.y', 281)
 
 module_eval(<<'.,.,', 'parser.y', 285)
   def _reduce_117(val, _values, result)
-            return make_node(:InputValueDefinition, name: val[0], type: val[2], default_value: val[3], directives: val[4])
+            return make_node(:InputValueDefinition, name: val[0], type: val[2], default_value: val[3], directives: val[4], description: get_description(val[0]))
       
     result
   end
@@ -1436,7 +1454,7 @@ module_eval(<<'.,.,', 'parser.y', 294)
 
 module_eval(<<'.,.,', 'parser.y', 298)
   def _reduce_122(val, _values, result)
-            return make_node(:FieldDefinition, name: val[0], arguments: val[1], type: val[3], directives: val[4])
+            return make_node(:FieldDefinition, name: val[0], arguments: val[1], type: val[3], directives: val[4], description: get_description(val[0]))
       
     result
   end
@@ -1458,7 +1476,7 @@ module_eval(<<'.,.,', 'parser.y', 303)
 
 module_eval(<<'.,.,', 'parser.y', 307)
   def _reduce_125(val, _values, result)
-            return make_node(:InterfaceTypeDefinition, name: val[1], directives: val[2], fields: val[4])
+            return make_node(:InterfaceTypeDefinition, name: val[1], directives: val[2], fields: val[4], description: get_description(val[0]))
       
     result
   end
@@ -1480,7 +1498,7 @@ module_eval(<<'.,.,', 'parser.y', 312)
 
 module_eval(<<'.,.,', 'parser.y', 316)
   def _reduce_128(val, _values, result)
-            return make_node(:UnionTypeDefinition, name: val[1], directives: val[2], types: val[4])
+            return make_node(:UnionTypeDefinition, name: val[1], directives: val[2], types: val[4], description: get_description(val[0]))
       
     result
   end
@@ -1488,7 +1506,7 @@ module_eval(<<'.,.,', 'parser.y', 316)
 
 module_eval(<<'.,.,', 'parser.y', 321)
   def _reduce_129(val, _values, result)
-             return make_node(:EnumTypeDefinition, name: val[1], directives: val[2], values: val[4])
+             return make_node(:EnumTypeDefinition, name: val[1], directives: val[2], values: val[4], description: get_description(val[0]))
       
     result
   end
@@ -1496,7 +1514,7 @@ module_eval(<<'.,.,', 'parser.y', 321)
 
 module_eval(<<'.,.,', 'parser.y', 326)
   def _reduce_130(val, _values, result)
-            return make_node(:InputObjectTypeDefinition, name: val[1], directives: val[2], fields: val[4])
+            return make_node(:InputObjectTypeDefinition, name: val[1], directives: val[2], fields: val[4], description: get_description(val[0]))
       
     result
   end
@@ -1504,7 +1522,7 @@ module_eval(<<'.,.,', 'parser.y', 326)
 
 module_eval(<<'.,.,', 'parser.y', 331)
   def _reduce_131(val, _values, result)
-            return make_node(:DirectiveDefinition, name: val[2], arguments: val[3], locations: val[5])
+            return make_node(:DirectiveDefinition, name: val[2], arguments: val[3], locations: val[5], description: get_description(val[0]))
       
     result
   end
