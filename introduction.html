@@ -52,7 +52,7 @@
 
 <p>Once you’ve defined your query root and mutation root, you can make a schema:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="no">ApplicationSchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">ApplicationSchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="n">query</span> <span class="no">QueryRoot</span>
   <span class="n">mutation</span> <span class="no">MutationRoot</span>
 <span class="k">end</span>
@@ -67,7 +67,7 @@
 
 <p>Let’s imagine we have a blog with only a <code class="highlighter-rouge">Post</code> model (no comments yet :) :</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Post</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Post</span>
   <span class="kp">attr_accessor</span> <span class="ss">:id</span><span class="p">,</span> <span class="ss">:title</span><span class="p">,</span> <span class="ss">:body</span>
   <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">find</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span>
     <span class="c1"># get a Post from the database</span>
@@ -78,7 +78,7 @@
 
 <p>Let’s make type for <code class="highlighter-rouge">Post</code>:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="c1"># `types` is a helper for declaring GraphQL types</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># `types` is a helper for declaring GraphQL types</span>
 <span class="no">PostType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="nb">name</span> <span class="s2">"Post"</span>
   <span class="n">description</span> <span class="s2">"A blog entry"</span>
@@ -98,7 +98,7 @@
 
 <p>A query root is “just” a type. Its fields don’t call methods on some object, though – instead, they retrieve objects which will be read.</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="no">QueryRoot</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">QueryRoot</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="nb">name</span> <span class="s2">"Query"</span>
   <span class="n">description</span> <span class="s2">"The query root for this schema"</span>
 
@@ -126,7 +126,7 @@
 
 <p>Lastly, create the schema:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="no">Schema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">Schema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="n">query</span> <span class="no">QueryRoot</span>
 <span class="k">end</span>
 </code></pre>
@@ -145,7 +145,7 @@
 
 <p>Given a <code class="highlighter-rouge">Comment</code> model like this one, let’s add it to our schema:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Comment</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Comment</span>
   <span class="kp">attr_accessor</span> <span class="ss">:id</span><span class="p">,</span> <span class="ss">:body</span><span class="p">,</span> <span class="ss">:post_id</span>
   <span class="k">def</span> <span class="nf">post</span>
     <span class="c1"># find this comment's post</span>
@@ -156,7 +156,7 @@
 
 <p>First, a <code class="highlighter-rouge">CommentType</code> to expose comments:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="no">CommentType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">CommentType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="nb">name</span> <span class="s2">"Comment"</span>
   <span class="n">description</span> <span class="s2">"A reply to a post"</span>
 
@@ -171,7 +171,7 @@
 
 <p>We should also add a <code class="highlighter-rouge">comments</code> field to <code class="highlighter-rouge">PostType</code>:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="no">PostType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">new</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="p">,</span> <span class="n">types</span><span class="p">,</span> <span class="n">field</span><span class="o">|</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">PostType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">new</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="p">,</span> <span class="n">types</span><span class="p">,</span> <span class="n">field</span><span class="o">|</span>
   <span class="c1"># ... existing code ...</span>
   <span class="n">field</span> <span class="ss">:comments</span><span class="p">,</span> <span class="o">!</span><span class="n">types</span><span class="p">[</span><span class="o">!</span><span class="no">CommentType</span><span class="p">],</span> <span class="s2">"Responses to this post"</span>
 <span class="k">end</span>
@@ -184,7 +184,7 @@
 
 <p>After defining your schema, you can evaluate queries with <code class="highlighter-rouge">GraphQL::Query</code>. For example:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="no">Schema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">Schema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="n">query</span> <span class="no">QueryRoot</span> <span class="c1"># QueryRoot defined above</span>
 <span class="k">end</span>
 

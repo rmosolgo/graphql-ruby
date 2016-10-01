@@ -57,7 +57,7 @@
 
 <p>For example:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="no">CityType</span> <span class="o">=</span> <span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">CityType</span> <span class="o">=</span> <span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="nb">name</span> <span class="s2">"City"</span>
   <span class="n">description</span> <span class="s2">"A large densely populated area"</span>
   <span class="n">interfaces</span> <span class="p">[</span><span class="no">LocationInterface</span><span class="p">,</span> <span class="no">NamedEntityInterface</span><span class="p">]</span>
@@ -80,7 +80,7 @@
 
 <p>Interfaces are defined with name, description and fields. For example:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="no">BeverageInterface</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">InterfaceType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">BeverageInterface</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">InterfaceType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="nb">name</span> <span class="s2">"Beverage"</span>
   <span class="n">field</span> <span class="ss">:caffeinated</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">Boolean</span>
   <span class="n">field</span> <span class="ss">:size</span><span class="p">,</span> <span class="no">BeverageSizeEnum</span>
@@ -96,7 +96,7 @@
 
 <p>In order for your schema to expose members of an interface, it must be able to determine the GraphQL type for a given Ruby object. You must define <code class="highlighter-rouge">resolve_type</code> in your schema:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
  <span class="c1"># ...</span>
  <span class="n">resolve_type</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">object</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
    <span class="c1"># for example, look up types by class name</span>
@@ -111,7 +111,7 @@
 
 <p>Unions represent a set of object types which may occur in the same place.</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="no">MediaSearchResultUnion</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">UnionType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">MediaSearchResultUnion</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">UnionType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="nb">name</span> <span class="s2">"MediaSearchResult"</span>
   <span class="n">description</span> <span class="s2">"An object which can be queried by date, location and filesize"</span>
   <span class="n">possible_types</span> <span class="p">[</span><span class="no">PhotoType</span><span class="p">,</span> <span class="no">VideoType</span><span class="p">,</span> <span class="no">AudioType</span><span class="p">]</span>
@@ -131,7 +131,7 @@
 
 <p>Values can be <em>deprecated</em> by providing a <code class="highlighter-rouge">deprecation_reason:</code>.</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="no">ShirtSizeEnum</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">EnumType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">ShirtSizeEnum</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">EnumType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="nb">name</span> <span class="s2">"ShirtSize"</span>
   <span class="n">description</span> <span class="s2">"T-shirt size"</span>
   <span class="n">value</span> <span class="s2">"LARGE"</span><span class="p">,</span> <span class="s2">"22 inches wide"</span>
@@ -158,7 +158,7 @@
   <li>input objects</li>
 </ul>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="c1"># Place an order with this input, eg:</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># Place an order with this input, eg:</span>
 <span class="c1"># {</span>
 <span class="c1">#   model_id: "100",</span>
 <span class="c1">#   selections: [</span>
@@ -189,7 +189,7 @@
 
 <p>Usually, you’ll define fields while defining a type. The most common case defines a field name, type, and description. For example:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:name</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">String</span><span class="p">,</span> <span class="s2">"The name of this thing"</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:name</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">String</span><span class="p">,</span> <span class="s2">"The name of this thing"</span>
 </code></pre>
 </div>
 
@@ -197,7 +197,7 @@
 
 <p>A field definition may include some options:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:name</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">String</span><span class="p">,</span> <span class="s2">"The name of this thing"</span><span class="p">,</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:name</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">String</span><span class="p">,</span> <span class="s2">"The name of this thing"</span><span class="p">,</span>
   <span class="c1"># Mark the field as deprecated:</span>
   <span class="ss">deprecation_reason: </span><span class="s2">"Nobody calls it by name anymore"</span><span class="p">,</span>
   <span class="c1"># Use a different getter method to resolve this field:</span>
@@ -213,7 +213,7 @@
 
 <p>For a more complex definition, you can also pass a definition block. Within the block, you can define <code class="highlighter-rouge">name</code>, <code class="highlighter-rouge">type</code>, <code class="highlighter-rouge">description</code>, <code class="highlighter-rouge">resolve</code>, and <code class="highlighter-rouge">argument</code>. For example:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:comments</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:comments</span> <span class="k">do</span>
   <span class="n">type</span> <span class="o">!</span><span class="n">types</span><span class="p">[</span><span class="o">!</span><span class="no">CommentType</span><span class="p">]</span>
 
   <span class="n">description</span> <span class="s2">"Comments on this Post"</span>
@@ -236,7 +236,7 @@
 
 <p>You can provide a pre-made <code class="highlighter-rouge">GraphQL::Field</code> object to define a field:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="n">name_field</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Field</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">name_field</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Field</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="c1"># ...</span>
 <span class="k">end</span>
 
@@ -256,7 +256,7 @@
   <li>
     <p><strong>By value</strong>. Pass a variable which holds the type.</p>
 
-    <div class="highlighter-rouge"><pre class="highlight"><code><span class="c1"># constant</span>
+    <div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># constant</span>
 <span class="n">field</span> <span class="ss">:team</span><span class="p">,</span> <span class="no">TeamType</span>
 <span class="c1"># local variable</span>
 <span class="n">field</span> <span class="ss">:stadium</span><span class="p">,</span> <span class="n">stadium_type</span>
@@ -266,7 +266,7 @@
   <li>
     <p><strong>By proc</strong>, which will be lazy-evaluated to look up a type.</p>
 
-    <div class="highlighter-rouge"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:team</span><span class="p">,</span> <span class="o">-&gt;</span> <span class="p">{</span> <span class="no">TeamType</span> <span class="p">}</span>
+    <div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:team</span><span class="p">,</span> <span class="o">-&gt;</span> <span class="p">{</span> <span class="no">TeamType</span> <span class="p">}</span>
 <span class="n">field</span> <span class="ss">:stadium</span><span class="p">,</span> <span class="o">-&gt;</span> <span class="p">{</span> <span class="no">LookupTypeForModel</span><span class="p">.</span><span class="nf">lookup</span><span class="p">(</span><span class="no">Stadium</span><span class="p">)</span> <span class="p">}</span>
 </code></pre>
     </div>
@@ -277,10 +277,10 @@
 
 <p>Your schema can be initialized with some options:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
-  <span class="n">query</span> <span class="no">QueryType</span><span class="p">,</span>       <span class="c1"># root type for read-only queries</span>
-  <span class="n">mutation</span> <span class="no">MutationType</span><span class="p">,</span> <span class="c1"># root type for mutations</span>
-  <span class="n">max_depth</span> <span class="mi">7</span><span class="p">,</span>           <span class="c1"># if present, the max depth for incoming queries</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+  <span class="n">query</span> <span class="no">QueryType</span>       <span class="c1"># root type for read-only queries</span>
+  <span class="n">mutation</span> <span class="no">MutationType</span> <span class="c1"># root type for mutations</span>
+  <span class="n">max_depth</span> <span class="mi">7</span>           <span class="c1"># if present, the max depth for incoming queries</span>
 <span class="k">end</span>
 </code></pre>
 </div>
@@ -293,14 +293,14 @@
 
 <p>For example, you can set up a handler:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="c1"># The error instance is yielded to the block:</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># The error instance is yielded to the block:</span>
 <span class="no">MySchema</span><span class="p">.</span><span class="nf">rescue_from</span><span class="p">(</span><span class="no">ActiveRecord</span><span class="o">::</span><span class="no">RecordInvalid</span><span class="p">)</span> <span class="p">{</span> <span class="o">|</span><span class="n">error</span><span class="o">|</span> <span class="s2">"Some data could not be saved"</span> <span class="p">}</span>
 </code></pre>
 </div>
 
 <p>Then, when a query is executed, that error is rescued and its message is added to the response:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="n">result</span> <span class="o">=</span> <span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="n">query_string</span><span class="p">)</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">result</span> <span class="o">=</span> <span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="n">query_string</span><span class="p">)</span>
 <span class="c1"># {</span>
 <span class="c1">#   "data" =&gt; {</span>
 <span class="c1">#     # other fields may resolve successfully</span>
@@ -345,7 +345,7 @@
 
 <p>This middleware only continues evaluation if the <code class="highlighter-rouge">current_user</code> is permitted to read the target object:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="k">class</span> <span class="nc">AuthorizationMiddleware</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="k">class</span> <span class="nc">AuthorizationMiddleware</span>
   <span class="k">def</span> <span class="nf">call</span><span class="p">(</span><span class="n">parent_type</span><span class="p">,</span> <span class="n">parent_object</span><span class="p">,</span> <span class="n">field_definition</span><span class="p">,</span> <span class="n">field_args</span><span class="p">,</span> <span class="n">query_context</span><span class="p">,</span> <span class="n">next_middleware</span><span class="p">)</span>
     <span class="n">current_user</span> <span class="o">=</span> <span class="n">query_context</span><span class="p">[</span><span class="ss">:current_user</span><span class="p">]</span> <span class="c1"># passed in when creating the query</span>
     <span class="k">if</span> <span class="n">current_user</span> <span class="o">&amp;&amp;</span> <span class="n">current_user</span><span class="p">.</span><span class="nf">can_read?</span><span class="p">(</span><span class="n">parent_object</span><span class="p">)</span>
@@ -362,7 +362,7 @@
 
 <p>Then, add the middleware to your schema:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="no">MySchema</span><span class="p">.</span><span class="nf">middleware</span> <span class="o">&lt;&lt;</span> <span class="no">AuthorizationMiddleware</span><span class="p">.</span><span class="nf">new</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">MySchema</span><span class="p">.</span><span class="nf">middleware</span> <span class="o">&lt;&lt;</span> <span class="no">AuthorizationMiddleware</span><span class="p">.</span><span class="nf">new</span>
 </code></pre>
 </div>
 
@@ -374,7 +374,7 @@
 
 <p>The minimal API is <code class="highlighter-rouge">.call(memo, visit_type, internal_representation_node)</code>. For example:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="n">ast_node_logger</span> <span class="o">=</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">memo</span><span class="p">,</span> <span class="n">visit_type</span><span class="p">,</span> <span class="n">internal_representation_node</span><span class="p">)</span> <span class="p">{</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">ast_node_logger</span> <span class="o">=</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">memo</span><span class="p">,</span> <span class="n">visit_type</span><span class="p">,</span> <span class="n">internal_representation_node</span><span class="p">)</span> <span class="p">{</span>
   <span class="k">if</span> <span class="n">visit_type</span> <span class="o">==</span> <span class="ss">:enter</span>
     <span class="nb">puts</span> <span class="s2">"Visiting </span><span class="si">#{</span><span class="n">internal_representation_node</span><span class="p">.</span><span class="nf">name</span><span class="si">}</span><span class="s2">!"</span>
   <span class="k">end</span>
@@ -444,7 +444,7 @@
 
 <p>First, make a custom definition:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">accepts_definitions</span> <span class="ss">resolves_to_class_names: </span><span class="no">GraphQL</span><span class="o">::</span><span class="no">Define</span><span class="p">.</span><span class="nf">assign_metadata_key</span><span class="p">(</span><span class="ss">:resolves_to_class_names</span><span class="p">)</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">accepts_definitions</span> <span class="ss">resolves_to_class_names: </span><span class="no">GraphQL</span><span class="o">::</span><span class="no">Define</span><span class="p">.</span><span class="nf">assign_metadata_key</span><span class="p">(</span><span class="ss">:resolves_to_class_names</span><span class="p">)</span>
 <span class="c1"># or:</span>
 <span class="c1"># GraphQL::Field.accepts_definitions(...)</span>
 <span class="c1"># GraphQL::Argument.accepts_definitions(...)</span>
@@ -453,7 +453,7 @@
 
 <p>Then, use the custom definition:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="no">Post</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">Post</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="c1"># ...</span>
   <span class="n">resolves_to_class_names</span> <span class="p">[</span><span class="s2">"Post"</span><span class="p">,</span> <span class="s2">"StaffUpdate"</span><span class="p">]</span>
 <span class="k">end</span>
@@ -462,7 +462,7 @@
 
 <p>Access <code class="highlighter-rouge">type.metadata</code> later:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="c1"># ...</span>
   <span class="c1"># Use the type's declared `resolves_to_class_names`</span>
   <span class="c1"># to figure out if `obj` is a member of that type</span>
