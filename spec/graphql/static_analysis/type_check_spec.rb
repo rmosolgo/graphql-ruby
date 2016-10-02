@@ -359,16 +359,25 @@ describe GraphQL::StaticAnalysis::TypeCheck do
     it "requires that object spreads in object scope are the same type" do
       query_string = %|
       {
-        addInt(lhs: 1, rhs: 2) { ...f1 ...f2 }
+        addInt(lhs: 1, rhs: 2) {
+          # OK:
+          ...f1
+          ... on CalculationSuccess { value }
+          # Not OK:
+          ...f2
+          ... on CalculationError { message }
+        }
       }
       fragment f1 on CalculationSuccess { value }
       fragment f2 on CalculationError { message }
       |
       assert_errors(
         query_string,
-        %|f2 can't be spread|,
+        %|Can't spread CalculationError inside CalculationSuccess (object types must match), inline fragment on "CalculationError" is invalid|,
+        %|Can't spread CalculationError inside CalculationSuccess (object types must match), "...f2" is invalid|,
       )
     end
+
     it "requires that object spreads in abstract scope are members of the abstract scope"
     it "requires that abstract spreads in object scope contain the object"
     it "requires that abstract spreads in abstract scopes have some types in common"

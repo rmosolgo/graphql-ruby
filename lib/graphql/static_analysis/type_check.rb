@@ -84,6 +84,15 @@ module GraphQL
         # Put the current directive here -- there can only ever be one
         current_directive_defn = nil
 
+        # Track fragment spreads, so that when you're done,
+        # you can typecheck the spreads with their definitions
+        # [Array<ObservedFragmentSpread>]
+        observed_fragment_spreads = []
+
+        # After you get the proper type for a fragment definition, stash it here
+        # [Hash<String => GraphQL::BaseType>]
+        fragment_definition_types = {}
+
         visitor[Nodes::OperationDefinition].enter << -> (node, prev_node) {
           # When you enter an operation definition:
           # - Check for the corresponding root type
@@ -213,6 +222,16 @@ module GraphQL
             if type_errors.any?
               errors.concat(type_errors)
               next_type = AnyType
+            else
+              # This is the "parent" type, who _may_ receive this
+              prev_type = type_stack.last
+              spread_errors = TypeCondition.errors_for_spread(schema, prev_type, next_type, node, owner_name)
+              if spread_errors.any?
+                # This spread isn't valid, but let's keep validating.
+                # It might be a typo, and we can still validate the children
+                # of this spread, since we know what type it's for
+                errors.concat(spread_errors)
+              end
             end
           else
             # If the inline fragment doesn't have a type condition,
@@ -237,6 +256,7 @@ module GraphQL
             next_type = AnyType
           end
 
+          fragment_definition_types[node.name] = next_type
           type_stack << next_type
           root_node = node
         }
@@ -265,6 +285,12 @@ module GraphQL
           observed_arguments_stack.pop
         }
 
+        visitor[Nodes::FragmentSpread].enter << -> (node, prev_node) {
+          observed_fragment_spreads << ObservedFragmentSpread.new(
+            prev_type: type_stack.last,
+            node: node,
+          )
+        }
         visitor[Nodes::Document].leave << -> (node, prev_node) {
           variables = @analysis.variable_usages
           dependencies = @analysis.dependencies
@@ -281,7 +307,26 @@ module GraphQL
               errors.concat(ValidArguments.errors_for_argument(schema, variables, dependencies, root_node, argument[:parent_defn], argument[:defn], argument[:node]))
             end
           end
+
+          observed_fragment_spreads.each do |observed_fragment_spread|
+            node_name = observed_fragment_spread.node.name
+            frag_defn_type = fragment_definition_types[node_name]
+            if frag_defn_type.nil?
+              # Womp womp, this is an undefined fragment
+            else
+              owner_name = "\"...#{node_name}\""
+              errors.concat(TypeCondition.errors_for_spread(schema, observed_fragment_spread.prev_type, frag_defn_type, node, owner_name))
+            end
+          end
         }
+      end
+
+      class ObservedFragmentSpread
+        attr_reader :prev_type, :node
+        def initialize(prev_type:, node:)
+          @prev_type = prev_type
+          @node = node
+        end
       end
     end
   end

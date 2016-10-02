@@ -18,22 +18,49 @@ module GraphQL
         end
 
         # Check for errors when spreading from `prev_type` into `next_type`
+        # @param schema [GraphQL::Schema] the schema for this query
         # @param prev_type [GraphQL::BaseType] the "outer" type, receiving a spread
         # @param next_type [GraphQL::BaseType] the "inner" type, attempting to be spread inside `prev_type`
         # @param next_node [GraphQL::Language::Nodes::AbstractNode] The AST node which is trying to apply `next_type` inside `prev_type`
         # @param owner_name [String] the name of this node, for use in any error messages
         # @return [Array<GraphQL::StaticAnalysis::AnalysisError>] Any errors for this spread (may be empty)
-        def errors_for_spread(prev_type, next_type, next_node)
+        def errors_for_spread(schema, prev_type, next_type, next_node, owner_name)
           errors = []
+          # Check the common case first
+          if (prev_type == next_type) || (prev_type == AnyType) || (next_type == AnyType)
+            errors
+          else
+
+            prev_inner_type = prev_type.unwrap
+            # next_type is already unwrapped
+            prev_possible_types = schema.possible_types(prev_inner_type)
+            next_possible_types = schema.possible_types(next_type)
+            overlapping_possible_types = prev_possible_types & next_possible_types
+
+            if overlapping_possible_types.none?
+              reason = mismatch_reason(prev_inner_type, next_type)
+              errors << AnalysisError.new(
+                "Can't spread #{next_type.name} inside #{prev_inner_type.name} (#{reason}), #{owner_name} is invalid",
+                nodes: [next_node]
+              )
+            end
+
+            errors
+          end
+        end
+
+        private
+
+        module_function
+
+        def mismatch_reason(prev_type, next_type)
           case prev_type.kind
           when GraphQL::TypeKinds::OBJECT
-          when GraphQL::TypeKinds::UNION
-          when GraphQL::TypeKinds::INTERFACE
-          else
-            # There's some kind of upstream error,
-            # don't worry about it
+            case next_type.kind
+            when GraphQL::TypeKinds::OBJECT
+              "object types must match"
+            end
           end
-          errors
         end
       end
     end
