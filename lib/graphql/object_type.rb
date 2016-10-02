@@ -74,27 +74,5 @@ module GraphQL
         memo.merge!(iface.fields)
       end
     end
-
-
-    # Error raised when the value provided for a field can't be resolved to one of the possible types
-    # for the field.
-    class UnresolvedTypeError < GraphQL::Error
-      attr_reader :field_name, :field_type, :parent_type
-
-      def initialize(field_name, field_type, parent_type)
-        @field_name = field_name
-        @field_type = field_type
-        @parent_type = parent_type
-        super(exception_message)
-      end
-
-      private
-
-      def exception_message
-        # TODO: more descriptive message -- what did it get or not get?
-        "The value returned for field #{field_name} on #{parent_type} could not be resolved "\
-        "to one of the possible types for #{field_type}."
-      end
-    end
   end
 end
