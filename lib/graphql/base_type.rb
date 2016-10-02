@@ -54,48 +54,6 @@ module GraphQL
       self
     end
 
-    module HasPossibleTypes
-
-      # If a (deprecated) `resolve_type` function was provided, call that and warn.
-      # Otherwise call `schema.resolve_type` (the proper behavior)
-      def legacy_resolve_type(object, ctx)
-        if @resolve_type_proc
-          resolve_type(object, ctx)
-        else
-          ctx.schema.resolve_type(object, ctx)
-        end
-      end
-
-      # Return the implementing type for `object`.
-      # The default implementation assumes that there's a type with the same name as `object.class.name`.
-      # Maybe you'll need to override this in your own interfaces!
-      #
-      # @param object [Object] the object which needs a type to expose it
-      # @param ctx [GraphQL::Query::Context]
-      # @return [GraphQL::ObjectType] the type which should expose `object`
-      def resolve_type(object, ctx)
-        ensure_defined
-        warn_resolve_type_deprecated
-        instance_exec(object, ctx, &(@resolve_type_proc || DEFAULT_RESOLVE_TYPE))
-      end
-
-      # The default implementation of {#resolve_type} gets `object.class.name`
-      # and finds a type with the same name
-      DEFAULT_RESOLVE_TYPE = -> (object, ctx) {
-        type_name = object.class.name
-        ctx.schema.possible_types(self).find {|t| t.name == type_name}
-      }
-
-      def resolve_type=(new_proc)
-        warn_resolve_type_deprecated
-        @resolve_type_proc = new_proc || DEFAULT_RESOLVE_TYPE
-      end
-
-      def warn_resolve_type_deprecated
-        warn("#{self.name}.resolve_type is deprecated; define Schema.resolve_type instead")
-      end
-    end
-
     # Print the human-readable name of this type using the query-string naming pattern
     def to_s
       name
