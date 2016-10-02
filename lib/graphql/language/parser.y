@@ -126,6 +126,7 @@ rule
     | UNION
     | ENUM
     | INPUT
+    | DIRECTIVE
 
   name_without_on:
       IDENTIFIER
