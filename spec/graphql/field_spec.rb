@@ -88,9 +88,10 @@ describe GraphQL::Field do
       invalid_field.name = :symbol_name
 
       dummy_query.fields["symbol_name"] = invalid_field
-      dummy_schema = GraphQL::Schema.define(query: dummy_query)
 
-      err = assert_raises(GraphQL::Schema::InvalidTypeError) { dummy_schema.types }
+      err = assert_raises(GraphQL::Schema::InvalidTypeError) {
+        GraphQL::Schema.define(query: dummy_query)
+      }
       assert_equal "QueryType is invalid: field :symbol_name name must return String, not Symbol (:symbol_name)", err.message
     end
   end

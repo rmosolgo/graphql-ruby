@@ -125,6 +125,32 @@ module GraphQL
             "type must be a valid input type (Scalar or InputObject), not #{outer_type.class} (#{outer_type})"
           end
         }
+
+        SCHEMA_CAN_RESOLVE_TYPES = -> (schema) {
+          if schema.types.values.any? { |type| type.kind.resolves? } && schema.resolve_type_proc.nil?
+            "schema contains Interfaces or Unions, so you must define a `resolve_type (obj, ctx) -> { ... }` function"
+          else
+            # :+1:
+          end
+        }
+
+        SCHEMA_CAN_FETCH_IDS = -> (schema) {
+          has_node_field = schema.query && schema.query.all_fields.any? { |f| f.metadata[:relay_node_field] }
+          if has_node_field && schema.object_from_id_proc.nil?
+            "schema contains `node(id:...)` field, so you must define a `object_from_id (id, ctx) -> { ... }` function"
+          else
+            # :rocket:
+          end
+        }
+
+        SCHEMA_CAN_GENERATE_IDS = -> (schema) {
+          has_id_field = schema.types.values.any? { |t| t.kind.fields? && t.all_fields.any? { |f| f.resolve_proc.is_a?(GraphQL::Relay::GlobalIdResolve) } }
+          if has_id_field && schema.id_from_object_proc.nil?
+            "schema contains `global_id_field`, so you must define a `id_from_object (obj, type, ctx) -> { ... }` function"
+          else
+            # :ok_hand:
+          end
+        }
       end
 
       # A mapping of `{Class => [Proc, Proc...]}` pairs.
@@ -164,6 +190,11 @@ module GraphQL
         ],
         GraphQL::InterfaceType => [
           Rules::FIELDS_ARE_VALID,
+        ],
+        GraphQL::Schema => [
+          Rules::SCHEMA_CAN_RESOLVE_TYPES,
+          Rules::SCHEMA_CAN_FETCH_IDS,
+          Rules::SCHEMA_CAN_GENERATE_IDS,
         ],
       }
     end

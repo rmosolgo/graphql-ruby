@@ -59,8 +59,8 @@ module GraphQL
           def non_null_result
             resolved_type = execution_context.schema.resolve_type(value, execution_context.query.context)
 
-            unless resolved_type.is_a?(GraphQL::ObjectType)
-              raise GraphQL::ObjectType::UnresolvedTypeError.new(irep_node.definition_name, field_type, parent_type)
+            if !resolved_type.is_a?(GraphQL::ObjectType)
+              raise GraphQL::UnresolvedTypeError.new(irep_node.definition_name, execution_context.schema, field_type, parent_type, resolved_type)
             end
 
             strategy_class = get_strategy_for_kind(resolved_type.kind)

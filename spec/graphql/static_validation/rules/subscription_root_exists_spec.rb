@@ -10,7 +10,7 @@ describe GraphQL::StaticValidation::SubscriptionRootExists do
   |}
 
   let(:schema) {
-    query_root = GraphQL::Field.define do
+    query_root = GraphQL::ObjectType.define do
       name "Query"
       description "Query root of the system"
     end
