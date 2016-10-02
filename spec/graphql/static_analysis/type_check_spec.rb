@@ -329,10 +329,13 @@ describe GraphQL::StaticAnalysis::TypeCheck do
       )
     end
 
-    it "requires fields for fragment selections" do
+    it "requires fields for fragment selections and inline fragments" do
       query_string = %|
       query {
-        addInt(lhs: 1, rhs: 2) { ...f1 }
+        addInt(lhs: 1, rhs: 2) {
+          ...f1
+          ... on CalculationSuccess { }
+        }
       }
       fragment f1 on CalculationSuccess { }
       |
@@ -340,18 +343,6 @@ describe GraphQL::StaticAnalysis::TypeCheck do
       assert_errors(
         query_string,
         %|Type "CalculationSuccess" must have selections, see fragment "f1"|,
-      )
-    end
-
-    it "requires fields for inline fragments" do
-      query_string = %|
-      query {
-        addInt(lhs: 1, rhs: 2) { ... on CalculationSuccess { } }
-      }
-      |
-
-      assert_errors(
-        query_string,
         %|Type "CalculationSuccess" must have selections, see inline fragment on "CalculationSuccess"|,
       )
     end
@@ -378,7 +369,41 @@ describe GraphQL::StaticAnalysis::TypeCheck do
       )
     end
 
-    it "requires that object spreads in abstract scope are members of the abstract scope"
+    it "requires that object spreads in abstract scope are members of the abstract scope" do
+      query_string = %|
+      {
+        calculate(expression: { add: { lhs: 1, rhs: 2 } }) {
+          # This is a Union
+          # OK
+          ... on CalculationSuccess { value }
+          ... on CalculationError { message }
+          # NOT OK
+          ... on Query { addInt(lhs: 1, rhs: 2) { value } }
+          ... f1
+        }
+        intValue(value: 3) {
+          # This is an interface
+          # OK
+          value
+          ... on IntegerValue { value }
+          # Not OK
+          ... on CalculationError { message }
+          ... f1
+        }
+      }
+
+      fragment f1 on Query { intValue(value: 2) { value } }
+      |
+
+      assert_errors(
+        query_string,
+        %|Can't spread Query inside CalculationResult (Query is not a member of CalculationResult), inline fragment on "Query" is invalid|,
+        %|Can't spread Query inside CalculationResult (Query is not a member of CalculationResult), "...f1" is invalid|,
+        %|Can't spread CalculationError inside Value (CalculationError doesn't implement Value), inline fragment on "CalculationError" is invalid|,
+        %|Can't spread Query inside Value (Query doesn't implement Value), "...f1" is invalid|,
+      )
+    end
+
     it "requires that abstract spreads in object scope contain the object"
     it "requires that abstract spreads in abstract scopes have some types in common"
   end

@@ -45,8 +45,15 @@ module StaticAnalysisHelpers
     value "DIVISION",       value: Calculation::DIVISION
   end
 
+  IntegerValueInterface = GraphQL::InterfaceType.define do
+    name "Value"
+    description "Something with an integer value field"
+    field :value, !types.Int
+  end
+
   CalculationSuccessType = GraphQL::ObjectType.define do
     name "CalculationSuccess"
+    interfaces [IntegerValueInterface]
     field :value, !types.Int
     field :calculate, !CalculationResultUnion do
       argument :expression, !ExpressionInput
@@ -65,6 +72,12 @@ module StaticAnalysisHelpers
       CalculationSuccessType,
       CalculationErrorType,
     ]
+  end
+
+  IntegerValueType = GraphQL::ObjectType.define do
+    name "IntegerValue"
+    interfaces [IntegerValueInterface]
+    field :value, !types.Int, resolve: -> (o, a, c) { o }
   end
 
   OperandsInput = GraphQL::InputObjectType.define do
@@ -107,9 +120,15 @@ module StaticAnalysisHelpers
         # todo: use the specified operation to reduce the array
       }
     end
+
+    field :intValue, IntegerValueInterface do
+      argument :value, !types.Int
+      resolve -> (obj, args, ctx) { args[:value] }
+    end
   end
 
   AnalysisSchema = GraphQL::Schema.define do
     query QueryType
+    orphan_types [IntegerValueType]
   end
 end

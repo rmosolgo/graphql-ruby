@@ -59,6 +59,20 @@ module GraphQL
             case next_type.kind
             when GraphQL::TypeKinds::OBJECT
               "object types must match"
+            when GraphQL::TypeKinds::INTERFACE
+
+            end
+          when GraphQL::TypeKinds::INTERFACE
+            case next_type.kind
+            when GraphQL::TypeKinds::OBJECT
+              "#{next_type} doesn't implement #{prev_type}"
+            end
+          when GraphQL::TypeKinds::UNION
+            case next_type.kind
+            when GraphQL::TypeKinds::OBJECT
+              "#{next_type} is not a member of #{prev_type}"
+            when GraphQL::TypeKinds::INTERFACE
+
             end
           end
         end
