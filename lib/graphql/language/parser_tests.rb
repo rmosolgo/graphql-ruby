@@ -33,7 +33,7 @@ module GraphQL
             }
 
             fragment moreNestedFields on NestedType @or(something: "ok") {
-              anotherNestedField
+              anotherNestedField @enum(directive: true)
             }
           |}
 

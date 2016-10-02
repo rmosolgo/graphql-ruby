@@ -25,13 +25,13 @@
   UNION =         'union';
   ENUM =          'enum';
   INPUT =         'input';
+  DIRECTIVE =     'directive';
   LCURLY =        '{';
   RCURLY =        '}';
   LPAREN =        '(';
   RPAREN =        ')';
   LBRACKET =      '[';
   RBRACKET =      ']';
-  DIRECTIVE =     'directive';
   COLON =         ':';
   QUOTE =         '"';
   ESCAPED_QUOTE = '\\"';
