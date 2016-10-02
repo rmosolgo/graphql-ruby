@@ -59,7 +59,7 @@ describe GraphQL::Schema do
           field :something, interface
         end
 
-        assert_raises(RuntimeError) {
+        assert_raises(NotImplementedError) {
           GraphQL::Schema.define do
             query(query_type)
           end
@@ -77,8 +77,25 @@ describe GraphQL::Schema do
       end
     end
 
-    describe "when a schema is defined with a node field, but no hook" do
-      it "raises not implemented"
+    describe "when a schema is defined with a relay ID field, but no hook" do
+      it "raises not implemented" do
+        thing_type = GraphQL::ObjectType.define do
+          name "Thing"
+          global_id_field :id
+        end
+
+        query_type = GraphQL::ObjectType.define do
+          name "Query"
+          field :thing, thing_type
+        end
+
+        assert_raises(NotImplementedError) {
+          GraphQL::Schema.define do
+            query(query_type)
+            resolve_type -> (obj, ctx) { :whatever }
+          end
+        }
+      end
     end
   end
 
@@ -92,7 +109,19 @@ describe GraphQL::Schema do
     end
 
     describe "when a schema is defined with a node field, but no hook" do
-      it "raises not implemented"
+      it "raises not implemented" do
+        query_type = GraphQL::ObjectType.define do
+          name "Query"
+          field :node, GraphQL::Relay::Node.field
+        end
+
+        assert_raises(NotImplementedError) {
+          GraphQL::Schema.define do
+            query(query_type)
+            resolve_type -> (obj, ctx) { :whatever }
+          end
+        }
+      end
     end
   end
 end

@@ -106,7 +106,12 @@ describe GraphQL::Schema::Loader do
       field :ping, field: ping_mutation.field
     end
 
-    GraphQL::Schema.define(query: query_root, mutation: mutation_root, orphan_types: [audio_type, video_type])
+    GraphQL::Schema.define(
+      query: query_root,
+      mutation: mutation_root,
+      orphan_types: [audio_type, video_type],
+      resolve_type: :pass,
+    )
   }
 
   let(:schema_json) {

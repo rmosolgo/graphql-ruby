@@ -63,8 +63,6 @@ module GraphQL
 
     DIRECTIVES = [GraphQL::Directive::SkipDirective, GraphQL::Directive::IncludeDirective, GraphQL::Directive::DeprecatedDirective]
     DYNAMIC_FIELDS = ["__type", "__typename", "__schema"]
-    OBJECT_FROM_ID_PROC_REQUIRED = -> (id, ctx) { raise(NotImplementedError, "Schema.object_from_id is undefined, can't fetch object for #{id.inspect}") }
-    ID_FROM_OBJECT_PROC_REQUIRED = -> (obj, type, ctx) { raise(NotImplementedError, "Schema.id_from_object is undefined, can't return an ID for #{obj.inspect}") }
 
     attr_reader :directives, :static_validator, :object_from_id_proc, :id_from_object_proc, :resolve_type_proc
 
@@ -92,8 +90,8 @@ module GraphQL
       @middleware = [@rescue_middleware]
       @query_analyzers = []
       @resolve_type_proc = nil
-      @object_from_id_proc = OBJECT_FROM_ID_PROC_REQUIRED
-      @id_from_object_proc = ID_FROM_OBJECT_PROC_REQUIRED
+      @object_from_id_proc = nil
+      @id_from_object_proc = nil
       # Default to the built-in execution strategy:
       @query_execution_strategy = GraphQL::Query::SerialExecution
       @mutation_execution_strategy = GraphQL::Query::SerialExecution
@@ -113,8 +111,9 @@ module GraphQL
     def define(**kwargs, &block)
       super
       types
+      # Assert that all necessary configs are present:
       validation_error = Validation.validate(self)
-      validation_error && raise(validation_error)
+      validation_error && raise(NotImplementedError, validation_error)
       nil
     end
 
@@ -227,7 +226,11 @@ module GraphQL
     # @return [Any] The application object identified by `id`
     def object_from_id(id, ctx)
       ensure_defined
-      @object_from_id_proc.call(id, ctx)
+      if @object_from_id_proc.nil?
+        raise(NotImplementedError, "Can't fetch an object for id \"#{id}\" because the schema's `object_from_id (id, ctx) -> { ... }` function is not defined")
+      else
+        @object_from_id_proc.call(id, ctx)
+      end
     end
 
     # @param new_proc [#call] A new callable for fetching objects by ID
@@ -238,11 +241,16 @@ module GraphQL
 
     # Get a unique identifier from this object
     # @param object [Any] An application object
+    # @param type [GraphQL::BaseType] The current type definition
     # @param ctx [GraphQL::Query::Context] the context for the current query
     # @return [String] a unique identifier for `object` which clients can use to refetch it
-    def id_from_object(type, object, ctx)
+    def id_from_object(object, type, ctx)
       ensure_defined
-      @id_from_object_proc.call(type, object, ctx)
+      if @id_from_object_proc.nil?
+        raise(NotImplementedError, "Can't generate an ID for #{object.inspect} of type #{type}, schema's `id_from_object` must be defined")
+      else
+        @id_from_object_proc.call(object, type, ctx)
+      end
     end
 
     # @param new_proc [#call] A new callable for generating unique IDs

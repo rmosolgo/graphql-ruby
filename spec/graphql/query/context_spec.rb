@@ -2,6 +2,7 @@ require "spec_helper"
 
 describe GraphQL::Query::Context do
   let(:query_type) { GraphQL::ObjectType.define {
+    name "Query"
     field :context, types.String do
       argument :key, !types.String
       resolve -> (target, args, ctx) { ctx[args[:key]] }

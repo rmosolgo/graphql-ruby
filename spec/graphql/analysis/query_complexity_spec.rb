@@ -255,7 +255,11 @@ describe GraphQL::Analysis::QueryComplexity do
         end
       end
 
-      GraphQL::Schema.define(query: query_type, orphan_types: [double_complexity_type])
+      GraphQL::Schema.define(
+        query: query_type,
+        orphan_types: [double_complexity_type],
+        resolve_type: :pass
+      )
     }
     let(:query_string) {%|
       {

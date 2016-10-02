@@ -63,7 +63,7 @@ describe GraphQL::Schema::Printer do
       end
     end
 
-    GraphQL::Schema.define(query: query_root)
+    GraphQL::Schema.define(query: query_root, resolve_type: :pass)
   }
 
   describe ".print_introspection_schema" do

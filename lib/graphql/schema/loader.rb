@@ -22,7 +22,7 @@ module GraphQL
           types[type_object.name] = type_object
         end
 
-        kargs = { :orphan_types => types.values }
+        kargs = { orphan_types: types.values, resolve_type: NullResolveType }
         [:query, :mutation, :subscription].each do |root|
           type = schema["#{root}Type"]
           kargs[root] = types.fetch(type.fetch("name")) if type
@@ -30,6 +30,10 @@ module GraphQL
 
         Schema.define(**kargs)
       end
+
+      NullResolveType = -> (obj, ctx) {
+        raise(NotImplementedError, "This schema was loaded from string, so it can't resolve types for objects")
+      }
 
       class << self
         private
