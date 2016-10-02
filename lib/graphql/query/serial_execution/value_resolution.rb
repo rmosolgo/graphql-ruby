@@ -57,9 +57,7 @@ module GraphQL
 
         class HasPossibleTypeResolution < BaseResolution
           def non_null_result
-            # When deprecations are removed:
-            # resolved_type = execution_context.schema.resolve_type(value)
-            resolved_type = field_type.legacy_resolve_type(value, execution_context)
+            resolved_type = execution_context.schema.resolve_type(value, execution_context.query.context)
 
             unless resolved_type.is_a?(GraphQL::ObjectType)
               raise GraphQL::ObjectType::UnresolvedTypeError.new(irep_node.definition_name, field_type, parent_type)

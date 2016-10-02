@@ -22,8 +22,7 @@ module GraphQL
   #   end
   #
   class InterfaceType < GraphQL::BaseType
-    include GraphQL::BaseType::HasPossibleTypes
-    accepts_definitions :resolve_type, :fields, field: GraphQL::Define::AssignObjectField
+    accepts_definitions :fields, field: GraphQL::Define::AssignObjectField
 
     lazy_defined_attr_accessor :fields
 

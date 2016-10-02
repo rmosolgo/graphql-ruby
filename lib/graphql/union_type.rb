@@ -23,7 +23,6 @@ module GraphQL
   #  }
   #
   class UnionType < GraphQL::BaseType
-    include GraphQL::BaseType::HasPossibleTypes
     accepts_definitions :possible_types, :resolve_type
 
     def kind
