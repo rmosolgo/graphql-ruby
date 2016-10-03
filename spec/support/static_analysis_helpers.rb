@@ -37,6 +37,11 @@ module StaticAnalysisHelpers
     end
   end
 
+  ErrorUnion = GraphQL::UnionType.define do
+    name "Error"
+    possible_types [ CalculationErrorType ]
+  end
+
   OperationNameEnum = GraphQL::EnumType.define do
     name "OperationName"
     value "ADDITION",       value: Calculation::ADDITION
@@ -129,6 +134,6 @@ module StaticAnalysisHelpers
 
   AnalysisSchema = GraphQL::Schema.define do
     query QueryType
-    orphan_types [IntegerValueType]
+    orphan_types [IntegerValueType, ErrorUnion]
   end
 end

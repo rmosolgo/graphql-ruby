@@ -404,7 +404,43 @@ describe GraphQL::StaticAnalysis::TypeCheck do
       )
     end
 
-    it "requires that abstract spreads in object scope contain the object"
+    it "requires that abstract spreads in object scope contain the object" do
+      query_string = %|
+      {
+        addInt(lhs: 2, rhs: 2) {
+          value
+          ... on CalculationResult {
+            ... on CalculationError { message }
+            ... on CalculationSuccess { value }
+          }
+          # Not OK, Interface:
+          ... on Operation {
+            perform(operands: {lhs: 1, rhs: 2}) { ... on CalculationSuccess { value } }
+          }
+          ... f1
+          # Not OK: Union:
+          ... on Error {
+            ... on CalculationError { message }
+          }
+          ... f2
+        }
+      }
+      fragment f1 on Operation {
+        perform(operands: {lhs: 1, rhs: 2}) { ... on CalculationSuccess { value } }
+      }
+      fragment f2 on Error {
+        ... on CalculationError { message }
+      }
+      |
+
+      assert_errors(
+        query_string,
+        %|Can't spread Operation inside CalculationSuccess (CalculationSuccess doesn't implement Operation), "...f1" is invalid|,
+        %|Can't spread Operation inside CalculationSuccess (CalculationSuccess doesn't implement Operation), inline fragment on "Operation" is invalid|,
+        %|Can't spread Error inside CalculationSuccess (CalculationSuccess isn't a member of Error), inline fragment on "Error" is invalid|,
+        %|Can't spread Error inside CalculationSuccess (CalculationSuccess isn't a member of Error), "...f2" is invalid|,
+      )
+    end
     it "requires that abstract spreads in abstract scopes have some types in common"
   end
 
