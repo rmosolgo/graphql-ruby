@@ -218,7 +218,8 @@ describe GraphQL::Query::Executor do
         expected = {
           "errors"=>[
             {
-              "message" => "Variable input of type ReplaceValuesInput! was provided invalid value",
+              "message" => "Variable input of type ReplaceValuesInput! was provided invalid value with problems:
+Expected value to not be null",
               "locations" => [{ "line" => 1, "column" => 13 }],
               "value" => nil,
               "problems" => [
@@ -238,7 +239,8 @@ describe GraphQL::Query::Executor do
         expected = {
           "errors"=>[
             {
-              "message" => "Variable input of type ReplaceValuesInput! was provided invalid value",
+              "message" => "Variable input of type ReplaceValuesInput! was provided invalid value with problems:
+Expected value to not be null on path 'values'",
               "locations" => [{ "line" => 1, "column" => 13 }],
               "value" => {},
               "problems" => [
@@ -258,7 +260,9 @@ describe GraphQL::Query::Executor do
         expected = {
           "errors"=>[
             {
-              "message" => "Variable input of type [DairyProductInput] was provided invalid value",
+              "message" => "Variable input of type [DairyProductInput] was provided invalid value with problems:
+Field is not defined on DairyProductInput on path '0 > foo'
+Expected value to not be null on path '0 > source'",
               "locations" => [{ "line" => 1, "column" => 10 }],
               "value" => [{ "foo" => "bar" }],
               "problems" => [
