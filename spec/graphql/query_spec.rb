@@ -286,7 +286,8 @@ describe GraphQL::Query do
         expected = {
           "errors" => [
             {
-              "message" => "Variable cheeseId of type Int! was provided invalid value",
+              "message" => "Variable cheeseId of type Int! was provided invalid value with problems:
+Could not coerce value \"2\" to Int",
               "locations"=>[{ "line" => 2, "column" => 23 }],
               "value" => "2",
               "problems" => [{ "path" => [], "explanation" => 'Could not coerce value "2" to Int' }]
@@ -304,7 +305,8 @@ describe GraphQL::Query do
         expected = {
           "errors" => [
             {
-              "message" => "Variable cheeseId of type Int! was provided invalid value",
+              "message" => "Variable cheeseId of type Int! was provided invalid value with problems:
+Expected value to not be null",
               "locations" => [{"line" => 2, "column" => 23}],
               "value" => nil,
               "problems" => [{ "path" => [], "explanation" => "Expected value to not be null" }]
