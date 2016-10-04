@@ -305,7 +305,7 @@ Could not coerce value \"2\" to Int",
         expected = {
           "errors" => [
             {
-              "message" => "Variable cheeseId of type Int! was provided invalid value with problems:
+              "message" => "Variable cheeseId of type Int! was provided invalid value with problems: 
 Expected value to not be null",
               "locations" => [{"line" => 2, "column" => 23}],
               "value" => nil,
