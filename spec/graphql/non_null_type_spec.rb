@@ -6,7 +6,7 @@ describe GraphQL::NonNullType do
       query_string = %|{ cow { name cantBeNullButIs } }|
       result = DummySchema.execute(query_string)
       assert_equal({"cow" => nil }, result["data"])
-      assert_equal([{"message"=>"Cannot return null for non-nullable field cantBeNullButIs"}], result["errors"])
+      assert_equal([{"message"=>"Cannot return null for non-nullable field Cow.cantBeNullButIs"}], result["errors"])
     end
 
     it "propagates the null up to the next nullable field" do
@@ -25,7 +25,7 @@ describe GraphQL::NonNullType do
       |
       result = DummySchema.execute(query_string)
       assert_equal(nil, result["data"])
-      assert_equal([{"message"=>"Cannot return null for non-nullable field nonNullInt"}], result["errors"])
+      assert_equal([{"message"=>"Cannot return null for non-nullable field DeepNonNull.nonNullInt"}], result["errors"])
     end
   end
 end

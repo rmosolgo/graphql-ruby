@@ -2,10 +2,11 @@ module GraphQL
   # Raised automatically when a field's resolve function returns `nil`
   # for a non-null field.
   class InvalidNullError < GraphQL::Error
-    def initialize(field_name, value)
+    def initialize(parent_type_name, field_name, value)
+      @parent_type_name = parent_type_name
       @field_name = field_name
       @value = value
-      super("Cannot return null for non-nullable field #{@field_name}")
+      super("Cannot return null for non-nullable field #{@parent_type_name}.#{@field_name}")
     end
 
     # @return [Hash] An entry for the response's "errors" key
