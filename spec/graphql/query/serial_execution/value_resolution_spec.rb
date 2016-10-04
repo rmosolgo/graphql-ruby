@@ -23,21 +23,36 @@ describe GraphQL::Query::SerialExecution::ValueResolution do
       interfaces [interface]
     end
 
+    other_object = GraphQL::ObjectType.define do
+      name "OtherObject"
+    end
+
+    OtherObject = Class.new
+
     query_root = GraphQL::ObjectType.define do
       name "Query"
       field :tomorrow, day_of_week_enum do
         argument :today, day_of_week_enum
         resolve ->(obj, args, ctx) { (args["today"] + 1) % 7 }
       end
-      field :misbehavedInterface, interface do
+      field :resolvesToNilInterface, interface do
         resolve ->(obj, args, ctx) { Object.new }
+      end
+      field :resolvesToWrongTypeInterface, interface do
+        resolve ->(obj, args, ctx) { OtherObject.new }
       end
     end
 
     GraphQL::Schema.define do
       query(query_root)
       orphan_types [some_object]
-      resolve_type -> (obj, ctx) { nil }
+      resolve_type -> (obj, ctx) do
+        if obj.is_a?(OtherObject)
+          other_object
+        else
+          nil
+        end
+      end
     end
   }
 
@@ -63,16 +78,33 @@ describe GraphQL::Query::SerialExecution::ValueResolution do
   end
 
   describe "interface type resolution" do
-    let(:query_string) { %|
-      {
-        misbehavedInterface { someField }
-      }
-    |}
+    describe "when type can't be resolved" do
+      let(:query_string) { %|
+        {
+          resolvesToNilInterface { someField }
+        }
+      |}
 
-    it "raises an error if it cannot resolve the type of an interface" do
-      err = assert_raises(GraphQL::ObjectType::UnresolvedTypeError) { result }
-      expected_message = %|The value from "misbehavedInterface" on "Query" could not be resolved to "SomeInterface". (Received: nil, Expected: [SomeObject])|
-      assert_equal expected_message, err.message
+      it "raises an error" do
+        err = assert_raises(GraphQL::ObjectType::UnresolvedTypeError) { result }
+        expected_message = %|The value from "resolvesToNilInterface" on "Query" could not be resolved to "SomeInterface". (Received: nil, Expected: [SomeObject])|
+        assert_equal expected_message, err.message
+      end
     end
+
+    describe "when type resolves but is not a possible type of an interface" do
+      let(:query_string) { %|
+        {
+          resolvesToWrongTypeInterface { someField }
+        }
+      |}
+
+      it "raises an error" do
+        err = assert_raises(GraphQL::ObjectType::UnresolvedTypeError) { result }
+        expected_message = %|The value from "resolvesToWrongTypeInterface" on "Query" could not be resolved to "SomeInterface". (Received: OtherObject, Expected: [SomeObject])|
+        assert_equal expected_message, err.message
+      end
+    end
+
   end
 end
