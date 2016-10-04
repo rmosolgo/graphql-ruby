@@ -218,7 +218,7 @@ describe GraphQL::Query::Executor do
         expected = {
           "errors"=>[
             {
-              "message" => "Variable input of type ReplaceValuesInput! was provided invalid value with problems:
+              "message" => "Variable input of type ReplaceValuesInput! was provided invalid value with problems: 
 Expected value to not be null",
               "locations" => [{ "line" => 1, "column" => 13 }],
               "value" => nil,
