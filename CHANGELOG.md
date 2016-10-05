@@ -8,6 +8,22 @@
 
 ### Bug fixes
 
+## 0.19.0 (4 Oct 2016)
+
+### Breaking changes
+
+- Previously-deprecated `InterfaceType#resolve_type` hook has been removed, use `Schema#resolve_type` instead #290
+
+### New features
+
+- Eager-load schemas at definition time, validating types & schema-level hooks #289
+- `InvalidNullError`s contain the type & field name that returned null #293
+- If an object is resolved with `Schema#resolve_type` and the resulting type is not a member of the expected possible types, raise an error #291
+
+### Bug fixes
+
+- Allow `directive` as field or argument name #288
+
 ## 0.19.0 (30 Sep 2016)
 
 ### Breaking changes
