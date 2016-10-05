@@ -53,6 +53,8 @@ module GraphQL
 
         module_function
 
+        # TODO: Isn't there some better construct for this?
+        # @return [String] Human-friendly explanation for why `next_type` can't be spread inside `prev_type`
         def mismatch_reason(prev_type, next_type)
           case prev_type.kind
           when GraphQL::TypeKinds::OBJECT
@@ -68,11 +70,15 @@ module GraphQL
             case next_type.kind
             when GraphQL::TypeKinds::OBJECT
               "#{next_type} doesn't implement #{prev_type}"
+            when GraphQL::TypeKinds::UNION, GraphQL::TypeKinds::INTERFACE
+              "#{next_type} doesn't include any members of #{prev_type}"
             end
           when GraphQL::TypeKinds::UNION
             case next_type.kind
             when GraphQL::TypeKinds::OBJECT
               "#{next_type} is not a member of #{prev_type}"
+            when GraphQL::TypeKinds::UNION, GraphQL::TypeKinds::INTERFACE
+              "#{next_type} doesn't include any members of #{prev_type}"
             end
           end
         end

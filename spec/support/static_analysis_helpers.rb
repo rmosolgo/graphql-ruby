@@ -42,6 +42,11 @@ module StaticAnalysisHelpers
     possible_types [ CalculationErrorType ]
   end
 
+  SuccessUnion = GraphQL::UnionType.define do
+    name "Success"
+    possible_types [ CalculationSuccessType ]
+  end
+
   OperationNameEnum = GraphQL::EnumType.define do
     name "OperationName"
     value "ADDITION",       value: Calculation::ADDITION
@@ -134,6 +139,7 @@ module StaticAnalysisHelpers
 
   AnalysisSchema = GraphQL::Schema.define do
     query QueryType
-    orphan_types [IntegerValueType, ErrorUnion]
+    orphan_types [IntegerValueType, ErrorUnion, SuccessUnion]
+    resolve_type :no_op
   end
 end

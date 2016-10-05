@@ -441,7 +441,42 @@ describe GraphQL::StaticAnalysis::TypeCheck do
         %|Can't spread Error inside CalculationSuccess (CalculationSuccess isn't a member of Error), "...f2" is invalid|,
       )
     end
-    it "requires that abstract spreads in abstract scopes have some types in common"
+
+    it "requires that abstract spreads in abstract scopes have some types in common" do
+      query_string = %|
+      {
+        calculate(expression: { add: { lhs: 1, rhs: 2 } }) {
+          # OK
+          ... on Error {
+            ... on CalculationError { message }
+          }
+          ...f1
+
+          ... on Value {
+            # Invalid spreads on an interface:
+            ... on Error { __typename }
+            ... on Operation { __typename }
+          }
+          ... on Error {
+            # Invalid spreads on a union:
+            ...f2
+            ...f3
+          }
+        }
+      }
+
+      fragment f1 on Value { __typename }
+      fragment f2 on Success { __typename }
+      fragment f3 on Operation { __typename }
+      |
+      assert_errors(
+        query_string,
+        %|Can't spread Error inside Value (Error doesn't include any members of Value), inline fragment on "Error" is invalid|,
+        %|Can't spread Operation inside Value (Operation doesn't include any members of Value), inline fragment on "Operation" is invalid|,
+        %|Can't spread Success inside Error (Success doesn't include any members of Error), "...f2" is invalid|,
+        %|Can't spread Operation inside Error (Operation doesn't include any members of Error), "...f3" is invalid|,
+      )
+    end
   end
 
   describe "root types" do
