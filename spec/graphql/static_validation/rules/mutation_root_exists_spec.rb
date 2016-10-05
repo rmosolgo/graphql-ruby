@@ -28,7 +28,7 @@ describe GraphQL::StaticValidation::MutationRootExists do
   it "errors when a mutation is performed on a schema without a mutation root" do
     assert_equal(1, errors.length)
     missing_mutation_root_error = {
-      "message"=>"Schema is not configured for mutations",
+      "message"=>%|"mutation addBagel" is invalid: root type "mutation" doesn't exist|,
       "locations"=>[{"line"=>2, "column"=>5}],
       "fields"=>["mutation addBagel"],
     }

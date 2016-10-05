@@ -16,24 +16,24 @@ require "graphql/static_analysis/type_check/valid_variables"
 module GraphQL
   module StaticAnalysis
     # This is responsible for several of the validations in the GraphQL spec:
-    # - [ ] Field Selections on Objects, Interfaces, and Unions Types
-    # - [ ] Field Selection Merging
-    # - [ ] Leaf Field Selections
-    # - [ ] Argument Names
-    # - [ ] Argument Value Compatibility
-    # - [ ] Required Arguments are Present
-    # - [ ] Fragment Type Existence
-    # - [ ] Fragments on Composite Types
-    # - [ ] Fragment Spreads are Possible
-    # - [ ] Object Spreads in Object Scope
-    # - [ ] Abstract Spreads in Object Scope
-    # - [ ] Object Spreads in Abstract Scope
-    # - [ ] Abstract Spreads in Abstract Scope
-    # - [ ] Directives are Defined
-    # - [ ] Directives are in Valid Locations
-    # - [ ] Variable Default Values are Correctly Typed
-    # - [ ] Variables are Input Types
-    # - [ ] Variable Usages are Allowed
+    # - Field Selections on Objects, Interfaces, and Unions Types
+    # - Field Selection Merging
+    # - Leaf Field Selections
+    # - Argument Names
+    # - Argument Value Compatibility
+    # - Required Arguments are Present
+    # - Fragment Type Existence
+    # - Fragments on Composite Types
+    # - Fragment Spreads are Possible
+    # - Object Spreads in Object Scope
+    # - Abstract Spreads in Object Scope
+    # - Object Spreads in Abstract Scope
+    # - Abstract Spreads in Abstract Scope
+    # - Directives are Defined
+    # - Directives are in Valid Locations
+    # - Variable Default Values are Correctly Typed
+    # - Variables are Input Types
+    # - Variable Usages are Allowed
     class TypeCheck
       include GraphQL::Language
 
@@ -44,8 +44,13 @@ module GraphQL
 
       def initialize(analysis)
         @analysis = analysis
-        @schema = analysis.schema # TODO: or AnySchema
+        @schema = analysis.schema
         @errors = []
+      end
+
+      # Get a copy of the current trace for an error message
+      def current_trace
+        @analysis.trace.dup
       end
 
       def mount(visitor)
@@ -101,8 +106,9 @@ module GraphQL
           root_type = schema.root_type_for_operation(node.operation_type)
           if root_type.nil?
             errors << AnalysisError.new(
-              %|Root type doesn't exist for operation: "#{node.operation_type}"|,
-              nodes: [node]
+              %|"#{[node.operation_type, node.name].compact.join(" ")}" is invalid: root type "#{node.operation_type}" doesn't exist|,
+              nodes: [node],
+              fields: current_trace,
             )
             root_type = AnyType
           end
@@ -151,7 +157,10 @@ module GraphQL
           field_defn = field_stack.pop
           observed_argument_names = observed_arguments_stack.pop
           parent = type_stack.last
-          errors.concat(RequiredArguments.find_errors(parent, field_defn, node, observed_argument_names))
+          err_msg = RequiredArguments.find_error(parent, field_defn, node, observed_argument_names)
+          if err_msg
+            errors << AnalysisError.new(err_msg, nodes: [node], fields: current_trace)
+          end
         }
 
         visitor[Nodes::Argument].enter << -> (node, prev_node) {
@@ -170,21 +179,7 @@ module GraphQL
           argument_defn = parent.get_argument(node.name)
 
           if argument_defn.nil?
-            case parent
-            when GraphQL::Field
-              # The _last_ one is the current field's type, so go back two
-              # to get the parent object for that field:
-              parent_type = type_stack[-2]
-              parent_name = %|Field "#{parent_type.name}.#{parent.name}"|
-            when GraphQL::InputObjectType
-              parent_name = %|Input Object "#{parent.name}"|
-            when GraphQL::Directive
-              parent_name = %|Directive "@#{parent.name}"|
-            end
-            errors << AnalysisError.new(
-              %|#{parent_name} doesn't accept "#{node.name}" as an argument|,
-              nodes: [node]
-            )
+            errors << ValidArguments.unknown_argument_error(type_stack, parent, node)
             argument_defn = AnyArgument
           else
             observed_arguments_stack.last << argument_defn.name
@@ -210,7 +205,10 @@ module GraphQL
           # pop yourself, and assert that your required fields were present
           input_object_type = type_stack.pop
           observed_argument_names = observed_arguments_stack.pop
-          errors.concat(RequiredArguments.find_errors(nil, input_object_type, node, observed_argument_names))
+          err_msg = RequiredArguments.find_error(nil, input_object_type, node, observed_argument_names)
+          if err_msg
+            errors << AnalysisError.new(err_msg, nodes: [node], fields: current_trace)
+          end
         }
 
         visitor[Nodes::InlineFragment].enter << -> (node, prev_node) {
@@ -281,8 +279,13 @@ module GraphQL
         }
 
         visitor[Nodes::Directive].leave << -> (node, prev_node) {
+          observed_argument_names = observed_arguments_stack.pop
+          err_msg = RequiredArguments.find_error(nil, current_directive_defn, node, observed_argument_names)
+          if err_msg
+            errors << AnalysisError.new(err_msg, nodes: [node], fields: current_trace)
+          end
           current_directive_defn = nil
-          observed_arguments_stack.pop
+
         }
 
         visitor[Nodes::FragmentSpread].enter << -> (node, prev_node) {

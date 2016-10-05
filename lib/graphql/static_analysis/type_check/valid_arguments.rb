@@ -41,6 +41,25 @@ module GraphQL
           errors
         end
 
+        # @return [AnalysisError] An error because this argument doesn't exist on `parent`
+        def unknown_argument_error(type_stack, parent, node)
+          case parent
+          when GraphQL::Field
+            # The _last_ one is the current field's type, so go back two
+            # to get the parent object for that field:
+            parent_type = type_stack[-2]
+            parent_name = %|Field "#{parent_type.name}.#{parent.name}"|
+          when GraphQL::InputObjectType
+            parent_name = %|Input Object "#{parent.name}"|
+          when GraphQL::Directive
+            parent_name = %|Directive "@#{parent.name}"|
+          end
+          AnalysisError.new(
+            %|#{parent_name} doesn't accept "#{node.name}" as an argument|,
+            nodes: [node]
+          )
+        end
+
         private
 
         module_function

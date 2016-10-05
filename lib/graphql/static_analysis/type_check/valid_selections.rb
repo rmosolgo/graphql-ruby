@@ -23,7 +23,7 @@ module GraphQL
             # It's a union with direct selections
             error_message = "can't have direct selections, use a fragment spread to access members instead"
             error_nodes = user_field_selections
-          elsif !parent_type_kind.scalar? && node.selections.none?
+          elsif !parent_type_kind.scalar? && !parent_type_kind.enum? && node.selections.none?
             if parent_type_kind.fields?
               # It's an object or interface with no selections
               error_message = "must have selections"

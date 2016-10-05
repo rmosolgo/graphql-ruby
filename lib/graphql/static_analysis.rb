@@ -30,7 +30,7 @@ module GraphQL
     # be triggered by visiting the document
     # @return [GraphQL::StaticAnalysis::Analysis]
     def self.prepare(visitor, schema: nil)
-      rules = ALL_RULES
+      rules = DOCUMENT_RULES
       Analysis.new(visitor: visitor, rules: rules, schema: schema)
     end
 
@@ -42,12 +42,6 @@ module GraphQL
       Rules::VariableUsagesAreValid,
     ]
 
-    # These rules require a document _and_ a schema.
-    SCHEMA_RULES = [
-    ]
-
-    ALL_RULES = DOCUMENT_RULES + SCHEMA_RULES
-
     # This object exposes some data to the rules.
     # You have to run the visitor,
     # then you can ask for its errors,
@@ -55,11 +49,16 @@ module GraphQL
     class Analysis
       attr_reader :visitor, :definition_names, :dependencies, :variable_usages, :schema
 
+      # @return [Array<String>] Trace of current node during visit
+      attr_reader :trace
+
       def initialize(visitor:, rules:, schema: nil)
         @visitor = visitor
         @schema = schema
+        @trace = []
         @rule_instances = rules.map { |rule_class| rule_class.new(self) }
 
+        GraphQL::Language::TraceVisitor.attach_enter(visitor, @trace)
         @definition_names = DefinitionNames.mount(visitor)
         variable_usages_visitor = VariableUsages.mount(visitor)
         definition_dependencies = DefinitionDependencies.mount(visitor)
@@ -76,6 +75,8 @@ module GraphQL
           type_check.mount(visitor)
           @rule_instances << type_check
         end
+
+        GraphQL::Language::TraceVisitor.attach_leave(visitor, @trace)
       end
 
       # You have to run the visitor before calling this.

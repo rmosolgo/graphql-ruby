@@ -1,16 +1,20 @@
 module GraphQL
   module StaticAnalysis
     class AnalysisError < GraphQL::Error
-      def initialize(message, nodes: [])
+      # @param message [String]
+      # @param nodes [Array<GraphQL::Language::Nodes::AbstractNode>]
+      # @param fields [Array<String>]
+      def initialize(message, nodes: [], fields: [])
         @nodes = nodes
+        @fields = fields
         super(message)
       end
 
       def to_h
         {
           "message" => message,
-          "path" => [], # TODO: track the logical path to the error
-          "locations" => @nodes.map { |n| { "column" => n.col, "line" => n.line } }
+          "locations" => @nodes.map { |n| { "line" => n.line, "column" => n.col } },
+          "fields" => @fields,
         }
       end
     end

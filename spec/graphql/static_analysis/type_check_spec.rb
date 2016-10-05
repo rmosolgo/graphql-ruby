@@ -25,6 +25,7 @@ describe GraphQL::StaticAnalysis::TypeCheck do
       query_string = %|
       {
         operation(type: ADDITION) {
+          type
           perform(operands: {lhs: 1, rhs: 2}) { ... on CalculationSuccess { value } }
           perform(operands: {lhs: 1, rhs: 2}) { ... on CalculationSuccess { } }
           perform(operands: {lhs: 1, rhs: 2})
@@ -119,6 +120,7 @@ describe GraphQL::StaticAnalysis::TypeCheck do
         calculate(expression: {add: {lhs: 1, rhs: 2}}) {
           ... on CalculationSuccess {
             calculate(expression: {add: {rhs: 5}}) { ... on CalculationSuccess { value } }
+            value @skip
           }
         }
       }
@@ -127,6 +129,7 @@ describe GraphQL::StaticAnalysis::TypeCheck do
         query_string,
         %|Required arguments missing from "Query.addInt": "rhs"|,
         %|Required arguments missing from "Operands": "lhs"|,
+        %|Required arguments missing from "@skip": "if"|,
       )
     end
   end
@@ -265,7 +268,8 @@ describe GraphQL::StaticAnalysis::TypeCheck do
 
       assert_errors(
         query_string,
-        %|Directive "@skip" doesn't accept "nonsense" as an argument|
+        %|Directive "@skip" doesn't accept "nonsense" as an argument|,
+        %|Required arguments missing from "@skip": "if"|,
       )
     end
   end
@@ -487,8 +491,8 @@ describe GraphQL::StaticAnalysis::TypeCheck do
       |
       assert_errors(
         query_string,
-        %|Root type doesn't exist for operation: "subscription"|,
-        %|Root type doesn't exist for operation: "mutation"|,
+        %|"subscription getStuff" is invalid: root type "subscription" doesn't exist|,
+        %|"mutation getOtherStuff" is invalid: root type "mutation" doesn't exist|,
       )
     end
   end

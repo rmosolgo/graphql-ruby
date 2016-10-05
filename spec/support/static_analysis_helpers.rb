@@ -29,6 +29,7 @@ module StaticAnalysisHelpers
 
   OperationInterface = GraphQL::InterfaceType.define do
     name "Operation"
+    field :type, OperationNameEnum
     field :perform, CalculationResultUnion do
       argument :operands, !OperandsInput
       resolve -> (obj, args, ctx) {
