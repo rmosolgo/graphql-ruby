@@ -271,7 +271,12 @@ DairyAppQueryType = GraphQL::ObjectType.define do
   end
 
   field :allDairy, types[DairyProductUnion] do
-    resolve -> (obj, args, ctx) { CHEESES.values + MILKS.values }
+    argument :executionErrorAtIndex, types.Int
+    resolve -> (obj, args, ctx) {
+      result = CHEESES.values + MILKS.values
+      result[args[:executionErrorAtIndex]] = GraphQL::ExecutionError.new("missing dairy") if args[:executionErrorAtIndex]
+      result
+    }
   end
 
   field :allEdible, types[EdibleInterface] do
