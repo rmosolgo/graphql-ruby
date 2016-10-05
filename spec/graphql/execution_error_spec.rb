@@ -171,4 +171,27 @@ describe GraphQL::ExecutionError do
       assert_equal(expected_result, result)
     end
   end
+
+  describe "error on root query field" do
+    let(:query_string) {%|
+    query MilkQuery {
+      root
+      nonnullableExecutionError
+    }
+    |}
+
+    it "data is empty" do
+      expected_result = {
+        "data" => nil,
+        "errors" => [
+          {
+            "message" => "There was an execution error",
+            "locations" => [{"line" => 4, "column" => 7}],
+            "path" => []
+          }
+        ]
+      }
+      assert_equal(expected_result, result)
+    end
+  end
 end
