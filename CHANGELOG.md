@@ -8,7 +8,7 @@
 
 ### Bug fixes
 
-## 0.19.0 (4 Oct 2016)
+## 0.19.1 (4 Oct 2016)
 
 ### Breaking changes
 
