@@ -27,6 +27,9 @@ describe GraphQL::ExecutionError do
           executionError
         }
       }
+      dairyErrors: allDairy(executionErrorAtIndex: 1) {
+        __typename
+      }
       dairy {
         milks {
           source
@@ -66,6 +69,12 @@ describe GraphQL::ExecutionError do
               { "flavor" => "Manchego" },
               { "source" => "COW", "executionError" => nil }
             ],
+            "dairyErrors" => [
+              { "__typename" => "Cheese" },
+              nil,
+              { "__typename" => "Cheese" },
+              { "__typename" => "Milk" }
+            ],
             "dairy" => {
               "milks" => [
                 {
@@ -99,18 +108,23 @@ describe GraphQL::ExecutionError do
               "path"=>["allDairy", 3, "executionError"]
             },
             {
+              "message"=>"missing dairy",
+              "locations"=>[{"line"=>25, "column"=>7}],
+              "path"=>["dairyErrors", 1]
+            },
+            {
               "message"=>"There was an execution error",
-              "locations"=>[{"line"=>28, "column"=>11}],
+              "locations"=>[{"line"=>31, "column"=>11}],
               "path"=>["dairy", "milks", 0, "executionError"]
             },
             {
               "message"=>"There was an execution error",
-              "locations"=>[{"line"=>33, "column"=>15}],
+              "locations"=>[{"line"=>36, "column"=>15}],
               "path"=>["dairy", "milks", 0, "allDairy", 3, "executionError"]
             },
             {
               "message"=>"There was an execution error",
-              "locations"=>[{"line"=>38, "column"=>7}],
+              "locations"=>[{"line"=>41, "column"=>7}],
               "path"=>["executionError"]
             },
           ]
