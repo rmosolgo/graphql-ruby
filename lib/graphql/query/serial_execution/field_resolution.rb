@@ -15,17 +15,8 @@ module GraphQL
 
         def result
           result_name = irep_node.name
-          begin
-            raw_value = get_raw_value
-            { result_name => get_finished_value(raw_value) }
-          rescue GraphQL::InvalidNullError => err
-            if field.type.kind.non_null?
-              raise(err)
-            else
-              err.parent_error? || execution_context.add_error(err)
-              {result_name => nil}
-            end
-          end
+          raw_value = get_raw_value
+          { result_name => get_finished_value(raw_value) }
         end
 
         private
@@ -51,7 +42,16 @@ module GraphQL
 
           strategy_class = GraphQL::Query::SerialExecution::ValueResolution.get_strategy_for_kind(field.type.kind)
           result_strategy = strategy_class.new(raw_value, field.type, target, parent_type, irep_node, execution_context)
-          result_strategy.result
+          begin
+            result_strategy.result
+          rescue GraphQL::InvalidNullError => err
+            if field.type.kind.non_null?
+              raise(err)
+            else
+              err.parent_error? || execution_context.add_error(err)
+              nil
+            end
+          end
         end
 
 
