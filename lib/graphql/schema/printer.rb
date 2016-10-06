@@ -111,7 +111,7 @@ module GraphQL
             when ScalarType, ID_TYPE, STRING_TYPE
               value.to_s.inspect
             when EnumType
-              value.to_s
+              type.coerce_result(value)
             when InputObjectType
               fields = value.to_h.map{ |field_name, field_value|
                 field_type = type.input_fields.fetch(field_name.to_s).type
