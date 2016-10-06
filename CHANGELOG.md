@@ -8,6 +8,17 @@
 
 ### Bug fixes
 
+## 0.19.2 (6 Oct 2016)
+
+### New features
+
+- If a list entry has a `GraphQL::ExecutionError`, replace the entry with `nil` and return the error #295
+
+### Bug fixes
+
+- Support graphql-batch rescuing `InvalidNullError`s #296
+- Schema printer prints Enum names, not Ruby values for enums #297
+
 ## 0.19.1 (4 Oct 2016)
 
 ### Breaking changes
