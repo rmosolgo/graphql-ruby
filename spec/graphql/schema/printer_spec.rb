@@ -11,8 +11,8 @@ describe GraphQL::Schema::Printer do
     choice_type = GraphQL::EnumType.define do
       name "Choice"
 
-      value "FOO"
-      value "BAR"
+      value "FOO", value: :foo
+      value "BAR", value: :bar
       value "BAZ", deprecation_reason: 'Use "BAR".'
       value "WOZ", deprecation_reason: GraphQL::Directive::DEFAULT_DEPRECATION_REASON
     end
@@ -28,7 +28,7 @@ describe GraphQL::Schema::Printer do
       input_field :int, types.Int
       input_field :float, types.Float
       input_field :bool, types.Boolean
-      input_field :enum, choice_type
+      input_field :enum, choice_type, default_value: :foo
       input_field :sub, types[sub_input_type]
     end
 
@@ -58,7 +58,7 @@ describe GraphQL::Schema::Printer do
       field :post do
         type post_type
         argument :id, !types.ID
-        argument :varied, variant_input_type, default_value: { id: "123", int: 234, float: 2.3, enum: "FOO", sub: [{ string: "str" }] }
+        argument :varied, variant_input_type, default_value: { id: "123", int: 234, float: 2.3, enum: :foo, sub: [{ string: "str" }] }
         resolve -> (obj, args, ctx) { Post.find(args["id"]) }
       end
     end
@@ -211,7 +211,7 @@ input Varied {
   int: Int
   float: Float
   bool: Boolean
-  enum: Choice
+  enum: Choice = FOO
   sub: [Sub]
 }
 SCHEMA
