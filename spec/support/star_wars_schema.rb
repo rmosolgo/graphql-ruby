@@ -155,7 +155,7 @@ IntroduceShipMutation = GraphQL::Relay::Mutation.define do
   return_field :faction, Faction
 
   # Here's the mutation operation:
-  resolve -> (inputs, ctx) {
+  resolve -> (root_obj, inputs, ctx) {
     faction_id = inputs["factionId"]
     ship = STAR_WARS_DATA.create_ship(inputs["shipName"], faction_id)
     faction = STAR_WARS_DATA["Faction"][faction_id]
