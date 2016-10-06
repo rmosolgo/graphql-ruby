@@ -148,18 +148,21 @@ module GraphQL
           field_stack << field_defn
           type_stack << field_type
           observed_arguments_stack << []
-
         }
 
         visitor[Nodes::Field].leave << -> (node, prev_node) {
           # Pop the field's type & defn
           type_stack.pop
           field_defn = field_stack.pop
-          observed_argument_names = observed_arguments_stack.pop
+          observed_arguments = observed_arguments_stack.pop
           parent = type_stack.last
-          err_msg = RequiredArguments.find_error(parent, field_defn, node, observed_argument_names)
+          err_msg = RequiredArguments.find_error(parent, field_defn, node, observed_arguments.map(&:name))
           if err_msg
             errors << AnalysisError.new(err_msg, nodes: [node], fields: current_trace)
+          else
+            # If they check out at the field level,
+            # push 'em here for a more thorough check at the end of the run
+            arguments_by_root[root_node].concat(observed_arguments)
           end
         }
 
@@ -176,16 +179,10 @@ module GraphQL
             current_directive_defn || field_stack.last
           end
 
-          argument_defn = parent.get_argument(node.name)
-
-          if argument_defn.nil?
-            errors << ValidArguments.unknown_argument_error(type_stack, parent, node)
-            argument_defn = AnyArgument
-          else
-            observed_arguments_stack.last << argument_defn.name
-          end
+          argument_defn = parent.get_argument(node.name) || AnyArgument
+          observed_argument = ObservedArgument.new(node: node, argument_defn: argument_defn, parent_defn: parent, trace: current_trace)
           # Push this argument here so we can check it later
-          arguments_by_root[root_node] << {node: node, defn: argument_defn, parent_defn: parent}
+          observed_arguments_stack.last << observed_argument
           argument_stack << argument_defn
         }
 
@@ -204,10 +201,15 @@ module GraphQL
         visitor[Nodes::InputObject].leave << -> (node, prev_node) {
           # pop yourself, and assert that your required fields were present
           input_object_type = type_stack.pop
-          observed_argument_names = observed_arguments_stack.pop
-          err_msg = RequiredArguments.find_error(nil, input_object_type, node, observed_argument_names)
+          observed_arguments = observed_arguments_stack.pop
+          err_msg = RequiredArguments.find_error(nil, input_object_type, node, observed_arguments.map(&:name))
           if err_msg
             errors << AnalysisError.new(err_msg, nodes: [node], fields: current_trace)
+          elsif field_stack.none?
+            # If this is a variable default value,
+            # it won't be validated by the parent field,
+            # so push it here to make sure it's validated
+            arguments_by_root[root_node].concat(observed_arguments)
           end
         }
 
@@ -279,13 +281,14 @@ module GraphQL
         }
 
         visitor[Nodes::Directive].leave << -> (node, prev_node) {
-          observed_argument_names = observed_arguments_stack.pop
-          err_msg = RequiredArguments.find_error(nil, current_directive_defn, node, observed_argument_names)
+          observed_arguments = observed_arguments_stack.pop
+          err_msg = RequiredArguments.find_error(nil, current_directive_defn, node, observed_arguments.map(&:name))
           if err_msg
             errors << AnalysisError.new(err_msg, nodes: [node], fields: current_trace)
+          else
+            arguments_by_root[root_node].concat(observed_arguments)
           end
           current_directive_defn = nil
-
         }
 
         visitor[Nodes::FragmentSpread].enter << -> (node, prev_node) {
@@ -306,8 +309,8 @@ module GraphQL
           end
 
           arguments_by_root.each do |root_node, arguments|
-            arguments.each do |argument|
-              errors.concat(ValidArguments.errors_for_argument(schema, variables, dependencies, root_node, argument[:parent_defn], argument[:defn], argument[:node]))
+            arguments.each do |observed_argument|
+              errors.concat(ValidArguments.errors_for_argument(schema, variables, dependencies, root_node, observed_argument.parent_defn, observed_argument.argument_defn, observed_argument.node, observed_argument.trace))
             end
           end
 
@@ -329,6 +332,17 @@ module GraphQL
         def initialize(prev_type:, node:)
           @prev_type = prev_type
           @node = node
+        end
+      end
+
+      class ObservedArgument
+        attr_reader :node, :name, :argument_defn, :parent_defn, :trace
+        def initialize(node:, argument_defn:, parent_defn:, trace:)
+          @node = node
+          @name = node.name
+          @argument_defn = argument_defn
+          @parent_defn = parent_defn
+          @trace = trace
         end
       end
     end

@@ -7,7 +7,7 @@ module GraphQL
         # - The literal value
         # - The variable usage (based on variable definition in the operation)
         # @return [Array<AnalysisError>] Any errors found for this argument
-        def errors_for_argument(schema, variable_usages, dependencies, root_node, parent_defn, argument_defn, argument_node)
+        def errors_for_argument(schema, variable_usages, dependencies, root_node, parent_defn, argument_defn, argument_node, trace)
           errors = []
           case argument_node.value
           when GraphQL::Language::Nodes::VariableIdentifier
@@ -19,22 +19,24 @@ module GraphQL
               type_comparison_error = TypeCheck::TypeComparison.compare_inputs(argument_type, variable_type, has_default: !variable_definition.default_value.nil?)
               case type_comparison_error
               when TypeComparison::TYPE_MISMATCH
-                errors << create_error("Type mismatch", variable_type, variable_definition, argument_type, argument_node)
+                errors << create_error("Type mismatch", variable_type, variable_definition, argument_type, argument_node, trace)
               when TypeComparison::LIST_MISMATCH
-                errors << create_error("List dimension mismatch", variable_type, variable_definition, argument_type, argument_node)
+                errors << create_error("List dimension mismatch", variable_type, variable_definition, argument_type, argument_node, trace)
               when TypeComparison::NULLABILITY_MISMATCH
-                errors << create_error("Nullability mismatch", variable_type, variable_definition, argument_type, argument_node)
+                errors << create_error("Nullability mismatch", variable_type, variable_definition, argument_type, argument_node, trace)
               when TypeComparison::NO_ERROR, TypeComparison::INVALID_DEFINITION
                 # do nothing
               end
             end
           else
             if !ValidLiteral.valid_literal?(argument_defn.type, argument_node.value)
+              # TODO: better owner name here
               parent_type = parent_defn.class.name.split("::").last
               value_string = GraphQL::Language::Generation.generate(argument_node.value)
               errors << AnalysisError.new(
-                %|Argument "#{argument_node.name}" on #{parent_type.downcase} "#{parent_defn.name}" has an invalid value, expected type "#{argument_defn.type}" but received #{value_string}|,
-                nodes: [argument_node]
+                %|Argument "#{argument_node.name}" on "#{parent_defn.name}" has an invalid value, expected type "#{argument_defn.type}" but received #{value_string}|,
+                nodes: [argument_node],
+                fields: trace,
               )
             end
           end
@@ -64,10 +66,11 @@ module GraphQL
 
         module_function
 
-        def create_error(error_msg, var_type, var_node, arg_type, arg_node)
+        def create_error(error_msg, var_type, var_node, arg_type, arg_node, trace)
           AnalysisError.new(
             %|#{error_msg} on variable "$#{var_node.name}" and argument "#{arg_node.name}" (#{var_type.to_s} / #{arg_type.to_s})|,
-            nodes: [var_node, arg_node]
+            nodes: [var_node, arg_node],
+            fields: trace,
           )
         end
 

@@ -4,7 +4,7 @@ module GraphQL
       module ValidLiteral
         module_function
         # @param [GraphQL::BaseType] The type of the argument to check
-        # @param [Any] The value parse from the document
+        # @param [Any] The value parsed from the document
         # @return [Boolean] Is `literal_value` a valid input for `type`
         def valid_literal?(type, literal_value)
           if type == AnyInput
@@ -22,7 +22,7 @@ module GraphQL
           elsif type.kind.input_object? && literal_value.is_a?(GraphQL::Language::Nodes::InputObject)
             literal_value.arguments.all? do |inner_ast_node|
               inner_argument_defn = type.get_argument(inner_ast_node.name)
-              valid_literal?(inner_argument_defn.type, inner_ast_node.value)
+              inner_argument_defn && valid_literal?(inner_argument_defn.type, inner_ast_node.value)
             end
           else
             false

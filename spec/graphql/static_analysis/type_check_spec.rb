@@ -95,7 +95,7 @@ describe GraphQL::StaticAnalysis::TypeCheck do
       |
       assert_errors(
         query_string,
-        %|Field "Query.addInt" doesn't accept "right" as an argument|,
+        %|Arguments for "Query.addInt" are invalid: undefined arguments ("right")|,
       )
     end
 
@@ -106,10 +106,11 @@ describe GraphQL::StaticAnalysis::TypeCheck do
         badFloat: addInt(rhs: ENUM, lhs: 2) { value }
       }
       |
+      # TODO: check message for input object & directive
       assert_errors(
         query_string,
-        %|Argument "rhs" on field "addInt" has an invalid value, expected type "Int!" but received "1aa"|,
-        %|Argument "rhs" on field "addInt" has an invalid value, expected type "Int!" but received ENUM|
+        %|Argument "rhs" on "addInt" has an invalid value, expected type "Int!" but received "1aa"|,
+        %|Argument "rhs" on "addInt" has an invalid value, expected type "Int!" but received ENUM|
       )
     end
 
@@ -127,9 +128,9 @@ describe GraphQL::StaticAnalysis::TypeCheck do
       |
       assert_errors(
         query_string,
-        %|Required arguments missing from "Query.addInt": "rhs"|,
-        %|Required arguments missing from "Operands": "lhs"|,
-        %|Required arguments missing from "@skip": "if"|,
+        %|Arguments for "Query.addInt" are invalid: missing required arguments ("rhs")|,
+        %|Arguments for "Operands" are invalid: missing required arguments ("lhs")|,
+        %|Arguments for "@skip" are invalid: missing required arguments ("if")|,
       )
     end
   end
@@ -268,8 +269,7 @@ describe GraphQL::StaticAnalysis::TypeCheck do
 
       assert_errors(
         query_string,
-        %|Directive "@skip" doesn't accept "nonsense" as an argument|,
-        %|Required arguments missing from "@skip": "if"|,
+        %|Arguments for "@skip" are invalid: missing required arguments ("if"), undefined arguments ("nonsense")|,
       )
     end
   end
