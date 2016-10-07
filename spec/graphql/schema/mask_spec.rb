@@ -176,6 +176,8 @@ describe GraphQL::Schema::Mask do
 
       assert_equal [], phoneme_fields
     end
+
+    it "isn't present in a schema print-out"
   end
 
   describe "#hidden_type?" do
@@ -243,5 +245,30 @@ describe GraphQL::Schema::Mask do
       assert_equal false, possible_type_names(res["data"]["EmicUnit"]).include?("Phoneme")
       assert_equal false, possible_type_names(res["data"]["LanguageMember"]).include?("Phoneme")
     end
+
+    it "isn't present in a type's interfaces"
+    it "isn't present in a schema print-out"
+  end
+
+
+  describe "#hidden_argument?" do
+    it "is hidden if the input type is hidden"
+    it "is hidden if the argument is hidden"
+    it "isn't present in introspection"
+    it "isn't valid in a query"
+    it "isn't present in a schema print-out"
+  end
+
+  describe "#hidden_input_object_type?" do
+    it "isn't present in a schema print-out"
+    it "isn't present in introspection"
+    it "isn't a valid input"
+  end
+
+  describe "#hidden_enum_value?" do
+    it "isn't present in introspection"
+    it "isn't a valid return value"
+    it "isn't a valid input"
+    it "isn't present in a schema print-out"
   end
 end
