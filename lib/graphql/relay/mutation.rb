@@ -68,23 +68,22 @@ module GraphQL
 
       def resolve=(new_resolve_proc)
         ensure_defined
+
         resolve_arity = get_arity(new_resolve_proc)
         if resolve_arity == 2
           warn("Mutation#resolve functions should be defined with three arguments: (root_obj, input, context). Two-argument mutation resolves are deprecated.")
-          @resolve_proc = NormalizedResolve.new(new_resolve_proc)
-        else
-          @resolve_proc = new_resolve_proc
+          new_resolve_proc = DeprecatedMutationResolve.new(new_resolve_proc)
         end
+
+        @resolve_proc = MutationResolve.new(self, new_resolve_proc)
       end
 
       def field
         @field ||= begin
           ensure_defined
           relay_mutation = self
-          field_resolve_proc = -> (obj, args, ctx){
-            results_hash = @resolve_proc.call(obj, args[:input], ctx)
-            result_class.new(client_mutation_id: args[:input][:clientMutationId], result: results_hash)
-          }
+          field_resolve_proc = @resolve_proc
+
           GraphQL::Field.define do
             type(relay_mutation.return_type)
             description(relay_mutation.description)
@@ -127,6 +126,13 @@ module GraphQL
         end
       end
 
+      def result_class
+        @result_class ||= begin
+          ensure_defined
+          Result.define_subclass(self)
+        end
+      end
+
       private
 
       def get_arity(callable)
@@ -135,13 +141,6 @@ module GraphQL
           callable.arity
         else
           callable.method(:call).arity
-        end
-      end
-
-      def result_class
-        @result_class ||= begin
-          ensure_defined
-          Result.define_subclass(self)
         end
       end
 
@@ -154,21 +153,38 @@ module GraphQL
           end
         end
 
-        def self.define_subclass(mutation)
+        class << self
+          attr_accessor :mutation
+        end
+
+        def self.define_subclass(mutation_defn)
           subclass = Class.new(self) do
-            attr_accessor(*mutation.return_fields.keys)
+            attr_accessor(*mutation_defn.return_fields.keys)
+            self.mutation = mutation_defn
           end
           subclass
         end
       end
 
-      class NormalizedResolve
+      class DeprecatedMutationResolve
         def initialize(two_argument_resolve)
           @two_argument_resolve = two_argument_resolve
         end
 
-        def call(obj, input, ctx)
-          @two_argument_resolve.call(input, ctx)
+        def call(obj, args, ctx)
+          @two_argument_resolve.call(args[:input], ctx)
+        end
+      end
+
+      class MutationResolve
+        def initialize(mutation, resolve)
+          @mutation = mutation
+          @resolve = resolve
+        end
+
+        def call(obj, args, ctx)
+          result_hash = @resolve.call(obj, args[:input], ctx)
+          @mutation.result_class.new(client_mutation_id: args[:input][:clientMutationId], result: result_hash)
         end
       end
     end
