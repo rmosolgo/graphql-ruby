@@ -5,7 +5,7 @@ GraphQL::Introspection::SchemaType = GraphQL::ObjectType.define do
               "query, mutation, and subscription operations."
 
   field :types, !types[!GraphQL::Introspection::TypeType], "A list of all types supported by this server." do
-    resolve ->(obj, arg, ctx) { obj.types.values }
+    resolve ->(obj, arg, ctx) { obj.types.values.select { |t| obj.visible_type?(t) } }
   end
 
   field :queryType, !GraphQL::Introspection::TypeType, "The type that query operations will be rooted at." do

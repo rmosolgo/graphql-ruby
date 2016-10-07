@@ -7,6 +7,7 @@ GraphQL::Introspection::FieldsField = GraphQL::Field.define do
     if !arguments["includeDeprecated"]
       fields = fields.select {|f| !f.deprecation_reason }
     end
+    fields = fields.select { |f| context.schema.visible_field?(f) }
     fields.sort_by(&:name)
   }
 end

@@ -1,5 +1,6 @@
 require "graphql/schema/catchall_middleware"
 require "graphql/schema/invalid_type_error"
+require "graphql/schema/mask"
 require "graphql/schema/middleware_chain"
 require "graphql/schema/possible_types"
 require "graphql/schema/rescue_middleware"
@@ -43,6 +44,9 @@ module GraphQL
   #   end
   #
   class Schema
+    extend Forwardable
+    def_delegators :@mask, :visible?, :hidden?, :hidden_field?, :visible_field?, :hidden_type?, :visible_type?
+
     include GraphQL::Define::InstanceDefinable
     accepts_definitions \
       :query, :mutation, :subscription,
@@ -87,6 +91,7 @@ module GraphQL
       @query_execution_strategy = GraphQL::Query::SerialExecution
       @mutation_execution_strategy = GraphQL::Query::SerialExecution
       @subscription_execution_strategy = GraphQL::Query::SerialExecution
+      @mask = Schema::Mask::NullMask
     end
 
     def rescue_from(*args, &block)
@@ -129,17 +134,24 @@ module GraphQL
     # Handles dynamic fields `__typename`, `__type` and `__schema`, too
     def get_field(parent_type, field_name)
       ensure_defined
+
       defined_field = parent_type.get_field(field_name)
-      if defined_field
+      field_defn = if defined_field
         defined_field
       elsif field_name == "__typename"
         GraphQL::Introspection::TypenameField.create(parent_type)
       elsif field_name == "__schema" && parent_type == query
         GraphQL::Introspection::SchemaField.create(self)
       elsif field_name == "__type" && parent_type == query
-        GraphQL::Introspection::TypeByNameField.create(self.types)
+        GraphQL::Introspection::TypeByNameField.create(self)
       else
         nil
+      end
+
+      if field_defn.nil? || @mask.hidden_field?(field_defn)
+        nil
+      else
+        field_defn
       end
     end
 

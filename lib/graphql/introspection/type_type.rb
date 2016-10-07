@@ -12,12 +12,13 @@ GraphQL::Introspection::TypeType = GraphQL::ObjectType.define do
     type !GraphQL::Introspection::TypeKindEnum
     resolve ->(target, a, c) { target.kind.name }
   end
+
   field :name, types.String
   field :description, types.String
-  field :fields,          field: GraphQL::Introspection::FieldsField
-  field :interfaces,      field: GraphQL::Introspection::InterfacesField
-  field :possibleTypes,   field: GraphQL::Introspection::PossibleTypesField
-  field :enumValues,      field: GraphQL::Introspection::EnumValuesField
-  field :inputFields,     field: GraphQL::Introspection::InputFieldsField
-  field :ofType,          field: GraphQL::Introspection::OfTypeField
+  field :fields,        GraphQL::Introspection::FieldsField
+  field :interfaces,    GraphQL::Introspection::InterfacesField
+  field :possibleTypes, GraphQL::Introspection::PossibleTypesField
+  field :enumValues,    GraphQL::Introspection::EnumValuesField
+  field :inputFields,   GraphQL::Introspection::InputFieldsField
+  field :ofType,        GraphQL::Introspection::OfTypeField
 end
