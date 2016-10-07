@@ -3,7 +3,9 @@ require "spec_helper"
 module MaskHelpers
   PhonemeType = GraphQL::ObjectType.define do
     name "Phoneme"
+    description "A building block of sound in a given language"
     metadata :hidden_type, true
+    interfaces [LanguageMemberInterface]
 
     field :name, types.String.to_non_null_type
     field :symbol, types.String.to_non_null_type
@@ -15,6 +17,29 @@ module MaskHelpers
     field :name, types.String.to_non_null_type
     field :families, types.String.to_list_type
     field :phonemes, PhonemeType.to_list_type
+    field :graphemes, GraphemeType.to_list_type
+  end
+
+  GraphemeType = GraphQL::ObjectType.define do
+    name "Grapheme"
+    description "A building block of spelling in a given language"
+    interfaces [LanguageMemberInterface]
+
+    field :name, types.String.to_non_null_type
+    field :glyph, types.String.to_non_null_type
+    field :languages, LanguageType.to_list_type
+  end
+
+  LanguageMemberInterface = GraphQL::InterfaceType.define do
+    name "LanguageMember"
+    description "Something that belongs to one or more languages"
+    field :languages, LanguageType.to_list_type
+  end
+
+  EmicUnitUnion = GraphQL::UnionType.define do
+    name "EmicUnit"
+    description "A building block of a word in a given language"
+    possible_types [GraphemeType, PhonemeType]
   end
 
   QueryType = GraphQL::ObjectType.define do
@@ -29,15 +54,49 @@ module MaskHelpers
       description "Lookup a phoneme by symbol"
       argument :symbol, !types.String
     end
+
+    field :unit, EmicUnitUnion do
+      description "Find an emic unit by its name"
+      argument :name, types.String.to_non_null_type
+    end
   end
 
   Schema = GraphQL::Schema.define do
     query QueryType
+    resolve_type(:stub)
   end
 end
 
 
 describe GraphQL::Schema::Mask do
+  def type_names(introspection_result)
+    introspection_result["data"]["__schema"]["types"].map { |t| t["name"] }
+  end
+
+  def possible_type_names(type_by_name_result)
+    type_by_name_result["possibleTypes"].map { |t| t["name"] }
+  end
+
+  def field_type_names(schema_result)
+    schema_result["types"]
+      .map {|t| t["fields"] }
+      .flatten
+      .map { |f| f ? get_recursive_field_type_names(f["type"]) : [] }
+      .flatten
+      .uniq
+  end
+
+  def get_recursive_field_type_names(field_result)
+    case field_result
+    when Hash
+      [field_result["name"]].concat(get_recursive_field_type_names(field_result["ofType"]))
+    when nil
+      []
+    else
+      raise "Unexpected field result: #{field_resul}"
+    end
+  end
+
   describe "#visible?" do
     let(:mask) {
       # Hide all name fields
@@ -94,7 +153,6 @@ describe GraphQL::Schema::Mask do
       query_string = %|
       {
         LanguageType: __type(name: "Language") { fields { name } }
-        PhonemeType: __type(name: "Phoneme") { fields { name } }
         __schema {
           types {
             name
@@ -107,12 +165,9 @@ describe GraphQL::Schema::Mask do
 
       res = mask.execute(query_string)
 
-      # The type can't be found by name
-      assert_equal nil, res["data"]["PhonemeType"]
-
       # Fields dont appear when finding the type by name
       language_fields = res["data"]["LanguageType"]["fields"].map {|f| f["name"] }
-      assert_equal ["families", "name"], language_fields
+      assert_equal ["families", "graphemes", "name"], language_fields
 
       # Fields don't appear in the __schema result
       phoneme_fields = res["data"]["__schema"]["types"]
@@ -120,6 +175,73 @@ describe GraphQL::Schema::Mask do
         .flatten
 
       assert_equal [], phoneme_fields
+    end
+  end
+
+  describe "#hidden_type?" do
+    let(:mask) {
+      GraphQL::Schema::Mask.new(schema: MaskHelpers::Schema) do |member|
+        member.metadata[:hidden_type]
+      end
+    }
+
+    it "returns true for masked types" do
+      assert_equal true, mask.hidden_type?(MaskHelpers::PhonemeType)
+      assert_equal false, mask.hidden_type?(MaskHelpers::LanguageType)
+    end
+
+    it "removes items from Schema#possible_types" do
+      # It's in the plain schema:
+      assert_equal true, MaskHelpers::Schema.possible_types(MaskHelpers::EmicUnit).include?(MaskHelpers::PhonemeType)
+      # But not the mask:
+      assert_equal true, mask.possible_types(MaskHelpers::EmicUnit).include?(MaskHelpers::PhonemeType)
+    end
+
+    focus
+    it "hides types from introspection" do
+      query_string = %|
+      {
+        Phoneme: __type(name: "Phoneme") { name }
+        EmicUnit: __type(name: "EmicUnit") {
+          possibleTypes { name }
+        }
+        LanguageMember: __type(name: "LanguageMember") {
+          possibleTypes { name }
+        }
+        __schema {
+          types {
+            name
+            fields {
+              type {
+                name
+                ofType {
+                  name
+                  ofType {
+                    name
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      |
+
+      res = mask.execute(query_string)
+
+      # It's not visible by name
+      assert_equal nil, res["data"]["Phoneme"]
+
+      # It's not visible in `__schema`
+      all_type_names = type_names(res)
+      assert_equal false, all_type_names.include?("Phoneme")
+
+      # No fields return it
+      assert_equal false, field_type_names(res["data"]["__schema"]).include?("Phoneme")
+
+      # It's not visible as a union or interface member
+      assert_equal false, possible_type_names(res["data"]["EmicUnit"]).include?("Phoneme")
+      assert_equal false, possible_type_names(res["data"]["LanguageMember"]).include?("Phoneme")
     end
   end
 end

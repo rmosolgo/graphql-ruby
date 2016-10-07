@@ -166,7 +166,9 @@ module GraphQL
     def possible_types(type_defn)
       ensure_defined
       @interface_possible_types ||= GraphQL::Schema::PossibleTypes.new(self)
-      @interface_possible_types.possible_types(type_defn)
+      @interface_possible_types
+        .possible_types(type_defn)
+        .select {|t| visible_type?(t) }
     end
 
     def root_type_for_operation(operation)

@@ -14,7 +14,7 @@ module GraphQL
       def initialize(schema)
         @object_types = schema.types.values.select { |type| type.kind.object? }
 
-        @storage = Hash.new do |hash, key|
+        @interface_implementers = Hash.new do |hash, key|
           hash[key] = @object_types.select { |type| type.interfaces.include?(key) }.sort_by(&:name)
         end
       end
@@ -24,7 +24,7 @@ module GraphQL
         when GraphQL::UnionType
           type_defn.possible_types
         when GraphQL::InterfaceType
-          @storage[type_defn]
+          @interface_implementers[type_defn]
         else
           raise "#{type_defn} doesn't have possible types"
         end
