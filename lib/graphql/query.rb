@@ -116,7 +116,6 @@ module GraphQL
       @validation_errors
     end
 
-
     # TODO this should probably contain error instances, not hashes
     # @return [Array<Hash>] Errors for this particular query run (eg, exceeds max complexity)
     def analysis_errors

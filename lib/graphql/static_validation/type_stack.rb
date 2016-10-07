@@ -48,15 +48,13 @@ module GraphQL
       private
 
       # Look up strategies by name and use singleton instance to push and pop
-      PUSH_STRATEGIES = Hash.new { |hash, key| hash[key] = get_strategy_for_node_class(key) }
-
-      def self.get_strategy_for_node_class(node_class)
-        node_class_name = node_class.name.split("::").last
+      PUSH_STRATEGIES = Hash.new do |hash, key|
+        node_class_name = key.name.split("::").last
         strategy_key = "#{node_class_name}Strategy"
-        const_defined?(strategy_key) ? const_get(strategy_key).new : NullStrategy.new
+        hash[key] = const_defined?(strategy_key) ? const_get(strategy_key) : NullStrategy
       end
 
-      class FragmentWithTypeStrategy
+      module FragmentWithTypeStrategy
         def push(stack, node)
           object_type = if node.type
             stack.schema.types.fetch(node.type, nil)
@@ -76,19 +74,24 @@ module GraphQL
         end
       end
 
-      class FragmentDefinitionStrategy < FragmentWithTypeStrategy
+      module FragmentDefinitionStrategy
+        extend FragmentWithTypeStrategy
+        module_function
         def push_path_member(stack, node)
           stack.path.push("fragment #{node.name}")
         end
       end
 
-      class InlineFragmentStrategy < FragmentWithTypeStrategy
+      module InlineFragmentStrategy
+        extend FragmentWithTypeStrategy
+        module_function
         def push_path_member(stack, node)
           stack.path.push("...#{node.type ? " on #{node.type}" : ""}")
         end
       end
 
-      class OperationDefinitionStrategy
+      module OperationDefinitionStrategy
+        module_function
         def push(stack, node)
           # eg, QueryType, MutationType
           object_type = stack.schema.root_type_for_operation(node.operation_type)
@@ -102,7 +105,8 @@ module GraphQL
         end
       end
 
-      class FieldStrategy
+      module FieldStrategy
+        module_function
         def push(stack, node)
           parent_type = stack.object_types.last
           parent_type = parent_type.unwrap
@@ -125,7 +129,8 @@ module GraphQL
         end
       end
 
-      class DirectiveStrategy
+      module DirectiveStrategy
+        module_function
         def push(stack, node)
           directive_defn = stack.schema.directives[node.name]
           stack.directive_definitions.push(directive_defn)
@@ -136,7 +141,8 @@ module GraphQL
         end
       end
 
-      class ArgumentStrategy
+      module ArgumentStrategy
+        module_function
         # Push `argument_defn` onto the stack.
         # It's possible that `argument_defn` will be nil.
         # Push it anyways so `pop` has something to pop.
@@ -165,7 +171,8 @@ module GraphQL
         end
       end
 
-      class FragmentSpreadStrategy
+      module FragmentSpreadStrategy
+        module_function
         def push(stack, node)
           stack.path.push("... #{node.name}")
         end
@@ -176,8 +183,7 @@ module GraphQL
       end
 
       # A no-op strategy (don't handle this node)
-      class NullStrategy
-        def self.new; self; end
+      module NullStrategy
         def self.push(stack, node);  end
         def self.pop(stack, node);   end
       end
