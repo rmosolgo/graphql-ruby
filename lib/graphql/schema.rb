@@ -122,6 +122,19 @@ module GraphQL
       end
     end
 
+    # @yieldparam [GraphQL::BaseType] A member of the schema
+    def each_type
+      if block_given?
+        @types.each do |name, type|
+          if visible_type?(type)
+            yield(type)
+          end
+        end
+      else
+        to_enum(:each_type)
+      end
+    end
+
     # Execute a query on itself.
     # See {Query#initialize} for arguments.
     # @return [Hash] query result, ready to be serialized as JSON

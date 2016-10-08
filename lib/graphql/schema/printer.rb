@@ -30,8 +30,8 @@ module GraphQL
         directives = schema.directives.values.select{ |directive| directive_filter.call(directive) }
         directive_definitions = directives.map{ |directive| print_directive(directive) }
 
-        types = schema.types.values.select{ |type| type_filter.call(type) }.sort_by(&:name)
-        type_definitions = types.map{ |type| print_type(type) }
+        types = schema.each_type.select{ |type| type_filter.call(type) }.sort_by(&:name)
+        type_definitions = types.map{ |type| print_type(type, schema) }
 
         [print_schema_definition(schema)].compact
                                          .concat(directive_definitions)
@@ -67,8 +67,8 @@ module GraphQL
         !is_introspection_type(type) && !BUILTIN_SCALARS.include?(type.name)
       end
 
-      def print_type(type)
-        TypeKindPrinters::STRATEGIES.fetch(type.kind).print(type)
+      def print_type(type, schema)
+        TypeKindPrinters::STRATEGIES.fetch(type.kind).print(type, schema)
       end
 
       def print_directive(directive)
@@ -142,6 +142,7 @@ module GraphQL
             when EnumType
               type.coerce_result(value)
             when InputObjectType
+              # TODO: filter
               fields = value.to_h.map{ |field_name, field_value|
                 field_type = type.input_fields.fetch(field_name.to_s).type
                 "#{field_name}: #{print_value(field_value, field_type)}"
@@ -162,9 +163,15 @@ module GraphQL
           include ArgsPrinter
           include DescriptionPrinter
           def print_fields(type)
+<<<<<<< 137bcc8f6ab8d063ceff257cb4d00bf661f71d43
             type.all_fields.map.with_index{ |field, i|
               "#{print_description(field, '  ', i == 0)}"\
               "  #{field.name}#{print_args(field, '  ')}: #{field.type}#{print_deprecated(field)}"
+=======
+            # TODO: filter
+            type.all_fields.map{ |field|
+              "  #{field.name}#{print_args(field)}: #{field.type}#{print_deprecated(field)}"
+>>>>>>> feat(Mask) hide some types in schema print-out
             }.join("\n")
           end
         end
@@ -180,18 +187,27 @@ module GraphQL
         end
 
         class ScalarPrinter
+<<<<<<< 137bcc8f6ab8d063ceff257cb4d00bf661f71d43
           extend DescriptionPrinter
           def self.print(type)
             "#{print_description(type)}"\
+=======
+          def self.print(type, schema)
+>>>>>>> feat(Mask) hide some types in schema print-out
             "scalar #{type.name}"
           end
         end
 
         class ObjectPrinter
           extend FieldPrinter
+<<<<<<< 137bcc8f6ab8d063ceff257cb4d00bf661f71d43
           extend DescriptionPrinter
           def self.print(type)
+=======
+          def self.print(type, schema)
+>>>>>>> feat(Mask) hide some types in schema print-out
             if type.interfaces.any?
+              # TODO: filter
               implementations = " implements #{type.interfaces.map(&:to_s).join(", ")}"
             else
               implementations = nil
@@ -206,25 +222,40 @@ module GraphQL
 
         class InterfacePrinter
           extend FieldPrinter
+<<<<<<< 137bcc8f6ab8d063ceff257cb4d00bf661f71d43
           extend DescriptionPrinter
           def self.print(type)
             "#{print_description(type)}"\
+=======
+          def self.print(type, schema)
+>>>>>>> feat(Mask) hide some types in schema print-out
             "interface #{type.name} {\n#{print_fields(type)}\n}"
           end
         end
 
         class UnionPrinter
+<<<<<<< 137bcc8f6ab8d063ceff257cb4d00bf661f71d43
           extend DescriptionPrinter
           def self.print(type)
             "#{print_description(type)}"\
             "union #{type.name} = #{type.possible_types.map(&:to_s).join(" | ")}"
+=======
+          def self.print(type, schema)
+            members = schema.possible_types(type)
+            "union #{type.name} = #{members.map(&:name).join(" | ")}"
+>>>>>>> feat(Mask) hide some types in schema print-out
           end
         end
 
         class EnumPrinter
           extend DeprecatedPrinter
+<<<<<<< 137bcc8f6ab8d063ceff257cb4d00bf661f71d43
           extend DescriptionPrinter
           def self.print(type)
+=======
+          def self.print(type, schema)
+            # TODO: filter
+>>>>>>> feat(Mask) hide some types in schema print-out
             values = type.values.values.map{ |v| "  #{v.name}#{print_deprecated(v)}" }.join("\n")
             values = type.values.values.map.with_index { |v, i|
               "#{print_description(v, '  ', i == 0)}"\
@@ -237,6 +268,7 @@ module GraphQL
 
         class InputObjectPrinter
           extend FieldPrinter
+<<<<<<< 137bcc8f6ab8d063ceff257cb4d00bf661f71d43
           extend DescriptionPrinter
           def self.print(type)
             fields = type.input_fields.values.map.with_index{ |field, i|
@@ -244,6 +276,11 @@ module GraphQL
               "  #{print_input_value(field)}"
             }.join("\n")
             "#{print_description(type)}"\
+=======
+          def self.print(type, schema)
+            # TODO: filter
+            fields = type.input_fields.values.map{ |field| "  #{print_input_value(field)}" }.join("\n")
+>>>>>>> feat(Mask) hide some types in schema print-out
             "input #{type.name} {\n#{fields}\n}"
           end
         end

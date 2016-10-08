@@ -3,7 +3,10 @@ module GraphQL
     class Mask
       extend Forwardable
 
-      def_delegators :@schema, :execute
+      def_delegators :@schema,
+        :execute, :possible_types,
+        # Used by Schema::Printer
+        :directives, :each_type, :query, :mutation, :subscription
 
       def initialize(schema:, &block)
         @schema = schema.dup

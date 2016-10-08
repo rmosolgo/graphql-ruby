@@ -32,6 +32,7 @@ module MaskHelpers
 
   LanguageMemberInterface = GraphQL::InterfaceType.define do
     name "LanguageMember"
+    metadata :hidden_abstract_type, true
     description "Something that belongs to one or more languages"
     field :languages, LanguageType.to_list_type
   end
@@ -194,12 +195,11 @@ describe GraphQL::Schema::Mask do
 
     it "removes items from Schema#possible_types" do
       # It's in the plain schema:
-      assert_equal true, MaskHelpers::Schema.possible_types(MaskHelpers::EmicUnit).include?(MaskHelpers::PhonemeType)
+      assert_equal true, MaskHelpers::Schema.possible_types(MaskHelpers::EmicUnitUnion).include?(MaskHelpers::PhonemeType)
       # But not the mask:
-      assert_equal true, mask.possible_types(MaskHelpers::EmicUnit).include?(MaskHelpers::PhonemeType)
+      assert_equal false, mask.possible_types(MaskHelpers::EmicUnitUnion).include?(MaskHelpers::PhonemeType)
     end
 
-    focus
     it "hides types from introspection" do
       query_string = %|
       {
@@ -246,8 +246,34 @@ describe GraphQL::Schema::Mask do
       assert_equal false, possible_type_names(res["data"]["LanguageMember"]).include?("Phoneme")
     end
 
-    it "isn't present in a type's interfaces"
-    it "isn't present in a schema print-out"
+    describe "hiding an abstract type" do
+      let(:mask) {
+        GraphQL::Schema::Mask.new(schema: MaskHelpers::Schema) do |member|
+          member.metadata[:hidden_abstract_type]
+        end
+      }
+
+      it "isn't present in a type's interfaces" do
+        query_string = %|
+        {
+          __type(name: "Phoneme") {
+            interfaces { name }
+          }
+        }
+        |
+
+        res = mask.execute(query_string)
+        interfaces_names = res["data"]["__type"]["interfaces"].map { |i| i["name"] }
+        refute_includes interfaces_names, "LanguageMember"
+      end
+    end
+
+    it "isn't present in a schema print-out" do
+      schema_print = GraphQL::Schema::Printer.print_schema(MaskHelpers::Schema)
+      mask_print = GraphQL::Schema::Printer.print_schema(mask)
+      assert_includes schema_print, "Phoneme"
+      refute_includes schema_print, "Phoneme"
+    end
   end
 
 
