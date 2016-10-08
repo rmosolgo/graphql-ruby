@@ -272,7 +272,7 @@ describe GraphQL::Schema::Mask do
       schema_print = GraphQL::Schema::Printer.print_schema(MaskHelpers::Schema)
       mask_print = GraphQL::Schema::Printer.print_schema(mask)
       assert_includes schema_print, "Phoneme"
-      refute_includes schema_print, "Phoneme"
+      refute_includes mask_print, "Phoneme"
     end
   end
 

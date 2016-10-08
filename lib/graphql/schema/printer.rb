@@ -163,15 +163,10 @@ module GraphQL
           include ArgsPrinter
           include DescriptionPrinter
           def print_fields(type)
-<<<<<<< 137bcc8f6ab8d063ceff257cb4d00bf661f71d43
-            type.all_fields.map.with_index{ |field, i|
+            fields = type.all_fields.select { |f| schema.visible_field?(f) }
+            fields.map.with_index { |field, i|
               "#{print_description(field, '  ', i == 0)}"\
               "  #{field.name}#{print_args(field, '  ')}: #{field.type}#{print_deprecated(field)}"
-=======
-            # TODO: filter
-            type.all_fields.map{ |field|
-              "  #{field.name}#{print_args(field)}: #{field.type}#{print_deprecated(field)}"
->>>>>>> feat(Mask) hide some types in schema print-out
             }.join("\n")
           end
         end
@@ -212,11 +207,15 @@ module GraphQL
             else
               implementations = nil
             end
+<<<<<<< 971205bf4f2a871cc525d07b1d1873cac8212acd
 
             "#{print_description(type)}"\
             "type #{type.name}#{implementations} {\n"\
             "#{print_fields(type)}\n"\
             "}"
+=======
+            "type #{type.name}#{implementations} {\n#{print_fields(type, schema)}\n}"
+>>>>>>> feat(Mask) filter fields in Schema::Printer
           end
         end
 
@@ -228,8 +227,12 @@ module GraphQL
             "#{print_description(type)}"\
 =======
           def self.print(type, schema)
+<<<<<<< 971205bf4f2a871cc525d07b1d1873cac8212acd
 >>>>>>> feat(Mask) hide some types in schema print-out
             "interface #{type.name} {\n#{print_fields(type)}\n}"
+=======
+            "interface #{type.name} {\n#{print_fields(type, schema)}\n}"
+>>>>>>> feat(Mask) filter fields in Schema::Printer
           end
         end
 
