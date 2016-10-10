@@ -61,11 +61,10 @@ module GraphQL
         class HasPossibleTypeResolution < BaseResolution
           def non_null_result
             resolved_type = execution_context.schema.resolve_type(value, execution_context.query.context)
-            possible_types = execution_context.schema.possible_types(field_type)
+            possible_types = execution_context.possible_types(field_type)
 
-            unless resolved_type.is_a?(GraphQL::ObjectType) && possible_types.include?(resolved_type)
-              # TODO: this is now really important for Schema::Mask. We have to make sure we're not leaking a type-name in this error message.
-              raise GraphQL::UnresolvedTypeError.new(irep_node.definition_name, execution_context.schema, field_type, parent_type, resolved_type)
+            if !possible_types.include?(resolved_type)
+              raise GraphQL::UnresolvedTypeError.new(irep_node.definition_name, field_type, parent_type, resolved_type, possible_types)
             end
 
             strategy_class = get_strategy_for_kind(resolved_type.kind)
