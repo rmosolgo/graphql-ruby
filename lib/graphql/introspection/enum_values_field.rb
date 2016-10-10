@@ -2,11 +2,16 @@ GraphQL::Introspection::EnumValuesField = GraphQL::Field.define do
   type types[!GraphQL::Introspection::EnumValueType]
   argument :includeDeprecated, types.Boolean, default_value: false
   resolve ->(object, arguments, context) do
-    return nil if !object.kind.enum?
-    fields = object.values.values
-    if !arguments["includeDeprecated"]
-      fields = fields.select {|f| !f.deprecation_reason }
+    if !object.kind.enum?
+      nil
+    else
+      enum_values = context.warden.each_enum_value(object).to_a
+
+      if !arguments["includeDeprecated"]
+        enum_values = enum_values.select {|f| !f.deprecation_reason }
+      end
+
+      enum_values
     end
-    fields
   end
 end

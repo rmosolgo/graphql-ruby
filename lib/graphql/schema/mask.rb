@@ -10,11 +10,7 @@ module GraphQL
       end
 
       def visible?(member)
-        !hidden?(member)
-      end
-
-      def hidden?(member)
-        !!@filter.call(member)
+        !@filter.call(member)
       end
 
       # A Mask implementation that shows everything as visible
@@ -28,15 +24,11 @@ module GraphQL
         def visible?(member)
           true
         end
-
-        def hidden?(member)
-          false
-        end
       end
 
       # Restrict access to `@schema`'s members based on `@mask` & `@query`'s context
       class Warden
-        # @param mask [<#hidden?(member), #visible?(member)>]
+        # @param mask [<#visible?(member)>]
         # @param query [GraphQL::Query]
         def initialize(mask, query)
           @mask = mask
@@ -110,13 +102,15 @@ module GraphQL
         end
 
         # @yieldparam [GraphQL::EnumType::EnumValue] Each member of `enum_defn`
-        def each_value(enum_defn)
+        def each_enum_value(enum_defn)
           if block_given?
             enum_defn.values.each do |name, enum_value_defn|
-              yield(enum_value_defn)
+              if visible_enum_value?(enum_value_defn)
+                yield(enum_value_defn)
+              end
             end
           else
-            enum_for(:enum_defn, enum_defn)
+            enum_for(:each_enum_value, enum_defn)
           end
         end
 
@@ -136,24 +130,16 @@ module GraphQL
 
         private
 
-        def hidden_field?(field_defn)
-          hidden?(field_defn) || hidden?(field_defn.type.unwrap)
-        end
-
         def visible_field?(field_defn)
-          !hidden_field?(field_defn)
-        end
-
-        def hidden_type?(type_defn)
-          hidden?(type_defn)
+          visible?(field_defn) && visible?(field_defn.type.unwrap)
         end
 
         def visible_type?(type_defn)
-          !hidden_type?(type_defn)
+          visible?(type_defn)
         end
 
-        def hidden?(member)
-          @mask.hidden?(member)
+        def visible_enum_value?(enum_value_defn)
+          visible?(enum_value_defn)
         end
 
         def visible?(member)

@@ -70,6 +70,11 @@ module GraphQL
         @type_stack.argument_definitions[-2]
       end
 
+      def valid_literal?(ast_value, type)
+        @literal_validator ||= LiteralValidator.new(warden: @warden)
+        @literal_validator.validate(ast_value, type)
+      end
+
       # Don't try to validate dynamic fields
       # since they aren't defined by the type system
       def skip_field?(field_name)

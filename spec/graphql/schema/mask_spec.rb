@@ -10,6 +10,20 @@ module MaskHelpers
     field :name, types.String.to_non_null_type
     field :symbol, types.String.to_non_null_type
     field :languages, LanguageType.to_list_type
+    field :manner, MannerEnum
+  end
+
+  MannerEnum = GraphQL::EnumType.define do
+    name "Manner"
+    description "Manner of articulation for this sound"
+    value "STOP"
+    value "AFFRICATE"
+    value "FRICATIVE"
+    value "APPROXIMANT"
+    value "VOWEL"
+    value "TRILL" do
+      metadata :hidden_enum_value, true
+    end
   end
 
   LanguageType = GraphQL::ObjectType.define do
@@ -50,7 +64,11 @@ module MaskHelpers
       metadata :hidden_field, true
       argument :name, !types.String
     end
-    field :phonemes, PhonemeType.to_list_type
+
+    field :phonemes, PhonemeType.to_list_type do
+      argument :manners, MannerEnum.to_list_type, "Filter phonemes by manner of articulation"
+    end
+
     field :phoneme, PhonemeType do
       description "Lookup a phoneme by symbol"
       argument :symbol, !types.String
@@ -235,9 +253,51 @@ describe GraphQL::Schema::Mask do
     it "isn't a valid input"
   end
 
-  describe "#hidden_enum_value?" do
-    it "isn't present in introspection"
-    it "isn't a valid return value"
-    it "isn't a valid input"
+  describe "hiding enum values" do
+    let(:mask) {
+      GraphQL::Schema::Mask.new { |member| member.metadata[:hidden_enum_value] }
+    }
+
+    it "isn't present in introspection" do
+      query_string = %|
+      {
+        Manner: __type(name: "Manner") { enumValues { name } }
+        __schema {
+          types {
+            enumValues { name }
+          }
+        }
+      }
+      |
+
+      res = MaskHelpers.query_with_mask(query_string, mask)
+
+      manner_values = res["data"]["Manner"]["enumValues"]
+        .map { |v| v["name"] }
+
+      schema_values = res["data"]["__schema"]["types"]
+        .map { |t| t["enumValues"] || [] }
+        .flatten
+        .map { |v| v["name"] }
+
+      refute_includes manner_values, "TRILL", "It's not present on __type"
+      refute_includes schema_values, "TRILL", "It's not present in __schema"
+    end
+
+    it "isn't a valid input" do
+      query_string = %|
+      { phonemes(manners: [STOP, TRILL]) { symbol } }
+      |
+      res = MaskHelpers.query_with_mask(query_string, mask)
+      # It's not a good error message ... but it's something!
+      expected_errors = [{
+        "message" => "Argument 'manners' on Field 'phonemes' has an invalid value. Expected type '[Manner]'.",
+        "locations" => [{"line"=>2, "column"=>9}],
+        "fields" => ["query", "phonemes", "manners"]
+      }]
+      assert_equal expected_errors, res["errors"]
+    end
+
+    it "returns nil in a query response"
   end
 end

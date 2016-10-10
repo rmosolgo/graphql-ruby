@@ -4,21 +4,20 @@ module GraphQL
       include GraphQL::StaticValidation::Message::MessageHelper
 
       def validate(context)
-        literal_validator = GraphQL::StaticValidation::LiteralValidator.new
         context.visitor[GraphQL::Language::Nodes::VariableDefinition] << ->(node, parent) {
           if !node.default_value.nil?
-            validate_default_value(node, literal_validator, context)
+            validate_default_value(node, context)
           end
         }
       end
 
-      def validate_default_value(node, literal_validator, context)
+      def validate_default_value(node, context)
         value = node.default_value
         if node.type.is_a?(GraphQL::Language::Nodes::NonNullType)
           context.errors << message("Non-null variable $#{node.name} can't have a default value", node, context: context)
         else
           type = context.schema.type_from_ast(node.type)
-          if !literal_validator.validate(value, type)
+          if !context.valid_literal?(value, type)
             context.errors << message("Default value for $#{node.name} doesn't match type #{type}", node, context: context)
           end
         end
