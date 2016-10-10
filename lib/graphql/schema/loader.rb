@@ -58,7 +58,7 @@ module GraphQL
               name: type["name"],
               description: type["description"],
               values: type["enumValues"].map { |enum|
-                EnumType::EnumValue.new(
+                EnumType::EnumValue.define(
                   name: enum["name"],
                   description: enum["description"],
                   deprecation_reason: enum["deprecationReason"],
