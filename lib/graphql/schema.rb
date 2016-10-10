@@ -44,9 +44,6 @@ module GraphQL
   #   end
   #
   class Schema
-    extend Forwardable
-    def_delegators :@mask, :visible?, :hidden?, :hidden_field?, :visible_field?, :hidden_type?, :visible_type?
-
     include GraphQL::Define::InstanceDefinable
     accepts_definitions \
       :query, :mutation, :subscription,
@@ -91,7 +88,6 @@ module GraphQL
       @query_execution_strategy = GraphQL::Query::SerialExecution
       @mutation_execution_strategy = GraphQL::Query::SerialExecution
       @subscription_execution_strategy = GraphQL::Query::SerialExecution
-      @mask = Schema::Mask::NullMask
     end
 
     def rescue_from(*args, &block)
@@ -122,19 +118,6 @@ module GraphQL
       end
     end
 
-    # @yieldparam [GraphQL::BaseType] A member of the schema
-    def each_type
-      if block_given?
-        @types.each do |name, type|
-          if visible_type?(type)
-            yield(type)
-          end
-        end
-      else
-        to_enum(:each_type)
-      end
-    end
-
     # Execute a query on itself.
     # See {Query#initialize} for arguments.
     # @return [Hash] query result, ready to be serialized as JSON
@@ -149,7 +132,7 @@ module GraphQL
       ensure_defined
 
       defined_field = parent_type.get_field(field_name)
-      field_defn = if defined_field
+      if defined_field
         defined_field
       elsif field_name == "__typename"
         GraphQL::Introspection::TypenameField.create(parent_type)
@@ -159,12 +142,6 @@ module GraphQL
         GraphQL::Introspection::TypeByNameField.create(self)
       else
         nil
-      end
-
-      if field_defn.nil? || @mask.hidden_field?(field_defn)
-        nil
-      else
-        field_defn
       end
     end
 
@@ -178,10 +155,8 @@ module GraphQL
     # @return [Array<GraphQL::ObjectType>] types which belong to `type_defn` in this schema
     def possible_types(type_defn)
       ensure_defined
-      @interface_possible_types ||= GraphQL::Schema::PossibleTypes.new(self)
-      @interface_possible_types
-        .possible_types(type_defn)
-        .select {|t| visible_type?(t) }
+      @possible_types ||= GraphQL::Schema::PossibleTypes.new(self)
+      @possible_types.possible_types(type_defn)
     end
 
     def root_type_for_operation(operation)

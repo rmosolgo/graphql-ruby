@@ -20,6 +20,9 @@ module GraphQL
       # @return [GraphQL::Schema]
       attr_reader :schema
 
+      # @return [GraphQL::Schema::Mask::Warden]
+      attr_reader :warden
+
       # Make a new context which delegates key lookup to `values`
       # @param query [GraphQL::Query] the query who owns this context
       # @param values [Hash] A hash of arbitrary values which will be accessible at query-time
@@ -28,6 +31,7 @@ module GraphQL
         @schema = query.schema
         @values = values || {}
         @errors = []
+        @warden = query.warden
       end
 
       # Lookup `key` from the hash passed to {Schema#execute} as `context:`

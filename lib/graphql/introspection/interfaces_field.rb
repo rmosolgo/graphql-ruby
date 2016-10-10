@@ -1,8 +1,8 @@
 GraphQL::Introspection::InterfacesField = GraphQL::Field.define do
   type -> { types[!GraphQL::Introspection::TypeType] }
-  resolve ->(target, a, c) {
-    if target.kind.object?
-      target.interfaces.select { |int| ctx.schema.visible_type?(int) }
+  resolve ->(target, a, ctx) {
+    if target.kind == GraphQL::TypeKinds::OBJECT
+      ctx.warden.each_interface(target).to_a
     else
       nil
     end

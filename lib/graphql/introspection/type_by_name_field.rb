@@ -8,13 +8,8 @@ module GraphQL
           description("A type in the GraphQL system")
           type(GraphQL::Introspection::TypeType)
           argument :name, !types.String
-          resolve ->(o, args, c) {
-            type_defn = schema.types.fetch(args["name"], nil)
-            if type_defn && schema.visible_type?(type_defn)
-              type_defn
-            else
-              nil
-            end
+          resolve ->(o, args, ctx) {
+            ctx.warden.get_type(args["name"])
           }
         end
       end

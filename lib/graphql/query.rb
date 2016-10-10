@@ -17,7 +17,7 @@ module GraphQL
       end
     end
 
-    attr_reader :schema, :document, :context, :fragments, :operations, :root_value, :max_depth, :query_string
+    attr_reader :schema, :document, :context, :fragments, :operations, :root_value, :max_depth, :query_string, :warden
 
     # Prepare query `query_string` on `schema`
     # @param schema [GraphQL::Schema]
@@ -28,10 +28,12 @@ module GraphQL
     # @param root_value [Object] the object used to resolve fields on the root type
     # @param max_depth [Numeric] the maximum number of nested selections allowed for this query (falls back to schema-level value)
     # @param max_complexity [Numeric] the maximum field complexity for this query (falls back to schema-level value)
-    def initialize(schema, query_string = nil, document: nil, context: nil, variables: {}, operation_name: nil, root_value: nil, max_depth: nil, max_complexity: nil)
+    # @param mask [Schema::Mask] A mask for this query
+    def initialize(schema, query_string = nil, document: nil, context: nil, variables: {}, operation_name: nil, root_value: nil, max_depth: nil, max_complexity: nil, mask: nil)
       fail ArgumentError, "a query string or document is required" unless query_string || document
 
       @schema = schema
+      @warden = (mask || GraphQL::Schema::Mask::NullMask).apply(self)
       @max_depth = max_depth || schema.max_depth
       @max_complexity = max_complexity || schema.max_complexity
       @query_analyzers = schema.query_analyzers.dup

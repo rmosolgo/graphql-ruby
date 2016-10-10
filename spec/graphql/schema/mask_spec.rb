@@ -66,6 +66,10 @@ module MaskHelpers
     query QueryType
     resolve_type(:stub)
   end
+
+  def self.query_with_mask(str, mask)
+    Schema.execute(str, mask: mask)
+  end
 end
 
 
@@ -94,58 +98,25 @@ describe GraphQL::Schema::Mask do
     when nil
       []
     else
-      raise "Unexpected field result: #{field_resul}"
+      raise "Unexpected field result: #{field_result}"
     end
   end
 
-  describe "#visible?" do
+  let(:warden) { mask.apply(GraphQL::Query.new(MaskHelpers::Schema, "{ __typename }")) }
+
+  describe "hiding fields" do
     let(:mask) {
-      # Hide all name fields
-      GraphQL::Schema::Mask.new(schema: MaskHelpers::Schema) do |member|
-        member.name == "name"
-      end
+      GraphQL::Schema::Mask.new { |member| member.metadata[:hidden_field] || member.metadata[:hidden_type] }
     }
-
-    it "returns true for members which _aren't_ excluded" do
-      assert_equal true, mask.visible?(MaskHelpers::QueryType.fields["languages"])
-      assert_equal true, mask.visible?(MaskHelpers::LanguageType.fields["phonemes"])
-    end
-
-    it "returns false for excluded members" do
-      assert_equal false, mask.visible?(MaskHelpers::LanguageType.fields["name"])
-      assert_equal false, mask.visible?(MaskHelpers::PhonemeType.fields["name"])
-    end
-  end
-
-  describe "#hidden_field?" do
-    let(:mask) {
-      GraphQL::Schema::Mask.new(schema: MaskHelpers::Schema) do |member|
-        member.metadata[:hidden_field] || member.metadata[:hidden_type]
-      end
-    }
-
-    it "hides fields which are excluded" do
-      assert_equal true, mask.hidden_field?(MaskHelpers::QueryType.fields["language"])
-      assert_equal false, mask.hidden_field?(MaskHelpers::QueryType.fields["languages"])
-    end
-
-    it "hides fields whose return types are excluded" do
-      assert_equal true, mask.hidden_field?(MaskHelpers::LanguageType.fields["phonemes"])
-      assert_equal true, mask.hidden_field?(MaskHelpers::QueryType.fields["phonemes"])
-      assert_equal true, mask.hidden_field?(MaskHelpers::QueryType.fields["phoneme"])
-
-      assert_equal false, mask.hidden_field?(MaskHelpers::LanguageType.fields["name"])
-      assert_equal false, mask.hidden_field?(MaskHelpers::LanguageType.fields["families"])
-    end
 
     it "causes validation errors" do
       query_string = %|{ phoneme(symbol: "ϕ") { name } }|
-      res = mask.execute(query_string)
+      res = MaskHelpers.query_with_mask(query_string, mask)
       err_msg = res["errors"][0]["message"]
       assert_equal "Field 'phoneme' doesn't exist on type 'Query'", err_msg
 
       query_string = %|{ language(name: "Uyghur") { name } }|
-      res = mask.execute(query_string)
+      res = MaskHelpers.query_with_mask(query_string, mask)
       err_msg = res["errors"][0]["message"]
       assert_equal "Field 'language' doesn't exist on type 'Query'", err_msg
     end
@@ -164,7 +135,7 @@ describe GraphQL::Schema::Mask do
         }
       }|
 
-      res = mask.execute(query_string)
+      res = MaskHelpers.query_with_mask(query_string, mask)
 
       # Fields dont appear when finding the type by name
       language_fields = res["data"]["LanguageType"]["fields"].map {|f| f["name"] }
@@ -177,28 +148,12 @@ describe GraphQL::Schema::Mask do
 
       assert_equal [], phoneme_fields
     end
-
-    it "isn't present in a schema print-out"
   end
 
-  describe "#hidden_type?" do
+  describe "hiding types" do
     let(:mask) {
-      GraphQL::Schema::Mask.new(schema: MaskHelpers::Schema) do |member|
-        member.metadata[:hidden_type]
-      end
+      GraphQL::Schema::Mask.new { |member| member.metadata[:hidden_type] }
     }
-
-    it "returns true for masked types" do
-      assert_equal true, mask.hidden_type?(MaskHelpers::PhonemeType)
-      assert_equal false, mask.hidden_type?(MaskHelpers::LanguageType)
-    end
-
-    it "removes items from Schema#possible_types" do
-      # It's in the plain schema:
-      assert_equal true, MaskHelpers::Schema.possible_types(MaskHelpers::EmicUnitUnion).include?(MaskHelpers::PhonemeType)
-      # But not the mask:
-      assert_equal false, mask.possible_types(MaskHelpers::EmicUnitUnion).include?(MaskHelpers::PhonemeType)
-    end
 
     it "hides types from introspection" do
       query_string = %|
@@ -229,7 +184,7 @@ describe GraphQL::Schema::Mask do
       }
       |
 
-      res = mask.execute(query_string)
+      res = MaskHelpers.query_with_mask(query_string, mask)
 
       # It's not visible by name
       assert_equal nil, res["data"]["Phoneme"]
@@ -248,9 +203,7 @@ describe GraphQL::Schema::Mask do
 
     describe "hiding an abstract type" do
       let(:mask) {
-        GraphQL::Schema::Mask.new(schema: MaskHelpers::Schema) do |member|
-          member.metadata[:hidden_abstract_type]
-        end
+        GraphQL::Schema::Mask.new { |member| member.metadata[:hidden_abstract_type] }
       }
 
       it "isn't present in a type's interfaces" do
@@ -262,17 +215,10 @@ describe GraphQL::Schema::Mask do
         }
         |
 
-        res = mask.execute(query_string)
+        res = MaskHelpers.query_with_mask(query_string, mask)
         interfaces_names = res["data"]["__type"]["interfaces"].map { |i| i["name"] }
         refute_includes interfaces_names, "LanguageMember"
       end
-    end
-
-    it "isn't present in a schema print-out" do
-      schema_print = GraphQL::Schema::Printer.print_schema(MaskHelpers::Schema)
-      mask_print = GraphQL::Schema::Printer.print_schema(mask)
-      assert_includes schema_print, "Phoneme"
-      refute_includes mask_print, "Phoneme"
     end
   end
 
@@ -282,11 +228,9 @@ describe GraphQL::Schema::Mask do
     it "is hidden if the argument is hidden"
     it "isn't present in introspection"
     it "isn't valid in a query"
-    it "isn't present in a schema print-out"
   end
 
   describe "#hidden_input_object_type?" do
-    it "isn't present in a schema print-out"
     it "isn't present in introspection"
     it "isn't a valid input"
   end
@@ -295,6 +239,5 @@ describe GraphQL::Schema::Mask do
     it "isn't present in introspection"
     it "isn't a valid return value"
     it "isn't a valid input"
-    it "isn't present in a schema print-out"
   end
 end
