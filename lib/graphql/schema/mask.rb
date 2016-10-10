@@ -94,7 +94,9 @@ module GraphQL
         def each_argument(argument_owner)
           if block_given?
             argument_owner.arguments.each do |name, arg_defn|
-              yield(arg_defn)
+              if visible_argument?(arg_defn)
+                yield(arg_defn)
+              end
             end
           else
             enum_for(:each_argument, argument_owner)
@@ -140,6 +142,10 @@ module GraphQL
 
         def visible_enum_value?(enum_value_defn)
           visible?(enum_value_defn)
+        end
+
+        def visible_argument?(arg_defn)
+          visible?(arg_defn) && visible?(arg_defn.type.unwrap)
         end
 
         def visible?(member)

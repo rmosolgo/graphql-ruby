@@ -16,6 +16,7 @@ module MaskHelpers
   MannerEnum = GraphQL::EnumType.define do
     name "Manner"
     description "Manner of articulation for this sound"
+    metadata :hidden_input_type, true
     value "STOP"
     value "AFFRICATE"
     value "FRICATIVE"
@@ -57,12 +58,24 @@ module MaskHelpers
     possible_types [GraphemeType, PhonemeType]
   end
 
+  WithinInputType = GraphQL::InputObjectType.define do
+    name "WithinInput"
+    metadata :hidden_input_object_type, true
+    argument :latitude, !types.Float
+    argument :longitude, !types.Float
+    argument :miles, !types.Float
+  end
+
   QueryType = GraphQL::ObjectType.define do
     name "Query"
-    field :languages, LanguageType.to_list_type
+    field :languages, LanguageType.to_list_type do
+      argument :within, WithinInputType, "Find languages nearby a point"
+    end
     field :language, LanguageType do
       metadata :hidden_field, true
-      argument :name, !types.String
+      argument :name, !types.String do
+        metadata :hidden_argument, true
+      end
     end
 
     field :phonemes, PhonemeType.to_list_type do
@@ -118,6 +131,10 @@ describe GraphQL::Schema::Mask do
     else
       raise "Unexpected field result: #{field_result}"
     end
+  end
+
+  def error_messages(query_result)
+    query_result["errors"].map { |err| err["message"] }
   end
 
   let(:warden) { mask.apply(GraphQL::Query.new(MaskHelpers::Schema, "{ __typename }")) }
@@ -241,16 +258,85 @@ describe GraphQL::Schema::Mask do
   end
 
 
-  describe "#hidden_argument?" do
-    it "is hidden if the input type is hidden"
-    it "is hidden if the argument is hidden"
-    it "isn't present in introspection"
-    it "isn't valid in a query"
+  describe "hiding argument" do
+    let(:mask) {
+      GraphQL::Schema::Mask.new { |member| member.metadata[:hidden_argument] || member.metadata[:hidden_input_type] }
+    }
+
+    it "isn't present in introspection" do
+      query_string = %|
+      {
+        Query: __type(name: "Query") { fields { name, args { name } } }
+      }
+      |
+      res = MaskHelpers.query_with_mask(query_string, mask)
+
+      query_field_args = res["data"]["Query"]["fields"].each_with_object({}) { |f, memo| memo[f["name"]] = f["args"].map { |a| a["name"] } }
+      # hidden argument:
+      refute_includes query_field_args["language"], "name"
+      # hidden input type:
+      refute_includes query_field_args["phoneme"], "manner"
+    end
+
+    it "isn't valid in a query" do
+      query_string = %|
+      {
+        language(name: "Catalan") { name }
+        phonemes(manners: STOP) { symbol }
+      }
+      |
+      res = MaskHelpers.query_with_mask(query_string, mask)
+      expected_errors = [
+        "Field 'language' doesn't accept argument 'name'",
+        "Field 'phonemes' doesn't accept argument 'manners'",
+      ]
+      assert_equal expected_errors, error_messages(res)
+    end
   end
 
-  describe "#hidden_input_object_type?" do
-    it "isn't present in introspection"
-    it "isn't a valid input"
+  describe "hidding input types" do
+    let(:mask) {
+      GraphQL::Schema::Mask.new { |member| member.metadata[:hidden_input_object_type] }
+    }
+
+    it "isn't present in introspection" do
+      query_string = %|
+      {
+        WithinInput: __type(name: "WithinInput") { name }
+        Query: __type(name: "Query") { fields { name, args { name } } }
+        __schema {
+          types { name }
+        }
+      }
+      |
+
+      res = MaskHelpers.query_with_mask(query_string, mask)
+
+      assert_equal nil, res["data"]["WithinInput"], "The type isn't accessible by name"
+
+      languages_arg_names = res["data"]["Query"]["fields"].find { |f| f["name"] == "languages" }["args"].map { |a| a["name"] }
+      refute_includes languages_arg_names, "within", "Arguments that point to it are gone"
+
+      type_names = res["data"]["__schema"]["types"].map { |t| t["name"] }
+      refute_includes type_names, "WithinInput", "It isn't in the schema's types"
+    end
+
+    it "isn't a valid input" do
+      query_string = %|
+      query findLanguages($nearby: WithinInput!) {
+        languages(within: $nearby) { name }
+      }
+      |
+
+      res = MaskHelpers.query_with_mask(query_string, mask)
+      expected_errors = [
+        "WithinInput isn't a valid input type (on $nearby)",
+        "Field 'languages' doesn't accept argument 'within'",
+        "Variable $nearby is declared by findLanguages but not used",
+      ]
+
+      assert_equal expected_errors, error_messages(res)
+    end
   end
 
   describe "hiding enum values" do
@@ -290,12 +376,10 @@ describe GraphQL::Schema::Mask do
       |
       res = MaskHelpers.query_with_mask(query_string, mask)
       # It's not a good error message ... but it's something!
-      expected_errors = [{
-        "message" => "Argument 'manners' on Field 'phonemes' has an invalid value. Expected type '[Manner]'.",
-        "locations" => [{"line"=>2, "column"=>9}],
-        "fields" => ["query", "phonemes", "manners"]
-      }]
-      assert_equal expected_errors, res["errors"]
+      expected_errors = [
+        "Argument 'manners' on Field 'phonemes' has an invalid value. Expected type '[Manner]'.",
+      ]
+      assert_equal expected_errors, error_messages(res)
     end
 
     it "returns nil in a query response"
