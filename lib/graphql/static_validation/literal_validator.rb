@@ -16,7 +16,7 @@ module GraphQL
           type.valid_input?(ast_value)
         elsif type.kind.enum? && ast_value.is_a?(GraphQL::Language::Nodes::Enum)
           # TODO: this shortcuts the `valid_input?` API, should I improve that API instead of bypassing it?
-          @warden.each_enum_value(type).find { |enum_value_defn| enum_value_defn.name == ast_value.name }
+          @warden.enum_values(type).find { |enum_value_defn| enum_value_defn.name == ast_value.name }
         elsif type.kind.input_object? && ast_value.is_a?(GraphQL::Language::Nodes::InputObject)
           required_input_fields_are_present(type, ast_value) &&
             present_input_field_values_are_valid(type, ast_value)

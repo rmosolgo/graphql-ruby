@@ -2,7 +2,7 @@ module GraphQL
   module StaticValidation
     class ArgumentsAreDefined < GraphQL::StaticValidation::ArgumentsValidator
       def validate_node(parent, node, defn, context)
-        argument_defn = context.warden.each_argument(defn).find { |arg| arg.name == node.name }
+        argument_defn = context.warden.arguments(defn).find { |arg| arg.name == node.name }
         if argument_defn.nil?
           kind_of_node = node_type(parent)
           error_arg_name = parent_name(parent, defn)

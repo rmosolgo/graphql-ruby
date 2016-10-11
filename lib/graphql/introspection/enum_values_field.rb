@@ -5,7 +5,7 @@ GraphQL::Introspection::EnumValuesField = GraphQL::Field.define do
     if !object.kind.enum?
       nil
     else
-      enum_values = context.warden.each_enum_value(object).to_a
+      enum_values = context.warden.enum_values(object)
 
       if !arguments["includeDeprecated"]
         enum_values = enum_values.select {|f| !f.deprecation_reason }

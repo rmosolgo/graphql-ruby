@@ -10,6 +10,7 @@ require "graphql/schema/type_expression"
 require "graphql/schema/type_map"
 require "graphql/schema/unique_within_type"
 require "graphql/schema/validation"
+require "graphql/schema/warden"
 
 module GraphQL
   # A GraphQL schema which may be queried with {GraphQL::Query}.

@@ -29,11 +29,11 @@ module GraphQL
     # @param max_depth [Numeric] the maximum number of nested selections allowed for this query (falls back to schema-level value)
     # @param max_complexity [Numeric] the maximum field complexity for this query (falls back to schema-level value)
     # @param mask [Schema::Mask] A mask for this query
-    def initialize(schema, query_string = nil, document: nil, context: nil, variables: {}, operation_name: nil, root_value: nil, max_depth: nil, max_complexity: nil, mask: nil)
+    def initialize(schema, query_string = nil, document: nil, context: nil, variables: {}, operation_name: nil, root_value: nil, max_depth: nil, max_complexity: nil, mask: GraphQL::Schema::Mask::NullMask)
       fail ArgumentError, "a query string or document is required" unless query_string || document
 
       @schema = schema
-      @warden = (mask || GraphQL::Schema::Mask::NullMask).apply(self)
+      @warden = GraphQL::Schema::Warden.new(schema, mask)
       @max_depth = max_depth || schema.max_depth
       @max_complexity = max_complexity || schema.max_complexity
       @query_analyzers = schema.query_analyzers.dup
