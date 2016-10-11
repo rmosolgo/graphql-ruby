@@ -18,14 +18,14 @@ describe GraphQL::EnumType do
   end
 
   it "raises when a result value can't be coerced" do
-    assert_raises {
+    assert_raises(GraphQL::EnumType::UnresolvedValueError) {
       enum.coerce_result(:nonsense)
     }
   end
 
   describe "resolving with a warden" do
     module ExampleWarden
-      def enum_values(enum_type)
+      def self.enum_values(enum_type)
         []
       end
     end
@@ -34,7 +34,7 @@ describe GraphQL::EnumType do
       # OK
       assert_equal("YAK", enum.coerce_result("YAK"))
       # NOT OK
-      assert_raises {
+      assert_raises(GraphQL::EnumType::UnresolvedValueError) {
         enum.coerce_result("YAK", ExampleWarden)
       }
     end

@@ -118,7 +118,7 @@ module GraphQL
       if enum_value
         enum_value.name
       else
-        raise("Can't resolve enum #{name} for #{value}")
+        raise(UnresolvedValueError, "Can't resolve enum #{name} for #{value}")
       end
     end
 
@@ -134,6 +134,9 @@ module GraphQL
       accepts_definitions :name, :description, :deprecation_reason, :value
 
       lazy_defined_attr_accessor :name, :description, :deprecation_reason, :value
+    end
+
+    class UnresolvedValueError < GraphQL::Error
     end
   end
 end

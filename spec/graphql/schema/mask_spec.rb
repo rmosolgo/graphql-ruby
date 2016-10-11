@@ -430,7 +430,7 @@ describe GraphQL::Schema::Mask do
         unit(name: "Uvular Trill") { ... on Phoneme { manner } }
       }
       |
-      assert_raises(RuntimeError) {
+      assert_raises(GraphQL::EnumType::UnresolvedValueError) {
         MaskHelpers.query_with_mask(query_string, mask)
       }
     end
