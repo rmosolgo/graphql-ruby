@@ -51,11 +51,12 @@ module GraphQL
       include GraphQL::Define::InstanceDefinable
       accepts_definitions(
         :name, :description, :resolve,
+        :return_type,
         input_field: GraphQL::Define::AssignArgument,
         return_field: GraphQL::Define::AssignObjectField,
       )
       lazy_defined_attr_accessor :name, :description
-      lazy_defined_attr_accessor :fields, :arguments
+      lazy_defined_attr_accessor :fields, :arguments, :return_type
 
       # For backwards compat, but do we need this separate API?
       alias :return_fields :fields
@@ -95,8 +96,8 @@ module GraphQL
       end
 
       def return_type
+        ensure_defined
         @return_type ||= begin
-          ensure_defined
           relay_mutation = self
           GraphQL::ObjectType.define do
             name("#{relay_mutation.name}Payload")

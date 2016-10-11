@@ -58,4 +58,30 @@ describe GraphQL::Relay::Mutation do
     assert_equal IntroduceShipMutation, IntroduceShipMutation.input_type.mutation
     assert_equal IntroduceShipMutation, IntroduceShipMutation.result_class.mutation
   end
+
+  describe "providing a return type" do
+    let(:custom_return_type) {
+      GraphQL::ObjectType.define do
+        name "CustomReturnType"
+        field :name, types.String
+      end
+    }
+
+    let(:mutation) {
+      custom_type = custom_return_type
+      GraphQL::Relay::Mutation.define do
+        name "CustomReturnTypeTest"
+        return_type custom_type
+      end
+    }
+
+    it "uses the provided type" do
+      assert_equal custom_return_type, mutation.return_type
+      assert_equal custom_return_type, mutation.field.type
+    end
+
+    it "doesn't get a mutation in the metadata" do
+      assert_equal nil, custom_return_type.mutation
+    end
+  end
 end
