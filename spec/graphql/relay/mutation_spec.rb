@@ -56,5 +56,6 @@ describe GraphQL::Relay::Mutation do
     assert_equal IntroduceShipMutation, IntroduceShipMutation.field.mutation
     assert_equal IntroduceShipMutation, IntroduceShipMutation.return_type.mutation
     assert_equal IntroduceShipMutation, IntroduceShipMutation.input_type.mutation
+    assert_equal IntroduceShipMutation, IntroduceShipMutation.result_class.mutation
   end
 end

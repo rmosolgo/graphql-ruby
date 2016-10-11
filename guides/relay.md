@@ -398,7 +398,7 @@ To define a mutation, use `GraphQL::Relay::Mutation.define`. Inside the block, y
   - `name`, which will name the mutation field & derived types
   - `input_field`s, which will be applied to the derived `InputObjectType`
   - `return_field`s, which will be applied to the derived `ObjectType`
-  - `resolve(-> (inputs, ctx) { ... })`, the mutation which will actually happen
+  - `resolve(-> (obj, inputs, ctx) { ... })`, the mutation which will actually happen
 
 
 For example:
@@ -419,15 +419,14 @@ AddCommentMutation = GraphQL::Relay::Mutation.define do
   return_field :comment, CommentType
 
   # The resolve proc is where you alter the system state.
-  resolve -> (inputs, ctx) {
+  # `object` is the `root_value:` passed to `Schema.execute`.
+  resolve -> (object, inputs, ctx) {
     post = Post.find(inputs[:postId])
     comment = post.comments.create!(author_id: inputs[:authorId], content: inputs[:content])
 
     {comment: comment, post: post}
   }
 end
-
-
 ```
 
 Under the hood, GraphQL creates:
