@@ -5,8 +5,8 @@ module GraphQL
         GraphQL::ObjectType.define do
           name("#{wrapped_type.name}Edge")
           description "An edge in a connection."
-          field :node, "The item at the end of the edge.", wrapped_type
-          field :cursor, "A cursor for use in pagination.", !types.String
+          field :node, wrapped_type, "The item at the end of the edge."
+          field :cursor, !types.String, "A cursor for use in pagination."
           block && instance_eval(&block)
         end
       end
