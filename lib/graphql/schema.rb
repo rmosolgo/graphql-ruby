@@ -1,6 +1,5 @@
 require "graphql/schema/catchall_middleware"
 require "graphql/schema/invalid_type_error"
-require "graphql/schema/mask"
 require "graphql/schema/middleware_chain"
 require "graphql/schema/possible_types"
 require "graphql/schema/rescue_middleware"

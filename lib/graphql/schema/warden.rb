@@ -9,10 +9,35 @@ module GraphQL
     # you may show a client something that it shouldn't be allowed to see.
     #
     # Masks can be provided in {Schema#execute} (or {Query#initialize}) with the `mask:` keyword.
-    # @see [GraphQL::Schema::Mask] A built-in mask implementation.
+    #
+    # @example Hidding private fields
+    #   private_members = -> (member) { member.metadata[:private] }
+    #   result = Schema.execute(query_string, except: private_members)
+    #
+    # @example Custom mask implementation
+    #   # It must respond to `#call(member)`.
+    #   class MissingRequiredFlags
+    #     def initialize(user)
+    #       @user = user
+    #     end
+    #
+    #     # Return `false` if any required flags are missing
+    #     def call(member)
+    #       member.metadata[:required_flags].any? do |flag|
+    #         !@user.has_flag?(flag)
+    #       end
+    #     end
+    #   end
+    #
+    #   # Then, use the custom filter in query:
+    #   missing_required_flags = MissingRequiredFlags.new(current_user)
+    #
+    #   # This query can only access members which match the user's flags
+    #   result = Schema.execute(query_string, except: missing_required_flags)
+    #
     class Warden
       # @param schema [GraphQL::Schema]
-      # @param mask [<#visible?(member)>] This object controls access to schema members
+      # @param mask [<#call(member)>] Objects are hidden when `.call(member)` returns true
       def initialize(schema, mask)
         @mask = mask
         @schema = schema
@@ -79,7 +104,7 @@ module GraphQL
       end
 
       def visible?(member)
-        @mask.visible?(member)
+        !@mask.call(member)
       end
     end
   end

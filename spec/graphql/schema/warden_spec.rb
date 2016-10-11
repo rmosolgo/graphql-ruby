@@ -106,12 +106,12 @@ module MaskHelpers
   end
 
   def self.query_with_mask(str, mask)
-    Schema.execute(str, mask: mask, root_value: Data)
+    Schema.execute(str, except: mask, root_value: Data)
   end
 end
 
 
-describe GraphQL::Schema::Mask do
+describe GraphQL::Schema::Warden do
   def type_names(introspection_result)
     introspection_result["data"]["__schema"]["types"].map { |t| t["name"] }
   end
@@ -144,11 +144,9 @@ describe GraphQL::Schema::Mask do
     query_result["errors"].map { |err| err["message"] }
   end
 
-  let(:warden) { mask.apply(GraphQL::Query.new(MaskHelpers::Schema, "{ __typename }")) }
-
   describe "hiding fields" do
     let(:mask) {
-      GraphQL::Schema::Mask.new { |member| member.metadata[:hidden_field] || member.metadata[:hidden_type] }
+      -> (member) { member.metadata[:hidden_field] || member.metadata[:hidden_type] }
     }
 
     it "causes validation errors" do
@@ -194,7 +192,7 @@ describe GraphQL::Schema::Mask do
 
   describe "hiding types" do
     let(:mask) {
-      GraphQL::Schema::Mask.new { |member| member.metadata[:hidden_type] }
+      -> (member) { member.metadata[:hidden_type] }
     }
 
     it "hides types from introspection" do
@@ -280,7 +278,7 @@ describe GraphQL::Schema::Mask do
 
     describe "hiding an abstract type" do
       let(:mask) {
-        GraphQL::Schema::Mask.new { |member| member.metadata[:hidden_abstract_type] }
+        -> (member) { member.metadata[:hidden_abstract_type] }
       }
 
       it "isn't present in a type's interfaces" do
@@ -302,7 +300,7 @@ describe GraphQL::Schema::Mask do
 
   describe "hiding arguments" do
     let(:mask) {
-      GraphQL::Schema::Mask.new { |member| member.metadata[:hidden_argument] || member.metadata[:hidden_input_type] }
+      -> (member) { member.metadata[:hidden_argument] || member.metadata[:hidden_input_type] }
     }
 
     it "isn't present in introspection" do
@@ -338,7 +336,7 @@ describe GraphQL::Schema::Mask do
 
   describe "hidding input types" do
     let(:mask) {
-      GraphQL::Schema::Mask.new { |member| member.metadata[:hidden_input_object_type] }
+      -> (member) { member.metadata[:hidden_input_object_type] }
     }
 
     it "isn't present in introspection" do
@@ -383,7 +381,7 @@ describe GraphQL::Schema::Mask do
 
   describe "hiding enum values" do
     let(:mask) {
-      GraphQL::Schema::Mask.new { |member| member.metadata[:hidden_enum_value] }
+      -> (member) { member.metadata[:hidden_enum_value] }
     }
 
     it "isn't present in introspection" do
