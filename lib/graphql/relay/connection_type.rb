@@ -10,11 +10,12 @@ module GraphQL
         connection_type = ObjectType.define do
           name(connection_type_name)
           field :edges, types[edge_type] do
+            description "A list of edges."
             resolve -> (obj, args, ctx) {
               obj.edge_nodes.map { |item| edge_class.new(item, obj) }
             }
           end
-          field :pageInfo, !PageInfo, property: :page_info
+          field :pageInfo, !PageInfo, "Information to aid in pagination.", property: :page_info
           block && instance_eval(&block)
         end
 

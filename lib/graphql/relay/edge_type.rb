@@ -4,8 +4,9 @@ module GraphQL
       def self.create_type(wrapped_type, name: nil, &block)
         GraphQL::ObjectType.define do
           name("#{wrapped_type.name}Edge")
-          field :node, wrapped_type
-          field :cursor, !types.String
+          description "An edge in a connection."
+          field :node, "The item at the end of the edge.", wrapped_type
+          field :cursor, "A cursor for use in pagination.", !types.String
           block && instance_eval(&block)
         end
       end

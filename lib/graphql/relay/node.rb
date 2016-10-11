@@ -9,8 +9,8 @@ module GraphQL
         # _may_ be modified.
         node_field = GraphQL::Field.define do
           type(GraphQL::Relay::Node.interface)
-          description("Fetches an object given its ID")
-          argument(:id, !types.ID, "ID of the object")
+          description("Fetches an object given its ID.")
+          argument(:id, !types.ID, "ID of the object.")
           resolve(GraphQL::Relay::Node::FindNode)
         end
 
@@ -24,7 +24,8 @@ module GraphQL
       def self.interface
         @interface ||= GraphQL::InterfaceType.define do
           name "Node"
-          field :id, !types.ID
+          description "An object with an ID."
+          field :id, !types.ID, "ID of the object."
         end
       end
 
