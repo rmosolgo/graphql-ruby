@@ -17,6 +17,29 @@ describe GraphQL::EnumType do
     assert_equal("COW", enum.coerce_result(1))
   end
 
+  it "raises when a result value can't be coerced" do
+    assert_raises {
+      enum.coerce_result(:nonsense)
+    }
+  end
+
+  describe "resolving with a warden" do
+    module ExampleWarden
+      def enum_values(enum_type)
+        []
+      end
+    end
+
+    it "gets values from the warden" do
+      # OK
+      assert_equal("YAK", enum.coerce_result("YAK"))
+      # NOT OK
+      assert_raises {
+        enum.coerce_result("YAK", ExampleWarden)
+      }
+    end
+  end
+
   it "has value description" do
     assert_equal("Animal with horns", enum.values["GOAT"].description)
   end

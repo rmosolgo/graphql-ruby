@@ -42,6 +42,13 @@ module GraphQL
           end
         end
 
+        class EnumResolution < BaseResolution
+          # Pick an enum value, but make sure it's allowed
+          def non_null_result
+            field_type.coerce_result(value, execution_context.query.warden)
+          end
+        end
+
         class ListResolution < BaseResolution
           # For each item in the list,
           # Resolve it with the "wrapped" type of this list
@@ -103,7 +110,7 @@ module GraphQL
           GraphQL::TypeKinds::SCALAR =>     ScalarResolution,
           GraphQL::TypeKinds::LIST =>       ListResolution,
           GraphQL::TypeKinds::OBJECT =>     ObjectResolution,
-          GraphQL::TypeKinds::ENUM =>       ScalarResolution,
+          GraphQL::TypeKinds::ENUM =>       EnumResolution,
           GraphQL::TypeKinds::NON_NULL =>   NonNullResolution,
           GraphQL::TypeKinds::INTERFACE =>  HasPossibleTypeResolution,
           GraphQL::TypeKinds::UNION =>      HasPossibleTypeResolution,

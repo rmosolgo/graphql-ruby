@@ -95,11 +95,18 @@ module MaskHelpers
 
   Schema = GraphQL::Schema.define do
     query QueryType
-    resolve_type(:stub)
+    resolve_type -> (obj, ctx) { PhonemeType }
+  end
+
+  module Data
+    UVULAR_TRILL = OpenStruct.new({name: "Uvular Trill", symbol: "ʀ", manner: "TRILL"})
+    def self.unit
+      UVULAR_TRILL
+    end
   end
 
   def self.query_with_mask(str, mask)
-    Schema.execute(str, mask: mask)
+    Schema.execute(str, mask: mask, root_value: Data)
   end
 end
 
@@ -259,6 +266,18 @@ describe GraphQL::Schema::Mask do
       assert_equal expected_errors, error_messages(res)
     end
 
+    it "can't be a resolve_type result" do
+      query_string = %|
+      {
+        unit(name: "Uvular Trill") { __typename }
+      }
+      |
+
+      assert_raises(GraphQL::UnresolvedTypeError) {
+        MaskHelpers.query_with_mask(query_string, mask)
+      }
+    end
+
     describe "hiding an abstract type" do
       let(:mask) {
         GraphQL::Schema::Mask.new { |member| member.metadata[:hidden_abstract_type] }
@@ -281,7 +300,7 @@ describe GraphQL::Schema::Mask do
   end
 
 
-  describe "hiding argument" do
+  describe "hiding arguments" do
     let(:mask) {
       GraphQL::Schema::Mask.new { |member| member.metadata[:hidden_argument] || member.metadata[:hidden_input_type] }
     }
@@ -405,6 +424,15 @@ describe GraphQL::Schema::Mask do
       assert_equal expected_errors, error_messages(res)
     end
 
-    it "returns nil in a query response"
+    it "raises a runtime error" do
+      query_string = %|
+      {
+        unit(name: "Uvular Trill") { ... on Phoneme { manner } }
+      }
+      |
+      assert_raises(RuntimeError) {
+        MaskHelpers.query_with_mask(query_string, mask)
+      }
+    end
   end
 end

@@ -110,6 +110,8 @@ module GraphQL
       nil
     end
 
+
+    # @see [GraphQL::Schema::Warden] Restricted access to members of a schema
     # @return [GraphQL::Schema::TypeMap] `{ name => type }` pairs of types in this schema
     def types
       @types ||= begin
@@ -129,6 +131,8 @@ module GraphQL
 
     # Resolve field named `field_name` for type `parent_type`.
     # Handles dynamic fields `__typename`, `__type` and `__schema`, too
+    # @see [GraphQL::Schema::Warden] Restricted access to members of a schema
+    # @return [GraphQL::Field, nil] The field named `field_name` on `parent_type`
     def get_field(parent_type, field_name)
       ensure_defined
 
@@ -151,7 +155,7 @@ module GraphQL
       GraphQL::Schema::TypeExpression.build_type(self, ast_node)
     end
 
-    # TODO: when `resolve_type` is schema level, can this be removed?
+    # @see [GraphQL::Schema::Warden] Restricted access to members of a schema
     # @param type_defn [GraphQL::InterfaceType, GraphQL::UnionType] the type whose members you want to retrieve
     # @return [Array<GraphQL::ObjectType>] types which belong to `type_defn` in this schema
     def possible_types(type_defn)
@@ -187,7 +191,8 @@ module GraphQL
     end
 
     # Determine the GraphQL type for a given object.
-    # This is required for unions and interfaces (include Relay's node interface)
+    # This is required for unions and interfaces (including Relay's `Node` interface)
+    # @see [GraphQL::Schema::Warden] Restricted access to members of a schema
     # @param object [Any] An application object which GraphQL is currently resolving on
     # @param ctx [GraphQL::Query::Context] The context for the current query
     # @return [GraphQL::ObjectType] The type for exposing `object` in GraphQL
