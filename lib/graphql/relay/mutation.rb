@@ -152,6 +152,8 @@ module GraphQL
         end
       end
 
+      # Use this when the mutation's return type was generated from `return_field`s.
+      # It delegates field lookups to the hash returned from `resolve`.
       class Result
         attr_reader :client_mutation_id
         def initialize(client_mutation_id:, result:)
@@ -192,8 +194,12 @@ module GraphQL
         end
 
         def call(obj, args, ctx)
-          result_hash = @resolve.call(obj, args[:input], ctx)
-          @mutation.result_class.new(client_mutation_id: args[:input][:clientMutationId], result: result_hash)
+          mutation_result = @resolve.call(obj, args[:input], ctx)
+          if @wrap_result
+            @mutation.result_class.new(client_mutation_id: args[:input][:clientMutationId], result: mutation_result)
+          else
+            mutation_result
+          end
         end
       end
     end
