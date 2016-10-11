@@ -438,3 +438,19 @@ The resolve proc:
   - Takes `inputs`, which is a hash whose keys are the ones defined by `input_field`
   - Takes `ctx`, which is the query context you passed with the `context:` keyword
   - Must return a hash with keys matching your defined `return_field`s
+
+### Specify a Return Type
+
+Instead of specifying `return_field`s, you can specify a `return_type` for a mutation. This type will be used to expose the object returned from `resolve`.
+
+```ruby
+CreateUser = GraphQL::Relay::Mutation.define do
+  return_type UserType
+  # ...
+  resolve -> (input, ctx) {
+    user = User.create(input)
+    # `user` will be treated as `UserType`
+    user
+  }
+end
+```

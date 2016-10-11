@@ -72,12 +72,31 @@ describe GraphQL::Relay::Mutation do
       GraphQL::Relay::Mutation.define do
         name "CustomReturnTypeTest"
         return_type custom_type
+        resolve -> (input, ctx) {
+          OpenStruct.new(name: "Custom Return Type Test")
+        }
+      end
+    }
+
+    let(:schema) {
+      mutation_field = mutation.field
+
+      mutation_root = GraphQL::ObjectType.define do
+        name "Mutation"
+        field :custom, mutation_field
+      end
+
+      GraphQL::Schema.define do
+        mutation(mutation_root)
       end
     }
 
     it "uses the provided type" do
       assert_equal custom_return_type, mutation.return_type
       assert_equal custom_return_type, mutation.field.type
+
+      result = schema.execute("mutation { custom(input: {}) { name } }")
+      assert_equal "Custom Return Type Test", result["data"]["custom"]["name"]
     end
 
     it "doesn't get a mutation in the metadata" do

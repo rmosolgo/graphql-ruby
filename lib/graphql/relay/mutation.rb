@@ -65,6 +65,13 @@ module GraphQL
       def initialize
         @fields = {}
         @arguments = {}
+        @has_generated_return_type = false
+      end
+
+      def has_generated_return_type?
+        # Trigger the generation of the return type, if it is dynamically generated:
+        return_type
+        @has_generated_return_type
       end
 
       def resolve=(new_resolve_proc)
@@ -76,7 +83,7 @@ module GraphQL
           new_resolve_proc = DeprecatedMutationResolve.new(new_resolve_proc)
         end
 
-        @resolve_proc = MutationResolve.new(self, new_resolve_proc)
+        @resolve_proc = MutationResolve.new(self, new_resolve_proc, wrap_result: has_generated_return_type?)
       end
 
       def field
@@ -84,7 +91,6 @@ module GraphQL
           ensure_defined
           relay_mutation = self
           field_resolve_proc = @resolve_proc
-
           GraphQL::Field.define do
             type(relay_mutation.return_type)
             description(relay_mutation.description)
@@ -98,6 +104,7 @@ module GraphQL
       def return_type
         ensure_defined
         @return_type ||= begin
+          @has_generated_return_type = true
           relay_mutation = self
           GraphQL::ObjectType.define do
             name("#{relay_mutation.name}Payload")
@@ -160,7 +167,7 @@ module GraphQL
 
         def self.define_subclass(mutation_defn)
           subclass = Class.new(self) do
-            attr_accessor(*mutation_defn.return_fields.keys)
+            attr_accessor(*mutation_defn.return_type.all_fields.map(&:name))
             self.mutation = mutation_defn
           end
           subclass
@@ -178,9 +185,10 @@ module GraphQL
       end
 
       class MutationResolve
-        def initialize(mutation, resolve)
+        def initialize(mutation, resolve, wrap_result:)
           @mutation = mutation
           @resolve = resolve
+          @wrap_result = wrap_result
         end
 
         def call(obj, args, ctx)
