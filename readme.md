@@ -148,4 +148,3 @@ If you're building a backend for [Relay](http://facebook.github.io/relay/), you'
   - Revisit guides, maybe split them into smaller, more specific pages
   - Put guide titles into the `<title />`
 - Document encrypted & versioned cursors
-- Eager load `Schema#types` after `.define { ... }`
