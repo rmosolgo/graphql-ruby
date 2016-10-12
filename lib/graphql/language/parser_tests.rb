@@ -1,3 +1,4 @@
+# encoding: UTF-8
 module GraphQL
   module Language
     # If you create your own GraphQL parser, can verify it using these tests.
