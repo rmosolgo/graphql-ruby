@@ -12,7 +12,7 @@ describe GraphQL::Query::Arguments do
       name "TestInput2"
       argument :a, types.Int
       argument :b, types.Int
-      argument :c, test_input_1
+      argument :c, !test_input_1
     end
 
     GraphQL::Query::Arguments.new({
