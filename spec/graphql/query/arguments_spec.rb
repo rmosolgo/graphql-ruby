@@ -1,7 +1,29 @@
 require "spec_helper"
 
 describe GraphQL::Query::Arguments do
-  let(:arguments) { GraphQL::Query::Arguments.new({ a: 1, b: 2, c: GraphQL::Query::Arguments.new({ d: 3, e: 4}) }) }
+  let(:arguments) {
+    test_input_1 = GraphQL::InputObjectType.define do
+      name "TestInput1"
+      argument :d, types.Int
+      argument :e, types.Int
+    end
+
+    test_input_2 = GraphQL::InputObjectType.define do
+      name "TestInput2"
+      argument :a, types.Int
+      argument :b, types.Int
+      argument :c, test_input_1
+    end
+
+    GraphQL::Query::Arguments.new({
+      a: 1,
+      b: 2,
+      c: GraphQL::Query::Arguments.new({
+        d: 3,
+        e: 4,
+      }, argument_definitions: test_input_1.arguments),
+    }, argument_definitions: test_input_2.arguments)
+  }
 
   it "returns keys as strings" do
     assert_equal(["a", "b", "c"], arguments.keys)
@@ -21,6 +43,25 @@ describe GraphQL::Query::Arguments do
 
   it "returns original Ruby hash values with to_h" do
     assert_equal({ a: 1, b: 2, c: { d: 3, e: 4 } }, arguments.to_h)
+  end
+
+  describe "nested hashes" do
+    let(:input_type) {
+      test_input_type = GraphQL::InputObjectType.define do
+        name "TestInput"
+        argument :a, types.Int
+        argument :b, test_input_type
+        argument :c, types.Int # will be a hash
+      end
+    }
+    it "wraps input objects, but not other hashes" do
+      args = GraphQL::Query::Arguments.new(
+        {a: 1, b: {a: 2}, c: {a: 3}},
+        argument_definitions: input_type.arguments
+      )
+      assert args["b"].is_a?(GraphQL::Query::Arguments)
+      assert args["c"].is_a?(Hash)
+    end
   end
 
   describe "#key?" do

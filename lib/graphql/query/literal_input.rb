@@ -36,7 +36,7 @@ module GraphQL
             values_hash[arg_name] = arg_value
           end
         end
-        GraphQL::Query::Arguments.new(values_hash)
+        GraphQL::Query::Arguments.new(values_hash, argument_definitions: argument_defns)
       end
 
       module LiteralKindCoercers
@@ -60,7 +60,7 @@ module GraphQL
           def self.coerce(value, type, variables)
             hash = {}
             value.arguments.each do |arg|
-              field_type = type.input_fields[arg.name].type
+              field_type = type.arguments[arg.name].type
               hash[arg.name] = LiteralInput.coerce(field_type, arg.value, variables)
             end
             type.input_fields.each do |arg_name, arg_defn|
@@ -71,7 +71,7 @@ module GraphQL
                 end
               end
             end
-            Arguments.new(hash)
+            Arguments.new(hash, argument_definitions: type.arguments)
           end
         end
 
