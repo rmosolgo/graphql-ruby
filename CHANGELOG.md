@@ -17,13 +17,13 @@
   Previously, it was called with two arguments:
 
   ```ruby
-  resolve -> (inputs, ctx) { ... }
+  resolve ->(inputs, ctx) { ... }
   ```
 
   Now, it's called with three inputs:
 
   ```ruby
-  resolve -> (obj, inputs, ctx) { ... }
+  resolve ->(obj, inputs, ctx) { ... }
   ```
 
   `obj` is the value of `root_value:` given to `Schema#execute`, as with other root-level fields.
@@ -92,11 +92,11 @@
     ```ruby
     MySchema = GraphQL::Schema.define do
       # Fetch an object by UUID
-      object_from_id -> (id, ctx) {
+      object_from_id ->(id, ctx) {
         MyApp::RelayLookup.find(id)
       }
       # Generate a UUID for this object
-      id_from_object -> (obj, type_defn, ctx) {
+      id_from_object ->(obj, type_defn, ctx) {
         MyApp::RelayLookup.to_id(obj)
       }
     end
@@ -106,14 +106,14 @@
 
       ```ruby
       MySchema = GraphQL::Schema.define do
-        object_from_id -> (id, ctx) {
+        object_from_id ->(id, ctx) {
           # Break the id into its parts:
           type_name, object_id = GraphQL::Schema::UniqueWithinType.decode(id)
           # Fetch the identified object
           # ...
         }
 
-        id_from_object -> (obj, type_defn, ctx) {
+        id_from_object ->(obj, type_defn, ctx) {
           # Provide the the type name & the object's `id`:
           GraphQL::Schema::UniqueWithinType.encode(type_defn.name, obj.id)
         }
@@ -133,7 +133,7 @@
     ```ruby
     MySchema = GraphQL::Schema.define do
       # ...
-      resolve_type -> (obj, ctx) {
+      resolve_type ->(obj, ctx) {
         # based on `obj` and `ctx`,
         # figure out which GraphQL type to use
         # and return the type
@@ -346,11 +346,11 @@
 
   ```ruby
   GraphQL::Relay::GlobalNodeIdentification.define do
-    type_from_object -> (obj) { ... }
+    type_from_object ->(obj) { ... }
   end
 
   GraphQL::InterfaceType.define do
-    resolve_type -> (obj, ctx) { ... }
+    resolve_type ->(obj, ctx) { ... }
   end
   ```
 
@@ -358,7 +358,7 @@
 
   ```ruby
   GraphQL::Schema.define do
-    resolve_type -> (obj, ctx) { ... }
+    resolve_type ->(obj, ctx) { ... }
   end
   ```
 
@@ -625,9 +625,9 @@
 
   ```ruby
   # Previous coerce behavior for scalars:
-  GraphQL::BOOLEAN_TYPE.coerce = -> (value) { !!value }
-  GraphQL::ID_TYPE.coerce = -> (value) { value.to_s }
-  GraphQL::STRING_TYPE.coerce = ->  (value) { value.to_s }
+  GraphQL::BOOLEAN_TYPE.coerce = ->(value) { !!value }
+  GraphQL::ID_TYPE.coerce = ->(value) { value.to_s }
+  GraphQL::STRING_TYPE.coerce = ->(value) { value.to_s }
   # INT_TYPE and FLOAT_TYPE were unchanged
   ```
 

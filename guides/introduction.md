@@ -66,7 +66,7 @@ QueryRoot = GraphQL::ObjectType.define do
     type PostType
     description "Find a Post by id"
     argument :id, !types.ID
-    resolve -> (object, arguments, context) {
+    resolve ->(object, arguments, context) {
       Post.find(arguments["id"])
     }
   end

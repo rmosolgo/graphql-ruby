@@ -5,7 +5,7 @@ module GraphQL
 
       def validate(context)
         directive_names = context.schema.directives.keys
-        context.visitor[GraphQL::Language::Nodes::Directive] << -> (node, parent) {
+        context.visitor[GraphQL::Language::Nodes::Directive] << ->(node, parent) {
           validate_directive(node, directive_names, context)
         }
       end

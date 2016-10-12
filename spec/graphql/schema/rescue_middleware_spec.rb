@@ -3,7 +3,7 @@ require "spec_helper"
 class SpecExampleError < StandardError; end
 
 describe GraphQL::Schema::RescueMiddleware do
-  let(:error_middleware) { -> (next_middleware) { raise(error_class) } }
+  let(:error_middleware) { ->(next_middleware) { raise(error_class) } }
 
   let(:rescue_middleware) do
     middleware = GraphQL::Schema::RescueMiddleware.new

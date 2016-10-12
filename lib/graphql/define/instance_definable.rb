@@ -25,7 +25,7 @@ module GraphQL
     #       # These attrs will be defined with plain setters, `{attr}=`
     #       :make, :model,
     #       # This attr has a custom definition which applies the config to the target
-    #       doors: -> (car, doors_count) { doors_count.times { car.doors << Door.new } }
+    #       doors: ->(car, doors_count) { doors_count.times { car.doors << Door.new } }
     #     )
     #
     #     def initialize
@@ -85,7 +85,7 @@ module GraphQL
         # make sure the previous definition_proc was executed:
         ensure_defined
 
-        @definition_proc = -> (obj) {
+        @definition_proc = ->(obj) {
           kwargs.each do |keyword, value|
             public_send(keyword, value)
           end

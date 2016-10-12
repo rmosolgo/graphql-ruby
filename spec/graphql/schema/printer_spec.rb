@@ -59,7 +59,7 @@ describe GraphQL::Schema::Printer do
         type post_type
         argument :id, !types.ID
         argument :varied, variant_input_type, default_value: { id: "123", int: 234, float: 2.3, enum: :foo, sub: [{ string: "str" }] }
-        resolve -> (obj, args, ctx) { Post.find(args["id"]) }
+        resolve ->(obj, args, ctx) { Post.find(args["id"]) }
       end
     end
 

@@ -10,7 +10,7 @@ module GraphQL
 
       def validate(context)
         FRAGMENTS_ON_TYPES.each do |node_class|
-          context.visitor[node_class] << -> (node, parent) { validate_type_exists(node, context) }
+          context.visitor[node_class] << ->(node, parent) { validate_type_exists(node, context) }
         end
       end
 

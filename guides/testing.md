@@ -19,7 +19,7 @@ For example, consider a field which calculates its own value:
 PostType = GraphQL::ObjectType.define do
   # ...
   field :isTrending, types.Boolean do
-    resolve -> (obj, args, ctx) {
+    resolve ->(obj, args, ctx) {
       recent_comments = comments.where("created_at < ?", 1.day.ago)
       recent_comments.count > 100
     }
@@ -50,7 +50,7 @@ end
 PostType = GraphQL::ObjectType.define do
   # ...
   field :isTrending, types.Boolean do
-    resolve -> (obj, args, ctx) {
+    resolve ->(obj, args, ctx) {
       # Use the Post::Trending class to calculate the value
       Post::Trending.new(obj).value
     }

@@ -28,7 +28,7 @@ module GraphQL
   # @example Defining an enum input
   #    field :coders, types[CoderType] do
   #      argument :knowing, types[LanguageType]
-  #      resolve -> (obj, args, ctx) {
+  #      resolve ->(obj, args, ctx) {
   #        Coder.where(language: args[:knowing])
   #      }
   #    end
@@ -51,7 +51,7 @@ module GraphQL
   #
   #   # Now, resolve functions will receive `:rb` instead of `"RUBY"`
   #   field :favoriteLanguage, LanguageEnum
-  #   resolve -> (obj, args, ctx) {
+  #   resolve ->(obj, args, ctx) {
   #     args[:favoriteLanguage] # => :rb
   #   }
   #

@@ -8,19 +8,19 @@ module GraphQL
         used_fragments = []
         defined_fragments = []
 
-        v[GraphQL::Language::Nodes::Document] << -> (node, parent) {
+        v[GraphQL::Language::Nodes::Document] << ->(node, parent) {
           defined_fragments = node.definitions
             .select { |defn| defn.is_a?(GraphQL::Language::Nodes::FragmentDefinition) }
             .map { |node| FragmentInstance.new(node: node, path: context.path) }
         }
 
-        v[GraphQL::Language::Nodes::FragmentSpread] << -> (node, parent) {
+        v[GraphQL::Language::Nodes::FragmentSpread] << ->(node, parent) {
           used_fragments << FragmentInstance.new(node: node, path: context.path)
           if defined_fragments.none? { |defn| defn.name == node.name }
             GraphQL::Language::Visitor::SKIP
           end
         }
-        v[GraphQL::Language::Nodes::Document].leave << -> (node, parent) { add_errors(context, used_fragments, defined_fragments) }
+        v[GraphQL::Language::Nodes::Document].leave << ->(node, parent) { add_errors(context, used_fragments, defined_fragments) }
       end
 
       private

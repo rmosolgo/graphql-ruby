@@ -58,7 +58,7 @@ CheeseType = GraphQL::ObjectType.define do
     # metadata test
     joins [:cheeses, :milks]
     argument :source, !types[!DairyAnimalEnum], default_value: [1]
-    resolve -> (t, a, c) {
+    resolve ->(t, a, c) {
       # get the strings out:
       sources = a["source"]
       if sources.include?("YAK")
@@ -71,12 +71,12 @@ CheeseType = GraphQL::ObjectType.define do
 
   field :nullableCheese, CheeseType, "Cheeses like this one" do
     argument :source, types[!DairyAnimalEnum]
-    resolve -> (t, a, c) { raise("NotImplemented") }
+    resolve ->(t, a, c) { raise("NotImplemented") }
   end
 
   field :deeplyNullableCheese, CheeseType, "Cheeses like this one" do
     argument :source, types[types[DairyAnimalEnum]]
-    resolve -> (t, a, c) { raise("NotImplemented") }
+    resolve ->(t, a, c) { raise("NotImplemented") }
   end
 
   # Keywords can be used for definition methods
@@ -96,17 +96,17 @@ MilkType = GraphQL::ObjectType.define do
   field :origin, !types.String, "Place the milk comes from"
   field :flavors, types[types.String], "Chocolate, Strawberry, etc" do
     argument :limit, types.Int
-    resolve -> (milk, args, ctx) {
+    resolve ->(milk, args, ctx) {
       args[:limit] ? milk.flavors.first(args[:limit]) : milk.flavors
     }
   end
   field :executionError do
     type GraphQL::STRING_TYPE
-    resolve -> (t, a, c) { raise(GraphQL::ExecutionError, "There was an execution error") }
+    resolve ->(t, a, c) { raise(GraphQL::ExecutionError, "There was an execution error") }
   end
 
   field :allDairy, -> { types[DairyProductUnion] } do
-    resolve -> (obj, args, ctx) { CHEESES.values + MILKS.values }
+    resolve ->(obj, args, ctx) { CHEESES.values + MILKS.values }
   end
 end
 
@@ -153,12 +153,12 @@ CowType = GraphQL::ObjectType.define do
 
   field :cantBeNullButIs do
     type !GraphQL::STRING_TYPE
-    resolve -> (t, a, c) { nil }
+    resolve ->(t, a, c) { nil }
   end
 
   field :cantBeNullButRaisesExecutionError do
     type !GraphQL::STRING_TYPE
-    resolve -> (t, a, c) { raise GraphQL::ExecutionError, "BOOM" }
+    resolve ->(t, a, c) { raise GraphQL::ExecutionError, "BOOM" }
   end
 end
 
@@ -188,11 +188,11 @@ DeepNonNullType = GraphQL::ObjectType.define do
   name "DeepNonNull"
   field :nonNullInt, !types.Int do
     argument :returning, types.Int
-    resolve -> (obj, args, ctx) { args[:returning] }
+    resolve ->(obj, args, ctx) { args[:returning] }
   end
 
   field :deepNonNull, DeepNonNullType.to_non_null_type do
-    resolve -> (obj, args, ctx) { :deepNonNull }
+    resolve ->(obj, args, ctx) { :deepNonNull }
   end
 end
 
@@ -205,7 +205,7 @@ class FetchField
       description(desc)
       argument :id, id_type
 
-      resolve -> (t, a, c) {
+      resolve ->(t, a, c) {
         id_string = a["id"].to_s # Cheese has Int type, Milk has ID type :(
         id, item = data.find { |id, item| id.to_s == id_string }
         item
@@ -222,7 +222,7 @@ class SingletonField
       type(return_type)
       description(desc)
 
-      resolve -> (t, a, c) {data}
+      resolve ->(t, a, c) {data}
     end
   end
 end
@@ -231,7 +231,7 @@ SourceFieldDefn = Proc.new {
   type GraphQL::ListType.new(of_type: CheeseType)
   description "Cheese from source"
   argument :source, DairyAnimalEnum, default_value: 1
-  resolve -> (target, arguments, context) {
+  resolve ->(target, arguments, context) {
     CHEESES.values.select{ |c| c.source == arguments["source"] }
   }
 }
@@ -240,7 +240,7 @@ FavoriteFieldDefn = GraphQL::Field.define do
   name "favoriteEdible"
   description "My favorite food"
   type EdibleInterface
-  resolve -> (t, a, c) { MILKS[1] }
+  resolve ->(t, a, c) { MILKS[1] }
 end
 
 DairyAppQueryType = GraphQL::ObjectType.define do
@@ -260,7 +260,7 @@ DairyAppQueryType = GraphQL::ObjectType.define do
     type !DairyProductUnion
     # This is a list just for testing 😬
     argument :product, types[DairyProductInputType], default_value: [{"source" => "SHEEP"}]
-    resolve -> (t, args, c) {
+    resolve ->(t, args, c) {
       source = args["product"][0][:source] # String or Sym is ok
       products = CHEESES.values + MILKS.values
       if !source.nil?
@@ -272,7 +272,7 @@ DairyAppQueryType = GraphQL::ObjectType.define do
 
   field :allDairy, types[DairyProductUnion] do
     argument :executionErrorAtIndex, types.Int
-    resolve -> (obj, args, ctx) {
+    resolve ->(obj, args, ctx) {
       result = CHEESES.values + MILKS.values
       result[args[:executionErrorAtIndex]] = GraphQL::ExecutionError.new("missing dairy") if args[:executionErrorAtIndex]
       result
@@ -280,27 +280,27 @@ DairyAppQueryType = GraphQL::ObjectType.define do
   end
 
   field :allEdible, types[EdibleInterface] do
-    resolve -> (obj, args, ctx) { CHEESES.values + MILKS.values }
+    resolve ->(obj, args, ctx) { CHEESES.values + MILKS.values }
   end
 
   field :error do
     description "Raise an error"
     type GraphQL::STRING_TYPE
-    resolve -> (t, a, c) { raise("This error was raised on purpose") }
+    resolve ->(t, a, c) { raise("This error was raised on purpose") }
   end
 
   field :executionError do
     type GraphQL::STRING_TYPE
-    resolve -> (t, a, c) { raise(GraphQL::ExecutionError, "There was an execution error") }
+    resolve ->(t, a, c) { raise(GraphQL::ExecutionError, "There was an execution error") }
   end
 
   # To test possibly-null fields
   field :maybeNull, MaybeNullType do
-    resolve -> (t, a, c) { OpenStruct.new(cheese: nil) }
+    resolve ->(t, a, c) { OpenStruct.new(cheese: nil) }
   end
 
   field :deepNonNull, !DeepNonNullType do
-    resolve -> (o, a, c) { :deepNonNull }
+    resolve ->(o, a, c) { :deepNonNull }
   end
 end
 
@@ -317,7 +317,7 @@ DairyAppMutationType = GraphQL::ObjectType.define do
   field :pushValue, !types[!types.Int] do
     description("Push a value onto a global array :D")
     argument :value, !types.Int
-    resolve -> (o, args, ctx) {
+    resolve ->(o, args, ctx) {
       GLOBAL_VALUES << args[:value]
       GLOBAL_VALUES
     }
@@ -326,7 +326,7 @@ DairyAppMutationType = GraphQL::ObjectType.define do
   field :replaceValues, !types[!types.Int] do
     description("Replace the global array with new values")
     argument :input, !ReplaceValuesInputType
-    resolve -> (o, args, ctx) {
+    resolve ->(o, args, ctx) {
       GLOBAL_VALUES.clear
       GLOBAL_VALUES.push(*args[:input][:values])
       GLOBAL_VALUES
@@ -337,7 +337,7 @@ end
 SubscriptionType = GraphQL::ObjectType.define do
   name "Subscription"
   field :test, types.String do
-    resolve -> (o, a, c) { "Test" }
+    resolve ->(o, a, c) { "Test" }
   end
 end
 
@@ -350,7 +350,7 @@ DummySchema = GraphQL::Schema.define do
 
   rescue_from(NoSuchDairyError) { |err| err.message  }
 
-  resolve_type -> (obj, ctx) {
+  resolve_type ->(obj, ctx) {
     DummySchema.types[obj.class.name]
   }
 end

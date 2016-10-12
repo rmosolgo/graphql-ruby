@@ -109,7 +109,7 @@
    ```ruby
    field :cities, CityType.connection_type do
      argument :order, types.String, default_value: "name"
-     resolve -> (obj, args, ctx) {
+     resolve ->(obj, args, ctx) {
        obj.order(args[:order])
      }
    end

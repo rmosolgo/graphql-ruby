@@ -31,7 +31,7 @@ module GraphQL
       def validate(context)
         visitor = context.visitor
 
-        visitor[Nodes::OperationDefinition].enter << -> (ast_node, prev_ast_node) {
+        visitor[Nodes::OperationDefinition].enter << ->(ast_node, prev_ast_node) {
           node = Node.new(
             return_type: context.type_definition && context.type_definition.unwrap,
             ast_node: ast_node,
@@ -42,7 +42,7 @@ module GraphQL
           @operations[ast_node.name] = node
         }
 
-        visitor[Nodes::Field].enter << -> (ast_node, prev_ast_node) {
+        visitor[Nodes::Field].enter << ->(ast_node, prev_ast_node) {
           parent_node = @nodes.last
           node_name = ast_node.alias || ast_node.name
           # This node might not be novel, eg inside an inline fragment
@@ -64,11 +64,11 @@ module GraphQL
           @parent_directives.push([])
         }
 
-        visitor[Nodes::InlineFragment].enter << -> (ast_node, prev_ast_node) {
+        visitor[Nodes::InlineFragment].enter << ->(ast_node, prev_ast_node) {
           @parent_directives.push(InlineFragmentDirectives.new)
         }
 
-        visitor[Nodes::Directive].enter << -> (ast_node, prev_ast_node) {
+        visitor[Nodes::Directive].enter << ->(ast_node, prev_ast_node) {
           # It could be a query error where a directive is somewhere it shouldn't be
           if @parent_directives.any?
             directive_irep_node = Node.new(
@@ -83,7 +83,7 @@ module GraphQL
           end
         }
 
-        visitor[Nodes::FragmentSpread].enter << -> (ast_node, prev_ast_node) {
+        visitor[Nodes::FragmentSpread].enter << ->(ast_node, prev_ast_node) {
           parent_node = @nodes.last
           # Record _both sides_ of the dependency
           spread_node = Node.new(
@@ -100,7 +100,7 @@ module GraphQL
           @parent_directives.push([])
         }
 
-        visitor[Nodes::FragmentDefinition].enter << -> (ast_node, prev_ast_node) {
+        visitor[Nodes::FragmentDefinition].enter << ->(ast_node, prev_ast_node) {
           node = Node.new(
             parent: nil,
             name: ast_node.name,
@@ -111,11 +111,11 @@ module GraphQL
           @fragments[ast_node.name] = node
         }
 
-        visitor[Nodes::InlineFragment].leave  << -> (ast_node, prev_ast_node) {
+        visitor[Nodes::InlineFragment].leave  << ->(ast_node, prev_ast_node) {
           @parent_directives.pop
         }
 
-        visitor[Nodes::FragmentSpread].leave  << -> (ast_node, prev_ast_node) {
+        visitor[Nodes::FragmentSpread].leave  << ->(ast_node, prev_ast_node) {
           # Capture any directives that apply to this spread
           # so that they can be applied to fields when
           # the fragment is merged in later
@@ -125,7 +125,7 @@ module GraphQL
           spread_node.directives.merge(applicable_directives)
         }
 
-        visitor[Nodes::FragmentDefinition].leave << -> (ast_node, prev_ast_node) {
+        visitor[Nodes::FragmentDefinition].leave << ->(ast_node, prev_ast_node) {
           # This fragment doesn't depend on any others,
           # we should save it as the starting point for dependency resolution
           frag_node = @nodes.pop
@@ -134,11 +134,11 @@ module GraphQL
           end
         }
 
-        visitor[Nodes::OperationDefinition].leave << -> (ast_node, prev_ast_node) {
+        visitor[Nodes::OperationDefinition].leave << ->(ast_node, prev_ast_node) {
           @nodes.pop
         }
 
-        visitor[Nodes::Field].leave << -> (ast_node, prev_ast_node) {
+        visitor[Nodes::Field].leave << ->(ast_node, prev_ast_node) {
           # Pop this field's node
           # and record any directives that were visited
           # during this field & before it (eg, inline fragments)
@@ -148,7 +148,7 @@ module GraphQL
           field_node.included ||= GraphQL::Execution::DirectiveChecks.include?(applicable_directives, context.query)
         }
 
-        visitor[Nodes::Document].leave << -> (ast_node, prev_ast_node) {
+        visitor[Nodes::Document].leave << ->(ast_node, prev_ast_node) {
           # Resolve fragment dependencies. Start with fragments with no
           # dependencies and work along the spreads.
           while fragment_node = @independent_fragments.pop

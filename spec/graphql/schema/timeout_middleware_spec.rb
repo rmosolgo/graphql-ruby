@@ -5,7 +5,7 @@ describe GraphQL::Schema::TimeoutMiddleware do
   let(:timeout_middleware) {  GraphQL::Schema::TimeoutMiddleware.new(max_seconds: max_seconds) }
   let(:timeout_schema) {
 
-    sleep_for_seconds_resolve = -> (obj, args, ctx) {
+    sleep_for_seconds_resolve = ->(obj, args, ctx) {
       sleep(args[:seconds])
       args[:seconds]
     }
@@ -13,7 +13,7 @@ describe GraphQL::Schema::TimeoutMiddleware do
     nested_sleep_type = GraphQL::ObjectType.define do
       name "NestedSleep"
       field :seconds, types.Float do
-        resolve -> (obj, args, ctx) { obj }
+        resolve ->(obj, args, ctx) { obj }
       end
 
       field :nestedSleep, -> { nested_sleep_type } do

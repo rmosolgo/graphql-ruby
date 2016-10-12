@@ -22,8 +22,8 @@ describe GraphQL::Schema::Loader do
 
     big_int_type = GraphQL::ScalarType.define do
       name "BigInt"
-      coerce_input -> (value) { value =~ /\d+/ ? Integer(value) : nil }
-      coerce_result -> (value) { value.to_s }
+      coerce_input ->(value) { value =~ /\d+/ ? Integer(value) : nil }
+      coerce_result ->(value) { value.to_s }
     end
 
     variant_input_type = GraphQL::InputObjectType.define do

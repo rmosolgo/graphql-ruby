@@ -7,7 +7,7 @@ GraphQL::Introspection::InputValueType = GraphQL::ObjectType.define do
   field :description, types.String
   field :type, !GraphQL::Introspection::TypeType
   field :defaultValue, types.String, "A GraphQL-formatted string representing the default value for this input value." do
-    resolve -> (obj, args, ctx) {
+    resolve ->(obj, args, ctx) {
       value = obj.default_value
       value.nil? ? nil : JSON.dump(obj.type.coerce_result(value))
     }

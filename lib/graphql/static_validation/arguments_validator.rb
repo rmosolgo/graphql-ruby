@@ -6,7 +6,7 @@ module GraphQL
 
       def validate(context)
         visitor = context.visitor
-        visitor[GraphQL::Language::Nodes::Argument] << -> (node, parent) {
+        visitor[GraphQL::Language::Nodes::Argument] << ->(node, parent) {
           if parent.is_a?(GraphQL::Language::Nodes::InputObject)
             arg_defn = context.argument_definition
             if arg_defn.nil?

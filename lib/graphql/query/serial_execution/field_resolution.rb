@@ -75,7 +75,7 @@ module GraphQL
         # Execute the field's resolve method
         # @return [Proc] suitable to be the last step in a middleware chain
         def get_middleware_proc_from_field_resolve
-          -> (_parent_type, parent_object, field_definition, field_args, context, _next) {
+          ->(_parent_type, parent_object, field_definition, field_args, context, _next) {
             context.ast_node = irep_node.ast_node
             context.irep_node = irep_node
             value = field_definition.resolve(parent_object, field_args, context)

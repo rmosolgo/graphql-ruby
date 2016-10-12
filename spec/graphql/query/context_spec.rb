@@ -5,16 +5,16 @@ describe GraphQL::Query::Context do
     name "Query"
     field :context, types.String do
       argument :key, !types.String
-      resolve -> (target, args, ctx) { ctx[args[:key]] }
+      resolve ->(target, args, ctx) { ctx[args[:key]] }
     end
     field :contextAstNodeName, types.String do
-      resolve -> (target, args, ctx) { ctx.ast_node.class.name }
+      resolve ->(target, args, ctx) { ctx.ast_node.class.name }
     end
     field :contextIrepNodeName, types.String do
-      resolve -> (target, args, ctx) { ctx.irep_node.class.name }
+      resolve ->(target, args, ctx) { ctx.irep_node.class.name }
     end
     field :queryName, types.String do
-      resolve -> (target, args, ctx) { ctx.query.class.name }
+      resolve ->(target, args, ctx) { ctx.query.class.name }
     end
   }}
   let(:schema) { GraphQL::Schema.define(query: query_type, mutation: nil)}

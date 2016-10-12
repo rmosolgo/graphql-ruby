@@ -4,7 +4,7 @@ module GraphQL
       include GraphQL::StaticValidation::Message::MessageHelper
 
       def validate(context)
-        context.visitor[GraphQL::Language::Nodes::VariableDefinition] << -> (node, parent) {
+        context.visitor[GraphQL::Language::Nodes::VariableDefinition] << ->(node, parent) {
           validate_is_input_type(node, context)
         }
       end

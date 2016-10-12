@@ -72,7 +72,7 @@ describe GraphQL::Relay::Mutation do
       GraphQL::Relay::Mutation.define do
         name "CustomReturnTypeTest"
         return_type custom_type
-        resolve -> (input, ctx) {
+        resolve ->(input, ctx) {
           OpenStruct.new(name: "Custom Return Type Test")
         }
       end

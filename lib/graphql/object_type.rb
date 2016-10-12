@@ -12,7 +12,7 @@ module GraphQL
   #     field :cast, CastType
   #     field :starring, types[PersonType] do
   #       argument :limit, types.Int
-  #       resolve -> (object, args, ctx) {
+  #       resolve ->(object, args, ctx) {
   #         stars = object.cast.stars
   #         args[:limit] && stars = stars.limit(args[:limit])
   #         stars

@@ -6,7 +6,7 @@ module GraphQL
       include GraphQL::StaticValidation::Message::MessageHelper
 
       def validate(context)
-        context.visitor[GraphQL::Language::Nodes::Field] << -> (node, parent)  {
+        context.visitor[GraphQL::Language::Nodes::Field] << ->(node, parent)  {
           return if context.skip_field?(node.name)
           field_defn = context.field_definition
           validate_field_selections(node, field_defn, context)

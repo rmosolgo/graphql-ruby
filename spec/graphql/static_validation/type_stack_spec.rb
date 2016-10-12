@@ -7,7 +7,7 @@ class TypeCheckValidator
 
   def validate(context)
     self.class.checks.clear
-    context.visitor[GraphQL::Language::Nodes::Field] << -> (node, parent) {
+    context.visitor[GraphQL::Language::Nodes::Field] << ->(node, parent) {
       self.class.checks << context.object_types.map(&:name)
     }
   end

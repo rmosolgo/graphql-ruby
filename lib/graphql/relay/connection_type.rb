@@ -11,7 +11,7 @@ module GraphQL
           name(connection_type_name)
           field :edges, types[edge_type] do
             description "A list of edges."
-            resolve -> (obj, args, ctx) {
+            resolve ->(obj, args, ctx) {
               obj.edge_nodes.map { |item| edge_class.new(item, obj) }
             }
           end

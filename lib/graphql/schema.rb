@@ -50,9 +50,9 @@ module GraphQL
       :max_depth, :max_complexity,
       :orphan_types, :resolve_type,
       :object_from_id, :id_from_object,
-      query_analyzer: -> (schema, analyzer) { schema.query_analyzers << analyzer },
-      middleware: -> (schema, middleware) { schema.middleware << middleware },
-      rescue_from: -> (schema, err_class, &block) { schema.rescue_from(err_class, &block)}
+      query_analyzer: ->(schema, analyzer) { schema.query_analyzers << analyzer },
+      middleware: ->(schema, middleware) { schema.middleware << middleware },
+      rescue_from: ->(schema, err_class, &block) { schema.rescue_from(err_class, &block)}
 
     lazy_defined_attr_accessor \
       :query, :mutation, :subscription,

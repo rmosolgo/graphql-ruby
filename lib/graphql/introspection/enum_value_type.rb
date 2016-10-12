@@ -6,7 +6,7 @@ GraphQL::Introspection::EnumValueType = GraphQL::ObjectType.define do
   field :name, !types.String
   field :description, types.String
   field :isDeprecated, !types.Boolean do
-    resolve -> (obj, a, c) { !!obj.deprecation_reason }
+    resolve ->(obj, a, c) { !!obj.deprecation_reason }
   end
   field :deprecationReason, types.String, property: :deprecation_reason
 end

@@ -92,7 +92,7 @@ describe GraphQL::Schema do
         assert_raises(NotImplementedError) {
           GraphQL::Schema.define do
             query(query_type)
-            resolve_type -> (obj, ctx) { :whatever }
+            resolve_type ->(obj, ctx) { :whatever }
           end
         }
       end
@@ -118,7 +118,7 @@ describe GraphQL::Schema do
         assert_raises(NotImplementedError) {
           GraphQL::Schema.define do
             query(query_type)
-            resolve_type -> (obj, ctx) { :whatever }
+            resolve_type ->(obj, ctx) { :whatever }
           end
         }
       end

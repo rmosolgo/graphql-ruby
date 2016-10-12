@@ -55,7 +55,7 @@ module GraphQL
   # @example Create a field with an argument
   #   field :students, types[StudentType] do
   #     argument :grade, types.Int
-  #     resolve -> (obj, args, ctx) {
+  #     resolve ->(obj, args, ctx) {
   #       Student.where(grade: args[:grade])
   #     }
   #   end
@@ -66,7 +66,7 @@ module GraphQL
   #   field :events, types[EventType] do
   #     # by default, don't include past events
   #     argument :includePast, types.Boolean, default_value: false
-  #     resolve -> (obj, args, ctx) {
+  #     resolve ->(obj, args, ctx) {
   #       args[:includePast] # => false if no value was provided in the query
   #       # ...
   #     }
@@ -95,14 +95,14 @@ module GraphQL
   #
   #   # Or inside the block:
   #   field :expensive_calculation_2, !types.Int do
-  #     complexity -> (ctx, args, child_complexity) { ctx[:current_user].staff? ? 0 : 10 }
+  #     complexity ->(ctx, args, child_complexity) { ctx[:current_user].staff? ? 0 : 10 }
   #   end
   #
   # @example Calculating the complexity of a list field
   #   field :items, types[ItemType] do
   #     argument :limit, !types.Int
   #     # Mulitply the child complexity by the possible items on the list
-  #     complexity -> (ctx, args, child_complexity) { child_complexity * args[:limit] }
+  #     complexity ->(ctx, args, child_complexity) { child_complexity * args[:limit] }
   #   end
   #
   # @example Creating a field, then assigning it to a type
@@ -110,7 +110,7 @@ module GraphQL
   #     name("Name")
   #     type(!types.String)
   #     description("The name of this thing")
-  #     resolve -> (object, arguments, context) { object.name }
+  #     resolve ->(object, arguments, context) { object.name }
   #   end
   #
   #   NamedType = GraphQL::ObjectType.define do
@@ -142,7 +142,7 @@ module GraphQL
     #   @return [GraphQL::Relay::Mutation, nil] The mutation this field was derived from, if it was derived from a mutation
 
     # @!attribute complexity
-    #   @return [Numeric, Proc] The complexity for this field (default: 1), as a constant or a proc like `-> (query_ctx, args, child_complexity) { } # Numeric`
+    #   @return [Numeric, Proc] The complexity for this field (default: 1), as a constant or a proc like `->(query_ctx, args, child_complexity) { } # Numeric`
 
     def initialize
       @complexity = 1
