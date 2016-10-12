@@ -91,7 +91,7 @@ module GraphQL
       result = GraphQL::Query::InputValidationResult.new
 
       if !@values_by_name.key?(value_name)
-        result.add_problem("Expected #{JSON.dump(value_name)} to be one of: #{@values_by_name.keys.join(', ')}")
+        result.add_problem("Expected #{JSON.generate(value_name, quirks_mode: true)} to be one of: #{@values_by_name.keys.join(', ')}")
       end
 
       result
