@@ -10,11 +10,6 @@ module GraphQL
         GraphQL::Define::TypeDefiner.instance
       end
 
-      # TODO: do I actually want to add this?
-      def metadata(key, value)
-        @target.metadata[key] = value
-      end
-
       def method_missing(name, *args, &block)
         definition = @dictionary[name]
         if definition

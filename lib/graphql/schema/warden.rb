@@ -82,9 +82,7 @@ module GraphQL
       # @param argument_owner [GraphQL::Field, GraphQL::InputObjectType]
       # @return [Array<GraphQL::Argument>] Visible arguments on `argument_owner`
       def arguments(argument_owner)
-        argument_owner.arguments.each_value.select do |arg_defn|
-          visible?(arg_defn) && visible?(arg_defn.type.unwrap)
-        end
+        argument_owner.arguments.each_value.select { |a| visible_field?(a) }
       end
 
       # @return [Array<GraphQL::EnumType::EnumValue>] Visible members of `enum_defn`
@@ -95,6 +93,11 @@ module GraphQL
       # @return [Array<GraphQL::InterfaceType>] Visible interfaces implemented by `obj_type`
       def interfaces(obj_type)
         obj_type.interfaces.select { |t| visible?(t) }
+      end
+
+      # @return [Array<GraphQL::Field>] Visible input fields on `input_obj_type`
+      def input_fields(input_obj_type)
+        input_obj_type.arguments.each_value.select { |f| visible_field?(f) }
       end
 
       private

@@ -83,12 +83,14 @@ module GraphQL
       GraphQL::TypeKinds::ENUM
     end
 
-    def validate_non_null_input(value_name)
+    def validate_non_null_input(value_name, warden)
       ensure_defined
       result = GraphQL::Query::InputValidationResult.new
+      allowed_values = warden.enum_values(self)
+      matching_value = allowed_values.find { |v| v.name == value_name }
 
-      if !@values_by_name.key?(value_name)
-        result.add_problem("Expected #{JSON.generate(value_name, quirks_mode: true)} to be one of: #{@values_by_name.keys.join(', ')}")
+      if matching_value.nil?
+        result.add_problem("Expected #{JSON.generate(value_name, quirks_mode: true)} to be one of: #{allowed_values.join(', ')}")
       end
 
       result

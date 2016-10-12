@@ -24,18 +24,12 @@ describe GraphQL::EnumType do
   end
 
   describe "resolving with a warden" do
-    module ExampleWarden
-      def self.enum_values(enum_type)
-        []
-      end
-    end
-
     it "gets values from the warden" do
       # OK
       assert_equal("YAK", enum.coerce_result("YAK"))
       # NOT OK
       assert_raises(GraphQL::EnumType::UnresolvedValueError) {
-        enum.coerce_result("YAK", ExampleWarden)
+        enum.coerce_result("YAK", NothingWarden)
       }
     end
   end
@@ -45,7 +39,7 @@ describe GraphQL::EnumType do
   end
 
   describe "validate_input with bad input" do
-    let(:result) { DairyAnimalEnum.validate_input("bad enum") }
+    let(:result) { DairyAnimalEnum.validate_input("bad enum", PermissiveWarden) }
 
     it "returns an invalid result" do
       assert(!result.valid?)

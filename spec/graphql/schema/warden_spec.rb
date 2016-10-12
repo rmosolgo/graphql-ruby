@@ -63,7 +63,9 @@ module MaskHelpers
     metadata :hidden_input_object_type, true
     argument :latitude, !types.Float
     argument :longitude, !types.Float
-    argument :miles, !types.Float
+    argument :miles, !types.Float do
+      metadata :hidden_input_field, true
+    end
   end
 
   QueryType = GraphQL::ObjectType.define do
@@ -105,8 +107,8 @@ module MaskHelpers
     end
   end
 
-  def self.query_with_mask(str, mask)
-    Schema.execute(str, except: mask, root_value: Data)
+  def self.query_with_mask(str, mask, variables: {})
+    Schema.execute(str, except: mask, root_value: Data, variables: variables)
   end
 end
 
@@ -334,6 +336,55 @@ describe GraphQL::Schema::Warden do
     end
   end
 
+  describe "hidding input type arguments" do
+    let(:mask) {
+      -> (member) { member.metadata[:hidden_input_field] }
+    }
+
+    it "isn't present in introspection" do
+      query_string = %|
+      {
+        WithinInput: __type(name: "WithinInput") { inputFields { name } }
+      }|
+      res = MaskHelpers.query_with_mask(query_string, mask)
+      input_field_names = res["data"]["WithinInput"]["inputFields"].map { |f| f["name"] }
+      refute_includes input_field_names, "miles"
+    end
+
+    it "isn't a valid default value" do
+      query_string = %|
+      query findLanguages($nearby: WithinInput = {latitude: 1.0, longitude: 2.2, miles: 3.3}) {
+        languages(within: $nearby) { name }
+      }|
+      res = MaskHelpers.query_with_mask(query_string, mask)
+      expected_errors = ["Default value for $nearby doesn't match type WithinInput"]
+      assert_equal expected_errors, error_messages(res)
+    end
+
+    it "isn't a valid literal input" do
+      query_string = %|
+      {
+        languages(within: {latitude: 1.0, longitude: 2.2, miles: 3.3}) { name }
+      }|
+      res = MaskHelpers.query_with_mask(query_string, mask)
+      expected_errors = [
+        "Argument 'within' on Field 'languages' has an invalid value. Expected type 'WithinInput'.",
+        "InputObject 'WithinInput' doesn't accept argument 'miles'"
+      ]
+      assert_equal expected_errors, error_messages(res)
+    end
+
+    it "isn't a valid variable input" do
+      query_string = %|
+      query findLanguages($nearby: WithinInput!) {
+        languages(within: $nearby) { name }
+      }|
+      res = MaskHelpers.query_with_mask(query_string, mask, variables: { "latitude" => 1.0, "longitude" => 2.2, "miles" => 3.3})
+      expected_errors = ["Variable nearby of type WithinInput! was provided invalid value"]
+      assert_equal expected_errors, error_messages(res)
+    end
+  end
+
   describe "hidding input types" do
     let(:mask) {
       -> (member) { member.metadata[:hidden_input_object_type] }
@@ -410,7 +461,7 @@ describe GraphQL::Schema::Warden do
       refute_includes schema_values, "TRILL", "It's not present in __schema"
     end
 
-    it "isn't a valid input" do
+    it "isn't a valid literal input" do
       query_string = %|
       { phonemes(manners: [STOP, TRILL]) { symbol } }
       |
@@ -418,6 +469,29 @@ describe GraphQL::Schema::Warden do
       # It's not a good error message ... but it's something!
       expected_errors = [
         "Argument 'manners' on Field 'phonemes' has an invalid value. Expected type '[Manner]'.",
+      ]
+      assert_equal expected_errors, error_messages(res)
+    end
+
+    it "isn't a valid default value" do
+      query_string = %|
+      query getPhonemes($manners: [Manner] = [STOP, TRILL]){ phonemes(manners: $manners) { symbol } }
+      |
+      res = MaskHelpers.query_with_mask(query_string, mask)
+      expected_errors = ["Default value for $manners doesn't match type [Manner]"]
+      assert_equal expected_errors, error_messages(res)
+    end
+
+    it "isn't a valid variable input" do
+      query_string = %|
+      query getPhonemes($manners: [Manner]!) {
+        phonemes(manners: $manners) { symbol }
+      }
+      |
+      res = MaskHelpers.query_with_mask(query_string, mask, variables: { "manners" => ["STOP", "TRILL"] })
+      # It's not a good error message ... but it's something!
+      expected_errors = [
+        "Variable manners of type [Manner]! was provided invalid value",
       ]
       assert_equal expected_errors, error_messages(res)
     end

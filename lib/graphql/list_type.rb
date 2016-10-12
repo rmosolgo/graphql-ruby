@@ -38,11 +38,11 @@ module GraphQL
       "[#{of_type.to_s}]"
     end
 
-    def validate_non_null_input(value)
+    def validate_non_null_input(value, warden)
       result = GraphQL::Query::InputValidationResult.new
 
       ensure_array(value).each_with_index do |item, index|
-        item_result = of_type.validate_input(item)
+        item_result = of_type.validate_input(item, warden)
         if !item_result.valid?
           result.merge_result!(index, item_result)
         end
