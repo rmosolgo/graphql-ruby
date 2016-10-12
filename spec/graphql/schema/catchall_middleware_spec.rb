@@ -1,7 +1,7 @@
 require "spec_helper"
 
 describe GraphQL::Schema::CatchallMiddleware do
-  let(:result) { DummySchema.execute(query_string) }
+  let(:result) { DummySchema.execute(query_string: query_string) }
   let(:query_string) {%| query noMilk { error }|}
 
   before do

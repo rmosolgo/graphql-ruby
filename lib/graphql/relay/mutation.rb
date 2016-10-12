@@ -39,7 +39,7 @@ module GraphQL
     #         clientMutationId
     #     }|
     #
-    #    GraphQL::Query.new(MySchema, query_string).result
+    #    GraphQL::Query.new(MySchema, query_string: query_string).result
     #    # {"data" => {
     #    #   "updateName" => {
     #    #     "item" => { "name" => "new name"},

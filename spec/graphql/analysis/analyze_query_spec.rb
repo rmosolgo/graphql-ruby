@@ -27,7 +27,7 @@ describe GraphQL::Analysis do
     let(:analyzers) { [type_collector, node_counter] }
     let(:reduce_result) { GraphQL::Analysis.analyze_query(query, analyzers) }
     let(:variables) { {} }
-    let(:query) { GraphQL::Query.new(DummySchema, query_string, variables: variables) }
+    let(:query) { GraphQL::Query.new(DummySchema, query_string: query_string, variables: variables) }
     let(:query_string) {%|
       {
         cheese(id: 1) {
@@ -98,7 +98,7 @@ describe GraphQL::Analysis do
       }
       let(:analyzers) { [connection_counter] }
       let(:reduce_result) { GraphQL::Analysis.analyze_query(query, analyzers) }
-      let(:query) { GraphQL::Query.new(StarWarsSchema, query_string, variables: variables) }
+      let(:query) { GraphQL::Query.new(StarWarsSchema, query_string: query_string, variables: variables) }
       let(:query_string) {%|
         query getBases {
           empire {
@@ -156,7 +156,7 @@ describe GraphQL::Analysis do
     let(:flavor_catcher) { FlavorCatcher.new }
     let(:analyzers) { [id_catcher, flavor_catcher] }
     let(:reduce_result) { GraphQL::Analysis.analyze_query(query, analyzers) }
-    let(:query) { GraphQL::Query.new(DummySchema, query_string) }
+    let(:query) { GraphQL::Query.new(DummySchema, query_string: query_string) }
     let(:query_string) {%|
       {
         cheese(id: 1) {
@@ -166,7 +166,7 @@ describe GraphQL::Analysis do
       }
     |}
     let(:schema) { DummySchema }
-    let(:result) { schema.execute(query_string) }
+    let(:result) { schema.execute(query_string: query_string) }
     let(:query_string) {%|
       {
         cheese(id: 1) {

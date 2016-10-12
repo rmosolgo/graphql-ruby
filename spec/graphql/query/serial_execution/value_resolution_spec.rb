@@ -57,7 +57,7 @@ describe GraphQL::Query::SerialExecution::ValueResolution do
   }
 
   let(:result) { schema.execute(
-    query_string,
+    query_string: query_string,
   )}
 
   describe "enum resolution" do

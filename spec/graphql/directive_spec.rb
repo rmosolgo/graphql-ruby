@@ -2,7 +2,7 @@ require "spec_helper"
 
 describe GraphQL::Directive do
   let(:variables) { {"t" => true, "f" => false} }
-  let(:result) { DummySchema.execute(query_string, variables: variables) }
+  let(:result) { DummySchema.execute(query_string: query_string, variables: variables) }
   describe "on fields" do
     let(:query_string) { %|query directives($t: Boolean!, $f: Boolean!) {
       cheese(id: 1) {
@@ -133,7 +133,7 @@ describe GraphQL::Directive do
           let(:skip?) { true }
           it "is included" do assert field_included? end
         end
-      end      
+      end
     end
     describe "when evaluating conflicting @skip and @include on query selection and fragment" do
       let(:query_string) {"

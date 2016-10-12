@@ -9,7 +9,7 @@ describe GraphQL::InterfaceType do
   end
 
   describe "query evaluation" do
-    let(:result) { DummySchema.execute(query_string, variables: {"cheeseId" => 2})}
+    let(:result) { DummySchema.execute(query_string: query_string, variables: {"cheeseId" => 2})}
     let(:query_string) {%|
       query fav {
         favoriteEdible { fatContent }
@@ -22,7 +22,7 @@ describe GraphQL::InterfaceType do
   end
 
   describe "mergable query evaluation" do
-    let(:result) { DummySchema.execute(query_string, variables: {"cheeseId" => 2})}
+    let(:result) { DummySchema.execute(query_string: query_string, variables: {"cheeseId" => 2})}
     let(:query_string) {%|
       query fav {
         favoriteEdible { fatContent }
@@ -46,7 +46,7 @@ describe GraphQL::InterfaceType do
       }
     }
     |}
-    let(:result) { DummySchema.execute(query_string) }
+    let(:result) { DummySchema.execute(query_string: query_string) }
 
     it "can apply interface fragments to an interface" do
       expected_result = { "data" => {

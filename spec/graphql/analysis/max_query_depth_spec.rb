@@ -9,7 +9,7 @@ describe GraphQL::Analysis::MaxQueryDepth do
     DummySchema.max_depth = @prev_max_depth
   end
 
-  let(:result) { DummySchema.execute(query_string) }
+  let(:result) { DummySchema.execute(query_string: query_string) }
   let(:query_string) { "
     {
       cheese(id: 1) {
@@ -35,7 +35,7 @@ describe GraphQL::Analysis::MaxQueryDepth do
   end
 
   describe "when the query specifies a different max_depth" do
-    let(:result) { DummySchema.execute(query_string, max_depth: 100) }
+    let(:result) { DummySchema.execute(query_string: query_string, max_depth: 100) }
 
     it "obeys that max_depth" do
       assert_equal nil, result["errors"]
