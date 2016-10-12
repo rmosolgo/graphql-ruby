@@ -1,5 +1,6 @@
-require "codeclimate-test-reporter"
-CodeClimate::TestReporter.start
+### Disable Code Climate for unofficial Ruby 1.9.3 support
+# require "codeclimate-test-reporter"
+# CodeClimate::TestReporter.start
 require "sqlite3"
 require "active_record"
 require "sequel"
