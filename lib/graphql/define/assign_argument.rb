@@ -5,12 +5,12 @@ module GraphQL
       ### Ruby 1.9.3 unofficial support
       # def self.call(target, name, type = nil, description = nil, default_value: nil, &block)
       def self.call(target, name, type = nil, description = nil, options = {}, &block)
-        type = options.fetch(:type, nil)
-        description = options.fetch(:description, nil)
+        type ||= options.fetch(:type, nil)
+        description ||= options.fetch(:description, nil)
         default_value = options.fetch(:default_value, nil)
 
         argument = if block_given?
-          GraphQL::Argument.define(&block)
+          GraphQL::Argument.define(options, &block)
         else
           GraphQL::Argument.new
         end
