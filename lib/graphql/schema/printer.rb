@@ -95,38 +95,8 @@ module GraphQL
           def print_description(definition, indentation='', first_in_block=true)
             return '' unless definition.description
 
-            lines = definition.description.split("\n")
-
             description = indentation != '' && !first_in_block ? "\n" : ""
-
-            lines.each do |line|
-              if line == ''
-                description << "#{indentation}#\n"
-              else
-                sublines = break_line(line, 120 - indentation.length)
-                sublines.each do |subline|
-                  description << "#{indentation}# #{subline}\n"
-                end
-              end
-            end
-
-            description
-          end
-
-          def break_line(line, length)
-            return [line] if line.length < length + 5
-
-            parts = line.split(Regexp.new("((?: |^).{15,#{length - 40}}(?= |$))"))
-            return [line] if parts.length < 4
-
-            sublines = [parts.slice!(0, 3).join]
-
-            parts.each_with_index do |part, i|
-              next if i % 2 == 1
-              sublines << "#{part[1..-1]}#{parts[i + 1]}"
-            end
-
-            sublines
+            description << GraphQL::Language::Comments.commentize(definition.description, indent: indentation)
           end
         end
 

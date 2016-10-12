@@ -87,7 +87,8 @@ module GraphQL
           out = "scalar #{node.name}"
           out << generate_directives(node.directives)
         when Nodes::ObjectTypeDefinition
-          out = "type #{node.name}"
+          out = generate_description(node)
+          out << "type #{node.name}"
           out << generate_directives(node.directives)
           out << " implements " << node.interfaces.map(&:name).join(", ") unless node.interfaces.empty?
           out << generate_field_definitions(node.fields)
@@ -103,16 +104,20 @@ module GraphQL
           out << ": #{generate(node.type)}"
           out << generate_directives(node.directives)
         when Nodes::InterfaceTypeDefinition
-          out = "interface #{node.name}"
+          out = generate_description(node)
+          out << "interface #{node.name}"
           out << generate_directives(node.directives)
           out << generate_field_definitions(node.fields)
         when Nodes::UnionTypeDefinition
-          out = "union #{node.name}"
+          out = generate_description(node)
+          out << "union #{node.name}"
           out << generate_directives(node.directives)
           out << " = " + node.types.map(&:name).join(" | ")
         when Nodes::EnumTypeDefinition
-          out = "enum #{node.name}#{generate_directives(node.directives)} {\n"
-          node.values.each do |value|
+          out = generate_description(node)
+          out << "enum #{node.name}#{generate_directives(node.directives)} {\n"
+          node.values.each.with_index do |value, i|
+            out << generate_description(value, indent: '  ', first_in_block: i == 0)
             out << generate(value)
           end
           out << "}"
@@ -121,15 +126,18 @@ module GraphQL
           out << generate_directives(node.directives)
           out << "\n"
         when Nodes::InputObjectTypeDefinition
-          out = "input #{node.name}"
+          out = generate_description(node)
+          out << "input #{node.name}"
           out << generate_directives(node.directives)
           out << " {\n"
-          node.fields.each do |field|
+          node.fields.each.with_index do |field, i|
+            out << generate_description(field, indent: '  ', first_in_block: i == 0)
             out << "  #{generate(field)}\n"
           end
           out << "}"
         when Nodes::DirectiveDefinition
-          out = "directive @#{node.name}"
+          out = generate_description(node)
+          out << "directive @#{node.name}"
           out << "(#{node.arguments.map { |a| generate(a) }.join(", ")})" if node.arguments.any?
           out << " on #{node.locations.join(' | ')}"
         when Nodes::AbstractNode
@@ -167,9 +175,17 @@ module GraphQL
         end
       end
 
+      def generate_description(node, indent: '', first_in_block: true)
+        return '' unless node.description
+
+        description = indent != '' && !first_in_block ? "\n" : ""
+        description << GraphQL::Language::Comments.commentize(node.description, indent: indent)
+      end
+
       def generate_field_definitions(fields)
         out = " {\n"
-        fields.each do |field|
+        fields.each.with_index do |field, i|
+          out << generate_description(field, indent: '  ', first_in_block: i == 0)
           out << "  #{generate(field)}\n"
         end
         out << "}"
