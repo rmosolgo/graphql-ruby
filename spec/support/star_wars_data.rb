@@ -73,6 +73,6 @@ def STAR_WARS_DATA.create_ship(name, faction_id)
   new_id = (self["Ship"].keys.map(&:to_i).max + 1).to_s
   new_ship = OpenStruct.new(id: new_id, name: name)
   self["Ship"][new_id] = new_ship
-  self["Faction"][faction_id]["ships"] << new_id
+  self["Faction"][faction_id].ships << new_id
   new_ship
 end
