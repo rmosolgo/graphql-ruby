@@ -12,7 +12,7 @@ Gem::Specification.new do |s|
   s.authors     = ["Robert Mosolgo"]
   s.email       = ["rdmosolgo@gmail.com"]
   s.license     = "MIT"
-  s.required_ruby_version = ">= 2.1.0" # bc optional keyword args
+  s.required_ruby_version = ">= 1.9.3" # Unofficial support
 
   s.files = Dir["{lib}/**/*", "MIT-LICENSE", "readme.md", ".yardopts"]
   s.test_files = Dir["spec/**/*"]
@@ -30,7 +30,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency "rake", "~> 11.0"
   s.add_development_dependency "rubocop", "~> 0.44"
   # following are required for relay helpers
-  s.add_development_dependency "activerecord"
+  s.add_development_dependency "activerecord", "< 5"
   s.add_development_dependency "appraisal"
   s.add_development_dependency "sequel"
   s.add_development_dependency "sqlite3"
