@@ -5,6 +5,14 @@ module GraphQL
       ### Ruby 1.9.3 unofficial support
       # def self.call(target, name, type = nil, description = nil, default_value: nil, &block)
       def self.call(target, name, type = nil, description = nil, options = {}, &block)
+        if type.is_a?(Hash)
+          options = type
+          type = nil
+        elsif description.is_a?(Hash)
+          options = description
+          description = nil
+        end
+
         type ||= options.fetch(:type, nil)
         description ||= options.fetch(:description, nil)
         default_value = options.fetch(:default_value, nil)

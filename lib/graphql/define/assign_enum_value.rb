@@ -5,6 +5,11 @@ module GraphQL
       # def self.call(enum_type, name, desc = nil, deprecation_reason: nil, value: name)
       ### Ruby 1.9.3 unofficial support
       def self.call(enum_type, name, desc = nil, options = {})
+        if desc.is_a?(Hash)
+          options = desc
+          desc = nil
+        end
+
         deprecation_reason = options.fetch(:deprecation_reason, nil)
         value = options.fetch(:value, name)
 

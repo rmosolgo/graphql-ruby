@@ -5,6 +5,13 @@ module GraphQL
       # def self.call(owner_type, name, type_or_field = nil, desc = nil, field: nil, **kwargs, &block)
       ### Ruby 1.9.3 unofficial support
       def self.call(owner_type, name, type_or_field = nil, desc = nil, options = {}, &block)
+        if type_or_field.is_a?(Hash)
+          options = type_or_field
+          type_or_field = nil
+        elsif desc.is_a?(Hash)
+          options = desc
+          desc = nil
+        end
         field = options.fetch(:field, nil)
         kwargs = options.delete_if { |k, _| k == :field }
 

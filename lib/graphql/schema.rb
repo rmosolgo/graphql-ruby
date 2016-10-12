@@ -139,8 +139,17 @@ module GraphQL
     # Execute a query on itself.
     # See {Query#initialize} for arguments.
     # @return [Hash] query result, ready to be serialized as JSON
-    def execute(*args)
-      query_obj = GraphQL::Query.new(self, *args)
+    def execute(query_string = nil, options = {})
+      case query_string
+      when String
+        options[:query_string] = query_string
+      when Hash
+        options = query_string
+        query_string = nil
+      when nil
+        raise("Must provide query string or options")
+      end
+      query_obj = GraphQL::Query.new(self, options)
       query_obj.result
     end
 
