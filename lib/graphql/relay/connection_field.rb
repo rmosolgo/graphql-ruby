@@ -30,7 +30,11 @@ module GraphQL
       # @param [GraphQL::Field] A field which returns nodes to be wrapped as a connection
       # @param max_page_size [Integer] The maximum number of nodes which may be requested (if a larger page is requested, it is limited to this number)
       # @return [GraphQL::Field] The same field, modified to resolve to a connection object
-      def self.create(underlying_field, max_page_size: nil)
+      ### Ruby 1.9.3 unofficial support
+      # def self.create(underlying_field, max_page_size: nil)
+      def self.create(underlying_field, options = {})
+        max_page_size = options.fetch(:max_page_size, nil)
+
         underlying_field.arguments = DEFAULT_ARGUMENTS.merge(underlying_field.arguments)
         original_resolve = underlying_field.resolve_proc
         underlying_field.resolve = GraphQL::Relay::ConnectionResolve.new(underlying_field, original_resolve, max_page_size: max_page_size)

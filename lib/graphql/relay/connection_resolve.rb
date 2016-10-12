@@ -1,7 +1,11 @@
 module GraphQL
   module Relay
     class ConnectionResolve
-      def initialize(field, underlying_resolve, max_page_size: nil)
+      ### Ruby 1.9.3 unofficial support
+      # def initialize(field, underlying_resolve, max_page_size: nil)
+      def initialize(field, underlying_resolve, options = {})
+        max_page_size = options.fetch(:max_page_size, nil)
+
         @field = field
         @underlying_resolve = underlying_resolve
         @max_page_size = max_page_size

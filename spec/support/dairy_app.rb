@@ -197,7 +197,13 @@ DeepNonNullType = GraphQL::ObjectType.define do
 end
 
 class FetchField
-  def self.create(type:, data:, id_type: !GraphQL::INT_TYPE)
+  ### Ruby 1.9.3 unofficial support
+  # def self.create(type:, data:, id_type: !GraphQL::INT_TYPE)
+  def self.create(options = {})
+    type = options[type]
+    data = options[data]
+    id_type = options.fetch(:id_type, !GraphQL::INT_TYPE)
+
     desc = "Find a #{type.name} by id"
     return_type = type
     GraphQL::Field.define do
@@ -215,7 +221,12 @@ class FetchField
 end
 
 class SingletonField
-  def self.create(type:, data:)
+  ### Ruby 1.9.3 unofficial support
+  # def self.create(type:, data:)
+  def self.create(options = {})
+    type = options[:type]
+    data = options[:data]
+
     desc = "Find the only #{type.name}"
     return_type = type
     GraphQL::Field.define do

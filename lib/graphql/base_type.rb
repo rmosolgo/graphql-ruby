@@ -104,8 +104,12 @@ module GraphQL
     end
 
     # Define a custom connection type for this object type
-    def define_connection(**kwargs, &block)
-      GraphQL::Relay::ConnectionType.create_type(self, **kwargs, &block)
+    ### Ruby 1.9.3 unofficial support
+    # def define_connection(**kwargs, &block)
+    def define_connection(kwargs = {}, &block)
+      ### Ruby 1.9.3 unofficial support
+      # GraphQL::Relay::ConnectionType.create_type(self, **kwargs, &block)
+      GraphQL::Relay::ConnectionType.create_type(self, kwargs, &block)
     end
 
     # Get the default edge type for this object type
@@ -114,8 +118,12 @@ module GraphQL
     end
 
     # Define a custom edge type for this object type
-    def define_edge(**kwargs, &block)
-      GraphQL::Relay::EdgeType.create_type(self, **kwargs, &block)
+    ### Ruby 1.9.3 unofficial support
+    # def define_edge(**kwargs, &block)
+    def define_edge(kwargs = {}, &block)
+      ### Ruby 1.9.3 unofficial support
+      # GraphQL::Relay::EdgeType.create_type(self, **kwargs, &block)
+      GraphQL::Relay::EdgeType.create_type(self, kwargs, &block)
     end
   end
 end

@@ -2,7 +2,12 @@ module GraphQL
   module Define
     # Turn field configs into a {GraphQL::Field} and attach it to a {GraphQL::ObjectType} or {GraphQL::InterfaceType}
     module AssignObjectField
-      def self.call(owner_type, name, type_or_field = nil, desc = nil, field: nil, **kwargs, &block)
+      # def self.call(owner_type, name, type_or_field = nil, desc = nil, field: nil, **kwargs, &block)
+      ### Ruby 1.9.3 unofficial support
+      def self.call(owner_type, name, type_or_field = nil, desc = nil, options = {}, &block)
+        field = options.fetch(:field, nil)
+        kwargs = options.delete_if { |k, _| k == :field }
+
         name_s = name.to_s
 
         # Move some possitional definitions into keyword defns:

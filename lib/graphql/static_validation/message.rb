@@ -6,7 +6,12 @@ module GraphQL
       # Convenience for validators
       module MessageHelper
         # Error `message` is located at `node`
-        def message(message, node, context: nil, path: nil)
+        ### Ruby 1.9.3 unofficial support
+        # def message(message, node, context: nil, path: nil)
+        def message(message, node, options = {})
+          context = options.fetch(:context, nil)
+          path = options.fetch(:path, nil)
+
           path ||= context.path
           GraphQL::StaticValidation::Message.new(message, line: node.line, col: node.col, path: path)
         end
@@ -14,7 +19,13 @@ module GraphQL
 
       attr_reader :message, :line, :col, :path
 
-      def initialize(message, line: nil, col: nil, path: [])
+      ### Ruby 1.9.3 unofficial support
+      # def initialize(message, line: nil, col: nil, path: [])
+      def initialize(message, options = {})
+        line = options.fetch(:line, nil)
+        col = options.fetch(:col, nil)
+        path = options.fetch(:path, [])
+
         @message = message
         @line = line
         @col = col

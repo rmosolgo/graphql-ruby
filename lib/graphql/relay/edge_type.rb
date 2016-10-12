@@ -1,7 +1,11 @@
 module GraphQL
   module Relay
     module EdgeType
-      def self.create_type(wrapped_type, name: nil, &block)
+      ### Ruby 1.9.3 unofficial support
+      # def self.create_type(wrapped_type, name: nil, &block)
+      def self.create_type(wrapped_type, options = {}, &block)
+        name = options.fetch(:name, nil)
+
         GraphQL::ObjectType.define do
           name("#{wrapped_type.name}Edge")
           description "An edge in a connection."

@@ -2,7 +2,12 @@ module GraphQL
   module Relay
     module ConnectionType
       # Create a connection which exposes edges of this type
-      def self.create_type(wrapped_type, edge_type: nil, edge_class: nil, &block)
+      ### Ruby 1.9.3 unofficial support
+      # def self.create_type(wrapped_type, edge_type: nil, edge_class: nil, &block)
+      def self.create_type(wrapped_type, options = {}, &block)
+        edge_type = options.fetch(:edge_type, nil)
+        edge_class = options.fetch(:edge_class, nil)
+
         edge_type ||= wrapped_type.edge_type
         edge_class ||= GraphQL::Relay::Edge
         connection_type_name = "#{wrapped_type.name}Connection"

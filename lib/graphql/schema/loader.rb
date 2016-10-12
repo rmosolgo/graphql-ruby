@@ -28,7 +28,9 @@ module GraphQL
           kargs[root] = types.fetch(type.fetch("name")) if type
         end
 
-        Schema.define(**kargs)
+        ### Ruby 1.9.3 unofficial support
+        # Schema.define(**kargs)
+        Schema.define(kargs)
       end
 
       NullResolveType = ->(obj, ctx) {

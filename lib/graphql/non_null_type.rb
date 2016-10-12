@@ -31,7 +31,11 @@ module GraphQL
     include GraphQL::BaseType::ModifiesAnotherType
 
     attr_reader :of_type
-    def initialize(of_type:)
+    ### Ruby 1.9.3 unofficial support
+    # def initialize(of_type:)
+    def initialize(options = {})
+      of_type = options[:of_type]
+
       @of_type = of_type
     end
 

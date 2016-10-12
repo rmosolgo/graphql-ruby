@@ -6,7 +6,15 @@ module GraphQL
       # @return [Symbol] The kind of token this is
       attr_reader :name, :prev_token, :line
 
-      def initialize(value:, name:, line:, col:, prev_token:)
+      ### Ruby 1.9.3 unofficial support
+      # def initialize(value:, name:, line:, col:, prev_token:)
+      def initialize(options = {})
+        value = options[:value]
+        name = options[:name]
+        line = options[:line]
+        col = options[:col]
+        prev_token = options[:prev_token]
+
         @name = name
         @value = value
         @line = line

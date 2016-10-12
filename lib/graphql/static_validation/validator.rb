@@ -12,7 +12,12 @@ module GraphQL
     class Validator
       # @param schema [GraphQL::Schema]
       # @param rule [Array<#validate(context)>] a list of rules to use when validating
-      def initialize(schema:, rules: GraphQL::StaticValidation::ALL_RULES)
+      ### Ruby 1.9.3 unofficial support
+      # def initialize(schema:, rules: GraphQL::StaticValidation::ALL_RULES)
+      def initialize(options = {})
+        schema = options[:schema]
+        rules = options.fetch(:rules, GraphQL::StaticValidation::ALL_RULES)
+
         @schema = schema
         @rules = rules
       end

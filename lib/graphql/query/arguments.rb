@@ -6,7 +6,11 @@ module GraphQL
     class Arguments
       extend Forwardable
 
-      def initialize(values, argument_definitions:)
+      ### Ruby 1.9.3 unofficial support
+      # def initialize(values, argument_definitions:)
+      def initialize(values, options = {})
+        argument_definitions = options[:argument_definitions]
+
         @original_values = values
         @argument_values = values.inject({}) do |memo, (inner_key, inner_value)|
           string_key = inner_key.to_s

@@ -10,7 +10,11 @@ module GraphQL
     # response which corresponds to this error.
     attr_accessor :path
 
-    def initialize(message, ast_node: nil)
+    ### Ruby 1.9.3 unofficial support
+    # def initialize(message, ast_node: nil)
+    def initialize(message, options = {})
+      ast_node = options.fetch(:ast_node, nil)
+
       @ast_node = ast_node
       super(message)
     end

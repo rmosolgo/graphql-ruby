@@ -25,7 +25,12 @@ module GraphQL
       DEFAULT_CONTEXT_KEY = :__timeout_at__
       # @param max_seconds [Numeric] how many seconds the query should be allowed to resolve new fields
       # @param context_key [Symbol] what key should be used to read and write to the query context
-      def initialize(max_seconds:, context_key: DEFAULT_CONTEXT_KEY, &block)
+      ### Ruby 1.9.3 unofficial support
+      # def initialize(max_seconds:, context_key: DEFAULT_CONTEXT_KEY, &block)
+      def initialize(options = {}, &block)
+        max_seconds = options[:max_seconds]
+        context_key = options.fetch(:context_key, DEFAULT_CONTEXT_KEY)
+
         @max_seconds = max_seconds
         @context_key = context_key
         @error_handler = block

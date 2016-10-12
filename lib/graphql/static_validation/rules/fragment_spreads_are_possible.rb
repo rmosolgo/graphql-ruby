@@ -59,7 +59,13 @@ module GraphQL
 
       class FragmentSpread
         attr_reader :node, :parent_type, :path
-        def initialize(node:, parent_type:, path:)
+        ### Ruby 1.9.3 unofficial support
+        # def initialize(node:, parent_type:, path:)
+        def initialize(options = {})
+          node = options[:node]
+          parent_type = options[:parent_type]
+          path = options[:path]
+
           @node = node
           @parent_type = parent_type
           @path = path

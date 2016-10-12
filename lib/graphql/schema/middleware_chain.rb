@@ -10,7 +10,12 @@ module GraphQL
       # @return [Array] Arguments passed to steps (followed by `next_middleware`)
       attr_reader :arguments
 
-      def initialize(steps:, arguments:)
+      ### Ruby 1.9.3 unofficial support
+      # def initialize(steps:, arguments:)
+      def initialize(options = {})
+        steps = options[:steps]
+        arguments = options[:arguments]
+
         # We're gonna destroy this array, so copy it:
         @steps = steps.dup
         @arguments = arguments

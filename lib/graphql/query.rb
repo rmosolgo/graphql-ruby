@@ -29,7 +29,19 @@ module GraphQL
     # @param root_value [Object] the object used to resolve fields on the root type
     # @param max_depth [Numeric] the maximum number of nested selections allowed for this query (falls back to schema-level value)
     # @param max_complexity [Numeric] the maximum field complexity for this query (falls back to schema-level value)
-    def initialize(schema, query_string = nil, document: nil, context: nil, variables: {}, validate: true, operation_name: nil, root_value: nil, max_depth: nil, max_complexity: nil)
+    ### Ruby 1.9.3 unofficial support
+    # def initialize(schema, query_string = nil, document: nil, context: nil, variables: {}, validate: true, operation_name: nil, root_value: nil, max_depth: nil, max_complexity: nil)
+    def initialize(schema, options = {})
+      query_string = options.fetch(:query_string, nil)
+      document = options.fetch(:document, nil)
+      context = options.fetch(:context, nil)
+      variables = options.fetch(:variables, {})
+      validate = options.fetch(:validate, true)
+      operation_name = options.fetch(:operation_name, nil)
+      root_value = options.fetch(:root_value, nil)
+      max_depth = options.fetch(:max_depth, nil)
+      max_complexity = options.fetch(:max_complexity, nil)
+
       fail ArgumentError, "a query string or document is required" unless query_string || document
 
       @schema = schema

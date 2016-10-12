@@ -14,7 +14,11 @@ module GraphQL
       # @param node [GraphQL::Language::Nodes::AbstractNode] an AST node to recursively stringify
       # @param indent [String] Whitespace to add to each printed node
       # @return [String] Valid GraphQL for `node`
-      def generate(node, indent: "")
+      ### Ruby 1.9.3 unofficial support
+      # def generate(node, indent: "")
+      def generate(node, options = {})
+        indent = options.fetch(:indent, "")
+
         case node
         when Nodes::Document
           node.definitions.map { |d| generate(d) }.join("\n\n")
@@ -164,7 +168,11 @@ module GraphQL
         end
       end
 
-      def generate_selections(selections, indent: "")
+      ### Ruby 1.9.3 unofficial support
+      # def generate_selections(selections, indent: "")
+      def generate_selections(selections, options = {})
+        indent = options.fetch(:indent, "")
+
         if selections.any?
           out = " {\n"
           selections.each do |selection|
