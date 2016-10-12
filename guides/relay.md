@@ -435,6 +435,25 @@ Under the hood, GraphQL creates:
   - A derived `ObjectType` for return values
 
 The resolve proc:
+  - Takes `obj`, which is the `root_value:` provided to `Schema.execute`
   - Takes `inputs`, which is a hash whose keys are the ones defined by `input_field`
   - Takes `ctx`, which is the query context you passed with the `context:` keyword
-  - Must return a hash with keys matching your defined `return_field`s
+  - Must return a hash with keys matching your defined `return_field`s (unless you provide a `return_type`, see below)
+
+### Specify a Return Type
+
+Instead of specifying `return_field`s, you can specify a `return_type` for a mutation. This type will be used to expose the object returned from `resolve`.
+
+```ruby
+CreateUser = GraphQL::Relay::Mutation.define do
+  return_type UserMutationResultType
+  # ...
+  resolve -> (obj, input, ctx) {
+    user = User.create(input)
+    # this object will be treated as `UserMutationResultType`
+    UserMutationResult.new(user, client_mutation_id: input[:clientMutationId])
+  }
+end
+```
+
+If you provide your own return type, it's up to you to support `clientMutationId`

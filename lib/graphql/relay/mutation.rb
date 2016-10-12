@@ -51,11 +51,12 @@ module GraphQL
       include GraphQL::Define::InstanceDefinable
       accepts_definitions(
         :name, :description, :resolve,
+        :return_type,
         input_field: GraphQL::Define::AssignArgument,
         return_field: GraphQL::Define::AssignObjectField,
       )
       lazy_defined_attr_accessor :name, :description
-      lazy_defined_attr_accessor :fields, :arguments
+      lazy_defined_attr_accessor :fields, :arguments, :return_type
 
       # For backwards compat, but do we need this separate API?
       alias :return_fields :fields
@@ -64,6 +65,13 @@ module GraphQL
       def initialize
         @fields = {}
         @arguments = {}
+        @has_generated_return_type = false
+      end
+
+      def has_generated_return_type?
+        # Trigger the generation of the return type, if it is dynamically generated:
+        return_type
+        @has_generated_return_type
       end
 
       def resolve=(new_resolve_proc)
@@ -75,7 +83,7 @@ module GraphQL
           new_resolve_proc = DeprecatedMutationResolve.new(new_resolve_proc)
         end
 
-        @resolve_proc = MutationResolve.new(self, new_resolve_proc)
+        @resolve_proc = MutationResolve.new(self, new_resolve_proc, wrap_result: has_generated_return_type?)
       end
 
       def field
@@ -83,7 +91,6 @@ module GraphQL
           ensure_defined
           relay_mutation = self
           field_resolve_proc = @resolve_proc
-
           GraphQL::Field.define do
             type(relay_mutation.return_type)
             description(relay_mutation.description)
@@ -95,8 +102,9 @@ module GraphQL
       end
 
       def return_type
+        ensure_defined
         @return_type ||= begin
-          ensure_defined
+          @has_generated_return_type = true
           relay_mutation = self
           GraphQL::ObjectType.define do
             name("#{relay_mutation.name}Payload")
@@ -144,6 +152,8 @@ module GraphQL
         end
       end
 
+      # Use this when the mutation's return type was generated from `return_field`s.
+      # It delegates field lookups to the hash returned from `resolve`.
       class Result
         attr_reader :client_mutation_id
         def initialize(client_mutation_id:, result:)
@@ -159,7 +169,7 @@ module GraphQL
 
         def self.define_subclass(mutation_defn)
           subclass = Class.new(self) do
-            attr_accessor(*mutation_defn.return_fields.keys)
+            attr_accessor(*mutation_defn.return_type.all_fields.map(&:name))
             self.mutation = mutation_defn
           end
           subclass
@@ -177,14 +187,19 @@ module GraphQL
       end
 
       class MutationResolve
-        def initialize(mutation, resolve)
+        def initialize(mutation, resolve, wrap_result:)
           @mutation = mutation
           @resolve = resolve
+          @wrap_result = wrap_result
         end
 
         def call(obj, args, ctx)
-          result_hash = @resolve.call(obj, args[:input], ctx)
-          @mutation.result_class.new(client_mutation_id: args[:input][:clientMutationId], result: result_hash)
+          mutation_result = @resolve.call(obj, args[:input], ctx)
+          if @wrap_result
+            @mutation.result_class.new(client_mutation_id: args[:input][:clientMutationId], result: mutation_result)
+          else
+            mutation_result
+          end
         end
       end
     end
