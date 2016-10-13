@@ -10,6 +10,7 @@ describe GraphQL::StaticValidation::VariablesAreInputTypes do
       $interface: AnimalProduct!,
       $object:    Milk = 1,
       $objects:   [Cheese]!,
+      $unknownType: Nonsense,
     ) {
       cheese(id: $id) { source }
       __type(name: $str) { name }
@@ -32,6 +33,12 @@ describe GraphQL::StaticValidation::VariablesAreInputTypes do
     assert_includes(errors, {
       "message"=>"Cheese isn't a valid input type (on $objects)",
       "locations"=>[{"line"=>7, "column"=>7}],
+      "fields"=>["query getCheese"],
+    })
+
+    assert_includes(errors, {
+      "message"=>"Nonsense isn't a defined input type (on $unknownType)",
+      "locations"=>[{"line"=>8, "column"=>7}],
       "fields"=>["query getCheese"],
     })
   end
