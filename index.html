@@ -60,7 +60,7 @@
 
 <p>Install from RubyGems by adding it to your <code class="highlighter-rouge">Gemfile</code>, then bundling.</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># Gemfile</span>
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="c1"># Gemfile</span>
 <span class="n">gem</span> <span class="s1">'graphql'</span>
 </code></pre>
 </div>
@@ -73,7 +73,7 @@
 
 <h4 id="declare-types--build-a-schema">Declare types &amp; build a schema</h4>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># Declare a type...</span>
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="c1"># Declare a type...</span>
 <span class="no">PostType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="nb">name</span> <span class="s2">"Post"</span>
   <span class="n">description</span> <span class="s2">"A blog post"</span>
@@ -108,7 +108,7 @@
 
 <p>Execute GraphQL queries on a given schema, from a query string.</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">result_hash</span> <span class="o">=</span> <span class="no">Schema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="n">query_string</span><span class="p">)</span>
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="n">result_hash</span> <span class="o">=</span> <span class="no">Schema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="n">query_string</span><span class="p">)</span>
 <span class="c1"># {</span>
 <span class="c1">#   "data" =&gt; {</span>
 <span class="c1">#     "post" =&gt; {</span>
@@ -225,7 +225,6 @@
     </ul>
   </li>
   <li>Document encrypted &amp; versioned cursors</li>
-  <li>Eager load <code class="highlighter-rouge">Schema#types</code> after <code class="highlighter-rouge">.define { ... }</code></li>
 </ul>
 
         </div>

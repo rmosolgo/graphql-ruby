@@ -140,7 +140,7 @@
 </code></pre>
 </div>
 
-<p>The returned value is an instance of the type class you used to <code class="highlighter-rouge">.define</code> it (eg, <code class="highlighter-rouge">GraphQL::ObjectType</code>, <code class="highlighter-rouge">GraphQL::EnumType</code>, <code class="highlighter-rouge">GraphQL::InputObjectType</code>).</p>
+<p>The returned value of <code class="highlighter-rouge">Schema#types[type_name]</code> is an instance of the type class you used to <code class="highlighter-rouge">.define</code> it (eg, <code class="highlighter-rouge">GraphQL::ObjectType</code>, <code class="highlighter-rouge">GraphQL::EnumType</code>, <code class="highlighter-rouge">GraphQL::InputObjectType</code>).</p>
 
 <h4 id="fields">Fields</h4>
 
@@ -171,7 +171,7 @@
   <li><code class="highlighter-rouge">GraphQL::Field#type</code>, the field’s return type</li>
   <li><code class="highlighter-rouge">GraphQL::InputObjectType#arguments</code>, which are <code class="highlighter-rouge">String</code> =&gt; <code class="highlighter-rouge">GraphQL::Argument</code> pairs</li>
   <li><code class="highlighter-rouge">GraphQL::EnumType#values</code>, which are <code class="highlighter-rouge">String</code> =&gt; <code class="highlighter-rouge">GraphQL::EnumType::EnumValue</code> pairs</li>
-  <li><code class="highlighter-rouge">GraphQL::InterfaceType#possible_types</code> and <code class="highlighter-rouge">GraphQL::UnionType#possible_types</code>, which are lists of types.</li>
+  <li><code class="highlighter-rouge">GraphQL::Schema#possible_types(type_defn)</code>, which returns the possible types for union or interface types in a given schema</li>
 </ul>
 
 <p><code class="highlighter-rouge">GraphQL::BaseType#unwrap</code> may also be helpful. It returns the “inner-most” type. For example:</p>
@@ -225,7 +225,7 @@
     <span class="n">context</span> <span class="s2">"when there's a current user"</span> <span class="k">do</span>
       <span class="c1"># override `context`</span>
       <span class="n">let</span><span class="p">(</span><span class="ss">:context</span><span class="p">)</span> <span class="p">{</span>
-        <span class="ss">current_user: </span><span class="no">User</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="ss">name: </span><span class="s2">"ABC"</span><span class="p">)</span>
+        <span class="p">{</span> <span class="ss">current_user: </span><span class="no">User</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="ss">name: </span><span class="s2">"ABC"</span><span class="p">)</span> <span class="p">}</span>
       <span class="p">}</span>
 
       <span class="n">it</span> <span class="s2">"shows the user's name"</span> <span class="k">do</span>

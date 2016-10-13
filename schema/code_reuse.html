@@ -74,11 +74,13 @@
   <span class="k">end</span>
 <span class="k">end</span>
 
-<span class="c1"># ...</span>
-
+<span class="c1"># use `NameResolver` instead of a proc</span>
 <span class="n">field</span> <span class="ss">:name</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">String</span> <span class="k">do</span>
   <span class="n">resolve</span><span class="p">(</span><span class="no">NameResolver</span><span class="p">)</span>
 <span class="k">end</span>
+<span class="c1"># `resolve: resolver` is equivalent to `do resolve(resolver) end`</span>
+<span class="c1"># so this is the same:</span>
+<span class="n">field</span> <span class="ss">:name</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">String</span><span class="p">,</span> <span class="ss">resolve: </span><span class="no">NameResolver</span>
 </code></pre>
 </div>
 
@@ -95,7 +97,6 @@
 <span class="k">end</span>
 
 <span class="c1"># ...</span>
-
 <span class="n">field</span> <span class="ss">:name</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">String</span> <span class="k">do</span>
   <span class="n">resolve</span><span class="p">(</span><span class="no">MethodCallResolver</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="ss">:name</span><span class="p">))</span>
 <span class="k">end</span>  
@@ -127,7 +128,8 @@
 
 <p>However, you can call <code class="highlighter-rouge">.define</code> anytime and store the result anywhere. For example, you can define a method which creates types:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="k">def</span> <span class="nf">create_type</span><span class="p">(</span><span class="n">model_class</span><span class="p">)</span>
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="c1"># @return [GraphQL::ObjectType] a type derived from `model_class`</span>
+<span class="k">def</span> <span class="nf">create_type</span><span class="p">(</span><span class="n">model_class</span><span class="p">)</span>
   <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
     <span class="nb">name</span><span class="p">(</span><span class="n">model_class</span><span class="p">.</span><span class="nf">name</span><span class="p">)</span>
     <span class="n">description</span><span class="p">(</span><span class="s2">"Generated programmatically from model: </span><span class="si">#{</span><span class="n">model_class</span><span class="p">.</span><span class="nf">name</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
@@ -138,8 +140,9 @@
   <span class="k">end</span>
 <span class="k">end</span>
 
+<span class="c1"># @return [GraphQL::BaseType] a GraphQL type for `database_type`</span>
 <span class="k">def</span> <span class="nf">convert_type</span><span class="p">(</span><span class="n">database_type</span><span class="p">)</span>
-  <span class="c1"># return a GraphQL type for `database_type`</span>
+  <span class="c1"># ...</span>
 <span class="k">end</span>
 </code></pre>
 </div>
