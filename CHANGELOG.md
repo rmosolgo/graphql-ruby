@@ -8,6 +8,40 @@
 
 ### Bug fixes
 
+## 0.19.3 (13 Oct 2016)
+
+### Deprecations
+
+- `Relay::Mutation#resolve` has a new signature. #301
+
+  Previously, it was called with two arguments:
+
+  ```ruby
+  resolve -> (inputs, ctx) { ... }
+  ```
+
+  Now, it's called with three inputs:
+
+  ```ruby
+  resolve -> (obj, inputs, ctx) { ... }
+  ```
+
+  `obj` is the value of `root_value:` given to `Schema#execute`, as with other root-level fields.
+
+  Two-argument resolvers are still supported, but they are deprecated and will be removed in a future version.
+
+### New features
+
+- `Relay::Mutation` accepts a user-defined `return_type` #310
+- `Relay::Mutation#resolve` receives the `root_value` passed to `Schema#execute` #301
+- Derived `Relay` objects have descriptions #303
+
+### Bug fixes
+
+- Introspection query is 7 levels deep instead of 3 #308
+- Unknown variable types cause validation errors, not runtime errors #310
+- `Query::Arguments` doesn't wrap hashes from parsed scalars (fix for user-defined "JSONScalar") #304
+
 ## 0.19.2 (6 Oct 2016)
 
 ### New features
