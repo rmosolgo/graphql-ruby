@@ -6,10 +6,12 @@ module GraphQL
     class Arguments
       extend Forwardable
 
-      def initialize(values)
+      def initialize(values, argument_definitions:)
         @original_values = values
         @argument_values = values.inject({}) do |memo, (inner_key, inner_value)|
-          memo[inner_key.to_s] = wrap_value(inner_value)
+          string_key = inner_key.to_s
+          arg_defn = argument_definitions[string_key]
+          memo[string_key] = wrap_value(inner_value, arg_defn.type)
           memo
         end
       end
@@ -36,12 +38,17 @@ module GraphQL
 
       private
 
-      def wrap_value(value)
+      def wrap_value(value, arg_defn_type)
         case value
         when Array
-          value.map { |item| wrap_value(item) }
+          value.map { |item| wrap_value(item, arg_defn_type.of_type) }
         when Hash
-          self.class.new(value)
+          if arg_defn_type.unwrap.kind.input_object?
+            self.class.new(value, argument_definitions: arg_defn_type.arguments)
+          else
+            # It may be a custom scalar that coerces to a Hash
+            value
+          end
         else
           value
         end

@@ -85,7 +85,7 @@ module GraphQL
         end
       end
 
-      GraphQL::Query::Arguments.new(input_values)
+      GraphQL::Query::Arguments.new(input_values, argument_definitions: arguments)
     end
 
     def coerce_result(value)
