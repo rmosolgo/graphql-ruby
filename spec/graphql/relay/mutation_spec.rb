@@ -22,7 +22,7 @@ describe GraphQL::Relay::Mutation do
 
   after do
     STAR_WARS_DATA["Ship"].delete("9")
-    STAR_WARS_DATA["Faction"]["1"]["ships"].delete("9")
+    STAR_WARS_DATA["Faction"]["1"].ships.delete("9")
   end
 
   it "returns the result & clientMutationId" do
