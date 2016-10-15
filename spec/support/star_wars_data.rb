@@ -1,3 +1,4 @@
+require 'ostruct'
 
 names = [
   'X-Wing',
