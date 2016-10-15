@@ -74,7 +74,7 @@ module GraphQL
       deprecate(:object, :nodes, 2016, 9)
 
       # Provide easy access to provided arguments:
-      METHODS_FROM_ARGUMENTS = [:first, :after, :last, :before, :order]
+      METHODS_FROM_ARGUMENTS = [:first, :after, :last, :before]
 
       # @!method first
       #   The value passed as `first:`, if there was one
@@ -84,8 +84,6 @@ module GraphQL
       #   The value passed as `last:`, if there was one
       # @!method before
       #   The value passed as `before:`, if there was one
-      # @!method order
-      #   The value passed as `order:`, if there was one
       METHODS_FROM_ARGUMENTS.each do |arg_name|
         define_method(arg_name) do
           arguments[arg_name]
