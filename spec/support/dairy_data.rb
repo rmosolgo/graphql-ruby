@@ -1,3 +1,5 @@
+require 'ostruct'
+
 Cheese = Struct.new(:id, :flavor, :origin, :fat_content, :source)
 CHEESES = {
   1 => Cheese.new(1, "Brie", "France", 0.19, 1),
