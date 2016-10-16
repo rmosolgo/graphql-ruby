@@ -117,7 +117,7 @@ describe GraphQL::InputObjectType do
 
   describe "when sent into a query" do
     let(:variables) { {} }
-    let(:result) { DummySchema.execute(query_string: query_string, variables: variables) }
+    let(:result) { DummySchema.execute(query_string, variables: variables) }
 
     describe "list inputs" do
       let(:variables) { {"search" => [MinimumInputObject.new({"source" => "COW", "fatContent" => 0.4})]} }

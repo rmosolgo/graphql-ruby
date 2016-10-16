@@ -40,7 +40,7 @@ describe GraphQL::Schema::TimeoutMiddleware do
     schema
   }
 
-  let(:result) { timeout_schema.execute(query_string: query_string) }
+  let(:result) { timeout_schema.execute(query_string) }
 
   describe "timeout part-way through" do
     let(:query_string) {%|

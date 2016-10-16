@@ -1,7 +1,7 @@
 require "spec_helper"
 
 describe GraphQL::ID_TYPE do
-  let(:result) { DummySchema.execute(query_string: query_string)}
+  let(:result) { DummySchema.execute(query_string)}
 
   describe "coercion for int inputs" do
     let(:query_string) { %|query getMilk { cow: milk(id: 1) { id } }| }

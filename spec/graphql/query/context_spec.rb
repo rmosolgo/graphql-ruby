@@ -18,7 +18,7 @@ describe GraphQL::Query::Context do
     end
   }}
   let(:schema) { GraphQL::Schema.define(query: query_type, mutation: nil)}
-  let(:result) { schema.execute(query_string: query_string, context: {"some_key" => "some value"})}
+  let(:result) { schema.execute(query_string, context: {"some_key" => "some value"})}
 
   describe "access to passed-in values" do
     let(:query_string) { %|

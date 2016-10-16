@@ -26,7 +26,7 @@ describe GraphQL::UnionType do
   end
 
   describe "typecasting from union to union" do
-    let(:result) { DummySchema.execute(query_string: query_string) }
+    let(:result) { DummySchema.execute(query_string) }
     let(:query_string) {%|
       {
         allDairy {
@@ -54,7 +54,7 @@ describe GraphQL::UnionType do
 
   describe "list of union type" do
     describe "fragment spreads" do
-      let(:result) { DummySchema.execute(query_string: query_string) }
+      let(:result) { DummySchema.execute(query_string) }
       let(:query_string) {%|
         {
           allDairy {

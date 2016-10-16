@@ -31,8 +31,11 @@ module GraphQL
     # @param max_complexity [Numeric] the maximum field complexity for this query (falls back to schema-level value)
     ### Ruby 1.9.3 unofficial support
     # def initialize(schema, query_string = nil, document: nil, context: nil, variables: {}, validate: true, operation_name: nil, root_value: nil, max_depth: nil, max_complexity: nil)
-    def initialize(schema, options = {})
-      query_string = options.fetch(:query_string, nil)
+    def initialize(schema, query_string = nil, options = {})
+      if query_string.is_a?(Hash)
+        options = query_string
+        query_string = nil
+      end
       document = options.fetch(:document, nil)
       context = options.fetch(:context, nil)
       variables = options.fetch(:variables, {})

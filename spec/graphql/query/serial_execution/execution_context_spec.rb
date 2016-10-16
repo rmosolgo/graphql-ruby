@@ -12,7 +12,7 @@ describe GraphQL::Query::SerialExecution::ExecutionContext do
   let(:schema) { DummySchema }
   let(:query) { GraphQL::Query.new(
     schema,
-    query_string: query_string,
+    query_string,
     variables: query_variables,
     operation_name: operation_name,
   )}

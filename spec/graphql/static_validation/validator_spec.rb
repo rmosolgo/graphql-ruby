@@ -2,7 +2,7 @@ require "spec_helper"
 
 describe GraphQL::StaticValidation::Validator do
   let(:validator) { GraphQL::StaticValidation::Validator.new(schema: DummySchema) }
-  let(:query) { GraphQL::Query.new(DummySchema, query_string: query_string) }
+  let(:query) { GraphQL::Query.new(DummySchema, query_string) }
   let(:errors) { validator.validate(query)[:errors] }
 
 

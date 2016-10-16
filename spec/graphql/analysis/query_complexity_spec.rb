@@ -5,7 +5,7 @@ describe GraphQL::Analysis::QueryComplexity do
   let(:query_complexity) { GraphQL::Analysis::QueryComplexity.new { |this_query, complexity|  complexities << this_query << complexity } }
   let(:reduce_result) { GraphQL::Analysis.analyze_query(query, [query_complexity]) }
   let(:variables) { {} }
-  let(:query) { GraphQL::Query.new(DummySchema, query_string: query_string, variables: variables) }
+  let(:query) { GraphQL::Query.new(DummySchema, query_string, variables: variables) }
 
   describe "simple queries" do
     let(:query_string) {%|
@@ -188,7 +188,7 @@ describe GraphQL::Analysis::QueryComplexity do
   end
 
   describe "relay types" do
-    let(:query) { GraphQL::Query.new(StarWarsSchema, query_string: query_string) }
+    let(:query) { GraphQL::Query.new(StarWarsSchema, query_string) }
     let(:query_string) {%|
     {
       rebels {
@@ -213,7 +213,7 @@ describe GraphQL::Analysis::QueryComplexity do
   end
 
   describe "custom complexities" do
-    let(:query) { GraphQL::Query.new(complexity_schema, query_string: query_string) }
+    let(:query) { GraphQL::Query.new(complexity_schema, query_string) }
     let(:complexity_schema) {
       complexity_interface = GraphQL::InterfaceType.define do
         name "ComplexityInterface"

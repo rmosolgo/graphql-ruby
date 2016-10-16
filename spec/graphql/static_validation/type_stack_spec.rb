@@ -22,7 +22,7 @@ describe GraphQL::StaticValidation::TypeStack do
   |}
 
   let(:validator) { GraphQL::StaticValidation::Validator.new(schema: DummySchema, rules: [TypeCheckValidator]) }
-  let(:query) { GraphQL::Query.new(DummySchema, query_string: query_string) }
+  let(:query) { GraphQL::Query.new(DummySchema, query_string) }
 
 
   it "stores up types" do

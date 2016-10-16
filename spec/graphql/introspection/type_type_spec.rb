@@ -11,7 +11,7 @@ describe GraphQL::Introspection::TypeType do
        missingType:   __type(name: "NotAType") { name }
      }
   |}
-  let(:result) { DummySchema.execute(query_string: query_string, context: {}, variables: {"cheeseId" => 2}) }
+  let(:result) { DummySchema.execute(query_string, context: {}, variables: {"cheeseId" => 2}) }
   let(:cheese_fields) {[
     {"name"=>"deeplyNullableCheese", "isDeprecated"=>false, "type"=>{"name"=>"Cheese", "ofType"=>nil}},
     {"name"=>"flavor",      "isDeprecated" => false, "type" => { "name" => "Non-Null", "ofType" => { "name" => "String"}}},

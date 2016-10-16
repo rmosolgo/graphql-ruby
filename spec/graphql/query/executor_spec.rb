@@ -6,7 +6,7 @@ describe GraphQL::Query::Executor do
   let(:variables) { {"cheeseId" => 2} }
   let(:query) { GraphQL::Query.new(
     schema,
-    query_string: query_string,
+    query_string,
     variables: variables,
     operation_name: operation_name,
   )}

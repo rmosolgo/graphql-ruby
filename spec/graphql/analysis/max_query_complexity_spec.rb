@@ -10,7 +10,7 @@ describe GraphQL::Analysis::MaxQueryComplexity do
   end
 
 
-  let(:result) { DummySchema.execute(query_string: query_string) }
+  let(:result) { DummySchema.execute(query_string) }
   let(:query_string) {%|
     {
       a: cheese(id: 1) { id }
@@ -53,7 +53,7 @@ describe GraphQL::Analysis::MaxQueryComplexity do
     before do
       DummySchema.max_complexity = 100
     end
-    let(:result) { DummySchema.execute(query_string: query_string, max_complexity: 7) }
+    let(:result) { DummySchema.execute(query_string, max_complexity: 7) }
 
     it "is applied" do
       assert_equal "Query has complexity of 10, which exceeds max complexity of 7", result["errors"][0]["message"]

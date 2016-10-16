@@ -2,7 +2,7 @@ require "spec_helper"
 
 describe GraphQL::InternalRepresentation::Rewrite do
   let(:validator) { GraphQL::StaticValidation::Validator.new(schema: DummySchema) }
-  let(:query) { GraphQL::Query.new(DummySchema, query_string: query_string) }
+  let(:query) { GraphQL::Query.new(DummySchema, query_string) }
   let(:rewrite_result) {
     validator.validate(query)[:irep]
   }
