@@ -9,7 +9,7 @@ GraphQL::Introspection::InputValueType = GraphQL::ObjectType.define do
   field :defaultValue, types.String, "A GraphQL-formatted string representing the default value for this input value." do
     resolve -> (obj, args, ctx) {
       value = obj.default_value
-      value.nil? ? nil : JSON.dump(obj.type.coerce_result(value))
+      value.nil? ? nil : JSON.generate(obj.type.coerce_result(value), quirks_mode: true)
     }
   end
 end
