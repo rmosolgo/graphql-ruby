@@ -103,7 +103,7 @@ module GraphQL
         when Nodes::UnionTypeDefinition
           out = "union #{node.name}"
           out << generate_directives(node.directives)
-          out << " = " + node.types.join(" | ")
+          out << " = " + node.types.map(&:name).join(" | ")
         when Nodes::EnumTypeDefinition
           out = "enum #{node.name}#{generate_directives(node.directives)} {\n"
           node.values.each do |value|
