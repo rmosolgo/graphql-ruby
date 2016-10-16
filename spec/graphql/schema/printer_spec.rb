@@ -63,14 +63,47 @@ describe GraphQL::Schema::Printer do
       end
     end
 
-    GraphQL::Schema.define(query: query_root, resolve_type: :pass)
+    create_post_mutation = GraphQL::Relay::Mutation.define do
+      name "CreatePost"
+      description "Create a blog post"
+
+      input_field :title, !types.String
+      input_field :body, !types.String
+
+      return_field :post, post_type
+
+      resolve -> (_, _, _) { }
+    end
+
+    mutation_root = GraphQL::ObjectType.define do
+      name "Mutation"
+
+      field :createPost, field: create_post_mutation.field
+    end
+
+    subscription_root = GraphQL::ObjectType.define do
+      name "Subscription"
+
+      field :post do
+        type post_type
+        argument :id, !types.ID
+        resolve -> (obj, args, ctx) { }
+      end
+    end
+
+    GraphQL::Schema.define(
+      query: query_root,
+      mutation: mutation_root,
+      subscription: subscription_root,
+      resolve_type: :pass
+    )
   }
 
   describe ".print_introspection_schema" do
     it "returns the schema as a string for the introspection types" do
       expected = <<SCHEMA
 schema {
-  query: Query
+  query: Root
 }
 
 directive @skip(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
@@ -169,12 +202,50 @@ SCHEMA
   end
 
   describe ".print_schema" do
-    it "returns the schema as a string for the defined types" do
+    it "includes schema definition when query root name doesn't match convention" do
+      schema.query.name = 'MyQueryRoot'
+
+      expected = <<SCHEMA
+schema {
+  query: MyQueryRoot
+  mutation: Mutation
+  subscription: Subscription
+}
+SCHEMA
+
+      assert_match expected, GraphQL::Schema::Printer.print_schema(schema)
+    end
+
+    it "includes schema definition when mutation root name doesn't match convention" do
+      schema.mutation.name = 'MyMutationRoot'
+
       expected = <<SCHEMA
 schema {
   query: Query
+  mutation: MyMutationRoot
+  subscription: Subscription
 }
+SCHEMA
 
+      assert_match expected, GraphQL::Schema::Printer.print_schema(schema)
+    end
+
+    it "includes schema definition when subscription root name doesn't match convention" do
+      schema.subscription.name = 'MySubscriptionRoot'
+
+      expected = <<SCHEMA
+schema {
+  query: Query
+  mutation: Mutation
+  subscription: MySubscriptionRoot
+}
+SCHEMA
+
+      assert_match expected, GraphQL::Schema::Printer.print_schema(schema)
+    end
+
+    it "returns the schema as a string for the defined types" do
+      expected = <<SCHEMA
 enum Choice {
   FOO
   BAR
@@ -184,6 +255,21 @@ enum Choice {
 
 type Comment implements Node {
   id: ID!
+}
+
+input CreatePostInput {
+  clientMutationId: String
+  title: String!
+  body: String!
+}
+
+type CreatePostPayload {
+  clientMutationId: String
+  post: Post
+}
+
+type Mutation {
+  createPost(input: CreatePostInput!): CreatePostPayload
 }
 
 interface Node {
@@ -204,6 +290,10 @@ type Query {
 
 input Sub {
   string: String
+}
+
+type Subscription {
+  post(id: ID!): Post
 }
 
 input Varied {

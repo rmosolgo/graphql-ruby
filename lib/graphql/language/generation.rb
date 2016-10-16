@@ -72,6 +72,12 @@ module GraphQL
         when Nodes::VariableIdentifier
           "$#{node.name}"
         when Nodes::SchemaDefinition
+          if (node.query.nil? || node.query == 'Query') &&
+             (node.mutation.nil? || node.mutation == 'Mutation') &&
+             (node.subscription.nil? || node.subscription == 'Subscription')
+            return
+          end
+
           out = "schema {\n"
           out << "  query: #{node.query}\n" if node.query
           out << "  mutation: #{node.mutation}\n" if node.mutation
