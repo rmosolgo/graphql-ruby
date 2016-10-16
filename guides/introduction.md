@@ -166,5 +166,5 @@ result_hash = Schema.execute(query_string)
 
 Read more in some other guides:
 
-- [Defining Your Schema](http://www.rubydoc.info/github/rmosolgo/graphql-ruby/file/guides/defining_your_schema.md)
-- [Executing Queries](http://www.rubydoc.info/github/rmosolgo/graphql-ruby/file/guides/executing_queries.md)
+- [Defining Your Schema](https://rmosolgo.github.io/graphql-ruby/defining_your_schema)
+- [Executing Queries](https://rmosolgo.github.io/graphql-ruby/executing_queries)
