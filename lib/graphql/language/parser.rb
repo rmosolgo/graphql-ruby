@@ -1389,7 +1389,7 @@ module_eval(<<'.,.,', 'parser.y', 262)
 
 module_eval(<<'.,.,', 'parser.y', 272)
   def _reduce_113(val, _values, result)
-     return make_node(:ScalarTypeDefinition, name: val[1], directives: val[2]) 
+     return make_node(:ScalarTypeDefinition, name: val[1], directives: val[2], description: get_description(val[0])) 
     result
   end
 .,.,

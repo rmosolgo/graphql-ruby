@@ -84,7 +84,8 @@ module GraphQL
           out << "  subscription: #{node.subscription}\n" if node.subscription
           out << "}"
         when Nodes::ScalarTypeDefinition
-          out = "scalar #{node.name}"
+          out = generate_description(node)
+          out << "scalar #{node.name}"
           out << generate_directives(node.directives)
         when Nodes::ObjectTypeDefinition
           out = generate_description(node)

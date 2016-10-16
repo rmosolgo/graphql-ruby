@@ -270,7 +270,7 @@ rule
     | enum_type_definition
     | input_object_type_definition
 
-  scalar_type_definition: SCALAR name directives_list_opt { return make_node(:ScalarTypeDefinition, name: val[1], directives: val[2]) }
+  scalar_type_definition: SCALAR name directives_list_opt { return make_node(:ScalarTypeDefinition, name: val[1], directives: val[2], description: get_description(val[0])) }
 
   object_type_definition:
       TYPE name implements_opt directives_list_opt LCURLY field_definition_list RCURLY {

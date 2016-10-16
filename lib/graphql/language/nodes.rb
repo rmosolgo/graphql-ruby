@@ -345,13 +345,14 @@ module GraphQL
       end
 
       class ScalarTypeDefinition < AbstractNode
-        attr_accessor :name, :directives
+        attr_accessor :name, :directives, :description
         scalar_attributes :name
         child_attributes :directives
 
-        def initialize_node(name:, directives: [])
+        def initialize_node(name:, directives: [], description: nil)
           @name = name
           @directives = directives
+          @description = description
         end
       end
 
