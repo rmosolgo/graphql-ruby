@@ -319,7 +319,7 @@ module GraphQL
                 type = document.definitions.first
                 assert_equal GraphQL::Language::Nodes::ObjectTypeDefinition, type.class
                 assert_equal 'Comment', type.name
-                assert_equal ['Node'], type.interfaces
+                assert_equal ['Node'], type.interfaces.map(&:name)
                 assert_equal ['id'], type.fields.map(&:name)
                 assert_equal [], type.fields[0].arguments
                 assert_equal 'ID', type.fields[0].type.of_type.name
@@ -335,7 +335,7 @@ module GraphQL
                 type = document.definitions.first
                 assert_equal GraphQL::Language::Nodes::ObjectTypeDefinition, type.class
                 assert_equal 'Comment', type.name
-                assert_equal ['Node'], type.interfaces
+                assert_equal ['Node'], type.interfaces.map(&:name)
                 assert_equal ['id'], type.fields.map(&:name)
                 assert_equal [], type.fields[0].arguments
                 assert_equal 'ID', type.fields[0].type.of_type.name

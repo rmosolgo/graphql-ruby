@@ -144,8 +144,8 @@ rule
     | schema_keyword
 
   name_list:
-      name             { return [val[0].to_s]}
-    | name_list name   { val[0] << val[1].to_s }
+      name             { return [make_node(:TypeName, name: val[0])] }
+    | name_list name   { val[0] << make_node(:TypeName, name: val[1]) }
 
   enum_value_definition:
     enum_name directives_list_opt { return make_node(:EnumValueDefinition, name: val[0], directives: val[1]) }
