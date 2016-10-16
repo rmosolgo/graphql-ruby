@@ -183,9 +183,9 @@ describe MySchema do
 
     context "when there's a current user" do
       # override `context`
-      let(:context) {
+      let(:context) {{
         current_user: User.new(name: "ABC")
-      }
+      }}
 
       it "shows the user's name" do
         user_name = result["data"]["viewer"]["name"]
