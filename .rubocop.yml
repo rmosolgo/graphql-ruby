@@ -32,9 +32,6 @@ Metrics/ParameterLists:
 Style/ClassAndModuleChildren:
   EnforcedStyle: nested
 
-Style/DeprecatedHashMethods:
-  Enabled: true
-
 Style/EmptyLineBetweenDefs:
   AllowAdjacentOneLineDefs: true
 
