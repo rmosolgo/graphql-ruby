@@ -50,18 +50,18 @@ module GraphQL
         end
         err
       end
-    end
 
-    # This error is raised when a query exceeds `max_seconds`.
-    # Since it's a child of {GraphQL::ExecutionError},
-    # its message will be added to the response's `errors` key.
-    #
-    # To raise an error that will stop query resolution, use a custom block
-    # to take this error and raise a new one which _doesn't_ descend from {GraphQL::ExecutionError},
-    # such as `RuntimeError`.
-    class GraphQL::Schema::TimeoutMiddleware::TimeoutError < GraphQL::ExecutionError
-      def initialize(parent_type, field_defn)
-        super("Timeout on #{parent_type.name}.#{field_defn.name}")
+      # This error is raised when a query exceeds `max_seconds`.
+      # Since it's a child of {GraphQL::ExecutionError},
+      # its message will be added to the response's `errors` key.
+      #
+      # To raise an error that will stop query resolution, use a custom block
+      # to take this error and raise a new one which _doesn't_ descend from {GraphQL::ExecutionError},
+      # such as `RuntimeError`.
+      class TimeoutError < GraphQL::ExecutionError
+        def initialize(parent_type, field_defn)
+          super("Timeout on #{parent_type.name}.#{field_defn.name}")
+        end
       end
     end
   end

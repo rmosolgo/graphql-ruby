@@ -92,6 +92,7 @@ module GraphQL
             JSON.dump(arg)
           end
         end
+
         # Turn AST tree into a hash
         # can't look up args, the names just have to match
         def reduce_list(args)
