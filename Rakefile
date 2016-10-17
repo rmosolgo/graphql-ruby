@@ -9,7 +9,10 @@ Rake::TestTask.new do |t|
   t.warning = false
 end
 
-task(default: :test)
+require 'rubocop/rake_task'
+RuboCop::RakeTask.new(:rubocop)
+
+task(default: [:test, :rubocop])
 
 def load_gem_and_dummy
   $:.push File.expand_path("../lib", __FILE__)
@@ -25,8 +28,6 @@ task :console do
   ARGV.clear
   IRB.start
 end
-
-
 
 desc "Use Racc & Ragel to regenerate parser.rb & lexer.rb from configuration files"
 task :build_parser do
@@ -78,11 +79,11 @@ namespace :site do
 
     # Proceed to purge all files in case we removed a file in this release.
     puts "Cleaning gh-pages directory..."
-    purge_exclude = %w[
-      gh-pages/.
-      gh-pages/..
-      gh-pages/.git
-      gh-pages/.gitignore
+    purge_exclude = [
+      'gh-pages/.',
+      'gh-pages/..',
+      'gh-pages/.git',
+      'gh-pages/.gitignore',
     ]
     FileList["gh-pages/{*,.*}"].exclude(*purge_exclude).each do |path|
       sh "rm -rf #{path}"
