@@ -993,7 +993,6 @@ end
           prev_token: @previous_token,
         )
 
-        @previous_token.next_token = token if @previous_token
         @previous_token = token
 
         meta[:col] += te - ts
@@ -1007,7 +1006,6 @@ end
           col: meta[:col],
           prev_token: @previous_token,
         )
-        @previous_token.next_token = token if @previous_token
         @previous_token = token
         # Bump the column counter for the next token
         meta[:col] += te - ts
@@ -1050,7 +1048,6 @@ end
           )
         end
 
-        @previous_token.next_token = token if @previous_token
         @previous_token = token
         meta[:col] += te - ts
       end

@@ -5,7 +5,6 @@ module GraphQL
     class Token
       # @return [Symbol] The kind of token this is
       attr_reader :name, :prev_token, :line
-      attr_accessor :next_token
 
       def initialize(value:, name:, line:, col:, prev_token:)
         @name = name

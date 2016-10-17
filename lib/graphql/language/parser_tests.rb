@@ -302,7 +302,7 @@ module GraphQL
                   BLUE
                 }
 
-                # What a great type
+                #Comment without preceding space
                 type Hello {
                   # And a field to boot
                   str: String
@@ -344,7 +344,7 @@ module GraphQL
 
                 object_type_definition = document.definitions.shift
                 assert_equal GraphQL::Language::Nodes::ObjectTypeDefinition, object_type_definition.class
-                assert_equal 'What a great type', object_type_definition.description
+                assert_equal 'Comment without preceding space', object_type_definition.description
                 assert_equal 'And a field to boot', object_type_definition.fields[0].description
 
                 input_object_type_definition = document.definitions.shift

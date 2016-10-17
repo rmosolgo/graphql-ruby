@@ -376,18 +376,19 @@ def get_description(token)
   comments = []
 
   loop do
+    prev_token = token
     token = token.prev_token
 
     break if token.nil?
     break if token.name != :COMMENT
-    break if token.next_token.line != token.line + 1
+    break if prev_token.line != token.line + 1
 
-    comments << token.to_s[2..-1] || ""
+    comments.unshift(token.to_s.sub(/^#\s*/, ""))
   end
 
   return nil if comments.empty?
 
-  comments.reverse.join("\n")
+  comments.join("\n")
 end
 
 def on_error(parser_token_id, lexer_token, vstack)
