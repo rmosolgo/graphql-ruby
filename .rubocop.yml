@@ -52,3 +52,18 @@ Style/StringLiterals:
 
 Style/WordArray:
   EnforcedStyle: brackets
+
+Style/StringLiterals:
+  Enabled: false
+
+Metrics/ClassLength:
+  Enabled: false
+
+Metrics/ModuleLength:
+  Enabled: false
+
+Metrics/MethodLength:
+  Enabled: false
+
+Lint/AssignmentInCondition:
+  Enabled: false
