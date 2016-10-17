@@ -1046,14 +1046,14 @@ module_eval(<<'.,.,', 'parser.y', 103)
 
 module_eval(<<'.,.,', 'parser.y', 146)
   def _reduce_58(val, _values, result)
-     return [val[0].to_s]
+     return [make_node(:TypeName, name: val[0])] 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 147)
   def _reduce_59(val, _values, result)
-     val[0] << val[1].to_s 
+     val[0] << make_node(:TypeName, name: val[1]) 
     result
   end
 .,.,
@@ -1466,14 +1466,14 @@ module_eval(<<'.,.,', 'parser.y', 307)
 
 module_eval(<<'.,.,', 'parser.y', 311)
   def _reduce_126(val, _values, result)
-     return [val[0].to_s]
+     return [make_node(:TypeName, name: val[0])]
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 312)
   def _reduce_127(val, _values, result)
-     val[0] << val[2].to_s 
+     val[0] << make_node(:TypeName, name: val[2]) 
     result
   end
 .,.,

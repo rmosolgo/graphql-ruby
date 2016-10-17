@@ -83,7 +83,7 @@ module GraphQL
         when Nodes::ObjectTypeDefinition
           out = "type #{node.name}"
           out << generate_directives(node.directives)
-          out << " implements " << node.interfaces.join(", ") unless node.interfaces.empty?
+          out << " implements " << node.interfaces.map(&:name).join(", ") unless node.interfaces.empty?
           out << generate_field_definitions(node.fields)
         when Nodes::InputValueDefinition
           out = "#{node.name}: #{generate(node.type)}"
@@ -103,7 +103,7 @@ module GraphQL
         when Nodes::UnionTypeDefinition
           out = "union #{node.name}"
           out << generate_directives(node.directives)
-          out << " = " + node.types.join(" | ")
+          out << " = " + node.types.map(&:name).join(" | ")
         when Nodes::EnumTypeDefinition
           out = "enum #{node.name}#{generate_directives(node.directives)} {\n"
           node.values.each do |value|
