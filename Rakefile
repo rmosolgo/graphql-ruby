@@ -10,7 +10,11 @@ Rake::TestTask.new do |t|
 end
 
 require 'rubocop/rake_task'
-RuboCop::RakeTask.new(:rubocop)
+RuboCop::RakeTask.new(:rubocop) do |t|
+  t.patterns = Rake::FileList['lib/**/{*}.rb', 'spec/**/*.rb']
+    .exclude("lib/graphql/language/parser.rb")
+    .exclude("lib/graphql/language/lexer.rb")
+end
 
 task(default: [:test, :rubocop])
 
