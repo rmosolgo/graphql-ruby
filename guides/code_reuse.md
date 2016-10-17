@@ -19,7 +19,7 @@ Many examples use a Proc literal for a field's `resolve`, for example:
 ```ruby
 field :name, types.String do
   # Resolve taking a Proc literal:
-  resolve -> (obj, args, ctx) { obj.name }
+  resolve ->(obj, args, ctx) { obj.name }
 end
 ```
 
@@ -66,7 +66,7 @@ Or, you can generate the `resolve` Proc dynamically:
 ```ruby
 # @return [Proc] A resolve proc which calls `method_name` on `obj`
 def resolve_with_method(method_name)
-  -> (obj, args, ctx) { obj.public_send(method_name) }
+  ->(obj, args, ctx) { obj.public_send(method_name) }
 end
 
 # ...
@@ -163,7 +163,7 @@ module Auth
   # @yieldreturn [Object] The return value for this field
   # @return [Proc] the passed-in block, modified to check for `can_read?(item_name)`
   def self.can_read(item_name, &block)
-    -> (obj, args, ctx) do
+    ->(obj, args, ctx) do
       if ctx[:current_user].can_read?(item_name)
         # continue to the next call:
         block.call(obj, args, ctx)

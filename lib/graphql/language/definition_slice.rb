@@ -16,7 +16,7 @@ module GraphQL
       def find_definition_dependencies(definitions, name)
         names = Set.new([name])
         visitor = Visitor.new(definitions[name])
-        visitor[Nodes::FragmentSpread] << -> (node, parent) {
+        visitor[Nodes::FragmentSpread] << ->(node, parent) {
           if fragment = definitions[node.name]
             names.merge(find_definition_dependencies(definitions, fragment.name))
           end

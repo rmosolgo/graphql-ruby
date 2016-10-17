@@ -35,19 +35,19 @@ module GraphQL
 
         # OperationDefinitions and FragmentDefinitions
         # both push themselves onto the context stack (and pop themselves off)
-        push_variable_context_stack = -> (node, parent) {
+        push_variable_context_stack = ->(node, parent) {
           # initialize the hash of vars for this context:
           variable_usages_for_context[node]
           variable_context_stack.push(node)
         }
 
-        pop_variable_context_stack = -> (node, parent) {
+        pop_variable_context_stack = ->(node, parent) {
           variable_context_stack.pop
         }
 
 
         context.visitor[GraphQL::Language::Nodes::OperationDefinition] << push_variable_context_stack
-        context.visitor[GraphQL::Language::Nodes::OperationDefinition] << -> (node, parent) {
+        context.visitor[GraphQL::Language::Nodes::OperationDefinition] << ->(node, parent) {
           # mark variables as defined:
           var_hash = variable_usages_for_context[node]
           node.variables.each { |var|
@@ -64,7 +64,7 @@ module GraphQL
         # For FragmentSpreads:
         #  - find the context on the stack
         #  - mark the context as containing this spread
-        context.visitor[GraphQL::Language::Nodes::FragmentSpread] << -> (node, parent) {
+        context.visitor[GraphQL::Language::Nodes::FragmentSpread] << ->(node, parent) {
           variable_context = variable_context_stack.last
           spreads_for_context[variable_context] << node.name
         }
@@ -72,7 +72,7 @@ module GraphQL
         # For VariableIdentifiers:
         #  - mark the variable as used
         #  - assign its AST node
-        context.visitor[GraphQL::Language::Nodes::VariableIdentifier] << -> (node, parent) {
+        context.visitor[GraphQL::Language::Nodes::VariableIdentifier] << ->(node, parent) {
           usage_context = variable_context_stack.last
           declared_variables = variable_usages_for_context[usage_context]
           usage = declared_variables[node.name]
@@ -82,7 +82,7 @@ module GraphQL
         }
 
 
-        context.visitor[GraphQL::Language::Nodes::Document].leave << -> (node, parent) {
+        context.visitor[GraphQL::Language::Nodes::Document].leave << ->(node, parent) {
           fragment_definitions = variable_usages_for_context.select { |key, value| key.is_a?(GraphQL::Language::Nodes::FragmentDefinition) }
           operation_definitions = variable_usages_for_context.select { |key, value| key.is_a?(GraphQL::Language::Nodes::OperationDefinition) }
 

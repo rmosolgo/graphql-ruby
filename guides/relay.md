@@ -22,13 +22,13 @@ You must provide a function for generating UUIDs and fetching objects with them.
 
 ```ruby
 MySchema = GraphQL::Schema.define do
-  id_from_object -> (object, type_definition, query_ctx) {
+  id_from_object ->(object, type_definition, query_ctx) {
     # Call your application's UUID method here
     # It should return a string
     MyApp::GlobalId.encrypt(object.class.name, object.id)
   }
 
-  object_from_id -> (id, query_ctx) {
+  object_from_id ->(id, query_ctx) {
     class_name, item_id = MyApp::GlobalId.decrypt(id)
     # "Post" => Post.find(id)
     Object.const_get(class_name).find(item_id)
@@ -41,11 +41,11 @@ An unencrypted ID generator is provided in the gem. It uses `Base64` to encode v
 ```ruby
 MySchema = GraphQL::Schema.define do
   # Create UUIDs by joining the type name & ID, then base64-encoding it
-  id_from_object -> (object, type_definition, query_ctx) {
+  id_from_object ->(object, type_definition, query_ctx) {
     GraphQL::Schema::UniqueWithinType.encode(type_definition.name, object.id)
   }
 
-  object_from_id -> (id, query_ctx) {
+  object_from_id ->(id, query_ctx) {
     type_name, item_id = GraphQL::Schema::UniqueWithinType.decode(id)
     # Now, based on `type_name` and `id`
     # find an object in your application
@@ -129,7 +129,7 @@ connection :featured_comments, CommentType.connection_type do
   argument :since, types.String
 
   # Return an Array or ActiveRecord::Relation
-  resolve -> (post, args, ctx) {
+  resolve ->(post, args, ctx) {
     comments = post.comments.featured
 
     if args[:since]
@@ -158,7 +158,7 @@ PostConnectionWithTotalCountType = PostType.define_connection do
   field :totalCount do
     type types.Int
     # `obj` is the Connection, `obj.object` is the collection of Posts
-    resolve -> (obj, args, ctx) { obj.object.count }
+    resolve ->(obj, args, ctx) { obj.object.count }
   end
 end
 
@@ -182,7 +182,7 @@ If you need custom fields on `edge`s, you can define an edge type and pass it to
 MembershipSinceEdgeType = TeamType.define_edge do
   name "MembershipSinceEdge"
   field :memberSince, types.Int, "The date that this person joined this team" do
-    resolve -> (obj, args, ctx) {
+    resolve ->(obj, args, ctx) {
       obj # => GraphQL::Relay::Edge instance
       person = obj.parent
       team = obj.node
@@ -398,7 +398,7 @@ To define a mutation, use `GraphQL::Relay::Mutation.define`. Inside the block, y
   - `name`, which will name the mutation field & derived types
   - `input_field`s, which will be applied to the derived `InputObjectType`
   - `return_field`s, which will be applied to the derived `ObjectType`
-  - `resolve(-> (obj, inputs, ctx) { ... })`, the mutation which will actually happen
+  - `resolve(->(obj, inputs, ctx) { ... })`, the mutation which will actually happen
 
 
 For example:
@@ -420,7 +420,7 @@ AddCommentMutation = GraphQL::Relay::Mutation.define do
 
   # The resolve proc is where you alter the system state.
   # `object` is the `root_value:` passed to `Schema.execute`.
-  resolve -> (object, inputs, ctx) {
+  resolve ->(object, inputs, ctx) {
     post = Post.find(inputs[:postId])
     comment = post.comments.create!(author_id: inputs[:authorId], content: inputs[:content])
 
@@ -448,7 +448,7 @@ Instead of specifying `return_field`s, you can specify a `return_type` for a mut
 CreateUser = GraphQL::Relay::Mutation.define do
   return_type UserMutationResultType
   # ...
-  resolve -> (obj, input, ctx) {
+  resolve ->(obj, input, ctx) {
     user = User.create(input)
     # this object will be treated as `UserMutationResultType`
     UserMutationResult.new(user, client_mutation_id: input[:clientMutationId])

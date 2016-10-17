@@ -10,7 +10,7 @@ module GraphQL
 
       def validate(context)
         HAS_TYPE_CONDITION.each do |node_class|
-          context.visitor[node_class] << -> (node, parent) {
+          context.visitor[node_class] << ->(node, parent) {
             validate_type_is_composite(node, context)
           }
         end

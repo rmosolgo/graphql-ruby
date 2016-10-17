@@ -519,7 +519,7 @@ end
 
 # line 132 "lib/graphql/language/lexer.rl"
 
-        emit_token = -> (name) {
+        emit_token = ->(name) {
           emit(name, ts, te, meta)
         }
 
@@ -1008,7 +1008,7 @@ end
       }
 
       UTF_8 = /\\u[\dAa-f]{4}/i
-      UTF_8_REPLACE = -> (m) { [m[-4..-1].to_i(16)].pack('U'.freeze) }
+      UTF_8_REPLACE = ->(m) { [m[-4..-1].to_i(16)].pack('U'.freeze) }
 
       def self.emit_string(ts, te, meta)
         value = meta[:data][ts...te].pack("c*").force_encoding("UTF-8")

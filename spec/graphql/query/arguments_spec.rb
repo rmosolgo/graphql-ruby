@@ -84,7 +84,7 @@ describe GraphQL::Query::Arguments do
           argument :b, types.Int, default_value: 2
           argument :c, types.Int
           argument :d, test_input_type
-          resolve -> (obj, args, ctx) {
+          resolve ->(obj, args, ctx) {
             arg_values_array << args
             1
           }

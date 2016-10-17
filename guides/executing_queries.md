@@ -39,7 +39,7 @@ These values will be accessible by key inside `resolve` functions. For example, 
 SecretStringField = GraphQL::Field.new do |f|
   f.type !GraphQL::STRING_TYPE
   f.description "A string that's only visible to authorized users"
-  f.resolve -> (obj, args, ctx) { ctx[:current_user].authorized? ? obj.secret_string : nil }
+  f.resolve ->(obj, args, ctx) { ctx[:current_user].authorized? ? obj.secret_string : nil }
 end
 ```
 

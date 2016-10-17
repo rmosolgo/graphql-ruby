@@ -1,9 +1,9 @@
 require "spec_helper"
 
 describe GraphQL::Schema::MiddlewareChain do
-  let(:step_1) { -> (step_values, next_step) { step_values << 1; next_step.call } }
-  let(:step_2) { -> (step_values, next_step) { step_values << 2; next_step.call } }
-  let(:step_3) { -> (step_values, next_step) { step_values << 3; :return_value } }
+  let(:step_1) { ->(step_values, next_step) { step_values << 1; next_step.call } }
+  let(:step_2) { ->(step_values, next_step) { step_values << 2; next_step.call } }
+  let(:step_3) { ->(step_values, next_step) { step_values << 3; :return_value } }
   let(:steps) { [step_1, step_2, step_3] }
   let(:step_values) { [] }
   let(:arguments) { [step_values] }
@@ -20,7 +20,7 @@ describe GraphQL::Schema::MiddlewareChain do
     end
 
     describe "when a step returns early" do
-      let(:early_return_step) { -> (step_values, next_step) { :early_return } }
+      let(:early_return_step) { ->(step_values, next_step) { :early_return } }
       it "doesn't continue the chain" do
         steps.insert(2, early_return_step)
         assert_equal(:early_return, middleware_chain.call)
@@ -30,8 +30,8 @@ describe GraphQL::Schema::MiddlewareChain do
 
     describe "when a step provides alternate arguments" do
       it "passes the new arguments to the next step" do
-        step_1 = -> (test_arg, next_step) { assert_equal(test_arg, 'HELLO'); next_step.call(['WORLD']) }
-        step_2 = -> (test_arg, next_step) { assert_equal(test_arg, 'WORLD'); test_arg }
+        step_1 = ->(test_arg, next_step) { assert_equal(test_arg, 'HELLO'); next_step.call(['WORLD']) }
+        step_2 = ->(test_arg, next_step) { assert_equal(test_arg, 'WORLD'); test_arg }
 
         chain = GraphQL::Schema::MiddlewareChain.new(steps: [step_1, step_2], arguments: ['HELLO'])
         result = chain.call

@@ -5,8 +5,8 @@ module GraphQL
 
       def validate(context)
         v = context.visitor
-        v[GraphQL::Language::Nodes::Field] << -> (node, parent) { validate_field(node, context) }
-        v[GraphQL::Language::Nodes::Directive] << -> (node, parent) { validate_directive(node, context) }
+        v[GraphQL::Language::Nodes::Field] << ->(node, parent) { validate_field(node, context) }
+        v[GraphQL::Language::Nodes::Directive] << ->(node, parent) { validate_directive(node, context) }
       end
 
       private

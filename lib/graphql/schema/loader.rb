@@ -14,7 +14,7 @@ module GraphQL
         schema = introspection_result.fetch("data").fetch("__schema")
 
         types = {}
-        type_resolver = -> (type) { -> { resolve_type(types, type) } }
+        type_resolver = ->(type) { -> { resolve_type(types, type) } }
 
         schema.fetch("types").each do |type|
           next if type.fetch("name").start_with?("__")
@@ -31,7 +31,7 @@ module GraphQL
         Schema.define(**kargs)
       end
 
-      NullResolveType = -> (obj, ctx) {
+      NullResolveType = ->(obj, ctx) {
         raise(NotImplementedError, "This schema was loaded from string, so it can't resolve types for objects")
       }
 

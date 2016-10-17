@@ -7,7 +7,7 @@ module GraphQL
           name("__schema")
           description("This GraphQL schema")
           type(!GraphQL::Introspection::SchemaType)
-          resolve -> (o, a, c) { wrapped_type }
+          resolve ->(o, a, c) { wrapped_type }
         end
       end
     end

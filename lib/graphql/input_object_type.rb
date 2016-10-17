@@ -15,7 +15,7 @@ module GraphQL
   # In a `resolve` function, you can access the values by making nested lookups on `args`.
   #
   # @example Accessing input values in a resolve function
-  #   resolve -> (obj, args, ctx) {
+  #   resolve ->(obj, args, ctx) {
   #     args[:player][:name]    # => "Tony Gwynn"
   #     args[:player][:number]  # => 19
   #     args[:player].to_h      # { "name" => "Tony Gwynn", "number" => 19 }

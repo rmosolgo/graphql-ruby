@@ -6,9 +6,9 @@ module GraphQL
     #   total_field_count = 0
     #   visitor = GraphQL::Language::Visitor.new(document)
     #   # Whenever you find a field, increment the field count:
-    #   visitor[GraphQL::Language::Nodes::Field] << -> (node) { total_field_count += 1 }
+    #   visitor[GraphQL::Language::Nodes::Field] << ->(node) { total_field_count += 1 }
     #   # When we finish, print the field count:
-    #   visitor[GraphQL::Language::Nodes::Document].leave << -> (node) { p total_field_count }
+    #   visitor[GraphQL::Language::Nodes::Document].leave << ->(node) { p total_field_count }
     #   visitor.visit
     #   # => 6
     #
@@ -34,7 +34,7 @@ module GraphQL
       # @return [NodeVisitor]
       #
       # @example Run a hook whenever you enter a new Field
-      #   visitor[GraphQL::Language::Nodes::Field] << -> (node, parent) { p "Here's a field" }
+      #   visitor[GraphQL::Language::Nodes::Field] << ->(node, parent) { p "Here's a field" }
       def [](node_class)
         @visitors[node_class] ||= NodeVisitor.new
       end

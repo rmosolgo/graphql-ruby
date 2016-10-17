@@ -8,7 +8,7 @@ module GraphQL
           description("A type in the GraphQL system")
           type(GraphQL::Introspection::TypeType)
           argument :name, !types.String
-          resolve -> (o, args, c) { type_hash.fetch(args["name"], nil) }
+          resolve ->(o, args, c) { type_hash.fetch(args["name"], nil) }
         end
       end
     end

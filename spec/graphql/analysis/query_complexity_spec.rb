@@ -223,12 +223,12 @@ describe GraphQL::Analysis::QueryComplexity do
       single_complexity_type = GraphQL::ObjectType.define do
         name "SingleComplexity"
         field :value, types.Int, complexity: 0.1 do
-          resolve -> (obj, args, ctx) { obj }
+          resolve ->(obj, args, ctx) { obj }
         end
         field :complexity, single_complexity_type do
           argument :value, types.Int
-          complexity -> (ctx, args, child_complexity) { args[:value] + child_complexity }
-          resolve -> (obj, args, ctx) { args[:value] }
+          complexity ->(ctx, args, child_complexity) { args[:value] + child_complexity }
+          resolve ->(obj, args, ctx) { args[:value] }
         end
         interfaces [complexity_interface]
       end
@@ -236,7 +236,7 @@ describe GraphQL::Analysis::QueryComplexity do
       double_complexity_type = GraphQL::ObjectType.define do
         name "DoubleComplexity"
         field :value, types.Int, complexity: 4 do
-          resolve -> (obj, args, ctx) { obj }
+          resolve ->(obj, args, ctx) { obj }
         end
         interfaces [complexity_interface]
       end
@@ -245,13 +245,13 @@ describe GraphQL::Analysis::QueryComplexity do
         name "Query"
         field :complexity, single_complexity_type do
           argument :value, types.Int
-          complexity -> (ctx, args, child_complexity) { args[:value] + child_complexity }
-          resolve -> (obj, args, ctx) { args[:value] }
+          complexity ->(ctx, args, child_complexity) { args[:value] + child_complexity }
+          resolve ->(obj, args, ctx) { args[:value] }
         end
 
         field :innerComplexity, complexity_interface do
           argument :value, types.Int
-          resolve -> (obj, args, ctx) { args[:value] }
+          resolve ->(obj, args, ctx) { args[:value] }
         end
       end
 

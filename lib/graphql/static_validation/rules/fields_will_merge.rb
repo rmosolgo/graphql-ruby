@@ -5,12 +5,12 @@ module GraphQL
         fragments = {}
         has_selections = []
         visitor = context.visitor
-        visitor[GraphQL::Language::Nodes::OperationDefinition] << -> (node, parent) {
+        visitor[GraphQL::Language::Nodes::OperationDefinition] << ->(node, parent) {
           if node.selections.any?
             has_selections << node
           end
         }
-        visitor[GraphQL::Language::Nodes::Document].leave << -> (node, parent) {
+        visitor[GraphQL::Language::Nodes::Document].leave << ->(node, parent) {
           has_selections.each { |node|
             field_map = gather_fields_by_name(node.selections, {}, [], context)
             find_conflicts(field_map, [], context)

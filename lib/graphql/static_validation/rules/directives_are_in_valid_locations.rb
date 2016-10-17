@@ -7,7 +7,7 @@ module GraphQL
       def validate(context)
         directives = context.schema.directives
 
-        context.visitor[Nodes::Directive] << -> (node, parent) {
+        context.visitor[Nodes::Directive] << ->(node, parent) {
           validate_location(node, parent, directives, context)
         }
       end

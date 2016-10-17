@@ -41,8 +41,8 @@ module GraphQL
         @directive_definitions = []
         @argument_definitions = []
         @path = []
-        visitor.enter << -> (node, parent) { PUSH_STRATEGIES[node.class].push(self, node) }
-        visitor.leave << -> (node, parent) { PUSH_STRATEGIES[node.class].pop(self, node) }
+        visitor.enter << ->(node, parent) { PUSH_STRATEGIES[node.class].push(self, node) }
+        visitor.leave << ->(node, parent) { PUSH_STRATEGIES[node.class].pop(self, node) }
       end
 
       private

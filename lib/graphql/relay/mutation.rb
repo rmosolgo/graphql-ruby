@@ -19,7 +19,7 @@ module GraphQL
     #
     #     return_field :item, ItemType
     #
-    #     resolve -> (inputs, ctx) {
+    #     resolve ->(inputs, ctx) {
     #       item = Item.find_by_id(inputs[:id])
     #       item.update(name: inputs[:name])
     #       {item: item}

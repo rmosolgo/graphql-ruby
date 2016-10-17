@@ -11,7 +11,7 @@ Always limit the number of items which can be returned from a list field. For ex
 ```ruby
 field :items, types[ItemType] do
   argument :limit, types.Int, default_value: 20
-  resolve -> (obj, args, ctx) {
+  resolve ->(obj, args, ctx) {
     # Cap the number of items at 30
     limit = [args[:limit], 30].min
     obj.items.limit(limit)
@@ -52,7 +52,7 @@ field :top_score, types.Int, complexity: 10
 # Dynamic complexity:
 field :top_scorers, types[PlayerType] do
   argument :limit, types.Int, default_value: 5
-  complexity -> (ctx, args, child_complexity) {
+  complexity ->(ctx, args, child_complexity) {
     if ctx[:current_user].staff?
       # no limit for staff users
       0

@@ -5,7 +5,7 @@ module GraphQL
 
       def validate(context)
         literal_validator = GraphQL::StaticValidation::LiteralValidator.new
-        context.visitor[GraphQL::Language::Nodes::VariableDefinition] << -> (node, parent) {
+        context.visitor[GraphQL::Language::Nodes::VariableDefinition] << ->(node, parent) {
           if !node.default_value.nil?
             validate_default_value(node, literal_validator, context)
           end

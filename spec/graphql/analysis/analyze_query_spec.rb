@@ -17,7 +17,7 @@ describe GraphQL::Analysis do
 
   describe ".analyze_query" do
     let(:node_counter) {
-      -> (memo, visit_type, irep_node) {
+      ->(memo, visit_type, irep_node) {
         memo ||= Hash.new { |h,k| h[k] = 0 }
         visit_type == :enter && memo[irep_node.ast_node.class] += 1
         memo
@@ -57,7 +57,7 @@ describe GraphQL::Analysis do
           }
         }
       |}
-      let(:variable_accessor) { -> (memo, visit_type, irep_node) { query.variables["cheeseId"] } }
+      let(:variable_accessor) { ->(memo, visit_type, irep_node) { query.variables["cheeseId"] } }
 
       before do
         @previous_query_analyzers = DummySchema.query_analyzers.dup
@@ -78,7 +78,7 @@ describe GraphQL::Analysis do
 
     describe "when processing fields" do
       let(:connection_counter) {
-        -> (memo, visit_type, irep_node) {
+        ->(memo, visit_type, irep_node) {
           memo ||= Hash.new { |h,k| h[k] = 0 }
           if visit_type == :enter
             if irep_node.ast_node.is_a?(GraphQL::Language::Nodes::Field)

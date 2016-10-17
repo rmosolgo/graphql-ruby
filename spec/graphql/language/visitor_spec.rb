@@ -19,13 +19,13 @@ describe GraphQL::Language::Visitor do
 
   let(:visitor) do
     v = GraphQL::Language::Visitor.new(document)
-    v[GraphQL::Language::Nodes::Field] << -> (node, parent) { counts[:fields_entered] += 1 }
+    v[GraphQL::Language::Nodes::Field] << ->(node, parent) { counts[:fields_entered] += 1 }
     # two ways to set up enter hooks:
-    v[GraphQL::Language::Nodes::Argument] <<       -> (node, parent) { counts[:argument_names] << node.name }
-    v[GraphQL::Language::Nodes::Argument].enter << -> (node, parent) { counts[:arguments_entered] += 1}
-    v[GraphQL::Language::Nodes::Argument].leave << -> (node, parent) { counts[:arguments_left] += 1 }
+    v[GraphQL::Language::Nodes::Argument] <<       ->(node, parent) { counts[:argument_names] << node.name }
+    v[GraphQL::Language::Nodes::Argument].enter << ->(node, parent) { counts[:arguments_entered] += 1}
+    v[GraphQL::Language::Nodes::Argument].leave << ->(node, parent) { counts[:arguments_left] += 1 }
 
-    v[GraphQL::Language::Nodes::Document].leave << -> (node, parent) { counts[:finished] = true }
+    v[GraphQL::Language::Nodes::Document].leave << ->(node, parent) { counts[:finished] = true }
     v
   end
 
@@ -41,7 +41,7 @@ describe GraphQL::Language::Visitor do
 
   describe "Visitor::SKIP" do
     it "skips the rest of the node" do
-      visitor[GraphQL::Language::Nodes::Document] << -> (node, parent) { GraphQL::Language::Visitor::SKIP }
+      visitor[GraphQL::Language::Nodes::Document] << ->(node, parent) { GraphQL::Language::Visitor::SKIP }
       visitor.visit
       assert_equal(0, counts[:fields_entered])
     end

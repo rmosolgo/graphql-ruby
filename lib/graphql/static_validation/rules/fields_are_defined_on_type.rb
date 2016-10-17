@@ -5,7 +5,7 @@ module GraphQL
 
       def validate(context)
         visitor = context.visitor
-        visitor[GraphQL::Language::Nodes::Field] << -> (node, parent) {
+        visitor[GraphQL::Language::Nodes::Field] << ->(node, parent) {
           return if context.skip_field?(node.name)
           parent_type = context.object_types[-2]
           parent_type = parent_type.unwrap

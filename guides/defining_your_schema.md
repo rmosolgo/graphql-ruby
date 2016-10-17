@@ -58,7 +58,7 @@ In order for your schema to expose members of an interface, it must be able to d
 ```ruby
 MySchema = GraphQL::Schema.define do
  # ...
- resolve_type -> (object, ctx) {
+ resolve_type ->(object, ctx) {
    # for example, look up types by class name
    type_name = object.class.name
    MySchema.types[type_name]
@@ -178,7 +178,7 @@ field :comments do
 
   argument :moderated, types.Boolean, default_value: true
 
-  resolve -> (obj, args, ctx) do
+  resolve ->(obj, args, ctx) do
      Comment.where(
        post_id: obj.id,
        moderated: args["moderated"]
@@ -324,7 +324,7 @@ Query analyzers are like middleware for the validation phase. They're called at 
 The minimal API is `.call(memo, visit_type, internal_representation_node)`. For example:
 
 ```ruby
-ast_node_logger = -> (memo, visit_type, internal_representation_node) {
+ast_node_logger = ->(memo, visit_type, internal_representation_node) {
   if visit_type == :enter
     puts "Visiting #{internal_representation_node.name}!"
   end
@@ -409,7 +409,7 @@ MySchema = GraphQL::Schema.define do
   # ...
   # Use the type's declared `resolves_to_class_names`
   # to figure out if `obj` is a member of that type
-  resolve_type -> (obj, ctx) {
+  resolve_type ->(obj, ctx) {
     class_name = obj.class.name
     MySchema.types.values.find { |type| type.metadata[:resolves_to_class_names].include?(class_name) }
   }

@@ -77,7 +77,7 @@ describe GraphQL::Query::Executor do
         name "Query"
         field :dairy do
           type DairyType
-          resolve -> (t, a, c) {
+          resolve ->(t, a, c) {
             raise if resolved
             resolved = true
             DAIRY

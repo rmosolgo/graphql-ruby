@@ -11,11 +11,11 @@ describe GraphQL::Relay::Node do
         @previous_id_from_object_proc = StarWarsSchema.id_from_object_proc
         @previous_object_from_id_proc = StarWarsSchema.object_from_id_proc
 
-        StarWarsSchema.id_from_object = -> (obj, type_name, ctx) {
+        StarWarsSchema.id_from_object = ->(obj, type_name, ctx) {
           "#{type_name}/#{obj.id}"
         }
 
-        StarWarsSchema.object_from_id = -> (global_id, ctx) {
+        StarWarsSchema.object_from_id = ->(global_id, ctx) {
           type_name, id = global_id.split("/")
           STAR_WARS_DATA[type_name][id]
         }

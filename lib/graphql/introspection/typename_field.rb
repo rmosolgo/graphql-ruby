@@ -7,7 +7,7 @@ module GraphQL
           name "__typename"
           description "The name of this type"
           type -> { !GraphQL::STRING_TYPE }
-          resolve -> (obj, a, c) { wrapped_type.name }
+          resolve ->(obj, a, c) { wrapped_type.name }
         end
       end
     end

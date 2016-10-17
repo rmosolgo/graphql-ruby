@@ -4,7 +4,7 @@ module GraphQL
       include GraphQL::StaticValidation::Message::MessageHelper
 
       def validate(context)
-        context.visitor[GraphQL::Language::Nodes::FragmentDefinition] << -> (node, parent) {
+        context.visitor[GraphQL::Language::Nodes::FragmentDefinition] << ->(node, parent) {
           if has_nested_spread(node, [], context)
             context.errors << message("Fragment #{node.name} contains an infinite loop", node, context: context)
           end
