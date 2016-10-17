@@ -72,7 +72,7 @@ describe GraphQL::Schema::Printer do
 
       return_field :post, post_type
 
-      resolve -> (_, _, _) { }
+      resolve ->(_, _, _) { }
     end
 
     mutation_root = GraphQL::ObjectType.define do
@@ -87,7 +87,7 @@ describe GraphQL::Schema::Printer do
       field :post do
         type post_type
         argument :id, !types.ID
-        resolve -> (obj, args, ctx) { }
+        resolve ->(_, _, _) { }
       end
     end
 
