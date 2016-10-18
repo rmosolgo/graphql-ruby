@@ -95,6 +95,19 @@ describe GraphQL::Query::Arguments do
     end
   end
 
+  describe "#[]" do
+    it "returns the value at that key" do
+      assert_equal 1, arguments["a"]
+      assert_equal 1, arguments[:a]
+      assert arguments["c"].is_a?(GraphQL::Query::Arguments)
+    end
+
+    it "returns nil for missing keys" do
+      assert_equal nil, arguments["z"]
+      assert_equal nil, arguments[7]
+    end
+  end
+
   describe "#key?" do
     let(:arg_values) { [] }
     let(:schema) {

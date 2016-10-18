@@ -20,7 +20,7 @@ module GraphQL
       # @param key [String, Symbol] name or index of value to access
       # @return [Object] the argument at that key
       def [](key)
-        @argument_values[key.to_s].value
+        @argument_values.fetch(key.to_s, NULL_ARGUMENT_VALUE).value
       end
 
       # @param key [String, Symbol] name of value to access
@@ -56,6 +56,8 @@ module GraphQL
           @definition = definition
         end
       end
+
+      NULL_ARGUMENT_VALUE = ArgumentValue.new(nil, nil, nil)
 
       def wrap_value(value, arg_defn_type)
         case value
