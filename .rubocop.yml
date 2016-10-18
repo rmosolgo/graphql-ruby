@@ -5,11 +5,6 @@ AllCops:
   - 'lib/graphql/language/lexer.rb'
   - 'lib/graphql/language/parser.rb'
 
-# value = do_something
-# if value # ...
-Lint/AssignmentInCondition:
-  AllowSafeAssignment: false
-
 # def ...
 # end
 Lint/DefEndAlignment:
@@ -20,10 +15,6 @@ Lint/DefEndAlignment:
 # end
 Lint/EndAlignment:
   AlignWith: variable
-
-Metrics/ClassLength:
-  CountComments: false
-  Max: 120
 
 Metrics/ParameterLists:
   Max: 6
@@ -47,23 +38,5 @@ Style/LeadingCommentSpace:
 Style/MethodName:
   EnforcedStyle: snake_case
 
-Style/StringLiterals:
-  EnforcedStyle: double_quotes
-
 Style/WordArray:
   EnforcedStyle: brackets
-
-Style/StringLiterals:
-  Enabled: false
-
-Metrics/ClassLength:
-  Enabled: false
-
-Metrics/ModuleLength:
-  Enabled: false
-
-Metrics/MethodLength:
-  Enabled: false
-
-Lint/AssignmentInCondition:
-  Enabled: false
