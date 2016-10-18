@@ -86,8 +86,7 @@ module GraphQL
       @orphan_types = types
       @directives = DIRECTIVES.reduce({}) { |m, d| m[d.name] = d; m }
       @static_validator = GraphQL::StaticValidation::Validator.new(schema: self)
-      @rescue_middleware = GraphQL::Schema::RescueMiddleware.new
-      @middleware = [@rescue_middleware]
+      @middleware = []
       @query_analyzers = []
       @resolve_type_proc = nil
       @object_from_id_proc = nil
@@ -100,12 +99,12 @@ module GraphQL
 
     def rescue_from(*args, &block)
       ensure_defined
-      @rescue_middleware.rescue_from(*args, &block)
+      rescue_middleware.rescue_from(*args, &block)
     end
 
     def remove_handler(*args, &block)
       ensure_defined
-      @rescue_middleware.remove_handler(*args, &block)
+      rescue_middleware.remove_handler(*args, &block)
     end
 
     def define(**kwargs, &block)
@@ -257,6 +256,18 @@ module GraphQL
     def id_from_object=(new_proc)
       ensure_defined
       @id_from_object_proc = new_proc
+    end
+
+    private
+
+    # Lazily create a middleware and add it to the schema
+    # (Don't add it if it's not used)
+    def rescue_middleware
+      @rescue_middleware ||= begin
+        middleware = GraphQL::Schema::RescueMiddleware.new
+        @middleware << middleware
+        middleware
+      end
     end
   end
 end
