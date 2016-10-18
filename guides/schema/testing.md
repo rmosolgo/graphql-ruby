@@ -1,5 +1,5 @@
 ---
-title: Testing a GraphQL Schema
+title: Schema — Testing
 ---
 
 There are a few ways to test the behavior of your GraphQL schema:
@@ -7,7 +7,6 @@ There are a few ways to test the behavior of your GraphQL schema:
 - _Don't_ test the schema, test other objects instead
 - Test schema elements (types, fields) in isolation
 - Execute GraphQL queries and test the result
-
 
 ## Don't test the schema
 
@@ -100,7 +99,7 @@ post.fields                   # => {"id" => <GraphQL::Field>, ... }
 post.fields.keys              # => ["id", "title", "body", "author", "comments"]
 ```
 
-The returned value is an instance of the type class you used to `.define` it (eg, `GraphQL::ObjectType`, `GraphQL::EnumType`, `GraphQL::InputObjectType`).
+The returned value of `Schema#types[type_name]` is an instance of the type class you used to `.define` it (eg, `GraphQL::ObjectType`, `GraphQL::EnumType`, `GraphQL::InputObjectType`).
 
 #### Fields
 
@@ -130,7 +129,7 @@ Similarly, you can access:
 - `GraphQL::Field#type`, the field's return type
 - `GraphQL::InputObjectType#arguments`, which are `String` => `GraphQL::Argument` pairs
 - `GraphQL::EnumType#values`, which are `String` => `GraphQL::EnumType::EnumValue` pairs
-- `GraphQL::InterfaceType#possible_types` and `GraphQL::UnionType#possible_types`, which are lists of types.
+- `GraphQL::Schema#possible_types(type_defn)`, which returns the possible types for union or interface types in a given schema
 
 `GraphQL::BaseType#unwrap` may also be helpful. It returns the "inner-most" type. For example:
 
@@ -183,10 +182,9 @@ describe MySchema do
 
     context "when there's a current user" do
       # override `context`
-      let(:context) {{
-        current_user: User.new(name: "ABC")
-      }}
-
+      let(:context) {
+        { current_user: User.new(name: "ABC") }
+      }
       it "shows the user's name" do
         user_name = result["data"]["viewer"]["name"]
         expect(user_name).to eq("ABC")

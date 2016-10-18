@@ -24,63 +24,9 @@ gem 'graphql'
 $ bundle install
 ```
 
-## Overview
+## Getting Started
 
-#### Declare types & build a schema
-
-```ruby
-# Declare a type...
-PostType = GraphQL::ObjectType.define do
-  name "Post"
-  description "A blog post"
-
-  field :id, !types.ID
-  field :title, !types.String
-  field :body, !types.String
-  field :comments, types[!CommentType]
-end
-
-# ...and a query root
-QueryType = GraphQL::ObjectType.define do
-  name "Query"
-  description "The query root of this schema"
-
-  field :post do
-    type PostType
-    argument :id, !types.ID
-    resolve ->(obj, args, ctx) { Post.find(args["id"]) }
-  end
-end
-
-# Then create your schema
-Schema = GraphQL::Schema.define do
-  query QueryType
-  max_depth 8
-end
-```
-
-#### Execute queries
-
-Execute GraphQL queries on a given schema, from a query string.
-
-```ruby
-result_hash = Schema.execute(query_string)
-# {
-#   "data" => {
-#     "post" => {
-#        "id" => 1,
-#        "title" => "GraphQL is nice"
-#     }
-#   }
-# }
-```
-
-#### Use with Relay
-
-If you're building a backend for [Relay](http://facebook.github.io/relay/), you'll need:
-
-- A JSON dump of the schema, which you can get by sending [`GraphQL::Introspection::INTROSPECTION_QUERY`](https://github.com/rmosolgo/graphql-ruby/blob/master/lib/graphql/introspection/introspection_query.rb)
-- Relay-specific helpers for GraphQL, see [`GraphQL::Relay`](http://www.rubydoc.info/github/rmosolgo/graphql-ruby/file/guides/relay.md)
+See "Getting Started" on the [website]((https://rmosolgo.github.io/graphql-ruby/) or on [GitHub](https://github.com/rmosolgo/graphql-ruby/blob/master/guides/index.md)
 
 ## Goals
 
@@ -94,23 +40,7 @@ If you're building a backend for [Relay](http://facebook.github.io/relay/), you'
 - __Report bugs__ by posting a description, full stack trace, and all relevant code in a  [GitHub issue](https://github.com/rmosolgo/graphql-ruby/issues).
 - __Features & patches__ are welcome! Consider discussing it in an [issue](https://github.com/rmosolgo/graphql-ruby/issues) or in the [#ruby channel on Slack](https://graphql-slack.herokuapp.com/) to make sure we're on the same page.
 - __Run the tests__ with `rake test` or start up guard with `bundle exec guard`.
-- __Build the site__ with `rake site:serve`, then visit `localhost:4000`.
-
-## Related Projects
-
-### Code
-
-- `graphql-ruby` + Rails demo ([src](https://github.com/rmosolgo/graphql-ruby-demo) / [heroku](http://graphql-ruby-demo.herokuapp.com))
-- [`graphql-batch`](https://github.com/shopify/graphql-batch), a batched query execution strategy
-- [`graphql-libgraphqlparser`](https://github.com/rmosolgo/graphql-libgraphqlparser-ruby), bindings to [libgraphqlparser](https://github.com/graphql/libgraphqlparser), a C-level parser.
-
-### Blog Posts
-
--  Building a blog in GraphQL and Relay on Rails [Introduction](https://medium.com/@gauravtiwari/graphql-and-relay-on-rails-getting-started-955a49d251de), [Part 1]( https://medium.com/@gauravtiwari/graphql-and-relay-on-rails-creating-types-and-schema-b3f9b232ccfc), [Part 2](https://medium.com/@gauravtiwari/graphql-and-relay-on-rails-first-relay-powered-react-component-cb3f9ee95eca)
-- https://medium.com/@khor/relay-facebook-on-rails-8b4af2057152
-- https://blog.jacobwgillespie.com/from-rest-to-graphql-b4e95e94c26b#.4cjtklrwt
-- http://mgiroux.me/2015/getting-started-with-rails-graphql-relay/
-- http://mgiroux.me/2015/uploading-files-using-relay-with-rails/
+- __Build the site__ with `rake site:serve`, then visit `http://localhost:4000/graphql-ruby/`.
 
 ## To Do
 

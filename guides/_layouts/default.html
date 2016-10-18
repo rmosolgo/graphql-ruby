@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>GraphQL Ruby</title>
+    <title>GraphQL Ruby - {{ page.title }}</title>
     <link rel="stylesheet" href="{{ site.baseurl }}/css/main.css">
     <link rel="icon" href="{{ site.baseurl }}/graphql-ruby-icon.png">
     <meta name="generator">
@@ -26,16 +26,37 @@
 
       <div class="grid -between">
         <div class="cell -3of12">
-          <h3><a href="{% if jekyll.environment == 'development' %}/{% else %}{{ site.baseurl }}{% endif %}">Readme</a></h3>
           <h3>Guides</h3>
           <ul>
-            <li><a href="{{ site.baseurl }}/introduction">Introduction</a></li>
-            <li><a href="{{ site.baseurl }}/defining_your_schema">Defining a Schema</a></li>
-            <li><a href="{{ site.baseurl }}/executing_queries">Executing Queries</a></li>
-            <li><a href="{{ site.baseurl }}/code_reuse">Code Reuse</a></li>
-            <li><a href="{{ site.baseurl }}/relay">Relay</a></li>
-            <li><a href="{{ site.baseurl }}/security">Security</a></li>
-            <li><a href="{{ site.baseurl }}/testing">Testing</a></li>
+            <li><a href="{{ site.baseurl }}/">Getting Started</a></li>
+            <li>
+              <strong>Schema</strong>
+              <ul>
+                <li><a href="{{ site.baseurl }}/schema/types_and_fields">Types and Fields</a></li>
+                <li><a href="{{ site.baseurl }}/schema/configuration_options">Configuration Options</a></li>
+                <li><a href="{{ site.baseurl }}/schema/code_reuse">Code Reuse</a></li>
+                <li><a href="{{ site.baseurl }}/schema/testing">Testing</a></li>
+              </ul>
+            </li>
+            <li>
+              <strong>Queries</strong>
+              <ul>
+                <li><a href="{{ site.baseurl }}/queries/executing_queries">Executing Queries</a></li>
+                <li><a href="{{ site.baseurl }}/queries/authorization">Authorization</a></li>
+                <li><a href="{{ site.baseurl }}/queries/security">Security</a></li>
+                <li><a href="{{ site.baseurl }}/queries/optimization">Optimization</a></li>
+                <li><a href="{{ site.baseurl }}/queries/error_handling">Error Handling</a></li>
+                <li><a href="{{ site.baseurl }}/queries/phases_of_execution">Phases of Execution</a></li>
+              </ul>
+            </li>
+            <li>
+              <strong>Relay</strong>
+              <ul>
+                <li><a href="{{ site.baseurl }}/relay/object_identification">Object Identification</a></li>
+                <li><a href="{{ site.baseurl }}/relay/connections">Connections</a></li>
+                <li><a href="{{ site.baseurl }}/relay/mutations">Mutations</a></li>
+              </ul>
+            </li>
           </ul>
           <h3><a href="http://www.rubydoc.info/github/rmosolgo/graphql-ruby">API Docs</a></h3>
           <h3><a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a></h3>
