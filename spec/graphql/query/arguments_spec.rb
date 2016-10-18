@@ -45,6 +45,37 @@ describe GraphQL::Query::Arguments do
     assert_equal({ a: 1, b: 2, c: { d: 3, e: 4 } }, arguments.to_h)
   end
 
+  it "yields key, value, and arg_defnition" do
+    type_info = []
+    arguments.each_value do |arg_value|
+      value = arg_value.value.is_a?(GraphQL::Query::Arguments) ? arg_value.value.to_h : arg_value.value
+      type_info << [arg_value.key, value, arg_value.definition.type.unwrap.name]
+    end
+    expected_type_info =[
+      ["a", 1, "Int"],
+      ["b", 2, "Int"],
+      ["c", { d: 3, e: 4 }, "TestInput1"],
+    ]
+    assert_equal expected_type_info, type_info
+  end
+
+  it "can be copied to a new Arguments instance" do
+    transformed_args = {}
+    types = {}
+    arguments.each_value do |arg_value|
+      transformed_args[arg_value.key.upcase] = arg_value.value
+      types[arg_value.key.upcase] = arg_value.definition
+    end
+
+    new_arguments = GraphQL::Query::Arguments.new(transformed_args, argument_definitions: types)
+    expected_hash = {
+      "A" => 1,
+      "B" => 2,
+      "C" => { d: 3 , e: 4 },
+    }
+    assert_equal expected_hash, new_arguments.to_h
+  end
+
   describe "nested hashes" do
     let(:input_type) {
       test_input_type = GraphQL::InputObjectType.define do
@@ -61,6 +92,19 @@ describe GraphQL::Query::Arguments do
       )
       assert args["b"].is_a?(GraphQL::Query::Arguments)
       assert args["c"].is_a?(Hash)
+    end
+  end
+
+  describe "#[]" do
+    it "returns the value at that key" do
+      assert_equal 1, arguments["a"]
+      assert_equal 1, arguments[:a]
+      assert arguments["c"].is_a?(GraphQL::Query::Arguments)
+    end
+
+    it "returns nil for missing keys" do
+      assert_equal nil, arguments["z"]
+      assert_equal nil, arguments[7]
     end
   end
 
