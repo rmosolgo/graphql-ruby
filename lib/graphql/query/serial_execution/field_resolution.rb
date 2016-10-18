@@ -54,35 +54,52 @@ module GraphQL
           end
         end
 
-
         # Get the result of:
         # - Any middleware on this schema
         # - The field's resolve method
         # If the middleware chain returns a GraphQL::ExecutionError, its message
         # is added to the "errors" key.
         def get_raw_value
-          steps = execution_context.query.schema.middleware + [get_middleware_proc_from_field_resolve]
-          chain = GraphQL::Schema::MiddlewareChain.new(
-            steps: steps,
-            arguments: [parent_type, target, field, arguments, execution_context.query.context]
-          )
-          chain.call
+          middlewares = execution_context.query.schema.middleware
+          field_resolve_step = FieldResolveStep.new(irep_node)
+          resolve_arguments = [parent_type, target, field, arguments, execution_context.query.context]
+          # only run a middleware chain if there are any middleware
+          if middlewares.any?
+            chain = GraphQL::Schema::MiddlewareChain.new(
+              steps: middlewares + [field_resolve_step],
+              arguments: resolve_arguments
+            )
+            chain.call
+          else
+            field_resolve_step.call(*resolve_arguments)
+          end
         rescue GraphQL::ExecutionError => err
           err
         end
 
 
-        # Execute the field's resolve method
-        # @return [Proc] suitable to be the last step in a middleware chain
-        def get_middleware_proc_from_field_resolve
-          ->(_parent_type, parent_object, field_definition, field_args, context, _next) {
-            context.ast_node = irep_node.ast_node
-            context.irep_node = irep_node
+        # A `.call`-able suitable to be the last step in a middleware chain
+        class FieldResolveStep
+          def initialize(irep_node)
+            @irep_node = irep_node
+          end
+
+          # Execute the field's resolve method
+          def call(_parent_type, parent_object, field_definition, field_args, context, _next = nil)
+            # setup
+            context.ast_node = @irep_node.ast_node
+            context.irep_node = @irep_node
+
+            # resolve
             value = field_definition.resolve(parent_object, field_args, context)
+
+            # teardown
             context.ast_node = nil
             context.irep_node = nil
+
+            # return
             value
-          }
+          end
         end
       end
     end
