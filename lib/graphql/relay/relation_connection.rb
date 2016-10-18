@@ -6,8 +6,13 @@ module GraphQL
     # - `Sequel::Dataset`
     class RelationConnection < BaseConnection
       def cursor_from_node(item)
-        offset = starting_offset + paged_nodes_array.index(item) + 1
-        Base64.strict_encode64(offset.to_s)
+        item_index = paged_nodes_array.index(item)
+        if item_index.nil?
+          raise("Can't generate cursor, item not found in connection: #{item}")
+        else
+          offset = starting_offset + item_index + 1
+          Base64.strict_encode64(offset.to_s)
+        end
       end
 
       def has_next_page
@@ -80,7 +85,6 @@ module GraphQL
         @paged_nodes_array ||= paged_nodes.to_a
       end
     end
-
 
     if defined?(ActiveRecord::Relation)
       BaseConnection.register_connection_implementation(ActiveRecord::Relation, RelationConnection)

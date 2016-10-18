@@ -345,4 +345,20 @@ describe GraphQL::Relay::RelationConnection do
       end
     end
   end
+
+  describe "#cursor_from_node" do
+    let(:connection) { GraphQL::Relay::RelationConnection.new(Base.where(faction_id: 1), {}) }
+
+    it "returns the cursor for a node in the connection" do
+      assert_equal "MQ==", connection.cursor_from_node(Base.all[0])
+      assert_equal "Mg==", connection.cursor_from_node(Base.all[1])
+    end
+
+    it "raises when the node isn't found" do
+      err = assert_raises(RuntimeError) {
+        connection.cursor_from_node(:not_found)
+      }
+      assert_includes err.message, "item not found"
+    end
+  end
 end
