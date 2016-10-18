@@ -5,7 +5,7 @@ module GraphQL
 
       def validate(context)
         context.visitor[GraphQL::Language::Nodes::FragmentDefinition] << ->(node, parent) {
-          if has_nested_spread(node, [], context)
+          if has_nested_spread?(node, [], context)
             context.errors << message("Fragment #{node.name} contains an infinite loop", node, context: context)
           end
         }
@@ -13,12 +13,17 @@ module GraphQL
 
       private
 
-      def has_nested_spread(fragment_def, parent_fragment_names, context)
+      def has_nested_spread?(fragment_def, parent_fragment_names, context)
         nested_spreads = get_spreads(fragment_def.selections)
 
         nested_spreads.any? do |spread|
           nested_def = context.fragments[spread.name]
-          parent_fragment_names.include?(spread.name) || has_nested_spread(nested_def, parent_fragment_names + [fragment_def.name], context)
+          if nested_def.nil?
+            # this is another kind of error
+            false
+          else
+            parent_fragment_names.include?(spread.name) || has_nested_spread?(nested_def, parent_fragment_names + [fragment_def.name], context)
+          end
         end
       end
 
