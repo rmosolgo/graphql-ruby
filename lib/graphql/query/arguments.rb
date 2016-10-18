@@ -11,7 +11,8 @@ module GraphQL
         @argument_values = values.inject({}) do |memo, (inner_key, inner_value)|
           string_key = inner_key.to_s
           arg_defn = argument_definitions[string_key]
-          memo[string_key] = wrap_value(inner_value, arg_defn.type)
+          arg_value = wrap_value(inner_value, arg_defn.type)
+          memo[string_key] = ArgumentValue.new(string_key, arg_value, arg_defn)
           memo
         end
       end
@@ -19,7 +20,7 @@ module GraphQL
       # @param key [String, Symbol] name or index of value to access
       # @return [Object] the argument at that key
       def [](key)
-        @argument_values[key.to_s]
+        @argument_values[key.to_s].value
       end
 
       # @param key [String, Symbol] name of value to access
@@ -36,7 +37,25 @@ module GraphQL
 
       def_delegators :string_key_values, :keys, :values, :each
 
+      # Access each key, value and type for the arguments in this set.
+      # @yield [argument_value] The {ArgumentValue} for each argument
+      # @yieldparam argument_value [ArgumentValue]
+      def each_value
+        @argument_values.each_value do |argument_value|
+          yield(argument_value)
+        end
+      end
+
       private
+
+      class ArgumentValue
+        attr_reader :key, :value, :definition
+        def initialize(key, value, definition)
+          @key = key
+          @value = value
+          @definition = definition
+        end
+      end
 
       def wrap_value(value, arg_defn_type)
         case value
