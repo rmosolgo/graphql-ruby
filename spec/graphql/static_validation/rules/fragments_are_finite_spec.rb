@@ -47,4 +47,17 @@ describe GraphQL::StaticValidation::FragmentsAreFinite do
     ]
     assert_equal(expected, errors)
   end
+
+  describe "undefined spreads inside fragments" do
+    let(:query_string) {%|
+      {
+        cheese(id: 1) { ... frag1 }
+      }
+      fragment frag1 on Cheese { id, ...frag2 }
+    |}
+
+    it "doesn't blow up" do
+      assert_equal("Fragment frag2 was used, but not defined", errors.first["message"])
+    end
+  end
 end
