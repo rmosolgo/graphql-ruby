@@ -61,7 +61,7 @@ module GraphQL
       :orphan_types,
       :query_analyzers, :middleware
 
-    DIRECTIVES = [GraphQL::Directive::SkipDirective, GraphQL::Directive::IncludeDirective, GraphQL::Directive::DeprecatedDirective]
+    DIRECTIVES = [GraphQL::Directive::IncludeDirective, GraphQL::Directive::SkipDirective, GraphQL::Directive::DeprecatedDirective]
     DYNAMIC_FIELDS = ["__type", "__typename", "__schema"]
 
     attr_reader :directives, :static_validator, :object_from_id_proc, :id_from_object_proc, :resolve_type_proc

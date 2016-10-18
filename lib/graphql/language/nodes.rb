@@ -17,9 +17,6 @@ module GraphQL
           if options.key?(:position_source)
             position_source = options.delete(:position_source)
             @line, @col = position_source.line_and_column
-          elsif options.key?(:line)
-            @line = options.delete(:line)
-            @col = options.delete(:col)
           end
 
           initialize_node(options)
@@ -143,14 +140,15 @@ module GraphQL
       end
 
       class DirectiveDefinition < AbstractNode
-        attr_accessor :name, :arguments, :locations
+        attr_accessor :name, :arguments, :locations, :description
         scalar_attributes :name
         child_attributes :arguments, :locations
 
-        def initialize_node(name: nil, arguments: [], locations: [])
+        def initialize_node(name: nil, arguments: [], locations: [], description: nil)
           @name = name
           @arguments = arguments
           @locations = locations
+          @description = description
         end
       end
 
@@ -347,111 +345,120 @@ module GraphQL
       end
 
       class ScalarTypeDefinition < AbstractNode
-        attr_accessor :name, :directives
+        attr_accessor :name, :directives, :description
         scalar_attributes :name
         child_attributes :directives
 
-        def initialize_node(name:, directives: [])
+        def initialize_node(name:, directives: [], description: nil)
           @name = name
           @directives = directives
+          @description = description
         end
       end
 
       class ObjectTypeDefinition < AbstractNode
-        attr_accessor :name, :interfaces, :fields, :directives
+        attr_accessor :name, :interfaces, :fields, :directives, :description
         scalar_attributes :name
         child_attributes :interfaces, :fields, :directives
 
-        def initialize_node(name:, interfaces:, fields:, directives: [])
+        def initialize_node(name:, interfaces:, fields:, directives: [], description: nil)
           @name = name
           @interfaces = interfaces || []
           @directives = directives
           @fields = fields
+          @description = description
         end
       end
 
       class InputValueDefinition < AbstractNode
-        attr_accessor :name, :type, :default_value, :directives
+        attr_accessor :name, :type, :default_value, :directives,:description
         scalar_attributes :name, :type, :default_value
         child_attributes :directives
 
-        def initialize_node(name:, type:, default_value: nil, directives: [])
+        def initialize_node(name:, type:, default_value: nil, directives: [], description: nil)
           @name = name
           @type = type
           @default_value = default_value
           @directives = directives
+          @description = description
         end
       end
 
       class FieldDefinition < AbstractNode
-        attr_accessor :name, :arguments, :type, :directives
+        attr_accessor :name, :arguments, :type, :directives, :description
         scalar_attributes :name, :type
         child_attributes :arguments, :directives
 
-        def initialize_node(name:, arguments:, type:, directives: [])
+        def initialize_node(name:, arguments:, type:, directives: [], description: nil)
           @name = name
           @arguments = arguments
           @type = type
           @directives = directives
+          @description = description
         end
       end
 
       class InterfaceTypeDefinition < AbstractNode
-        attr_accessor :name, :fields, :directives
+        attr_accessor :name, :fields, :directives, :description
         scalar_attributes :name
         child_attributes :fields, :directives
 
-        def initialize_node(name:, fields:, directives: [])
+        def initialize_node(name:, fields:, directives: [], description: nil)
           @name = name
           @fields = fields
           @directives = directives
+          @description = description
         end
       end
 
       class UnionTypeDefinition < AbstractNode
-        attr_accessor :name, :types, :directives
+        attr_accessor :name, :types, :directives, :description
         scalar_attributes :name
         child_attributes :types, :directives
 
-        def initialize_node(name:, types:, directives: [])
+        def initialize_node(name:, types:, directives: [], description: nil)
           @name = name
           @types = types
           @directives = directives
+          @description = description
         end
       end
 
       class EnumTypeDefinition < AbstractNode
-        attr_accessor :name, :values, :directives
+        attr_accessor :name, :values, :directives, :description
         scalar_attributes :name
         child_attributes :values, :directives
 
-        def initialize_node(name:, values:, directives: [])
+        def initialize_node(name:, values:, directives: [], description: nil)
           @name = name
           @values = values
           @directives = directives
+          @description = description
         end
       end
 
       class EnumValueDefinition < AbstractNode
-        attr_accessor :name, :directives
+        attr_accessor :name, :directives, :description
         scalar_attributes :name
         child_attributes :directives
 
-        def initialize_node(name:, directives: [])
+        def initialize_node(name:, directives: [], description: nil)
           @name = name
           @directives = directives
+          @description = description
         end
       end
 
       class InputObjectTypeDefinition < AbstractNode
-        attr_accessor :name, :fields, :directives
+        attr_accessor :name, :fields, :directives, :description
         scalar_attributes :name
         child_attributes :fields
 
-        def initialize_node(name:, fields:, directives: [])
+        def initialize_node(name:, fields:, directives: [], description: nil)
           @name = name
           @fields = fields
           @directives = directives
+          @description = description
         end
       end
     end
