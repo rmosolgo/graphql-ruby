@@ -8,7 +8,32 @@
 
 ### Bug fixes
 
+## 0.19.4 (18 Oct 2016)
+
+### Breaking changes
+
+- `Relay::BaseConnection#order` was removed (it always returned `nil`) #313
+- In the IDL, Interface names & Union members are parsed as `TypeName` nodes instead of Strings #322
+
+### New features
+
+- Print and parse descriptions in the IDL #305
+- Schema roots from IDL are omitted when their names match convention #320
+- Don't add `rescue_middleware` to a schema if it's not using `rescue_from` #328
+- `Query::Arguments#each_value` yields `Query::Argument::ArgumentValue` instances which contain key, value and argument definition #331
+
+### Bug fixes
+
+- Use `JSON.generate(val, quirks_mode: true)` for compatibility with other JSON implementations #316
+- Improvements for compatibility with 1.9.3 branch #315 #314 #313
+- Raise a descriptive error when calculating a `cursor` for a node which isn't present in the connection's members #327
+
+
 ## 0.19.3 (13 Oct 2016)
+
+### Breaking Changes
+
+- `GraphQL::Query::Arguments.new` requires `argument_definitions:` of type `{String => GraphQL::Argument }` #304
 
 ### Deprecations
 
