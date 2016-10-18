@@ -18,7 +18,7 @@ module GraphQL
       # Return the GraphQL schema string for the introspection type system
       def print_introspection_schema
         query_root = ObjectType.define do
-          name "Query"
+          name "Root"
         end
         schema = GraphQL::Schema.define(query: query_root)
         print_filtered_schema(schema, method(:is_spec_directive), method(:is_introspection_type))
@@ -33,11 +33,18 @@ module GraphQL
         types = schema.types.values.select{ |type| type_filter.call(type) }.sort_by(&:name)
         type_definitions = types.map{ |type| print_type(type) }
 
-        [print_schema_definition(schema)].concat(directive_definitions)
+        [print_schema_definition(schema)].compact
+                                         .concat(directive_definitions)
                                          .concat(type_definitions).join("\n\n")
       end
 
       def print_schema_definition(schema)
+        if (schema.query.nil? || schema.query.name == 'Query') &&
+           (schema.mutation.nil? || schema.mutation.name == 'Mutation') &&
+           (schema.subscription.nil? || schema.subscription.name == 'Subscription')
+          return
+        end
+
         operations = [:query, :mutation, :subscription].map do |operation_type|
           object_type = schema.public_send(operation_type)
           "  #{operation_type}: #{object_type.name}\n" if object_type
