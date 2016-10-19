@@ -1,3 +1,0 @@
----
-title: Queries — Optimization
----

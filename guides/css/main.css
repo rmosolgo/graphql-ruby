@@ -17,6 +17,7 @@ html{font-size:12px}*{box-sizing:border-box;text-rendering:geometricPrecision}bo
 .hack pre {
   padding: 1rem;
   border-radius: 2px;
+  background-color: #fbf9f9;
 }
 
 .hack em { font-style: italic; }
@@ -25,7 +26,7 @@ html{font-size:12px}*{box-sizing:border-box;text-rendering:geometricPrecision}bo
   font-weight: normal;
   color: #cd3b60;
   border: 1px solid #cca5a5;
-  background-color: #efe7e7;
+  background-color: #fbf9f9;
   border-radius: 2px;
   padding: 2px;
 }
