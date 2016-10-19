@@ -83,7 +83,7 @@ describe GraphQL::Schema::Printer do
 
       field :post do
         type post_type
-        argument :id, !types.ID
+        argument :id, !types.ID, 'Post ID'
         argument :varied, variant_input_type, default_value: { id: "123", int: 234, float: 2.3, enum: :foo, sub: [{ string: "str" }] }
         resolve ->(obj, args, ctx) { Post.find(args["id"]) }
       end
@@ -440,7 +440,11 @@ type Post {
 
 # The query root of this schema
 type Query {
-  post(id: ID!, varied: Varied = {id: \"123\", int: 234, float: 2.3, enum: FOO, sub: [{string: \"str\"}]}): Post
+  post(
+    # Post ID
+    id: ID!
+    varied: Varied = {id: \"123\", int: 234, float: 2.3, enum: FOO, sub: [{string: \"str\"}]}
+  ): Post
 }
 
 # Test
