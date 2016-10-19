@@ -54,6 +54,10 @@ h1:first-child {
   overflow-x: scroll;
 }
 
+h1.guide-header {
+  font-size: 1.5em;
+}
+
 
 /* pygments CSS, github theme */
 .highlight .hll { background-color: #ffffcc }
