@@ -21,7 +21,7 @@ PostType = GraphQL::ObjectType.define do
   field :title, types.String
   # ...
   field :errors, types[types.String], "Reasons the object couldn't be created or updated" do
-    resolve -> (obj, args, ctx) { obj.errors.full_messages }
+    resolve ->(obj, args, ctx) { obj.errors.full_messages }
   end
 end
 ```
@@ -29,7 +29,7 @@ end
 Then, when creating a post, return the `Post`, even if the save failed:
 
 ```ruby
-resolve -> (obj, args, ctx) {
+resolve ->(obj, args, ctx) {
   post = Post.new(args["post"].to_h)
   # Maybe this fails, no big deal:
   post.save
@@ -69,7 +69,7 @@ Schema.execute(query_string)
 You can add an error to the `"errors"` key by returning a {{ "GraphQL::ExecutionError" | api_doc }} from a `resolve` function. For example:
 
 ```ruby
-resolve -> (obj, args, ctx) {
+resolve ->(obj, args, ctx) {
   post_params = args["post"].to_h
   if obj.posts.create(post_params)
     # on success, return the post:
@@ -84,7 +84,7 @@ resolve -> (obj, args, ctx) {
 If some part of your `resolve` function would raise an error, you can rescue it and return a {{ "GraphQL::ExecutionError" | api_doc }} instead:
 
 ```ruby
-resolve -> (obj, args, ctx) {
+resolve ->(obj, args, ctx) {
   post_params = args["post"].to_h
   begin
     post = obj.posts.create!(post_params)
@@ -126,7 +126,7 @@ Then, apply it to fields on an opt-in basis:
 ```ruby
 field :create_post, PostType do
   # Wrap the resolve function with `RescueFrom.new(err_class, ...)`
-  resolve RescueFrom.new(ActiveRecord::RecordInvalid, -> (obj, args, ctx) { ... })
+  resolve RescueFrom.new(ActiveRecord::RecordInvalid, ->(obj, args, ctx) { ... })
 end
 ```
 

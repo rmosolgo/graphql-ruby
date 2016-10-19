@@ -74,7 +74,7 @@ Sometimes, you can only check permissions when you have the _actual_ object. Let
 
 ```ruby
 field :documents, types[DocumentType] do
-  resolve -> (obj, args, ctx) {
+  resolve ->(obj, args, ctx) {
     documents = obj.documents
     # sort, filter, etc
     # return the documents:
@@ -90,7 +90,7 @@ You can "wrap" this resolve function to assert that the documents are ok for the
 # Then, check that the result includes permitted records _only_.
 # @return [Proc] a new resolve function that checks the return values
 def assert_allowed_documents(resolve_func)
-  -> (obj, args, ctx) {
+  ->(obj, args, ctx) {
     documents = resolve_func.call(obj, args, ctx)
     current_user = ctx[:current_user]
 
@@ -106,7 +106,7 @@ end
 
 field :documents, types[DocumentType] do
   # wrap the resolve function with your assertion
-  resolve assert_allowed_documents(-> (obj, args, ctx) {
+  resolve assert_allowed_documents(->(obj, args, ctx) {
     # ...
   })
 end
@@ -142,7 +142,7 @@ end
 
 # Apply this class to the resolve function:
 field :documents, types[DocumentType] do
-  resolve PermissionAssertion.new(:view, -> (obj, args, ctx) {
+  resolve PermissionAssertion.new(:view, ->(obj, args, ctx) {
     # ...
   })
 end

@@ -35,7 +35,7 @@ connection :featured_comments, CommentType.connection_type do
   argument :since, types.String
 
   # Return an Array or ActiveRecord::Relation
-  resolve -> (post, args, ctx) {
+  resolve ->(post, args, ctx) {
     comments = post.comments.featured
 
     if args[:since]
@@ -67,7 +67,7 @@ PostConnectionWithTotalCountType = PostType.define_connection do
     type types.Int
     # - `obj` is the Connection
     # - `obj.nodes` is the collection of Posts
-    resolve -> (obj, args, ctx) { obj.nodes.count }
+    resolve ->(obj, args, ctx) { obj.nodes.count }
   end
 end
 
@@ -103,7 +103,7 @@ If you need custom fields on `edge`s, you can define an edge type and pass it to
 MembershipSinceEdgeType = TeamType.define_edge do
   name "MembershipSinceEdge"
   field :memberSince, types.Int, "The date that this person joined this team" do
-    resolve -> (obj, args, ctx) {
+    resolve ->(obj, args, ctx) {
       obj # => GraphQL::Relay::Edge instance
       person = obj.parent
       team = obj.node

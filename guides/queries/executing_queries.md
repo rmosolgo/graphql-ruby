@@ -90,7 +90,7 @@ MySchema.execute(query_string, context: context)
 Then, you can access those values during execution:
 
 ```ruby
-resolve -> (obj, args,  ctx) {
+resolve ->(obj, args,  ctx) {
   ctx[:current_user] # => #<User id=123 ... >
   # ...
 }
@@ -113,7 +113,7 @@ That value will be provided to root-level fields, such as mutation fields. For e
 MutationType = GraphQL::ObjectType.define do
   name "Mutation"
   field :createPost, types.Post do
-    resolve -> (obj, args, ctx) {
+    resolve ->(obj, args, ctx) {
       obj # => #<Organization id=456 ...>
       # ...
     }

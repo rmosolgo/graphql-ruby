@@ -60,9 +60,9 @@ These hooks are provided as objects that respond to `#call`, for example, a `Pro
 ```ruby
 GraphQL::Schema.define do
   # Hooks for query execution:
-  resolve_type -> (obj, ctx) { ... }
-  id_from_object -> (obj, type, ctx) { ... }
-  object_from_id -> (id, ctx) { ... }
+  resolve_type ->(obj, ctx) { ... }
+  id_from_object ->(obj, type, ctx) { ... }
+  object_from_id ->(id, ctx) { ... }
 end
 ```
 
@@ -138,7 +138,7 @@ Query analyzers are like middleware for the validation phase. They're called at 
 The minimal API is `.call(memo, visit_type, internal_representation_node)`. For example:
 
 ```ruby
-ast_node_logger = -> (memo, visit_type, internal_representation_node) {
+ast_node_logger = ->(memo, visit_type, internal_representation_node) {
   if visit_type == :enter
     puts "Visiting #{internal_representation_node.name}!"
   end

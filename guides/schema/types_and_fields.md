@@ -44,7 +44,7 @@ PostType = GraphQL::ObjectType.define do
   #     name   , type        , description (optional)
   field :teaser, types.String, "The teaser of the Post" do
     # how to get the value?
-    resolve -> (obj, args, ctx) {
+    resolve ->(obj, args, ctx) {
       # first 40 chars of the body
       obj.body[0, 40]
     }
@@ -65,7 +65,7 @@ field do
   name "teaser"
   type types.String
   description "..."
-  resolve -> (obj, args, ctx) { ... }
+  resolve ->(obj, args, ctx) { ... }
   deprecation_reason "Too long, use .title instead"
   complexity 2
 end
@@ -80,7 +80,7 @@ Arguments are defined with the `argument` helper:
 ```ruby
 field :search_posts, types[PostType] do
   argument :category, types.String
-  resolve -> (obj, args, ctx) {
+  resolve ->(obj, args, ctx) {
     args[:category]
     # => maybe a string, eg "Programming"
     if args[:category]
@@ -111,7 +111,7 @@ Only certain types are valid for arguments:
 The `args` parameter of a `resolve` function will always be a `{{ "GraphQL::Query::Arguments" | api_doc }}`. You can access specific arguments with `["arg_name"]` or `[:arg_name]`. You recursively turn it into a Ruby Hash with `to_h`. Inside `args`, scalars will be parsed into Ruby values and enums will be converted to their `value:` (if one was provided).
 
 ```ruby
-resolve -> (obj, args, ctx) {
+resolve ->(obj, args, ctx) {
   args["category"] == args[:category]
   # => true
   args.to_h
