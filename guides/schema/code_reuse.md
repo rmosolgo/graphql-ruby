@@ -1,5 +1,5 @@
 ---
-title: Code Reuse with GraphQL
+title: Schema — Code Reuse
 ---
 
 Here are a few techniques for code reuse with graphql-ruby:
@@ -34,11 +34,13 @@ module NameResolver
   end
 end
 
-# ...
-
+# use `NameResolver` instead of a proc
 field :name, types.String do
   resolve(NameResolver)
 end
+# `resolve: resolver` is equivalent to `do resolve(resolver) end`
+# so this is the same:
+field :name, types.String, resolve: NameResolver
 ```
 
 Or, you can pass an instance of a class:
@@ -55,7 +57,6 @@ class MethodCallResolver
 end
 
 # ...
-
 field :name, types.String do
   resolve(MethodCallResolver.new(:name))
 end  
@@ -87,6 +88,7 @@ PostType = GraphQL::ObjectType.define do ... end
 However, you can call `.define` anytime and store the result anywhere. For example, you can define a method which creates types:
 
 ```ruby
+# @return [GraphQL::ObjectType] a type derived from `model_class`
 def create_type(model_class)
   GraphQL::ObjectType.define do
     name(model_class.name)
@@ -98,8 +100,9 @@ def create_type(model_class)
   end
 end
 
+# @return [GraphQL::BaseType] a GraphQL type for `database_type`
 def convert_type(database_type)
-  # return a GraphQL type for `database_type`
+  # ...
 end
 ```
 

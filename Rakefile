@@ -18,21 +18,6 @@ end
 
 task(default: [:test, :rubocop])
 
-def load_gem_and_dummy
-  $:.push File.expand_path("../lib", __FILE__)
-  $:.push File.expand_path("../spec", __FILE__)
-  require "graphql"
-  require "./spec/support/dairy_app"
-end
-
-task :console do
-  require "irb"
-  require "irb/completion"
-  load_gem_and_dummy
-  ARGV.clear
-  IRB.start
-end
-
 desc "Use Racc & Ragel to regenerate parser.rb & lexer.rb from configuration files"
 task :build_parser do
   `rm lib/graphql/language/parser.rb lib/graphql/language/lexer.rb `
@@ -41,17 +26,8 @@ task :build_parser do
 end
 
 namespace :site do
-  task :generate_readme_index do
-    File.open("guides/index.md", "w") do |fo|
-      fo.puts "---\npermalink: \"/\"\n---\n"
-      File.foreach("readme.md") do |li|
-        fo.puts li
-      end
-    end
-  end
-
   desc "View the documentation site locally"
-  task :serve => :generate_readme_index do
+  task :serve do
     require "jekyll"
 
     # Generate the site in server mode.
@@ -67,7 +43,7 @@ namespace :site do
   end
 
   desc "Commit the local site to the gh-pages branch and publish to GitHub Pages"
-  task :publish => [:generate_readme_index, :html_proofer] do
+  task :publish => [:html_proofer] do
     # Ensure the gh-pages dir exists so we can generate into it.
     puts "Checking for gh-pages dir..."
     unless File.exist?("./gh-pages")
@@ -117,7 +93,7 @@ namespace :site do
   end
 
   desc "Test the generated HTML files"
-  task :html_proofer => :generate_readme_index do
+  task :html_proofer do
     require "html-proofer"
 
     Dir.chdir("guides") do

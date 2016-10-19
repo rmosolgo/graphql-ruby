@@ -14,12 +14,10 @@ Gem::Specification.new do |s|
   s.license     = "MIT"
   s.required_ruby_version = ">= 2.1.0" # bc optional keyword args
 
-  s.files = Dir["{lib}/**/*", "MIT-LICENSE", "readme.md"]
+  s.files = Dir["{lib}/**/*", "MIT-LICENSE", "readme.md", ".yardopts"]
   s.test_files = Dir["spec/**/*"]
 
   s.add_development_dependency "codeclimate-test-reporter", "~>0.4"
-  s.add_development_dependency "pry", "~> 0.10"
-  s.add_development_dependency 'pry-stack_explorer'
   s.add_development_dependency "guard", "~> 2.12"
   s.add_development_dependency "guard-bundler", "~> 2.1"
   s.add_development_dependency "guard-minitest", "~> 2.4"
