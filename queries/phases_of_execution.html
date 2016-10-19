@@ -1,0 +1,88 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>GraphQL Ruby - Queries — Phases of Execution</title>
+    <link rel="stylesheet" href="/graphql-ruby/css/main.css">
+    <link rel="icon" href="/graphql-ruby/graphql-ruby-icon.png">
+    <meta name="generator">
+  </head>
+  <body class="hack">
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+      ga('create', 'UA-19264608-11', 'auto');
+      ga('send', 'pageview');
+    </script>
+    <div class="container">
+      <div style="display: flex; justify-content: center;">
+<strong style="white-space: pre; line-height: 1.1em; display: inline-block; font-size: 8px;">
+    ▄██████▄     ▄████████    ▄████████    ▄███████▄    ▄█    █▄    ████████▄    ▄█
+   ███    ███   ███    ███   ███    ███   ███    ███   ███    ███   ███    ███  ███
+   ███    █▀    ███    ███   ███    ███   ███    ███   ███    ███   ███    ███  ███
+  ▄███         ▄███▄▄▄▄██▀   ███    ███   ███    ███  ▄███▄▄▄▄███▄▄ ███    ███  ███
+ ▀▀███ ████▄  ▀▀███▀▀▀▀▀   ▀███████████ ▀█████████▀  ▀▀███▀▀▀▀███▀  ███    ███  ███
+   ███    ███ ▀███████████   ███    ███   ███          ███    ███   ███    ███  ███
+   ███    ███   ███    ███   ███    ███   ███          ███    ███   ███  ▀ ███  ███▌    ▄
+   ████████▀    ███    ███   ███    █▀   ▄████▀        ███    █▀     ▀██████▀▄█ █████▄▄██
+                ███    ███                                                      ▀
+</strong>
+      </div>
+      <p style="text-align: center;">A GraphQL server implementation for Ruby</p>
+
+      <div class="grid -between">
+        <div class="cell -3of12">
+          <h3>Guides</h3>
+          <ul>
+            <li><a href="/graphql-ruby/">Getting Started</a></li>
+            <li>
+              <strong>Schema</strong>
+              <ul>
+                <li><a href="/graphql-ruby/schema/types_and_fields">Types and Fields</a></li>
+                <li><a href="/graphql-ruby/schema/configuration_options">Configuration Options</a></li>
+                <li><a href="/graphql-ruby/schema/code_reuse">Code Reuse</a></li>
+                <li><a href="/graphql-ruby/schema/testing">Testing</a></li>
+              </ul>
+            </li>
+            <li>
+              <strong>Queries</strong>
+              <ul>
+                <li><a href="/graphql-ruby/queries/executing_queries">Executing Queries</a></li>
+                <li><a href="/graphql-ruby/queries/authorization">Authorization</a></li>
+                <li><a href="/graphql-ruby/queries/security">Security</a></li>
+                <li><a href="/graphql-ruby/queries/error_handling">Error Handling</a></li>
+                <li><a href="/graphql-ruby/queries/phases_of_execution">Phases of Execution</a></li>
+              </ul>
+            </li>
+            <li>
+              <strong>Relay</strong>
+              <ul>
+                <li><a href="/graphql-ruby/relay/object_identification">Object Identification</a></li>
+                <li><a href="/graphql-ruby/relay/connections">Connections</a></li>
+                <li><a href="/graphql-ruby/relay/mutations">Mutations</a></li>
+              </ul>
+            </li>
+          </ul>
+          <h3><a href="http://www.rubydoc.info/github/rmosolgo/graphql-ruby">API Docs</a></h3>
+          <h3><a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a></h3>
+        </div>
+        <div class="cell -9of12">
+          <p>When GraphQL receives a query string, it goes through these steps:</p>
+
+<ul>
+  <li>Tokenize: <a href="http://www.rubydoc.info/gems/graphql/GraphQL/Language/Lexer" target="_blank"><code>GraphQL::Language::Lexer</code></a> splits the string into a stream of tokens</li>
+  <li>Parse: <a href="http://www.rubydoc.info/gems/graphql/GraphQL/Language/Parser" target="_blank"><code>GraphQL::Language::Parser</code></a> builds an abstract syntax tree (AST) out of the stream of tokens</li>
+  <li>Validate: <a href="http://www.rubydoc.info/gems/graphql/GraphQL/StaticValidation/Validator" target="_blank"><code>GraphQL::StaticValidation::Validator</code></a> validates the incoming AST as a valid query for the schema</li>
+  <li>Rewrite: <a href="http://www.rubydoc.info/gems/graphql/GraphQL/InternalRepresentation/Rewrite" target="_blank"><code>GraphQL::InternalRepresentation::Rewrite</code></a> builds a tree of <a href="http://www.rubydoc.info/gems/graphql/GraphQL/InternalRepresentation/Node" target="_blank"><code>GraphQL::InternalRepresentation::Node</code></a>s which express the query in a simpler way than the AST</li>
+  <li>Analyze: If there are any query analyzers, they are run with <a href="http://www.rubydoc.info/gems/graphql/GraphQL/Analysis/AnalyzeQuery" target="_blank"><code>GraphQL::Analysis::AnalyzeQuery</code></a></li>
+  <li>Execute: The query is traversed, <a href="http://www.rubydoc.info/gems/graphql/resolve" target="_blank"><code>resolve</code></a> functions are called and the response is built</li>
+  <li>Respond: The response is returned as a Hash</li>
+</ul>
+
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

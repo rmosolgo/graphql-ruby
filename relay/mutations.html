@@ -1,0 +1,208 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>GraphQL Ruby - Relay — Mutations</title>
+    <link rel="stylesheet" href="/graphql-ruby/css/main.css">
+    <link rel="icon" href="/graphql-ruby/graphql-ruby-icon.png">
+    <meta name="generator">
+  </head>
+  <body class="hack">
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+      ga('create', 'UA-19264608-11', 'auto');
+      ga('send', 'pageview');
+    </script>
+    <div class="container">
+      <div style="display: flex; justify-content: center;">
+<strong style="white-space: pre; line-height: 1.1em; display: inline-block; font-size: 8px;">
+    ▄██████▄     ▄████████    ▄████████    ▄███████▄    ▄█    █▄    ████████▄    ▄█
+   ███    ███   ███    ███   ███    ███   ███    ███   ███    ███   ███    ███  ███
+   ███    █▀    ███    ███   ███    ███   ███    ███   ███    ███   ███    ███  ███
+  ▄███         ▄███▄▄▄▄██▀   ███    ███   ███    ███  ▄███▄▄▄▄███▄▄ ███    ███  ███
+ ▀▀███ ████▄  ▀▀███▀▀▀▀▀   ▀███████████ ▀█████████▀  ▀▀███▀▀▀▀███▀  ███    ███  ███
+   ███    ███ ▀███████████   ███    ███   ███          ███    ███   ███    ███  ███
+   ███    ███   ███    ███   ███    ███   ███          ███    ███   ███  ▀ ███  ███▌    ▄
+   ████████▀    ███    ███   ███    █▀   ▄████▀        ███    █▀     ▀██████▀▄█ █████▄▄██
+                ███    ███                                                      ▀
+</strong>
+      </div>
+      <p style="text-align: center;">A GraphQL server implementation for Ruby</p>
+
+      <div class="grid -between">
+        <div class="cell -3of12">
+          <h3>Guides</h3>
+          <ul>
+            <li><a href="/graphql-ruby/">Getting Started</a></li>
+            <li>
+              <strong>Schema</strong>
+              <ul>
+                <li><a href="/graphql-ruby/schema/types_and_fields">Types and Fields</a></li>
+                <li><a href="/graphql-ruby/schema/configuration_options">Configuration Options</a></li>
+                <li><a href="/graphql-ruby/schema/code_reuse">Code Reuse</a></li>
+                <li><a href="/graphql-ruby/schema/testing">Testing</a></li>
+              </ul>
+            </li>
+            <li>
+              <strong>Queries</strong>
+              <ul>
+                <li><a href="/graphql-ruby/queries/executing_queries">Executing Queries</a></li>
+                <li><a href="/graphql-ruby/queries/authorization">Authorization</a></li>
+                <li><a href="/graphql-ruby/queries/security">Security</a></li>
+                <li><a href="/graphql-ruby/queries/error_handling">Error Handling</a></li>
+                <li><a href="/graphql-ruby/queries/phases_of_execution">Phases of Execution</a></li>
+              </ul>
+            </li>
+            <li>
+              <strong>Relay</strong>
+              <ul>
+                <li><a href="/graphql-ruby/relay/object_identification">Object Identification</a></li>
+                <li><a href="/graphql-ruby/relay/connections">Connections</a></li>
+                <li><a href="/graphql-ruby/relay/mutations">Mutations</a></li>
+              </ul>
+            </li>
+          </ul>
+          <h3><a href="http://www.rubydoc.info/github/rmosolgo/graphql-ruby">API Docs</a></h3>
+          <h3><a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a></h3>
+        </div>
+        <div class="cell -9of12">
+          <p>Relay uses a <a href="https://facebook.github.io/relay/docs/graphql-mutations.html#content">strict mutation API</a> for modifying the state of your application. This API makes mutations predictable to the client.</p>
+
+<h2 id="mutation-root">Mutation root</h2>
+
+<p>To add mutations to your GraphQL schema, define a mutation type and pass it to your schema:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># Define the mutation type</span>
+<span class="no">MutationType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+  <span class="nb">name</span> <span class="s2">"Mutation"</span>
+  <span class="c1"># ...</span>
+<span class="k">end</span>
+
+<span class="c1"># and pass it to the schema</span>
+<span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+  <span class="n">query</span> <span class="no">QueryType</span><span class="p">,</span>
+  <span class="n">mutation</span> <span class="no">MutationType</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<p>Like <code class="highlighter-rouge">QueryType</code>, <code class="highlighter-rouge">MutationType</code> is a root of the schema.</p>
+
+<h2 id="mutation-fields">Mutation fields</h2>
+
+<p>Members of <code class="highlighter-rouge">MutationType</code> are <em>mutation fields</em>. For GraphQL in general, mutation fields are identical to query fields <em>except</em> that they have side-effects (which mutate application state, eg, update the database).</p>
+
+<p>For Relay-compliant GraphQL, a mutation field must comply to a strict API. <code class="highlighter-rouge">GraphQL::Relay</code> includes a mutation definition helper (see below) to make it simple.</p>
+
+<p>After defining a mutation (see below), add it to your mutation type:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">MutationType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+  <span class="nb">name</span> <span class="s2">"Mutation"</span>
+  <span class="c1"># Add the mutation's derived field to the mutation type</span>
+  <span class="n">field</span> <span class="ss">:addComment</span><span class="p">,</span> <span class="ss">field: </span><span class="no">AddCommentMutation</span><span class="p">.</span><span class="nf">field</span>
+  <span class="c1"># ...</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<h2 id="relay-mutations">Relay mutations</h2>
+
+<p>To define a mutation, use <code class="highlighter-rouge">GraphQL::Relay::Mutation.define</code>. Inside the block, you should configure:
+  - <code class="highlighter-rouge">name</code>, which will name the mutation field &amp; derived types
+  - <code class="highlighter-rouge">input_field</code>s, which will be applied to the derived <code class="highlighter-rouge">InputObjectType</code>
+  - <code class="highlighter-rouge">return_field</code>s, which will be applied to the derived <code class="highlighter-rouge">ObjectType</code>
+  - <code class="highlighter-rouge">resolve(-&gt;(object, inputs, ctx) { ... })</code>, the mutation which will actually happen</p>
+
+<p>For example:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">AddCommentMutation</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Relay</span><span class="o">::</span><span class="no">Mutation</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+  <span class="c1"># Used to name derived types, eg `"AddCommentInput"`:</span>
+  <span class="nb">name</span> <span class="s2">"AddComment"</span>
+
+  <span class="c1"># Accessible from `input` in the resolve function:</span>
+  <span class="n">input_field</span> <span class="ss">:postId</span><span class="p">,</span> <span class="o">!</span><span class="n">types</span><span class="o">.</span><span class="no">ID</span>
+  <span class="n">input_field</span> <span class="ss">:authorId</span><span class="p">,</span> <span class="o">!</span><span class="n">types</span><span class="o">.</span><span class="no">ID</span>
+  <span class="n">input_field</span> <span class="ss">:content</span><span class="p">,</span> <span class="o">!</span><span class="n">types</span><span class="o">.</span><span class="no">String</span>
+
+  <span class="c1"># The result has access to these fields,</span>
+  <span class="c1"># resolve must return a hash with these keys</span>
+  <span class="n">return_field</span> <span class="ss">:post</span><span class="p">,</span> <span class="no">PostType</span>
+  <span class="n">return_field</span> <span class="ss">:comment</span><span class="p">,</span> <span class="no">CommentType</span>
+
+  <span class="c1"># The resolve proc is where you alter the system state.</span>
+  <span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">post</span> <span class="o">=</span> <span class="no">Post</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="n">inputs</span><span class="p">[</span><span class="ss">:postId</span><span class="p">])</span>
+    <span class="n">comment</span> <span class="o">=</span> <span class="n">post</span><span class="p">.</span><span class="nf">comments</span><span class="p">.</span><span class="nf">create!</span><span class="p">(</span><span class="ss">author_id: </span><span class="n">inputs</span><span class="p">[</span><span class="ss">:authorId</span><span class="p">],</span> <span class="ss">content: </span><span class="n">inputs</span><span class="p">[</span><span class="ss">:content</span><span class="p">])</span>
+
+    <span class="c1"># The keys in this hash correspond to `return_field`s above:</span>
+    <span class="p">{</span>
+      <span class="ss">comment: </span><span class="n">comment</span><span class="p">,</span>
+      <span class="ss">post: </span><span class="n">post</span><span class="p">,</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<h2 id="derived-objects">Derived Objects</h2>
+
+<p><code class="highlighter-rouge">graphql-ruby</code> uses your mutation to define some members of the schema. Under the hood, GraphQL creates:</p>
+
+<ul>
+  <li>A field for your schema’s <code class="highlighter-rouge">mutation</code> root, as <code class="highlighter-rouge">AddCommentMutation.field</code></li>
+  <li>A derived <code class="highlighter-rouge">InputObjectType</code> for input values, as <code class="highlighter-rouge">AddCommentMutation.input_type</code></li>
+  <li>A derived <code class="highlighter-rouge">ObjectType</code> for return values, as <code class="highlighter-rouge">AddCommentMutation.return_type</code></li>
+</ul>
+
+<p>Each of these derived objects maintains a reference to the parent <code class="highlighter-rouge">Mutation</code> in the <code class="highlighter-rouge">mutation</code> attribute. So you can access it from the derived object:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># Define a mutation:</span>
+<span class="no">AddCommentMutation</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Relay</span><span class="o">::</span><span class="no">Mutation</span><span class="p">.</span><span class="nf">define</span> <span class="p">{</span> <span class="p">.</span><span class="nf">.</span><span class="o">.</span> <span class="p">}</span>
+<span class="c1"># Get the derived input type:</span>
+<span class="no">AddCommentMutationInput</span> <span class="o">=</span> <span class="no">AddCommentMutation</span><span class="p">.</span><span class="nf">input_type</span>
+<span class="c1"># Reference the parent mutation:</span>
+<span class="no">AddCommentMutationInput</span><span class="p">.</span><span class="nf">mutation</span>
+<span class="c1"># =&gt; #&lt;GraphQL::Relay::Mutation @name="AddComment"&gt;</span>
+</code></pre>
+</div>
+
+<h2 id="mutation-resolution">Mutation Resolution</h2>
+
+<p>In the mutation’s <code class="highlighter-rouge">resolve</code> function, it can mutate your application state (eg, writing to the database) and return some results.</p>
+
+<p><code class="highlighter-rouge">resolve</code> is called with:</p>
+
+<ul>
+  <li><code class="highlighter-rouge">object</code>, which is the <code class="highlighter-rouge">root_value:</code> provided to <code class="highlighter-rouge">Schema.execute</code></li>
+  <li><code class="highlighter-rouge">inputs</code>, which is a hash whose keys are the ones defined by <code class="highlighter-rouge">input_field</code>. (This value comes from <code class="highlighter-rouge">args[:input]</code>.)</li>
+  <li><code class="highlighter-rouge">ctx</code>, which is the query context</li>
+</ul>
+
+<p>It must return a <code class="highlighter-rouge">hash</code> whose keys match your defined <code class="highlighter-rouge">return_field</code>s. (Or, if you specified a <code class="highlighter-rouge">return_type</code>, you can return an object suitable for that type.)</p>
+
+<h3 id="specify-a-return-type">Specify a Return Type</h3>
+
+<p>Instead of specifying <code class="highlighter-rouge">return_field</code>s, you can specify a <code class="highlighter-rouge">return_type</code> for a mutation. This type will be used to expose the object returned from <code class="highlighter-rouge">resolve</code>.</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">CreateUser</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Relay</span><span class="o">::</span><span class="no">Mutation</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+  <span class="n">return_type</span> <span class="no">UserMutationResultType</span>
+  <span class="c1"># ...</span>
+  <span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">input</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">user</span> <span class="o">=</span> <span class="no">User</span><span class="p">.</span><span class="nf">create</span><span class="p">(</span><span class="n">input</span><span class="p">)</span>
+    <span class="c1"># this object will be treated as `UserMutationResultType`</span>
+    <span class="no">UserMutationResult</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="ss">client_mutation_id: </span><span class="n">input</span><span class="p">[</span><span class="ss">:clientMutationId</span><span class="p">])</span>
+  <span class="p">}</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<p>If you provide your own return type, it’s up to you to support <code class="highlighter-rouge">clientMutationId</code></p>
+
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

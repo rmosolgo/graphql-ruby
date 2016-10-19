@@ -1,0 +1,229 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>GraphQL Ruby - Queries — Authorization</title>
+    <link rel="stylesheet" href="/graphql-ruby/css/main.css">
+    <link rel="icon" href="/graphql-ruby/graphql-ruby-icon.png">
+    <meta name="generator">
+  </head>
+  <body class="hack">
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+      ga('create', 'UA-19264608-11', 'auto');
+      ga('send', 'pageview');
+    </script>
+    <div class="container">
+      <div style="display: flex; justify-content: center;">
+<strong style="white-space: pre; line-height: 1.1em; display: inline-block; font-size: 8px;">
+    ▄██████▄     ▄████████    ▄████████    ▄███████▄    ▄█    █▄    ████████▄    ▄█
+   ███    ███   ███    ███   ███    ███   ███    ███   ███    ███   ███    ███  ███
+   ███    █▀    ███    ███   ███    ███   ███    ███   ███    ███   ███    ███  ███
+  ▄███         ▄███▄▄▄▄██▀   ███    ███   ███    ███  ▄███▄▄▄▄███▄▄ ███    ███  ███
+ ▀▀███ ████▄  ▀▀███▀▀▀▀▀   ▀███████████ ▀█████████▀  ▀▀███▀▀▀▀███▀  ███    ███  ███
+   ███    ███ ▀███████████   ███    ███   ███          ███    ███   ███    ███  ███
+   ███    ███   ███    ███   ███    ███   ███          ███    ███   ███  ▀ ███  ███▌    ▄
+   ████████▀    ███    ███   ███    █▀   ▄████▀        ███    █▀     ▀██████▀▄█ █████▄▄██
+                ███    ███                                                      ▀
+</strong>
+      </div>
+      <p style="text-align: center;">A GraphQL server implementation for Ruby</p>
+
+      <div class="grid -between">
+        <div class="cell -3of12">
+          <h3>Guides</h3>
+          <ul>
+            <li><a href="/graphql-ruby/">Getting Started</a></li>
+            <li>
+              <strong>Schema</strong>
+              <ul>
+                <li><a href="/graphql-ruby/schema/types_and_fields">Types and Fields</a></li>
+                <li><a href="/graphql-ruby/schema/configuration_options">Configuration Options</a></li>
+                <li><a href="/graphql-ruby/schema/code_reuse">Code Reuse</a></li>
+                <li><a href="/graphql-ruby/schema/testing">Testing</a></li>
+              </ul>
+            </li>
+            <li>
+              <strong>Queries</strong>
+              <ul>
+                <li><a href="/graphql-ruby/queries/executing_queries">Executing Queries</a></li>
+                <li><a href="/graphql-ruby/queries/authorization">Authorization</a></li>
+                <li><a href="/graphql-ruby/queries/security">Security</a></li>
+                <li><a href="/graphql-ruby/queries/error_handling">Error Handling</a></li>
+                <li><a href="/graphql-ruby/queries/phases_of_execution">Phases of Execution</a></li>
+              </ul>
+            </li>
+            <li>
+              <strong>Relay</strong>
+              <ul>
+                <li><a href="/graphql-ruby/relay/object_identification">Object Identification</a></li>
+                <li><a href="/graphql-ruby/relay/connections">Connections</a></li>
+                <li><a href="/graphql-ruby/relay/mutations">Mutations</a></li>
+              </ul>
+            </li>
+          </ul>
+          <h3><a href="http://www.rubydoc.info/github/rmosolgo/graphql-ruby">API Docs</a></h3>
+          <h3><a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a></h3>
+        </div>
+        <div class="cell -9of12">
+          <p>GraphQL offers a few ways to ensure that clients access data according to their permissions.</p>
+
+<ul>
+  <li><strong>Query analyzers</strong> can assert that the query is valid before running it.</li>
+  <li><strong>Resolve wrappers</strong> can assert that returned objects are permitted to a given user.</li>
+</ul>
+
+<h2 id="query-analyzers">Query Analyzers</h2>
+
+<p>A query analyzer visits each field in the query <em>before</em> the query is executed. It can accumulate data during the visits, then return a value. If the returned value is a <a href="http://www.rubydoc.info/gems/graphql/GraphQL/AnalysisError" target="_blank"><code>GraphQL::AnalysisError</code></a> (or an array of those errors), the query won’t be executed and the error will be returned to the user. You can use this feature to assert that queries are permitted <em>before</em> running them!</p>
+
+<p>Query analyzers reuse concepts from <code class="highlighter-rouge">Array#reduce</code>, so let’s briefly revisit how that method works:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">items</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">]</span>
+<span class="n">initial_value</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">reduce_result</span> <span class="o">=</span> <span class="n">items</span><span class="p">.</span><span class="nf">reduce</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="p">{</span> <span class="o">|</span><span class="n">memo</span><span class="p">,</span> <span class="n">item</span><span class="o">|</span> <span class="n">memo</span> <span class="o">+</span> <span class="n">item</span> <span class="p">}</span>
+<span class="n">final_value</span> <span class="o">=</span> <span class="s2">"Sum: </span><span class="si">#{</span><span class="n">reduce_result</span><span class="si">}</span><span class="s2">"</span>
+<span class="nb">puts</span> <span class="n">final_value</span>
+<span class="c1"># Sum: 15</span>
+</code></pre>
+</div>
+
+<ul>
+  <li><code class="highlighter-rouge">reduce</code> accepts an <em>initial value</em> and a <em>callback</em> (as a block)</li>
+  <li>The callback receives the reduce <em>state</em> (<code class="highlighter-rouge">memo</code>) and each item of the array (<code class="highlighter-rouge">item</code>)</li>
+  <li>For each call to the callback, the return value is the new state and it will be provided to the <em>next</em> call to the callback</li>
+  <li>When each item has been visited, the last value of the callback state (the last <code class="highlighter-rouge">memo</code> value) is returned</li>
+  <li>Then, you can use the reduced value in your application</li>
+</ul>
+
+<p>A query analyzer has the same basic parts. Here’s the scaffold for an analyzer:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MyQueryAnalyzer</span>
+  <span class="c1"># Called before the visit.</span>
+  <span class="c1"># Returns the initial value for `memo`</span>
+  <span class="k">def</span> <span class="nf">initial_value</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+  <span class="k">end</span>
+
+  <span class="c1"># This is like the `reduce` callback.</span>
+  <span class="c1"># The return value is passed to the next call as `memo`</span>
+  <span class="k">def</span> <span class="nf">call</span><span class="p">(</span><span class="n">memo</span><span class="p">,</span> <span class="n">visit_type</span><span class="p">,</span> <span class="n">irep_node</span><span class="p">)</span>
+  <span class="k">end</span>
+
+  <span class="c1"># Called when we're done the whole visit.</span>
+  <span class="c1"># The return value may be a GraphQL::AnalysisError (or an array of them).</span>
+  <span class="c1"># Or, you can use this hook to write to a log, etc</span>
+  <span class="k">def</span> <span class="nf">final_value</span><span class="p">(</span><span class="n">memo</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<ul>
+  <li><code class="highlighter-rouge">#initial_value</code> is a chance to initialize the state for your analysis. For example, you can return a hash with keys for the query, schema, and any other values you want to store.</li>
+  <li><code class="highlighter-rouge">#call</code> is called for each node in the query. <code class="highlighter-rouge">memo</code> is the analyzer state. <code class="highlighter-rouge">visit_type</code> is either <code class="highlighter-rouge">:enter</code> or <code class="highlighter-rouge">:leave</code>. <code class="highlighter-rouge">irep_node</code> is the <a href="http://www.rubydoc.info/gems/graphql/GraphQL/InternalRepresentation/Node" target="_blank"><code>GraphQL::InternalRepresentation::Node</code></a> for the current field in the query. (It is like <code class="highlighter-rouge">item</code> in the <code class="highlighter-rouge">Array#reduce</code> callback.)</li>
+  <li><code class="highlighter-rouge">#final_value</code> is called <em>after</em> the visit. It provides a chance to write to your log or return a <a href="http://www.rubydoc.info/gems/graphql/GraphQL/AnalysisError" target="_blank"><code>GraphQL::AnalysisError</code></a> to halt query execution.</li>
+</ul>
+
+<p>Query analyzers are added to the schema with <code class="highlighter-rouge">query_analyzer</code>, for example:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+  <span class="n">query_analyzer</span> <span class="no">MyQueryAnalyzer</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<p>GraphQL’s <code class="highlighter-rouge">max_depth</code> and <code class="highlighter-rouge">max_complexity</code> are implemented with query analyzers, you can see those for reference:</p>
+
+<ul>
+  <li><a href="http://www.rubydoc.info/gems/graphql/GraphQL/Analysis/QueryDepth" target="_blank"><code>GraphQL::Analysis::QueryDepth</code></a></li>
+  <li><a href="http://www.rubydoc.info/gems/graphql/GraphQL/Analysis/QueryComplexity" target="_blank"><code>GraphQL::Analysis::QueryComplexity</code></a></li>
+</ul>
+
+<h2 id="resolve-wrapper">Resolve Wrapper</h2>
+
+<p>Sometimes, you can only check permissions when you have the <em>actual</em> object. Let’s say you’re exposing documents in your API:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:documents</span><span class="p">,</span> <span class="n">types</span><span class="p">[</span><span class="no">DocumentType</span><span class="p">]</span> <span class="k">do</span>
+  <span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">documents</span> <span class="o">=</span> <span class="n">obj</span><span class="p">.</span><span class="nf">documents</span>
+    <span class="c1"># sort, filter, etc</span>
+    <span class="c1"># return the documents:</span>
+    <span class="n">documents</span>
+  <span class="p">}</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<p>You can “wrap” this resolve function to assert that the documents are ok for the current user:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># Take a resolve function and call it.</span>
+<span class="c1"># Then, check that the result includes permitted records _only_.</span>
+<span class="c1"># @return [Proc] a new resolve function that checks the return values</span>
+<span class="k">def</span> <span class="nf">assert_allowed_documents</span><span class="p">(</span><span class="n">resolve_func</span><span class="p">)</span>
+  <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">documents</span> <span class="o">=</span> <span class="n">resolve_func</span><span class="p">.</span><span class="nf">call</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span>
+    <span class="n">current_user</span> <span class="o">=</span> <span class="n">ctx</span><span class="p">[</span><span class="ss">:current_user</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">documents</span><span class="p">.</span><span class="nf">all?</span> <span class="p">{</span> <span class="o">|</span><span class="n">d</span><span class="o">|</span> <span class="n">current_user</span><span class="p">.</span><span class="nf">can_view?</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="p">}</span>
+      <span class="n">documents</span>
+    <span class="k">else</span>
+      <span class="kp">nil</span>
+    <span class="k">end</span>
+  <span class="p">}</span>
+<span class="k">end</span>
+
+<span class="c1"># ...</span>
+
+<span class="n">field</span> <span class="ss">:documents</span><span class="p">,</span> <span class="n">types</span><span class="p">[</span><span class="no">DocumentType</span><span class="p">]</span> <span class="k">do</span>
+  <span class="c1"># wrap the resolve function with your assertion</span>
+  <span class="n">resolve</span> <span class="n">assert_allowed_documents</span><span class="p">(</span><span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1"># ...</span>
+  <span class="p">})</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<p>This way, you can “catch” the returned value before giving it to a client.</p>
+
+<p>This approach can be further parameterized by implementing it as a class, for example:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># Assert that the current user has `permission` on the return value of `block`</span>
+<span class="k">class</span> <span class="nc">PermissionAssertion</span>
+  <span class="c1"># Get a permission level and the "inner" resolve function</span>
+  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">permission</span><span class="p">,</span> <span class="n">resolve_func</span><span class="p">)</span>
+    <span class="vi">@permission</span> <span class="o">=</span> <span class="n">permission</span>
+    <span class="vi">@resolve_func</span> <span class="o">=</span> <span class="n">resolve_func</span>
+  <span class="k">end</span>
+
+  <span class="c1"># GraphQL will call this, so delegate to the "inner" resolve function</span>
+  <span class="c1"># and check the return value</span>
+  <span class="k">def</span> <span class="nf">call</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="vi">@resolve_func</span><span class="p">.</span><span class="nf">call</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span>
+    <span class="n">current_user</span> <span class="o">=</span> <span class="n">ctx</span><span class="p">[</span><span class="ss">:current_user</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">current_user</span><span class="p">.</span><span class="nf">can?</span><span class="p">(</span><span class="vi">@permission</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+      <span class="n">value</span>
+    <span class="k">else</span>
+      <span class="kp">nil</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="c1"># ...</span>
+
+<span class="c1"># Apply this class to the resolve function:</span>
+<span class="n">field</span> <span class="ss">:documents</span><span class="p">,</span> <span class="n">types</span><span class="p">[</span><span class="no">DocumentType</span><span class="p">]</span> <span class="k">do</span>
+  <span class="n">resolve</span> <span class="no">PermissionAssertion</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="ss">:view</span><span class="p">,</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1"># ...</span>
+  <span class="p">})</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

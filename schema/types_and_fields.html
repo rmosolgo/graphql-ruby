@@ -1,0 +1,261 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>GraphQL Ruby - Schema — Types and Fields</title>
+    <link rel="stylesheet" href="/graphql-ruby/css/main.css">
+    <link rel="icon" href="/graphql-ruby/graphql-ruby-icon.png">
+    <meta name="generator">
+  </head>
+  <body class="hack">
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+      ga('create', 'UA-19264608-11', 'auto');
+      ga('send', 'pageview');
+    </script>
+    <div class="container">
+      <div style="display: flex; justify-content: center;">
+<strong style="white-space: pre; line-height: 1.1em; display: inline-block; font-size: 8px;">
+    ▄██████▄     ▄████████    ▄████████    ▄███████▄    ▄█    █▄    ████████▄    ▄█
+   ███    ███   ███    ███   ███    ███   ███    ███   ███    ███   ███    ███  ███
+   ███    █▀    ███    ███   ███    ███   ███    ███   ███    ███   ███    ███  ███
+  ▄███         ▄███▄▄▄▄██▀   ███    ███   ███    ███  ▄███▄▄▄▄███▄▄ ███    ███  ███
+ ▀▀███ ████▄  ▀▀███▀▀▀▀▀   ▀███████████ ▀█████████▀  ▀▀███▀▀▀▀███▀  ███    ███  ███
+   ███    ███ ▀███████████   ███    ███   ███          ███    ███   ███    ███  ███
+   ███    ███   ███    ███   ███    ███   ███          ███    ███   ███  ▀ ███  ███▌    ▄
+   ████████▀    ███    ███   ███    █▀   ▄████▀        ███    █▀     ▀██████▀▄█ █████▄▄██
+                ███    ███                                                      ▀
+</strong>
+      </div>
+      <p style="text-align: center;">A GraphQL server implementation for Ruby</p>
+
+      <div class="grid -between">
+        <div class="cell -3of12">
+          <h3>Guides</h3>
+          <ul>
+            <li><a href="/graphql-ruby/">Getting Started</a></li>
+            <li>
+              <strong>Schema</strong>
+              <ul>
+                <li><a href="/graphql-ruby/schema/types_and_fields">Types and Fields</a></li>
+                <li><a href="/graphql-ruby/schema/configuration_options">Configuration Options</a></li>
+                <li><a href="/graphql-ruby/schema/code_reuse">Code Reuse</a></li>
+                <li><a href="/graphql-ruby/schema/testing">Testing</a></li>
+              </ul>
+            </li>
+            <li>
+              <strong>Queries</strong>
+              <ul>
+                <li><a href="/graphql-ruby/queries/executing_queries">Executing Queries</a></li>
+                <li><a href="/graphql-ruby/queries/authorization">Authorization</a></li>
+                <li><a href="/graphql-ruby/queries/security">Security</a></li>
+                <li><a href="/graphql-ruby/queries/error_handling">Error Handling</a></li>
+                <li><a href="/graphql-ruby/queries/phases_of_execution">Phases of Execution</a></li>
+              </ul>
+            </li>
+            <li>
+              <strong>Relay</strong>
+              <ul>
+                <li><a href="/graphql-ruby/relay/object_identification">Object Identification</a></li>
+                <li><a href="/graphql-ruby/relay/connections">Connections</a></li>
+                <li><a href="/graphql-ruby/relay/mutations">Mutations</a></li>
+              </ul>
+            </li>
+          </ul>
+          <h3><a href="http://www.rubydoc.info/github/rmosolgo/graphql-ruby">API Docs</a></h3>
+          <h3><a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a></h3>
+        </div>
+        <div class="cell -9of12">
+          <p>Types, fields and arguments make up a schema’s type system. These objects are also open to extension via <code class="highlighter-rouge">metadata</code> and <code class="highlighter-rouge">accepts_definitions</code>.</p>
+
+<h2 id="types">Types</h2>
+
+<p>Types describe objects and values in a system. The API documentation for each type contains a detailed description with examples.</p>
+
+<p>Objects are described with <a href="http://www.rubydoc.info/gems/graphql/GraphQL/ObjectType" target="_blank"><code>GraphQL::ObjectType</code></a>s.</p>
+
+<p>Scalar values are described with built-in scalars (string, int, float, boolean, ID) or custom <a href="http://www.rubydoc.info/gems/graphql/GraphQL/EnumType" target="_blank"><code>GraphQL::EnumType</code></a>s. You can define custom <a href="http://www.rubydoc.info/gems/graphql/GraphQL/ScalarType" target="_blank"><code>GraphQL::ScalarType</code></a>s, too.</p>
+
+<p>Scalars and enums can be sent to GraphQL as inputs. For complex inputs (key-value pairs), use <a href="http://www.rubydoc.info/gems/graphql/GraphQL/InputObjectType" target="_blank"><code>GraphQL::InputObjectType</code></a>.</p>
+
+<p>There are two abstract types, too:</p>
+
+<ul>
+  <li><a href="http://www.rubydoc.info/gems/graphql/GraphQL/InterfaceType" target="_blank"><code>GraphQL::InterfaceType</code></a> describes a collection of object types which implement some of the same fields.</li>
+  <li><a href="http://www.rubydoc.info/gems/graphql/GraphQL/UnionType" target="_blank"><code>GraphQL::UnionType</code></a> describes a collection of object types which may appear in the same place in the schema (ie, may be returned by the same field.)</li>
+</ul>
+
+<p><a href="http://www.rubydoc.info/gems/graphql/GraphQL/ListType" target="_blank"><code>GraphQL::ListType</code></a> and <a href="http://www.rubydoc.info/gems/graphql/GraphQL/NonNullType" target="_blank"><code>GraphQL::NonNullType</code></a> modify other types, describing them as “list of <em>T</em>” or “required <em>T</em>”.</p>
+
+<h3 id="referencing-types">Referencing Types</h3>
+
+<p>Some parts of schema definition take types as an input. There are two good ways to provide types:</p>
+
+<ol>
+  <li>
+    <p><strong>By value</strong>. Pass a variable which holds the type.</p>
+
+    <div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># constant</span>
+<span class="n">field</span> <span class="ss">:team</span><span class="p">,</span> <span class="no">TeamType</span>
+<span class="c1"># local variable</span>
+<span class="n">field</span> <span class="ss">:stadium</span><span class="p">,</span> <span class="n">stadium_type</span>
+</code></pre>
+    </div>
+  </li>
+  <li>
+    <p><strong>By proc</strong>, which will be lazy-evaluated to look up a type.</p>
+
+    <div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:team</span><span class="p">,</span> <span class="o">-&gt;</span> <span class="p">{</span> <span class="no">TeamType</span> <span class="p">}</span>
+<span class="n">field</span> <span class="ss">:stadium</span><span class="p">,</span> <span class="o">-&gt;</span> <span class="p">{</span> <span class="no">LookupTypeForModel</span><span class="p">.</span><span class="nf">lookup</span><span class="p">(</span><span class="no">Stadium</span><span class="p">)</span> <span class="p">}</span>
+</code></pre>
+    </div>
+  </li>
+</ol>
+
+<h2 id="fields">Fields</h2>
+
+<p><a href="http://www.rubydoc.info/gems/graphql/GraphQL/ObjectType" target="_blank"><code>GraphQL::ObjectType</code></a>s and <a href="http://www.rubydoc.info/gems/graphql/GraphQL/InterfaceType" target="_blank"><code>GraphQL::InterfaceType</code></a>s may expose their values with <em>fields</em>. A field definition looks like this:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">PostType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+  <span class="c1"># ...</span>
+  <span class="c1">#     name  , type        , description (optional)</span>
+  <span class="n">field</span> <span class="ss">:title</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">String</span><span class="p">,</span> <span class="s2">"The title of the Post"</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<p>By default, fields are resolved by sending the name to the underlying object (eg <code class="highlighter-rouge">post.title</code> in the example above).</p>
+
+<p>You can define a different resolution by providing a <code class="highlighter-rouge">resolve</code> function:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">PostType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+  <span class="c1"># ...</span>
+  <span class="c1">#     name   , type        , description (optional)</span>
+  <span class="n">field</span> <span class="ss">:teaser</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">String</span><span class="p">,</span> <span class="s2">"The teaser of the Post"</span> <span class="k">do</span>
+    <span class="c1"># how to get the value?</span>
+    <span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
+      <span class="c1"># first 40 chars of the body</span>
+      <span class="n">obj</span><span class="p">.</span><span class="nf">body</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">40</span><span class="p">]</span>
+    <span class="p">}</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<p>The resolve function receives inputs:</p>
+
+<ul>
+  <li><code class="highlighter-rouge">object</code>: The underlying object for this type (above, a <code class="highlighter-rouge">Post</code> instance)</li>
+  <li><code class="highlighter-rouge">arguments</code>: The arguments for this field (see below, a <a href="http://www.rubydoc.info/gems/graphql/GraphQL/Query/Arguments" target="_blank"><code>GraphQL::Query::Arguments</code></a> instance)</li>
+  <li><code class="highlighter-rouge">context</code>: The context for this query (see <a href="/graphql-ruby/queries/executing_queries">“Executing Queries”</a>, a <a href="http://www.rubydoc.info/gems/graphql/GraphQL/Query/Context" target="_blank"><code>GraphQL::Query::Context</code></a> instance)</li>
+</ul>
+
+<p>In fact, the <code class="highlighter-rouge">field do ... end</code> block is passed to <a href="http://www.rubydoc.info/gems/graphql/GraphQL/Field" target="_blank"><code>GraphQL::Field</code></a>’s <code class="highlighter-rouge">.define</code> method, so you can define many things there:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">field</span> <span class="k">do</span>
+  <span class="nb">name</span> <span class="s2">"teaser"</span>
+  <span class="n">type</span> <span class="n">types</span><span class="o">.</span><span class="no">String</span>
+  <span class="n">description</span> <span class="s2">"..."</span>
+  <span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span> <span class="p">.</span><span class="nf">.</span><span class="o">.</span> <span class="p">}</span>
+  <span class="n">deprecation_reason</span> <span class="s2">"Too long, use .title instead"</span>
+  <span class="n">complexity</span> <span class="mi">2</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<h2 id="arguments">Arguments</h2>
+
+<p>Fields can take <strong>arguments</strong> as input. These can be used to determine the return value (eg, filtering search results) or to modify the application state (eg, updating the database in <code class="highlighter-rouge">MutationType</code>).</p>
+
+<p>Arguments are defined with the <code class="highlighter-rouge">argument</code> helper:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:search_posts</span><span class="p">,</span> <span class="n">types</span><span class="p">[</span><span class="no">PostType</span><span class="p">]</span> <span class="k">do</span>
+  <span class="n">argument</span> <span class="ss">:category</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">String</span>
+  <span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">args</span><span class="p">[</span><span class="ss">:category</span><span class="p">]</span>
+    <span class="c1"># =&gt; maybe a string, eg "Programming"</span>
+    <span class="k">if</span> <span class="n">args</span><span class="p">[</span><span class="ss">:category</span><span class="p">]</span>
+      <span class="no">Post</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="ss">category: </span><span class="n">category</span><span class="p">).</span><span class="nf">limit</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+    <span class="k">else</span>
+      <span class="no">Post</span><span class="p">.</span><span class="nf">all</span><span class="p">.</span><span class="nf">limit</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+    <span class="k">end</span>
+  <span class="p">}</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<p>Use <code class="highlighter-rouge">!</code> to mark an argument as <em>required</em>:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># This argument is a required string:</span>
+<span class="n">argument</span> <span class="ss">:category</span><span class="p">,</span> <span class="o">!</span><span class="n">types</span><span class="o">.</span><span class="no">String</span>
+</code></pre>
+</div>
+
+<p>Only certain types are valid for arguments:</p>
+
+<ul>
+  <li><a href="http://www.rubydoc.info/gems/graphql/GraphQL/ScalarType" target="_blank"><code>GraphQL::ScalarType</code></a>, including built-in scalars (string, int, float, boolean, ID)</li>
+  <li><a href="http://www.rubydoc.info/gems/graphql/GraphQL/EnumType" target="_blank"><code>GraphQL::EnumType</code></a></li>
+  <li><a href="http://www.rubydoc.info/gems/graphql/GraphQL/InputObjectType" target="_blank"><code>GraphQL::InputObjectType</code></a>, which allows key-value pairs as input</li>
+  <li><a href="http://www.rubydoc.info/gems/graphql/GraphQL/ListType" target="_blank"><code>GraphQL::ListType</code></a>s of a valid input type</li>
+  <li><a href="http://www.rubydoc.info/gems/graphql/GraphQL/NonNullType" target="_blank"><code>GraphQL::NonNullType</code></a>s of a valid input type</li>
+</ul>
+
+<p>The <code class="highlighter-rouge">args</code> parameter of a <code class="highlighter-rouge">resolve</code> function will always be a <code class="highlighter-rouge">&lt;a href="http://www.rubydoc.info/gems/graphql/GraphQL/Query/Arguments" target="_blank"&gt;&lt;code&gt;GraphQL::Query::Arguments&lt;/code&gt;&lt;/a&gt;</code>. You can access specific arguments with <code class="highlighter-rouge">["arg_name"]</code> or <code class="highlighter-rouge">[:arg_name]</code>. You recursively turn it into a Ruby Hash with <code class="highlighter-rouge">to_h</code>. Inside <code class="highlighter-rouge">args</code>, scalars will be parsed into Ruby values and enums will be converted to their <code class="highlighter-rouge">value:</code> (if one was provided).</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">args</span><span class="p">[</span><span class="s2">"category"</span><span class="p">]</span> <span class="o">==</span> <span class="n">args</span><span class="p">[</span><span class="ss">:category</span><span class="p">]</span>
+  <span class="c1"># =&gt; true</span>
+  <span class="n">args</span><span class="p">.</span><span class="nf">to_h</span>
+  <span class="c1"># =&gt; { "category" =&gt; "Programming" }</span>
+  <span class="c1"># ...</span>
+<span class="p">}</span>
+</code></pre>
+</div>
+
+<h2 id="extending-type-and-field-definitions">Extending type and field definitions</h2>
+
+<p>Types, fields, and arguments have a <code class="highlighter-rouge">metadata</code> hash which accepts values during definition.</p>
+
+<p>First, make a custom definition:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">accepts_definitions</span> <span class="ss">resolves_to_class_names: </span><span class="no">GraphQL</span><span class="o">::</span><span class="no">Define</span><span class="p">.</span><span class="nf">assign_metadata_key</span><span class="p">(</span><span class="ss">:resolves_to_class_names</span><span class="p">)</span>
+<span class="c1"># or:</span>
+<span class="c1"># GraphQL::Field.accepts_definitions(...)</span>
+<span class="c1"># GraphQL::Argument.accepts_definitions(...)</span>
+</code></pre>
+</div>
+
+<p>Then, use the custom definition:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">Post</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+  <span class="c1"># ...</span>
+  <span class="n">resolves_to_class_names</span> <span class="p">[</span><span class="s2">"Post"</span><span class="p">,</span> <span class="s2">"StaffUpdate"</span><span class="p">]</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<p>Access <code class="highlighter-rouge">type.metadata</code> later:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+  <span class="c1"># ...</span>
+  <span class="c1"># Use the type's declared `resolves_to_class_names`</span>
+  <span class="c1"># to figure out if `obj` is a member of that type</span>
+  <span class="n">resolve_type</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">class_name</span> <span class="o">=</span> <span class="n">obj</span><span class="p">.</span><span class="nf">class</span><span class="p">.</span><span class="nf">name</span>
+    <span class="no">MySchema</span><span class="p">.</span><span class="nf">types</span><span class="p">.</span><span class="nf">values</span><span class="p">.</span><span class="nf">find</span> <span class="p">{</span> <span class="o">|</span><span class="n">type</span><span class="o">|</span> <span class="n">type</span><span class="p">.</span><span class="nf">metadata</span><span class="p">[</span><span class="ss">:resolves_to_class_names</span><span class="p">].</span><span class="nf">include?</span><span class="p">(</span><span class="n">class_name</span><span class="p">)</span> <span class="p">}</span>
+  <span class="p">}</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<p>This behavior is provided by <a href="http://www.rubydoc.info/gems/graphql/GraphQL/Define/InstanceDefinable" target="_blank"><code>GraphQL::Define::InstanceDefinable</code></a>.</p>
+
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,207 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>GraphQL Ruby - Queries — Error Handling</title>
+    <link rel="stylesheet" href="/graphql-ruby/css/main.css">
+    <link rel="icon" href="/graphql-ruby/graphql-ruby-icon.png">
+    <meta name="generator">
+  </head>
+  <body class="hack">
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+      ga('create', 'UA-19264608-11', 'auto');
+      ga('send', 'pageview');
+    </script>
+    <div class="container">
+      <div style="display: flex; justify-content: center;">
+<strong style="white-space: pre; line-height: 1.1em; display: inline-block; font-size: 8px;">
+    ▄██████▄     ▄████████    ▄████████    ▄███████▄    ▄█    █▄    ████████▄    ▄█
+   ███    ███   ███    ███   ███    ███   ███    ███   ███    ███   ███    ███  ███
+   ███    █▀    ███    ███   ███    ███   ███    ███   ███    ███   ███    ███  ███
+  ▄███         ▄███▄▄▄▄██▀   ███    ███   ███    ███  ▄███▄▄▄▄███▄▄ ███    ███  ███
+ ▀▀███ ████▄  ▀▀███▀▀▀▀▀   ▀███████████ ▀█████████▀  ▀▀███▀▀▀▀███▀  ███    ███  ███
+   ███    ███ ▀███████████   ███    ███   ███          ███    ███   ███    ███  ███
+   ███    ███   ███    ███   ███    ███   ███          ███    ███   ███  ▀ ███  ███▌    ▄
+   ████████▀    ███    ███   ███    █▀   ▄████▀        ███    █▀     ▀██████▀▄█ █████▄▄██
+                ███    ███                                                      ▀
+</strong>
+      </div>
+      <p style="text-align: center;">A GraphQL server implementation for Ruby</p>
+
+      <div class="grid -between">
+        <div class="cell -3of12">
+          <h3>Guides</h3>
+          <ul>
+            <li><a href="/graphql-ruby/">Getting Started</a></li>
+            <li>
+              <strong>Schema</strong>
+              <ul>
+                <li><a href="/graphql-ruby/schema/types_and_fields">Types and Fields</a></li>
+                <li><a href="/graphql-ruby/schema/configuration_options">Configuration Options</a></li>
+                <li><a href="/graphql-ruby/schema/code_reuse">Code Reuse</a></li>
+                <li><a href="/graphql-ruby/schema/testing">Testing</a></li>
+              </ul>
+            </li>
+            <li>
+              <strong>Queries</strong>
+              <ul>
+                <li><a href="/graphql-ruby/queries/executing_queries">Executing Queries</a></li>
+                <li><a href="/graphql-ruby/queries/authorization">Authorization</a></li>
+                <li><a href="/graphql-ruby/queries/security">Security</a></li>
+                <li><a href="/graphql-ruby/queries/error_handling">Error Handling</a></li>
+                <li><a href="/graphql-ruby/queries/phases_of_execution">Phases of Execution</a></li>
+              </ul>
+            </li>
+            <li>
+              <strong>Relay</strong>
+              <ul>
+                <li><a href="/graphql-ruby/relay/object_identification">Object Identification</a></li>
+                <li><a href="/graphql-ruby/relay/connections">Connections</a></li>
+                <li><a href="/graphql-ruby/relay/mutations">Mutations</a></li>
+              </ul>
+            </li>
+          </ul>
+          <h3><a href="http://www.rubydoc.info/github/rmosolgo/graphql-ruby">API Docs</a></h3>
+          <h3><a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a></h3>
+        </div>
+        <div class="cell -9of12">
+          <p>Sometimes errors happen! There are a few ways to express them in GraphQL:</p>
+
+<ul>
+  <li>Expose errors <em>in</em> the schema itself</li>
+  <li>Add errors to the response’s <code class="highlighter-rouge">"errors"</code> key</li>
+</ul>
+
+<p>Additionally, you can provide opt-in error support by wrapping resolvers (described below).</p>
+
+<h2 id="exposing-errors">Exposing Errors</h2>
+
+<p>You can expose errors as part of your schema. In a sense, this makes errors part of “business as usual”, instead of exceptional cases.</p>
+
+<p>For example, you could add <code class="highlighter-rouge">errors</code> to <code class="highlighter-rouge">PostType</code>:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">PostType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+  <span class="nb">name</span> <span class="s2">"Post"</span>
+  <span class="n">field</span> <span class="ss">:title</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">String</span>
+  <span class="c1"># ...</span>
+  <span class="n">field</span> <span class="ss">:errors</span><span class="p">,</span> <span class="n">types</span><span class="p">[</span><span class="n">types</span><span class="o">.</span><span class="no">String</span><span class="p">],</span> <span class="s2">"Reasons the object couldn't be created or updated"</span> <span class="k">do</span>
+    <span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span> <span class="n">obj</span><span class="p">.</span><span class="nf">errors</span><span class="p">.</span><span class="nf">full_messages</span> <span class="p">}</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<p>Then, when creating a post, return the <code class="highlighter-rouge">Post</code>, even if the save failed:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">post</span> <span class="o">=</span> <span class="no">Post</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="s2">"post"</span><span class="p">].</span><span class="nf">to_h</span><span class="p">)</span>
+  <span class="c1"># Maybe this fails, no big deal:</span>
+  <span class="n">post</span><span class="p">.</span><span class="nf">save</span>
+  <span class="n">post</span>
+<span class="p">}</span>
+</code></pre>
+</div>
+
+<p>Then, when clients create a post, they should check the <code class="highlighter-rouge">errors</code> field to see if it was successful:</p>
+
+<pre><code class="language-graphql">mutation {
+  createPost(post: {title: "GraphQL is Nice"}) {
+    id
+    title
+    errors # in case the save failed
+  }
+}
+</code></pre>
+
+<p>If <code class="highlighter-rouge">errors</code> is present (and <code class="highlighter-rouge">id</code> is null), the client knows that the operation was unsuccessful, and they can discover why.</p>
+
+<p>This technique could be extended by creating dedicated error types, too.</p>
+
+<h2 id="the-errors-key">The “errors” Key</h2>
+
+<p>A GraphQL response may have an <code class="highlighter-rouge">"errors"</code> key, for example:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">Schema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="n">query_string</span><span class="p">)</span>
+<span class="c1"># {</span>
+<span class="c1">#   "errors" =&gt; [</span>
+<span class="c1">#     { "message" =&gt; "Something went wrong" },</span>
+<span class="c1">#   ],</span>
+<span class="c1"># }</span>
+</code></pre>
+</div>
+
+<p>You can add an error to the <code class="highlighter-rouge">"errors"</code> key by returning a <a href="http://www.rubydoc.info/gems/graphql/GraphQL/ExecutionError" target="_blank"><code>GraphQL::ExecutionError</code></a> from a <code class="highlighter-rouge">resolve</code> function. For example:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">post_params</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="s2">"post"</span><span class="p">].</span><span class="nf">to_h</span>
+  <span class="k">if</span> <span class="n">obj</span><span class="p">.</span><span class="nf">posts</span><span class="p">.</span><span class="nf">create</span><span class="p">(</span><span class="n">post_params</span><span class="p">)</span>
+    <span class="c1"># on success, return the post:</span>
+    <span class="n">post</span>
+  <span class="k">else</span>
+    <span class="c1"># on error, return an error:</span>
+    <span class="no">GraphQL</span><span class="o">::</span><span class="no">ExecutionError</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"Invalid input for Post: </span><span class="si">#{</span><span class="n">post</span><span class="p">.</span><span class="nf">errors</span><span class="p">.</span><span class="nf">full_messages</span><span class="p">.</span><span class="nf">join</span><span class="p">(</span><span class="s2">", "</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="p">}</span>
+</code></pre>
+</div>
+
+<p>If some part of your <code class="highlighter-rouge">resolve</code> function would raise an error, you can rescue it and return a <a href="http://www.rubydoc.info/gems/graphql/GraphQL/ExecutionError" target="_blank"><code>GraphQL::ExecutionError</code></a> instead:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">post_params</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="s2">"post"</span><span class="p">].</span><span class="nf">to_h</span>
+  <span class="k">begin</span>
+    <span class="n">post</span> <span class="o">=</span> <span class="n">obj</span><span class="p">.</span><span class="nf">posts</span><span class="p">.</span><span class="nf">create!</span><span class="p">(</span><span class="n">post_params</span><span class="p">)</span>
+    <span class="c1"># on success, return the post:</span>
+    <span class="n">post</span>
+  <span class="k">rescue</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">RecordInvalid</span> <span class="o">=&gt;</span> <span class="n">err</span>
+    <span class="c1"># on error, return an error:</span>
+    <span class="no">GraphQL</span><span class="o">::</span><span class="no">ExecutionError</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"Invalid input for Post: </span><span class="si">#{</span><span class="n">post</span><span class="p">.</span><span class="nf">errors</span><span class="p">.</span><span class="nf">full_messages</span><span class="p">.</span><span class="nf">join</span><span class="p">(</span><span class="s2">", "</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="p">}</span>
+</code></pre>
+</div>
+
+<h2 id="error-handling-with-wrappers">Error Handling with Wrappers</h2>
+
+<p>If you don’t want to <code class="highlighter-rouge">begin ... rescue ... end</code> in every field, you can wrap <code class="highlighter-rouge">resolve</code> functions in error handling. For example, you could make an object that wraps another resolver:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># Wrap field resolver `resolve_func` with a handler for `error_superclass`.</span>
+<span class="c1"># `RescueFrom` instances are valid field resolvers too.</span>
+<span class="k">class</span> <span class="nc">RescueFrom</span>
+  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">error_superclass</span><span class="p">,</span> <span class="n">resolve_func</span><span class="p">)</span>
+    <span class="vi">@error_superclass</span> <span class="o">=</span> <span class="n">error_superclass</span>
+    <span class="vi">@resolve_func</span> <span class="o">=</span> <span class="n">resolve_func</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">call</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span>
+    <span class="vi">@resolve_func</span><span class="p">.</span><span class="nf">call</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span>
+  <span class="k">rescue</span> <span class="vi">@error_superclass</span> <span class="o">=&gt;</span> <span class="n">err</span>
+    <span class="c1"># Your error handling logic here:</span>
+    <span class="c1"># - return an instance of `GraphQL::ExecutionError`</span>
+    <span class="c1"># - or, return nil:</span>
+    <span class="kp">nil</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<p>Then, apply it to fields on an opt-in basis:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:create_post</span><span class="p">,</span> <span class="no">PostType</span> <span class="k">do</span>
+  <span class="c1"># Wrap the resolve function with `RescueFrom.new(err_class, ...)`</span>
+  <span class="n">resolve</span> <span class="no">RescueFrom</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="no">ActiveRecord</span><span class="o">::</span><span class="no">RecordInvalid</span><span class="p">,</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span> <span class="p">.</span><span class="nf">.</span><span class="o">.</span> <span class="p">})</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<p>This way, you get error handling with proper Ruby semantics and no overhead!</p>
+
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
