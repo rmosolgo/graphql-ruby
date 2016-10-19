@@ -116,7 +116,7 @@ module GraphQL
               "#{print_description(arg, "  #{indentation}", i == 0)}  #{indentation}"\
               "#{print_input_value(arg)}"
             }.join("\n")
-            out << "\n)"
+            out << "\n#{indentation})"
           end
 
           def print_input_value(arg)
