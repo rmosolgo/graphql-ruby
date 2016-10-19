@@ -123,15 +123,10 @@ describe GraphQL::Query::Executor do
     describe "if nil is given for a non-null field" do
       let(:query_string) {%| query noMilk { cow { name cantBeNullButIs } }|}
       it "turns into error message and nulls the entire selection" do
-        expected = {
-          "data" => { "cow" => nil },
-          "errors" => [
-            {
-              "message" => "Cannot return null for non-nullable field Cow.cantBeNullButIs"
-            }
-          ]
-        }
-        assert_equal(expected, result)
+        err = assert_raises(GraphQL::InvalidNullError) do
+          query.result
+        end
+        assert_equal "Cannot return null for non-nullable field Cow.cantBeNullButIs", err.message
       end
     end
 

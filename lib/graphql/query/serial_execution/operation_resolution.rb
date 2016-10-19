@@ -18,7 +18,7 @@ module GraphQL
             execution_context
           ).result
         rescue GraphQL::InvalidNullError => err
-          err.parent_error? || execution_context.add_error(err)
+          raise unless err.parent_error?
           nil
         end
       end

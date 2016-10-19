@@ -45,10 +45,10 @@ module GraphQL
           begin
             result_strategy.result
           rescue GraphQL::InvalidNullError => err
+            raise unless err.parent_error?
             if field.type.kind.non_null?
               raise(err)
             else
-              err.parent_error? || execution_context.add_error(err)
               nil
             end
           end
