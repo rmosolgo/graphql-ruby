@@ -124,4 +124,37 @@ describe GraphQL::Schema do
       end
     end
   end
+
+  describe ".invalid_null" do
+    before do
+      schema.define(
+        invalid_null: -> (err, ctx) {
+          ctx.errors << GraphQL::ExecutionError.new("Oops, something went wrong! (#{err.parent_type.name}, #{err.field_name})")
+          # Test adding the invalid null error also:
+          ctx.errors << err
+        }
+      )
+    end
+
+    after do
+      schema.define(invalid_null: GraphQL::Schema::RAISE_INVALID_NULL)
+    end
+
+    it "handles invalid null errors" do
+      query_string = %| query noMilk { cow { name cantBeNullButIs } }|
+      result = schema.execute(query_string)
+      expected = {
+        "data" => { "cow" => nil },
+        "errors" => [
+          {
+            "message" => "Oops, something went wrong! (Cow, cantBeNullButIs)"
+          },
+          {
+            "message" => "Cannot return null for non-nullable field Cow.cantBeNullButIs"
+          }
+        ]
+      }
+      assert_equal(expected, result)
+    end
+  end
 end

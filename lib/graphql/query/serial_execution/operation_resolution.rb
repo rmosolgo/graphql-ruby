@@ -18,7 +18,11 @@ module GraphQL
             execution_context
           ).result
         rescue GraphQL::InvalidNullError => err
-          raise unless err.parent_error?
+          if !err.parent_error?
+            # This was caused by a surprise `nil` on a root field.
+            # Handle it, and return nil if it's rescued.
+            execution_context.handle_invalid_null(err)
+          end
           nil
         end
       end

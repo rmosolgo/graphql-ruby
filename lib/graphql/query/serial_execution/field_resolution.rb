@@ -45,10 +45,18 @@ module GraphQL
           begin
             result_strategy.result
           rescue GraphQL::InvalidNullError => err
-            raise unless err.parent_error?
             if field.type.kind.non_null?
+              # This field and its siblings can't be present in the response,
+              # so send this error up to the parent selection.
               raise(err)
+            elsif err.parent_error?
+              # This was caused by an upstream ExecutionError, returned by user code.
+              # This field is nullable, so let's just catch it put `nil` here.
+              nil
             else
+              # This was caused by a surprise `nil`, send it
+              # the schema for logging and/or re-raising
+              execution_context.handle_invalid_null(err)
               nil
             end
           end
