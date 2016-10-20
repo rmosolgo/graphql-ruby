@@ -102,7 +102,7 @@
 <div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">PostType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="nb">name</span> <span class="s2">"Post"</span>
   <span class="n">description</span> <span class="s2">"A blog post"</span>
-  <span class="c1"># `!` marks a field as "required" or "non-null"</span>
+  <span class="c1"># `!` marks a field as "non-null"</span>
   <span class="n">field</span> <span class="ss">:id</span><span class="p">,</span> <span class="o">!</span><span class="n">types</span><span class="o">.</span><span class="no">ID</span>
   <span class="n">field</span> <span class="ss">:title</span><span class="p">,</span> <span class="o">!</span><span class="n">types</span><span class="o">.</span><span class="no">String</span>
   <span class="n">field</span> <span class="ss">:body</span><span class="p">,</span> <span class="o">!</span><span class="n">types</span><span class="o">.</span><span class="no">String</span>
