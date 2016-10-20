@@ -33,7 +33,7 @@ Types describe objects in your application and form the basis for [GraphQL's typ
 PostType = GraphQL::ObjectType.define do
   name "Post"
   description "A blog post"
-  # `!` marks a field as "required" or "non-null"
+  # `!` marks a field as "non-null"
   field :id, !types.ID
   field :title, !types.String
   field :body, !types.String
