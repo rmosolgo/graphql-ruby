@@ -26,7 +26,7 @@ $ bundle install
 
 ## Getting Started
 
-See "Getting Started" on the [website]((https://rmosolgo.github.io/graphql-ruby/) or on [GitHub](https://github.com/rmosolgo/graphql-ruby/blob/master/guides/index.md)
+See "Getting Started" on the [website](https://rmosolgo.github.io/graphql-ruby/) or on [GitHub](https://github.com/rmosolgo/graphql-ruby/blob/master/guides/index.md)
 
 ## Goals
 
