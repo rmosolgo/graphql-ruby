@@ -214,7 +214,7 @@ rule
       ELLIPSIS name_without_on directives_list_opt { return make_node(:FragmentSpread, name: val[1], directives: val[2], position_source: val[0]) }
 
   inline_fragment:
-      ELLIPSIS ON name directives_list_opt selection_set {
+      ELLIPSIS ON type directives_list_opt selection_set {
         return make_node(:InlineFragment, {
           type: val[2],
           directives: val[3],
@@ -232,7 +232,7 @@ rule
       }
 
   fragment_definition:
-    FRAGMENT fragment_name_opt ON name_without_on directives_list_opt selection_set {
+    FRAGMENT fragment_name_opt ON type directives_list_opt selection_set {
       return make_node(:FragmentDefinition, {
           name:       val[1],
           type:       val[3],

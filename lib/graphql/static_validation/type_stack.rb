@@ -57,7 +57,7 @@ module GraphQL
       module FragmentWithTypeStrategy
         def push(stack, node)
           object_type = if node.type
-            stack.schema.types.fetch(node.type, nil)
+            stack.schema.types.fetch(node.type.name, nil)
           else
             stack.object_types.last
           end
@@ -86,7 +86,7 @@ module GraphQL
         extend FragmentWithTypeStrategy
         module_function
         def push_path_member(stack, node)
-          stack.path.push("...#{node.type ? " on #{node.type}" : ""}")
+          stack.path.push("...#{node.type ? " on #{node.type.to_query_string}" : ""}")
         end
       end
 
