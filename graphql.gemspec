@@ -29,7 +29,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency "minitest-reporters", "~>1.0"
   s.add_development_dependency "racc", "~> 1.4"
   s.add_development_dependency "rake", "~> 11.0"
-  s.add_development_dependency "rubocop", "~> 0.44"
+  s.add_development_dependency "rubocop", "< 0.42"
   # following are required for relay helpers
   s.add_development_dependency "activerecord", "< 5"
   s.add_development_dependency "appraisal"
