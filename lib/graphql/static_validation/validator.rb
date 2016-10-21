@@ -33,7 +33,7 @@ module GraphQL
         context.visitor.visit
 
         {
-          errors: context.errors.map(&:to_h),
+          errors: context.errors,
           # If there were errors, the irep is garbage
           irep: context.errors.none? ? rewrite.operations : nil,
         }

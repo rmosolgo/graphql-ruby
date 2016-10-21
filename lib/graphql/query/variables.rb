@@ -2,9 +2,13 @@ module GraphQL
   class Query
     # Read-only access to query variables, applying default values if needed.
     class Variables
+      # @return [Array<GraphQL::Query::VariableValidationError>]  Any errors encountered when parsing the provided variables and literal values
+      attr_reader :errors
+
       def initialize(schema, ast_variables, provided_variables)
         @schema = schema
         @provided_variables = provided_variables
+        @errors = []
         @storage = ast_variables.each_with_object({}) do |ast_variable, memo|
           variable_name = ast_variable.name
           memo[variable_name] = get_graphql_value(ast_variable)
@@ -29,7 +33,7 @@ module GraphQL
 
         validation_result = variable_type.validate_input(provided_value)
         if !validation_result.valid?
-          raise GraphQL::Query::VariableValidationError.new(ast_variable, variable_type, provided_value, validation_result)
+          @errors << GraphQL::Query::VariableValidationError.new(ast_variable, variable_type, provided_value, validation_result)
         elsif provided_value.nil?
           GraphQL::Query::LiteralInput.coerce(variable_type, default_value, {})
         else
