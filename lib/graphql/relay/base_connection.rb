@@ -30,13 +30,14 @@ module GraphQL
         def connection_for_nodes(nodes)
           # Check for class _names_ because classes can be redefined in Rails development
           ancestor_names = nodes.class.ancestors.map(&:name)
-          implementation = CONNECTION_IMPLEMENTATIONS.find do |nodes_class_name, connection_class|
-            ancestor_names.include? nodes_class_name
+          implementation_class_name = ancestor_names.find do |ancestor_class_name|
+            CONNECTION_IMPLEMENTATIONS.include? ancestor_class_name
           end
-          if implementation.nil?
+
+          if implementation_class_name.nil?
             raise("No connection implementation to wrap #{nodes.class} (#{nodes})")
           else
-            implementation[1]
+            CONNECTION_IMPLEMENTATIONS[implementation_class_name]
           end
         end
 
