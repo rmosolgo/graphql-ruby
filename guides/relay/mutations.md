@@ -68,7 +68,7 @@ AddCommentMutation = GraphQL::Relay::Mutation.define do
   return_field :comment, CommentType
 
   # The resolve proc is where you alter the system state.
-  resolve ->(inputs, ctx) {
+  resolve ->(object, inputs, ctx) {
     post = Post.find(inputs[:postId])
     comment = post.comments.create!(author_id: inputs[:authorId], content: inputs[:content])
 
