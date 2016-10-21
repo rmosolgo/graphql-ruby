@@ -31,6 +31,7 @@ describe GraphQL::Introspection::SchemaType do
             {"name"=>"fromSource"},
             {"name"=>"maybeNull"},
             {"name"=>"milk"},
+            {"name"=>"milks"},
             {"name"=>"root"},
             {"name"=>"searchDairy"},
             {"name"=>"valueWithExecutionError"},

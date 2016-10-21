@@ -51,6 +51,16 @@ module GraphQL
       # result was defered, so it should be empty in the patch.
       DEFERRED_RESULT = :__deferred_result__
 
+      # TODO: this is necessary to send the error to a context where
+      # the parent type name is available
+      class InnerInvalidNullError < GraphQL::Error
+        attr_reader :field_name, :value
+        def initialize(field_name, value)
+          @field_name = field_name
+          @value = value
+        end
+      end
+
       # Execute `ast_operation`, a member of `query_object`, starting from `root_type`.
       #
       # Results will be sent to `query_object.context[CONTEXT_PATCH_TARGET]` in the form
@@ -260,7 +270,14 @@ module GraphQL
         else
           raise("No defined resolution for #{ast_node.class.name} (#{ast_node})")
         end
-      rescue GraphQL::InvalidNullError => err
+      rescue InvalidNullError, InnerInvalidNullError => inner_err
+        # TODO omg
+        err = if inner_err.is_a?(InnerInvalidNullError)
+          GraphQL::InvalidNullError.new(type_defn.name, inner_err.field_name, inner_err.value)
+        else
+          inner_err
+        end
+
         if return_type_defn && return_type_defn.kind.non_null?
           raise(err)
         else
@@ -278,9 +295,9 @@ module GraphQL
 
         resolved_selections = merged_selections.each_with_object({}) do |(name, irep_selection), memo|
           field_applies_to_type = irep_selection.definitions.any? do |child_type, defn|
-            GraphQL::Execution::Typecast.compatible?(outer_frame.value, child_type, outer_frame.type, query.context)
+            GraphQL::Execution::Typecast.compatible?(child_type, outer_frame.type, query.context)
           end
-          if field_applies_to_type && !GraphQL::Execution::DirectiveChecks.skip?(irep_selection, query)
+          if field_applies_to_type && irep_selection.included?
             selection_key = irep_selection.name
 
             inner_frame = ExecFrame.new(
@@ -336,9 +353,19 @@ module GraphQL
           resolve_fn_value = err
         end
 
-        if resolve_fn_value.is_a?(GraphQL::ExecutionError)
+        case resolve_fn_value
+        when GraphQL::ExecutionError
           thread.errors << resolve_fn_value
           resolve_fn_value.ast_node = ast_node
+          resolve_fn_value.path = frame.path
+        when Array
+          resolve_fn_value.each_with_index do |item, idx|
+            if item.is_a?(GraphQL::ExecutionError)
+              item.ast_node = ast_node
+              item.path = frame.path + [idx]
+              thread.errors << item
+            end
+          end
         end
 
         resolve_fn_value
@@ -351,7 +378,7 @@ module GraphQL
       def resolve_value(scope, thread, frame, value, type_defn)
         if value.nil? || value.is_a?(GraphQL::ExecutionError)
           if type_defn.kind.non_null?
-            raise GraphQL::InvalidNullError.new(frame.node.ast_node.name, value)
+            raise InnerInvalidNullError.new(frame.node.ast_node.name, value)
           else
             nil
           end
@@ -360,10 +387,10 @@ module GraphQL
           when GraphQL::TypeKinds::SCALAR, GraphQL::TypeKinds::ENUM
             type_defn.coerce_result(value)
           when GraphQL::TypeKinds::INTERFACE, GraphQL::TypeKinds::UNION
-            resolved_type = type_defn.resolve_type(value, scope)
+            resolved_type = scope.schema.resolve_type(value, scope.query.context)
 
-            if !resolved_type.is_a?(GraphQL::ObjectType)
-              raise GraphQL::ObjectType::UnresolvedTypeError.new(frame.node.definition_name, type_defn, frame.node.parent.return_type)
+            if !resolved_type.is_a?(GraphQL::ObjectType) || !scope.schema.possible_types(type_defn).include?(resolved_type)
+              raise GraphQL::UnresolvedTypeError.new(frame.node.definition_name, scope.schema, type_defn, frame.node.parent.return_type, resolved_type)
             else
               resolve_value(scope, thread, frame, value, resolved_type)
             end

@@ -47,7 +47,9 @@ describe GraphQL::UnionType do
         {"dairyName"=>"Cheese"},
         {"dairyName"=>"Cheese"},
         {"dairyName"=>"Milk", "bevName"=>"Milk", "flavors"=>["Natural", "Chocolate", "Strawberry"]},
+        {"dairyName"=>"Milk", "bevName"=>"Milk", "flavors"=>["Natural"]},
       ]
+
       assert_equal expected_result, result["data"]["allDairy"]
     end
   end

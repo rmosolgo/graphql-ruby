@@ -10,7 +10,7 @@ CHEESES = {
 Milk = Struct.new(:id, :fatContent, :origin, :source, :flavors)
 MILKS = {
   1 => Milk.new(1, 0.04, "Antiquity", 1, ["Natural", "Chocolate", "Strawberry"]),
-  2 => Milk.new(2, 0.02, "Antiquity", 1, ["Natural"]),
+  2 => Milk.new(2, 0.02, "Modernity", 1, ["Natural"]),
 }
 
 DAIRY = OpenStruct.new(

@@ -77,6 +77,7 @@ describe GraphQL::InterfaceType do
           {"__typename"=>"Cheese", "origin"=>"Netherlands"},
           {"__typename"=>"Cheese", "origin"=>"Spain"},
           {"__typename"=>"Milk", "origin"=>"Antiquity"},
+          {"__typename"=>"Milk", "origin"=>"Modernity"},
         ]
 
         assert_equal expected_data, result["data"]["allEdible"]
