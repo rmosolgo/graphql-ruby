@@ -25,6 +25,11 @@ module GraphQL
           @storage[key] = value
         end
       end
+
+      ### Ruby 1.9.3 unofficial support
+      def to_h
+        @storage
+      end
     end
   end
 end

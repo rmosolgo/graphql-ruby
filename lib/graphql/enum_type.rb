@@ -127,12 +127,26 @@ module GraphQL
     #
     # Created with the `value` helper
     class EnumValue
-      def self.define(name:, description: nil, deprecation_reason: nil, value: nil)
+      ### Ruby 1.9.3 unofficial support
+      # def self.define(name:, description: nil, deprecation_reason: nil, value: nil)
+      def self.define(options = {})
+        name = options[:name]
+        description = options.fetch(:description, nil)
+        deprecation_reason = options.fetch(:deprecation_reason, nil)
+        value = options.fetch(:value, nil)
+
         new(name: name, description: description, deprecation_reason: deprecation_reason, value: value)
       end
 
       attr_accessor :name, :description, :deprecation_reason, :value
-      def initialize(name:, description:, deprecation_reason:, value:)
+      ### Ruby 1.9.3 unofficial support
+      # def initialize(name:, description:, deprecation_reason:, value:)
+      def initialize(options = {})
+        name = options[:name]
+        description = options[:description]
+        deprecation_reason = options[:deprecation_reason]
+        value = options[:value]
+
         @name = name
         @description = description
         @deprecation_reason = deprecation_reason

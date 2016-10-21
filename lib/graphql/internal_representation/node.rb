@@ -3,7 +3,20 @@ require "set"
 module GraphQL
   module InternalRepresentation
     class Node
-      def initialize(parent:, ast_node: nil, return_type: nil, name: nil, definition_name: nil, definitions: {}, children: {}, spreads: [], directives: Set.new, included: true)
+      ### Ruby 1.9.3 unofficial support
+      # def initialize(parent:, ast_node: nil, return_type: nil, name: nil, definition_name: nil, definitions: {}, children: {}, spreads: [], directives: Set.new, included: true)
+      def initialize(options = {})
+        parent = options[:parent]
+        ast_node = options.fetch(:ast_node, nil)
+        return_type = options.fetch(:return_type, nil)
+        name = options.fetch(:name, nil)
+        definition_name = options.fetch(:definition_name, nil)
+        definitions = options.fetch(:definitions, {})
+        children = options.fetch(:children, {})
+        spreads = options.fetch(:spreads, [])
+        directives = options.fetch(:directives, Set.new)
+        included = options.fetch(:included, true)
+
         # Make sure these are kept in sync with #dup
         @ast_node = ast_node
         @return_type = return_type

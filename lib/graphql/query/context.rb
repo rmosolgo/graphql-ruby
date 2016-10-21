@@ -23,7 +23,12 @@ module GraphQL
       # Make a new context which delegates key lookup to `values`
       # @param query [GraphQL::Query] the query who owns this context
       # @param values [Hash] A hash of arbitrary values which will be accessible at query-time
-      def initialize(query:, values:)
+      ### Ruby 1.9.3 unofficial support
+      # def initialize(query:, values:)
+      def initialize(options = {})
+        query = options[:query]
+        values = options[:values]
+
         @query = query
         @schema = query.schema
         @values = values || {}

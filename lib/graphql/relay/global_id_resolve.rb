@@ -1,7 +1,11 @@
 module GraphQL
   module Relay
     class GlobalIdResolve
-      def initialize(type:)
+      ### Ruby 1.9.3 unofficial support
+      # def initialize(type:)
+      def initialize(options = {})
+        type = options[:type]
+
         @type = type
       end
 

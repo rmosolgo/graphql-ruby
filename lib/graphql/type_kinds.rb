@@ -4,7 +4,15 @@ module GraphQL
     # These objects are singletons, eg `GraphQL::TypeKinds::UNION`, `GraphQL::TypeKinds::SCALAR`.
     class TypeKind
       attr_reader :name, :description
-      def initialize(name, resolves: false, fields: false, wraps: false, input: false, description: nil)
+      ### Ruby 1.9.3 unofficial support
+      # def initialize(name, resolves: false, fields: false, wraps: false, input: false, description: nil)
+      def initialize(name, options = {})
+        resolves = options.fetch(:resolves, false)
+        fields = options.fetch(:fields, false)
+        wraps = options.fetch(:wraps, false)
+        input = options.fetch(:input, false)
+        description = options.fetch(:description, nil)
+
         @name = name
         @resolves = resolves
         @fields = fields

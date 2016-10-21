@@ -142,7 +142,9 @@ module GraphQL
             when EnumType
               type.coerce_result(value)
             when InputObjectType
-              fields = value.to_h.map{ |field_name, field_value|
+              ### Ruby 1.9.3 unofficial support
+              # fields = value.to_h.map{ |field_name, field_value|
+              fields = value.to_hash.map{ |field_name, field_value|
                 field_type = type.input_fields.fetch(field_name.to_s).type
                 "#{field_name}: #{print_value(field_value, field_type)}"
               }.join(", ")

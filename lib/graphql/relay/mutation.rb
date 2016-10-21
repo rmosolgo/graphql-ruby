@@ -156,7 +156,12 @@ module GraphQL
       # It delegates field lookups to the hash returned from `resolve`.
       class Result
         attr_reader :client_mutation_id
-        def initialize(client_mutation_id:, result:)
+        ### Ruby 1.9.3 unofficial support
+        # def initialize(client_mutation_id:, result:)
+        def initialize(options = {})
+          client_mutation_id = options[:client_mutation_id]
+          result = options[:result]
+
           @client_mutation_id = client_mutation_id
           result.each do |key, value|
             self.public_send("#{key}=", value)
@@ -187,7 +192,11 @@ module GraphQL
       end
 
       class MutationResolve
-        def initialize(mutation, resolve, wrap_result:)
+        ### Ruby 1.9.3 unofficial support
+        # def initialize(mutation, resolve, wrap_result:)
+        def initialize(mutation, resolve, options = {})
+          wrap_result = options[:wrap_result]
+
           @mutation = mutation
           @resolve = resolve
           @wrap_result = wrap_result

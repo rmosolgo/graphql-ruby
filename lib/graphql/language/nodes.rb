@@ -84,7 +84,11 @@ module GraphQL
         attr_accessor :of_type
         scalar_attributes :of_type
 
-        def initialize_node(of_type: nil)
+        ### Ruby 1.9.3 unofficial support
+        # def initialize_node(of_type: nil)
+        def initialize_node(options = {})
+          of_type = options.fetch(:of_type, nil)
+
           @of_type = of_type
         end
 
@@ -98,7 +102,11 @@ module GraphQL
         attr_accessor :name
         scalar_attributes :name
 
-        def initialize_node(name: nil)
+        ### Ruby 1.9.3 unofficial support
+        # def initialize_node(name: nil)
+        def initialize_node(options = {})
+          name = options.fetch(:name, nil)
+
           @name = name
         end
 
@@ -118,7 +126,12 @@ module GraphQL
         # @!attribute value
         #   @return [String, Float, Integer, Boolean, Array, InputObject] The value passed for this key
 
-        def initialize_node(name: nil, value: nil)
+        ### Ruby 1.9.3 unofficial support
+        # def initialize_node(name: nil, value: nil)
+        def initialize_node(options = {})
+          name = options.fetch(:name, nil)
+          value = options.fetch(:value, nil)
+
           @name = name
           @value = value
         end
@@ -133,7 +146,12 @@ module GraphQL
         scalar_attributes :name
         child_attributes :arguments
 
-        def initialize_node(name: nil, arguments: [])
+        ### Ruby 1.9.3 unofficial support
+        # def initialize_node(name: nil, arguments: [])
+        def initialize_node(options = {})
+          name = options.fetch(:name, nil)
+          arguments = options.fetch(:arguments, [])
+
           @name = name
           @arguments = arguments
         end
@@ -144,7 +162,14 @@ module GraphQL
         scalar_attributes :name
         child_attributes :arguments, :locations
 
-        def initialize_node(name: nil, arguments: [], locations: [], description: nil)
+        ### Ruby 1.9.3 unofficial support
+        # def initialize_node(name: nil, arguments: [], locations: [], description: nil)
+        def initialize_node(options = {})
+          name = options.fetch(:name, nil)
+          arguments = options.fetch(:arguments, [])
+          locations = options.fetch(:locations, [])
+          description = options.fetch(:description, nil)
+
           @name = name
           @arguments = arguments
           @locations = locations
@@ -167,7 +192,11 @@ module GraphQL
 
         # @!attribute definitions
         #   @return [Array<OperationDefinition, FragmentDefinition>] top-level GraphQL units: operations or fragments
-        def initialize_node(definitions: [])
+        ### Ruby 1.9.3 unofficial support
+        # def initialize_node(definitions: [])
+        def initialize_node(options = {})
+          definitions = options.fetch(:definitions, [])
+
           @definitions = definitions
         end
 
@@ -188,7 +217,19 @@ module GraphQL
         # @!attribute selections
         #   @return [Array<Nodes::Field>] Selections on this object (or empty array if this is a scalar field)
 
-        def initialize_node(name: nil, arguments: [], directives: [], selections: [], **kwargs)
+        ### Ruby 1.9.3 unofficial support
+        # def initialize_node(name: nil, arguments: [], directives: [], selections: [], **kwargs)
+        def initialize_node(options = {})
+          name = options.fetch(:name, nil)
+          arguments = options.fetch(:arguments, [])
+          directives = options.fetch(:directives, [])
+          selections = options.fetch(:selections, [])
+
+          kwargs = options.delete_if { |k, _| k == :name }
+          kwargs = options.delete_if { |k, _| k == :arguments }
+          kwargs = options.delete_if { |k, _| k == :directives }
+          kwargs = options.delete_if { |k, _| k == :selections }
+
           @name = name
           # oops, alias is a keyword:
           @alias = kwargs.fetch(:alias, nil)
@@ -209,7 +250,14 @@ module GraphQL
 
         # @!attribute type
         #   @return [String] the type condition for this fragment (name of type which it may apply to)
-        def initialize_node(name: nil, type: nil, directives: [], selections: [])
+        ### Ruby 1.9.3 unofficial support
+        # def initialize_node(name: nil, type: nil, directives: [], selections: [])
+        def initialize_node(options = {})
+          name = options.fetch(:name, nil)
+          type = options.fetch(:type, nil)
+          directives = options.fetch(:directives, [])
+          selections = options.fetch(:selections, [])
+
           @name = name
           @type = type
           @directives = directives
@@ -226,7 +274,12 @@ module GraphQL
         # @!attribute name
         #   @return [String] The identifier of the fragment to apply, corresponds with {FragmentDefinition#name}
 
-        def initialize_node(name: nil, directives: [])
+        ### Ruby 1.9.3 unofficial support
+        # def initialize_node(name: nil, directives: [])
+        def initialize_node(options = {})
+          name = options.fetch(:name, nil)
+          directives = options.fetch(:directives, [])
+
           @name = name
           @directives = directives
         end
@@ -241,7 +294,13 @@ module GraphQL
         # @!attribute type
         #   @return [String, nil] Name of the type this fragment applies to, or `nil` if this fragment applies to any type
 
-        def initialize_node(type: nil, directives: [], selections: [])
+        ### Ruby 1.9.3 unofficial support
+        # def initialize_node(type: nil, directives: [], selections: [])
+        def initialize_node(options = {})
+          type = options.fetch(:type, nil)
+          directives = options.fetch(:directives, [])
+          selections = options.fetch(:selections, [])
+
           @type = type
           @directives = directives
           @selections = selections
@@ -256,7 +315,11 @@ module GraphQL
         # @!attribute arguments
         #   @return [Array<Nodes::Argument>] A list of key-value pairs inside this input object
 
-        def initialize_node(arguments: [])
+        ### Ruby 1.9.3 unofficial support
+        # def initialize_node(arguments: [])
+        def initialize_node(options = {})
+          arguments = options.fetch(:arguments, [])
+
           @arguments = arguments
         end
 
@@ -297,7 +360,15 @@ module GraphQL
         # @!attribute name
         #   @return [String, nil] The name for this operation, or `nil` if unnamed
 
-        def initialize_node(operation_type: nil, name: nil, variables: [], directives: [], selections: [])
+        ### Ruby 1.9.3 unofficial support
+        # def initialize_node(operation_type: nil, name: nil, variables: [], directives: [], selections: [])
+        def initialize_node(options = {})
+          operation_type = options.fetch(:operation_type, nil)
+          name = options.fetch(:name, nil)
+          variables = options.fetch(:variables, [])
+          directives = options.fetch(:directives, [])
+          selections = options.fetch(:selections, [])
+
           @operation_type = operation_type
           @name = name
           @variables = variables
@@ -323,7 +394,13 @@ module GraphQL
         # @!attribute name
         #   @return [String] The identifier for this variable, _without_ `$`
 
-        def initialize_node(name: nil, type: nil, default_value: nil)
+        ### Ruby 1.9.3 unofficial support
+        # def initialize_node(name: nil, type: nil, default_value: nil)
+        def initialize_node(options = {})
+          name = options.fetch(:name, nil)
+          type = options.fetch(:type, nil)
+          default_value = options.fetch(:default_value, nil)
+
           @name = name
           @type = type
           @default_value = default_value
@@ -337,7 +414,13 @@ module GraphQL
         attr_accessor :query, :mutation, :subscription
         scalar_attributes :query, :mutation, :subscription
 
-        def initialize_node(query: nil, mutation: nil, subscription: nil)
+        ### Ruby 1.9.3 unofficial support
+        # def initialize_node(query: nil, mutation: nil, subscription: nil)
+        def initialize_node(options = {})
+          query = options.fetch(:query, nil)
+          mutation = options.fetch(:mutation, nil)
+          subscription = options.fetch(:subscription, nil)
+
           @query = query
           @mutation = mutation
           @subscription = subscription
@@ -349,7 +432,13 @@ module GraphQL
         scalar_attributes :name
         child_attributes :directives
 
-        def initialize_node(name:, directives: [], description: nil)
+        ### Ruby 1.9.3 unofficial support
+        # def initialize_node(name:, directives: [], description: nil)
+        def initialize_node(options = {})
+          name = options[:name]
+          directives = options.fetch(:directives, [])
+          description = options.fetch(:description, nil)
+
           @name = name
           @directives = directives
           @description = description
@@ -361,7 +450,15 @@ module GraphQL
         scalar_attributes :name
         child_attributes :interfaces, :fields, :directives
 
-        def initialize_node(name:, interfaces:, fields:, directives: [], description: nil)
+        ### Ruby 1.9.3 unofficial support
+        # def initialize_node(name:, interfaces:, fields:, directives: [], description: nil)
+        def initialize_node(options = {})
+          name = options[:name]
+          interfaces = options[:interfaces]
+          fields = options[:fields]
+          directives = options.fetch(:directives, [])
+          description = options.fetch(:description, nil)
+
           @name = name
           @interfaces = interfaces || []
           @directives = directives
@@ -375,7 +472,15 @@ module GraphQL
         scalar_attributes :name, :type, :default_value
         child_attributes :directives
 
-        def initialize_node(name:, type:, default_value: nil, directives: [], description: nil)
+        ### Ruby 1.9.3 unofficial support
+        # def initialize_node(name:, type:, default_value: nil, directives: [], description: nil)
+        def initialize_node(options = {})
+          name = options[:name]
+          type = options[:type]
+          default_value = options.fetch(:default_value, [])
+          directives = options.fetch(:directives, [])
+          description = options.fetch(:description, nil)
+
           @name = name
           @type = type
           @default_value = default_value
@@ -389,7 +494,15 @@ module GraphQL
         scalar_attributes :name, :type
         child_attributes :arguments, :directives
 
-        def initialize_node(name:, arguments:, type:, directives: [], description: nil)
+        ### Ruby 1.9.3 unofficial support
+        # def initialize_node(name:, arguments:, type:, directives: [], description: nil)
+        def initialize_node(options = {})
+          name = options[:name]
+          arguments = options[:arguments]
+          type = options[:type]
+          directives = options.fetch(:directives, [])
+          description = options.fetch(:description, nil)
+
           @name = name
           @arguments = arguments
           @type = type
@@ -403,7 +516,14 @@ module GraphQL
         scalar_attributes :name
         child_attributes :fields, :directives
 
-        def initialize_node(name:, fields:, directives: [], description: nil)
+        ### Ruby 1.9.3 unofficial support
+        # def initialize_node(name:, fields:, directives: [], description: nil)
+        def initialize_node(options = {})
+          name = options[:name]
+          fields = options[:fields]
+          directives = options.fetch(:directives, [])
+          description = options.fetch(:description, nil)
+
           @name = name
           @fields = fields
           @directives = directives
@@ -416,7 +536,14 @@ module GraphQL
         scalar_attributes :name
         child_attributes :types, :directives
 
-        def initialize_node(name:, types:, directives: [], description: nil)
+        ### Ruby 1.9.3 unofficial support
+        # def initialize_node(name:, types:, directives: [], description: nil)
+        def initialize_node(options = {})
+          name = options[:name]
+          types = options[:types]
+          directives = options.fetch(:directives, [])
+          description = options.fetch(:description, nil)
+
           @name = name
           @types = types
           @directives = directives
@@ -429,7 +556,14 @@ module GraphQL
         scalar_attributes :name
         child_attributes :values, :directives
 
-        def initialize_node(name:, values:, directives: [], description: nil)
+        ### Ruby 1.9.3 unofficial support
+        # def initialize_node(name:, values:, directives: [], description: nil)
+        def initialize_node(options = {})
+          name = options[:name]
+          values = options[:values]
+          directives = options.fetch(:directives, [])
+          description = options.fetch(:description, nil)
+
           @name = name
           @values = values
           @directives = directives
@@ -442,7 +576,13 @@ module GraphQL
         scalar_attributes :name
         child_attributes :directives
 
-        def initialize_node(name:, directives: [], description: nil)
+        ### Ruby 1.9.3 unofficial support
+        # def initialize_node(name:, directives: [], description: nil)
+        def initialize_node(options = {})
+          name = options[:name]
+          directives = options.fetch(:directives, [])
+          description = options.fetch(:description, nil)
+
           @name = name
           @directives = directives
           @description = description
@@ -454,7 +594,14 @@ module GraphQL
         scalar_attributes :name
         child_attributes :fields
 
-        def initialize_node(name:, fields:, directives: [], description: nil)
+        ### Ruby 1.9.3 unofficial support
+        # def initialize_node(name:, fields:, directives: [], description: nil)
+        def initialize_node(options = {})
+          name = options[:name]
+          fields = options[:fields]
+          directives = options.fetch(:directives, [])
+          description = options.fetch(:description, nil)
+
           @name = name
           @fields = fields
           @directives = directives

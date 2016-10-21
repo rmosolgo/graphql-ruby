@@ -133,7 +133,7 @@ describe GraphQL::Directive do
           let(:skip?) { true }
           it "is included" do assert field_included? end
         end
-      end      
+      end
     end
     describe "when evaluating conflicting @skip and @include on query selection and fragment" do
       let(:query_string) {"

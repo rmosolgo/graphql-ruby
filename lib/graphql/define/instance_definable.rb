@@ -81,7 +81,9 @@ module GraphQL
       # Note that the block is not called right away -- instead, it's deferred until
       # one of the defined fields is needed.
       # @return [void]
-      def define(**kwargs, &block)
+      ### Ruby 1.9.3 unofficial support
+      # def define(**kwargs, &block)
+      def define(kwargs = {}, &block)
         # make sure the previous definition_proc was executed:
         ensure_defined
 
@@ -119,9 +121,13 @@ module GraphQL
         # and prepare a definition using its {.definitions}.
         # @param kwargs [Hash] Key-value pairs corresponding to defininitions from `accepts_definitions`
         # @param block [Proc] Block which calls helper methods from `accepts_definitions`
-        def define(**kwargs, &block)
+        ### Ruby 1.9.3 unofficial support
+        # def define(**kwargs, &block)
+        def define(kwargs = {}, &block)
           instance = self.new
-          instance.define(**kwargs, &block)
+          ### Ruby 1.9.3 unofficial support
+          # instance.define(**kwargs, &block)
+          instance.define(kwargs, &block)
           instance
         end
 

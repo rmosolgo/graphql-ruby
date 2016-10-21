@@ -74,7 +74,16 @@ module GraphQL
     # @param subscription [GraphQL::ObjectType] the subscription root for the schema
     # @param max_depth [Integer] maximum query nesting (if it's greater, raise an error)
     # @param types [Array<GraphQL::BaseType>] additional types to include in this schema
-    def initialize(query: nil, mutation: nil, subscription: nil, max_depth: nil, max_complexity: nil, types: [])
+    ### Ruby 1.9.3 unofficial support
+    # def initialize(query: nil, mutation: nil, subscription: nil, max_depth: nil, max_complexity: nil, types: [])
+    def initialize(options = {})
+      query = options.fetch(:query, nil)
+      mutation = options.fetch(:mutation, nil)
+      subscription = options.fetch(:subscription, nil)
+      max_depth = options.fetch(:max_depth, nil)
+      max_complexity = options.fetch(:max_complexity, nil)
+      types = options.fetch(:types, [])
+
       if query
         warn("Schema.new is deprecated, use Schema.define instead")
       end
@@ -107,7 +116,9 @@ module GraphQL
       rescue_middleware.remove_handler(*args, &block)
     end
 
-    def define(**kwargs, &block)
+    ### Ruby 1.9.3 unofficial support
+    # def define(**kwargs, &block)
+    def define(kwargs = {}, &block)
       super
       types
       # Assert that all necessary configs are present:

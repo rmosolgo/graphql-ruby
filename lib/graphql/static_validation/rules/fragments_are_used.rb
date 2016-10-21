@@ -43,7 +43,12 @@ module GraphQL
 
       class FragmentInstance
         attr_reader :name, :node, :path
-        def initialize(node:, path:)
+        ### Ruby 1.9.3 unofficial support
+        # def initialize(node:, path:)
+        def initialize(options = {})
+          node = options[:node]
+          path = options[:path]
+
           @node = node
           @name = node.name
           @path = path

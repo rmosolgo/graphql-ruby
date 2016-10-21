@@ -3,7 +3,11 @@ module GraphQL
     module Comments
       extend self
 
-      def commentize(description, indent: '')
+      ### Ruby 1.9.3 unofficial support
+      # def commentize(description, indent: '')
+      def commentize(description, options = {})
+        indent = options.fetch(:indent, '')
+
         lines = description.split("\n")
 
         comment = ''

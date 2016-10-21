@@ -1,3 +1,17 @@
+
+---
+
+***THIS BRANCH SHOULD NOT BE USED IN PRODUCTION!!!***
+
+**If you see this, chances are you found this branch *via* [issue #148](https://github.com/rmosolgo/graphql-ruby/issues/148) and/or [PR #306](https://github.com/rmosolgo/graphql-ruby/pull/306).**
+
+**This is not for production! I repeat, this is not for production!<br>
+Use this branch to play with GraphQL on your ancient project running Ruby 1.9.3, or for whatever foolish reason, but don't you dare pushing this live.**
+
+![FLY, YOU FOOLS!](https://cdn.meme.am/instances/500x/31074494.jpg)
+
+---
+
 # graphql <img src="https://cloud.githubusercontent.com/assets/2231765/9094460/cb43861e-3b66-11e5-9fbf-71066ff3ab13.png" height="40" alt="graphql-ruby"/>
 
 [![Build Status](https://travis-ci.org/rmosolgo/graphql-ruby.svg?branch=master)](https://travis-ci.org/rmosolgo/graphql-ruby)

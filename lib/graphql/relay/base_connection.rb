@@ -61,7 +61,13 @@ module GraphQL
       # @param field [Object] The underlying field
       # @param max_page_size [Int] The maximum number of results to return
       # @param parent [Object] The object which this collection belongs to
-      def initialize(nodes, arguments, field: nil, max_page_size: nil, parent: nil)
+      ### Ruby 1.9.3 unofficial support
+      # def initialize(nodes, arguments, field: nil, max_page_size: nil, parent: nil)
+      def initialize(nodes, arguments, options = {})
+        field = options.fetch(:field, nil)
+        max_page_size = options.fetch(:max_page_size, nil)
+        parent = options.fetch(:parent, nil)
+
         @nodes = nodes
         @arguments = arguments
         @max_page_size = max_page_size
