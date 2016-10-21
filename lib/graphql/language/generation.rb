@@ -184,7 +184,12 @@ module GraphQL
         end
       end
 
-      def generate_description(node, indent: '', first_in_block: true)
+      ### Ruby 1.9.3 unofficial support
+      # def generate_description(node, indent: '', first_in_block: true)
+      def generate_description(node, options = {})
+        indent = options.fetch(:indent, '')
+        first_in_block = options.fetch(:first_in_block, true)
+
         return '' unless node.description
 
         description = indent != '' && !first_in_block ? "\n" : ""
