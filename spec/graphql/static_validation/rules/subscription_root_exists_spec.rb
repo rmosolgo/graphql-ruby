@@ -23,7 +23,7 @@ describe GraphQL::StaticValidation::SubscriptionRootExists do
   it "errors when a subscription is performed on a schema without a subscription root" do
     assert_equal(1, errors.length)
     missing_subscription_root_error = {
-      "message"=>"Schema is not configured for subscriptions",
+      "message"=>"\"subscription\" is invalid: root type \"subscription\" doesn't exist",
       "locations"=>[{"line"=>2, "column"=>5}],
       "fields"=>["subscription"],
     }

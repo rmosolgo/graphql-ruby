@@ -5,7 +5,7 @@ module GraphQL
         case ast_node
         when GraphQL::Language::Nodes::TypeName
           type_name = ast_node.name
-          schema.types[type_name]
+          schema.types.fetch(type_name, GraphQL::StaticAnalysis::TypeCheck::AnyType)
         when GraphQL::Language::Nodes::NonNullType
           ast_inner_type = ast_node.of_type
           build_type(schema, ast_inner_type).to_non_null_type

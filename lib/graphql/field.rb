@@ -215,6 +215,12 @@ module GraphQL
       "<Field name:#{name || "not-named"} desc:#{description} resolve:#{resolve_proc}>"
     end
 
+    # @param [String] Name of an argument on this field
+    # @return [GraphQL::Argument, nil] The argument defined for `name`
+    def get_argument(name)
+      arguments[name]
+    end
+
     private
 
     def build_default_resolver

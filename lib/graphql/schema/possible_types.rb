@@ -25,8 +25,10 @@ module GraphQL
           type_defn.possible_types
         when GraphQL::InterfaceType
           @storage[type_defn]
+        when GraphQL::ObjectType
+          [type_defn]
         else
-          raise "#{type_defn} doesn't have possible types"
+          []
         end
       end
     end
