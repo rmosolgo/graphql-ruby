@@ -14,7 +14,7 @@ module StaticValidationHelpers
     target_schema = schema
     validator = GraphQL::StaticValidation::Validator.new(schema: target_schema)
     query = GraphQL::Query.new(target_schema, query_string)
-    validator.validate(query)[:errors]
+    validator.validate(query)[:errors].map(&:to_h)
   end
 
   def error_messages

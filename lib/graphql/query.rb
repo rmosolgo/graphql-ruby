@@ -24,12 +24,11 @@ module GraphQL
     # @param query_string [String]
     # @param context [#[]] an arbitrary hash of values which you can access in {GraphQL::Field#resolve}
     # @param variables [Hash] values for `$variables` in the query
-    # @param validate [Boolean] if true, `query_string` will be validated with {StaticValidation::Validator}
     # @param operation_name [String] if the query string contains many operations, this is the one which should be executed
     # @param root_value [Object] the object used to resolve fields on the root type
     # @param max_depth [Numeric] the maximum number of nested selections allowed for this query (falls back to schema-level value)
     # @param max_complexity [Numeric] the maximum field complexity for this query (falls back to schema-level value)
-    def initialize(schema, query_string = nil, document: nil, context: nil, variables: {}, validate: true, operation_name: nil, root_value: nil, max_depth: nil, max_complexity: nil)
+    def initialize(schema, query_string = nil, document: nil, context: nil, variables: {}, operation_name: nil, root_value: nil, max_depth: nil, max_complexity: nil)
       fail ArgumentError, "a query string or document is required" unless query_string || document
 
       @schema = schema
@@ -44,7 +43,6 @@ module GraphQL
       end
       @context = Context.new(query: self, values: context)
       @root_value = root_value
-      @validate = validate
       @operation_name = operation_name
       @fragments = {}
       @operations = {}
@@ -66,6 +64,18 @@ module GraphQL
       @analysis_errors = []
       @internal_representation = nil
       @was_validated = false
+
+      # Trying to execute a document
+      # with no operations returns an empty hash
+      @ast_variables = []
+      if @operations.any?
+        @selected_operation = find_operation(@operations, @operation_name)
+        if @selected_operation.nil?
+          @validation_errors << GraphQL::Query::OperationNameMissingError.new(@operations.keys)
+        else
+          @ast_variables = @selected_operation.variables
+        end
+      end
     end
 
     # Get the result for this query, executing it once
@@ -74,7 +84,7 @@ module GraphQL
         if !valid?
           all_errors = validation_errors + analysis_errors
           if all_errors.any?
-            { "errors" => all_errors }
+            { "errors" => all_errors.map(&:to_h) }
           else
             nil
           end
@@ -93,14 +103,19 @@ module GraphQL
     # Determine the values for variables of this query, using default values
     # if a value isn't provided at runtime.
     #
-    # Raises if a non-null variable isn't provided at runtime.
+    # If some variable is invalid, errors are added to {#validation_errors}.
+    #
     # @return [GraphQL::Query::Variables] Variables to apply to this query
     def variables
-      @variables ||= GraphQL::Query::Variables.new(
-        schema,
-        selected_operation.variables,
-        @provided_variables
-      )
+      @variables ||= begin
+        vars = GraphQL::Query::Variables.new(
+          @schema,
+          @ast_variables,
+          @provided_variables,
+        )
+        @validation_errors.concat(vars.errors)
+        vars
+      end
     end
 
     # @return [Hash<String, nil => GraphQL::InternalRepresentation::Node] Operation name -> Irep node pairs
@@ -136,18 +151,13 @@ module GraphQL
     end
 
     # @return [GraphQL::Language::Nodes::Document, nil]
-    def selected_operation
-      @selected_operation ||= find_operation(@operations, @operation_name)
-    end
+    attr_reader :selected_operation
 
     def valid?
-      if !@was_validated
+      @was_validated ||= begin
         @was_validated = true
-        @valid = if @validate
-          document_valid? && query_possible? && query_valid?
-        else
-          true
-        end
+        @valid = document_valid? && query_valid? && variables.errors.none?
+        true
       end
 
       @valid
@@ -158,21 +168,9 @@ module GraphQL
     # Assert that the passed-in query string is internally consistent
     def document_valid?
       validation_result = schema.static_validator.validate(self)
-      @validation_errors = validation_result[:errors]
+      @validation_errors.concat(validation_result[:errors])
       @internal_representation = validation_result[:irep]
       @validation_errors.none?
-    end
-
-    # Given that the document is valid, do we have what we need to
-    # execute the document this time?
-    # - Is there an operation to run?
-    # - Are all variables accounted for?
-    def query_possible?
-      !selected_operation.nil? && variables
-      true
-    rescue GraphQL::Query::OperationNameMissingError, GraphQL::Query::VariableValidationError => err
-      @validation_errors << err.to_h
-      false
     end
 
     # Given that we _could_ execute this query, _should_ we?
@@ -182,9 +180,8 @@ module GraphQL
         if @query_analyzers.any?
           reduce_results = GraphQL::Analysis.analyze_query(self, @query_analyzers)
           reduce_results
-          .flatten # accept n-dimensional array
-          .select { |r| r.is_a?(GraphQL::AnalysisError) }
-          .map(&:to_h)
+            .flatten # accept n-dimensional array
+            .select { |r| r.is_a?(GraphQL::AnalysisError) }
         else
           []
         end
@@ -195,10 +192,8 @@ module GraphQL
     def find_operation(operations, operation_name)
       if operations.length == 1
         operations.values.first
-      elsif operations.length == 0
+      elsif operations.length == 0 || !operations.key?(operation_name)
         nil
-      elsif !operations.key?(operation_name)
-        raise OperationNameMissingError, operations.keys
       else
         operations[operation_name]
       end

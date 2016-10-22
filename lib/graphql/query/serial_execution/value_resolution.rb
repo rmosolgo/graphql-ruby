@@ -19,8 +19,11 @@ module GraphQL
           end
 
           def result
-            return nil if value.nil? || value.is_a?(GraphQL::ExecutionError)
-            non_null_result
+            if value.nil? || value.is_a?(GraphQL::ExecutionError)
+              nil
+            else
+              non_null_result
+            end
           end
 
           def non_null_result
