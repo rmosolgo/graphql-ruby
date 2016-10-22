@@ -29,7 +29,10 @@ module GraphQL
       argument: GraphQL::Define::AssignArgument
     )
 
-    lazy_defined_attr_accessor :mutation, :arguments
+    lazy_methods do
+      attr_accessor :mutation, :arguments
+    end
+
     alias :input_fields :arguments
 
     # @!attribute mutation

@@ -49,25 +49,25 @@ module GraphQL
       result
     end
 
-    def coerce_non_null_input(value)
-      ensure_defined
-      @coerce_input_proc.call(value)
-    end
-
-    def coerce_input=(proc)
-      if !proc.nil?
-        @coerce_input_proc = proc
+    lazy_methods do
+      def coerce_non_null_input(value)
+        @coerce_input_proc.call(value)
       end
-    end
 
-    def coerce_result(value)
-      ensure_defined
-      @coerce_result_proc ? @coerce_result_proc.call(value) : value
-    end
+      def coerce_input=(proc)
+        if !proc.nil?
+          @coerce_input_proc = proc
+        end
+      end
 
-    def coerce_result=(proc)
-      if !proc.nil?
-        @coerce_result_proc = proc
+      def coerce_result(value)
+        @coerce_result_proc ? @coerce_result_proc.call(value) : value
+      end
+
+      def coerce_result=(proc)
+        if !proc.nil?
+          @coerce_result_proc = proc
+        end
       end
     end
 
