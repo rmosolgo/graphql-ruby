@@ -127,17 +127,10 @@ module GraphQL
     #
     # Created with the `value` helper
     class EnumValue
-      def self.define(name:, description: nil, deprecation_reason: nil, value: nil)
-        new(name: name, description: description, deprecation_reason: deprecation_reason, value: value)
-      end
+      include GraphQL::Define::InstanceDefinable
+      accepts_definitions :name, :description, :deprecation_reason, :value
 
-      attr_accessor :name, :description, :deprecation_reason, :value
-      def initialize(name:, description:, deprecation_reason:, value:)
-        @name = name
-        @description = description
-        @deprecation_reason = deprecation_reason
-        @value = value
-      end
+      lazy_defined_attr_accessor :name, :description, :deprecation_reason, :value
     end
   end
 end
