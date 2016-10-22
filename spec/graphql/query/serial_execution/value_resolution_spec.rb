@@ -27,8 +27,6 @@ describe GraphQL::Query::SerialExecution::ValueResolution do
       name "OtherObject"
     end
 
-    OtherObject = Class.new
-
     query_root = GraphQL::ObjectType.define do
       name "Query"
       field :tomorrow, day_of_week_enum do
@@ -39,7 +37,7 @@ describe GraphQL::Query::SerialExecution::ValueResolution do
         resolve ->(obj, args, ctx) { Object.new }
       end
       field :resolvesToWrongTypeInterface, interface do
-        resolve ->(obj, args, ctx) { OtherObject.new }
+        resolve ->(obj, args, ctx) { :something }
       end
     end
 
@@ -47,7 +45,7 @@ describe GraphQL::Query::SerialExecution::ValueResolution do
       query(query_root)
       orphan_types [some_object]
       resolve_type ->(obj, ctx) do
-        if obj.is_a?(OtherObject)
+        if obj.is_a?(Symbol)
           other_object
         else
           nil
