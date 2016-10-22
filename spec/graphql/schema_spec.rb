@@ -124,4 +124,29 @@ describe GraphQL::Schema do
       end
     end
   end
+
+  describe "directives" do
+    describe "when directives are not overwritten" do
+      it "contains built-in directives" do
+        schema = GraphQL::Schema.define
+
+        assert_equal ['deprecated', 'include', 'skip'], schema.directives.keys.sort
+
+        assert_equal GraphQL::Directive::DeprecatedDirective, schema.directives['deprecated']
+        assert_equal GraphQL::Directive::IncludeDirective, schema.directives['include']
+        assert_equal GraphQL::Directive::SkipDirective, schema.directives['skip']
+      end
+    end
+
+    describe "when directives are overwritten" do
+      it "contains only specified directives" do
+        schema = GraphQL::Schema.define do
+          directives [GraphQL::Directive::DeprecatedDirective]
+        end
+
+        assert_equal ['deprecated'], schema.directives.keys.sort
+        assert_equal GraphQL::Directive::DeprecatedDirective, schema.directives['deprecated']
+      end
+    end
+  end
 end
