@@ -361,4 +361,11 @@ describe GraphQL::Relay::RelationConnection do
       assert_includes err.message, "item not found"
     end
   end
+
+  it "is chosen for a relation" do
+    relation = Base.where(faction_id: 1)
+    assert relation.is_a?(ActiveRecord::Relation)
+    connection = GraphQL::Relay::BaseConnection.connection_for_nodes(relation)
+    assert_equal GraphQL::Relay::RelationConnection, connection
+  end
 end
