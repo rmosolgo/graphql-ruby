@@ -46,9 +46,11 @@ module GraphQL
     def interfaces
       @clean_interfaces ||= begin
         ensure_defined
-        @dirty_interfaces.map { |i_type| GraphQL::BaseType.resolve_related_type(i_type) }
-      rescue
-        @dirty_interfaces
+        if @dirty_interfaces.respond_to?(:map)
+          @dirty_interfaces.map { |i_type| GraphQL::BaseType.resolve_related_type(i_type) }
+        else
+          @dirty_interfaces
+        end
       end
     end
 
