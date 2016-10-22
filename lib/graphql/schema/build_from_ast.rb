@@ -17,6 +17,7 @@ module GraphQL
 
         schema_definition = nil
         types = {}
+        types.merge!(GraphQL::Schema::BUILT_IN_TYPES)
         directives = {}
         type_resolver = -> (type) { -> { resolve_type(types, type) } }
 
@@ -229,31 +230,9 @@ module GraphQL
       end
 
       def resolve_type(types, ast_node)
-        case ast_node
-        when GraphQL::Language::Nodes::TypeName
-          type_name = ast_node.name
-          case type_name
-          when "Int"
-            INT_TYPE
-          when "String"
-            STRING_TYPE
-          when "Float"
-            FLOAT_TYPE
-          when "Boolean"
-            BOOLEAN_TYPE
-          when "ID"
-            ID_TYPE
-          else
-            raise InvalidDocument.new("Type \"#{type_name}\" not found in document.") unless types[type_name]
-            types[type_name]
-          end
-        when GraphQL::Language::Nodes::NonNullType
-          ast_inner_type = ast_node.of_type
-          resolve_type(types, ast_inner_type).to_non_null_type
-        when GraphQL::Language::Nodes::ListType
-          ast_inner_type = ast_node.of_type
-          resolve_type(types, ast_inner_type).to_list_type
-        end
+        type = GraphQL::Schema::TypeExpression.build_type(types, ast_node)
+        raise InvalidDocument.new("Type \"#{ast_node.name}\" not found in document.") unless type
+        type
       end
     end
   end

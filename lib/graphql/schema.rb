@@ -64,6 +64,7 @@ module GraphQL
       :orphan_types, :directives,
       :query_analyzers, :middleware
 
+    BUILT_IN_TYPES = Hash[[INT_TYPE, STRING_TYPE, FLOAT_TYPE, BOOLEAN_TYPE, ID_TYPE].map{ |type| [type.name, type] }]
     DIRECTIVES = [GraphQL::Directive::IncludeDirective, GraphQL::Directive::SkipDirective, GraphQL::Directive::DeprecatedDirective]
     DYNAMIC_FIELDS = ["__type", "__typename", "__schema"]
 
@@ -153,7 +154,7 @@ module GraphQL
 
     def type_from_ast(ast_node)
       ensure_defined
-      GraphQL::Schema::TypeExpression.build_type(self, ast_node)
+      GraphQL::Schema::TypeExpression.build_type(self.types, ast_node)
     end
 
     # @see [GraphQL::Schema::Warden] Restricted access to members of a schema

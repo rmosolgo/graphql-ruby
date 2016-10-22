@@ -109,17 +109,9 @@ module GraphQL
               default_value: type["defaultValue"] ? JSON.parse(type["defaultValue"], quirks_mode: true) : nil
             )
           when "SCALAR"
-            case type.fetch("name")
-            when "Int"
-              INT_TYPE
-            when "String"
-              STRING_TYPE
-            when "Float"
-              FLOAT_TYPE
-            when "Boolean"
-              BOOLEAN_TYPE
-            when "ID"
-              ID_TYPE
+            type_name = type.fetch("name")
+            if GraphQL::Schema::BUILT_IN_TYPES[type_name]
+              GraphQL::Schema::BUILT_IN_TYPES[type_name]
             else
               ScalarType.define(
                 name: type["name"],
