@@ -1,6 +1,11 @@
 require "spec_helper"
 
-describe GraphQL::Schema::BuildFromAST do
+describe GraphQL::Schema::BuildFromDefinition do
+  def build_schema_and_compare_output(definition)
+    built_schema = GraphQL::Schema.from_definition(definition)
+    assert_equal definition, GraphQL::Schema::Printer.print_schema(built_schema)
+  end
+
   describe '.build' do
     it 'can build a schema with a simple type' do
       schema = <<-SCHEMA
@@ -17,9 +22,7 @@ type HelloScalars {
 }
       SCHEMA
 
-      parsed_schema = GraphQL.parse(schema)
-      built_schema = GraphQL::Schema::BuildFromAST.build(parsed_schema)
-      assert_equal schema.chop, GraphQL::Schema::Printer.print_schema(built_schema)
+      build_schema_and_compare_output(schema.chop)
     end
 
     it 'can build a schema with directives' do
@@ -35,9 +38,7 @@ type Hello {
 }
       SCHEMA
 
-      parsed_schema = GraphQL.parse(schema)
-      built_schema = GraphQL::Schema::BuildFromAST.build(parsed_schema)
-      assert_equal schema.chop, GraphQL::Schema::Printer.print_schema(built_schema)
+      build_schema_and_compare_output(schema.chop)
     end
 
     it 'supports descriptions' do
@@ -68,9 +69,7 @@ type Hello {
 }
       SCHEMA
 
-      parsed_schema = GraphQL.parse(schema)
-      built_schema = GraphQL::Schema::BuildFromAST.build(parsed_schema)
-      assert_equal schema.chop, GraphQL::Schema::Printer.print_schema(built_schema)
+      build_schema_and_compare_output(schema.chop)
     end
 
     it 'maintains built-in directives' do
@@ -84,9 +83,7 @@ type Hello {
 }
       SCHEMA
 
-      parsed_schema = GraphQL.parse(schema)
-      built_schema = GraphQL::Schema::BuildFromAST.build(parsed_schema)
-
+      built_schema = GraphQL::Schema.from_definition(schema)
       assert_equal ['deprecated', 'include', 'skip'], built_schema.directives.keys.sort
     end
 
@@ -105,8 +102,7 @@ type Hello {
 }
       SCHEMA
 
-      parsed_schema = GraphQL.parse(schema)
-      built_schema = GraphQL::Schema::BuildFromAST.build(parsed_schema)
+      built_schema = GraphQL::Schema.from_definition(schema)
 
       refute built_schema.directives['skip'] == GraphQL::Directive::SkipDirective
       refute built_schema.directives['include'] == GraphQL::Directive::IncludeDirective
@@ -126,8 +122,7 @@ type Hello {
 }
       SCHEMA
 
-      parsed_schema = GraphQL.parse(schema)
-      built_schema = GraphQL::Schema::BuildFromAST.build(parsed_schema)
+      built_schema = GraphQL::Schema.from_definition(schema)
 
       assert built_schema.directives.keys.include?('skip')
       assert built_schema.directives.keys.include?('include')
@@ -150,9 +145,7 @@ type HelloScalars {
 }
       SCHEMA
 
-      parsed_schema = GraphQL.parse(schema)
-      built_schema = GraphQL::Schema::BuildFromAST.build(parsed_schema)
-      assert_equal schema.chop, GraphQL::Schema::Printer.print_schema(built_schema)
+      build_schema_and_compare_output(schema.chop)
     end
 
     it 'supports recursive type' do
@@ -167,9 +160,7 @@ type Recurse {
 }
       SCHEMA
 
-      parsed_schema = GraphQL.parse(schema)
-      built_schema = GraphQL::Schema::BuildFromAST.build(parsed_schema)
-      assert_equal schema.chop, GraphQL::Schema::Printer.print_schema(built_schema)
+      build_schema_and_compare_output(schema.chop)
     end
 
     it 'supports two types circular' do
@@ -189,9 +180,7 @@ type TypeTwo {
 }
       SCHEMA
 
-      parsed_schema = GraphQL.parse(schema)
-      built_schema = GraphQL::Schema::BuildFromAST.build(parsed_schema)
-      assert_equal schema.chop, GraphQL::Schema::Printer.print_schema(built_schema)
+      build_schema_and_compare_output(schema.chop)
     end
 
     it 'supports single argument fields' do
@@ -209,9 +198,7 @@ type Hello {
 }
       SCHEMA
 
-      parsed_schema = GraphQL.parse(schema)
-      built_schema = GraphQL::Schema::BuildFromAST.build(parsed_schema)
-      assert_equal schema.chop, GraphQL::Schema::Printer.print_schema(built_schema)
+      build_schema_and_compare_output(schema.chop)
     end
 
     it 'supports simple type with multiple arguments' do
@@ -225,9 +212,7 @@ type Hello {
 }
       SCHEMA
 
-      parsed_schema = GraphQL.parse(schema)
-      built_schema = GraphQL::Schema::BuildFromAST.build(parsed_schema)
-      assert_equal schema.chop, GraphQL::Schema::Printer.print_schema(built_schema)
+      build_schema_and_compare_output(schema.chop)
     end
 
     it 'supports simple type with interface' do
@@ -245,9 +230,7 @@ interface WorldInterface {
 }
       SCHEMA
 
-      parsed_schema = GraphQL.parse(schema)
-      built_schema = GraphQL::Schema::BuildFromAST.build(parsed_schema)
-      assert_equal schema.chop, GraphQL::Schema::Printer.print_schema(built_schema)
+      build_schema_and_compare_output(schema.chop)
     end
 
     it 'supports simple output enum' do
@@ -265,9 +248,7 @@ type OutputEnumRoot {
 }
       SCHEMA
 
-      parsed_schema = GraphQL.parse(schema)
-      built_schema = GraphQL::Schema::BuildFromAST.build(parsed_schema)
-      assert_equal schema.chop, GraphQL::Schema::Printer.print_schema(built_schema)
+      build_schema_and_compare_output(schema.chop)
     end
 
     it 'supports simple input enum' do
@@ -285,9 +266,7 @@ type InputEnumRoot {
 }
       SCHEMA
 
-      parsed_schema = GraphQL.parse(schema)
-      built_schema = GraphQL::Schema::BuildFromAST.build(parsed_schema)
-      assert_equal schema.chop, GraphQL::Schema::Printer.print_schema(built_schema)
+      build_schema_and_compare_output(schema.chop)
     end
 
     it 'supports multiple value enum' do
@@ -306,9 +285,7 @@ type OutputEnumRoot {
 }
       SCHEMA
 
-      parsed_schema = GraphQL.parse(schema)
-      built_schema = GraphQL::Schema::BuildFromAST.build(parsed_schema)
-      assert_equal schema.chop, GraphQL::Schema::Printer.print_schema(built_schema)
+      build_schema_and_compare_output(schema.chop)
     end
 
     it 'supports simple union' do
@@ -328,9 +305,7 @@ type World {
 }
       SCHEMA
 
-      parsed_schema = GraphQL.parse(schema)
-      built_schema = GraphQL::Schema::BuildFromAST.build(parsed_schema)
-      assert_equal schema.chop, GraphQL::Schema::Printer.print_schema(built_schema)
+      build_schema_and_compare_output(schema.chop)
     end
 
     it 'supports multiple union' do
@@ -354,9 +329,7 @@ type WorldTwo {
 }
       SCHEMA
 
-      parsed_schema = GraphQL.parse(schema)
-      built_schema = GraphQL::Schema::BuildFromAST.build(parsed_schema)
-      assert_equal schema.chop, GraphQL::Schema::Printer.print_schema(built_schema)
+      build_schema_and_compare_output(schema.chop)
     end
 
     it 'supports custom scalar' do
@@ -372,9 +345,7 @@ type Root {
 }
       SCHEMA
 
-      parsed_schema = GraphQL.parse(schema)
-      built_schema = GraphQL::Schema::BuildFromAST.build(parsed_schema)
-      assert_equal schema.chop, GraphQL::Schema::Printer.print_schema(built_schema)
+      build_schema_and_compare_output(schema.chop)
     end
 
     it 'supports input object' do
@@ -392,9 +363,7 @@ type Root {
 }
       SCHEMA
 
-      parsed_schema = GraphQL.parse(schema)
-      built_schema = GraphQL::Schema::BuildFromAST.build(parsed_schema)
-      assert_equal schema.chop, GraphQL::Schema::Printer.print_schema(built_schema)
+      build_schema_and_compare_output(schema.chop)
     end
 
     it 'supports simple argument field with default value' do
@@ -414,9 +383,7 @@ type Hello {
 }
       SCHEMA
 
-      parsed_schema = GraphQL.parse(schema)
-      built_schema = GraphQL::Schema::BuildFromAST.build(parsed_schema)
-      assert_equal schema.chop, GraphQL::Schema::Printer.print_schema(built_schema)
+      build_schema_and_compare_output(schema.chop)
     end
 
     it 'supports simple type with mutation' do
@@ -437,9 +404,7 @@ type Mutation {
 }
       SCHEMA
 
-      parsed_schema = GraphQL.parse(schema)
-      built_schema = GraphQL::Schema::BuildFromAST.build(parsed_schema)
-      assert_equal schema.chop, GraphQL::Schema::Printer.print_schema(built_schema)
+      build_schema_and_compare_output(schema.chop)
     end
 
     it 'supports simple type with mutation and default values' do
@@ -458,9 +423,7 @@ type Query {
 }
       SCHEMA
 
-      parsed_schema = GraphQL.parse(schema)
-      built_schema = GraphQL::Schema::BuildFromAST.build(parsed_schema)
-      assert_equal schema.chop, GraphQL::Schema::Printer.print_schema(built_schema)
+      build_schema_and_compare_output(schema.chop)
     end
 
     it 'supports simple type with subscription' do
@@ -481,9 +444,7 @@ type Subscription {
 }
       SCHEMA
 
-      parsed_schema = GraphQL.parse(schema)
-      built_schema = GraphQL::Schema::BuildFromAST.build(parsed_schema)
-      assert_equal schema.chop, GraphQL::Schema::Printer.print_schema(built_schema)
+      build_schema_and_compare_output(schema.chop)
     end
 
     it 'supports unreferenced type implementing referenced interface' do
@@ -501,9 +462,7 @@ type Query {
 }
       SCHEMA
 
-      parsed_schema = GraphQL.parse(schema)
-      built_schema = GraphQL::Schema::BuildFromAST.build(parsed_schema)
-      assert_equal schema.chop, GraphQL::Schema::Printer.print_schema(built_schema)
+      build_schema_and_compare_output(schema.chop)
     end
 
     it 'supports unreferenced type implementing referenced union' do
@@ -519,9 +478,7 @@ type Query {
 union Union = Concrete
       SCHEMA
 
-      parsed_schema = GraphQL.parse(schema)
-      built_schema = GraphQL::Schema::BuildFromAST.build(parsed_schema)
-      assert_equal schema.chop, GraphQL::Schema::Printer.print_schema(built_schema)
+      build_schema_and_compare_output(schema.chop)
     end
 
     it 'supports @deprecated' do
@@ -539,9 +496,7 @@ type Query {
 }
       SCHEMA
 
-      parsed_schema = GraphQL.parse(schema)
-      built_schema = GraphQL::Schema::BuildFromAST.build(parsed_schema)
-      assert_equal schema.chop, GraphQL::Schema::Printer.print_schema(built_schema)
+      build_schema_and_compare_output(schema.chop)
     end
   end
 
@@ -552,9 +507,8 @@ type Hello {
   bar: Bar
 }
 SCHEMA
-      parsed_schema = GraphQL.parse(schema)
-      err = assert_raises(GraphQL::Schema::BuildFromAST::InvalidDocumentError) do
-        GraphQL::Schema::BuildFromAST.build(parsed_schema)
+      err = assert_raises(GraphQL::Schema::InvalidDocumentError) do
+        GraphQL::Schema.from_definition(schema)
       end
       assert_equal 'Must provide schema definition with query type or a type named Query.', err.message
     end
@@ -574,9 +528,8 @@ type Hello {
 }
 SCHEMA
 
-      parsed_schema = GraphQL.parse(schema)
-      err = assert_raises(GraphQL::Schema::BuildFromAST::InvalidDocumentError) do
-        GraphQL::Schema::BuildFromAST.build(parsed_schema)
+      err = assert_raises(GraphQL::Schema::InvalidDocumentError) do
+        GraphQL::Schema.from_definition(schema)
       end
       assert_equal 'Must provide only one schema definition.', err.message
     end
@@ -592,9 +545,8 @@ type Hello {
 }
 SCHEMA
 
-      parsed_schema = GraphQL.parse(schema)
-      err = assert_raises(GraphQL::Schema::BuildFromAST::InvalidDocumentError) do
-        GraphQL::Schema::BuildFromAST.build(parsed_schema)
+      err = assert_raises(GraphQL::Schema::InvalidDocumentError) do
+        GraphQL::Schema.from_definition(schema)
       end
       assert_equal 'Must provide schema definition with query type or a type named Query.', err.message
     end
@@ -610,9 +562,8 @@ type Hello {
 }
 SCHEMA
 
-      parsed_schema = GraphQL.parse(schema)
-      err = assert_raises(GraphQL::Schema::BuildFromAST::InvalidDocumentError) do
-        GraphQL::Schema::BuildFromAST.build(parsed_schema)
+      err = assert_raises(GraphQL::Schema::InvalidDocumentError) do
+        GraphQL::Schema.from_definition(schema)
       end
       assert_equal 'Type "Bar" not found in document.', err.message
     end
@@ -628,9 +579,8 @@ type Hello implements Bar {
 }
 SCHEMA
 
-      parsed_schema = GraphQL.parse(schema)
-      err = assert_raises(GraphQL::Schema::BuildFromAST::InvalidDocumentError) do
-        GraphQL::Schema::BuildFromAST.build(parsed_schema)
+      err = assert_raises(GraphQL::Schema::InvalidDocumentError) do
+        GraphQL::Schema.from_definition(schema)
       end
       assert_equal 'Type "Bar" not found in document.', err.message
     end
@@ -646,9 +596,8 @@ union TestUnion = Bar
 type Hello { testUnion: TestUnion }
 SCHEMA
 
-      parsed_schema = GraphQL.parse(schema)
-      err = assert_raises(GraphQL::Schema::BuildFromAST::InvalidDocumentError) do
-        GraphQL::Schema::BuildFromAST.build(parsed_schema)
+      err = assert_raises(GraphQL::Schema::InvalidDocumentError) do
+        GraphQL::Schema.from_definition(schema)
       end
       assert_equal 'Type "Bar" not found in document.', err.message
     end
@@ -664,9 +613,8 @@ type Hello {
 }
 SCHEMA
 
-      parsed_schema = GraphQL.parse(schema)
-      err = assert_raises(GraphQL::Schema::BuildFromAST::InvalidDocumentError) do
-        GraphQL::Schema::BuildFromAST.build(parsed_schema)
+      err = assert_raises(GraphQL::Schema::InvalidDocumentError) do
+        GraphQL::Schema.from_definition(schema)
       end
       assert_equal 'Specified query type "Wat" not found in document.', err.message
     end
@@ -683,9 +631,8 @@ type Hello {
 }
 SCHEMA
 
-      parsed_schema = GraphQL.parse(schema)
-      err = assert_raises(GraphQL::Schema::BuildFromAST::InvalidDocumentError) do
-        GraphQL::Schema::BuildFromAST.build(parsed_schema)
+      err = assert_raises(GraphQL::Schema::InvalidDocumentError) do
+        GraphQL::Schema.from_definition(schema)
       end
       assert_equal 'Specified mutation type "Wat" not found in document.', err.message
     end
@@ -707,9 +654,8 @@ type Wat {
 }
 SCHEMA
 
-      parsed_schema = GraphQL.parse(schema)
-      err = assert_raises(GraphQL::Schema::BuildFromAST::InvalidDocumentError) do
-        GraphQL::Schema::BuildFromAST.build(parsed_schema)
+      err = assert_raises(GraphQL::Schema::InvalidDocumentError) do
+        GraphQL::Schema.from_definition(schema)
       end
       assert_equal 'Specified subscription type "Awesome" not found in document.', err.message
     end
@@ -723,9 +669,8 @@ schema {
 query Foo { field }
 SCHEMA
 
-      parsed_schema = GraphQL.parse(schema)
-      err = assert_raises(GraphQL::Schema::BuildFromAST::InvalidDocumentError) do
-        GraphQL::Schema::BuildFromAST.build(parsed_schema)
+      err = assert_raises(GraphQL::Schema::InvalidDocumentError) do
+        GraphQL::Schema.from_definition(schema)
       end
       assert_equal 'Specified query type "Foo" not found in document.', err.message
     end
@@ -739,9 +684,8 @@ schema {
 fragment Foo on Type { field }
 SCHEMA
 
-      parsed_schema = GraphQL.parse(schema)
-      err = assert_raises(GraphQL::Schema::BuildFromAST::InvalidDocumentError) do
-        GraphQL::Schema::BuildFromAST.build(parsed_schema)
+      err = assert_raises(GraphQL::Schema::InvalidDocumentError) do
+        GraphQL::Schema.from_definition(schema)
       end
       assert_equal 'Specified query type "Foo" not found in document.', err.message
     end

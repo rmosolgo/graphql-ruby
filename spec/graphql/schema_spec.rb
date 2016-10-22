@@ -149,4 +149,17 @@ describe GraphQL::Schema do
       end
     end
   end
+
+  describe ".from_definition" do
+    it "uses BuildFromSchema to build a schema from a definition string" do
+      schema = <<-SCHEMA
+type Query {
+  str: String
+}
+      SCHEMA
+
+      built_schema = GraphQL::Schema.from_definition(schema)
+      assert_equal schema.chop, GraphQL::Schema::Printer.print_schema(built_schema)
+    end
+  end
 end
