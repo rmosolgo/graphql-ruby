@@ -63,9 +63,9 @@ module GraphQL
             subscription_root_type = types[schema_definition.subscription]
           end
         else
-          query_root_type = types['Query'] if types['Query']
-          mutation_root_type = types['Mutation'] if types['Mutation']
-          subscription_root_type = types['Subscription'] if types['Subcription']
+          query_root_type = types['Query']
+          mutation_root_type = types['Mutation']
+          subscription_root_type = types['Subscription']
         end
 
         raise InvalidDocument.new('Must provide schema definition with query type or a type named Query.') unless query_root_type
