@@ -7,13 +7,13 @@ module GraphQL
     module BuildFromAST
       extend self
 
-      class InvalidDocument < Error; end;
+      class InvalidDocumentError < Error; end;
 
       # Create schema with the AST of a parsed schema.
       # @param document [GraphQL::Language::Nodes::Document] A Document node obtained from {GraphQL.parse}
       # @return [GraphQL::Schema] the schema described by `document`
       def build(document)
-        raise InvalidDocument.new('Must provide a document ast.') if !document || !document.is_a?(GraphQL::Language::Nodes::Document)
+        raise InvalidDocumentError.new('Must provide a document ast.') if !document || !document.is_a?(GraphQL::Language::Nodes::Document)
 
         schema_definition = nil
         types = {}
@@ -24,7 +24,7 @@ module GraphQL
         document.definitions.each do |definition|
           case definition
           when GraphQL::Language::Nodes::SchemaDefinition
-            raise InvalidDocument.new('Must provide only one schema definition.') if schema_definition
+            raise InvalidDocumentError.new('Must provide only one schema definition.') if schema_definition
             schema_definition = definition
           when GraphQL::Language::Nodes::EnumTypeDefinition
             types[definition.name] = build_enum_type(definition, type_resolver)
@@ -49,17 +49,17 @@ module GraphQL
 
         if schema_definition
           if schema_definition.query
-            raise InvalidDocument.new("Specified query type \"#{schema_definition.query}\" not found in document.") unless types[schema_definition.query]
+            raise InvalidDocumentError.new("Specified query type \"#{schema_definition.query}\" not found in document.") unless types[schema_definition.query]
             query_root_type = types[schema_definition.query]
           end
 
           if schema_definition.mutation
-            raise InvalidDocument.new("Specified mutation type \"#{schema_definition.mutation}\" not found in document.") unless types[schema_definition.mutation]
+            raise InvalidDocumentError.new("Specified mutation type \"#{schema_definition.mutation}\" not found in document.") unless types[schema_definition.mutation]
             mutation_root_type = types[schema_definition.mutation]
           end
 
           if schema_definition.subscription
-            raise InvalidDocument.new("Specified subscription type \"#{schema_definition.subscription}\" not found in document.") unless types[schema_definition.subscription]
+            raise InvalidDocumentError.new("Specified subscription type \"#{schema_definition.subscription}\" not found in document.") unless types[schema_definition.subscription]
             subscription_root_type = types[schema_definition.subscription]
           end
         else
@@ -68,7 +68,7 @@ module GraphQL
           subscription_root_type = types['Subscription']
         end
 
-        raise InvalidDocument.new('Must provide schema definition with query type or a type named Query.') unless query_root_type
+        raise InvalidDocumentError.new('Must provide schema definition with query type or a type named Query.') unless query_root_type
 
         Schema.define do
           query query_root_type
@@ -231,7 +231,7 @@ module GraphQL
 
       def resolve_type(types, ast_node)
         type = GraphQL::Schema::TypeExpression.build_type(types, ast_node)
-        raise InvalidDocument.new("Type \"#{ast_node.name}\" not found in document.") unless type
+        raise InvalidDocumentError.new("Type \"#{ast_node.name}\" not found in document.") unless type
         type
       end
     end

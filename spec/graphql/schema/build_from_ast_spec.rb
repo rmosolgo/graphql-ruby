@@ -553,7 +553,7 @@ type Hello {
 }
 SCHEMA
       parsed_schema = GraphQL.parse(schema)
-      err = assert_raises(GraphQL::Schema::BuildFromAST::InvalidDocument) do
+      err = assert_raises(GraphQL::Schema::BuildFromAST::InvalidDocumentError) do
         GraphQL::Schema::BuildFromAST.build(parsed_schema)
       end
       assert_equal 'Must provide schema definition with query type or a type named Query.', err.message
@@ -575,7 +575,7 @@ type Hello {
 SCHEMA
 
       parsed_schema = GraphQL.parse(schema)
-      err = assert_raises(GraphQL::Schema::BuildFromAST::InvalidDocument) do
+      err = assert_raises(GraphQL::Schema::BuildFromAST::InvalidDocumentError) do
         GraphQL::Schema::BuildFromAST.build(parsed_schema)
       end
       assert_equal 'Must provide only one schema definition.', err.message
@@ -593,7 +593,7 @@ type Hello {
 SCHEMA
 
       parsed_schema = GraphQL.parse(schema)
-      err = assert_raises(GraphQL::Schema::BuildFromAST::InvalidDocument) do
+      err = assert_raises(GraphQL::Schema::BuildFromAST::InvalidDocumentError) do
         GraphQL::Schema::BuildFromAST.build(parsed_schema)
       end
       assert_equal 'Must provide schema definition with query type or a type named Query.', err.message
@@ -611,7 +611,7 @@ type Hello {
 SCHEMA
 
       parsed_schema = GraphQL.parse(schema)
-      err = assert_raises(GraphQL::Schema::BuildFromAST::InvalidDocument) do
+      err = assert_raises(GraphQL::Schema::BuildFromAST::InvalidDocumentError) do
         GraphQL::Schema::BuildFromAST.build(parsed_schema)
       end
       assert_equal 'Type "Bar" not found in document.', err.message
@@ -629,7 +629,7 @@ type Hello implements Bar {
 SCHEMA
 
       parsed_schema = GraphQL.parse(schema)
-      err = assert_raises(GraphQL::Schema::BuildFromAST::InvalidDocument) do
+      err = assert_raises(GraphQL::Schema::BuildFromAST::InvalidDocumentError) do
         GraphQL::Schema::BuildFromAST.build(parsed_schema)
       end
       assert_equal 'Type "Bar" not found in document.', err.message
@@ -647,7 +647,7 @@ type Hello { testUnion: TestUnion }
 SCHEMA
 
       parsed_schema = GraphQL.parse(schema)
-      err = assert_raises(GraphQL::Schema::BuildFromAST::InvalidDocument) do
+      err = assert_raises(GraphQL::Schema::BuildFromAST::InvalidDocumentError) do
         GraphQL::Schema::BuildFromAST.build(parsed_schema)
       end
       assert_equal 'Type "Bar" not found in document.', err.message
@@ -665,7 +665,7 @@ type Hello {
 SCHEMA
 
       parsed_schema = GraphQL.parse(schema)
-      err = assert_raises(GraphQL::Schema::BuildFromAST::InvalidDocument) do
+      err = assert_raises(GraphQL::Schema::BuildFromAST::InvalidDocumentError) do
         GraphQL::Schema::BuildFromAST.build(parsed_schema)
       end
       assert_equal 'Specified query type "Wat" not found in document.', err.message
@@ -684,7 +684,7 @@ type Hello {
 SCHEMA
 
       parsed_schema = GraphQL.parse(schema)
-      err = assert_raises(GraphQL::Schema::BuildFromAST::InvalidDocument) do
+      err = assert_raises(GraphQL::Schema::BuildFromAST::InvalidDocumentError) do
         GraphQL::Schema::BuildFromAST.build(parsed_schema)
       end
       assert_equal 'Specified mutation type "Wat" not found in document.', err.message
@@ -708,7 +708,7 @@ type Wat {
 SCHEMA
 
       parsed_schema = GraphQL.parse(schema)
-      err = assert_raises(GraphQL::Schema::BuildFromAST::InvalidDocument) do
+      err = assert_raises(GraphQL::Schema::BuildFromAST::InvalidDocumentError) do
         GraphQL::Schema::BuildFromAST.build(parsed_schema)
       end
       assert_equal 'Specified subscription type "Awesome" not found in document.', err.message
@@ -724,7 +724,7 @@ query Foo { field }
 SCHEMA
 
       parsed_schema = GraphQL.parse(schema)
-      err = assert_raises(GraphQL::Schema::BuildFromAST::InvalidDocument) do
+      err = assert_raises(GraphQL::Schema::BuildFromAST::InvalidDocumentError) do
         GraphQL::Schema::BuildFromAST.build(parsed_schema)
       end
       assert_equal 'Specified query type "Foo" not found in document.', err.message
@@ -740,7 +740,7 @@ fragment Foo on Type { field }
 SCHEMA
 
       parsed_schema = GraphQL.parse(schema)
-      err = assert_raises(GraphQL::Schema::BuildFromAST::InvalidDocument) do
+      err = assert_raises(GraphQL::Schema::BuildFromAST::InvalidDocumentError) do
         GraphQL::Schema::BuildFromAST.build(parsed_schema)
       end
       assert_equal 'Specified query type "Foo" not found in document.', err.message
