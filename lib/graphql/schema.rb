@@ -263,6 +263,13 @@ module GraphQL
       @id_from_object_proc = new_proc
     end
 
+    # Create schema with the result of an introspection query.
+    # @param introspection_result [Hash] A response from {GraphQL::Introspection::INTROSPECTION_QUERY}
+    # @return [GraphQL::Schema] the schema described by `input`
+    def self.from_introspection(introspection_result)
+      GraphQL::Schema::Loader.load(introspection_result)
+    end
+
     private
 
     # Lazily create a middleware and add it to the schema

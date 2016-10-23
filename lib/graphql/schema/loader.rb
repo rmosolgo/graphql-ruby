@@ -10,6 +10,7 @@ module GraphQL
       # Create schema with the result of an introspection query.
       # @param introspection_result [Hash] A response from {GraphQL::Introspection::INTROSPECTION_QUERY}
       # @return [GraphQL::Schema] the schema described by `input`
+      # @deprecated Use {GraphQL::Schema.from_introspection} instead
       def load(introspection_result)
         schema = introspection_result.fetch("data").fetch("__schema")
 

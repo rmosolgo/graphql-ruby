@@ -162,4 +162,24 @@ type Query {
       assert_equal schema.chop, GraphQL::Schema::Printer.print_schema(built_schema)
     end
   end
+
+  describe ".from_introspection" do
+    let(:schema) {
+      query_root = GraphQL::ObjectType.define do
+        name 'Query'
+        field :str, types.String
+      end
+
+      GraphQL::Schema.define do
+        query query_root
+      end
+    }
+    let(:schema_json) {
+      schema.execute(GraphQL::Introspection::INTROSPECTION_QUERY)
+    }
+    it "uses Schema::Loader to build a schema from an introspection result" do
+      built_schema = GraphQL::Schema.from_introspection(schema_json)
+      assert_equal GraphQL::Schema::Printer.print_schema(schema), GraphQL::Schema::Printer.print_schema(built_schema)
+    end
+  end
 end
