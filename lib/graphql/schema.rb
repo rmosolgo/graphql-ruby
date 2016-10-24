@@ -12,6 +12,7 @@ require "graphql/schema/unique_within_type"
 require "graphql/schema/validation"
 require "graphql/schema/warden"
 require "graphql/schema/build_from_definition"
+require "graphql/schema/schema_comparator"
 
 module GraphQL
   # A GraphQL schema which may be queried with {GraphQL::Query}.
@@ -46,6 +47,8 @@ module GraphQL
   #   end
   #
   class Schema
+    include SchemaComparator
+
     include GraphQL::Define::InstanceDefinable
     accepts_definitions \
       :query, :mutation, :subscription,
