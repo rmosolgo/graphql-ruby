@@ -36,7 +36,9 @@ module GraphQL
           out
         when Nodes::FragmentDefinition
           out = "#{indent}fragment #{node.name}"
-          out << " on #{node.type}" if node.type
+          if node.type
+            out << " on #{generate(node.type)}"
+          end
           out << generate_directives(node.directives)
           out << generate_selections(node.selections, indent: indent)
           out
@@ -46,7 +48,9 @@ module GraphQL
           out
         when Nodes::InlineFragment
           out = "#{indent}..."
-          out << " on #{node.type}" if node.type
+          if node.type
+            out << " on #{generate(node.type)}"
+          end
           out << generate_directives(node.directives)
           out << generate_selections(node.selections, indent: indent)
           out

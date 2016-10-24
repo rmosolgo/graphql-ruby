@@ -25,7 +25,7 @@ describe GraphQL::Language::Parser do
           assert fragment.is_a?(GraphQL::Language::Nodes::FragmentDefinition)
           assert_equal nil, fragment.name
           assert_equal 1, fragment.selections.length
-          assert_equal "NestedType", fragment.type
+          assert_equal "NestedType", fragment.type.name
           assert_equal 1, fragment.directives.length
           assert_equal [2, 7], fragment.position
         end

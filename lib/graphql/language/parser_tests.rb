@@ -65,7 +65,7 @@ module GraphQL
                 assert fragment_def.is_a?(GraphQL::Language::Nodes::FragmentDefinition)
                 assert_equal "moreNestedFields", fragment_def.name
                 assert_equal 1, fragment_def.selections.length
-                assert_equal "NestedType", fragment_def.type
+                assert_equal "NestedType", fragment_def.type.name
                 assert_equal 1, fragment_def.directives.length
                 assert_equal [20, 13], fragment_def.position
               end
@@ -173,7 +173,7 @@ module GraphQL
                 let(:typeless_inline_fragment) { query.selections[3] }
 
                 it "gets the type and directives" do
-                  assert_equal "OtherType", inline_fragment.type
+                  assert_equal "OtherType", inline_fragment.type.name
                   assert_equal 2, inline_fragment.selections.length
                   assert_equal 1, inline_fragment.directives.length
                 end
