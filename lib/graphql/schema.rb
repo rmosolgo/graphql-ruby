@@ -45,8 +45,7 @@ module GraphQL
   #   end
   #
   class Schema
-    class InvalidDocumentError < Error; end;
-    extend BuildFromDefinition
+    include BuildFromDefinition
 
     include GraphQL::Define::InstanceDefinable
     accepts_definitions \
