@@ -84,7 +84,7 @@ describe GraphQL::Query::SerialExecution::ValueResolution do
       |}
 
       it "raises an error" do
-        err = assert_raises(GraphQL::ObjectType::UnresolvedTypeError) { result }
+        err = assert_raises(GraphQL::UnresolvedTypeError) { result }
         expected_message = %|The value from "resolvesToNilInterface" on "Query" could not be resolved to "SomeInterface". (Received: nil, Expected: [SomeObject])|
         assert_equal expected_message, err.message
       end
@@ -98,7 +98,7 @@ describe GraphQL::Query::SerialExecution::ValueResolution do
       |}
 
       it "raises an error" do
-        err = assert_raises(GraphQL::ObjectType::UnresolvedTypeError) { result }
+        err = assert_raises(GraphQL::UnresolvedTypeError) { result }
         expected_message = %|The value from "resolvesToWrongTypeInterface" on "Query" could not be resolved to "SomeInterface". (Received: OtherObject, Expected: [SomeObject])|
         assert_equal expected_message, err.message
       end

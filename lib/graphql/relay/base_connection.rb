@@ -11,8 +11,6 @@ module GraphQL
     #   - {#max_page_size} (the specified maximum page size that can be returned from a connection)
     #
     class BaseConnection
-      extend Gem::Deprecate
-
       # Just to encode data in the cursor, use something that won't conflict
       CURSOR_SEPARATOR = "---"
 
@@ -21,8 +19,6 @@ module GraphQL
       CONNECTION_IMPLEMENTATIONS = {}
 
       class << self
-        extend Gem::Deprecate
-
         # Find a connection implementation suitable for exposing `nodes`
         #
         # @param [Object] A collection of nodes (eg, Array, AR::Relation)
@@ -48,10 +44,6 @@ module GraphQL
         def register_connection_implementation(nodes_class, connection_class)
           CONNECTION_IMPLEMENTATIONS[nodes_class.name] = connection_class
         end
-
-        # @deprecated use {#connection_for_nodes} instead
-        alias :connection_for_items :connection_for_nodes
-        deprecate(:connection_for_items, :connection_for_nodes, 2016, 9)
       end
 
       attr_reader :nodes, :arguments, :max_page_size, :parent, :field
@@ -69,10 +61,6 @@ module GraphQL
         @field = field
         @parent = parent
       end
-
-      # @deprecated use {#nodes} instead
-      alias :object :nodes
-      deprecate(:object, :nodes, 2016, 9)
 
       # Provide easy access to provided arguments:
       METHODS_FROM_ARGUMENTS = [:first, :after, :last, :before]
