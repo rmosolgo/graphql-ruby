@@ -18,7 +18,7 @@ end
 
 # and pass it to the schema
 MySchema = GraphQL::Schema.define do
-  query QueryType,
+  query QueryType
   mutation MutationType
 end
 ```
