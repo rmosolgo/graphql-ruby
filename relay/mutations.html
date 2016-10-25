@@ -134,7 +134,7 @@
   <span class="n">return_field</span> <span class="ss">:comment</span><span class="p">,</span> <span class="no">CommentType</span>
 
   <span class="c1"># The resolve proc is where you alter the system state.</span>
-  <span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">object</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
     <span class="n">post</span> <span class="o">=</span> <span class="no">Post</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="n">inputs</span><span class="p">[</span><span class="ss">:postId</span><span class="p">])</span>
     <span class="n">comment</span> <span class="o">=</span> <span class="n">post</span><span class="p">.</span><span class="nf">comments</span><span class="p">.</span><span class="nf">create!</span><span class="p">(</span><span class="ss">author_id: </span><span class="n">inputs</span><span class="p">[</span><span class="ss">:authorId</span><span class="p">],</span> <span class="ss">content: </span><span class="n">inputs</span><span class="p">[</span><span class="ss">:content</span><span class="p">])</span>
 
