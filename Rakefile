@@ -43,7 +43,7 @@ namespace :site do
   end
 
   desc "Commit the local site to the gh-pages branch and publish to GitHub Pages"
-  task :publish => [:html_proofer] do
+  task :publish do
     # Ensure the gh-pages dir exists so we can generate into it.
     puts "Checking for gh-pages dir..."
     unless File.exist?("./gh-pages")
@@ -90,20 +90,5 @@ namespace :site do
       sh "git push origin gh-pages"
     end
     puts 'Done.'
-  end
-
-  desc "Test the generated HTML files"
-  task :html_proofer do
-    require "html-proofer"
-
-    Dir.chdir("guides") do
-      system "bundle exec jekyll build"
-    end
-
-    config = {
-      :assume_extension => true
-    }
-
-    HTMLProofer.check_directory("./guides/_site", config).run
   end
 end

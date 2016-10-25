@@ -2,6 +2,8 @@
 title: Welcome
 ---
 
+[![Gem Version](https://badge.fury.io/rb/graphql.svg)](https://rubygems.org/gems/graphql)
+
 ## Installation
 
 You can install `graphql` from RubyGems by adding to your application's `Gemfile`:
