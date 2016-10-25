@@ -8,12 +8,6 @@ module GraphQL
 
       module_function
 
-      # This covers `@include(if:)` & `@skip(if:)`
-      # @return [Boolean] Should this node be skipped altogether?
-      def skip?(ast_node, query)
-        !include?(ast_node, query)
-      end
-
       # @return [Boolean] Should this node be included in the query?
       def include?(directive_irep_nodes, query)
         directive_irep_nodes.each do |directive_irep_node|
