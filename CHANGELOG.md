@@ -8,6 +8,28 @@
 
 ### Bug fixes
 
+## 1.0.0 (25 Oct 2016)
+
+### Breaking changes
+
+- `validate: false` option removed from `Schema.execute` (it didn't work anyways) #338
+- Some deprecated methods were removed:
+  - `BaseConnection#object` was removed, use `BaseConnection#nodes`
+  - `BaseConnection.connection_for_items` was removed, use `BaseConnection#connection_for_nodes`
+  - Two-argument resolve functions for `Relay::Mutation`s are not supported, use three arguments instead: `(root_obj, input, ctx)`
+  - `Schema.new` no longer accepts initialization options, use `Schema.define` instead
+  - `GraphQL::ObjectType::UnresolvedTypeError` was removed, use `GraphQL::UnresolvedTypeError` instead
+
+### New Features
+
+- Set `ast_node` and `irep_node` on query context before sending it to middleware #348
+- Enum values can be extended with `.define` #341
+
+### Bug Fixes
+
+- Use `RelationConnection` for Rails 3 relations (which also extend `Array`) #343
+- Fix schema printout when arguments have comments #335
+
 ## 0.19.4 (18 Oct 2016)
 
 ### Breaking changes
