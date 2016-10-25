@@ -74,16 +74,8 @@ module GraphQL
     # @param subscription [GraphQL::ObjectType] the subscription root for the schema
     # @param max_depth [Integer] maximum query nesting (if it's greater, raise an error)
     # @param types [Array<GraphQL::BaseType>] additional types to include in this schema
-    def initialize(query: nil, mutation: nil, subscription: nil, max_depth: nil, max_complexity: nil, types: [])
-      if query
-        warn("Schema.new is deprecated, use Schema.define instead")
-      end
-      @query    = query
-      @mutation = mutation
-      @subscription = subscription
-      @max_depth = max_depth
-      @max_complexity = max_complexity
-      @orphan_types = types
+    def initialize
+      @orphan_types = []
       @directives = DIRECTIVES.reduce({}) { |m, d| m[d.name] = d; m }
       @static_validator = GraphQL::StaticValidation::Validator.new(schema: self)
       @middleware = []

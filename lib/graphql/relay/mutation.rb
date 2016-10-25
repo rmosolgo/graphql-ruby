@@ -76,13 +76,6 @@ module GraphQL
 
       def resolve=(new_resolve_proc)
         ensure_defined
-
-        resolve_arity = get_arity(new_resolve_proc)
-        if resolve_arity == 2
-          warn("Mutation#resolve functions should be defined with three arguments: (root_obj, input, context). Two-argument mutation resolves are deprecated.")
-          new_resolve_proc = DeprecatedMutationResolve.new(new_resolve_proc)
-        end
-
         @resolve_proc = MutationResolve.new(self, new_resolve_proc, wrap_result: has_generated_return_type?)
       end
 
@@ -173,16 +166,6 @@ module GraphQL
             self.mutation = mutation_defn
           end
           subclass
-        end
-      end
-
-      class DeprecatedMutationResolve
-        def initialize(two_argument_resolve)
-          @two_argument_resolve = two_argument_resolve
-        end
-
-        def call(obj, args, ctx)
-          @two_argument_resolve.call(args[:input], ctx)
         end
       end
 

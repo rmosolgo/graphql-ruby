@@ -8,9 +8,4 @@ module GraphQL
       super(message)
     end
   end
-
-  class ObjectType
-    # @deprecated Use {GraphQL::UnresolvedTypeError} instead
-    UnresolvedTypeError = GraphQL::UnresolvedTypeError
-  end
 end
