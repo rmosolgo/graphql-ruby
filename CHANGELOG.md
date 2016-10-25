@@ -13,12 +13,13 @@
 ### Breaking changes
 
 - `validate: false` option removed from `Schema.execute` (it didn't work anyways) #338
-- Some deprecated methods were removed:
+- Some deprecated methods were removed: #349
   - `BaseConnection#object` was removed, use `BaseConnection#nodes`
   - `BaseConnection.connection_for_items` was removed, use `BaseConnection#connection_for_nodes`
   - Two-argument resolve functions for `Relay::Mutation`s are not supported, use three arguments instead: `(root_obj, input, ctx)`
   - `Schema.new` no longer accepts initialization options, use `Schema.define` instead
   - `GraphQL::ObjectType::UnresolvedTypeError` was removed, use `GraphQL::UnresolvedTypeError` instead
+- Fragment type conditions should be parsed as `TypeName` nodes, not strings. (Users of `graphql-libgraphqlparser` should update to `1.0.0` of that gem.) #342
 
 ### New Features
 
