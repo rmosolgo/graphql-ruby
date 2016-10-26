@@ -110,7 +110,9 @@ module GraphQL
 
     def define(**kwargs, &block)
       super
-      types
+      all_types = orphan_types + [query, mutation, subscription, GraphQL::Introspection::SchemaType]
+      @types = GraphQL::Schema::ReduceTypes.reduce(all_types.compact)
+
       @instrumented_field_map = InstrumentedFieldMap.new(self)
       field_instrumenters = @instrumenters[:field]
       types.each do |type_name, type|
@@ -134,13 +136,7 @@ module GraphQL
 
     # @see [GraphQL::Schema::Warden] Restricted access to members of a schema
     # @return [GraphQL::Schema::TypeMap] `{ name => type }` pairs of types in this schema
-    def types
-      @types ||= begin
-        ensure_defined
-        all_types = orphan_types + [query, mutation, subscription, GraphQL::Introspection::SchemaType]
-        GraphQL::Schema::ReduceTypes.reduce(all_types.compact)
-      end
-    end
+    attr_reader :types
 
     # Execute a query on itself.
     # See {Query#initialize} for arguments.

@@ -2,6 +2,8 @@ module GraphQL
   class Query
     # Read-only access to query variables, applying default values if needed.
     class Variables
+      extend Forwardable
+
       # @return [Array<GraphQL::Query::VariableValidationError>]  Any errors encountered when parsing the provided variables and literal values
       attr_reader :errors
 
@@ -19,6 +21,8 @@ module GraphQL
       def [](key)
         @storage.fetch(key)
       end
+
+      def_delegators :@storage, :length
 
       private
 

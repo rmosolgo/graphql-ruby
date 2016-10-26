@@ -91,16 +91,9 @@ module GraphQL
     # Get the result for this query, executing it once
     def result
       @result ||= begin
-        if !valid?
-          all_errors = validation_errors + analysis_errors
-          if all_errors.any?
-            { "errors" => all_errors.map(&:to_h) }
-          else
-            nil
-          end
-        else
-          Executor.new(self).result
-        end
+        instrumenters = @schema.instrumenters[:query]
+        execution_call = ExecutionCall.new(self, instrumenters)
+        execution_call.call
       end
     end
 
@@ -207,6 +200,38 @@ module GraphQL
         nil
       else
         operations[operation_name]
+      end
+    end
+
+    class ExecutionCall
+      def initialize(query, instrumenters)
+        @query = query
+        @instrumenters = instrumenters
+      end
+
+      # Check if the query is valid, and if it is,
+      # execute it, calling instrumenters along the way
+      # @return [Hash] The GraphQL response
+      def call
+        @instrumenters.each { |i| i.before_query(@query) }
+        result = get_result
+        @instrumenters.each { |i| i.after_query(@query) }
+        result
+      end
+
+      private
+
+      def get_result
+        if !@query.valid?
+          all_errors = @query.validation_errors + @query.analysis_errors
+          if all_errors.any?
+            { "errors" => all_errors.map(&:to_h) }
+          else
+            nil
+          end
+        else
+          Executor.new(@query).result
+        end
       end
     end
   end

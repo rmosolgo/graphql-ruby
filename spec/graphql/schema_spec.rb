@@ -190,18 +190,39 @@ type Query {
       end
 
       def instrument(type_defn, field_defn)
-        prev_proc = field_defn.resolve_proc
-        new_resolve_proc = ->(obj, args, ctx) {
-          inner_value = prev_proc.call(obj, args, ctx)
-          inner_value * @multiplier
-        }
+        if type_defn.name == "Query" && field_defn.name == "int"
+          prev_proc = field_defn.resolve_proc
+          new_resolve_proc = ->(obj, args, ctx) {
+            inner_value = prev_proc.call(obj, args, ctx)
+            inner_value * @multiplier
+          }
 
-        field_defn.redefine do
-          resolve(new_resolve_proc)
+          field_defn.redefine do
+            resolve(new_resolve_proc)
+          end
+        else
+          field_defn
         end
       end
     end
 
+    class VariableCountInstrumenter
+      attr_reader :counts
+      def initialize
+        @counts = []
+      end
+
+      def before_query(query)
+        @counts << query.variables.length
+      end
+
+      def after_query(query)
+      end
+    end
+
+    let(:variable_counter) {
+      VariableCountInstrumenter.new
+    }
     let(:query_type) {
       GraphQL::ObjectType.define do
         name "Query"
@@ -217,12 +238,19 @@ type Query {
       GraphQL::Schema.define do
         query(spec.query_type)
         instrument(:field, MultiplyInstrumenter.new(3))
+        instrument(:query, spec.variable_counter)
       end
     }
 
     it "can modify field definitions" do
       res = schema.execute(" { int(value: 2) } ")
       assert_equal 6, res["data"]["int"]
+    end
+
+    it "can wrap query execution" do
+      schema.execute("query getInt($val: Int = 5){ int(value: $val) } ")
+      schema.execute("query getInt($val: Int = 5, $val2: Int = 3){ int(value: $val) int2: int(value: $val2) } ")
+      assert_equal [1, 2], variable_counter.counts
     end
   end
 end
