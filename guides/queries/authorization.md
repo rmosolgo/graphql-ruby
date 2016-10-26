@@ -59,7 +59,7 @@ Query analyzers are added to the schema with `query_analyzer`, for example:
 
 ```ruby
 MySchema = GraphQL::Schema.define do
-  query_analyzer MyQueryAnalyzer
+  query_analyzer MyQueryAnalyzer.new
 end
 ```
 
