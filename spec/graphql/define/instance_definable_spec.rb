@@ -73,6 +73,26 @@ describe GraphQL::Define::InstanceDefinable do
     end
   end
 
+  describe "#redefine" do
+    it "re-runs definitions without modifying the original object" do
+      arugula = Garden::Vegetable.define(name: "Arugula", color: :green)
+
+      red_arugula = arugula.redefine(color: :red)
+      renamed_red_arugula = red_arugula.redefine do
+        name "Renamed Red Arugula"
+      end
+
+      assert_equal :green, arugula.metadata[:color]
+      assert_equal "Arugula", arugula.name
+
+      assert_equal :red, red_arugula.metadata[:color]
+      assert_equal "Arugula", red_arugula.name
+
+      assert_equal :red, renamed_red_arugula.metadata[:color]
+      assert_equal "Renamed Red Arugula", renamed_red_arugula.name
+    end
+  end
+
   describe "#metadata" do
     it "gets values from definitions" do
       arugula = Garden::Vegetable.define(name: "Arugula", color: :green)

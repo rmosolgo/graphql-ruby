@@ -56,15 +56,21 @@ module GraphQL
     #   # Access it from metadata
     #   subaru_baja.metadata[:all_wheel_drive] # => true
     #
+    # @example Making a copy with an extended definition
+    #   # Create an instance with `.define`:
+    #   subaru_baja = Car.define do
+    #     make "Subaru"
+    #     model "Baja"
+    #     doors 4
+    #   end
+    #
+    #   # Then extend it with `#redefine`
+    #   two_door_baja = subaru_baja.redefine do
+    #     doors 2
+    #   end
     module InstanceDefinable
       def self.included(base)
         base.extend(ClassMethods)
-      end
-
-      # Set the definition block for this instance.
-      # It can be run later with {#ensure_defined}
-      def definition_proc=(defn_block)
-        @definition_proc = defn_block
       end
 
       # `metadata` can store arbitrary key-values with an object.
@@ -84,17 +90,19 @@ module GraphQL
       def define(**kwargs, &block)
         # make sure the previous definition_proc was executed:
         ensure_defined
-
-        @definition_proc = ->(obj) {
-          kwargs.each do |keyword, value|
-            public_send(keyword, value)
-          end
-
-          if block
-            instance_eval(&block)
-          end
-        }
+        @pending_definition = Definition.new(kwargs, block)
         nil
+      end
+
+      # Make a new instance of this class, then
+      # re-run any definitions on that object.
+      # @return [InstanceDefinable] A new instance, with any extended definitions
+      def redefine(**kwargs, &block)
+        ensure_defined
+        new_instance = self.class.new
+        applied_definitions.each { |defn| defn.apply(new_instance) }
+        new_instance.define(**kwargs, &block)
+        new_instance
       end
 
       private
@@ -105,13 +113,37 @@ module GraphQL
       # come from the definition block.
       # @return [void]
       def ensure_defined
-        if @definition_proc
-          defn_proc = @definition_proc
-          @definition_proc = nil
-          proxy = DefinedObjectProxy.new(self)
-          proxy.instance_eval(&defn_proc)
+        if @pending_definition
+          defn = @pending_definition
+          @pending_definition = nil
+          defn.apply(self)
+          applied_definitions << defn
         end
         nil
+      end
+
+      def applied_definitions
+        @applied_definitions ||= []
+      end
+
+
+      class Definition
+        def initialize(define_keywords, define_proc)
+          @define_keywords = define_keywords
+          @define_proc = define_proc
+        end
+
+        def apply(instance)
+          defn_proxy = DefinedObjectProxy.new(instance)
+
+          @define_keywords.each do |keyword, value|
+            defn_proxy.public_send(keyword, value)
+          end
+
+          if @define_proc
+            defn_proxy.instance_eval(&@define_proc)
+          end
+        end
       end
 
       module ClassMethods
