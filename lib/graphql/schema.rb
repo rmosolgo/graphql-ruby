@@ -1,5 +1,6 @@
 require "graphql/schema/catchall_middleware"
 require "graphql/schema/invalid_type_error"
+require "graphql/schema/instrumented_field_map"
 require "graphql/schema/middleware_chain"
 require "graphql/schema/possible_types"
 require "graphql/schema/rescue_middleware"
@@ -108,6 +109,14 @@ module GraphQL
     def define(**kwargs, &block)
       super
       types
+      @instrumented_field_map = InstrumentedFieldMap.new(self)
+      types.each do |type_name, type|
+        if type.kind.fields?
+          type.all_fields.each do |field_defn|
+            @instrumented_field_map.set(type.name, field_defn.name, field_defn)
+          end
+        end
+      end
       # Assert that all necessary configs are present:
       validation_error = Validation.validate(self)
       validation_error && raise(NotImplementedError, validation_error)
@@ -139,8 +148,7 @@ module GraphQL
     # @return [GraphQL::Field, nil] The field named `field_name` on `parent_type`
     def get_field(parent_type, field_name)
       ensure_defined
-
-      defined_field = parent_type.get_field(field_name)
+      defined_field = @instrumented_field_map.get(parent_type.name, field_name)
       if defined_field
         defined_field
       elsif field_name == "__typename"
