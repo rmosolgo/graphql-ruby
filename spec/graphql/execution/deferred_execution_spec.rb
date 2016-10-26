@@ -334,7 +334,7 @@ describe GraphQL::Execution::DeferredExecution do
             }
           end
         end
-        schema = GraphQL::Schema.define(query: query_type)
+        schema = GraphQL::Schema.define(query: query_type, directives: ["@stream", "@defer"])
         schema.query_execution_strategy = GraphQL::Execution::DeferredExecution
         schema
       }

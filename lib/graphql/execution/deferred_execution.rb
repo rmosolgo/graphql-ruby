@@ -329,14 +329,12 @@ module GraphQL
         # Build arguments according to query-string literals, default values, and query variables
         arguments = query.arguments_for(frame.node, field_defn)
 
+        query.context.ast_node = ast_node
+        query.context.irep_node = frame.node
+
         # This is the last call in the middleware chain; it actually calls the user's resolve proc
         field_resolve_middleware_proc = -> (_parent_type, parent_object, field_definition, field_args, query_ctx, _next) {
-          query_ctx.ast_node = ast_node
-          query_ctx.irep_node = frame.node
-          value = field_definition.resolve(parent_object, field_args, query_ctx)
-          query_ctx.ast_node = nil
-          query_ctx.irep_node = frame.node
-          value
+          field_definition.resolve(parent_object, field_args, query_ctx)
         }
 
         # Send arguments through the middleware stack,
@@ -352,6 +350,9 @@ module GraphQL
         rescue GraphQL::ExecutionError => err
           resolve_fn_value = err
         end
+
+        query.context.ast_node = nil
+        query.context.irep_node = nil
 
         case resolve_fn_value
         when GraphQL::ExecutionError

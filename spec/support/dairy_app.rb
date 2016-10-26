@@ -368,6 +368,8 @@ DummySchema = GraphQL::Schema.define do
 
   rescue_from(NoSuchDairyError) { |err| err.message  }
 
+  directives ["@defer", "@stream"]
+
   resolve_type ->(obj, ctx) {
     DummySchema.types[obj.class.name]
   }
