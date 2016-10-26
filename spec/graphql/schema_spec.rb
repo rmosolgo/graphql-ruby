@@ -182,4 +182,47 @@ type Query {
       assert_equal GraphQL::Schema::Printer.print_schema(schema), GraphQL::Schema::Printer.print_schema(built_schema)
     end
   end
+
+  describe "#instrument" do
+    class MultiplyInstrumenter
+      def initialize(multiplier)
+        @multiplier = multiplier
+      end
+
+      def instrument(type_defn, field_defn)
+        prev_proc = field_defn.resolve_proc
+        new_resolve_proc = ->(obj, args, ctx) {
+          inner_value = prev_proc.call(obj, args, ctx)
+          inner_value * @multiplier
+        }
+
+        field_defn.redefine do
+          resolve(new_resolve_proc)
+        end
+      end
+    end
+
+    let(:query_type) {
+      GraphQL::ObjectType.define do
+        name "Query"
+        field :int, types.Int do
+          argument :value, types.Int
+          resolve -> (obj, args, ctx) { args[:value] }
+        end
+      end
+    }
+
+    let(:schema) {
+      spec = self
+      GraphQL::Schema.define do
+        query(spec.query_type)
+        instrument(:field, MultiplyInstrumenter.new(3))
+      end
+    }
+
+    it "can modify field definitions" do
+      res = schema.execute(" { int(value: 2) } ")
+      assert_equal 6, res["data"]["int"]
+    end
+  end
 end
