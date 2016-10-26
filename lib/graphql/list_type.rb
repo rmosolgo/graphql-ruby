@@ -25,9 +25,8 @@ module GraphQL
   #
   class ListType < GraphQL::BaseType
     include GraphQL::BaseType::ModifiesAnotherType
-    attr_reader :of_type, :name
+    attr_reader :of_type
     def initialize(of_type:)
-      @name = "List"
       @of_type = of_type
     end
 

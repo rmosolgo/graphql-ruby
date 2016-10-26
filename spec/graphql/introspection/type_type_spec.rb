@@ -3,8 +3,8 @@ require "spec_helper"
 describe GraphQL::Introspection::TypeType do
   let(:query_string) {%|
      query introspectionQuery {
-       cheeseType:    __type(name: "Cheese") { name, kind, fields { name, isDeprecated, type { name, ofType { name } } } }
-       milkType:      __type(name: "Milk") { interfaces { name }, fields { type { name, ofType { name } } } }
+       cheeseType:    __type(name: "Cheese") { name, kind, fields { name, isDeprecated, type { kind, name, ofType { name } } } }
+       milkType:      __type(name: "Milk") { interfaces { name }, fields { type { kind, name, ofType { name } } } }
        dairyAnimal:   __type(name: "DairyAnimal") { name, kind, enumValues(includeDeprecated: false) { name, isDeprecated } }
        dairyProduct:  __type(name: "DairyProduct") { name, kind, possibleTypes { name } }
        animalProduct: __type(name: "AnimalProduct") { name, kind, possibleTypes { name }, fields { name } }
@@ -13,13 +13,13 @@ describe GraphQL::Introspection::TypeType do
   |}
   let(:result) { DummySchema.execute(query_string, context: {}, variables: {"cheeseId" => 2}) }
   let(:cheese_fields) {[
-    {"name"=>"deeplyNullableCheese", "isDeprecated"=>false, "type"=>{"name"=>"Cheese", "ofType"=>nil}},
-    {"name"=>"flavor",      "isDeprecated" => false, "type" => { "name" => "Non-Null", "ofType" => { "name" => "String"}}},
-    {"name"=>"id",          "isDeprecated" => false, "type" => { "name" => "Non-Null", "ofType" => { "name" => "Int"}}},
-    {"name"=>"nullableCheese", "isDeprecated"=>false, "type"=>{"name"=>"Cheese", "ofType"=>nil}},
-    {"name"=>"origin",      "isDeprecated" => false, "type" => { "name" => "Non-Null", "ofType" => { "name" => "String"}}},
-    {"name"=>"similarCheese", "isDeprecated"=>false, "type"=>{"name"=>"Cheese", "ofType"=>nil}},
-    {"name"=>"source",      "isDeprecated" => false, "type" => { "name" => "Non-Null", "ofType" => { "name" => "DairyAnimal"}}},
+    {"name"=>"deeplyNullableCheese", "isDeprecated" => false, "type"=>{ "kind" => "OBJECT", "name" => "Cheese", "ofType" => nil}},
+    {"name"=>"flavor",      "isDeprecated" => false, "type" => { "kind" => "NON_NULL", "name" => nil, "ofType" => { "name" => "String"}}},
+    {"name"=>"id",          "isDeprecated" => false, "type" => { "kind" => "NON_NULL", "name" => nil, "ofType" => { "name" => "Int"}}},
+    {"name"=>"nullableCheese", "isDeprecated"=>false, "type"=>{ "kind" => "OBJECT",  "name" => "Cheese", "ofType"=>nil}},
+    {"name"=>"origin",      "isDeprecated" => false, "type" => { "kind" => "NON_NULL", "name" => nil, "ofType" => { "name" => "String"}}},
+    {"name"=>"similarCheese", "isDeprecated"=>false, "type"=>{ "kind" => "OBJECT", "name"=>"Cheese", "ofType"=>nil}},
+    {"name"=>"source",      "isDeprecated" => false, "type" => { "kind" => "NON_NULL", "name" => nil, "ofType" => { "name" => "DairyAnimal"}}},
   ]}
 
   let(:dairy_animals) {[
@@ -41,13 +41,13 @@ describe GraphQL::Introspection::TypeType do
           {"name"=>"LocalProduct"},
         ],
         "fields"=>[
-          {"type"=>{"name"=>"List", "ofType"=>{"name"=>"DairyProduct"}}},
-          {"type"=>{"name"=>"String", "ofType"=>nil}},
-          {"type"=>{"name"=>"Non-Null", "ofType"=>{"name"=>"Float"}}},
-          {"type"=>{"name"=>"List", "ofType"=>{"name"=>"String"}}},
-          {"type"=>{"name"=>"Non-Null", "ofType"=>{"name"=>"ID"}}},
-          {"type"=>{"name"=>"Non-Null", "ofType"=>{"name"=>"String"}}},
-          {"type"=>{"name"=>"DairyAnimal", "ofType"=>nil}},
+          {"type"=>{"kind"=>"LIST","name"=>nil, "ofType"=>{"name"=>"DairyProduct"}}},
+          {"type"=>{"kind"=>"SCALAR","name"=>"String", "ofType"=>nil}},
+          {"type"=>{"kind"=>"NON_NULL","name"=>nil, "ofType"=>{"name"=>"Float"}}},
+          {"type"=>{"kind"=>"LIST","name"=>nil, "ofType"=>{"name"=>"String"}}},
+          {"type"=>{"kind"=>"NON_NULL","name"=>nil, "ofType"=>{"name"=>"ID"}}},
+          {"type"=>{"kind"=>"NON_NULL","name"=>nil, "ofType"=>{"name"=>"String"}}},
+          {"type"=>{"kind"=>"ENUM","name"=>"DairyAnimal", "ofType"=>nil}},
         ]
       },
       "dairyAnimal"=>{
@@ -76,11 +76,11 @@ describe GraphQL::Introspection::TypeType do
   describe "deprecated fields" do
     let(:query_string) {%|
        query introspectionQuery {
-         cheeseType:    __type(name: "Cheese") { name, kind, fields(includeDeprecated: true) { name, isDeprecated, type { name, ofType { name } } } }
+         cheeseType:    __type(name: "Cheese") { name, kind, fields(includeDeprecated: true) { name, isDeprecated, type { kind, name, ofType { name } } } }
          dairyAnimal:   __type(name: "DairyAnimal") { name, kind, enumValues(includeDeprecated: true) { name, isDeprecated } }
        }
     |}
-    let(:deprecated_fields) { {"name"=>"fatContent", "isDeprecated"=>true, "type"=>{"name"=>"Non-Null", "ofType"=>{"name"=>"Float"}}} }
+    let(:deprecated_fields) { {"name"=>"fatContent", "isDeprecated"=>true, "type"=>{"kind"=>"NON_NULL","name"=>nil, "ofType"=>{"name"=>"Float"}}} }
 
     it "can expose deprecated fields" do
       new_cheese_fields = ([deprecated_fields] + cheese_fields).sort_by { |f| f["name"] }
@@ -102,7 +102,7 @@ describe GraphQL::Introspection::TypeType do
     describe "input objects" do
       let(:query_string) {%|
          query introspectionQuery {
-           __type(name: "DairyProductInput") { name, description, kind, inputFields { name, type { name }, defaultValue } }
+           __type(name: "DairyProductInput") { name, description, kind, inputFields { name, type { kind, name }, defaultValue } }
          }
       |}
 
@@ -113,10 +113,10 @@ describe GraphQL::Introspection::TypeType do
               "description"=>"Properties for finding a dairy product",
               "kind"=>"INPUT_OBJECT",
               "inputFields"=>[
-                {"name"=>"source", "type"=>{ "name" => "Non-Null"}, "defaultValue"=>nil},
-                {"name"=>"originDairy", "type"=>{"name"=>"String"}, "defaultValue"=>"\"Sugar Hollow Dairy\""},
-                {"name"=>"fatContent", "type"=>{ "name" => "Float"}, "defaultValue"=>"0.3"},
-                {"name"=>"organic", "type"=>{ "name" => "Boolean"}, "defaultValue"=>"false"},
+                {"name"=>"source", "type"=>{"kind"=>"NON_NULL","name"=>nil, }, "defaultValue"=>nil},
+                {"name"=>"originDairy", "type"=>{"kind"=>"SCALAR","name"=>"String"}, "defaultValue"=>"\"Sugar Hollow Dairy\""},
+                {"name"=>"fatContent", "type"=>{"kind"=>"SCALAR","name" => "Float"}, "defaultValue"=>"0.3"},
+                {"name"=>"organic", "type"=>{"kind"=>"SCALAR","name" => "Boolean"}, "defaultValue"=>"false"},
               ]
             }
           }}

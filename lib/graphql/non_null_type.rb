@@ -35,10 +35,6 @@ module GraphQL
       @of_type = of_type
     end
 
-    def name
-      "Non-Null"
-    end
-
     def valid_input?(value)
       validate_input(value).valid?
     end

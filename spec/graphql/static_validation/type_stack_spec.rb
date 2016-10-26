@@ -8,7 +8,7 @@ class TypeCheckValidator
   def validate(context)
     self.class.checks.clear
     context.visitor[GraphQL::Language::Nodes::Field] << ->(node, parent) {
-      self.class.checks << context.object_types.map(&:name)
+      self.class.checks << context.object_types.map {|t| t.name || t.kind.name }
     }
   end
 end
@@ -29,8 +29,8 @@ describe GraphQL::StaticValidation::TypeStack do
     validator.validate(query)
     expected = [
       ["Query", "Cheese"],
-      ["Query", "Cheese", "Non-Null"],
-      ["Edible", "Non-Null"]
+      ["Query", "Cheese", "NON_NULL"],
+      ["Edible", "NON_NULL"]
     ]
     assert_equal(expected, TypeCheckValidator.checks)
   end
