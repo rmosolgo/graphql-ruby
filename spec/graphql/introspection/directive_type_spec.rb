@@ -6,7 +6,7 @@ describe GraphQL::Introspection::DirectiveType do
       __schema {
         directives {
           name,
-          args { name, type { name, ofType { name } } },
+          args { name, type { kind, name, ofType { name } } },
           locations
           # Deprecated fields:
           onField
@@ -25,7 +25,7 @@ describe GraphQL::Introspection::DirectiveType do
           {
             "name" => "include",
             "args" => [
-              {"name"=>"if", "type"=>{"name"=>"Non-Null", "ofType"=>{"name"=>"Boolean"}}}
+              {"name"=>"if", "type"=>{"kind"=>"NON_NULL", "name"=>nil, "ofType"=>{"name"=>"Boolean"}}}
             ],
             "locations"=>["FIELD", "FRAGMENT_SPREAD", "INLINE_FRAGMENT"],
             "onField" => true,
@@ -35,7 +35,7 @@ describe GraphQL::Introspection::DirectiveType do
           {
             "name" => "skip",
             "args" => [
-              {"name"=>"if", "type"=>{"name"=>"Non-Null", "ofType"=>{"name"=>"Boolean"}}}
+              {"name"=>"if", "type"=>{"kind"=>"NON_NULL", "name"=>nil, "ofType"=>{"name"=>"Boolean"}}}
             ],
             "locations"=>["FIELD", "FRAGMENT_SPREAD", "INLINE_FRAGMENT"],
             "onField" => true,
@@ -45,7 +45,7 @@ describe GraphQL::Introspection::DirectiveType do
           {
             "name" => "deprecated",
             "args" => [
-              {"name"=>"reason", "type"=>{"name"=>"String", "ofType"=>nil}}
+              {"name"=>"reason", "type"=>{"kind"=>"SCALAR", "name"=>"String", "ofType"=>nil}}
             ],
             "locations"=>["FIELD_DEFINITION", "ENUM_VALUE"],
             "onField" => false,
