@@ -3,6 +3,7 @@ language: ruby
 sudo: false
 cache: bundler
 env: CODECLIMATE_REPO_TOKEN=f5b27b2e25d3f4e199bb2566fb4fd4507144a004c71d4aa33a32c2df5f940333
+script: bundle exec test_both_strategies
 
 rvm:
 - 2.1.0 # Lowest version officially supported by that gem

@@ -258,7 +258,8 @@ describe GraphQL::Analysis::QueryComplexity do
       GraphQL::Schema.define(
         query: query_type,
         orphan_types: [double_complexity_type],
-        resolve_type: :pass
+        resolve_type: :pass,
+        query_execution_strategy: DEFAULT_EXEC_STRATEGY,
       )
     }
     let(:query_string) {%|

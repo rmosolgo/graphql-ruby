@@ -111,6 +111,7 @@ describe GraphQL::Schema::Loader do
       mutation: mutation_root,
       orphan_types: [audio_type, video_type],
       resolve_type: :pass,
+      query_execution_strategy: DEFAULT_EXEC_STRATEGY,
     )
   }
 

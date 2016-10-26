@@ -366,6 +366,8 @@ DummySchema = GraphQL::Schema.define do
   max_depth 5
   orphan_types [HoneyType, BeverageUnion]
 
+  query_execution_strategy DEFAULT_EXEC_STRATEGY
+
   rescue_from(NoSuchDairyError) { |err| err.message  }
 
   directives ["@defer", "@stream"]

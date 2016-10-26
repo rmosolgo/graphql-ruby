@@ -282,9 +282,9 @@ type Query {
       let(:directives) { ["@defer"] }
 
       it "executes queries with defer" do
-        res = schema.execute("{ one @defer, two: one }")
+        res = schema.execute("{ deferred: one @defer, one }")
         # The deferred field is left out ??
-        assert_equal({ "two" => 1 }, res["data"])
+        assert_equal 1, res["data"]["one"]
         assert_equal nil, res["errors"]
       end
     end

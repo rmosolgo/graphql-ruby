@@ -9,6 +9,12 @@ Rake::TestTask.new do |t|
   t.warning = false
 end
 
+desc "Run the test suite on both built-in execution strategies"
+task :test_both_strategies do
+  system "bundle exec rake test"
+  system "GRAPHQL_EXEC_STRATEGY=serial bundle exec rake test"
+end
+
 require 'rubocop/rake_task'
 RuboCop::RakeTask.new(:rubocop) do |t|
   t.patterns = Rake::FileList['lib/**/{*}.rb', 'spec/**/*.rb']
