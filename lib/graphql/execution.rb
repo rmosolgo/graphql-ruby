@@ -1,3 +1,7 @@
 require "graphql/execution/deferred_execution"
 require "graphql/execution/directive_checks"
+require "graphql/execution/exec_frame"
+require "graphql/execution/exec_scope"
+require "graphql/execution/exec_stream"
+require "graphql/execution/exec_thread"
 require "graphql/execution/typecast"
