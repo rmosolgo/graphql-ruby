@@ -51,6 +51,7 @@ module GraphQL
       :max_depth, :max_complexity,
       :orphan_types, :resolve_type,
       :object_from_id, :id_from_object,
+      :invalid_null,
       query_analyzer: ->(schema, analyzer) { schema.query_analyzers << analyzer },
       middleware: ->(schema, middleware) { schema.middleware << middleware },
       rescue_from: ->(schema, err_class, &block) { schema.rescue_from(err_class, &block)}
@@ -64,6 +65,8 @@ module GraphQL
 
     DIRECTIVES = [GraphQL::Directive::IncludeDirective, GraphQL::Directive::SkipDirective, GraphQL::Directive::DeprecatedDirective]
     DYNAMIC_FIELDS = ["__type", "__typename", "__schema"]
+
+    RAISE_INVALID_NULL = -> (err, ctx) { raise(err) }
 
     attr_reader :directives, :static_validator, :object_from_id_proc, :id_from_object_proc, :resolve_type_proc
 
@@ -84,6 +87,7 @@ module GraphQL
       @resolve_type_proc = nil
       @object_from_id_proc = nil
       @id_from_object_proc = nil
+      @invalid_null_proc = RAISE_INVALID_NULL
       # Default to the built-in execution strategy:
       @query_execution_strategy = GraphQL::Query::SerialExecution
       @mutation_execution_strategy = GraphQL::Query::SerialExecution
@@ -255,6 +259,32 @@ module GraphQL
     def id_from_object=(new_proc)
       ensure_defined
       @id_from_object_proc = new_proc
+    end
+
+    def invalid_null=(new_invalid_null_proc)
+      ensure_defined
+      @invalid_null_proc = new_invalid_null_proc
+    end
+
+    # Called to handle {InvalidNullError}s during execution.
+    # The default is to raise the error, but you can provide a handler
+    # in the schema definition.
+    #
+    # @example Adding errors to the "errors" key
+    #   GraphQL::Schema.define do
+    #     invalid_null -> (err, ctx) {
+    #       # Add the error to the query's errors,
+    #       # but continue to execute the query
+    #       ctx.errors << err
+    #     }
+    #   end
+    #
+    # @param invalid_null_error [GraphQL::InvalidNullError]
+    # @param query_ctx [GraphQL::Query::Context]
+    # @return [void]
+    def invalid_null(invalid_null_error, query_ctx)
+      ensure_defined
+      @invalid_null_proc.call(invalid_null_error, query_ctx)
     end
 
     private

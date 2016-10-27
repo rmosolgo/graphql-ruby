@@ -31,6 +31,10 @@ module GraphQL
         def add_error(err)
           @query.context.errors << err
         end
+
+        def handle_invalid_null(err)
+          @schema.invalid_null(err, @query.context)
+        end
       end
     end
   end

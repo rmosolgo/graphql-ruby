@@ -1,12 +1,20 @@
 module GraphQL
   # Raised automatically when a field's resolve function returns `nil`
-  # for a non-null field.
+  # or returns a {GraphQL::ExecutionError} for a non-null field.
+  #
+  # You can handle these errors with {Schema#invalid_null}.
   class InvalidNullError < GraphQL::Error
-    def initialize(parent_type_name, field_name, value)
-      @parent_type_name = parent_type_name
+    # @return [GraphQL::ObjectType] The owner of the field which had an invalid null
+    attr_reader :parent_type
+
+    # @return [String] The name of the field which returned `nil` or an {ExecutionError}
+    attr_reader :field_name
+
+    def initialize(parent_type, field_name, value)
+      @parent_type = parent_type
       @field_name = field_name
       @value = value
-      super("Cannot return null for non-nullable field #{@parent_type_name}.#{@field_name}")
+      super("Cannot return null for non-nullable field #{@parent_type.name}.#{@field_name}")
     end
 
     # @return [Hash] An entry for the response's "errors" key
