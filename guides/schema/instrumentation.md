@@ -30,6 +30,11 @@ class MyFieldInstrumentation
         old_resolve_proc.call(obj, args, ctx)
         Rails.logger.info("#{type.name}.#{field.name} END: #{Time.now.to_i}")
       }
+
+      # Return a copy of `field`, with a new resolve proc
+      field.redefine do
+        resolve(new_resolve_proc)
+      end
     end
   end
 end
@@ -37,7 +42,7 @@ end
 
 It can be attached as shown above. This implementation will _modify_ the underlying `GraphQL::Field` instance... be warned!
 
-## Query Instrumetation
+## Query Instrumentation
 
 
 Query instrumentation can be attached during schema definition:
