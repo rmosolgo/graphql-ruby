@@ -182,9 +182,9 @@ end
 QueryType = GraphQL::ObjectType.define do
   field :findPost, PostType do
     argument :id, !types.Int
-    resolve Auth.can_read(:post) do |obj, args, ctx|
+    resolve(Auth.can_read(:post) do |obj, args, ctx|
       Post.find(args[:id])
-    end
+    end)
   end
 end
 ```
