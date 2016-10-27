@@ -162,7 +162,7 @@ module GraphQL
           include ArgsPrinter
           include DescriptionPrinter
           def print_fields(type)
-            type.all_fields.map.with_index{ |field, i|
+            type.all_fields.map.with_index { |field, i|
               "#{print_description(field, '  ', i == 0)}"\
               "  #{field.name}#{print_args(field, '  ')}: #{field.type}#{print_deprecated(field)}"
             }.join("\n")

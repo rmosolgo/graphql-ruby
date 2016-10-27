@@ -47,19 +47,21 @@ module GraphQL
       GraphQL::TypeKinds::INPUT_OBJECT
     end
 
-    def validate_non_null_input(input)
+    def validate_non_null_input(input, warden)
       result = GraphQL::Query::InputValidationResult.new
+
+      visible_arguments_map = warden.input_fields(self).reduce({}) { |m, f| m[f.name] = f; m}
 
       # Items in the input that are unexpected
       input.each do |name, value|
-        if arguments[name].nil?
+        if visible_arguments_map[name].nil?
           result.add_problem("Field is not defined on #{self.name}", [name])
         end
       end
 
       # Items in the input that are expected, but have invalid values
-      invalid_fields = arguments.map do |name, field|
-        field_result = field.type.validate_input(input[name])
+      invalid_fields = visible_arguments_map.map do |name, field|
+        field_result = field.type.validate_input(input[name], warden)
         if !field_result.valid?
           result.merge_result!(name, field_result)
         end

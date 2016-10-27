@@ -23,7 +23,8 @@ module GraphQL
         context.visitor[GraphQL::Language::Nodes::Document].leave << ->(doc_node, parent) {
           spreads_to_validate.each do |frag_spread|
             fragment_child_name = context.fragments[frag_spread.node.name].type.name
-            fragment_child = context.schema.types.fetch(fragment_child_name, nil) # Might be non-existent type name
+            fragment_child = context.warden.get_type(fragment_child_name)
+            # Might be non-existent type name
             if fragment_child
               validate_fragment_in_scope(frag_spread.parent_type, fragment_child, frag_spread.node, context, frag_spread.path)
             end
@@ -38,22 +39,10 @@ module GraphQL
           # It's not a valid fragment type, this error was handled someplace else
           return
         end
-        intersecting_types = get_possible_types(parent_type, context.schema) & get_possible_types(child_type, context.schema)
+        intersecting_types = context.warden.possible_types(parent_type.unwrap) & context.warden.possible_types(child_type.unwrap)
         if intersecting_types.none?
           name = node.respond_to?(:name) ? " #{node.name}" : ""
           context.errors << message("Fragment#{name} on #{child_type.name} can't be spread inside #{parent_type.name}", node, path: path)
-        end
-      end
-
-      def get_possible_types(type, schema)
-        if type.kind.wraps?
-          get_possible_types(type.of_type, schema)
-        elsif type.kind.object?
-          [type]
-        elsif type.kind.resolves?
-          schema.possible_types(type)
-        else
-          []
         end
       end
 

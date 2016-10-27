@@ -2,6 +2,10 @@ module GraphQL
   module StaticValidation
     # Test whether `ast_value` is a valid input for `type`
     class LiteralValidator
+      def initialize(warden:)
+        @warden = warden
+      end
+
       def validate(ast_value, type)
         if type.kind.non_null?
           (!ast_value.nil?) && validate(ast_value, type.of_type)
@@ -9,9 +13,9 @@ module GraphQL
           item_type = type.of_type
           ensure_array(ast_value).all? { |val| validate(val, item_type) }
         elsif type.kind.scalar? && !ast_value.is_a?(GraphQL::Language::Nodes::AbstractNode) && !ast_value.is_a?(Array)
-          type.valid_input?(ast_value)
+          type.valid_input?(ast_value, @warden)
         elsif type.kind.enum? && ast_value.is_a?(GraphQL::Language::Nodes::Enum)
-          type.valid_input?(ast_value.name)
+          type.valid_input?(ast_value.name, @warden)
         elsif type.kind.input_object? && ast_value.is_a?(GraphQL::Language::Nodes::InputObject)
           required_input_fields_are_present(type, ast_value) &&
             present_input_field_values_are_valid(type, ast_value)
@@ -27,8 +31,7 @@ module GraphQL
 
 
       def required_input_fields_are_present(type, ast_node)
-        required_field_names = type.input_fields
-          .values
+        required_field_names = @warden.input_fields(type)
           .select { |f| f.type.kind.non_null? }
           .map(&:name)
         present_field_names = ast_node.arguments.map(&:name)
@@ -37,10 +40,10 @@ module GraphQL
       end
 
       def present_input_field_values_are_valid(type, ast_node)
-        fields = type.input_fields
+        field_map = @warden.input_fields(type).reduce({}) { |m, f| m[f.name] = f; m}
         ast_node.arguments.all? do |value|
-          field = fields[value.name]
-          field ? validate(value.value, field.type) : true
+          field = field_map[value.name]
+          field && validate(value.value, field.type)
         end
       end
 

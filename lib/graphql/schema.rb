@@ -9,6 +9,7 @@ require "graphql/schema/type_expression"
 require "graphql/schema/type_map"
 require "graphql/schema/unique_within_type"
 require "graphql/schema/validation"
+require "graphql/schema/warden"
 
 module GraphQL
   # A GraphQL schema which may be queried with {GraphQL::Query}.
@@ -108,6 +109,8 @@ module GraphQL
       nil
     end
 
+
+    # @see [GraphQL::Schema::Warden] Restricted access to members of a schema
     # @return [GraphQL::Schema::TypeMap] `{ name => type }` pairs of types in this schema
     def types
       @types ||= begin
@@ -127,8 +130,11 @@ module GraphQL
 
     # Resolve field named `field_name` for type `parent_type`.
     # Handles dynamic fields `__typename`, `__type` and `__schema`, too
+    # @see [GraphQL::Schema::Warden] Restricted access to members of a schema
+    # @return [GraphQL::Field, nil] The field named `field_name` on `parent_type`
     def get_field(parent_type, field_name)
       ensure_defined
+
       defined_field = parent_type.get_field(field_name)
       if defined_field
         defined_field
@@ -137,7 +143,7 @@ module GraphQL
       elsif field_name == "__schema" && parent_type == query
         GraphQL::Introspection::SchemaField.create(self)
       elsif field_name == "__type" && parent_type == query
-        GraphQL::Introspection::TypeByNameField.create(self.types)
+        GraphQL::Introspection::TypeByNameField.create(self)
       else
         nil
       end
@@ -148,13 +154,13 @@ module GraphQL
       GraphQL::Schema::TypeExpression.build_type(self, ast_node)
     end
 
-    # TODO: when `resolve_type` is schema level, can this be removed?
+    # @see [GraphQL::Schema::Warden] Restricted access to members of a schema
     # @param type_defn [GraphQL::InterfaceType, GraphQL::UnionType] the type whose members you want to retrieve
     # @return [Array<GraphQL::ObjectType>] types which belong to `type_defn` in this schema
     def possible_types(type_defn)
       ensure_defined
-      @interface_possible_types ||= GraphQL::Schema::PossibleTypes.new(self)
-      @interface_possible_types.possible_types(type_defn)
+      @possible_types ||= GraphQL::Schema::PossibleTypes.new(self)
+      @possible_types.possible_types(type_defn)
     end
 
     def root_type_for_operation(operation)
@@ -184,7 +190,8 @@ module GraphQL
     end
 
     # Determine the GraphQL type for a given object.
-    # This is required for unions and interfaces (include Relay's node interface)
+    # This is required for unions and interfaces (including Relay's `Node` interface)
+    # @see [GraphQL::Schema::Warden] Restricted access to members of a schema
     # @param object [Any] An application object which GraphQL is currently resolving on
     # @param ctx [GraphQL::Query::Context] The context for the current query
     # @return [GraphQL::ObjectType] The type for exposing `object` in GraphQL

@@ -21,7 +21,7 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
 
   it "finds undefined or missing-required arguments to fields and directives" do
     # `wacky` above is handled by ArgumentsAreDefined, so only 6 are tested below
-    assert_equal(7, errors.length)
+    assert_equal(8, errors.length)
 
     query_root_error = {
       "message"=>"Argument 'id' on Field 'stringCheese' has an invalid value. Expected type 'Int!'.",

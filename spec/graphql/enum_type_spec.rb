@@ -17,12 +17,29 @@ describe GraphQL::EnumType do
     assert_equal("COW", enum.coerce_result(1))
   end
 
+  it "raises when a result value can't be coerced" do
+    assert_raises(GraphQL::EnumType::UnresolvedValueError) {
+      enum.coerce_result(:nonsense)
+    }
+  end
+
+  describe "resolving with a warden" do
+    it "gets values from the warden" do
+      # OK
+      assert_equal("YAK", enum.coerce_result("YAK"))
+      # NOT OK
+      assert_raises(GraphQL::EnumType::UnresolvedValueError) {
+        enum.coerce_result("YAK", NothingWarden)
+      }
+    end
+  end
+
   it "has value description" do
     assert_equal("Animal with horns", enum.values["GOAT"].description)
   end
 
   describe "validate_input with bad input" do
-    let(:result) { DairyAnimalEnum.validate_input("bad enum") }
+    let(:result) { DairyAnimalEnum.validate_input("bad enum", PermissiveWarden) }
 
     it "returns an invalid result" do
       assert(!result.valid?)

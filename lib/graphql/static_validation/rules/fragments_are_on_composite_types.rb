@@ -24,7 +24,7 @@ module GraphQL
           # Inline fragment on the same type
         else
           type_name = node_type.to_query_string
-          type_def = context.schema.types.fetch(type_name, nil)
+          type_def = context.warden.get_type(type_name)
           if type_def.nil? || !type_def.kind.composite?
             context.errors <<  message("Invalid fragment on type #{type_name} (must be Union, Interface or Object)", node, context: context)
             GraphQL::Language::Visitor::SKIP

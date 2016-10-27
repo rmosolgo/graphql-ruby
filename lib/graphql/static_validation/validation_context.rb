@@ -11,13 +11,14 @@ module GraphQL
     # It also provides limited access to the {TypeStack} instance,
     # which tracks state as you climb in and out of different fields.
     class ValidationContext
-      attr_reader :query, :schema, :document, :errors, :visitor, :fragments, :operations
+      attr_reader :query, :schema, :document, :errors, :visitor, :fragments, :operations, :warden
       def initialize(query)
         @query = query
         @schema = query.schema
         @document = query.document
         @fragments = {}
         @operations = {}
+        @warden = query.warden
 
         document.definitions.each do |definition|
           case definition
@@ -67,6 +68,11 @@ module GraphQL
         # Don't get the _last_ one because that's the current one.
         # Get the second-to-last one, which is the parent of the current one.
         @type_stack.argument_definitions[-2]
+      end
+
+      def valid_literal?(ast_value, type)
+        @literal_validator ||= LiteralValidator.new(warden: @warden)
+        @literal_validator.validate(ast_value, type)
       end
 
       # Don't try to validate dynamic fields

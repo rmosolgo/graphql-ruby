@@ -42,6 +42,13 @@ module GraphQL
           end
         end
 
+        class EnumResolution < BaseResolution
+          # Pick an enum value, but make sure it's allowed
+          def non_null_result
+            field_type.coerce_result(value, execution_context.query.warden)
+          end
+        end
+
         class ListResolution < BaseResolution
           # For each item in the list,
           # Resolve it with the "wrapped" type of this list
@@ -61,10 +68,10 @@ module GraphQL
         class HasPossibleTypeResolution < BaseResolution
           def non_null_result
             resolved_type = execution_context.schema.resolve_type(value, execution_context.query.context)
-            possible_types = execution_context.schema.possible_types(field_type)
+            possible_types = execution_context.possible_types(field_type)
 
-            unless resolved_type.is_a?(GraphQL::ObjectType) && possible_types.include?(resolved_type)
-              raise GraphQL::UnresolvedTypeError.new(irep_node.definition_name, execution_context.schema, field_type, parent_type, resolved_type)
+            if !possible_types.include?(resolved_type)
+              raise GraphQL::UnresolvedTypeError.new(irep_node.definition_name, field_type, parent_type, resolved_type, possible_types)
             end
 
             strategy_class = get_strategy_for_kind(resolved_type.kind)
@@ -103,7 +110,7 @@ module GraphQL
           GraphQL::TypeKinds::SCALAR =>     ScalarResolution,
           GraphQL::TypeKinds::LIST =>       ListResolution,
           GraphQL::TypeKinds::OBJECT =>     ObjectResolution,
-          GraphQL::TypeKinds::ENUM =>       ScalarResolution,
+          GraphQL::TypeKinds::ENUM =>       EnumResolution,
           GraphQL::TypeKinds::NON_NULL =>   NonNullResolution,
           GraphQL::TypeKinds::INTERFACE =>  HasPossibleTypeResolution,
           GraphQL::TypeKinds::UNION =>      HasPossibleTypeResolution,

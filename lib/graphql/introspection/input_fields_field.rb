@@ -1,9 +1,9 @@
 GraphQL::Introspection::InputFieldsField = GraphQL::Field.define do
   name "inputFields"
   type types[!GraphQL::Introspection::InputValueType]
-  resolve ->(target, a, c) {
+  resolve ->(target, a, ctx) {
     if target.kind.input_object?
-      target.input_fields.values
+      ctx.warden.input_fields(target)
     else
       nil
     end

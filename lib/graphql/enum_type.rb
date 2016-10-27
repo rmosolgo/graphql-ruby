@@ -60,20 +60,17 @@ module GraphQL
 
     def initialize
       @values_by_name = {}
-      @values_by_value = {}
     end
 
     # @param new_values [Array<EnumValue>] The set of values contained in this type
     def values=(new_values)
       @values_by_name = {}
-      @values_by_value = {}
       new_values.each { |enum_value| add_value(enum_value) }
     end
 
     # @param enum_value [EnumValue] A value to add to this type's set of values
     def add_value(enum_value)
       @values_by_name[enum_value.name] = enum_value
-      @values_by_value[enum_value.value] = enum_value
     end
 
     # @return [Hash<String => EnumValue>] `{name => value}` pairs contained in this type
@@ -86,12 +83,14 @@ module GraphQL
       GraphQL::TypeKinds::ENUM
     end
 
-    def validate_non_null_input(value_name)
+    def validate_non_null_input(value_name, warden)
       ensure_defined
       result = GraphQL::Query::InputValidationResult.new
+      allowed_values = warden.enum_values(self)
+      matching_value = allowed_values.find { |v| v.name == value_name }
 
-      if !@values_by_name.key?(value_name)
-        result.add_problem("Expected #{JSON.generate(value_name, quirks_mode: true)} to be one of: #{@values_by_name.keys.join(', ')}")
+      if matching_value.nil?
+        result.add_problem("Expected #{JSON.generate(value_name, quirks_mode: true)} to be one of: #{allowed_values.join(', ')}")
       end
 
       result
@@ -114,9 +113,15 @@ module GraphQL
       end
     end
 
-    def coerce_result(value)
+    def coerce_result(value, warden = nil)
       ensure_defined
-      @values_by_value.fetch(value).name
+      all_values = warden ? warden.enum_values(self) : @values_by_name.each_value
+      enum_value = all_values.find { |val| val.value == value }
+      if enum_value
+        enum_value.name
+      else
+        raise(UnresolvedValueError, "Can't resolve enum #{name} for #{value}")
+      end
     end
 
     def to_s
@@ -131,6 +136,9 @@ module GraphQL
       accepts_definitions :name, :description, :deprecation_reason, :value
 
       lazy_defined_attr_accessor :name, :description, :deprecation_reason, :value
+    end
+
+    class UnresolvedValueError < GraphQL::Error
     end
   end
 end

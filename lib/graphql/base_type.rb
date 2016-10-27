@@ -61,13 +61,16 @@ module GraphQL
 
     alias :inspect :to_s
 
-    def valid_input?(value)
-      validate_input(value).valid?
+    def valid_input?(value, warden)
+      validate_input(value, warden).valid?
     end
 
-    def validate_input(value)
-      return GraphQL::Query::InputValidationResult.new if value.nil?
-      validate_non_null_input(value)
+    def validate_input(value, warden)
+      if value.nil?
+        GraphQL::Query::InputValidationResult.new
+      else
+        validate_non_null_input(value, warden)
+      end
     end
 
     def coerce_input(value)

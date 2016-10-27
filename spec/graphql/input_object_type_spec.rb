@@ -13,18 +13,18 @@ describe GraphQL::InputObjectType do
   describe "input validation" do
     it "Accepts anything that yields key-value pairs to #all?" do
       values_obj = MinimumInputObject.new({"source" => "COW", "fatContent" => 0.4})
-      assert DairyProductInputType.valid_input?(values_obj)
+      assert DairyProductInputType.valid_input?(values_obj, PermissiveWarden)
     end
 
     describe "validate_input with non-enumerable input" do
       it "returns a valid result for MinimumInputObject" do
-        result = DairyProductInputType.validate_input(MinimumInputObject.new({"source" => "COW", "fatContent" => 0.4}))
+        result = DairyProductInputType.validate_input(MinimumInputObject.new({"source" => "COW", "fatContent" => 0.4}), PermissiveWarden)
         assert(result.valid?)
       end
 
       it "returns an invalid result for MinimumInvalidInputObject" do
         invalid_input = MinimumInputObject.new({"source" => "KOALA", "fatContent" => 0.4})
-        result = DairyProductInputType.validate_input(invalid_input)
+        result = DairyProductInputType.validate_input(invalid_input, PermissiveWarden)
         assert(!result.valid?)
       end
     end
@@ -37,7 +37,7 @@ describe GraphQL::InputObjectType do
             "fatContent" => 0.4
           }
         end
-        let(:result) { DairyProductInputType.validate_input(input) }
+        let(:result) { DairyProductInputType.validate_input(input, PermissiveWarden) }
 
         it "returns a valid result" do
           assert(result.valid?)
@@ -45,7 +45,7 @@ describe GraphQL::InputObjectType do
       end
 
       describe "with bad enum and float" do
-        let(:result) { DairyProductInputType.validate_input("source" => "KOALA", "fatContent" => "bad_num") }
+        let(:result) { DairyProductInputType.validate_input({"source" => "KOALA", "fatContent" => "bad_num"}, PermissiveWarden) }
 
         it "returns an invalid result" do
           assert(!result.valid?)
@@ -58,7 +58,7 @@ describe GraphQL::InputObjectType do
         end
 
         it "has correct problem explanation" do
-          expected = DairyAnimalEnum.validate_input("KOALA").problems[0]["explanation"]
+          expected = DairyAnimalEnum.validate_input("KOALA", PermissiveWarden).problems[0]["explanation"]
 
           source_problem = result.problems.detect { |p| p["path"] == ["source"] }
           actual = source_problem["explanation"]
@@ -68,7 +68,7 @@ describe GraphQL::InputObjectType do
       end
 
       describe "with extra argument" do
-        let(:result) { DairyProductInputType.validate_input("source" => "COW", "fatContent" => 0.4, "isDelicious" => false) }
+        let(:result) { DairyProductInputType.validate_input({"source" => "COW", "fatContent" => 0.4, "isDelicious" => false}, PermissiveWarden) }
 
         it "returns an invalid result" do
           assert(!result.valid?)
@@ -90,7 +90,7 @@ describe GraphQL::InputObjectType do
           list_type.validate_input([
             { "source" => "COW", "fatContent" => 0.4 },
             { "source" => "KOALA", "fatContent" => 0.4 }
-          ])
+          ], PermissiveWarden)
         end
 
         it "returns an invalid result" do
@@ -107,7 +107,7 @@ describe GraphQL::InputObjectType do
         end
 
         it "has problem with correct explanation" do
-          expected = DairyAnimalEnum.validate_input("KOALA").problems[0]["explanation"]
+          expected = DairyAnimalEnum.validate_input("KOALA", PermissiveWarden).problems[0]["explanation"]
           actual = result.problems[0]["explanation"]
           assert_equal(expected, actual)
         end
