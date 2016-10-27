@@ -22,6 +22,45 @@ describe GraphQL::ScalarType do
     assert_equal(bignum.to_s, custom_scalar.coerce_result(bignum))
   end
 
+  describe "when passing literals for scalar types in input objects" do
+    let(:scalar_type) {
+      GraphQL::ScalarType.define do
+        name "ArrayScalar"
+        coerce ->(value) { value if value.is_a?(Array) }
+      end
+    }
+    let(:dummy_mutation) {
+      scalar_type = scalar_type()
+      GraphQL::Relay::Mutation.define do
+        name "DummyMutation"
+        input_field :input_value, !scalar_type
+        return_field :output_value, !scalar_type
+        resolve -> (obj, inputs, ctx) { {output_value: inputs[:input_value]} }
+      end
+    }
+    let(:root_object) {
+      dummy_mutation = dummy_mutation()
+      GraphQL::ObjectType.define do
+        name "Mutation"
+        field :field, field: dummy_mutation.field
+      end
+    }
+    let(:schema) {
+      GraphQL::Schema.define(mutation: root_object)
+    }
+    let(:query_string) {%|
+      mutation M { field(input: {input_value: [1, 2]}) { output_value } }
+    |}
+    let(:result) {
+      schema.execute(query_string)
+    }
+
+    it "correctly validates arrays" do
+      expected = {"data" => {"field" => {"output_value" => [1, 2]}}}
+      assert_equal(expected, result)
+    end
+  end
+
   describe "custom scalar errors" do
     let(:result) { custom_scalar.validate_input("xyz", PermissiveWarden) }
 
