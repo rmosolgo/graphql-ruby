@@ -50,13 +50,10 @@ See "Getting Started" on the [website](https://rmosolgo.github.io/graphql-ruby/)
   - Validators are order-dependent, is this a smell?
   - Tests for interference between validators are poor
   - Maybe this is a candidate for a rewrite?
-- Add Rails-y argument validations, eg `less_than: 100`, `max_length: 255`, `one_of: [...]`
-  - Must be customizable
 - Relay:
   - Reduce duplication in ArrayConnection / RelationConnection
   - Improve API for creating edges (better RANGE_ADD support)
   - If the new edge isn't a member of the connection's objects, raise a nice error
-- Missing Enum value should raise a descriptive error, not "key not found"
 - `args` should whitelist keys -- if you request a key that isn't defined for the field, it should 💥
 - Fix middleware ([discussion](https://github.com/rmosolgo/graphql-ruby/issues/186))
   - Handle out-of-bounds lookup, eg `graphql-batch`
@@ -69,6 +66,5 @@ See "Getting Started" on the [website](https://rmosolgo.github.io/graphql-ruby/)
   - Support working with AST as data
   - Adding fields to selections (`__typename` can go anywhere, others are type-specific)
   - Renaming fragments from local names to unique names
-- Support AST subclasses? This would be hard, I think classes are used as hash keys in many places.
-- Support object deep-copy (schema, type, field, argument)? To support multiple schemas based on the same types. ([discussion](https://github.com/rmosolgo/graphql-ruby/issues/269))
 - Document encrypted & versioned cursors
+- Make it faster
