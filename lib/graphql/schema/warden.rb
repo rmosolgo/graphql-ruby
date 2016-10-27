@@ -40,8 +40,8 @@ module GraphQL
       # @param schema [GraphQL::Schema]
       # @param mask [<#call(member)>] Objects are hidden when `.call(member)` returns true
       def initialize(schema, mask)
-        @mask = mask
         @schema = schema
+        @visibility_cache = Hash.new { |h, k| h[k] = !mask.call(k) }
       end
 
       # @return [Array<GraphQL::BaseType>] Visible types in the schema
@@ -108,7 +108,7 @@ module GraphQL
       end
 
       def visible?(member)
-        !@mask.call(member)
+        @visibility_cache[member]
       end
     end
   end
