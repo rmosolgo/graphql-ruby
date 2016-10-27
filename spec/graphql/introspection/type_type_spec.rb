@@ -23,9 +23,11 @@ describe GraphQL::Introspection::TypeType do
   ]}
 
   let(:dairy_animals) {[
-    {"name"=>"COW",   "isDeprecated"=> false },
-    {"name"=>"GOAT",  "isDeprecated"=> false },
-    {"name"=>"SHEEP", "isDeprecated"=> false },
+    {"name"=>"COW",       "isDeprecated"=> false },
+    {"name"=>"DONKEY",    "isDeprecated"=> false },
+    {"name"=>"GOAT",      "isDeprecated"=> false },
+    {"name"=>"REINDEER",  "isDeprecated"=> false },
+    {"name"=>"SHEEP",     "isDeprecated"=> false },
   ]}
   it "exposes metadata about types" do
     expected = {"data"=> {
