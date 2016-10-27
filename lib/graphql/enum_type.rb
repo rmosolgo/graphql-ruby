@@ -55,6 +55,21 @@ module GraphQL
   #     args[:favoriteLanguage] # => :rb
   #   }
   #
+  # @example Enum whose values are different in ActiveRecord-land
+  #   class Language < ActiveRecord::BaseType
+  #     enum language: {
+  #       rb: 0
+  #     }
+  #   end
+  #
+  #   # Now enum type should be defined as
+  #   GraphQL::EnumType.define do
+  #     # ...
+  #     # use the `value:` keyword:
+  #     value("RUBY", "Lisp? Smalltalk?", value: 'rb')
+  #   end
+  #
+
   class EnumType < GraphQL::BaseType
     accepts_definitions :values, value: GraphQL::Define::AssignEnumValue
 

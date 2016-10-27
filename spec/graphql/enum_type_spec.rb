@@ -15,6 +15,8 @@ describe GraphQL::EnumType do
   it "coerces result values to value's value" do
     assert_equal("YAK", enum.coerce_result("YAK"))
     assert_equal("COW", enum.coerce_result(1))
+    assert_equal("REINDEER", enum.coerce_result('reindeer'))
+    assert_equal("DONKEY", enum.coerce_result(:donkey))
   end
 
   it "raises when a result value can't be coerced" do
