@@ -251,9 +251,9 @@
 <span class="no">QueryType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="n">field</span> <span class="ss">:findPost</span><span class="p">,</span> <span class="no">PostType</span> <span class="k">do</span>
     <span class="n">argument</span> <span class="ss">:id</span><span class="p">,</span> <span class="o">!</span><span class="n">types</span><span class="o">.</span><span class="no">Int</span>
-    <span class="n">resolve</span> <span class="no">Auth</span><span class="p">.</span><span class="nf">can_read</span><span class="p">(</span><span class="ss">:post</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="o">|</span>
+    <span class="n">resolve</span><span class="p">(</span><span class="no">Auth</span><span class="p">.</span><span class="nf">can_read</span><span class="p">(</span><span class="ss">:post</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="o">|</span>
       <span class="no">Post</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="ss">:id</span><span class="p">])</span>
-    <span class="k">end</span>
+    <span class="k">end</span><span class="p">)</span>
   <span class="k">end</span>
 <span class="k">end</span>
 </code></pre>
