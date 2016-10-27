@@ -124,4 +124,62 @@ describe GraphQL::Schema do
       end
     end
   end
+
+  describe "directives" do
+    describe "when directives are not overwritten" do
+      it "contains built-in directives" do
+        schema = GraphQL::Schema.define
+
+        assert_equal ['deprecated', 'include', 'skip'], schema.directives.keys.sort
+
+        assert_equal GraphQL::Directive::DeprecatedDirective, schema.directives['deprecated']
+        assert_equal GraphQL::Directive::IncludeDirective, schema.directives['include']
+        assert_equal GraphQL::Directive::SkipDirective, schema.directives['skip']
+      end
+    end
+
+    describe "when directives are overwritten" do
+      it "contains only specified directives" do
+        schema = GraphQL::Schema.define do
+          directives [GraphQL::Directive::DeprecatedDirective]
+        end
+
+        assert_equal ['deprecated'], schema.directives.keys.sort
+        assert_equal GraphQL::Directive::DeprecatedDirective, schema.directives['deprecated']
+      end
+    end
+  end
+
+  describe ".from_definition" do
+    it "uses BuildFromSchema to build a schema from a definition string" do
+      schema = <<-SCHEMA
+type Query {
+  str: String
+}
+      SCHEMA
+
+      built_schema = GraphQL::Schema.from_definition(schema)
+      assert_equal schema.chop, GraphQL::Schema::Printer.print_schema(built_schema)
+    end
+  end
+
+  describe ".from_introspection" do
+    let(:schema) {
+      query_root = GraphQL::ObjectType.define do
+        name 'Query'
+        field :str, types.String
+      end
+
+      GraphQL::Schema.define do
+        query query_root
+      end
+    }
+    let(:schema_json) {
+      schema.execute(GraphQL::Introspection::INTROSPECTION_QUERY)
+    }
+    it "uses Schema::Loader to build a schema from an introspection result" do
+      built_schema = GraphQL::Schema.from_introspection(schema_json)
+      assert_equal GraphQL::Schema::Printer.print_schema(schema), GraphQL::Schema::Printer.print_schema(built_schema)
+    end
+  end
 end

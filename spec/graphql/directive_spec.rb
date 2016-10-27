@@ -212,4 +212,15 @@ describe GraphQL::Directive do
       end
     end
   end
+
+  describe "defining a directive" do
+    it "can accept an array of arguments" do
+      directive = GraphQL::Directive.define do
+        arguments [GraphQL::Argument.define(name: 'skip')]
+      end
+
+      assert_equal 1, directive.arguments.length
+      assert_equal 'skip', directive.arguments.first.name
+    end
+  end
 end

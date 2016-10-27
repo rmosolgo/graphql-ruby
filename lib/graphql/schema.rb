@@ -10,6 +10,7 @@ require "graphql/schema/type_map"
 require "graphql/schema/unique_within_type"
 require "graphql/schema/validation"
 require "graphql/schema/warden"
+require "graphql/schema/build_from_definition"
 
 module GraphQL
   # A GraphQL schema which may be queried with {GraphQL::Query}.
@@ -44,6 +45,8 @@ module GraphQL
   #   end
   #
   class Schema
+    include BuildFromDefinition
+
     include GraphQL::Define::InstanceDefinable
     accepts_definitions \
       :query, :mutation, :subscription,
@@ -51,6 +54,7 @@ module GraphQL
       :max_depth, :max_complexity,
       :orphan_types, :resolve_type,
       :object_from_id, :id_from_object,
+      directives: ->(schema, directives) { schema.directives = directives.reduce({}) { |m, d| m[d.name] = d; m  }},
       query_analyzer: ->(schema, analyzer) { schema.query_analyzers << analyzer },
       middleware: ->(schema, middleware) { schema.middleware << middleware },
       rescue_from: ->(schema, err_class, &block) { schema.rescue_from(err_class, &block)}
@@ -59,13 +63,14 @@ module GraphQL
       :query, :mutation, :subscription,
       :query_execution_strategy, :mutation_execution_strategy, :subscription_execution_strategy,
       :max_depth, :max_complexity,
-      :orphan_types,
+      :orphan_types, :directives,
       :query_analyzers, :middleware
 
+    BUILT_IN_TYPES = Hash[[INT_TYPE, STRING_TYPE, FLOAT_TYPE, BOOLEAN_TYPE, ID_TYPE].map{ |type| [type.name, type] }]
     DIRECTIVES = [GraphQL::Directive::IncludeDirective, GraphQL::Directive::SkipDirective, GraphQL::Directive::DeprecatedDirective]
     DYNAMIC_FIELDS = ["__type", "__typename", "__schema"]
 
-    attr_reader :directives, :static_validator, :object_from_id_proc, :id_from_object_proc, :resolve_type_proc
+    attr_reader :static_validator, :object_from_id_proc, :id_from_object_proc, :resolve_type_proc
 
     # @!attribute [r] middleware
     #   @return [Array<#call>] Middlewares suitable for MiddlewareChain, applied to fields during execution
@@ -151,7 +156,7 @@ module GraphQL
 
     def type_from_ast(ast_node)
       ensure_defined
-      GraphQL::Schema::TypeExpression.build_type(self, ast_node)
+      GraphQL::Schema::TypeExpression.build_type(self.types, ast_node)
     end
 
     # @see [GraphQL::Schema::Warden] Restricted access to members of a schema
@@ -255,6 +260,13 @@ module GraphQL
     def id_from_object=(new_proc)
       ensure_defined
       @id_from_object_proc = new_proc
+    end
+
+    # Create schema with the result of an introspection query.
+    # @param introspection_result [Hash] A response from {GraphQL::Introspection::INTROSPECTION_QUERY}
+    # @return [GraphQL::Schema] the schema described by `input`
+    def self.from_introspection(introspection_result)
+      GraphQL::Schema::Loader.load(introspection_result)
     end
 
     private

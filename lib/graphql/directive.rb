@@ -7,7 +7,7 @@ module GraphQL
   #
   class Directive
     include GraphQL::Define::InstanceDefinable
-    accepts_definitions :locations, :name, :description, argument: GraphQL::Define::AssignArgument
+    accepts_definitions :locations, :name, :description, :arguments, argument: GraphQL::Define::AssignArgument
 
     lazy_defined_attr_accessor :locations, :arguments, :name, :description
 
