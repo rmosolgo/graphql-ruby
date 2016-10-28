@@ -58,7 +58,7 @@ describe GraphQL::Introspection::InputValueType do
 
   it "converts default values to GraphQL values" do
     field = cheese_type['data']['__type']['fields'].detect { |f| f['name'] == 'similarCheese' }
-    arg = field['args'].detect { |a| a['name'] == 'source' }
+    arg = field['args'].detect { |a| a['name'] == 'nullableSource' }
 
     assert_equal('["COW"]', arg['defaultValue'])
   end
