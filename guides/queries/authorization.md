@@ -16,7 +16,7 @@ Query analyzers reuse concepts from `Array#reduce`, so let's briefly revisit how
 ```ruby
 items = [1, 2, 3, 4, 5]
 initial_value = 0
-reduce_result = items.reduce(0) { |memo, item| memo + item }
+reduce_result = items.reduce(initial_value) { |memo, item| memo + item }
 final_value = "Sum: #{reduce_result}"
 puts final_value
 # Sum: 15
