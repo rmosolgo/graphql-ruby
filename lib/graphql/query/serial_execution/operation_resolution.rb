@@ -11,12 +11,12 @@ module GraphQL
         end
 
         def result
-          execution_context.strategy.selection_resolution.new(
+          execution_context.strategy.selection_resolution.resolve(
             execution_context.query.root_value,
             target,
             irep_node,
             execution_context
-          ).result
+          )
         rescue GraphQL::InvalidNullError => err
           err.parent_error? || execution_context.add_error(err)
           nil

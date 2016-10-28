@@ -6,7 +6,9 @@ module GraphQL
       attr_accessor :execution_strategy
 
       # @return [GraphQL::Language::Nodes::Field] The AST node for the currently-executing field
-      attr_accessor :ast_node
+      def ast_node
+        irep_node.ast_node
+      end
 
       # @return [GraphQL::InternalRepresentation::Node] The internal representation for this query node
       attr_accessor :irep_node
