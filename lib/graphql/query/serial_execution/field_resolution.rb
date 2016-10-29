@@ -40,10 +40,15 @@ module GraphQL
             end
           end
 
-          strategy_class = GraphQL::Query::SerialExecution::ValueResolution.get_strategy_for_kind(field.type.kind)
-          result_strategy = strategy_class.new(raw_value, field.type, target, parent_type, irep_node, execution_context)
           begin
-            result_strategy.result
+            GraphQL::Query::SerialExecution::ValueResolution.resolve(
+              parent_type,
+              field,
+              field.type,
+              raw_value,
+              irep_node,
+              execution_context,
+            )
           rescue GraphQL::InvalidNullError => err
             if field.type.kind.non_null?
               raise(err)
@@ -63,7 +68,6 @@ module GraphQL
           middlewares = execution_context.query.schema.middleware
           query_context = execution_context.query.context
           # setup
-          query_context.ast_node = @irep_node.ast_node
           query_context.irep_node = @irep_node
 
           resolve_arguments = [parent_type, target, field, arguments, query_context]
@@ -84,7 +88,6 @@ module GraphQL
             end
         ensure
           # teardown
-          query_context.ast_node = nil
           query_context.irep_node = nil
           resolve_value
         end
