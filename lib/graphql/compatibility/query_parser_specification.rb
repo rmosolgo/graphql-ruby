@@ -37,19 +37,6 @@ module GraphQL
             assert_valid_typeless_inline_fragment(query.selections[3])
           end
 
-          def test_it_parses_empty_arguments
-            strings = [
-              "{ field { } }",
-              "{ field() }",
-            ]
-            strings.each do |query_str|
-              doc = parse(query_str)
-              field = doc.definitions.first.selections.first
-              assert_equal 0, field.arguments.length
-              assert_equal 0, field.selections.length
-            end
-          end
-
           def test_it_parses_unnamed_queries
             document = parse("{ name, age, height }")
             operation =  document.definitions.first
@@ -59,6 +46,10 @@ module GraphQL
             assert_equal 3, operation.selections.length
           end
 
+          def test_it_parses_the_introspection_query
+            parse(GraphQL::Introspection::INTROSPECTION_QUERY)
+          end
+
           def test_it_parses_inputs
             query_string = %|
               {
@@ -66,7 +57,7 @@ module GraphQL
                   int: 3,
                   float: 4.7e-24,
                   bool: false,
-                  string: "☀︎🏆\\n escaped \\" unicode \\u00b6 /",
+                  string: "☀︎🏆\\n escaped \\" unicode \u00b6 /",
                   enum: ENUM_NAME,
                   array: [7, 8, 9]
                   object: {a: [1,2,3], b: {c: "4"}}
