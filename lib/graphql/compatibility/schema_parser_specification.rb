@@ -16,6 +16,8 @@ module GraphQL
 
           def test_it_parses_object_types
             document = parse('
+              # This is what
+              # somebody said about something
               type Comment implements Node @deprecated(reason: "No longer supported") {
                 id: ID!
               }
@@ -24,6 +26,7 @@ module GraphQL
             type = document.definitions.first
             assert_equal GraphQL::Language::Nodes::ObjectTypeDefinition, type.class
             assert_equal 'Comment', type.name
+            assert_equal "This is what\nsomebody said about something", type.description
             assert_equal ['Node'], type.interfaces.map(&:name)
             assert_equal ['id'], type.fields.map(&:name)
             assert_equal [], type.fields[0].arguments
@@ -34,6 +37,103 @@ module GraphQL
             assert_equal 'deprecated', deprecated_directive.name
             assert_equal 'reason', deprecated_directive.arguments[0].name
             assert_equal 'No longer supported', deprecated_directive.arguments[0].value
+          end
+
+          def test_it_parses_scalars
+            document = parse('scalar DateTime')
+
+            type = document.definitions.first
+            assert_equal GraphQL::Language::Nodes::ScalarTypeDefinition, type.class
+            assert_equal 'DateTime', type.name
+          end
+
+          def test_it_parses_enum_types
+            document = parse('
+              enum DogCommand {
+                # Good dog
+                SIT
+                DOWN @deprecated(reason: "No longer supported")
+                HEEL
+              }
+            ')
+
+            type = document.definitions.first
+            assert_equal GraphQL::Language::Nodes::EnumTypeDefinition, type.class
+            assert_equal 'DogCommand', type.name
+            assert_equal 3, type.values.length
+
+            assert_equal 'SIT', type.values[0].name
+            assert_equal [], type.values[0].directives
+            assert_equal "Good dog", type.values[0].description
+
+            assert_equal 'DOWN', type.values[1].name
+            assert_equal 1, type.values[1].directives.length
+            deprecated_directive = type.values[1].directives[0]
+            assert_equal 'deprecated', deprecated_directive.name
+            assert_equal 'reason', deprecated_directive.arguments[0].name
+            assert_equal 'No longer supported', deprecated_directive.arguments[0].value
+
+            assert_equal 'HEEL', type.values[2].name
+            assert_equal [], type.values[2].directives
+          end
+
+          def test_it_parses_input_types
+            document = parse('
+              input EmptyMutationInput {
+                clientMutationId: String
+              }
+            ')
+
+            type = document.definitions.first
+            assert_equal GraphQL::Language::Nodes::InputObjectTypeDefinition, type.class
+            assert_equal 'EmptyMutationInput', type.name
+            assert_equal ['clientMutationId'], type.fields.map(&:name)
+            assert_equal 'String', type.fields[0].type.name
+            assert_equal nil, type.fields[0].default_value
+          end
+
+          def test_it_parses_directives
+            document = parse('
+              directive @include(if: Boolean!)
+                on FIELD
+                | FRAGMENT_SPREAD
+                | INLINE_FRAGMENT
+            ')
+
+            type = document.definitions.first
+            assert_equal GraphQL::Language::Nodes::DirectiveDefinition, type.class
+            assert_equal 'include', type.name
+
+            assert_equal 1, type.arguments.length
+            assert_equal 'if', type.arguments[0].name
+            assert_equal 'Boolean', type.arguments[0].type.of_type.name
+
+            assert_equal ['FIELD', 'FRAGMENT_SPREAD', 'INLINE_FRAGMENT'], type.locations
+          end
+
+          def test_it_parses_field_arguments
+            document = parse('
+              type Mutation {
+                post(
+                  id: ID! @deprecated(reason: "Not used"),
+                  # This is what goes in the post
+                  data: String
+                ): Post
+              }
+            ')
+
+            field = document.definitions.first.fields.first
+            assert_equal ['id', 'data'], field.arguments.map(&:name)
+            id_arg = field.arguments[0]
+
+            deprecated_directive = id_arg.directives[0]
+            assert_equal 'deprecated', deprecated_directive.name
+            assert_equal 'reason', deprecated_directive.arguments[0].name
+            assert_equal 'Not used', deprecated_directive.arguments[0].value
+
+            data_arg = field.arguments[1]
+            assert_equal "data", data_arg.name
+            assert_equal "This is what goes in the post", data_arg.description
           end
 
           def test_it_parses_schema_definition

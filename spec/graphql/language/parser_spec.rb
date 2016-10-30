@@ -1,8 +1,6 @@
 require "spec_helper"
-require 'graphql/language/parser_tests'
 
 describe GraphQL::Language::Parser do
-  include GraphQL::Language::ParserTests
   subject { GraphQL::Language::Parser }
 
   describe "anonymous fragment extension" do
@@ -29,6 +27,15 @@ describe GraphQL::Language::Parser do
           assert_equal 1, fragment.directives.length
           assert_equal [2, 7], fragment.position
         end
+      end
+
+      it "parses the test schema" do
+        schema = DummySchema
+        schema_string = GraphQL::Schema::Printer.print_schema(schema)
+
+        document = subject.parse(schema_string)
+
+        assert_equal schema_string, document.to_query_string
       end
     end
   end
