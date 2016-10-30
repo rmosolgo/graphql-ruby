@@ -2,7 +2,7 @@ module GraphQL
   module Compatibility
     # This asserts that a given parse function turns a string into
     # the proper tree of {{GraphQL::Language::Nodes}}.
-    module SchemaParserSpec
+    module SchemaParserSpecification
       # @yieldparam query_string [String] A query string to parse
       # @yieldreturn [GraphQL::Language::Nodes::Document]
       # @return [Class<Minitest::Test>] A test suite for this parse function
@@ -14,7 +14,44 @@ module GraphQL
             @@parse_fn.call(query_string)
           end
 
+          def test_it_parses_object_types
+            document = parse('
+              type Comment implements Node @deprecated(reason: "No longer supported") {
+                id: ID!
+              }
+            ')
+
+            type = document.definitions.first
+            assert_equal GraphQL::Language::Nodes::ObjectTypeDefinition, type.class
+            assert_equal 'Comment', type.name
+            assert_equal ['Node'], type.interfaces.map(&:name)
+            assert_equal ['id'], type.fields.map(&:name)
+            assert_equal [], type.fields[0].arguments
+            assert_equal 'ID', type.fields[0].type.of_type.name
+            assert_equal 1, type.directives.length
+
+            deprecated_directive = type.directives[0]
+            assert_equal 'deprecated', deprecated_directive.name
+            assert_equal 'reason', deprecated_directive.arguments[0].name
+            assert_equal 'No longer supported', deprecated_directive.arguments[0].value
+          end
+
           def test_it_parses_schema_definition
+            document = parse('
+              schema {
+                query: QueryRoot
+                mutation: MutationRoot
+                subscription: SubscriptionRoot
+              }
+            ')
+
+            schema = document.definitions.first
+            assert_equal 'QueryRoot', schema.query
+            assert_equal 'MutationRoot', schema.mutation
+            assert_equal 'SubscriptionRoot', schema.subscription
+          end
+
+          def test_it_parses_whole_definition_with_descriptions
             document = parse(SCHEMA_DEFINITION_STRING)
 
             assert_equal 6, document.definitions.size

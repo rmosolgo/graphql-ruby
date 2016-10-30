@@ -1,11 +1,11 @@
-require "graphql/compatibility/query_parser_spec/query_assertions"
-require "graphql/compatibility/query_parser_spec/parse_error_specification"
+require "graphql/compatibility/query_parser_specification/query_assertions"
+require "graphql/compatibility/query_parser_specification/parse_error_specification"
 
 module GraphQL
   module Compatibility
     # This asserts that a given parse function turns a string into
     # the proper tree of {{GraphQL::Language::Nodes}}.
-    module QueryParserSpec
+    module QueryParserSpecification
       # @yieldparam query_string [String] A query string to parse
       # @yieldreturn [GraphQL::Language::Nodes::Document]
       # @return [Class<Minitest::Test>] A test suite for this parse function

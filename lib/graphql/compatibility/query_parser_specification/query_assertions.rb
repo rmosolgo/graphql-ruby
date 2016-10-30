@@ -1,6 +1,6 @@
 module GraphQL
   module Compatibility
-    module QueryParserSpec
+    module QueryParserSpecification
       module QueryAssertions
         def assert_valid_query(query)
           assert query.is_a?(GraphQL::Language::Nodes::OperationDefinition)

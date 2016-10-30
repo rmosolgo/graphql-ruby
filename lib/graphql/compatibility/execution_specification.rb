@@ -21,7 +21,7 @@ module GraphQL
     # - Query validation and analysis
     # - Relay features
     #
-    module ExecutionSpec
+    module ExecutionSpecification
       DATA = {
         "1001" => OpenStruct.new({
           name: "Fannie Lou Hamer",
