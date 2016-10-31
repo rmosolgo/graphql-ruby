@@ -10,7 +10,7 @@ Field instrumentation can be attached during schema definition:
 
 ```ruby
 MySchema = GraphQL::Schema.define do
-  instrument(:field, MyFieldInstrumentation.new)
+  instrument(:field, FieldTimerInstrumentation.new)
 end
 ```
 
@@ -19,7 +19,7 @@ The instrumenter is an object which responds to `#instrument(type, field)`. `#in
 Here's an example field instrumenter:
 
 ```ruby
-class MyFieldInstrumentation
+class FieldTimerInstrumentation
   # If a field was flagged to be timed,
   # wrap its resolve proc with a timer.
   def instrument(type, field)
@@ -40,7 +40,7 @@ class MyFieldInstrumentation
 end
 ```
 
-It can be attached as shown above. This implementation will _modify_ the underlying `GraphQL::Field` instance... be warned!
+It can be attached as shown above. You can use `redefine { ... }` to make a shallow copy of the  {{ "GraphQL::Field" | api_doc }} and extend its definition.
 
 ## Query Instrumentation
 
@@ -49,14 +49,16 @@ Query instrumentation can be attached during schema definition:
 
 ```ruby
 MySchema = GraphQL::Schema.define do
-  instrument(:query, MyQueryInstrumentation.new)
+  instrument(:query, QueryTimerInstrumentation)
 end
 ```
 
-The instrumenter must implement `#before_query(query)` and `#after_query(query)`. The return value of these methods are not used. They receive the `GraphQL::Query` instance.
+The instrumenter must implement `#before_query(query)` and `#after_query(query)`. The return values of these methods are not used. They receive the {{ "GraphQL::Query" | api_doc }} instance.
 
 ```ruby
-class MyQueryInstrumentation
+module MyQueryInstrumentation
+  module_function
+
   # Log the time of the query
   def before_query(query)
     Rails.logger.info("Query begin: #{Time.now.to_i}")
