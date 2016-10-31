@@ -45,6 +45,21 @@ module GraphQL
       def []=(key, value)
         @values[key] = value
       end
+
+      # Add error to current field resolution.
+      # @param error [GraphQL::ExecutionError] an execution error
+      # @return [void]
+      def add_error(error)
+        unless error.is_a?(ExecutionError)
+          raise TypeError, "expected error to be a ExecutionError, but was #{error.class}"
+        end
+
+        error.ast_node = irep_node.ast_node
+        error.path = irep_node.path
+        errors << error
+
+        nil
+      end
     end
   end
 end
