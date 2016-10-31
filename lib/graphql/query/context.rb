@@ -54,8 +54,8 @@ module GraphQL
           raise TypeError, "expected error to be a ExecutionError, but was #{error.class}"
         end
 
-        error.ast_node = irep_node.ast_node
-        error.path = irep_node.path
+        error.ast_node = irep_node.ast_node unless error.ast_node
+        error.path = irep_node.path unless error.path
         errors << error
 
         nil
