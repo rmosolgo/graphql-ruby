@@ -329,6 +329,10 @@ module GraphQL
             assert_equal "SNCC", res["data"]["organization"]["name"]
             assert_equal [true, true, false], res["data"]["organization"]["nodePresence"]
           end
+
+          def test_it_runs_the_introspection_query
+            execute_query(GraphQL::Introspection::INTROSPECTION_QUERY)
+          end
         end
       end
     end
