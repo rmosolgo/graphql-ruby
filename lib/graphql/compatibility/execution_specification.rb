@@ -231,7 +231,7 @@ module GraphQL
             success = res["data"]["success"]
 
             assert_equal nil, failure, "It propagates nulls to the next nullable field"
-            assert_equal "SNCC", success["name"], "It serves the same object if no invalid null is encountered"
+            assert_equal({"name" => "SNCC"}, success, "It serves the same object if no invalid null is encountered")
             assert_equal 1, res["errors"].length , "It returns an error for the invalid null"
           end
 
@@ -332,6 +332,22 @@ module GraphQL
 
           def test_it_runs_the_introspection_query
             execute_query(GraphQL::Introspection::INTROSPECTION_QUERY)
+          end
+
+          def test_it_propagates_deeply_nested_nulls
+            skip
+          end
+
+          def test_it_doesnt_add_errors_for_invalid_nulls_from_execution_errors
+            skip
+          end
+
+          def test_it_passes_invalid_nulls_to_schema
+            skip
+          end
+
+          def test_it_includes_path_and_index_in_error_path
+            skip
           end
         end
       end
