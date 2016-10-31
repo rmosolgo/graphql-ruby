@@ -26,6 +26,8 @@ module GraphQL
           out
         when Nodes::Enum
           "#{node.name}"
+        when Nodes::NullValue
+          "null"
         when Nodes::Field
           out = "#{indent}"
           out << "#{node.alias}: " if node.alias
