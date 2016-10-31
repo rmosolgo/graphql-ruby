@@ -88,54 +88,52 @@ module GraphQL
       @values_by_name[enum_value.name] = enum_value
     end
 
-    # @return [Hash<String => EnumValue>] `{name => value}` pairs contained in this type
-    def values
-      ensure_defined
-      @values_by_name
-    end
-
     def kind
       GraphQL::TypeKinds::ENUM
     end
 
-    def validate_non_null_input(value_name, warden)
-      ensure_defined
-      result = GraphQL::Query::InputValidationResult.new
-      allowed_values = warden.enum_values(self)
-      matching_value = allowed_values.find { |v| v.name == value_name }
-
-      if matching_value.nil?
-        result.add_problem("Expected #{JSON.generate(value_name, quirks_mode: true)} to be one of: #{allowed_values.join(', ')}")
+    lazy_methods do
+      # @return [Hash<String => EnumValue>] `{name => value}` pairs contained in this type
+      def values
+        @values_by_name
       end
 
-      result
-    end
+      def validate_non_null_input(value_name, warden)
+        result = GraphQL::Query::InputValidationResult.new
+        allowed_values = warden.enum_values(self)
+        matching_value = allowed_values.find { |v| v.name == value_name }
 
-    # Get the underlying value for this enum value
-    #
-    # @example get episode value from Enum
-    #   episode = EpisodeEnum.coerce("NEWHOPE")
-    #   episode # => 6
-    #
-    # @param value_name [String] the string representation of this enum value
-    # @return [Object] the underlying value for this enum value
-    def coerce_non_null_input(value_name)
-      ensure_defined
-      if @values_by_name.key?(value_name)
-        @values_by_name.fetch(value_name).value
-      else
-        nil
+        if matching_value.nil?
+          result.add_problem("Expected #{JSON.generate(value_name, quirks_mode: true)} to be one of: #{allowed_values.join(', ')}")
+        end
+
+        result
       end
-    end
 
-    def coerce_result(value, warden = nil)
-      ensure_defined
-      all_values = warden ? warden.enum_values(self) : @values_by_name.each_value
-      enum_value = all_values.find { |val| val.value == value }
-      if enum_value
-        enum_value.name
-      else
-        raise(UnresolvedValueError, "Can't resolve enum #{name} for #{value}")
+      # Get the underlying value for this enum value
+      #
+      # @example get episode value from Enum
+      #   episode = EpisodeEnum.coerce("NEWHOPE")
+      #   episode # => 6
+      #
+      # @param value_name [String] the string representation of this enum value
+      # @return [Object] the underlying value for this enum value
+      def coerce_non_null_input(value_name)
+        if @values_by_name.key?(value_name)
+          @values_by_name.fetch(value_name).value
+        else
+          nil
+        end
+      end
+
+      def coerce_result(value, warden = nil)
+        all_values = warden ? warden.enum_values(self) : @values_by_name.each_value
+        enum_value = all_values.find { |val| val.value == value }
+        if enum_value
+          enum_value.name
+        else
+          raise(UnresolvedValueError, "Can't resolve enum #{name} for #{value}")
+        end
       end
     end
 
@@ -150,7 +148,9 @@ module GraphQL
       include GraphQL::Define::InstanceDefinable
       accepts_definitions :name, :description, :deprecation_reason, :value
 
-      lazy_defined_attr_accessor :name, :description, :deprecation_reason, :value
+      lazy_methods do
+        attr_accessor :name, :description, :deprecation_reason, :value
+      end
     end
 
     class UnresolvedValueError < GraphQL::Error

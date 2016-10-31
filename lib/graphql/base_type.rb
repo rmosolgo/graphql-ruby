@@ -8,7 +8,9 @@ module GraphQL
         global_id_field: GraphQL::Define::AssignGlobalIdField,
       }
 
-    lazy_defined_attr_accessor :name, :description
+    lazy_methods do
+      attr_accessor :name, :description
+    end
 
     # @!attribute name
     #   @return [String] the name of this type, must be unique within a Schema

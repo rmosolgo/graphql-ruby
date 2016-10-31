@@ -5,6 +5,7 @@ require "graphql/define/assign_global_id_field"
 require "graphql/define/assign_object_field"
 require "graphql/define/defined_object_proxy"
 require "graphql/define/instance_definable"
+require "graphql/define/lazy_method_proxy"
 require "graphql/define/non_null_with_bang"
 require "graphql/define/type_definer"
 

@@ -9,7 +9,9 @@ module GraphQL
     include GraphQL::Define::InstanceDefinable
     accepts_definitions :locations, :name, :description, :arguments, argument: GraphQL::Define::AssignArgument
 
-    lazy_defined_attr_accessor :locations, :arguments, :name, :description
+    lazy_methods do
+      attr_accessor :locations, :arguments, :name, :description
+    end
 
     LOCATIONS = [
       QUERY =                  :QUERY,
