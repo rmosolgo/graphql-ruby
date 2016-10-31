@@ -179,6 +179,9 @@ module GraphQL
       # An enum value. The string is available as {#name}.
       class Enum < NameOnlyNode; end
 
+      # A null value literal.
+      class NullValue < NameOnlyNode; end
+
       # A single selection in a GraphQL query.
       class Field < AbstractNode
         attr_accessor :name, :alias, :arguments, :directives, :selections

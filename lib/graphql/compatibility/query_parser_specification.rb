@@ -63,6 +63,9 @@ module GraphQL
                   object: {a: [1,2,3], b: {c: "4"}}
                   unicode_bom: "\xef\xbb\xbfquery"
                   keywordEnum: on
+                  nullValue: null
+                  nullValueInList: {a: null, b: "b"}
+                  nullValueInArray: ["a", null, "b"]
                 )
               }
             |
@@ -85,6 +88,17 @@ module GraphQL
 
             assert_equal %|\xef\xbb\xbfquery|, inputs[7].value, "Unicode BOM"
             assert_equal "on", inputs[8].value.name, "Enum value 'on'"
+
+            assert_instance_of GraphQL::Language::Nodes::NullValue, inputs[9].value
+
+            args = inputs[10].value.arguments
+            assert_instance_of GraphQL::Language::Nodes::NullValue, args.find{ |arg| arg.name == 'a' }.value
+            assert_equal 'b', args.find{ |arg| arg.name == 'b' }.value
+
+            values = inputs[11].value
+            assert_equal 'a', values[0]
+            assert_instance_of GraphQL::Language::Nodes::NullValue, values[1]
+            assert_equal 'b', values[2]
           end
         end
       end
