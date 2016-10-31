@@ -348,7 +348,7 @@ end
 
 def parse_document
   @document ||= begin
-    @tokens ||= GraphQL::Language::Lexer.tokenize(@query_string)
+    @tokens ||= GraphQL.scan(@query_string)
     if @tokens.none?
       make_node(:Document, definitions: [])
     else

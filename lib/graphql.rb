@@ -27,6 +27,15 @@ module GraphQL
   def self.parse_with_racc(string)
     GraphQL::Language::Parser.parse(string)
   end
+
+  # @return [Array<GraphQL::Language::Token>]
+  def self.scan(query_string)
+    scan_with_ragel(query_string)
+  end
+
+  def self.scan_with_ragel(query_string)
+    GraphQL::Language::Lexer.tokenize(query_string)
+  end
 end
 
 # Order matters for these:
