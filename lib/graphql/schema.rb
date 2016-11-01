@@ -1,5 +1,6 @@
 require "graphql/schema/catchall_middleware"
 require "graphql/schema/invalid_type_error"
+require "graphql/schema/instrumented_field_map"
 require "graphql/schema/middleware_chain"
 require "graphql/schema/possible_types"
 require "graphql/schema/rescue_middleware"
@@ -55,6 +56,7 @@ module GraphQL
       :orphan_types, :resolve_type,
       :object_from_id, :id_from_object,
       directives: ->(schema, directives) { schema.directives = directives.reduce({}) { |m, d| m[d.name] = d; m  }},
+      instrument: -> (schema, type, instrumenter) { schema.instrumenters[type] << instrumenter },
       query_analyzer: ->(schema, analyzer) { schema.query_analyzers << analyzer },
       middleware: ->(schema, middleware) { schema.middleware << middleware },
       rescue_from: ->(schema, err_class, &block) { schema.rescue_from(err_class, &block)}
@@ -64,7 +66,7 @@ module GraphQL
       :query_execution_strategy, :mutation_execution_strategy, :subscription_execution_strategy,
       :max_depth, :max_complexity,
       :orphan_types, :directives,
-      :query_analyzers, :middleware
+      :query_analyzers, :middleware, :instrumenters
 
     BUILT_IN_TYPES = Hash[[INT_TYPE, STRING_TYPE, FLOAT_TYPE, BOOLEAN_TYPE, ID_TYPE].map{ |type| [type.name, type] }]
     DIRECTIVES = [GraphQL::Directive::IncludeDirective, GraphQL::Directive::SkipDirective, GraphQL::Directive::DeprecatedDirective]
@@ -89,6 +91,7 @@ module GraphQL
       @resolve_type_proc = nil
       @object_from_id_proc = nil
       @id_from_object_proc = nil
+      @instrumenters = Hash.new { |h, k| h[k] = [] }
       # Default to the built-in execution strategy:
       @query_execution_strategy = GraphQL::Query::SerialExecution
       @mutation_execution_strategy = GraphQL::Query::SerialExecution
@@ -107,7 +110,23 @@ module GraphQL
 
     def define(**kwargs, &block)
       super
-      types
+      all_types = orphan_types + [query, mutation, subscription, GraphQL::Introspection::SchemaType]
+      @types = GraphQL::Schema::ReduceTypes.reduce(all_types.compact)
+
+      @instrumented_field_map = InstrumentedFieldMap.new(self)
+      field_instrumenters = @instrumenters[:field]
+      types.each do |type_name, type|
+        if type.kind.fields?
+          type.all_fields.each do |field_defn|
+
+            instrumented_field_defn = field_instrumenters.reduce(field_defn) do |defn, inst|
+              inst.instrument(type, defn)
+            end
+
+            @instrumented_field_map.set(type.name, field_defn.name, instrumented_field_defn)
+          end
+        end
+      end
       # Assert that all necessary configs are present:
       validation_error = Validation.validate(self)
       validation_error && raise(NotImplementedError, validation_error)
@@ -117,13 +136,7 @@ module GraphQL
 
     # @see [GraphQL::Schema::Warden] Restricted access to members of a schema
     # @return [GraphQL::Schema::TypeMap] `{ name => type }` pairs of types in this schema
-    def types
-      @types ||= begin
-        ensure_defined
-        all_types = orphan_types + [query, mutation, subscription, GraphQL::Introspection::SchemaType]
-        GraphQL::Schema::ReduceTypes.reduce(all_types.compact)
-      end
-    end
+    attr_reader :types
 
     # Execute a query on itself.
     # See {Query#initialize} for arguments.
@@ -139,8 +152,7 @@ module GraphQL
     # @return [GraphQL::Field, nil] The field named `field_name` on `parent_type`
     def get_field(parent_type, field_name)
       ensure_defined
-
-      defined_field = parent_type.get_field(field_name)
+      defined_field = @instrumented_field_map.get(parent_type.name, field_name)
       if defined_field
         defined_field
       elsif field_name == "__typename"
