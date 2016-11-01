@@ -99,6 +99,11 @@ module GraphQL
                   obj.organization_ids.map { |id| DATA[id] }
                 }
               end
+              field :first_organization, !organization_type do
+                resolve ->(obj, args, ctx) {
+                  DATA[obj.organization_ids.first]
+                }
+              end
             end
 
             organization_type = GraphQL::ObjectType.define do
@@ -107,7 +112,7 @@ module GraphQL
               field :name, !types.String
               field :leader, !person_type do
                 resolve ->(obj, args, ctx) {
-                  DATA[obj.leader_id]
+                  DATA[obj.leader_id] || (ctx[:return_error] ? ExecutionError.new("Error on Nullable") : nil)
                 }
               end
               field :returnedError, types.String do
@@ -150,6 +155,12 @@ module GraphQL
                 argument :id, !types.ID
                 resolve ->(obj, args, ctx) {
                   args[:id].start_with?("2") && obj[args[:id]]
+                }
+              end
+
+              field :organizations, types[organization_type] do
+                resolve ->(obj, args, ctx) {
+                  [obj["2001"], obj["2002"]]
                 }
               end
             end
@@ -260,6 +271,10 @@ module GraphQL
                   returnedError
                   raisedError
                 }
+                organizations {
+                  returnedError
+                  raisedError
+                }
               }
             |
 
@@ -267,19 +282,42 @@ module GraphQL
 
             assert_equal "SNCC", res["data"]["organization"]["name"], "It runs the rest of the query"
 
-            expected_returned_error = {
-              "message"=>"This error was returned",
-              "locations"=>[{"line"=>5, "column"=>19}],
-              "path"=>["organization", "returnedError"]
-            }
-            assert_includes res["errors"], expected_returned_error, "It turns returned errors into response errors"
+            expected_errors = [
+              {
+                "message"=>"This error was returned",
+                "locations"=>[{"line"=>5, "column"=>19}],
+                "path"=>["organization", "returnedError"]
+              },
+              {
+                "message"=>"This error was raised",
+                "locations"=>[{"line"=>6, "column"=>19}],
+                "path"=>["organization", "raisedError"]
+              },
+              {
+                "message"=>"This error was raised",
+                "locations"=>[{"line"=>10, "column"=>19}],
+                "path"=>["organizations", 0, "raisedError"]
+              },
+              {
+                "message"=>"This error was raised",
+                "locations"=>[{"line"=>10, "column"=>19}],
+                "path"=>["organizations", 1, "raisedError"]
+              },
+              {
+                "message"=>"This error was returned",
+                "locations"=>[{"line"=>9, "column"=>19}],
+                "path"=>["organizations", 0, "returnedError"]
+              },
+              {
+                "message"=>"This error was returned",
+                "locations"=>[{"line"=>9, "column"=>19}],
+                "path"=>["organizations", 1, "returnedError"]
+              },
+            ]
 
-            expected_raised_error = {
-              "message"=>"This error was raised",
-              "locations"=>[{"line"=>6, "column"=>19}],
-              "path"=>["organization", "raisedError"]
-            }
-            assert_includes res["errors"], expected_raised_error, "It turns raised errors into response errors"
+            expected_errors.each do |expected_err|
+              assert_includes res["errors"], expected_err
+            end
           end
 
           def test_it_applies_masking
@@ -335,19 +373,39 @@ module GraphQL
           end
 
           def test_it_propagates_deeply_nested_nulls
-            skip
+            query_string = %|
+            {
+              node(id: "1001") {
+                ... on Person {
+                  name
+                  first_organization {
+                    leader {
+                      name
+                    }
+                  }
+                }
+              }
+            }
+            |
+            res = execute_query(query_string)
+            assert_equal nil, res["data"]["node"]
+            assert_equal 1, res["errors"].length
           end
 
           def test_it_doesnt_add_errors_for_invalid_nulls_from_execution_errors
-            skip
-          end
-
-          def test_it_passes_invalid_nulls_to_schema
-            skip
-          end
-
-          def test_it_includes_path_and_index_in_error_path
-            skip
+            query_string = %|
+            query getOrg($id: ID = "2001"){
+              failure: node(id: $id) {
+                ... on Organization {
+                  name
+                  leader { name }
+                }
+              }
+            }
+            |
+            res = execute_query(query_string, context: {return_error: true})
+            error_messages = res["errors"].map { |e| e["message"] }
+            assert_equal ["Error on Nullable"], error_messages
           end
         end
       end
