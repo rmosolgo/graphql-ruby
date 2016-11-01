@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>GraphQL Ruby - Related Projects</title>
+    <title>GraphQL Ruby - Schema — Limiting Visibility</title>
     <link rel="stylesheet" href="/graphql-ruby/css/main.css">
     <link rel="icon" href="/graphql-ruby/graphql-ruby-icon.png">
     <meta name="generator">
@@ -69,33 +69,77 @@
           <h3><a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a></h3>
         </div>
         <div class="cell -9of12">
-          <h1 class="guide-header">Related Projects</h1>
-          <p>Want to add something? Please open a pull request <a href="https://github.com/rmosolgo/graphql-ruby">on GitHub</a>!</p>
-
-<h2 id="code">Code</h2>
+          <h1 class="guide-header">Schema — Limiting Visibility</h1>
+          <p>Sometimes, you want to hide schema elements from some users. For example:</p>
 
 <ul>
-  <li><code class="highlighter-rouge">graphql-ruby</code> + Rails demo (<a href="https://github.com/rmosolgo/graphql-ruby-demo">src</a> / <a href="http://graphql-ruby-demo.herokuapp.com">heroku</a>)</li>
-  <li><a href="https://github.com/shopify/graphql-batch"><code class="highlighter-rouge">graphql-batch</code></a>, a batched query execution strategy</li>
-  <li><a href="https://github.com/rmosolgo/graphql-libgraphqlparser-ruby"><code class="highlighter-rouge">graphql-libgraphqlparser</code></a>, bindings to <a href="https://github.com/graphql/libgraphqlparser">libgraphqlparser</a>, a C-level parser.</li>
-  <li>Rails Helpers:
-    <ul>
-      <li><a href="https://github.com/goco-inc/graphql-activerecord"><code class="highlighter-rouge">graphql-activerecord</code></a></li>
-      <li><a href="https://github.com/colepatrickturner/graphql-rails-resolver"><code class="highlighter-rouge">graphql-rails-resolve</code></a></li>
-    </ul>
+  <li>some elements are feature flagged; or</li>
+  <li>some elements require higher permissions</li>
+</ul>
+
+<p>If you only want to limit <em>access</em> to these fields, consider the options described in the <a href="/graphql-ruby/queries/authorization">authorization guide</a>.</p>
+
+<p>If you want to <em>completely hide</em> some fields, types, enum values or arguments, read on!</p>
+
+<h2 id="masking">Masking</h2>
+
+<p>You can hide parts of the schema by passing <code class="highlighter-rouge">except:</code> to <code class="highlighter-rouge">Schema.execute</code>. For example:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">mask</span> <span class="o">=</span> <span class="no">PermissionMask</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="vi">@current_user</span><span class="p">)</span>
+<span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="n">query_string</span><span class="p">,</span> <span class="ss">except: </span><span class="n">mask</span><span class="p">)</span>
+</code></pre>
+</div>
+
+<p>During that query, some elements will be hidden. This means that fields, types, arguments or enum values will be treated as if they were not defined at all.</p>
+
+<p>A mask must respond to <code class="highlighter-rouge">#call(schema_member)</code>. When that methods returns truthy, the schema member will be hidden.</p>
+
+<p>For example, here’s an implementation of <code class="highlighter-rouge">PermissionMask</code> above:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="k">class</span> <span class="nc">PermissionMask</span>
+  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">person</span><span class="p">)</span>
+    <span class="vi">@person</span> <span class="o">=</span> <span class="n">person</span>
+  <span class="k">end</span>
+
+  <span class="c1"># If this returns true, the schema member will be hidden</span>
+  <span class="k">def</span> <span class="nf">call</span><span class="p">(</span><span class="n">schema_member</span><span class="p">)</span>
+    <span class="no">Permissions</span><span class="p">.</span><span class="nf">hidden?</span><span class="p">(</span><span class="n">person</span><span class="p">,</span> <span class="n">schema_member</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<p>The <code class="highlighter-rouge">schema_member</code> may be any of:</p>
+
+<ul>
+  <li>Type (<a href="http://www.rubydoc.info/gems/graphql/GraphQL/BaseType" target="_blank"><code>GraphQL::BaseType</code></a> and subclasses)</li>
+  <li>Field (<a href="http://www.rubydoc.info/gems/graphql/GraphQL/Field" target="_blank"><code>GraphQL::Field</code></a>)</li>
+  <li>
+    <table>
+      <tbody>
+        <tr>
+          <td>Argument (GraphQL::Argument</td>
+          <td>api_doc }})</td>
+        </tr>
+      </tbody>
+    </table>
   </li>
+  <li>Enum value (<a href="http://www.rubydoc.info/gems/graphql/GraphQL/EnumType/EnumValue" target="_blank"><code>GraphQL::EnumType::EnumValue</code></a>)</li>
 </ul>
 
-<h2 id="blog-posts">Blog Posts</h2>
+<p>The result of <code class="highlighter-rouge">#call(schema_member)</code> is <strong>cached</strong> during the query.</p>
 
-<ul>
-  <li>Building a blog in GraphQL and Relay on Rails <a href="https://medium.com/@gauravtiwari/graphql-and-relay-on-rails-getting-started-955a49d251de">Introduction</a>, <a href="https://medium.com/@gauravtiwari/graphql-and-relay-on-rails-creating-types-and-schema-b3f9b232ccfc">Part 1</a>, <a href="https://medium.com/@gauravtiwari/graphql-and-relay-on-rails-first-relay-powered-react-component-cb3f9ee95eca">Part 2</a></li>
-  <li>https://medium.com/@khor/relay-facebook-on-rails-8b4af2057152</li>
-  <li>https://blog.jacobwgillespie.com/from-rest-to-graphql-b4e95e94c26b#.4cjtklrwt</li>
-  <li>http://mgiroux.me/2015/getting-started-with-rails-graphql-relay/</li>
-  <li>http://mgiroux.me/2015/uploading-files-using-relay-with-rails/</li>
-  <li>http://mgiroux.me/2016/journey-into-graphql-ruby-query-execution/</li>
-</ul>
+<h2 id="use-with-metadata">Use with Metadata</h2>
+
+<p>This feature pairs nicely with attaching custom data to types. See the <a href="/graphql-ruby/schema/types_and_fields">types and fields guide</a> for information about assigning values to an object’s <code class="highlighter-rouge">metadata</code>.</p>
+
+<p>Then, you can check <code class="highlighter-rouge">metadata</code> in your mask. For example, to hide fields based on a metadata flag:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># Hide secret objects from this user</span>
+<span class="n">top_secret</span> <span class="o">=</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">schema_member</span><span class="p">)</span> <span class="p">{</span> <span class="n">schema_member</span><span class="p">.</span><span class="nf">metadata</span><span class="p">[</span><span class="ss">:top_secret</span><span class="p">]}</span>
+<span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="n">query_string</span><span class="p">,</span> <span class="ss">except: </span><span class="n">top_secret</span><span class="p">)</span>
+</code></pre>
+</div>
 
         </div>
       </div>

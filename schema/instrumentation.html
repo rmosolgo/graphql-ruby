@@ -1,0 +1,161 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>GraphQL Ruby - Schema — Instrumentation</title>
+    <link rel="stylesheet" href="/graphql-ruby/css/main.css">
+    <link rel="icon" href="/graphql-ruby/graphql-ruby-icon.png">
+    <meta name="generator">
+  </head>
+  <body class="hack">
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+      ga('create', 'UA-19264608-11', 'auto');
+      ga('send', 'pageview');
+    </script>
+    <div class="container">
+      <div style="display: flex; justify-content: center;">
+<strong style="white-space: pre; line-height: 1.1em; display: inline-block; font-size: 8px;">
+    ▄██████▄     ▄████████    ▄████████    ▄███████▄    ▄█    █▄    ████████▄    ▄█
+   ███    ███   ███    ███   ███    ███   ███    ███   ███    ███   ███    ███  ███
+   ███    █▀    ███    ███   ███    ███   ███    ███   ███    ███   ███    ███  ███
+  ▄███         ▄███▄▄▄▄██▀   ███    ███   ███    ███  ▄███▄▄▄▄███▄▄ ███    ███  ███
+ ▀▀███ ████▄  ▀▀███▀▀▀▀▀   ▀███████████ ▀█████████▀  ▀▀███▀▀▀▀███▀  ███    ███  ███
+   ███    ███ ▀███████████   ███    ███   ███          ███    ███   ███    ███  ███
+   ███    ███   ███    ███   ███    ███   ███          ███    ███   ███  ▀ ███  ███▌    ▄
+   ████████▀    ███    ███   ███    █▀   ▄████▀        ███    █▀     ▀██████▀▄█ █████▄▄██
+                ███    ███                                                      ▀
+</strong>
+      </div>
+      <p style="text-align: center;">A GraphQL server implementation for Ruby</p>
+
+      <div class="grid -between">
+        <div class="cell -3of12">
+          <h3>Guides</h3>
+          <ul>
+            <li><a href="/graphql-ruby/">Getting Started</a></li>
+            <li>
+              <strong>Schema</strong>
+              <ul>
+                <li><a href="/graphql-ruby/schema/types_and_fields">Types and Fields</a></li>
+                <li><a href="/graphql-ruby/schema/configuration_options">Configuration Options</a></li>
+                <li><a href="/graphql-ruby/schema/code_reuse">Code Reuse</a></li>
+                <li><a href="/graphql-ruby/schema/testing">Testing</a></li>
+              </ul>
+            </li>
+            <li>
+              <strong>Queries</strong>
+              <ul>
+                <li><a href="/graphql-ruby/queries/executing_queries">Executing Queries</a></li>
+                <li><a href="/graphql-ruby/queries/authorization">Authorization</a></li>
+                <li><a href="/graphql-ruby/queries/security">Security</a></li>
+                <li><a href="/graphql-ruby/queries/error_handling">Error Handling</a></li>
+                <li><a href="/graphql-ruby/queries/phases_of_execution">Phases of Execution</a></li>
+              </ul>
+            </li>
+            <li>
+              <strong>Relay</strong>
+              <ul>
+                <li><a href="/graphql-ruby/relay/object_identification">Object Identification</a></li>
+                <li><a href="/graphql-ruby/relay/connections">Connections</a></li>
+                <li><a href="/graphql-ruby/relay/mutations">Mutations</a></li>
+              </ul>
+            </li>
+          </ul>
+          <h3><a href="http://www.rubydoc.info/github/rmosolgo/graphql-ruby">API Docs</a></h3>
+          <h3><a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a></h3>
+        </div>
+        <div class="cell -9of12">
+          <h1 class="guide-header">Schema — Instrumentation</h1>
+          <p>Instrumentation provides hooks for inserting custom code around field resolution and query execution.</p>
+
+<h2 id="field-instrumentation">Field Instrumentation</h2>
+
+<p>Field instrumentation can be attached during schema definition:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+  <span class="n">instrument</span><span class="p">(</span><span class="ss">:field</span><span class="p">,</span> <span class="no">FieldTimerInstrumentation</span><span class="p">.</span><span class="nf">new</span><span class="p">)</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<p>The instrumenter is an object which responds to <code class="highlighter-rouge">#instrument(type, field)</code>. <code class="highlighter-rouge">#instrument</code> should return a <code class="highlighter-rouge">GraphQL::Field</code> instance which will be used during query execution. <code class="highlighter-rouge">#instrument</code> is called with each type-field pair for <em>all</em> Object types and Interface types in your schema.</p>
+
+<p>Here’s an example field instrumenter:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="k">class</span> <span class="nc">FieldTimerInstrumentation</span>
+  <span class="c1"># If a field was flagged to be timed,</span>
+  <span class="c1"># wrap its resolve proc with a timer.</span>
+  <span class="k">def</span> <span class="nf">instrument</span><span class="p">(</span><span class="n">type</span><span class="p">,</span> <span class="n">field</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">field</span><span class="p">.</span><span class="nf">metadata</span><span class="p">[</span><span class="ss">:timed</span><span class="p">]</span>
+      <span class="n">old_resolve_proc</span> <span class="o">=</span> <span class="n">field</span><span class="p">.</span><span class="nf">resolve_proc</span>
+      <span class="n">new_resolve_proc</span> <span class="o">=</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
+        <span class="no">Rails</span><span class="p">.</span><span class="nf">logger</span><span class="p">.</span><span class="nf">info</span><span class="p">(</span><span class="s2">"</span><span class="si">#{</span><span class="n">type</span><span class="p">.</span><span class="nf">name</span><span class="si">}</span><span class="s2">.</span><span class="si">#{</span><span class="n">field</span><span class="p">.</span><span class="nf">name</span><span class="si">}</span><span class="s2"> START: </span><span class="si">#{</span><span class="no">Time</span><span class="p">.</span><span class="nf">now</span><span class="p">.</span><span class="nf">to_i</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="n">old_resolve_proc</span><span class="p">.</span><span class="nf">call</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span>
+        <span class="no">Rails</span><span class="p">.</span><span class="nf">logger</span><span class="p">.</span><span class="nf">info</span><span class="p">(</span><span class="s2">"</span><span class="si">#{</span><span class="n">type</span><span class="p">.</span><span class="nf">name</span><span class="si">}</span><span class="s2">.</span><span class="si">#{</span><span class="n">field</span><span class="p">.</span><span class="nf">name</span><span class="si">}</span><span class="s2"> END: </span><span class="si">#{</span><span class="no">Time</span><span class="p">.</span><span class="nf">now</span><span class="p">.</span><span class="nf">to_i</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+      <span class="p">}</span>
+
+      <span class="c1"># Return a copy of `field`, with a new resolve proc</span>
+      <span class="n">field</span><span class="p">.</span><span class="nf">redefine</span> <span class="k">do</span>
+        <span class="n">resolve</span><span class="p">(</span><span class="n">new_resolve_proc</span><span class="p">)</span>
+      <span class="k">end</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<p>It can be attached as shown above. You can use <code class="highlighter-rouge">redefine { ... }</code> to make a shallow copy of the  <a href="http://www.rubydoc.info/gems/graphql/GraphQL/Field" target="_blank"><code>GraphQL::Field</code></a> and extend its definition.</p>
+
+<h2 id="query-instrumentation">Query Instrumentation</h2>
+
+<p>Query instrumentation can be attached during schema definition:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+  <span class="n">instrument</span><span class="p">(</span><span class="ss">:query</span><span class="p">,</span> <span class="no">QueryTimerInstrumentation</span><span class="p">)</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<p>The instrumenter must implement <code class="highlighter-rouge">#before_query(query)</code> and <code class="highlighter-rouge">#after_query(query)</code>. The return values of these methods are not used. They receive the <a href="http://www.rubydoc.info/gems/graphql/GraphQL/Query" target="_blank"><code>GraphQL::Query</code></a> instance.</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="k">module</span> <span class="nn">MyQueryInstrumentation</span>
+  <span class="kp">module_function</span>
+
+  <span class="c1"># Log the time of the query</span>
+  <span class="k">def</span> <span class="nf">before_query</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+    <span class="no">Rails</span><span class="p">.</span><span class="nf">logger</span><span class="p">.</span><span class="nf">info</span><span class="p">(</span><span class="s2">"Query begin: </span><span class="si">#{</span><span class="no">Time</span><span class="p">.</span><span class="nf">now</span><span class="p">.</span><span class="nf">to_i</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">after_query</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+    <span class="no">Rails</span><span class="p">.</span><span class="nf">logger</span><span class="p">.</span><span class="nf">info</span><span class="p">(</span><span class="s2">"Query end: </span><span class="si">#{</span><span class="no">Time</span><span class="p">.</span><span class="nf">now</span><span class="p">.</span><span class="nf">to_i</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+        </div>
+      </div>
+    </div>
+    <script>
+      // Find headers with IDs and wrap their text in `<a href=></a>`
+      // That way people can easily copy the link.
+      var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+      var header, idText, headerLink;
+      for (var i = 0; i < headers.length; i++) {
+        header = headers[i];
+        idText = header.id;
+        if (idText) {
+          headerLink = document.createElement("a");
+          headerLink.href = "#" + idText;
+          headerLink.textContent = header.textContent;
+          header.textContent = "";
+          header.appendChild(headerLink);
+        }
+      }
+    </script>
+  </body>
+</html>
