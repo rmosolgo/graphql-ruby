@@ -74,5 +74,22 @@
         </div>
       </div>
     </div>
+    <script>
+      // Find headers with IDs and wrap their text in `<a href={{id}}></a>`
+      // That way people can easily copy the link.
+      var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+      var header, idText, headerLink;
+      for (var i = 0; i < headers.length; i++) {
+        header = headers[i];
+        idText = header.id;
+        if (idText) {
+          headerLink = document.createElement("a");
+          headerLink.href = "#" + idText;
+          headerLink.textContent = header.textContent;
+          header.textContent = "";
+          header.appendChild(headerLink);
+        }
+      }
+    </script>
   </body>
 </html>
