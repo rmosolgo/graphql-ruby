@@ -8,6 +8,29 @@
 
 ### Bug fixes
 
+## 1.1.0 (1 Nov 2016)
+
+### Breaking changes
+
+- Two-character `"\\u"` is no longer treated as the Unicode escape character, only the Unicode escape character `"\u"` is treated that way. (This behavior was a bug, the migration path is to use the Unicode escape character.) #366
+- `GraphQL::Language::ParserTests` was removed, use `GraphQL::Compatibility` instead. #366
+- Non-null arguments can't be defined with default values, because those values would never be used #361
+
+### New features
+
+- `Schema.from_definition(definition_string)` builds a `GraphQL::Schema` out of a schema definition. #346
+- Schema members (types, fields, arguments, enum values) can be hidden on a per-query basis with the `except:` option #300
+- `GraphQL::Compatibility` contains `.build_suite` functions for testing user-provided parsers and execution strategies with GraphQL internals. #366
+- Schema members respond to `#redefine { ... }` for making shallow copies with extended definitions. #357
+- `Schema#instrument` provides an avenue for observing query and field resolution with no overhead.
+- Some `SerialExecution` objects were converted to functions, resulting in a modest performance improvement for query resolution.
+
+
+### Bug fixes
+
+- `NonNullType` and `ListType` have no name (`nil`), as per the spec #355
+- Non-null arguments can't be defined with default values, because those values would never be used #361
+
 ## 1.0.0 (25 Oct 2016)
 
 ### Breaking changes
