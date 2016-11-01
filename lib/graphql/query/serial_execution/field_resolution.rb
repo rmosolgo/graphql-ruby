@@ -24,17 +24,18 @@ module GraphQL
         # After getting the value from the field's resolve method,
         # continue by "finishing" the value, eg. executing sub-fields or coercing values
         def get_finished_value(raw_value)
-          execution_context.query.context.irep_node = irep_node
-
           case raw_value
           when GraphQL::ExecutionError
-            execution_context.query.context.add_error(raw_value)
+            raw_value.ast_node = irep_node.ast_node
+            raw_value.path = irep_node.path
+            execution_context.add_error(raw_value)
           when Array
             list_errors = raw_value.each_with_index.select { |value, _| value.is_a?(GraphQL::ExecutionError) }
             if list_errors.any?
               list_errors.each do |error, index|
+                error.ast_node = irep_node.ast_node
                 error.path = irep_node.path + [index]
-                execution_context.query.context.add_error(error)
+                execution_context.add_error(error)
               end
             end
           end
