@@ -20,7 +20,7 @@ task(default: [:test, :rubocop])
 
 desc "Use Racc & Ragel to regenerate parser.rb & lexer.rb from configuration files"
 task :build_parser do
-  `rm lib/graphql/language/parser.rb lib/graphql/language/lexer.rb `
+  `rm -f lib/graphql/language/parser.rb lib/graphql/language/lexer.rb `
   `racc lib/graphql/language/parser.y -o lib/graphql/language/parser.rb`
   `ragel -R lib/graphql/language/lexer.rl`
 end
