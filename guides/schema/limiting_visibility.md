@@ -43,10 +43,8 @@ The `schema_member` may be any of:
 
 - Type ({{ "GraphQL::BaseType" | api_doc }} and subclasses)
 - Field ({{ "GraphQL::Field" | api_doc }})
-- Argument ({{ "GraphQL::Argument" }} | api_doc }})
+- Argument ({{ "GraphQL::Argument" | api_doc }})
 - Enum value ({{ "GraphQL::EnumType::EnumValue" | api_doc }})
-
-The result of `#call(schema_member)` is __cached__ during the query.
 
 ## Use with Metadata
 
