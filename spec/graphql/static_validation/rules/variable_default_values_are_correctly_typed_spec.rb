@@ -43,4 +43,82 @@ describe GraphQL::StaticValidation::VariableDefaultValuesAreCorrectlyTyped do
     ]
     assert_equal(expected, errors)
   end
+
+  describe "null default values" do
+    describe "variables with valid default null values" do
+      let(:schema) {
+        GraphQL::Schema.from_definition(%|
+          type Query {
+            field(a: Int, b: String, c: ComplexInput): Int
+          }
+
+          input ComplexInput {
+            requiredField: Boolean!
+            intField: Int
+          }
+        |)
+      }
+
+      let(:query_string) {%|
+        query getCheese(
+          $a: Int = null,
+          $b: String = null,
+          $c: ComplexInput = { requiredField: true, intField: null }
+        ) {
+          field(a: $a, b: $b, c: $c)
+        }
+      |}
+
+      it "finds no errors" do
+        assert_equal [], errors
+      end
+    end
+
+    describe "variables with invalid default null values" do
+      let(:schema) {
+        GraphQL::Schema.from_definition(%|
+          type Query {
+            field(a: Int!, b: String!, c: ComplexInput): Int
+          }
+
+          input ComplexInput {
+            requiredField: Boolean!
+            intField: Int
+          }
+        |)
+      }
+
+      let(:query_string) {%|
+        query getCheese(
+          $a: Int! = null,
+          $b: String! = null,
+          $c: ComplexInput = { requiredField: null, intField: null }
+        ) {
+          field(a: $a, b: $b, c: $c)
+        }
+      |}
+
+      it "finds errors" do
+        expected = [
+          {
+            "message"=>"Non-null variable $a can't have a default value",
+            "locations"=>[{"line"=>3, "column"=>11}],
+            "fields"=>["query getCheese"]
+          },
+          {
+            "message"=>"Non-null variable $b can't have a default value",
+            "locations"=>[{"line"=>4, "column"=>11}],
+            "fields"=>["query getCheese"]
+          },
+          {
+            "message"=>"Default value for $c doesn't match type ComplexInput",
+            "locations"=>[{"line"=>5, "column"=>11}],
+            "fields"=>["query getCheese"]
+          }
+        ]
+
+        assert_equal expected, errors
+      end
+    end
+  end
 end
