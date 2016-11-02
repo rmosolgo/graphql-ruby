@@ -32,8 +32,10 @@ module GraphQL
     def reduce_node(irep_node, reducer_states)
       visit_analyzers(:enter, irep_node, reducer_states)
 
-      irep_node.children.each do |name, child_irep_node|
-        reduce_node(child_irep_node, reducer_states)
+      irep_node.typed_children.each do |type_defn, children|
+        children.each do |name, child_irep_node|
+          reduce_node(child_irep_node, reducer_states)
+        end
       end
 
       visit_analyzers(:leave, irep_node, reducer_states)

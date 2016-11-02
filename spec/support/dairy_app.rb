@@ -16,6 +16,7 @@ EdibleInterface = GraphQL::InterfaceType.define do
   description "Something you can eat, yum"
   field :fatContent, !types.Float, "Percentage which is fat"
   field :origin, !types.String, "Place the edible comes from"
+  field :selfAsEdible, EdibleInterface, resolve: ->(o, a, c) { o }
 end
 
 AnimalProductInterface = GraphQL::InterfaceType.define do
