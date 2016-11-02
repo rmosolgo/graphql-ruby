@@ -168,11 +168,9 @@ describe GraphQL::Query::Arguments do
       assert_equal true, test_inputs.key?(:b)
 
       assert_equal false, test_inputs.key?(:c)
-      # This _was_ present in the variables,
-      # but it was nil, which is not allowed in GraphQL
-      assert_equal false, test_inputs.key?(:d)
+      assert_equal true, test_inputs.key?(:d)
 
-      assert_equal({"a" => 1, "b" => 2}, test_inputs.to_h)
+      assert_equal({"a" => 1, "b" => 2, "d" => nil}, test_inputs.to_h)
     end
 
     it "works with variable default values" do
@@ -187,6 +185,21 @@ describe GraphQL::Query::Arguments do
       assert_equal false, test_defaults.key?(:c)
       assert_equal false, test_defaults.key?(:d)
       assert_equal({"a" => 1, "b" => 2}, test_defaults.to_h)
+    end
+
+    it "works with variable default values with null" do
+      schema.execute("query ArgTest($arg: TestInput = {d: null}){ argTest(d: $arg) }")
+
+      test_defaults = arg_values.last["d"]
+
+      assert_equal false, test_defaults.key?(:a)
+      # This is present from default val
+      assert_equal true, test_defaults.key?(:b)
+
+      assert_equal false, test_defaults.key?(:c)
+      assert_equal true, test_defaults.key?(:d)
+
+      assert_equal({"d" => nil, "b" => 2}, test_defaults.to_h)
     end
   end
 end

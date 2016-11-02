@@ -13,4 +13,8 @@ class MinimumInputObject
   def [](key)
     @values[key]
   end
+
+  def key?(key)
+    @values.key?(key)
+  end
 end
