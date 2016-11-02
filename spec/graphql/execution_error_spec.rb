@@ -44,6 +44,7 @@ describe GraphQL::ExecutionError do
         }
       }
       executionError
+      valueWithExecutionError
     }
 
     fragment similarCheeseFields on Cheese {
@@ -90,6 +91,7 @@ describe GraphQL::ExecutionError do
               ]
             },
             "executionError" => nil,
+            "valueWithExecutionError" => 0
           },
           "errors"=>[
             {
@@ -126,6 +128,11 @@ describe GraphQL::ExecutionError do
               "message"=>"There was an execution error",
               "locations"=>[{"line"=>41, "column"=>7}],
               "path"=>["executionError"]
+            },
+            {
+              "message"=>"Could not fetch latest value",
+              "locations"=>[{"line"=>42, "column"=>7}],
+              "path"=>["valueWithExecutionError"]
             },
           ]
         }

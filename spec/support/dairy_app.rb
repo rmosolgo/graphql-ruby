@@ -297,6 +297,14 @@ DairyAppQueryType = GraphQL::ObjectType.define do
     resolve ->(t, a, c) { raise(GraphQL::ExecutionError, "There was an execution error") }
   end
 
+  field :valueWithExecutionError do
+    type !GraphQL::INT_TYPE
+    resolve ->(t, a, c) {
+      c.add_error(GraphQL::ExecutionError.new("Could not fetch latest value"))
+      return 0
+    }
+  end
+
   # To test possibly-null fields
   field :maybeNull, MaybeNullType do
     resolve ->(t, a, c) { OpenStruct.new(cheese: nil) }
