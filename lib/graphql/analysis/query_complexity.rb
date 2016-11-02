@@ -46,7 +46,7 @@ module GraphQL
               type_complexities = memo[:complexities_on_type].pop
               child_complexity = type_complexities.max_possible_complexity
               own_complexity = get_complexity(irep_node, memo[:query], child_complexity)
-              memo[:complexities_on_type].last.merge(irep_node.definitions, own_complexity)
+              memo[:complexities_on_type].last.merge(irep_node.owner_type, own_complexity)
             end
           end
         end
@@ -65,24 +65,18 @@ module GraphQL
       # Get a complexity value for a field,
       # by getting the number or calling its proc
       def get_complexity(irep_node, query, child_complexity)
-        max_possible_complexity = 0
-        irep_node.definitions.each do |type_defn, field_defn|
-          defined_complexity = field_defn.complexity
-          type_cpx = case defined_complexity
-          when Proc
-            args = query.arguments_for(irep_node, field_defn)
-            defined_complexity.call(query.context, args, child_complexity)
-          when Numeric
-            defined_complexity + (child_complexity || 0)
-          else
-            raise("Invalid complexity: #{defined_complexity.inspect} on #{field_defn.name}")
-          end
-
-          if type_cpx > max_possible_complexity
-            max_possible_complexity = type_cpx
-          end
+        type_defn = irep_node.owner_type
+        field_defn = irep_node.definition
+        defined_complexity = field_defn.complexity
+        case defined_complexity
+        when Proc
+          args = query.arguments_for(irep_node, field_defn)
+          defined_complexity.call(query.context, args, child_complexity)
+        when Numeric
+          defined_complexity + (child_complexity || 0)
+        else
+          raise("Invalid complexity: #{defined_complexity.inspect} on #{field_defn.name}")
         end
-        max_possible_complexity
       end
 
       # Selections on an object may apply differently depending on what is _actually_ returned by the resolve function.
@@ -112,9 +106,10 @@ module GraphQL
           max_complexity
         end
 
-        # Store the complexity score for each of `types`
-        def merge(definitions, complexity)
-          definitions.each { |type_defn, field_defn| @types[type_defn] += complexity }
+        # Store the complexity for the branch on `type_defn`.
+        # Later we will see if this is the max complexity among branches.
+        def merge(type_defn, complexity)
+          @types[type_defn] += complexity
         end
 
         private

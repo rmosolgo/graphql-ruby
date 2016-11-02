@@ -47,19 +47,16 @@ module GraphQL
           node_name = ast_node.alias || ast_node.name
           owner_type = context.parent_type_definition.unwrap
           # This node might not be novel, eg inside an inline fragment
-          # but it could contain new type information, which is captured below.
-          # (StaticValidation ensures that merging fields is fair game)
-          node = parent_node.typed_children[owner_type][node_name] ||= begin
-            Node.new(
-              return_type: context.type_definition && context.type_definition.unwrap,
-              ast_node: ast_node,
-              name: node_name,
-              definition_name: ast_node.name,
-              parent: parent_node,
-              included: false, # may be set to true on leaving the node
-            )
-          end
-          node.definitions[owner_type] = context.field_definition
+          node = parent_node.typed_children[owner_type][node_name] ||= Node.new(
+            return_type: context.type_definition && context.type_definition.unwrap,
+            ast_node: ast_node,
+            name: node_name,
+            definition_name: ast_node.name,
+            definition: context.field_definition,
+            parent: parent_node,
+            owner_type: owner_type,
+            included: false, # may be set to true on leaving the node
+          )
           @nodes.push(node)
           @parent_directives.push([])
         }
@@ -75,7 +72,7 @@ module GraphQL
               name: ast_node.name,
               definition_name: ast_node.name,
               ast_node: ast_node,
-              definitions: {context.directive_definition => context.directive_definition},
+              definition: context.directive_definition,
               # This isn't used, the directive may have many parents in the case of inline fragment
               parent: nil,
             )
@@ -196,8 +193,6 @@ module GraphQL
         if child_node.nil?
           child_node = parent_node.typed_children[type_defn][name] = node.dup
         end
-
-        child_node.definitions.merge!(node.definitions)
 
         child_node.included = next_included
 

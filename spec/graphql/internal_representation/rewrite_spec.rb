@@ -28,12 +28,12 @@ describe GraphQL::InternalRepresentation::Rewrite do
       assert_equal DairyAppQueryType, op_node.return_type
       first_field = root_children.values.first
       assert_equal 3, first_field.typed_children[CheeseType].length
-      assert_equal [DairyAppQueryType], first_field.definitions.keys
+      assert_equal DairyAppQueryType, first_field.owner_type
       assert_equal CheeseType, first_field.return_type
 
       second_field = root_children.values.last
       assert_equal 1, second_field.typed_children[CheeseType].length
-      assert_equal [DairyAppQueryType], second_field.definitions.keys
+      assert_equal DairyAppQueryType.get_field("cheese"), second_field.definition
       assert_equal CheeseType, second_field.return_type
       assert second_field.inspect.is_a?(String)
     end
@@ -51,7 +51,7 @@ describe GraphQL::InternalRepresentation::Rewrite do
     it "gets dynamic field definitions" do
       cheese_field = rewrite_result[nil].typed_children[DairyAppQueryType]["cheese"]
       typename_field = cheese_field.typed_children[CheeseType]["typename"]
-      assert_equal "__typename", typename_field.definitions.values.first.name
+      assert_equal "__typename", typename_field.definition.name
       assert_equal "__typename", typename_field.definition_name
     end
   end
@@ -137,14 +137,26 @@ describe GraphQL::InternalRepresentation::Rewrite do
       similar_sheep_field = similar_cow_field.typed_children[CheeseType]["similarCheese"]
       assert_equal ["flavor", "source"], similar_sheep_field.typed_children[CheeseType].keys
 
-      assert_equal [EdibleInterface], cheese_field.typed_children[EdibleInterface]["origin"].definitions.keys
-      assert_equal [EdibleInterface], cheese_field.typed_children[EdibleInterface]["fatContent"].definitions.keys
-      assert_equal [CheeseType], cheese_field.typed_children[CheeseType]["fatContent"].definitions.keys
-      assert_equal [CheeseType], cheese_field.typed_children[CheeseType]["flavor"].definitions.keys
+      edible_origin_node = cheese_field.typed_children[EdibleInterface]["origin"]
+      assert_equal EdibleInterface.get_field("origin"), edible_origin_node.definition
+      assert_equal EdibleInterface, edible_origin_node.owner_type
+
+      edible_fat_content_node = cheese_field.typed_children[EdibleInterface]["fatContent"]
+      assert_equal EdibleInterface.get_field("fatContent"), edible_fat_content_node.definition
+      assert_equal EdibleInterface, edible_fat_content_node.owner_type
+
+      cheese_fat_content_node = cheese_field.typed_children[CheeseType]["fatContent"]
+      assert_equal CheeseType.get_field("fatContent"), cheese_fat_content_node.definition
+      assert_equal CheeseType, cheese_fat_content_node.owner_type
+
+      cheese_flavor_node = cheese_field.typed_children[CheeseType]["flavor"]
+      assert_equal CheeseType.get_field("flavor"), cheese_flavor_node.definition
+      assert_equal CheeseType, cheese_flavor_node.owner_type
+
 
       # nested spread inside fragment definition:
-      cheese_2_field = op_node.children["cheese2"].children["similarCheese"]
-      assert_equal ["id", "fatContent"], cheese_2_field.children.keys
+      cheese_2_field = op_node.typed_children[DairyAppQueryType]["cheese2"].typed_children[CheeseType]["similarCheese"]
+      assert_equal ["id", "fatContent"], cheese_2_field.typed_children[CheeseType].keys
     end
   end
 
