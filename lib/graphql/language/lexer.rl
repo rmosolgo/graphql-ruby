@@ -109,6 +109,7 @@ module GraphQL
       # To avoid allocating more strings, this modifies the string passed into it
       def self.replace_escaped_characters_in_place(raw_string)
         raw_string.gsub!(ESCAPES, ESCAPES_REPLACE)
+        raw_string.gsub!(UTF_8, &UTF_8_REPLACE)
         nil
       end
 
@@ -176,6 +177,9 @@ module GraphQL
         "\\r" => "\r",
         "\\t" => "\t",
       }
+
+      UTF_8 = /\\u[\dAa-f]{4}/i
+      UTF_8_REPLACE = ->(m) { [m[-4..-1].to_i(16)].pack('U'.freeze) }
 
       def self.emit_string(ts, te, meta)
         value = meta[:data][ts...te].pack("c*").force_encoding("UTF-8")

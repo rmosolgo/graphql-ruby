@@ -57,7 +57,7 @@ module GraphQL
                   int: 3,
                   float: 4.7e-24,
                   bool: false,
-                  string: "☀︎🏆\\n \\" \u00b6 /",
+                  string: "☀︎🏆 \\b \\f \\n \\r \\t \\" \u00b6 \\u00b6 / \\/",
                   enum: ENUM_NAME,
                   array: [7, 8, 9]
                   object: {a: [1,2,3], b: {c: "4"}}
@@ -71,7 +71,7 @@ module GraphQL
             assert_equal 3, inputs[0].value, "Integers"
             assert_equal 0.47e-23, inputs[1].value, "Floats"
             assert_equal false, inputs[2].value, "Booleans"
-            assert_equal %|☀︎🏆\n " ¶ /|, inputs[3].value, "Strings"
+            assert_equal %|☀︎🏆 \b \f \n \r \t " ¶ ¶ / /|, inputs[3].value, "Strings"
             assert_instance_of GraphQL::Language::Nodes::Enum, inputs[4].value
             assert_equal "ENUM_NAME", inputs[4].value.name, "Enums"
             assert_equal [7,8,9], inputs[5].value, "Lists"
