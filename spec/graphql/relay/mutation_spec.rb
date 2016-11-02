@@ -2,8 +2,8 @@ require 'spec_helper'
 
 describe GraphQL::Relay::Mutation do
   let(:query_string) {%|
-    mutation addBagel($clientMutationId: String) {
-      introduceShip(input: {shipName: "Bagel", factionId: "1", clientMutationId: $clientMutationId}) {
+    mutation addBagel($clientMutationId: String, $shipName: String = "Bagel") {
+      introduceShip(input: {shipName: $shipName, factionId: "1", clientMutationId: $clientMutationId}) {
         clientMutationId
         shipEdge {
           node { name, id }
@@ -23,6 +23,24 @@ describe GraphQL::Relay::Mutation do
   after do
     STAR_WARS_DATA["Ship"].delete("9")
     STAR_WARS_DATA["Faction"]["1"].ships.delete("9")
+  end
+
+  it "supports null values" do
+    result = star_wars_query(query_string, "clientMutationId" => "1234", "shipName" => nil)
+
+    expected = {"data" => {
+      "introduceShip" => {
+        "clientMutationId" => "1234",
+        "shipEdge" => {
+          "node" => {
+            "name" => nil,
+            "id" => GraphQL::Schema::UniqueWithinType.encode("Ship", "9"),
+          },
+        },
+        "faction" => {"name" => STAR_WARS_DATA["Faction"]["1"].name }
+      }
+    }}
+    assert_equal(expected, result)
   end
 
   it "returns the result & clientMutationId" do
