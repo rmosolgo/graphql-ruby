@@ -89,12 +89,19 @@ describe GraphQL::Relay::Mutation do
       custom_type = custom_return_type
       GraphQL::Relay::Mutation.define do
         name "CustomReturnTypeTest"
+
+        input_field :nullDefault, types.String, default_value: nil
+        input_field :noDefault, types.String
+        input_field :stringDefault, types.String, default_value: 'String'
+
         return_type custom_type
         resolve ->(obj, input, ctx) {
           OpenStruct.new(name: "Custom Return Type Test")
         }
       end
     }
+
+    let(:input) { mutation.field.arguments['input'].type.unwrap }
 
     let(:schema) {
       mutation_field = mutation.field
@@ -119,6 +126,21 @@ describe GraphQL::Relay::Mutation do
 
     it "doesn't get a mutation in the metadata" do
       assert_equal nil, custom_return_type.mutation
+    end
+
+    it "supports input fields with nil default value" do
+      assert input.arguments['nullDefault'].default_value?
+      assert_equal nil, input.arguments['nullDefault'].default_value
+    end
+
+    it "supports input fields with no default value" do
+      assert !input.arguments['noDefault'].default_value?
+      assert_equal nil, input.arguments['noDefault'].default_value
+    end
+
+    it "supports input fields with non-nil default value" do
+      assert input.arguments['stringDefault'].default_value?
+      assert_equal "String", input.arguments['stringDefault'].default_value
     end
   end
 end
