@@ -11,11 +11,13 @@ module Garden
 
   class Vegetable
     include GraphQL::Define::InstanceDefinable
-    lazy_defined_attr_accessor :name, :start_planting_on, :end_planting_on
+    attr_accessor :name, :start_planting_on, :end_planting_on
+    ensure_defined(:name, :start_planting_on, :end_planting_on)
     accepts_definitions :name, plant_between: DefinePlantBetween, color: GraphQL::Define.assign_metadata_key(:color)
 
     # definition added later:
-    lazy_defined_attr_accessor :height
+    attr_accessor :height
+    ensure_defined(:height)
   end
 end
 
