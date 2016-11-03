@@ -10,9 +10,9 @@ describe GraphQL::Schema::ReduceTypes do
       "Cheese" => CheeseType,
       "Float" => GraphQL::FLOAT_TYPE,
       "String" => GraphQL::STRING_TYPE,
+      "Edible" => EdibleInterface,
       "DairyAnimal" => DairyAnimalEnum,
       "Int" => GraphQL::INT_TYPE,
-      "Edible" => EdibleInterface,
       "AnimalProduct" => AnimalProductInterface,
       "LocalProduct" => LocalProductInterface,
     }

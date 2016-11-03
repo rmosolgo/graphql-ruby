@@ -26,10 +26,10 @@ module GraphQL
 
       def call(memo, visit_type, irep_node)
         if irep_node.ast_node.is_a?(GraphQL::Language::Nodes::Field) && visit_type == :leave
-          irep_node.definitions.each do |type_defn, field_defn|
-            field = "#{type_defn.name}.#{field_defn.name}"
-            memo[:used_fields] << field
-            memo[:used_deprecated_fields] << field if field_defn.deprecation_reason
+          field = "#{irep_node.owner_type.name}.#{irep_node.definition.name}"
+          memo[:used_fields] << field
+          if irep_node.definition.deprecation_reason
+            memo[:used_deprecated_fields] << field
           end
         end
 

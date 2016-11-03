@@ -18,6 +18,7 @@ describe GraphQL::Introspection::TypeType do
     {"name"=>"id",          "isDeprecated" => false, "type" => { "kind" => "NON_NULL", "name" => nil, "ofType" => { "name" => "Int"}}},
     {"name"=>"nullableCheese", "isDeprecated"=>false, "type"=>{ "kind" => "OBJECT",  "name" => "Cheese", "ofType"=>nil}},
     {"name"=>"origin",      "isDeprecated" => false, "type" => { "kind" => "NON_NULL", "name" => nil, "ofType" => { "name" => "String"}}},
+    {"name"=>"selfAsEdible", "isDeprecated"=>false, "type"=>{"kind"=>"INTERFACE", "name"=>"Edible", "ofType"=>nil}},
     {"name"=>"similarCheese", "isDeprecated"=>false, "type"=>{ "kind" => "OBJECT", "name"=>"Cheese", "ofType"=>nil}},
     {"name"=>"source",      "isDeprecated" => false, "type" => { "kind" => "NON_NULL", "name" => nil, "ofType" => { "name" => "DairyAnimal"}}},
   ]}
@@ -49,6 +50,7 @@ describe GraphQL::Introspection::TypeType do
           {"type"=>{"kind"=>"LIST","name"=>nil, "ofType"=>{"name"=>"String"}}},
           {"type"=>{"kind"=>"NON_NULL","name"=>nil, "ofType"=>{"name"=>"ID"}}},
           {"type"=>{"kind"=>"NON_NULL","name"=>nil, "ofType"=>{"name"=>"String"}}},
+          {"type"=>{"kind"=>"INTERFACE", "name"=>"Edible", "ofType"=>nil}},
           {"type"=>{"kind"=>"ENUM","name"=>"DairyAnimal", "ofType"=>nil}},
         ]
       },

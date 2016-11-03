@@ -45,21 +45,20 @@ module GraphQL
         visitor[Nodes::Field].enter << ->(ast_node, prev_ast_node) {
           parent_node = @nodes.last
           node_name = ast_node.alias || ast_node.name
+          owner_type = context.parent_type_definition.unwrap
           # This node might not be novel, eg inside an inline fragment
-          # but it could contain new type information, which is captured below.
-          # (StaticValidation ensures that merging fields is fair game)
-          node = parent_node.children[node_name] ||= begin
-            Node.new(
-              return_type: context.type_definition && context.type_definition.unwrap,
-              ast_node: ast_node,
-              name: node_name,
-              definition_name: ast_node.name,
-              parent: parent_node,
-              included: false, # may be set to true on leaving the node
-            )
-          end
-          object_type = context.parent_type_definition.unwrap
-          node.definitions[object_type] = context.field_definition
+          node = parent_node.typed_children[owner_type][node_name] ||= Node.new(
+            return_type: context.type_definition && context.type_definition.unwrap,
+            ast_node: ast_node,
+            name: node_name,
+            definition_name: ast_node.name,
+            definition: context.field_definition,
+            parent: parent_node,
+            owner_type: owner_type,
+            included: false, # may be set to true on leaving the node
+          )
+          parent_node.children[node_name] ||= node
+          node.definitions[owner_type] = context.field_definition
           @nodes.push(node)
           @parent_directives.push([])
         }
@@ -75,6 +74,7 @@ module GraphQL
               name: ast_node.name,
               definition_name: ast_node.name,
               ast_node: ast_node,
+              definition: context.directive_definition,
               definitions: {context.directive_definition => context.directive_definition},
               # This isn't used, the directive may have many parents in the case of inline fragment
               parent: nil,
@@ -176,8 +176,10 @@ module GraphQL
       # Merge the children from `fragment_node` into `parent_node`.
       # This is an implementation of "fragment inlining"
       def deep_merge(parent_node, fragment_node, included)
-        fragment_node.children.each do |name, child_node|
-          deep_merge_child(parent_node, name, child_node, included)
+        fragment_node.typed_children.each do |type_defn, children|
+          children.each do |name, child_node|
+            deep_merge_child(parent_node, type_defn, name, child_node, included)
+          end
         end
       end
 
@@ -186,29 +188,27 @@ module GraphQL
       # - If the spread was included, first-level children should be included if _either_ node was included
       # - If the spread was _not_ included, first-level children should be included if _a pre-existing_ node was included
       #   (A copied node should be excluded)
-      def deep_merge_child(parent_node, name, node, extra_included)
-        child_node = parent_node.children[name]
+      def deep_merge_child(parent_node, type_defn, name, node, extra_included)
+        child_node = parent_node.typed_children[type_defn][name]
         previously_included = child_node.nil? ? false : child_node.included?
         next_included = extra_included ? (previously_included || node.included?) : previously_included
 
         if child_node.nil?
-          child_node = parent_node.children[name] = node.dup
+          child_node = parent_node.typed_children[type_defn][name] = node.dup
         end
-
-        child_node.definitions.merge!(node.definitions)
 
         child_node.included = next_included
 
-
-
-        node.children.each do |merge_child_name, merge_child_node|
-          deep_merge_child(child_node, merge_child_name, merge_child_node, node.included)
+        node.typed_children.each do |type_defn, children|
+          children.each do |merge_child_name, merge_child_node|
+            deep_merge_child(child_node, type_defn, merge_child_name, merge_child_node, node.included)
+          end
         end
       end
 
       # return true if node or _any_ children have a fragment spread
       def any_fragment_spreads?(node)
-        node.spreads.any? || node.children.any? { |name, node| any_fragment_spreads?(node) }
+        node.spreads.any? || node.typed_children.any? { |type_defn, children| children.any? { |name, node| any_fragment_spreads?(node) } }
       end
 
       # pop off own directives,

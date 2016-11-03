@@ -68,3 +68,4 @@ See "Getting Started" on the [website](https://rmosolgo.github.io/graphql-ruby/)
   - Renaming fragments from local names to unique names
 - Document encrypted & versioned cursors
 - Make it faster
+- Is it possible to merge typed branches before resolving them? It's hard because even the branches will have branches.
