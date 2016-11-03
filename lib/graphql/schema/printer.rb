@@ -120,10 +120,10 @@ module GraphQL
           end
 
           def print_input_value(arg)
-            if arg.default_value.nil?
-              default_string = nil
-            else
+            if arg.default_value?
               default_string = " = #{print_value(arg.default_value, arg.type)}"
+            else
+              default_string = nil
             end
 
             "#{arg.name}: #{arg.type.to_s}#{default_string}"
@@ -132,16 +132,22 @@ module GraphQL
           def print_value(value, type)
             case type
             when FLOAT_TYPE
+              return 'null' if value.nil?
               value.to_f.inspect
             when INT_TYPE
+              return 'null' if value.nil?
               value.to_i.inspect
             when BOOLEAN_TYPE
+              return 'null' if value.nil?
               (!!value).inspect
             when ScalarType, ID_TYPE, STRING_TYPE
+              return 'null' if value.nil?
               value.to_s.inspect
             when EnumType
+              return 'null' if value.nil?
               type.coerce_result(value)
             when InputObjectType
+              return 'null' if value.nil?
               fields = value.to_h.map{ |field_name, field_value|
                 field_type = type.input_fields.fetch(field_name.to_s).type
                 "#{field_name}: #{print_value(field_value, field_type)}"
@@ -150,6 +156,7 @@ module GraphQL
             when NonNullType
               print_value(value, type.of_type)
             when ListType
+              return 'null' if value.nil?
               "[#{value.to_a.map{ |v| print_value(v, type.of_type) }.join(", ")}]"
             else
               raise NotImplementedError, "Unexpected value type #{type.inspect}"
