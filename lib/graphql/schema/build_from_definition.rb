@@ -150,13 +150,23 @@ module GraphQL
           )
         end
 
+        def build_default_value(default_value)
+          case default_value
+          when GraphQL::Language::Nodes::Enum
+            default_value.name
+          when GraphQL::Language::Nodes::NullValue
+            nil
+          else
+            default_value
+          end
+        end
+
         def build_input_arguments(input_object_type_definition, type_resolver)
           input_object_type_definition.fields.map do |input_argument|
-            default_value = case input_argument.default_value
-            when GraphQL::Language::Nodes::Enum
-              input_argument.default_value.name
-            else
-              input_argument.default_value
+            kwargs = {}
+
+            if !input_argument.default_value.nil?
+              kwargs[:default_value] = build_default_value(input_argument.default_value)
             end
 
             [
@@ -165,7 +175,7 @@ module GraphQL
                 name: input_argument.name,
                 type: type_resolver.call(input_argument.type),
                 description: input_argument.description,
-                default_value: default_value,
+                **kwargs,
               )
             ]
           end
@@ -182,13 +192,19 @@ module GraphQL
 
         def build_directive_arguments(directive_definition, type_resolver)
           directive_definition.arguments.map do |directive_argument|
+            kwargs = {}
+
+            if !directive_argument.default_value.nil?
+              kwargs[:default_value] = build_default_value(directive_argument.default_value)
+            end
+
             [
               directive_argument.name,
               GraphQL::Argument.define(
                 name: directive_argument.name,
                 type: type_resolver.call(directive_argument.type),
                 description: directive_argument.description,
-                default_value: directive_argument.default_value,
+                **kwargs,
               )
             ]
           end
@@ -205,18 +221,17 @@ module GraphQL
         def build_fields(field_definitions, type_resolver)
           field_definitions.map do |field_definition|
             field_arguments = Hash[field_definition.arguments.map do |argument|
-              default_value = case argument.default_value
-              when GraphQL::Language::Nodes::Enum
-                argument.default_value.name
-              else
-                argument.default_value
+              kwargs = {}
+
+              if !argument.default_value.nil?
+                kwargs[:default_value] = build_default_value(argument.default_value)
               end
 
               arg = GraphQL::Argument.define(
                 name: argument.name,
                 description: argument.description,
                 type: type_resolver.call(argument.type),
-                default_value: default_value,
+                **kwargs,
               )
 
               [argument.name, arg]
