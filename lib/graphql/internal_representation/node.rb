@@ -3,7 +3,7 @@ require "set"
 module GraphQL
   module InternalRepresentation
     class Node
-      def initialize(parent:, ast_node: nil, return_type: nil, owner_type: nil, name: nil, definition_name: nil, definition: nil, spreads: [], directives: Set.new, included: true, typed_children: Hash.new {|h, k| h[k] = {} })
+      def initialize(parent:, ast_node: nil, return_type: nil, owner_type: nil, name: nil, definition_name: nil, definition: nil, spreads: [], directives: Set.new, included: true, typed_children: Hash.new {|h, k| h[k] = {} }, definitions: {}, children: {})
         @ast_node = ast_node
         @return_type = return_type
         @owner_type = owner_type
@@ -15,6 +15,8 @@ module GraphQL
         @directives = directives
         @included = included
         @typed_children = typed_children
+        @children = children
+        @definitions = definitions
       end
 
       # @return [Hash{GraphQL::BaseType => Hash{String => Node}] Children for each type condition
@@ -31,6 +33,28 @@ module GraphQL
       # @return [String] the name for this node's definition ({#name} may be a field's alias, this is always the name)
       attr_reader :definition_name
 
+      # A _shallow_ cache of type-field pairs for executing & analyzing this node.
+      #
+      # Known to be buggy: some fields are deeply merged when they shouldn't be.
+      #
+      # @example On-type from previous return value
+      # {
+      #   person(id: 1) {
+      #     firstName # => defined type is person
+      #   }
+      # }
+      # @example On-type from explicit type condition
+      # {
+      #   node(id: $nodeId) {
+      #     ... on Nameable {
+      #       firstName # => defined type is Nameable
+      #     }
+      #   }
+      # }
+      # @deprecated use {#typed_children} to find matching children, the use the node's {#definition}
+      # @return [Hash<GraphQL::BaseType => GraphQL::Field>] definitions to use for each possible type
+      attr_reader :definitions
+
       # @return [GraphQL::Field, GraphQL::Directive] the static definition for this field (it might be an interface field definition even though an object field definition will be used at runtime)
       attr_reader :definition
 
@@ -45,6 +69,12 @@ module GraphQL
 
       # @return [GraphQL::BaseType]
       attr_reader :owner_type
+
+      # Returns leaf selections on this node.
+      # Known to be buggy: deeply nested selections are not handled properly
+      # @deprecated use {#typed_children} instead
+      # @return [Array<Node>]
+      attr_reader :children
 
       # @return [Boolean] false if every field for this node included `@skip(if: true)`
       attr_accessor :included

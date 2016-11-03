@@ -57,6 +57,8 @@ module GraphQL
             owner_type: owner_type,
             included: false, # may be set to true on leaving the node
           )
+          parent_node.children[node_name] ||= node
+          node.definitions[owner_type] = context.field_definition
           @nodes.push(node)
           @parent_directives.push([])
         }
@@ -73,6 +75,7 @@ module GraphQL
               definition_name: ast_node.name,
               ast_node: ast_node,
               definition: context.directive_definition,
+              definitions: {context.directive_definition => context.directive_definition},
               # This isn't used, the directive may have many parents in the case of inline fragment
               parent: nil,
             )
