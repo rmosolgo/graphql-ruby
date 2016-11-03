@@ -200,7 +200,7 @@ describe GraphQL::Schema::Validation do
       end
     }
 
-    let(:invalid_default_argument_for_non_null_field) {
+    let(:invalid_default_argument_for_non_null_argument) {
       GraphQL::Argument.define do
         name "InvalidDefault"
         type !GraphQL::INT_TYPE
@@ -208,12 +208,24 @@ describe GraphQL::Schema::Validation do
       end
     }
 
+    let(:null_default_value) {
+      GraphQL::Argument.define do
+        name "NullDefault"
+        type DairyAnimalEnum
+        default_value nil
+      end
+    }
+
     it "requires the type is a Base type" do
       assert_error_includes untyped_argument, "must be a valid input type (Scalar or InputObject), not Symbol"
     end
 
-    it "does not allow default values for non-null fields" do
-      assert_error_includes invalid_default_argument_for_non_null_field, 'Variable InvalidDefault of type "Int!" is required and will not use the default value. Perhaps you meant to use type "Int".'
+    it "does not allow default values for non-null argument" do
+      assert_error_includes invalid_default_argument_for_non_null_argument, 'Variable InvalidDefault of type "Int!" is required and will not use the default value. Perhaps you meant to use type "Int".'
+    end
+
+    it "allows null default value for nullable argument" do
+      assert_equal nil, GraphQL::Schema::Validation.validate(null_default_value)
     end
   end
 end
