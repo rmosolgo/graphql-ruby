@@ -23,7 +23,8 @@ module GraphQL
   class ObjectType < GraphQL::BaseType
     accepts_definitions :interfaces, :fields, :mutation, field: GraphQL::Define::AssignObjectField
 
-    lazy_defined_attr_accessor :fields, :mutation
+    attr_accessor :fields, :mutation
+    ensure_defined(:fields, :mutation, :interfaces)
 
     # @!attribute fields
     #   @return [Hash<String => GraphQL::Field>] Map String fieldnames to their {GraphQL::Field} implementations
@@ -45,7 +46,6 @@ module GraphQL
 
     def interfaces
       @clean_interfaces ||= begin
-        ensure_defined
         if @dirty_interfaces.respond_to?(:map)
           @dirty_interfaces.map { |i_type| GraphQL::BaseType.resolve_related_type(i_type) }
         else

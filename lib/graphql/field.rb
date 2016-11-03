@@ -126,7 +126,11 @@ module GraphQL
       argument: GraphQL::Define::AssignArgument
 
 
-    lazy_defined_attr_accessor :name, :deprecation_reason, :description, :property, :hash_key, :mutation, :arguments, :complexity
+    attr_accessor :name, :deprecation_reason, :description, :property, :hash_key, :mutation, :arguments, :complexity
+    ensure_defined(
+      :name, :deprecation_reason, :description, :property, :hash_key, :mutation, :arguments, :complexity,
+      :resolve, :resolve=, :type, :type=, :name=, :property=, :hash_key=
+    )
 
     # @!attribute [r] resolve_proc
     #   @return [<#call(obj, args,ctx)>] A proc-like object which can be called to return the field's value
@@ -158,7 +162,6 @@ module GraphQL
     # @param arguments [Hash] Arguments declared in the query
     # @param context [GraphQL::Query::Context]
     def resolve(object, arguments, context)
-      ensure_defined
       resolve_proc.call(object, arguments, context)
     end
 
@@ -166,22 +169,17 @@ module GraphQL
     # a new resolve proc will be build based on its {#name}, {#property} or {#hash_key}.
     # @param new_resolve_proc [<#call(obj, args, ctx)>, nil]
     def resolve=(new_resolve_proc)
-      ensure_defined
       @resolve_proc = new_resolve_proc || build_default_resolver
     end
 
     def type=(new_return_type)
-      ensure_defined
       @clean_type = nil
       @dirty_type = new_return_type
     end
 
     # Get the return type for this field.
     def type
-      @clean_type ||= begin
-        ensure_defined
-        GraphQL::BaseType.resolve_related_type(@dirty_type)
-      end
+      @clean_type ||= GraphQL::BaseType.resolve_related_type(@dirty_type)
     end
 
     # You can only set a field's name _once_ -- this to prevent
@@ -189,7 +187,6 @@ module GraphQL
     #
     # This is important because {#name} may be used by {#resolve}.
     def name=(new_name)
-      ensure_defined
       if @name.nil?
         @name = new_name
       elsif @name != new_name
@@ -199,14 +196,12 @@ module GraphQL
 
     # @param new_property [Symbol] A method to call to resolve this field. Overrides the existing resolve proc.
     def property=(new_property)
-      ensure_defined
       @property = new_property
       self.resolve = nil # reset resolve proc
     end
 
     # @param new_hash_key [Symbol] A key to access with `#[key]` to resolve this field. Overrides the existing resolve proc.
     def hash_key=(new_hash_key)
-      ensure_defined
       @hash_key = new_hash_key
       self.resolve = nil # reset resolve proc
     end

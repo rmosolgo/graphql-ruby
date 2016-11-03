@@ -71,13 +71,13 @@ module GraphQL
     module InstanceDefinable
       def self.included(base)
         base.extend(ClassMethods)
+        base.ensure_defined(:metadata)
       end
 
       # `metadata` can store arbitrary key-values with an object.
       #
       # @return [Hash<Object, Object>] Hash for user-defined storage
       def metadata
-        ensure_defined
         @metadata ||= {}
       end
 
@@ -189,6 +189,20 @@ module GraphQL
               instance_variable_set(ivar_name, new_value)
             end
           end
+        end
+
+        def ensure_defined(*method_names)
+          ensure_defined_module = Module.new
+          ensure_defined_module.module_eval {
+            method_names.each do |method_name|
+              define_method(method_name) { |*args, &block|
+                ensure_defined
+                super(*args, &block)
+              }
+            end
+          }
+          self.prepend(ensure_defined_module)
+          nil
         end
 
         # @return [Hash] combined definitions for self and ancestors

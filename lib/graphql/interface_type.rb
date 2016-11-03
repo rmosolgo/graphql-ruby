@@ -24,7 +24,8 @@ module GraphQL
   class InterfaceType < GraphQL::BaseType
     accepts_definitions :fields, field: GraphQL::Define::AssignObjectField
 
-    lazy_defined_attr_accessor :fields
+    attr_accessor :fields
+    ensure_defined :fields
 
     def initialize
       @fields = {}
