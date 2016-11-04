@@ -261,7 +261,6 @@ module GraphQL
         # Build arguments according to query-string literals, default values, and query variables
         arguments = query.arguments_for(frame.node, field_defn)
 
-        query.context.ast_node = ast_node
         query.context.irep_node = frame.node
 
         # This is the last call in the middleware chain; it actually calls the user's resolve proc
@@ -283,7 +282,6 @@ module GraphQL
           resolve_fn_value = err
         end
 
-        query.context.ast_node = nil
         query.context.irep_node = nil
 
         case resolve_fn_value
