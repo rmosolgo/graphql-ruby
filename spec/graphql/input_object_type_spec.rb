@@ -141,6 +141,14 @@ describe GraphQL::InputObjectType do
     end
   end
 
+  describe "coerce_result" do
+    it "omits unspecified arguments" do
+      result = input_object.coerce_result(fatContent: 0.3)
+      assert_equal ["fatContent"], result.keys
+      assert_equal 0.3, result["fatContent"]
+    end
+  end
+
   describe "coercion of null inputs" do
     let(:schema) { GraphQL::Schema.from_definition(%|
       type Query {

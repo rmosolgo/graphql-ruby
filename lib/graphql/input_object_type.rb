@@ -98,7 +98,7 @@ module GraphQL
 
       arguments.each do |input_key, input_field_defn|
         input_value = value[input_key]
-        result[input_key] = input_value.nil? ? nil : input_field_defn.type.coerce_result(input_value)
+        result[input_key] = input_value.nil? ? nil : input_field_defn.type.coerce_result(input_value) if value.key?(input_key)
       end
 
       result

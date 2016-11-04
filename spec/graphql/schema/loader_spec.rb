@@ -205,7 +205,7 @@ describe GraphQL::Schema::Loader do
       field = type.fields['post']
       arg = field.arguments['varied']
 
-      assert_equal arg.default_value, { 'id' => "123", 'bigint' => nil, 'bool' => nil, 'int' => 234, 'float' => 2.3, 'enum' => "FOO", 'sub' => [{ 'string' => "str" }] }
+      assert_equal arg.default_value, { 'id' => "123", 'int' => 234, 'float' => 2.3, 'enum' => "FOO", 'sub' => [{ 'string' => "str" }] }
     end
   end
 end
