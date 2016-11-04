@@ -103,11 +103,14 @@ module GraphQL
               }]
             )
           when "ARGUMENT"
+            kwargs = {}
+            kwargs[:default_value] = JSON.parse(type["defaultValue"], quirks_mode: true) if type["defaultValue"]
+
             Argument.define(
               name: type["name"],
               type: type_resolver.call(type["type"]),
               description: type["description"],
-              default_value: type["defaultValue"] ? JSON.parse(type["defaultValue"], quirks_mode: true) : nil
+              **kwargs
             )
           when "SCALAR"
             type_name = type.fetch("name")
