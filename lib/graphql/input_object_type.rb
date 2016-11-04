@@ -29,8 +29,10 @@ module GraphQL
       argument: GraphQL::Define::AssignArgument
     )
 
-    lazy_defined_attr_accessor :mutation, :arguments
+    attr_accessor :mutation, :arguments
     alias :input_fields :arguments
+
+    ensure_defined(:mutation, :arguments)
 
     # @!attribute mutation
     #   @return [GraphQL::Relay::Mutation, nil] The mutation this field was derived from, if it was derived from a mutation

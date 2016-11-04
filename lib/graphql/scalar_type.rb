@@ -35,6 +35,7 @@ module GraphQL
   #
   class ScalarType < GraphQL::BaseType
     accepts_definitions :coerce, :coerce_input, :coerce_result
+    ensure_defined :coerce_non_null_input, :coerce_result
 
     def coerce=(proc)
       self.coerce_input = proc
@@ -50,7 +51,6 @@ module GraphQL
     end
 
     def coerce_non_null_input(value)
-      ensure_defined
       @coerce_input_proc.call(value)
     end
 
@@ -61,7 +61,6 @@ module GraphQL
     end
 
     def coerce_result(value)
-      ensure_defined
       @coerce_result_proc ? @coerce_result_proc.call(value) : value
     end
 

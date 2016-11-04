@@ -61,7 +61,7 @@ module GraphQL
       middleware: ->(schema, middleware) { schema.middleware << middleware },
       rescue_from: ->(schema, err_class, &block) { schema.rescue_from(err_class, &block)}
 
-    lazy_defined_attr_accessor \
+    attr_accessor \
       :query, :mutation, :subscription,
       :query_execution_strategy, :mutation_execution_strategy, :subscription_execution_strategy,
       :max_depth, :max_complexity,
@@ -99,17 +99,16 @@ module GraphQL
     end
 
     def rescue_from(*args, &block)
-      ensure_defined
       rescue_middleware.rescue_from(*args, &block)
     end
 
     def remove_handler(*args, &block)
-      ensure_defined
       rescue_middleware.remove_handler(*args, &block)
     end
 
     def define(**kwargs, &block)
       super
+      ensure_defined
       all_types = orphan_types + [query, mutation, subscription, GraphQL::Introspection::SchemaType]
       @types = GraphQL::Schema::ReduceTypes.reduce(all_types.compact)
 
@@ -151,7 +150,6 @@ module GraphQL
     # @see [GraphQL::Schema::Warden] Restricted access to members of a schema
     # @return [GraphQL::Field, nil] The field named `field_name` on `parent_type`
     def get_field(parent_type, field_name)
-      ensure_defined
       defined_field = @instrumented_field_map.get(parent_type.name, field_name)
       if defined_field
         defined_field
@@ -167,7 +165,6 @@ module GraphQL
     end
 
     def type_from_ast(ast_node)
-      ensure_defined
       GraphQL::Schema::TypeExpression.build_type(self.types, ast_node)
     end
 
@@ -175,7 +172,6 @@ module GraphQL
     # @param type_defn [GraphQL::InterfaceType, GraphQL::UnionType] the type whose members you want to retrieve
     # @return [Array<GraphQL::ObjectType>] types which belong to `type_defn` in this schema
     def possible_types(type_defn)
-      ensure_defined
       @possible_types ||= GraphQL::Schema::PossibleTypes.new(self)
       @possible_types.possible_types(type_defn)
     end
@@ -213,8 +209,6 @@ module GraphQL
     # @param ctx [GraphQL::Query::Context] The context for the current query
     # @return [GraphQL::ObjectType] The type for exposing `object` in GraphQL
     def resolve_type(object, ctx)
-      ensure_defined
-
       if @resolve_type_proc.nil?
         raise(NotImplementedError, "Can't determine GraphQL type for: #{object.inspect}, define `resolve_type (obj, ctx) -> { ... }` inside `Schema.define`.")
       end
@@ -231,7 +225,6 @@ module GraphQL
     end
 
     def resolve_type=(new_resolve_type_proc)
-      ensure_defined
       @resolve_type_proc = new_resolve_type_proc
     end
 
@@ -240,7 +233,6 @@ module GraphQL
     # @param ctx [GraphQL::Query::Context] The context for the current query
     # @return [Any] The application object identified by `id`
     def object_from_id(id, ctx)
-      ensure_defined
       if @object_from_id_proc.nil?
         raise(NotImplementedError, "Can't fetch an object for id \"#{id}\" because the schema's `object_from_id (id, ctx) -> { ... }` function is not defined")
       else
@@ -250,7 +242,6 @@ module GraphQL
 
     # @param new_proc [#call] A new callable for fetching objects by ID
     def object_from_id=(new_proc)
-      ensure_defined
       @object_from_id_proc = new_proc
     end
 
@@ -260,7 +251,6 @@ module GraphQL
     # @param ctx [GraphQL::Query::Context] the context for the current query
     # @return [String] a unique identifier for `object` which clients can use to refetch it
     def id_from_object(object, type, ctx)
-      ensure_defined
       if @id_from_object_proc.nil?
         raise(NotImplementedError, "Can't generate an ID for #{object.inspect} of type #{type}, schema's `id_from_object` must be defined")
       else
@@ -270,7 +260,6 @@ module GraphQL
 
     # @param new_proc [#call] A new callable for generating unique IDs
     def id_from_object=(new_proc)
-      ensure_defined
       @id_from_object_proc = new_proc
     end
 

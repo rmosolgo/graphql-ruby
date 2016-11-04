@@ -72,6 +72,7 @@ module GraphQL
 
   class EnumType < GraphQL::BaseType
     accepts_definitions :values, value: GraphQL::Define::AssignEnumValue
+    ensure_defined(:values, :validate_non_null_input, :coerce_non_null_input, :coerce_result)
 
     def initialize
       @values_by_name = {}
@@ -90,7 +91,6 @@ module GraphQL
 
     # @return [Hash<String => EnumValue>] `{name => value}` pairs contained in this type
     def values
-      ensure_defined
       @values_by_name
     end
 
@@ -99,7 +99,6 @@ module GraphQL
     end
 
     def validate_non_null_input(value_name, warden)
-      ensure_defined
       result = GraphQL::Query::InputValidationResult.new
       allowed_values = warden.enum_values(self)
       matching_value = allowed_values.find { |v| v.name == value_name }
@@ -120,7 +119,6 @@ module GraphQL
     # @param value_name [String] the string representation of this enum value
     # @return [Object] the underlying value for this enum value
     def coerce_non_null_input(value_name)
-      ensure_defined
       if @values_by_name.key?(value_name)
         @values_by_name.fetch(value_name).value
       else
@@ -129,7 +127,6 @@ module GraphQL
     end
 
     def coerce_result(value, warden = nil)
-      ensure_defined
       all_values = warden ? warden.enum_values(self) : @values_by_name.each_value
       enum_value = all_values.find { |val| val.value == value }
       if enum_value
@@ -148,9 +145,10 @@ module GraphQL
     # Created with the `value` helper
     class EnumValue
       include GraphQL::Define::InstanceDefinable
-      accepts_definitions :name, :description, :deprecation_reason, :value
-
-      lazy_defined_attr_accessor :name, :description, :deprecation_reason, :value
+      ATTRIBUTES = [:name, :description, :deprecation_reason, :value]
+      accepts_definitions(*ATTRIBUTES)
+      attr_accessor(*ATTRIBUTES)
+      ensure_defined(*ATTRIBUTES)
     end
 
     class UnresolvedValueError < GraphQL::Error

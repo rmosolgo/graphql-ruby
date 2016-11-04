@@ -55,9 +55,9 @@ module GraphQL
         input_field: GraphQL::Define::AssignArgument,
         return_field: GraphQL::Define::AssignObjectField,
       )
-      lazy_defined_attr_accessor :name, :description
-      lazy_defined_attr_accessor :fields, :arguments, :return_type
+      attr_accessor :name, :description, :fields, :arguments, :return_type
 
+      ensure_defined(:name, :description, :fields, :arguments, :return_type, :resolve=, :field, :result_class, :input_type)
       # For backwards compat, but do we need this separate API?
       alias :return_fields :fields
       alias :input_fields :arguments
@@ -75,13 +75,11 @@ module GraphQL
       end
 
       def resolve=(new_resolve_proc)
-        ensure_defined
         @resolve_proc = MutationResolve.new(self, new_resolve_proc, wrap_result: has_generated_return_type?)
       end
 
       def field
         @field ||= begin
-          ensure_defined
           relay_mutation = self
           field_resolve_proc = @resolve_proc
           GraphQL::Field.define do
@@ -95,7 +93,6 @@ module GraphQL
       end
 
       def return_type
-        ensure_defined
         @return_type ||= begin
           @has_generated_return_type = true
           relay_mutation = self
@@ -113,7 +110,6 @@ module GraphQL
 
       def input_type
         @input_type ||= begin
-          ensure_defined
           relay_mutation = self
           GraphQL::InputObjectType.define do
             name("#{relay_mutation.name}Input")
@@ -129,7 +125,6 @@ module GraphQL
 
       def result_class
         @result_class ||= begin
-          ensure_defined
           Result.define_subclass(self)
         end
       end
