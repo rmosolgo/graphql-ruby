@@ -28,7 +28,7 @@ module GraphQL
                       target,
                       execution_context
                     ).result
-                    deeply_merge(selection_result, field_result)
+                    GraphQL::Execution::MergeBranchResult.merge(selection_result, field_result)
                   else
                     # This value has already been resolved in another type branch
                   end
@@ -37,22 +37,6 @@ module GraphQL
             end
           end
           selection_result
-        end
-
-        # Modify `complete_result` by recursively merging `type_branch_result`
-        # @return [void]
-        def self.deeply_merge(complete_result, type_branch_result)
-          type_branch_result.each do |key, branch_value|
-            prev_value = complete_result[key]
-            case prev_value
-            when nil
-              complete_result[key] = branch_value
-            when Hash
-              deeply_merge(prev_value, branch_value)
-            else
-              # Sad, this was not needed.
-            end
-          end
         end
       end
     end

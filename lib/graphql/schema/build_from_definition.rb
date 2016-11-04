@@ -51,7 +51,7 @@ module GraphQL
             end
           end
 
-          GraphQL::Schema::BUILT_IN_DIRECTIVES.each do |built_in_directive|
+          GraphQL::Schema::BUILT_IN_DIRECTIVES.each do |identifier, built_in_directive|
             directives[built_in_directive.name] = built_in_directive unless directives[built_in_directive.name]
           end
 

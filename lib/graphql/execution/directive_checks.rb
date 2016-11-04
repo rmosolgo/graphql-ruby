@@ -24,6 +24,7 @@ module GraphQL
       def include?(directive_irep_nodes, query)
         directive_irep_nodes.each do |directive_irep_node|
           name = directive_irep_node.name
+          # Don't `.fetch` here, it would cause a runtime error in validation
           directive_defn = query.schema.directives[name]
           case name
           when SKIP

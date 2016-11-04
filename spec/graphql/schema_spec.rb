@@ -279,7 +279,7 @@ type Query {
     end
 
     describe "when @defer is provided" do
-      let(:directives) { ["@defer"] }
+      let(:directives) { ["defer"] }
 
       it "executes queries with defer" do
         res = schema.execute("{ deferred: one @defer, one }")

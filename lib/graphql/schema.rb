@@ -71,15 +71,15 @@ module GraphQL
 
     BUILT_IN_TYPES = Hash[[INT_TYPE, STRING_TYPE, FLOAT_TYPE, BOOLEAN_TYPE, ID_TYPE].map{ |type| [type.name, type] }]
 
-    BUILT_IN_DIRECTIVES = [
-      GraphQL::Directive::IncludeDirective,
-      GraphQL::Directive::SkipDirective,
-      GraphQL::Directive::DeprecatedDirective,
-    ]
+    BUILT_IN_DIRECTIVES = {
+      "include" => GraphQL::Directive::IncludeDirective,
+      "skip" => GraphQL::Directive::SkipDirective,
+      "deprecated" => GraphQL::Directive::DeprecatedDirective,
+    }
 
     OPTIONAL_DIRECTIVES = {
-      "@defer" => GraphQL::Directive::DeferDirective,
-      "@stream" => GraphQL::Directive::StreamDirective,
+      "defer" => GraphQL::Directive::DeferDirective,
+      "stream" => GraphQL::Directive::StreamDirective,
     }
 
     DYNAMIC_FIELDS = ["__type", "__typename", "__schema"]
@@ -96,7 +96,7 @@ module GraphQL
     # @param types [Array<GraphQL::BaseType>] additional types to include in this schema
     def initialize
       @orphan_types = []
-      @directives = BUILT_IN_DIRECTIVES.reduce({}) { |m, d| m[d.name] = d; m }
+      @directives = BUILT_IN_DIRECTIVES.values.reduce({}) { |m, d| m[d.name] = d; m }
       @static_validator = GraphQL::StaticValidation::Validator.new(schema: self)
       @middleware = []
       @query_analyzers = []
@@ -110,13 +110,30 @@ module GraphQL
       @subscription_execution_strategy = GraphQL::Query::SerialExecution
     end
 
-    def directives=(directive_names)
+    def directives=(new_directives)
       ensure_defined
-      directive_names.each do |name|
-        dir = OPTIONAL_DIRECTIVES.fetch(name)
-        @directives[dir.name] = dir
+
+      next_directives = {}
+      new_directives.each do |directive|
+        case directive
+        when GraphQL::Directive
+          next_directives[directive.name] = directive
+        when String
+          dir = OPTIONAL_DIRECTIVES[directive] || BUILT_IN_DIRECTIVES[directive] || raise("No directive found for: #{directive}")
+          next_directives[dir.name] = dir
+        else
+          raise("Can't define a directive for #{directive.inspect} (expected String or GraphQL::Directive instance)")
+        end
       end
-      @directives
+
+      explicit_built_in_directives = (next_directives.keys & BUILT_IN_DIRECTIVES.values.map(&:name))
+
+      if explicit_built_in_directives.none?
+        # This is optional directives only; assume a full set of built-in directives
+        next_directives = BUILT_IN_DIRECTIVES.merge(next_directives)
+      end
+
+      @directives = next_directives
     end
 
     def rescue_from(*args, &block)

@@ -222,30 +222,43 @@ module GraphQL
       # Return a `Hash<String, Any>` of identifiers and results.
       # Deferred fields will be absent from the result.
       def resolve_selections(scope, thread, outer_frame)
-        merged_selections = outer_frame.node.children
         query = scope.query
+        selection_result = {}
 
-        resolved_selections = merged_selections.each_with_object({}) do |(name, irep_selection), memo|
-          field_applies_to_type = irep_selection.definitions.any? do |child_type, defn|
-            GraphQL::Execution::Typecast.compatible?(child_type, outer_frame.type, query.context)
-          end
-          if field_applies_to_type && irep_selection.included?
-            selection_key = irep_selection.name
+        outer_frame.node.typed_children.each do |type_cond, children|
+          if GraphQL::Execution::Typecast.compatible?(outer_frame.type, type_cond, query.context)
+            children.each do |selection_name, irep_node|
+              if irep_node.included?
+                previous_result = selection_result.fetch(selection_name, :__graphql_not_resolved__)
 
-            inner_frame = ExecFrame.new(
-              node: irep_selection,
-              path: outer_frame.path + [selection_key],
-              type: outer_frame.type,
-              value: outer_frame.value,
-            )
+                case previous_result
+                when :__graphql_not_resolved__, Hash
+                  # There's no value for this yet, so we can assign it directly
+                  # OR
+                  # This field was also requested on a different type, so we need
+                  # to deeply merge _this_ branch with the other branch
 
-            inner_result = resolve_or_defer_frame(scope, thread, inner_frame)
-            if inner_result != DEFERRED_RESULT
-              memo[selection_key] = inner_result
+                  inner_frame = ExecFrame.new(
+                    node: irep_node,
+                    path: outer_frame.path + [selection_name],
+                    type: outer_frame.type,
+                    value: outer_frame.value,
+                  )
+
+                  inner_result = resolve_or_defer_frame(scope, thread, inner_frame)
+                else
+                  # This value has already been resolved in another type branch
+                end
+
+                if inner_result != DEFERRED_RESULT
+                  GraphQL::Execution::MergeBranchResult.merge(selection_result, { selection_name => inner_result })
+                end
+              end
             end
           end
         end
-        resolved_selections
+
+        selection_result
       end
 
       # Resolve `field_defn` on `frame.node`, returning the value
