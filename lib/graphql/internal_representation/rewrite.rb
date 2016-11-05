@@ -77,7 +77,7 @@ module GraphQL
               definition: context.directive_definition,
               definitions: {context.directive_definition => context.directive_definition},
               # This isn't used, the directive may have many parents in the case of inline fragment
-              parent: nil,
+              parent: @nodes.last,
             )
             @parent_directives.last.push(directive_irep_node)
           end

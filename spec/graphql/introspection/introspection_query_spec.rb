@@ -24,6 +24,7 @@ describe "GraphQL::Introspection::INTROSPECTION_QUERY" do
 
      deep_schema = GraphQL::Schema.define do
        query query_type
+       query_execution_strategy DEFAULT_EXEC_STRATEGY
      end
 
      result = deep_schema.execute(query_string)

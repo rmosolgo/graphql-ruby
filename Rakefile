@@ -9,6 +9,12 @@ Rake::TestTask.new do |t|
   t.warning = false
 end
 
+desc "Run the test suite on both built-in execution strategies"
+task :test_both_strategies do
+  system "bundle exec rake test"
+  system "GRAPHQL_EXEC_STRATEGY=serial bundle exec rake test"
+end
+
 require 'rubocop/rake_task'
 RuboCop::RakeTask.new(:rubocop) do |t|
   t.patterns = Rake::FileList['lib/**/{*}.rb', 'spec/**/*.rb']
@@ -16,7 +22,7 @@ RuboCop::RakeTask.new(:rubocop) do |t|
     .exclude("lib/graphql/language/lexer.rb")
 end
 
-task(default: [:test, :rubocop])
+task(default: [:test_both_strategies, :rubocop])
 
 desc "Use Racc & Ragel to regenerate parser.rb & lexer.rb from configuration files"
 task :build_parser do

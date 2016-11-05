@@ -254,7 +254,13 @@ DairyAppQueryType = GraphQL::ObjectType.define do
     resolve ->(root_value, args, c) { root_value }
   end
   field :cheese, field: FetchField.create(type: CheeseType, data: CHEESES)
+  field :cheeses, types[CheeseType] do
+    resolve -> (obj, args, ctx) { CHEESES.values }
+  end
   field :milk, field: FetchField.create(type: MilkType, data: MILKS, id_type: !types.ID)
+  field :milks, types[MilkType] do
+    resolve -> (obj, args, ctx) { MILKS.values }
+  end
   field :dairy, field: SingletonField.create(type: DairyType, data: DAIRY)
   field :fromSource, &SourceFieldDefn
   field :favoriteEdible, FavoriteFieldDefn
@@ -360,7 +366,11 @@ DummySchema = GraphQL::Schema.define do
   max_depth 5
   orphan_types [HoneyType, BeverageUnion]
 
+  query_execution_strategy DEFAULT_EXEC_STRATEGY
+
   rescue_from(NoSuchDairyError) { |err| err.message  }
+
+  directives ["defer", "stream"]
 
   resolve_type ->(obj, ctx) {
     DummySchema.types[obj.class.name]

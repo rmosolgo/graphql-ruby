@@ -192,7 +192,7 @@ end
 StarWarsSchema = GraphQL::Schema.define do
   query(QueryType)
   mutation(MutationType)
-
+  query_execution_strategy DEFAULT_EXEC_STRATEGY
   resolve_type ->(object, ctx) {
     if object == :test_error
       :not_a_type

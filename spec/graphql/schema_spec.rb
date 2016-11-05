@@ -253,4 +253,40 @@ type Query {
       assert_equal [1, 2], variable_counter.counts
     end
   end
+
+  describe "#directives" do
+    let(:schema) {
+      query_type = GraphQL::ObjectType.define do
+        name "Query"
+        field :one, types.Int, resolve: -> (o,a,c) { 1 }
+      end
+
+      schema_directives = directives
+
+      GraphQL::Schema.define do
+        query(query_type)
+        directives(schema_directives)
+      end
+    }
+
+    describe "when @defer is not provided" do
+      let(:directives) { [] }
+      it "doesn't execute queries with defer" do
+        res = schema.execute("{ one @defer }")
+        assert_equal nil, res["data"]
+        assert_equal 1, res["errors"].length
+      end
+    end
+
+    describe "when @defer is provided" do
+      let(:directives) { ["defer"] }
+
+      it "executes queries with defer" do
+        res = schema.execute("{ deferred: one @defer, one }")
+        # The deferred field is left out ??
+        assert_equal 1, res["data"]["one"]
+        assert_equal nil, res["errors"]
+      end
+    end
+  end
 end

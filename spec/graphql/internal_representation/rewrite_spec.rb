@@ -216,7 +216,7 @@ describe GraphQL::InternalRepresentation::Rewrite do
 
       # Make sure all the data is there:
       assert_equal 3, cheeses.length
-      assert_equal 1, milks.length
+      assert_equal 2, milks.length
 
       cheeses.each do |cheese|
         assert_equal ["cheeseInlineOrigin", "cheeseFragmentOrigin", "edibleInlineOrigin", "untypedInlineOrigin"], cheese["selfAsEdible"].keys

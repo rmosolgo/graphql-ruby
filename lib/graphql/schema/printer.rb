@@ -56,7 +56,8 @@ module GraphQL
       private_constant :BUILTIN_SCALARS
 
       def is_spec_directive(directive)
-        ['skip', 'include', 'deprecated'].include?(directive.name)
+        # TODO: make defer & stream opt-in
+        ['skip', 'include', 'deprecated', 'defer', 'stream'].include?(directive.name)
       end
 
       def is_introspection_type(type)

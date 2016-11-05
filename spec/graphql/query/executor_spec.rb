@@ -85,7 +85,7 @@ describe GraphQL::Query::Executor do
         end
       end
 
-      GraphQL::Schema.define(query: DummyQueryType, mutation: MutationType, resolve_type: :pass, id_from_object: :pass)
+      GraphQL::Schema.define(query: DummyQueryType, mutation: MutationType, resolve_type: :pass, id_from_object: :pass, query_execution_strategy: DEFAULT_EXEC_STRATEGY)
     }
     let(:variables) { nil }
     let(:query_string) { %|

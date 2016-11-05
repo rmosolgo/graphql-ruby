@@ -98,6 +98,7 @@ module GraphQL
         end
       end
 
+      # TODO? This can be deprecated: ExecFrames track their paths
       def path
         if parent
           path = parent.path

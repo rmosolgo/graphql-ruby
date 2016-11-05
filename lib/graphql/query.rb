@@ -25,7 +25,7 @@ module GraphQL
       end
     end
 
-    attr_reader :schema, :document, :context, :fragments, :operations, :root_value, :max_depth, :query_string, :warden
+    attr_reader :schema, :document, :context, :fragments, :operations, :root_value, :max_depth, :query_string, :warden, :accumulator
 
     # Prepare query `query_string` on `schema`
     # @param schema [GraphQL::Schema]
@@ -45,6 +45,8 @@ module GraphQL
       @max_depth = max_depth || schema.max_depth
       @max_complexity = max_complexity || schema.max_complexity
       @query_analyzers = schema.query_analyzers.dup
+      @accumulator = GraphQL::Execution::Batch::Accumulator.new
+
       if @max_depth
         @query_analyzers << GraphQL::Analysis::MaxQueryDepth.new(@max_depth)
       end

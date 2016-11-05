@@ -10,7 +10,7 @@ describe GraphQL::Argument do
     end
 
     err = assert_raises(GraphQL::Schema::InvalidTypeError) {
-      schema = GraphQL::Schema.define(query: query_type)
+      schema = GraphQL::Schema.define(query: query_type, query_execution_strategy: DEFAULT_EXEC_STRATEGY)
       schema.types
     }
 
