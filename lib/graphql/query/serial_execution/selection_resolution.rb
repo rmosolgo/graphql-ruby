@@ -2,9 +2,9 @@ module GraphQL
   class Query
     class SerialExecution
       module SelectionResolution
-        def self.resolve(target, current_type, irep_node, execution_context)
+        def self.resolve(target, current_type, frame, execution_context)
           selection_result = {}
-          irep_node.typed_children.each do |type_defn, typed_children|
+          frame.irep_node.typed_children.each do |type_defn, typed_children|
             if GraphQL::Execution::Typecast.compatible?(current_type, type_defn, execution_context.query.context)
               typed_children.each do |name, irep_node|
                 if irep_node.included?
@@ -12,8 +12,9 @@ module GraphQL
                   case previous_result
                   when :__graphql_not_resolved__
                     # There's no value for this yet, so we can assign it directly
+                    inner_frame = frame.spawn(irep_node: irep_node)
                     field_result = execution_context.strategy.field_resolution.new(
-                      irep_node,
+                      inner_frame,
                       current_type,
                       target,
                       execution_context
@@ -22,8 +23,9 @@ module GraphQL
                   when Hash
                     # This field was also requested on a different type, so we need
                     # to deeply merge _this_ branch with the other branch
+                    inner_frame = frame.spawn(irep_node: irep_node)
                     field_result = execution_context.strategy.field_resolution.new(
-                      irep_node,
+                      inner_frame,
                       current_type,
                       target,
                       execution_context
