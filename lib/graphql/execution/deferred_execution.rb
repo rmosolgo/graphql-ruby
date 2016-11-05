@@ -159,7 +159,7 @@ module GraphQL
             defers = next_defers
           end
         else
-          query_object.context.errors.push(*initial_thread.errors)
+          query_object.context.errors.concat(initial_thread.errors)
         end
 
         initial_result
@@ -333,8 +333,9 @@ module GraphQL
           when GraphQL::TypeKinds::INTERFACE, GraphQL::TypeKinds::UNION
             resolved_type = scope.schema.resolve_type(value, scope.query.context)
 
-            if !resolved_type.is_a?(GraphQL::ObjectType) || !scope.schema.possible_types(type_defn).include?(resolved_type)
-              raise GraphQL::UnresolvedTypeError.new(frame.node.definition_name, scope.schema, type_defn, frame.node.parent.return_type, resolved_type)
+            possible_types = scope.schema.possible_types(type_defn)
+            if !resolved_type.is_a?(GraphQL::ObjectType) || !possible_types.include?(resolved_type)
+              raise GraphQL::UnresolvedTypeError.new(frame.node.definition_name, type_defn, frame.node.parent.return_type, resolved_type, possible_types)
             else
               resolve_value(scope, thread, frame, value, resolved_type)
             end

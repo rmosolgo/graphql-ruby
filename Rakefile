@@ -22,7 +22,7 @@ RuboCop::RakeTask.new(:rubocop) do |t|
     .exclude("lib/graphql/language/lexer.rb")
 end
 
-task(default: [:test, :rubocop])
+task(default: [:test_both_strategies, :rubocop])
 
 desc "Use Racc & Ragel to regenerate parser.rb & lexer.rb from configuration files"
 task :build_parser do
