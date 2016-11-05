@@ -33,6 +33,13 @@ describe GraphQL::Execution::Batch do
       }
     end
 
+    field :reqBatchInt, !ReqBatchIntType do
+      argument :value, types.Int
+      batch_resolve MultiplyLoader, 3, -> (_obj, args, ctx) {
+        ctx.batch(args[:value]) { |v| OpenStruct.new(val: v, query: :q) }
+      }
+    end
+
     field :self, BatchQueryType, resolve: ->(o, a, c) { :q }
     field :selfs, types[BatchQueryType] do
       argument :count, types.Int
@@ -45,6 +52,12 @@ describe GraphQL::Execution::Batch do
     field :val, types.Int
     field :query, BatchQueryType
   end
+
+  ReqBatchIntType = GraphQL::ObjectType.define do
+    name "ReqBatchInt"
+    field :val, !types.Int
+  end
+
 
   BatchSchema = GraphQL::Schema.define do
     query(BatchQueryType)
@@ -161,6 +174,21 @@ describe GraphQL::Execution::Batch do
       assert_equal expected_errors, res["errors"]
     end
 
-    it "propagates invalid nulls"
+    it "propagates invalid nulls" do
+      res = BatchSchema.execute(%|
+        {
+          one: int(value: 1)
+          two: reqBatchInt(value: 99) {
+            val
+          }
+        }
+      |)
+
+      pp res
+      expected_data = {}
+      assert_equal expected_data, res["data"]
+      expected_errors = []
+      assert_equal expected_errors, res["errors"]
+    end
   end
 end
