@@ -2,13 +2,23 @@ module GraphQL
   class Query
     class SerialExecution
       module ValueResolution
-        def self.resolve(parent_type, field_defn, field_type, value, irep_node, execution_context)
-          if value.nil? || value.is_a?(GraphQL::ExecutionError)
+        def self.resolve(parent_type, field_defn, field_type, value, frame, execution_context)
+          irep_node = frame.irep_node
+          case value
+          when nil, GraphQL::ExecutionError
             if field_type.kind.non_null?
               raise GraphQL::InvalidNullError.new(parent_type.name, field_defn.name, value)
             else
               nil
             end
+          when GraphQL::Execution::Batch::BatchResolve
+            execution_context.query.accumulator.register(
+              field_defn.batch_loader.func,
+              field_defn.batch_loader.args,
+              frame,
+              value
+            )
+            value
           else
             case field_type.kind
             when GraphQL::TypeKinds::SCALAR
@@ -24,7 +34,7 @@ module GraphQL
                   field_defn,
                   wrapped_type,
                   inner_value,
-                  irep_node,
+                  frame,
                   execution_context,
                 )
               end
@@ -37,14 +47,14 @@ module GraphQL
                 field_defn,
                 wrapped_type,
                 value,
-                irep_node,
+                frame,
                 execution_context,
               )
             when GraphQL::TypeKinds::OBJECT
               execution_context.strategy.selection_resolution.resolve(
                 value,
                 field_type,
-                irep_node,
+                frame,
                 execution_context
               )
             when GraphQL::TypeKinds::UNION, GraphQL::TypeKinds::INTERFACE
@@ -59,7 +69,7 @@ module GraphQL
                   field_defn,
                   resolved_type,
                   value,
-                  irep_node,
+                  frame,
                   execution_context,
                 )
               end

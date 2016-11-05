@@ -123,13 +123,15 @@ module GraphQL
     accepts_definitions :name, :description, :deprecation_reason,
       :resolve, :type, :arguments,
       :property, :hash_key, :complexity, :mutation,
-      argument: GraphQL::Define::AssignArgument
+      argument: GraphQL::Define::AssignArgument,
+      batch_resolve: GraphQL::Define::AssignBatchResolve
 
 
-    attr_accessor :name, :deprecation_reason, :description, :property, :hash_key, :mutation, :arguments, :complexity
+
+    attr_accessor :name, :deprecation_reason, :description, :property, :hash_key, :mutation, :arguments, :complexity, :batch_loader
     ensure_defined(
       :name, :deprecation_reason, :description, :property, :hash_key, :mutation, :arguments, :complexity,
-      :resolve, :resolve=, :type, :type=, :name=, :property=, :hash_key=
+      :resolve, :resolve=, :type, :type=, :name=, :property=, :hash_key=, :batch_loader
     )
 
     # @!attribute [r] resolve_proc

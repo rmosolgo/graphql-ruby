@@ -4,8 +4,9 @@ module GraphQL
       class FieldResolution
         attr_reader :irep_node, :parent_type, :target, :execution_context, :field, :arguments
 
-        def initialize(irep_node, parent_type, target, execution_context)
-          @irep_node = irep_node
+        def initialize(frame, parent_type, target, execution_context)
+          @frame = frame
+          @irep_node = frame.irep_node
           @parent_type = parent_type
           @target = target
           @execution_context = execution_context
@@ -26,9 +27,7 @@ module GraphQL
         def get_finished_value(raw_value)
           case raw_value
           when GraphQL::ExecutionError
-            raw_value.ast_node = irep_node.ast_node
-            raw_value.path = irep_node.path
-            execution_context.add_error(raw_value)
+            @frame.add_error(raw_value)
           when Array
             list_errors = raw_value.each_with_index.select { |value, _| value.is_a?(GraphQL::ExecutionError) }
             if list_errors.any?
@@ -46,14 +45,14 @@ module GraphQL
               field,
               field.type,
               raw_value,
-              irep_node,
+              @frame,
               execution_context,
             )
           rescue GraphQL::InvalidNullError => err
             if field.type.kind.non_null?
               raise(err)
             else
-              err.parent_error? || execution_context.add_error(err)
+              err.parent_error? || @frame.add_error(err)
               nil
             end
           end

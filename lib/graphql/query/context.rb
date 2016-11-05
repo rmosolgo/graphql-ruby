@@ -60,6 +60,10 @@ module GraphQL
 
         nil
       end
+
+      def batch(item_arg, &func)
+        GraphQL::Execution::Batch.resolve(item_arg, func)
+      end
     end
   end
 end

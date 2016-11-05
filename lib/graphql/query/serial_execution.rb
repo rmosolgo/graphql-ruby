@@ -15,14 +15,41 @@ module GraphQL
       # @param root_type [GraphQL::ObjectType] either the query type or the mutation type
       # @param query_obj [GraphQL::Query] the query object for this execution
       # @return [Hash] a spec-compliant GraphQL result, as a hash
-      def execute(ast_operation, root_type, query_object)
-        irep_root = query_object.internal_representation[ast_operation.name]
+      def execute(ast_operation, root_type, query)
+        irep_root = query.internal_representation[ast_operation.name]
 
-        operation_resolution.new(
-          irep_root,
+        frame = GraphQL::Execution::Frame.new(query: query, irep_node: irep_root, type: root_type)
+        execution_context = ExecutionContext.new(query, self)
+        result = operation_resolution.resolve(
+          frame,
           root_type,
-          ExecutionContext.new(query_object, self)
-        ).result
+          execution_context
+        )
+
+        while query.accumulator.any?
+          query.accumulator.resolve_all do |frame, value|
+            case value
+            when GraphQL::ExecutionError
+              frame.add_error(value)
+              value = nil
+            end
+            path = frame.path
+            last = path.pop
+            target = result
+            path.each { |key| target = target[key] }
+            finished_value = value_resolution.resolve(
+              frame.type,
+              frame.field,
+              frame.field.type,
+              value,
+              frame,
+              execution_context
+            )
+            target[last] = finished_value
+          end
+        end
+
+        result
       end
 
       def field_resolution
@@ -35,6 +62,10 @@ module GraphQL
 
       def selection_resolution
         self.class::SelectionResolution
+      end
+
+      def value_resolution
+        self.class::ValueResolution
       end
     end
   end

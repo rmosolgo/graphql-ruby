@@ -1,20 +1,12 @@
 module GraphQL
   class Query
     class SerialExecution
-      class OperationResolution
-        attr_reader :target, :execution_context, :irep_node
-
-        def initialize(irep_node, target, execution_context)
-          @target = target
-          @irep_node = irep_node
-          @execution_context = execution_context
-        end
-
-        def result
+      module OperationResolution
+        def self.resolve(frame, root_type, execution_context)
           execution_context.strategy.selection_resolution.resolve(
             execution_context.query.root_value,
-            target,
-            irep_node,
+            root_type,
+            frame,
             execution_context
           )
         rescue GraphQL::InvalidNullError => err
