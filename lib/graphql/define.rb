@@ -1,4 +1,5 @@
 require "graphql/define/assign_argument"
+require "graphql/define/assign_batch_resolve"
 require "graphql/define/assign_connection"
 require "graphql/define/assign_enum_value"
 require "graphql/define/assign_global_id_field"

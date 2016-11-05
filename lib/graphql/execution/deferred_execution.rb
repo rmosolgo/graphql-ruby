@@ -75,7 +75,7 @@ module GraphQL
       #
       # @return [Object] the initial result, without any defers
       def execute(ast_operation, root_type, query_object)
-        collector = query_object.context[CONTEXT_PATCH_TARGET]
+        collector = query_object.context[CONTEXT_PATCH_TARGET] || MergeCollector.new
         irep_root = query_object.internal_representation[ast_operation.name]
 
         scope = ExecScope.new(query_object)
@@ -88,81 +88,93 @@ module GraphQL
         )
 
         initial_result = resolve_or_defer_frame(scope, initial_thread, initial_frame)
+        resolve_batches(scope, initial_thread, query_object, initial_result)
 
-        if collector
-          initial_data = if initial_result == DEFERRED_RESULT
-            {}
-          else
-            initial_result
-          end
-          initial_patch = {"data" => initial_data}
-
-          initial_errors = initial_thread.errors + query_object.context.errors
-          error_idx = initial_errors.length
-
-          if initial_errors.any?
-            initial_patch["errors"] = initial_errors.map(&:to_h)
-          end
-
-          collector.patch(
-            path: [],
-            value: initial_patch
-          )
-
-          defers = initial_thread.defers
-          while defers.any?
-            next_defers = []
-            defers.each do |deferral|
-              deferred_thread = ExecThread.new
-              case deferral
-              when ExecFrame
-                deferred_frame = deferral
-                deferred_result = resolve_frame(scope, deferred_thread, deferred_frame)
-
-              when ExecStream
-                begin
-                  list_frame = deferral.frame
-                  inner_type = deferral.type
-                  item, idx = deferral.enumerator.next
-                  deferred_frame = ExecFrame.new({
-                    node: list_frame.node,
-                    path: list_frame.path + [idx],
-                    type: inner_type,
-                    value: item,
-                  })
-                  deferred_result = resolve_value(scope, deferred_thread, deferred_frame, item, inner_type)
-                  deferred_thread.defers << deferral
-                rescue StopIteration
-                  # The enum is done
-                end
-              else
-                raise("Can't continue deferred #{deferred_frame.class.name}")
-              end
-
-              # TODO: Should I patch nil?
-              if !deferred_result.nil?
-                collector.patch(
-                  path: ["data"] + deferred_frame.path,
-                  value: deferred_result
-                )
-              end
-
-              deferred_thread.errors.each do |deferred_error|
-                collector.patch(
-                  path: ["errors", error_idx],
-                  value: deferred_error.to_h
-                )
-                error_idx += 1
-              end
-              next_defers.push(*deferred_thread.defers)
-            end
-            defers = next_defers
-          end
+        initial_data = if initial_result == DEFERRED_RESULT
+          {}
         else
-          query_object.context.errors.concat(initial_thread.errors)
+          initial_result
         end
 
-        initial_result
+        initial_patch = {"data" => initial_data}
+
+        initial_errors = initial_thread.errors + query_object.context.errors
+        error_idx = initial_errors.length
+
+        if initial_errors.any?
+          initial_patch["errors"] = initial_errors.map(&:to_h)
+        end
+
+        collector.patch(
+          path: [],
+          value: initial_patch
+        )
+
+        defers = initial_thread.defers
+        while defers.any?
+          next_defers = []
+          defers.each do |deferral|
+            deferred_thread = ExecThread.new
+            case deferral
+            when ExecFrame
+              deferred_frame = deferral
+              deferred_result = resolve_frame(scope, deferred_thread, deferred_frame)
+              if deferred_result.is_a?(GraphQL::Execution::Batch::BatchResolve)
+                # TODO: this will miss nested resolves
+                res = {}
+                resolve_batches(scope, deferred_thread, query_object, res)
+                deferred_result = get_in(res, deferred_frame.path)
+              end
+            when ExecStream
+              begin
+                list_frame = deferral.frame
+                inner_type = deferral.type
+                item, idx = deferral.enumerator.next
+                deferred_frame = ExecFrame.new({
+                  node: list_frame.node,
+                  path: list_frame.path + [idx],
+                  type: inner_type,
+                  value: item,
+                })
+                field_defn = scope.get_field(list_frame.type, list_frame.node.definition_name)
+                deferred_result = resolve_value(scope, deferred_thread, deferred_frame, item, field_defn, inner_type)
+
+                # TODO: deep merge ??
+                res = {}
+                resolve_batches(scope, deferred_thread, query_object, res)
+                if res.any?
+                  deferred_result = get_in(res, deferred_frame.path)
+                end
+
+                deferred_thread.defers << deferral
+              rescue StopIteration
+                # The enum is done
+              end
+            else
+              raise("Can't continue deferred #{deferred_frame.class.name}")
+            end
+
+            # TODO: Should I patch nil?
+            if !deferred_result.nil?
+              collector.patch(
+                path: ["data"].concat(deferred_frame.path),
+                value: deferred_result
+              )
+            end
+
+            deferred_thread.errors.each do |deferred_error|
+              collector.patch(
+                path: ["errors", error_idx],
+                value: deferred_error.to_h
+              )
+              error_idx += 1
+            end
+            next_defers.push(*deferred_thread.defers)
+          end
+          defers = next_defers
+        end
+
+        initial_data
       end
 
       private
@@ -197,6 +209,7 @@ module GraphQL
             thread,
             frame,
             field_result,
+            field_defn,
             return_type_defn,
           )
         else
@@ -250,7 +263,9 @@ module GraphQL
                   # This value has already been resolved in another type branch
                 end
 
-                if inner_result != DEFERRED_RESULT
+                if inner_result == DEFERRED_RESULT || inner_result.is_a?(GraphQL::Execution::Batch::BatchResolve)
+                  # This result was dealt with by the thread
+                else
                   GraphQL::Execution::MergeBranchResult.merge(selection_result, { selection_name => inner_result })
                 end
               end
@@ -319,13 +334,22 @@ module GraphQL
       # expected to be an instance of `type_defn`.
       # This coerces terminals and recursively resolves non-terminals (object, list, non-null).
       # @return [Object] the response-ready version of `value`
-      def resolve_value(scope, thread, frame, value, type_defn)
-        if value.nil? || value.is_a?(GraphQL::ExecutionError)
+      def resolve_value(scope, thread, frame, value, field_defn, type_defn)
+        case value
+        when nil, GraphQL::ExecutionError
           if type_defn.kind.non_null?
             raise InnerInvalidNullError.new(frame.node.ast_node.name, value)
           else
             nil
           end
+        when GraphQL::Execution::Batch::BatchResolve
+          scope.query.accumulator.register(
+            field_defn.batch_loader.func,
+            field_defn.batch_loader.args,
+            frame,
+            value
+          )
+          value
         else
           case type_defn.kind
           when GraphQL::TypeKinds::SCALAR, GraphQL::TypeKinds::ENUM
@@ -337,11 +361,11 @@ module GraphQL
             if !resolved_type.is_a?(GraphQL::ObjectType) || !possible_types.include?(resolved_type)
               raise GraphQL::UnresolvedTypeError.new(frame.node.definition_name, type_defn, frame.node.parent.return_type, resolved_type, possible_types)
             else
-              resolve_value(scope, thread, frame, value, resolved_type)
+              resolve_value(scope, thread, frame, value, field_defn, resolved_type)
             end
           when GraphQL::TypeKinds::NON_NULL
             wrapped_type = type_defn.of_type
-            resolve_value(scope, thread, frame, value, wrapped_type)
+            resolve_value(scope, thread, frame, value, field_defn, wrapped_type)
           when GraphQL::TypeKinds::LIST
             wrapped_type = type_defn.of_type
             items_enumerator = value.map.with_index
@@ -361,7 +385,7 @@ module GraphQL
                   type: wrapped_type,
                   value: item,
                 })
-                resolve_value(scope, thread, inner_frame, item, wrapped_type)
+                resolve_value(scope, thread, inner_frame, item, field_defn, wrapped_type)
               end
               resolved_values
             end
@@ -375,6 +399,33 @@ module GraphQL
             resolve_selections(scope, thread, inner_frame)
           else
             raise("No ResolveValue for kind: #{type_defn.kind.name} (#{type_defn})")
+          end
+        end
+      end
+
+      def set_in(data, path, value)
+        path = path.dup
+        last = path.pop
+        path.each do |key|
+          data = data[key] ||= {}
+        end
+        data[last] = value
+      end
+
+      def get_in(data, path)
+        path.each do |key|
+          data = data[key]
+        end
+        data
+      end
+
+      def resolve_batches(scope, thread, query_object, merge_target)
+        while query_object.accumulator.any?
+          query_object.accumulator.resolve_all do |frame, value|
+            # TODO cache on frame
+            field_defn = scope.get_field(frame.type, frame.node.definition_name)
+            finished_value = resolve_value(scope, thread, frame, value, field_defn, field_defn.type)
+            set_in(merge_target, frame.path, finished_value)
           end
         end
       end
