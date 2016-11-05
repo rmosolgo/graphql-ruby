@@ -64,7 +64,7 @@ module GraphQL
                   unicode_bom: "\xef\xbb\xbfquery"
                   keywordEnum: on
                   nullValue: null
-                  nullValueInList: {a: null, b: "b"}
+                  nullValueInObject: {a: null, b: "b"}
                   nullValueInArray: ["a", null, "b"]
                 )
               }

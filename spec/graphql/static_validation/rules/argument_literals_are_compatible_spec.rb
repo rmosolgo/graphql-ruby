@@ -151,7 +151,7 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
       end
     end
 
-    describe "list" do
+    describe "input object" do
       let(:schema) {
         GraphQL::Schema.from_definition(%|
           type Query {
