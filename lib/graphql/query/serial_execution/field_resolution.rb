@@ -4,8 +4,9 @@ module GraphQL
       class FieldResolution
         attr_reader :irep_node, :parent_type, :target, :execution_context, :field, :arguments
 
-        def initialize(irep_node, parent_type, target, execution_context)
-          @irep_node = irep_node
+        def initialize(irep_nodes, parent_type, target, execution_context)
+          @irep_node = irep_nodes.first
+          @irep_nodes = irep_nodes
           @parent_type = parent_type
           @target = target
           @execution_context = execution_context
@@ -46,7 +47,7 @@ module GraphQL
               field,
               field.type,
               raw_value,
-              irep_node,
+              @irep_nodes,
               execution_context,
             )
           rescue GraphQL::InvalidNullError => err

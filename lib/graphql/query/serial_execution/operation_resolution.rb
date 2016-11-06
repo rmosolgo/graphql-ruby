@@ -14,7 +14,7 @@ module GraphQL
           execution_context.strategy.selection_resolution.resolve(
             execution_context.query.root_value,
             target,
-            irep_node,
+            [irep_node],
             execution_context
           )
         rescue GraphQL::InvalidNullError => err
