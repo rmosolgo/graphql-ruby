@@ -3,8 +3,7 @@ module GraphQL
     class SerialExecution
       module SelectionResolution
         def self.resolve(target, current_type, irep_nodes, execution_context)
-          all_selections = GraphQL::InternalRepresentation::Selections.build(execution_context.query, irep_nodes)
-          own_selections = all_selections[current_type]
+          own_selections = execution_context.query.selections(irep_nodes, current_type)
 
           selection_result = {}
 

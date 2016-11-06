@@ -6,9 +6,12 @@ module GraphQL
         selections = Hash.new { |h, k| h[k] = Hash.new { |h2, k2| h2[k2] = [] } }
         object_types = Set.new
 
+        warden = query.warden
+        ctx = query.context
+
         nodes.each do |node|
           node.typed_children.each_key do |type_cond|
-            object_types.merge(query.possible_types(type_cond))
+            object_types.merge(warden.possible_types(type_cond))
           end
         end
 
@@ -17,7 +20,7 @@ module GraphQL
             object_types.each do |obj_type|
               obj_selections = selections[obj_type]
               skipped = []
-              if GraphQL::Execution::Typecast.compatible?(obj_type, type_cond, query.context)
+              if GraphQL::Execution::Typecast.compatible?(obj_type, type_cond, ctx)
                 children.each do |name, irep_node|
                   if irep_node.skipped?
                     skipped << name

@@ -167,6 +167,11 @@ module GraphQL
       @valid
     end
 
+    def selections(nodes, type)
+      @selections ||= Hash.new { |h, k| h[k] = GraphQL::InternalRepresentation::Selections.build(self, k) }
+      @selections[nodes][type]
+    end
+
     private
 
     # Assert that the passed-in query string is internally consistent
