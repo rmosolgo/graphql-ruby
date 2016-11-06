@@ -16,8 +16,11 @@ module GraphQL
 
         def result
           result_name = irep_node.name
+          @query.context.path.push(result_name)
           raw_value = get_raw_value
-          { result_name => get_finished_value(raw_value) }
+          res = { result_name => get_finished_value(raw_value) }
+          @query.context.path.pop
+          res
         end
 
         private
@@ -28,14 +31,14 @@ module GraphQL
           case raw_value
           when GraphQL::ExecutionError
             raw_value.ast_node = irep_node.ast_node
-            raw_value.path = irep_node.path
+            raw_value.path = @query.context.path.dup
             @query.context.errors.push(raw_value)
           when Array
             list_errors = raw_value.each_with_index.select { |value, _| value.is_a?(GraphQL::ExecutionError) }
             if list_errors.any?
               list_errors.each do |error, index|
                 error.ast_node = irep_node.ast_node
-                error.path = irep_node.path + [index]
+                error.path = @query.context.path + [index]
                 @query.context.errors.push(error)
               end
             end
@@ -57,6 +60,9 @@ module GraphQL
               err.parent_error? || @query.context.errors.push(err)
               nil
             end
+          ensure
+            # teardown
+            @query.context.irep_node = nil
           end
         end
 
@@ -73,26 +79,21 @@ module GraphQL
 
           resolve_arguments = [parent_type, target, field, arguments, query_context]
 
-          resolve_value = begin
-              # only run a middleware chain if there are any middleware
-              if middlewares.any?
-                chain = GraphQL::Schema::MiddlewareChain.new(
-                  steps: middlewares + [FieldResolveStep],
-                  arguments: resolve_arguments
-                )
-                chain.call
-              else
-                FieldResolveStep.call(*resolve_arguments)
-              end
-            rescue GraphQL::ExecutionError => err
-              err
+          begin
+            # only run a middleware chain if there are any middleware
+            if middlewares.any?
+              chain = GraphQL::Schema::MiddlewareChain.new(
+                steps: middlewares + [FieldResolveStep],
+                arguments: resolve_arguments
+              )
+              chain.call
+            else
+              FieldResolveStep.call(*resolve_arguments)
             end
-        ensure
-          # teardown
-          query_context.irep_node = nil
-          resolve_value
+          rescue GraphQL::ExecutionError => err
+            err
+          end
         end
-
 
         # A `.call`-able suitable to be the last step in a middleware chain
         module FieldResolveStep

@@ -25,6 +25,9 @@ module GraphQL
       # @return [GraphQL::Schema::Mask::Warden]
       attr_reader :warden
 
+      # @return [Array<String, Integer>] The current position in the result
+      attr_reader :path
+
       # Make a new context which delegates key lookup to `values`
       # @param query [GraphQL::Query] the query who owns this context
       # @param values [Hash] A hash of arbitrary values which will be accessible at query-time
@@ -34,6 +37,7 @@ module GraphQL
         @values = values || {}
         @errors = []
         @warden = query.warden
+        @path = []
       end
 
       # Lookup `key` from the hash passed to {Schema#execute} as `context:`
@@ -54,10 +58,9 @@ module GraphQL
           raise TypeError, "expected error to be a ExecutionError, but was #{error.class}"
         end
 
-        error.ast_node = irep_node.ast_node unless error.ast_node
-        error.path = irep_node.path unless error.path
+        error.ast_node ||= irep_node.ast_node
+        error.path ||= path.dup
         errors << error
-
         nil
       end
     end
