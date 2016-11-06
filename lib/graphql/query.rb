@@ -172,6 +172,22 @@ module GraphQL
       @selections[nodes][type]
     end
 
+    def get_type(type_name)
+      @warden.get_type(type_name)
+    end
+
+    def get_field(type, name)
+      @warden.get_field(type, name)
+    end
+
+    def possible_types(type)
+      @warden.possible_types(type)
+    end
+
+    def resolve_type(type)
+      @schema.resolve_type(type, @context)
+    end
+
     private
 
     # Assert that the passed-in query string is internally consistent

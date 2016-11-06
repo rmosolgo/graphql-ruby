@@ -2,16 +2,16 @@ module GraphQL
   class Query
     class SerialExecution
       class FieldResolution
-        attr_reader :irep_node, :parent_type, :target, :execution_context, :field, :arguments
+        attr_reader :irep_node, :parent_type, :target, :field, :arguments
 
-        def initialize(irep_nodes, parent_type, target, execution_context)
+        def initialize(irep_nodes, parent_type, target, query)
           @irep_node = irep_nodes.first
           @irep_nodes = irep_nodes
           @parent_type = parent_type
           @target = target
-          @execution_context = execution_context
-          @field = execution_context.get_field(parent_type, irep_node)
-          @arguments = execution_context.query.arguments_for(irep_node, @field)
+          @query = query
+          @field = @query.get_field(parent_type, irep_node.definition_name)
+          @arguments = @query.arguments_for(irep_node, @field)
         end
 
         def result
@@ -29,14 +29,14 @@ module GraphQL
           when GraphQL::ExecutionError
             raw_value.ast_node = irep_node.ast_node
             raw_value.path = irep_node.path
-            execution_context.add_error(raw_value)
+            @query.context.errors.push(raw_value)
           when Array
             list_errors = raw_value.each_with_index.select { |value, _| value.is_a?(GraphQL::ExecutionError) }
             if list_errors.any?
               list_errors.each do |error, index|
                 error.ast_node = irep_node.ast_node
                 error.path = irep_node.path + [index]
-                execution_context.add_error(error)
+                @query.context.errors.push(error)
               end
             end
           end
@@ -48,13 +48,13 @@ module GraphQL
               field.type,
               raw_value,
               @irep_nodes,
-              execution_context,
+              @query,
             )
           rescue GraphQL::InvalidNullError => err
             if field.type.kind.non_null?
               raise(err)
             else
-              err.parent_error? || execution_context.add_error(err)
+              err.parent_error? || @query.context.errors.push(err)
               nil
             end
           end
@@ -66,8 +66,8 @@ module GraphQL
         # If the middleware chain returns a GraphQL::ExecutionError, its message
         # is added to the "errors" key.
         def get_raw_value
-          middlewares = execution_context.query.schema.middleware
-          query_context = execution_context.query.context
+          middlewares = @query.schema.middleware
+          query_context = @query.context
           # setup
           query_context.irep_node = @irep_node
 

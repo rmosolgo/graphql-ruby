@@ -2,7 +2,7 @@ module GraphQL
   class Query
     class SerialExecution
       module ValueResolution
-        def self.resolve(parent_type, field_defn, field_type, value, irep_nodes, execution_context)
+        def self.resolve(parent_type, field_defn, field_type, value, irep_nodes, query)
           if value.nil? || value.is_a?(GraphQL::ExecutionError)
             if field_type.kind.non_null?
               raise GraphQL::InvalidNullError.new(parent_type.name, field_defn.name, value)
@@ -14,7 +14,7 @@ module GraphQL
             when GraphQL::TypeKinds::SCALAR
               field_type.coerce_result(value)
             when GraphQL::TypeKinds::ENUM
-              field_type.coerce_result(value, execution_context.query.warden)
+              field_type.coerce_result(value, query.warden)
             when GraphQL::TypeKinds::LIST
               wrapped_type = field_type.of_type
               result = value.each_with_index.map do |inner_value, index|
@@ -25,7 +25,7 @@ module GraphQL
                   wrapped_type,
                   inner_value,
                   irep_nodes,
-                  execution_context,
+                  query,
                 )
               end
               # irep_node.index = nil
@@ -38,18 +38,18 @@ module GraphQL
                 wrapped_type,
                 value,
                 irep_nodes,
-                execution_context,
+                query,
               )
             when GraphQL::TypeKinds::OBJECT
-              execution_context.strategy.selection_resolution.resolve(
+              query.context.execution_strategy.selection_resolution.resolve(
                 value,
                 field_type,
                 irep_nodes,
-                execution_context
+                query
               )
             when GraphQL::TypeKinds::UNION, GraphQL::TypeKinds::INTERFACE
-              resolved_type = execution_context.schema.resolve_type(value, execution_context.query.context)
-              possible_types = execution_context.possible_types(field_type)
+              resolved_type = query.resolve_type(value)
+              possible_types = query.possible_types(field_type)
 
               if !possible_types.include?(resolved_type)
                 raise GraphQL::UnresolvedTypeError.new(irep_nodes.first.definition_name, field_type, parent_type, resolved_type, possible_types)
@@ -60,7 +60,7 @@ module GraphQL
                   resolved_type,
                   value,
                   irep_nodes,
-                  execution_context,
+                  query,
                 )
               end
             else
