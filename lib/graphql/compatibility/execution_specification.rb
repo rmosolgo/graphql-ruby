@@ -407,6 +407,43 @@ module GraphQL
             error_messages = res["errors"].map { |e| e["message"] }
             assert_equal ["Error on Nullable"], error_messages
           end
+
+          def test_it_only_resolves_fields_once_on_typed_fragments
+            count = 0
+
+            counter_type = GraphQL::ObjectType.define do
+              name "Counter"
+              field :count, types.Int, resolve: ->(o,a,c) { count += 1 }
+            end
+
+            has_counter_interface = GraphQL::InterfaceType.define do
+              name "HasCounter"
+              field :counter, counter_type
+            end
+
+            query_type = GraphQL::ObjectType.define do
+              name "Query"
+              interfaces [has_counter_interface]
+              field :counter, counter_type, resolve: ->(o,a,c) { :counter }
+            end
+
+            schema = GraphQL::Schema.define(query: query_type, resolve_type: ->(o, c) { counter_type })
+
+            res = schema.execute("
+            {
+              counter { count }
+              ... on HasCounter {
+                counter { count }
+              }
+            }
+            ")
+
+            expected_data = {
+              "counter" => { "count" => 1 }
+            }
+            assert_equal expected_data, res["data"]
+            assert_equal 1, count
+          end
         end
       end
     end
