@@ -63,9 +63,6 @@ module GraphQL
               err.parent_error? || @query.context.errors.push(err)
               nil
             end
-          ensure
-            # teardown
-            @query.context.irep_node = nil
           end
         end
 
@@ -76,9 +73,6 @@ module GraphQL
         # is added to the "errors" key.
         def get_raw_value
           middlewares = @query.schema.middleware
-          query_context = @query.context
-          # setup
-          query_context.irep_node = @irep_node
 
           resolve_arguments = [parent_type, target, field, arguments, @field_ctx]
 

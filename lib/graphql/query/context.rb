@@ -3,7 +3,14 @@ module GraphQL
     # Expose some query-specific info to field resolve functions.
     # It delegates `[]` to the hash that's passed to `GraphQL::Query#initialize`.
     class Context
-      attr_accessor :execution_strategy
+      attr_reader :execution_strategy
+
+      def execution_strategy=(new_strategy)
+        # GraphQL::Batch re-assigns this value but it was previously not used
+        # (ExecutionContext#strategy was used instead)
+        # now it _is_ used, but it breaks GraphQL::Batch tests
+        @execution_strategy ||= new_strategy
+      end
 
       # @return [GraphQL::InternalRepresentation::Node] The internal representation for this query node
       attr_accessor :irep_node
