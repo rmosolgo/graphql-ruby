@@ -238,12 +238,12 @@ describe GraphQL::ExecutionError do
           "errors"=>[
             {
               "message"=>"There was an execution error",
-              "locations"=>[{"line"=>6, "column"=>11}],
+              "locations"=>[{"line"=>11, "column"=>9}],
               "path"=>["dairy", "milks", 0, "executionError"]
             },
             {
               "message"=>"There was an execution error",
-              "locations"=>[{"line"=>11, "column"=>15}],
+              "locations"=>[{"line"=>21, "column"=>7}],
               "path"=>["dairy", "milks", 0, "allDairy", 3, "executionError"]
             }
           ]
