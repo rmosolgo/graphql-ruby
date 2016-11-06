@@ -8,10 +8,6 @@ module GraphQL
 
       module_function
 
-      def set_default_separator(separator)
-        self.default_id_separator = separator
-      end
-
       # @param type_name [String]
       # @param object_value [Any]
       # @return [String] a unique, opaque ID generated as a function of the two inputs

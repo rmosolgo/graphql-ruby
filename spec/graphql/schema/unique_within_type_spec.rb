@@ -10,12 +10,12 @@ describe GraphQL::Schema::UniqueWithinType do
     end
 
     it "allows you specify default separator" do
-      GraphQL::Schema::UniqueWithinType.set_default_separator '|'
+      GraphQL::Schema::UniqueWithinType.default_id_separator = '|'
       global_id = GraphQL::Schema::UniqueWithinType.encode("Type-With-UUID", "250cda0e-a89d-41cf-99e1-2872d89f1100")
       type_name, id = GraphQL::Schema::UniqueWithinType.decode(global_id)
       assert_equal("Type-With-UUID", type_name)
       assert_equal("250cda0e-a89d-41cf-99e1-2872d89f1100", id)
-      GraphQL::Schema::UniqueWithinType.set_default_separator '-'
+      GraphQL::Schema::UniqueWithinType.default_id_separator = '-'
     end
 
     it "allows you to specify the separator" do
