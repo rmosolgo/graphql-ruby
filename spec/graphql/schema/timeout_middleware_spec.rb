@@ -166,7 +166,7 @@ describe GraphQL::Schema::TimeoutMiddleware do
   describe "with a custom block" do
     let(:timeout_middleware) {
       GraphQL::Schema::TimeoutMiddleware.new(max_seconds: max_seconds) do |err, query|
-        raise("Query timed out after 2s: #{query.class.name} on #{query.context.ast_node.alias}")
+        raise("Query timed out after 2s: #{query.operations.count} on #{query.context.ast_node.alias}")
       end
     }
     let(:query_string) {%|
@@ -181,7 +181,7 @@ describe GraphQL::Schema::TimeoutMiddleware do
 
     it "calls the block" do
       err = assert_raises(RuntimeError) { result }
-      assert_equal "Query timed out after 2s: GraphQL::Query on d", err.message
+      assert_equal "Query timed out after 2s: 1 on d", err.message
     end
   end
 end
