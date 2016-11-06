@@ -7,7 +7,7 @@ module GraphQL
             query.root_value,
             target,
             [irep_node],
-            query
+            query.context,
           )
 
           result
