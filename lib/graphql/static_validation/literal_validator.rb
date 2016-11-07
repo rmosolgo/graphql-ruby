@@ -7,7 +7,9 @@ module GraphQL
       end
 
       def validate(ast_value, type)
-        if type.kind.non_null?
+        if ast_value.is_a?(GraphQL::Language::Nodes::NullValue)
+          !type.kind.non_null?
+        elsif type.kind.non_null?
           (!ast_value.nil?) && validate(ast_value, type.of_type)
         elsif type.kind.list?
           item_type = type.of_type

@@ -77,16 +77,14 @@ module GraphQL
 
       arguments.each do |input_key, input_field_defn|
         field_value = value[input_key]
-        field_value = input_field_defn.type.coerce_input(field_value)
 
-        # Try getting the default value
-        if field_value.nil?
-          field_value = input_field_defn.default_value
+        if value.key?(input_key)
+          coerced_value = input_field_defn.type.coerce_input(field_value)
+        else
+          coerced_value = input_field_defn.default_value
         end
 
-        if !field_value.nil?
-          input_values[input_key] = field_value
-        end
+        input_values[input_key] = coerced_value if coerced_value || value.key?(input_key)
       end
 
       GraphQL::Query::Arguments.new(input_values, argument_definitions: arguments)
@@ -100,7 +98,7 @@ module GraphQL
 
       arguments.each do |input_key, input_field_defn|
         input_value = value[input_key]
-        result[input_key] = input_value.nil? ? nil : input_field_defn.type.coerce_result(input_value)
+        result[input_key] = input_value.nil? ? nil : input_field_defn.type.coerce_result(input_value) if value.key?(input_key)
       end
 
       result

@@ -31,7 +31,7 @@ schema {
   query: Hello
 }
 
-directive @foo(arg: Int) on FIELD
+directive @foo(arg: Int, nullDefault: Int = null) on FIELD
 
 type Hello {
   str: String
@@ -356,6 +356,7 @@ schema {
 
 input Input {
   int: Int
+  nullDefault: Int = null
 }
 
 type Root {
@@ -380,6 +381,7 @@ enum Color {
 type Hello {
   str(int: Int = 2): String
   hello(color: Color = RED): String
+  nullable(color: Color = null): String
 }
       SCHEMA
 
@@ -415,7 +417,7 @@ enum Color {
 }
 
 type Mutation {
-  hello(str: String, int: Int, color: Color = RED): String
+  hello(str: String, int: Int, color: Color = RED, nullDefault: Int = null): String
 }
 
 type Query {

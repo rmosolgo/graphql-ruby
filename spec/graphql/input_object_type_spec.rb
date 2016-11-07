@@ -29,6 +29,32 @@ describe GraphQL::InputObjectType do
       end
     end
 
+    describe "validate_input with null" do
+      let(:schema) { GraphQL::Schema.from_definition(%|
+        type Query {
+          a: Int
+        }
+
+        input ExampleInputObject {
+          a: String
+          b: Int!
+        }
+      |) }
+      let(:input_type) { schema.types['ExampleInputObject'] }
+
+      it "returns an invalid result when value is null for non-null argument" do
+        invalid_input = MinimumInputObject.new({"a" => "Test", "b" => nil})
+        result = input_type.validate_input(invalid_input, PermissiveWarden)
+        assert(!result.valid?)
+      end
+
+      it "returns valid result when value is null for nullable argument" do
+        invalid_input = MinimumInputObject.new({"a" => nil, "b" => 1})
+        result = input_type.validate_input(invalid_input, PermissiveWarden)
+        assert(result.valid?)
+      end
+    end
+
     describe "validate_input with enumerable input" do
       describe "with good input" do
         let(:input) do
@@ -112,6 +138,61 @@ describe GraphQL::InputObjectType do
           assert_equal(expected, actual)
         end
       end
+    end
+  end
+
+  describe "coerce_result" do
+    it "omits unspecified arguments" do
+      result = input_object.coerce_result(fatContent: 0.3)
+      assert_equal ["fatContent"], result.keys
+      assert_equal 0.3, result["fatContent"]
+    end
+  end
+
+  describe "coercion of null inputs" do
+    let(:schema) { GraphQL::Schema.from_definition(%|
+      type Query {
+        a: Int
+      }
+
+      input ExampleInputObject {
+        a: String
+        b: Int!
+        c: String = "Default"
+      }
+    |) }
+    let(:input_type) { schema.types['ExampleInputObject'] }
+
+    it "null values are returned in coerced input" do
+      input = MinimumInputObject.new({"a" => "Test", "b" => nil,"c" => "Test"})
+      result = input_type.coerce_input(input)
+
+      assert_equal 'Test', result['a']
+
+      assert result.key?('b')
+      assert_equal nil, result['b']
+
+      assert_equal "Test", result['c']
+    end
+
+    it "null values are preserved when argument has a default value" do
+      input = MinimumInputObject.new({"a" => "Test", "b" => 1, "c" => nil})
+      result = input_type.coerce_input(input)
+
+      assert_equal 'Test', result['a']
+      assert_equal 1, result['b']
+
+      assert result.key?('c')
+      assert_equal nil, result['c']
+    end
+
+    it "omitted arguments are not returned" do
+      input = MinimumInputObject.new({"b" => 1, "c" => "Test"})
+      result = input_type.coerce_input(input)
+
+      assert !result.key?('a')
+      assert_equal 1, result['b']
+      assert_equal 'Test', result['c']
     end
   end
 

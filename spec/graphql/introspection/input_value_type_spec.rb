@@ -5,19 +5,19 @@ describe GraphQL::Introspection::InputValueType do
   let(:query_string) {%|
      {
        __type(name: "DairyProductInput") {
-         name,
-         description,
-         kind,
+         name
+         description
+         kind
          inputFields {
-           name,
-           type { kind, name },
+           name
+           type { kind, name }
            defaultValue
            description
          }
        }
      }
   |}
-  let(:result) { DummySchema.execute(query_string)}
+  let(:result) { DummySchema.execute(query_string) }
 
   it "exposes metadata about input objects, giving extra quotes for strings" do
     expected = { "data" => {
@@ -61,5 +61,42 @@ describe GraphQL::Introspection::InputValueType do
     arg = field['args'].detect { |a| a['name'] == 'nullableSource' }
 
     assert_equal('["COW"]', arg['defaultValue'])
+  end
+
+  it "supports null default values" do
+    schema = GraphQL::Schema.from_definition(%|
+      type Query {
+        hello(person: Person): String
+      }
+
+      input Person {
+        firstName: String!
+        lastName: String = null
+      }
+    |)
+
+    result = schema.execute(%|
+      {
+        __type(name: "Person") {
+          inputFields {
+            name
+            defaultValue
+          }
+        }
+      }
+    |)
+
+    expected = {
+      "data" => {
+        "__type" => {
+          "inputFields" => [
+            { "name" => "firstName", "defaultValue" => nil},
+            { "name" => "lastName", "defaultValue" => "null"}
+          ]
+        }
+      }
+    }
+
+    assert_equal expected, result
   end
 end

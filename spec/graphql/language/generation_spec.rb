@@ -31,7 +31,7 @@ describe GraphQL::Language::Generation do
     describe "inputs" do
       let(:query_string) {%|
         query {
-          field(int: 3, float: 4.7e-24, bool: false, string: "☀︎🏆\\n escaped \\" unicode ¶ /", enum: ENUM_NAME, array: [7, 8, 9], object: {a: [1, 2, 3], b: {c: "4"}}, unicode_bom: "\xef\xbb\xbfquery")
+          field(null_value: null, null_in_array: [1, null, 3], int: 3, float: 4.7e-24, bool: false, string: "☀︎🏆\\n escaped \\" unicode ¶ /", enum: ENUM_NAME, array: [7, 8, 9], object: {a: [1, 2, 3], b: {c: "4"}}, unicode_bom: "\xef\xbb\xbfquery")
         }
       |}
 
@@ -102,7 +102,7 @@ describe GraphQL::Language::Generation do
       end
 
       describe "full featured schema" do
-        # From: https://github.com/graphql/graphql-js/blob/a725499b155285c2e33647a93393c82689b20b0f/src/language/__tests__/schema-kitchen-sink.graphql
+        # From: https://github.com/graphql/graphql-js/blob/bc96406ab44453a120da25a0bd6e2b0237119ddf/src/language/__tests__/schema-kitchen-sink.graphql
         let(:query_string) {<<-schema
           schema {
             query: QueryType
@@ -119,6 +119,7 @@ describe GraphQL::Language::Generation do
             four(argument: String = "string"): String
             five(argument: [String] = ["string", "string"]): String
             six(argument: InputType = {key: "value"}): Type
+            seven(argument: String = null): Type
           }
 
           # Scalar description

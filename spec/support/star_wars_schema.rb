@@ -147,7 +147,7 @@ IntroduceShipMutation = GraphQL::Relay::Mutation.define do
   description "Add a ship to this faction"
 
   # Nested under `input` in the query:
-  input_field :shipName, !types.String
+  input_field :shipName, types.String
   input_field :factionId, !types.ID
 
   # Result may have access to these fields:

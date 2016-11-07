@@ -21,6 +21,15 @@ module GraphQL
 
     ensure_defined(:name, :description, :default_value, :type=, :type)
 
+    def default_value?
+      !!@has_default_value
+    end
+
+    def default_value=(new_default_value)
+      @has_default_value = true
+      @default_value = new_default_value
+    end
+
     # @!attribute name
     #   @return [String] The name of this argument on its {GraphQL::Field} or {GraphQL::InputObjectType}
 

@@ -172,11 +172,13 @@ rule
     | STRING      { return val[0].to_s }
     | TRUE        { return true }
     | FALSE       { return false }
+    | null_value
     | variable
     | list_value
     | object_value
     | enum_value
 
+  null_value: NULL { return make_node(:NullValue, name: val[0], position_source: val[0]) }
   variable: VAR_SIGN name { return make_node(:VariableIdentifier, name: val[1], position_source: val[0]) }
 
   list_value:

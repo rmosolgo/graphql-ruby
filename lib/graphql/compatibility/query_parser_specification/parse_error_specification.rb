@@ -70,11 +70,6 @@ module GraphQL
           assert_raises_parse_error("{ ...on }")
           assert_raises_parse_error("fragment on on Type { field }")
         end
-
-        def test_it_rejects_null
-          err = assert_raises_parse_error("{ field(input: null) }")
-          assert_includes(err.message, "null")
-        end
       end
     end
   end

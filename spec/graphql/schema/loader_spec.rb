@@ -37,6 +37,17 @@ describe GraphQL::Schema::Loader do
       input_field :sub, types[sub_input_type]
     end
 
+    variant_input_type_with_nulls = GraphQL::InputObjectType.define do
+      name "VariedWithNulls"
+      input_field :id, types.ID, default_value: nil
+      input_field :int, types.Int, default_value: nil
+      input_field :bigint, big_int_type, default_value: nil
+      input_field :float, types.Float, default_value: nil
+      input_field :bool, types.Boolean, default_value: nil
+      input_field :enum, choice_type, default_value: nil
+      input_field :sub, types[sub_input_type], default_value: nil
+    end
+
     comment_type = GraphQL::ObjectType.define do
       name "Comment"
       description "A blog comment"
@@ -90,6 +101,7 @@ describe GraphQL::Schema::Loader do
         type post_type
         argument :id, !types.ID
         argument :varied, variant_input_type, default_value: { id: "123", int: 234, float: 2.3, enum: :foo, sub: [{ string: "str" }] }
+        argument :variedWithNull, variant_input_type_with_nulls, default_value: { id: nil, int: nil, float: nil, enum: nil, sub: nil, bigint: nil, bool: nil }
       end
 
       field :content do
@@ -205,7 +217,53 @@ describe GraphQL::Schema::Loader do
       field = type.fields['post']
       arg = field.arguments['varied']
 
-      assert_equal arg.default_value, { 'id' => "123", 'bigint' => nil, 'bool' => nil, 'int' => 234, 'float' => 2.3, 'enum' => "FOO", 'sub' => [{ 'string' => "str" }] }
+      assert_equal arg.default_value, { 'id' => "123", 'int' => 234, 'float' => 2.3, 'enum' => "FOO", 'sub' => [{ 'string' => "str" }] }
+      assert !arg.default_value.key?('bool'), 'Omits default value for unspecified arguments'
+    end
+
+    it "does not set default value when there are none on input fields" do
+      type = loaded_schema.types['Varied']
+
+      assert !type.arguments['id'].default_value?
+      assert !type.arguments['int'].default_value?
+      assert type.arguments['bigint'].default_value?
+      assert !type.arguments['float'].default_value?
+      assert !type.arguments['bool'].default_value?
+      assert !type.arguments['enum'].default_value?
+      assert !type.arguments['sub'].default_value?
+    end
+
+    it "sets correct default values `null` on input fields" do
+      type = loaded_schema.types['VariedWithNulls']
+
+      assert type.arguments['id'].default_value?
+      assert type.arguments['id'].default_value.nil?
+
+      assert type.arguments['int'].default_value?
+      assert type.arguments['int'].default_value.nil?
+
+      assert type.arguments['bigint'].default_value?
+      assert type.arguments['bigint'].default_value.nil?
+
+      assert type.arguments['float'].default_value?
+      assert type.arguments['float'].default_value.nil?
+
+      assert type.arguments['bool'].default_value?
+      assert type.arguments['bool'].default_value.nil?
+
+      assert type.arguments['enum'].default_value?
+      assert type.arguments['enum'].default_value.nil?
+
+      assert type.arguments['sub'].default_value?
+      assert type.arguments['sub'].default_value.nil?
+    end
+
+    it "sets correct default values `null` on complex field arguments" do
+      type = loaded_schema.types['Query']
+      field = type.fields['post']
+      arg = field.arguments['variedWithNull']
+
+      assert_equal arg.default_value, { 'id' => nil, 'int' => nil, 'float' => nil, 'enum' => nil, 'sub' => nil, 'bool' => nil, 'bigint' => nil }
     end
   end
 end

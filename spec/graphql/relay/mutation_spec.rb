@@ -2,8 +2,8 @@ require 'spec_helper'
 
 describe GraphQL::Relay::Mutation do
   let(:query_string) {%|
-    mutation addBagel($clientMutationId: String) {
-      introduceShip(input: {shipName: "Bagel", factionId: "1", clientMutationId: $clientMutationId}) {
+    mutation addBagel($clientMutationId: String, $shipName: String = "Bagel") {
+      introduceShip(input: {shipName: $shipName, factionId: "1", clientMutationId: $clientMutationId}) {
         clientMutationId
         shipEdge {
           node { name, id }
@@ -23,6 +23,24 @@ describe GraphQL::Relay::Mutation do
   after do
     STAR_WARS_DATA["Ship"].delete("9")
     STAR_WARS_DATA["Faction"]["1"].ships.delete("9")
+  end
+
+  it "supports null values" do
+    result = star_wars_query(query_string, "clientMutationId" => "1234", "shipName" => nil)
+
+    expected = {"data" => {
+      "introduceShip" => {
+        "clientMutationId" => "1234",
+        "shipEdge" => {
+          "node" => {
+            "name" => nil,
+            "id" => GraphQL::Schema::UniqueWithinType.encode("Ship", "9"),
+          },
+        },
+        "faction" => {"name" => STAR_WARS_DATA["Faction"]["1"].name }
+      }
+    }}
+    assert_equal(expected, result)
   end
 
   it "returns the result & clientMutationId" do
@@ -71,12 +89,19 @@ describe GraphQL::Relay::Mutation do
       custom_type = custom_return_type
       GraphQL::Relay::Mutation.define do
         name "CustomReturnTypeTest"
+
+        input_field :nullDefault, types.String, default_value: nil
+        input_field :noDefault, types.String
+        input_field :stringDefault, types.String, default_value: 'String'
+
         return_type custom_type
         resolve ->(obj, input, ctx) {
           OpenStruct.new(name: "Custom Return Type Test")
         }
       end
     }
+
+    let(:input) { mutation.field.arguments['input'].type.unwrap }
 
     let(:schema) {
       mutation_field = mutation.field
@@ -101,6 +126,21 @@ describe GraphQL::Relay::Mutation do
 
     it "doesn't get a mutation in the metadata" do
       assert_equal nil, custom_return_type.mutation
+    end
+
+    it "supports input fields with nil default value" do
+      assert input.arguments['nullDefault'].default_value?
+      assert_equal nil, input.arguments['nullDefault'].default_value
+    end
+
+    it "supports input fields with no default value" do
+      assert !input.arguments['noDefault'].default_value?
+      assert_equal nil, input.arguments['noDefault'].default_value
+    end
+
+    it "supports input fields with non-nil default value" do
+      assert input.arguments['stringDefault'].default_value?
+      assert_equal "String", input.arguments['stringDefault'].default_value
     end
   end
 end

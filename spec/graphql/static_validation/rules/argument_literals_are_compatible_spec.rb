@@ -65,4 +65,126 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
     }
     assert_includes(errors, fragment_error)
   end
+
+  describe "null value" do
+    describe "nullable arg" do
+      let(:schema) {
+        GraphQL::Schema.from_definition(%|
+          type Query {
+            field(arg: Int): Int
+          }
+        |)
+      }
+      let(:query_string) {%|
+        query {
+          field(arg: null)
+        }
+      |}
+
+      it "finds no errors" do
+        assert_equal [], errors
+      end
+    end
+
+    describe "non-nullable arg" do
+      let(:schema) {
+        GraphQL::Schema.from_definition(%|
+          type Query {
+            field(arg: Int!): Int
+          }
+        |)
+      }
+      let(:query_string) {%|
+        query {
+          field(arg: null)
+        }
+      |}
+
+      it "finds error" do
+        assert_equal [{
+          "message"=>"Argument 'arg' on Field 'field' has an invalid value. Expected type 'Int!'.",
+          "locations"=>[{"line"=>3, "column"=>11}],
+          "fields"=>["query", "field", "arg"],
+        }], errors
+      end
+    end
+
+    describe "non-nullable array" do
+      let(:schema) {
+        GraphQL::Schema.from_definition(%|
+          type Query {
+            field(arg: [Int!]): Int
+          }
+        |)
+      }
+      let(:query_string) {%|
+        query {
+          field(arg: [null])
+        }
+      |}
+
+      it "finds error" do
+        assert_equal [{
+          "message"=>"Argument 'arg' on Field 'field' has an invalid value. Expected type '[Int!]'.",
+          "locations"=>[{"line"=>3, "column"=>11}],
+          "fields"=>["query", "field", "arg"],
+        }], errors
+      end
+    end
+
+    describe "array with nullable values" do
+      let(:schema) {
+        GraphQL::Schema.from_definition(%|
+          type Query {
+            field(arg: [Int]): Int
+          }
+        |)
+      }
+      let(:query_string) {%|
+        query {
+          field(arg: [null])
+        }
+      |}
+
+      it "finds no errors" do
+        assert_equal [], errors
+      end
+    end
+
+    describe "input object" do
+      let(:schema) {
+        GraphQL::Schema.from_definition(%|
+          type Query {
+            field(arg: Input): Int
+          }
+
+          input Input {
+            a: Int
+            b: Int!
+          }
+        |)
+      }
+      let(:query_string) {%|
+        query {
+          field(arg: {a: null, b: null})
+        }
+      |}
+
+      it "finds errors" do
+        assert_equal 2, errors.length
+
+        assert_includes errors, {
+          "message"=> "Argument 'arg' on Field 'field' has an invalid value. Expected type 'Input'.",
+          "locations"=>[{"line"=>3, "column"=>11}],
+          "fields"=>["query", "field", "arg"]
+        }
+
+        assert_includes errors, {
+          "message"=>"Argument 'b' on InputObject 'Input' has an invalid value. Expected type 'Int!'.",
+          "locations"=>[{"line"=>3, "column"=>22}],
+          "fields"=>["query", "field", "arg", "b"]
+        }
+      end
+    end
+  end
 end

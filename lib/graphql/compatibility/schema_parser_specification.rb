@@ -184,6 +184,11 @@ module GraphQL
             assert_equal GraphQL::Language::Nodes::InterfaceTypeDefinition, interface_type_definition.class
             assert_equal 'Comment for interface definitions', interface_type_definition.description
             assert_equal 'Amount of wheels', interface_type_definition.fields[0].description
+
+            brand_field = interface_type_definition.fields[1]
+            assert_equal 1, brand_field.arguments.length
+            assert_equal 'argument', brand_field.arguments[0].name
+            assert_instance_of GraphQL::Language::Nodes::NullValue, brand_field.arguments[0].default_value
           end
         end
       end
@@ -230,6 +235,7 @@ module GraphQL
         interface Vehicle {
           # Amount of wheels
           wheels: Int!
+          brand(argument: String = null): String!
         }
 
         # Comment at the end of schema
