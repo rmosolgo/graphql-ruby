@@ -8,6 +8,12 @@
 
 ### Bug fixes
 
+## 1.2.1 (7 Nov 2016)
+
+### Bug fixes
+
+- Implement `Query::Context#strategy` and `FieldResolutionContext#strategy` to support GraphQL::Batch #382
+
 ## 1.2.0 (7 Nov 2016)
 
 ### Breaking changes
