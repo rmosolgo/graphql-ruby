@@ -16,6 +16,7 @@ module GraphQL
         end
       end
 
+      # These only require `obj` as input
       class BuiltInResolve
       end
 
