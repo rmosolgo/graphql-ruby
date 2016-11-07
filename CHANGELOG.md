@@ -8,6 +8,79 @@
 
 ### Bug fixes
 
+## 1.2.0 (7 Nov 2016)
+
+### Breaking changes
+
+- A breaking change from 1.1.0 was reverted: two-character `"\\u"` _is_ longer treated as the Unicode escape character #372
+
+- Due to the execution bug described below, the internal representation of a query has changed. Although `Node` responds to the same methods, tree is built differently and query analyzers visit it differently. #373, #379
+
+  The difference is in cases like this:
+
+  ```graphql
+  outer {
+    ... on A { inner1 { inner2 } }
+    ... on B { inner1 { inner3 } }
+  }
+  ```
+
+  Previously, visits would be:
+
+  - `outer`, which has one child:
+    - `inner1`, which has two definitions (one on `A`, another on `B`), then visit its two `children`:
+      - `inner2` which has one definition (on the return type of `inner1`)
+      - `inner3` which has one definition (on the return type of `inner1`)
+
+  This can be wrong for some cases. For example, if `A` and `B` are mutually exclusive (both object types, or union types with no shared members), then `inner2` and `inner3` will never be executed together.
+
+  Now, the visit goes like this:
+
+  - `outer` which has two entries in `typed_children`, one on `A` and another on `B`. Visit each `typed_chidren` branch:
+    - `inner1`, then its one `typed_children` branch:
+      - `inner2`
+    - `inner1`, then its one `typed_children` branch:
+      - `inner3`
+
+  As you can see, we visit `inner1` twice, once for each type condition. `inner2` and `inner3` are no longer visited as siblings. Instead they're visited as ... cousins? (They share a grandparent, not a parent.)
+
+  Although `Node#children` is still present, it may not contain all children actually resolved at runtime, since multiple `typed_children` branches could apply to the same runtime type (eg, two branches on interface types can apply to the same object type). To track all children, you have to do some bookkeeping during visitation, see `QueryComplexity` for an example.
+
+  You can see PR #373 for how built-in analyzers were changed to reflect this.
+
+
+### Deprecations
+
+- `InternalRepresentation::Node#children` and `InternalRepresentation::Node#definitions` are deprecated due to the bug described below and the breaking change described above. Instead, use `InternalRepresentation::Node#typed_children` and `InternalRepresentation::Node#defininition`. #373
+
+
+### New features
+
+- `null` support for the whole library: as a query literal, variable value, and argument default value. To check for the presence of a nullable, use `Arguments#key?` #369
+
+- `GraphQL::Schema::UniqueWithinType.default_id_separator` may be assigned to a custom value #381
+
+- `Context#add_error(err)` may be used to add a `GraphQL::ExecutionError` to the response's `"errors"` key (and the resolve function can still return a value) #367
+
+- The third argument of `resolve` is now a `FieldResolutionContext`, which behaves just like a `Query::Context`, except that it is not modified during query execution. This means you can capture a reference to that context and access some field-level details after the fact: `#path`, `#ast_node`, `#irep_node`. (Other methods are delegated to the underlying `Query::Context`) #379
+
+- `TimeoutMiddleware`'s second argument is a _proxied_ query object: it's `#context` method returns the `FieldResolutionContext` (see above) for the timed-out field. Other methods are delegated to the underlying `Query` #379
+
+### Bug fixes
+
+- Previously, nested selections on different fragments were not distinguished. Consider a case like this:
+
+  ```graphql
+  ... on A { inner1 { inner2 } }
+  ... on B { inner1 { inner3 } }
+  ```
+
+  Previously, an object of type `A` would resolve `inner1`, then the result would receive _both_ `inner2` and `inner3`. The same was true for an object of type `B`.
+
+  Now, those are properly distinguished. An object of type `A` resolves `inner1`, then its result receives `inner2`. An object of type `B` receives `inner1`, then `inner3`.
+
+  #370, #373, #379
+
 ## 1.1.0 (1 Nov 2016)
 
 ### Breaking changes
