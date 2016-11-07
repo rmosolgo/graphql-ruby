@@ -99,6 +99,7 @@ module GraphQL
       end
 
       def path
+        warn("InternalRepresentation::Node#path is deprecated, use Query::Context#path instead")
         if parent
           path = parent.path
           path << name

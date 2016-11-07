@@ -1,6 +1,9 @@
 require "spec_helper"
 
 describe GraphQL::Query::Context do
+  CTX = []
+  before { CTX.clear }
+
   let(:query_type) { GraphQL::ObjectType.define {
     name "Query"
     field :context, types.String do
@@ -15,6 +18,10 @@ describe GraphQL::Query::Context do
     end
     field :queryName, types.String do
       resolve ->(target, args, ctx) { ctx.query.class.name }
+    end
+
+    field :pushContext, types.Int do
+      resolve ->(t,a,c) { CTX << c; 1 }
     end
   }}
   let(:schema) { GraphQL::Schema.define(query: query_type, mutation: nil)}
@@ -79,6 +86,22 @@ describe GraphQL::Query::Context do
       assert_equal(nil, context[:some_key])
       context[:some_key] = "wow!"
       assert_equal("wow!", context[:some_key])
+    end
+  end
+
+  describe "accessing context after the fact" do
+    let(:query_string) { %|
+      { pushContext }
+    |}
+
+    it "preserves path information" do
+      assert_equal 1, result["data"]["pushContext"]
+      last_ctx = CTX.pop
+      assert_equal ["pushContext"], last_ctx.path
+      err = GraphQL::ExecutionError.new("Test position info")
+      last_ctx.add_error(err)
+      assert_equal ["pushContext"], err.path
+      assert_equal [2, 9], [err.ast_node.line, err.ast_node.col]
     end
   end
 end

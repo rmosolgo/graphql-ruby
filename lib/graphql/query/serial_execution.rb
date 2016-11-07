@@ -1,4 +1,3 @@
-require "graphql/query/serial_execution/execution_context"
 require "graphql/query/serial_execution/value_resolution"
 require "graphql/query/serial_execution/field_resolution"
 require "graphql/query/serial_execution/operation_resolution"
@@ -18,11 +17,11 @@ module GraphQL
       def execute(ast_operation, root_type, query_object)
         irep_root = query_object.internal_representation[ast_operation.name]
 
-        operation_resolution.new(
+        operation_resolution.resolve(
           irep_root,
           root_type,
-          ExecutionContext.new(query_object, self)
-        ).result
+          query_object
+        )
       end
 
       def field_resolution

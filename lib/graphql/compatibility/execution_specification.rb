@@ -407,6 +407,82 @@ module GraphQL
             error_messages = res["errors"].map { |e| e["message"] }
             assert_equal ["Error on Nullable"], error_messages
           end
+
+          def test_it_only_resolves_fields_once_on_typed_fragments
+            count = 0
+            counter_type = nil
+
+            has_count_interface = GraphQL::InterfaceType.define do
+              name "HasCount"
+              field :count, types.Int
+              field :counter, ->{ counter_type }
+            end
+
+            counter_type = GraphQL::ObjectType.define do
+              name "Counter"
+              interfaces [has_count_interface]
+              field :count, types.Int, resolve: ->(o,a,c) { count += 1 }
+              field :counter, has_count_interface, resolve: ->(o,a,c) { :counter }
+            end
+
+            alt_counter_type = GraphQL::ObjectType.define do
+              name "AltCounter"
+              interfaces [has_count_interface]
+              field :count, types.Int, resolve: ->(o,a,c) { count += 1 }
+              field :counter, has_count_interface, resolve: ->(o,a,c) { :counter }
+            end
+
+            has_counter_interface = GraphQL::InterfaceType.define do
+              name "HasCounter"
+              field :counter, counter_type
+            end
+
+            query_type = GraphQL::ObjectType.define do
+              name "Query"
+              interfaces [has_counter_interface]
+              field :counter, has_count_interface, resolve: ->(o,a,c) { :counter }
+            end
+
+            schema = GraphQL::Schema.define(
+              query: query_type,
+              resolve_type: ->(o, c) { o == :counter ? counter_type : nil },
+              orphan_types: [alt_counter_type],
+            )
+
+            res = schema.execute("
+            {
+              counter { count }
+              ... on HasCounter {
+                counter { count }
+              }
+            }
+            ")
+
+            expected_data = {
+              "counter" => { "count" => 1 }
+            }
+            assert_equal expected_data, res["data"]
+            assert_equal 1, count
+
+            # Deep typed children are correctly distinguished:
+            res = schema.execute("
+            {
+              counter {
+                ... on Counter {
+                  counter { count }
+                }
+                ... on AltCounter {
+                  counter { count, t: __typename }
+                }
+              }
+            }
+            ")
+
+            expected_data = {
+              "counter" => { "counter" => { "count" => 2 } }
+            }
+            assert_equal expected_data, res["data"]
+          end
         end
       end
     end

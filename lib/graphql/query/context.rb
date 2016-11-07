@@ -3,15 +3,22 @@ module GraphQL
     # Expose some query-specific info to field resolve functions.
     # It delegates `[]` to the hash that's passed to `GraphQL::Query#initialize`.
     class Context
-      attr_accessor :execution_strategy
+      attr_reader :execution_strategy
 
-      # @return [GraphQL::Language::Nodes::Field] The AST node for the currently-executing field
-      def ast_node
-        irep_node.ast_node
+      def execution_strategy=(new_strategy)
+        # GraphQL::Batch re-assigns this value but it was previously not used
+        # (ExecutionContext#strategy was used instead)
+        # now it _is_ used, but it breaks GraphQL::Batch tests
+        @execution_strategy ||= new_strategy
       end
 
       # @return [GraphQL::InternalRepresentation::Node] The internal representation for this query node
       attr_accessor :irep_node
+
+      # @return [GraphQL::Language::Nodes::Field] The AST node for the currently-executing field
+      def ast_node
+        @irep_node.ast_node
+      end
 
       # @return [Array<GraphQL::ExecutionError>] errors returned during execution
       attr_reader :errors
@@ -25,6 +32,9 @@ module GraphQL
       # @return [GraphQL::Schema::Mask::Warden]
       attr_reader :warden
 
+      # @return [Array<String, Integer>] The current position in the result
+      attr_reader :path
+
       # Make a new context which delegates key lookup to `values`
       # @param query [GraphQL::Query] the query who owns this context
       # @param values [Hash] A hash of arbitrary values which will be accessible at query-time
@@ -34,6 +44,7 @@ module GraphQL
         @values = values || {}
         @errors = []
         @warden = query.warden
+        @path = []
       end
 
       # Lookup `key` from the hash passed to {Schema#execute} as `context:`
@@ -46,19 +57,41 @@ module GraphQL
         @values[key] = value
       end
 
-      # Add error to current field resolution.
-      # @param error [GraphQL::ExecutionError] an execution error
-      # @return [void]
-      def add_error(error)
-        unless error.is_a?(ExecutionError)
-          raise TypeError, "expected error to be a ExecutionError, but was #{error.class}"
+      def spawn(path:, irep_node:)
+        FieldResolutionContext.new(context: self, path: path, irep_node: irep_node)
+      end
+
+      class FieldResolutionContext
+        extend Forwardable
+
+        attr_reader :path, :irep_node
+
+        def initialize(context:, path:, irep_node:)
+          @context = context
+          @path = path
+          @irep_node = irep_node
         end
 
-        error.ast_node = irep_node.ast_node unless error.ast_node
-        error.path = irep_node.path unless error.path
-        errors << error
+        def_delegators :@context, :[], :[]=, :spawn, :query, :schema, :warden, :errors, :execution_strategy
 
-        nil
+        # @return [GraphQL::Language::Nodes::Field] The AST node for the currently-executing field
+        def ast_node
+          @irep_node.ast_node
+        end
+
+        # Add error to current field resolution.
+        # @param error [GraphQL::ExecutionError] an execution error
+        # @return [void]
+        def add_error(error)
+          unless error.is_a?(ExecutionError)
+            raise TypeError, "expected error to be a ExecutionError, but was #{error.class}"
+          end
+
+          error.ast_node ||= irep_node.ast_node
+          error.path ||= path
+          errors << error
+          nil
+        end
       end
     end
   end

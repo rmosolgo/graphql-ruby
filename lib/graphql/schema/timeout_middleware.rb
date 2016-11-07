@@ -1,3 +1,5 @@
+require "delegate"
+
 module GraphQL
   class Schema
     # This middleware will stop resolving new fields after `max_seconds` have elapsed.
@@ -43,12 +45,26 @@ module GraphQL
 
       # This is called when a field _would_ be resolved, except that we're over the time limit.
       # @return [GraphQL::Schema::TimeoutMiddleware::TimeoutError] An error whose message will be added to the `errors` key
-      def on_timeout(parent_type, parent_object, field_definition, field_args, query_context)
+      def on_timeout(parent_type, parent_object, field_definition, field_args, field_context)
         err = GraphQL::Schema::TimeoutMiddleware::TimeoutError.new(parent_type, field_definition)
         if @error_handler
-          @error_handler.call(err, query_context.query)
+          query_proxy = TimeoutQueryProxy.new(field_context.query, field_context)
+          @error_handler.call(err, query_proxy)
         end
         err
+      end
+
+      # This behaves like {GraphQL::Query} but {#context} returns
+      # the _field-level_ context, not the query-level context.
+      # This means you can reliably get the `irep_node` and `path`
+      # from it after the fact.
+      class TimeoutQueryProxy < SimpleDelegator
+        def initialize(query, ctx)
+          @context = ctx
+          super(query)
+        end
+
+        attr_reader :context
       end
 
       # This error is raised when a query exceeds `max_seconds`.
