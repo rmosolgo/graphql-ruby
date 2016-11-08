@@ -46,8 +46,6 @@ module GraphQL
   #   end
   #
   class Schema
-    include BuildFromDefinition
-
     include GraphQL::Define::InstanceDefinable
     accepts_definitions \
       :query, :mutation, :subscription,
@@ -269,6 +267,16 @@ module GraphQL
     def self.from_introspection(introspection_result)
       GraphQL::Schema::Loader.load(introspection_result)
     end
+
+    # Create schema from an IDL schema.
+    # @param definition_string String A schema definition string
+    # @return [GraphQL::Schema] the schema described by `document`
+    def self.from_definition(definition_string)
+      GraphQL::Schema::BuildFromDefinition.from_definition(definition_string)
+    end
+
+    # Error that is raised when [#Schema#from_definition] is passed an invalid schema definition string.
+    class InvalidDocumentError < Error; end;
 
     private
 

@@ -1,16 +1,7 @@
 module GraphQL
   class Schema
     module BuildFromDefinition
-      def self.included(base)
-        base.extend(ClassMethods)
-      end
-
-      class InvalidDocumentError < Error; end;
-
-      module ClassMethods
-        # Create schema from an IDL schema.
-        # @param definition_string String A schema definition string
-        # @return [GraphQL::Schema] the schema described by `document`
+      class << self
         def from_definition(definition_string)
           document = GraphQL::parse(definition_string)
           Builder.build(document)
