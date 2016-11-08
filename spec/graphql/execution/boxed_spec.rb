@@ -70,6 +70,7 @@ describe GraphQL::Execution::Boxed do
 
   BoxedSchema = GraphQL::Schema.define do
     query(BoxedQuery)
+    mutation(BoxedQuery)
     boxed_value(Box, :item)
     boxed_value(SumAll, :value)
   end
@@ -130,5 +131,34 @@ describe GraphQL::Execution::Boxed do
     end
 
     it "propagates nulls"
+
+    it "resolves mutation fields right away" do
+      res = run_query %|
+      mutation {
+        a: sum(value: 2)
+        b: sum(value: 4)
+        c: sum(value: 6)
+      }
+      |
+
+      assert_equal [2, 4, 6], res["data"].values
+    end
+  end
+
+  describe "BoxMethodMap" do
+    class SubBox < Box; end
+
+    let(:map) { GraphQL::Execution::Boxed::BoxMethodMap.new }
+
+    it "finds methods for classes and subclasses" do
+      map.set(Box, :item)
+      map.set(SumAll, :value)
+      b = Box.new(1)
+      sub_b = SubBox.new(2)
+      s = SumAll.new(3)
+      assert_equal(:item, map.get(b))
+      assert_equal(:item, map.get(sub_b))
+      assert_equal(:value, map.get(s))
+    end
   end
 end

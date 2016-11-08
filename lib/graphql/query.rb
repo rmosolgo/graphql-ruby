@@ -82,12 +82,14 @@ module GraphQL
       # Trying to execute a document
       # with no operations returns an empty hash
       @ast_variables = []
+      @mutation = false
       if @operations.any?
         @selected_operation = find_operation(@operations, @operation_name)
         if @selected_operation.nil?
           @validation_errors << GraphQL::Query::OperationNameMissingError.new(@operations.keys)
         else
           @ast_variables = @selected_operation.variables
+          @mutation = @selected_operation.operation_type == "mutation"
         end
       end
     end
@@ -192,8 +194,12 @@ module GraphQL
       @schema.resolve_type(type, @context)
     end
 
-    def boxed?(value)
-      @schema.boxes[value.class]
+    def boxed_value_method(value)
+      @schema.boxes.get(value)
+    end
+
+    def mutation?
+      @mutation
     end
 
     private

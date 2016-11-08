@@ -2,12 +2,13 @@ module GraphQL
   class Query
     class SerialExecution
       module OperationResolution
-        def self.resolve(irep_node, target, query)
+        def self.resolve(irep_node, current_type, query)
           result = query.context.execution_strategy.selection_resolution.resolve(
             query.root_value,
-            target,
+            current_type,
             [irep_node],
             query.context,
+            mutation: query.mutation?
           )
 
           result

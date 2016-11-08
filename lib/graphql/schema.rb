@@ -57,7 +57,7 @@ module GraphQL
       instrument: -> (schema, type, instrumenter) { schema.instrumenters[type] << instrumenter },
       query_analyzer: ->(schema, analyzer) { schema.query_analyzers << analyzer },
       middleware: ->(schema, middleware) { schema.middleware << middleware },
-      boxed_value: ->(schema, box_class, boxed_method) { schema.boxes[box_class] = boxed_method },
+      boxed_value: ->(schema, box_class, boxed_value_method) { schema.boxes.set(box_class, boxed_value_method) },
       rescue_from: ->(schema, err_class, &block) { schema.rescue_from(err_class, &block)}
 
     attr_accessor \
@@ -91,7 +91,7 @@ module GraphQL
       @object_from_id_proc = nil
       @id_from_object_proc = nil
       @instrumenters = Hash.new { |h, k| h[k] = [] }
-      @boxes = Hash.new { |h, k| h.find { |k2, v2| k < k2 ? h[k] = v2 : nil } }
+      @boxes = GraphQL::Execution::Boxed::BoxMethodMap.new
       # Default to the built-in execution strategy:
       @query_execution_strategy = GraphQL::Query::SerialExecution
       @mutation_execution_strategy = GraphQL::Query::SerialExecution

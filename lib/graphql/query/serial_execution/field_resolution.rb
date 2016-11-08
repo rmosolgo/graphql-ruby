@@ -53,7 +53,7 @@ module GraphQL
             end
           end
 
-          box_method = @query.boxed?(raw_value)
+          box_method = @query.boxed_value_method(raw_value)
           if box_method
             GraphQL::Execution::Boxed.new { raw_value.public_send(box_method) }.then { |val|
               GraphQL::Query::SerialExecution::ValueResolution.resolve(
