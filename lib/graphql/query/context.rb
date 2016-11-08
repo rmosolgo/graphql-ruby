@@ -59,19 +59,29 @@ module GraphQL
         @values[key] = value
       end
 
-      def spawn(path:, irep_node:)
-        FieldResolutionContext.new(context: self, path: path, irep_node: irep_node)
+      def spawn(path:, irep_node:, parent_type:, field:, irep_nodes:)
+        FieldResolutionContext.new(
+          context: self,
+          path: path,
+          irep_node: irep_node,
+          parent_type: parent_type,
+          field: field,
+          irep_nodes: irep_nodes,
+        )
       end
 
       class FieldResolutionContext
         extend Forwardable
 
-        attr_reader :path, :irep_node
+        attr_reader :path, :irep_node, :field, :parent_type, :irep_nodes
 
-        def initialize(context:, path:, irep_node:)
+        def initialize(context:, path:, irep_node:, field:, parent_type:, irep_nodes:)
           @context = context
           @path = path
           @irep_node = irep_node
+          @field = field
+          @parent_type = parent_type
+          @irep_nodes = irep_nodes
         end
 
         def_delegators :@context, :[], :[]=, :spawn, :query, :schema, :warden, :errors, :execution_strategy, :strategy

@@ -9,9 +9,15 @@ module GraphQL
           @irep_nodes = irep_nodes
           @parent_type = parent_type
           @target = target
-          @field_ctx = query_ctx.spawn(path: query_ctx.path + [irep_node.name], irep_node: irep_node)
           @query = query_ctx.query
           @field = @query.get_field(parent_type, irep_node.definition_name)
+          @field_ctx = query_ctx.spawn(
+            parent_type: parent_type,
+            field: field,
+            path: query_ctx.path + [irep_node.name],
+            irep_node: irep_node,
+            irep_nodes: irep_nodes,
+          )
           @arguments = @query.arguments_for(irep_node, @field)
         end
 
@@ -47,21 +53,35 @@ module GraphQL
             end
           end
 
-          begin
-            GraphQL::Query::SerialExecution::ValueResolution.resolve(
-              parent_type,
-              field,
-              field.type,
-              raw_value,
-              @irep_nodes,
-              @field_ctx,
-            )
-          rescue GraphQL::InvalidNullError => err
-            if field.type.kind.non_null?
-              raise(err)
-            else
-              err.parent_error? || @query.context.errors.push(err)
-              nil
+          box_method = @query.boxed?(raw_value)
+          if box_method
+            GraphQL::Execution::Boxed.new { raw_value.public_send(box_method) }.then { |val|
+              GraphQL::Query::SerialExecution::ValueResolution.resolve(
+                parent_type,
+                field,
+                field.type,
+                val,
+                @irep_nodes,
+                @field_ctx,
+              )
+            }
+          else
+            begin
+              GraphQL::Query::SerialExecution::ValueResolution.resolve(
+                parent_type,
+                field,
+                field.type,
+                raw_value,
+                @irep_nodes,
+                @field_ctx,
+              )
+            rescue GraphQL::InvalidNullError => err
+              if field.type.kind.non_null?
+                raise(err)
+              else
+                err.parent_error? || @query.context.errors.push(err)
+                nil
+              end
             end
           end
         end

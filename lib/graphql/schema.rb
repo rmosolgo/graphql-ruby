@@ -57,6 +57,7 @@ module GraphQL
       instrument: -> (schema, type, instrumenter) { schema.instrumenters[type] << instrumenter },
       query_analyzer: ->(schema, analyzer) { schema.query_analyzers << analyzer },
       middleware: ->(schema, middleware) { schema.middleware << middleware },
+      boxed_value: ->(schema, box_class, boxed_method) { schema.boxes[box_class] = boxed_method },
       rescue_from: ->(schema, err_class, &block) { schema.rescue_from(err_class, &block)}
 
     attr_accessor \
@@ -64,7 +65,7 @@ module GraphQL
       :query_execution_strategy, :mutation_execution_strategy, :subscription_execution_strategy,
       :max_depth, :max_complexity,
       :orphan_types, :directives,
-      :query_analyzers, :middleware, :instrumenters
+      :query_analyzers, :middleware, :instrumenters, :boxes
 
     BUILT_IN_TYPES = Hash[[INT_TYPE, STRING_TYPE, FLOAT_TYPE, BOOLEAN_TYPE, ID_TYPE].map{ |type| [type.name, type] }]
     DIRECTIVES = [GraphQL::Directive::IncludeDirective, GraphQL::Directive::SkipDirective, GraphQL::Directive::DeprecatedDirective]
@@ -90,6 +91,7 @@ module GraphQL
       @object_from_id_proc = nil
       @id_from_object_proc = nil
       @instrumenters = Hash.new { |h, k| h[k] = [] }
+      @boxes = Hash.new { |h, k| h.find { |k2, v2| k < k2 ? h[k] = v2 : nil } }
       # Default to the built-in execution strategy:
       @query_execution_strategy = GraphQL::Query::SerialExecution
       @mutation_execution_strategy = GraphQL::Query::SerialExecution

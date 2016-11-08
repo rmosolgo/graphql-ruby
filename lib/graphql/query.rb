@@ -192,6 +192,10 @@ module GraphQL
       @schema.resolve_type(type, @context)
     end
 
+    def boxed?(value)
+      @schema.boxes[value.class]
+    end
+
     private
 
     # Assert that the passed-in query string is internally consistent

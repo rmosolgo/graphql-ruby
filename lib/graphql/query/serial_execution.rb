@@ -17,11 +17,14 @@ module GraphQL
       def execute(ast_operation, root_type, query_object)
         irep_root = query_object.internal_representation[ast_operation.name]
 
-        operation_resolution.resolve(
+        result = operation_resolution.resolve(
           irep_root,
           root_type,
           query_object
         )
+
+        GraphQL::Execution::Boxed.unbox(result)
+        result
       end
 
       def field_resolution
