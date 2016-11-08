@@ -12,20 +12,20 @@ describe GraphQL::Execution::Boxed do
   end
 
   class SumAll
-    ALL = []
     attr_reader :own_value
     attr_accessor :value
 
-    def initialize(own_value)
+    def initialize(ctx, own_value)
       @own_value = own_value
-      ALL << self
+      @all = ctx[:__sum_all__] ||= []
+      @all << self
     end
 
     def value
       @value ||= begin
-        total_value = ALL.map(&:own_value).reduce(&:+)
-        ALL.each { |v| v.value = total_value}
-        ALL.clear
+        total_value = @all.map(&:own_value).reduce(&:+)
+        @all.each { |v| v.value = total_value}
+        @all.clear
         total_value
       end
       @value
@@ -39,7 +39,7 @@ describe GraphQL::Execution::Boxed do
     end
     field :nestedSum, BoxedSum do
       argument :value, !types.Int
-      resolve ->(o, args, c) { SumAll.new(o + args[:value]) }
+      resolve ->(o, args, c) { SumAll.new(c, o + args[:value]) }
     end
   end
 
@@ -54,12 +54,12 @@ describe GraphQL::Execution::Boxed do
 
     field :sum, !types.Int do
       argument :value, !types.Int
-      resolve ->(o, args, c) { SumAll.new(args[:value]) }
+      resolve ->(o, args, c) { SumAll.new(c, args[:value]) }
     end
 
     field :nestedSum, BoxedSum do
       argument :value, !types.Int
-      resolve ->(o, args, c) { SumAll.new(args[:value]) }
+      resolve ->(o, args, c) { SumAll.new(c, args[:value]) }
     end
 
     field :listSum, types[BoxedSum] do
@@ -155,7 +155,7 @@ describe GraphQL::Execution::Boxed do
       map.set(SumAll, :value)
       b = Box.new(1)
       sub_b = SubBox.new(2)
-      s = SumAll.new(3)
+      s = SumAll.new({}, 3)
       assert_equal(:item, map.get(b))
       assert_equal(:item, map.get(sub_b))
       assert_equal(:value, map.get(s))
