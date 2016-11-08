@@ -183,6 +183,39 @@ type Query {
     end
   end
 
+  describe "schema comparison" do
+    let(:schema1) {
+      GraphQL::Schema.from_definition(%|
+        type Query {
+          a: String
+        }
+      |)
+    }
+
+    let(:schema2) {
+      GraphQL::Schema.from_definition(%|
+        type Query {
+          a: String
+          b: String
+        }
+      |)
+    }
+
+    describe "#compare" do
+      it "finds changes between two schemas" do
+        changes = GraphQL::Schema.compare(schema1, schema2)
+        assert_equal 1, changes.length
+      end
+    end
+
+    describe ".compare_to" do
+      it "finds changes between current schema and specified schema" do
+        changes = schema1.compare_to(schema2)
+        assert_equal 1, changes.length
+      end
+    end
+  end
+
   describe "#instrument" do
     class MultiplyInstrumenter
       def initialize(multiplier)

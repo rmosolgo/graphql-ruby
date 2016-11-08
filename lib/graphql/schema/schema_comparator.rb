@@ -1,59 +1,10 @@
 module GraphQL
   class Schema
     module SchemaComparator
-      def self.included(base)
-        base.extend(ClassMethods)
-      end
-
-      CHANGE_TYPES = [
-        TYPE_REMOVED = :TYPE_REMOVED,
-        TYPE_ADDED = :TYPE_ADDED,
-        TYPE_KIND_CHANGED = :TYPE_KIND_CHANGED,
-        TYPE_DESCRIPTION_CHANGED = :TYPE_DESCRIPTION_CHANGED,
-        ENUM_VALUE_REMOVED = :ENUM_VALUE_REMOVED,
-        ENUM_VALUE_ADDED = :ENUM_VALUE_ADDED,
-        ENUM_VALUE_DESCRIPTION_CHANGED = :ENUM_VALUE_DESCRIPTION_CHANGED,
-        ENUM_VALUE_DEPRECATED = :ENUM_VALUE_DEPRECATED,
-        UNION_MEMBER_REMOVED = :UNION_MEMBER_REMOVED,
-        UNION_MEMBER_ADDED = :UNION_MEMBER_ADDED,
-        DIRECTIVE_REMOVED = :DIRECTIVE_REMOVED,
-        DIRECTIVE_ADDED = :DIRECTIVE_ADDED,
-        DIRECTIVE_DESCRIPTION_CHANGED = :DIRECTIVE_DESCRIPTION_CHANGED,
-        DIRECTIVE_ARGUMENT_DESCRIPTION_CHANGED = :DIRECTIVE_ARGUMENT_DESCRIPTION_CHANGED,
-        DIRECTIVE_ARGUMENT_TYPE_CHANGED = :DIRECTIVE_ARGUMENT_TYPE_CHANGED,
-        DIRECTIVE_ARGUMENT_DEFAULT_CHANGED = :DIRECTIVE_ARGUMENT_DEFAULT_CHANGED,
-        DIRECTIVE_ARGUMENT_REMOVED = :DIRECTIVE_ARGUMENT_REMOVED,
-        DIRECTIVE_ARGUMENT_ADDED = :DIRECTIVE_ARGUMENT_ADDED,
-        DIRECTIVE_LOCATION_ADDED = :DIRECTIVE_LOCATION_ADDED,
-        DIRECTIVE_LOCATION_REMOVED = :DIRECTIVE_LOCATION_REMOVED,
-        INPUT_FIELD_REMOVED = :INPUT_FIELD_REMOVED,
-        INPUT_FIELD_ADDED = :INPUT_FIELD_ADDED,
-        INPUT_FIELD_DESCRIPTION_CHANGED = :INPUT_FIELD_DESCRIPTION_CHANGED,
-        INPUT_FIELD_TYPE_CHANGED = :INPUT_FIELD_TYPE_CHANGED,
-        INPUT_FIELD_DEFAULT_CHANGED = :INPUT_FIELD_DEFAULT_CHANGED,
-        OBJECT_TYPE_INTERFACE_ADDED = :OBJECT_TYPE_INTERFACE_ADDED,
-        OBJECT_TYPE_INTERFACE_REMOVED = :OBJECT_TYPE_INTERFACE_REMOVED,
-        OBJECT_TYPE_ARGUMENT_ADDED = :OBJECT_TYPE_ARGUMENT_ADDED,
-        OBJECT_TYPE_ARGUMENT_TYPE_CHANGED = :OBJECT_TYPE_ARGUMENT_TYPE_CHANGED,
-        OBJECT_TYPE_ARGUMENT_DEFAULT_CHANGED = :OBJECT_TYPE_ARGUMENT_DEFAULT_CHANGED,
-        OBJECT_TYPE_ARGUMENT_DESCRIPTION_CHANGED = :OBJECT_TYPE_ARGUMENT_DESCRIPTION_CHANGED,
-        FIELD_REMOVED = :FIELD_REMOVED,
-        FIELD_ADDED = :FIELD_ADDED,
-        FIELD_DESCRIPTION_CHANGED = :FIELD_DESCRIPTION_CHANGED,
-        FIELD_DEPRECATION_CHANGED = :FIELD_DEPRECATION_CHANGED,
-        SCHEMA_QUERY_TYPE_CHANGED = :SCHEMA_QUERY_TYPE_CHANGED,
-        SCHEMA_MUTATION_TYPE_CHANGED = :SCHEMA_MUTATION_TYPE_CHANGED,
-        SCHEMA_SUBSCRIPTION_TYPE_CHANGED = :SCHEMA_SUBSCRIPTION_TYPE_CHANGED,
-      ]
-
-      module ClassMethods
-        def compare(old_schema, new_schema)
+      class << self
+        def find_changes(old_schema, new_schema)
           SchemaComparator.find_changes(old_schema, new_schema)
         end
-      end
-
-      def compare_to(new_schema)
-        self.class.compare(self, new_schema)
       end
 
       module SchemaComparator
@@ -374,7 +325,7 @@ module GraphQL
 
         def type_removed(type)
           {
-            type: TYPE_REMOVED,
+            type: GraphQL::Schema::SchemaComparatorChange::TYPE_REMOVED,
             description: "`#{type}` type was removed",
             breaking_change: true,
           }
@@ -382,7 +333,7 @@ module GraphQL
 
         def type_added(type)
           {
-            type: TYPE_ADDED,
+            type: GraphQL::Schema::SchemaComparatorChange::TYPE_ADDED,
             description: "`#{type}` type was added",
             breaking_change: false,
           }
@@ -390,7 +341,7 @@ module GraphQL
 
         def type_kind_changed(old_type, new_type)
           {
-            type: TYPE_KIND_CHANGED,
+            type: GraphQL::Schema::SchemaComparatorChange::TYPE_KIND_CHANGED,
             description: "`#{old_type.name}` changed from an #{kind(old_type)} type to a #{kind(new_type)} type",
             breaking_change: true,
           }
@@ -398,7 +349,7 @@ module GraphQL
 
         def type_description_changed(type)
           {
-            type: TYPE_DESCRIPTION_CHANGED,
+            type: GraphQL::Schema::SchemaComparatorChange::TYPE_DESCRIPTION_CHANGED,
             description: "`#{type.name}` type description is changed",
             breaking_change: false,
           }
@@ -406,7 +357,7 @@ module GraphQL
 
         def enum_value_added(enum_type, value)
           {
-            type: ENUM_VALUE_ADDED,
+            type: GraphQL::Schema::SchemaComparatorChange::ENUM_VALUE_ADDED,
             description: "Enum value `#{value}` was added to enum `#{enum_type.name}`",
             breaking_change: false,
           }
@@ -414,7 +365,7 @@ module GraphQL
 
         def enum_value_removed(enum_type, value)
           {
-            type: ENUM_VALUE_REMOVED,
+            type: GraphQL::Schema::SchemaComparatorChange::ENUM_VALUE_REMOVED,
             description: "Enum value `#{value}` was removed from enum `#{enum_type.name}`",
             breaking_change: true,
           }
@@ -422,7 +373,7 @@ module GraphQL
 
         def enum_value_description_changed(enum_type, value)
           {
-            type: ENUM_VALUE_DESCRIPTION_CHANGED,
+            type: GraphQL::Schema::SchemaComparatorChange::ENUM_VALUE_DESCRIPTION_CHANGED,
             description: "`#{enum_type.name}.#{value}` description changed",
             breaking_change: false,
           }
@@ -430,7 +381,7 @@ module GraphQL
 
         def enum_value_deprecated(enum_type, value)
           {
-            type: ENUM_VALUE_DEPRECATED,
+            type: GraphQL::Schema::SchemaComparatorChange::ENUM_VALUE_DEPRECATED,
             description: "Enum value `#{value}` was deprecated in enum `#{enum_type.name}`",
             breaking_change: false,
           }
@@ -438,7 +389,7 @@ module GraphQL
 
         def union_member_removed(union_type, type_name)
           {
-            type: UNION_MEMBER_REMOVED,
+            type: GraphQL::Schema::SchemaComparatorChange::UNION_MEMBER_REMOVED,
             description: "`#{type_name}` type was removed from union `#{union_type.name}`",
             breaking_change: true,
           }
@@ -446,7 +397,7 @@ module GraphQL
 
         def union_member_added(union_type, type_name)
           {
-            type: UNION_MEMBER_ADDED,
+            type: GraphQL::Schema::SchemaComparatorChange::UNION_MEMBER_ADDED,
             description: "`#{type_name}` type was added to union `#{union_type.name}`",
             breaking_change: false,
           }
@@ -454,7 +405,7 @@ module GraphQL
 
         def directive_added(directive)
           {
-            type: DIRECTIVE_ADDED,
+            type: GraphQL::Schema::SchemaComparatorChange::DIRECTIVE_ADDED,
             description: "`#{directive.name}` directive was added",
             breaking_change: false,
           }
@@ -462,7 +413,7 @@ module GraphQL
 
         def directive_removed(directive)
           {
-            type: DIRECTIVE_REMOVED,
+            type: GraphQL::Schema::SchemaComparatorChange::DIRECTIVE_REMOVED,
             description: "`#{directive.name}` directive was removed",
             breaking_change: true,
           }
@@ -470,7 +421,7 @@ module GraphQL
 
         def directive_description_changed(directive)
           {
-            type: DIRECTIVE_DESCRIPTION_CHANGED,
+            type: GraphQL::Schema::SchemaComparatorChange::DIRECTIVE_DESCRIPTION_CHANGED,
             description: "`#{directive.name}` directive description is changed",
             breaking_change: false,
           }
@@ -478,7 +429,7 @@ module GraphQL
 
         def directive_argument_removed(directive, argument)
           {
-            type: DIRECTIVE_ARGUMENT_REMOVED,
+            type: GraphQL::Schema::SchemaComparatorChange::DIRECTIVE_ARGUMENT_REMOVED,
             description: "Argument `#{argument.name}` was removed from `#{directive.name}` directive",
             breaking_change: true,
           }
@@ -486,7 +437,7 @@ module GraphQL
 
         def directive_argument_added(directive, argument, breaking_change)
           {
-            type: DIRECTIVE_ARGUMENT_ADDED,
+            type: GraphQL::Schema::SchemaComparatorChange::DIRECTIVE_ARGUMENT_ADDED,
             description: "Argument `#{argument.name}` was added to `#{directive.name}` directive",
             breaking_change: breaking_change,
           }
@@ -494,7 +445,7 @@ module GraphQL
 
         def directive_argument_description_changed(directive, argument)
           {
-            type: DIRECTIVE_ARGUMENT_DESCRIPTION_CHANGED,
+            type: GraphQL::Schema::SchemaComparatorChange::DIRECTIVE_ARGUMENT_DESCRIPTION_CHANGED,
             description: "`#{directive.name}(#{argument.name})` description is changed",
             breaking_change: false,
           }
@@ -505,7 +456,7 @@ module GraphQL
           new_default_value = new_default_value ? "`#{JSON.dump(new_default_value)}`" : 'none'
 
           {
-            type: DIRECTIVE_ARGUMENT_DEFAULT_CHANGED,
+            type: GraphQL::Schema::SchemaComparatorChange::DIRECTIVE_ARGUMENT_DEFAULT_CHANGED,
             description: "`#{directive.name}(#{argument.name})` default value changed from #{old_default_value} to #{new_default_value}",
             breaking_change: false,
           }
@@ -513,7 +464,7 @@ module GraphQL
 
         def directive_argument_type_changed(directive, argument, old_type, new_type, breaking_change)
           {
-            type: DIRECTIVE_ARGUMENT_TYPE_CHANGED,
+            type: GraphQL::Schema::SchemaComparatorChange::DIRECTIVE_ARGUMENT_TYPE_CHANGED,
             description: "`#{directive.name}(#{argument.name})` type changed from `#{old_type}` to `#{new_type}`",
             breaking_change: breaking_change,
           }
@@ -521,7 +472,7 @@ module GraphQL
 
         def directive_location_added(directive, location)
           {
-            type: DIRECTIVE_LOCATION_ADDED,
+            type: GraphQL::Schema::SchemaComparatorChange::DIRECTIVE_LOCATION_ADDED,
             description: "`#{directive_location(location)}` directive location added to `#{directive.name}` directive",
             breaking_change: false,
           }
@@ -529,7 +480,7 @@ module GraphQL
 
         def directive_location_removed(directive, location)
           {
-            type: DIRECTIVE_LOCATION_REMOVED,
+            type: GraphQL::Schema::SchemaComparatorChange::DIRECTIVE_LOCATION_REMOVED,
             description: "`#{directive_location(location)}` directive location removed from `#{directive.name}` directive",
             breaking_change: true,
           }
@@ -537,7 +488,7 @@ module GraphQL
 
         def input_field_removed(type, input_field)
           {
-            type: INPUT_FIELD_REMOVED,
+            type: GraphQL::Schema::SchemaComparatorChange::INPUT_FIELD_REMOVED,
             description: "Input field `#{input_field.name}` was removed from `#{type.name}` type",
             breaking_change: true,
           }
@@ -545,7 +496,7 @@ module GraphQL
 
         def input_field_added(type, input_field, breaking_change)
           {
-            type: INPUT_FIELD_ADDED,
+            type: GraphQL::Schema::SchemaComparatorChange::INPUT_FIELD_ADDED,
             description: "Input field `#{input_field.name}` was added to `#{type.name}` type",
             breaking_change: breaking_change,
           }
@@ -553,7 +504,7 @@ module GraphQL
 
         def input_field_description_changed(type, input_field)
           {
-            type: INPUT_FIELD_DESCRIPTION_CHANGED,
+            type: GraphQL::Schema::SchemaComparatorChange::INPUT_FIELD_DESCRIPTION_CHANGED,
             description: "`#{type.name}.#{input_field.name}` description is changed",
             breaking_change: false,
           }
@@ -564,7 +515,7 @@ module GraphQL
           new_default_value = new_default_value ? "`#{JSON.dump(new_default_value)}`" : 'none'
 
           {
-            type: INPUT_FIELD_DEFAULT_CHANGED,
+            type: GraphQL::Schema::SchemaComparatorChange::INPUT_FIELD_DEFAULT_CHANGED,
             description: "`#{type.name}.#{field.name}` default value changed from #{old_default_value} to #{new_default_value}",
             breaking_change: false,
           }
@@ -572,7 +523,7 @@ module GraphQL
 
         def input_field_type_changed(type, field, old_type, new_type, breaking_change)
           {
-            type: INPUT_FIELD_TYPE_CHANGED,
+            type: GraphQL::Schema::SchemaComparatorChange::INPUT_FIELD_TYPE_CHANGED,
             description: "`#{type.name}.#{field.name}` input field type changed from `#{old_type}` to `#{new_type}`",
             breaking_change: breaking_change,
           }
@@ -580,7 +531,7 @@ module GraphQL
 
         def object_type_interface_added(type, interface_name)
           {
-            type: OBJECT_TYPE_INTERFACE_ADDED,
+            type: GraphQL::Schema::SchemaComparatorChange::OBJECT_TYPE_INTERFACE_ADDED,
             description: "`#{type.name}` object type now implements `#{interface_name}` interface",
             breaking_change: false,
           }
@@ -588,7 +539,7 @@ module GraphQL
 
         def object_type_interface_removed(type, interface_name)
           {
-            type: OBJECT_TYPE_INTERFACE_REMOVED,
+            type: GraphQL::Schema::SchemaComparatorChange::OBJECT_TYPE_INTERFACE_REMOVED,
             description: "`#{type.name}` object type no longer implements `#{interface_name}` interface",
             breaking_change: true,
           }
@@ -596,7 +547,7 @@ module GraphQL
 
         def object_type_argument_type_changed(type, field, argument, old_type, new_type, breaking_change)
           {
-            type: OBJECT_TYPE_ARGUMENT_TYPE_CHANGED,
+            type: GraphQL::Schema::SchemaComparatorChange::OBJECT_TYPE_ARGUMENT_TYPE_CHANGED,
             description: "`#{type.name}.#{field.name}(#{argument.name})` type changed from `#{old_type}` to `#{new_type}`",
             breaking_change: breaking_change,
           }
@@ -604,7 +555,7 @@ module GraphQL
 
         def object_type_argument_added(type, field, argument, breaking_change)
           {
-            type: OBJECT_TYPE_ARGUMENT_ADDED,
+            type: GraphQL::Schema::SchemaComparatorChange::OBJECT_TYPE_ARGUMENT_ADDED,
             description: "Argument `#{argument.name}` was added to `#{type.name}.#{field.name}` field",
             breaking_change: breaking_change,
           }
@@ -615,7 +566,7 @@ module GraphQL
           new_default_value = new_default_value ? "`#{JSON.dump(new_default_value)}`" : 'none'
 
           {
-            type: OBJECT_TYPE_ARGUMENT_DEFAULT_CHANGED,
+            type: GraphQL::Schema::SchemaComparatorChange::OBJECT_TYPE_ARGUMENT_DEFAULT_CHANGED,
             description: "`#{type.name}.#{field.name}(#{argument.name})` default value changed from #{old_default_value} to #{new_default_value}",
             breaking_change: false,
           }
@@ -623,7 +574,7 @@ module GraphQL
 
         def object_type_argument_description_changed(type, field, argument)
           {
-            type: OBJECT_TYPE_ARGUMENT_DESCRIPTION_CHANGED,
+            type: GraphQL::Schema::SchemaComparatorChange::OBJECT_TYPE_ARGUMENT_DESCRIPTION_CHANGED,
             description: "`#{type.name}.#{field.name}(#{argument.name})` description was changed",
             breaking_change: false,
           }
@@ -631,7 +582,7 @@ module GraphQL
 
         def field_removed(type, field)
           {
-            type: FIELD_REMOVED,
+            type: GraphQL::Schema::SchemaComparatorChange::FIELD_REMOVED,
             description: "Field `#{field.name}` was removed from `#{type.name}` type",
             breaking_change: true,
           }
@@ -639,7 +590,7 @@ module GraphQL
 
         def field_added(type, field)
           {
-            type: FIELD_ADDED,
+            type: GraphQL::Schema::SchemaComparatorChange::FIELD_ADDED,
             description: "Field `#{field.name}` was added to `#{type.name}` type",
             breaking_change: false,
           }
@@ -647,7 +598,7 @@ module GraphQL
 
         def schema_query_type_changed(old_type, new_type)
           {
-            type: SCHEMA_QUERY_TYPE_CHANGED,
+            type: GraphQL::Schema::SchemaComparatorChange::SCHEMA_QUERY_TYPE_CHANGED,
             description: "Schema query type changed from `#{old_type.name}` to `#{new_type.name}` type",
             breaking_change: false,
           }
@@ -658,7 +609,7 @@ module GraphQL
           new_name = new_type ? "`#{new_type.name}`" : 'none'
 
           {
-            type: SCHEMA_MUTATION_TYPE_CHANGED,
+            type: GraphQL::Schema::SchemaComparatorChange::SCHEMA_MUTATION_TYPE_CHANGED,
             description: "Schema mutation type changed from #{old_name} to #{new_name} type",
             breaking_change: breaking_change,
           }
@@ -669,7 +620,7 @@ module GraphQL
           new_name = new_type ? "`#{new_type.name}`" : 'none'
 
           {
-            type: SCHEMA_SUBSCRIPTION_TYPE_CHANGED,
+            type: GraphQL::Schema::SchemaComparatorChange::SCHEMA_SUBSCRIPTION_TYPE_CHANGED,
             description: "Schema subscription type changed from #{old_name} to #{new_name} type",
             breaking_change: breaking_change,
           }

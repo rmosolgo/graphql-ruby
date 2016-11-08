@@ -40,21 +40,21 @@ describe GraphQL::Schema do
       }
     SCHEMA
 
-    changes = GraphQL::Schema.compare(schema(schema1), schema(schema2))
+    changes = GraphQL::Schema::SchemaComparator.find_changes(schema(schema1), schema(schema2))
     assert_equal [{
-      type: GraphQL::Schema::TYPE_REMOVED,
+      type: GraphQL::Schema::SchemaComparatorChange::TYPE_REMOVED,
       description: "`Type1` type was removed",
       breaking_change: true,
     }], changes
 
-    changes = GraphQL::Schema.compare(schema(schema2), schema(schema1))
+    changes = GraphQL::Schema::SchemaComparator.find_changes(schema(schema2), schema(schema1))
     assert_equal [{
-      type: GraphQL::Schema::TYPE_ADDED,
+      type: GraphQL::Schema::SchemaComparatorChange::TYPE_ADDED,
       description: "`Type1` type was added",
       breaking_change: false,
     }], changes
 
-    changes = GraphQL::Schema.compare(schema(schema1), schema(schema1))
+    changes = GraphQL::Schema::SchemaComparator.find_changes(schema(schema1), schema(schema1))
     assert_equal [], changes
   end
 
@@ -68,13 +68,13 @@ describe GraphQL::Schema do
       union Type1 = ObjectType
     SCHEMA
 
-    changes = GraphQL::Schema.compare(schema(schema1), schema(schema2))
+    changes = GraphQL::Schema::SchemaComparator.find_changes(schema(schema1), schema(schema2))
     assert_equal [{
-      type: GraphQL::Schema::TYPE_ADDED,
+      type: GraphQL::Schema::SchemaComparatorChange::TYPE_ADDED,
       description: "`ObjectType` type was added",
       breaking_change: false,
     }, {
-      type: GraphQL::Schema::TYPE_KIND_CHANGED,
+      type: GraphQL::Schema::SchemaComparatorChange::TYPE_KIND_CHANGED,
       description: "`Type1` changed from an Interface type to a Union type",
       breaking_change: true,
     }], changes
@@ -91,9 +91,9 @@ describe GraphQL::Schema do
       type ObjectType {field1: String}
     SCHEMA
 
-    changes = GraphQL::Schema.compare(schema(schema1), schema(schema2))
+    changes = GraphQL::Schema::SchemaComparator.find_changes(schema(schema1), schema(schema2))
     assert_equal [{
-      type: GraphQL::Schema::TYPE_DESCRIPTION_CHANGED,
+      type: GraphQL::Schema::SchemaComparatorChange::TYPE_DESCRIPTION_CHANGED,
       description: "`ObjectType` type description is changed",
       breaking_change: false,
     }], changes
@@ -115,30 +115,30 @@ describe GraphQL::Schema do
       }
     SCHEMA
 
-    changes = GraphQL::Schema.compare(schema(schema1), schema(schema2))
+    changes = GraphQL::Schema::SchemaComparator.find_changes(schema(schema1), schema(schema2))
 
     assert_equal 4, changes.length
 
     assert_includes changes, {
-      type: GraphQL::Schema::ENUM_VALUE_REMOVED,
+      type: GraphQL::Schema::SchemaComparatorChange::ENUM_VALUE_REMOVED,
       description: "Enum value `A` was removed from enum `Foo`",
       breaking_change: true,
     }
 
     assert_includes changes, {
-      type: GraphQL::Schema::ENUM_VALUE_ADDED,
+      type: GraphQL::Schema::SchemaComparatorChange::ENUM_VALUE_ADDED,
       description: "Enum value `D` was added to enum `Foo`",
       breaking_change: false,
     }
 
     assert_includes changes, {
-      type: GraphQL::Schema::ENUM_VALUE_DESCRIPTION_CHANGED,
+      type: GraphQL::Schema::SchemaComparatorChange::ENUM_VALUE_DESCRIPTION_CHANGED,
       description: "`Foo.C` description changed",
       breaking_change: false,
     }
 
     assert_includes changes, {
-      type: GraphQL::Schema::ENUM_VALUE_DEPRECATED,
+      type: GraphQL::Schema::SchemaComparatorChange::ENUM_VALUE_DEPRECATED,
       description: "Enum value `B` was deprecated in enum `Foo`",
       breaking_change: false,
     }
@@ -159,36 +159,36 @@ describe GraphQL::Schema do
       union Agg = Bar | Baz
     SCHEMA
 
-    changes = GraphQL::Schema.compare(schema(schema1), schema(schema2))
+    changes = GraphQL::Schema::SchemaComparator.find_changes(schema(schema1), schema(schema2))
 
     assert_equal 5, changes.length
 
     assert_includes changes, {
-      type: GraphQL::Schema::TYPE_ADDED,
+      type: GraphQL::Schema::SchemaComparatorChange::TYPE_ADDED,
       description: "`Baz` type was added",
       breaking_change: false,
     }
 
     assert_includes changes, {
-      type: GraphQL::Schema::TYPE_REMOVED,
+      type: GraphQL::Schema::SchemaComparatorChange::TYPE_REMOVED,
       description: "`Foo` type was removed",
       breaking_change: true,
     }
 
     assert_includes changes, {
-      type: GraphQL::Schema::UNION_MEMBER_REMOVED,
+      type: GraphQL::Schema::SchemaComparatorChange::UNION_MEMBER_REMOVED,
       description: "`Foo` type was removed from union `Agg`",
       breaking_change: true,
     }
 
     assert_includes changes, {
-      type: GraphQL::Schema::UNION_MEMBER_ADDED,
+      type: GraphQL::Schema::SchemaComparatorChange::UNION_MEMBER_ADDED,
       description: "`Baz` type was added to union `Agg`",
       breaking_change: false,
     }
 
     assert_includes changes, {
-      type: GraphQL::Schema::TYPE_DESCRIPTION_CHANGED,
+      type: GraphQL::Schema::SchemaComparatorChange::TYPE_DESCRIPTION_CHANGED,
       description: "`Agg` type description is changed",
       breaking_change: false,
     }
@@ -208,24 +208,24 @@ describe GraphQL::Schema do
       scalar Country
     SCHEMA
 
-    changes = GraphQL::Schema.compare(schema(schema1), schema(schema2))
+    changes = GraphQL::Schema::SchemaComparator.find_changes(schema(schema1), schema(schema2))
 
     assert_equal 3, changes.length
 
     assert_includes changes, {
-      type: GraphQL::Schema::TYPE_REMOVED,
+      type: GraphQL::Schema::SchemaComparatorChange::TYPE_REMOVED,
       description: "`Date` type was removed",
       breaking_change: true,
     }
 
     assert_includes changes, {
-      type: GraphQL::Schema::TYPE_ADDED,
+      type: GraphQL::Schema::SchemaComparatorChange::TYPE_ADDED,
       description: "`Country` type was added",
       breaking_change: false,
     }
 
     assert_includes changes, {
-      type: GraphQL::Schema::TYPE_DESCRIPTION_CHANGED,
+      type: GraphQL::Schema::SchemaComparatorChange::TYPE_DESCRIPTION_CHANGED,
       description: "`Locale` type description is changed",
       breaking_change: false,
     }
@@ -251,78 +251,78 @@ describe GraphQL::Schema do
       directive @hello(a: String = "World", b: String, c: Int, d: Int) on FIELD_DEFINITION
     SCHEMA
 
-    changes = GraphQL::Schema.compare(schema(schema1), schema(schema2))
+    changes = GraphQL::Schema::SchemaComparator.find_changes(schema(schema1), schema(schema2))
 
     assert_equal 12, changes.length
 
     assert_includes changes, {
-      type: GraphQL::Schema::DIRECTIVE_REMOVED,
+      type: GraphQL::Schema::SchemaComparatorChange::DIRECTIVE_REMOVED,
       description: "`bar` directive was removed",
       breaking_change: true,
     }
 
     assert_includes changes, {
-      type: GraphQL::Schema::DIRECTIVE_ADDED,
+      type: GraphQL::Schema::SchemaComparatorChange::DIRECTIVE_ADDED,
       description: "`baz` directive was added",
       breaking_change: false,
     }
 
     assert_includes changes, {
-      type: GraphQL::Schema::DIRECTIVE_DESCRIPTION_CHANGED,
+      type: GraphQL::Schema::SchemaComparatorChange::DIRECTIVE_DESCRIPTION_CHANGED,
       description: "`foo` directive description is changed",
       breaking_change: false,
     }
 
     assert_includes changes, {
-      type: GraphQL::Schema::DIRECTIVE_ARGUMENT_DESCRIPTION_CHANGED,
+      type: GraphQL::Schema::SchemaComparatorChange::DIRECTIVE_ARGUMENT_DESCRIPTION_CHANGED,
       description: "`foo(a)` description is changed",
       breaking_change: false,
     }
 
     assert_includes changes, {
-      type: GraphQL::Schema::DIRECTIVE_ARGUMENT_REMOVED,
+      type: GraphQL::Schema::SchemaComparatorChange::DIRECTIVE_ARGUMENT_REMOVED,
       description: "Argument `b` was removed from `foo` directive",
       breaking_change: true,
     }
 
     assert_includes changes, {
-      type: GraphQL::Schema::DIRECTIVE_LOCATION_ADDED,
+      type: GraphQL::Schema::SchemaComparatorChange::DIRECTIVE_LOCATION_ADDED,
       description: "`InputObject` directive location added to `foo` directive",
       breaking_change: false,
     }
 
     assert_includes changes, {
-      type: GraphQL::Schema::DIRECTIVE_LOCATION_REMOVED,
+      type: GraphQL::Schema::SchemaComparatorChange::DIRECTIVE_LOCATION_REMOVED,
       description: "`Enum` directive location removed from `foo` directive",
       breaking_change: true,
     }
 
     assert_includes changes, {
-      type: GraphQL::Schema::DIRECTIVE_ARGUMENT_ADDED,
+      type: GraphQL::Schema::SchemaComparatorChange::DIRECTIVE_ARGUMENT_ADDED,
       description: "Argument `c` was added to `foo` directive",
       breaking_change: false,
     }
 
     assert_includes changes, {
-      type: GraphQL::Schema::DIRECTIVE_ARGUMENT_DEFAULT_CHANGED,
+      type: GraphQL::Schema::SchemaComparatorChange::DIRECTIVE_ARGUMENT_DEFAULT_CHANGED,
       description: %Q(`hello(a)` default value changed from none to `"World"`),
       breaking_change: false,
     }
 
     assert_includes changes, {
-      type: GraphQL::Schema::DIRECTIVE_ARGUMENT_TYPE_CHANGED,
+      type: GraphQL::Schema::SchemaComparatorChange::DIRECTIVE_ARGUMENT_TYPE_CHANGED,
       description: "`hello(b)` type changed from `Int` to `String`",
       breaking_change: true,
     }
 
     assert_includes changes, {
-      type: GraphQL::Schema::DIRECTIVE_ARGUMENT_TYPE_CHANGED,
+      type: GraphQL::Schema::SchemaComparatorChange::DIRECTIVE_ARGUMENT_TYPE_CHANGED,
       description: "`hello(c)` type changed from `Int!` to `Int`",
       breaking_change: false,
     }
 
     assert_includes changes, {
-      type: GraphQL::Schema::DIRECTIVE_ARGUMENT_DEFAULT_CHANGED,
+      type: GraphQL::Schema::SchemaComparatorChange::DIRECTIVE_ARGUMENT_DEFAULT_CHANGED,
       description: "`hello(d)` default value changed from `1` to none",
       breaking_change: false,
     }
@@ -342,24 +342,24 @@ describe GraphQL::Schema do
       input Foo {size: Int}
     SCHEMA
 
-    changes = GraphQL::Schema.compare(schema(schema1), schema(schema2))
+    changes = GraphQL::Schema::SchemaComparator.find_changes(schema(schema1), schema(schema2))
 
     assert_equal 3, changes.length
 
     assert_includes changes, {
-      type: GraphQL::Schema::TYPE_REMOVED,
+      type: GraphQL::Schema::SchemaComparatorChange::TYPE_REMOVED,
       description: "`Bar` type was removed",
       breaking_change: true,
     }
 
     assert_includes changes, {
-      type: GraphQL::Schema::TYPE_ADDED,
+      type: GraphQL::Schema::SchemaComparatorChange::TYPE_ADDED,
       description: "`Foo` type was added",
       breaking_change: false,
     }
 
     assert_includes changes, {
-      type: GraphQL::Schema::TYPE_DESCRIPTION_CHANGED,
+      type: GraphQL::Schema::SchemaComparatorChange::TYPE_DESCRIPTION_CHANGED,
       description: "`Sort` type description is changed",
       breaking_change: false,
     }
@@ -384,30 +384,30 @@ describe GraphQL::Schema do
       }
     SCHEMA
 
-    changes = GraphQL::Schema.compare(schema(schema1), schema(schema2))
+    changes = GraphQL::Schema::SchemaComparator.find_changes(schema(schema1), schema(schema2))
 
     assert_equal 4, changes.length
 
     assert_includes changes, {
-      type: GraphQL::Schema::INPUT_FIELD_REMOVED,
+      type: GraphQL::Schema::SchemaComparatorChange::INPUT_FIELD_REMOVED,
       description: "Input field `descr` was removed from `Filter` type",
       breaking_change: true,
     }
 
     assert_includes changes, {
-      type: GraphQL::Schema::INPUT_FIELD_ADDED,
+      type: GraphQL::Schema::SchemaComparatorChange::INPUT_FIELD_ADDED,
       description: "Input field `size` was added to `Filter` type",
       breaking_change: false,
     }
 
     assert_includes changes, {
-      type: GraphQL::Schema::INPUT_FIELD_DESCRIPTION_CHANGED,
+      type: GraphQL::Schema::SchemaComparatorChange::INPUT_FIELD_DESCRIPTION_CHANGED,
       description: "`Filter.name` description is changed",
       breaking_change: false,
     }
 
     assert_includes changes, {
-      type: GraphQL::Schema::TYPE_DESCRIPTION_CHANGED,
+      type: GraphQL::Schema::SchemaComparatorChange::TYPE_DESCRIPTION_CHANGED,
       description: "`Filter` type description is changed",
       breaking_change: false,
     }
@@ -447,66 +447,66 @@ describe GraphQL::Schema do
       }
     SCHEMA
 
-    changes = GraphQL::Schema.compare(schema(schema1), schema(schema2))
+    changes = GraphQL::Schema::SchemaComparator.find_changes(schema(schema1), schema(schema2))
 
     assert_equal 10, changes.length
 
     assert_includes changes, {
-      type: GraphQL::Schema::TYPE_REMOVED,
+      type: GraphQL::Schema::SchemaComparatorChange::TYPE_REMOVED,
       description: "`I2` type was removed",
       breaking_change: true,
     }
 
     assert_includes changes, {
-      type: GraphQL::Schema::TYPE_ADDED,
+      type: GraphQL::Schema::SchemaComparatorChange::TYPE_ADDED,
       description: "`I3` type was added",
       breaking_change: false,
     }
 
     assert_includes changes, {
-      type: GraphQL::Schema::OBJECT_TYPE_INTERFACE_REMOVED,
+      type: GraphQL::Schema::SchemaComparatorChange::OBJECT_TYPE_INTERFACE_REMOVED,
       description: "`Filter` object type no longer implements `I2` interface",
       breaking_change: true,
     }
 
     assert_includes changes, {
-      type: GraphQL::Schema::OBJECT_TYPE_INTERFACE_ADDED,
+      type: GraphQL::Schema::SchemaComparatorChange::OBJECT_TYPE_INTERFACE_ADDED,
       description: "`Filter` object type now implements `I3` interface",
       breaking_change: false,
     }
 
     assert_includes changes, {
-      type: GraphQL::Schema::FIELD_REMOVED,
+      type: GraphQL::Schema::SchemaComparatorChange::FIELD_REMOVED,
       description: "Field `name` was removed from `Filter` type",
       breaking_change: true,
     }
 
     assert_includes changes, {
-      type: GraphQL::Schema::FIELD_REMOVED,
+      type: GraphQL::Schema::SchemaComparatorChange::FIELD_REMOVED,
       description: "Field `foo` was removed from `Filter` type",
       breaking_change: true,
     }
 
     assert_includes changes, {
-      type: GraphQL::Schema::FIELD_ADDED,
+      type: GraphQL::Schema::SchemaComparatorChange::FIELD_ADDED,
       description: "Field `id` was added to `Filter` type",
       breaking_change: false,
     }
 
     assert_includes changes, {
-      type: GraphQL::Schema::FIELD_ADDED,
+      type: GraphQL::Schema::SchemaComparatorChange::FIELD_ADDED,
       description: "Field `bar` was added to `Filter` type",
       breaking_change: false,
     }
 
     assert_includes changes, {
-      type: GraphQL::Schema::FIELD_ADDED,
+      type: GraphQL::Schema::SchemaComparatorChange::FIELD_ADDED,
       description: "Field `bar` was added to `I1` type",
       breaking_change: false,
     }
 
     assert_includes changes, {
-      type: GraphQL::Schema::FIELD_REMOVED,
+      type: GraphQL::Schema::SchemaComparatorChange::FIELD_REMOVED,
       description: "Field `name` was removed from `I1` type",
       breaking_change: true,
     }
@@ -538,54 +538,54 @@ describe GraphQL::Schema do
       }
     SCHEMA
 
-    changes = GraphQL::Schema.compare(schema(schema1), schema(schema2))
+    changes = GraphQL::Schema::SchemaComparator.find_changes(schema(schema1), schema(schema2))
 
     assert_equal 8, changes.length
 
     assert_includes changes, {
-      type: GraphQL::Schema::OBJECT_TYPE_ARGUMENT_TYPE_CHANGED,
+      type: GraphQL::Schema::SchemaComparatorChange::OBJECT_TYPE_ARGUMENT_TYPE_CHANGED,
       description: "`Filter.foo(b)` type changed from `String` to `[String]`",
       breaking_change: true,
     }
 
     assert_includes changes, {
-      type: GraphQL::Schema::OBJECT_TYPE_ARGUMENT_ADDED,
+      type: GraphQL::Schema::SchemaComparatorChange::OBJECT_TYPE_ARGUMENT_ADDED,
       description: "Argument `d` was added to `Filter.foo` field",
       breaking_change: false,
     }
 
     assert_includes changes, {
-      type: GraphQL::Schema::OBJECT_TYPE_ARGUMENT_TYPE_CHANGED,
+      type: GraphQL::Schema::SchemaComparatorChange::OBJECT_TYPE_ARGUMENT_TYPE_CHANGED,
       description: "`Filter.foo(b1)` type changed from `String` to `String!`",
       breaking_change: true,
     }
 
     assert_includes changes, {
-      type: GraphQL::Schema::OBJECT_TYPE_ARGUMENT_TYPE_CHANGED,
+      type: GraphQL::Schema::SchemaComparatorChange::OBJECT_TYPE_ARGUMENT_TYPE_CHANGED,
       description: "`Filter.foo(a)` type changed from `String!` to `String`",
       breaking_change: false,
     }
 
     assert_includes changes, {
-      type: GraphQL::Schema::OBJECT_TYPE_ARGUMENT_TYPE_CHANGED,
+      type: GraphQL::Schema::SchemaComparatorChange::OBJECT_TYPE_ARGUMENT_TYPE_CHANGED,
       description: "`Filter.foo(c)` type changed from `[String]` to `[String]!`",
       breaking_change: true,
     }
 
     assert_includes changes, {
-      type: GraphQL::Schema::OBJECT_TYPE_ARGUMENT_ADDED,
+      type: GraphQL::Schema::SchemaComparatorChange::OBJECT_TYPE_ARGUMENT_ADDED,
       description: "Argument `e` was added to `Filter.foo` field",
       breaking_change: true,
     }
 
     assert_includes changes, {
-      type: GraphQL::Schema::OBJECT_TYPE_ARGUMENT_DEFAULT_CHANGED,
+      type: GraphQL::Schema::SchemaComparatorChange::OBJECT_TYPE_ARGUMENT_DEFAULT_CHANGED,
       description: "`Filter.foo(a)` default value changed from none to `\"foo\"`",
       breaking_change: false,
     }
 
     assert_includes changes, {
-      type: GraphQL::Schema::OBJECT_TYPE_ARGUMENT_DESCRIPTION_CHANGED,
+      type: GraphQL::Schema::SchemaComparatorChange::OBJECT_TYPE_ARGUMENT_DESCRIPTION_CHANGED,
       description: "`Filter.foo(a)` description was changed",
       breaking_change: false,
     }
@@ -612,42 +612,42 @@ describe GraphQL::Schema do
       }
     SCHEMA
 
-    changes = GraphQL::Schema.compare(schema(schema1), schema(schema2))
+    changes = GraphQL::Schema::SchemaComparator.find_changes(schema(schema1), schema(schema2))
 
     assert_equal 6, changes.length
 
     assert_includes changes, {
-      type: GraphQL::Schema::INPUT_FIELD_TYPE_CHANGED,
+      type: GraphQL::Schema::SchemaComparatorChange::INPUT_FIELD_TYPE_CHANGED,
       description: "`Filter.color` input field type changed from `Int` to `String`",
       breaking_change: true,
     }
 
     assert_includes changes, {
-      type: GraphQL::Schema::INPUT_FIELD_TYPE_CHANGED,
+      type: GraphQL::Schema::SchemaComparatorChange::INPUT_FIELD_TYPE_CHANGED,
       description: "`Filter.type` input field type changed from `[Int]` to `[Int!]`",
       breaking_change: true,
     }
 
     assert_includes changes, {
-      type: GraphQL::Schema::INPUT_FIELD_DEFAULT_CHANGED,
+      type: GraphQL::Schema::SchemaComparatorChange::INPUT_FIELD_DEFAULT_CHANGED,
       description: %Q(`Filter.a` default value changed from `["hello","world"]` to `["foo"]`),
       breaking_change: false,
     }
 
     assert_includes changes, {
-      type: GraphQL::Schema::INPUT_FIELD_DEFAULT_CHANGED,
+      type: GraphQL::Schema::SchemaComparatorChange::INPUT_FIELD_DEFAULT_CHANGED,
       description: "`Filter.size` default value changed from none to `12`",
       breaking_change: false,
     }
 
     assert_includes changes, {
-      type: GraphQL::Schema::INPUT_FIELD_DEFAULT_CHANGED,
+      type: GraphQL::Schema::SchemaComparatorChange::INPUT_FIELD_DEFAULT_CHANGED,
       description: %Q(`Filter.color` default value changed from `5` to `"red"`),
       breaking_change: false,
     }
 
     assert_includes changes, {
-      type: GraphQL::Schema::INPUT_FIELD_DEFAULT_CHANGED,
+      type: GraphQL::Schema::SchemaComparatorChange::INPUT_FIELD_DEFAULT_CHANGED,
       description: "`Filter.b` default value changed from `5` to none",
       breaking_change: false,
     }
@@ -678,42 +678,42 @@ describe GraphQL::Schema do
       }
     SCHEMA
 
-    changes = GraphQL::Schema.compare(schema(schema1), schema(schema2))
+    changes = GraphQL::Schema::SchemaComparator.find_changes(schema(schema1), schema(schema2))
 
     assert_equal 6, changes.length
 
     assert_includes changes, {
-      type: GraphQL::Schema::INPUT_FIELD_ADDED,
+      type: GraphQL::Schema::SchemaComparatorChange::INPUT_FIELD_ADDED,
       description: "Input field `e` was added to `Filter` type",
       breaking_change: true,
     }
 
     assert_includes changes, {
-      type: GraphQL::Schema::INPUT_FIELD_ADDED,
+      type: GraphQL::Schema::SchemaComparatorChange::INPUT_FIELD_ADDED,
       description: "Input field `d` was added to `Filter` type",
       breaking_change: false,
     }
 
     assert_includes changes, {
-      type: GraphQL::Schema::INPUT_FIELD_TYPE_CHANGED,
+      type: GraphQL::Schema::SchemaComparatorChange::INPUT_FIELD_TYPE_CHANGED,
       description: "`Filter.b` input field type changed from `String` to `[String]`",
       breaking_change: true,
     }
 
     assert_includes changes, {
-      type: GraphQL::Schema::INPUT_FIELD_TYPE_CHANGED,
+      type: GraphQL::Schema::SchemaComparatorChange::INPUT_FIELD_TYPE_CHANGED,
       description: "`Filter.a` input field type changed from `String!` to `String`",
       breaking_change: false,
     }
 
     assert_includes changes, {
-      type: GraphQL::Schema::INPUT_FIELD_TYPE_CHANGED,
+      type: GraphQL::Schema::SchemaComparatorChange::INPUT_FIELD_TYPE_CHANGED,
       description: "`Filter.c` input field type changed from `[String]` to `[String]!`",
       breaking_change: true,
     }
 
     assert_includes changes, {
-      type: GraphQL::Schema::INPUT_FIELD_TYPE_CHANGED,
+      type: GraphQL::Schema::SchemaComparatorChange::INPUT_FIELD_TYPE_CHANGED,
       description: "`Filter.b1` input field type changed from `String` to `String!`",
       breaking_change: true,
     }
@@ -746,48 +746,48 @@ describe GraphQL::Schema do
       }
     SCHEMA
 
-    changes = GraphQL::Schema.compare(schema(schema1, include_query_type: false), schema(schema2, include_query_type: false))
+    changes = GraphQL::Schema::SchemaComparator.find_changes(schema(schema1, include_query_type: false), schema(schema2, include_query_type: false))
 
     assert_equal 7, changes.length
 
     assert_includes changes, {
-      type: GraphQL::Schema::TYPE_REMOVED,
+      type: GraphQL::Schema::SchemaComparatorChange::TYPE_REMOVED,
       description: "`Query` type was removed",
       breaking_change: true,
     }
 
     assert_includes changes, {
-      type: GraphQL::Schema::TYPE_ADDED,
+      type: GraphQL::Schema::SchemaComparatorChange::TYPE_ADDED,
       description: "`Mut` type was added",
       breaking_change: false,
     }
 
     assert_includes changes, {
-      type: GraphQL::Schema::TYPE_ADDED,
+      type: GraphQL::Schema::SchemaComparatorChange::TYPE_ADDED,
       description: "`Subs` type was added",
       breaking_change: false,
     }
 
     assert_includes changes, {
-      type: GraphQL::Schema::TYPE_ADDED,
+      type: GraphQL::Schema::SchemaComparatorChange::TYPE_ADDED,
       description: "`Foo` type was added",
       breaking_change: false,
     }
 
     assert_includes changes, {
-      type: GraphQL::Schema::SCHEMA_QUERY_TYPE_CHANGED,
+      type: GraphQL::Schema::SchemaComparatorChange::SCHEMA_QUERY_TYPE_CHANGED,
       description: "Schema query type changed from `Query` to `Foo` type",
       breaking_change: false,
     }
 
     assert_includes changes, {
-      type: GraphQL::Schema::SCHEMA_MUTATION_TYPE_CHANGED,
+      type: GraphQL::Schema::SchemaComparatorChange::SCHEMA_MUTATION_TYPE_CHANGED,
       description: "Schema mutation type changed from none to `Mut` type",
       breaking_change: false,
     }
 
     assert_includes changes, {
-      type: GraphQL::Schema::SCHEMA_SUBSCRIPTION_TYPE_CHANGED,
+      type: GraphQL::Schema::SchemaComparatorChange::SCHEMA_SUBSCRIPTION_TYPE_CHANGED,
       description: "Schema subscription type changed from none to `Subs` type",
       breaking_change: false,
     }
@@ -829,36 +829,36 @@ describe GraphQL::Schema do
       }
     SCHEMA
 
-    changes = GraphQL::Schema.compare(schema(schema1, include_query_type: false), schema(schema2, include_query_type: false))
+    changes = GraphQL::Schema::SchemaComparator.find_changes(schema(schema1, include_query_type: false), schema(schema2, include_query_type: false))
 
     assert_equal 5, changes.length
 
     assert_includes changes, {
-      type: GraphQL::Schema::TYPE_REMOVED,
+      type: GraphQL::Schema::SchemaComparatorChange::TYPE_REMOVED,
       description: "`Mut` type was removed",
       breaking_change: true,
     }
 
     assert_includes changes, {
-      type: GraphQL::Schema::TYPE_REMOVED,
+      type: GraphQL::Schema::SchemaComparatorChange::TYPE_REMOVED,
       description: "`Subs` type was removed",
       breaking_change: true,
     }
 
     assert_includes changes, {
-      type: GraphQL::Schema::TYPE_ADDED,
+      type: GraphQL::Schema::SchemaComparatorChange::TYPE_ADDED,
       description: "`Subs1` type was added",
       breaking_change: false,
     }
 
     assert_includes changes, {
-      type: GraphQL::Schema::SCHEMA_MUTATION_TYPE_CHANGED,
+      type: GraphQL::Schema::SchemaComparatorChange::SCHEMA_MUTATION_TYPE_CHANGED,
       description: "Schema mutation type changed from `Mut` to none type",
       breaking_change: true,
     }
 
     assert_includes changes, {
-      type: GraphQL::Schema::SCHEMA_SUBSCRIPTION_TYPE_CHANGED,
+      type: GraphQL::Schema::SchemaComparatorChange::SCHEMA_SUBSCRIPTION_TYPE_CHANGED,
       description: "Schema subscription type changed from `Subs` to `Subs1` type",
       breaking_change: true,
     }

@@ -13,6 +13,7 @@ require "graphql/schema/validation"
 require "graphql/schema/warden"
 require "graphql/schema/build_from_definition"
 require "graphql/schema/schema_comparator"
+require "graphql/schema/schema_comparator_change"
 
 module GraphQL
   # A GraphQL schema which may be queried with {GraphQL::Query}.
@@ -47,8 +48,6 @@ module GraphQL
   #   end
   #
   class Schema
-    include SchemaComparator
-
     include GraphQL::Define::InstanceDefinable
     accepts_definitions \
       :query, :mutation, :subscription,
@@ -280,6 +279,18 @@ module GraphQL
 
     # Error that is raised when [#Schema#from_definition] is passed an invalid schema definition string.
     class InvalidDocumentError < Error; end;
+
+    # Obtain a list of changes between `old_schema` and `new_schema`.
+    # @return [Array<GraphQL::Schema::SchemaComparatorChange>]
+    def self.compare(old_schema, new_schema)
+      SchemaComparator.find_changes(old_schema, new_schema)
+    end
+
+    # Obtain a list of changes between current schema and `new_schema`.
+    # @return [Array<GraphQL::Schema::SchemaComparatorChange>]
+    def compare_to(new_schema)
+      self.class.compare(self, new_schema)
+    end
 
     private
 
