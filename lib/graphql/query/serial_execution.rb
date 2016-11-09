@@ -22,8 +22,6 @@ module GraphQL
           root_type,
           query_object
         )
-
-        GraphQL::Execution::Boxed.unbox(result)
         result
       end
 

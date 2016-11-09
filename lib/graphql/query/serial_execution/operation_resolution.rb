@@ -11,6 +11,8 @@ module GraphQL
             mutation: query.mutation?
           )
 
+          GraphQL::Execution::Boxed.unbox(result)
+
           result
         rescue GraphQL::InvalidNullError => err
           err.parent_error? || query.context.errors.push(err)

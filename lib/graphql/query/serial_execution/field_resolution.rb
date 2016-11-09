@@ -37,6 +37,17 @@ module GraphQL
         # After getting the value from the field's resolve method,
         # continue by "finishing" the value, eg. executing sub-fields or coercing values
         def get_finished_value(raw_value)
+          box_method = @query.boxed_value_method(raw_value)
+          if box_method
+            GraphQL::Execution::Boxed.new { raw_value.public_send(box_method) }.then { |inner_value|
+              get_finished_value_without_box(inner_value)
+            }
+          else
+            get_finished_value_without_box(raw_value)
+          end
+        end
+
+        def get_finished_value_without_box(raw_value)
           case raw_value
           when GraphQL::ExecutionError
             raw_value.ast_node = irep_node.ast_node
@@ -53,35 +64,22 @@ module GraphQL
             end
           end
 
-          box_method = @query.boxed_value_method(raw_value)
-          if box_method
-            GraphQL::Execution::Boxed.new { raw_value.public_send(box_method) }.then { |val|
-              GraphQL::Query::SerialExecution::ValueResolution.resolve(
-                parent_type,
-                field,
-                field.type,
-                val,
-                @irep_nodes,
-                @field_ctx,
-              )
-            }
-          else
-            begin
-              GraphQL::Query::SerialExecution::ValueResolution.resolve(
-                parent_type,
-                field,
-                field.type,
-                raw_value,
-                @irep_nodes,
-                @field_ctx,
-              )
-            rescue GraphQL::InvalidNullError => err
-              if field.type.kind.non_null?
-                raise(err)
-              else
-                err.parent_error? || @query.context.errors.push(err)
-                nil
-              end
+
+          begin
+            GraphQL::Query::SerialExecution::ValueResolution.resolve(
+              parent_type,
+              field,
+              field.type,
+              raw_value,
+              @irep_nodes,
+              @field_ctx,
+            )
+          rescue GraphQL::InvalidNullError => err
+            if field.type.kind.non_null?
+              raise(err)
+            else
+              err.parent_error? || @query.context.errors.push(err)
+              nil
             end
           end
         end

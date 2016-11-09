@@ -34,31 +34,47 @@ describe GraphQL::Execution::Boxed do
 
   BoxedSum = GraphQL::ObjectType.define do
     name "BoxedSum"
-    field :value, !types.Int do
-      resolve ->(o, a, c) { o }
+    field :value, types.Int do
+      resolve ->(o, a, c) { o == 13 ? nil : o }
     end
-    field :nestedSum, BoxedSum do
+    field :nestedSum, !BoxedSum do
       argument :value, !types.Int
-      resolve ->(o, args, c) { SumAll.new(c, o + args[:value]) }
+      resolve ->(o, args, c) {
+        if args[:value] == 13
+          Box.new(nil)
+        else
+          SumAll.new(c, o + args[:value])
+        end
+      }
+    end
+
+    field :nullableNestedSum, BoxedSum do
+      argument :value, types.Int
+      resolve ->(o, args, c) {
+        if args[:value] == 13
+          Box.new(nil)
+        else
+          SumAll.new(c, o + args[:value])
+        end
+      }
     end
   end
 
   BoxedQuery = GraphQL::ObjectType.define do
     name "Query"
-
     field :int, !types.Int do
       argument :value, !types.Int
       argument :plus, types.Int, default_value: 0
-      resolve ->(o, args, c) { Box.new(args[:value] + args[:plus]) }
+      resolve ->(o, a, c) { Box.new(a[:value] + a[:plus])}
     end
 
-    field :sum, !types.Int do
+    field :nestedSum, !BoxedSum do
       argument :value, !types.Int
       resolve ->(o, args, c) { SumAll.new(c, args[:value]) }
     end
 
-    field :nestedSum, BoxedSum do
-      argument :value, !types.Int
+    field :nullableNestedSum, BoxedSum do
+      argument :value, types.Int
       resolve ->(o, args, c) { SumAll.new(c, args[:value]) }
     end
 
@@ -83,18 +99,6 @@ describe GraphQL::Execution::Boxed do
     it "calls value handlers" do
       res = run_query('{  int(value: 2, plus: 1)}')
       assert_equal 3, res["data"]["int"]
-    end
-
-    it "can do out-of-bounds processing" do
-      res = run_query %|
-      {
-        a: sum(value: 2)
-        b: sum(value: 4)
-        c: sum(value: 6)
-      }
-      |
-
-      assert_equal [12, 12, 12], res["data"].values
     end
 
     it "can do nested boxed values" do
@@ -130,18 +134,64 @@ describe GraphQL::Execution::Boxed do
       assert_equal expected_data, res["data"]
     end
 
-    it "propagates nulls"
+    it "propagates nulls" do
+      res = run_query %|
+      {
+        nestedSum(value: 1) {
+          value
+          nestedSum(value: 13) {
+            value
+          }
+        }
+      }|
+
+      assert_equal(nil, res["data"])
+      assert_equal 1, res["errors"].length
+
+
+      res = run_query %|
+      {
+        nullableNestedSum(value: 1) {
+          value
+          nullableNestedSum(value: 2) {
+            nestedSum(value: 13) {
+              value
+            }
+          }
+        }
+      }|
+
+      pp res
+      expected_data = {
+        "nullableNestedSum" => {
+          "value" => 1,
+          "nullableNestedSum" => nil,
+        }
+      }
+      assert_equal(expected_data, res["data"])
+      assert_equal 1, res["errors"].length
+
+    end
 
     it "resolves mutation fields right away" do
       res = run_query %|
+      {
+        a: nestedSum(value: 2) { value }
+        b: nestedSum(value: 4) { value }
+        c: nestedSum(value: 6) { value }
+      }|
+
+      assert_equal [12, 12, 12], res["data"].values.map { |d| d["value"] }
+
+      res = run_query %|
       mutation {
-        a: sum(value: 2)
-        b: sum(value: 4)
-        c: sum(value: 6)
+        a: nestedSum(value: 2) { value }
+        b: nestedSum(value: 4) { value }
+        c: nestedSum(value: 6) { value }
       }
       |
 
-      assert_equal [2, 4, 6], res["data"].values
+      assert_equal [2, 4, 6], res["data"].values.map { |d| d["value"] }
     end
   end
 
