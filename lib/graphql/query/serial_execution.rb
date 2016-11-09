@@ -17,12 +17,11 @@ module GraphQL
       def execute(ast_operation, root_type, query_object)
         irep_root = query_object.internal_representation[ast_operation.name]
 
-        result = operation_resolution.resolve(
+        operation_resolution.resolve(
           irep_root,
           root_type,
           query_object
         )
-        result
       end
 
       def field_resolution

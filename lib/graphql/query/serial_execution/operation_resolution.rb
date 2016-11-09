@@ -2,16 +2,13 @@ module GraphQL
   class Query
     class SerialExecution
       module OperationResolution
-        def self.resolve(irep_node, current_type, query)
+        def self.resolve(irep_node, target, query)
           result = query.context.execution_strategy.selection_resolution.resolve(
             query.root_value,
-            current_type,
+            target,
             [irep_node],
             query.context,
-            mutation: query.mutation?
           )
-
-          GraphQL::Execution::Boxed.unbox(result)
 
           result
         rescue GraphQL::InvalidNullError => err

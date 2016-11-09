@@ -9,15 +9,9 @@ module GraphQL
           @irep_nodes = irep_nodes
           @parent_type = parent_type
           @target = target
+          @field_ctx = query_ctx.spawn(path: query_ctx.path + [irep_node.name], irep_node: irep_node)
           @query = query_ctx.query
           @field = @query.get_field(parent_type, irep_node.definition_name)
-          @field_ctx = query_ctx.spawn(
-            parent_type: parent_type,
-            field: field,
-            path: query_ctx.path + [irep_node.name],
-            irep_node: irep_node,
-            irep_nodes: irep_nodes,
-          )
           @arguments = @query.arguments_for(irep_node, @field)
         end
 
@@ -37,17 +31,6 @@ module GraphQL
         # After getting the value from the field's resolve method,
         # continue by "finishing" the value, eg. executing sub-fields or coercing values
         def get_finished_value(raw_value)
-          box_method = @query.boxed_value_method(raw_value)
-          if box_method
-            GraphQL::Execution::Boxed.new { raw_value.public_send(box_method) }.then { |inner_value|
-              get_finished_value_without_box(inner_value)
-            }
-          else
-            get_finished_value_without_box(raw_value)
-          end
-        end
-
-        def get_finished_value_without_box(raw_value)
           case raw_value
           when GraphQL::ExecutionError
             raw_value.ast_node = irep_node.ast_node
@@ -63,7 +46,6 @@ module GraphQL
               end
             end
           end
-
 
           begin
             GraphQL::Query::SerialExecution::ValueResolution.resolve(
