@@ -62,7 +62,7 @@ module GraphQL
         # @return [void]
         def self.each_box(value, &block)
           case value
-          when Hash
+          when Hash, SelectionResult
             value.each do |k, v|
               if v.is_a?(Boxed)
                 yield(value, k, v)

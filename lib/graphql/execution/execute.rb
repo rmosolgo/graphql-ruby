@@ -1,46 +1,39 @@
 module GraphQL
   module Execution
     class Execute
-      def execute(ast_operation, root_type, query_object)
-        irep_root = query_object.internal_representation[ast_operation.name]
+      def execute(ast_operation, root_type, query)
+        irep_root = query.internal_representation[ast_operation.name]
 
-        result = resolve_operation(
-          irep_root,
-          root_type,
-          query_object
-        )
-        result
-      end
-
-      private
-
-      def resolve_operation(irep_node, current_type, query)
         result = resolve_selection(
           query.root_value,
-          current_type,
-          [irep_node],
+          root_type,
+          [irep_root],
           query.context,
           mutation: query.mutation?
         )
 
         GraphQL::Execution::Boxed.unbox(result)
 
-        result
+        result.to_h
       rescue GraphQL::InvalidNullError => err
         err.parent_error? || query.context.errors.push(err)
         nil
       end
 
+      private
+
       def resolve_selection(object, current_type, irep_nodes, query_ctx, mutation: false )
+        query = query_ctx.query
+        own_selections = query.selections(irep_nodes, current_type)
 
-        own_selections = query_ctx.query.selections(irep_nodes, current_type)
-
-        selection_result = {}
+        selection_result = SelectionResult.new
 
         own_selections.each do |name, child_irep_nodes|
+          field = query.get_field(current_type, child_irep_nodes.first.definition_name)
           field_result = resolve_field(
             child_irep_nodes,
             current_type,
+            field,
             object,
             query_ctx
           )
@@ -48,16 +41,18 @@ module GraphQL
           if mutation
             GraphQL::Execution::Boxed.unbox(field_result)
           end
-          selection_result.merge!(field_result)
+
+          field_result.each do |key, val|
+            selection_result.set(key, val, field.type)
+          end
         end
 
         selection_result
       end
 
-      def resolve_field(irep_nodes, parent_type, object, query_ctx)
+      def resolve_field(irep_nodes, parent_type, field, object, query_ctx)
         irep_node = irep_nodes.first
         query = query_ctx.query
-        field = query.get_field(parent_type, irep_node.definition_name)
         field_ctx = query_ctx.spawn(
           parent_type: parent_type,
           field: field,

@@ -18,7 +18,14 @@ module GraphQL
             when GraphQL::TypeKinds::LIST
               wrapped_type = field_type.of_type
               result = value.each_with_index.map do |inner_value, index|
-                inner_ctx = query_ctx.spawn(path: query_ctx.path + [index], irep_node: query_ctx.irep_node)
+                inner_ctx = query_ctx.spawn(
+                  path: query_ctx.path + [index],
+                  irep_node: query_ctx.irep_node,
+                  parent_type: wrapped_type,
+                  field: field_defn,
+                  irep_nodes: irep_nodes,
+                )
+
                 inner_result = resolve(
                   parent_type,
                   field_defn,
