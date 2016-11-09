@@ -59,7 +59,6 @@ describe GraphQL::StaticValidation::FieldsAreDefinedOnType do
       fragment dpIndirectFields on DairyProduct { ... on Cheese { source } }
     "}
 
-
     it "doesnt allow selections on unions" do
       expected_errors = [
         {
@@ -73,4 +72,90 @@ describe GraphQL::StaticValidation::FieldsAreDefinedOnType do
       assert_equal(expected_errors, errors)
     end
   end
+
+  describe "__typename" do
+    describe "on existing unions" do
+      let(:query_string) { "
+        query { favoriteEdible { ...dpFields } }
+        fragment dpFields on DairyProduct { __typename }
+      "}
+
+      it "is allowed" do
+        assert_equal([], errors)
+      end
+    end
+
+    describe "on existing objects" do
+      let(:query_string) { "
+        query { cheese(id: 1) { __typename } }
+      "}
+
+      it "is allowed" do
+        assert_equal([], errors)
+      end
+    end
+  end
+
+  describe "__schema" do
+    describe "on query root" do
+      let(:query_string) { "
+        query { __schema { queryType { name } } }
+      "}
+
+      it "is allowed" do
+        assert_equal([], errors)
+      end
+    end
+
+    describe "on non-query root" do
+      let(:query_string) { "
+        query { cheese(id: 1) { __schema { queryType { name } } } }
+      "}
+
+      it "is not allowed" do
+        expected_errors = [
+          {
+            "message"=>"Field '__schema' doesn't exist on type 'Cheese'",
+            "locations"=>[
+              {"line"=>2, "column"=>33}
+            ],
+            "fields"=>["query", "cheese", "__schema"],
+          }
+        ]
+        assert_equal(expected_errors, errors)
+      end
+    end
+  end
+
+  describe "__type" do
+    describe "on query root" do
+      let(:query_string) { %|
+        query { __type(name: "Cheese") { name } }
+      |}
+
+      it "is allowed" do
+        assert_equal([], errors)
+      end
+    end
+
+    describe "on non-query root" do
+      let(:query_string) { %|
+        query { cheese(id: 1) { __type(name: "Cheese") { name } } }
+      |}
+
+      it "is not allowed" do
+        expected_errors = [
+          {
+            "message"=>"Field '__type' doesn't exist on type 'Cheese'",
+            "locations"=>[
+              {"line"=>2, "column"=>33}
+            ],
+            "fields"=>["query", "cheese", "__type"],
+          }
+        ]
+        assert_equal(expected_errors, errors)
+      end
+    end
+  end
+
 end
