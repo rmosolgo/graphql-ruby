@@ -55,9 +55,6 @@ See "Getting Started" on the [website](https://rmosolgo.github.io/graphql-ruby/)
   - Improve API for creating edges (better RANGE_ADD support)
   - If the new edge isn't a member of the connection's objects, raise a nice error
 - `args` should whitelist keys -- if you request a key that isn't defined for the field, it should 💥
-- Fix middleware ([discussion](https://github.com/rmosolgo/graphql-ruby/issues/186))
-  - Handle out-of-bounds lookup, eg `graphql-batch`
-  - Handle non-serial execution, eg `@defer`
 - Support non-instance-eval `.define`, eg `.define { |defn| ... }`
 - First-class promise support ([discussion](https://github.com/rmosolgo/graphql-ruby/issues/274))
   - like `graphql-batch` but more local
@@ -67,5 +64,3 @@ See "Getting Started" on the [website](https://rmosolgo.github.io/graphql-ruby/)
   - Adding fields to selections (`__typename` can go anywhere, others are type-specific)
   - Renaming fragments from local names to unique names
 - Document encrypted & versioned cursors
-- Make it faster
-- Is it possible to merge typed branches before resolving them? It's hard because even the branches will have branches.
