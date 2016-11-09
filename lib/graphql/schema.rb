@@ -67,6 +67,12 @@ module GraphQL
       :orphan_types, :directives,
       :query_analyzers, :middleware, :instrumenters, :boxes
 
+    class << self
+      attr_accessor :default_execution_strategy
+    end
+
+    self.default_execution_strategy = GraphQL::Execution::Execute
+
     BUILT_IN_TYPES = Hash[[INT_TYPE, STRING_TYPE, FLOAT_TYPE, BOOLEAN_TYPE, ID_TYPE].map{ |type| [type.name, type] }]
     DIRECTIVES = [GraphQL::Directive::IncludeDirective, GraphQL::Directive::SkipDirective, GraphQL::Directive::DeprecatedDirective]
     DYNAMIC_FIELDS = ["__type", "__typename", "__schema"]
@@ -93,9 +99,9 @@ module GraphQL
       @instrumenters = Hash.new { |h, k| h[k] = [] }
       @boxes = GraphQL::Execution::Boxed::BoxMethodMap.new
       # Default to the built-in execution strategy:
-      @query_execution_strategy = GraphQL::Query::SerialExecution
-      @mutation_execution_strategy = GraphQL::Query::SerialExecution
-      @subscription_execution_strategy = GraphQL::Query::SerialExecution
+      @query_execution_strategy = self.class.default_execution_strategy
+      @mutation_execution_strategy = self.class.default_execution_strategy
+      @subscription_execution_strategy = self.class.default_execution_strategy
     end
 
     def rescue_from(*args, &block)
