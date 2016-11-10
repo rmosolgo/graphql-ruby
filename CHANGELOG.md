@@ -8,6 +8,16 @@
 
 ### Bug fixes
 
+## 1.2.2 (7 Nov 2016)
+
+### New features
+
+- `Schema.execute` raises an error if `variables:` is a string
+
+### Bug fixes
+
+- Dynamic fields `__schema`, `__type` and `__typename` are properly validated #391
+
 ## 1.2.1 (7 Nov 2016)
 
 ### Bug fixes
