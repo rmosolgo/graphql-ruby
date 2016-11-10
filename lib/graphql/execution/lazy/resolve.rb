@@ -3,13 +3,13 @@ module GraphQL
     class Lazy
       # Helpers for dealing with data structures containing {Lazy} instances
       module Resolve
+        # Mutate `value`, replacing {Lazy} instances in place with their resolved values
+        # @return [void]
         def self.resolve(value)
           lazies = resolve_in_place(value)
           deep_sync(lazies)
         end
 
-        # Mutate `value`, replacing {Lazy} instances in place with their resolved values
-        # @return [void]
         def self.resolve_in_place(value)
           lazies = []
 

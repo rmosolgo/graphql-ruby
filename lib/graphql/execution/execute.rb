@@ -1,5 +1,6 @@
 module GraphQL
   module Execution
+    # A valid execution strategy
     class Execute
       PROPAGATE_NULL = :__graphql_propagate_null__
 
@@ -25,7 +26,7 @@ module GraphQL
         query = query_ctx.query
         own_selections = query.selections(irep_nodes, current_type)
 
-        selection_result = SelectionResult.new(type: current_type)
+        selection_result = SelectionResult.new
 
         own_selections.each do |name, child_irep_nodes|
           field = query.get_field(current_type, child_irep_nodes.first.definition_name)
@@ -89,9 +90,7 @@ module GraphQL
 
         FieldResult.new(
           owner: owner,
-          parent_type: parent_type,
           field: field,
-          name: irep_node.name,
           value: result,
         )
       end
