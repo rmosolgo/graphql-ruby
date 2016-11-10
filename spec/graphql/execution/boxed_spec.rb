@@ -161,7 +161,6 @@ describe GraphQL::Execution::Boxed do
         }
       }|
 
-      pp res
       expected_data = {
         "nullableNestedSum" => {
           "value" => 1,

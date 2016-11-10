@@ -1,6 +1,8 @@
 module GraphQL
   module Execution
     class Execute
+      PROPAGATE_NULL = :__graphql_propagate_null__
+
       def execute(ast_operation, root_type, query)
         irep_root = query.internal_representation[ast_operation.name]
 
@@ -15,9 +17,6 @@ module GraphQL
         GraphQL::Execution::Boxed.unbox(result)
 
         result.to_h
-      rescue GraphQL::InvalidNullError => err
-        err.parent_error? || query.context.errors.push(err)
-        nil
       end
 
       private
@@ -26,11 +25,12 @@ module GraphQL
         query = query_ctx.query
         own_selections = query.selections(irep_nodes, current_type)
 
-        selection_result = SelectionResult.new
+        selection_result = SelectionResult.new(type: current_type)
 
         own_selections.each do |name, child_irep_nodes|
           field = query.get_field(current_type, child_irep_nodes.first.definition_name)
           field_result = resolve_field(
+            selection_result,
             child_irep_nodes,
             current_type,
             field,
@@ -42,15 +42,13 @@ module GraphQL
             GraphQL::Execution::Boxed.unbox(field_result)
           end
 
-          field_result.each do |key, val|
-            selection_result.set(key, val, field.type)
-          end
+          selection_result.set(name, field_result)
         end
 
         selection_result
       end
 
-      def resolve_field(irep_nodes, parent_type, field, object, query_ctx)
+      def resolve_field(owner, irep_nodes, parent_type, field, object, query_ctx)
         irep_node = irep_nodes.first
         query = query_ctx.query
         field_ctx = query_ctx.spawn(
@@ -80,8 +78,6 @@ module GraphQL
           err
         end
 
-        result_name = irep_node.name
-
         box_method = query.boxed_value_method(raw_value)
         result = if box_method
           GraphQL::Execution::Boxed.new { raw_value.public_send(box_method) }.then { |inner_value|
@@ -91,7 +87,13 @@ module GraphQL
           continue_resolve_field(irep_nodes, parent_type, field, raw_value, field_ctx)
         end
 
-        { irep_node.name => result }
+        FieldResult.new(
+          owner: owner,
+          parent_type: parent_type,
+          field: field,
+          name: irep_node.name,
+          value: result,
+        )
       end
 
       def continue_resolve_field(irep_nodes, parent_type, field, raw_value, field_ctx)
@@ -114,30 +116,27 @@ module GraphQL
           end
         end
 
-
-        begin
-          resolve_value(
-            parent_type,
-            field,
-            field.type,
-            raw_value,
-            irep_nodes,
-            field_ctx,
-          )
-        rescue GraphQL::InvalidNullError => err
-          if field.type.kind.non_null?
-            raise(err)
-          else
-            err.parent_error? || query.context.errors.push(err)
-            nil
-          end
-        end
+        resolve_value(
+          parent_type,
+          field,
+          field.type,
+          raw_value,
+          irep_nodes,
+          field_ctx,
+        )
       end
 
-      def resolve_value(parent_type, field_defn, field_type, value, irep_nodes, query_ctx)
-        if value.nil? || value.is_a?(GraphQL::ExecutionError)
+      def resolve_value(parent_type, field_defn, field_type, value, irep_nodes, field_ctx)
+        if value.nil?
           if field_type.kind.non_null?
-            raise GraphQL::InvalidNullError.new(parent_type.name, field_defn.name, value)
+            field_ctx.add_error(GraphQL::ExecutionError.new("Cannot return null for non-nullable field #{parent_type.name}.#{field_defn.name}"))
+            PROPAGATE_NULL
+          else
+            nil
+          end
+        elsif value.is_a?(GraphQL::ExecutionError)
+          if field_type.kind.non_null?
+            PROPAGATE_NULL
           else
             nil
           end
@@ -146,13 +145,13 @@ module GraphQL
           when GraphQL::TypeKinds::SCALAR
             field_type.coerce_result(value)
           when GraphQL::TypeKinds::ENUM
-            field_type.coerce_result(value, query_ctx.query.warden)
+            field_type.coerce_result(value, field_ctx.query.warden)
           when GraphQL::TypeKinds::LIST
             wrapped_type = field_type.of_type
             result = value.each_with_index.map do |inner_value, index|
-              inner_ctx = query_ctx.spawn(
-                path: query_ctx.path + [index],
-                irep_node: query_ctx.irep_node,
+              inner_ctx = field_ctx.spawn(
+                path: field_ctx.path + [index],
+                irep_node: field_ctx.irep_node,
                 irep_nodes: irep_nodes,
                 parent_type: parent_type,
                 field: field_defn,
@@ -177,17 +176,17 @@ module GraphQL
               wrapped_type,
               value,
               irep_nodes,
-              query_ctx,
+              field_ctx,
             )
           when GraphQL::TypeKinds::OBJECT
             resolve_selection(
               value,
               field_type,
               irep_nodes,
-              query_ctx
+              field_ctx
             )
           when GraphQL::TypeKinds::UNION, GraphQL::TypeKinds::INTERFACE
-            query = query_ctx.query
+            query = field_ctx.query
             resolved_type = query.resolve_type(value)
             possible_types = query.possible_types(field_type)
 
@@ -200,7 +199,7 @@ module GraphQL
                 resolved_type,
                 value,
                 irep_nodes,
-                query_ctx,
+                field_ctx,
               )
             end
           else

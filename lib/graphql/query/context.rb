@@ -95,7 +95,7 @@ module GraphQL
         # @param error [GraphQL::ExecutionError] an execution error
         # @return [void]
         def add_error(error)
-          unless error.is_a?(ExecutionError)
+          if !error.is_a?(ExecutionError)
             raise TypeError, "expected error to be a ExecutionError, but was #{error.class}"
           end
 

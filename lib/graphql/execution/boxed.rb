@@ -1,3 +1,5 @@
+require "graphql/execution/boxed/boxed_method_map"
+require "graphql/execution/boxed/unbox"
 module GraphQL
   module Execution
     # This wraps a value which is available, but not yet calculated, like a promise or future.
@@ -37,88 +39,6 @@ module GraphQL
         self.class.new {
           next_val = block.call(value)
         }
-      end
-
-      # Helpers for dealing with data structures containing {Boxed} instances
-      module Unbox
-        # Mutate `value`, replacing {Boxed} instances in place with their resolved values
-        # @return [void]
-        def self.unbox_in_place(value)
-          boxes = []
-
-          each_box(value) do |obj, key, value|
-            inner_b = value.then do |inner_v|
-              obj[key] = inner_v
-              unbox_in_place(inner_v)
-            end
-            boxes.push(inner_b)
-          end
-
-          Boxed.new { boxes.map(&:value) }
-        end
-
-        # If `value` is a collection, call `block`
-        # with any {Boxed} instances in the collection
-        # @return [void]
-        def self.each_box(value, &block)
-          case value
-          when Hash, SelectionResult
-            value.each do |k, v|
-              if v.is_a?(Boxed)
-                yield(value, k, v)
-              else
-                each_box(v, &block)
-              end
-            end
-          when Array
-            value.each_with_index do |v, i|
-              if v.is_a?(Boxed)
-                yield(value, i, v)
-              else
-                each_box(v, &block)
-              end
-            end
-          end
-        end
-
-        # Traverse `val`, triggering resolution for each {Boxed}.
-        # These {Boxed}s are expected to mutate their owner data structures
-        # during resolution! (They're created with the `.then` calls in `unbox_in_place`).
-        # @return [void]
-        def self.deep_sync(val)
-          case val
-          when Boxed
-            deep_sync(val.value)
-          when Array
-            val.each { |v| deep_sync(v) }
-          when Hash
-            val.each { |k, v| deep_sync(v) }
-          end
-        end
-      end
-
-      class BoxMethodMap
-        def initialize
-          @storage = {}
-        end
-
-        # @param boxed_class [Class] A class which represents a boxed value (subclasses may also be used)
-        # @param boxed_value_method [Symbol] The method to call on this class to get its value
-        def set(boxed_class, boxed_value_method)
-          @storage[boxed_class] = boxed_value_method
-        end
-
-        # @param value [Object] an object which may have a `boxed_value_method` registered for its class or superclasses
-        # @return [Symbol, nil] The `boxed_value_method` for this object, or nil
-        def get(value)
-          if @storage.key?(value.class)
-            @storage[value.class]
-          else
-            value_class = value.class
-            registered_superclass = @storage.each_key.find { |boxed_class| value_class < boxed_class }
-            @storage[value_class] = @storage[registered_superclass]
-          end
-        end
       end
     end
   end

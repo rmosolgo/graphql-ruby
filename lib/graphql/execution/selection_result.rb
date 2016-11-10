@@ -1,30 +1,59 @@
 module GraphQL
   module Execution
     class SelectionResult
-      def initialize
+      def initialize(type:)
+        @type = type
         @storage = {}
+        @owner = nil
+        @invalid_null = false
       end
 
-      def set(key, value, type)
-        @storage[key] = FieldResult.new(type: type, value: value)
+      def set(key, field_result)
+        @storage[key] = field_result
       end
 
-      def [](key)
-        @storage.fetch(key).value
-      end
-
-      def []=(key, value)
-        @storage.fetch(key).value = value
+      def fetch(key)
+        @storage.fetch(key)
       end
 
       def each
         @storage.each do |key, field_res|
-          yield(key, field_res.value, field_res)
+          yield(key, field_res)
         end
       end
 
       def to_h
-        flatten(self)
+        if @invalid_null
+          nil
+        else
+          flatten(self)
+        end
+      end
+
+      def propagate_null(key, value)
+        if @owner
+          @owner.value = value
+        end
+        @invalid_null = value
+      end
+
+      def invalid_null?
+        @invalid_null
+      end
+
+      def invalid_null
+        @invalid_null
+      end
+
+      def owner=(field_result)
+        if @owner
+          raise("Can't change owners of SelectionResult")
+        else
+          @owner = field_result
+          if @invalid_null
+            @owner.value = @invalid_null
+          end
+        end
       end
 
       private
@@ -39,17 +68,10 @@ module GraphQL
           flattened
         when Array
           obj.map { |v| flatten(v) }
+        when FieldResult
+          flatten(obj.value)
         else
           obj
-        end
-      end
-
-      class FieldResult
-        attr_reader :type
-        attr_accessor :value
-        def initialize(type:, value:)
-          @type = type
-          @value = value
         end
       end
     end
