@@ -49,4 +49,20 @@ describe GraphQL::StaticValidation::ArgumentsAreDefined do
     }
     assert_includes(errors, directive_error)
   end
+
+  describe "dynamic fields" do
+    let(:query_string) {"
+      query {
+        __type(somethingInvalid: 1) { name }
+      }
+    "}
+
+    it "finds undefined arguments" do
+      assert_includes(errors, {
+        "message"=>"Field '__type' doesn't accept argument 'somethingInvalid'",
+        "locations"=>[{"line"=>3, "column"=>9}],
+        "fields"=>["query", "__type", "somethingInvalid"],
+      })
+    end
+  end
 end

@@ -17,8 +17,6 @@ module GraphQL
                 return
               end
             end
-          elsif context.skip_field?(parent.name)
-            return
           elsif parent.is_a?(GraphQL::Language::Nodes::Directive)
             parent_defn = context.schema.directives[parent.name]
           else

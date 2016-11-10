@@ -187,4 +187,20 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
       end
     end
   end
+
+  describe "dynamic fields" do
+    let(:query_string) {"
+      query {
+        __type(name: 1) { name }
+      }
+    "}
+
+    it "finds invalid argument types" do
+      assert_includes(errors, {
+        "message"=>"Argument 'name' on Field '__type' has an invalid value. Expected type 'String!'.",
+        "locations"=>[{"line"=>3, "column"=>9}],
+        "fields"=>["query", "__type", "name"],
+      })
+    end
+  end
 end
