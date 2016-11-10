@@ -39,4 +39,25 @@ describe GraphQL::StaticValidation::RequiredArgumentsArePresent do
     }
     assert_includes(errors, directive_error)
   end
+
+  describe "dynamic fields" do
+    let(:query_string) {"
+      query {
+        __type { name }
+      }
+    "}
+
+    it "finds undefined required arguments" do
+      expected_errors = [
+        {
+          "message"=>"Field '__type' is missing required arguments: name",
+          "locations"=>[
+            {"line"=>3, "column"=>9}
+          ],
+          "fields"=>["query", "__type"],
+        }
+      ]
+      assert_equal(expected_errors, errors)
+    end
+  end
 end

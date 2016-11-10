@@ -17,7 +17,6 @@ module GraphQL
       end
 
       def validate_field(ast_field, context)
-        return if context.skip_field?(ast_field.name)
         defn = context.field_definition
         assert_required_args(ast_field, defn, context)
       end
