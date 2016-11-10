@@ -74,12 +74,6 @@ module GraphQL
         @literal_validator ||= LiteralValidator.new(warden: @warden)
         @literal_validator.validate(ast_value, type)
       end
-
-      # Don't try to validate dynamic fields
-      # since they aren't defined by the type system
-      def skip_field?(field_name)
-        GraphQL::Schema::DYNAMIC_FIELDS.include?(field_name)
-      end
     end
   end
 end
