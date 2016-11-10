@@ -56,7 +56,11 @@ module GraphQL
       @operation_name = operation_name
       @fragments = {}
       @operations = {}
-      @provided_variables = variables
+      if variables.is_a?(String)
+        raise ArgumentError, "Query variables should be a Hash, not a String. Try JSON.parse to prepare variables."
+      else
+        @provided_variables = variables
+      end
       @query_string = query_string
       @document = document || GraphQL.parse(query_string)
       @document.definitions.each do |part|

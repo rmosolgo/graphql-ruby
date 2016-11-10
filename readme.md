@@ -64,5 +64,3 @@ See "Getting Started" on the [website](https://rmosolgo.github.io/graphql-ruby/)
   - Adding fields to selections (`__typename` can go anywhere, others are type-specific)
   - Renaming fragments from local names to unique names
 - Document encrypted & versioned cursors
-- Typecheck some user objects:
-  - Variables (sometimes a string)

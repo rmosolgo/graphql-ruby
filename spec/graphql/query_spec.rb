@@ -315,6 +315,13 @@ describe GraphQL::Query do
       end
     end
 
+    describe "when they're a string" do
+      let(:query_variables) { '{ "var" : 1 }' }
+      it "raises an error" do
+        assert_raises(ArgumentError) { result }
+      end
+    end
+
     describe "default values" do
       let(:query_string) {%|
         query getCheese($cheeseId: Int = 3){
