@@ -31,6 +31,9 @@ module GraphQL
           @value = @get_value_func.call
         end
         @value
+      rescue GraphQL::ExecutionError => err
+        @resolved = true
+        @value = err
       end
 
       # @return [Lazy] A {Lazy} whose value depends on another {Lazy}, plus any transformations in `block`

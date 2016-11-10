@@ -2,11 +2,19 @@ require "spec_helper"
 
 describe GraphQL::Execution::Lazy do
   class Wrapper
-    def initialize(item)
-      @item = item
+    def initialize(item = nil, &block)
+      if block
+        @block = block
+      else
+        @item = item
+      end
     end
 
     def item
+      if @block
+        @item = @block.call()
+        @block = nil
+      end
       @item
     end
   end
@@ -75,7 +83,13 @@ describe GraphQL::Execution::Lazy do
 
     field :nullableNestedSum, LazySum do
       argument :value, types.Int
-      resolve ->(o, args, c) { SumAll.new(c, args[:value]) }
+      resolve ->(o, args, c) {
+        if args[:value] == 13
+          Wrapper.new { raise GraphQL::ExecutionError.new("13 is unlucky") }
+        else
+          SumAll.new(c, args[:value])
+        end
+      }
     end
 
     field :listSum, types[LazySum] do
@@ -169,7 +183,29 @@ describe GraphQL::Execution::Lazy do
       }
       assert_equal(expected_data, res["data"])
       assert_equal 1, res["errors"].length
+    end
 
+    it "handles raised errors" do
+      res = run_query %|
+      {
+        a: nullableNestedSum(value: 1) { value }
+        b: nullableNestedSum(value: 13) { value }
+        c: nullableNestedSum(value: 2) { value }
+      }|
+
+      expected_data = {
+        "a" => { "value" => 3 },
+        "b" => nil,
+        "c" => { "value" => 3 },
+      }
+      assert_equal expected_data, res["data"]
+
+      expected_errors = [{
+        "message"=>"13 is unlucky",
+        "locations"=>[{"line"=>4, "column"=>9}],
+        "path"=>["b"],
+      }]
+      assert_equal expected_errors, res["errors"]
     end
 
     it "resolves mutation fields right away" do
