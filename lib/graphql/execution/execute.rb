@@ -14,7 +14,7 @@ module GraphQL
           mutation: query.mutation?
         )
 
-        GraphQL::Execution::Boxed.unbox(result)
+        GraphQL::Execution::Lazy.resolve(result)
 
         result.to_h
       end
@@ -39,7 +39,7 @@ module GraphQL
           )
 
           if mutation
-            GraphQL::Execution::Boxed.unbox(field_result)
+            GraphQL::Execution::Lazy.resolve(field_result)
           end
 
           selection_result.set(name, field_result)
@@ -78,9 +78,9 @@ module GraphQL
           err
         end
 
-        box_method = query.boxed_value_method(raw_value)
-        result = if box_method
-          GraphQL::Execution::Boxed.new { raw_value.public_send(box_method) }.then { |inner_value|
+        lazy_method_name = query.lazy_method(raw_value)
+        result = if lazy_method_name
+          GraphQL::Execution::Lazy.new { raw_value.public_send(lazy_method_name) }.then { |inner_value|
             continue_resolve_field(irep_nodes, parent_type, field, inner_value, field_ctx)
           }
         else

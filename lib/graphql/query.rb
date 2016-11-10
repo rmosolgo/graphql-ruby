@@ -194,8 +194,8 @@ module GraphQL
       @schema.resolve_type(type, @context)
     end
 
-    def boxed_value_method(value)
-      @schema.boxes.get(value)
+    def lazy_method(value)
+      @schema.lazy_methods.get(value)
     end
 
     def mutation?

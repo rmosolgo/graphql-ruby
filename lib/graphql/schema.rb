@@ -57,7 +57,7 @@ module GraphQL
       instrument: -> (schema, type, instrumenter) { schema.instrumenters[type] << instrumenter },
       query_analyzer: ->(schema, analyzer) { schema.query_analyzers << analyzer },
       middleware: ->(schema, middleware) { schema.middleware << middleware },
-      boxed_value: ->(schema, box_class, boxed_value_method) { schema.boxes.set(box_class, boxed_value_method) },
+      lazy_resolve: ->(schema, lazy_class, lazy_value_method) { schema.lazy_methods.set(lazy_class, lazy_value_method) },
       rescue_from: ->(schema, err_class, &block) { schema.rescue_from(err_class, &block)}
 
     attr_accessor \
@@ -65,7 +65,7 @@ module GraphQL
       :query_execution_strategy, :mutation_execution_strategy, :subscription_execution_strategy,
       :max_depth, :max_complexity,
       :orphan_types, :directives,
-      :query_analyzers, :middleware, :instrumenters, :boxes
+      :query_analyzers, :middleware, :instrumenters, :lazy_methods
 
     class << self
       attr_accessor :default_execution_strategy
@@ -97,7 +97,7 @@ module GraphQL
       @object_from_id_proc = nil
       @id_from_object_proc = nil
       @instrumenters = Hash.new { |h, k| h[k] = [] }
-      @boxes = GraphQL::Execution::Boxed::BoxMethodMap.new
+      @lazy_methods = GraphQL::Execution::Lazy::LazyMethodMap.new
       # Default to the built-in execution strategy:
       @query_execution_strategy = self.class.default_execution_strategy
       @mutation_execution_strategy = self.class.default_execution_strategy

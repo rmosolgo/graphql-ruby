@@ -1,24 +1,23 @@
-require "graphql/execution/boxed/boxed_method_map"
-require "graphql/execution/boxed/unbox"
+require "graphql/execution/lazy/lazy_method_map"
+require "graphql/execution/lazy/resolve"
 module GraphQL
   module Execution
     # This wraps a value which is available, but not yet calculated, like a promise or future.
     #
-    # Calling `#value` will trigger calculation & return the "boxed" value.
+    # Calling `#value` will trigger calculation & return the "lazy" value.
     #
     # This is an itty-bitty promise-like object, with key differences:
     # - It has only two states, not-resolved and resolved
     # - It has no error-catching functionality
-    class Boxed
-      # Traverse `val`, lazily unboxing any values along the way
-      # @param val [Object] A data structure containing mixed unboxed values and `Boxed` instances
+    class Lazy
+      # Traverse `val`, lazily resolving any values along the way
+      # @param val [Object] A data structure containing mixed plain values and `Lazy` instances
       # @return void
-      def self.unbox(val)
-        b = Unbox.unbox_in_place(val)
-        Unbox.deep_sync(b)
+      def self.resolve(val)
+        Resolve.resolve(val)
       end
 
-      # Create a `Boxed` which will get its inner value by calling the block
+      # Create a {Lazy} which will get its inner value by calling the block
       # @param get_value_func [Proc] a block to get the inner value (later)
       def initialize(&get_value_func)
         @get_value_func = get_value_func
@@ -34,7 +33,7 @@ module GraphQL
         @value
       end
 
-      # @return [Boxed] A Boxed whose value depends on another Boxed, plus any transformations in `block`
+      # @return [Lazy] A {Lazy} whose value depends on another {Lazy}, plus any transformations in `block`
       def then(&block)
         self.class.new {
           next_val = block.call(value)

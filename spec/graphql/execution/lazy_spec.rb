@@ -1,7 +1,7 @@
 require "spec_helper"
 
-describe GraphQL::Execution::Boxed do
-  class Box
+describe GraphQL::Execution::Lazy do
+  class Wrapper
     def initialize(item)
       @item = item
     end
@@ -32,27 +32,27 @@ describe GraphQL::Execution::Boxed do
     end
   end
 
-  BoxedSum = GraphQL::ObjectType.define do
-    name "BoxedSum"
+  LazySum = GraphQL::ObjectType.define do
+    name "LazySum"
     field :value, types.Int do
       resolve ->(o, a, c) { o == 13 ? nil : o }
     end
-    field :nestedSum, !BoxedSum do
+    field :nestedSum, !LazySum do
       argument :value, !types.Int
       resolve ->(o, args, c) {
         if args[:value] == 13
-          Box.new(nil)
+          Wrapper.new(nil)
         else
           SumAll.new(c, o + args[:value])
         end
       }
     end
 
-    field :nullableNestedSum, BoxedSum do
+    field :nullableNestedSum, LazySum do
       argument :value, types.Int
       resolve ->(o, args, c) {
         if args[:value] == 13
-          Box.new(nil)
+          Wrapper.new(nil)
         else
           SumAll.new(c, o + args[:value])
         end
@@ -60,48 +60,48 @@ describe GraphQL::Execution::Boxed do
     end
   end
 
-  BoxedQuery = GraphQL::ObjectType.define do
+  LazyQuery = GraphQL::ObjectType.define do
     name "Query"
     field :int, !types.Int do
       argument :value, !types.Int
       argument :plus, types.Int, default_value: 0
-      resolve ->(o, a, c) { Box.new(a[:value] + a[:plus])}
+      resolve ->(o, a, c) { Wrapper.new(a[:value] + a[:plus])}
     end
 
-    field :nestedSum, !BoxedSum do
+    field :nestedSum, !LazySum do
       argument :value, !types.Int
       resolve ->(o, args, c) { SumAll.new(c, args[:value]) }
     end
 
-    field :nullableNestedSum, BoxedSum do
+    field :nullableNestedSum, LazySum do
       argument :value, types.Int
       resolve ->(o, args, c) { SumAll.new(c, args[:value]) }
     end
 
-    field :listSum, types[BoxedSum] do
+    field :listSum, types[LazySum] do
       argument :values, types[types.Int]
       resolve ->(o, args, c) { args[:values] }
     end
   end
 
-  BoxedSchema = GraphQL::Schema.define do
-    query(BoxedQuery)
-    mutation(BoxedQuery)
-    boxed_value(Box, :item)
-    boxed_value(SumAll, :value)
+  LazySchema = GraphQL::Schema.define do
+    query(LazyQuery)
+    mutation(LazyQuery)
+    lazy_resolve(Wrapper, :item)
+    lazy_resolve(SumAll, :value)
   end
 
   def run_query(query_str)
-    BoxedSchema.execute(query_str)
+    LazySchema.execute(query_str)
   end
 
-  describe "unboxing" do
+  describe "resolving" do
     it "calls value handlers" do
       res = run_query('{  int(value: 2, plus: 1)}')
       assert_equal 3, res["data"]["int"]
     end
 
-    it "can do nested boxed values" do
+    it "can do nested lazy values" do
       res = run_query %|
       {
         a: nestedSum(value: 3) {
@@ -194,16 +194,16 @@ describe GraphQL::Execution::Boxed do
     end
   end
 
-  describe "BoxMethodMap" do
-    class SubBox < Box; end
+  describe "LazyMethodMap" do
+    class SubWrapper < Wrapper; end
 
-    let(:map) { GraphQL::Execution::Boxed::BoxMethodMap.new }
+    let(:map) { GraphQL::Execution::Lazy::LazyMethodMap.new }
 
     it "finds methods for classes and subclasses" do
-      map.set(Box, :item)
+      map.set(Wrapper, :item)
       map.set(SumAll, :value)
-      b = Box.new(1)
-      sub_b = SubBox.new(2)
+      b = Wrapper.new(1)
+      sub_b = Wrapper.new(2)
       s = SumAll.new({}, 3)
       assert_equal(:item, map.get(b))
       assert_equal(:item, map.get(sub_b))
