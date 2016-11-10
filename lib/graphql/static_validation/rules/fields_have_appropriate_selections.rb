@@ -7,7 +7,6 @@ module GraphQL
 
       def validate(context)
         context.visitor[GraphQL::Language::Nodes::Field] << ->(node, parent)  {
-          return if context.skip_field?(node.name)
           field_defn = context.field_definition
           validate_field_selections(node, field_defn, context)
         }
