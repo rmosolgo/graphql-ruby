@@ -97,14 +97,17 @@
       <span class="n">old_resolve_proc</span> <span class="o">=</span> <span class="n">field</span><span class="p">.</span><span class="nf">resolve_proc</span>
       <span class="n">new_resolve_proc</span> <span class="o">=</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
         <span class="no">Rails</span><span class="p">.</span><span class="nf">logger</span><span class="p">.</span><span class="nf">info</span><span class="p">(</span><span class="s2">"</span><span class="si">#{</span><span class="n">type</span><span class="p">.</span><span class="nf">name</span><span class="si">}</span><span class="s2">.</span><span class="si">#{</span><span class="n">field</span><span class="p">.</span><span class="nf">name</span><span class="si">}</span><span class="s2"> START: </span><span class="si">#{</span><span class="no">Time</span><span class="p">.</span><span class="nf">now</span><span class="p">.</span><span class="nf">to_i</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-        <span class="n">old_resolve_proc</span><span class="p">.</span><span class="nf">call</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span>
+        <span class="n">resolved</span> <span class="o">=</span> <span class="n">old_resolve_proc</span><span class="p">.</span><span class="nf">call</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span>
         <span class="no">Rails</span><span class="p">.</span><span class="nf">logger</span><span class="p">.</span><span class="nf">info</span><span class="p">(</span><span class="s2">"</span><span class="si">#{</span><span class="n">type</span><span class="p">.</span><span class="nf">name</span><span class="si">}</span><span class="s2">.</span><span class="si">#{</span><span class="n">field</span><span class="p">.</span><span class="nf">name</span><span class="si">}</span><span class="s2"> END: </span><span class="si">#{</span><span class="no">Time</span><span class="p">.</span><span class="nf">now</span><span class="p">.</span><span class="nf">to_i</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="n">resolved</span>
       <span class="p">}</span>
 
       <span class="c1"># Return a copy of `field`, with a new resolve proc</span>
       <span class="n">field</span><span class="p">.</span><span class="nf">redefine</span> <span class="k">do</span>
         <span class="n">resolve</span><span class="p">(</span><span class="n">new_resolve_proc</span><span class="p">)</span>
       <span class="k">end</span>
+    <span class="k">else</span>
+      <span class="n">field</span>
     <span class="k">end</span>
   <span class="k">end</span>
 <span class="k">end</span>
