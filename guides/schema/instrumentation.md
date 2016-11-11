@@ -27,14 +27,17 @@ class FieldTimerInstrumentation
       old_resolve_proc = field.resolve_proc
       new_resolve_proc = ->(obj, args, ctx) {
         Rails.logger.info("#{type.name}.#{field.name} START: #{Time.now.to_i}")
-        old_resolve_proc.call(obj, args, ctx)
+        resolved = old_resolve_proc.call(obj, args, ctx)
         Rails.logger.info("#{type.name}.#{field.name} END: #{Time.now.to_i}")
+        resolved
       }
 
       # Return a copy of `field`, with a new resolve proc
       field.redefine do
         resolve(new_resolve_proc)
       end
+    else
+      field
     end
   end
 end
