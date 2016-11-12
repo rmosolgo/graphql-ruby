@@ -7,7 +7,7 @@ module GraphQL
 
           selection_result = {}
 
-          own_selections.each do |name, child_irep_nodes|
+          own_selections.each_selection do |name, child_irep_nodes|
             selection_result.merge!(query_ctx.execution_strategy.field_resolution.new(
               child_irep_nodes,
               current_type,
