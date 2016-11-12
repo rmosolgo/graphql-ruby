@@ -3,7 +3,7 @@ module GraphQL
     module Selections
       def self.build(query, nodes)
         # { type => { name => nodes } }
-        selections = Hash.new { |h, k| h[k] = Hash.new { |h2, k2| h2[k2] = [] } }
+        selections = Hash.new { |h, k| h[k] =  Selection.new(type: k) }
         object_types = Set.new
 
         warden = query.warden
@@ -19,17 +19,11 @@ module GraphQL
           node.typed_children.each do |type_cond, children|
             object_types.each do |obj_type|
               obj_selections = selections[obj_type]
-              skipped = []
               if GraphQL::Execution::Typecast.compatible?(obj_type, type_cond, ctx)
                 children.each do |name, irep_node|
-                  if irep_node.skipped?
-                    skipped << name
-                  else
-                    obj_selections[name] << irep_node
-                  end
+                  obj_selections.add_selection(name, irep_node)
                 end
               end
-              skipped.each { |k| obj_selections.delete(k) }
             end
           end
         end

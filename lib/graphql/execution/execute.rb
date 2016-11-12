@@ -28,7 +28,7 @@ module GraphQL
 
         selection_result = SelectionResult.new
 
-        own_selections.each do |name, child_irep_nodes|
+        own_selections.each_selection do |name, child_irep_nodes|
           field = query.get_field(current_type, child_irep_nodes.first.definition_name)
           field_result = resolve_field(
             selection_result,
