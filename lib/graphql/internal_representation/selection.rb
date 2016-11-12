@@ -3,41 +3,29 @@ module GraphQL
     # A selection is a single field on an object.
     # It's "backed" by one or more {Node}s.
     class Selection
-      # @return [GraphQL::BaseType] The type this selection belongs to
-      attr_reader :type
+      def initialize(query:, nodes:)
+        @irep_node = nodes.first
+        @definition_name = @irep_node.definition_name
+        @name = @irep_node.name
 
-      def initialize(type:)
-        @type = type
-        @selections = Hash.new { |h, k| h[k] = Subselection.new }
+        @skipped = nodes.any?(&:skipped?)
+        @query = query
+        @typed_child_nodes = Selections.build(query, nodes)
+        @typed_subselections = Hash.new { |h, k| h[k] = {} }
       end
 
-      def add_selection(name, irep_node)
-        @selections[name].add_node(irep_node)
+      attr_reader :definition_name, :name, :irep_node
+
+      def skipped?
+        @skipped
       end
 
-      def each_selection
-        @selections.each do |name, subselection|
+      def each_selection(type:)
+        @typed_child_nodes[type].each do |name, child_nodes|
+          subselection = @typed_subselections[type][name] ||= self.class.new(query: @query, nodes: child_nodes)
           if !subselection.skipped?
-            yield(name, subselection.nodes)
+            yield(name, subselection)
           end
-        end
-      end
-
-      class Subselection
-        attr_reader :nodes
-
-        def initialize
-          @nodes = []
-          @skipped = false
-        end
-
-        def add_node(node)
-          @nodes << node
-          @skipped ||= node.skipped?
-        end
-
-        def skipped?
-          @skipped
         end
       end
     end

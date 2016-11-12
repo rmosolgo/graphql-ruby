@@ -173,11 +173,6 @@ module GraphQL
       @valid
     end
 
-    def selections(nodes, type)
-      @selections ||= Hash.new { |h, k| h[k] = GraphQL::InternalRepresentation::Selections.build(self, k) }
-      @selections[nodes][type]
-    end
-
     def get_type(type_name)
       @warden.get_type(type_name)
     end
