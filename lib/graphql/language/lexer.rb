@@ -1028,7 +1028,7 @@ end
 
       def self.emit_string(ts, te, meta)
         value = meta[:data][ts...te].pack("c*").force_encoding("UTF-8")
-        if value =~ /\\u|\\./ && value !~ ESCAPES
+        if value =~ /\\u|\\./ && value !~ ESCAPES && value !~ UTF_8
           meta[:tokens] << token = GraphQL::Language::Token.new(
             name: :BAD_UNICODE_ESCAPE,
             value: value,
