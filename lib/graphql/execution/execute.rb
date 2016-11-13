@@ -5,12 +5,10 @@ module GraphQL
       PROPAGATE_NULL = :__graphql_propagate_null__
 
       def execute(ast_operation, root_type, query)
-        irep_root = query.internal_representation[ast_operation.name]
-        selection = GraphQL::InternalRepresentation::Selection.new(query: query, nodes: [irep_root])
         result = resolve_selection(
           query.root_value,
           root_type,
-          selection,
+          query.irep_selection,
           query.context,
           mutation: query.mutation?
         )

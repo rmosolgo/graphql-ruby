@@ -134,6 +134,14 @@ module GraphQL
       @internal_representation
     end
 
+    def irep_selection
+      @selection ||= begin
+        irep_root = internal_representation[selected_operation.name]
+        GraphQL::InternalRepresentation::Selection.new(query: self, nodes: [irep_root])
+      end
+    end
+
+
     # TODO this should probably contain error instances, not hashes
     # @return [Array<Hash>] Static validation errors for the query string
     def validation_errors
