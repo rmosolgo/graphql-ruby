@@ -26,5 +26,9 @@ describe GraphQL::Language::Lexer do
     it "unescapes escaped unicode characters" do
       assert_equal "\t", subject.tokenize('"\\u0009"').first.to_s
     end
+
+    it "rejects bad unicode, even when there's good unicode in the string" do
+      assert_equal :BAD_UNICODE_ESCAPE, subject.tokenize('"\\u0XXF \\u0009"').first.name
+    end
   end
 end
