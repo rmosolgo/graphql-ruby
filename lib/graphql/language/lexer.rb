@@ -499,15 +499,18 @@ self.graphql_lexer_en_main = 6;
         data = query_string.unpack("c*")
         eof = data.length
 
+        # Since `Lexer` is a module, store all lexer state
+        # in this local variable:
         meta = {
           line: 1,
           col: 1,
           data: data,
-          tokens: []
+          tokens: [],
+          previous_token: nil,
         }
 
         
-# line 511 "lib/graphql/language/lexer.rb"
+# line 514 "lib/graphql/language/lexer.rb"
 begin
 	p ||= 0
 	pe ||= data.length
@@ -517,14 +520,14 @@ begin
 	act = 0
 end
 
-# line 132 "lib/graphql/language/lexer.rl"
+# line 135 "lib/graphql/language/lexer.rl"
 
         emit_token = ->(name) {
           emit(name, ts, te, meta)
         }
 
         
-# line 528 "lib/graphql/language/lexer.rb"
+# line 531 "lib/graphql/language/lexer.rb"
 begin
 	_klen, _trans, _keys, _acts, _nacts = nil
 	_goto_level = 0
@@ -554,7 +557,7 @@ begin
 		begin
 ts = p
 		end
-# line 558 "lib/graphql/language/lexer.rb"
+# line 561 "lib/graphql/language/lexer.rb"
 		end # from state action switch
 	end
 	if _trigger_goto
@@ -932,7 +935,7 @@ when 49 then
  emit_token.call(:UNKNOWN_CHAR) end
 end 
 			end
-# line 936 "lib/graphql/language/lexer.rb"
+# line 939 "lib/graphql/language/lexer.rb"
 			end # action switch
 		end
 	end
@@ -952,7 +955,7 @@ when 0 then
 # line 1 "NONE"
 		begin
 ts = nil;		end
-# line 956 "lib/graphql/language/lexer.rb"
+# line 959 "lib/graphql/language/lexer.rb"
 		end # to state action switch
 	end
 	if _trigger_goto
@@ -979,7 +982,7 @@ end
 	end
 	end
 
-# line 138 "lib/graphql/language/lexer.rl"
+# line 141 "lib/graphql/language/lexer.rl"
 
         meta[:tokens]
       end
@@ -990,10 +993,10 @@ end
           value: meta[:data][ts...te].pack("c*"),
           line: meta[:line],
           col: meta[:col],
-          prev_token: @previous_token,
+          prev_token: meta[:previous_token],
         )
 
-        @previous_token = token
+        meta[:previous_token] = token
 
         meta[:col] += te - ts
       end
@@ -1004,9 +1007,9 @@ end
           value: meta[:data][ts...te].pack("c*"),
           line: meta[:line],
           col: meta[:col],
-          prev_token: @previous_token,
+          prev_token: meta[:previous_token],
         )
-        @previous_token = token
+        meta[:previous_token] = token
         # Bump the column counter for the next token
         meta[:col] += te - ts
       end
@@ -1034,7 +1037,7 @@ end
             value: value,
             line: meta[:line],
             col: meta[:col],
-            prev_token: @previous_token,
+            prev_token: meta[:previous_token],
           )
         else
           replace_escaped_characters_in_place(value)
@@ -1044,11 +1047,11 @@ end
             value: value,
             line: meta[:line],
             col: meta[:col],
-            prev_token: @previous_token,
+            prev_token: meta[:previous_token],
           )
         end
 
-        @previous_token = token
+        meta[:previous_token] = token
         meta[:col] += te - ts
       end
     end
