@@ -21,8 +21,9 @@ module GraphQL
       end
 
       def each_selection(type:)
+        subselections = @typed_subselections[type]
         @typed_child_nodes[type].each do |name, child_nodes|
-          subselection = @typed_subselections[type][name] ||= self.class.new(query: @query, nodes: child_nodes)
+          subselection = subselections[name] ||= self.class.new(query: @query, nodes: child_nodes)
           if !subselection.skipped?
             yield(name, subselection)
           end

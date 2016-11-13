@@ -19,9 +19,10 @@ module GraphQL
         nodes.each do |node|
           node.typed_children.each do |type_cond, children|
             object_types.each do |obj_type|
+              obj_selections = selections[obj_type]
               if GraphQL::Execution::Typecast.compatible?(obj_type, type_cond, ctx)
                 children.each do |name, irep_node|
-                  selections[obj_type][name] << irep_node
+                  obj_selections[name] << irep_node
                 end
               end
             end
