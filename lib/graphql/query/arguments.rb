@@ -60,14 +60,15 @@ module GraphQL
       NULL_ARGUMENT_VALUE = ArgumentValue.new(nil, nil, nil)
 
       def wrap_value(value, arg_defn_type)
-        case value
-        when Array
+        case arg_defn_type
+        when GraphQL::ListType
           value.map { |item| wrap_value(item, arg_defn_type.of_type) }
-        when Hash
-          if arg_defn_type.unwrap.kind.input_object?
+        when GraphQL::NonNullType
+          wrap_value(value, arg_defn_type.of_type)
+        when GraphQL::InputObjectType
+          if value.is_a?(Hash)
             self.class.new(value, argument_definitions: arg_defn_type.arguments)
           else
-            # It may be a custom scalar that coerces to a Hash
             value
           end
         else
