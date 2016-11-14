@@ -1,3 +1,6 @@
+require "graphql/compatibility/execution_specification/counter_schema"
+require "graphql/compatibility/execution_specification/specification_schema"
+
 module GraphQL
   module Compatibility
     # Test an execution strategy. This spec is not meant as a development aid.
@@ -22,164 +25,22 @@ module GraphQL
     # - Relay features
     #
     module ExecutionSpecification
-      DATA = {
-        "1001" => OpenStruct.new({
-          name: "Fannie Lou Hamer",
-          birthdate: Time.new(1917, 10, 6),
-          organization_ids: [],
-        }),
-        "1002" => OpenStruct.new({
-          name: "John Lewis",
-          birthdate: Time.new(1940, 2, 21),
-          organization_ids: ["2001"],
-        }),
-        "1003" => OpenStruct.new({
-          name: "Diane Nash",
-          birthdate: Time.new(1938, 5, 15),
-          organization_ids: ["2001", "2002"],
-        }),
-        "1004" => OpenStruct.new({
-          name: "Ralph Abernathy",
-          birthdate: Time.new(1926, 3, 11),
-          organization_ids: ["2002"],
-        }),
-        "2001" => OpenStruct.new({
-          name: "SNCC",
-          leader_id: nil, # fail on purpose
-        }),
-        "2002" => OpenStruct.new({
-          name: "SCLC",
-          leader_id: "1004",
-        }),
-      }
-
       # Make a minitest suite for this execution strategy, making sure it
       # fulfills all the requirements of this library.
       # @param execution_strategy [<#new, #execute>] An execution strategy class
       # @return [Class<Minitest::Test>] A test suite for this execution strategy
       def self.build_suite(execution_strategy)
         Class.new(Minitest::Test) do
-          def self.build_schema(execution_strategy)
-            organization_type = nil
-
-            timestamp_type = GraphQL::ScalarType.define do
-              name "Timestamp"
-              coerce_input ->(value) { Time.at(value.to_i) }
-              coerce_result ->(value) { value.to_i }
-            end
-
-            named_entity_interface_type = GraphQL::InterfaceType.define do
-              name "NamedEntity"
-              field :name, !types.String
-            end
-
-            person_type = GraphQL::ObjectType.define do
-              name "Person"
-              interfaces [named_entity_interface_type]
-              field :name, !types.String
-              field :birthdate, timestamp_type
-              field :age, types.Int do
-                argument :on, !timestamp_type
-                resolve ->(obj, args, ctx) {
-                  if obj.birthdate.nil?
-                    nil
-                  else
-                    age_on = args[:on]
-                    age_years = age_on.year - obj.birthdate.year
-                    this_year_birthday = Time.new(age_on.year, obj.birthdate.month, obj.birthdate.day)
-                    if this_year_birthday > age_on
-                      age_years -= 1
-                    end
-                  end
-                  age_years
-                }
-              end
-              field :organizations, types[organization_type] do
-                resolve ->(obj, args, ctx) {
-                  obj.organization_ids.map { |id| DATA[id] }
-                }
-              end
-              field :first_organization, !organization_type do
-                resolve ->(obj, args, ctx) {
-                  DATA[obj.organization_ids.first]
-                }
-              end
-            end
-
-            organization_type = GraphQL::ObjectType.define do
-              name "Organization"
-              interfaces [named_entity_interface_type]
-              field :name, !types.String
-              field :leader, !person_type do
-                resolve ->(obj, args, ctx) {
-                  DATA[obj.leader_id] || (ctx[:return_error] ? ExecutionError.new("Error on Nullable") : nil)
-                }
-              end
-              field :returnedError, types.String do
-                resolve ->(o, a, c) {
-                  GraphQL::ExecutionError.new("This error was returned")
-                }
-              end
-              field :raisedError, types.String do
-                resolve ->(o, a, c) {
-                  raise GraphQL::ExecutionError.new("This error was raised")
-                }
-              end
-
-              field :nodePresence, !types[!types.Boolean] do
-                resolve ->(o, a, ctx) {
-                  [
-                    ctx.irep_node.is_a?(GraphQL::InternalRepresentation::Node),
-                    ctx.ast_node.is_a?(GraphQL::Language::Nodes::AbstractNode),
-                    false, # just testing
-                  ]
-                }
-              end
-            end
-
-            node_union_type = GraphQL::UnionType.define do
-              name "Node"
-              possible_types [person_type, organization_type]
-            end
-
-            query_type = GraphQL::ObjectType.define do
-              name "Query"
-              field :node, node_union_type do
-                argument :id, !types.ID
-                resolve ->(obj, args, ctx) {
-                  obj[args[:id]]
-                }
-              end
-
-              field :organization, !organization_type do
-                argument :id, !types.ID
-                resolve ->(obj, args, ctx) {
-                  args[:id].start_with?("2") && obj[args[:id]]
-                }
-              end
-
-              field :organizations, types[organization_type] do
-                resolve ->(obj, args, ctx) {
-                  [obj["2001"], obj["2002"]]
-                }
-              end
-            end
-
-            GraphQL::Schema.define do
-              query_execution_strategy execution_strategy
-              query query_type
-
-              resolve_type ->(obj, ctx) {
-                obj.respond_to?(:birthdate) ? person_type : organization_type
-              }
-            end
+          class << self
+            attr_accessor :counter_schema, :specification_schema
           end
 
-          @@schema = build_schema(execution_strategy)
+          self.specification_schema = SpecificationSchema.build(execution_strategy)
+          self.counter_schema = CounterSchema.build(execution_strategy)
 
           def execute_query(query_string, **kwargs)
-            kwargs[:root_value] = DATA
-            @@schema.execute(query_string, **kwargs)
+            kwargs[:root_value] = SpecificationSchema::DATA
+            self.class.specification_schema.execute(query_string, **kwargs)
           end
 
           def test_it_fetches_data
@@ -409,47 +270,7 @@ module GraphQL
           end
 
           def test_it_only_resolves_fields_once_on_typed_fragments
-            count = 0
-            counter_type = nil
-
-            has_count_interface = GraphQL::InterfaceType.define do
-              name "HasCount"
-              field :count, types.Int
-              field :counter, ->{ counter_type }
-            end
-
-            counter_type = GraphQL::ObjectType.define do
-              name "Counter"
-              interfaces [has_count_interface]
-              field :count, types.Int, resolve: ->(o,a,c) { count += 1 }
-              field :counter, has_count_interface, resolve: ->(o,a,c) { :counter }
-            end
-
-            alt_counter_type = GraphQL::ObjectType.define do
-              name "AltCounter"
-              interfaces [has_count_interface]
-              field :count, types.Int, resolve: ->(o,a,c) { count += 1 }
-              field :counter, has_count_interface, resolve: ->(o,a,c) { :counter }
-            end
-
-            has_counter_interface = GraphQL::InterfaceType.define do
-              name "HasCounter"
-              field :counter, counter_type
-            end
-
-            query_type = GraphQL::ObjectType.define do
-              name "Query"
-              interfaces [has_counter_interface]
-              field :counter, has_count_interface, resolve: ->(o,a,c) { :counter }
-            end
-
-            schema = GraphQL::Schema.define(
-              query: query_type,
-              resolve_type: ->(o, c) { o == :counter ? counter_type : nil },
-              orphan_types: [alt_counter_type],
-            )
-
-            res = schema.execute("
+            res = self.class.counter_schema.execute("
             {
               counter { count }
               ... on HasCounter {
@@ -462,10 +283,10 @@ module GraphQL
               "counter" => { "count" => 1 }
             }
             assert_equal expected_data, res["data"]
-            assert_equal 1, count
+            assert_equal 1, self.class.counter_schema.metadata[:count]
 
             # Deep typed children are correctly distinguished:
-            res = schema.execute("
+            res = self.class.counter_schema.execute("
             {
               counter {
                 ... on Counter {

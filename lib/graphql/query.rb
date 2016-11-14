@@ -82,12 +82,14 @@ module GraphQL
       # Trying to execute a document
       # with no operations returns an empty hash
       @ast_variables = []
+      @mutation = false
       if @operations.any?
         @selected_operation = find_operation(@operations, @operation_name)
         if @selected_operation.nil?
           @validation_errors << GraphQL::Query::OperationNameMissingError.new(@operations.keys)
         else
           @ast_variables = @selected_operation.variables
+          @mutation = @selected_operation.operation_type == "mutation"
         end
       end
     end
@@ -190,6 +192,14 @@ module GraphQL
 
     def resolve_type(type)
       @schema.resolve_type(type, @context)
+    end
+
+    def lazy_method(value)
+      @schema.lazy_methods.get(value)
+    end
+
+    def mutation?
+      @mutation
     end
 
     private

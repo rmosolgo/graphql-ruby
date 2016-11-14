@@ -9,9 +9,15 @@ module GraphQL
           @irep_nodes = irep_nodes
           @parent_type = parent_type
           @target = target
-          @field_ctx = query_ctx.spawn(path: query_ctx.path + [irep_node.name], irep_node: irep_node)
           @query = query_ctx.query
           @field = @query.get_field(parent_type, irep_node.definition_name)
+          @field_ctx = query_ctx.spawn(
+            path: query_ctx.path + [irep_node.name],
+            irep_node: irep_node,
+            parent_type: parent_type,
+            field: field,
+            irep_nodes: irep_nodes
+          )
           @arguments = @query.arguments_for(irep_node, @field)
         end
 
