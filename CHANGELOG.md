@@ -8,6 +8,13 @@
 
 ### Bug fixes
 
+## 1.2.3 (14 Nov 2016)
+
+### Bug fixes
+
+- `Lexer` previous token should be a local variable, not a method attribute #396
+- `Arguments` should wrap values according to their type, not their value #398
+
 ## 1.2.2 (7 Nov 2016)
 
 ### New features
