@@ -16,13 +16,13 @@ module GraphQL
         # Figure out how to find or initialize the field instance:
         if type_or_field.is_a?(GraphQL::Field)
           field = type_or_field
-          field.name ||= name_s
+          field = field.redefine(name: name_s)
         elsif block_given?
           field = GraphQL::Field.define(kwargs, &block)
         elsif field.nil?
           field = GraphQL::Field.define(kwargs)
         elsif field.is_a?(GraphQL::Field)
-          field.name ||= name_s
+          field = field.redefine(name: name_s)
         else
           raise("Couldn't find a field argument, received: #{field || type_or_field}")
         end
