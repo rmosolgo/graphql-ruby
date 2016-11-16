@@ -59,10 +59,15 @@ module GraphQL
         @values[key] = value
       end
 
-      def spawn(path:, irep_node:, parent_type:, field:, irep_nodes:)
+      def path
+        []
+      end
+
+      def spawn(key:, irep_node:, parent_type:, field:, irep_nodes:)
         FieldResolutionContext.new(
           context: self,
-          path: path,
+          parent: self,
+          key: key,
           irep_node: irep_node,
           parent_type: parent_type,
           field: field,
@@ -73,18 +78,19 @@ module GraphQL
       class FieldResolutionContext
         extend Forwardable
 
-        attr_reader :path, :irep_node, :field, :parent_type, :irep_nodes
+        attr_reader :irep_node, :field, :parent_type, :irep_nodes
 
-        def initialize(context:, path:, irep_node:, field:, parent_type:, irep_nodes:)
+        def initialize(context:, parent:, key:, irep_node:, field:, parent_type:, irep_nodes:)
           @context = context
-          @path = path
+          @parent = parent
+          @key = key
           @irep_node = irep_node
           @field = field
           @parent_type = parent_type
           @irep_nodes = irep_nodes
         end
 
-        def_delegators :@context, :[], :[]=, :spawn, :query, :schema, :warden, :errors, :execution_strategy, :strategy
+        def_delegators :@context, :[], :[]=, :query, :schema, :warden, :errors, :execution_strategy, :strategy
 
         # @return [GraphQL::Language::Nodes::Field] The AST node for the currently-executing field
         def ast_node
@@ -103,6 +109,24 @@ module GraphQL
           error.path ||= path
           errors << error
           nil
+        end
+
+        def path
+          @path ||= @parent.path + [@key]
+        end
+
+
+        # Like {Context#spawn}, but passes the original `context:`
+        def spawn(key:, irep_node:, parent_type:, field:, irep_nodes:)
+          FieldResolutionContext.new(
+            context: @context,
+            parent: self,
+            key: key,
+            irep_node: irep_node,
+            parent_type: parent_type,
+            field: field,
+            irep_nodes: irep_nodes,
+          )
         end
       end
     end
