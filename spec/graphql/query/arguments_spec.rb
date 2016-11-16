@@ -90,8 +90,8 @@ describe GraphQL::Query::Arguments do
         {a: 1, b: {a: 2}, c: {a: 3}},
         argument_definitions: input_type.arguments
       )
-      assert args["b"].is_a?(GraphQL::Query::Arguments)
-      assert args["c"].is_a?(Hash)
+      assert_instance_of GraphQL::Query::Arguments, args["b"]
+      assert_instance_of Hash, args["c"]
     end
   end
 

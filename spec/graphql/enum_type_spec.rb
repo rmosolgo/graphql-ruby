@@ -36,6 +36,36 @@ describe GraphQL::EnumType do
     end
   end
 
+  describe "values that are Arrays" do
+    let(:schema) {
+      enum = GraphQL::EnumType.define do
+        name "PluralEnum"
+        value 'PETS', value: ["dogs", "cats"]
+        value 'FRUITS', value: ["apples", "oranges"]
+        value 'PLANETS', value: ["Earth"]
+      end
+
+      query_type = GraphQL::ObjectType.define do
+        name "Query"
+        field :names, types[types.String] do
+          argument :things, types[enum]
+          resolve ->(o, a, c) {
+            a[:things].reduce(&:+)
+          }
+        end
+      end
+
+      GraphQL::Schema.define do
+        query(query_type)
+      end
+    }
+
+    it "accepts them as inputs" do
+      res = schema.execute("{ names(things: [PETS, PLANETS]) }")
+      assert_equal ["dogs", "cats", "Earth"], res["data"]["names"]
+    end
+  end
+
   it "has value description" do
     assert_equal("Animal with horns", enum.values["GOAT"].description)
   end

@@ -121,11 +121,14 @@ module GraphQL
         data = query_string.unpack("c*")
         eof = data.length
 
+        # Since `Lexer` is a module, store all lexer state
+        # in this local variable:
         meta = {
           line: 1,
           col: 1,
           data: data,
-          tokens: []
+          tokens: [],
+          previous_token: nil,
         }
 
         %% write init;
@@ -145,10 +148,10 @@ module GraphQL
           value: meta[:data][ts...te].pack("c*"),
           line: meta[:line],
           col: meta[:col],
-          prev_token: @previous_token,
+          prev_token: meta[:previous_token],
         )
 
-        @previous_token = token
+        meta[:previous_token] = token
 
         meta[:col] += te - ts
       end
@@ -159,9 +162,9 @@ module GraphQL
           value: meta[:data][ts...te].pack("c*"),
           line: meta[:line],
           col: meta[:col],
-          prev_token: @previous_token,
+          prev_token: meta[:previous_token],
         )
-        @previous_token = token
+        meta[:previous_token] = token
         # Bump the column counter for the next token
         meta[:col] += te - ts
       end
@@ -189,7 +192,7 @@ module GraphQL
             value: value,
             line: meta[:line],
             col: meta[:col],
-            prev_token: @previous_token,
+            prev_token: meta[:previous_token],
           )
         else
           replace_escaped_characters_in_place(value)
@@ -199,11 +202,11 @@ module GraphQL
             value: value,
             line: meta[:line],
             col: meta[:col],
-            prev_token: @previous_token,
+            prev_token: meta[:previous_token],
           )
         end
 
-        @previous_token = token
+        meta[:previous_token] = token
         meta[:col] += te - ts
       end
     end

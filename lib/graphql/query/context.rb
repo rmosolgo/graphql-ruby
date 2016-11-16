@@ -59,19 +59,29 @@ module GraphQL
         @values[key] = value
       end
 
-      def spawn(path:, irep_node:)
-        FieldResolutionContext.new(context: self, path: path, irep_node: irep_node)
+      def spawn(path:, irep_node:, parent_type:, field:, irep_nodes:)
+        FieldResolutionContext.new(
+          context: self,
+          path: path,
+          irep_node: irep_node,
+          parent_type: parent_type,
+          field: field,
+          irep_nodes: irep_nodes,
+        )
       end
 
       class FieldResolutionContext
         extend Forwardable
 
-        attr_reader :path, :irep_node
+        attr_reader :path, :irep_node, :field, :parent_type, :irep_nodes
 
-        def initialize(context:, path:, irep_node:)
+        def initialize(context:, path:, irep_node:, field:, parent_type:, irep_nodes:)
           @context = context
           @path = path
           @irep_node = irep_node
+          @field = field
+          @parent_type = parent_type
+          @irep_nodes = irep_nodes
         end
 
         def_delegators :@context, :[], :[]=, :spawn, :query, :schema, :warden, :errors, :execution_strategy, :strategy
@@ -85,7 +95,7 @@ module GraphQL
         # @param error [GraphQL::ExecutionError] an execution error
         # @return [void]
         def add_error(error)
-          unless error.is_a?(ExecutionError)
+          if !error.is_a?(ExecutionError)
             raise TypeError, "expected error to be a ExecutionError, but was #{error.class}"
           end
 

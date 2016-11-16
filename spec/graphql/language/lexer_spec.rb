@@ -30,5 +30,11 @@ describe GraphQL::Language::Lexer do
     it "rejects bad unicode, even when there's good unicode in the string" do
       assert_equal :BAD_UNICODE_ESCAPE, subject.tokenize('"\\u0XXF \\u0009"').first.name
     end
+
+    it "clears the previous_token between runs" do
+      tok_1 = subject.tokenize(query_string)
+      tok_2 = subject.tokenize(query_string)
+      assert_equal nil, tok_2[0].prev_token
+    end
   end
 end

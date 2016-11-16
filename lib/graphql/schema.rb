@@ -57,6 +57,7 @@ module GraphQL
       instrument: -> (schema, type, instrumenter) { schema.instrumenters[type] << instrumenter },
       query_analyzer: ->(schema, analyzer) { schema.query_analyzers << analyzer },
       middleware: ->(schema, middleware) { schema.middleware << middleware },
+      lazy_resolve: ->(schema, lazy_class, lazy_value_method) { schema.lazy_methods.set(lazy_class, lazy_value_method) },
       rescue_from: ->(schema, err_class, &block) { schema.rescue_from(err_class, &block)}
 
     attr_accessor \
@@ -64,7 +65,13 @@ module GraphQL
       :query_execution_strategy, :mutation_execution_strategy, :subscription_execution_strategy,
       :max_depth, :max_complexity,
       :orphan_types, :directives,
-      :query_analyzers, :middleware, :instrumenters
+      :query_analyzers, :middleware, :instrumenters, :lazy_methods
+
+    class << self
+      attr_accessor :default_execution_strategy
+    end
+
+    self.default_execution_strategy = GraphQL::Execution::Execute
 
     BUILT_IN_TYPES = Hash[[INT_TYPE, STRING_TYPE, FLOAT_TYPE, BOOLEAN_TYPE, ID_TYPE].map{ |type| [type.name, type] }]
     DIRECTIVES = [GraphQL::Directive::IncludeDirective, GraphQL::Directive::SkipDirective, GraphQL::Directive::DeprecatedDirective]
@@ -90,10 +97,11 @@ module GraphQL
       @object_from_id_proc = nil
       @id_from_object_proc = nil
       @instrumenters = Hash.new { |h, k| h[k] = [] }
+      @lazy_methods = GraphQL::Execution::Lazy::LazyMethodMap.new
       # Default to the built-in execution strategy:
-      @query_execution_strategy = GraphQL::Query::SerialExecution
-      @mutation_execution_strategy = GraphQL::Query::SerialExecution
-      @subscription_execution_strategy = GraphQL::Query::SerialExecution
+      @query_execution_strategy = self.class.default_execution_strategy
+      @mutation_execution_strategy = self.class.default_execution_strategy
+      @subscription_execution_strategy = self.class.default_execution_strategy
     end
 
     def rescue_from(*args, &block)
