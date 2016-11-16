@@ -18,6 +18,10 @@ module Garden
     # definition added later:
     attr_accessor :height
     ensure_defined(:height)
+
+    def color
+      metadata[:color]
+    end
   end
 end
 
@@ -84,14 +88,23 @@ describe GraphQL::Define::InstanceDefinable do
         name "Renamed Red Arugula"
       end
 
-      assert_equal :green, arugula.metadata[:color]
+      assert_equal :green, arugula.color
       assert_equal "Arugula", arugula.name
 
-      assert_equal :red, red_arugula.metadata[:color]
+      assert_equal :red, red_arugula.color
       assert_equal "Arugula", red_arugula.name
 
-      assert_equal :red, renamed_red_arugula.metadata[:color]
+      assert_equal :red, renamed_red_arugula.color
       assert_equal "Renamed Red Arugula", renamed_red_arugula.name
+    end
+
+    it "can be chained several times" do
+      arugula_1 = Garden::Vegetable.define(name: "Arugula") { color :green }
+      arugula_2 = arugula_1.redefine { color :red }
+      arugula_3 = arugula_2.redefine { plant_between(1..3) }
+      assert_equal ["Arugula", :green], [arugula_1.name, arugula_1.color]
+      assert_equal ["Arugula", :red], [arugula_2.name, arugula_2.color]
+      assert_equal ["Arugula", :red], [arugula_3.name, arugula_3.color]
     end
   end
 

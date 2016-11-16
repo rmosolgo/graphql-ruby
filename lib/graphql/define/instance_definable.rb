@@ -100,7 +100,7 @@ module GraphQL
       def redefine(**kwargs, &block)
         ensure_defined
         new_instance = self.class.new
-        applied_definitions.each { |defn| defn.apply(new_instance) }
+        applied_definitions.each { |defn| new_instance.define(defn.define_keywords, &defn.define_proc) }
         new_instance.define(**kwargs, &block)
         new_instance
       end
@@ -116,7 +116,16 @@ module GraphQL
         if @pending_definition
           defn = @pending_definition
           @pending_definition = nil
-          defn.apply(self)
+          defn_proxy = DefinedObjectProxy.new(self)
+          # Apply definition from `define(...)` kwargs
+          defn.define_keywords.each do |keyword, value|
+            defn_proxy.public_send(keyword, value)
+          end
+          # and/or apply definition from `define { ... }` block
+          if defn.define_proc
+            defn_proxy.instance_eval(&defn.define_proc)
+          end
+
           applied_definitions << defn
         end
         nil
@@ -126,23 +135,11 @@ module GraphQL
         @applied_definitions ||= []
       end
 
-
       class Definition
+        attr_reader :define_keywords, :define_proc
         def initialize(define_keywords, define_proc)
           @define_keywords = define_keywords
           @define_proc = define_proc
-        end
-
-        def apply(instance)
-          defn_proxy = DefinedObjectProxy.new(instance)
-
-          @define_keywords.each do |keyword, value|
-            defn_proxy.public_send(keyword, value)
-          end
-
-          if @define_proc
-            defn_proxy.instance_eval(&@define_proc)
-          end
         end
       end
 
