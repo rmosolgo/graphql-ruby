@@ -184,9 +184,11 @@ module GraphQL
       UTF_8 = /\\u[\dAa-f]{4}/i
       UTF_8_REPLACE = ->(m) { [m[-4..-1].to_i(16)].pack('U'.freeze) }
 
+      VALID_STRING = /\A(?:[^\\]|#{ESCAPES}|#{UTF_8})*\z/o
+
       def self.emit_string(ts, te, meta)
         value = meta[:data][ts...te].pack("c*").force_encoding("UTF-8")
-        if value =~ /\\u|\\./ && value !~ ESCAPES && value !~ UTF_8
+        if value !~ VALID_STRING
           meta[:tokens] << token = GraphQL::Language::Token.new(
             name: :BAD_UNICODE_ESCAPE,
             value: value,
