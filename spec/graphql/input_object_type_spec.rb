@@ -10,6 +10,18 @@ describe GraphQL::InputObjectType do
     assert(DairyProductInputType.input_fields["fatContent"])
   end
 
+  describe "on a type unused by the schema" do
+    it "has input fields" do
+      UnreachedInputType = GraphQL::InputObjectType.define do
+        name 'UnreachedInputType'
+        description 'An input object type not directly used in the schema.'
+
+        input_field :field, types.String
+      end
+      assert(UnreachedInputType.input_fields['field'])
+    end
+  end
+
   describe "input validation" do
     it "Accepts anything that yields key-value pairs to #all?" do
       values_obj = MinimumInputObject.new({"source" => "COW", "fatContent" => 0.4})
