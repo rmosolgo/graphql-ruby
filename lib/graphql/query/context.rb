@@ -3,21 +3,6 @@ module GraphQL
     # Expose some query-specific info to field resolve functions.
     # It delegates `[]` to the hash that's passed to `GraphQL::Query#initialize`.
     class Context
-      module Spawn
-        def spawn(key:, irep_node:, parent_type:, field:, irep_nodes:)
-          FieldResolutionContext.new(
-            parent: self,
-            key: key,
-            irep_node: irep_node,
-            parent_type: parent_type,
-            field: field,
-            irep_nodes: irep_nodes,
-          )
-        end
-      end
-
-      include Spawn
-
       attr_reader :execution_strategy
       # `strategy` is required by GraphQL::Batch
       alias_method :strategy, :execution_strategy
@@ -78,13 +63,25 @@ module GraphQL
         []
       end
 
+      def spawn(key:, irep_node:, parent_type:, field:, irep_nodes:)
+        FieldResolutionContext.new(
+          context: self,
+          parent: self,
+          key: key,
+          irep_node: irep_node,
+          parent_type: parent_type,
+          field: field,
+          irep_nodes: irep_nodes,
+        )
+      end
+
       class FieldResolutionContext
         extend Forwardable
-        include Spawn
 
         attr_reader :irep_node, :field, :parent_type, :irep_nodes
 
-        def initialize(parent:, key:, irep_node:, field:, parent_type:, irep_nodes:)
+        def initialize(context:, parent:, key:, irep_node:, field:, parent_type:, irep_nodes:)
+          @context = context
           @parent = parent
           @key = key
           @irep_node = irep_node
@@ -93,7 +90,7 @@ module GraphQL
           @irep_nodes = irep_nodes
         end
 
-        def_delegators :@parent, :[], :[]=, :query, :schema, :warden, :errors, :execution_strategy, :strategy
+        def_delegators :@context, :[], :[]=, :query, :schema, :warden, :errors, :execution_strategy, :strategy
 
         # @return [GraphQL::Language::Nodes::Field] The AST node for the currently-executing field
         def ast_node
@@ -116,6 +113,20 @@ module GraphQL
 
         def path
           @path ||= @parent.path + [@key]
+        end
+
+
+        # Like {Context#spawn}, but passes the original `context:`
+        def spawn(key:, irep_node:, parent_type:, field:, irep_nodes:)
+          FieldResolutionContext.new(
+            context: @context,
+            parent: self,
+            key: key,
+            irep_node: irep_node,
+            parent_type: parent_type,
+            field: field,
+            irep_nodes: irep_nodes,
+          )
         end
       end
     end
