@@ -3,6 +3,21 @@ module GraphQL
     # Expose some query-specific info to field resolve functions.
     # It delegates `[]` to the hash that's passed to `GraphQL::Query#initialize`.
     class Context
+      module Spawn
+        def spawn(key:, irep_node:, parent_type:, field:, irep_nodes:)
+          FieldResolutionContext.new(
+            parent: self,
+            key: key,
+            irep_node: irep_node,
+            parent_type: parent_type,
+            field: field,
+            irep_nodes: irep_nodes,
+          )
+        end
+      end
+
+      include Spawn
+
       attr_reader :execution_strategy
       # `strategy` is required by GraphQL::Batch
       alias_method :strategy, :execution_strategy
@@ -59,32 +74,26 @@ module GraphQL
         @values[key] = value
       end
 
-      def spawn(path:, irep_node:, parent_type:, field:, irep_nodes:)
-        FieldResolutionContext.new(
-          context: self,
-          path: path,
-          irep_node: irep_node,
-          parent_type: parent_type,
-          field: field,
-          irep_nodes: irep_nodes,
-        )
+      def path
+        []
       end
 
       class FieldResolutionContext
         extend Forwardable
+        include Spawn
 
-        attr_reader :path, :irep_node, :field, :parent_type, :irep_nodes
+        attr_reader :irep_node, :field, :parent_type, :irep_nodes
 
-        def initialize(context:, path:, irep_node:, field:, parent_type:, irep_nodes:)
-          @context = context
-          @path = path
+        def initialize(parent:, key:, irep_node:, field:, parent_type:, irep_nodes:)
+          @parent = parent
+          @key = key
           @irep_node = irep_node
           @field = field
           @parent_type = parent_type
           @irep_nodes = irep_nodes
         end
 
-        def_delegators :@context, :[], :[]=, :spawn, :query, :schema, :warden, :errors, :execution_strategy, :strategy
+        def_delegators :@parent, :[], :[]=, :query, :schema, :warden, :errors, :execution_strategy, :strategy
 
         # @return [GraphQL::Language::Nodes::Field] The AST node for the currently-executing field
         def ast_node
@@ -103,6 +112,10 @@ module GraphQL
           error.path ||= path
           errors << error
           nil
+        end
+
+        def path
+          @path ||= @parent.path + [@key]
         end
       end
     end

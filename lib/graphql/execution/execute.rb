@@ -55,7 +55,7 @@ module GraphQL
         field_ctx = query_ctx.spawn(
           parent_type: parent_type,
           field: field,
-          path: query_ctx.path + [irep_node.name],
+          key: irep_node.name,
           irep_node: irep_node,
           irep_nodes: irep_nodes,
         )
@@ -149,7 +149,7 @@ module GraphQL
             wrapped_type = field_type.of_type
             result = value.each_with_index.map do |inner_value, index|
               inner_ctx = field_ctx.spawn(
-                path: field_ctx.path + [index],
+                key: index,
                 irep_node: field_ctx.irep_node,
                 irep_nodes: irep_nodes,
                 parent_type: parent_type,
