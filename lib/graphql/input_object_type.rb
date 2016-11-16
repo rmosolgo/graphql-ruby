@@ -30,9 +30,8 @@ module GraphQL
     )
 
     attr_accessor :mutation, :arguments
-    alias :input_fields :arguments
-
     ensure_defined(:mutation, :arguments)
+    alias :input_fields :arguments
 
     # @!attribute mutation
     #   @return [GraphQL::Relay::Mutation, nil] The mutation this field was derived from, if it was derived from a mutation

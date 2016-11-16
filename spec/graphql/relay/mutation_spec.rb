@@ -77,6 +77,23 @@ describe GraphQL::Relay::Mutation do
     assert_equal IntroduceShipMutation, IntroduceShipMutation.result_class.mutation
   end
 
+  describe "aliased methods" do
+    describe "on an unreached mutation" do
+      it 'still ensures definitions' do
+        UnreachedMutation = GraphQL::Relay::Mutation.define do
+          name 'UnreachedMutation'
+          description 'A mutation type not directly used in the schema.'
+
+          input_field :input, types.String
+          return_field :return, types.String
+        end
+
+        assert UnreachedMutation.input_fields['input']
+        assert UnreachedMutation.return_fields['return']
+      end
+    end
+  end
+
   describe "providing a return type" do
     let(:custom_return_type) {
       GraphQL::ObjectType.define do
