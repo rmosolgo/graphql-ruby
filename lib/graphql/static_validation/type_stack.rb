@@ -41,18 +41,15 @@ module GraphQL
         @directive_definitions = []
         @argument_definitions = []
         @path = []
-        visitor.enter << ->(node, parent) { PUSH_STRATEGIES[node.class].push(self, node) }
-        visitor.leave << ->(node, parent) { PUSH_STRATEGIES[node.class].pop(self, node) }
+
+        PUSH_STRATEGIES.each do |node_class, strategy|
+          visitor[node_class].enter << EnterWithStrategy.new(self, strategy)
+          visitor[node_class].leave << LeaveWithStrategy.new(self, strategy)
+        end
       end
 
       private
 
-      # Look up strategies by name and use singleton instance to push and pop
-      PUSH_STRATEGIES = Hash.new do |hash, key|
-        node_class_name = key.name.split("::").last
-        strategy_key = "#{node_class_name}Strategy"
-        hash[key] = const_defined?(strategy_key) ? const_get(strategy_key) : NullStrategy
-      end
 
       module FragmentWithTypeStrategy
         def push(stack, node)
@@ -182,10 +179,36 @@ module GraphQL
         end
       end
 
-      # A no-op strategy (don't handle this node)
-      module NullStrategy
-        def self.push(stack, node);  end
-        def self.pop(stack, node);   end
+      PUSH_STRATEGIES = {
+        GraphQL::Language::Nodes::FragmentDefinition => FragmentDefinitionStrategy,
+        GraphQL::Language::Nodes::InlineFragment => InlineFragmentStrategy,
+        GraphQL::Language::Nodes::FragmentSpread => FragmentSpreadStrategy,
+        GraphQL::Language::Nodes::Argument => ArgumentStrategy,
+        GraphQL::Language::Nodes::Field => FieldStrategy,
+        GraphQL::Language::Nodes::Directive => DirectiveStrategy,
+        GraphQL::Language::Nodes::OperationDefinition => OperationDefinitionStrategy,
+      }
+
+      class EnterWithStrategy
+        def initialize(stack, strategy)
+          @stack = stack
+          @strategy = strategy
+        end
+
+        def call(node, parent)
+          @strategy.push(@stack, node)
+        end
+      end
+
+      class LeaveWithStrategy
+        def initialize(stack, strategy)
+          @stack = stack
+          @strategy = strategy
+        end
+
+        def call(node, parent)
+          @strategy.pop(@stack, node)
+        end
       end
     end
   end
