@@ -5,12 +5,10 @@ module GraphQL
       PROPAGATE_NULL = :__graphql_propagate_null__
 
       def execute(ast_operation, root_type, query)
-        irep_root = query.internal_representation[ast_operation.name]
-
         result = resolve_selection(
           query.root_value,
           root_type,
-          [irep_root],
+          query.irep_selection,
           query.context,
           mutation: query.mutation?
         )
@@ -22,17 +20,16 @@ module GraphQL
 
       private
 
-      def resolve_selection(object, current_type, irep_nodes, query_ctx, mutation: false )
+      def resolve_selection(object, current_type, selection, query_ctx, mutation: false )
         query = query_ctx.query
-        own_selections = query.selections(irep_nodes, current_type)
 
         selection_result = SelectionResult.new
 
-        own_selections.each do |name, child_irep_nodes|
-          field = query.get_field(current_type, child_irep_nodes.first.definition_name)
+        selection.each_selection(type: current_type) do |name, subselection|
+          field = query.get_field(current_type, subselection.definition_name)
           field_result = resolve_field(
             selection_result,
-            child_irep_nodes,
+            subselection,
             current_type,
             field,
             object,
@@ -49,18 +46,16 @@ module GraphQL
         selection_result
       end
 
-      def resolve_field(owner, irep_nodes, parent_type, field, object, query_ctx)
-        irep_node = irep_nodes.first
+      def resolve_field(owner, selection, parent_type, field, object, query_ctx)
         query = query_ctx.query
         field_ctx = query_ctx.spawn(
           parent_type: parent_type,
           field: field,
-          key: irep_node.name,
-          irep_node: irep_node,
-          irep_nodes: irep_nodes,
+          key: selection.name,
+          selection: selection,
         )
 
-        arguments = query.arguments_for(irep_node, field)
+        arguments = query.arguments_for(selection.irep_node, field)
         middlewares = query.schema.middleware
         resolve_arguments = [parent_type, object, field, arguments, field_ctx]
 
@@ -82,10 +77,10 @@ module GraphQL
         lazy_method_name = query.lazy_method(raw_value)
         result = if lazy_method_name
           GraphQL::Execution::Lazy.new { raw_value.public_send(lazy_method_name) }.then { |inner_value|
-            continue_resolve_field(irep_nodes, parent_type, field, inner_value, field_ctx)
+            continue_resolve_field(selection, parent_type, field, inner_value, field_ctx)
           }
         else
-          continue_resolve_field(irep_nodes, parent_type, field, raw_value, field_ctx)
+          continue_resolve_field(selection, parent_type, field, raw_value, field_ctx)
         end
 
         FieldResult.new(
@@ -95,20 +90,19 @@ module GraphQL
         )
       end
 
-      def continue_resolve_field(irep_nodes, parent_type, field, raw_value, field_ctx)
-        irep_node = irep_nodes.first
+      def continue_resolve_field(selection, parent_type, field, raw_value, field_ctx)
         query = field_ctx.query
 
         case raw_value
         when GraphQL::ExecutionError
-          raw_value.ast_node = irep_node.ast_node
+          raw_value.ast_node = field_ctx.ast_node
           raw_value.path = field_ctx.path
           query.context.errors.push(raw_value)
         when Array
           list_errors = raw_value.each_with_index.select { |value, _| value.is_a?(GraphQL::ExecutionError) }
           if list_errors.any?
             list_errors.each do |error, index|
-              error.ast_node = irep_node.ast_node
+              error.ast_node = field_ctx.ast_node
               error.path = field_ctx.path + [index]
               query.context.errors.push(error)
             end
@@ -120,12 +114,12 @@ module GraphQL
           field,
           field.type,
           raw_value,
-          irep_nodes,
+          selection,
           field_ctx,
         )
       end
 
-      def resolve_value(parent_type, field_defn, field_type, value, irep_nodes, field_ctx)
+      def resolve_value(parent_type, field_defn, field_type, value, selection, field_ctx)
         if value.nil?
           if field_type.kind.non_null?
             field_ctx.add_error(GraphQL::ExecutionError.new("Cannot return null for non-nullable field #{parent_type.name}.#{field_defn.name}"))
@@ -150,8 +144,7 @@ module GraphQL
             result = value.each_with_index.map do |inner_value, index|
               inner_ctx = field_ctx.spawn(
                 key: index,
-                irep_node: field_ctx.irep_node,
-                irep_nodes: irep_nodes,
+                selection: selection,
                 parent_type: parent_type,
                 field: field_defn,
               )
@@ -161,7 +154,7 @@ module GraphQL
                 field_defn,
                 wrapped_type,
                 inner_value,
-                irep_nodes,
+                selection,
                 inner_ctx,
               )
               inner_result
@@ -174,14 +167,14 @@ module GraphQL
               field_defn,
               wrapped_type,
               value,
-              irep_nodes,
+              selection,
               field_ctx,
             )
           when GraphQL::TypeKinds::OBJECT
             resolve_selection(
               value,
               field_type,
-              irep_nodes,
+              selection,
               field_ctx
             )
           when GraphQL::TypeKinds::UNION, GraphQL::TypeKinds::INTERFACE
@@ -190,14 +183,14 @@ module GraphQL
             possible_types = query.possible_types(field_type)
 
             if !possible_types.include?(resolved_type)
-              raise GraphQL::UnresolvedTypeError.new(irep_nodes.first.definition_name, field_type, parent_type, resolved_type, possible_types)
+              raise GraphQL::UnresolvedTypeError.new(selection.definition_name, field_type, parent_type, resolved_type, possible_types)
             else
               resolve_value(
                 parent_type,
                 field_defn,
                 resolved_type,
                 value,
-                irep_nodes,
+                selection,
                 field_ctx,
               )
             end

@@ -59,36 +59,39 @@ module GraphQL
         @values[key] = value
       end
 
-      def spawn(key:, irep_node:, parent_type:, field:, irep_nodes:)
+      def spawn(key:, selection:, parent_type:, field:)
         FieldResolutionContext.new(
           context: self,
           path: path + [key],
-          irep_node: irep_node,
+          selection: selection,
           parent_type: parent_type,
           field: field,
-          irep_nodes: irep_nodes,
         )
       end
 
       class FieldResolutionContext
         extend Forwardable
 
-        attr_reader :path, :irep_node, :field, :parent_type, :irep_nodes
+        attr_reader :path, :selection, :field, :parent_type
 
-        def initialize(context:, path:, irep_node:, field:, parent_type:, irep_nodes:)
+        def initialize(context:, path:, selection:, field:, parent_type:)
           @context = context
           @path = path
-          @irep_node = irep_node
+          @selection = selection
           @field = field
           @parent_type = parent_type
-          @irep_nodes = irep_nodes
         end
 
         def_delegators :@context, :[], :[]=, :spawn, :query, :schema, :warden, :errors, :execution_strategy, :strategy
 
         # @return [GraphQL::Language::Nodes::Field] The AST node for the currently-executing field
         def ast_node
-          @irep_node.ast_node
+          selection.irep_node.ast_node
+        end
+
+        # @return [GraphQL::InternalRepresentation::Node]
+        def irep_node
+          selection.irep_node
         end
 
         # Add error to current field resolution.
@@ -105,14 +108,13 @@ module GraphQL
           nil
         end
 
-        def spawn(key:, irep_node:, parent_type:, field:, irep_nodes:)
+        def spawn(key:, selection:, parent_type:, field:)
           FieldResolutionContext.new(
             context: @context,
             path: path + [key],
-            irep_node: irep_node,
+            selection: selection,
             parent_type: parent_type,
             field: field,
-            irep_nodes: irep_nodes,
           )
         end
       end

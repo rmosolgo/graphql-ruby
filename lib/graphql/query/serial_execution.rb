@@ -15,10 +15,8 @@ module GraphQL
       # @param query_obj [GraphQL::Query] the query object for this execution
       # @return [Hash] a spec-compliant GraphQL result, as a hash
       def execute(ast_operation, root_type, query_object)
-        irep_root = query_object.internal_representation[ast_operation.name]
-
         operation_resolution.resolve(
-          irep_root,
+          query_object.irep_selection,
           root_type,
           query_object
         )

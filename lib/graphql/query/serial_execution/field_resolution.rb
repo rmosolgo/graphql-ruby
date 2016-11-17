@@ -4,19 +4,18 @@ module GraphQL
       class FieldResolution
         attr_reader :irep_node, :parent_type, :target, :field, :arguments, :query
 
-        def initialize(irep_nodes, parent_type, target, query_ctx)
-          @irep_node = irep_nodes.first
-          @irep_nodes = irep_nodes
+        def initialize(selection, parent_type, target, query_ctx)
+          @irep_node = selection.irep_node
+          @selection = selection
           @parent_type = parent_type
           @target = target
           @query = query_ctx.query
           @field = @query.get_field(parent_type, irep_node.definition_name)
           @field_ctx = query_ctx.spawn(
             key: irep_node.name,
-            irep_node: irep_node,
+            selection: selection,
             parent_type: parent_type,
             field: field,
-            irep_nodes: irep_nodes
           )
           @arguments = @query.arguments_for(irep_node, @field)
         end
@@ -39,14 +38,14 @@ module GraphQL
         def get_finished_value(raw_value)
           case raw_value
           when GraphQL::ExecutionError
-            raw_value.ast_node = irep_node.ast_node
+            raw_value.ast_node = @field_ctx.ast_node
             raw_value.path = @field_ctx.path
             @query.context.errors.push(raw_value)
           when Array
             list_errors = raw_value.each_with_index.select { |value, _| value.is_a?(GraphQL::ExecutionError) }
             if list_errors.any?
               list_errors.each do |error, index|
-                error.ast_node = irep_node.ast_node
+                error.ast_node = @field_ctx.ast_node
                 error.path = @field_ctx.path + [index]
                 @query.context.errors.push(error)
               end
@@ -59,7 +58,7 @@ module GraphQL
               field,
               field.type,
               raw_value,
-              @irep_nodes,
+              @selection,
               @field_ctx,
             )
           rescue GraphQL::InvalidNullError => err
