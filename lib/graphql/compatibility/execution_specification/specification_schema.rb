@@ -33,6 +33,13 @@ module GraphQL
           }),
         }
 
+        module TestMiddleware
+          def self.call(parent_type, parent_object, field_definition, field_args, query_context, next_middleware)
+            query_context[:middleware_log] && query_context[:middleware_log] << field_definition.name
+            next_middleware.call
+          end
+        end
+
         def self.build(execution_strategy)
           organization_type = nil
 
@@ -146,6 +153,7 @@ module GraphQL
             resolve_type ->(obj, ctx) {
               obj.respond_to?(:birthdate) ? person_type : organization_type
             }
+            middleware(TestMiddleware)
           end
         end
       end

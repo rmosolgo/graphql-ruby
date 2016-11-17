@@ -304,6 +304,18 @@ module GraphQL
             }
             assert_equal expected_data, res["data"]
           end
+
+          def test_it_runs_middleware
+            log = []
+            query_string = %|
+            {
+              node(id: "2001") {
+                __typename
+              }
+            }|
+            res = execute_query(query_string, context: {middleware_log: log})
+            assert_equal ["node", "__typename"], log
+          end
         end
       end
     end
