@@ -19,6 +19,18 @@ describe GraphQL::Language::Lexer do
       assert_equal tokens[0], tokens[1].prev_token
     end
 
+    it "unescapes escaped characters" do
+      assert_equal "\" \\ / \b \f \n \r \t", subject.tokenize('"\\" \\\\ \\/ \\b \\f \\n \\r \\t"').first.to_s
+    end
+
+    it "unescapes escaped unicode characters" do
+      assert_equal "\t", subject.tokenize('"\\u0009"').first.to_s
+    end
+
+    it "rejects bad unicode, even when there's good unicode in the string" do
+      assert_equal :BAD_UNICODE_ESCAPE, subject.tokenize('"\\u0XXF \\u0009"').first.name
+    end
+
     it "clears the previous_token between runs" do
       tok_1 = subject.tokenize(query_string)
       tok_2 = subject.tokenize(query_string)
