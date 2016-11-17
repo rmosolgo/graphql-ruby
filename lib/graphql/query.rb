@@ -183,7 +183,8 @@ module GraphQL
     end
 
     def get_field(type, name)
-      @warden.get_field(type, name)
+      @fields ||= Hash.new { |h, k| h[k] = Hash.new { |h2, k2| h2[k2] = @warden.get_field(k, k2) } }
+      @fields[type][name]
     end
 
     def possible_types(type)
