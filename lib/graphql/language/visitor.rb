@@ -17,16 +17,9 @@ module GraphQL
       # node right away
       SKIP = :_skip
 
-      # @return [Array<Proc>] Hooks to call when entering _any_ node
-      attr_reader :enter
-      # @return [Array<Proc>] Hooks to call when leaving _any_ node
-      attr_reader :leave
-
       def initialize(document)
         @document = document
         @visitors = {}
-        @enter = []
-        @leave = []
       end
 
       # Get a {NodeVisitor} for `node_class`
@@ -50,20 +43,18 @@ module GraphQL
       def visit_node(node, parent)
         begin_hooks_ok = begin_visit(node, parent)
         if begin_hooks_ok
-          node.children.reduce(true) { |memo, child| memo && visit_node(child, node) }
+          node.children.each { |child| visit_node(child, node) }
         end
         end_visit(node, parent)
       end
 
       def begin_visit(node, parent)
-        self.class.apply_hooks(enter, node, parent)
         node_visitor = self[node.class]
         self.class.apply_hooks(node_visitor.enter, node, parent)
       end
 
       # Should global `leave` visitors come first or last?
       def end_visit(node, parent)
-        self.class.apply_hooks(leave, node, parent)
         node_visitor = self[node.class]
         self.class.apply_hooks(node_visitor.leave, node, parent)
       end
