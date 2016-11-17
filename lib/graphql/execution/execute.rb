@@ -51,7 +51,7 @@ module GraphQL
         field_ctx = query_ctx.spawn(
           parent_type: parent_type,
           field: field,
-          key: irep_node.name,
+          key: selection.name,
           selection: selection,
         )
 
