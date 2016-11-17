@@ -252,5 +252,14 @@ type Query {
       schema.execute("query getInt($val: Int = 5, $val2: Int = 3){ int(value: $val) int2: int(value: $val2) } ")
       assert_equal [1, 2], variable_counter.counts
     end
+
+    it "can be applied after the fact" do
+      res = schema.execute("query { int(value: 2) } ")
+      assert_equal 6, res["data"]["int"]
+
+      schema.instrument(:field, MultiplyInstrumenter.new(4))
+      res = schema.execute("query { int(value: 2) } ")
+      assert_equal 24, res["data"]["int"]
+    end
   end
 end

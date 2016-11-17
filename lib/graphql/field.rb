@@ -123,13 +123,19 @@ module GraphQL
     accepts_definitions :name, :description, :deprecation_reason,
       :resolve, :type, :arguments,
       :property, :hash_key, :complexity, :mutation,
+      :relay_node_field,
       argument: GraphQL::Define::AssignArgument
 
 
     attr_accessor :name, :deprecation_reason, :description, :property, :hash_key, :mutation, :arguments, :complexity
+
+    # @return [Boolean] True if this is the Relay find-by-id field
+    attr_accessor :relay_node_field
+
     ensure_defined(
-      :name, :deprecation_reason, :description, :property, :hash_key, :mutation, :arguments, :complexity,
-      :resolve, :resolve=, :type, :type=, :name=, :property=, :hash_key=
+      :name, :deprecation_reason, :description, :description=, :property, :hash_key, :mutation, :arguments, :complexity,
+      :resolve, :resolve=, :type, :type=, :name=, :property=, :hash_key=,
+      :relay_node_field,
     )
 
     # @!attribute [r] resolve_proc
@@ -152,6 +158,7 @@ module GraphQL
       @complexity = 1
       @arguments = {}
       @resolve_proc = build_default_resolver
+      @relay_node_field = false
     end
 
     # Get a value for this field
