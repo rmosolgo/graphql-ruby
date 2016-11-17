@@ -59,10 +59,10 @@ module GraphQL
         @values[key] = value
       end
 
-      def spawn(path:, irep_node:, parent_type:, field:, irep_nodes:)
+      def spawn(key:, irep_node:, parent_type:, field:, irep_nodes:)
         FieldResolutionContext.new(
           context: self,
-          path: path,
+          path: path + [key],
           irep_node: irep_node,
           parent_type: parent_type,
           field: field,
@@ -103,6 +103,17 @@ module GraphQL
           error.path ||= path
           errors << error
           nil
+        end
+
+        def spawn(key:, irep_node:, parent_type:, field:, irep_nodes:)
+          FieldResolutionContext.new(
+            context: @context,
+            path: path + [key],
+            irep_node: irep_node,
+            parent_type: parent_type,
+            field: field,
+            irep_nodes: irep_nodes,
+          )
         end
       end
     end
