@@ -7,17 +7,13 @@ module GraphQL
         # We have to define it fresh each time because
         # its name will be modified and its description
         # _may_ be modified.
-        node_field = GraphQL::Field.define do
+        GraphQL::Field.define do
           type(GraphQL::Relay::Node.interface)
           description("Fetches an object given its ID.")
           argument(:id, !types.ID, "ID of the object.")
           resolve(GraphQL::Relay::Node::FindNode)
+          relay_node_field(true)
         end
-
-        # This is used to identify generated fields in the schema
-        node_field.metadata[:relay_node_field] = true
-
-        node_field
       end
 
       # @return [GraphQL::InterfaceType] The interface which all Relay types must implement

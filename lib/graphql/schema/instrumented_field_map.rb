@@ -6,8 +6,21 @@ module GraphQL
     #
     # The catch is, the fields in this map _may_ have been modified by being instrumented.
     class InstrumentedFieldMap
-      def initialize(schema)
+      # Build a map using types from `schema` and instrumenters in `field_instrumenters`
+      # @param schema [GraphQL::Schema]
+      # @param field_instrumenters [Array<#instrument(type, field)>]
+      def initialize(schema, field_instrumenters)
         @storage = Hash.new { |h, k| h[k] = {} }
+        schema.types.each do |type_name, type|
+          if type.kind.fields?
+            type.all_fields.each do |field_defn|
+              instrumented_field_defn = field_instrumenters.reduce(field_defn) do |defn, inst|
+                inst.instrument(type, defn)
+              end
+              self.set(type.name, field_defn.name, instrumented_field_defn)
+            end
+          end
+        end
       end
 
       def set(type_name, field_name, field)

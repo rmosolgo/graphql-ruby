@@ -117,25 +117,22 @@ module GraphQL
       ensure_defined
       all_types = orphan_types + [query, mutation, subscription, GraphQL::Introspection::SchemaType]
       @types = GraphQL::Schema::ReduceTypes.reduce(all_types.compact)
-
-      @instrumented_field_map = InstrumentedFieldMap.new(self)
-      field_instrumenters = @instrumenters[:field]
-      types.each do |type_name, type|
-        if type.kind.fields?
-          type.all_fields.each do |field_defn|
-
-            instrumented_field_defn = field_instrumenters.reduce(field_defn) do |defn, inst|
-              inst.instrument(type, defn)
-            end
-
-            @instrumented_field_map.set(type.name, field_defn.name, instrumented_field_defn)
-          end
-        end
-      end
+      build_instrumented_field_map
       # Assert that all necessary configs are present:
       validation_error = Validation.validate(self)
       validation_error && raise(NotImplementedError, validation_error)
       nil
+    end
+
+    # Attach `instrumenter` to this schema for instrumenting events of `instrumentation_type`.
+    # @param instrumentation_type [Symbol]
+    # @param instrumenter
+    # @return [void]
+    def instrument(instrumentation_type, instrumenter)
+      @instrumenters[instrumentation_type] << instrumenter
+      if instrumentation_type == :field
+        build_instrumented_field_map
+      end
     end
 
 
@@ -296,6 +293,10 @@ module GraphQL
         @middleware << middleware
         middleware
       end
+    end
+
+    def build_instrumented_field_map
+      @instrumented_field_map = InstrumentedFieldMap.new(self, @instrumenters[:field])
     end
   end
 end

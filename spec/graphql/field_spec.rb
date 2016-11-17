@@ -120,4 +120,34 @@ describe GraphQL::Field do
       assert_equal [:cheeses, :milks], similar_cheese_field.metadata[:joins]
     end
   end
+
+  describe "reusing a GraphQL::Field" do
+    let(:schema) {
+      int_field = GraphQL::Field.define do
+        type types.Int
+        argument :value, types.Int
+        resolve -> (obj, args, ctx) { args[:value] }
+      end
+
+      query_type = GraphQL::ObjectType.define do
+        name "Query"
+        field :int, int_field
+        field :int2, int_field
+        field :int3, field: int_field
+      end
+
+      GraphQL::Schema.define do
+        query(query_type)
+      end
+    }
+
+    it "can be used in two places" do
+      res = schema.execute %|{ int(value: 1) int2(value: 2) int3(value: 3) }|
+      assert_equal({ "int" => 1, "int2" => 2, "int3" => 3}, res["data"], "It works in queries")
+
+      res = schema.execute %|{ __type(name: "Query") { fields { name } } }|
+      query_field_names = res["data"]["__type"]["fields"].map { |f| f["name"] }
+      assert_equal ["int", "int2", "int3"], query_field_names, "It works in introspection"
+    end
+  end
 end
