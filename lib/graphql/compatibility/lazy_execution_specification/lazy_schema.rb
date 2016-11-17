@@ -46,6 +46,7 @@ module GraphQL
             query(query_type)
             mutation(query_type)
             query_execution_strategy(execution_strategy)
+            mutation_execution_strategy(execution_strategy)
             lazy_resolve(LazyPush, :push)
           end
         end

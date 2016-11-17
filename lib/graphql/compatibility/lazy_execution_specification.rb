@@ -82,7 +82,7 @@ module GraphQL
             expected_pushes = [
               [1],        # first operation
               [2], [3],   # second operation
-              [4], [5,6], # third operation
+              [4], [5, 6], # third operation
             ]
             assert_equal expected_pushes, pushes
           end
