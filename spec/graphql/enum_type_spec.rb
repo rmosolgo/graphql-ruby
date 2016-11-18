@@ -75,6 +75,10 @@ describe GraphQL::EnumType do
 
     it "returns an invalid result" do
       assert(!result.valid?)
+      assert_equal(
+        result.problems.first['explanation'],
+        "Expected \"bad enum\" to be one of: COW, DONKEY, GOAT, REINDEER, SHEEP, YAK"
+      )
     end
   end
 

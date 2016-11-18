@@ -149,6 +149,10 @@ module GraphQL
       accepts_definitions(*ATTRIBUTES)
       attr_accessor(*ATTRIBUTES)
       ensure_defined(*ATTRIBUTES)
+
+      def to_s
+        name
+      end
     end
 
     class UnresolvedValueError < GraphQL::Error
