@@ -104,7 +104,7 @@ module GraphQL
       matching_value = allowed_values.find { |v| v.name == value_name }
 
       if matching_value.nil?
-        result.add_problem("Expected #{JSON.generate(value_name, quirks_mode: true)} to be one of: #{allowed_values.join(', ')}")
+        result.add_problem("Expected #{JSON.generate(value_name, quirks_mode: true)} to be one of: #{allowed_values.map(&:name).join(', ')}")
       end
 
       result
@@ -149,10 +149,6 @@ module GraphQL
       accepts_definitions(*ATTRIBUTES)
       attr_accessor(*ATTRIBUTES)
       ensure_defined(*ATTRIBUTES)
-
-      def to_s
-        name
-      end
     end
 
     class UnresolvedValueError < GraphQL::Error
