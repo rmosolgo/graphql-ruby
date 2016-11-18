@@ -8,6 +8,13 @@
 
 ### Bug fixes
 
+## 1.2.4 (14 Nov 2016)
+
+### Bug fixes
+
+- For invalid enum values, print the enum name in the error message (not a Ruby object dump) #403
+- Improve detection of invalid UTF-8 escapes #394
+
 ## 1.2.3 (14 Nov 2016)
 
 ### Bug fixes
