@@ -1,23 +1,22 @@
 module GraphQL
   module StaticValidation
     # Generates GraphQL-compliant validation message.
-    # Only supports one "location", too bad :(
     class Message
       # Convenience for validators
       module MessageHelper
         # Error `message` is located at `node`
-        def message(message, node, context: nil, path: nil)
+        def message(message, nodes, context: nil, path: nil)
           path ||= context.path
-          GraphQL::StaticValidation::Message.new(message, line: node.line, col: node.col, path: path)
+          nodes = Array(nodes)
+          GraphQL::StaticValidation::Message.new(message, nodes: nodes, path: path)
         end
       end
 
-      attr_reader :message, :line, :col, :path
+      attr_reader :message, :path
 
-      def initialize(message, line: nil, col: nil, path: [])
+      def initialize(message, path: [], nodes: [])
         @message = message
-        @line = line
-        @col = col
+        @nodes = nodes
         @path = path
       end
 
@@ -33,7 +32,7 @@ module GraphQL
       private
 
       def locations
-        @line.nil? && @col.nil? ? [] : [{"line" => @line, "column" => @col}]
+        @nodes.map{|node| {"line" => node.line, "column" => node.col}}
       end
     end
   end
