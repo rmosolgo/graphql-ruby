@@ -217,6 +217,7 @@ type Query {
       end
 
       def after_query(query)
+        @counts << :end
       end
     end
 
@@ -228,7 +229,7 @@ type Query {
         name "Query"
         field :int, types.Int do
           argument :value, types.Int
-          resolve -> (obj, args, ctx) { args[:value] }
+          resolve -> (obj, args, ctx) { args[:value] == 13 ? raise("13 is unlucky") : args[:value] }
         end
       end
     }
@@ -250,7 +251,15 @@ type Query {
     it "can wrap query execution" do
       schema.execute("query getInt($val: Int = 5){ int(value: $val) } ")
       schema.execute("query getInt($val: Int = 5, $val2: Int = 3){ int(value: $val) int2: int(value: $val2) } ")
-      assert_equal [1, 2], variable_counter.counts
+      assert_equal [1, :end, 2, :end], variable_counter.counts
+    end
+
+    it "runs even when a runtime error occurs" do
+      schema.execute("query getInt($val: Int = 5){ int(value: $val) } ")
+      assert_raises(RuntimeError) {
+        schema.execute("query getInt($val: Int = 13){ int(value: $val) } ")
+      }
+      assert_equal [1, :end, 1, :end], variable_counter.counts
     end
 
     it "can be applied after the fact" do
