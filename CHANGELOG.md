@@ -8,6 +8,27 @@
 
 ### Bug fixes
 
+## 1.2.5 (22 Nov 2016)
+
+### Breaking changes
+
+- `Visitor` received some breaking changes, though these are largely-private APIs (#401):
+  - Global visitor hooks (`Visitor#enter` and `Visitor#leave`) have been removed
+  - Returning `SKIP` from a visitor hook no longer skips sibling nodes
+
+### New features
+
+- `Schema#instrument` may be called outside of `Schema.define` #399
+- Validation: assert that directives on a node are unique #409
+- `instrument(:query)` hooks are executed even if the query raises an error #412
+
+### Bug fixes
+
+- `Mutation#input_fields` should trigger lazy definition #392
+- `ObjectType#connection` doesn't modify the provided `GraphQL::Field` #411
+- `Mutation#resolve` may return a `GraphQL::ExecutionError` #405
+- `Arguments` can handle nullable arguments passed as `nil` #410
+
 ## 1.2.4 (14 Nov 2016)
 
 ### Bug fixes
