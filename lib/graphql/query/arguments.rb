@@ -60,19 +60,23 @@ module GraphQL
       NULL_ARGUMENT_VALUE = ArgumentValue.new(nil, nil, nil)
 
       def wrap_value(value, arg_defn_type)
-        case arg_defn_type
-        when GraphQL::ListType
-          value.map { |item| wrap_value(item, arg_defn_type.of_type) }
-        when GraphQL::NonNullType
-          wrap_value(value, arg_defn_type.of_type)
-        when GraphQL::InputObjectType
-          if value.is_a?(Hash)
-            self.class.new(value, argument_definitions: arg_defn_type.arguments)
+        if value.nil?
+          nil
+        else
+          case arg_defn_type
+          when GraphQL::ListType
+            value.map { |item| wrap_value(item, arg_defn_type.of_type) }
+          when GraphQL::NonNullType
+            wrap_value(value, arg_defn_type.of_type)
+          when GraphQL::InputObjectType
+            if value.is_a?(Hash)
+              self.class.new(value, argument_definitions: arg_defn_type.arguments)
+            else
+              value
+            end
           else
             value
           end
-        else
-          value
         end
       end
 
