@@ -160,21 +160,28 @@ describe GraphQL::Relay::Mutation do
       assert_equal "String", input.arguments['stringDefault'].default_value
     end
   end
-  
+
   describe "handling errors" do
     it "supports returning an error in resolve" do
       result = star_wars_query(query_string, "clientMutationId" => "5678", "shipName" => "Millennium Falcon")
 
-      expected = { "data" => {
-          "introduceShip" => nil
-        } , "errors" => [
-          { "message" => "Sorry, Millennium Falcon ship is reserved",
-              "locations" => [ { "line" => 3 , "column" => 7}],
-              "path" => ["introduceShip"]
-            }
+      expected = {
+        "data" => {
+          "introduceShip" => {
+            "clientMutationId" => "5678",
+            "shipEdge" => nil,
+            "faction" => nil,
+          }
+        },
+        "errors" => [
+          {
+            "message" => "Sorry, Millennium Falcon ship is reserved",
+            "locations" => [ { "line" => 3 , "column" => 7}],
+            "path" => ["introduceShip"]
+          }
         ]
       }
-      
+
       assert_equal(expected, result)
     end
   end

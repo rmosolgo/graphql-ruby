@@ -148,8 +148,7 @@ module GraphQL
         attr_reader :client_mutation_id
         def initialize(client_mutation_id:, result:)
           @client_mutation_id = client_mutation_id
-          raise result if result.is_a? GraphQL::ExecutionError
-          result.each do |key, value|
+          result && result.each do |key, value|
             self.public_send("#{key}=", value)
           end
         end
@@ -176,6 +175,12 @@ module GraphQL
 
         def call(obj, args, ctx)
           mutation_result = @resolve.call(obj, args[:input], ctx)
+
+          if mutation_result.is_a?(GraphQL::ExecutionError)
+            ctx.add_error(mutation_result)
+            mutation_result = nil
+          end
+
           if @wrap_result
             @mutation.result_class.new(client_mutation_id: args[:input][:clientMutationId], result: mutation_result)
           else
