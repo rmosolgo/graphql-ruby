@@ -157,6 +157,7 @@ IntroduceShipMutation = GraphQL::Relay::Mutation.define do
   # Here's the mutation operation:
   resolve ->(root_obj, inputs, ctx) {
     faction_id = inputs["factionId"]
+    return GraphQL::ExecutionError.new("Sorry, Millennium Falcon ship is reserved") if inputs["shipName"] == 'Millennium Falcon'
     ship = STAR_WARS_DATA.create_ship(inputs["shipName"], faction_id)
     faction = STAR_WARS_DATA["Faction"][faction_id]
     connection_class = GraphQL::Relay::BaseConnection.connection_for_nodes(faction.ships)
