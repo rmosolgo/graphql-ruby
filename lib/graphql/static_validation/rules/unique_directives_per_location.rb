@@ -3,12 +3,12 @@ module GraphQL
     class UniqueDirectivesPerLocation
       include GraphQL::StaticValidation::Message::MessageHelper
 
-      def validate(context)
-        nodes_with_directives = GraphQL::Language::Nodes.constants
-          .map{|c| GraphQL::Language::Nodes.const_get(c)}
-          .select{|c| c.is_a?(Class) && c.instance_methods.include?(:directives)}
+      NODES_WITH_DIRECTIVES = GraphQL::Language::Nodes.constants
+        .map{|c| GraphQL::Language::Nodes.const_get(c)}
+        .select{|c| c.is_a?(Class) && c.instance_methods.include?(:directives)}
 
-        nodes_with_directives.each do |node_class|
+      def validate(context)
+        NODES_WITH_DIRECTIVES.each do |node_class|
           context.visitor[node_class] << ->(node, _) {
             validate_directives(node, context) unless node.directives.empty?
           }
