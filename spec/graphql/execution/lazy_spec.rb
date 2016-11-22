@@ -153,14 +153,17 @@ describe GraphQL::Execution::Lazy do
       {
         nestedSum(value: 1) {
           value
-          nestedSum(value: 13) {
-            value
+          nestedSum(value: 2) {
+            nestedSum(value: 13) {
+              value
+            }
           }
         }
       }|
 
       assert_equal(nil, res["data"])
       assert_equal 1, res["errors"].length
+      assert_equal ["nestedSum", "nestedSum", "nestedSum"], res["errors"][0]["path"]
 
 
       res = run_query %|
