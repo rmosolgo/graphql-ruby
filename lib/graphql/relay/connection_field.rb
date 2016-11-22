@@ -27,7 +27,7 @@ module GraphQL
       # Turn A GraphQL::Field into a connection by:
       # - Merging in the default arguments
       # - Transforming its resolve function to return a connection object
-      # @param [GraphQL::Field] A field which returns nodes to be wrapped as a connection
+      # @param underlying_field [GraphQL::Field] A field which returns nodes to be wrapped as a connection
       # @param max_page_size [Integer] The maximum number of nodes which may be requested (if a larger page is requested, it is limited to this number)
       # @return [GraphQL::Field] The same field, modified to resolve to a connection object
       def self.create(underlying_field, max_page_size: nil)
