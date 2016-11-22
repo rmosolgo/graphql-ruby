@@ -20,6 +20,11 @@ module GraphQL
         end
       end
 
+      def respond_to_missing?(name, include_private = false)
+        return true if @dictionary[name]
+        super
+      end
+
       def to_s
         inspect
       end
