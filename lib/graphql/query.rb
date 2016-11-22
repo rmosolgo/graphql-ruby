@@ -240,6 +240,7 @@ module GraphQL
       def call
         @instrumenters.each { |i| i.before_query(@query) }
         result = get_result
+      ensure
         @instrumenters.each { |i| i.after_query(@query) }
         result
       end
