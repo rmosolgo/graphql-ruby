@@ -5,7 +5,13 @@ module GraphQL
         class LazyPush
           attr_reader :value
           def initialize(ctx, value)
-            @value = value
+            if value == 13
+              @value = nil
+            elsif value == 14
+              @value = GraphQL::ExecutionError.new("oops!")
+            else
+              @value = value
+            end
             @context = ctx
             pushes = @context[:lazy_pushes] ||= []
             pushes << @value
@@ -23,8 +29,8 @@ module GraphQL
         def self.build(execution_strategy)
           lazy_push_type = GraphQL::ObjectType.define do
             name "LazyPush"
-            field :value, types.Int
-            field :push, lazy_push_type do
+            field :value, !types.Int
+            field :push, !lazy_push_type do
               argument :value, types.Int
               resolve ->(o, a, c) {
                 LazyPush.new(c, a[:value])
@@ -34,7 +40,7 @@ module GraphQL
 
           query_type = GraphQL::ObjectType.define do
             name "Query"
-            field :push, lazy_push_type do
+            field :push, !lazy_push_type do
               argument :value, types.Int
               resolve ->(o, a, c) {
                 LazyPush.new(c, a[:value])
