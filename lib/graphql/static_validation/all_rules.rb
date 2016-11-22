@@ -8,6 +8,7 @@ module GraphQL
     ALL_RULES = [
       GraphQL::StaticValidation::DirectivesAreDefined,
       GraphQL::StaticValidation::DirectivesAreInValidLocations,
+      GraphQL::StaticValidation::UniqueDirectivesPerLocation,
       GraphQL::StaticValidation::FragmentsAreFinite,
       GraphQL::StaticValidation::FragmentsAreNamed,
       GraphQL::StaticValidation::FragmentsAreUsed,
