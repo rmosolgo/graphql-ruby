@@ -53,7 +53,7 @@ module GraphQL
             {
               push(value: 2) {
                 push(value: 3) {
-                  fail1: push(value: 13) {
+                  fail1: push(value: 14) {
                     value
                   }
                   fail2: push(value: 14) {
