@@ -1,4 +1,5 @@
 require "graphql/schema/catchall_middleware"
+require "graphql/schema/default_type_error"
 require "graphql/schema/invalid_type_error"
 require "graphql/schema/instrumented_field_map"
 require "graphql/schema/middleware_chain"
@@ -51,7 +52,7 @@ module GraphQL
       :query, :mutation, :subscription,
       :query_execution_strategy, :mutation_execution_strategy, :subscription_execution_strategy,
       :max_depth, :max_complexity,
-      :orphan_types, :resolve_type,
+      :orphan_types, :resolve_type, :type_error,
       :object_from_id, :id_from_object,
       directives: ->(schema, directives) { schema.directives = directives.reduce({}) { |m, d| m[d.name] = d; m  }},
       instrument: -> (schema, type, instrumenter) { schema.instrumenters[type] << instrumenter },
@@ -96,6 +97,7 @@ module GraphQL
       @resolve_type_proc = nil
       @object_from_id_proc = nil
       @id_from_object_proc = nil
+      @type_error_proc = DefaultTypeError
       @instrumenters = Hash.new { |h, k| h[k] = [] }
       @lazy_methods = GraphQL::Execution::Lazy::LazyMethodMap.new
       # Default to the built-in execution strategy:
@@ -246,6 +248,45 @@ module GraphQL
     # @param new_proc [#call] A new callable for fetching objects by ID
     def object_from_id=(new_proc)
       @object_from_id_proc = new_proc
+    end
+
+    # When we encounter a type error during query execution, we call this hook.
+    #
+    # You can use this hook to write a log entry,
+    # add an error to the response (with `ctx.add_error`)
+    # or raise an exception and halt query execution.
+    #
+    # @example A `nil` is encountered by a non-null field
+    #   type_error ->(value, field, parent_type, parent_value) {
+    #     value           # => nil
+    #     field           # => #<GraphQL::Field name="count" ... >
+    #     field.type      # => #<GraphQL::NonNullType ... />
+    #     field.type.to_s # => Int!
+    #     parent_type     # => #<GraphQL::ObjectType ... />
+    #     parent_value    # => #<YourObject ... />
+    #   }
+    #
+    # @example An object doesn't resolve to one of a {UnionType}'s members
+    #   type_error ->(value, field, parent_type, query_ctx) {
+    #     value           # => nil
+    #     field           # => #<GraphQL::Field name="count" ... >
+    #     field.type      # => #<GraphQL::NonNullType ... />
+    #     field.type.to_s # => Int!
+    #     parent_type     # => #<GraphQL::ObjectType ... />
+    #     query_ctx.path  # => ["viewer", "teams", "count"]
+    #   }
+    #
+    # @see {DefaultTypeError} is the default behavior.
+    # @param value [Object] This value was encountered, but couldn't be processed.
+    # @param expected_type [GraphQL::BaseType] Tried to treat `value` as this type, but we couldn't
+    # @return void
+    def type_error(value, field, parent_type, parent_value)
+      @type_error_proc.call(value, field, parent_type, parent_value)
+    end
+
+    # @param new_proc [#call] A new callable for handling type errors during execution
+    def type_error=(new_proc)
+      @type_error_proc = new_proc
     end
 
     # Get a unique identifier from this object

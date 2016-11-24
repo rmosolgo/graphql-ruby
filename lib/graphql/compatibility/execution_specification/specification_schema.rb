@@ -2,6 +2,8 @@ module GraphQL
   module Compatibility
     module ExecutionSpecification
       module SpecificationSchema
+        BOGUS_NODE = OpenStruct.new({ bogus: true })
+
         DATA = {
           "1001" => OpenStruct.new({
             name: "Fannie Lou Hamer",
@@ -31,6 +33,7 @@ module GraphQL
             name: "SCLC",
             leader_id: "1004",
           }),
+          "2003" => BOGUS_NODE,
         }
 
         module TestMiddleware
@@ -151,8 +154,20 @@ module GraphQL
             query query_type
 
             resolve_type ->(obj, ctx) {
-              obj.respond_to?(:birthdate) ? person_type : organization_type
+              if obj.respond_to?(:birthdate)
+                person_type
+              elsif obj.respond_to?(:leader_id)
+                organization_type
+              else
+                nil
+              end
             }
+
+            type_error ->(val, field, type, ctx) {
+              ctx[:type_errors] && (ctx[:type_errors] << val)
+              GraphQL::Schema::DefaultTypeError.call(val, field, type, ctx)
+            }
+
             middleware(TestMiddleware)
           end
         end

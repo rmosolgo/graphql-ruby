@@ -316,6 +316,44 @@ module GraphQL
             res = execute_query(query_string, context: {middleware_log: log})
             assert_equal ["node", "__typename"], log
           end
+
+          def test_it_uses_type_error_hooks_for_invalid_nulls
+            log = []
+            query_string = %|
+            {
+              node(id: "1001") {
+                ... on Person {
+                  name
+                  first_organization {
+                    leader {
+                      name
+                    }
+                  }
+                }
+              }
+            }
+            |
+            res = execute_query(query_string, context: { type_errors: log })
+            assert_equal nil, res["data"]["node"]
+            assert_equal [nil], log
+          end
+
+          def test_it_uses_type_error_hooks_for_failed_type_resolution
+            log = []
+            query_string = %|
+            {
+              node(id: "2003") {
+                __typename
+              }
+            }
+            |
+
+            assert_raises(GraphQL::UnresolvedTypeError) {
+              execute_query(query_string, context: { type_errors: log })
+            }
+
+            assert_equal [SpecificationSchema::BOGUS_NODE], log
+          end
         end
       end
     end
