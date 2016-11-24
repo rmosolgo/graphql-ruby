@@ -44,7 +44,7 @@ See "Getting Started" on the [website](https://rmosolgo.github.io/graphql-ruby/)
 
 ## To Do
 
-- StaticValidation improvements ([in progress](https://github.com/rmosolgo/graphql-ruby/pull/268))
+- StaticValidation improvements ([in progress ??](https://github.com/rmosolgo/graphql-ruby/pull/268))
   - Use catch-all type/field/argument definitions instead of terminating traversal
   - Reduce ad-hoc traversals?
   - Validators are order-dependent, is this a smell?
@@ -56,11 +56,7 @@ See "Getting Started" on the [website](https://rmosolgo.github.io/graphql-ruby/)
   - If the new edge isn't a member of the connection's objects, raise a nice error
 - `args` should whitelist keys -- if you request a key that isn't defined for the field, it should 💥
 - Support non-instance-eval `.define`, eg `.define { |defn| ... }`
-- First-class promise support ([discussion](https://github.com/rmosolgo/graphql-ruby/issues/274))
-  - like `graphql-batch` but more local
-  - support promises in connection resolves
 - Add immutable transformation API to AST
   - Support working with AST as data
   - Adding fields to selections (`__typename` can go anywhere, others are type-specific)
   - Renaming fragments from local names to unique names
-- Document encrypted & versioned cursors
