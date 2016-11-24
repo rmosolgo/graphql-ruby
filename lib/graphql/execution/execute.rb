@@ -162,7 +162,7 @@ module GraphQL
             result
           when GraphQL::TypeKinds::NON_NULL
             wrapped_type = field_type.of_type
-            resolve_value(
+            inner_value = resolve_value(
               parent_type,
               field_defn,
               wrapped_type,
@@ -170,6 +170,11 @@ module GraphQL
               selection,
               field_ctx,
             )
+            if inner_value.nil?
+              PROPAGATE_NULL
+            else
+              inner_value
+            end
           when GraphQL::TypeKinds::OBJECT
             resolve_selection(
               value,
@@ -184,6 +189,7 @@ module GraphQL
 
             if !possible_types.include?(resolved_type)
               field_ctx.schema.type_error(value, field_defn, parent_type, field_ctx)
+              PROPAGATE_NULL
             else
               resolve_value(
                 parent_type,

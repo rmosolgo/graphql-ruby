@@ -331,8 +331,8 @@ module GraphQL
                   }
                 }
               }
-            }
-            |
+            }|
+
             res = execute_query(query_string, context: { type_errors: log })
             assert_equal nil, res["data"]["node"]
             assert_equal [nil], log
@@ -345,14 +345,43 @@ module GraphQL
               node(id: "2003") {
                 __typename
               }
-            }
-            |
+            }|
 
             assert_raises(GraphQL::UnresolvedTypeError) {
               execute_query(query_string, context: { type_errors: log })
             }
 
             assert_equal [SpecificationSchema::BOGUS_NODE], log
+          end
+
+          def test_it_treats_failed_type_resolution_like_nil
+            log = []
+            ctx = { type_errors: log, gobble: true }
+            query_string = %|
+            {
+              node(id: "2003") {
+                __typename
+              }
+            }|
+
+            res = execute_query(query_string, context: ctx)
+
+            assert_equal nil, res["data"]["node"]
+            assert_equal false, res.key?("errors")
+            assert_equal [SpecificationSchema::BOGUS_NODE], log
+
+            query_string_2 = %|
+            {
+              requiredNode(id: "2003") {
+                __typename
+              }
+            }|
+
+            res = execute_query(query_string_2, context: ctx)
+
+            assert_equal nil, res["data"]
+            assert_equal false, res.key?("errors")
+            assert_equal [SpecificationSchema::BOGUS_NODE, SpecificationSchema::BOGUS_NODE], log
           end
         end
       end

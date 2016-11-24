@@ -135,6 +135,13 @@ module GraphQL
               }
             end
 
+            field :requiredNode, node_union_type.to_non_null_type do
+              argument :id, !types.ID
+              resolve ->(obj, args, ctx) {
+                obj[args[:id]]
+              }
+            end
+
             field :organization, !organization_type do
               argument :id, !types.ID
               resolve ->(obj, args, ctx) {
@@ -165,9 +172,8 @@ module GraphQL
 
             type_error ->(val, field, type, ctx) {
               ctx[:type_errors] && (ctx[:type_errors] << val)
-              GraphQL::Schema::DefaultTypeError.call(val, field, type, ctx)
+              ctx[:gobble] || GraphQL::Schema::DefaultTypeError.call(val, field, type, ctx)
             }
-
             middleware(TestMiddleware)
           end
         end

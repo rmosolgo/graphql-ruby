@@ -98,6 +98,8 @@ If you don't specify a hook, you get the default behavior:
 - Unexpected nulls add an error the response's `"errors"` key
 - Unresolved Union / Interface types raise {{ "GraphQL::UnresolvedTypeError" | api_doc }}
 
+An object that fails type resolution is treated as `nil`.
+
 ## Security Options
 
 These options can prevent execution of malicious queries.

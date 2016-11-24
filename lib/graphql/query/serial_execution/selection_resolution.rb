@@ -13,7 +13,7 @@ module GraphQL
               query_ctx
             ).result
 
-            if field_result.values.any? { |v| v == GraphQL::Execution::Execute::PROPAGATE_NULL }
+            if field_result.values[0] == GraphQL::Execution::Execute::PROPAGATE_NULL
               selection_result = nil
               break
             else

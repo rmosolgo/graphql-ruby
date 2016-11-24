@@ -42,7 +42,7 @@ module GraphQL
               result
             when GraphQL::TypeKinds::NON_NULL
               wrapped_type = field_type.of_type
-              resolve(
+              required_value = resolve(
                 parent_type,
                 field_defn,
                 wrapped_type,
@@ -50,6 +50,11 @@ module GraphQL
                 selection,
                 query_ctx,
               )
+              if required_value.nil?
+                GraphQL::Execution::Execute::PROPAGATE_NULL
+              else
+                required_value
+              end
             when GraphQL::TypeKinds::OBJECT
               query_ctx.execution_strategy.selection_resolution.resolve(
                 value,
@@ -64,6 +69,7 @@ module GraphQL
 
               if !possible_types.include?(resolved_type)
                 query.schema.type_error(value, field_defn, parent_type, query_ctx)
+                nil
               else
                 resolve(
                   parent_type,
