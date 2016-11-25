@@ -150,4 +150,19 @@ describe GraphQL::Field do
       assert_equal ["int", "int2", "int3"], query_field_names, "It works in introspection"
     end
   end
+
+  describe "#redefine" do
+    it "can add arguments" do
+      int_field = GraphQL::Field.define do
+        argument :value, types.Int
+      end
+
+      int_field_2 = int_field.redefine do
+        argument :value_2, types.Int
+      end
+
+      assert_equal 1, int_field.arguments.size
+      assert_equal 2, int_field_2.arguments.size
+    end
+  end
 end

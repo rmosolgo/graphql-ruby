@@ -39,10 +39,10 @@ describe GraphQL::Relay::ConnectionField do
     end
 
     connection_field = test_type.fields["tests"]
-    redefined_connection_field = connection_field.redefine
+    redefined_connection_field = connection_field.redefine { argument "name", types.String }
 
     assert_equal 4, connection_field.arguments.size
-    assert_equal 4, redefined_connection_field.arguments.size
+    assert_equal 5, redefined_connection_field.arguments.size
 
     assert_instance_of GraphQL::Relay::ConnectionResolve, connection_field.resolve_proc
     assert_instance_of GraphQL::Relay::ConnectionResolve, redefined_connection_field.resolve_proc
