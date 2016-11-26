@@ -105,6 +105,38 @@ describe GraphQL::InputObjectType do
         end
       end
 
+      describe 'with a string as input' do
+        let(:result) { DairyProductInputType.validate_input("just a string", PermissiveWarden) }
+
+        it "returns an invalid result" do
+          skip("fix not yet implemented")
+        end
+
+        it "has problem with correct path" do
+          skip("fix not yet implemented")
+        end
+
+        it "has correct problem explanation" do
+          skip("fix not yet implemented")
+        end
+      end
+
+      describe 'with a int as input' do
+        let(:result) { DairyProductInputType.validate_input(10, PermissiveWarden) }
+
+        it "returns an invalid result" do
+          skip("fix not yet implemented")
+        end
+
+        it "has problem with correct path" do
+          skip("fix not yet implemented")
+        end
+
+        it "has correct problem explanation" do
+          skip("fix not yet implemented")
+        end
+      end
+
       describe "with extra argument" do
         let(:result) { DairyProductInputType.validate_input({"source" => "COW", "fatContent" => 0.4, "isDelicious" => false}, PermissiveWarden) }
 
