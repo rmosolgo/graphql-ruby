@@ -12,6 +12,7 @@ module GraphQL
     #   - {#max_page_size} (the specified maximum page size that can be returned from a connection)
     #
     class BaseConnection
+      extend Forwardable
       # Just to encode data in the cursor, use something that won't conflict
       CURSOR_SEPARATOR = "---"
 
@@ -50,11 +51,12 @@ module GraphQL
       attr_reader :nodes, :arguments, :max_page_size, :parent, :field
 
       # Make a connection, wrapping `nodes`
-      # @param [Object] The collection of nodes
-      # @param Query arguments
-      # @param field [Object] The underlying field
+      # @param nodes [Object] The collection of nodes
+      # @param arguments [GraphQL::Query::Arguments] Query arguments
+      # @param field [GraphQL::Field] The underlying field
       # @param max_page_size [Int] The maximum number of results to return
       # @param parent [Object] The object which this collection belongs to
+      # @param context [GraphQL::Query::Context] The context from the field being resolved
       def initialize(nodes, arguments, field: nil, max_page_size: nil, parent: nil, context: nil)
         @nodes = nodes
         @arguments = arguments
@@ -65,13 +67,8 @@ module GraphQL
         @encoder = context ? @context.schema.cursor_encoder : GraphQL::Schema::Base64Encoder
       end
 
-      def encode(plaintext)
-        @encoder.encode(plaintext)
-      end
 
-      def decode(ciphertext)
-        @encoder.decode(ciphertext)
-      end
+      def_delegators :@encoder, :encode, :decode
 
       # Provide easy access to provided arguments:
       METHODS_FROM_ARGUMENTS = [:first, :after, :last, :before]

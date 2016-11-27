@@ -6,7 +6,7 @@ Relay expresses [one-to-many relationships with _connections_](https://facebook.
 
 `graphql-ruby` includes built-in connection support for `Array`, `ActiveRecord::Relation`s, and `Sequel::Dataset`s. You can define custom connection classes to expose other collections with GraphQL.
 
-### Connection fields
+## Connection fields
 
 To define a connection field, use the `connection` helper. For a return type, get a type's `.connection_type`.  The `resolve` proc should return a collection (eg, `Array` or `ActiveRecord::Relation`) _without_ pagination. (The connection will paginate the collection).
 
@@ -55,7 +55,7 @@ You can limit the number of results with `max_page_size:`:
 connection :featured_comments, CommentType.connection_type, max_page_size: 50
 ```
 
-### Connection types
+## Connection types
 
 You can customize a connection type with `.define_connection`:
 
@@ -188,7 +188,7 @@ TeamMembershipsConnectionType = TeamType.define_connection(
 end
 ```
 
-### Connection objects
+## Connection objects
 
 Maybe you need to make a connection object yourself (for example, to return a connection type from a mutation). You can create a connection object like this:
 
@@ -272,3 +272,30 @@ field = GraphQL::Field.new
 # ... define the field
 connection_field = GraphQL::Relay::ConnectionField.create(field)
 ```
+
+## Cursors
+
+By default, cursors are encoded in base64 to make them opaque to a human client. You can specify a custom encoder with `Schema#cursor_encoder`. The value should be an object which responds to `.encode(plain_text)` and `.decode(encoded_text)`.
+
+For example, to use URL-safe base-64 encoding:
+
+```ruby
+module URLSafeBase64Encoder
+  def self.encode(txt)
+    Base64.urlsafe_encode64(txt)
+  end
+
+  def self.decode(txt)
+    Base64.urlsafe_decode64(txt)
+  end
+end
+
+MySchema = GraphQL::Schema.define do
+  # ...
+  cursor_encoder(URLSafeBase64Encoder)
+end
+```
+
+Now, all connections will use URL-safe base-64 encoding.
+
+From a connection instance, the `cursor_encoders` methods available via {{ "GraphQL::Relay::BaseConnection#encode" | api_doc }} and {{ "GraphQL::Relay::BaseConnection#decode" | api_doc }}
