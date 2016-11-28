@@ -26,6 +26,17 @@ module GraphQL
           end
         end
 
+        class LazyPushCollection
+          def initialize(ctx, values)
+            @ctx = ctx
+            @values = values
+          end
+
+          def push
+            @values.map { |v| LazyPush.new(@ctx, v) }
+          end
+        end
+
         def self.build(execution_strategy)
           lazy_push_type = GraphQL::ObjectType.define do
             name "LazyPush"
@@ -46,6 +57,13 @@ module GraphQL
                 LazyPush.new(c, a[:value])
               }
             end
+
+            connection :pushes, lazy_push_type.connection_type do
+              argument :values, types[types.Int]
+              resolve ->(o, a, c) {
+                LazyPushCollection.new(c, a[:values])
+              }
+            end
           end
 
           GraphQL::Schema.define do
@@ -54,6 +72,7 @@ module GraphQL
             query_execution_strategy(execution_strategy)
             mutation_execution_strategy(execution_strategy)
             lazy_resolve(LazyPush, :push)
+            lazy_resolve(LazyPushCollection, :push)
           end
         end
       end

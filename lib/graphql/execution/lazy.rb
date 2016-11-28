@@ -18,9 +18,16 @@ module GraphQL
       end
 
       # Create a {Lazy} which will get its inner value by calling the block
+      # @param target [Object]
+      # @param method_name [Symbol]
       # @param get_value_func [Proc] a block to get the inner value (later)
-      def initialize(&get_value_func)
-        @get_value_func = get_value_func
+      def initialize(target = nil, method_name = nil, &get_value_func)
+        if block_given?
+          @get_value_func = get_value_func
+        else
+          @target = target
+          @method_name = method_name
+        end
         @resolved = false
       end
 
@@ -28,7 +35,11 @@ module GraphQL
       def value
         if !@resolved
           @resolved = true
-          @value = @get_value_func.call
+          if @get_value_func
+            @value = @get_value_func.call
+          else
+            @value = @target.public_send(@method_name)
+          end
         end
         @value
       rescue GraphQL::ExecutionError => err
