@@ -51,7 +51,7 @@ module GraphQL
     end
 
     def coerce_non_null_input(value)
-      @coerce_input_proc ? @coerce_input_proc.call(value) : value
+      @coerce_input_proc.call(value)
     end
 
     def coerce_input=(proc)
