@@ -58,4 +58,17 @@ describe GraphQL::ScalarType do
       assert(result.problems[0]["path"].empty?)
     end
   end
+
+  describe 'validate without coerce input' do
+    let(:custom_scalar) do
+      GraphQL::ScalarType.define do
+        name 'Foo'
+      end
+    end
+    let(:result) { custom_scalar.validate_input('bar', PermissiveWarden) }
+
+    it 'returns a valid result' do
+      assert(result.valid?)
+    end
+  end
 end
