@@ -122,6 +122,23 @@ describe GraphQL::InputObjectType do
         end
       end
 
+      describe 'with an array as input' do
+        let(:result) { DairyProductInputType.validate_input(["string array"], PermissiveWarden) }
+
+        it "returns an invalid result" do
+          assert(!result.valid?)
+        end
+
+        it "has problem with correct path" do
+          paths = result.problems.map { |p| p["path"] }
+          assert(paths.include?([]))
+        end
+
+        it "has correct problem explanation" do
+          assert(result.problems[0]["explanation"].include?("to be a hash, not an array"))
+        end
+      end
+
       describe 'with a int as input' do
         let(:result) { DairyProductInputType.validate_input(10, PermissiveWarden) }
 

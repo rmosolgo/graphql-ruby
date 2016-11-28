@@ -51,6 +51,13 @@ module GraphQL
     def validate_non_null_input(input, warden)
       result = GraphQL::Query::InputValidationResult.new
 
+      if input.is_a? Array
+        result.add_problem(
+          "Expected #{JSON.generate(input, quirks_mode: true)} to be a hash, not an array",
+        )
+        return result
+      end
+
       unless input.is_a? Enumerable
         result.add_problem("Expected #{JSON.generate(input, quirks_mode: true)} to be a hash")
         return result
