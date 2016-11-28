@@ -120,7 +120,9 @@ module GraphQL
               ScalarType.define(
                 name: type["name"],
                 description: type["description"]
-              )
+              ) do
+                coerce ->(value) { value }
+              end
             end
           when "UNION"
             UnionType.define(
