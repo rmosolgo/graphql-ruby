@@ -174,11 +174,6 @@ module GraphQL
               selection,
               field_ctx,
             )
-            if inner_value.nil?
-              PROPAGATE_NULL
-            else
-              inner_value
-            end
           when GraphQL::TypeKinds::OBJECT
             resolve_selection(
               value,
