@@ -122,9 +122,7 @@ module GraphQL
       def resolve_value(parent_type, field_defn, field_type, value, selection, field_ctx)
         if value.nil?
           if field_type.kind.non_null?
-            error = GraphQL::InvalidNullError.new(parent_type.name, field_defn.name, value)
-            error.set_backtrace(caller)
-            field_ctx.errors << error
+            field_ctx.schema.type_error(value, field_defn, parent_type, field_ctx)
             PROPAGATE_NULL
           else
             nil
@@ -164,7 +162,7 @@ module GraphQL
             result
           when GraphQL::TypeKinds::NON_NULL
             wrapped_type = field_type.of_type
-            resolve_value(
+            inner_value = resolve_value(
               parent_type,
               field_defn,
               wrapped_type,
@@ -172,6 +170,11 @@ module GraphQL
               selection,
               field_ctx,
             )
+            if inner_value.nil?
+              PROPAGATE_NULL
+            else
+              inner_value
+            end
           when GraphQL::TypeKinds::OBJECT
             resolve_selection(
               value,
@@ -185,7 +188,8 @@ module GraphQL
             possible_types = query.possible_types(field_type)
 
             if !possible_types.include?(resolved_type)
-              raise GraphQL::UnresolvedTypeError.new(selection.definition_name, field_type, parent_type, resolved_type, possible_types)
+              field_ctx.schema.type_error(value, field_defn, parent_type, field_ctx)
+              PROPAGATE_NULL
             else
               resolve_value(
                 parent_type,

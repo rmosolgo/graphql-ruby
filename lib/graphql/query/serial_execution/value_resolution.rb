@@ -3,12 +3,16 @@ module GraphQL
     class SerialExecution
       module ValueResolution
         def self.resolve(parent_type, field_defn, field_type, value, selection, query_ctx)
-          if value.nil? || value.is_a?(GraphQL::ExecutionError)
+          case value
+          when GraphQL::ExecutionError, NilClass
             if field_type.kind.non_null?
-              raise GraphQL::InvalidNullError.new(parent_type.name, field_defn.name, value)
+              query_ctx.schema.type_error(value, field_defn, parent_type, query_ctx)
+              GraphQL::Execution::Execute::PROPAGATE_NULL
             else
               nil
             end
+          when GraphQL::Execution::Execute::PROPAGATE_NULL
+            value
           else
             case field_type.kind
             when GraphQL::TypeKinds::SCALAR
@@ -38,7 +42,7 @@ module GraphQL
               result
             when GraphQL::TypeKinds::NON_NULL
               wrapped_type = field_type.of_type
-              resolve(
+              required_value = resolve(
                 parent_type,
                 field_defn,
                 wrapped_type,
@@ -46,6 +50,11 @@ module GraphQL
                 selection,
                 query_ctx,
               )
+              if required_value.nil?
+                GraphQL::Execution::Execute::PROPAGATE_NULL
+              else
+                required_value
+              end
             when GraphQL::TypeKinds::OBJECT
               query_ctx.execution_strategy.selection_resolution.resolve(
                 value,
@@ -59,7 +68,8 @@ module GraphQL
               possible_types = query.possible_types(field_type)
 
               if !possible_types.include?(resolved_type)
-                raise GraphQL::UnresolvedTypeError.new(selection.definition_name, field_type, parent_type, resolved_type, possible_types)
+                query.schema.type_error(value, field_defn, parent_type, query_ctx)
+                nil
               else
                 resolve(
                   parent_type,

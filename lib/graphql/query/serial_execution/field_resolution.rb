@@ -52,23 +52,14 @@ module GraphQL
             end
           end
 
-          begin
-            GraphQL::Query::SerialExecution::ValueResolution.resolve(
-              parent_type,
-              field,
-              field.type,
-              raw_value,
-              @selection,
-              @field_ctx,
-            )
-          rescue GraphQL::InvalidNullError => err
-            if field.type.kind.non_null?
-              raise(err)
-            else
-              err.parent_error? || @query.context.errors.push(err)
-              nil
-            end
-          end
+          GraphQL::Query::SerialExecution::ValueResolution.resolve(
+            parent_type,
+            field,
+            field.type,
+            raw_value,
+            @selection,
+            @field_ctx,
+          )
         end
 
         # Get the result of:

@@ -7,6 +7,7 @@ Many things can be added to a GraphQL schema. They fall into a few categories:
 - Data entry points: `query`, `mutation`, `subscription`
 - Manually adding types: `orphan_types`
 - Execution functions: `resolve_type`, `id_from_object`, `object_from_id`
+- Type error handling: `type_error`
 - Security options: `max_depth`, `max_complexity`
 - Middleware: `middleware`
 - Query analyzers: `query_analyzer`
@@ -67,6 +68,37 @@ end
 ```
 
 See ["Object Identification"]({{ site.baseurl }}/relay/object_identification) for more information about Relay IDs.
+
+## Type Error Handling
+
+In some cases, runtime data can cause GraphQL execution to reach an invalid state:
+
+- A `resolve` function returned `nil` for a non-null type
+- A `resolve` function's value couldn't be resolved to a valid Union or Interface member ({{ "Schema#resolve_type" | api_doc }} returned an unexpected value)
+
+You can specify behavior in these cases by defining a {{ "Schema#type_error" | api_doc }} hook:
+
+```ruby
+MySchema = GraphQL::Schema.define do
+  type_error ->(value, field, parent_type, query_ctx) {
+    # Handle a failed runtime type coercion
+  }
+end
+```
+
+It is called with four parameters:
+
+- `value` is the runtime value which was unexpected
+- `field` is the {{ "GraphQL::Field" | api_doc }} whose `resolve` function returned `value`
+- `parent_type` is the type that `field` belongs to
+- `query_ctx` is the same `ctx` which was provided to the resolve function
+
+If you don't specify a hook, you get the default behavior:
+
+- Unexpected nulls add an error the response's `"errors"` key
+- Unresolved Union / Interface types raise {{ "GraphQL::UnresolvedTypeError" | api_doc }}
+
+An object that fails type resolution is treated as `nil`.
 
 ## Security Options
 

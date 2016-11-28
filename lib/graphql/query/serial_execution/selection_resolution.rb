@@ -6,12 +6,19 @@ module GraphQL
           selection_result = {}
 
           selection.each_selection(type: current_type) do |name, subselection|
-            selection_result.merge!(query_ctx.execution_strategy.field_resolution.new(
+            field_result = query_ctx.execution_strategy.field_resolution.new(
               subselection,
               current_type,
               target,
               query_ctx
-            ).result)
+            ).result
+
+            if field_result.values[0] == GraphQL::Execution::Execute::PROPAGATE_NULL
+              selection_result = nil
+              break
+            else
+              selection_result.merge!(field_result)
+            end
           end
 
           selection_result
