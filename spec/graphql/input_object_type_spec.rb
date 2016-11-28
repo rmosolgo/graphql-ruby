@@ -109,15 +109,16 @@ describe GraphQL::InputObjectType do
         let(:result) { DairyProductInputType.validate_input("just a string", PermissiveWarden) }
 
         it "returns an invalid result" do
-          skip("fix not yet implemented")
+          assert(!result.valid?)
         end
 
         it "has problem with correct path" do
-          skip("fix not yet implemented")
+          paths = result.problems.map { |p| p["path"] }
+          assert(paths.include?([]))
         end
 
         it "has correct problem explanation" do
-          skip("fix not yet implemented")
+          assert(result.problems[0]["explanation"].include?("to be a hash"))
         end
       end
 
@@ -125,15 +126,16 @@ describe GraphQL::InputObjectType do
         let(:result) { DairyProductInputType.validate_input(10, PermissiveWarden) }
 
         it "returns an invalid result" do
-          skip("fix not yet implemented")
+          assert(!result.valid?)
         end
 
         it "has problem with correct path" do
-          skip("fix not yet implemented")
+          paths = result.problems.map { |p| p["path"] }
+          assert(paths.include?([]))
         end
 
         it "has correct problem explanation" do
-          skip("fix not yet implemented")
+          assert(result.problems[0]["explanation"].include?("to be a hash"))
         end
       end
 

@@ -51,6 +51,11 @@ module GraphQL
     def validate_non_null_input(input, warden)
       result = GraphQL::Query::InputValidationResult.new
 
+      unless input.is_a? Enumerable
+        result.add_problem("Expected #{JSON.generate(input, quirks_mode: true)} to be a hash")
+        return result
+      end
+
       visible_arguments_map = warden.input_fields(self).reduce({}) { |m, f| m[f.name] = f; m}
 
       # Items in the input that are unexpected
