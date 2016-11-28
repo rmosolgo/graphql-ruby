@@ -76,7 +76,11 @@ module GraphQL
 
         lazy_method_name = query.lazy_method(raw_value)
         result = if lazy_method_name
-          GraphQL::Execution::Lazy.new { raw_value.public_send(lazy_method_name) }.then { |inner_value|
+          GraphQL::Execution::Lazy.new(raw_value, lazy_method_name).then { |inner_value|
+            continue_resolve_field(selection, parent_type, field, inner_value, field_ctx)
+          }
+        elsif raw_value.is_a?(GraphQL::Execution::Lazy)
+          raw_value.then { |inner_value|
             continue_resolve_field(selection, parent_type, field, inner_value, field_ctx)
           }
         else
