@@ -86,7 +86,6 @@ module GraphQL
           }
         end
 
-
         FIELDS_ARE_VALID = Rules.assert_named_items_are_valid("field", ->(type) { type.all_fields })
 
         HAS_ONE_OR_MORE_POSSIBLE_TYPES = ->(type) {
@@ -155,6 +154,17 @@ module GraphQL
             # :ok_hand:
           end
         }
+
+        RESERVED_TYPE_NAME = ->(type) {
+          return unless type.name.start_with?('__')
+          return if INTROSPECTION_TYPES[type.name] && INTROSPECTION_TYPES[type.name] == type
+          "Name #{type.name.inspect} must not begin with \"__\", which is reserved by GraphQL introspection."
+        }
+
+        RESERVED_NAME = ->(named_thing) {
+          return unless named_thing.name.start_with?('__')
+          "Name #{named_thing.name.inspect} must not begin with \"__\", which is reserved by GraphQL introspection."
+        }
       end
 
       # A mapping of `{Class => [Proc, Proc...]}` pairs.
@@ -163,6 +173,7 @@ module GraphQL
       RULES = {
         GraphQL::Field => [
           Rules::NAME_IS_STRING,
+          Rules::RESERVED_NAME,
           Rules::DESCRIPTION_IS_STRING_OR_NIL,
           Rules.assert_property(:deprecation_reason, String, NilClass),
           Rules.assert_property(:type, GraphQL::BaseType),
@@ -172,12 +183,14 @@ module GraphQL
         ],
         GraphQL::Argument => [
           Rules::NAME_IS_STRING,
+          Rules::RESERVED_NAME,
           Rules::DESCRIPTION_IS_STRING_OR_NIL,
           Rules::TYPE_IS_VALID_INPUT_TYPE,
           Rules::DEFAULT_VALUE_IS_VALID_FOR_TYPE,
         ],
         GraphQL::BaseType => [
           Rules::NAME_IS_STRING,
+          Rules::RESERVED_TYPE_NAME,
           Rules::DESCRIPTION_IS_STRING_OR_NIL,
         ],
         GraphQL::ObjectType => [
@@ -201,6 +214,17 @@ module GraphQL
           Rules::SCHEMA_CAN_GENERATE_IDS,
         ],
       }
+
+      INTROSPECTION_TYPES = Hash[[
+        GraphQL::Introspection::TypeType,
+        GraphQL::Introspection::TypeKindEnum,
+        GraphQL::Introspection::FieldType,
+        GraphQL::Introspection::InputValueType,
+        GraphQL::Introspection::EnumValueType,
+        GraphQL::Introspection::DirectiveType,
+        GraphQL::Introspection::DirectiveLocationEnum,
+        GraphQL::Introspection::SchemaType,
+      ].map{ |type| [type.name, type] }]
     end
   end
 end
