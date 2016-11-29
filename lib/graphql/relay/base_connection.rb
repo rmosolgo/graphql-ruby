@@ -12,7 +12,6 @@ module GraphQL
     #   - {#max_page_size} (the specified maximum page size that can be returned from a connection)
     #
     class BaseConnection
-      extend Forwardable
       # Just to encode data in the cursor, use something that won't conflict
       CURSOR_SEPARATOR = "---"
 
@@ -67,8 +66,13 @@ module GraphQL
         @encoder = context ? @context.schema.cursor_encoder : GraphQL::Schema::Base64Encoder
       end
 
+      def encode(data)
+        @encoder.encode(data, nonce: true)
+      end
 
-      def_delegators :@encoder, :encode, :decode
+      def decode(data)
+        @encoder.decode(data, nonce: true)
+      end
 
       # Provide easy access to provided arguments:
       METHODS_FROM_ARGUMENTS = [:first, :after, :last, :before]
