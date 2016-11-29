@@ -115,7 +115,7 @@ module GraphQL
 
       def inspect(indent = 0)
         own_indent = " " * indent
-        self_inspect = "#{own_indent}<Node #{name} #{skipped? ? "(skipped)" : ""}(#{definition_name} -> #{return_type})>"
+        self_inspect = "#{own_indent}<Node #{name} #{skipped? ? "(skipped)" : ""}(#{definition_name} -> #{return_type})>".dup
         if typed_children.any?
           self_inspect << " {"
           typed_children.each do |type_defn, children|

@@ -7,7 +7,7 @@ module GraphQL
       def commentize(description, indent: '')
         lines = description.split("\n")
 
-        comment = ''
+        comment = ''.dup
 
         lines.each do |line|
           if line == ''
