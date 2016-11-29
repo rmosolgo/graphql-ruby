@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 GraphQL::Introspection::FieldType = GraphQL::ObjectType.define do
   name "__Field"
   description "Object and Interface types are described by a list of Fields, each of which has "\

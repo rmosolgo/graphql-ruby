@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module GraphQL
   class Field
     # Create resolve procs ahead of time based on a {GraphQL::Field}'s `name`, `property`, and `hash_key` configuration.

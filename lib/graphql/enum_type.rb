@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module GraphQL
   # Represents a collection of related values.
   # By convention, enum names are `SCREAMING_CASE_NAMES`,

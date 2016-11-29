@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module GraphQL
   module Define
     # Turn argument configs into a {GraphQL::Argument}.

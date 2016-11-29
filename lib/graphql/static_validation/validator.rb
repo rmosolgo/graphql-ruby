@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module GraphQL
   module StaticValidation
     # Initialized with a {GraphQL::Schema}, then it can validate {GraphQL::Language::Nodes::Documents}s based on that schema.

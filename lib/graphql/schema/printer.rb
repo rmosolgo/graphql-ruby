@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module GraphQL
   class Schema
     # Used to convert your {GraphQL::Schema} to a GraphQL schema string

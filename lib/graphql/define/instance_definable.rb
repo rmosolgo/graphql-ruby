@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module GraphQL
   module Define
     # This module provides the `.define { ... }` API for

@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # Adapted from graphql-relay-js
 # https://github.com/graphql/graphql-relay-js/blob/master/src/__tests__/starWarsSchema.js
 

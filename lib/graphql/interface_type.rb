@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module GraphQL
   # An Interface contains a collection of types which implement some of the same fields.
   #

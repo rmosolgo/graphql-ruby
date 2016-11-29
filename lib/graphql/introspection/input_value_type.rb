@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 GraphQL::Introspection::InputValueType = GraphQL::ObjectType.define do
   name "__InputValue"
   description "Arguments provided to Fields or Directives and the input fields of an "\

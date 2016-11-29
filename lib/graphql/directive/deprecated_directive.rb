@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 GraphQL::Directive::DeprecatedDirective = GraphQL::Directive.define do
   name "deprecated"
   description "Marks an element of a GraphQL schema as no longer supported."

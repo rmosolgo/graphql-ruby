@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 require "graphql/language/definition_slice"
 require "graphql/language/generation"
 require "graphql/language/lexer"

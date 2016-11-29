@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # This is the minimum required interface for an input object
 class MinimumInputObject
   include Enumerable

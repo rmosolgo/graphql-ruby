@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 GraphQL::FLOAT_TYPE = GraphQL::ScalarType.define do
   name "Float"
   description "Represents signed double-precision fractional values as specified by [IEEE 754](http://en.wikipedia.org/wiki/IEEE_floating_point)."

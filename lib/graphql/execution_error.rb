@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module GraphQL
   # If a field's resolve function returns a {ExecutionError},
   # the error will be inserted into the response's `"errors"` key

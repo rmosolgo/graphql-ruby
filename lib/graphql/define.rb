@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 require "graphql/define/assign_argument"
 require "graphql/define/assign_connection"
 require "graphql/define/assign_enum_value"

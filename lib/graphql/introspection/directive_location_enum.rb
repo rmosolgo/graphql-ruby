@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 GraphQL::Introspection::DirectiveLocationEnum = GraphQL::EnumType.define do
   name "__DirectiveLocation"
   description "A Directive can be adjacent to many parts of the GraphQL language, a "\

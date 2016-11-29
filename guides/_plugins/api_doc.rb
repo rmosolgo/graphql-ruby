@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module GraphQLSite
   module APIDoc
     API_DOC_ROOT = "http://www.rubydoc.info/gems/graphql/"

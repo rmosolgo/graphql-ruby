@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module GraphQL
   module InternalRepresentation
     # A selection is a single field on an object.

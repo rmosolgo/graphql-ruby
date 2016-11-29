@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 require "graphql/query/arguments"
 require "graphql/query/context"
 require "graphql/query/executor"

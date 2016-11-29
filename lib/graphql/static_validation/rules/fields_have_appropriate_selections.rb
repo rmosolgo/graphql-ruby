@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module GraphQL
   module StaticValidation
     # Scalars _can't_ have selections
