@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 require_relative "./query_depth"
 module GraphQL
   module Analysis

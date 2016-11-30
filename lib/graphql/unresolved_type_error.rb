@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module GraphQL
   # Error raised when the value provided for a field can't be resolved to one of the possible types
   # for the field.

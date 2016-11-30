@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module GraphQL
   class Schema
     # Given {steps} and {arguments}, call steps in order, passing `(*arguments, next_step)`.

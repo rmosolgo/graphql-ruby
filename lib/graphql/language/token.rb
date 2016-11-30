@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module GraphQL
   module Language
     # Emitted by the lexer and passed to the parser.

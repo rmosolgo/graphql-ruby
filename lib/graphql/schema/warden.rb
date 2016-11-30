@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module GraphQL
   class Schema
     # Restrict access to a {GraphQL::Schema} with a user-defined mask.

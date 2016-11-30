@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module GraphQL
   class Schema
     # In early GraphQL versions, errors would be "automatically"

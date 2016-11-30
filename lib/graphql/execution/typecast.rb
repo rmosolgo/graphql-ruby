@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module GraphQL
   module Execution
     # GraphQL object `{value, current_type}` can be cast to `potential_type` when:

@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module GraphQL
   # Type kinds are the basic categories which a type may belong to (`Object`, `Scalar`, `Union`...)
   module TypeKinds

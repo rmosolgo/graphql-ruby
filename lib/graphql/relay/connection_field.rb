@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module GraphQL
   module Relay
     # Provided a GraphQL field which returns a collection of nodes,

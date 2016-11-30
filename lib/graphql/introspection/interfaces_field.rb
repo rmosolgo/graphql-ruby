@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 GraphQL::Introspection::InterfacesField = GraphQL::Field.define do
   type -> { types[!GraphQL::Introspection::TypeType] }
   resolve ->(target, a, ctx) {

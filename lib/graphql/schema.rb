@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 require "graphql/schema/catchall_middleware"
 require "graphql/schema/default_type_error"
 require "graphql/schema/invalid_type_error"

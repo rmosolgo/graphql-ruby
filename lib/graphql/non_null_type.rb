@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module GraphQL
   # A non-null type modifies another type.
   #

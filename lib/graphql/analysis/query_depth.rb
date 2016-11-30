@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module GraphQL
   module Analysis
     # A query reducer for measuring the depth of a given query.

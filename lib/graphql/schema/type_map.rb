@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module GraphQL
   class Schema
     # Stores `{ name => type }` pairs for a given schema.

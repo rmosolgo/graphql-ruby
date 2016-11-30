@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 require "graphql/compatibility/execution_specification/counter_schema"
 require "graphql/compatibility/execution_specification/specification_schema"
 

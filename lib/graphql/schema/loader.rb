@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module GraphQL
   class Schema
     # You can use the result of {GraphQL::Introspection::INTROSPECTION_QUERY}
