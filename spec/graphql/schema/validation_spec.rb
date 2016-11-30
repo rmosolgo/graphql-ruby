@@ -14,6 +14,13 @@ describe GraphQL::Schema::Validation do
       end
     }
 
+    let(:invalid_name_field) {
+      GraphQL::Field.define do
+        name "__Something"
+        type GraphQL::STRING_TYPE
+      end
+    }
+
     let(:untyped_field) {
       GraphQL::Field.define do
         name "Untyped"
@@ -45,6 +52,10 @@ describe GraphQL::Schema::Validation do
       assert_error_includes unnamed_field, "must return String, not NilClass"
     end
 
+    it "cannot use reserved name" do
+      assert_error_includes invalid_name_field, 'Name "__Something" must not begin with "__", which is reserved by GraphQL introspection.'
+    end
+
     it "requires a BaseType for type" do
       assert_error_includes untyped_field, "must return GraphQL::BaseType, not Symbol"
     end
@@ -65,14 +76,25 @@ describe GraphQL::Schema::Validation do
       end
     }
 
+    let(:invalid_name_type) {
+      GraphQL::BaseType.define do
+        name '__Something'
+      end
+    }
+
     let(:wrongly_described_type) {
       GraphQL::BaseType.define do
         name "WronglyDescribed"
         description 12345
       end
     }
+
     it "requires a String name" do
       assert_error_includes unnamed_type, "must return String, not Symbol"
+    end
+
+    it "cannot use reserved name" do
+      assert_error_includes invalid_name_type, 'Name "__Something" must not begin with "__", which is reserved by GraphQL introspection.'
     end
 
     it "requires String-or-nil description" do
@@ -87,6 +109,7 @@ describe GraphQL::Schema::Validation do
         interfaces(55)
       end
     }
+
     let(:invalid_interface_member_object) {
       GraphQL::ObjectType.define do
         name "InvalidInterfaceMember"
@@ -209,6 +232,13 @@ describe GraphQL::Schema::Validation do
       end
     }
 
+    let(:invalid_name_argument) {
+      GraphQL::Argument.define do
+        name "__Something"
+        type GraphQL::INT_TYPE
+      end
+    }
+
     let(:null_default_value) {
       GraphQL::Argument.define do
         name "NullDefault"
@@ -223,6 +253,10 @@ describe GraphQL::Schema::Validation do
 
     it "does not allow default values for non-null argument" do
       assert_error_includes invalid_default_argument_for_non_null_argument, 'Variable InvalidDefault of type "Int!" is required and will not use the default value. Perhaps you meant to use type "Int".'
+    end
+
+    it "cannot use reserved name" do
+      assert_error_includes invalid_name_argument, 'Name "__Something" must not begin with "__", which is reserved by GraphQL introspection.'
     end
 
     it "allows null default value for nullable argument" do
