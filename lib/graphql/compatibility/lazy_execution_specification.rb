@@ -135,7 +135,49 @@ module GraphQL
             ]
             assert_equal expected_edges, res["data"]["pushes"]["edges"]
             assert_equal [[1, 2, 3], [4, 4, 4]], pushes
+          end
 
+          def test_it_calls_lazy_resolve_instrumentation
+            query_str = %|
+            {
+              p1: push(value: 1) {
+                value
+              }
+              p2: push(value: 2) {
+                push(value: 3) {
+                  value
+                }
+              }
+              pushes(values: [1,2,3]) {
+                edges {
+                  node {
+                    value
+                    push(value: 4) {
+                      value
+                    }
+                  }
+                }
+              }
+            }
+            |
+
+            log = []
+            res = self.class.lazy_schema.execute(query_str, context: {lazy_instrumentation: log, pushes: []})
+            expected_log = [
+              "PUSH",
+              "Query.push: 1",
+              "Query.push: 2",
+              "PUSH",
+              "LazyPush.push: 3",
+              "LazyPushEdge.node: 1",
+              "LazyPushEdge.node: 2",
+              "LazyPushEdge.node: 3",
+              "PUSH",
+              "LazyPush.push: 4",
+              "LazyPush.push: 4",
+              "LazyPush.push: 4",
+            ]
+            assert_equal expected_log, log
           end
         end
       end

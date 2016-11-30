@@ -122,11 +122,11 @@ module GraphQL
   class Field
     include GraphQL::Define::InstanceDefinable
     accepts_definitions :name, :description, :deprecation_reason,
-      :resolve, :type, :arguments,
+      :resolve, :lazy_resolve,
+      :type, :arguments,
       :property, :hash_key, :complexity, :mutation,
       :relay_node_field,
       argument: GraphQL::Define::AssignArgument
-
 
     attr_accessor :name, :deprecation_reason, :description, :property, :hash_key, :mutation, :arguments, :complexity
 
@@ -135,13 +135,16 @@ module GraphQL
 
     ensure_defined(
       :name, :deprecation_reason, :description, :description=, :property, :hash_key, :mutation, :arguments, :complexity,
-      :resolve, :resolve=, :type, :type=, :name=, :property=, :hash_key=,
+      :resolve, :resolve=, :lazy_resolve, :lazy_resolve=, :lazy_resolve_proc,
+      :type, :type=, :name=, :property=, :hash_key=,
       :relay_node_field,
     )
 
-    # @!attribute [r] resolve_proc
-    #   @return [<#call(obj, args,ctx)>] A proc-like object which can be called to return the field's value
+    # @return [<#call(obj, args, ctx)>] A proc-like object which can be called to return the field's value
     attr_reader :resolve_proc
+
+    # @return [<#call(obj, args, ctx)>] A proc-like object which can be called trigger a lazy resolution
+    attr_reader :lazy_resolve_proc
 
     # @!attribute name
     #   @return [String] The name of this field on its {GraphQL::ObjectType} (or {GraphQL::InterfaceType})
@@ -159,6 +162,7 @@ module GraphQL
       @complexity = 1
       @arguments = {}
       @resolve_proc = build_default_resolver
+      @lazy_resolve_proc = DefaultLazyResolve
       @relay_node_field = false
     end
 
@@ -218,10 +222,40 @@ module GraphQL
       "<Field name:#{name || "not-named"} desc:#{description} resolve:#{resolve_proc}>"
     end
 
+    # If {#resolve} returned and object which should be handled lazily,
+    # this method will be called later force the object to return its value.
+    # @param obj [Object] The {#resolve}-provided object, registered with {Schema#lazy_resolve}
+    # @param args [GraphQL::Query::Arguments] Arguments to this field
+    # @param ctx [GraphQL::Query::Context] Context for this field
+    # @return [Object] The result of calling the registered method on `obj`
+    def lazy_resolve(obj, args, ctx)
+      @lazy_resolve_proc.call(obj, args, ctx)
+    end
+
+    # Assign a new resolve proc to this field. Used for {#lazy_resolve}
+    def lazy_resolve=(new_lazy_resolve_proc)
+      @lazy_resolve_proc = new_lazy_resolve_proc
+    end
+
+    # Prepare a lazy value for this field. It may be `then`-ed and resolved later.
+    # @return [GraphQL::Execution::Lazy] A lazy wrapper around `obj` and its registered method name
+    def prepare_lazy(obj, args, ctx)
+      GraphQL::Execution::Lazy.new {
+        lazy_resolve(obj, args, ctx)
+      }
+    end
+
     private
 
     def build_default_resolver
       GraphQL::Field::Resolve.create_proc(self)
+    end
+
+    module DefaultLazyResolve
+      def self.call(obj, args, ctx)
+        method_name = ctx.query.lazy_method(obj)
+        obj.public_send(method_name)
+      end
     end
   end
 end
