@@ -377,4 +377,10 @@ describe GraphQL::Query do
       end
     end
   end
+
+  describe "#provided_variables" do
+    it "returns the originally-provided object" do
+      assert_equal({"cheeseId" => 2}, query.provided_variables)
+    end
+  end
 end

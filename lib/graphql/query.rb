@@ -25,7 +25,7 @@ module GraphQL
       end
     end
 
-    attr_reader :schema, :document, :context, :fragments, :operations, :root_value, :max_depth, :query_string, :warden
+    attr_reader :schema, :document, :context, :fragments, :operations, :root_value, :max_depth, :query_string, :warden, :provided_variables
 
     # Prepare query `query_string` on `schema`
     # @param schema [GraphQL::Schema]
