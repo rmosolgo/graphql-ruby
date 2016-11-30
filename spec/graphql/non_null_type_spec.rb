@@ -32,15 +32,16 @@ describe GraphQL::NonNullType do
     describe "when type_error is configured to raise an error" do
       it "crashes query execution" do
         raise_schema = DummySchema.redefine {
-          type_error ->(value, field, parent_type, ctx) {
-            # IRL this would be `if value.nil? && field.type.kind.non_null?`
-            err = GraphQL::InvalidNullError.new(parent_type.name, field.name, value)
-            raise err
+          type_error ->(type_err, ctx) {
+            raise type_err
           }
         }
         query_string = %|{ cow { name cantBeNullButIs } }|
         err = assert_raises(GraphQL::InvalidNullError) { raise_schema.execute(query_string) }
         assert_equal("Cannot return null for non-nullable field Cow.cantBeNullButIs", err.message)
+        assert_equal("Cow", err.parent_type.name)
+        assert_equal("cantBeNullButIs", err.field.name)
+        assert_equal(nil, err.value)
       end
     end
   end

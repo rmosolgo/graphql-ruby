@@ -171,9 +171,9 @@ module GraphQL
               end
             }
 
-            type_error ->(val, field, type, ctx) {
-              ctx[:type_errors] && (ctx[:type_errors] << val)
-              ctx[:gobble] || GraphQL::Schema::DefaultTypeError.call(val, field, type, ctx)
+            type_error ->(err, ctx) {
+              ctx[:type_errors] && (ctx[:type_errors] << err.value)
+              ctx[:gobble] || GraphQL::Schema::DefaultTypeError.call(err, ctx)
             }
             middleware(TestMiddleware)
           end

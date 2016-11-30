@@ -7,7 +7,8 @@ module GraphQL
           case value
           when GraphQL::ExecutionError, NilClass
             if field_type.kind.non_null?
-              query_ctx.schema.type_error(value, field_defn, parent_type, query_ctx)
+              type_error = GraphQL::InvalidNullError.new(parent_type, field_defn, value)
+              query_ctx.schema.type_error(type_error, query_ctx)
               GraphQL::Execution::Execute::PROPAGATE_NULL
             else
               nil
@@ -69,7 +70,8 @@ module GraphQL
               possible_types = query.possible_types(field_type)
 
               if !possible_types.include?(resolved_type)
-                query.schema.type_error(value, field_defn, parent_type, query_ctx)
+                type_error = GraphQL::UnresolvedTypeError.new(value, field_defn, parent_type, resolved_type, possible_types)
+                query.schema.type_error(type_error, query_ctx)
                 nil
               else
                 resolve(
