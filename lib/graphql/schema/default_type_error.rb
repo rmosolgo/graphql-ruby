@@ -5,9 +5,7 @@ module GraphQL
       def self.call(type_error, ctx)
         case type_error
         when GraphQL::InvalidNullError
-          if !type_error.parent_error?
-            ctx.errors << type_error
-          end
+          ctx.errors << type_error
         when GraphQL::UnresolvedTypeError
           raise type_error
         end

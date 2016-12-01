@@ -7,8 +7,10 @@ module GraphQL
           case value
           when GraphQL::ExecutionError, NilClass
             if field_type.kind.non_null?
-              type_error = GraphQL::InvalidNullError.new(parent_type, field_defn, value)
-              query_ctx.schema.type_error(type_error, query_ctx)
+              if value.nil?
+                type_error = GraphQL::InvalidNullError.new(parent_type, field_defn, value)
+                query_ctx.schema.type_error(type_error, query_ctx)
+              end
               GraphQL::Execution::Execute::PROPAGATE_NULL
             else
               nil
