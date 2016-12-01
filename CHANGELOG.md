@@ -8,6 +8,13 @@
 
 ### Bug fixes
 
+## 1.2.6 (1 Dec 2016)
+
+### Bug fixes
+
+- Preserve connection behaviors after `redefine` #421
+- Implement `respond_to_missing?` on `DefinedObjectProxy` (which is `self` inside `.define { ... }`) #414
+
 ## 1.2.5 (22 Nov 2016)
 
 ### Breaking changes
