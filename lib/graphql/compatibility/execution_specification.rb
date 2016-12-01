@@ -191,7 +191,7 @@ module GraphQL
               }
             }|
 
-            assert_raises(GraphQL::UnresolvedTypeError) {
+            err = assert_raises(GraphQL::UnresolvedTypeError) {
               execute_query(query_string, except: no_org)
             }
 
@@ -204,6 +204,11 @@ module GraphQL
 
             assert_equal nil, res["data"]
             assert_equal 1, res["errors"].length
+            assert_equal "SNCC", err.value.name
+            assert_equal GraphQL::Relay::Node.interface, err.field.type
+            assert_equal 1, err.possible_types.length
+            assert_equal "Organization", err.resolved_type.name
+            assert_equal "Query", err.parent_type.name
 
             query_string = %|
             {

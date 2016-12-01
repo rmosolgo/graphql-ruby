@@ -127,7 +127,8 @@ module GraphQL
       def resolve_value(parent_type, field_defn, field_type, value, selection, field_ctx)
         if value.nil?
           if field_type.kind.non_null?
-            field_ctx.schema.type_error(value, field_defn, parent_type, field_ctx)
+            type_error = GraphQL::InvalidNullError.new(parent_type, field_defn, value)
+            field_ctx.schema.type_error(type_error, field_ctx)
             PROPAGATE_NULL
           else
             nil
@@ -188,7 +189,8 @@ module GraphQL
             possible_types = query.possible_types(field_type)
 
             if !possible_types.include?(resolved_type)
-              field_ctx.schema.type_error(value, field_defn, parent_type, field_ctx)
+              type_error = GraphQL::UnresolvedTypeError.new(value, field_defn, parent_type, resolved_type, possible_types)
+              field_ctx.schema.type_error(type_error, field_ctx)
               PROPAGATE_NULL
             else
               resolve_value(

@@ -80,22 +80,17 @@ You can specify behavior in these cases by defining a {{ "Schema#type_error" | a
 
 ```ruby
 MySchema = GraphQL::Schema.define do
-  type_error ->(value, field, parent_type, query_ctx) {
+  type_error ->(type_error, query_ctx) {
     # Handle a failed runtime type coercion
   }
 end
 ```
 
-It is called with four parameters:
-
-- `value` is the runtime value which was unexpected
-- `field` is the {{ "GraphQL::Field" | api_doc }} whose `resolve` function returned `value`
-- `parent_type` is the type that `field` belongs to
-- `query_ctx` is the same `ctx` which was provided to the resolve function
+It is called with an instance of {{ "GraphQL::UnresolvedTypeError" | api_doc }} or {{ "GraphQL::InvalidNullError" | api_doc }} and the query context (a {{ "GraphQL::Query::Context" |  api_doc }}).
 
 If you don't specify a hook, you get the default behavior:
 
-- Unexpected nulls add an error the response's `"errors"` key
+- Unexpected `nil`s add an error the response's `"errors"` key
 - Unresolved Union / Interface types raise {{ "GraphQL::UnresolvedTypeError" | api_doc }}
 
 An object that fails type resolution is treated as `nil`.

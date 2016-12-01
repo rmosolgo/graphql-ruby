@@ -254,35 +254,25 @@ module GraphQL
     # When we encounter a type error during query execution, we call this hook.
     #
     # You can use this hook to write a log entry,
-    # add an error to the response (with `ctx.add_error`)
+    # add a {GraphQL::ExecutionError} to the response (with `ctx.add_error`)
     # or raise an exception and halt query execution.
     #
     # @example A `nil` is encountered by a non-null field
-    #   type_error ->(value, field, parent_type, parent_value) {
-    #     value           # => nil
-    #     field           # => #<GraphQL::Field name="count" ... >
-    #     field.type      # => #<GraphQL::NonNullType ... />
-    #     field.type.to_s # => Int!
-    #     parent_type     # => #<GraphQL::ObjectType ... />
-    #     parent_value    # => #<YourObject ... />
+    #   type_error ->(err, query_ctx) {
+    #     err.is_a?(GraphQL::InvalidNullError) # => true
     #   }
     #
     # @example An object doesn't resolve to one of a {UnionType}'s members
-    #   type_error ->(value, field, parent_type, query_ctx) {
-    #     value           # => nil
-    #     field           # => #<GraphQL::Field name="count" ... >
-    #     field.type      # => #<GraphQL::NonNullType ... />
-    #     field.type.to_s # => Int!
-    #     parent_type     # => #<GraphQL::ObjectType ... />
-    #     query_ctx.path  # => ["viewer", "teams", "count"]
+    #   type_error ->(err, query_ctx) {
+    #     err.is_a?(GraphQL::UnresolvedTypeError) # => true
     #   }
     #
     # @see {DefaultTypeError} is the default behavior.
-    # @param value [Object] This value was encountered, but couldn't be processed.
-    # @param expected_type [GraphQL::BaseType] Tried to treat `value` as this type, but we couldn't
+    # @param err [GraphQL::TypeError] The error encountered during execution
+    # @param ctx [GraphQL::Query::Context] The context for the field where the error occurred
     # @return void
-    def type_error(value, field, parent_type, parent_value)
-      @type_error_proc.call(value, field, parent_type, parent_value)
+    def type_error(err, ctx)
+      @type_error_proc.call(err, ctx)
     end
 
     # @param new_proc [#call] A new callable for handling type errors during execution
