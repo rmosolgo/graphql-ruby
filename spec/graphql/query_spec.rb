@@ -123,6 +123,24 @@ describe GraphQL::Query do
         assert_equal(expected, result)
       end
     end
+
+    describe "after_query hooks" do
+      module Instrumenter
+        ERROR_LOG = []
+        def self.before_query(q); end;
+        def self.after_query(q); ERROR_LOG << q.result["errors"]; end;
+      end
+
+      let(:schema) {
+        DummySchema.redefine {
+          instrument(:query, Instrumenter)
+        }
+      }
+      it "can access #result" do
+        result
+        assert_equal [nil], Instrumenter::ERROR_LOG
+      end
+    end
   end
 
   it "fails to execute a query containing a type definition" do
@@ -376,6 +394,12 @@ describe GraphQL::Query do
       it "overrides the schema's max_depth" do
         assert_equal 12, query.max_depth
       end
+    end
+  end
+
+  describe "#provided_variables" do
+    it "returns the originally-provided object" do
+      assert_equal({"cheeseId" => 2}, query.provided_variables)
     end
   end
 end
