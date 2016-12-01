@@ -53,14 +53,22 @@ module GraphQL
             end
           end
 
-          GraphQL::Query::SerialExecution::ValueResolution.resolve(
-            parent_type,
-            field,
-            field.type,
-            raw_value,
-            @selection,
-            @field_ctx,
-          )
+          begin
+            GraphQL::Query::SerialExecution::ValueResolution.resolve(
+              parent_type,
+              field,
+              field.type,
+              raw_value,
+              @selection,
+              @field_ctx,
+            )
+          rescue GraphQL::Query::Executor::PropagateNull
+            if field.type.kind.non_null?
+              raise
+            else
+              nil
+            end
+          end
         end
 
         # Get the result of:
