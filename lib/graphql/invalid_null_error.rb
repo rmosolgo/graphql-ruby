@@ -24,9 +24,9 @@ module GraphQL
       { "message" => message }
     end
 
-    # @return [Boolean] Whether the null in question was caused by another error
+    # @deprecated always false
     def parent_error?
-      @value.is_a?(GraphQL::ExecutionError)
+      false
     end
   end
 end
