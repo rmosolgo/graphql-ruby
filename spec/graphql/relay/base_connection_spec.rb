@@ -18,8 +18,8 @@ describe GraphQL::Relay::BaseConnection do
   describe "#encode / #decode" do
     module ReverseEncoder
       module_function
-      def encode(str); str.reverse; end
-      def decode(str); str.reverse; end
+      def encode(str, nonce: false); str.reverse; end
+      def decode(str, nonce: false); str.reverse; end
     end
 
     let(:schema) { OpenStruct.new(cursor_encoder: ReverseEncoder) }

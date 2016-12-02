@@ -275,7 +275,7 @@ connection_field = GraphQL::Relay::ConnectionField.create(field)
 
 ## Cursors
 
-By default, cursors are encoded in base64 to make them opaque to a human client. You can specify a custom encoder with `Schema#cursor_encoder`. The value should be an object which responds to `.encode(plain_text, nonce:)` and `.decode(encoded_text, nonce:)`.
+By default, cursors are encoded in base64 to make them opaque to a human client. You can specify a custom encoder with `Schema#cursor_encoder`. The value should be an object which responds to `.encode(plain_text, nonce:)` and `.decode(encoded_text, nonce: false)`.
 
 For example, to use URL-safe base-64 encoding:
 
