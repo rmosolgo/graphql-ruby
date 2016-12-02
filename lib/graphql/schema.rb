@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+require "graphql/schema/base_64_encoder"
 require "graphql/schema/catchall_middleware"
 require "graphql/schema/default_type_error"
 require "graphql/schema/invalid_type_error"
@@ -55,6 +56,7 @@ module GraphQL
       :max_depth, :max_complexity,
       :orphan_types, :resolve_type, :type_error,
       :object_from_id, :id_from_object,
+      :cursor_encoder,
       directives: ->(schema, directives) { schema.directives = directives.reduce({}) { |m, d| m[d.name] = d; m  }},
       instrument: -> (schema, type, instrumenter) { schema.instrumenters[type] << instrumenter },
       query_analyzer: ->(schema, analyzer) { schema.query_analyzers << analyzer },
@@ -67,7 +69,8 @@ module GraphQL
       :query_execution_strategy, :mutation_execution_strategy, :subscription_execution_strategy,
       :max_depth, :max_complexity,
       :orphan_types, :directives,
-      :query_analyzers, :middleware, :instrumenters, :lazy_methods
+      :query_analyzers, :middleware, :instrumenters, :lazy_methods,
+      :cursor_encoder
 
     class << self
       attr_accessor :default_execution_strategy
@@ -101,6 +104,7 @@ module GraphQL
       @type_error_proc = DefaultTypeError
       @instrumenters = Hash.new { |h, k| h[k] = [] }
       @lazy_methods = GraphQL::Execution::Lazy::LazyMethodMap.new
+      @cursor_encoder = Base64Encoder
       # Default to the built-in execution strategy:
       @query_execution_strategy = self.class.default_execution_strategy
       @mutation_execution_strategy = self.class.default_execution_strategy

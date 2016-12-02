@@ -50,17 +50,28 @@ module GraphQL
       attr_reader :nodes, :arguments, :max_page_size, :parent, :field
 
       # Make a connection, wrapping `nodes`
-      # @param [Object] The collection of nodes
-      # @param Query arguments
-      # @param field [Object] The underlying field
+      # @param nodes [Object] The collection of nodes
+      # @param arguments [GraphQL::Query::Arguments] Query arguments
+      # @param field [GraphQL::Field] The underlying field
       # @param max_page_size [Int] The maximum number of results to return
       # @param parent [Object] The object which this collection belongs to
-      def initialize(nodes, arguments, field: nil, max_page_size: nil, parent: nil)
+      # @param context [GraphQL::Query::Context] The context from the field being resolved
+      def initialize(nodes, arguments, field: nil, max_page_size: nil, parent: nil, context: nil)
         @nodes = nodes
         @arguments = arguments
         @max_page_size = max_page_size
         @field = field
         @parent = parent
+        @context = context
+        @encoder = context ? @context.schema.cursor_encoder : GraphQL::Schema::Base64Encoder
+      end
+
+      def encode(data)
+        @encoder.encode(data, nonce: true)
+      end
+
+      def decode(data)
+        @encoder.decode(data, nonce: true)
       end
 
       # Provide easy access to provided arguments:

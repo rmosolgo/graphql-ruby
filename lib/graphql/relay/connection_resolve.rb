@@ -14,18 +14,18 @@ module GraphQL
         if lazy_method
           GraphQL::Execution::Lazy.new do
             resolved_nodes = nodes.public_send(lazy_method)
-            build_connection(resolved_nodes, args, obj)
+            build_connection(resolved_nodes, args, obj, ctx)
           end
         else
-          build_connection(nodes, args, obj)
+          build_connection(nodes, args, obj, ctx)
         end
       end
 
       private
 
-      def build_connection(nodes, args, parent)
+      def build_connection(nodes, args, parent, ctx)
         connection_class = GraphQL::Relay::BaseConnection.connection_for_nodes(nodes)
-        connection_class.new(nodes, args, field: @field, max_page_size: @max_page_size, parent: parent)
+        connection_class.new(nodes, args, field: @field, max_page_size: @max_page_size, parent: parent, context: ctx)
       end
     end
   end
