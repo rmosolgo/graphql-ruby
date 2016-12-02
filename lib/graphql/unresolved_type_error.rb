@@ -2,7 +2,7 @@
 module GraphQL
   # Error raised when the value provided for a field
   # can't be resolved to one of the possible types for the field.
-  class UnresolvedTypeError < GraphQL::TypeError
+  class UnresolvedTypeError < GraphQL::RuntimeTypeError
     # @return [Object] The runtime value which couldn't be successfully resolved with `resolve_type`
     attr_reader :value
 
