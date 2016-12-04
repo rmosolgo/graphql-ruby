@@ -124,10 +124,10 @@ module GraphQL
       ensure_defined
       all_types = orphan_types + [query, mutation, subscription, GraphQL::Introspection::SchemaType]
       @types = GraphQL::Schema::ReduceTypes.reduce(all_types.compact)
-      build_instrumented_field_map
       # Assert that all necessary configs are present:
       validation_error = Validation.validate(self)
       validation_error && raise(NotImplementedError, validation_error)
+      build_instrumented_field_map
       nil
     end
 

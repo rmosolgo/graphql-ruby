@@ -263,4 +263,20 @@ describe GraphQL::Schema::Validation do
       assert_equal nil, GraphQL::Schema::Validation.validate(null_default_value)
     end
   end
+
+  describe "validating instrumentation" do
+    let(:schema) {
+      query_type = GraphQL::ObjectType.define(name: "Query")
+      GraphQL::Schema.define do
+        query(query_type)
+        instrument(:field, 1)
+        instrument(:query, :oops)
+      end
+    }
+    it "finds instrumenters missing methods" do
+      err = assert_raises(NotImplementedError) { schema }
+      assert_includes err.message, "before_query(query)"
+      assert_includes err.message, "instrument(type, field)"
+    end
+  end
 end

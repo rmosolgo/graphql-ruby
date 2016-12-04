@@ -156,6 +156,27 @@ module GraphQL
           end
         }
 
+        SCHEMA_INSTRUMENTERS_ARE_VALID = ->(schema) {
+          errs = []
+          schema.instrumenters[:query].each do |inst|
+            if !inst.respond_to?(:before_query) || !inst.respond_to?(:after_query)
+              errs << "`instrument(:query, #{inst})` is invalid: must respond to `before_query(query)` and `after_query(query)` "
+            end
+          end
+
+          schema.instrumenters[:field].each do |inst|
+            if !inst.respond_to?(:instrument)
+              errs << "`instrument(:field, #{inst})` is invalid: must respond to `instrument(type, field)`"
+            end
+          end
+
+          if errs.any?
+            errs.join("Invalid instrumenters:\n" + errs.join("\n"))
+          else
+            nil
+          end
+        }
+
         RESERVED_TYPE_NAME = ->(type) {
           return unless type.name.start_with?('__')
           return if INTROSPECTION_TYPES[type.name] && INTROSPECTION_TYPES[type.name] == type
@@ -213,6 +234,7 @@ module GraphQL
           Rules::SCHEMA_CAN_RESOLVE_TYPES,
           Rules::SCHEMA_CAN_FETCH_IDS,
           Rules::SCHEMA_CAN_GENERATE_IDS,
+          Rules::SCHEMA_INSTRUMENTERS_ARE_VALID,
         ],
       }
 
