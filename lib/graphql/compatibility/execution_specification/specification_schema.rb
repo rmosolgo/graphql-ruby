@@ -37,6 +37,17 @@ module GraphQL
           "2003" => BOGUS_NODE,
         }
 
+        # A list object must implement #each
+        class CustomCollection
+          def initialize(storage)
+            @storage = storage
+          end
+
+          def each
+            @storage.each { |i| yield(i) }
+          end
+        end
+
         module TestMiddleware
           def self.call(parent_type, parent_object, field_definition, field_args, query_context, next_middleware)
             query_context[:middleware_log] && query_context[:middleware_log] << field_definition.name
@@ -81,7 +92,7 @@ module GraphQL
             end
             field :organizations, types[organization_type] do
               resolve ->(obj, args, ctx) {
-                obj.organization_ids.map { |id| DATA[id] }
+                CustomCollection.new(obj.organization_ids.map { |id| DATA[id] })
               }
             end
             field :first_organization, !organization_type do
