@@ -82,6 +82,21 @@ module GraphQL
             assert_equal false, flh.key?("org_n"), "It doesn't apply other type fields"
           end
 
+          def test_it_iterates_over_each
+            query_string = %|
+              query getData($nodeId: ID = "1002") {
+                node(id: $nodeId) {
+                  ... on Person {
+                    organizations { name }
+                  }
+                }
+              }
+            |
+
+            res = execute_query(query_string)
+            assert_equal ["SNCC"], res["data"]["node"]["organizations"].map { |o| o["name"] }
+          end
+
           def test_it_propagates_nulls_to_field
             query_string = %|
             query getOrg($id: ID = "2001"){
