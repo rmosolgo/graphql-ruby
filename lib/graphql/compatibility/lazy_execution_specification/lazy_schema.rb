@@ -20,6 +20,7 @@ module GraphQL
 
           def push
             if @context[:lazy_pushes].include?(@value)
+              @context[:lazy_instrumentation] && @context[:lazy_instrumentation] << "PUSH"
               @context[:pushes] << @context[:lazy_pushes]
               @context[:lazy_pushes] = []
             end
@@ -35,6 +36,19 @@ module GraphQL
 
           def push
             @values.map { |v| LazyPush.new(@ctx, v) }
+          end
+        end
+
+        module LazyInstrumentation
+          def self.instrument(type, field)
+            prev_lazy_resolve = field.lazy_resolve_proc
+            field.redefine {
+              lazy_resolve ->(o, a, c) {
+                result = prev_lazy_resolve.call(o, a, c)
+                c[:lazy_instrumentation] && c[:lazy_instrumentation].push("#{type.name}.#{field.name}: #{o.value}")
+                result
+              }
+            }
           end
         end
 
@@ -74,6 +88,7 @@ module GraphQL
             mutation_execution_strategy(execution_strategy)
             lazy_resolve(LazyPush, :push)
             lazy_resolve(LazyPushCollection, :push)
+            instrument(:field, LazyInstrumentation)
           end
         end
       end

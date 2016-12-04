@@ -12,10 +12,9 @@ module GraphQL
         nodes = @underlying_resolve.call(obj, args, ctx)
         lazy_method = ctx.query.lazy_method(nodes)
         if lazy_method
-          GraphQL::Execution::Lazy.new do
-            resolved_nodes = nodes.public_send(lazy_method)
+          @field.prepare_lazy(nodes, args, ctx).then { |resolved_nodes|
             build_connection(resolved_nodes, args, obj, ctx)
-          end
+          }
         else
           build_connection(nodes, args, obj, ctx)
         end

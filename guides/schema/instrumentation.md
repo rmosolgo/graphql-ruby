@@ -45,8 +45,9 @@ end
 
 It can be attached as shown above. You can use `redefine { ... }` to make a shallow copy of the  {{ "GraphQL::Field" | api_doc }} and extend its definition.
 
-## Query Instrumentation
+{{ "GraphQL::Field#lazy_resolve_proc" | api_doc }} can also be instrumented. This is called for objects registered with [lazy execution]({{ site.baseurl }}/schema/lazy_execution).
 
+## Query Instrumentation
 
 Query instrumentation can be attached during schema definition:
 
