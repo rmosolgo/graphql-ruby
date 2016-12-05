@@ -218,10 +218,6 @@ module GraphQL
       @schema.resolve_type(type, @context)
     end
 
-    def lazy_method(value)
-      @schema.lazy_methods.get(value)
-    end
-
     def mutation?
       @mutation
     end

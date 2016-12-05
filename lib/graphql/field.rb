@@ -253,7 +253,7 @@ module GraphQL
 
     module DefaultLazyResolve
       def self.call(obj, args, ctx)
-        method_name = ctx.query.lazy_method(obj)
+        method_name = ctx.schema.lazy_method_name(obj)
         obj.public_send(method_name)
       end
     end

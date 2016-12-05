@@ -10,8 +10,7 @@ module GraphQL
 
       def call(obj, args, ctx)
         nodes = @underlying_resolve.call(obj, args, ctx)
-        lazy_method = ctx.query.lazy_method(nodes)
-        if lazy_method
+        if ctx.schema.lazy?(nodes)
           @field.prepare_lazy(nodes, args, ctx).then { |resolved_nodes|
             build_connection(resolved_nodes, args, obj, ctx)
           }

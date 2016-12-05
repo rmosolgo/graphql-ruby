@@ -272,4 +272,29 @@ type Query {
       assert_equal 24, res["data"]["int"]
     end
   end
+
+  describe "#lazy? / #lazy_method_name" do
+    class LazyObj; end
+    class LazyObjChild < LazyObj; end
+
+    let(:schema) {
+      query_type = GraphQL::ObjectType.define(name: "Query")
+      GraphQL::Schema.define do
+        query(query_type)
+        lazy_resolve(Integer, :itself)
+        lazy_resolve(LazyObj, :dup)
+      end
+    }
+
+    it "returns registered lazy method names by class/superclass, or returns nil" do
+      assert_equal :itself, schema.lazy_method_name(68)
+      assert_equal true, schema.lazy?(77)
+      assert_equal :dup, schema.lazy_method_name(LazyObj.new)
+      assert_equal true, schema.lazy?(LazyObj.new)
+      assert_equal :dup, schema.lazy_method_name(LazyObjChild.new)
+      assert_equal true, schema.lazy?(LazyObjChild.new)
+      assert_equal nil, schema.lazy_method_name({})
+      assert_equal false, schema.lazy?({})
+    end
+  end
 end

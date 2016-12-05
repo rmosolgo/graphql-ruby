@@ -319,6 +319,16 @@ module GraphQL
     # Error that is raised when [#Schema#from_definition] is passed an invalid schema definition string.
     class InvalidDocumentError < Error; end;
 
+    # @return [Symbol, nil] The method name to lazily resolve `obj`, or nil if `obj`'s class wasn't registered wtih {#lazy_resolve}.
+    def lazy_method_name(obj)
+      @lazy_methods.get(obj)
+    end
+
+    # @return [Boolean] True if this object should be lazily resolved
+    def lazy?(obj)
+      !!lazy_method_name(obj)
+    end
+
     private
 
     # Lazily create a middleware and add it to the schema

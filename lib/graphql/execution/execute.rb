@@ -75,8 +75,7 @@ module GraphQL
           err
         end
 
-        lazy_method_name = query.lazy_method(raw_value)
-        result = if lazy_method_name
+        result = if query.schema.lazy?(raw_value)
           field.prepare_lazy(raw_value, arguments, field_ctx).then { |inner_value|
             continue_resolve_field(selection, parent_type, field, inner_value, field_ctx)
           }
