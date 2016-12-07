@@ -128,11 +128,6 @@ module GraphQL
       :relay_node_field,
       argument: GraphQL::Define::AssignArgument
 
-    attr_accessor :name, :deprecation_reason, :description, :property, :hash_key, :mutation, :arguments, :complexity
-
-    # @return [Boolean] True if this is the Relay find-by-id field
-    attr_accessor :relay_node_field
-
     ensure_defined(
       :name, :deprecation_reason, :description, :description=, :property, :hash_key, :mutation, :arguments, :complexity,
       :resolve, :resolve=, :lazy_resolve, :lazy_resolve=, :lazy_resolve_proc,
@@ -140,23 +135,38 @@ module GraphQL
       :relay_node_field,
     )
 
+    # @return [Boolean] True if this is the Relay find-by-id field
+    attr_accessor :relay_node_field
+
     # @return [<#call(obj, args, ctx)>] A proc-like object which can be called to return the field's value
     attr_reader :resolve_proc
 
     # @return [<#call(obj, args, ctx)>] A proc-like object which can be called trigger a lazy resolution
     attr_reader :lazy_resolve_proc
 
-    # @!attribute name
-    #   @return [String] The name of this field on its {GraphQL::ObjectType} (or {GraphQL::InterfaceType})
+    # @return [String] The name of this field on its {GraphQL::ObjectType} (or {GraphQL::InterfaceType})
+    attr_accessor :name
 
-    # @!attribute arguments
-    #   @return [Hash<String => GraphQL::Argument>] Map String argument names to their {GraphQL::Argument} implementations
+    # @return [String, nil] The client-facing description of this field
+    attr_accessor :description
 
-    # @!attribute mutation
-    #   @return [GraphQL::Relay::Mutation, nil] The mutation this field was derived from, if it was derived from a mutation
+    # @return [String, nil] The client-facing reason why this field is deprecated (if present, the field is deprecated)
+    attr_accessor :deprecation_reason
 
-    # @!attribute complexity
-    #   @return [Numeric, Proc] The complexity for this field (default: 1), as a constant or a proc like `->(query_ctx, args, child_complexity) { } # Numeric`
+    # @return [Hash<String => GraphQL::Argument>] Map String argument names to their {GraphQL::Argument} implementations
+    attr_accessor :arguments
+
+    # @return [GraphQL::Relay::Mutation, nil] The mutation this field was derived from, if it was derived from a mutation
+    attr_accessor :mutation
+
+    # @return [Numeric, Proc] The complexity for this field (default: 1), as a constant or a proc like `->(query_ctx, args, child_complexity) { } # Numeric`
+    attr_accessor :complexity
+
+    # @return [Symbol, nil] The method to call on `obj` to return this field (overrides {#name} if present)
+    attr_accessor :property
+
+    # @return [Object, nil] The key to access with `obj.[]` to resolve this field (overrides {#name} if present)
+    attr_accessor :hash_key
 
     def initialize
       @complexity = 1
@@ -164,6 +174,11 @@ module GraphQL
       @resolve_proc = build_default_resolver
       @lazy_resolve_proc = DefaultLazyResolve
       @relay_node_field = false
+    end
+
+    def initialize_copy(other)
+      super
+      @arguments = other.arguments.dup
     end
 
     # Get a value for this field

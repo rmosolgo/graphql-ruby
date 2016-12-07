@@ -297,4 +297,17 @@ type Query {
       assert_equal false, schema.lazy?({})
     end
   end
+
+  describe "#dup" do
+    it "copies internal state" do
+      schema_2 = schema.dup
+      refute schema_2.types.equal?(schema.types)
+
+      refute schema_2.instrumenters.equal?(schema.instrumenters)
+      assert_equal schema_2.instrumenters, schema.instrumenters
+
+      refute schema_2.middleware.equal?(schema.middleware)
+      assert_equal schema_2.middleware, schema.middleware
+    end
+  end
 end

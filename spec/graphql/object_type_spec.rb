@@ -46,4 +46,22 @@ describe GraphQL::ObjectType do
       assert_equal(field_from_iface.property, nil)
     end
   end
+
+  describe "#dup" do
+    it "copies fields and interfaces without altering the original" do
+      type.interfaces # load the internal cache
+      type_2 = type.dup
+
+      # IRL, use `+=`, not this
+      # (this tests the internal cache)
+      type_2.interfaces << type
+
+      type_2.fields["nonsense"] = GraphQL::Field.define(name: "nonsense", type: type)
+
+      assert_equal 3, type.interfaces.size
+      assert_equal 4, type_2.interfaces.size
+      assert_equal 8, type.fields.size
+      assert_equal 9, type_2.fields.size
+    end
+  end
 end

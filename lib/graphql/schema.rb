@@ -60,7 +60,7 @@ module GraphQL
       directives: ->(schema, directives) { schema.directives = directives.reduce({}) { |m, d| m[d.name] = d; m  }},
       instrument: -> (schema, type, instrumenter) { schema.instrumenters[type] << instrumenter },
       query_analyzer: ->(schema, analyzer) { schema.query_analyzers << analyzer },
-      middleware: ->(schema, middleware) { schema.middleware << middleware },
+      middleware: ->(schema, middleware) { schema.user_middleware << middleware },
       lazy_resolve: ->(schema, lazy_class, lazy_value_method) { schema.lazy_methods.set(lazy_class, lazy_value_method) },
       rescue_from: ->(schema, err_class, &block) { schema.rescue_from(err_class, &block)}
 
@@ -69,7 +69,7 @@ module GraphQL
       :query_execution_strategy, :mutation_execution_strategy, :subscription_execution_strategy,
       :max_depth, :max_complexity,
       :orphan_types, :directives,
-      :query_analyzers, :middleware, :instrumenters, :lazy_methods,
+      :query_analyzers, :user_middleware, :instrumenters, :lazy_methods,
       :cursor_encoder
 
     class << self
@@ -84,19 +84,11 @@ module GraphQL
 
     attr_reader :static_validator, :object_from_id_proc, :id_from_object_proc, :resolve_type_proc
 
-    # @!attribute [r] middleware
-    #   @return [Array<#call>] Middlewares suitable for MiddlewareChain, applied to fields during execution
-
-    # @param query [GraphQL::ObjectType]  the query root for the schema
-    # @param mutation [GraphQL::ObjectType] the mutation root for the schema
-    # @param subscription [GraphQL::ObjectType] the subscription root for the schema
-    # @param max_depth [Integer] maximum query nesting (if it's greater, raise an error)
-    # @param types [Array<GraphQL::BaseType>] additional types to include in this schema
     def initialize
       @orphan_types = []
       @directives = DIRECTIVES.reduce({}) { |m, d| m[d.name] = d; m }
       @static_validator = GraphQL::StaticValidation::Validator.new(schema: self)
-      @middleware = []
+      @user_middleware = []
       @query_analyzers = []
       @resolve_type_proc = nil
       @object_from_id_proc = nil
@@ -111,6 +103,34 @@ module GraphQL
       @subscription_execution_strategy = self.class.default_execution_strategy
     end
 
+    def initialize_copy(other)
+      super
+      @orphan_types = other.orphan_types.dup
+      @directives = other.directives.dup
+      @static_validator = GraphQL::StaticValidation::Validator.new(schema: self)
+      @user_middleware = other.user_middleware.dup
+      @middleware = nil
+      @query_analyzers = other.query_analyzers.dup
+
+      @possible_types = GraphQL::Schema::PossibleTypes.new(self)
+
+      @lazy_methods = GraphQL::Execution::Lazy::LazyMethodMap.new
+      other.lazy_methods.each { |lazy_class, lazy_method| @lazy_methods.set(lazy_class, lazy_method) }
+
+      @instrumenters = Hash.new { |h, k| h[k] = [] }
+      other.instrumenters.each do |key, insts|
+        @instrumenters[key].concat(insts)
+      end
+
+      if other.rescues?
+        @rescue_middleware = other.rescue_middleware
+      end
+
+      # This will be rebuilt when it's requested
+      # or during a later `define` call
+      @types = nil
+    end
+
     def rescue_from(*args, &block)
       rescue_middleware.rescue_from(*args, &block)
     end
@@ -122,8 +142,7 @@ module GraphQL
     def define(**kwargs, &block)
       super
       ensure_defined
-      all_types = orphan_types + [query, mutation, subscription, GraphQL::Introspection::SchemaType]
-      @types = GraphQL::Schema::ReduceTypes.reduce(all_types.compact)
+      build_types_map
       # Assert that all necessary configs are present:
       validation_error = Validation.validate(self)
       validation_error && raise(NotImplementedError, validation_error)
@@ -142,10 +161,11 @@ module GraphQL
       end
     end
 
-
     # @see [GraphQL::Schema::Warden] Restricted access to members of a schema
     # @return [GraphQL::Schema::TypeMap] `{ name => type }` pairs of types in this schema
-    attr_reader :types
+    def types
+      @types ||= build_types_map
+    end
 
     # Execute a query on itself.
     # See {Query#initialize} for arguments.
@@ -329,20 +349,36 @@ module GraphQL
       !!lazy_method_name(obj)
     end
 
-    private
+    # @return [Array<#call>] Middlewares suitable for MiddlewareChain, applied to fields during execution
+    def middleware
+      @middleware ||= if @rescue_middleware
+        [@rescue_middleware].concat(@user_middleware)
+      else
+        @user_middleware
+      end
+    end
+
+    protected
+
+    def rescues?
+      !!@rescue_middleware
+    end
 
     # Lazily create a middleware and add it to the schema
     # (Don't add it if it's not used)
     def rescue_middleware
-      @rescue_middleware ||= begin
-        middleware = GraphQL::Schema::RescueMiddleware.new
-        @middleware << middleware
-        middleware
-      end
+      @rescue_middleware ||= GraphQL::Schema::RescueMiddleware.new
     end
+
+    private
 
     def build_instrumented_field_map
       @instrumented_field_map = InstrumentedFieldMap.new(self, @instrumenters[:field])
+    end
+
+    def build_types_map
+      all_types = orphan_types + [query, mutation, subscription, GraphQL::Introspection::SchemaType]
+      @types = GraphQL::Schema::ReduceTypes.reduce(all_types.compact)
     end
   end
 end

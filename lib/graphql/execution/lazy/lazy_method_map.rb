@@ -28,6 +28,10 @@ module GraphQL
         def get(value)
           @storage[value.class]
         end
+
+        def each
+          @storage.each { |k, v| yield(k,v) }
+        end
       end
     end
   end

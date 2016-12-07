@@ -95,4 +95,14 @@ describe GraphQL::UnionType do
       end
     end
   end
+
+  describe "#dup" do
+    it "copies possible types without affecting the orginal" do
+      union.possible_types # load the internal cache
+      union_2 = union.dup
+      union_2.possible_types << type_3
+      assert_equal 2, union.possible_types.size
+      assert_equal 3, union_2.possible_types.size
+    end
+  end
 end
