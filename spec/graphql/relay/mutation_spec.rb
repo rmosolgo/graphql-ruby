@@ -44,6 +44,11 @@ describe GraphQL::Relay::Mutation do
     assert_equal(expected, result)
   end
 
+  it "supports lazy resolution" do
+    result = star_wars_query(query_string, "clientMutationId" => "1234", "shipName" => "Slave II")
+    assert_equal "Slave II", result["data"]["introduceShip"]["shipEdge"]["node"]["name"]
+  end
+
   it "returns the result & clientMutationId" do
     result = star_wars_query(query_string, "clientMutationId" => "1234")
     expected = {"data" => {
