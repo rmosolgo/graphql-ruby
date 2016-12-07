@@ -77,7 +77,7 @@ module GraphQL
 
           args = defs.map { |defn| reduce_list(defn.arguments)}.uniq
           if args.length != 1
-            errors << message("Field '#{name}' has an argument conflict: #{args.map {|a| print_arg(a) }.join(" or ")}?", defs.first, context: context)
+            errors << message("Field '#{name}' has an argument conflict: #{args.map{|arg| JSON.dump(arg)}.join(" or ")}?", defs.first, context: context)
           end
 
           @errors = errors
@@ -89,6 +89,8 @@ module GraphQL
           case arg
           when GraphQL::Language::Nodes::VariableIdentifier
             "$#{arg.name}"
+          when GraphQL::Language::Nodes::Enum
+            "#{arg.name}"
           else
             JSON.dump(arg)
           end
@@ -98,7 +100,7 @@ module GraphQL
         # can't look up args, the names just have to match
         def reduce_list(args)
           args.reduce({}) do |memo, a|
-            memo[a.name] = NAMED_VALUES.include?(a.value.class) ? a.value.name : a.value
+            memo[a.name] = print_arg(a.value)
             memo
           end
         end
