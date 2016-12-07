@@ -51,8 +51,7 @@ end
 ```
 
 - `#initial_value` is a chance to initialize the state for your analysis. For example, you can return a hash with keys for the query, schema, and any other values you want to store.
-- `#call` is called for each node in the query. `memo` is the analyzer state. `visit_type` is either `:enter` or `:leave`. `irep_node` is the {{
-  "GraphQL::InternalRepresentation::Node" | api_doc }} for the current field in the query. (It is like `item` in the `Array#reduce` callback.)
+- `#call` is called for each node in the query. `memo` is the analyzer state. `visit_type` is either `:enter` or `:leave`. `irep_node` is the {{ "GraphQL::InternalRepresentation::Node" | api_doc }} for the current field in the query. (It is like `item` in the `Array#reduce` callback.)
 - `#final_value` is called _after_ the visit. It provides a chance to write to your log or return a {{ "GraphQL::AnalysisError" | api_doc }} to halt query execution.
 
 Query analyzers are added to the schema with `query_analyzer`, for example:
