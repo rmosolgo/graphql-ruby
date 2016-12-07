@@ -75,127 +75,141 @@
           <h1 class="guide-header">Queries — Executing Queries</h1>
           <p>You can execute queries with your <a href="http://www.rubydoc.info/gems/graphql/GraphQL/Schema" target="_blank"><code>GraphQL::Schema</code></a> at get a Ruby Hash as a result. For example, to execute a query from a string:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">query_string</span> <span class="o">=</span> <span class="s2">"{ ... }"</span>
-<span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="n">query_string</span><span class="p">)</span>
-<span class="c1"># {</span>
-<span class="c1">#   "data" =&gt; { ... }</span>
-<span class="c1"># }</span>
-</code></pre>
+<div><div class="CodeRay">
+  <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span>query_string = <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">{ ... }</span><span style="color:#710">&quot;</span></span>
+<span class="line-numbers"><a href="#n2" name="n2">2</a></span><span style="color:#036;font-weight:bold">MySchema</span>.execute(query_string)
+<span class="line-numbers"><a href="#n3" name="n3">3</a></span><span style="color:#777"># {</span>
+<span class="line-numbers"><a href="#n4" name="n4">4</a></span><span style="color:#777">#   &quot;data&quot; =&gt; { ... }</span>
+<span class="line-numbers"><a href="#n5" name="n5">5</a></span><span style="color:#777"># }</span>
+</pre></div>
+</div>
 </div>
 
 <p>There are also several options you can use:</p>
 
 <ul>
-  <li><code class="highlighter-rouge">variables:</code> provides values for <code class="highlighter-rouge">$</code>-named <a href="http://graphql.org/learn/queries/#variables">query variables</a></li>
-  <li><code class="highlighter-rouge">context:</code> accepts application-specific data to pass to <code class="highlighter-rouge">resolve</code> functions</li>
-  <li><code class="highlighter-rouge">root_value:</code> will be provided to root-level <code class="highlighter-rouge">resolve</code> functions as <code class="highlighter-rouge">obj</code></li>
-  <li><code class="highlighter-rouge">operation_name:</code> picks a <a href="http://graphql.org/learn/queries/#operation-name">named operation</a> from the incoming string to execute</li>
-  <li><code class="highlighter-rouge">document:</code> accepts an already-parsed query (instead of a string), see <a href="http://www.rubydoc.info/gems/graphql/GraphQL#parse-class_method" target="_blank"><code>GraphQL.parse</code></a></li>
-  <li><code class="highlighter-rouge">validate:</code> may be <code class="highlighter-rouge">false</code> to skip static validation for this query</li>
-  <li><code class="highlighter-rouge">max_depth:</code> and <code class="highlighter-rouge">max_complexity:</code> may override schema-level values</li>
+  <li><code>variables:</code> provides values for <code>$</code>-named <a href="http://graphql.org/learn/queries/#variables">query variables</a></li>
+  <li><code>context:</code> accepts application-specific data to pass to <code>resolve</code> functions</li>
+  <li><code>root_value:</code> will be provided to root-level <code>resolve</code> functions as <code>obj</code></li>
+  <li><code>operation_name:</code> picks a <a href="http://graphql.org/learn/queries/#operation-name">named operation</a> from the incoming string to execute</li>
+  <li><code>document:</code> accepts an already-parsed query (instead of a string), see <a href="http://www.rubydoc.info/gems/graphql/GraphQL#parse-class_method" target="_blank"><code>GraphQL.parse</code></a></li>
+  <li><code>validate:</code> may be <code>false</code> to skip static validation for this query</li>
+  <li><code>max_depth:</code> and <code>max_complexity:</code> may override schema-level values</li>
 </ul>
 
 <p>Some of these options are described in more detail below, see <a href="http://www.rubydoc.info/gems/graphql/GraphQL/Query#initialize-instance_method" target="_blank"><code>GraphQL::Query#initialize</code></a> for more information.</p>
 
 <h2 id="variables">Variables</h2>
 
-<p>GraphQL provides <a href="http://graphql.org/learn/queries/#variables">query variables</a> as a way to parameterize query strings. If your query string contains variables, you can provide values in a hash of <code class="highlighter-rouge"><span class="p">{</span><span class="w"> </span><span class="err">String</span><span class="w"> </span><span class="err">=&gt;</span><span class="w"> </span><span class="err">value</span><span class="w"> </span><span class="p">}</span></code> pairs. The keys should <em>not</em> contain <code class="highlighter-rouge">"$"</code>.</p>
+<p>GraphQL provides <a href="http://graphql.org/learn/queries/#variables">query variables</a> as a way to parameterize query strings. If your query string contains variables, you can provide values in a hash of <code>{ String =&gt; value }</code> pairs. The keys should <em>not</em> contain <code>"$"</code>.</p>
 
 <p>For example, to provide variables to a query:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">query_string</span> <span class="o">=</span> <span class="s2">"
-  query getPost($postId: ID!) {
-    post(id: $postId) {
-      title
-    }
-  }"</span>
-
-<span class="n">variables</span> <span class="o">=</span> <span class="p">{</span> <span class="s2">"postId"</span> <span class="o">=&gt;</span> <span class="s2">"1"</span> <span class="p">}</span>
-
-<span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="n">query_string</span><span class="p">,</span> <span class="ss">variables: </span><span class="n">variables</span><span class="p">)</span>
-</code></pre>
+<div><div class="CodeRay">
+  <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span>query_string = <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20"></span></span>
+<span class="line-numbers"> <a href="#n2" name="n2">2</a></span><span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#D20">  query getPost($postId: ID!) {</span></span>
+<span class="line-numbers"> <a href="#n3" name="n3">3</a></span><span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#D20">    post(id: $postId) {</span></span>
+<span class="line-numbers"> <a href="#n4" name="n4">4</a></span><span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#D20">      title</span></span>
+<span class="line-numbers"> <a href="#n5" name="n5">5</a></span><span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#D20">    }</span></span>
+<span class="line-numbers"> <a href="#n6" name="n6">6</a></span><span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#D20">  }</span><span style="color:#710">&quot;</span></span>
+<span class="line-numbers"> <a href="#n7" name="n7">7</a></span>
+<span class="line-numbers"> <a href="#n8" name="n8">8</a></span>variables = { <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">postId</span><span style="color:#710">&quot;</span></span> =&gt; <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">1</span><span style="color:#710">&quot;</span></span> }
+<span class="line-numbers"> <a href="#n9" name="n9">9</a></span>
+<span class="line-numbers"><strong><a href="#n10" name="n10">10</a></strong></span><span style="color:#036;font-weight:bold">MySchema</span>.execute(query_string, <span style="color:#606">variables</span>: variables)
+</pre></div>
+</div>
 </div>
 
 <p>If the variable is a <a href="http://www.rubydoc.info/gems/graphql/GraphQL/InputObjectType" target="_blank"><code>GraphQL::InputObjectType</code></a>, you can provide a nested hash, for example:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">query_string</span> <span class="o">=</span> <span class="s2">"
-mutation createPost($postParams: PostInput!, $createdById: ID!){
-  createPost(params: $postParams, createdById: $createdById) {
-    id
-    title
-    createdBy { name }
-  }
-}
-"</span>
-
-<span class="n">variables</span> <span class="o">=</span> <span class="p">{</span>
-  <span class="s2">"postParams"</span> <span class="o">=&gt;</span> <span class="p">{</span>
-    <span class="s2">"title"</span> <span class="o">=&gt;</span> <span class="s2">"..."</span><span class="p">,</span>
-    <span class="s2">"body"</span> <span class="o">=&gt;</span> <span class="s2">"..."</span>
-  <span class="p">},</span>
-  <span class="s2">"createdById"</span> <span class="o">=&gt;</span> <span class="s2">"5"</span><span class="p">,</span>
-<span class="p">}</span>
-
-<span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="n">query_string</span><span class="p">,</span> <span class="ss">variables: </span><span class="n">variables</span><span class="p">)</span>
-</code></pre>
+<div><div class="CodeRay">
+  <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span>query_string = <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20"></span></span>
+<span class="line-numbers"> <a href="#n2" name="n2">2</a></span><span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#D20">mutation createPost($postParams: PostInput!, $createdById: ID!){</span></span>
+<span class="line-numbers"> <a href="#n3" name="n3">3</a></span><span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#D20">  createPost(params: $postParams, createdById: $createdById) {</span></span>
+<span class="line-numbers"> <a href="#n4" name="n4">4</a></span><span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#D20">    id</span></span>
+<span class="line-numbers"> <a href="#n5" name="n5">5</a></span><span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#D20">    title</span></span>
+<span class="line-numbers"> <a href="#n6" name="n6">6</a></span><span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#D20">    createdBy { name }</span></span>
+<span class="line-numbers"> <a href="#n7" name="n7">7</a></span><span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#D20">  }</span></span>
+<span class="line-numbers"> <a href="#n8" name="n8">8</a></span><span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#D20">}</span></span>
+<span class="line-numbers"> <a href="#n9" name="n9">9</a></span><span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#D20"></span><span style="color:#710">&quot;</span></span>
+<span class="line-numbers"><strong><a href="#n10" name="n10">10</a></strong></span>
+<span class="line-numbers"><a href="#n11" name="n11">11</a></span>variables = {
+<span class="line-numbers"><a href="#n12" name="n12">12</a></span>  <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">postParams</span><span style="color:#710">&quot;</span></span> =&gt; {
+<span class="line-numbers"><a href="#n13" name="n13">13</a></span>    <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">title</span><span style="color:#710">&quot;</span></span> =&gt; <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">...</span><span style="color:#710">&quot;</span></span>,
+<span class="line-numbers"><a href="#n14" name="n14">14</a></span>    <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">body</span><span style="color:#710">&quot;</span></span> =&gt; <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">...</span><span style="color:#710">&quot;</span></span>
+<span class="line-numbers"><a href="#n15" name="n15">15</a></span>  },
+<span class="line-numbers"><a href="#n16" name="n16">16</a></span>  <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">createdById</span><span style="color:#710">&quot;</span></span> =&gt; <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">5</span><span style="color:#710">&quot;</span></span>,
+<span class="line-numbers"><a href="#n17" name="n17">17</a></span>}
+<span class="line-numbers"><a href="#n18" name="n18">18</a></span>
+<span class="line-numbers"><a href="#n19" name="n19">19</a></span><span style="color:#036;font-weight:bold">MySchema</span>.execute(query_string, <span style="color:#606">variables</span>: variables)
+</pre></div>
+</div>
 </div>
 
 <h2 id="context">Context</h2>
 
-<p>You can provide application-specific values to GraphQL as <code class="highlighter-rouge">context:</code>. This is available in many places:</p>
+<p>You can provide application-specific values to GraphQL as <code>context:</code>. This is available in many places:</p>
 
 <ul>
-  <li><code class="highlighter-rouge">resolve</code> functions</li>
-  <li><code class="highlighter-rouge">Schema#resolve_type</code> hook</li>
+  <li><code>resolve</code> functions</li>
+  <li><code>Schema#resolve_type</code> hook</li>
   <li>ID generation &amp; fetching</li>
 </ul>
 
-<p>Common uses for <code class="highlighter-rouge">context:</code> include the current user or auth token. To provide a <code class="highlighter-rouge">context:</code> value, pass a hash to <code class="highlighter-rouge">Schema#execute</code>:</p>
+<p>Common uses for <code>context:</code> include the current user or auth token. To provide a <code>context:</code> value, pass a hash to <code>Schema#execute</code>:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">context</span> <span class="o">=</span> <span class="p">{</span>
-  <span class="ss">current_user: </span><span class="n">session</span><span class="p">[</span><span class="ss">:current_user</span><span class="p">],</span>
-  <span class="ss">current_organization: </span><span class="n">session</span><span class="p">[</span><span class="ss">:current_organization</span><span class="p">],</span>
-<span class="p">}</span>
-
-<span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="n">query_string</span><span class="p">,</span> <span class="ss">context: </span><span class="n">context</span><span class="p">)</span>
-</code></pre>
+<div><div class="CodeRay">
+  <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span>context = {
+<span class="line-numbers"><a href="#n2" name="n2">2</a></span>  <span style="color:#606">current_user</span>: session[<span style="color:#A60">:current_user</span>],
+<span class="line-numbers"><a href="#n3" name="n3">3</a></span>  <span style="color:#606">current_organization</span>: session[<span style="color:#A60">:current_organization</span>],
+<span class="line-numbers"><a href="#n4" name="n4">4</a></span>}
+<span class="line-numbers"><a href="#n5" name="n5">5</a></span>
+<span class="line-numbers"><a href="#n6" name="n6">6</a></span><span style="color:#036;font-weight:bold">MySchema</span>.execute(query_string, <span style="color:#606">context</span>: context)
+</pre></div>
+</div>
 </div>
 
 <p>Then, you can access those values during execution:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span>  <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
-  <span class="n">ctx</span><span class="p">[</span><span class="ss">:current_user</span><span class="p">]</span> <span class="c1"># =&gt; #&lt;User id=123 ... &gt;</span>
-  <span class="c1"># ...</span>
-<span class="p">}</span>
-</code></pre>
+<div><div class="CodeRay">
+  <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span>resolve -&gt;(obj, args,  ctx) {
+<span class="line-numbers"><a href="#n2" name="n2">2</a></span>  ctx[<span style="color:#A60">:current_user</span>] <span style="color:#777"># =&gt; #&lt;User id=123 ... &gt;</span>
+<span class="line-numbers"><a href="#n3" name="n3">3</a></span>  <span style="color:#777"># ...</span>
+<span class="line-numbers"><a href="#n4" name="n4">4</a></span>}
+</pre></div>
+</div>
 </div>
 
-<p>Note that <code class="highlighter-rouge">ctx</code> is <em>not</em> the hash that you passed it. It’s an instance of <a href="http://www.rubydoc.info/gems/graphql/GraphQL/Query/Context" target="_blank"><code>GraphQL::Query::Context</code></a>, but it delegates <code class="highlighter-rouge">#[](key)</code> to the hash you provide.</p>
+<p>Note that <code>ctx</code> is <em>not</em> the hash that you passed it. It’s an instance of <a href="http://www.rubydoc.info/gems/graphql/GraphQL/Query/Context" target="_blank"><code>GraphQL::Query::Context</code></a>, but it delegates <code>#[](key)</code> to the hash you provide.</p>
 
 <h2 id="root-value">Root Value</h2>
 
-<p>You can provide a root <code class="highlighter-rouge">obj</code> value with <code class="highlighter-rouge">root_value:</code>. For example, to base the query off of the current organization:</p>
+<p>You can provide a root <code>obj</code> value with <code>root_value:</code>. For example, to base the query off of the current organization:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">current_org</span> <span class="o">=</span> <span class="n">session</span><span class="p">[</span><span class="ss">:current_organization</span><span class="p">]</span>
-<span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="n">query_string</span><span class="p">,</span> <span class="ss">root_value: </span><span class="n">current_org</span><span class="p">)</span>
-</code></pre>
+<div><div class="CodeRay">
+  <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span>current_org = session[<span style="color:#A60">:current_organization</span>]
+<span class="line-numbers"><a href="#n2" name="n2">2</a></span><span style="color:#036;font-weight:bold">MySchema</span>.execute(query_string, <span style="color:#606">root_value</span>: current_org)
+</pre></div>
+</div>
 </div>
 
 <p>That value will be provided to root-level fields, such as mutation fields. For example:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">MutationType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
-  <span class="nb">name</span> <span class="s2">"Mutation"</span>
-  <span class="n">field</span> <span class="ss">:createPost</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">Post</span> <span class="k">do</span>
-    <span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
-      <span class="n">obj</span> <span class="c1"># =&gt; #&lt;Organization id=456 ...&gt;</span>
-      <span class="c1"># ...</span>
-    <span class="p">}</span>
-  <span class="k">end</span>
-<span class="k">end</span>
-</code></pre>
+<div><div class="CodeRay">
+  <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">MutationType</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">ObjectType</span>.define <span style="color:#080;font-weight:bold">do</span>
+<span class="line-numbers"> <a href="#n2" name="n2">2</a></span>  name <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">Mutation</span><span style="color:#710">&quot;</span></span>
+<span class="line-numbers"> <a href="#n3" name="n3">3</a></span>  field <span style="color:#A60">:createPost</span>, types.Post <span style="color:#080;font-weight:bold">do</span>
+<span class="line-numbers"> <a href="#n4" name="n4">4</a></span>    resolve -&gt;(obj, args, ctx) {
+<span class="line-numbers"> <a href="#n5" name="n5">5</a></span>      obj <span style="color:#777"># =&gt; #&lt;Organization id=456 ...&gt;</span>
+<span class="line-numbers"> <a href="#n6" name="n6">6</a></span>      <span style="color:#777"># ...</span>
+<span class="line-numbers"> <a href="#n7" name="n7">7</a></span>    }
+<span class="line-numbers"> <a href="#n8" name="n8">8</a></span>  <span style="color:#080;font-weight:bold">end</span>
+<span class="line-numbers"> <a href="#n9" name="n9">9</a></span><span style="color:#080;font-weight:bold">end</span>
+</pre></div>
+</div>
 </div>
 
-<p><a href="http://www.rubydoc.info/gems/graphql/GraphQL/Relay/Mutation" target="_blank"><code>GraphQL::Relay::Mutation</code></a> fields will also receive <code class="highlighter-rouge">root_value:</code> as <code class="highlighter-rouge">obj</code> (assuming they’re attached directly to your <code class="highlighter-rouge">MutationType</code>).</p>
+<p><a href="http://www.rubydoc.info/gems/graphql/GraphQL/Relay/Mutation" target="_blank"><code>GraphQL::Relay::Mutation</code></a> fields will also receive <code>root_value:</code> as <code>obj</code> (assuming they’re attached directly to your <code>MutationType</code>).</p>
 
         </div>
       </div>

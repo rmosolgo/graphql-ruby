@@ -86,33 +86,37 @@
 
 <h2 id="masking">Masking</h2>
 
-<p>You can hide parts of the schema by passing <code class="highlighter-rouge">except:</code> to <code class="highlighter-rouge">Schema.execute</code>. For example:</p>
+<p>You can hide parts of the schema by passing <code>except:</code> to <code>Schema.execute</code>. For example:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">mask</span> <span class="o">=</span> <span class="no">PermissionMask</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="vi">@current_user</span><span class="p">)</span>
-<span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="n">query_string</span><span class="p">,</span> <span class="ss">except: </span><span class="n">mask</span><span class="p">)</span>
-</code></pre>
+<div><div class="CodeRay">
+  <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span>mask = <span style="color:#036;font-weight:bold">PermissionMask</span>.new(<span style="color:#33B">@current_user</span>)
+<span class="line-numbers"><a href="#n2" name="n2">2</a></span><span style="color:#036;font-weight:bold">MySchema</span>.execute(query_string, <span style="color:#606">except</span>: mask)
+</pre></div>
+</div>
 </div>
 
 <p>During that query, some elements will be hidden. This means that fields, types, arguments or enum values will be treated as if they were not defined at all.</p>
 
-<p>A mask must respond to <code class="highlighter-rouge">#call(schema_member)</code>. When that methods returns truthy, the schema member will be hidden.</p>
+<p>A mask must respond to <code>#call(schema_member)</code>. When that methods returns truthy, the schema member will be hidden.</p>
 
-<p>For example, here’s an implementation of <code class="highlighter-rouge">PermissionMask</code> above:</p>
+<p>For example, here’s an implementation of <code>PermissionMask</code> above:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="k">class</span> <span class="nc">PermissionMask</span>
-  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">person</span><span class="p">)</span>
-    <span class="vi">@person</span> <span class="o">=</span> <span class="n">person</span>
-  <span class="k">end</span>
-
-  <span class="c1"># If this returns true, the schema member will be hidden</span>
-  <span class="k">def</span> <span class="nf">call</span><span class="p">(</span><span class="n">schema_member</span><span class="p">)</span>
-    <span class="no">Permissions</span><span class="p">.</span><span class="nf">hidden?</span><span class="p">(</span><span class="n">person</span><span class="p">,</span> <span class="n">schema_member</span><span class="p">)</span>
-  <span class="k">end</span>
-<span class="k">end</span>
-</code></pre>
+<div><div class="CodeRay">
+  <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span><span style="color:#080;font-weight:bold">class</span> <span style="color:#B06;font-weight:bold">PermissionMask</span>
+<span class="line-numbers"> <a href="#n2" name="n2">2</a></span>  <span style="color:#080;font-weight:bold">def</span> <span style="color:#06B;font-weight:bold">initialize</span>(person)
+<span class="line-numbers"> <a href="#n3" name="n3">3</a></span>    <span style="color:#33B">@person</span> = person
+<span class="line-numbers"> <a href="#n4" name="n4">4</a></span>  <span style="color:#080;font-weight:bold">end</span>
+<span class="line-numbers"> <a href="#n5" name="n5">5</a></span>
+<span class="line-numbers"> <a href="#n6" name="n6">6</a></span>  <span style="color:#777"># If this returns true, the schema member will be hidden</span>
+<span class="line-numbers"> <a href="#n7" name="n7">7</a></span>  <span style="color:#080;font-weight:bold">def</span> <span style="color:#06B;font-weight:bold">call</span>(schema_member)
+<span class="line-numbers"> <a href="#n8" name="n8">8</a></span>    <span style="color:#036;font-weight:bold">Permissions</span>.hidden?(person, schema_member)
+<span class="line-numbers"> <a href="#n9" name="n9">9</a></span>  <span style="color:#080;font-weight:bold">end</span>
+<span class="line-numbers"><strong><a href="#n10" name="n10">10</a></strong></span><span style="color:#080;font-weight:bold">end</span>
+</pre></div>
+</div>
 </div>
 
-<p>The <code class="highlighter-rouge">schema_member</code> may be any of:</p>
+<p>The <code>schema_member</code> may be any of:</p>
 
 <ul>
   <li>Type (<a href="http://www.rubydoc.info/gems/graphql/GraphQL/BaseType" target="_blank"><code>GraphQL::BaseType</code></a> and subclasses)</li>
@@ -123,14 +127,16 @@
 
 <h2 id="use-with-metadata">Use with Metadata</h2>
 
-<p>This feature pairs nicely with attaching custom data to types. See the <a href="/graphql-ruby/schema/types_and_fields">types and fields guide</a> for information about assigning values to an object’s <code class="highlighter-rouge">metadata</code>.</p>
+<p>This feature pairs nicely with attaching custom data to types. See the <a href="/graphql-ruby/schema/types_and_fields">types and fields guide</a> for information about assigning values to an object’s <code>metadata</code>.</p>
 
-<p>Then, you can check <code class="highlighter-rouge">metadata</code> in your mask. For example, to hide fields based on a metadata flag:</p>
+<p>Then, you can check <code>metadata</code> in your mask. For example, to hide fields based on a metadata flag:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># Hide secret objects from this user</span>
-<span class="n">top_secret</span> <span class="o">=</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">schema_member</span><span class="p">)</span> <span class="p">{</span> <span class="n">schema_member</span><span class="p">.</span><span class="nf">metadata</span><span class="p">[</span><span class="ss">:top_secret</span><span class="p">]}</span>
-<span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="n">query_string</span><span class="p">,</span> <span class="ss">except: </span><span class="n">top_secret</span><span class="p">)</span>
-</code></pre>
+<div><div class="CodeRay">
+  <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#777"># Hide secret objects from this user</span>
+<span class="line-numbers"><a href="#n2" name="n2">2</a></span>top_secret = -&gt;(schema_member) { schema_member.metadata[<span style="color:#A60">:top_secret</span>]}
+<span class="line-numbers"><a href="#n3" name="n3">3</a></span><span style="color:#036;font-weight:bold">MySchema</span>.execute(query_string, <span style="color:#606">except</span>: top_secret)
+</pre></div>
+</div>
 </div>
 
         </div>

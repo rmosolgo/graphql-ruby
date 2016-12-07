@@ -77,17 +77,21 @@
 
 <h2 id="installation">Installation</h2>
 
-<p>You can install <code class="highlighter-rouge">graphql</code> from RubyGems by adding to your application’s <code class="highlighter-rouge">Gemfile</code>:</p>
+<p>You can install <code>graphql</code> from RubyGems by adding to your application’s <code>Gemfile</code>:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># Gemfile</span>
-<span class="n">gem</span> <span class="s2">"graphql"</span>
-</code></pre>
+<div><div class="CodeRay">
+  <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#777"># Gemfile</span>
+<span class="line-numbers"><a href="#n2" name="n2">2</a></span>gem <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">graphql</span><span style="color:#710">&quot;</span></span>
+</pre></div>
+</div>
 </div>
 
-<p>Then, running <code class="highlighter-rouge">bundle install</code>:</p>
+<p>Then, running <code>bundle install</code>:</p>
 
-<div class="language-sh highlighter-rouge"><pre class="highlight"><code><span class="gp">$ </span>bundle install
-</code></pre>
+<div><div class="CodeRay">
+  <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span>$ bundle install
+</pre></div>
+</div>
 </div>
 
 <h2 id="getting-started">Getting Started</h2>
@@ -104,49 +108,55 @@
 
 <p>Types describe objects in your application and form the basis for <a href="http://graphql.org/learn/schema/#type-system">GraphQL’s type system</a>.</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">PostType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
-  <span class="nb">name</span> <span class="s2">"Post"</span>
-  <span class="n">description</span> <span class="s2">"A blog post"</span>
-  <span class="c1"># `!` marks a field as "non-null"</span>
-  <span class="n">field</span> <span class="ss">:id</span><span class="p">,</span> <span class="o">!</span><span class="n">types</span><span class="o">.</span><span class="no">ID</span>
-  <span class="n">field</span> <span class="ss">:title</span><span class="p">,</span> <span class="o">!</span><span class="n">types</span><span class="o">.</span><span class="no">String</span>
-  <span class="n">field</span> <span class="ss">:body</span><span class="p">,</span> <span class="o">!</span><span class="n">types</span><span class="o">.</span><span class="no">String</span>
-  <span class="n">field</span> <span class="ss">:comments</span><span class="p">,</span> <span class="n">types</span><span class="p">[</span><span class="o">!</span><span class="no">CommentType</span><span class="p">]</span>
-<span class="k">end</span>
-
-<span class="no">CommentType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
-  <span class="nb">name</span> <span class="s2">"Comment"</span>
-  <span class="n">field</span> <span class="ss">:id</span><span class="p">,</span> <span class="o">!</span><span class="n">types</span><span class="o">.</span><span class="no">ID</span>
-  <span class="n">field</span> <span class="ss">:body</span><span class="p">,</span> <span class="o">!</span><span class="n">types</span><span class="o">.</span><span class="no">String</span>
-  <span class="n">field</span> <span class="ss">:created_at</span><span class="p">,</span> <span class="o">!</span><span class="n">types</span><span class="o">.</span><span class="no">String</span>
-<span class="k">end</span>
-</code></pre>
+<div><div class="CodeRay">
+  <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">PostType</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">ObjectType</span>.define <span style="color:#080;font-weight:bold">do</span>
+<span class="line-numbers"> <a href="#n2" name="n2">2</a></span>  name <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">Post</span><span style="color:#710">&quot;</span></span>
+<span class="line-numbers"> <a href="#n3" name="n3">3</a></span>  description <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">A blog post</span><span style="color:#710">&quot;</span></span>
+<span class="line-numbers"> <a href="#n4" name="n4">4</a></span>  <span style="color:#777"># `!` marks a field as &quot;non-null&quot;</span>
+<span class="line-numbers"> <a href="#n5" name="n5">5</a></span>  field <span style="color:#A60">:id</span>, !types.ID
+<span class="line-numbers"> <a href="#n6" name="n6">6</a></span>  field <span style="color:#A60">:title</span>, !types.String
+<span class="line-numbers"> <a href="#n7" name="n7">7</a></span>  field <span style="color:#A60">:body</span>, !types.String
+<span class="line-numbers"> <a href="#n8" name="n8">8</a></span>  field <span style="color:#A60">:comments</span>, types[!<span style="color:#036;font-weight:bold">CommentType</span>]
+<span class="line-numbers"> <a href="#n9" name="n9">9</a></span><span style="color:#080;font-weight:bold">end</span>
+<span class="line-numbers"><strong><a href="#n10" name="n10">10</a></strong></span>
+<span class="line-numbers"><a href="#n11" name="n11">11</a></span><span style="color:#036;font-weight:bold">CommentType</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">ObjectType</span>.define <span style="color:#080;font-weight:bold">do</span>
+<span class="line-numbers"><a href="#n12" name="n12">12</a></span>  name <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">Comment</span><span style="color:#710">&quot;</span></span>
+<span class="line-numbers"><a href="#n13" name="n13">13</a></span>  field <span style="color:#A60">:id</span>, !types.ID
+<span class="line-numbers"><a href="#n14" name="n14">14</a></span>  field <span style="color:#A60">:body</span>, !types.String
+<span class="line-numbers"><a href="#n15" name="n15">15</a></span>  field <span style="color:#A60">:created_at</span>, !types.String
+<span class="line-numbers"><a href="#n16" name="n16">16</a></span><span style="color:#080;font-weight:bold">end</span>
+</pre></div>
+</div>
 </div>
 
 <h3 id="build-a-schema">Build a Schema</h3>
 
 <p>Before building a schema, you have to define an <a href="http://graphql.org/learn/schema/#the-query-and-mutation-types">entry point to your system, the “query root”</a>:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">QueryType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
-  <span class="nb">name</span> <span class="s2">"Query"</span>
-  <span class="n">description</span> <span class="s2">"The query root of this schema"</span>
-
-  <span class="n">field</span> <span class="ss">:post</span> <span class="k">do</span>
-    <span class="n">type</span> <span class="no">PostType</span>
-    <span class="n">argument</span> <span class="ss">:id</span><span class="p">,</span> <span class="o">!</span><span class="n">types</span><span class="o">.</span><span class="no">ID</span>
-    <span class="n">description</span> <span class="s2">"Find a Post by ID"</span>
-    <span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span> <span class="no">Post</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="s2">"id"</span><span class="p">])</span> <span class="p">}</span>
-  <span class="k">end</span>
-<span class="k">end</span>
-</code></pre>
+<div><div class="CodeRay">
+  <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">QueryType</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">ObjectType</span>.define <span style="color:#080;font-weight:bold">do</span>
+<span class="line-numbers"> <a href="#n2" name="n2">2</a></span>  name <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">Query</span><span style="color:#710">&quot;</span></span>
+<span class="line-numbers"> <a href="#n3" name="n3">3</a></span>  description <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">The query root of this schema</span><span style="color:#710">&quot;</span></span>
+<span class="line-numbers"> <a href="#n4" name="n4">4</a></span>
+<span class="line-numbers"> <a href="#n5" name="n5">5</a></span>  field <span style="color:#A60">:post</span> <span style="color:#080;font-weight:bold">do</span>
+<span class="line-numbers"> <a href="#n6" name="n6">6</a></span>    type <span style="color:#036;font-weight:bold">PostType</span>
+<span class="line-numbers"> <a href="#n7" name="n7">7</a></span>    argument <span style="color:#A60">:id</span>, !types.ID
+<span class="line-numbers"> <a href="#n8" name="n8">8</a></span>    description <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">Find a Post by ID</span><span style="color:#710">&quot;</span></span>
+<span class="line-numbers"> <a href="#n9" name="n9">9</a></span>    resolve -&gt;(obj, args, ctx) { <span style="color:#036;font-weight:bold">Post</span>.find(args[<span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">id</span><span style="color:#710">&quot;</span></span>]) }
+<span class="line-numbers"><strong><a href="#n10" name="n10">10</a></strong></span>  <span style="color:#080;font-weight:bold">end</span>
+<span class="line-numbers"><a href="#n11" name="n11">11</a></span><span style="color:#080;font-weight:bold">end</span>
+</pre></div>
+</div>
 </div>
 
-<p>Then, build a schema with <code class="highlighter-rouge">QueryType</code> as the query entry point:</p>
+<p>Then, build a schema with <code>QueryType</code> as the query entry point:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">Schema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
-  <span class="n">query</span> <span class="no">QueryType</span>
-<span class="k">end</span>
-</code></pre>
+<div><div class="CodeRay">
+  <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">Schema</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Schema</span>.define <span style="color:#080;font-weight:bold">do</span>
+<span class="line-numbers"><a href="#n2" name="n2">2</a></span>  query <span style="color:#036;font-weight:bold">QueryType</span>
+<span class="line-numbers"><a href="#n3" name="n3">3</a></span><span style="color:#080;font-weight:bold">end</span>
+</pre></div>
+</div>
 </div>
 
 <p>This schema is ready to serve GraphQL queries! See <a href="/graphql-ruby/schema/configuration_options">“Configuration Options”</a> for all the schema options.</p>
@@ -155,23 +165,25 @@
 
 <p>You can execute queries from a query string:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">query_string</span> <span class="o">=</span> <span class="s2">"
-{
-  post(id: 1) {
-    id
-    title
-  }
-}"</span>
-<span class="n">result_hash</span> <span class="o">=</span> <span class="no">Schema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="n">query_string</span><span class="p">)</span>
-<span class="c1"># {</span>
-<span class="c1">#   "data" =&gt; {</span>
-<span class="c1">#     "post" =&gt; {</span>
-<span class="c1">#        "id" =&gt; 1,</span>
-<span class="c1">#        "title" =&gt; "GraphQL is nice"</span>
-<span class="c1">#     }</span>
-<span class="c1">#   }</span>
-<span class="c1"># }</span>
-</code></pre>
+<div><div class="CodeRay">
+  <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span>query_string = <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20"></span></span>
+<span class="line-numbers"> <a href="#n2" name="n2">2</a></span><span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#D20">{</span></span>
+<span class="line-numbers"> <a href="#n3" name="n3">3</a></span><span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#D20">  post(id: 1) {</span></span>
+<span class="line-numbers"> <a href="#n4" name="n4">4</a></span><span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#D20">    id</span></span>
+<span class="line-numbers"> <a href="#n5" name="n5">5</a></span><span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#D20">    title</span></span>
+<span class="line-numbers"> <a href="#n6" name="n6">6</a></span><span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#D20">  }</span></span>
+<span class="line-numbers"> <a href="#n7" name="n7">7</a></span><span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#D20">}</span><span style="color:#710">&quot;</span></span>
+<span class="line-numbers"> <a href="#n8" name="n8">8</a></span>result_hash = <span style="color:#036;font-weight:bold">Schema</span>.execute(query_string)
+<span class="line-numbers"> <a href="#n9" name="n9">9</a></span><span style="color:#777"># {</span>
+<span class="line-numbers"><strong><a href="#n10" name="n10">10</a></strong></span><span style="color:#777">#   &quot;data&quot; =&gt; {</span>
+<span class="line-numbers"><a href="#n11" name="n11">11</a></span><span style="color:#777">#     &quot;post&quot; =&gt; {</span>
+<span class="line-numbers"><a href="#n12" name="n12">12</a></span><span style="color:#777">#        &quot;id&quot; =&gt; 1,</span>
+<span class="line-numbers"><a href="#n13" name="n13">13</a></span><span style="color:#777">#        &quot;title&quot; =&gt; &quot;GraphQL is nice&quot;</span>
+<span class="line-numbers"><a href="#n14" name="n14">14</a></span><span style="color:#777">#     }</span>
+<span class="line-numbers"><a href="#n15" name="n15">15</a></span><span style="color:#777">#   }</span>
+<span class="line-numbers"><a href="#n16" name="n16">16</a></span><span style="color:#777"># }</span>
+</pre></div>
+</div>
 </div>
 
 <p>See <a href="/graphql-ruby/queries/executing_queries">“Executing Queries”</a> for more information about running queries on your schema.</p>
@@ -181,9 +193,13 @@
 <p>If you’re building a backend for <a href="http://facebook.github.io/relay/">Relay</a>, you’ll need:</p>
 
 <ul>
-  <li>A JSON dump of the schema, which you can get by sending <a href="https://github.com/rmosolgo/graphql-ruby/blob/master/lib/graphql/introspection/introspection_query.rb"><code class="highlighter-rouge">GraphQL::Introspection::INTROSPECTION_QUERY</code></a></li>
-  <li>Relay-specific helpers for GraphQL, see the <code class="highlighter-rouge">GraphQL::Relay</code> guides.</li>
+  <li>A JSON dump of the schema, which you can get by sending <a href="https://github.com/rmosolgo/graphql-ruby/blob/master/lib/graphql/introspection/introspection_query.rb"><code>GraphQL::Introspection::INTROSPECTION_QUERY</code></a></li>
+  <li>Relay-specific helpers for GraphQL, see the <code>GraphQL::Relay</code> guides.</li>
 </ul>
+
+<h2 id="use-with-apollo-client">Use with Apollo Client</h2>
+
+<p><a href="http://dev.apollodata.com/">Apollo Client</a> is a full featured, simple to use GraphQL client with convenient integrations for popular view layers. You don’t need to do anything special to connect Apollo Client to a <code>graphql-ruby</code> server.</p>
 
         </div>
       </div>

@@ -84,62 +84,68 @@
 
 <p>A query analyzer visits each field in the query <em>before</em> the query is executed. It can accumulate data during the visits, then return a value. If the returned value is a <a href="http://www.rubydoc.info/gems/graphql/GraphQL/AnalysisError" target="_blank"><code>GraphQL::AnalysisError</code></a> (or an array of those errors), the query won’t be executed and the error will be returned to the user. You can use this feature to assert that queries are permitted <em>before</em> running them!</p>
 
-<p>Query analyzers reuse concepts from <code class="highlighter-rouge">Array#reduce</code>, so let’s briefly revisit how that method works:</p>
+<p>Query analyzers reuse concepts from <code>Array#reduce</code>, so let’s briefly revisit how that method works:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">items</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">]</span>
-<span class="n">initial_value</span> <span class="o">=</span> <span class="mi">0</span>
-<span class="n">reduce_result</span> <span class="o">=</span> <span class="n">items</span><span class="p">.</span><span class="nf">reduce</span><span class="p">(</span><span class="n">initial_value</span><span class="p">)</span> <span class="p">{</span> <span class="o">|</span><span class="n">memo</span><span class="p">,</span> <span class="n">item</span><span class="o">|</span> <span class="n">memo</span> <span class="o">+</span> <span class="n">item</span> <span class="p">}</span>
-<span class="n">final_value</span> <span class="o">=</span> <span class="s2">"Sum: </span><span class="si">#{</span><span class="n">reduce_result</span><span class="si">}</span><span class="s2">"</span>
-<span class="nb">puts</span> <span class="n">final_value</span>
-<span class="c1"># Sum: 15</span>
-</code></pre>
+<div><div class="CodeRay">
+  <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span>items = [<span style="color:#00D">1</span>, <span style="color:#00D">2</span>, <span style="color:#00D">3</span>, <span style="color:#00D">4</span>, <span style="color:#00D">5</span>]
+<span class="line-numbers"><a href="#n2" name="n2">2</a></span>initial_value = <span style="color:#00D">0</span>
+<span class="line-numbers"><a href="#n3" name="n3">3</a></span>reduce_result = items.reduce(initial_value) { |memo, item| memo + item }
+<span class="line-numbers"><a href="#n4" name="n4">4</a></span>final_value = <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">Sum: </span><span style="background-color:hsla(0,0%,0%,0.07);color:black"><span style="font-weight:bold;color:#666">#{</span>reduce_result<span style="font-weight:bold;color:#666">}</span></span><span style="color:#710">&quot;</span></span>
+<span class="line-numbers"><a href="#n5" name="n5">5</a></span>puts final_value
+<span class="line-numbers"><a href="#n6" name="n6">6</a></span><span style="color:#777"># Sum: 15</span>
+</pre></div>
+</div>
 </div>
 
 <ul>
-  <li><code class="highlighter-rouge">reduce</code> accepts an <em>initial value</em> and a <em>callback</em> (as a block)</li>
-  <li>The callback receives the reduce <em>state</em> (<code class="highlighter-rouge">memo</code>) and each item of the array (<code class="highlighter-rouge">item</code>)</li>
+  <li><code>reduce</code> accepts an <em>initial value</em> and a <em>callback</em> (as a block)</li>
+  <li>The callback receives the reduce <em>state</em> (<code>memo</code>) and each item of the array (<code>item</code>)</li>
   <li>For each call to the callback, the return value is the new state and it will be provided to the <em>next</em> call to the callback</li>
-  <li>When each item has been visited, the last value of the callback state (the last <code class="highlighter-rouge">memo</code> value) is returned</li>
+  <li>When each item has been visited, the last value of the callback state (the last <code>memo</code> value) is returned</li>
   <li>Then, you can use the reduced value in your application</li>
 </ul>
 
 <p>A query analyzer has the same basic parts. Here’s the scaffold for an analyzer:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MyQueryAnalyzer</span>
-  <span class="c1"># Called before the visit.</span>
-  <span class="c1"># Returns the initial value for `memo`</span>
-  <span class="k">def</span> <span class="nf">initial_value</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
-  <span class="k">end</span>
-
-  <span class="c1"># This is like the `reduce` callback.</span>
-  <span class="c1"># The return value is passed to the next call as `memo`</span>
-  <span class="k">def</span> <span class="nf">call</span><span class="p">(</span><span class="n">memo</span><span class="p">,</span> <span class="n">visit_type</span><span class="p">,</span> <span class="n">irep_node</span><span class="p">)</span>
-  <span class="k">end</span>
-
-  <span class="c1"># Called when we're done the whole visit.</span>
-  <span class="c1"># The return value may be a GraphQL::AnalysisError (or an array of them).</span>
-  <span class="c1"># Or, you can use this hook to write to a log, etc</span>
-  <span class="k">def</span> <span class="nf">final_value</span><span class="p">(</span><span class="n">memo</span><span class="p">)</span>
-  <span class="k">end</span>
-<span class="k">end</span>
-</code></pre>
+<div><div class="CodeRay">
+  <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span><span style="color:#080;font-weight:bold">class</span> <span style="color:#B06;font-weight:bold">MyQueryAnalyzer</span>
+<span class="line-numbers"> <a href="#n2" name="n2">2</a></span>  <span style="color:#777"># Called before the visit.</span>
+<span class="line-numbers"> <a href="#n3" name="n3">3</a></span>  <span style="color:#777"># Returns the initial value for `memo`</span>
+<span class="line-numbers"> <a href="#n4" name="n4">4</a></span>  <span style="color:#080;font-weight:bold">def</span> <span style="color:#06B;font-weight:bold">initial_value</span>(query)
+<span class="line-numbers"> <a href="#n5" name="n5">5</a></span>  <span style="color:#080;font-weight:bold">end</span>
+<span class="line-numbers"> <a href="#n6" name="n6">6</a></span>
+<span class="line-numbers"> <a href="#n7" name="n7">7</a></span>  <span style="color:#777"># This is like the `reduce` callback.</span>
+<span class="line-numbers"> <a href="#n8" name="n8">8</a></span>  <span style="color:#777"># The return value is passed to the next call as `memo`</span>
+<span class="line-numbers"> <a href="#n9" name="n9">9</a></span>  <span style="color:#080;font-weight:bold">def</span> <span style="color:#06B;font-weight:bold">call</span>(memo, visit_type, irep_node)
+<span class="line-numbers"><strong><a href="#n10" name="n10">10</a></strong></span>  <span style="color:#080;font-weight:bold">end</span>
+<span class="line-numbers"><a href="#n11" name="n11">11</a></span>
+<span class="line-numbers"><a href="#n12" name="n12">12</a></span>  <span style="color:#777"># Called when we're done the whole visit.</span>
+<span class="line-numbers"><a href="#n13" name="n13">13</a></span>  <span style="color:#777"># The return value may be a GraphQL::AnalysisError (or an array of them).</span>
+<span class="line-numbers"><a href="#n14" name="n14">14</a></span>  <span style="color:#777"># Or, you can use this hook to write to a log, etc</span>
+<span class="line-numbers"><a href="#n15" name="n15">15</a></span>  <span style="color:#080;font-weight:bold">def</span> <span style="color:#06B;font-weight:bold">final_value</span>(memo)
+<span class="line-numbers"><a href="#n16" name="n16">16</a></span>  <span style="color:#080;font-weight:bold">end</span>
+<span class="line-numbers"><a href="#n17" name="n17">17</a></span><span style="color:#080;font-weight:bold">end</span>
+</pre></div>
+</div>
 </div>
 
 <ul>
-  <li><code class="highlighter-rouge">#initial_value</code> is a chance to initialize the state for your analysis. For example, you can return a hash with keys for the query, schema, and any other values you want to store.</li>
-  <li><code class="highlighter-rouge">#call</code> is called for each node in the query. <code class="highlighter-rouge">memo</code> is the analyzer state. <code class="highlighter-rouge">visit_type</code> is either <code class="highlighter-rouge">:enter</code> or <code class="highlighter-rouge">:leave</code>. <code class="highlighter-rouge">irep_node</code> is the <a href="http://www.rubydoc.info/gems/graphql/GraphQL/InternalRepresentation/Node" target="_blank"><code>GraphQL::InternalRepresentation::Node</code></a> for the current field in the query. (It is like <code class="highlighter-rouge">item</code> in the <code class="highlighter-rouge">Array#reduce</code> callback.)</li>
-  <li><code class="highlighter-rouge">#final_value</code> is called <em>after</em> the visit. It provides a chance to write to your log or return a <a href="http://www.rubydoc.info/gems/graphql/GraphQL/AnalysisError" target="_blank"><code>GraphQL::AnalysisError</code></a> to halt query execution.</li>
+  <li><code>#initial_value</code> is a chance to initialize the state for your analysis. For example, you can return a hash with keys for the query, schema, and any other values you want to store.</li>
+  <li><code>#call</code> is called for each node in the query. <code>memo</code> is the analyzer state. <code>visit_type</code> is either <code>:enter</code> or <code>:leave</code>. <code>irep_node</code> is the <a href="http://www.rubydoc.info/gems/graphql/GraphQL/InternalRepresentation/Node" target="_blank"><code>GraphQL::InternalRepresentation::Node</code></a> for the current field in the query. (It is like <code>item</code> in the <code>Array#reduce</code> callback.)</li>
+  <li><code>#final_value</code> is called <em>after</em> the visit. It provides a chance to write to your log or return a <a href="http://www.rubydoc.info/gems/graphql/GraphQL/AnalysisError" target="_blank"><code>GraphQL::AnalysisError</code></a> to halt query execution.</li>
 </ul>
 
-<p>Query analyzers are added to the schema with <code class="highlighter-rouge">query_analyzer</code>, for example:</p>
+<p>Query analyzers are added to the schema with <code>query_analyzer</code>, for example:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
-  <span class="n">query_analyzer</span> <span class="no">MyQueryAnalyzer</span><span class="p">.</span><span class="nf">new</span>
-<span class="k">end</span>
-</code></pre>
+<div><div class="CodeRay">
+  <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">MySchema</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Schema</span>.define <span style="color:#080;font-weight:bold">do</span>
+<span class="line-numbers"><a href="#n2" name="n2">2</a></span>  query_analyzer <span style="color:#036;font-weight:bold">MyQueryAnalyzer</span>.new
+<span class="line-numbers"><a href="#n3" name="n3">3</a></span><span style="color:#080;font-weight:bold">end</span>
+</pre></div>
+</div>
 </div>
 
-<p>GraphQL’s <code class="highlighter-rouge">max_depth</code> and <code class="highlighter-rouge">max_complexity</code> are implemented with query analyzers, you can see those for reference:</p>
+<p>GraphQL’s <code>max_depth</code> and <code>max_complexity</code> are implemented with query analyzers, you can see those for reference:</p>
 
 <ul>
   <li><a href="http://www.rubydoc.info/gems/graphql/GraphQL/Analysis/QueryDepth" target="_blank"><code>GraphQL::Analysis::QueryDepth</code></a></li>
@@ -150,80 +156,86 @@
 
 <p>Sometimes, you can only check permissions when you have the <em>actual</em> object. Let’s say you’re exposing documents in your API:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:documents</span><span class="p">,</span> <span class="n">types</span><span class="p">[</span><span class="no">DocumentType</span><span class="p">]</span> <span class="k">do</span>
-  <span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
-    <span class="n">documents</span> <span class="o">=</span> <span class="n">obj</span><span class="p">.</span><span class="nf">documents</span>
-    <span class="c1"># sort, filter, etc</span>
-    <span class="c1"># return the documents:</span>
-    <span class="n">documents</span>
-  <span class="p">}</span>
-<span class="k">end</span>
-</code></pre>
+<div><div class="CodeRay">
+  <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span>field <span style="color:#A60">:documents</span>, types[<span style="color:#036;font-weight:bold">DocumentType</span>] <span style="color:#080;font-weight:bold">do</span>
+<span class="line-numbers"><a href="#n2" name="n2">2</a></span>  resolve -&gt;(obj, args, ctx) {
+<span class="line-numbers"><a href="#n3" name="n3">3</a></span>    documents = obj.documents
+<span class="line-numbers"><a href="#n4" name="n4">4</a></span>    <span style="color:#777"># sort, filter, etc</span>
+<span class="line-numbers"><a href="#n5" name="n5">5</a></span>    <span style="color:#777"># return the documents:</span>
+<span class="line-numbers"><a href="#n6" name="n6">6</a></span>    documents
+<span class="line-numbers"><a href="#n7" name="n7">7</a></span>  }
+<span class="line-numbers"><a href="#n8" name="n8">8</a></span><span style="color:#080;font-weight:bold">end</span>
+</pre></div>
+</div>
 </div>
 
 <p>You can “wrap” this resolve function to assert that the documents are ok for the current user:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># Take a resolve function and call it.</span>
-<span class="c1"># Then, check that the result includes permitted records _only_.</span>
-<span class="c1"># @return [Proc] a new resolve function that checks the return values</span>
-<span class="k">def</span> <span class="nf">assert_allowed_documents</span><span class="p">(</span><span class="n">resolve_func</span><span class="p">)</span>
-  <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
-    <span class="n">documents</span> <span class="o">=</span> <span class="n">resolve_func</span><span class="p">.</span><span class="nf">call</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span>
-    <span class="n">current_user</span> <span class="o">=</span> <span class="n">ctx</span><span class="p">[</span><span class="ss">:current_user</span><span class="p">]</span>
-
-    <span class="k">if</span> <span class="n">documents</span><span class="p">.</span><span class="nf">all?</span> <span class="p">{</span> <span class="o">|</span><span class="n">d</span><span class="o">|</span> <span class="n">current_user</span><span class="p">.</span><span class="nf">can_view?</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="p">}</span>
-      <span class="n">documents</span>
-    <span class="k">else</span>
-      <span class="kp">nil</span>
-    <span class="k">end</span>
-  <span class="p">}</span>
-<span class="k">end</span>
-
-<span class="c1"># ...</span>
-
-<span class="n">field</span> <span class="ss">:documents</span><span class="p">,</span> <span class="n">types</span><span class="p">[</span><span class="no">DocumentType</span><span class="p">]</span> <span class="k">do</span>
-  <span class="c1"># wrap the resolve function with your assertion</span>
-  <span class="n">resolve</span> <span class="n">assert_allowed_documents</span><span class="p">(</span><span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
-    <span class="c1"># ...</span>
-  <span class="p">})</span>
-<span class="k">end</span>
-</code></pre>
+<div><div class="CodeRay">
+  <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span><span style="color:#777"># Take a resolve function and call it.</span>
+<span class="line-numbers"> <a href="#n2" name="n2">2</a></span><span style="color:#777"># Then, check that the result includes permitted records _only_.</span>
+<span class="line-numbers"> <a href="#n3" name="n3">3</a></span><span style="color:#777"># @return [Proc] a new resolve function that checks the return values</span>
+<span class="line-numbers"> <a href="#n4" name="n4">4</a></span><span style="color:#080;font-weight:bold">def</span> <span style="color:#06B;font-weight:bold">assert_allowed_documents</span>(resolve_func)
+<span class="line-numbers"> <a href="#n5" name="n5">5</a></span>  -&gt;(obj, args, ctx) {
+<span class="line-numbers"> <a href="#n6" name="n6">6</a></span>    documents = resolve_func.call(obj, args, ctx)
+<span class="line-numbers"> <a href="#n7" name="n7">7</a></span>    current_user = ctx[<span style="color:#A60">:current_user</span>]
+<span class="line-numbers"> <a href="#n8" name="n8">8</a></span>
+<span class="line-numbers"> <a href="#n9" name="n9">9</a></span>    <span style="color:#080;font-weight:bold">if</span> documents.all? { |d| current_user.can_view?(d) }
+<span class="line-numbers"><strong><a href="#n10" name="n10">10</a></strong></span>      documents
+<span class="line-numbers"><a href="#n11" name="n11">11</a></span>    <span style="color:#080;font-weight:bold">else</span>
+<span class="line-numbers"><a href="#n12" name="n12">12</a></span>      <span style="color:#069">nil</span>
+<span class="line-numbers"><a href="#n13" name="n13">13</a></span>    <span style="color:#080;font-weight:bold">end</span>
+<span class="line-numbers"><a href="#n14" name="n14">14</a></span>  }
+<span class="line-numbers"><a href="#n15" name="n15">15</a></span><span style="color:#080;font-weight:bold">end</span>
+<span class="line-numbers"><a href="#n16" name="n16">16</a></span>
+<span class="line-numbers"><a href="#n17" name="n17">17</a></span><span style="color:#777"># ...</span>
+<span class="line-numbers"><a href="#n18" name="n18">18</a></span>
+<span class="line-numbers"><a href="#n19" name="n19">19</a></span>field <span style="color:#A60">:documents</span>, types[<span style="color:#036;font-weight:bold">DocumentType</span>] <span style="color:#080;font-weight:bold">do</span>
+<span class="line-numbers"><strong><a href="#n20" name="n20">20</a></strong></span>  <span style="color:#777"># wrap the resolve function with your assertion</span>
+<span class="line-numbers"><a href="#n21" name="n21">21</a></span>  resolve assert_allowed_documents(-&gt;(obj, args, ctx) {
+<span class="line-numbers"><a href="#n22" name="n22">22</a></span>    <span style="color:#777"># ...</span>
+<span class="line-numbers"><a href="#n23" name="n23">23</a></span>  })
+<span class="line-numbers"><a href="#n24" name="n24">24</a></span><span style="color:#080;font-weight:bold">end</span>
+</pre></div>
+</div>
 </div>
 
 <p>This way, you can “catch” the returned value before giving it to a client.</p>
 
 <p>This approach can be further parameterized by implementing it as a class, for example:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># Assert that the current user has `permission` on the return value of `block`</span>
-<span class="k">class</span> <span class="nc">PermissionAssertion</span>
-  <span class="c1"># Get a permission level and the "inner" resolve function</span>
-  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">permission</span><span class="p">,</span> <span class="n">resolve_func</span><span class="p">)</span>
-    <span class="vi">@permission</span> <span class="o">=</span> <span class="n">permission</span>
-    <span class="vi">@resolve_func</span> <span class="o">=</span> <span class="n">resolve_func</span>
-  <span class="k">end</span>
-
-  <span class="c1"># GraphQL will call this, so delegate to the "inner" resolve function</span>
-  <span class="c1"># and check the return value</span>
-  <span class="k">def</span> <span class="nf">call</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span>
-    <span class="n">value</span> <span class="o">=</span> <span class="vi">@resolve_func</span><span class="p">.</span><span class="nf">call</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span>
-    <span class="n">current_user</span> <span class="o">=</span> <span class="n">ctx</span><span class="p">[</span><span class="ss">:current_user</span><span class="p">]</span>
-    <span class="k">if</span> <span class="n">current_user</span><span class="p">.</span><span class="nf">can?</span><span class="p">(</span><span class="vi">@permission</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
-      <span class="n">value</span>
-    <span class="k">else</span>
-      <span class="kp">nil</span>
-    <span class="k">end</span>
-  <span class="k">end</span>
-<span class="k">end</span>
-
-<span class="c1"># ...</span>
-
-<span class="c1"># Apply this class to the resolve function:</span>
-<span class="n">field</span> <span class="ss">:documents</span><span class="p">,</span> <span class="n">types</span><span class="p">[</span><span class="no">DocumentType</span><span class="p">]</span> <span class="k">do</span>
-  <span class="n">resolve</span> <span class="no">PermissionAssertion</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="ss">:view</span><span class="p">,</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
-    <span class="c1"># ...</span>
-  <span class="p">})</span>
-<span class="k">end</span>
-</code></pre>
+<div><div class="CodeRay">
+  <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span><span style="color:#777"># Assert that the current user has `permission` on the return value of `block`</span>
+<span class="line-numbers"> <a href="#n2" name="n2">2</a></span><span style="color:#080;font-weight:bold">class</span> <span style="color:#B06;font-weight:bold">PermissionAssertion</span>
+<span class="line-numbers"> <a href="#n3" name="n3">3</a></span>  <span style="color:#777"># Get a permission level and the &quot;inner&quot; resolve function</span>
+<span class="line-numbers"> <a href="#n4" name="n4">4</a></span>  <span style="color:#080;font-weight:bold">def</span> <span style="color:#06B;font-weight:bold">initialize</span>(permission, resolve_func)
+<span class="line-numbers"> <a href="#n5" name="n5">5</a></span>    <span style="color:#33B">@permission</span> = permission
+<span class="line-numbers"> <a href="#n6" name="n6">6</a></span>    <span style="color:#33B">@resolve_func</span> = resolve_func
+<span class="line-numbers"> <a href="#n7" name="n7">7</a></span>  <span style="color:#080;font-weight:bold">end</span>
+<span class="line-numbers"> <a href="#n8" name="n8">8</a></span>
+<span class="line-numbers"> <a href="#n9" name="n9">9</a></span>  <span style="color:#777"># GraphQL will call this, so delegate to the &quot;inner&quot; resolve function</span>
+<span class="line-numbers"><strong><a href="#n10" name="n10">10</a></strong></span>  <span style="color:#777"># and check the return value</span>
+<span class="line-numbers"><a href="#n11" name="n11">11</a></span>  <span style="color:#080;font-weight:bold">def</span> <span style="color:#06B;font-weight:bold">call</span>(obj, args, ctx)
+<span class="line-numbers"><a href="#n12" name="n12">12</a></span>    value = <span style="color:#33B">@resolve_func</span>.call(obj, args, ctx)
+<span class="line-numbers"><a href="#n13" name="n13">13</a></span>    current_user = ctx[<span style="color:#A60">:current_user</span>]
+<span class="line-numbers"><a href="#n14" name="n14">14</a></span>    <span style="color:#080;font-weight:bold">if</span> current_user.can?(<span style="color:#33B">@permission</span>, value)
+<span class="line-numbers"><a href="#n15" name="n15">15</a></span>      value
+<span class="line-numbers"><a href="#n16" name="n16">16</a></span>    <span style="color:#080;font-weight:bold">else</span>
+<span class="line-numbers"><a href="#n17" name="n17">17</a></span>      <span style="color:#069">nil</span>
+<span class="line-numbers"><a href="#n18" name="n18">18</a></span>    <span style="color:#080;font-weight:bold">end</span>
+<span class="line-numbers"><a href="#n19" name="n19">19</a></span>  <span style="color:#080;font-weight:bold">end</span>
+<span class="line-numbers"><strong><a href="#n20" name="n20">20</a></strong></span><span style="color:#080;font-weight:bold">end</span>
+<span class="line-numbers"><a href="#n21" name="n21">21</a></span>
+<span class="line-numbers"><a href="#n22" name="n22">22</a></span><span style="color:#777"># ...</span>
+<span class="line-numbers"><a href="#n23" name="n23">23</a></span>
+<span class="line-numbers"><a href="#n24" name="n24">24</a></span><span style="color:#777"># Apply this class to the resolve function:</span>
+<span class="line-numbers"><a href="#n25" name="n25">25</a></span>field <span style="color:#A60">:documents</span>, types[<span style="color:#036;font-weight:bold">DocumentType</span>] <span style="color:#080;font-weight:bold">do</span>
+<span class="line-numbers"><a href="#n26" name="n26">26</a></span>  resolve <span style="color:#036;font-weight:bold">PermissionAssertion</span>.new(<span style="color:#A60">:view</span>, -&gt;(obj, args, ctx) {
+<span class="line-numbers"><a href="#n27" name="n27">27</a></span>    <span style="color:#777"># ...</span>
+<span class="line-numbers"><a href="#n28" name="n28">28</a></span>  })
+<span class="line-numbers"><a href="#n29" name="n29">29</a></span><span style="color:#080;font-weight:bold">end</span>
+</pre></div>
+</div>
 </div>
 
         </div>
