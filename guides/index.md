@@ -109,3 +109,7 @@ If you're building a backend for [Relay](http://facebook.github.io/relay/), you'
 
 - A JSON dump of the schema, which you can get by sending [`GraphQL::Introspection::INTROSPECTION_QUERY`](https://github.com/rmosolgo/graphql-ruby/blob/master/lib/graphql/introspection/introspection_query.rb)
 - Relay-specific helpers for GraphQL, see the `GraphQL::Relay` guides.
+
+## Use with Apollo Client
+
+[Apollo Client](http://dev.apollodata.com/) is a full featured, simple to use GraphQL client with convenient integrations for popular view layers. You don't need to do anything special to connect Apollo Client to a `graphql-ruby` server.
