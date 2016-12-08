@@ -92,7 +92,7 @@ module GraphQL
           when GraphQL::Language::Nodes::Enum
             "#{arg.name}"
           else
-            JSON.dump(arg)
+            JSON.generate(arg, { quirks_mode: true })
           end
         end
 
