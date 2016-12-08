@@ -101,23 +101,20 @@
 
 <div><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span>connection <span style="color:#A60">:featured_comments</span>, <span style="color:#036;font-weight:bold">CommentType</span>.connection_type <span style="color:#080;font-weight:bold">do</span>
-<span class="line-numbers"> <a href="#n2" name="n2">2</a></span>  <span style="color:#777"># Use a name to disambiguate this from `CommentType.connection_type`</span>
-<span class="line-numbers"> <a href="#n3" name="n3">3</a></span>  name <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">CommentConnectionWithSince</span><span style="color:#710">&quot;</span></span>
+<span class="line-numbers"> <a href="#n2" name="n2">2</a></span>  <span style="color:#777"># Add an argument:</span>
+<span class="line-numbers"> <a href="#n3" name="n3">3</a></span>  argument <span style="color:#A60">:since</span>, types.String
 <span class="line-numbers"> <a href="#n4" name="n4">4</a></span>
-<span class="line-numbers"> <a href="#n5" name="n5">5</a></span>  <span style="color:#777"># Add an argument:</span>
-<span class="line-numbers"> <a href="#n6" name="n6">6</a></span>  argument <span style="color:#A60">:since</span>, types.String
-<span class="line-numbers"> <a href="#n7" name="n7">7</a></span>
-<span class="line-numbers"> <a href="#n8" name="n8">8</a></span>  <span style="color:#777"># Return an Array or ActiveRecord::Relation</span>
-<span class="line-numbers"> <a href="#n9" name="n9">9</a></span>  resolve -&gt;(post, args, ctx) {
-<span class="line-numbers"><strong><a href="#n10" name="n10">10</a></strong></span>    comments = post.comments.featured
-<span class="line-numbers"><a href="#n11" name="n11">11</a></span>
-<span class="line-numbers"><a href="#n12" name="n12">12</a></span>    <span style="color:#080;font-weight:bold">if</span> args[<span style="color:#A60">:since</span>]
-<span class="line-numbers"><a href="#n13" name="n13">13</a></span>      comments = comments.where(<span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">created_at &gt;= </span><span style="color:#710">&quot;</span></span>, since)
-<span class="line-numbers"><a href="#n14" name="n14">14</a></span>    <span style="color:#080;font-weight:bold">end</span>
-<span class="line-numbers"><a href="#n15" name="n15">15</a></span>
-<span class="line-numbers"><a href="#n16" name="n16">16</a></span>    comments
-<span class="line-numbers"><a href="#n17" name="n17">17</a></span>  }
-<span class="line-numbers"><a href="#n18" name="n18">18</a></span><span style="color:#080;font-weight:bold">end</span>
+<span class="line-numbers"> <a href="#n5" name="n5">5</a></span>  <span style="color:#777"># Return an Array or ActiveRecord::Relation</span>
+<span class="line-numbers"> <a href="#n6" name="n6">6</a></span>  resolve -&gt;(post, args, ctx) {
+<span class="line-numbers"> <a href="#n7" name="n7">7</a></span>    comments = post.comments.featured
+<span class="line-numbers"> <a href="#n8" name="n8">8</a></span>
+<span class="line-numbers"> <a href="#n9" name="n9">9</a></span>    <span style="color:#080;font-weight:bold">if</span> args[<span style="color:#A60">:since</span>]
+<span class="line-numbers"><strong><a href="#n10" name="n10">10</a></strong></span>      comments = comments.where(<span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">created_at &gt;= </span><span style="color:#710">&quot;</span></span>, since)
+<span class="line-numbers"><a href="#n11" name="n11">11</a></span>    <span style="color:#080;font-weight:bold">end</span>
+<span class="line-numbers"><a href="#n12" name="n12">12</a></span>
+<span class="line-numbers"><a href="#n13" name="n13">13</a></span>    comments
+<span class="line-numbers"><a href="#n14" name="n14">14</a></span>  }
+<span class="line-numbers"><a href="#n15" name="n15">15</a></span><span style="color:#080;font-weight:bold">end</span>
 </pre></div>
 </div>
 </div>
