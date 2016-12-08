@@ -2,9 +2,13 @@
 require "spec_helper"
 
 describe GraphQL::Schema::BuildFromDefinition do
+  # Build a schema from `definition` and assert that it
+  # prints out the same string.
+  # Then return the built schema.
   def build_schema_and_compare_output(definition)
     built_schema = GraphQL::Schema.from_definition(definition)
     assert_equal definition, GraphQL::Schema::Printer.print_schema(built_schema)
+    built_schema
   end
 
   describe '.build' do
@@ -346,7 +350,10 @@ type Root {
 }
       SCHEMA
 
-      build_schema_and_compare_output(schema.chop)
+      built_schema = build_schema_and_compare_output(schema.chop)
+      custom_scalar = built_schema.types["CustomScalar"]
+      assert_equal true, custom_scalar.valid_input?("anything", PermissiveWarden)
+      assert_equal true, custom_scalar.valid_input?(12345, PermissiveWarden)
     end
 
     it 'supports input object' do
