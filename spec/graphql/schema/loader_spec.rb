@@ -197,6 +197,12 @@ describe GraphQL::Schema::Loader do
       assert loaded_schema.execute(GraphQL::Introspection::INTROSPECTION_QUERY)
     end
 
+    it "has no-op coerce functions" do
+      custom_scalar = loaded_schema.types["BigInt"]
+      assert_equal true, custom_scalar.valid_input?("anything", PermissiveWarden)
+      assert_equal true, custom_scalar.valid_input?(12345, PermissiveWarden)
+    end
+
     it "sets correct default values on custom scalar arguments" do
       type = loaded_schema.types["Comment"]
       field = type.fields['fieldWithArg']

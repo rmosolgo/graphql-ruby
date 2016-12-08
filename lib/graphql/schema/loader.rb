@@ -36,6 +36,8 @@ module GraphQL
         raise(NotImplementedError, "This schema was loaded from string, so it can't resolve types for objects")
       }
 
+      NullScalarCoerce = ->(val) { val }
+
       class << self
         private
 
@@ -119,10 +121,9 @@ module GraphQL
             else
               ScalarType.define(
                 name: type["name"],
-                description: type["description"]
-              ) do
-                coerce ->(value) { value }
-              end
+                description: type["description"],
+                coerce: NullScalarCoerce,
+              )
             end
           when "UNION"
             UnionType.define(
