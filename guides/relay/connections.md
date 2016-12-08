@@ -28,9 +28,6 @@ You can also define custom arguments and a custom resolve function for connectio
 
 ```ruby
 connection :featured_comments, CommentType.connection_type do
-  # Use a name to disambiguate this from `CommentType.connection_type`
-  name "CommentConnectionWithSince"
-
   # Add an argument:
   argument :since, types.String
 
