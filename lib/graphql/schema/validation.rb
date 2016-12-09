@@ -178,14 +178,23 @@ module GraphQL
         }
 
         RESERVED_TYPE_NAME = ->(type) {
-          return unless type.name.start_with?('__')
-          return if INTROSPECTION_TYPES[type.name] && INTROSPECTION_TYPES[type.name] == type
-          "Name #{type.name.inspect} must not begin with \"__\", which is reserved by GraphQL introspection."
+          if type.name.start_with?('__') && INTROSPECTION_TYPES[type.name] != type
+            # TODO: make this a hard failure in a later version
+            warn("Name #{type.name.inspect} must not begin with \"__\", which is reserved by GraphQL introspection.")
+            nil
+          else
+            # ok name
+          end
         }
 
         RESERVED_NAME = ->(named_thing) {
-          return unless named_thing.name.start_with?('__')
-          "Name #{named_thing.name.inspect} must not begin with \"__\", which is reserved by GraphQL introspection."
+          if named_thing.name.start_with?('__')
+            # TODO: make this a hard failure in a later version
+            warn("Name #{named_thing.name.inspect} must not begin with \"__\", which is reserved by GraphQL introspection.")
+            nil
+          else
+            # no worries
+          end
         }
       end
 
