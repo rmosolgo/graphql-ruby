@@ -3,7 +3,7 @@ module GraphQL
   module Relay
     module ConnectionType
       # Create a connection which exposes edges of this type
-      def self.create_type(wrapped_type, edge_type: nil, edge_class: nil, &block)
+      def self.create_type(wrapped_type, edge_type: nil, edge_class: nil, nodes_field: false, &block)
         edge_type ||= wrapped_type.edge_type
         edge_class ||= GraphQL::Relay::Edge
         connection_type_name = "#{wrapped_type.name}Connection"
@@ -15,6 +15,14 @@ module GraphQL
             resolve ->(obj, args, ctx) {
               obj.edge_nodes.map { |item| edge_class.new(item, obj) }
             }
+          end
+          if nodes_field
+            field :nodes, types[wrapped_type] do
+              description "A list of nodes."
+              resolve ->(obj, args, ctx) {
+                obj.edge_nodes
+              }
+            end
           end
           field :pageInfo, !PageInfo, "Information to aid in pagination.", property: :page_info
           block && instance_eval(&block)
