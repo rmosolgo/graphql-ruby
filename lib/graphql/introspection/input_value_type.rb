@@ -11,7 +11,7 @@ GraphQL::Introspection::InputValueType = GraphQL::ObjectType.define do
     resolve ->(obj, args, ctx) {
       if obj.default_value?
         value = obj.default_value
-        value.nil? ? 'null' : JSON.generate(obj.type.coerce_result(value), quirks_mode: true)
+        value.nil? ? 'null' : GraphQL::Language.serialize(obj.type.coerce_result(value))
       else
         nil
       end

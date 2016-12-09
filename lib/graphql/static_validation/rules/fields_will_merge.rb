@@ -77,7 +77,7 @@ module GraphQL
 
           args = defs.map { |defn| reduce_list(defn.arguments)}.uniq
           if args.length != 1
-            errors << message("Field '#{name}' has an argument conflict: #{args.map{|arg| JSON.dump(arg)}.join(" or ")}?", defs.first, context: context)
+            errors << message("Field '#{name}' has an argument conflict: #{args.map{ |arg| GraphQL::Language.serialize(arg) }.join(" or ")}?", defs.first, context: context)
           end
 
           @errors = errors
@@ -92,7 +92,7 @@ module GraphQL
           when GraphQL::Language::Nodes::Enum
             "#{arg.name}"
           else
-            JSON.generate(arg, { quirks_mode: true })
+            GraphQL::Language.serialize(arg)
           end
         end
 

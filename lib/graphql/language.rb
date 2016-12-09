@@ -7,3 +7,12 @@ require "graphql/language/parser"
 require "graphql/language/token"
 require "graphql/language/visitor"
 require "graphql/language/comments"
+
+module GraphQL
+  module Language
+    # @api private
+    def self.serialize(value)
+      JSON.generate(value, quirks_mode: true)
+    end
+  end
+end

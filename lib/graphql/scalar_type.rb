@@ -46,7 +46,7 @@ module GraphQL
     def validate_non_null_input(value, warden)
       result = Query::InputValidationResult.new
       if coerce_non_null_input(value).nil?
-        result.add_problem("Could not coerce value #{JSON.generate(value, quirks_mode: true)} to #{name}")
+        result.add_problem("Could not coerce value #{GraphQL::Language.serialize(value)} to #{name}")
       end
       result
     end
