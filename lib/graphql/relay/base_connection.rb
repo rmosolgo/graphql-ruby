@@ -16,13 +16,13 @@ module GraphQL
       CURSOR_SEPARATOR = "---"
 
       # Map of collection class names -> connection_classes
-      # eg {"Array" => ArrayConnection}
+      # eg `{"Array" => ArrayConnection}`
       CONNECTION_IMPLEMENTATIONS = {}
 
       class << self
         # Find a connection implementation suitable for exposing `nodes`
         #
-        # @param [Object] A collection of nodes (eg, Array, AR::Relation)
+        # @param nodes [Object] A collection of nodes (eg, Array, AR::Relation)
         # @return [subclass of BaseConnection] a connection Class for wrapping `nodes`
         def connection_for_nodes(nodes)
           # Check for class _names_ because classes can be redefined in Rails development
@@ -40,8 +40,8 @@ module GraphQL
 
         # Add `connection_class` as the connection wrapper for `nodes_class`
         # eg, `RelationConnection` is the implementation for `AR::Relation`
-        # @param [Class] A class representing a collection (eg, Array, AR::Relation)
-        # @param [Class] A class implementing Connection methods
+        # @param nodes_class [Class] A class representing a collection (eg, Array, AR::Relation)
+        # @param connection_class [Class] A class implementing Connection methods
         def register_connection_implementation(nodes_class, connection_class)
           CONNECTION_IMPLEMENTATIONS[nodes_class.name] = connection_class
         end

@@ -13,10 +13,9 @@ module GraphQL
       #
       # This is used for checking whether fragments apply to an object.
       #
-      # @param [Object] the value which GraphQL is currently exposing
-      # @param [GraphQL::BaseType] the type which GraphQL is using for `value` now
-      # @param [GraphQL::BaseType] can `value` be exposed using this type?
-      # @param [GraphQL::Query::Context] the context for the current query
+      # @param current_type [GraphQL::BaseType] the type which GraphQL is using now
+      # @param potential_type [GraphQL::BaseType] can this type be used from here?
+      # @param query_ctx [GraphQL::Query::Context] the context for the current query
       # @return [Boolean] true if `value` be evaluated as a `potential_type`
       def self.compatible?(current_type, potential_type, query_ctx)
         if current_type == potential_type
