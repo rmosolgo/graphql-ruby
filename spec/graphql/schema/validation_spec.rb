@@ -7,6 +7,10 @@ describe GraphQL::Schema::Validation do
     assert_includes validation_error, error_substring
   end
 
+  def assert_validation_warns(object, warning)
+    assert_output("", warning + "\n") { GraphQL::Schema::Validation.validate(object) }
+  end
+
   describe "validating Fields" do
     let(:unnamed_field) {
       GraphQL::Field.define do
@@ -53,7 +57,7 @@ describe GraphQL::Schema::Validation do
     end
 
     it "cannot use reserved name" do
-      assert_error_includes invalid_name_field, 'Name "__Something" must not begin with "__", which is reserved by GraphQL introspection.'
+      assert_validation_warns invalid_name_field, 'Name "__Something" must not begin with "__", which is reserved by GraphQL introspection.'
     end
 
     it "requires a BaseType for type" do
@@ -94,7 +98,7 @@ describe GraphQL::Schema::Validation do
     end
 
     it "cannot use reserved name" do
-      assert_error_includes invalid_name_type, 'Name "__Something" must not begin with "__", which is reserved by GraphQL introspection.'
+      assert_validation_warns invalid_name_type, 'Name "__Something" must not begin with "__", which is reserved by GraphQL introspection.'
     end
 
     it "requires String-or-nil description" do
@@ -256,7 +260,7 @@ describe GraphQL::Schema::Validation do
     end
 
     it "cannot use reserved name" do
-      assert_error_includes invalid_name_argument, 'Name "__Something" must not begin with "__", which is reserved by GraphQL introspection.'
+      assert_validation_warns invalid_name_argument, 'Name "__Something" must not begin with "__", which is reserved by GraphQL introspection.'
     end
 
     it "allows null default value for nullable argument" do
