@@ -44,6 +44,7 @@
                 <li><a href="/graphql-ruby/schema/configuration_options">Configuration Options</a></li>
                 <li><a href="/graphql-ruby/schema/code_reuse">Code Reuse</a></li>
                 <li><a href="/graphql-ruby/schema/instrumentation">Instrumentation</a></li>
+                <li><a href="/graphql-ruby/schema/lazy_execution">Lazy Execution</a></li>
                 <li><a href="/graphql-ruby/schema/limiting_visibility">Limiting Visibility</a></li>
                 <li><a href="/graphql-ruby/schema/testing">Testing</a></li>
               </ul>
@@ -79,6 +80,7 @@
   <li>Data entry points: <code>query</code>, <code>mutation</code>, <code>subscription</code></li>
   <li>Manually adding types: <code>orphan_types</code></li>
   <li>Execution functions: <code>resolve_type</code>, <code>id_from_object</code>, <code>object_from_id</code></li>
+  <li>Type error handling: <code>type_error</code></li>
   <li>Security options: <code>max_depth</code>, <code>max_complexity</code></li>
   <li>Middleware: <code>middleware</code></li>
   <li>Query analyzers: <code>query_analyzer</code></li>
@@ -147,6 +149,38 @@
 </div>
 
 <p>See <a href="/graphql-ruby/relay/object_identification">“Object Identification”</a> for more information about Relay IDs.</p>
+
+<h2 id="type-error-handling">Type Error Handling</h2>
+
+<p>In some cases, runtime data can cause GraphQL execution to reach an invalid state:</p>
+
+<ul>
+  <li>A <code>resolve</code> function returned <code>nil</code> for a non-null type</li>
+  <li>A <code>resolve</code> function’s value couldn’t be resolved to a valid Union or Interface member (<a href="http://www.rubydoc.info/gems/graphql/Schema#resolve_type-instance_method" target="_blank"><code>Schema#resolve_type</code></a> returned an unexpected value)</li>
+</ul>
+
+<p>You can specify behavior in these cases by defining a <a href="http://www.rubydoc.info/gems/graphql/Schema#type_error-instance_method" target="_blank"><code>Schema#type_error</code></a> hook:</p>
+
+<div><div class="CodeRay">
+  <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">MySchema</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Schema</span>.define <span style="color:#080;font-weight:bold">do</span>
+<span class="line-numbers"><a href="#n2" name="n2">2</a></span>  type_error -&gt;(type_error, query_ctx) {
+<span class="line-numbers"><a href="#n3" name="n3">3</a></span>    <span style="color:#777"># Handle a failed runtime type coercion</span>
+<span class="line-numbers"><a href="#n4" name="n4">4</a></span>  }
+<span class="line-numbers"><a href="#n5" name="n5">5</a></span><span style="color:#080;font-weight:bold">end</span>
+</pre></div>
+</div>
+</div>
+
+<p>It is called with an instance of <a href="http://www.rubydoc.info/gems/graphql/GraphQL/UnresolvedTypeError" target="_blank"><code>GraphQL::UnresolvedTypeError</code></a> or <a href="http://www.rubydoc.info/gems/graphql/GraphQL/InvalidNullError" target="_blank"><code>GraphQL::InvalidNullError</code></a> and the query context (a <a href="http://www.rubydoc.info/gems/graphql/GraphQL/Query/Context" target="_blank"><code>GraphQL::Query::Context</code></a>).</p>
+
+<p>If you don’t specify a hook, you get the default behavior:</p>
+
+<ul>
+  <li>Unexpected <code>nil</code>s add an error the response’s <code>"errors"</code> key</li>
+  <li>Unresolved Union / Interface types raise <a href="http://www.rubydoc.info/gems/graphql/GraphQL/UnresolvedTypeError" target="_blank"><code>GraphQL::UnresolvedTypeError</code></a></li>
+</ul>
+
+<p>An object that fails type resolution is treated as <code>nil</code>.</p>
 
 <h2 id="security-options">Security Options</h2>
 

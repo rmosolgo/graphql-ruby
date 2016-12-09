@@ -44,6 +44,7 @@
                 <li><a href="/graphql-ruby/schema/configuration_options">Configuration Options</a></li>
                 <li><a href="/graphql-ruby/schema/code_reuse">Code Reuse</a></li>
                 <li><a href="/graphql-ruby/schema/instrumentation">Instrumentation</a></li>
+                <li><a href="/graphql-ruby/schema/lazy_execution">Lazy Execution</a></li>
                 <li><a href="/graphql-ruby/schema/limiting_visibility">Limiting Visibility</a></li>
                 <li><a href="/graphql-ruby/schema/testing">Testing</a></li>
               </ul>
@@ -77,7 +78,7 @@
 
 <p><code>graphql-ruby</code> includes built-in connection support for <code>Array</code>, <code>ActiveRecord::Relation</code>s, and <code>Sequel::Dataset</code>s. You can define custom connection classes to expose other collections with GraphQL.</p>
 
-<h3 id="connection-fields">Connection fields</h3>
+<h2 id="connection-fields">Connection fields</h2>
 
 <p>To define a connection field, use the <code>connection</code> helper. For a return type, get a type’s <code>.connection_type</code>.  The <code>resolve</code> proc should return a collection (eg, <code>Array</code> or <code>ActiveRecord::Relation</code>) <em>without</em> pagination. (The connection will paginate the collection).</p>
 
@@ -129,7 +130,7 @@
 </div>
 </div>
 
-<h3 id="connection-types">Connection types</h3>
+<h2 id="connection-types">Connection types</h2>
 
 <p>You can customize a connection type with <code>.define_connection</code>:</p>
 
@@ -278,7 +279,7 @@
 </div>
 </div>
 
-<h3 id="connection-objects">Connection objects</h3>
+<h2 id="connection-objects">Connection objects</h2>
 
 <p>Maybe you need to make a connection object yourself (for example, to return a connection type from a mutation). You can create a connection object like this:</p>
 
@@ -374,6 +375,35 @@
 </pre></div>
 </div>
 </div>
+
+<h2 id="cursors">Cursors</h2>
+
+<p>By default, cursors are encoded in base64 to make them opaque to a human client. You can specify a custom encoder with <code>Schema#cursor_encoder</code>. The value should be an object which responds to <code>.encode(plain_text, nonce:)</code> and <code>.decode(encoded_text, nonce: false)</code>.</p>
+
+<p>For example, to use URL-safe base-64 encoding:</p>
+
+<div><div class="CodeRay">
+  <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span><span style="color:#080;font-weight:bold">module</span> <span style="color:#B06;font-weight:bold">URLSafeBase64Encoder</span>
+<span class="line-numbers"> <a href="#n2" name="n2">2</a></span>  <span style="color:#080;font-weight:bold">def</span> <span style="color:#069">self</span>.<span style="color:#06B;font-weight:bold">encode</span>(txt, <span style="color:#606">nonce</span>: <span style="color:#069">false</span>)
+<span class="line-numbers"> <a href="#n3" name="n3">3</a></span>    <span style="color:#036;font-weight:bold">Base64</span>.urlsafe_encode64(txt)
+<span class="line-numbers"> <a href="#n4" name="n4">4</a></span>  <span style="color:#080;font-weight:bold">end</span>
+<span class="line-numbers"> <a href="#n5" name="n5">5</a></span>
+<span class="line-numbers"> <a href="#n6" name="n6">6</a></span>  <span style="color:#080;font-weight:bold">def</span> <span style="color:#069">self</span>.<span style="color:#06B;font-weight:bold">decode</span>(txt, <span style="color:#606">nonce</span>: <span style="color:#069">false</span>)
+<span class="line-numbers"> <a href="#n7" name="n7">7</a></span>    <span style="color:#036;font-weight:bold">Base64</span>.urlsafe_decode64(txt)
+<span class="line-numbers"> <a href="#n8" name="n8">8</a></span>  <span style="color:#080;font-weight:bold">end</span>
+<span class="line-numbers"> <a href="#n9" name="n9">9</a></span><span style="color:#080;font-weight:bold">end</span>
+<span class="line-numbers"><strong><a href="#n10" name="n10">10</a></strong></span>
+<span class="line-numbers"><a href="#n11" name="n11">11</a></span><span style="color:#036;font-weight:bold">MySchema</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Schema</span>.define <span style="color:#080;font-weight:bold">do</span>
+<span class="line-numbers"><a href="#n12" name="n12">12</a></span>  <span style="color:#777"># ...</span>
+<span class="line-numbers"><a href="#n13" name="n13">13</a></span>  cursor_encoder(<span style="color:#036;font-weight:bold">URLSafeBase64Encoder</span>)
+<span class="line-numbers"><a href="#n14" name="n14">14</a></span><span style="color:#080;font-weight:bold">end</span>
+</pre></div>
+</div>
+</div>
+
+<p>Now, all connections will use URL-safe base-64 encoding.</p>
+
+<p>From a connection instance, the <code>cursor_encoders</code> methods available via <a href="http://www.rubydoc.info/gems/graphql/GraphQL/Relay/BaseConnection#encode-instance_method" target="_blank"><code>GraphQL::Relay::BaseConnection#encode</code></a> and <a href="http://www.rubydoc.info/gems/graphql/GraphQL/Relay/BaseConnection#decode-instance_method" target="_blank"><code>GraphQL::Relay::BaseConnection#decode</code></a></p>
 
         </div>
       </div>

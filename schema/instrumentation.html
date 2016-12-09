@@ -44,6 +44,7 @@
                 <li><a href="/graphql-ruby/schema/configuration_options">Configuration Options</a></li>
                 <li><a href="/graphql-ruby/schema/code_reuse">Code Reuse</a></li>
                 <li><a href="/graphql-ruby/schema/instrumentation">Instrumentation</a></li>
+                <li><a href="/graphql-ruby/schema/lazy_execution">Lazy Execution</a></li>
                 <li><a href="/graphql-ruby/schema/limiting_visibility">Limiting Visibility</a></li>
                 <li><a href="/graphql-ruby/schema/testing">Testing</a></li>
               </ul>
@@ -119,6 +120,8 @@
 </div>
 
 <p>It can be attached as shown above. You can use <code>redefine { ... }</code> to make a shallow copy of the  <a href="http://www.rubydoc.info/gems/graphql/GraphQL/Field" target="_blank"><code>GraphQL::Field</code></a> and extend its definition.</p>
+
+<p><a href="http://www.rubydoc.info/gems/graphql/GraphQL/Field#lazy_resolve_proc-instance_method" target="_blank"><code>GraphQL::Field#lazy_resolve_proc</code></a> can also be instrumented. This is called for objects registered with <a href="/graphql-ruby/schema/lazy_execution">lazy execution</a>.</p>
 
 <h2 id="query-instrumentation">Query Instrumentation</h2>
 

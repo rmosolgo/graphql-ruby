@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>GraphQL Ruby - Schema — Limiting Visibility</title>
+    <title>GraphQL Ruby - Schema — Lazy Execution</title>
     <link rel="stylesheet" href="/graphql-ruby/css/main.css">
     <link rel="icon" href="/graphql-ruby/graphql-ruby-icon.png">
     <meta name="generator">
@@ -73,72 +73,97 @@
           <h3><a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a></h3>
         </div>
         <div class="cell -9of12">
-          <h1 class="guide-header">Schema — Limiting Visibility</h1>
-          <p>Sometimes, you want to hide schema elements from some users. For example:</p>
+          <h1 class="guide-header">Schema — Lazy Execution</h1>
+          <p>With lazy execution, you can optimize access to external services (such as databases) by making batched calls. Building a lazy loader has three steps:</p>
 
 <ul>
-  <li>some elements are feature flagged; or</li>
-  <li>some elements require higher permissions</li>
+  <li>Define a lazy-loading class with <em>one</em> method for loading &amp; returning a value</li>
+  <li>Connect it to your schema with <a href="http://www.rubydoc.info/gems/graphql/GraphQL/Schema#lazy_resolve-instance_method" target="_blank"><code>GraphQL::Schema#lazy_resolve</code></a></li>
+  <li>In <code>resolve</code> functions, return instances of the lazy-loading class</li>
 </ul>
 
-<p>If you only want to limit <em>access</em> to these fields, consider the options described in the <a href="/graphql-ruby/queries/authorization">authorization guide</a>.</p>
+<p><a href="https://github.com/shopify/graphql-batch"><code>graphql-batch</code></a> provides a powerful, flexible toolkit for lazy resolution with GraphQL.</p>
 
-<p>If you want to <em>completely hide</em> some fields, types, enum values or arguments, read on!</p>
+<h2 id="example-batched-find">Example: Batched Find</h2>
 
-<h2 id="masking">Masking</h2>
+<p>Here’s a way to find many objects by ID using one database call, preventing N+1 queries.</p>
 
-<p>You can hide parts of the schema by passing <code>except:</code> to <code>Schema.execute</code>. For example:</p>
+<ol>
+  <li>Lazy-loading class which finds models by ID.</li>
+</ol>
+
+<p>```ruby
+  class LazyFindPerson
+    def initialize(query_ctx, person_id)
+      @person_id = person_id
+      # Initialize the loading state for this query,
+      # or get the previously-initiated state
+      @lazy_state = query_ctx[:lazy_find_person] ||= {
+        pending_ids: [],
+        loaded_ids: {},
+      }
+      # Register this ID to be loaded later:
+      @lazy_state[:pending_ids] « person_id
+    end</p>
+
+<pre><code># Return the loaded record, hitting the database if needed
+def person
+  # Check if the record was already loaded:
+  loaded_record = @lazy_state[:loaded_ids][@person_id]
+  if loaded_record
+    # The pending IDs were already loaded,
+    # so return the result of that previous load
+    loaded_record
+  else
+    # The record hasn't been loaded yet, so
+    # hit the database with all pending IDs
+    pending_ids = @lazy_state[:pending_ids]
+    people = Person.where(id: pending_ids)
+    people.each { |person| @lazy_state[:loaded_ids][person.id] = person }
+    # Now, get the matching person from the loaded result:
+    @lazy_state[:loaded_ids][@person_id]
+  end
+end   ```
+</code></pre>
+
+<ol>
+  <li>Connect the lazy resolve method</li>
+</ol>
+
+<p><code>ruby
+  MySchema = GraphQL::Schema.define do
+    # ...
+    lazy_resolve(LazyFindPerson, :person)
+  end
+ </code></p>
+
+<ol>
+  <li>Return lazy objects from <code>resolve</code></li>
+</ol>
+
+<p><code>ruby
+  field :author, PersonType do
+    resolve -&gt;(obj, args, ctx) {
+      LazyFindPerson(ctx, obj.author_id)
+    }
+  end
+ </code></p>
+
+<p>Now, calls to <code>author</code> will use batched database access. For example, this query:</p>
 
 <div><div class="CodeRay">
-  <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span>mask = <span style="color:#036;font-weight:bold">PermissionMask</span>.new(<span style="color:#33B">@current_user</span>)
-<span class="line-numbers"><a href="#n2" name="n2">2</a></span><span style="color:#036;font-weight:bold">MySchema</span>.execute(query_string, <span style="color:#606">except</span>: mask)
+  <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span>{
+<span class="line-numbers"><a href="#n2" name="n2">2</a></span>  p1: post(id: 1) { author { name } }
+<span class="line-numbers"><a href="#n3" name="n3">3</a></span>  p2: post(id: 2) { author { name } }
+<span class="line-numbers"><a href="#n4" name="n4">4</a></span>  p3: post(id: 3) { author { name } }
+<span class="line-numbers"><a href="#n5" name="n5">5</a></span>}
 </pre></div>
 </div>
 </div>
 
-<p>During that query, some elements will be hidden. This means that fields, types, arguments or enum values will be treated as if they were not defined at all.</p>
+<p>Will only make one query to load the <code>author</code> values.</p>
 
-<p>A mask must respond to <code>#call(schema_member)</code>. When that methods returns truthy, the schema member will be hidden.</p>
-
-<p>For example, here’s an implementation of <code>PermissionMask</code> above:</p>
-
-<div><div class="CodeRay">
-  <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span><span style="color:#080;font-weight:bold">class</span> <span style="color:#B06;font-weight:bold">PermissionMask</span>
-<span class="line-numbers"> <a href="#n2" name="n2">2</a></span>  <span style="color:#080;font-weight:bold">def</span> <span style="color:#06B;font-weight:bold">initialize</span>(person)
-<span class="line-numbers"> <a href="#n3" name="n3">3</a></span>    <span style="color:#33B">@person</span> = person
-<span class="line-numbers"> <a href="#n4" name="n4">4</a></span>  <span style="color:#080;font-weight:bold">end</span>
-<span class="line-numbers"> <a href="#n5" name="n5">5</a></span>
-<span class="line-numbers"> <a href="#n6" name="n6">6</a></span>  <span style="color:#777"># If this returns true, the schema member will be hidden</span>
-<span class="line-numbers"> <a href="#n7" name="n7">7</a></span>  <span style="color:#080;font-weight:bold">def</span> <span style="color:#06B;font-weight:bold">call</span>(schema_member)
-<span class="line-numbers"> <a href="#n8" name="n8">8</a></span>    <span style="color:#036;font-weight:bold">Permissions</span>.hidden?(person, schema_member)
-<span class="line-numbers"> <a href="#n9" name="n9">9</a></span>  <span style="color:#080;font-weight:bold">end</span>
-<span class="line-numbers"><strong><a href="#n10" name="n10">10</a></strong></span><span style="color:#080;font-weight:bold">end</span>
-</pre></div>
-</div>
-</div>
-
-<p>The <code>schema_member</code> may be any of:</p>
-
-<ul>
-  <li>Type (<a href="http://www.rubydoc.info/gems/graphql/GraphQL/BaseType" target="_blank"><code>GraphQL::BaseType</code></a> and subclasses)</li>
-  <li>Field (<a href="http://www.rubydoc.info/gems/graphql/GraphQL/Field" target="_blank"><code>GraphQL::Field</code></a>)</li>
-  <li>Argument (<a href="http://www.rubydoc.info/gems/graphql/GraphQL/Argument" target="_blank"><code>GraphQL::Argument</code></a>)</li>
-  <li>Enum value (<a href="http://www.rubydoc.info/gems/graphql/GraphQL/EnumType/EnumValue" target="_blank"><code>GraphQL::EnumType::EnumValue</code></a>)</li>
-</ul>
-
-<h2 id="use-with-metadata">Use with Metadata</h2>
-
-<p>This feature pairs nicely with attaching custom data to types. See the <a href="/graphql-ruby/schema/types_and_fields">types and fields guide</a> for information about assigning values to an object’s <code>metadata</code>.</p>
-
-<p>Then, you can check <code>metadata</code> in your mask. For example, to hide fields based on a metadata flag:</p>
-
-<div><div class="CodeRay">
-  <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#777"># Hide secret objects from this user</span>
-<span class="line-numbers"><a href="#n2" name="n2">2</a></span>top_secret = -&gt;(schema_member) { schema_member.metadata[<span style="color:#A60">:top_secret</span>]}
-<span class="line-numbers"><a href="#n3" name="n3">3</a></span><span style="color:#036;font-weight:bold">MySchema</span>.execute(query_string, <span style="color:#606">except</span>: top_secret)
-</pre></div>
-</div>
-</div>
+<p>The example above is simple and has some shortcomings. Consider the <code>graphql-batch</code> gem for a robust solution to batched resolution.</p>
 
         </div>
       </div>
