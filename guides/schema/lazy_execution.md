@@ -10,64 +10,67 @@ With lazy execution, you can optimize access to external services (such as datab
 
 [`graphql-batch`](https://github.com/shopify/graphql-batch) provides a powerful, flexible toolkit for lazy resolution with GraphQL.
 
+
+Lazy resolution can be [instrumented]({{ site.baseurl }}/schema/instrumentation).
+
 ## Example: Batched Find
 
 Here's a way to find many objects by ID using one database call, preventing N+1 queries.
 
 1. Lazy-loading class which finds models by ID.
 
-  ```ruby
-  class LazyFindPerson
-    def initialize(query_ctx, person_id)
-      @person_id = person_id
-      # Initialize the loading state for this query,
-      # or get the previously-initiated state
-      @lazy_state = query_ctx[:lazy_find_person] ||= {
-        pending_ids: [],
-        loaded_ids: {},
-      }
-      # Register this ID to be loaded later:
-      @lazy_state[:pending_ids] << person_id
-    end
+```ruby
+class LazyFindPerson
+  def initialize(query_ctx, person_id)
+    @person_id = person_id
+    # Initialize the loading state for this query,
+    # or get the previously-initiated state
+    @lazy_state = query_ctx[:lazy_find_person] ||= {
+      pending_ids: [],
+      loaded_ids: {},
+    }
+    # Register this ID to be loaded later:
+    @lazy_state[:pending_ids] << person_id
+  end
 
-    # Return the loaded record, hitting the database if needed
-    def person
-      # Check if the record was already loaded:
-      loaded_record = @lazy_state[:loaded_ids][@person_id]
-      if loaded_record
-        # The pending IDs were already loaded,
-        # so return the result of that previous load
-        loaded_record
-      else
-        # The record hasn't been loaded yet, so
-        # hit the database with all pending IDs
-        pending_ids = @lazy_state[:pending_ids]
-        people = Person.where(id: pending_ids)
-        people.each { |person| @lazy_state[:loaded_ids][person.id] = person }
-        # Now, get the matching person from the loaded result:
-        @lazy_state[:loaded_ids][@person_id]
-      end
+  # Return the loaded record, hitting the database if needed
+  def person
+    # Check if the record was already loaded:
+    loaded_record = @lazy_state[:loaded_ids][@person_id]
+    if loaded_record
+      # The pending IDs were already loaded,
+      # so return the result of that previous load
+      loaded_record
+    else
+      # The record hasn't been loaded yet, so
+      # hit the database with all pending IDs
+      pending_ids = @lazy_state[:pending_ids]
+      people = Person.where(id: pending_ids)
+      people.each { |person| @lazy_state[:loaded_ids][person.id] = person }
+      # Now, get the matching person from the loaded result:
+      @lazy_state[:loaded_ids][@person_id]
     end
-  ```
+  end
+```
 
 2. Connect the lazy resolve method
 
-  ```ruby
-  MySchema = GraphQL::Schema.define do
-    # ...
-    lazy_resolve(LazyFindPerson, :person)
-  end
-  ```
+```ruby
+MySchema = GraphQL::Schema.define do
+  # ...
+  lazy_resolve(LazyFindPerson, :person)
+end
+```
 
 3. Return lazy objects from `resolve`
 
-  ```ruby
-  field :author, PersonType do
-    resolve ->(obj, args, ctx) {
-      LazyFindPerson(ctx, obj.author_id)
-    }
-  end
-  ```
+```ruby
+field :author, PersonType do
+  resolve ->(obj, args, ctx) {
+    LazyFindPerson(ctx, obj.author_id)
+  }
+end
+```
 
 Now, calls to `author` will use batched database access. For example, this query:
 
