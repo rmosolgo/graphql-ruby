@@ -151,7 +151,7 @@ module GraphQL
         when Nodes::AbstractNode
           node.to_query_string(indent: indent)
         when FalseClass, Float, Integer, NilClass, String, TrueClass
-          JSON.generate(node, quirks_mode: true)
+          GraphQL::Language.serialize(node)
         when Array
           "[#{node.map { |v| generate(v) }.join(", ")}]".dup
         when Hash

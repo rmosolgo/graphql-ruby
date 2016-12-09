@@ -111,7 +111,7 @@ module GraphQL
       matching_value = allowed_values.find { |v| v.name == value_name }
 
       if matching_value.nil?
-        result.add_problem("Expected #{JSON.generate(value_name, quirks_mode: true)} to be one of: #{allowed_values.map(&:name).join(', ')}")
+        result.add_problem("Expected #{GraphQL::Language.serialize(value_name)} to be one of: #{allowed_values.map(&:name).join(', ')}")
       end
 
       result
