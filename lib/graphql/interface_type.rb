@@ -32,6 +32,11 @@ module GraphQL
       @fields = {}
     end
 
+    def initialize_copy(other)
+      super
+      @fields = other.fields.dup
+    end
+
     def kind
       GraphQL::TypeKinds::INTERFACE
     end

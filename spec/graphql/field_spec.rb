@@ -165,5 +165,21 @@ describe GraphQL::Field do
       assert_equal 1, int_field.arguments.size
       assert_equal 2, int_field_2.arguments.size
     end
+
+    it "copies metadata, even out-of-bounds assignments" do
+      int_field = GraphQL::Field.define do
+        metadata(:a, 1)
+        argument :value, types.Int
+      end
+      int_field.metadata[:b] = 2
+
+      int_field_2 = int_field.redefine do
+        metadata(:c, 3)
+        argument :value_2, types.Int
+      end
+
+      assert_equal({a: 1, b: 2}, int_field.metadata)
+      assert_equal({a: 1, b: 2, c: 3}, int_field_2.metadata)
+    end
   end
 end

@@ -39,6 +39,13 @@ module GraphQL
       @dirty_interfaces = []
     end
 
+    def initialize_copy(other)
+      super
+      @clean_interfaces = nil
+      @dirty_interfaces = other.dirty_interfaces.dup
+      @fields = other.fields.dup
+    end
+
     # @param new_interfaces [Array<GraphQL::Interface>] interfaces that this type implements
     def interfaces=(new_interfaces)
       @clean_interfaces = nil
@@ -68,6 +75,10 @@ module GraphQL
     def all_fields
       interface_fields.merge(self.fields).values
     end
+
+    protected
+
+    attr_reader :dirty_interfaces
 
     private
 

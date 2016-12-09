@@ -45,6 +45,11 @@ module GraphQL
       @arguments = {}
     end
 
+    def initialize_copy(other)
+      super
+      @arguments = other.arguments.dup
+    end
+
     def kind
       GraphQL::TypeKinds::INPUT_OBJECT
     end
