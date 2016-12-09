@@ -32,7 +32,7 @@ module GraphQL
 
       # Apply cursors to edges
       def sliced_nodes
-        @sliced_nodes ||= nodes[starting_offset..-1]
+        @sliced_nodes ||= nodes[starting_offset..-1] || []
       end
 
       def index_from_cursor(cursor)

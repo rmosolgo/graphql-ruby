@@ -81,6 +81,12 @@ describe GraphQL::Relay::ArrayConnection do
       assert_equal(["X-Wing", "Y-Wing"], get_names(result))
     end
 
+    it 'handles cursors beyond the bounds of the array' do
+      overreaching_cursor = Base64.strict_encode64("100")
+      result = star_wars_query(query_string, "after" => overreaching_cursor, "first" => 2)
+      assert_equal([], get_names(result))
+    end
+
     it 'applies custom arguments' do
       result = star_wars_query(query_string, "nameIncludes" => "Wing", "first" => 2)
       names = get_names(result)
