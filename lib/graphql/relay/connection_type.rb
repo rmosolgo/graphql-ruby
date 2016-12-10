@@ -2,8 +2,14 @@
 module GraphQL
   module Relay
     module ConnectionType
+      class << self
+        attr_accessor :default_nodes_field
+      end
+
+      self.default_nodes_field = false
+
       # Create a connection which exposes edges of this type
-      def self.create_type(wrapped_type, edge_type: nil, edge_class: nil, nodes_field: false, &block)
+      def self.create_type(wrapped_type, edge_type: nil, edge_class: nil, nodes_field: ConnectionType.default_nodes_field, &block)
         edge_type ||= wrapped_type.edge_type
         edge_class ||= GraphQL::Relay::Edge
         connection_type_name = "#{wrapped_type.name}Connection"
