@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module GraphQL
   module Execution
     class Lazy
@@ -26,6 +27,10 @@ module GraphQL
         # @return [Symbol, nil] The `lazy_value_method` for this object, or nil
         def get(value)
           @storage[value.class]
+        end
+
+        def each
+          @storage.each { |k, v| yield(k,v) }
         end
       end
     end

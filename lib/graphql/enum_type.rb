@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module GraphQL
   # Represents a collection of related values.
   # By convention, enum names are `SCREAMING_CASE_NAMES`,
@@ -78,6 +79,12 @@ module GraphQL
       @values_by_name = {}
     end
 
+    def initialize_copy(other)
+      super
+      self.values = other.values.values
+    end
+
+
     # @param new_values [Array<EnumValue>] The set of values contained in this type
     def values=(new_values)
       @values_by_name = {}
@@ -104,7 +111,7 @@ module GraphQL
       matching_value = allowed_values.find { |v| v.name == value_name }
 
       if matching_value.nil?
-        result.add_problem("Expected #{JSON.generate(value_name, quirks_mode: true)} to be one of: #{allowed_values.map(&:name).join(', ')}")
+        result.add_problem("Expected #{GraphQL::Language.serialize(value_name)} to be one of: #{allowed_values.map(&:name).join(', ')}")
       end
 
       result

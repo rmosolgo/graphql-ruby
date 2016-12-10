@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 require "spec_helper"
 
 describe GraphQL::NonNullType do
@@ -26,6 +27,22 @@ describe GraphQL::NonNullType do
       result = DummySchema.execute(query_string)
       assert_equal(nil, result["data"])
       assert_equal([{"message"=>"Cannot return null for non-nullable field DeepNonNull.nonNullInt"}], result["errors"])
+    end
+
+    describe "when type_error is configured to raise an error" do
+      it "crashes query execution" do
+        raise_schema = DummySchema.redefine {
+          type_error ->(type_err, ctx) {
+            raise type_err
+          }
+        }
+        query_string = %|{ cow { name cantBeNullButIs } }|
+        err = assert_raises(GraphQL::InvalidNullError) { raise_schema.execute(query_string) }
+        assert_equal("Cannot return null for non-nullable field Cow.cantBeNullButIs", err.message)
+        assert_equal("Cow", err.parent_type.name)
+        assert_equal("cantBeNullButIs", err.field.name)
+        assert_equal(nil, err.value)
+      end
     end
   end
 end

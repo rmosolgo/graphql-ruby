@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module GraphQL
   module Define
     # This module provides the `.define { ... }` API for
@@ -94,15 +95,19 @@ module GraphQL
         nil
       end
 
-      # Make a new instance of this class, then
-      # re-run any definitions on that object.
+      # Shallow-copy this object, then apply new definitions to the copy.
+      # @see {#define} for arguments
       # @return [InstanceDefinable] A new instance, with any extended definitions
       def redefine(**kwargs, &block)
         ensure_defined
-        new_instance = self.class.new
-        applied_definitions.each { |defn| new_instance.define(defn.define_keywords, &defn.define_proc) }
-        new_instance.define(**kwargs, &block)
-        new_instance
+        new_inst = self.dup
+        new_inst.define(**kwargs, &block)
+        new_inst
+      end
+
+      def initialize_copy(other)
+        super
+        @metadata = other.metadata.dup
       end
 
       private
@@ -125,14 +130,8 @@ module GraphQL
           if defn.define_proc
             defn_proxy.instance_eval(&defn.define_proc)
           end
-
-          applied_definitions << defn
         end
         nil
-      end
-
-      def applied_definitions
-        @applied_definitions ||= []
       end
 
       class Definition

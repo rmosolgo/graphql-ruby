@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module GraphQL
   class Schema
     # - Store a table of errors & handlers
@@ -14,7 +15,7 @@ module GraphQL
       # @example Rescue from not-found by telling the user
       #   MySchema.rescue_from(ActiveRecord::RecordNotFound) { "An item could not be found" }
       #
-      # @param [Class] a class of error to rescue from
+      # @param error_class [Class] a class of error to rescue from
       # @yield [err] A handler to return a message for this error instance
       # @yieldparam [Exception] an error that was rescued
       # @yieldreturn [String] message to put in GraphQL response
@@ -23,7 +24,7 @@ module GraphQL
       end
 
       # Remove the handler for `error_class`
-      # @param [Class] the error class whose handler should be removed
+      # @param error_class [Class] the error class whose handler should be removed
       def remove_handler(error_class)
         rescue_table.delete(error_class)
       end

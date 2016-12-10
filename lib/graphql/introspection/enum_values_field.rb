@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 GraphQL::Introspection::EnumValuesField = GraphQL::Field.define do
   type types[!GraphQL::Introspection::EnumValueType]
   argument :includeDeprecated, types.Boolean, default_value: false

@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module GraphQL
   module Define
     # Turn enum value configs into a {GraphQL::EnumType::EnumValue} and register it with the {GraphQL::EnumType}

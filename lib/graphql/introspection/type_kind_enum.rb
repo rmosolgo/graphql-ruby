@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 GraphQL::Introspection::TypeKindEnum = GraphQL::EnumType.define do
   name "__TypeKind"
   description "An enum describing what kind of type a given `__Type` is."

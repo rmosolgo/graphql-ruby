@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module GraphQL
   module Relay
     # Define a Relay mutation:
@@ -181,6 +182,18 @@ module GraphQL
             mutation_result = nil
           end
 
+          if ctx.schema.lazy?(mutation_result)
+            @mutation.field.prepare_lazy(mutation_result, args, ctx).then { |inner_obj|
+              build_result(inner_obj, args)
+            }
+          else
+            build_result(mutation_result, args)
+          end
+        end
+
+        private
+
+        def build_result(mutation_result, args)
           if @wrap_result
             @mutation.result_class.new(client_mutation_id: args[:input][:clientMutationId], result: mutation_result)
           else

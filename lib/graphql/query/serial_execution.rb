@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 require "graphql/query/serial_execution/value_resolution"
 require "graphql/query/serial_execution/field_resolution"
 require "graphql/query/serial_execution/operation_resolution"
@@ -12,7 +13,7 @@ module GraphQL
       #
       # @param ast_operation [GraphQL::Language::Nodes::OperationDefinition] The operation definition to run
       # @param root_type [GraphQL::ObjectType] either the query type or the mutation type
-      # @param query_obj [GraphQL::Query] the query object for this execution
+      # @param query_object [GraphQL::Query] the query object for this execution
       # @return [Hash] a spec-compliant GraphQL result, as a hash
       def execute(ast_operation, root_type, query_object)
         operation_resolution.resolve(

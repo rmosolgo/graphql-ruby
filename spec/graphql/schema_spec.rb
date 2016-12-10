@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 require "spec_helper"
 
 describe GraphQL::Schema do
@@ -269,6 +270,44 @@ type Query {
       schema.instrument(:field, MultiplyInstrumenter.new(4))
       res = schema.execute("query { int(value: 2) } ")
       assert_equal 24, res["data"]["int"]
+    end
+  end
+
+  describe "#lazy? / #lazy_method_name" do
+    class LazyObj; end
+    class LazyObjChild < LazyObj; end
+
+    let(:schema) {
+      query_type = GraphQL::ObjectType.define(name: "Query")
+      GraphQL::Schema.define do
+        query(query_type)
+        lazy_resolve(Integer, :itself)
+        lazy_resolve(LazyObj, :dup)
+      end
+    }
+
+    it "returns registered lazy method names by class/superclass, or returns nil" do
+      assert_equal :itself, schema.lazy_method_name(68)
+      assert_equal true, schema.lazy?(77)
+      assert_equal :dup, schema.lazy_method_name(LazyObj.new)
+      assert_equal true, schema.lazy?(LazyObj.new)
+      assert_equal :dup, schema.lazy_method_name(LazyObjChild.new)
+      assert_equal true, schema.lazy?(LazyObjChild.new)
+      assert_equal nil, schema.lazy_method_name({})
+      assert_equal false, schema.lazy?({})
+    end
+  end
+
+  describe "#dup" do
+    it "copies internal state" do
+      schema_2 = schema.dup
+      refute schema_2.types.equal?(schema.types)
+
+      refute schema_2.instrumenters.equal?(schema.instrumenters)
+      assert_equal schema_2.instrumenters, schema.instrumenters
+
+      refute schema_2.middleware.equal?(schema.middleware)
+      assert_equal schema_2.middleware, schema.middleware
     end
   end
 end

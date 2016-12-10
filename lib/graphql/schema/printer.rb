@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module GraphQL
   class Schema
     # Used to convert your {GraphQL::Schema} to a GraphQL schema string
@@ -95,7 +96,7 @@ module GraphQL
           def print_description(definition, indentation='', first_in_block=true)
             return '' unless definition.description
 
-            description = indentation != '' && !first_in_block ? "\n" : ""
+            description = indentation != '' && !first_in_block ? "\n".dup : "".dup
             description << GraphQL::Language::Comments.commentize(definition.description, indent: indentation)
           end
         end
@@ -111,7 +112,7 @@ module GraphQL
               return "(#{field_arguments.map{ |arg| print_input_value(arg) }.join(", ")})"
             end
 
-            out = "(\n"
+            out = "(\n".dup
             out << field_arguments.map.with_index{ |arg, i|
               "#{print_description(arg, "  #{indentation}", i == 0)}  #{indentation}"\
               "#{print_input_value(arg)}"

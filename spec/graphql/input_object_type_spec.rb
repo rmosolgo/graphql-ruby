@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 require "spec_helper"
 
 describe GraphQL::InputObjectType do
@@ -301,6 +302,15 @@ describe GraphQL::InputObjectType do
         cheese_name = result["data"]["cheese"]["flavor"]
         assert_equal("Brie", cheese_name)
       end
+    end
+  end
+
+  describe "#dup" do
+    it "shallow-copies internal state" do
+      input_object_2 = input_object.dup
+      input_object_2.arguments["nonsense"] = GraphQL::Argument.define(name: "int", type: GraphQL::INT_TYPE)
+      assert_equal 4, input_object.arguments.size
+      assert_equal 5, input_object_2.arguments.size
     end
   end
 end

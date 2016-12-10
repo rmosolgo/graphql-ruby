@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module GraphQL
   module Language
     # Depth-first traversal through the tree, calling hooks at each stop.

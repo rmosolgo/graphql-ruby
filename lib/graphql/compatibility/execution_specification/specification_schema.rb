@@ -1,7 +1,10 @@
+# frozen_string_literal: true
 module GraphQL
   module Compatibility
     module ExecutionSpecification
       module SpecificationSchema
+        BOGUS_NODE = OpenStruct.new({ bogus: true })
+
         DATA = {
           "1001" => OpenStruct.new({
             name: "Fannie Lou Hamer",
@@ -31,7 +34,19 @@ module GraphQL
             name: "SCLC",
             leader_id: "1004",
           }),
+          "2003" => BOGUS_NODE,
         }
+
+        # A list object must implement #each
+        class CustomCollection
+          def initialize(storage)
+            @storage = storage
+          end
+
+          def each
+            @storage.each { |i| yield(i) }
+          end
+        end
 
         module TestMiddleware
           def self.call(parent_type, parent_object, field_definition, field_args, query_context, next_middleware)
@@ -77,7 +92,7 @@ module GraphQL
             end
             field :organizations, types[organization_type] do
               resolve ->(obj, args, ctx) {
-                obj.organization_ids.map { |id| DATA[id] }
+                CustomCollection.new(obj.organization_ids.map { |id| DATA[id] })
               }
             end
             field :first_organization, !organization_type do
@@ -132,6 +147,13 @@ module GraphQL
               }
             end
 
+            field :requiredNode, node_union_type.to_non_null_type do
+              argument :id, !types.ID
+              resolve ->(obj, args, ctx) {
+                obj[args[:id]]
+              }
+            end
+
             field :organization, !organization_type do
               argument :id, !types.ID
               resolve ->(obj, args, ctx) {
@@ -151,7 +173,18 @@ module GraphQL
             query query_type
 
             resolve_type ->(obj, ctx) {
-              obj.respond_to?(:birthdate) ? person_type : organization_type
+              if obj.respond_to?(:birthdate)
+                person_type
+              elsif obj.respond_to?(:leader_id)
+                organization_type
+              else
+                nil
+              end
+            }
+
+            type_error ->(err, ctx) {
+              ctx[:type_errors] && (ctx[:type_errors] << err.value)
+              ctx[:gobble] || GraphQL::Schema::DefaultTypeError.call(err, ctx)
             }
             middleware(TestMiddleware)
           end

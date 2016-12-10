@@ -1,6 +1,9 @@
+# frozen_string_literal: true
 module GraphQL
   class Query
     class Executor
+      class PropagateNull < StandardError; end
+
       # @return [GraphQL::Query] the query being executed
       attr_reader :query
 
@@ -30,7 +33,11 @@ module GraphQL
         execution_strategy = execution_strategy_class.new
 
         query.context.execution_strategy = execution_strategy
-        data_result = execution_strategy.execute(operation, root_type, query)
+        data_result = begin
+          execution_strategy.execute(operation, root_type, query)
+        rescue PropagateNull
+          nil
+        end
         result = { "data" => data_result }
         error_result = query.context.errors.map(&:to_h)
 

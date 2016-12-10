@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 GraphQL::INT_TYPE = GraphQL::ScalarType.define do
   name "Int"
   description "Represents non-fractional signed whole numeric values. Int can represent values between -(2^31) and 2^31 - 1."

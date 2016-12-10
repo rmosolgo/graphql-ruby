@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module GraphQL
   # A non-null type modifies another type.
   #
@@ -11,7 +12,7 @@ module GraphQL
   #   # or
   #   field :items, ItemType.to_non_null_type
   #
-  # (If the application fails to return a value, {InvalidNullError} will be raised.)
+  # (If the application fails to return a value, {InvalidNullError} will be passed to {Schema#type_error}.)
   #
   # For input types, it says that the incoming value _must_ be provided by the query.
   #

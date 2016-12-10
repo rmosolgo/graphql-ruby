@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module GraphQL
   class Query
     class SerialExecution
@@ -11,9 +12,6 @@ module GraphQL
           )
 
           result
-        rescue GraphQL::InvalidNullError => err
-          err.parent_error? || query.context.errors.push(err)
-          nil
         end
       end
     end

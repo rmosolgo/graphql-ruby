@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module GraphQL
   module Language
     # Exposes {.generate}, which turns AST nodes back into query strings.
@@ -19,17 +20,17 @@ module GraphQL
         when Nodes::Document
           node.definitions.map { |d| generate(d) }.join("\n\n")
         when Nodes::Argument
-          "#{node.name}: #{generate(node.value)}"
+          "#{node.name}: #{generate(node.value)}".dup
         when Nodes::Directive
-          out = "@#{node.name}"
+          out = "@#{node.name}".dup
           out << "(#{node.arguments.map { |a| generate(a) }.join(", ")})" if node.arguments.any?
           out
         when Nodes::Enum
-          "#{node.name}"
+          "#{node.name}".dup
         when Nodes::NullValue
-          "null"
+          "null".dup
         when Nodes::Field
-          out = "#{indent}"
+          out = "#{indent}".dup
           out << "#{node.alias}: " if node.alias
           out << "#{node.name}"
           out << "(#{node.arguments.map { |a| generate(a) }.join(", ")})" if node.arguments.any?
@@ -37,7 +38,7 @@ module GraphQL
           out << generate_selections(node.selections, indent: indent)
           out
         when Nodes::FragmentDefinition
-          out = "#{indent}fragment #{node.name}"
+          out = "#{indent}fragment #{node.name}".dup
           if node.type
             out << " on #{generate(node.type)}"
           end
@@ -45,11 +46,11 @@ module GraphQL
           out << generate_selections(node.selections, indent: indent)
           out
         when Nodes::FragmentSpread
-          out = "#{indent}...#{node.name}"
+          out = "#{indent}...#{node.name}".dup
           out << generate_directives(node.directives)
           out
         when Nodes::InlineFragment
-          out = "#{indent}..."
+          out = "#{indent}...".dup
           if node.type
             out << " on #{generate(node.type)}"
           end
@@ -59,24 +60,24 @@ module GraphQL
         when Nodes::InputObject
           generate(node.to_h)
         when Nodes::ListType
-          "[#{generate(node.of_type)}]"
+          "[#{generate(node.of_type)}]".dup
         when Nodes::NonNullType
-          "#{generate(node.of_type)}!"
+          "#{generate(node.of_type)}!".dup
         when Nodes::OperationDefinition
-          out = "#{indent}#{node.operation_type}"
+          out = "#{indent}#{node.operation_type}".dup
           out << " #{node.name}" if node.name
           out << "(#{node.variables.map { |v| generate(v) }.join(", ")})" if node.variables.any?
           out << generate_directives(node.directives)
           out << generate_selections(node.selections, indent: indent)
           out
         when Nodes::TypeName
-          "#{node.name}"
+          "#{node.name}".dup
         when Nodes::VariableDefinition
-          out = "$#{node.name}: #{generate(node.type)}"
+          out = "$#{node.name}: #{generate(node.type)}".dup
           out << " = #{generate(node.default_value)}" unless node.default_value.nil?
           out
         when Nodes::VariableIdentifier
-          "$#{node.name}"
+          "$#{node.name}".dup
         when Nodes::SchemaDefinition
           if (node.query.nil? || node.query == 'Query') &&
              (node.mutation.nil? || node.mutation == 'Mutation') &&
@@ -84,7 +85,7 @@ module GraphQL
             return
           end
 
-          out = "schema {\n"
+          out = "schema {\n".dup
           out << "  query: #{node.query}\n" if node.query
           out << "  mutation: #{node.mutation}\n" if node.mutation
           out << "  subscription: #{node.subscription}\n" if node.subscription
@@ -100,7 +101,7 @@ module GraphQL
           out << " implements " << node.interfaces.map(&:name).join(", ") unless node.interfaces.empty?
           out << generate_field_definitions(node.fields)
         when Nodes::InputValueDefinition
-          out = "#{node.name}: #{generate(node.type)}"
+          out = "#{node.name}: #{generate(node.type)}".dup
           out << " = #{generate(node.default_value)}" unless node.default_value.nil?
           out << generate_directives(node.directives)
         when Nodes::FieldDefinition
@@ -129,7 +130,7 @@ module GraphQL
           end
           out << "}"
         when Nodes::EnumValueDefinition
-          out = "  #{node.name}"
+          out = "  #{node.name}".dup
           out << generate_directives(node.directives)
           out << "\n"
         when Nodes::InputObjectTypeDefinition
@@ -150,11 +151,11 @@ module GraphQL
         when Nodes::AbstractNode
           node.to_query_string(indent: indent)
         when FalseClass, Float, Integer, NilClass, String, TrueClass
-          JSON.generate(node, quirks_mode: true)
+          GraphQL::Language.serialize(node)
         when Array
-          "[#{node.map { |v| generate(v) }.join(", ")}]"
+          "[#{node.map { |v| generate(v) }.join(", ")}]".dup
         when Hash
-          "{#{node.map { |k, v| "#{k}: #{generate(v)}" }.join(", ")}}"
+          "{#{node.map { |k, v| "#{k}: #{generate(v)}" }.join(", ")}}".dup
         else
           raise TypeError
         end
@@ -172,7 +173,7 @@ module GraphQL
 
       def generate_selections(selections, indent: "")
         if selections.any?
-          out = " {\n"
+          out = " {\n".dup
           selections.each do |selection|
             out << generate(selection, indent: indent + "  ") << "\n"
           end
@@ -183,14 +184,14 @@ module GraphQL
       end
 
       def generate_description(node, indent: '', first_in_block: true)
-        return '' unless node.description
+        return ''.dup unless node.description
 
-        description = indent != '' && !first_in_block ? "\n" : ""
+        description = indent != '' && !first_in_block ? "\n".dup : "".dup
         description << GraphQL::Language::Comments.commentize(node.description, indent: indent)
       end
 
       def generate_field_definitions(fields)
-        out = " {\n"
+        out = " {\n".dup
         fields.each.with_index do |field, i|
           out << generate_description(field, indent: '  ', first_in_block: i == 0)
           out << "  #{generate(field)}\n"

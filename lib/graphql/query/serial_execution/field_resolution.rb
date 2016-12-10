@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module GraphQL
   class Query
     class SerialExecution
@@ -61,11 +62,10 @@ module GraphQL
               @selection,
               @field_ctx,
             )
-          rescue GraphQL::InvalidNullError => err
+          rescue GraphQL::Query::Executor::PropagateNull
             if field.type.kind.non_null?
-              raise(err)
+              raise
             else
-              err.parent_error? || @query.context.errors.push(err)
               nil
             end
           end

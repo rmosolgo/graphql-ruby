@@ -26,6 +26,9 @@ Style/ClassAndModuleChildren:
 Style/EmptyLineBetweenDefs:
   AllowAdjacentOneLineDefs: true
 
+Style/FrozenStringLiteralComment:
+  Enabled: true
+
 Style/IndentationWidth:
   Width: 2
 

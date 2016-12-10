@@ -8,6 +8,34 @@
 
 ### Bug fixes
 
+## 1.3.0 (8 Dec 2016)
+
+### Deprecations
+
+- As per the spec, `__` prefix is reserved for built-in names only. This is currently deprecated and will be invalid in a future version. #427, #450
+
+### New features
+
+- `Schema#lazy_resolve` allows you to define handlers for a second pass of resolution #386
+- `Field#lazy_resolve` can be instrumented to track lazy resolution #429
+- `Schema#type_error` allows you to handle `InvalidNullError`s and `UnresolvedTypeErrors` in your own way #416
+- `Schema#cursor_encoder` can be specified for transforming cursors from built-in Connection implementations #345
+- Schema members `#dup` correctly: they shallowly copy their state into new instances #444
+- `Query#provided_variables` is now public #430
+
+### Bug fixes
+
+- Schemas created from JSON or strings with custom scalars can validate queries (although they still can't check if inputs are valid for those custom scalars) #445
+- Always use `quirks_mode: true` when serializing values (to support non-stdlib `JSON`s) #449
+- Calling `#redefine` on a Schema member copies state outside of previous `#define` blocks (uses `#dup`) #444
+
+## 1.2.6 (1 Dec 2016)
+
+### Bug fixes
+
+- Preserve connection behaviors after `redefine` #421
+- Implement `respond_to_missing?` on `DefinedObjectProxy` (which is `self` inside `.define { ... }`) #414
+
 ## 1.2.5 (22 Nov 2016)
 
 ### Breaking changes

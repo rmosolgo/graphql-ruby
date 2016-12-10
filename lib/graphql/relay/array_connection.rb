@@ -1,9 +1,10 @@
+# frozen_string_literal: true
 module GraphQL
   module Relay
     class ArrayConnection < BaseConnection
       def cursor_from_node(item)
         idx = starting_offset + sliced_nodes.find_index(item) + 1
-        Base64.strict_encode64(idx.to_s)
+        encode(idx.to_s)
       end
 
       def has_next_page
@@ -31,11 +32,11 @@ module GraphQL
 
       # Apply cursors to edges
       def sliced_nodes
-        @sliced_nodes ||= nodes[starting_offset..-1]
+        @sliced_nodes ||= nodes[starting_offset..-1] || []
       end
 
       def index_from_cursor(cursor)
-        Base64.decode64(cursor).to_i
+        decode(cursor).to_i
       end
 
       def starting_offset

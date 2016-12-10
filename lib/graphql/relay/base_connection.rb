@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module GraphQL
   module Relay
     # Subclasses must implement:
@@ -15,13 +16,13 @@ module GraphQL
       CURSOR_SEPARATOR = "---"
 
       # Map of collection class names -> connection_classes
-      # eg {"Array" => ArrayConnection}
+      # eg `{"Array" => ArrayConnection}`
       CONNECTION_IMPLEMENTATIONS = {}
 
       class << self
         # Find a connection implementation suitable for exposing `nodes`
         #
-        # @param [Object] A collection of nodes (eg, Array, AR::Relation)
+        # @param nodes [Object] A collection of nodes (eg, Array, AR::Relation)
         # @return [subclass of BaseConnection] a connection Class for wrapping `nodes`
         def connection_for_nodes(nodes)
           # Check for class _names_ because classes can be redefined in Rails development
@@ -39,8 +40,8 @@ module GraphQL
 
         # Add `connection_class` as the connection wrapper for `nodes_class`
         # eg, `RelationConnection` is the implementation for `AR::Relation`
-        # @param [Class] A class representing a collection (eg, Array, AR::Relation)
-        # @param [Class] A class implementing Connection methods
+        # @param nodes_class [Class] A class representing a collection (eg, Array, AR::Relation)
+        # @param connection_class [Class] A class implementing Connection methods
         def register_connection_implementation(nodes_class, connection_class)
           CONNECTION_IMPLEMENTATIONS[nodes_class.name] = connection_class
         end
@@ -49,17 +50,28 @@ module GraphQL
       attr_reader :nodes, :arguments, :max_page_size, :parent, :field
 
       # Make a connection, wrapping `nodes`
-      # @param [Object] The collection of nodes
-      # @param Query arguments
-      # @param field [Object] The underlying field
+      # @param nodes [Object] The collection of nodes
+      # @param arguments [GraphQL::Query::Arguments] Query arguments
+      # @param field [GraphQL::Field] The underlying field
       # @param max_page_size [Int] The maximum number of results to return
       # @param parent [Object] The object which this collection belongs to
-      def initialize(nodes, arguments, field: nil, max_page_size: nil, parent: nil)
+      # @param context [GraphQL::Query::Context] The context from the field being resolved
+      def initialize(nodes, arguments, field: nil, max_page_size: nil, parent: nil, context: nil)
         @nodes = nodes
         @arguments = arguments
         @max_page_size = max_page_size
         @field = field
         @parent = parent
+        @context = context
+        @encoder = context ? @context.schema.cursor_encoder : GraphQL::Schema::Base64Encoder
+      end
+
+      def encode(data)
+        @encoder.encode(data, nonce: true)
+      end
+
+      def decode(data)
+        @encoder.decode(data, nonce: true)
       end
 
       # Provide easy access to provided arguments:

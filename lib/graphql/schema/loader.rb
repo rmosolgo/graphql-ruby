@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module GraphQL
   class Schema
     # You can use the result of {GraphQL::Introspection::INTROSPECTION_QUERY}
@@ -35,6 +36,8 @@ module GraphQL
       NullResolveType = ->(obj, ctx) {
         raise(NotImplementedError, "This schema was loaded from string, so it can't resolve types for objects")
       }
+
+      NullScalarCoerce = ->(val) { val }
 
       class << self
         private
@@ -119,7 +122,8 @@ module GraphQL
             else
               ScalarType.define(
                 name: type["name"],
-                description: type["description"]
+                description: type["description"],
+                coerce: NullScalarCoerce,
               )
             end
           when "UNION"

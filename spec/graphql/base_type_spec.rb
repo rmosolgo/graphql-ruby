@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 require "spec_helper"
 
 describe GraphQL::BaseType do
@@ -24,5 +25,17 @@ describe GraphQL::BaseType do
 
   it "Accepts arbitrary metadata" do
     assert_equal ["Cheese"], CheeseType.metadata[:class_names]
+  end
+
+  describe "#dup" do
+    it "resets connection types" do
+      # Make sure the defaults have been calculated
+      cheese_edge = CheeseType.edge_type
+      cheese_conn = CheeseType.connection_type
+      cheese_2 = CheeseType.dup
+      cheese_2.name = "Cheese2"
+      refute_equal cheese_edge, cheese_2.edge_type
+      refute_equal cheese_conn, cheese_2.connection_type
+    end
   end
 end

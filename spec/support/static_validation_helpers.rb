@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # This module assumes you have `let(:query_string)` in your spec.
 # It provides `errors` which are the validation errors for that string,
 # as validated against `DummySchema`.

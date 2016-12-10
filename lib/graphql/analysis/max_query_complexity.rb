@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 require_relative "./query_complexity"
 module GraphQL
   module Analysis

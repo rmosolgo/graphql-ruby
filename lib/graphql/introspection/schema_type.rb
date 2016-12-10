@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 GraphQL::Introspection::SchemaType = GraphQL::ObjectType.define do
   name "__Schema"
   description "A GraphQL Schema defines the capabilities of a GraphQL server. It exposes all "\

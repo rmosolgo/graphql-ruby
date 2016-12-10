@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module GraphQL
   module Define
     # Some conveniences for definining return & argument types.

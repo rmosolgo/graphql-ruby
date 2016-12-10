@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # Adapted from graphql-relay-js
 # https://github.com/graphql/graphql-relay-js/blob/master/src/__tests__/starWarsSchema.js
 
@@ -157,14 +158,34 @@ IntroduceShipMutation = GraphQL::Relay::Mutation.define do
   # Here's the mutation operation:
   resolve ->(root_obj, inputs, ctx) {
     faction_id = inputs["factionId"]
-    return GraphQL::ExecutionError.new("Sorry, Millennium Falcon ship is reserved") if inputs["shipName"] == 'Millennium Falcon'
-    ship = STAR_WARS_DATA.create_ship(inputs["shipName"], faction_id)
-    faction = STAR_WARS_DATA["Faction"][faction_id]
-    connection_class = GraphQL::Relay::BaseConnection.connection_for_nodes(faction.ships)
-    ships_connection = connection_class.new(faction.ships, inputs)
-    ship_edge = GraphQL::Relay::Edge.new(ship, ships_connection)
-    { shipEdge: ship_edge, faction: faction }
+    if inputs["shipName"] == 'Millennium Falcon'
+      GraphQL::ExecutionError.new("Sorry, Millennium Falcon ship is reserved")
+
+    else
+      ship = STAR_WARS_DATA.create_ship(inputs["shipName"], faction_id)
+      faction = STAR_WARS_DATA["Faction"][faction_id]
+      connection_class = GraphQL::Relay::BaseConnection.connection_for_nodes(faction.ships)
+      ships_connection = connection_class.new(faction.ships, inputs)
+      ship_edge = GraphQL::Relay::Edge.new(ship, ships_connection)
+      result = {
+        shipEdge: ship_edge,
+        faction: faction
+      }
+      if inputs["shipName"] == "Slave II"
+        LazyWrapper.new(result)
+      else
+        result
+      end
+    end
   }
+end
+
+
+class LazyWrapper
+  attr_reader :value
+  def initialize(value)
+    @value = value
+  end
 end
 
 QueryType = GraphQL::ObjectType.define do
@@ -216,4 +237,6 @@ StarWarsSchema = GraphQL::Schema.define do
   id_from_object ->(object, type, ctx) do
     GraphQL::Schema::UniqueWithinType.encode(type.name, object.id)
   end
+
+  lazy_resolve(LazyWrapper, :value)
 end

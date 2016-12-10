@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module GraphQL
   module Compatibility
     # This asserts that a given parse function turns a string into

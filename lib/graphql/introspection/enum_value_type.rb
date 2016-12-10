@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 GraphQL::Introspection::EnumValueType = GraphQL::ObjectType.define do
   name "__EnumValue"
   description "One possible value for a given Enum. Enum values are unique values, not a "\

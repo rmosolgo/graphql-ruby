@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module GraphQL
   module Analysis
     # Calculate the complexity of a query, using {Field#complexity} values.

@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module GraphQL
   module StaticValidation
     # Default rules for {GraphQL::StaticValidation::Validator}

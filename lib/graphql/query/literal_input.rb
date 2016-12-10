@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module GraphQL
   class Query
     # Turn query string values into something useful for query execution

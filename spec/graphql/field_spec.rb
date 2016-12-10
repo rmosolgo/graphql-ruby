@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 require "spec_helper"
 
 describe GraphQL::Field do
@@ -148,6 +149,37 @@ describe GraphQL::Field do
       res = schema.execute %|{ __type(name: "Query") { fields { name } } }|
       query_field_names = res["data"]["__type"]["fields"].map { |f| f["name"] }
       assert_equal ["int", "int2", "int3"], query_field_names, "It works in introspection"
+    end
+  end
+
+  describe "#redefine" do
+    it "can add arguments" do
+      int_field = GraphQL::Field.define do
+        argument :value, types.Int
+      end
+
+      int_field_2 = int_field.redefine do
+        argument :value_2, types.Int
+      end
+
+      assert_equal 1, int_field.arguments.size
+      assert_equal 2, int_field_2.arguments.size
+    end
+
+    it "copies metadata, even out-of-bounds assignments" do
+      int_field = GraphQL::Field.define do
+        metadata(:a, 1)
+        argument :value, types.Int
+      end
+      int_field.metadata[:b] = 2
+
+      int_field_2 = int_field.redefine do
+        metadata(:c, 3)
+        argument :value_2, types.Int
+      end
+
+      assert_equal({a: 1, b: 2}, int_field.metadata)
+      assert_equal({a: 1, b: 2, c: 3}, int_field_2.metadata)
     end
   end
 end

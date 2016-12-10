@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 require "spec_helper"
 
 describe GraphQL::InterfaceType do
@@ -81,6 +82,15 @@ describe GraphQL::InterfaceType do
 
         assert_equal expected_data, result["data"]["allEdible"]
       end
+    end
+  end
+
+  describe "#dup" do
+    it "copies the fields without altering the original" do
+      interface_2 = interface.dup
+      interface_2.fields["extra"] = GraphQL::Field.define(name: "extra", type: GraphQL::BOOLEAN_TYPE)
+      assert_equal 3, interface.fields.size
+      assert_equal 4, interface_2.fields.size
     end
   end
 end

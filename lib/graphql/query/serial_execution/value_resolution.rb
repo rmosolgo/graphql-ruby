@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module GraphQL
   class Query
     class SerialExecution
@@ -5,7 +6,11 @@ module GraphQL
         def self.resolve(parent_type, field_defn, field_type, value, selection, query_ctx)
           if value.nil? || value.is_a?(GraphQL::ExecutionError)
             if field_type.kind.non_null?
-              raise GraphQL::InvalidNullError.new(parent_type.name, field_defn.name, value)
+              if value.nil?
+                type_error = GraphQL::InvalidNullError.new(parent_type, field_defn, value)
+                query_ctx.schema.type_error(type_error, query_ctx)
+              end
+              raise GraphQL::Query::Executor::PropagateNull
             else
               nil
             end
@@ -17,15 +22,17 @@ module GraphQL
               field_type.coerce_result(value, query_ctx.query.warden)
             when GraphQL::TypeKinds::LIST
               wrapped_type = field_type.of_type
-              result = value.each_with_index.map do |inner_value, index|
+              result = []
+              i = 0
+              value.each do |inner_value|
                 inner_ctx = query_ctx.spawn(
-                  key: index,
+                  key: i,
                   selection: selection,
                   parent_type: wrapped_type,
                   field: field_defn,
                 )
 
-                inner_result = resolve(
+                result << resolve(
                   parent_type,
                   field_defn,
                   wrapped_type,
@@ -33,7 +40,7 @@ module GraphQL
                   selection,
                   inner_ctx,
                 )
-                inner_result
+                i += 1
               end
               result
             when GraphQL::TypeKinds::NON_NULL
@@ -59,7 +66,9 @@ module GraphQL
               possible_types = query.possible_types(field_type)
 
               if !possible_types.include?(resolved_type)
-                raise GraphQL::UnresolvedTypeError.new(selection.definition_name, field_type, parent_type, resolved_type, possible_types)
+                type_error = GraphQL::UnresolvedTypeError.new(value, field_defn, parent_type, resolved_type, possible_types)
+                query.schema.type_error(type_error, query_ctx)
+                raise GraphQL::Query::Executor::PropagateNull
               else
                 resolve(
                   parent_type,

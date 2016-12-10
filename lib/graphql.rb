@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 require "json"
 require "set"
 require "singleton"
@@ -75,6 +76,7 @@ require "graphql/schema/printer"
 # Order does not matter for these:
 
 require "graphql/analysis_error"
+require "graphql/runtime_type_error"
 require "graphql/invalid_null_error"
 require "graphql/unresolved_type_error"
 require "graphql/query"

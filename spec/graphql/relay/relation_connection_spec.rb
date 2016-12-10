@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 require 'spec_helper'
 
 describe GraphQL::Relay::RelationConnection do
@@ -94,6 +95,12 @@ describe GraphQL::Relay::RelationConnection do
       result = star_wars_query(query_string, "before" => last_cursor, "last" => 10)
       assert_equal(["Death Star", "Shield Generator"], get_names(result))
 
+    end
+
+    it 'handles cursors beyond the bounds of the array' do
+      overreaching_cursor = Base64.strict_encode64("100")
+      result = star_wars_query(query_string, "after" => overreaching_cursor, "first" => 2)
+      assert_equal([], get_names(result))
     end
 
     it "applies custom arguments" do

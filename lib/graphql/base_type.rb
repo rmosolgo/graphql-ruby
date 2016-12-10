@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module GraphQL
   # The parent for all type classes.
   class BaseType
@@ -8,14 +9,20 @@ module GraphQL
         global_id_field: GraphQL::Define::AssignGlobalIdField,
       }
 
-    attr_accessor :name, :description
     ensure_defined(:name, :description)
 
-    # @!attribute name
-    #   @return [String] the name of this type, must be unique within a Schema
+    def initialize_copy(other)
+      super
+      # Reset these derived defaults
+      @connection_type = nil
+      @edge_type = nil
+    end
 
-    # @!attribute description
-    #  @return [String, nil] a description for this type
+    # @return [String] the name of this type, must be unique within a Schema
+    attr_accessor :name
+
+    # @return [String, nil] a description for this type
+    attr_accessor :description
 
     # @param other [GraphQL::BaseType] compare to this object
     # @return [Boolean] are these types equivalent? (incl. non-null, list)
@@ -102,22 +109,24 @@ module GraphQL
       end
     end
 
-    # Get the default connection type for this object type
+    # @return [GraphQL::ObjectType] The default connection type for this object type
     def connection_type
       @connection_type ||= define_connection
     end
 
     # Define a custom connection type for this object type
+    # @return [GraphQL::ObjectType]
     def define_connection(**kwargs, &block)
       GraphQL::Relay::ConnectionType.create_type(self, **kwargs, &block)
     end
 
-    # Get the default edge type for this object type
+    # @return [GraphQL::ObjectType] The default edge type for this object type
     def edge_type
       @edge_type ||= define_edge
     end
 
     # Define a custom edge type for this object type
+    # @return [GraphQL::ObjectType]
     def define_edge(**kwargs, &block)
       GraphQL::Relay::EdgeType.create_type(self, **kwargs, &block)
     end

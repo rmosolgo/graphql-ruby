@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module GraphQL
   module Relay
     # Provided a GraphQL field which returns a collection of nodes,
@@ -24,17 +25,17 @@ module GraphQL
         memo
       end
 
-      # Turn A GraphQL::Field into a connection by:
+      # Build a connection field from a {GraphQL::Field} by:
       # - Merging in the default arguments
       # - Transforming its resolve function to return a connection object
       # @param underlying_field [GraphQL::Field] A field which returns nodes to be wrapped as a connection
       # @param max_page_size [Integer] The maximum number of nodes which may be requested (if a larger page is requested, it is limited to this number)
-      # @return [GraphQL::Field] The same field, modified to resolve to a connection object
+      # @return [GraphQL::Field] A redefined field with connection behavior
       def self.create(underlying_field, max_page_size: nil)
-        underlying_field.arguments = DEFAULT_ARGUMENTS.merge(underlying_field.arguments)
+        connection_arguments = DEFAULT_ARGUMENTS.merge(underlying_field.arguments)
         original_resolve = underlying_field.resolve_proc
-        underlying_field.resolve = GraphQL::Relay::ConnectionResolve.new(underlying_field, original_resolve, max_page_size: max_page_size)
-        underlying_field
+        connection_resolve = GraphQL::Relay::ConnectionResolve.new(underlying_field, original_resolve, max_page_size: max_page_size)
+        underlying_field.redefine(resolve: connection_resolve, arguments: connection_arguments)
       end
     end
   end

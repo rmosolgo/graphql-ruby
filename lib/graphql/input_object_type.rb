@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module GraphQL
   # {InputObjectType}s are key-value inputs for fields.
   #
@@ -42,6 +43,11 @@ module GraphQL
 
     def initialize
       @arguments = {}
+    end
+
+    def initialize_copy(other)
+      super
+      @arguments = other.arguments.dup
     end
 
     def kind

@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module GraphQL
   # A Union is is a collection of object types which may appear in the same place.
   #
@@ -26,10 +27,17 @@ module GraphQL
     accepts_definitions :possible_types, :resolve_type
     ensure_defined :possible_types
 
+    def initialize_copy(other)
+      super
+      @clean_possible_types = nil
+      @dirty_possible_types = other.dirty_possible_types.dup
+    end
+
     def kind
       GraphQL::TypeKinds::UNION
     end
 
+    # @return [Boolean] True if `child_type_defn` is a member of this {UnionType}
     def include?(child_type_defn)
       possible_types.include?(child_type_defn)
     end
@@ -39,6 +47,7 @@ module GraphQL
       @dirty_possible_types = new_possible_types
     end
 
+    # @return [Array<GraphQL::ObjectType>] Types which may be found in this union
     def possible_types
       @clean_possible_types ||= begin
         if @dirty_possible_types.respond_to?(:map)
@@ -48,5 +57,9 @@ module GraphQL
         end
       end
     end
+
+    protected
+
+    attr_reader :dirty_possible_types
   end
 end

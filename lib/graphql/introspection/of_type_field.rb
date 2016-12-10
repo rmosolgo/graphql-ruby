@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 GraphQL::Introspection::OfTypeField = GraphQL::Field.define do
   name "ofType"
   type -> { GraphQL::Introspection::TypeType }

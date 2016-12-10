@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 require "spec_helper"
 
 describe GraphQL::EnumType do
@@ -87,5 +88,14 @@ describe GraphQL::EnumType do
     goat = GraphQL::EnumType::EnumValue.define(name: "GOAT")
     enum = GraphQL::EnumType.define(name: "DairyAnimal", values: [cow, goat])
     assert_equal({ "COW" => cow, "GOAT" => goat }, enum.values)
+  end
+
+  describe "#dup" do
+    it "copies the values map without altering the original" do
+      enum_2 = enum.dup
+      enum_2.add_value(GraphQL::EnumType::EnumValue.define(name: "MUSKRAT"))
+      assert_equal(6, enum.values.size)
+      assert_equal(7, enum_2.values.size)
+    end
   end
 end

@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 require "spec_helper"
 
 describe GraphQL::Relay::ConnectionField do
@@ -30,5 +31,21 @@ describe GraphQL::Relay::ConnectionField do
 
     assert_instance_of GraphQL::Field::Resolve::MethodResolve, test_field.resolve_proc
     assert_instance_of GraphQL::Relay::ConnectionResolve, conn_field.resolve_proc
+  end
+
+  it "passes connection behaviors to redefinitions" do
+    test_type = GraphQL::ObjectType.define do
+      name "Test"
+      connection :tests, test_type.connection_type
+    end
+
+    connection_field = test_type.fields["tests"]
+    redefined_connection_field = connection_field.redefine { argument "name", types.String }
+
+    assert_equal 4, connection_field.arguments.size
+    assert_equal 5, redefined_connection_field.arguments.size
+
+    assert_instance_of GraphQL::Relay::ConnectionResolve, connection_field.resolve_proc
+    assert_instance_of GraphQL::Relay::ConnectionResolve, redefined_connection_field.resolve_proc
   end
 end

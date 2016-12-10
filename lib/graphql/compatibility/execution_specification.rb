@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 require "graphql/compatibility/execution_specification/counter_schema"
 require "graphql/compatibility/execution_specification/specification_schema"
 
@@ -79,6 +80,21 @@ module GraphQL
             assert_equal "Fannie Lou Hamer", flh["ne_n"], "It serves interface fields"
             assert_equal false, flh.key?("skippedName"), "It obeys @skip"
             assert_equal false, flh.key?("org_n"), "It doesn't apply other type fields"
+          end
+
+          def test_it_iterates_over_each
+            query_string = %|
+              query getData($nodeId: ID = "1002") {
+                node(id: $nodeId) {
+                  ... on Person {
+                    organizations { name }
+                  }
+                }
+              }
+            |
+
+            res = execute_query(query_string)
+            assert_equal ["SNCC"], res["data"]["node"]["organizations"].map { |o| o["name"] }
           end
 
           def test_it_propagates_nulls_to_field
@@ -190,7 +206,7 @@ module GraphQL
               }
             }|
 
-            assert_raises(GraphQL::UnresolvedTypeError) {
+            err = assert_raises(GraphQL::UnresolvedTypeError) {
               execute_query(query_string, except: no_org)
             }
 
@@ -203,6 +219,11 @@ module GraphQL
 
             assert_equal nil, res["data"]
             assert_equal 1, res["errors"].length
+            assert_equal "SNCC", err.value.name
+            assert_equal GraphQL::Relay::Node.interface, err.field.type
+            assert_equal 1, err.possible_types.length
+            assert_equal "Organization", err.resolved_type.name
+            assert_equal "Query", err.parent_type.name
 
             query_string = %|
             {
@@ -315,6 +336,73 @@ module GraphQL
             }|
             res = execute_query(query_string, context: {middleware_log: log})
             assert_equal ["node", "__typename"], log
+          end
+
+          def test_it_uses_type_error_hooks_for_invalid_nulls
+            log = []
+            query_string = %|
+            {
+              node(id: "1001") {
+                ... on Person {
+                  name
+                  first_organization {
+                    leader {
+                      name
+                    }
+                  }
+                }
+              }
+            }|
+
+            res = execute_query(query_string, context: { type_errors: log })
+            assert_equal nil, res["data"]["node"]
+            assert_equal [nil], log
+          end
+
+          def test_it_uses_type_error_hooks_for_failed_type_resolution
+            log = []
+            query_string = %|
+            {
+              node(id: "2003") {
+                __typename
+              }
+            }|
+
+            assert_raises(GraphQL::UnresolvedTypeError) {
+              execute_query(query_string, context: { type_errors: log })
+            }
+
+            assert_equal [SpecificationSchema::BOGUS_NODE], log
+          end
+
+          def test_it_treats_failed_type_resolution_like_nil
+            log = []
+            ctx = { type_errors: log, gobble: true }
+            query_string = %|
+            {
+              node(id: "2003") {
+                __typename
+              }
+            }|
+
+            res = execute_query(query_string, context: ctx)
+
+            assert_equal nil, res["data"]["node"]
+            assert_equal false, res.key?("errors")
+            assert_equal [SpecificationSchema::BOGUS_NODE], log
+
+            query_string_2 = %|
+            {
+              requiredNode(id: "2003") {
+                __typename
+              }
+            }|
+
+            res = execute_query(query_string_2, context: ctx)
+
+            assert_equal nil, res["data"]
+            assert_equal false, res.key?("errors")
+            assert_equal [SpecificationSchema::BOGUS_NODE, SpecificationSchema::BOGUS_NODE], log
           end
         end
       end

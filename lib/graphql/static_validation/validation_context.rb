@@ -1,8 +1,9 @@
+# frozen_string_literal: true
 module GraphQL
   module StaticValidation
     # The validation context gets passed to each validator.
     #
-    # It exposes a {GraphQL::Language::Visitor} where validators may add hooks. ({Visitor#visit} is called in {Validator#validate})
+    # It exposes a {GraphQL::Language::Visitor} where validators may add hooks. ({Language::Visitor#visit} is called in {Validator#validate})
     #
     # It provides access to the schema & fragments which validators may read from.
     #

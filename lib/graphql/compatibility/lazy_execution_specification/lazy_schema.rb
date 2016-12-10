@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module GraphQL
   module Compatibility
     module LazyExecutionSpecification
@@ -19,10 +20,35 @@ module GraphQL
 
           def push
             if @context[:lazy_pushes].include?(@value)
+              @context[:lazy_instrumentation] && @context[:lazy_instrumentation] << "PUSH"
               @context[:pushes] << @context[:lazy_pushes]
               @context[:lazy_pushes] = []
             end
             self
+          end
+        end
+
+        class LazyPushCollection
+          def initialize(ctx, values)
+            @ctx = ctx
+            @values = values
+          end
+
+          def push
+            @values.map { |v| LazyPush.new(@ctx, v) }
+          end
+        end
+
+        module LazyInstrumentation
+          def self.instrument(type, field)
+            prev_lazy_resolve = field.lazy_resolve_proc
+            field.redefine {
+              lazy_resolve ->(o, a, c) {
+                result = prev_lazy_resolve.call(o, a, c)
+                c[:lazy_instrumentation] && c[:lazy_instrumentation].push("#{type.name}.#{field.name}: #{o.value}")
+                result
+              }
+            }
           end
         end
 
@@ -46,6 +72,13 @@ module GraphQL
                 LazyPush.new(c, a[:value])
               }
             end
+
+            connection :pushes, lazy_push_type.connection_type do
+              argument :values, types[types.Int]
+              resolve ->(o, a, c) {
+                LazyPushCollection.new(c, a[:values])
+              }
+            end
           end
 
           GraphQL::Schema.define do
@@ -54,6 +87,8 @@ module GraphQL
             query_execution_strategy(execution_strategy)
             mutation_execution_strategy(execution_strategy)
             lazy_resolve(LazyPush, :push)
+            lazy_resolve(LazyPushCollection, :push)
+            instrument(:field, LazyInstrumentation)
           end
         end
       end

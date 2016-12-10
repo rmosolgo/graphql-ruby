@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 GraphQL::Introspection::TypeType = GraphQL::ObjectType.define do
   name "__Type"
   description "The fundamental unit of any GraphQL Schema is the type. There are many kinds of types in "\

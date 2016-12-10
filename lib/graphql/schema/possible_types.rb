@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module GraphQL
   class Schema
     # Find the members of a union or interface within a given schema.

@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module GraphQL
   module Relay
     # A connection implementation to expose SQL collection objects.
@@ -11,7 +12,7 @@ module GraphQL
           raise("Can't generate cursor, item not found in connection: #{item}")
         else
           offset = starting_offset + item_index + 1
-          Base64.strict_encode64(offset.to_s)
+          encode(offset.to_s)
         end
       end
 
@@ -36,7 +37,7 @@ module GraphQL
       end
 
       def offset_from_cursor(cursor)
-        Base64.decode64(cursor).to_i
+        decode(cursor).to_i
       end
 
       def starting_offset
