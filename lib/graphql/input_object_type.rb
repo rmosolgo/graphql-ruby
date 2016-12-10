@@ -57,14 +57,9 @@ module GraphQL
     def validate_non_null_input(input, warden)
       result = GraphQL::Query::InputValidationResult.new
 
-      if input.is_a? Array
-        result.add_problem(
-          "Expected #{JSON.generate(input, quirks_mode: true)} to be a hash, not an array",
-        )
-        return result
-      end
+      input_h = input.is_a?(Hash) ? input : (input.to_h rescue nil)
 
-      unless input.is_a? Enumerable
+      if input_h.nil?
         result.add_problem("Expected #{JSON.generate(input, quirks_mode: true)} to be a hash")
         return result
       end
@@ -72,15 +67,15 @@ module GraphQL
       visible_arguments_map = warden.input_fields(self).reduce({}) { |m, f| m[f.name] = f; m}
 
       # Items in the input that are unexpected
-      input.each do |name, value|
+      input_h.each do |name, value|
         if visible_arguments_map[name].nil?
           result.add_problem("Field is not defined on #{self.name}", [name])
         end
       end
 
       # Items in the input that are expected, but have invalid values
-      invalid_fields = visible_arguments_map.map do |name, field|
-        field_result = field.type.validate_input(input[name], warden)
+      visible_arguments_map.map do |name, field|
+        field_result = field.type.validate_input(input_h[name], warden)
         if !field_result.valid?
           result.merge_result!(name, field_result)
         end

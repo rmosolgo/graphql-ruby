@@ -136,7 +136,7 @@ describe GraphQL::InputObjectType do
         end
 
         it "has correct problem explanation" do
-          assert(result.problems[0]["explanation"].include?("to be a hash, not an array"))
+          assert(result.problems[0]["explanation"].include?("to be a hash"))
         end
       end
 
