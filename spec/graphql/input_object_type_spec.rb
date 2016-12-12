@@ -119,7 +119,7 @@ describe GraphQL::InputObjectType do
         end
 
         it "has correct problem explanation" do
-          assert(result.problems[0]["explanation"].include?("to be a hash"))
+          assert(result.problems[0]["explanation"].include?("to be a key, value object"))
         end
       end
 
@@ -136,7 +136,7 @@ describe GraphQL::InputObjectType do
         end
 
         it "has correct problem explanation" do
-          assert(result.problems[0]["explanation"].include?("to be a hash"))
+          assert(result.problems[0]["explanation"].include?("to be a key, value object"))
         end
       end
 
@@ -153,7 +153,7 @@ describe GraphQL::InputObjectType do
         end
 
         it "has correct problem explanation" do
-          assert(result.problems[0]["explanation"].include?("to be a hash"))
+          assert(result.problems[0]["explanation"].include?("to be a key, value object"))
         end
       end
 

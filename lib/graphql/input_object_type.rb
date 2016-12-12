@@ -57,17 +57,18 @@ module GraphQL
     def validate_non_null_input(input, warden)
       result = GraphQL::Query::InputValidationResult.new
 
-      input_h = input.is_a?(Hash) ? input : (input.to_h rescue nil)
-
-      if input_h.nil?
-        result.add_problem("Expected #{JSON.generate(input, quirks_mode: true)} to be a hash")
+      if (input.to_h rescue nil).nil?
+        result.add_problem(
+          "Expected #{JSON.generate(input, quirks_mode: true)} to be a key, value object " \
+          " responding to `to_h`."
+        )
         return result
       end
 
       visible_arguments_map = warden.input_fields(self).reduce({}) { |m, f| m[f.name] = f; m}
 
       # Items in the input that are unexpected
-      input_h.each do |name, value|
+      input.each do |name, value|
         if visible_arguments_map[name].nil?
           result.add_problem("Field is not defined on #{self.name}", [name])
         end
@@ -75,7 +76,7 @@ module GraphQL
 
       # Items in the input that are expected, but have invalid values
       visible_arguments_map.map do |name, field|
-        field_result = field.type.validate_input(input_h[name], warden)
+        field_result = field.type.validate_input(input[name], warden)
         if !field_result.valid?
           result.merge_result!(name, field_result)
         end
