@@ -18,7 +18,7 @@ BaseType = GraphQL::ObjectType.define do
 end
 
 # Use an optional block to add fields to the connection type:
-BaseConnectionWithTotalCountType = BaseType.define_connection do
+BaseConnectionWithTotalCountType = BaseType.define_connection(nodes_field: true) do
   name "BasesConnectionWithTotalCount"
   field :totalCount do
     type types.Int
@@ -45,7 +45,7 @@ CustomBaseEdgeType = BaseType.define_edge do
   end
 end
 
-CustomEdgeBaseConnectionType = BaseType.define_connection(edge_class: CustomBaseEdge, edge_type: CustomBaseEdgeType) do
+CustomEdgeBaseConnectionType = BaseType.define_connection(edge_class: CustomBaseEdge, edge_type: CustomBaseEdgeType, nodes_field: true) do
   name "CustomEdgeBaseConnection"
 
   field :totalCountTimes100 do

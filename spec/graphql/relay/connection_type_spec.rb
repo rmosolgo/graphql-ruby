@@ -36,5 +36,25 @@ describe GraphQL::Relay::ConnectionType do
         assert_equal [upcased_rebels_name] , bases["edges"].map { |e| e["upcasedParentName"] }.uniq
       end
     end
+
+    describe "connections with nodes field" do
+      let(:query_string) {%|
+        {
+          rebels {
+            bases: basesWithCustomEdge {
+              nodes {
+                name
+              }
+            }
+          }
+        }
+      |}
+
+      it "uses the custom edge and custom connection" do
+        result = star_wars_query(query_string)
+        bases = result["data"]["rebels"]["bases"]
+        assert_equal ["Yavin", "Echo Base", "Secret Hideout"] , bases["nodes"].map { |e| e["name"] }
+      end
+    end
   end
 end
