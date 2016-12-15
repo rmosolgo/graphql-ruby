@@ -12,7 +12,7 @@ module GraphQL
     # Masks can be provided in {Schema#execute} (or {Query#initialize}) with the `mask:` keyword.
     #
     # @example Hidding private fields
-    #   private_members = -> (member) { member.metadata[:private] }
+    #   private_members = -> (member, ctx) { member.metadata[:private] }
     #   result = Schema.execute(query_string, except: private_members)
     #
     # @example Custom mask implementation
@@ -23,7 +23,7 @@ module GraphQL
     #     end
     #
     #     # Return `false` if any required flags are missing
-    #     def call(member)
+    #     def call(member, ctx)
     #       member.metadata[:required_flags].any? do |flag|
     #         !@user.has_flag?(flag)
     #       end
@@ -36,12 +36,15 @@ module GraphQL
     #   # This query can only access members which match the user's flags
     #   result = Schema.execute(query_string, except: missing_required_flags)
     #
+    # @api private
     class Warden
-      # @param schema [GraphQL::Schema]
-      # @param mask [<#call(member)>] Objects are hidden when `.call(member)` returns true
-      def initialize(schema, mask)
+      # @param query [GraphQL::Query]
+      # @param mask [<#call(member)>] Objects are hidden when `.call(member, ctx)` returns true
+      def initialize(query, mask)
         @mask = mask
-        @schema = schema
+        @query = query
+        @context = @query.context
+        @schema = @query.schema
       end
 
       # @return [Array<GraphQL::BaseType>] Visible types in the schema
@@ -125,7 +128,7 @@ module GraphQL
       end
 
       def visible?(member)
-        @visibility_cache ||= read_through {|m| !@mask.call(m) }
+        @visibility_cache ||= read_through { |m| !@mask.call(m, @context) }
         @visibility_cache[member]
       end
 

@@ -5,6 +5,7 @@ require "graphql/schema/default_type_error"
 require "graphql/schema/invalid_type_error"
 require "graphql/schema/instrumented_field_map"
 require "graphql/schema/middleware_chain"
+require "graphql/schema/null_mask"
 require "graphql/schema/possible_types"
 require "graphql/schema/rescue_middleware"
 require "graphql/schema/reduce_types"
@@ -56,6 +57,7 @@ module GraphQL
       :max_depth, :max_complexity,
       :orphan_types, :resolve_type, :type_error,
       :object_from_id, :id_from_object,
+      :default_mask,
       :cursor_encoder,
       directives: ->(schema, directives) { schema.directives = directives.reduce({}) { |m, d| m[d.name] = d; m  }},
       instrument: -> (schema, type, instrumenter) { schema.instrumenters[type] << instrumenter },
@@ -72,10 +74,12 @@ module GraphQL
       :query_analyzers, :instrumenters, :lazy_methods,
       :cursor_encoder
 
-
     # @return [MiddlewareChain] MiddlewareChain which is applied to fields during execution
     attr_accessor :middleware
 
+    # @return [<#call(member, ctx)>] A callable for filtering members of the schema
+    # @see {Query.new} for query-specific filters with `except:`
+    attr_accessor :default_mask
 
     class << self
       attr_accessor :default_execution_strategy
@@ -106,6 +110,7 @@ module GraphQL
       @query_execution_strategy = self.class.default_execution_strategy
       @mutation_execution_strategy = self.class.default_execution_strategy
       @subscription_execution_strategy = self.class.default_execution_strategy
+      @default_mask = GraphQL::Schema::NullMask
     end
 
     def initialize_copy(other)
