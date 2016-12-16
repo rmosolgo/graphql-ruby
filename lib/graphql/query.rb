@@ -30,14 +30,16 @@ module GraphQL
     # @param max_depth [Numeric] the maximum number of nested selections allowed for this query (falls back to schema-level value)
     # @param max_complexity [Numeric] the maximum field complexity for this query (falls back to schema-level value)
     # @param except [<#call(schema_member)>] If provided, objects will be hidden from the schema when `.call(schema_member)` returns truthy
-    def initialize(schema, query_string = nil, document: nil, context: nil, variables: {}, validate: true, operation_name: nil, root_value: nil, max_depth: nil, max_complexity: nil, except: nil)
+    def initialize(schema, query_string = nil, document: nil, context: nil, variables: {}, validate: true, operation_name: nil, root_value: nil, max_depth: nil, max_complexity: nil, except: nil, only: nil)
       fail ArgumentError, "a query string or document is required" unless query_string || document
 
       @schema = schema
-      mask = if except.nil?
-        schema.default_mask
-      else
+      mask = if except
         wrap_if_legacy_mask(except)
+      elsif only
+        InvertedMask.new(wrap_if_legacy_mask(only))
+      else
+        schema.default_mask
       end
 
       @warden = GraphQL::Schema::Warden.new(self, mask)
@@ -267,6 +269,19 @@ module GraphQL
         LegacyMaskWrap.new(mask)
       else
         mask
+      end
+    end
+
+    # @api private
+    class InvertedMask
+      def initialize(inner_mask)
+        @inner_mask = inner_mask
+      end
+
+      # Returns true when the inner mask returned false
+      # Returns false when the inner mask returned true
+      def call(member, ctx)
+        !@inner_mask.call(member, ctx)
       end
     end
 

@@ -109,7 +109,11 @@ module MaskHelpers
   end
 
   def self.query_with_mask(str, mask, variables: {})
-    Schema.execute(str, except: mask, root_value: Data, variables: variables)
+   run_query(str, except: mask, root_value: Data, variables: variables)
+  end
+
+  def self.run_query(str, options = {})
+    Schema.execute(str, options.merge(root_value: Data))
   end
 end
 
@@ -194,8 +198,8 @@ describe GraphQL::Schema::Warden do
   end
 
   describe "hiding types" do
-    let(:mask) {
-      -> (member, ctx) { member.metadata[:hidden_type] }
+    let(:whitelist) {
+      -> (member, ctx) { !member.metadata[:hidden_type] }
     }
 
     it "hides types from introspection" do
@@ -227,7 +231,7 @@ describe GraphQL::Schema::Warden do
       }
       |
 
-      res = MaskHelpers.query_with_mask(query_string, mask)
+      res = MaskHelpers.run_query(query_string, only: whitelist)
 
       # It's not visible by name
       assert_equal nil, res["data"]["Phoneme"]
@@ -258,7 +262,7 @@ describe GraphQL::Schema::Warden do
       }
       |
 
-      res = MaskHelpers.query_with_mask(query_string, mask)
+      res = MaskHelpers.run_query(query_string, only: whitelist)
 
       expected_errors = [
         "No such type Phoneme, so it can't be a fragment condition",
@@ -275,7 +279,7 @@ describe GraphQL::Schema::Warden do
       |
 
       assert_raises(GraphQL::UnresolvedTypeError) {
-        MaskHelpers.query_with_mask(query_string, mask)
+        MaskHelpers.run_query(query_string, only: whitelist)
       }
     end
 
