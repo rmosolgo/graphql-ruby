@@ -77,21 +77,8 @@ module GraphQL
         # If the middleware chain returns a GraphQL::ExecutionError, its message
         # is added to the "errors" key.
         def get_raw_value
-          middlewares = @query.schema.middleware
-
-          resolve_arguments = [parent_type, target, field, arguments, @field_ctx]
-
           begin
-            # only run a middleware chain if there are any middleware
-            if middlewares.any?
-              chain = GraphQL::Schema::MiddlewareChain.new(
-                steps: middlewares + [FieldResolveStep],
-                arguments: resolve_arguments
-              )
-              chain.call
-            else
-              FieldResolveStep.call(*resolve_arguments)
-            end
+            @query.schema.middleware_chain.invoke(0, [parent_type, target, field, arguments, @field_ctx])
           rescue GraphQL::ExecutionError => err
             err
           end

@@ -8,21 +8,15 @@ module GraphQL
       # @return [Array<#call(*args)>] Steps in this chain, will be called with arguments and `next_middleware`
       attr_reader :steps
 
-      # @return [Array] Arguments passed to steps (followed by `next_middleware`)
-      attr_reader :arguments
-
-      def initialize(steps:, arguments:)
-        # We're gonna destroy this array, so copy it:
-        @steps = steps.dup
-        @arguments = arguments
+      def initialize(steps:)
+        @steps = steps
       end
 
       # Run the next step in the chain, passing in arguments and handle to the next step
-      def call(next_arguments = @arguments)
-        @arguments = next_arguments
-        next_step = steps.shift
-        next_middleware = self
-        next_step.call(*arguments, next_middleware)
+      def invoke(index, arguments)
+        next_step = steps[index]
+        call_next = ->(next_args = arguments) { invoke(index + 1, next_args) }
+        next_step.call(*arguments, call_next)
       end
     end
   end
