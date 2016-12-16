@@ -34,7 +34,7 @@ module GraphQL
 
 
       def required_input_fields_are_present(type, ast_node)
-        required_field_names = @warden.input_fields(type)
+        required_field_names = @warden.arguments(type)
           .select { |f| f.type.kind.non_null? }
           .map(&:name)
         present_field_names = ast_node.arguments.map(&:name)
@@ -43,7 +43,7 @@ module GraphQL
       end
 
       def present_input_field_values_are_valid(type, ast_node)
-        field_map = @warden.input_fields(type).reduce({}) { |m, f| m[f.name] = f; m}
+        field_map = @warden.arguments(type).reduce({}) { |m, f| m[f.name] = f; m}
         ast_node.arguments.all? do |value|
           field = field_map[value.name]
           field && validate(value.value, field.type)

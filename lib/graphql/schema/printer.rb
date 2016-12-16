@@ -11,74 +11,76 @@ module GraphQL
       extend self
 
       # Return a GraphQL schema string for the defined types in the schema
+      # @param context [Hash]
+      # @param only [<#call(member, ctx)>]
+      # @param except [<#call(member, ctx)>]
       # @param schema [GraphQL::Schema]
-      def print_schema(schema)
-        whitelist = ->(m) { IS_USER_DEFINED_MEMBER.call(m) }
-        print_filtered_schema(schema, whitelist)
+      def print_schema(schema, context: nil, only: nil, except: nil)
+        blacklist = if only
+          ->(m, ctx) { !(IS_USER_DEFINED_MEMBER.call(m) && only.call(m, ctx)) }
+        elsif except
+          ->(m, ctx) { !IS_USER_DEFINED_MEMBER.call(m) || except.call(m, ctx) }
+        else
+          ->(m, ctx) { !IS_USER_DEFINED_MEMBER.call(m) }
+        end
+
+        warden = GraphQL::Schema::Warden.new(blacklist, schema: schema, context: context)
+
+        print_filtered_schema(schema, warden: warden)
       end
 
       # Return the GraphQL schema string for the introspection type system
       def print_introspection_schema
-        query_root = ObjectType.define do
-          name "Root"
-        end
+        query_root = ObjectType.define(name: "Root")
         schema = GraphQL::Schema.define(query: query_root)
-        whitelist = IS_INTROSPECTION_MEMBER
-        print_filtered_schema(schema, whitelist)
+        blacklist = ->(m, ctx) { m == query_root }
+
+        warden = GraphQL::Schema::Warden.new(blacklist, schema: schema, context: nil)
+
+        print_filtered_schema(schema, warden: warden)
       end
 
       private
 
       BUILTIN_DIRECTIVE_NAMES = Set.new(['skip', 'include', 'deprecated'])
-      BUILTIN_SCALARS = Set.new(["String", "Boolean", "Int", "Float", "ID"])
+
+      BUILTIN_SCALARS = [
+        GraphQL::STRING_TYPE,
+        GraphQL::BOOLEAN_TYPE,
+        GraphQL::INT_TYPE,
+        GraphQL::FLOAT_TYPE,
+        GraphQL::ID_TYPE,
+      ]
 
       # By default, these are included in a schema printout
       IS_USER_DEFINED_MEMBER = ->(member) {
         case member
-        when GraphQL::ObjectType, GraphQL::EnumType
+        when GraphQL::BaseType
           !member.name.start_with?("__")
         when GraphQL::Directive
           !BUILTIN_DIRECTIVE_NAMES.include?(member.name)
-        when GraphQL::ScalarType
-          !BUILTIN_SCALARS.include?(member.name)
         else
           true
         end
       }
 
-      # These are included in an introspection schema printout
-      IS_INTROSPECTION_MEMBER = ->(member) {
-        case member
-        when GraphQL::ScalarType
-          !BUILTIN_SCALARS.include?(member.name)
-        else
-          !IS_USER_DEFINED_MEMBER.call(member)
-        end
-      }
+      private_constant :BUILTIN_DIRECTIVE_NAMES, :BUILTIN_SCALARS, :IS_USER_DEFINED_MEMBER
 
+      def print_filtered_schema(schema, warden:)
+        directive_definitions = warden.directives.map { |directive| print_directive(warden, directive) }
 
-      private_constant :BUILTIN_DIRECTIVE_NAMES, :BUILTIN_SCALARS, :IS_INTROSPECTION_MEMBER, :IS_USER_DEFINED_MEMBER
+        printable_types = warden.types - BUILTIN_SCALARS
 
-      def print_filtered_schema(schema, whitelist)
-        directive_definitions = schema
-          .directives
-          .values
-          .select { |directive| whitelist.call(directive) }
-          .map { |directive| print_directive(directive) }
-
-        type_definitions = schema
-          .types
-          .values
-          .select { |type| whitelist.call(type) }
+        type_definitions = printable_types
           .sort_by(&:name)
-          .map { |type| print_type(type) }
+          .map { |type| print_type(warden, type) }
 
-        [print_schema_definition(schema)].compact
+        [print_schema_definition(warden, schema)].compact
                                          .concat(directive_definitions)
                                          .concat(type_definitions).join("\n\n")
       end
 
-      def print_schema_definition(schema)
+      def print_schema_definition(warden, schema)
         if (schema.query.nil? || schema.query.name == 'Query') &&
            (schema.mutation.nil? || schema.mutation.name == 'Mutation') &&
            (schema.subscription.nil? || schema.subscription.name == 'Subscription')
@@ -87,17 +89,22 @@ module GraphQL
 
         operations = [:query, :mutation, :subscription].map do |operation_type|
           object_type = schema.public_send(operation_type)
-          "  #{operation_type}: #{object_type.name}\n" if object_type
+          # Special treatment for the introspection schema, which prints `{ query: "Root" }`
+          if object_type && (warden.get_type(object_type.name) || (object_type.name == "Root" && schema.query == object_type))
+            "  #{operation_type}: #{object_type.name}\n"
+          else
+            nil
+          end
         end.compact.join
         "schema {\n#{operations}}"
       end
 
-      def print_type(type)
-        TypeKindPrinters::STRATEGIES.fetch(type.kind).print(type)
+      def print_type(warden, type)
+        TypeKindPrinters::STRATEGIES.fetch(type.kind).print(warden, type)
       end
 
-      def print_directive(directive)
-        TypeKindPrinters::DirectivePrinter.print(directive)
+      def print_directive(warden, directive)
+        TypeKindPrinters::DirectivePrinter.print(warden, directive)
       end
 
       module TypeKindPrinters
@@ -127,17 +134,16 @@ module GraphQL
 
         module ArgsPrinter
           include DescriptionPrinter
-          def print_args(field, indentation = '')
-            return if field.arguments.empty?
+          def print_args(warden, field, indentation = '')
+            arguments = warden.arguments(field)
+            return if arguments.empty?
 
-            field_arguments = field.arguments.values
-
-            if field_arguments.all?{ |arg| !arg.description }
-              return "(#{field_arguments.map{ |arg| print_input_value(arg) }.join(", ")})"
+            if arguments.all?{ |arg| !arg.description }
+              return "(#{arguments.map{ |arg| print_input_value(arg) }.join(", ")})"
             end
 
             out = "(\n".dup
-            out << field_arguments.map.with_index{ |arg, i|
+            out << arguments.map.with_index{ |arg, i|
               "#{print_description(arg, "  #{indentation}", i == 0)}  #{indentation}"\
               "#{print_input_value(arg)}"
             }.join("\n")
@@ -193,10 +199,11 @@ module GraphQL
           include DeprecatedPrinter
           include ArgsPrinter
           include DescriptionPrinter
-          def print_fields(type)
-            type.all_fields.map.with_index { |field, i|
+          def print_fields(warden, type)
+            fields = warden.fields(type)
+            fields.map.with_index { |field, i|
               "#{print_description(field, '  ', i == 0)}"\
-              "  #{field.name}#{print_args(field, '  ')}: #{field.type}#{print_deprecated(field)}"
+              "  #{field.name}#{print_args(warden, field, '  ')}: #{field.type}#{print_deprecated(field)}"
             }.join("\n")
           end
         end
@@ -204,16 +211,16 @@ module GraphQL
         class DirectivePrinter
           extend ArgsPrinter
           extend DescriptionPrinter
-          def self.print(directive)
+          def self.print(warden, directive)
             "#{print_description(directive)}"\
-            "directive @#{directive.name}#{print_args(directive)} "\
+            "directive @#{directive.name}#{print_args(warden, directive)} "\
             "on #{directive.locations.join(' | ')}"
           end
         end
 
         class ScalarPrinter
           extend DescriptionPrinter
-          def self.print(type)
+          def self.print(warden, type)
             "#{print_description(type)}"\
             "scalar #{type.name}"
           end
@@ -222,16 +229,17 @@ module GraphQL
         class ObjectPrinter
           extend FieldPrinter
           extend DescriptionPrinter
-          def self.print(type)
-            if type.interfaces.any?
-              implementations = " implements #{type.interfaces.map(&:to_s).join(", ")}"
+          def self.print(warden, type)
+            interfaces = warden.interfaces(type)
+            if interfaces.any?
+              implementations = " implements #{interfaces.map(&:to_s).join(", ")}"
             else
               implementations = nil
             end
 
             "#{print_description(type)}"\
             "type #{type.name}#{implementations} {\n"\
-            "#{print_fields(type)}\n"\
+            "#{print_fields(warden, type)}\n"\
             "}"
           end
         end
@@ -239,29 +247,32 @@ module GraphQL
         class InterfacePrinter
           extend FieldPrinter
           extend DescriptionPrinter
-          def self.print(type)
+          def self.print(warden, type)
             "#{print_description(type)}"\
-            "interface #{type.name} {\n#{print_fields(type)}\n}"
+            "interface #{type.name} {\n#{print_fields(warden, type)}\n}"
           end
         end
 
         class UnionPrinter
           extend DescriptionPrinter
-          def self.print(type)
+          def self.print(warden, type)
+            possible_types = warden.possible_types(type)
             "#{print_description(type)}"\
-            "union #{type.name} = #{type.possible_types.map(&:to_s).join(" | ")}"
+            "union #{type.name} = #{possible_types.map(&:to_s).join(" | ")}"
           end
         end
 
         class EnumPrinter
           extend DeprecatedPrinter
           extend DescriptionPrinter
-          def self.print(type)
-            values = type.values.values.map{ |v| "  #{v.name}#{print_deprecated(v)}" }.join("\n")
-            values = type.values.values.map.with_index { |v, i|
+          def self.print(warden, type)
+            enum_values = warden.enum_values(type)
+
+            values = enum_values.map.with_index { |v, i|
               "#{print_description(v, '  ', i == 0)}"\
               "  #{v.name}#{print_deprecated(v)}"
             }.join("\n")
+
             "#{print_description(type)}"\
             "enum #{type.name} {\n#{values}\n}"
           end
@@ -270,8 +281,9 @@ module GraphQL
         class InputObjectPrinter
           extend FieldPrinter
           extend DescriptionPrinter
-          def self.print(type)
-            fields = type.input_fields.values.map.with_index{ |field, i|
+          def self.print(warden, type)
+            arguments = warden.arguments(type)
+            fields = arguments.map.with_index{ |field, i|
               "#{print_description(field, "  ", i == 0)}"\
               "  #{print_input_value(field)}"
             }.join("\n")

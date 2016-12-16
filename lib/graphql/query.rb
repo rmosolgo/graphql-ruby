@@ -41,8 +41,8 @@ module GraphQL
       else
         schema.default_mask
       end
-
-      @warden = GraphQL::Schema::Warden.new(self, mask)
+      @context = Context.new(query: self, values: context)
+      @warden = GraphQL::Schema::Warden.new(mask, schema: @schema, context: @context)
       @max_depth = max_depth || schema.max_depth
       @max_complexity = max_complexity || schema.max_complexity
       @query_analyzers = schema.query_analyzers.dup
@@ -52,7 +52,6 @@ module GraphQL
       if @max_complexity
         @query_analyzers << GraphQL::Analysis::MaxQueryComplexity.new(@max_complexity)
       end
-      @context = Context.new(query: self, values: context)
       @root_value = root_value
       @operation_name = operation_name
       @fragments = {}
