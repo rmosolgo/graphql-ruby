@@ -13,7 +13,8 @@ module GraphQL
       # Return a GraphQL schema string for the defined types in the schema
       # @param schema [GraphQL::Schema]
       def print_schema(schema)
-        print_filtered_schema(schema, lambda { |n| !is_spec_directive(n) }, method(:is_defined_type))
+        whitelist = ->(m) { IS_USER_DEFINED_MEMBER.call(m) }
+        print_filtered_schema(schema, whitelist)
       end
 
       # Return the GraphQL schema string for the introspection type system
@@ -22,17 +23,55 @@ module GraphQL
           name "Root"
         end
         schema = GraphQL::Schema.define(query: query_root)
-        print_filtered_schema(schema, method(:is_spec_directive), method(:is_introspection_type))
+        whitelist = IS_INTROSPECTION_MEMBER
+        print_filtered_schema(schema, whitelist)
       end
 
       private
 
-      def print_filtered_schema(schema, directive_filter, type_filter)
-        directives = schema.directives.values.select{ |directive| directive_filter.call(directive) }
-        directive_definitions = directives.map{ |directive| print_directive(directive) }
+      BUILTIN_DIRECTIVE_NAMES = Set.new(['skip', 'include', 'deprecated'])
+      BUILTIN_SCALARS = Set.new(["String", "Boolean", "Int", "Float", "ID"])
 
-        types = schema.types.values.select{ |type| type_filter.call(type) }.sort_by(&:name)
-        type_definitions = types.map{ |type| print_type(type) }
+      # By default, these are included in a schema printout
+      IS_USER_DEFINED_MEMBER = ->(member) {
+        case member
+        when GraphQL::ObjectType, GraphQL::EnumType
+          !member.name.start_with?("__")
+        when GraphQL::Directive
+          !BUILTIN_DIRECTIVE_NAMES.include?(member.name)
+        when GraphQL::ScalarType
+          !BUILTIN_SCALARS.include?(member.name)
+        else
+          true
+        end
+      }
+
+      # These are included in an introspection schema printout
+      IS_INTROSPECTION_MEMBER = ->(member) {
+        case member
+        when GraphQL::ScalarType
+          !BUILTIN_SCALARS.include?(member.name)
+        else
+          !IS_USER_DEFINED_MEMBER.call(member)
+        end
+      }
+
+
+      private_constant :BUILTIN_DIRECTIVE_NAMES, :BUILTIN_SCALARS, :IS_INTROSPECTION_MEMBER, :IS_USER_DEFINED_MEMBER
+
+      def print_filtered_schema(schema, whitelist)
+        directive_definitions = schema
+          .directives
+          .values
+          .select { |directive| whitelist.call(directive) }
+          .map { |directive| print_directive(directive) }
+
+        type_definitions = schema
+          .types
+          .values
+          .select { |type| whitelist.call(type) }
+          .sort_by(&:name)
+          .map { |type| print_type(type) }
 
         [print_schema_definition(schema)].compact
                                          .concat(directive_definitions)
@@ -51,21 +90,6 @@ module GraphQL
           "  #{operation_type}: #{object_type.name}\n" if object_type
         end.compact.join
         "schema {\n#{operations}}"
-      end
-
-      BUILTIN_SCALARS = Set.new(["String", "Boolean", "Int", "Float", "ID"])
-      private_constant :BUILTIN_SCALARS
-
-      def is_spec_directive(directive)
-        ['skip', 'include', 'deprecated'].include?(directive.name)
-      end
-
-      def is_introspection_type(type)
-        type.name.start_with?("__")
-      end
-
-      def is_defined_type(type)
-        !is_introspection_type(type) && !BUILTIN_SCALARS.include?(type.name)
       end
 
       def print_type(type)
