@@ -12,11 +12,23 @@ module GraphQL
         @steps = steps
       end
 
+      class ChainCall
+        def initialize(chain, next_args, next_offset)
+          @chain = chain
+          @next_args = next_args
+          @next_offset = next_offset
+        end
+
+        def call(next_args = @next_args)
+          @chain.invoke(@next_offset, next_args)
+        end
+      end
+
       # Run the next step in the chain, passing in arguments and handle to the next step
       def invoke(index, arguments)
         next_step = steps[index]
-        call_next = ->(next_args = arguments) { invoke(index + 1, next_args) }
-        next_step.call(*arguments, call_next)
+        next_middleware = ChainCall.new(self, arguments, index + 1)
+        next_step.call(*arguments, next_middleware)
       end
     end
   end

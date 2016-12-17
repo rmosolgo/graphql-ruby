@@ -50,6 +50,14 @@ module GraphQL
         @path = []
       end
 
+      def middleware_chain
+        @middleware_chain ||= begin
+          steps = @schema.middleware.dup
+          steps << GraphQL::Execution::Execute::FieldResolveStep
+          GraphQL::Schema::MiddlewareChain.new(steps: steps)
+        end
+      end
+
       # Lookup `key` from the hash passed to {Schema#execute} as `context:`
       def [](key)
         @values[key]
@@ -83,7 +91,7 @@ module GraphQL
           @parent_type = parent_type
         end
 
-        def_delegators :@context, :[], :[]=, :spawn, :query, :schema, :warden, :errors, :execution_strategy, :strategy
+        def_delegators :@context, :[], :[]=, :spawn, :query, :schema, :warden, :errors, :execution_strategy, :strategy, :middleware_chain
 
         # @return [GraphQL::Language::Nodes::Field] The AST node for the currently-executing field
         def ast_node

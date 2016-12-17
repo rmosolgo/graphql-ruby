@@ -358,14 +358,6 @@ module GraphQL
       end
     end
 
-    def middleware_chain
-      @middleware_chain ||= begin
-        steps = middleware.dup
-        steps << GraphQL::Execution::Execute::FieldResolveStep
-        GraphQL::Schema::MiddlewareChain.new(steps: steps)
-      end
-    end
-
     protected
 
     def rescues?
