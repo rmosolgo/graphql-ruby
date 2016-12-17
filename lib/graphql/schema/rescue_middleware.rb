@@ -30,9 +30,9 @@ module GraphQL
       end
 
       # Implement the requirement for {GraphQL::Schema::MiddlewareChain}
-      def call(*args, next_middleware)
+      def call(*args)
         begin
-          next_middleware.call
+          yield
         rescue StandardError => err
           attempt_rescue(err)
         end
