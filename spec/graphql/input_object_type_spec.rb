@@ -83,22 +83,18 @@ describe GraphQL::InputObjectType do
         end
       end
 
-      require "action_pack"
-      if ActionPack::VERSION::MAJOR > 3
-        require "action_controller"
 
-        describe "with a ActionController::Parameters" do
-          let(:input) do
-            ActionController::Parameters.new(
-              "source" => "COW",
-              "fatContent" => 0.4,
-            )
-          end
-          let(:result) { DairyProductInputType.validate_input(input, PermissiveWarden) }
+      describe "with a ActionController::Parameters" do
+        let(:input) do
+          ActionController::Parameters.new(
+            "source" => "COW",
+            "fatContent" => 0.4,
+          )
+        end
+        let(:result) { DairyProductInputType.validate_input(input, PermissiveWarden) }
 
-          it "returns a valid result" do
-            assert(result.valid?)
-          end
+        it "returns a valid result" do
+          assert(result.valid?)
         end
       end
 

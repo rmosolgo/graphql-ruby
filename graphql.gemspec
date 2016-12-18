@@ -34,6 +34,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency "rubocop", "~> 0.44"
   # following are required for relay helpers
   s.add_development_dependency "activerecord"
+  s.add_development_dependency "actionpack"
   s.add_development_dependency "appraisal"
   s.add_development_dependency "sequel"
   s.add_development_dependency "sqlite3"
