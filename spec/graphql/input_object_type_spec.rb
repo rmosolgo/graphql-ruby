@@ -83,6 +83,25 @@ describe GraphQL::InputObjectType do
         end
       end
 
+      require "action_pack"
+      if ActionPack::VERSION::MAJOR > 3
+        require "action_controller"
+
+        describe "with a ActionController::Parameters" do
+          let(:input) do
+            ActionController::Parameters.new(
+              "source" => "COW",
+              "fatContent" => 0.4,
+            )
+          end
+          let(:result) { DairyProductInputType.validate_input(input, PermissiveWarden) }
+
+          it "returns a valid result" do
+            assert(result.valid?)
+          end
+        end
+      end
+
       describe "with bad enum and float" do
         let(:result) { DairyProductInputType.validate_input({"source" => "KOALA", "fatContent" => "bad_num"}, PermissiveWarden) }
 
@@ -103,6 +122,57 @@ describe GraphQL::InputObjectType do
           actual = source_problem["explanation"]
 
           assert_equal(expected, actual)
+        end
+      end
+
+      describe 'with a string as input' do
+        let(:result) { DairyProductInputType.validate_input("just a string", PermissiveWarden) }
+
+        it "returns an invalid result" do
+          assert(!result.valid?)
+        end
+
+        it "has problem with correct path" do
+          paths = result.problems.map { |p| p["path"] }
+          assert(paths.include?([]))
+        end
+
+        it "has correct problem explanation" do
+          assert(result.problems[0]["explanation"].include?("to be a key, value object"))
+        end
+      end
+
+      describe 'with an array as input' do
+        let(:result) { DairyProductInputType.validate_input(["string array"], PermissiveWarden) }
+
+        it "returns an invalid result" do
+          assert(!result.valid?)
+        end
+
+        it "has problem with correct path" do
+          paths = result.problems.map { |p| p["path"] }
+          assert(paths.include?([]))
+        end
+
+        it "has correct problem explanation" do
+          assert(result.problems[0]["explanation"].include?("to be a key, value object"))
+        end
+      end
+
+      describe 'with a int as input' do
+        let(:result) { DairyProductInputType.validate_input(10, PermissiveWarden) }
+
+        it "returns an invalid result" do
+          assert(!result.valid?)
+        end
+
+        it "has problem with correct path" do
+          paths = result.problems.map { |p| p["path"] }
+          assert(paths.include?([]))
+        end
+
+        it "has correct problem explanation" do
+          assert(result.problems[0]["explanation"].include?("to be a key, value object"))
         end
       end
 
