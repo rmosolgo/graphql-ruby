@@ -109,7 +109,7 @@ module MaskHelpers
   end
 
   def self.query_with_mask(str, mask, variables: {})
-   run_query(str, except: mask, root_value: Data, variables: variables)
+    run_query(str, except: mask, root_value: Data, variables: variables)
   end
 
   def self.run_query(str, options = {})
