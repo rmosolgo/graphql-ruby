@@ -17,6 +17,12 @@ describe GraphQL::Schema do
     end
   end
 
+  describe "#to_definition" do
+    it "prints out the schema definition" do
+      assert_equal schema.to_definition, GraphQL::Schema::Printer.print_schema(schema)
+    end
+  end
+
   describe "#subscription" do
     it "calls fields on the subscription type" do
       res = schema.execute("subscription { test }")

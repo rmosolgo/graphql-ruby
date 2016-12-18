@@ -513,7 +513,7 @@ SCHEMA
     }
 
     context = { names: ["Varied", "Choice", "Subscription"] }
-    assert_equal expected.chomp, GraphQL::Schema::Printer.print_schema(schema, context: context, only: only_filter)
+    assert_equal expected.chomp, schema.to_definition(context: context, only: only_filter)
   end
 
 
@@ -588,6 +588,6 @@ SCHEMA
     }
 
     context = { names: ["Varied", "Image", "Sub"] }
-    assert_equal expected.chomp, GraphQL::Schema::Printer.print_schema(schema, context: context, except: except_filter)
+    assert_equal expected.chomp, schema.to_definition(context: context, except: except_filter)
   end
 end
