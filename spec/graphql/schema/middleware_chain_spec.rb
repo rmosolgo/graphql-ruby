@@ -10,21 +10,35 @@ describe GraphQL::Schema::MiddlewareChain do
   let(:arguments) { [step_values] }
   let(:middleware_chain) { GraphQL::Schema::MiddlewareChain.new(steps: steps)}
 
-  describe "#call" do
+  describe "#invoke" do
     it "runs steps in order" do
-      middleware_chain.invoke(0, arguments)
+      middleware_chain.invoke(arguments)
       assert_equal([1,2,3], step_values)
     end
 
     it "returns the value of the last middleware" do
-      assert_equal(:return_value, middleware_chain.invoke(0, arguments))
+      assert_equal(:return_value, middleware_chain.invoke(arguments))
+    end
+
+    describe "when there is a final step" do
+      let(:final_step) { ->(step_values) { step_values << :final; :final_value } }
+      let(:middleware_chain) { GraphQL::Schema::MiddlewareChain.new(steps: [step_1, step_2], final_step: final_step) }
+
+      it "calls the final step" do
+        middleware_chain.invoke(arguments)
+        assert_equal([1, 2, :final], step_values)
+      end
+
+      it "returns the value from the final step" do
+        assert_equal(:final_value, middleware_chain.invoke(arguments))
+      end
     end
 
     describe "when a step returns early" do
       let(:early_return_step) { ->(step_values, &next_step) { :early_return } }
       it "doesn't continue the chain" do
         steps.insert(2, early_return_step)
-        assert_equal(:early_return, middleware_chain.invoke(0, arguments))
+        assert_equal(:early_return, middleware_chain.invoke(arguments))
         assert_equal([1,2], step_values)
       end
     end
@@ -35,7 +49,7 @@ describe GraphQL::Schema::MiddlewareChain do
         step_2 = ->(test_arg, &next_step) { assert_equal(test_arg, 'WORLD'); test_arg }
 
         chain = GraphQL::Schema::MiddlewareChain.new(steps: [step_1, step_2])
-        result = chain.invoke(0, ['HELLO'])
+        result = chain.invoke(['HELLO'])
         assert_equal(result, 'WORLD')
       end
     end

@@ -88,7 +88,7 @@ module GraphQL
       @orphan_types = []
       @directives = DIRECTIVES.reduce({}) { |m, d| m[d.name] = d; m }
       @static_validator = GraphQL::StaticValidation::Validator.new(schema: self)
-      @user_middleware = []
+      @user_middleware = MiddlewareChain.new(final_step: GraphQL::Execution::Execute::FieldResolveStep)
       @query_analyzers = []
       @resolve_type_proc = nil
       @object_from_id_proc = nil
@@ -349,13 +349,9 @@ module GraphQL
       !!lazy_method_name(obj)
     end
 
-    # @return [Array<#call>] Middlewares suitable for MiddlewareChain, applied to fields during execution
+    # @return [MiddlewareChain] Middlewares suitable for MiddlewareChain, applied to fields during execution
     def middleware
-      @middleware ||= if @rescue_middleware
-        [@rescue_middleware].concat(@user_middleware)
-      else
-        @user_middleware
-      end
+      @user_middleware
     end
 
     protected
@@ -367,7 +363,7 @@ module GraphQL
     # Lazily create a middleware and add it to the schema
     # (Don't add it if it's not used)
     def rescue_middleware
-      @rescue_middleware ||= GraphQL::Schema::RescueMiddleware.new
+      @rescue_middleware ||= GraphQL::Schema::RescueMiddleware.new.tap { |m| middleware.insert(0, m) }
     end
 
     private

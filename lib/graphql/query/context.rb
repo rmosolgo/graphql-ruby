@@ -51,11 +51,7 @@ module GraphQL
       end
 
       def middleware_chain
-        @middleware_chain ||= begin
-          steps = @schema.middleware.dup
-          steps << GraphQL::Execution::Execute::FieldResolveStep
-          GraphQL::Schema::MiddlewareChain.new(steps: steps)
-        end
+        @schema.middleware
       end
 
       # Lookup `key` from the hash passed to {Schema#execute} as `context:`

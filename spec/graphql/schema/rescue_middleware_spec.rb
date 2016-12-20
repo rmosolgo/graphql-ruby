@@ -14,12 +14,12 @@ describe GraphQL::Schema::RescueMiddleware do
 
   let(:steps) { [rescue_middleware, error_middleware] }
 
-  let(:middleware_chain) { GraphQL::Schema::MiddlewareChain.new(steps: steps)}
+  let(:middleware_chain) { GraphQL::Schema::MiddlewareChain.new(steps: steps) }
 
   describe "known errors" do
     let(:error_class) { SpecExampleError }
     it "handles them as execution errors" do
-      result = middleware_chain.invoke(0, [])
+      result = middleware_chain.invoke([])
       assert_equal("there was an example error: SpecExampleError", result.message)
       assert_equal(GraphQL::ExecutionError, result.class)
     end
@@ -28,7 +28,7 @@ describe GraphQL::Schema::RescueMiddleware do
   describe "unknown errors" do
     let(:error_class) { RuntimeError }
     it "re-raises them" do
-      assert_raises(RuntimeError) { middleware_chain.invoke(0, []) }
+      assert_raises(RuntimeError) { middleware_chain.invoke([]) }
     end
   end
 end

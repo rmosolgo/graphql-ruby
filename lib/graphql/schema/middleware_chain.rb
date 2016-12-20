@@ -5,16 +5,77 @@ module GraphQL
     #
     # Steps should call `next_step.call` to continue the chain, or _not_ call it to stop the chain.
     class MiddlewareChain
-      # @return [Array<#call(*args)>] Steps in this chain, will be called with arguments and `next_middleware`
-      attr_reader :steps
+      extend Forwardable
 
-      def initialize(steps:)
+      # @return [Array<#call(*args)>] Steps in this chain, will be called with arguments and `next_middleware`
+      attr_reader :steps, :final_step
+
+      def initialize(steps: [], final_step: nil)
         @steps = steps
+        @final_step = final_step
       end
 
-      # Run the next step in the chain, passing in arguments and handle to the next step
-      def invoke(index, arguments)
-        steps[index].call(*arguments) { |next_args = arguments| invoke(index + 1, next_args) }
+      def_delegators :@steps, :[], :first, :insert, :delete
+
+      def <<(callable)
+        add_middleware(callable)
+      end
+
+      def push(callable)
+        add_middleware(callable)
+      end
+
+      def ==(other)
+        steps == other.steps && final_step == other.final_step
+      end
+
+      def invoke(arguments)
+        invoke_core(0, arguments)
+      end
+
+      private
+
+      def invoke_core(index, arguments)
+        if index >= steps.length
+          final_step.call(*arguments)
+        else
+          steps[index].call(*arguments) { |next_args = arguments| invoke_core(index + 1, next_args) }
+        end
+      end
+
+      def add_middleware(callable)
+        # TODO: Stop wrapping callables once deprecated middleware becomes unsupported
+        steps << wrap(callable)
+      end
+
+      # TODO: Remove this code once deprecated middleware becomes unsupported
+      class MiddlewareWrapper
+        attr_reader :callable
+        def initialize(callable)
+          @callable = callable
+        end
+
+        def call(*args, &next_middleware)
+          callable.call(*args, next_middleware)
+        end
+      end
+
+      def wrap(callable)
+        if get_arity(callable) == 6
+          warn("Middleware that takes a next_middleware parameter is deprecated (#{callable.inspect}); instead, accept a block and use yield.")
+          MiddlewareWrapper.new(callable)
+        else
+          callable
+        end
+      end
+
+      def get_arity(callable)
+        case callable
+        when Proc, Method
+          callable.arity
+        else
+          callable.method(:call).arity
+        end
       end
     end
   end
