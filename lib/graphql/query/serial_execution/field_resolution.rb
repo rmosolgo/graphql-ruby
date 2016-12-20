@@ -78,7 +78,7 @@ module GraphQL
         # is added to the "errors" key.
         def get_raw_value
           begin
-            @field_ctx.middleware_chain.invoke([parent_type, target, field, arguments, @field_ctx])
+            @field_ctx.schema.middleware.invoke([parent_type, target, field, arguments, @field_ctx])
           rescue GraphQL::ExecutionError => err
             err
           end

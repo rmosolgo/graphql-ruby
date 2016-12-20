@@ -349,7 +349,7 @@ module GraphQL
       !!lazy_method_name(obj)
     end
 
-    # @return [MiddlewareChain] Middlewares suitable for MiddlewareChain, applied to fields during execution
+    # @return [MiddlewareChain] MiddlewareChain which is applied to fields during execution
     def middleware
       @user_middleware
     end

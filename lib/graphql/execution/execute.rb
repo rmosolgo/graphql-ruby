@@ -58,7 +58,7 @@ module GraphQL
 
         arguments = query.arguments_for(selection.irep_node, field)
         raw_value = begin
-          query_ctx.middleware_chain.invoke([parent_type, object, field, arguments, field_ctx])
+          query_ctx.schema.middleware.invoke([parent_type, object, field, arguments, field_ctx])
         rescue GraphQL::ExecutionError => err
           err
         end

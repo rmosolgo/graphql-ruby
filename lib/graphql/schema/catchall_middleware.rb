@@ -25,8 +25,8 @@ module GraphQL
 
       # Rescue any error and replace it with a {GraphQL::ExecutionError}
       # whose message is {MESSAGE}
-      def self.call(parent_type, parent_object, field_definition, field_args, query_context, &next_middleware)
-        next_middleware.call
+      def self.call(parent_type, parent_object, field_definition, field_args, query_context)
+        yield
       rescue StandardError => err
         GraphQL::ExecutionError.new(MESSAGE)
       end
