@@ -308,6 +308,9 @@ type Query {
 
       refute schema_2.middleware.equal?(schema.middleware)
       assert_equal schema_2.middleware, schema.middleware
+
+      schema_2.middleware << ->(*args) { :noop }
+      refute_equal schema_2.middleware, schema.middleware
     end
   end
 end

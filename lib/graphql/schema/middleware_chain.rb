@@ -15,6 +15,11 @@ module GraphQL
         @final_step = final_step
       end
 
+      def initialize_copy(other)
+        super
+        @steps = other.steps.dup
+      end
+
       def_delegators :@steps, :[], :first, :insert, :delete
 
       def <<(callable)
