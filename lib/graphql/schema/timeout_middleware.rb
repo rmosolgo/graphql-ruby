@@ -34,13 +34,13 @@ module GraphQL
         @error_handler = block
       end
 
-      def call(parent_type, parent_object, field_definition, field_args, query_context, next_middleware)
+      def call(parent_type, parent_object, field_definition, field_args, query_context)
         timeout_at = query_context[@context_key] ||= Time.now + @max_seconds
 
         if timeout_at < Time.now
           on_timeout(parent_type, parent_object, field_definition, field_args, query_context)
         else
-          next_middleware.call
+          yield
         end
       end
 

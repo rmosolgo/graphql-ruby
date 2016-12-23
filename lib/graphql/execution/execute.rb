@@ -57,20 +57,8 @@ module GraphQL
         )
 
         arguments = query.arguments_for(selection.irep_node, field)
-        middlewares = query.schema.middleware
-        resolve_arguments = [parent_type, object, field, arguments, field_ctx]
-
         raw_value = begin
-          # only run a middleware chain if there are any middleware
-          if middlewares.any?
-            chain = GraphQL::Schema::MiddlewareChain.new(
-              steps: middlewares + [FieldResolveStep],
-              arguments: resolve_arguments
-            )
-            chain.call
-          else
-            FieldResolveStep.call(*resolve_arguments)
-          end
+          query_ctx.schema.middleware.invoke([parent_type, object, field, arguments, field_ctx])
         rescue GraphQL::ExecutionError => err
           err
         end
