@@ -74,6 +74,8 @@ module GraphQL
         end
       end
 
+      @resolved_types_cache = Hash.new { |h, k| h[k] = @schema.resolve_type(k, @context) }
+
       @arguments_cache = Hash.new { |h, k| h[k] = {} }
       @validation_errors = []
       @analysis_errors = []
@@ -214,8 +216,11 @@ module GraphQL
       @warden.possible_types(type)
     end
 
-    def resolve_type(type)
-      @schema.resolve_type(type, @context)
+    # @param value [Object] Any runtime value
+    # @return [GraphQL::ObjectType, nil] The runtime type of `value` from {Schema#resolve_type}
+    # @see {#possible_types} to apply filtering from `only` / `except`
+    def resolve_type(value)
+      @resolved_types_cache[value]
     end
 
     def mutation?
