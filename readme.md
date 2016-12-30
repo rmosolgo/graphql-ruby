@@ -10,6 +10,7 @@ A Ruby implementation of [GraphQL](http://graphql.org/).
 
  - [Website](https://rmosolgo.github.io/graphql-ruby)
  - [API Documentation](http://www.rubydoc.info/github/rmosolgo/graphql-ruby)
+ - [GraphQL Basics Screencast](https://rubyplus.com/episodes/271-GraphQL-Basics-in-Rails-5)
 
 ## Installation
 
