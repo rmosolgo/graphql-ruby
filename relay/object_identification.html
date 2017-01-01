@@ -87,13 +87,13 @@
 
 <div><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">MySchema</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Schema</span>.define <span style="color:#080;font-weight:bold">do</span>
-<span class="line-numbers"> <a href="#n2" name="n2">2</a></span>  id_from_object = -&gt;(object, type_definition, query_ctx) {
+<span class="line-numbers"> <a href="#n2" name="n2">2</a></span>  id_from_object -&gt;(object, type_definition, query_ctx) {
 <span class="line-numbers"> <a href="#n3" name="n3">3</a></span>    <span style="color:#777"># Call your application's UUID method here</span>
 <span class="line-numbers"> <a href="#n4" name="n4">4</a></span>    <span style="color:#777"># It should return a string</span>
 <span class="line-numbers"> <a href="#n5" name="n5">5</a></span>    <span style="color:#036;font-weight:bold">MyApp</span>::<span style="color:#036;font-weight:bold">GlobalId</span>.encrypt(object.class.name, object.id)
 <span class="line-numbers"> <a href="#n6" name="n6">6</a></span>  }
 <span class="line-numbers"> <a href="#n7" name="n7">7</a></span>
-<span class="line-numbers"> <a href="#n8" name="n8">8</a></span>  object_from_id = -&gt;(id, query_ctx) {
+<span class="line-numbers"> <a href="#n8" name="n8">8</a></span>  object_from_id -&gt;(id, query_ctx) {
 <span class="line-numbers"> <a href="#n9" name="n9">9</a></span>    class_name, item_id = <span style="color:#036;font-weight:bold">MyApp</span>::<span style="color:#036;font-weight:bold">GlobalId</span>.decrypt(id)
 <span class="line-numbers"><strong><a href="#n10" name="n10">10</a></strong></span>    <span style="color:#777"># &quot;Post&quot; =&gt; Post.find(id)</span>
 <span class="line-numbers"><a href="#n11" name="n11">11</a></span>    <span style="color:#036;font-weight:bold">Object</span>.const_get(class_name).find(item_id)
@@ -108,11 +108,11 @@
 <div><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">MySchema</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Schema</span>.define <span style="color:#080;font-weight:bold">do</span>
 <span class="line-numbers"> <a href="#n2" name="n2">2</a></span>  <span style="color:#777"># Create UUIDs by joining the type name &amp; ID, then base64-encoding it</span>
-<span class="line-numbers"> <a href="#n3" name="n3">3</a></span>  id_from_object = -&gt;(object, type_definition, query_ctx) {
+<span class="line-numbers"> <a href="#n3" name="n3">3</a></span>  id_from_object -&gt;(object, type_definition, query_ctx) {
 <span class="line-numbers"> <a href="#n4" name="n4">4</a></span>    <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Schema</span>::<span style="color:#036;font-weight:bold">UniqueWithinType</span>.encode(type_definition.name, object.id)
 <span class="line-numbers"> <a href="#n5" name="n5">5</a></span>  }
 <span class="line-numbers"> <a href="#n6" name="n6">6</a></span>
-<span class="line-numbers"> <a href="#n7" name="n7">7</a></span>  object_from_id = -&gt;(id, query_ctx) {
+<span class="line-numbers"> <a href="#n7" name="n7">7</a></span>  object_from_id -&gt;(id, query_ctx) {
 <span class="line-numbers"> <a href="#n8" name="n8">8</a></span>    type_name, item_id = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Schema</span>::<span style="color:#036;font-weight:bold">UniqueWithinType</span>.decode(id)
 <span class="line-numbers"> <a href="#n9" name="n9">9</a></span>    <span style="color:#777"># Now, based on `type_name` and `id`</span>
 <span class="line-numbers"><strong><a href="#n10" name="n10">10</a></strong></span>    <span style="color:#777"># find an object in your application</span>
