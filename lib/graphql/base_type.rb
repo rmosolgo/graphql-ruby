@@ -4,18 +4,21 @@ module GraphQL
   class BaseType
     include GraphQL::Define::NonNullWithBang
     include GraphQL::Define::InstanceDefinable
-    accepts_definitions :name, :description, {
-        connection: GraphQL::Define::AssignConnection,
-        global_id_field: GraphQL::Define::AssignGlobalIdField,
-      }
+    accepts_definitions :name, :description,
+        :introspection,
+        {
+          connection: GraphQL::Define::AssignConnection,
+          global_id_field: GraphQL::Define::AssignGlobalIdField,
+        }
 
-    ensure_defined(:name, :description)
+    ensure_defined(:name, :description, :introspection?)
 
     def initialize_copy(other)
       super
       # Reset these derived defaults
       @connection_type = nil
       @edge_type = nil
+      @introspection = false
     end
 
     # @return [String] the name of this type, must be unique within a Schema
@@ -23,6 +26,14 @@ module GraphQL
 
     # @return [String, nil] a description for this type
     attr_accessor :description
+ 
+    # @return [Boolean] Is this type a predefined introspection type?
+    def introspection?
+      @introspection
+    end
+
+    # @api private
+    attr_writer :introspection
 
     # @param other [GraphQL::BaseType] compare to this object
     # @return [Boolean] are these types equivalent? (incl. non-null, list)

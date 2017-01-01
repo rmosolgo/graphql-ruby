@@ -24,4 +24,6 @@ GraphQL::Introspection::SchemaType = GraphQL::ObjectType.define do
   field :directives, !types[!GraphQL::Introspection::DirectiveType], "A list of all directives supported by this server." do
     resolve ->(obj, arg, ctx) { obj.directives.values }
   end
+
+  introspection true
 end

@@ -54,7 +54,7 @@ module GraphQL
       IS_USER_DEFINED_MEMBER = ->(member) {
         case member
         when GraphQL::BaseType
-          !member.name.start_with?("__")
+          !member.introspection?
         when GraphQL::Directive
           !member.default?
         else

@@ -7,4 +7,5 @@ GraphQL::Introspection::DirectiveLocationEnum = GraphQL::EnumType.define do
   GraphQL::Directive::LOCATIONS.each do |location|
     value(location.to_s, GraphQL::Directive::LOCATION_DESCRIPTIONS[location], value: location)
   end
+  introspection true
 end
