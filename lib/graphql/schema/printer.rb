@@ -42,8 +42,6 @@ module GraphQL
 
       private
 
-      BUILTIN_DIRECTIVE_NAMES = Set.new(['skip', 'include', 'deprecated'])
-
       BUILTIN_SCALARS = [
         GraphQL::STRING_TYPE,
         GraphQL::BOOLEAN_TYPE,
@@ -58,13 +56,13 @@ module GraphQL
         when GraphQL::BaseType
           !member.name.start_with?("__")
         when GraphQL::Directive
-          !BUILTIN_DIRECTIVE_NAMES.include?(member.name)
+          !member.default?
         else
           true
         end
       }
 
-      private_constant :BUILTIN_DIRECTIVE_NAMES, :BUILTIN_SCALARS, :IS_USER_DEFINED_MEMBER
+      private_constant :BUILTIN_SCALARS, :IS_USER_DEFINED_MEMBER
 
       def print_filtered_schema(schema, warden:)
         directive_definitions = warden.directives.map { |directive| print_directive(warden, directive) }

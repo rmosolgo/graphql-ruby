@@ -134,7 +134,7 @@ describe GraphQL::Directive do
           let(:skip?) { true }
           it "is included" do assert field_included? end
         end
-      end      
+      end
     end
     describe "when evaluating conflicting @skip and @include on query selection and fragment" do
       let(:query_string) {"
@@ -215,13 +215,19 @@ describe GraphQL::Directive do
   end
 
   describe "defining a directive" do
-    it "can accept an array of arguments" do
-      directive = GraphQL::Directive.define do
+    let(:directive) {
+      GraphQL::Directive.define do
         arguments [GraphQL::Argument.define(name: 'skip')]
       end
+    }
 
+    it "can accept an array of arguments" do
       assert_equal 1, directive.arguments.length
       assert_equal 'skip', directive.arguments.first.name
+    end
+
+    it "is not default" do
+      assert_equal false, directive.default?
     end
   end
 end

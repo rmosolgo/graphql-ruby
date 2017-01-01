@@ -9,4 +9,5 @@ GraphQL::Directive::DeprecatedDirective = GraphQL::Directive.define do
     "in [Markdown](https://daringfireball.net/projects/markdown/)."
 
   argument :reason, GraphQL::STRING_TYPE, reason_description, default_value: GraphQL::Directive::DEFAULT_DEPRECATION_REASON
+  default true
 end
