@@ -6,6 +6,7 @@ module GraphQL
     include GraphQL::Define::InstanceDefinable
     accepts_definitions :name, :description,
         :introspection,
+        :default_scalar,
         {
           connection: GraphQL::Define::AssignConnection,
           global_id_field: GraphQL::Define::AssignGlobalIdField,
@@ -19,6 +20,7 @@ module GraphQL
       @connection_type = nil
       @edge_type = nil
       @introspection = false
+      @default_scalar = false
     end
 
     # @return [String] the name of this type, must be unique within a Schema
@@ -26,14 +28,19 @@ module GraphQL
 
     # @return [String, nil] a description for this type
     attr_accessor :description
- 
+
     # @return [Boolean] Is this type a predefined introspection type?
     def introspection?
       @introspection
     end
 
+    # @return [Boolean] Is this type a built-in scalar type? (eg, `String`, `Int`)
+    def default_scalar?
+      @default_scalar
+    end
+
     # @api private
-    attr_writer :introspection
+    attr_writer :introspection, :default_scalar
 
     # @param other [GraphQL::BaseType] compare to this object
     # @return [Boolean] are these types equivalent? (incl. non-null, list)

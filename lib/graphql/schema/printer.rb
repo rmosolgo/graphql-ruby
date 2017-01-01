@@ -42,14 +42,6 @@ module GraphQL
 
       private
 
-      BUILTIN_SCALARS = [
-        GraphQL::STRING_TYPE,
-        GraphQL::BOOLEAN_TYPE,
-        GraphQL::INT_TYPE,
-        GraphQL::FLOAT_TYPE,
-        GraphQL::ID_TYPE,
-      ]
-
       # By default, these are included in a schema printout
       IS_USER_DEFINED_MEMBER = ->(member) {
         case member
@@ -62,12 +54,12 @@ module GraphQL
         end
       }
 
-      private_constant :BUILTIN_SCALARS, :IS_USER_DEFINED_MEMBER
+      private_constant :IS_USER_DEFINED_MEMBER
 
       def print_filtered_schema(schema, warden:)
         directive_definitions = warden.directives.map { |directive| print_directive(warden, directive) }
 
-        printable_types = warden.types - BUILTIN_SCALARS
+        printable_types = warden.types.reject(&:default_scalar?)
 
         type_definitions = printable_types
           .sort_by(&:name)
