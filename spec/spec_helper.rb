@@ -28,7 +28,7 @@ GraphQL::EnumType::EnumValue.accepts_definitions(metadata: assign_metadata_key)
 
 # Can be used as a GraphQL::Schema::Warden for some purposes, but allows anything
 module PermissiveWarden
-  def self.input_fields(input_obj)
+  def self.arguments(input_obj)
     input_obj.arguments.values
   end
 

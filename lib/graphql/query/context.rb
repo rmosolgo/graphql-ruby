@@ -32,9 +32,6 @@ module GraphQL
       # @return [GraphQL::Schema]
       attr_reader :schema
 
-      # @return [GraphQL::Schema::Mask::Warden]
-      attr_reader :warden
-
       # @return [Array<String, Integer>] The current position in the result
       attr_reader :path
 
@@ -46,13 +43,17 @@ module GraphQL
         @schema = query.schema
         @values = values || {}
         @errors = []
-        @warden = query.warden
         @path = []
       end
 
       # Lookup `key` from the hash passed to {Schema#execute} as `context:`
       def [](key)
         @values[key]
+      end
+
+      # @return [GraphQL::Schema::Warden]
+      def warden
+        @warden ||= @query.warden
       end
 
       # Reassign `key` to the hash passed to {Schema#execute} as `context:`

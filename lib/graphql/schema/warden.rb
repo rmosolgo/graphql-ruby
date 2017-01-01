@@ -12,7 +12,7 @@ module GraphQL
     # Masks can be provided in {Schema#execute} (or {Query#initialize}) with the `mask:` keyword.
     #
     # @example Hidding private fields
-    #   private_members = -> (member) { member.metadata[:private] }
+    #   private_members = -> (member, ctx) { member.metadata[:private] }
     #   result = Schema.execute(query_string, except: private_members)
     #
     # @example Custom mask implementation
@@ -23,7 +23,7 @@ module GraphQL
     #     end
     #
     #     # Return `false` if any required flags are missing
-    #     def call(member)
+    #     def call(member, ctx)
     #       member.metadata[:required_flags].any? do |flag|
     #         !@user.has_flag?(flag)
     #       end
@@ -36,11 +36,15 @@ module GraphQL
     #   # This query can only access members which match the user's flags
     #   result = Schema.execute(query_string, except: missing_required_flags)
     #
+    # @api private
     class Warden
+      # @param mask [<#call(member)>] Objects are hidden when `.call(member, ctx)` returns true
+      # @param context [GraphQL::Query::Context]
       # @param schema [GraphQL::Schema]
-      # @param mask [<#call(member)>] Objects are hidden when `.call(member)` returns true
-      def initialize(schema, mask)
+      # @param deep_check [Boolean]
+      def initialize(mask, context:, schema:)
         @mask = mask
+        @context = context
         @schema = schema
       end
 
@@ -112,10 +116,8 @@ module GraphQL
         @visible_interfaces[obj_type]
       end
 
-      # @return [Array<GraphQL::Field>] Visible input fields on `input_obj_type`
-      def input_fields(input_obj_type)
-        @visible_input_fields ||= read_through { |t| t.arguments.each_value.select { |f| visible_field?(f) } }
-        @visible_input_fields[input_obj_type]
+      def directives
+        @schema.directives.each_value.select { |d| visible?(d) }
       end
 
       private
@@ -125,7 +127,7 @@ module GraphQL
       end
 
       def visible?(member)
-        @visibility_cache ||= read_through {|m| !@mask.call(m) }
+        @visibility_cache ||= read_through { |m| !@mask.call(m, @context) }
         @visibility_cache[member]
       end
 

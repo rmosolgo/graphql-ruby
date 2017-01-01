@@ -65,7 +65,8 @@ module GraphQL
         return result
       end
 
-      visible_arguments_map = warden.input_fields(self).reduce({}) { |m, f| m[f.name] = f; m}
+
+      visible_arguments_map = warden.arguments(self).reduce({}) { |m, f| m[f.name] = f; m}
 
       # Items in the input that are unexpected
       input.each do |name, value|

@@ -18,14 +18,6 @@ module GraphQL
       end
     end
 
-    module NullExcept
-      module_function
-
-      def call(member)
-        false
-      end
-    end
-
     attr_reader :schema, :document, :context, :fragments, :operations, :root_value, :max_depth, :query_string, :warden, :provided_variables
 
     # Prepare query `query_string` on `schema`
@@ -38,11 +30,19 @@ module GraphQL
     # @param max_depth [Numeric] the maximum number of nested selections allowed for this query (falls back to schema-level value)
     # @param max_complexity [Numeric] the maximum field complexity for this query (falls back to schema-level value)
     # @param except [<#call(schema_member)>] If provided, objects will be hidden from the schema when `.call(schema_member)` returns truthy
-    def initialize(schema, query_string = nil, document: nil, context: nil, variables: {}, validate: true, operation_name: nil, root_value: nil, max_depth: nil, max_complexity: nil, except: NullExcept)
+    def initialize(schema, query_string = nil, document: nil, context: nil, variables: {}, validate: true, operation_name: nil, root_value: nil, max_depth: nil, max_complexity: nil, except: nil, only: nil)
       fail ArgumentError, "a query string or document is required" unless query_string || document
 
       @schema = schema
-      @warden = GraphQL::Schema::Warden.new(schema, except)
+      mask = if except
+        wrap_if_legacy_mask(except)
+      elsif only
+        InvertedMask.new(wrap_if_legacy_mask(only))
+      else
+        schema.default_mask
+      end
+      @context = Context.new(query: self, values: context)
+      @warden = GraphQL::Schema::Warden.new(mask, schema: @schema, context: @context)
       @max_depth = max_depth || schema.max_depth
       @max_complexity = max_complexity || schema.max_complexity
       @query_analyzers = schema.query_analyzers.dup
@@ -52,7 +52,6 @@ module GraphQL
       if @max_complexity
         @query_analyzers << GraphQL::Analysis::MaxQueryComplexity.new(@max_complexity)
       end
-      @context = Context.new(query: self, values: context)
       @root_value = root_value
       @operation_name = operation_name
       @fragments = {}
@@ -260,6 +259,39 @@ module GraphQL
         nil
       else
         operations[operation_name]
+      end
+    end
+
+    def wrap_if_legacy_mask(mask)
+      if (mask.is_a?(Proc) && mask.arity == 1) || mask.method(:call).arity == 1
+        warn("Schema.execute(..., except:) filters now accept two arguments, `(member, ctx)`. One-argument filters are deprecated.")
+        LegacyMaskWrap.new(mask)
+      else
+        mask
+      end
+    end
+
+    # @api private
+    class InvertedMask
+      def initialize(inner_mask)
+        @inner_mask = inner_mask
+      end
+
+      # Returns true when the inner mask returned false
+      # Returns false when the inner mask returned true
+      def call(member, ctx)
+        !@inner_mask.call(member, ctx)
+      end
+    end
+
+    # @api private
+    class LegacyMaskWrap
+      def initialize(inner_mask)
+        @inner_mask = inner_mask
+      end
+
+      def call(member, ctx)
+        @inner_mask.call(member)
       end
     end
   end

@@ -109,7 +109,11 @@ module MaskHelpers
   end
 
   def self.query_with_mask(str, mask, variables: {})
-    Schema.execute(str, except: mask, root_value: Data, variables: variables)
+    run_query(str, except: mask, root_value: Data, variables: variables)
+  end
+
+  def self.run_query(str, options = {})
+    Schema.execute(str, options.merge(root_value: Data))
   end
 end
 
@@ -149,7 +153,7 @@ describe GraphQL::Schema::Warden do
 
   describe "hiding fields" do
     let(:mask) {
-      -> (member) { member.metadata[:hidden_field] || member.metadata[:hidden_type] }
+      -> (member, ctx) { member.metadata[:hidden_field] || member.metadata[:hidden_type] }
     }
 
     it "causes validation errors" do
@@ -194,8 +198,8 @@ describe GraphQL::Schema::Warden do
   end
 
   describe "hiding types" do
-    let(:mask) {
-      -> (member) { member.metadata[:hidden_type] }
+    let(:whitelist) {
+      -> (member, ctx) { !member.metadata[:hidden_type] }
     }
 
     it "hides types from introspection" do
@@ -227,7 +231,7 @@ describe GraphQL::Schema::Warden do
       }
       |
 
-      res = MaskHelpers.query_with_mask(query_string, mask)
+      res = MaskHelpers.run_query(query_string, only: whitelist)
 
       # It's not visible by name
       assert_equal nil, res["data"]["Phoneme"]
@@ -258,7 +262,7 @@ describe GraphQL::Schema::Warden do
       }
       |
 
-      res = MaskHelpers.query_with_mask(query_string, mask)
+      res = MaskHelpers.run_query(query_string, only: whitelist)
 
       expected_errors = [
         "No such type Phoneme, so it can't be a fragment condition",
@@ -275,13 +279,13 @@ describe GraphQL::Schema::Warden do
       |
 
       assert_raises(GraphQL::UnresolvedTypeError) {
-        MaskHelpers.query_with_mask(query_string, mask)
+        MaskHelpers.run_query(query_string, only: whitelist)
       }
     end
 
     describe "hiding an abstract type" do
       let(:mask) {
-        -> (member) { member.metadata[:hidden_abstract_type] }
+        -> (member, ctx) { member.metadata[:hidden_abstract_type] }
       }
 
       it "isn't present in a type's interfaces" do
@@ -303,7 +307,7 @@ describe GraphQL::Schema::Warden do
 
   describe "hiding arguments" do
     let(:mask) {
-      -> (member) { member.metadata[:hidden_argument] || member.metadata[:hidden_input_type] }
+      -> (member, ctx) { member.metadata[:hidden_argument] || member.metadata[:hidden_input_type] }
     }
 
     it "isn't present in introspection" do
@@ -339,7 +343,7 @@ describe GraphQL::Schema::Warden do
 
   describe "hidding input type arguments" do
     let(:mask) {
-      -> (member) { member.metadata[:hidden_input_field] }
+      -> (member, ctx) { member.metadata[:hidden_input_field] }
     }
 
     it "isn't present in introspection" do
@@ -388,7 +392,7 @@ describe GraphQL::Schema::Warden do
 
   describe "hidding input types" do
     let(:mask) {
-      -> (member) { member.metadata[:hidden_input_object_type] }
+      -> (member, ctx) { member.metadata[:hidden_input_object_type] }
     }
 
     it "isn't present in introspection" do
@@ -433,7 +437,7 @@ describe GraphQL::Schema::Warden do
 
   describe "hiding enum values" do
     let(:mask) {
-      -> (member) { member.metadata[:hidden_enum_value] }
+      -> (member, ctx) { member.metadata[:hidden_enum_value] }
     }
 
     it "isn't present in introspection" do

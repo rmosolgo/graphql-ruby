@@ -198,7 +198,7 @@ module GraphQL
           end
 
           def test_it_applies_masking
-            no_org = ->(member) { member.name == "Organization" }
+            no_org = ->(member, ctx) { member.name == "Organization" }
             query_string = %|
             {
               node(id: "2001") {
