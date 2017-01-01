@@ -24,7 +24,7 @@ module GraphQL
   #  }
   #
   class UnionType < GraphQL::BaseType
-    accepts_definitions :possible_types, :resolve_type
+    accepts_definitions :possible_types
     ensure_defined :possible_types
 
     def initialize_copy(other)
