@@ -11,6 +11,10 @@ describe GraphQL::ScalarType do
   }
   let(:bignum) { 2 ** 128 }
 
+  it "is not a default scalar" do
+    assert_equal(false, custom_scalar.default_scalar?)
+  end
+
   it "coerces nil into nil" do
     assert_equal(nil, custom_scalar.coerce_input(nil))
   end

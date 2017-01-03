@@ -28,6 +28,7 @@ module GraphQL
     include GraphQL::BaseType::ModifiesAnotherType
     attr_reader :of_type
     def initialize(of_type:)
+      super()
       @of_type = of_type
     end
 

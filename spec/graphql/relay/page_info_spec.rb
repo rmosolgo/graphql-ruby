@@ -37,6 +37,10 @@ describe GraphQL::Relay::PageInfo do
     }
   |}
 
+  it "is a default relay type" do
+    assert_equal true, GraphQL::Relay::PageInfo.default_relay?
+  end
+
   describe 'hasNextPage / hasPreviousPage' do
     it "hasNextPage is true if there are more items" do
       result = star_wars_query(query_string, "first" => 2)

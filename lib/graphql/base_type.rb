@@ -7,20 +7,25 @@ module GraphQL
     accepts_definitions :name, :description,
         :introspection,
         :default_scalar,
+        :default_relay,
         {
           connection: GraphQL::Define::AssignConnection,
           global_id_field: GraphQL::Define::AssignGlobalIdField,
         }
 
-    ensure_defined(:name, :description, :introspection?)
+    ensure_defined(:name, :description, :introspection?, :default_scalar?)
+
+    def initialize
+      @introspection = false
+      @default_scalar = false
+      @default_relay = false
+    end
 
     def initialize_copy(other)
       super
       # Reset these derived defaults
       @connection_type = nil
       @edge_type = nil
-      @introspection = false
-      @default_scalar = false
     end
 
     # @return [String] the name of this type, must be unique within a Schema
@@ -39,8 +44,13 @@ module GraphQL
       @default_scalar
     end
 
+    # @return [Boolean] Is this type a built-in Relay type? (`Node`, `PageInfo`)
+    def default_relay?
+      @default_relay
+    end
+
     # @api private
-    attr_writer :introspection, :default_scalar
+    attr_writer :introspection, :default_scalar, :default_relay
 
     # @param other [GraphQL::BaseType] compare to this object
     # @return [Boolean] are these types equivalent? (incl. non-null, list)

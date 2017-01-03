@@ -29,6 +29,7 @@ module GraphQL
     ensure_defined :fields
 
     def initialize
+      super
       @fields = {}
     end
 

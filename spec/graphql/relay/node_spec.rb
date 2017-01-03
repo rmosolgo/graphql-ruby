@@ -2,6 +2,12 @@
 require "spec_helper"
 
 describe GraphQL::Relay::Node do
+  describe ".interface" do
+    it "is a default relay type" do
+      assert_equal true, GraphQL::Relay::Node.interface.default_relay?
+    end
+  end
+
   describe ".field" do
     describe "Custom global IDs" do
       before do
