@@ -8,12 +8,12 @@ module GraphQL
   #
   class Directive
     include GraphQL::Define::InstanceDefinable
-    accepts_definitions :locations, :name, :description, :arguments, :default, argument: GraphQL::Define::AssignArgument
+    accepts_definitions :locations, :name, :description, :arguments, :default_directive, argument: GraphQL::Define::AssignArgument
 
     attr_accessor :locations, :arguments, :name, :description
     # @api private
-    attr_writer :default
-    ensure_defined(:locations, :arguments, :name, :description, :default?)
+    attr_writer :default_directive
+    ensure_defined(:locations, :arguments, :name, :description, :default_directive?)
 
     LOCATIONS = [
       QUERY =                  :QUERY,
@@ -60,7 +60,7 @@ module GraphQL
 
     def initialize
       @arguments = {}
-      @default = false
+      @default_directive = false
     end
 
     def to_s
@@ -80,8 +80,8 @@ module GraphQL
     end
 
     # @return [Boolean] Is this directive supplied by default? (eg `@skip`)
-    def default?
-      @default
+    def default_directive?
+      @default_directive
     end
   end
 end

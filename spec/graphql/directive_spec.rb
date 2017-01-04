@@ -227,7 +227,7 @@ describe GraphQL::Directive do
     end
 
     it "is not default" do
-      assert_equal false, directive.default?
+      assert_equal false, directive.default_directive?
     end
   end
 end

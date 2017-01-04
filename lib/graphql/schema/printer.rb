@@ -48,7 +48,7 @@ module GraphQL
         when GraphQL::BaseType
           !member.introspection?
         when GraphQL::Directive
-          !member.default?
+          !member.default_directive?
         else
           true
         end
