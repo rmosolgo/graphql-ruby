@@ -5,4 +5,5 @@ GraphQL::BOOLEAN_TYPE = GraphQL::ScalarType.define do
 
   coerce_input ->(value) { (value == true || value == false) ? value : nil }
   coerce_result ->(value) { !!value }
+  default_scalar true
 end

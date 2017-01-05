@@ -178,7 +178,7 @@ module GraphQL
         }
 
         RESERVED_TYPE_NAME = ->(type) {
-          if type.name.start_with?('__') && INTROSPECTION_TYPES[type.name] != type
+          if type.name.start_with?('__') && !type.introspection?
             # TODO: make this a hard failure in a later version
             warn("Name #{type.name.inspect} must not begin with \"__\", which is reserved by GraphQL introspection.")
             nil
@@ -246,17 +246,6 @@ module GraphQL
           Rules::SCHEMA_INSTRUMENTERS_ARE_VALID,
         ],
       }
-
-      INTROSPECTION_TYPES = Hash[[
-        GraphQL::Introspection::TypeType,
-        GraphQL::Introspection::TypeKindEnum,
-        GraphQL::Introspection::FieldType,
-        GraphQL::Introspection::InputValueType,
-        GraphQL::Introspection::EnumValueType,
-        GraphQL::Introspection::DirectiveType,
-        GraphQL::Introspection::DirectiveLocationEnum,
-        GraphQL::Introspection::SchemaType,
-      ].map{ |type| [type.name, type] }]
     end
   end
 end

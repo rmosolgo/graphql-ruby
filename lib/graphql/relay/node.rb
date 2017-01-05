@@ -23,6 +23,7 @@ module GraphQL
           name "Node"
           description "An object with an ID."
           field :id, !types.ID, "ID of the object."
+          default_relay true
         end
       end
 

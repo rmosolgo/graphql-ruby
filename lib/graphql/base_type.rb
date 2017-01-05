@@ -4,12 +4,22 @@ module GraphQL
   class BaseType
     include GraphQL::Define::NonNullWithBang
     include GraphQL::Define::InstanceDefinable
-    accepts_definitions :name, :description, {
-        connection: GraphQL::Define::AssignConnection,
-        global_id_field: GraphQL::Define::AssignGlobalIdField,
-      }
+    accepts_definitions :name, :description,
+        :introspection,
+        :default_scalar,
+        :default_relay,
+        {
+          connection: GraphQL::Define::AssignConnection,
+          global_id_field: GraphQL::Define::AssignGlobalIdField,
+        }
 
-    ensure_defined(:name, :description)
+    ensure_defined(:name, :description, :introspection?, :default_scalar?)
+
+    def initialize
+      @introspection = false
+      @default_scalar = false
+      @default_relay = false
+    end
 
     def initialize_copy(other)
       super
@@ -23,6 +33,24 @@ module GraphQL
 
     # @return [String, nil] a description for this type
     attr_accessor :description
+
+    # @return [Boolean] Is this type a predefined introspection type?
+    def introspection?
+      @introspection
+    end
+
+    # @return [Boolean] Is this type a built-in scalar type? (eg, `String`, `Int`)
+    def default_scalar?
+      @default_scalar
+    end
+
+    # @return [Boolean] Is this type a built-in Relay type? (`Node`, `PageInfo`)
+    def default_relay?
+      @default_relay
+    end
+
+    # @api private
+    attr_writer :introspection, :default_scalar, :default_relay
 
     # @param other [GraphQL::BaseType] compare to this object
     # @return [Boolean] are these types equivalent? (incl. non-null, list)

@@ -33,6 +33,7 @@ module GraphQL
 
     attr_reader :of_type
     def initialize(of_type:)
+      super()
       @of_type = of_type
     end
 

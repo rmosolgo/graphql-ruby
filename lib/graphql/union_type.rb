@@ -27,6 +27,12 @@ module GraphQL
     accepts_definitions :possible_types
     ensure_defined :possible_types
 
+    def initialize
+      super
+      @dirty_possible_types = []
+      @clean_possible_types = nil
+    end
+
     def initialize_copy(other)
       super
       @clean_possible_types = nil

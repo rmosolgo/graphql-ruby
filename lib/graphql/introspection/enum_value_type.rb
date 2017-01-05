@@ -10,4 +10,5 @@ GraphQL::Introspection::EnumValueType = GraphQL::ObjectType.define do
     resolve ->(obj, a, c) { !!obj.deprecation_reason }
   end
   field :deprecationReason, types.String, property: :deprecation_reason
+  introspection true
 end

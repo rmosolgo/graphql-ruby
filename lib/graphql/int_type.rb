@@ -5,4 +5,5 @@ GraphQL::INT_TYPE = GraphQL::ScalarType.define do
 
   coerce_input ->(value) { value.is_a?(Numeric) ? value.to_i : nil }
   coerce_result ->(value) { value.to_i }
+  default_scalar true
 end

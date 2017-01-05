@@ -9,6 +9,7 @@ module GraphQL
       field :hasPreviousPage, !types.Boolean, "Indicates if there are any pages prior to the current page", property: :has_previous_page
       field :startCursor, types.String, "When paginating backwards, the cursor to continue", property: :start_cursor
       field :endCursor, types.String, "When paginating forwards, the cursor to continue", property: :end_cursor
+      default_relay true
     end
   end
 end

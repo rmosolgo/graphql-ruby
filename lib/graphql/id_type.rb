@@ -12,4 +12,5 @@ GraphQL::ID_TYPE = GraphQL::ScalarType.define do
       nil
     end
   }
+  default_scalar true
 end

@@ -42,6 +42,7 @@ module GraphQL
 
 
     def initialize
+      super
       @arguments = {}
     end
 

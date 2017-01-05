@@ -14,4 +14,5 @@ GraphQL::Introspection::DirectiveType = GraphQL::ObjectType.define do
   field :onOperation, !types.Boolean, deprecation_reason: "Use `locations`.", property: :on_operation?
   field :onFragment, !types.Boolean, deprecation_reason: "Use `locations`.", property: :on_fragment?
   field :onField, !types.Boolean, deprecation_reason: "Use `locations`.", property: :on_field?
+  introspection true
 end

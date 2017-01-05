@@ -35,6 +35,7 @@ module GraphQL
 
 
     def initialize
+      super
       @fields = {}
       @dirty_interfaces = []
     end

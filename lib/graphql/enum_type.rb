@@ -76,6 +76,7 @@ module GraphQL
     ensure_defined(:values, :validate_non_null_input, :coerce_non_null_input, :coerce_result)
 
     def initialize
+      super
       @values_by_name = {}
     end
 

@@ -17,4 +17,5 @@ GraphQL::Introspection::InputValueType = GraphQL::ObjectType.define do
       end
     }
   end
+  introspection true
 end

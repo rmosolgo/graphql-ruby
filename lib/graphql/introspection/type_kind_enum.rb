@@ -5,4 +5,5 @@ GraphQL::Introspection::TypeKindEnum = GraphQL::EnumType.define do
   GraphQL::TypeKinds::TYPE_KINDS.each do |type_kind|
     value(type_kind.name, type_kind.description)
   end
+  introspection true
 end
