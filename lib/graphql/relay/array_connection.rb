@@ -42,6 +42,8 @@ module GraphQL
       def starting_offset
         @starting_offset = if before
           [previous_offset, 0].max
+        elsif last
+          nodes.count - last
         else
           previous_offset
         end

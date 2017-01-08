@@ -95,6 +95,8 @@ describe GraphQL::Relay::RelationConnection do
       result = star_wars_query(query_string, "before" => last_cursor, "last" => 10)
       assert_equal(["Death Star", "Shield Generator"], get_names(result))
 
+      result = star_wars_query(query_string, "last" => 2)
+      assert_equal(["Shield Generator", "Headquarters"], get_names(result))
     end
 
     it 'handles cursors beyond the bounds of the array' do

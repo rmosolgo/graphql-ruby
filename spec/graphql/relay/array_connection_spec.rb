@@ -79,6 +79,9 @@ describe GraphQL::Relay::ArrayConnection do
 
       result = star_wars_query(query_string, "before" => last_cursor, "last" => 2)
       assert_equal(["X-Wing", "Y-Wing"], get_names(result))
+
+      result = star_wars_query(query_string, "last" => 2)
+      assert_equal(["Millenium Falcon", "Home One"], get_names(result))
     end
 
     it 'handles cursors beyond the bounds of the array' do
