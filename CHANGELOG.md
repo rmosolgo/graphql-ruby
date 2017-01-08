@@ -8,6 +8,46 @@
 
 ### Bug fixes
 
+## 1.4.0 (8 Jan 2016)
+
+### Breaking changes
+
+### Deprecations
+
+- One-argument schema filters are deprecated. Schema filters are now called with _two_ arguments, `(member, ctx)`. #463
+
+### New features
+
+- You can add a `nodes` field directly to a connection. #451 That way you can say `{ friends { nodes } }` instead of `{ freinds { edges { node } } }`. Either pass `nodes_field: true` when defining a custom connection type, for example:
+
+  ```ruby
+  FriendsConnectionType = FriendType.define_connection(nodes_field: true)
+  ```
+
+  Or, set `GraphQL::Relay::ConnectionType.default_nodes_field = true` before defining your schema, for example:
+
+  ```ruby
+  GraphQL::Relay::ConnectionType.default_nodes_field = true
+  MySchema = GraphQL::Schema.define { ... }
+  ```
+- Improve error messages for wrongly-typed variable values #423
+- Huge performance improvement for middleware #462
+- Cache the value of `resolve_type` per object per query #462
+- Pass `ctx` to schema filters #463
+- Accept whitelist schema filters as `only:` #463
+- Add `Schema#to_definition` which accepts `only:/except:` to filter the schema when printing #463
+- Add `Schema#default_mask` as a default `except:` filter #463
+- Add reflection methods to types #473
+   - `#introspection?` marks built-in introspection types
+   - `#default_scalar?` marks built-in scalars
+   - `#default_relay?` marks built-in Relay types
+   - `#default_directive?` marks built-in directives
+
+### Bug fixes
+
+- Fix ArrayConnection: gracefully handle out-of-bounds cursors #452
+- Fix ArrayConnection & RelationConnection: properly handle `last` without `before` #362
+
 ## 1.3.0 (8 Dec 2016)
 
 ### Deprecations
