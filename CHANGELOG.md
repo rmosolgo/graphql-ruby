@@ -14,7 +14,25 @@
 
 ### Deprecations
 
-- One-argument schema filters are deprecated. Schema filters are now called with _two_ arguments, `(member, ctx)`. #463
+- One-argument schema filters are deprecated. Schema filters are now called with _two_ arguments, `(member, ctx)`. #463 To update, add a second argument to your schema filter.
+- The arity of middleware `#call` methods has changed. Instead of `next_middleware` being the last argument, it is passed as a block. To update, call `yield` to continue the middleware chain or use `&next_middleware` to capture `next_middleware` into a local variable.
+
+  ```ruby
+  # Previous:
+  def call(*args, next_middleware)
+    next_middleware.call
+  end
+
+  # Current
+  def call(*args)
+    yield
+  end
+  # Or
+  def call(*args, &next_middleware)
+    next_middleware.call
+  end
+  ```
+
 
 ### New features
 
@@ -30,8 +48,9 @@
   GraphQL::Relay::ConnectionType.default_nodes_field = true
   MySchema = GraphQL::Schema.define { ... }
   ```
+
+- Middleware performance was dramatically improved by reducing object allocations. #462 `next_middleware` is now passed as a block. In general, [`yield` is faster than calling a captured block](https://github.com/JuanitoFatas/fast-ruby#proccall-and-block-arguments-vs-yieldcode).
 - Improve error messages for wrongly-typed variable values #423
-- Huge performance improvement for middleware #462
 - Cache the value of `resolve_type` per object per query #462
 - Pass `ctx` to schema filters #463
 - Accept whitelist schema filters as `only:` #463
