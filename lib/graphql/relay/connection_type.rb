@@ -7,7 +7,7 @@ module GraphQL
         edge_type ||= wrapped_type.edge_type
         edge_class ||= GraphQL::Relay::Edge
         connection_type_name = "#{wrapped_type.name}Connection"
-        description "The connection model for #{wrapped_type.name}"
+        description "The connection model for #{wrapped_type.name}."
 
         connection_type = ObjectType.define do
           name(connection_type_name)
