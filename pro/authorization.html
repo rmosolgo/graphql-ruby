@@ -1,0 +1,397 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>GraphQL Ruby - GraphQL::Pro — Authorization Framework</title>
+    <link rel="stylesheet" href="/graphql-ruby/css/main.css">
+    <link rel="icon" href="/graphql-ruby/graphql-ruby-icon.png">
+    <meta name="generator">
+  </head>
+  <body class="hack">
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+      ga('create', 'UA-19264608-11', 'auto');
+      ga('send', 'pageview');
+    </script>
+    <div class="container">
+      <div style="display: flex; justify-content: center;">
+<strong style="white-space: pre; line-height: 1.1em; display: inline-block; font-size: 8px;">
+    ▄██████▄     ▄████████    ▄████████    ▄███████▄    ▄█    █▄    ████████▄    ▄█
+   ███    ███   ███    ███   ███    ███   ███    ███   ███    ███   ███    ███  ███
+   ███    █▀    ███    ███   ███    ███   ███    ███   ███    ███   ███    ███  ███
+  ▄███         ▄███▄▄▄▄██▀   ███    ███   ███    ███  ▄███▄▄▄▄███▄▄ ███    ███  ███
+ ▀▀███ ████▄  ▀▀███▀▀▀▀▀   ▀███████████ ▀█████████▀  ▀▀███▀▀▀▀███▀  ███    ███  ███
+   ███    ███ ▀███████████   ███    ███   ███          ███    ███   ███    ███  ███
+   ███    ███   ███    ███   ███    ███   ███          ███    ███   ███  ▀ ███  ███▌    ▄
+   ████████▀    ███    ███   ███    █▀   ▄████▀        ███    █▀     ▀██████▀▄█ █████▄▄██
+                ███    ███                                                      ▀
+</strong>
+      </div>
+      <p style="text-align: center;">A GraphQL server implementation for Ruby</p>
+
+      <div class="grid -between">
+        <div class="cell -3of12">
+          <h3>Guides</h3>
+          <ul>
+            <li><a href="/graphql-ruby/">Getting Started</a></li>
+            <li>
+              <strong>Schema</strong>
+              <ul>
+                <li><a href="/graphql-ruby/schema/types_and_fields">Types and Fields</a></li>
+                <li><a href="/graphql-ruby/schema/configuration_options">Configuration Options</a></li>
+                <li><a href="/graphql-ruby/schema/code_reuse">Code Reuse</a></li>
+                <li><a href="/graphql-ruby/schema/instrumentation">Instrumentation</a></li>
+                <li><a href="/graphql-ruby/schema/lazy_execution">Lazy Execution</a></li>
+                <li><a href="/graphql-ruby/schema/limiting_visibility">Limiting Visibility</a></li>
+                <li><a href="/graphql-ruby/schema/testing">Testing</a></li>
+              </ul>
+            </li>
+            <li>
+              <strong>Queries</strong>
+              <ul>
+                <li><a href="/graphql-ruby/queries/executing_queries">Executing Queries</a></li>
+                <li><a href="/graphql-ruby/queries/authorization">Authorization</a></li>
+                <li><a href="/graphql-ruby/queries/security">Security</a></li>
+                <li><a href="/graphql-ruby/queries/error_handling">Error Handling</a></li>
+                <li><a href="/graphql-ruby/queries/phases_of_execution">Phases of Execution</a></li>
+              </ul>
+            </li>
+            <li>
+              <strong>Relay</strong>
+              <ul>
+                <li><a href="/graphql-ruby/relay/object_identification">Object Identification</a></li>
+                <li><a href="/graphql-ruby/relay/connections">Connections</a></li>
+                <li><a href="/graphql-ruby/relay/mutations">Mutations</a></li>
+              </ul>
+            </li>
+            <li>
+              <strong>GraphQL::Pro</strong>
+              <ul>
+                <li><a href="https://graphql.pro">GraphQL::Pro Home</a></li>
+                <li><a href="/graphql-ruby/pro/installation">Installation & Updates</a></li>
+                <li><a href="/graphql-ruby/pro/authorization">Authorization</a></li>
+                <li><a href="/graphql-ruby/pro/monitoring">Monitoring</a></li>
+                <li><a href="/graphql-ruby/pro/cursors">Stable Cursors<br/>for ActiveRecord</a></li>
+                <li><a href="/graphql-ruby/pro/encoders">Encrypted, Versioned<br/>Cursors and Ids</a></li>
+              </ul>
+            </li>
+            <li><a href="/graphql-ruby/related_projects">Related Projects</a></li>
+          </ul>
+          <h3><a href="https://tinyletter.com/graphql-ruby">GraphQL Ruby Newsletter</a></h3>
+          <h3><a href="http://www.rubydoc.info/github/rmosolgo/graphql-ruby">API Docs</a></h3>
+          <h3><a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a></h3>
+        </div>
+        <div class="cell -9of12">
+          <h1 class="guide-header">GraphQL::Pro — Authorization Framework</h1>
+          <p><code>GraphQL::Pro</code> provides a comprehensive, unified authorization framework for the GraphQL runtime. Authorization can happen in two places:</p>
+
+<ul>
+  <li><strong>Runtime</strong>: objects from <code>resolve</code> functions can be authorized for the current user.</li>
+  <li><strong>“Compile” time</strong>: queries can be rejected if a user requests unauthorized fields or types.</li>
+</ul>
+
+<p><code>GraphQL::Pro</code> supports any authorization scheme and includes built-in <a href="#pundit">Pundit support</a> and <a href="#cancan">CanCan support</a></p>
+
+<h2 id="configuration">Configuration</h2>
+
+<p>To use authorization, specify an authorization strategy in your schema:</p>
+
+<div><div class="CodeRay">
+  <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">MySchema</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Schema</span>.define <span style="color:#080;font-weight:bold">do</span>
+<span class="line-numbers"><a href="#n2" name="n2">2</a></span>  <span style="color:#777"># ...</span>
+<span class="line-numbers"><a href="#n3" name="n3">3</a></span>  authorization <span style="color:#A60">:pundit</span>
+<span class="line-numbers"><a href="#n4" name="n4">4</a></span>  <span style="color:#777"># or:</span>
+<span class="line-numbers"><a href="#n5" name="n5">5</a></span>  <span style="color:#777"># authorization :cancan</span>
+<span class="line-numbers"><a href="#n6" name="n6">6</a></span>  <span style="color:#777"># authorization CustomAuthClass</span>
+<span class="line-numbers"><a href="#n7" name="n7">7</a></span><span style="color:#080;font-weight:bold">end</span>
+</pre></div>
+</div>
+</div>
+
+<p>(See below for details on these strategies.)</p>
+
+<p>Then, provide a <code>current_user:</code> in your execution context:</p>
+
+<div><div class="CodeRay">
+  <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#777"># Authenticate somehow:</span>
+<span class="line-numbers"><a href="#n2" name="n2">2</a></span>current_user = <span style="color:#036;font-weight:bold">User</span>.find(session[<span style="color:#A60">:current_user_id</span>])
+<span class="line-numbers"><a href="#n3" name="n3">3</a></span><span style="color:#777"># Then pass the user as `current_user:`</span>
+<span class="line-numbers"><a href="#n4" name="n4">4</a></span>result = <span style="color:#036;font-weight:bold">MySchema</span>.execute(query_string, <span style="color:#606">context</span>: { <span style="color:#606">current_user</span>: current_user })
+</pre></div>
+</div>
+</div>
+
+<p><code>current_user</code> will be used by the authorization hooks as described below.</p>
+
+<h2 id="runtime-authorization">Runtime Authorization</h2>
+
+<p>When a <code>resolve</code> function returns an object or list of objects, you can assert that the current user has permission to access that object. The <code>authorize</code> keyword defines a runtime permission.</p>
+
+<p>You can specify a permission at <strong>field-level</strong>, for example:</p>
+
+<div><div class="CodeRay">
+  <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#777"># Only allow access to this `balance` if current user is the owner:</span>
+<span class="line-numbers"><a href="#n2" name="n2">2</a></span>field <span style="color:#A60">:balance</span>, <span style="color:#036;font-weight:bold">AccountBalanceType</span>, <span style="color:#606">authorize</span>: <span style="color:#A60">:owner</span>
+<span class="line-numbers"><a href="#n3" name="n3">3</a></span>
+<span class="line-numbers"><a href="#n4" name="n4">4</a></span><span style="color:#777"># This is the same:</span>
+<span class="line-numbers"><a href="#n5" name="n5">5</a></span>field <span style="color:#A60">:balance</span>, <span style="color:#036;font-weight:bold">AccountBalanceType</span> <span style="color:#080;font-weight:bold">do</span>
+<span class="line-numbers"><a href="#n6" name="n6">6</a></span>  authorize <span style="color:#A60">:owner</span>
+<span class="line-numbers"><a href="#n7" name="n7">7</a></span>  <span style="color:#777"># ...</span>
+<span class="line-numbers"><a href="#n8" name="n8">8</a></span><span style="color:#080;font-weight:bold">end</span>
+</pre></div>
+</div>
+</div>
+
+<p>Also, you can specify authentication at <strong>type-level</strong>, for example:</p>
+
+<div><div class="CodeRay">
+  <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">AccountBalanceType</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">ObjectType</span>.define <span style="color:#080;font-weight:bold">do</span>
+<span class="line-numbers"><a href="#n2" name="n2">2</a></span>  name <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">AccountBalance</span><span style="color:#710">&quot;</span></span>
+<span class="line-numbers"><a href="#n3" name="n3">3</a></span>  <span style="color:#777"># Only billing administrators can see</span>
+<span class="line-numbers"><a href="#n4" name="n4">4</a></span>  <span style="color:#777"># objects of this type:</span>
+<span class="line-numbers"><a href="#n5" name="n5">5</a></span>  authorize <span style="color:#A60">:billing_administrator</span>
+<span class="line-numbers"><a href="#n6" name="n6">6</a></span>  <span style="color:#777"># ...</span>
+<span class="line-numbers"><a href="#n7" name="n7">7</a></span><span style="color:#080;font-weight:bold">end</span>
+</pre></div>
+</div>
+</div>
+
+<p>Field-level and type-level permissions are additive: both checks must pass for a user to access an object.</p>
+
+<p>Type-level permissions are applied according to an object’s runtime type (unions and interfaces don’t have authorization checks).</p>
+
+<p>If an object doesn’t pass permission checks, it is removed from the response. If the object is part of a list, it is removed from the list.</p>
+
+<h2 id="compile-time-authorization">“Compile” Time Authorization</h2>
+
+<p>Before executing a query, GraphQL checks that it is valid. You can assert that users only access fields and types which are allowed to them.</p>
+
+<p>There are two kinds of compile-time authorization:</p>
+
+<ul>
+  <li><strong>Visibility</strong>: you can hide fields and types from certain users. If they request these types or fields, the error message says that they don’t exist.  </li>
+  <li><strong>Accessibility</strong>: you can prevent access of fields and types from certain users. (They can see them, but if they request them, the request is rejected with an error message.)</li>
+</ul>
+
+<p>The <code>view</code> keyword specifies visibility permission:</p>
+
+<div><div class="CodeRay">
+  <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span><span style="color:#777"># These types and fields are</span>
+<span class="line-numbers"> <a href="#n2" name="n2">2</a></span><span style="color:#777"># invisible to non-admins:</span>
+<span class="line-numbers"> <a href="#n3" name="n3">3</a></span>
+<span class="line-numbers"> <a href="#n4" name="n4">4</a></span><span style="color:#777"># field-level:</span>
+<span class="line-numbers"> <a href="#n5" name="n5">5</a></span>field <span style="color:#A60">:social_security_number</span>, types.String, <span style="color:#606">view</span>: <span style="color:#A60">:admin</span>
+<span class="line-numbers"> <a href="#n6" name="n6">6</a></span>
+<span class="line-numbers"> <a href="#n7" name="n7">7</a></span><span style="color:#777"># type-level:</span>
+<span class="line-numbers"> <a href="#n8" name="n8">8</a></span><span style="color:#036;font-weight:bold">PassportApplicationType</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">ObjectType</span>.define <span style="color:#080;font-weight:bold">do</span>
+<span class="line-numbers"> <a href="#n9" name="n9">9</a></span>  name <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">PassportApplication</span><span style="color:#710">&quot;</span></span>
+<span class="line-numbers"><strong><a href="#n10" name="n10">10</a></strong></span>  view <span style="color:#A60">:admin</span>
+<span class="line-numbers"><a href="#n11" name="n11">11</a></span>  <span style="color:#777"># ...</span>
+<span class="line-numbers"><a href="#n12" name="n12">12</a></span><span style="color:#080;font-weight:bold">end</span>
+</pre></div>
+</div>
+</div>
+
+<p>The <code>access</code> keyword specifies accessibility permission:</p>
+
+<div><div class="CodeRay">
+  <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span><span style="color:#777"># Non-owners may _see_ these,</span>
+<span class="line-numbers"> <a href="#n2" name="n2">2</a></span><span style="color:#777"># but they may not request them:</span>
+<span class="line-numbers"> <a href="#n3" name="n3">3</a></span>field <span style="color:#A60">:telephone_number</span>, types.String, <span style="color:#606">access</span>: <span style="color:#A60">:owner</span>
+<span class="line-numbers"> <a href="#n4" name="n4">4</a></span>
+<span class="line-numbers"> <a href="#n5" name="n5">5</a></span><span style="color:#036;font-weight:bold">AddressType</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">ObjectType</span>.define <span style="color:#080;font-weight:bold">do</span>
+<span class="line-numbers"> <a href="#n6" name="n6">6</a></span>  name <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">Address</span><span style="color:#710">&quot;</span></span>
+<span class="line-numbers"> <a href="#n7" name="n7">7</a></span>  access <span style="color:#A60">:owner</span>
+<span class="line-numbers"> <a href="#n8" name="n8">8</a></span>  <span style="color:#777"># ...</span>
+<span class="line-numbers"> <a href="#n9" name="n9">9</a></span><span style="color:#080;font-weight:bold">end</span>
+</pre></div>
+</div>
+</div>
+
+<p>When a user requests access to an unpermitted field, GraphQL returns an error message. You can customize this error message by providing an <code>unauthorized_fields</code> hook:</p>
+
+<div><div class="CodeRay">
+  <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">MySchema</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Schema</span>.define <span style="color:#080;font-weight:bold">do</span>
+<span class="line-numbers"><a href="#n2" name="n2">2</a></span>  <span style="color:#777"># ...</span>
+<span class="line-numbers"><a href="#n3" name="n3">3</a></span>  unauthorized_fields -&gt;(irep_nodes, ctx) {
+<span class="line-numbers"><a href="#n4" name="n4">4</a></span>    <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">AnalysisError</span>.new(<span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">Sorry, you're not allowed to see that!</span><span style="color:#710">&quot;</span></span>)
+<span class="line-numbers"><a href="#n5" name="n5">5</a></span>  }
+<span class="line-numbers"><a href="#n6" name="n6">6</a></span><span style="color:#080;font-weight:bold">end</span>
+</pre></div>
+</div>
+</div>
+
+<p>The hook should return a <a href="http://www.rubydoc.info/gems/graphql/GraphQL/AnalysisError" target="_blank"><code>GraphQL::AnalysisError</code></a>. It is called with:</p>
+
+<ul>
+  <li><code>irep_nodes</code>: an array of <a href="http://www.rubydoc.info/gems/graphql/GraphQL/InternalRepresentation/Node" target="_blank"><code>GraphQL::InternalRepresentation::Node</code></a>s which represent unpermitted fields in the incoming query.</li>
+  <li><code>ctx</code>: the <a href="http://www.rubydoc.info/gems/graphql/GraphQL/Query/Context" target="_blank"><code>GraphQL::Query::Context</code></a> (which includes <code>:current_user</code>).</li>
+</ul>
+
+<h2 id="authorization-strategies">Authorization Strategies</h2>
+
+<p>You can choose a built-in strategy or provide custom logic by providing a class:</p>
+
+<div><div class="CodeRay">
+  <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">MySchema</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Schema</span>.define <span style="color:#080;font-weight:bold">do</span>
+<span class="line-numbers"><a href="#n2" name="n2">2</a></span>  <span style="color:#777"># choose one:</span>
+<span class="line-numbers"><a href="#n3" name="n3">3</a></span>  authorization(<span style="color:#A60">:pundit</span>)
+<span class="line-numbers"><a href="#n4" name="n4">4</a></span>  <span style="color:#777"># or:</span>
+<span class="line-numbers"><a href="#n5" name="n5">5</a></span>  authorization(<span style="color:#A60">:cancan</span>)
+<span class="line-numbers"><a href="#n6" name="n6">6</a></span>  <span style="color:#777"># or:</span>
+<span class="line-numbers"><a href="#n7" name="n7">7</a></span>  authorization(<span style="color:#036;font-weight:bold">MyAuthStrategy</span>)
+<span class="line-numbers"><a href="#n8" name="n8">8</a></span><span style="color:#080;font-weight:bold">end</span>
+</pre></div>
+</div>
+</div>
+
+<p>As described below, <code>GraphQL::Pro</code> includes two built-in strategies, <code>:pundit</code> and <code>:cancan</code>.</p>
+
+<p>A custom strategy class must implement <code>#initialize(ctx)</code> and <code>#allowed?(gate, object)</code>. For example:</p>
+
+<div><div class="CodeRay">
+  <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span><span style="color:#080;font-weight:bold">class</span> <span style="color:#B06;font-weight:bold">MyAuthStrategy</span>
+<span class="line-numbers"> <a href="#n2" name="n2">2</a></span>  <span style="color:#080;font-weight:bold">def</span> <span style="color:#06B;font-weight:bold">initialize</span>(ctx)
+<span class="line-numbers"> <a href="#n3" name="n3">3</a></span>    <span style="color:#33B">@user</span> = ctx[<span style="color:#A60">:custom_user</span>]
+<span class="line-numbers"> <a href="#n4" name="n4">4</a></span>  <span style="color:#080;font-weight:bold">end</span>
+<span class="line-numbers"> <a href="#n5" name="n5">5</a></span>
+<span class="line-numbers"> <a href="#n6" name="n6">6</a></span>  <span style="color:#080;font-weight:bold">def</span> <span style="color:#06B;font-weight:bold">allowed?</span>(gate, object)
+<span class="line-numbers"> <a href="#n7" name="n7">7</a></span>    <span style="color:#080;font-weight:bold">if</span> object.nil?
+<span class="line-numbers"> <a href="#n8" name="n8">8</a></span>      <span style="color:#777"># This is a compile-time check,</span>
+<span class="line-numbers"> <a href="#n9" name="n9">9</a></span>      <span style="color:#777"># so no object is available:</span>
+<span class="line-numbers"><strong><a href="#n10" name="n10">10</a></strong></span>      <span style="color:#080;font-weight:bold">if</span> gate.role == <span style="color:#A60">:admin</span>
+<span class="line-numbers"><a href="#n11" name="n11">11</a></span>        <span style="color:#33B">@user</span>.admin?
+<span class="line-numbers"><a href="#n12" name="n12">12</a></span>      <span style="color:#080;font-weight:bold">else</span>
+<span class="line-numbers"><a href="#n13" name="n13">13</a></span>        <span style="color:#33B">@user</span>.viewer?
+<span class="line-numbers"><a href="#n14" name="n14">14</a></span>      <span style="color:#080;font-weight:bold">end</span>
+<span class="line-numbers"><a href="#n15" name="n15">15</a></span>    <span style="color:#080;font-weight:bold">else</span>
+<span class="line-numbers"><a href="#n16" name="n16">16</a></span>      <span style="color:#777"># This is a runtime check,</span>
+<span class="line-numbers"><a href="#n17" name="n17">17</a></span>      <span style="color:#777"># so we can use this specific object</span>
+<span class="line-numbers"><a href="#n18" name="n18">18</a></span>      <span style="color:#33B">@user</span>.can?(gate.role, object)
+<span class="line-numbers"><a href="#n19" name="n19">19</a></span>    <span style="color:#080;font-weight:bold">end</span>
+<span class="line-numbers"><strong><a href="#n20" name="n20">20</a></strong></span>  <span style="color:#080;font-weight:bold">end</span>
+<span class="line-numbers"><a href="#n21" name="n21">21</a></span><span style="color:#080;font-weight:bold">end</span>
+</pre></div>
+</div>
+</div>
+
+<p><code>gate</code> is the permission setting which responds to:</p>
+
+<ul>
+  <li><code>#level</code>: where this check occurs: <code>:authorize</code>, <code>:view</code> or <code>:access</code></li>
+  <li><code>#role</code>: the value given to <code>authorize</code>, <code>view</code> or <code>access</code></li>
+  <li><code>#owner</code>: the field or type which has this permission check</li>
+</ul>
+
+<p><code>object</code> is either:</p>
+
+<ul>
+  <li><code>nil</code>, if the current check is <code>:view</code> or <code>:access</code></li>
+  <li>The runtime object, if the current check is <code>authorize</code></li>
+</ul>
+
+<p>For list types, each item of the list is authorized individually.</p>
+
+<h2 id="pundit">Pundit</h2>
+
+<p><code>GraphQL::Pro</code> includes built-in support for <a href="https://github.com/elabs/pundit">Pundit</a>:</p>
+
+<div><div class="CodeRay">
+  <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">MySchema</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Schema</span>.define <span style="color:#080;font-weight:bold">do</span>
+<span class="line-numbers"><a href="#n2" name="n2">2</a></span>  authorize(<span style="color:#A60">:pundit</span>)
+<span class="line-numbers"><a href="#n3" name="n3">3</a></span><span style="color:#080;font-weight:bold">end</span>
+</pre></div>
+</div>
+</div>
+
+<p>Now, GraphQL will use your <code>*Policy</code> classes during execution. To find a policy class:</p>
+
+<ul>
+  <li>“Compile”-time checks use the type name (or return type name) to find a policy class</li>
+  <li>Runtime checks use the object to find a policy class (using Pundit’s provided lookup)</li>
+</ul>
+
+<p>You can also specify a custom policy name. Use the <code>pundit_policy_name:</code> option, for example:</p>
+
+<div><div class="CodeRay">
+  <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span><span style="color:#777"># A pundit policy:</span>
+<span class="line-numbers"> <a href="#n2" name="n2">2</a></span><span style="color:#080;font-weight:bold">class</span> <span style="color:#B06;font-weight:bold">TotalBalancePolicy</span>
+<span class="line-numbers"> <a href="#n3" name="n3">3</a></span>  <span style="color:#080;font-weight:bold">def</span> <span style="color:#06B;font-weight:bold">initialize</span>(user, obj)
+<span class="line-numbers"> <a href="#n4" name="n4">4</a></span>    <span style="color:#777"># ...</span>
+<span class="line-numbers"> <a href="#n5" name="n5">5</a></span>  <span style="color:#080;font-weight:bold">end</span>
+<span class="line-numbers"> <a href="#n6" name="n6">6</a></span>  <span style="color:#080;font-weight:bold">def</span> <span style="color:#06B;font-weight:bold">admin?</span>
+<span class="line-numbers"> <a href="#n7" name="n7">7</a></span>    <span style="color:#777"># ...</span>
+<span class="line-numbers"> <a href="#n8" name="n8">8</a></span>  <span style="color:#080;font-weight:bold">end</span>
+<span class="line-numbers"> <a href="#n9" name="n9">9</a></span><span style="color:#080;font-weight:bold">end</span>
+<span class="line-numbers"><strong><a href="#n10" name="n10">10</a></strong></span>
+<span class="line-numbers"><a href="#n11" name="n11">11</a></span>field <span style="color:#A60">:balance</span>, <span style="color:#036;font-weight:bold">AccountBalanceType</span>, <span style="color:#606">authorize</span>: { <span style="color:#606">role</span>: <span style="color:#A60">:admin</span>, <span style="color:#606">pundit_policy_name</span>: <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">TotalBalancePolicy</span><span style="color:#710">&quot;</span></span> }
+</pre></div>
+</div>
+</div>
+
+<p>The permission is defined as a hash with a <code>role:</code> key and <code>pundit_policy_name:</code> key. You can pass a hash for <code>view:</code> and <code>access:</code> too.</p>
+
+<p>For <code>:pundit</code>, methods will be called with an extra <code>?</code>, so</p>
+
+<div><div class="CodeRay">
+  <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#606">view</span>: <span style="color:#A60">:viewer</span>
+<span class="line-numbers"><a href="#n2" name="n2">2</a></span><span style="color:#777"># =&gt; will call the policy's `#viewer?` method</span>
+</pre></div>
+</div>
+</div>
+
+<h2 id="cancan">CanCan</h2>
+
+<p><code>GraphQL::Pro</code> includes built-in support for <a href="https://github.com/CanCanCommunity/cancancan">CanCan</a>:</p>
+
+<div><div class="CodeRay">
+  <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">MySchema</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Schema</span>.define <span style="color:#080;font-weight:bold">do</span>
+<span class="line-numbers"><a href="#n2" name="n2">2</a></span>  authorize(<span style="color:#A60">:cancan</span>)
+<span class="line-numbers"><a href="#n3" name="n3">3</a></span><span style="color:#080;font-weight:bold">end</span>
+</pre></div>
+</div>
+</div>
+
+<p>GraphQL will initialize your <code>Ability</code> class at the beginning of the query and pass permissions to the <code>#can?</code> method.</p>
+
+<div><div class="CodeRay">
+  <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span>field <span style="color:#A60">:phone_number</span>, <span style="color:#036;font-weight:bold">PhoneNumberType</span>, <span style="color:#606">authorize</span>: <span style="color:#A60">:view</span>
+<span class="line-numbers"><a href="#n2" name="n2">2</a></span><span style="color:#777"># =&gt; calls `can?(:view, phone_number)`</span>
+</pre></div>
+</div>
+</div>
+
+<p>For compile-time checks (<code>view</code> and <code>access</code>), the object is always <code>nil</code>.</p>
+
+<div><div class="CodeRay">
+  <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span>field <span style="color:#A60">:social_security_number</span>, types.String, <span style="color:#606">view</span>: <span style="color:#A60">:admin</span>
+<span class="line-numbers"><a href="#n2" name="n2">2</a></span><span style="color:#777"># =&gt; calls `can?(:admin, nil)`</span>
+</pre></div>
+</div>
+</div>
+
+        </div>
+      </div>
+    </div>
+    <script>
+      // Find headers with IDs and wrap their text in `<a href=></a>`
+      // That way people can easily copy the link.
+      var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+      var header, idText, headerLink;
+      for (var i = 0; i < headers.length; i++) {
+        header = headers[i];
+        idText = header.id;
+        if (idText) {
+          headerLink = document.createElement("a");
+          headerLink.href = "#" + idText;
+          headerLink.textContent = header.textContent;
+          header.textContent = "";
+          header.appendChild(headerLink);
+        }
+      }
+    </script>
+  </body>
+</html>

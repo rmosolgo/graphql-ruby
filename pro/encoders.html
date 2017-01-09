@@ -1,0 +1,254 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>GraphQL Ruby - GraphQL::Pro — Encrypted, Versioned Cursors and IDs</title>
+    <link rel="stylesheet" href="/graphql-ruby/css/main.css">
+    <link rel="icon" href="/graphql-ruby/graphql-ruby-icon.png">
+    <meta name="generator">
+  </head>
+  <body class="hack">
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+      ga('create', 'UA-19264608-11', 'auto');
+      ga('send', 'pageview');
+    </script>
+    <div class="container">
+      <div style="display: flex; justify-content: center;">
+<strong style="white-space: pre; line-height: 1.1em; display: inline-block; font-size: 8px;">
+    ▄██████▄     ▄████████    ▄████████    ▄███████▄    ▄█    █▄    ████████▄    ▄█
+   ███    ███   ███    ███   ███    ███   ███    ███   ███    ███   ███    ███  ███
+   ███    █▀    ███    ███   ███    ███   ███    ███   ███    ███   ███    ███  ███
+  ▄███         ▄███▄▄▄▄██▀   ███    ███   ███    ███  ▄███▄▄▄▄███▄▄ ███    ███  ███
+ ▀▀███ ████▄  ▀▀███▀▀▀▀▀   ▀███████████ ▀█████████▀  ▀▀███▀▀▀▀███▀  ███    ███  ███
+   ███    ███ ▀███████████   ███    ███   ███          ███    ███   ███    ███  ███
+   ███    ███   ███    ███   ███    ███   ███          ███    ███   ███  ▀ ███  ███▌    ▄
+   ████████▀    ███    ███   ███    █▀   ▄████▀        ███    █▀     ▀██████▀▄█ █████▄▄██
+                ███    ███                                                      ▀
+</strong>
+      </div>
+      <p style="text-align: center;">A GraphQL server implementation for Ruby</p>
+
+      <div class="grid -between">
+        <div class="cell -3of12">
+          <h3>Guides</h3>
+          <ul>
+            <li><a href="/graphql-ruby/">Getting Started</a></li>
+            <li>
+              <strong>Schema</strong>
+              <ul>
+                <li><a href="/graphql-ruby/schema/types_and_fields">Types and Fields</a></li>
+                <li><a href="/graphql-ruby/schema/configuration_options">Configuration Options</a></li>
+                <li><a href="/graphql-ruby/schema/code_reuse">Code Reuse</a></li>
+                <li><a href="/graphql-ruby/schema/instrumentation">Instrumentation</a></li>
+                <li><a href="/graphql-ruby/schema/lazy_execution">Lazy Execution</a></li>
+                <li><a href="/graphql-ruby/schema/limiting_visibility">Limiting Visibility</a></li>
+                <li><a href="/graphql-ruby/schema/testing">Testing</a></li>
+              </ul>
+            </li>
+            <li>
+              <strong>Queries</strong>
+              <ul>
+                <li><a href="/graphql-ruby/queries/executing_queries">Executing Queries</a></li>
+                <li><a href="/graphql-ruby/queries/authorization">Authorization</a></li>
+                <li><a href="/graphql-ruby/queries/security">Security</a></li>
+                <li><a href="/graphql-ruby/queries/error_handling">Error Handling</a></li>
+                <li><a href="/graphql-ruby/queries/phases_of_execution">Phases of Execution</a></li>
+              </ul>
+            </li>
+            <li>
+              <strong>Relay</strong>
+              <ul>
+                <li><a href="/graphql-ruby/relay/object_identification">Object Identification</a></li>
+                <li><a href="/graphql-ruby/relay/connections">Connections</a></li>
+                <li><a href="/graphql-ruby/relay/mutations">Mutations</a></li>
+              </ul>
+            </li>
+            <li>
+              <strong>GraphQL::Pro</strong>
+              <ul>
+                <li><a href="https://graphql.pro">GraphQL::Pro Home</a></li>
+                <li><a href="/graphql-ruby/pro/installation">Installation & Updates</a></li>
+                <li><a href="/graphql-ruby/pro/authorization">Authorization</a></li>
+                <li><a href="/graphql-ruby/pro/monitoring">Monitoring</a></li>
+                <li><a href="/graphql-ruby/pro/cursors">Stable Cursors<br/>for ActiveRecord</a></li>
+                <li><a href="/graphql-ruby/pro/encoders">Encrypted, Versioned<br/>Cursors and Ids</a></li>
+              </ul>
+            </li>
+            <li><a href="/graphql-ruby/related_projects">Related Projects</a></li>
+          </ul>
+          <h3><a href="https://tinyletter.com/graphql-ruby">GraphQL Ruby Newsletter</a></h3>
+          <h3><a href="http://www.rubydoc.info/github/rmosolgo/graphql-ruby">API Docs</a></h3>
+          <h3><a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a></h3>
+        </div>
+        <div class="cell -9of12">
+          <h1 class="guide-header">GraphQL::Pro — Encrypted, Versioned Cursors and IDs</h1>
+          <p><code>GraphQL::Pro</code> includes a mechanism for serving encrypted, versioned cursors and IDs.  This provides some benefits:</p>
+
+<ul>
+  <li>Users can’t reverse-engineer node IDs or connection cursors, removing a possible attack vector.</li>
+  <li>You can gradually transition between cursor strategies, adding encrypting while supporting any “stale” encoders which clients already have.</li>
+</ul>
+
+<p><code>GraphQL::Pro</code>’s encrypted encoders provide a few security features:</p>
+
+<ul>
+  <li>Key-based encryption by <code>aes-128-gcm</code> by default</li>
+  <li>Authentication</li>
+  <li>Nonces for cursors (but not IDs, that would be silly)</li>
+</ul>
+
+<h2 id="defining-an-encoder">Defining an Encoder</h2>
+
+<p>Encoders can be created with <code>Encoder.define { ... }</code>:</p>
+
+<div><div class="CodeRay">
+  <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">MyEncoder</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Pro</span>::<span style="color:#036;font-weight:bold">Encoder</span>.define <span style="color:#080;font-weight:bold">do</span>
+<span class="line-numbers"><a href="#n2" name="n2">2</a></span>  key(<span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">f411f30495fe688cb349d...</span><span style="color:#710">&quot;</span></span>)
+<span class="line-numbers"><a href="#n3" name="n3">3</a></span>  <span style="color:#777"># optional:</span>
+<span class="line-numbers"><a href="#n4" name="n4">4</a></span>  tag(<span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">81ce51c307</span><span style="color:#710">&quot;</span></span>)
+<span class="line-numbers"><a href="#n5" name="n5">5</a></span><span style="color:#080;font-weight:bold">end</span>
+</pre></div>
+</div>
+</div>
+
+<ul>
+  <li><code>key</code> is the encryption key for this encoder. You can generate one with: <code>require "securerandom"; SecureRandom.random_bytes(64)</code></li>
+  <li><code>tag</code>, if provided, is used as authentication data or for disambiguating versioned encoders</li>
+</ul>
+
+<h2 id="encrypting-cursors">Encrypting Cursors</h2>
+
+<p>Encrypt cursors by attaching an encrypted encoder to <code>Schema#cursor_encoder</code>:</p>
+
+<div><div class="CodeRay">
+  <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">MySchema</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Schema</span>.define <span style="color:#080;font-weight:bold">do</span>
+<span class="line-numbers"><a href="#n2" name="n2">2</a></span>  cursor_encoder(<span style="color:#036;font-weight:bold">MyCursorEncoder</span>)
+<span class="line-numbers"><a href="#n3" name="n3">3</a></span><span style="color:#080;font-weight:bold">end</span>
+</pre></div>
+</div>
+</div>
+
+<p>Now, built-in connection implementations will use that encoder for cursors.</p>
+
+<p>If you implement your own connections, you can access the encoder’s encryption methods via <a href="http://www.rubydoc.info/gems/graphql/GraphQL/Relay/BaseConnection#encode-instance_method" target="_blank"><code>GraphQL::Relay::BaseConnection#encode</code></a> and <a href="http://www.rubydoc.info/gems/graphql/GraphQL/Relay/BaseConnection#decode-instance_method" target="_blank"><code>GraphQL::Relay::BaseConnection#decode</code></a>.</p>
+
+<h2 id="encrypting-ids">Encrypting IDs</h2>
+
+<p>Encrypt IDs by using encoders in <code>Schema#id_from_object</code> and <code>Schema#object_from_id</code>:</p>
+
+<div><div class="CodeRay">
+  <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">MySchema</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Schema</span>.define <span style="color:#080;font-weight:bold">do</span>
+<span class="line-numbers"> <a href="#n2" name="n2">2</a></span>  id_from_object -&gt;(object, type, ctx) {
+<span class="line-numbers"> <a href="#n3" name="n3">3</a></span>    id_data = <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="background-color:hsla(0,0%,0%,0.07);color:black"><span style="font-weight:bold;color:#666">#{</span>object.class.name<span style="font-weight:bold;color:#666">}</span></span><span style="color:#D20">/</span><span style="background-color:hsla(0,0%,0%,0.07);color:black"><span style="font-weight:bold;color:#666">#{</span>object.id<span style="font-weight:bold;color:#666">}</span></span><span style="color:#710">&quot;</span></span>
+<span class="line-numbers"> <a href="#n4" name="n4">4</a></span>    <span style="color:#036;font-weight:bold">MyIDEncoder</span>.encode(id_data)
+<span class="line-numbers"> <a href="#n5" name="n5">5</a></span>  }
+<span class="line-numbers"> <a href="#n6" name="n6">6</a></span>
+<span class="line-numbers"> <a href="#n7" name="n7">7</a></span>  object_from_id -&gt;(id, ctx) {
+<span class="line-numbers"> <a href="#n8" name="n8">8</a></span>    id_data = <span style="color:#036;font-weight:bold">MyIDEncoder</span>.decode(id)
+<span class="line-numbers"> <a href="#n9" name="n9">9</a></span>    class_name, id = id_data.split(<span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">/</span><span style="color:#710">&quot;</span></span>)
+<span class="line-numbers"><strong><a href="#n10" name="n10">10</a></strong></span>    class_name.constantize.find(id)
+<span class="line-numbers"><a href="#n11" name="n11">11</a></span>  }
+<span class="line-numbers"><a href="#n12" name="n12">12</a></span><span style="color:#080;font-weight:bold">end</span>
+</pre></div>
+</div>
+</div>
+
+<p>Note that IDs are <em>not</em> encrypted with nonces. This means that if someone can <em>guess</em> how IDs are constructed, they can determine the encryption key (a kind of <a href="https://en.wikipedia.org/wiki/Known-plaintext_attack">known-plaintext attack</a>). To reduce this risk, make your plaintext IDs unpredictable, for example, by appending a salt or obfuscating their content.</p>
+
+<h2 id="versioning">Versioning</h2>
+
+<p>You can combine several encoders into a single chain of versioned encoders. Pass them to <code>.versioned</code>, newest-to-oldest:</p>
+
+<div><div class="CodeRay">
+  <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span><span style="color:#777"># Define some encoders ...</span>
+<span class="line-numbers"> <a href="#n2" name="n2">2</a></span><span style="color:#036;font-weight:bold">NewSecureEncoder</span>       = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Pro</span>::<span style="color:#036;font-weight:bold">Encoder</span>.define { ... }
+<span class="line-numbers"> <a href="#n3" name="n3">3</a></span><span style="color:#036;font-weight:bold">OldSecureEncoder</span>       = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Pro</span>::<span style="color:#036;font-weight:bold">Encoder</span>.define { ... }
+<span class="line-numbers"> <a href="#n4" name="n4">4</a></span><span style="color:#036;font-weight:bold">LegacyInsecureEncoder</span>  = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Pro</span>::<span style="color:#036;font-weight:bold">Encoder</span>.define { ... }
+<span class="line-numbers"> <a href="#n5" name="n5">5</a></span>
+<span class="line-numbers"> <a href="#n6" name="n6">6</a></span><span style="color:#777"># Then order them by priority:</span>
+<span class="line-numbers"> <a href="#n7" name="n7">7</a></span><span style="color:#036;font-weight:bold">VersionedEncoder</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Pro</span>::<span style="color:#036;font-weight:bold">Encoder</span>.versioned(
+<span class="line-numbers"> <a href="#n8" name="n8">8</a></span>  <span style="color:#777"># Newest:</span>
+<span class="line-numbers"> <a href="#n9" name="n9">9</a></span>  <span style="color:#036;font-weight:bold">NewSecureEncoder</span>,
+<span class="line-numbers"><strong><a href="#n10" name="n10">10</a></strong></span>  <span style="color:#036;font-weight:bold">OldSecureEncoder</span>,
+<span class="line-numbers"><a href="#n11" name="n11">11</a></span>  <span style="color:#777"># Oldest:</span>
+<span class="line-numbers"><a href="#n12" name="n12">12</a></span>  <span style="color:#036;font-weight:bold">LegacyInsecureEncoder</span>
+<span class="line-numbers"><a href="#n13" name="n13">13</a></span>)
+</pre></div>
+</div>
+</div>
+
+<p>When receiving an ID or cursor, a versioned encoders tries each encoder in sequence. When creating a new ID or cursor, the encoder always uses the first encoder. This way, clients will receiving <em>new</em> encoders, but the server will still accept <em>old</em> encoders (until the old one is removed from the list).</p>
+
+<p><code>VersionedEncoder#decode_versioned</code> returns two values: the decoded data <em>and</em> the encoder which successfully decoded it. You can use this to determine how to process decoded data. For example, you can switch on the encoder:</p>
+
+<div><div class="CodeRay">
+  <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span>data, encoder = <span style="color:#036;font-weight:bold">VersionedEncoder</span>.decode_versioned(id)
+<span class="line-numbers"> <a href="#n2" name="n2">2</a></span><span style="color:#080;font-weight:bold">case</span> encoder
+<span class="line-numbers"> <a href="#n3" name="n3">3</a></span><span style="color:#080;font-weight:bold">when</span> <span style="color:#036;font-weight:bold">UUIDEncoder</span>
+<span class="line-numbers"> <a href="#n4" name="n4">4</a></span>  find_by_uuid(data)
+<span class="line-numbers"> <a href="#n5" name="n5">5</a></span><span style="color:#080;font-weight:bold">when</span> <span style="color:#036;font-weight:bold">SQLPrimaryKeyEncoder</span>
+<span class="line-numbers"> <a href="#n6" name="n6">6</a></span>  find_by_pk(data)
+<span class="line-numbers"> <a href="#n7" name="n7">7</a></span><span style="color:#080;font-weight:bold">when</span> <span style="color:#069">nil</span>
+<span class="line-numbers"> <a href="#n8" name="n8">8</a></span>  <span style="color:#777"># `id` could not be decoded</span>
+<span class="line-numbers"> <a href="#n9" name="n9">9</a></span>  <span style="color:#069">nil</span>
+<span class="line-numbers"><strong><a href="#n10" name="n10">10</a></strong></span><span style="color:#080;font-weight:bold">end</span>
+</pre></div>
+</div>
+</div>
+
+<h2 id="encoding">Encoding</h2>
+
+<p>By default, encrypted bytes is stringified as base-64. You can specific a custom encoder with the <code>Encoder#encoder</code> definition. For example, you could define an encode which uses URL-safe base-64 functions:</p>
+
+<div><div class="CodeRay">
+  <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span><span style="color:#080;font-weight:bold">module</span> <span style="color:#B06;font-weight:bold">URLSafeEncoder</span>
+<span class="line-numbers"> <a href="#n2" name="n2">2</a></span>  <span style="color:#080;font-weight:bold">def</span> <span style="color:#069">self</span>.<span style="color:#06B;font-weight:bold">encode</span>(str)
+<span class="line-numbers"> <a href="#n3" name="n3">3</a></span>    <span style="color:#036;font-weight:bold">Base64</span>.urlsafe_encode64(str)
+<span class="line-numbers"> <a href="#n4" name="n4">4</a></span>  <span style="color:#080;font-weight:bold">end</span>
+<span class="line-numbers"> <a href="#n5" name="n5">5</a></span>
+<span class="line-numbers"> <a href="#n6" name="n6">6</a></span>  <span style="color:#080;font-weight:bold">def</span> <span style="color:#069">self</span>.<span style="color:#06B;font-weight:bold">decode</span>(str)
+<span class="line-numbers"> <a href="#n7" name="n7">7</a></span>    <span style="color:#036;font-weight:bold">Base64</span>.urlsafe_decode64(str)
+<span class="line-numbers"> <a href="#n8" name="n8">8</a></span>  <span style="color:#080;font-weight:bold">end</span>
+<span class="line-numbers"> <a href="#n9" name="n9">9</a></span><span style="color:#080;font-weight:bold">end</span>
+</pre></div>
+</div>
+</div>
+
+<p>Then attach it to your encoder:</p>
+
+<div><div class="CodeRay">
+  <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">MyURLSafeEncoder</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Pro</span>::<span style="color:#036;font-weight:bold">Encoder</span>.define <span style="color:#080;font-weight:bold">do</span>
+<span class="line-numbers"><a href="#n2" name="n2">2</a></span>  encoder <span style="color:#036;font-weight:bold">URLSafeEncoder</span>
+<span class="line-numbers"><a href="#n3" name="n3">3</a></span><span style="color:#080;font-weight:bold">end</span>
+</pre></div>
+</div>
+</div>
+
+<p>Now, these node IDs and cursors will be URL-safe!</p>
+
+        </div>
+      </div>
+    </div>
+    <script>
+      // Find headers with IDs and wrap their text in `<a href=></a>`
+      // That way people can easily copy the link.
+      var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+      var header, idText, headerLink;
+      for (var i = 0; i < headers.length; i++) {
+        header = headers[i];
+        idText = header.id;
+        if (idText) {
+          headerLink = document.createElement("a");
+          headerLink.href = "#" + idText;
+          headerLink.textContent = header.textContent;
+          header.textContent = "";
+          header.appendChild(headerLink);
+        }
+      }
+    </script>
+  </body>
+</html>

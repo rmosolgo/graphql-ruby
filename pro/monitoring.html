@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>GraphQL Ruby - Related Projects</title>
+    <title>GraphQL Ruby - GraphQL::Pro — Instrumentation For New Relic, Scout and Skylight</title>
     <link rel="stylesheet" href="/graphql-ruby/css/main.css">
     <link rel="icon" href="/graphql-ruby/graphql-ruby-icon.png">
     <meta name="generator">
@@ -85,35 +85,60 @@
           <h3><a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a></h3>
         </div>
         <div class="cell -9of12">
-          <h1 class="guide-header">Related Projects</h1>
-          <p>Want to add something? Please open a pull request <a href="https://github.com/rmosolgo/graphql-ruby">on GitHub</a>!</p>
-
-<h2 id="code">Code</h2>
+          <h1 class="guide-header">GraphQL::Pro — Instrumentation For New Relic, Scout and Skylight</h1>
+          <p><code>GraphQL::Pro</code> includes instrumentation for <a href="https://newrelic.com/">New Relic</a>, <a href="https://scoutapp.com">Scout</a>, and <a href="skylight.io">Skylight</a>. All three platforms add:</p>
 
 <ul>
-  <li><code>graphql-ruby</code> + Rails demo (<a href="https://github.com/rmosolgo/graphql-ruby-demo">src</a> / <a href="http://graphql-ruby-demo.herokuapp.com">heroku</a>)</li>
-  <li><code>graphql-ruby</code> + Sinatra demo (<a href="https://github.com/robinjmurphy/ruby-graphql-server-example">src</a> / <a href="https://ruby-graphql-server-example.herokuapp.com/">heroku</a>)</li>
-  <li><a href="https://github.com/shopify/graphql-batch"><code>graphql-batch</code></a>, a batched query execution strategy</li>
-  <li><a href="https://github.com/rmosolgo/graphql-libgraphqlparser-ruby"><code>graphql-libgraphqlparser</code></a>, bindings to <a href="https://github.com/graphql/libgraphqlparser">libgraphqlparser</a>, a C-level parser.</li>
-  <li>Rails Helpers:
-    <ul>
-      <li><a href="https://github.com/goco-inc/graphql-activerecord"><code>graphql-activerecord</code></a></li>
-      <li><a href="https://github.com/colepatrickturner/graphql-rails-resolver"><code>graphql-rails-resolve</code></a></li>
-    </ul>
-  </li>
-  <li><a href="https://github.com/apollostack/optics-agent-ruby">optics-agent-ruby</a>, a graphql-ruby agent for use with the <a href="http://www.apollodata.com/optics">Apollo Optics</a> GraphQL performance tool.</li>
+  <li>Tracking queries by name</li>
+  <li>Tracking field resolution</li>
+  <li>Observing database calls during resolution  </li>
 </ul>
 
-<h2 id="blog-posts">Blog Posts</h2>
+<p>To add monitoring, provide one or more platform names to <code>monitoring(...)</code>:</p>
 
-<ul>
-  <li>Building a blog in GraphQL and Relay on Rails <a href="https://medium.com/@gauravtiwari/graphql-and-relay-on-rails-getting-started-955a49d251de">Introduction</a>, <a href="https://medium.com/@gauravtiwari/graphql-and-relay-on-rails-creating-types-and-schema-b3f9b232ccfc">Part 1</a>, <a href="https://medium.com/@gauravtiwari/graphql-and-relay-on-rails-first-relay-powered-react-component-cb3f9ee95eca">Part 2</a></li>
-  <li>https://medium.com/@khor/relay-facebook-on-rails-8b4af2057152</li>
-  <li>https://blog.jacobwgillespie.com/from-rest-to-graphql-b4e95e94c26b#.4cjtklrwt</li>
-  <li>http://mgiroux.me/2015/getting-started-with-rails-graphql-relay/</li>
-  <li>http://mgiroux.me/2015/uploading-files-using-relay-with-rails/</li>
-  <li>http://mgiroux.me/2016/journey-into-graphql-ruby-query-execution/</li>
-</ul>
+<div><div class="CodeRay">
+  <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">MySchema</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Schema</span>.define <span style="color:#080;font-weight:bold">do</span>
+<span class="line-numbers"><a href="#n2" name="n2">2</a></span>  <span style="color:#777"># ...</span>
+<span class="line-numbers"><a href="#n3" name="n3">3</a></span>  <span style="color:#777"># Send query info to New Relic:</span>
+<span class="line-numbers"><a href="#n4" name="n4">4</a></span>  monitoring(<span style="color:#A60">:new_relic</span>)
+<span class="line-numbers"><a href="#n5" name="n5">5</a></span>  <span style="color:#777"># Send info to Skylight and Scout:</span>
+<span class="line-numbers"><a href="#n6" name="n6">6</a></span>  <span style="color:#777"># monitoring(:skylight, :scout)</span>
+<span class="line-numbers"><a href="#n7" name="n7">7</a></span><span style="color:#080;font-weight:bold">end</span>
+</pre></div>
+</div>
+</div>
+
+<p>Supported platforms are <code>:new_relic</code>, <code>:scout</code> and <code>:skylight</code>.</p>
+
+<h2 id="previews">Previews</h2>
+
+<div class="img-set">
+
+        <a href="/graphql-ruby/pro/newrelic_1.png" target="_blank">
+          <img class="img-set-member" src="/graphql-ruby/pro/newrelic_1.png" title="GraphQL New Relic Instrumentation 1" />
+        </a>
+      
+
+        <a href="/graphql-ruby/pro/newrelic_2.png" target="_blank">
+          <img class="img-set-member" src="/graphql-ruby/pro/newrelic_2.png" title="GraphQL New Relic Instrumentation 2" />
+        </a>
+      
+
+        <a href="/graphql-ruby/pro/scout_1.png" target="_blank">
+          <img class="img-set-member" src="/graphql-ruby/pro/scout_1.png" title="GraphQL Scout Instrumentation 1" />
+        </a>
+      
+
+        <a href="/graphql-ruby/pro/scout_2.png" target="_blank">
+          <img class="img-set-member" src="/graphql-ruby/pro/scout_2.png" title="GraphQL Scout Instrumentation 2" />
+        </a>
+      
+
+        <a href="/graphql-ruby/pro/skylight_1.png" target="_blank">
+          <img class="img-set-member" src="/graphql-ruby/pro/skylight_1.png" title="GraphQL Skylight Instrumentation 1" />
+        </a>
+      
+</div>
 
         </div>
       </div>

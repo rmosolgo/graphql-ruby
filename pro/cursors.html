@@ -1,0 +1,188 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>GraphQL Ruby - GraphQL::Pro — Stable Cursors</title>
+    <link rel="stylesheet" href="/graphql-ruby/css/main.css">
+    <link rel="icon" href="/graphql-ruby/graphql-ruby-icon.png">
+    <meta name="generator">
+  </head>
+  <body class="hack">
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+      ga('create', 'UA-19264608-11', 'auto');
+      ga('send', 'pageview');
+    </script>
+    <div class="container">
+      <div style="display: flex; justify-content: center;">
+<strong style="white-space: pre; line-height: 1.1em; display: inline-block; font-size: 8px;">
+    ▄██████▄     ▄████████    ▄████████    ▄███████▄    ▄█    █▄    ████████▄    ▄█
+   ███    ███   ███    ███   ███    ███   ███    ███   ███    ███   ███    ███  ███
+   ███    █▀    ███    ███   ███    ███   ███    ███   ███    ███   ███    ███  ███
+  ▄███         ▄███▄▄▄▄██▀   ███    ███   ███    ███  ▄███▄▄▄▄███▄▄ ███    ███  ███
+ ▀▀███ ████▄  ▀▀███▀▀▀▀▀   ▀███████████ ▀█████████▀  ▀▀███▀▀▀▀███▀  ███    ███  ███
+   ███    ███ ▀███████████   ███    ███   ███          ███    ███   ███    ███  ███
+   ███    ███   ███    ███   ███    ███   ███          ███    ███   ███  ▀ ███  ███▌    ▄
+   ████████▀    ███    ███   ███    █▀   ▄████▀        ███    █▀     ▀██████▀▄█ █████▄▄██
+                ███    ███                                                      ▀
+</strong>
+      </div>
+      <p style="text-align: center;">A GraphQL server implementation for Ruby</p>
+
+      <div class="grid -between">
+        <div class="cell -3of12">
+          <h3>Guides</h3>
+          <ul>
+            <li><a href="/graphql-ruby/">Getting Started</a></li>
+            <li>
+              <strong>Schema</strong>
+              <ul>
+                <li><a href="/graphql-ruby/schema/types_and_fields">Types and Fields</a></li>
+                <li><a href="/graphql-ruby/schema/configuration_options">Configuration Options</a></li>
+                <li><a href="/graphql-ruby/schema/code_reuse">Code Reuse</a></li>
+                <li><a href="/graphql-ruby/schema/instrumentation">Instrumentation</a></li>
+                <li><a href="/graphql-ruby/schema/lazy_execution">Lazy Execution</a></li>
+                <li><a href="/graphql-ruby/schema/limiting_visibility">Limiting Visibility</a></li>
+                <li><a href="/graphql-ruby/schema/testing">Testing</a></li>
+              </ul>
+            </li>
+            <li>
+              <strong>Queries</strong>
+              <ul>
+                <li><a href="/graphql-ruby/queries/executing_queries">Executing Queries</a></li>
+                <li><a href="/graphql-ruby/queries/authorization">Authorization</a></li>
+                <li><a href="/graphql-ruby/queries/security">Security</a></li>
+                <li><a href="/graphql-ruby/queries/error_handling">Error Handling</a></li>
+                <li><a href="/graphql-ruby/queries/phases_of_execution">Phases of Execution</a></li>
+              </ul>
+            </li>
+            <li>
+              <strong>Relay</strong>
+              <ul>
+                <li><a href="/graphql-ruby/relay/object_identification">Object Identification</a></li>
+                <li><a href="/graphql-ruby/relay/connections">Connections</a></li>
+                <li><a href="/graphql-ruby/relay/mutations">Mutations</a></li>
+              </ul>
+            </li>
+            <li>
+              <strong>GraphQL::Pro</strong>
+              <ul>
+                <li><a href="https://graphql.pro">GraphQL::Pro Home</a></li>
+                <li><a href="/graphql-ruby/pro/installation">Installation & Updates</a></li>
+                <li><a href="/graphql-ruby/pro/authorization">Authorization</a></li>
+                <li><a href="/graphql-ruby/pro/monitoring">Monitoring</a></li>
+                <li><a href="/graphql-ruby/pro/cursors">Stable Cursors<br/>for ActiveRecord</a></li>
+                <li><a href="/graphql-ruby/pro/encoders">Encrypted, Versioned<br/>Cursors and Ids</a></li>
+              </ul>
+            </li>
+            <li><a href="/graphql-ruby/related_projects">Related Projects</a></li>
+          </ul>
+          <h3><a href="https://tinyletter.com/graphql-ruby">GraphQL Ruby Newsletter</a></h3>
+          <h3><a href="http://www.rubydoc.info/github/rmosolgo/graphql-ruby">API Docs</a></h3>
+          <h3><a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a></h3>
+        </div>
+        <div class="cell -9of12">
+          <h1 class="guide-header">GraphQL::Pro — Stable Cursors</h1>
+          <p><code>GraphQL::Pro</code> includes a mechanism for serving <em>stable</em> cursors for <code>ActiveRecord::Relation</code>s based on column values. If objects are created or destroyed during pagination, the list of items won’t be disrupted.</p>
+
+<p>A new <code>RelationConnection</code> is applied by default. It is backwards-compatible with existing offset-based cursors. See <a href="#opting-out">“Opting Out”</a> below if you wish to continue using offset-based pagination.</p>
+
+<p>To enforce the opacity of your cursors, consider an <a href="/graphql-ruby/pro/encoders">encrypted encoder</a>.</p>
+
+<h2 id="whats-the-difference">What’s the difference?</h2>
+
+<p>The default <code>RelationConnection</code> (which turns an <code>ActiveRecord::Relation</code> into a Relay-compatible connection) uses <em>offset</em> as a cursor. This naive approach is sufficient for many cases, but it’s subject to a specific set of bugs.</p>
+
+<p>Let’s say you’re looking at the second page of 10 items (<code>LIMIT 10 OFFSET 10</code>). During that time, one of the items on page 1 is deleted. When you navigate to page 3 (<code>LIMIT 10 OFFSET 20</code>), you’ll actually <em>miss</em> one item. The entire list shifted “up” one position when a previous item was deleted.</p>
+
+<p>To solve this bug, we should use a <em>value</em> to page through items (instead of <em>offset</em>). For example, if items are ordered by <code>id</code>, use the <code>id</code> for pagination:</p>
+
+<div><div class="CodeRay">
+  <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span>LIMIT <span style="color:#00D">10</span>                      <span style="color:#777">-- page 1</span>
+<span class="line-numbers"><a href="#n2" name="n2">2</a></span><span style="color:#080;font-weight:bold">WHERE</span> id &gt; :last_id LIMIT <span style="color:#00D">10</span>  <span style="color:#777">-- page 2</span>
+</pre></div>
+</div>
+</div>
+
+<p>This way, even when items are added or removed, pagination will continue without interruption.</p>
+
+<p>For more information about this issue, see <a href="https://coderwall.com/p/lkcaag/pagination-you-re-probably-doing-it-wrong">“Pagination: You’re (Probably) Doing It Wrong”</a>.</p>
+
+<h2 id="implementation-notes">Implementation Notes</h2>
+
+<p>Keep these points in mind when using value-based cursors:</p>
+
+<ul>
+  <li>For a given <code>ActiveRecord::Relation</code>, only columns of that specific model can be used in pagination. (This is because column names are turned into <code>WHERE</code> conditions.)</li>
+  <li><code>RelationConnection</code> may add an additional <code>primary_key</code> ordering to ensure that the cursor value is unique. This behavior is inspired by <code>Relation#reverse_order</code> which also assumes that <code>primary_key</code> is the default sort.</li>
+</ul>
+
+<h2 id="backwards-compatibility">Backwards Compatibility</h2>
+
+<p><code>GraphQL::Pro</code>’s <code>RelationConnection</code> is backwards-compatible. If it receives an offset-based cursor, it uses that cursor for the next resolution, then returns value-based cursors in the next result.</p>
+
+<p>If you’re also switching to <a href="/graphql-ruby/pro/encoders">encrypted cursors</a>, you’ll need a <a href="/graphql-ruby/pro/encoders#versioning">versioned encoder</a>, too. This way, <em>both</em> unencrypted <em>and</em> encrypted cursors will be accepted! For example:</p>
+
+<div><div class="CodeRay">
+  <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span><span style="color:#777"># Define an encrypted encoder for use with cursors:</span>
+<span class="line-numbers"> <a href="#n2" name="n2">2</a></span><span style="color:#036;font-weight:bold">EncryptedCursorEncoder</span> = <span style="color:#036;font-weight:bold">MyEncoder</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Pro</span>::<span style="color:#036;font-weight:bold">Encoder</span>.define <span style="color:#080;font-weight:bold">do</span>
+<span class="line-numbers"> <a href="#n3" name="n3">3</a></span>  key(<span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">f411f30495fe688cb349d...</span><span style="color:#710">&quot;</span></span>)
+<span class="line-numbers"> <a href="#n4" name="n4">4</a></span><span style="color:#080;font-weight:bold">end</span>
+<span class="line-numbers"> <a href="#n5" name="n5">5</a></span>
+<span class="line-numbers"> <a href="#n6" name="n6">6</a></span><span style="color:#777"># Make a versioned encoder combining new &amp; old</span>
+<span class="line-numbers"> <a href="#n7" name="n7">7</a></span><span style="color:#036;font-weight:bold">VersionedCursorEncoder</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Pro</span>::<span style="color:#036;font-weight:bold">Encoder</span>.versioned(
+<span class="line-numbers"> <a href="#n8" name="n8">8</a></span>  <span style="color:#777"># New encrypted encoder:</span>
+<span class="line-numbers"> <a href="#n9" name="n9">9</a></span>  <span style="color:#036;font-weight:bold">EncryptedCursorEncoder</span>
+<span class="line-numbers"><strong><a href="#n10" name="n10">10</a></strong></span>  <span style="color:#777"># Old plaintext encoder (this is the default):</span>
+<span class="line-numbers"><a href="#n11" name="n11">11</a></span>  <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Schema</span>::<span style="color:#036;font-weight:bold">Base64Encoder</span>
+<span class="line-numbers"><a href="#n12" name="n12">12</a></span>)
+<span class="line-numbers"><a href="#n13" name="n13">13</a></span>
+<span class="line-numbers"><a href="#n14" name="n14">14</a></span><span style="color:#036;font-weight:bold">MySchema</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Schema</span>.define <span style="color:#080;font-weight:bold">do</span>
+<span class="line-numbers"><a href="#n15" name="n15">15</a></span>  <span style="color:#777"># Apply the versioned encoder:</span>
+<span class="line-numbers"><a href="#n16" name="n16">16</a></span>  cursor_encoder(<span style="color:#036;font-weight:bold">VersionedCursorEncoder</span>)
+<span class="line-numbers"><a href="#n17" name="n17">17</a></span><span style="color:#080;font-weight:bold">end</span>
+</pre></div>
+</div>
+</div>
+
+<p>Now, <em>both</em> unencrypted and encrypted cursors will be accepted.</p>
+
+<h2 id="opting-out">Opting Out</h2>
+
+<p>If you don’t want <code>GraphQL::Pro</code>’s new cursor behavior, re-register the offset-based <code>RelationConnection</code>:</p>
+
+<div><div class="CodeRay">
+  <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">MySchema</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Schema</span>.define { ... }
+<span class="line-numbers"><a href="#n2" name="n2">2</a></span><span style="color:#777"># Always use the offset-based connection, override `GraphQL::Pro::RelationConnection`</span>
+<span class="line-numbers"><a href="#n3" name="n3">3</a></span><span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Relay</span>::<span style="color:#036;font-weight:bold">BaseConnection</span>.register_connection_implementation(
+<span class="line-numbers"><a href="#n4" name="n4">4</a></span>  <span style="color:#036;font-weight:bold">ActiveRecord</span>, <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Relay</span>::<span style="color:#036;font-weight:bold">RelationConnection</span>
+<span class="line-numbers"><a href="#n5" name="n5">5</a></span>)
+</pre></div>
+</div>
+</div>
+
+        </div>
+      </div>
+    </div>
+    <script>
+      // Find headers with IDs and wrap their text in `<a href=></a>`
+      // That way people can easily copy the link.
+      var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+      var header, idText, headerLink;
+      for (var i = 0; i < headers.length; i++) {
+        header = headers[i];
+        idText = header.id;
+        if (idText) {
+          headerLink = document.createElement("a");
+          headerLink.href = "#" + idText;
+          headerLink.textContent = header.textContent;
+          header.textContent = "";
+          header.appendChild(headerLink);
+        }
+      }
+    </script>
+  </body>
+</html>

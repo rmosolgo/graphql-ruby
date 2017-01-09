@@ -67,8 +67,20 @@
                 <li><a href="/graphql-ruby/relay/mutations">Mutations</a></li>
               </ul>
             </li>
+            <li>
+              <strong>GraphQL::Pro</strong>
+              <ul>
+                <li><a href="https://graphql.pro">GraphQL::Pro Home</a></li>
+                <li><a href="/graphql-ruby/pro/installation">Installation & Updates</a></li>
+                <li><a href="/graphql-ruby/pro/authorization">Authorization</a></li>
+                <li><a href="/graphql-ruby/pro/monitoring">Monitoring</a></li>
+                <li><a href="/graphql-ruby/pro/cursors">Stable Cursors<br/>for ActiveRecord</a></li>
+                <li><a href="/graphql-ruby/pro/encoders">Encrypted, Versioned<br/>Cursors and Ids</a></li>
+              </ul>
+            </li>
             <li><a href="/graphql-ruby/related_projects">Related Projects</a></li>
           </ul>
+          <h3><a href="https://tinyletter.com/graphql-ruby">GraphQL Ruby Newsletter</a></h3>
           <h3><a href="http://www.rubydoc.info/github/rmosolgo/graphql-ruby">API Docs</a></h3>
           <h3><a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a></h3>
         </div>
@@ -202,10 +214,10 @@
 
 <p>You can use <em>middleware</em> to affect the evaluation of fields in your schema. They function like <code>before_action</code>s and <code>after_action</code>s in Rails controllers.</p>
 
-<p>A middleware is any object that responds to <code>#call(*args, next_middleware)</code>. Inside that method, it should either:</p>
+<p>A middleware is any object that responds to <code>#call(*args)</code>. Inside that method, it should either:</p>
 
 <ul>
-  <li>send <code>call</code> to the next middleware to continue the evaluation; or</li>
+  <li><code>yield</code> to continue the evaluation; or</li>
   <li>return a value to end the evaluation early.</li>
 </ul>
 
@@ -217,10 +229,17 @@
   <li><code>field_definition</code> is the definition for the field being accessed</li>
   <li><code>field_args</code> is the hash of arguments passed to the field</li>
   <li><code>query_context</code> is the context object passed throughout the query</li>
-  <li><code>next_middleware</code> represents the execution chain. Call <code>#call</code> to continue evalution.</li>
 </ul>
 
-<p>Add a middleware to a schema by adding to the <code>#middleware</code> array.</p>
+<p>Add a middleware to a schema by calling <code>middleware</code> in <code>Schema::define</code>:</p>
+
+<div><div class="CodeRay">
+  <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Schema</span>.define <span style="color:#080;font-weight:bold">do</span>
+<span class="line-numbers"><a href="#n2" name="n2">2</a></span>  middleware <span style="color:#036;font-weight:bold">MyMiddleware</span>.new
+<span class="line-numbers"><a href="#n3" name="n3">3</a></span><span style="color:#080;font-weight:bold">end</span>
+</pre></div>
+</div>
+</div>
 
 <h3 id="example-authorization">Example: Authorization</h3>
 
@@ -228,11 +247,11 @@
 
 <div><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span><span style="color:#080;font-weight:bold">class</span> <span style="color:#B06;font-weight:bold">AuthorizationMiddleware</span>
-<span class="line-numbers"> <a href="#n2" name="n2">2</a></span>  <span style="color:#080;font-weight:bold">def</span> <span style="color:#06B;font-weight:bold">call</span>(parent_type, parent_object, field_definition, field_args, query_context, next_middleware)
+<span class="line-numbers"> <a href="#n2" name="n2">2</a></span>  <span style="color:#080;font-weight:bold">def</span> <span style="color:#06B;font-weight:bold">call</span>(parent_type, parent_object, field_definition, field_args, query_context)
 <span class="line-numbers"> <a href="#n3" name="n3">3</a></span>    current_user = query_context[<span style="color:#A60">:current_user</span>] <span style="color:#777"># passed in when creating the query</span>
 <span class="line-numbers"> <a href="#n4" name="n4">4</a></span>    <span style="color:#080;font-weight:bold">if</span> current_user &amp;&amp; current_user.can_read?(parent_object)
 <span class="line-numbers"> <a href="#n5" name="n5">5</a></span>      <span style="color:#777"># This user is authorized, so continue execution</span>
-<span class="line-numbers"> <a href="#n6" name="n6">6</a></span>      next_middleware.call
+<span class="line-numbers"> <a href="#n6" name="n6">6</a></span>      <span style="color:#080;font-weight:bold">yield</span>
 <span class="line-numbers"> <a href="#n7" name="n7">7</a></span>    <span style="color:#080;font-weight:bold">else</span>
 <span class="line-numbers"> <a href="#n8" name="n8">8</a></span>      <span style="color:#777"># Silently halt execution</span>
 <span class="line-numbers"> <a href="#n9" name="n9">9</a></span>      <span style="color:#069">nil</span>
