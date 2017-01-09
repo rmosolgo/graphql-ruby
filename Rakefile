@@ -27,18 +27,19 @@ task :build_parser do
 end
 
 namespace :site do
+
+
   desc "View the documentation site locally"
   task :serve do
     require "jekyll"
-
-    # Generate the site in server mode.
-    puts "Running Jekyll..."
     options = {
       "source"      => File.expand_path("guides"),
       "destination" => File.expand_path("guides/_site"),
       "watch"       => true,
       "serving"     => true
     }
+    # Generate the site in server mode.
+    puts "Running Jekyll..."
     Jekyll::Commands::Build.process(options)
     Jekyll::Commands::Serve.process(options)
   end
