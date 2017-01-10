@@ -2,11 +2,16 @@
 title: GraphQL::Pro — Installation
 ---
 
-`GraphQL::Pro` is distributed as a Ruby gem. When you buy `GraphQL::Pro`, you'll receive a custom URL to add to your gemfile:
+`GraphQL::Pro` is distributed as a Ruby gem. When you buy `GraphQL::Pro`, you'll receive credentials, which you can register with bundler:
+
+```sh
+bundle config gems.graphql.pro #{YOUR_CREDENTIALS}
+```
+
+Then, you can add `graphql-pro` to your Gemfile, which a custom `source`:
 
 ```ruby
-GRAPHQL_PRO_URL = "..." # your custom URL here
-source GRAPHQL_PRO_URL do
+source "gems.graphql.pro" do
   gem "graphql-pro"
 end
 ```
