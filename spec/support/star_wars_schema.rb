@@ -202,6 +202,12 @@ QueryType = GraphQL::ObjectType.define do
     resolve ->(obj, args, ctx) { Base.find(3) }
   end
 
+  connection :newestBasesGroupedByFaction, BaseType.connection_type do
+    resolve ->(obj, args, ctx) {
+      Base.order('sum(faction_id) desc').group(:faction_id)
+    }
+  end
+
   field :node, GraphQL::Relay::Node.field
 end
 

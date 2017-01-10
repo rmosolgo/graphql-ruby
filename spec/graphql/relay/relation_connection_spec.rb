@@ -27,6 +27,13 @@ describe GraphQL::Relay::RelationConnection do
             ... basesConnection
           }
         }
+        newestBasesGroupedByFaction(last: 2) {
+          edges {
+            node {
+              name
+            }
+          }
+        }
       }
 
       fragment basesConnection on BasesConnectionWithTotalCount {
@@ -103,6 +110,12 @@ describe GraphQL::Relay::RelationConnection do
       overreaching_cursor = Base64.strict_encode64("100")
       result = star_wars_query(query_string, "after" => overreaching_cursor, "first" => 2)
       assert_equal([], get_names(result))
+    end
+
+    it 'handles grouped connections with only last argument' do
+      result = star_wars_query(query_string, "first" => 1)
+      names = result['data']['newestBasesGroupedByFaction']['edges'].map { |edge| edge['node']['name'] }
+      assert_equal(['Headquarters', 'Secret Hideout'], names)
     end
 
     it "applies custom arguments" do
