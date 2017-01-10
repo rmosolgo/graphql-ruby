@@ -86,13 +86,17 @@
         </div>
         <div class="cell -9of12">
           <h1 class="guide-header">GraphQL::Pro — Installation</h1>
-          <p><code>GraphQL::Pro</code> is distributed as a Ruby gem. When you buy <code>GraphQL::Pro</code>, you’ll receive a custom URL to add to your gemfile:</p>
+          <p><code>GraphQL::Pro</code> is distributed as a Ruby gem. When you buy <code>GraphQL::Pro</code>, you’ll receive credentials, which you can register with bundler:</p>
+
+<pre><code>bundle config gems.graphql.pro #{YOUR_CREDENTIALS}
+</code></pre>
+
+<p>Then, you can add <code>graphql-pro</code> to your Gemfile, which a custom <code>source</code>:</p>
 
 <div><div class="CodeRay">
-  <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">GRAPHQL_PRO_URL</span> = <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">...</span><span style="color:#710">&quot;</span></span> <span style="color:#777"># your custom URL here</span>
-<span class="line-numbers"><a href="#n2" name="n2">2</a></span>source <span style="color:#036;font-weight:bold">GRAPHQL_PRO_URL</span> <span style="color:#080;font-weight:bold">do</span>
-<span class="line-numbers"><a href="#n3" name="n3">3</a></span>  gem <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">graphql-pro</span><span style="color:#710">&quot;</span></span>
-<span class="line-numbers"><a href="#n4" name="n4">4</a></span><span style="color:#080;font-weight:bold">end</span>
+  <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span>source <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">gems.graphql.pro</span><span style="color:#710">&quot;</span></span> <span style="color:#080;font-weight:bold">do</span>
+<span class="line-numbers"><a href="#n2" name="n2">2</a></span>  gem <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">graphql-pro</span><span style="color:#710">&quot;</span></span>
+<span class="line-numbers"><a href="#n3" name="n3">3</a></span><span style="color:#080;font-weight:bold">end</span>
 </pre></div>
 </div>
 </div>
