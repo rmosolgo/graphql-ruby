@@ -11,6 +11,8 @@ require "graphql/query/variable_validation_error"
 module GraphQL
   # A combination of query string and {Schema} instance which can be reduced to a {#result}.
   class Query
+    extend Forwardable
+
     class OperationNameMissingError < GraphQL::ExecutionError
       def initialize(names)
         msg = "You must provide an operation name from: #{names.join(", ")}"
@@ -202,18 +204,8 @@ module GraphQL
       @valid
     end
 
-    def get_type(type_name)
-      @warden.get_type(type_name)
-    end
+    def_delegators :@warden, :get_type, :get_field, :possible_types, :root_type_for_operation
 
-    def get_field(type, name)
-      @fields ||= Hash.new { |h, k| h[k] = Hash.new { |h2, k2| h2[k2] = @warden.get_field(k, k2) } }
-      @fields[type][name]
-    end
-
-    def possible_types(type)
-      @warden.possible_types(type)
-    end
 
     # @param value [Object] Any runtime value
     # @return [GraphQL::ObjectType, nil] The runtime type of `value` from {Schema#resolve_type}
