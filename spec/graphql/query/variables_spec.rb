@@ -3,7 +3,12 @@ require "spec_helper"
 
 describe GraphQL::Query::Variables do
   let(:query_string) {%|
-  query getCheese($animals: [DairyAnimal!], $int: Int, $intWithDefault: Int = 10) {
+  query getCheese(
+    $animals: [DairyAnimal!],
+    $intDefaultNull: Int = null,
+    $int: Int,
+    $intWithDefault: Int = 10)
+  {
     cheese(id: 1) {
       similarCheese(source: $animals)
     }
@@ -57,7 +62,7 @@ describe GraphQL::Query::Variables do
         end
       end
 
-      describe "when a nullable list has a null in it" do
+      describe "when a non-nullable list has a null in it" do
         let(:provided_variables) { { "ids" => [nil] } }
         it "returns an error" do
           assert_equal 1, result["errors"].length
@@ -71,12 +76,23 @@ describe GraphQL::Query::Variables do
         {"int" => nil, "intWithDefault" => nil}
       }
 
-      it "null variable" do
+      it "preserves explicit null" do
         assert_equal nil, variables["int"]
+        assert_equal true, variables.key?("int")
+      end
+
+      it "doesn't contain variables that weren't present" do
+        assert_equal nil, variables["animals"]
+        assert_equal false, variables.key?("animals")
       end
 
       it "preserves explicit null when variable has a default value" do
         assert_equal nil, variables["intWithDefault"]
+      end
+
+      it "uses null default value" do
+        assert_equal nil, variables["intDefaultNull"]
+        assert_equal true, variables.key?("intDefaultNull")
       end
     end
   end

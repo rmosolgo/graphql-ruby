@@ -319,7 +319,7 @@ module GraphQL
         scalar_attributes :name, :type, :default_value
 
         # @!attribute default_value
-        #   @return [String, Integer, Float, Boolean, Array] A Ruby value to use if no other value is provided
+        #   @return [String, Integer, Float, Boolean, Array, NullValue] A Ruby value to use if no other value is provided
 
         # @!attribute type
         #   @return [TypeName, NonNullType, ListType] The expected type of this value
