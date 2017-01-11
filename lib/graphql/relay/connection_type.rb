@@ -13,9 +13,11 @@ module GraphQL
         edge_type ||= wrapped_type.edge_type
         edge_class ||= GraphQL::Relay::Edge
         connection_type_name = "#{wrapped_type.name}Connection"
+        connection_type_description = "The connection type for #{wrapped_type.name}."
 
         connection_type = ObjectType.define do
           name(connection_type_name)
+          description(connection_type_description)
           field :edges, types[edge_type] do
             description "A list of edges."
             resolve ->(obj, args, ctx) {
