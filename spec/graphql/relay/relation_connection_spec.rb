@@ -69,7 +69,7 @@ describe GraphQL::Relay::RelationConnection do
     it 'provides custom fields on the connection type' do
       result = star_wars_query(query_string, "first" => 2)
       assert_equal(
-        Base.where(faction_id: 2).count,
+        StarWars::Base.where(faction_id: 2).count,
         result["data"]["empire"]["bases"]["totalCount"]
       )
     end
@@ -329,7 +329,7 @@ describe GraphQL::Relay::RelationConnection do
       it 'provides custom fields on the connection type' do
         result = star_wars_query(query_string, "first" => 2)
         assert_equal(
-          Base.where(faction_id: 2).count,
+          StarWars::Base.where(faction_id: 2).count,
           result["data"]["empire"]["basesAsSequelDataset"]["totalCount"]
         )
       end
@@ -374,11 +374,11 @@ describe GraphQL::Relay::RelationConnection do
   end
 
   describe "#cursor_from_node" do
-    let(:connection) { GraphQL::Relay::RelationConnection.new(Base.where(faction_id: 1), {}) }
+    let(:connection) { GraphQL::Relay::RelationConnection.new(StarWars::Base.where(faction_id: 1), {}) }
 
     it "returns the cursor for a node in the connection" do
-      assert_equal "MQ==", connection.cursor_from_node(Base.all[0])
-      assert_equal "Mg==", connection.cursor_from_node(Base.all[1])
+      assert_equal "MQ==", connection.cursor_from_node(StarWars::Base.all[0])
+      assert_equal "Mg==", connection.cursor_from_node(StarWars::Base.all[1])
     end
 
     it "raises when the node isn't found" do
@@ -390,7 +390,7 @@ describe GraphQL::Relay::RelationConnection do
   end
 
   it "is chosen for a relation" do
-    relation = Base.where(faction_id: 1)
+    relation = StarWars::Base.where(faction_id: 1)
     assert relation.is_a?(ActiveRecord::Relation)
     connection = GraphQL::Relay::BaseConnection.connection_for_nodes(relation)
     assert_equal GraphQL::Relay::RelationConnection, connection

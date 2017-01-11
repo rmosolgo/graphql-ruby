@@ -28,7 +28,7 @@ describe GraphQL::Analysis do
     let(:analyzers) { [type_collector, node_counter] }
     let(:reduce_result) { GraphQL::Analysis.analyze_query(query, analyzers) }
     let(:variables) { {} }
-    let(:query) { GraphQL::Query.new(DummySchema, query_string, variables: variables) }
+    let(:query) { GraphQL::Query.new(Dummy::Schema, query_string, variables: variables) }
     let(:query_string) {%|
       {
         cheese(id: 1) {
@@ -40,7 +40,7 @@ describe GraphQL::Analysis do
 
     it "calls the defined analyzers" do
       collected_types, node_counts = reduce_result
-      expected_visited_types = [DairyAppQueryType, CheeseType, GraphQL::INT_TYPE, GraphQL::STRING_TYPE]
+      expected_visited_types = [Dummy::DairyAppQueryType, Dummy::CheeseType, GraphQL::INT_TYPE, GraphQL::STRING_TYPE]
       assert_equal expected_visited_types, collected_types
       expected_node_counts = {
         GraphQL::Language::Nodes::OperationDefinition => 1,
@@ -61,14 +61,14 @@ describe GraphQL::Analysis do
       let(:variable_accessor) { ->(memo, visit_type, irep_node) { query.variables["cheeseId"] } }
 
       before do
-        @previous_query_analyzers = DummySchema.query_analyzers.dup
-        DummySchema.query_analyzers.clear
-        DummySchema.query_analyzers << variable_accessor
+        @previous_query_analyzers = Dummy::Schema.query_analyzers.dup
+        Dummy::Schema.query_analyzers.clear
+        Dummy::Schema.query_analyzers << variable_accessor
       end
 
       after do
-        DummySchema.query_analyzers.clear
-        DummySchema.query_analyzers.push(*@previous_query_analyzers)
+        Dummy::Schema.query_analyzers.clear
+        Dummy::Schema.query_analyzers.push(*@previous_query_analyzers)
       end
 
       it "returns an error" do
@@ -97,7 +97,7 @@ describe GraphQL::Analysis do
       }
       let(:analyzers) { [connection_counter] }
       let(:reduce_result) { GraphQL::Analysis.analyze_query(query, analyzers) }
-      let(:query) { GraphQL::Query.new(StarWarsSchema, query_string, variables: variables) }
+      let(:query) { GraphQL::Query.new(StarWars::Schema, query_string, variables: variables) }
       let(:query_string) {%|
         query getBases {
           empire {
@@ -155,7 +155,7 @@ describe GraphQL::Analysis do
     let(:flavor_catcher) { FlavorCatcher.new }
     let(:analyzers) { [id_catcher, flavor_catcher] }
     let(:reduce_result) { GraphQL::Analysis.analyze_query(query, analyzers) }
-    let(:query) { GraphQL::Query.new(DummySchema, query_string) }
+    let(:query) { GraphQL::Query.new(Dummy::Schema, query_string) }
     let(:query_string) {%|
       {
         cheese(id: 1) {
@@ -164,7 +164,7 @@ describe GraphQL::Analysis do
         }
       }
     |}
-    let(:schema) { DummySchema }
+    let(:schema) { Dummy::Schema }
     let(:result) { schema.execute(query_string) }
     let(:query_string) {%|
       {
@@ -176,14 +176,14 @@ describe GraphQL::Analysis do
     |}
 
     before do
-      @previous_query_analyzers = DummySchema.query_analyzers.dup
-      DummySchema.query_analyzers.clear
-      DummySchema.query_analyzers << id_catcher << flavor_catcher
+      @previous_query_analyzers = Dummy::Schema.query_analyzers.dup
+      Dummy::Schema.query_analyzers.clear
+      Dummy::Schema.query_analyzers << id_catcher << flavor_catcher
     end
 
     after do
-      DummySchema.query_analyzers.clear
-      DummySchema.query_analyzers.push(*@previous_query_analyzers)
+      Dummy::Schema.query_analyzers.clear
+      Dummy::Schema.query_analyzers.push(*@previous_query_analyzers)
     end
 
     it "groups all errors together" do

@@ -11,31 +11,39 @@ describe GraphQL::BaseType do
   end
 
   it "can be compared" do
+    obj_type = Dummy::MilkType
     assert_equal(!GraphQL::INT_TYPE, !GraphQL::INT_TYPE)
     refute_equal(!GraphQL::FLOAT_TYPE, GraphQL::FLOAT_TYPE)
     assert_equal(
-      GraphQL::ListType.new(of_type: MilkType),
-      GraphQL::ListType.new(of_type: MilkType)
+      GraphQL::ListType.new(of_type: obj_type),
+      GraphQL::ListType.new(of_type: obj_type)
     )
     refute_equal(
-      GraphQL::ListType.new(of_type: MilkType),
-      GraphQL::ListType.new(of_type: !MilkType)
+      GraphQL::ListType.new(of_type: obj_type),
+      GraphQL::ListType.new(of_type: !obj_type)
     )
   end
 
   it "Accepts arbitrary metadata" do
-    assert_equal ["Cheese"], CheeseType.metadata[:class_names]
+    assert_equal ["Cheese"], Dummy::CheeseType.metadata[:class_names]
   end
 
   describe "#dup" do
+    let(:obj_type) {
+      GraphQL::ObjectType.define do
+        name "SomeObject"
+        field :id, types.Int
+      end
+    }
+
     it "resets connection types" do
       # Make sure the defaults have been calculated
-      cheese_edge = CheeseType.edge_type
-      cheese_conn = CheeseType.connection_type
-      cheese_2 = CheeseType.dup
-      cheese_2.name = "Cheese2"
-      refute_equal cheese_edge, cheese_2.edge_type
-      refute_equal cheese_conn, cheese_2.connection_type
+      obj_edge = obj_type.edge_type
+      obj_conn = obj_type.connection_type
+      obj_2 = obj_type.dup
+      obj_2.name = "Cheese2"
+      refute_equal obj_edge, obj_2.edge_type
+      refute_equal obj_edge, obj_2.connection_type
     end
   end
 end

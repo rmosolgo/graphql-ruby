@@ -5,7 +5,7 @@ describe GraphQL::NonNullType do
   describe "when a non-null field returns null" do
     it "nulls out the parent selection" do
       query_string = %|{ cow { name cantBeNullButIs } }|
-      result = DummySchema.execute(query_string)
+      result = Dummy::Schema.execute(query_string)
       assert_equal({"cow" => nil }, result["data"])
       assert_equal([{"message"=>"Cannot return null for non-nullable field Cow.cantBeNullButIs"}], result["errors"])
     end
@@ -24,14 +24,14 @@ describe GraphQL::NonNullType do
         }
       }
       |
-      result = DummySchema.execute(query_string)
+      result = Dummy::Schema.execute(query_string)
       assert_equal(nil, result["data"])
       assert_equal([{"message"=>"Cannot return null for non-nullable field DeepNonNull.nonNullInt"}], result["errors"])
     end
 
     describe "when type_error is configured to raise an error" do
       it "crashes query execution" do
-        raise_schema = DummySchema.redefine {
+        raise_schema = Dummy::Schema.redefine {
           type_error ->(type_err, ctx) {
             raise type_err
           }

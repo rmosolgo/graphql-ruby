@@ -2,7 +2,7 @@
 require "spec_helper"
 
 describe GraphQL::Schema::TypeExpression do
-  let(:types) { DummySchema.types }
+  let(:types) { Dummy::Schema.types }
   let(:ast_node) {
     document = GraphQL.parse("query dostuff($var: #{type_name}) { id } ")
     document.definitions.first.variables.first.type
@@ -13,7 +13,7 @@ describe GraphQL::Schema::TypeExpression do
     describe "simple types" do
       let(:type_name) { "DairyProductInput" }
       it "it gets types from the provided types" do
-        assert_equal(DairyProductInputType, type_expression_result)
+        assert_equal(Dummy::DairyProductInputType, type_expression_result)
       end
     end
 
@@ -28,7 +28,7 @@ describe GraphQL::Schema::TypeExpression do
       let(:type_name) { "[DairyAnimal!]!" }
 
       it "makes list types" do
-        expected = DairyAnimalEnum
+        expected = Dummy::DairyAnimalEnum
           .to_non_null_type
           .to_list_type
           .to_non_null_type

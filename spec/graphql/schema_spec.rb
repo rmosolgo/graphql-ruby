@@ -2,8 +2,8 @@
 require "spec_helper"
 
 describe GraphQL::Schema do
-  let(:schema) { DummySchema }
-  let(:relay_schema)  { StarWarsSchema }
+  let(:schema) { Dummy::Schema }
+  let(:relay_schema)  { StarWars::Schema }
   let(:empty_schema) { GraphQL::Schema.define }
 
   describe "#rescue_from" do

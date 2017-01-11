@@ -32,7 +32,7 @@ describe GraphQL::Query do
   let(:operation_name) { nil }
   let(:max_depth) { nil }
   let(:query_variables) { {"cheeseId" => 2} }
-  let(:schema) { DummySchema }
+  let(:schema) { Dummy::Schema }
   let(:document) { GraphQL.parse(query_string) }
 
   let(:query) { GraphQL::Query.new(
@@ -132,7 +132,7 @@ describe GraphQL::Query do
       end
 
       let(:schema) {
-        DummySchema.redefine {
+        Dummy::Schema.redefine {
           instrument(:query, Instrumenter)
         }
       }

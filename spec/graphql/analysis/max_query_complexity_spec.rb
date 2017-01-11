@@ -3,15 +3,15 @@ require "spec_helper"
 
 describe GraphQL::Analysis::MaxQueryComplexity do
   before do
-    @prev_max_complexity = DummySchema.max_complexity
+    @prev_max_complexity = Dummy::Schema.max_complexity
   end
 
   after do
-    DummySchema.max_complexity = @prev_max_complexity
+    Dummy::Schema.max_complexity = @prev_max_complexity
   end
 
 
-  let(:result) { DummySchema.execute(query_string) }
+  let(:result) { Dummy::Schema.execute(query_string) }
   let(:query_string) {%|
     {
       a: cheese(id: 1) { id }
@@ -24,7 +24,7 @@ describe GraphQL::Analysis::MaxQueryComplexity do
 
   describe "when a query goes over max complexity" do
     before do
-      DummySchema.max_complexity = 9
+      Dummy::Schema.max_complexity = 9
     end
 
     it "returns an error" do
@@ -34,7 +34,7 @@ describe GraphQL::Analysis::MaxQueryComplexity do
 
   describe "when there is no max complexity" do
     before do
-      DummySchema.max_complexity = nil
+      Dummy::Schema.max_complexity = nil
     end
     it "doesn't error" do
       assert_equal nil, result["errors"]
@@ -43,7 +43,7 @@ describe GraphQL::Analysis::MaxQueryComplexity do
 
   describe "when the query is less than the max complexity" do
     before do
-      DummySchema.max_complexity = 99
+      Dummy::Schema.max_complexity = 99
     end
     it "doesn't error" do
       assert_equal nil, result["errors"]
@@ -52,9 +52,9 @@ describe GraphQL::Analysis::MaxQueryComplexity do
 
   describe "when complexity is overriden at query-level" do
     before do
-      DummySchema.max_complexity = 100
+      Dummy::Schema.max_complexity = 100
     end
-    let(:result) { DummySchema.execute(query_string, max_complexity: 7) }
+    let(:result) { Dummy::Schema.execute(query_string, max_complexity: 7) }
 
     it "is applied" do
       assert_equal "Query has complexity of 10, which exceeds max complexity of 7", result["errors"][0]["message"]

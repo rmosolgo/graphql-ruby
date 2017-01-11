@@ -2,7 +2,7 @@
 require "spec_helper"
 
 describe GraphQL::EnumType do
-  let(:enum) { DairyAnimalEnum }
+  let(:enum) { Dummy::DairyAnimalEnum }
 
   it "coerces names to underlying values" do
     assert_equal("YAK", enum.coerce_input("YAK"))
@@ -72,7 +72,7 @@ describe GraphQL::EnumType do
   end
 
   describe "validate_input with bad input" do
-    let(:result) { DairyAnimalEnum.validate_input("bad enum", PermissiveWarden) }
+    let(:result) { enum.validate_input("bad enum", PermissiveWarden) }
 
     it "returns an invalid result" do
       assert(!result.valid?)
