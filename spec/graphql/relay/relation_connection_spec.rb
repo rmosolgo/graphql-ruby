@@ -105,6 +105,24 @@ describe GraphQL::Relay::RelationConnection do
       assert_equal([], get_names(result))
     end
 
+    it 'handles grouped connections with only last argument' do
+      grouped_conn_query = <<-GRAPHQL
+      query {
+        newestBasesGroupedByFaction(last: 2) {
+          edges {
+            node {
+              name
+            }
+          }
+        }
+      }
+      GRAPHQL
+
+      result = star_wars_query(grouped_conn_query)
+      names = result['data']['newestBasesGroupedByFaction']['edges'].map { |edge| edge['node']['name'] }
+      assert_equal(['Headquarters', 'Secret Hideout'], names)
+    end
+
     it "applies custom arguments" do
       result = star_wars_query(query_string, "first" => 1, "nameIncludes" => "ea")
       assert_equal(["Death Star"], get_names(result))

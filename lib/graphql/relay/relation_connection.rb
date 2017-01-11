@@ -17,7 +17,7 @@ module GraphQL
       end
 
       def has_next_page
-        !!(first && sliced_nodes.limit(limit + 1).count > limit)
+        !!(first && count(sliced_nodes.limit(limit + 1)) > limit)
       end
 
       def has_previous_page
@@ -25,6 +25,12 @@ module GraphQL
       end
 
       private
+
+      # If a relation contains a `.group` clause, a `.count` will return a Hash.
+      def count(nodes)
+        count_or_hash = nodes.count
+        count_or_hash.is_a?(Integer) ? count_or_hash : count_or_hash.length
+      end
 
       # apply first / last limit results
       def paged_nodes
@@ -45,7 +51,7 @@ module GraphQL
           if before
             [previous_offset, 0].max
           elsif last
-            nodes.count - last
+            count(nodes) - last
           else
             previous_offset
           end
