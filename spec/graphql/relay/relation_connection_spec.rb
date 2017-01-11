@@ -27,13 +27,6 @@ describe GraphQL::Relay::RelationConnection do
             ... basesConnection
           }
         }
-        newestBasesGroupedByFaction(last: 2) {
-          edges {
-            node {
-              name
-            }
-          }
-        }
       }
 
       fragment basesConnection on BasesConnectionWithTotalCount {
@@ -113,7 +106,19 @@ describe GraphQL::Relay::RelationConnection do
     end
 
     it 'handles grouped connections with only last argument' do
-      result = star_wars_query(query_string, "first" => 1)
+      grouped_conn_query = <<-GRAPHQL
+      query {
+        newestBasesGroupedByFaction(last: 2) {
+          edges {
+            node {
+              name
+            }
+          }
+        }
+      }
+      GRAPHQL
+
+      result = star_wars_query(grouped_conn_query)
       names = result['data']['newestBasesGroupedByFaction']['edges'].map { |edge| edge['node']['name'] }
       assert_equal(['Headquarters', 'Secret Hideout'], names)
     end
