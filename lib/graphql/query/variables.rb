@@ -14,38 +14,31 @@ module GraphQL
         @provided_variables = provided_variables
         @errors = []
         @storage = ast_variables.each_with_object({}) do |ast_variable, memo|
+          # Find the right value for this variable:
+          # - First, use the value provided at runtime
+          # - Then, fall back to the default value from the query string
+          # If it's still nil, raise an error if it's required.
+          variable_type = @schema.type_from_ast(ast_variable.type)
           variable_name = ast_variable.name
-          memo[variable_name] = get_graphql_value(ast_variable)
+          default_value = ast_variable.default_value
+          provided_value = @provided_variables[variable_name]
+          value_was_provided = @provided_variables.key?(variable_name)
+
+          validation_result = variable_type.validate_input(provided_value, @warden)
+          if !validation_result.valid?
+            # This finds variables that were required but not provided
+            @errors << GraphQL::Query::VariableValidationError.new(ast_variable, variable_type, provided_value, validation_result)
+          elsif value_was_provided
+            # Add the variable if a value was provided
+            memo[variable_name] = variable_type.coerce_input(provided_value)
+          elsif default_value
+            # Add the variable if it wasn't provided but it has a default value (including `null`)
+            memo[variable_name] = GraphQL::Query::LiteralInput.coerce(variable_type, default_value, {})
+          end
         end
       end
 
-      def [](key)
-        @storage.fetch(key)
-      end
-
-      def_delegators :@storage, :length
-
-      private
-
-      # Find the right value for this variable:
-      # - First, use the value provided at runtime
-      # - Then, fall back to the default value from the query string
-      # If it's still nil, raise an error if it's required.
-      def get_graphql_value(ast_variable)
-        variable_type = @schema.type_from_ast(ast_variable.type)
-        variable_name = ast_variable.name
-        default_value = ast_variable.default_value
-        provided_value = @provided_variables[variable_name]
-
-        validation_result = variable_type.validate_input(provided_value, @warden)
-        if !validation_result.valid?
-          @errors << GraphQL::Query::VariableValidationError.new(ast_variable, variable_type, provided_value, validation_result)
-        elsif !@provided_variables.key?(variable_name) && provided_value.nil?
-          GraphQL::Query::LiteralInput.coerce(variable_type, default_value, {})
-        else
-          variable_type.coerce_input(provided_value)
-        end
-      end
+      def_delegators :@storage, :length, :key?, :[], :fetch
     end
   end
 end

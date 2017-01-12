@@ -334,6 +334,24 @@ describe GraphQL::Query do
       end
     end
 
+    describe "when they are non-null and provided a null value" do
+      let(:query_variables) { { "cheeseId" => nil } }
+
+      it "raises an error" do
+        expected = {
+          "errors" => [
+            {
+              "message" => "Variable cheeseId of type Int! was provided invalid value",
+              "locations" => [{"line" => 2, "column" => 23}],
+              "value" => nil,
+              "problems" => [{ "path" => [], "explanation" => "Expected value to not be null" }]
+            }
+          ]
+        }
+        assert_equal(expected, result)
+      end
+    end
+
     describe "when they're a string" do
       let(:query_variables) { '{ "var" : 1 }' }
       it "raises an error" do
