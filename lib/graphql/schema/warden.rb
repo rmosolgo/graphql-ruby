@@ -120,6 +120,15 @@ module GraphQL
         @schema.directives.each_value.select { |d| visible?(d) }
       end
 
+      def root_type_for_operation(op_name)
+        root_type = @schema.root_type_for_operation(op_name)
+        if root_type && visible?(root_type)
+          root_type
+        else
+          nil
+        end
+      end
+
       private
 
       def visible_field?(field_defn)

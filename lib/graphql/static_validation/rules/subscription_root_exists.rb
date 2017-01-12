@@ -5,7 +5,7 @@ module GraphQL
       include GraphQL::StaticValidation::Message::MessageHelper
 
       def validate(context)
-        return if context.schema.subscription
+        return if context.warden.root_type_for_operation("subscription")
 
         visitor = context.visitor
 

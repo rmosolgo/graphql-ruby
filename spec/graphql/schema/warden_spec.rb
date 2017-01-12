@@ -96,8 +96,17 @@ module MaskHelpers
     end
   end
 
+  MutationType = GraphQL::ObjectType.define do
+    name "Mutation"
+    field :add_phoneme, PhonemeType do
+      argument :symbol, types.String
+    end
+  end
+
   Schema = GraphQL::Schema.define do
     query QueryType
+    mutation MutationType
+    subscription MutationType
     resolve_type -> (obj, ctx) { PhonemeType }
   end
 
@@ -149,6 +158,52 @@ describe GraphQL::Schema::Warden do
 
   def error_messages(query_result)
     query_result["errors"].map { |err| err["message"] }
+  end
+
+  describe "hiding root types" do
+    let(:mask) { ->(m, ctx) { m == MaskHelpers::MutationType } }
+
+    it "acts as if the root doesn't exist" do
+      query_string = %|mutation { add_phoneme(symbol: "ϕ") { name } }|
+      res = MaskHelpers.query_with_mask(query_string, mask)
+      assert MaskHelpers::Schema.mutation # it _does_ exist
+      assert_equal 1, res["errors"].length
+      assert_equal "Schema is not configured for mutations", res["errors"][0]["message"]
+
+      query_string = %|subscription { add_phoneme(symbol: "ϕ") { name } }|
+      res = MaskHelpers.query_with_mask(query_string, mask)
+      assert MaskHelpers::Schema.subscription # it _does_ exist
+      assert_equal 1, res["errors"].length
+      assert_equal "Schema is not configured for subscriptions", res["errors"][0]["message"]
+    end
+
+    it "doesn't show in introspection" do
+      query_string = <<-GRAPHQL
+      {
+        __schema {
+          queryType {
+            name
+          }
+          mutationType {
+            name
+          }
+          subscriptionType {
+            name
+          }
+          types {
+            name
+          }
+        }
+      }
+      GRAPHQL
+      res = MaskHelpers.query_with_mask(query_string, mask)
+      assert_equal "Query", res["data"]["__schema"]["queryType"]["name"]
+      assert_equal nil, res["data"]["__schema"]["mutationType"]
+      assert_equal nil, res["data"]["__schema"]["subscriptionType"]
+      type_names = res["data"]["__schema"]["types"].map { |t| t["name"] }
+      refute type_names.include?("Mutation")
+      refute type_names.include?("Subscription")
+    end
   end
 
   describe "hiding fields" do
