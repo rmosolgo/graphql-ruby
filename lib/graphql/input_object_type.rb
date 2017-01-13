@@ -31,7 +31,7 @@ module GraphQL
     )
 
     attr_accessor :mutation, :arguments
-    ensure_defined(:mutation, :arguments)
+    ensure_defined(:mutation, :arguments, :input_fields)
     alias :input_fields :arguments
 
     # @!attribute mutation

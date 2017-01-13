@@ -58,7 +58,11 @@ module GraphQL
       )
       attr_accessor :name, :description, :fields, :arguments, :return_type
 
-      ensure_defined(:name, :description, :fields, :arguments, :return_type, :resolve=, :field, :result_class, :input_type)
+      ensure_defined(
+        :input_fields, :return_fields, :name, :description,
+        :fields, :arguments, :return_type, :resolve=,
+        :field, :result_class, :input_type
+      )
       # For backwards compat, but do we need this separate API?
       alias :return_fields :fields
       alias :input_fields :arguments
