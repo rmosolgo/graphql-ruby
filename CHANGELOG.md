@@ -8,6 +8,15 @@
 
 ### Bug fixes
 
+## 1.4.1 (16 Jan 2016)
+
+### Bug fixes
+
+- Absent variables aren't present in `args` #479
+- Fix grouped ActiveRecord relation with `last` only #476
+- `Schema#default_mask` & query `only:`/`except:` are combined, not overriden #485
+- Root types can be hidden with dynamic filters #480
+
 ## 1.4.0 (8 Jan 2016)
 
 ### Breaking changes
