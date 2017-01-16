@@ -15,7 +15,7 @@ describe GraphQL::Query::Variables do
   }
   |}
   let(:ast_variables) { GraphQL.parse(query_string).definitions.first.variables }
-  let(:schema) { DummySchema }
+  let(:schema) { Dummy::Schema }
   let(:variables) { GraphQL::Query::Variables.new(
     schema,
     GraphQL::Schema::Warden.new(schema.default_mask, schema: schema, context: nil),

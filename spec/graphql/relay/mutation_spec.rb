@@ -22,8 +22,8 @@ describe GraphQL::Relay::Mutation do
   |}
 
   after do
-    STAR_WARS_DATA["Ship"].delete("9")
-    STAR_WARS_DATA["Faction"]["1"].ships.delete("9")
+    StarWars::DATA["Ship"].delete("9")
+    StarWars::DATA["Faction"]["1"].ships.delete("9")
   end
 
   it "supports null values" do
@@ -38,7 +38,7 @@ describe GraphQL::Relay::Mutation do
             "id" => GraphQL::Schema::UniqueWithinType.encode("Ship", "9"),
           },
         },
-        "faction" => {"name" => STAR_WARS_DATA["Faction"]["1"].name }
+        "faction" => {"name" => StarWars::DATA["Faction"]["1"].name }
       }
     }}
     assert_equal(expected, result)
@@ -60,7 +60,7 @@ describe GraphQL::Relay::Mutation do
             "id" => GraphQL::Schema::UniqueWithinType.encode("Ship", "9"),
           },
         },
-        "faction" => {"name" => STAR_WARS_DATA["Faction"]["1"].name }
+        "faction" => {"name" => StarWars::DATA["Faction"]["1"].name }
       }
     }}
     assert_equal(expected, result)
@@ -73,14 +73,14 @@ describe GraphQL::Relay::Mutation do
   end
 
   it "applies the description to the derived field" do
-    assert_equal "Add a ship to this faction", IntroduceShipMutation.field.description
+    assert_equal "Add a ship to this faction", StarWars::IntroduceShipMutation.field.description
   end
 
   it "inserts itself into the derived objects' metadata" do
-    assert_equal IntroduceShipMutation, IntroduceShipMutation.field.mutation
-    assert_equal IntroduceShipMutation, IntroduceShipMutation.return_type.mutation
-    assert_equal IntroduceShipMutation, IntroduceShipMutation.input_type.mutation
-    assert_equal IntroduceShipMutation, IntroduceShipMutation.result_class.mutation
+    assert_equal StarWars::IntroduceShipMutation, StarWars::IntroduceShipMutation.field.mutation
+    assert_equal StarWars::IntroduceShipMutation, StarWars::IntroduceShipMutation.return_type.mutation
+    assert_equal StarWars::IntroduceShipMutation, StarWars::IntroduceShipMutation.input_type.mutation
+    assert_equal StarWars::IntroduceShipMutation, StarWars::IntroduceShipMutation.result_class.mutation
   end
 
   describe "aliased methods" do

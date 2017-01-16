@@ -8,23 +8,23 @@ describe GraphQL::Schema::ReduceTypes do
 
   it "finds types from a single type and its fields" do
     expected = {
-      "Cheese" => CheeseType,
+      "Cheese" => Dummy::CheeseType,
       "Float" => GraphQL::FLOAT_TYPE,
       "String" => GraphQL::STRING_TYPE,
-      "Edible" => EdibleInterface,
-      "DairyAnimal" => DairyAnimalEnum,
+      "Edible" => Dummy::EdibleInterface,
+      "DairyAnimal" => Dummy::DairyAnimalEnum,
       "Int" => GraphQL::INT_TYPE,
-      "AnimalProduct" => AnimalProductInterface,
-      "LocalProduct" => LocalProductInterface,
+      "AnimalProduct" => Dummy::AnimalProductInterface,
+      "LocalProduct" => Dummy::LocalProductInterface,
     }
-    result = reduce_types([CheeseType])
+    result = reduce_types([Dummy::CheeseType])
     assert_equal(expected.keys, result.keys)
     assert_equal(expected, result.to_h)
   end
 
   it "finds type from arguments" do
-    result = reduce_types([DairyAppQueryType])
-    assert_equal(DairyProductInputType, result["DairyProductInput"])
+    result = reduce_types([Dummy::DairyAppQueryType])
+    assert_equal(Dummy::DairyProductInputType, result["DairyProductInput"])
   end
 
   it "finds types from nested InputObjectTypes" do
@@ -98,7 +98,7 @@ describe GraphQL::Schema::ReduceTypes do
 
   describe "when a field is only accessible through an interface" do
     it "is found through Schema.define(types:)" do
-      assert_equal HoneyType, DummySchema.types["Honey"]
+      assert_equal Dummy::HoneyType, Dummy::Schema.types["Honey"]
     end
   end
 end

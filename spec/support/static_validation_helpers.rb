@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 # This module assumes you have `let(:query_string)` in your spec.
 # It provides `errors` which are the validation errors for that string,
-# as validated against `DummySchema`.
+# as validated against `Dummy::Schema`.
 # You can override `schema` to provide another schema
 # @example testing static validation
 #   include StaticValidationHelpers
@@ -23,6 +23,6 @@ module StaticValidationHelpers
   end
 
   def schema
-    DummySchema
+    Dummy::Schema
   end
 end

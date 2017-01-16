@@ -2,13 +2,13 @@
 require "spec_helper"
 
 describe GraphQL::InputObjectType do
-  let(:input_object) { DairyProductInputType }
+  let(:input_object) { Dummy::DairyProductInputType }
   it "has a description" do
     assert(input_object.description)
   end
 
   it "has input fields" do
-    assert(DairyProductInputType.input_fields["fatContent"])
+    assert(input_object.input_fields["fatContent"])
   end
 
   describe "on a type unused by the schema" do
@@ -26,18 +26,18 @@ describe GraphQL::InputObjectType do
   describe "input validation" do
     it "Accepts anything that yields key-value pairs to #all?" do
       values_obj = MinimumInputObject.new({"source" => "COW", "fatContent" => 0.4})
-      assert DairyProductInputType.valid_input?(values_obj, PermissiveWarden)
+      assert input_object.valid_input?(values_obj, PermissiveWarden)
     end
 
     describe "validate_input with non-enumerable input" do
       it "returns a valid result for MinimumInputObject" do
-        result = DairyProductInputType.validate_input(MinimumInputObject.new({"source" => "COW", "fatContent" => 0.4}), PermissiveWarden)
+        result = input_object.validate_input(MinimumInputObject.new({"source" => "COW", "fatContent" => 0.4}), PermissiveWarden)
         assert(result.valid?)
       end
 
       it "returns an invalid result for MinimumInvalidInputObject" do
         invalid_input = MinimumInputObject.new({"source" => "KOALA", "fatContent" => 0.4})
-        result = DairyProductInputType.validate_input(invalid_input, PermissiveWarden)
+        result = input_object.validate_input(invalid_input, PermissiveWarden)
         assert(!result.valid?)
       end
     end
@@ -76,7 +76,7 @@ describe GraphQL::InputObjectType do
             "fatContent" => 0.4
           }
         end
-        let(:result) { DairyProductInputType.validate_input(input, PermissiveWarden) }
+        let(:result) { input_object.validate_input(input, PermissiveWarden) }
 
         it "returns a valid result" do
           assert(result.valid?)
@@ -91,7 +91,7 @@ describe GraphQL::InputObjectType do
               "fatContent" => 0.4,
             )
           end
-          let(:result) { DairyProductInputType.validate_input(input, PermissiveWarden) }
+          let(:result) { input_object.validate_input(input, PermissiveWarden) }
 
           it "returns a valid result" do
             assert(result.valid?)
@@ -100,7 +100,7 @@ describe GraphQL::InputObjectType do
       end
 
       describe "with bad enum and float" do
-        let(:result) { DairyProductInputType.validate_input({"source" => "KOALA", "fatContent" => "bad_num"}, PermissiveWarden) }
+        let(:result) { input_object.validate_input({"source" => "KOALA", "fatContent" => "bad_num"}, PermissiveWarden) }
 
         it "returns an invalid result" do
           assert(!result.valid?)
@@ -113,7 +113,7 @@ describe GraphQL::InputObjectType do
         end
 
         it "has correct problem explanation" do
-          expected = DairyAnimalEnum.validate_input("KOALA", PermissiveWarden).problems[0]["explanation"]
+          expected = Dummy::DairyAnimalEnum.validate_input("KOALA", PermissiveWarden).problems[0]["explanation"]
 
           source_problem = result.problems.detect { |p| p["path"] == ["source"] }
           actual = source_problem["explanation"]
@@ -123,7 +123,7 @@ describe GraphQL::InputObjectType do
       end
 
       describe 'with a string as input' do
-        let(:result) { DairyProductInputType.validate_input("just a string", PermissiveWarden) }
+        let(:result) { input_object.validate_input("just a string", PermissiveWarden) }
 
         it "returns an invalid result" do
           assert(!result.valid?)
@@ -140,7 +140,7 @@ describe GraphQL::InputObjectType do
       end
 
       describe 'with an array as input' do
-        let(:result) { DairyProductInputType.validate_input(["string array"], PermissiveWarden) }
+        let(:result) { input_object.validate_input(["string array"], PermissiveWarden) }
 
         it "returns an invalid result" do
           assert(!result.valid?)
@@ -157,7 +157,7 @@ describe GraphQL::InputObjectType do
       end
 
       describe 'with a int as input' do
-        let(:result) { DairyProductInputType.validate_input(10, PermissiveWarden) }
+        let(:result) { input_object.validate_input(10, PermissiveWarden) }
 
         it "returns an invalid result" do
           assert(!result.valid?)
@@ -174,7 +174,7 @@ describe GraphQL::InputObjectType do
       end
 
       describe "with extra argument" do
-        let(:result) { DairyProductInputType.validate_input({"source" => "COW", "fatContent" => 0.4, "isDelicious" => false}, PermissiveWarden) }
+        let(:result) { input_object.validate_input({"source" => "COW", "fatContent" => 0.4, "isDelicious" => false}, PermissiveWarden) }
 
         it "returns an invalid result" do
           assert(!result.valid?)
@@ -191,7 +191,7 @@ describe GraphQL::InputObjectType do
       end
 
       describe "list with one invalid element" do
-        let(:list_type) { GraphQL::ListType.new(of_type: DairyProductInputType) }
+        let(:list_type) { GraphQL::ListType.new(of_type: Dummy::DairyProductInputType) }
         let(:result) do
           list_type.validate_input([
             { "source" => "COW", "fatContent" => 0.4 },
@@ -213,7 +213,7 @@ describe GraphQL::InputObjectType do
         end
 
         it "has problem with correct explanation" do
-          expected = DairyAnimalEnum.validate_input("KOALA", PermissiveWarden).problems[0]["explanation"]
+          expected = Dummy::DairyAnimalEnum.validate_input("KOALA", PermissiveWarden).problems[0]["explanation"]
           actual = result.problems[0]["explanation"]
           assert_equal(expected, actual)
         end
@@ -278,7 +278,7 @@ describe GraphQL::InputObjectType do
 
   describe "when sent into a query" do
     let(:variables) { {} }
-    let(:result) { DummySchema.execute(query_string, variables: variables) }
+    let(:result) { Dummy::Schema.execute(query_string, variables: variables) }
 
     describe "list inputs" do
       let(:variables) { {"search" => [MinimumInputObject.new({"source" => "COW", "fatContent" => 0.4})]} }

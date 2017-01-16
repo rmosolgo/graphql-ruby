@@ -2,7 +2,7 @@
 require "spec_helper"
 
 describe GraphQL::ObjectType do
-  let(:type) { CheeseType }
+  let(:type) { Dummy::CheeseType }
 
   it "has a name" do
     assert_equal("Cheese", type.name)
@@ -16,16 +16,16 @@ describe GraphQL::ObjectType do
   end
 
   it "may have interfaces" do
-    assert_equal([EdibleInterface, AnimalProductInterface, LocalProductInterface], type.interfaces)
+    assert_equal([Dummy::EdibleInterface, Dummy::AnimalProductInterface, Dummy::LocalProductInterface], type.interfaces)
   end
 
   it "accepts fields definition" do
-    last_produced_dairy = GraphQL::Field.define(name: :last_produced_dairy, type: DairyProductUnion)
+    last_produced_dairy = GraphQL::Field.define(name: :last_produced_dairy, type: Dummy::DairyProductUnion)
     cow_type = GraphQL::ObjectType.define(name: "Cow", fields: [last_produced_dairy])
     assert_equal([last_produced_dairy], cow_type.fields)
   end
 
-  describe '#get_field ' do
+  describe '#get_field' do
     it "exposes fields" do
       field = type.get_field("id")
       assert_equal(GraphQL::TypeKinds::NON_NULL, field.type.kind)
@@ -33,15 +33,15 @@ describe GraphQL::ObjectType do
     end
 
     it "exposes defined field property" do
-      field_without_prop = CheeseType.get_field("flavor")
-      field_with_prop = CheeseType.get_field("fatContent")
+      field_without_prop = Dummy::CheeseType.get_field("flavor")
+      field_with_prop = Dummy::CheeseType.get_field("fatContent")
       assert_equal(field_without_prop.property, nil)
       assert_equal(field_with_prop.property, :fat_content)
     end
 
     it "looks up from interfaces" do
-      field_from_self = CheeseType.get_field("fatContent")
-      field_from_iface = MilkType.get_field("fatContent")
+      field_from_self = Dummy::CheeseType.get_field("fatContent")
+      field_from_iface = Dummy::MilkType.get_field("fatContent")
       assert_equal(field_from_self.property, :fat_content)
       assert_equal(field_from_iface.property, nil)
     end

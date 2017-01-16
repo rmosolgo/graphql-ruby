@@ -13,24 +13,24 @@ describe GraphQL::Relay::Node do
       before do
         # TODO: make the schema eager-load so we can remove this
         # Ensure the schema is defined:
-        StarWarsSchema.types
+        StarWars::Schema.types
 
-        @previous_id_from_object_proc = StarWarsSchema.id_from_object_proc
-        @previous_object_from_id_proc = StarWarsSchema.object_from_id_proc
+        @previous_id_from_object_proc = StarWars::Schema.id_from_object_proc
+        @previous_object_from_id_proc = StarWars::Schema.object_from_id_proc
 
-        StarWarsSchema.id_from_object = ->(obj, type_name, ctx) {
+        StarWars::Schema.id_from_object = ->(obj, type_name, ctx) {
           "#{type_name}/#{obj.id}"
         }
 
-        StarWarsSchema.object_from_id = ->(global_id, ctx) {
+        StarWars::Schema.object_from_id = ->(global_id, ctx) {
           type_name, id = global_id.split("/")
-          STAR_WARS_DATA[type_name][id]
+          StarWars::DATA[type_name][id]
         }
       end
 
       after do
-        StarWarsSchema.id_from_object = @previous_id_from_object_proc
-        StarWarsSchema.object_from_id = @previous_object_from_id_proc
+        StarWars::Schema.id_from_object = @previous_id_from_object_proc
+        StarWars::Schema.object_from_id = @previous_object_from_id_proc
       end
 
       it "Deconstructs the ID by the custom proc" do

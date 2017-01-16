@@ -22,8 +22,8 @@ describe GraphQL::StaticValidation::TypeStack do
     fragment edibleFields on Edible { fatContent @skip(if: false)}
   |}
 
-  let(:validator) { GraphQL::StaticValidation::Validator.new(schema: DummySchema, rules: [TypeCheckValidator]) }
-  let(:query) { GraphQL::Query.new(DummySchema, query_string) }
+  let(:validator) { GraphQL::StaticValidation::Validator.new(schema: Dummy::Schema, rules: [TypeCheckValidator]) }
+  let(:query) { GraphQL::Query.new(Dummy::Schema, query_string) }
 
 
   it "stores up types" do

@@ -2,7 +2,7 @@
 require "spec_helper"
 
 describe GraphQL::ExecutionError do
-  let(:result) { DummySchema.execute(query_string) }
+  let(:result) { Dummy::Schema.execute(query_string) }
   describe "when returned from a field" do
     let(:query_string) {%|
     {

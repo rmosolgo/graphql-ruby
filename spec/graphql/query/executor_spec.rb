@@ -3,7 +3,7 @@ require "spec_helper"
 
 describe GraphQL::Query::Executor do
   let(:operation_name) { nil }
-  let(:schema) { DummySchema }
+  let(:schema) { Dummy::Schema }
   let(:variables) { {"cheeseId" => 2} }
   let(:query) { GraphQL::Query.new(
     schema,
@@ -77,16 +77,16 @@ describe GraphQL::Query::Executor do
       DummyQueryType = GraphQL::ObjectType.define do
         name "Query"
         field :dairy do
-          type DairyType
+          type Dummy::DairyType
           resolve ->(t, a, c) {
             raise if resolved
             resolved = true
-            DAIRY
+            Dummy::DAIRY
           }
         end
       end
 
-      GraphQL::Schema.define(query: DummyQueryType, mutation: MutationType, resolve_type: :pass, id_from_object: :pass)
+      GraphQL::Schema.define(query: DummyQueryType, mutation: Dummy::DairyAppMutationType, resolve_type: :pass, id_from_object: :pass)
     }
     let(:variables) { nil }
     let(:query_string) { %|

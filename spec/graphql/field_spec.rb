@@ -1,26 +1,34 @@
 # frozen_string_literal: true
 require "spec_helper"
 
+# Must be top-level so it can be found by string
+FieldSpecReturnType = GraphQL::ObjectType.define do
+  name "FieldReturn"
+  field :id, types.Int
+  field :source, types.String, hash_key: :source
+end
+
 describe GraphQL::Field do
+
   it "accepts a proc as type" do
     field = GraphQL::Field.define do
-      type(-> { DairyProductUnion })
+      type(-> { FieldSpecReturnType })
     end
 
-    assert_equal(DairyProductUnion, field.type)
+    assert_equal(FieldSpecReturnType, field.type)
   end
 
   it "accepts a string as a type" do
     field = GraphQL::Field.define do
-      type("DairyProductUnion")
+      type("FieldSpecReturnType")
     end
 
-    assert_equal(DairyProductUnion, field.type)
+    assert_equal(FieldSpecReturnType, field.type)
   end
 
   it "accepts arguments definition" do
     number = GraphQL::Argument.define(name: :number, type: -> { GraphQL::INT_TYPE })
-    field = GraphQL::Field.define(type: DairyProductUnion, arguments: [number])
+    field = GraphQL::Field.define(type: FieldSpecReturnType, arguments: [number])
     assert_equal([number], field.arguments)
   end
 
@@ -98,7 +106,7 @@ describe GraphQL::Field do
   end
 
   describe "#hash_key" do
-    let(:source_field) { MilkType.get_field("source") }
+    let(:source_field) { FieldSpecReturnType.get_field("source") }
     after { source_field.hash_key = :source }
 
     it "looks up a value with obj[hash_key]" do
@@ -117,7 +125,7 @@ describe GraphQL::Field do
 
   describe "#metadata" do
     it "accepts user-defined metadata" do
-      similar_cheese_field = CheeseType.get_field("similarCheese")
+      similar_cheese_field = Dummy::CheeseType.get_field("similarCheese")
       assert_equal [:cheeses, :milks], similar_cheese_field.metadata[:joins]
     end
   end

@@ -38,7 +38,7 @@ describe GraphQL::Language::Parser do
   end
 
   it "parses the test schema" do
-    schema = DummySchema
+    schema = Dummy::Schema
     schema_string = GraphQL::Schema::Printer.print_schema(schema)
     document = subject.parse(schema_string)
     assert_equal schema_string, document.to_query_string
