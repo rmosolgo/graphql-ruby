@@ -8,13 +8,13 @@ AllCops:
 # def ...
 # end
 Lint/DefEndAlignment:
-  AlignWith: def
+  EnforcedStyleAlignWith: def
 
 # value = if
 #   # ...
 # end
 Lint/EndAlignment:
-  AlignWith: variable
+  EnforcedStyleAlignWith: variable
 
 Metrics/ParameterLists:
   Max: 6
