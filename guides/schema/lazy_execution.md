@@ -67,7 +67,7 @@ end
 ```ruby
 field :author, PersonType do
   resolve ->(obj, args, ctx) {
-    LazyFindPerson(ctx, obj.author_id)
+    LazyFindPerson.new(ctx, obj.author_id)
   }
 end
 ```
