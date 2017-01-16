@@ -105,7 +105,7 @@
 
 <p>Encoders can be created with <code>Encoder.define { ... }</code>:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">MyEncoder</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Pro</span>::<span style="color:#036;font-weight:bold">Encoder</span>.define <span style="color:#080;font-weight:bold">do</span>
 <span class="line-numbers"><a href="#n2" name="n2">2</a></span>  key(<span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">f411f30495fe688cb349d...</span><span style="color:#710">&quot;</span></span>)
 <span class="line-numbers"><a href="#n3" name="n3">3</a></span>  <span style="color:#777"># optional:</span>
@@ -124,7 +124,7 @@
 
 <p>Encrypt cursors by attaching an encrypted encoder to <code>Schema#cursor_encoder</code>:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">MySchema</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Schema</span>.define <span style="color:#080;font-weight:bold">do</span>
 <span class="line-numbers"><a href="#n2" name="n2">2</a></span>  cursor_encoder(<span style="color:#036;font-weight:bold">MyCursorEncoder</span>)
 <span class="line-numbers"><a href="#n3" name="n3">3</a></span><span style="color:#080;font-weight:bold">end</span>
@@ -140,7 +140,7 @@
 
 <p>Encrypt IDs by using encoders in <code>Schema#id_from_object</code> and <code>Schema#object_from_id</code>:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">MySchema</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Schema</span>.define <span style="color:#080;font-weight:bold">do</span>
 <span class="line-numbers"> <a href="#n2" name="n2">2</a></span>  id_from_object -&gt;(object, type, ctx) {
 <span class="line-numbers"> <a href="#n3" name="n3">3</a></span>    id_data = <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="background-color:hsla(0,0%,0%,0.07);color:black"><span style="font-weight:bold;color:#666">#{</span>object.class.name<span style="font-weight:bold;color:#666">}</span></span><span style="color:#D20">/</span><span style="background-color:hsla(0,0%,0%,0.07);color:black"><span style="font-weight:bold;color:#666">#{</span>object.id<span style="font-weight:bold;color:#666">}</span></span><span style="color:#710">&quot;</span></span>
@@ -163,7 +163,7 @@
 
 <p>You can combine several encoders into a single chain of versioned encoders. Pass them to <code>.versioned</code>, newest-to-oldest:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span><span style="color:#777"># Define some encoders ...</span>
 <span class="line-numbers"> <a href="#n2" name="n2">2</a></span><span style="color:#036;font-weight:bold">NewSecureEncoder</span>       = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Pro</span>::<span style="color:#036;font-weight:bold">Encoder</span>.define { ... }
 <span class="line-numbers"> <a href="#n3" name="n3">3</a></span><span style="color:#036;font-weight:bold">OldSecureEncoder</span>       = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Pro</span>::<span style="color:#036;font-weight:bold">Encoder</span>.define { ... }
@@ -185,7 +185,7 @@
 
 <p><code>VersionedEncoder#decode_versioned</code> returns two values: the decoded data <em>and</em> the encoder which successfully decoded it. You can use this to determine how to process decoded data. For example, you can switch on the encoder:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span>data, encoder = <span style="color:#036;font-weight:bold">VersionedEncoder</span>.decode_versioned(id)
 <span class="line-numbers"> <a href="#n2" name="n2">2</a></span><span style="color:#080;font-weight:bold">case</span> encoder
 <span class="line-numbers"> <a href="#n3" name="n3">3</a></span><span style="color:#080;font-weight:bold">when</span> <span style="color:#036;font-weight:bold">UUIDEncoder</span>
@@ -204,7 +204,7 @@
 
 <p>By default, encrypted bytes is stringified as base-64. You can specific a custom encoder with the <code>Encoder#encoder</code> definition. For example, you could define an encode which uses URL-safe base-64 functions:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span><span style="color:#080;font-weight:bold">module</span> <span style="color:#B06;font-weight:bold">URLSafeEncoder</span>
 <span class="line-numbers"> <a href="#n2" name="n2">2</a></span>  <span style="color:#080;font-weight:bold">def</span> <span style="color:#069">self</span>.<span style="color:#06B;font-weight:bold">encode</span>(str)
 <span class="line-numbers"> <a href="#n3" name="n3">3</a></span>    <span style="color:#036;font-weight:bold">Base64</span>.urlsafe_encode64(str)
@@ -220,7 +220,7 @@
 
 <p>Then attach it to your encoder:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">MyURLSafeEncoder</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Pro</span>::<span style="color:#036;font-weight:bold">Encoder</span>.define <span style="color:#080;font-weight:bold">do</span>
 <span class="line-numbers"><a href="#n2" name="n2">2</a></span>  encoder <span style="color:#036;font-weight:bold">URLSafeEncoder</span>
 <span class="line-numbers"><a href="#n3" name="n3">3</a></span><span style="color:#080;font-weight:bold">end</span>

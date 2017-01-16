@@ -106,7 +106,7 @@
   <li>Lazy-loading class which finds models by ID.</li>
 </ol>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span><span style="color:#080;font-weight:bold">class</span> <span style="color:#B06;font-weight:bold">LazyFindPerson</span>
 <span class="line-numbers"> <a href="#n2" name="n2">2</a></span>  <span style="color:#080;font-weight:bold">def</span> <span style="color:#06B;font-weight:bold">initialize</span>(query_ctx, person_id)
 <span class="line-numbers"> <a href="#n3" name="n3">3</a></span>    <span style="color:#33B">@person_id</span> = person_id
@@ -146,7 +146,7 @@
   <li>Connect the lazy resolve method</li>
 </ol>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">MySchema</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Schema</span>.define <span style="color:#080;font-weight:bold">do</span>
 <span class="line-numbers"><a href="#n2" name="n2">2</a></span>  <span style="color:#777"># ...</span>
 <span class="line-numbers"><a href="#n3" name="n3">3</a></span>  lazy_resolve(<span style="color:#036;font-weight:bold">LazyFindPerson</span>, <span style="color:#A60">:person</span>)
@@ -159,10 +159,10 @@
   <li>Return lazy objects from <code>resolve</code></li>
 </ol>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span>field <span style="color:#A60">:author</span>, <span style="color:#036;font-weight:bold">PersonType</span> <span style="color:#080;font-weight:bold">do</span>
 <span class="line-numbers"><a href="#n2" name="n2">2</a></span>  resolve -&gt;(obj, args, ctx) {
-<span class="line-numbers"><a href="#n3" name="n3">3</a></span>    LazyFindPerson(ctx, obj.author_id)
+<span class="line-numbers"><a href="#n3" name="n3">3</a></span>    <span style="color:#036;font-weight:bold">LazyFindPerson</span>.new(ctx, obj.author_id)
 <span class="line-numbers"><a href="#n4" name="n4">4</a></span>  }
 <span class="line-numbers"><a href="#n5" name="n5">5</a></span><span style="color:#080;font-weight:bold">end</span>
 </pre></div>
@@ -171,7 +171,7 @@
 
 <p>Now, calls to <code>author</code> will use batched database access. For example, this query:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span>{
 <span class="line-numbers"><a href="#n2" name="n2">2</a></span>  p1: post(id: 1) { author { name } }
 <span class="line-numbers"><a href="#n3" name="n3">3</a></span>  p2: post(id: 2) { author { name } }

@@ -97,32 +97,37 @@
 
 <p>If you want to <em>completely hide</em> some fields, types, enum values or arguments, read on!</p>
 
-<h2 id="masking">Masking</h2>
+<h2 id="filtering">Filtering</h2>
 
-<p>You can hide parts of the schema by passing <code>except:</code> to <code>Schema.execute</code>. For example:</p>
+<p>You can hide parts of the schema by passing <code>except:</code>  or <code>only:</code> to <code>Schema.execute</code>. For example:</p>
 
-<div><div class="CodeRay">
-  <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span>mask = <span style="color:#036;font-weight:bold">PermissionMask</span>.new(<span style="color:#33B">@current_user</span>)
-<span class="line-numbers"><a href="#n2" name="n2">2</a></span><span style="color:#036;font-weight:bold">MySchema</span>.execute(query_string, <span style="color:#606">except</span>: mask)
+<div class="highlighter-coderay"><div class="CodeRay">
+  <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#777"># `except:` blacklists items:</span>
+<span class="line-numbers"><a href="#n2" name="n2">2</a></span>filter = <span style="color:#036;font-weight:bold">PermissionBlacklist</span>.new(<span style="color:#33B">@current_user</span>)
+<span class="line-numbers"><a href="#n3" name="n3">3</a></span><span style="color:#036;font-weight:bold">MySchema</span>.execute(query_string, <span style="color:#606">except</span>: filter)
+<span class="line-numbers"><a href="#n4" name="n4">4</a></span><span style="color:#777"># OR</span>
+<span class="line-numbers"><a href="#n5" name="n5">5</a></span><span style="color:#777"># `only:` whitelists items:</span>
+<span class="line-numbers"><a href="#n6" name="n6">6</a></span>filter = <span style="color:#036;font-weight:bold">PermissionWhitelist</span>.new(<span style="color:#33B">@current_user</span>)
+<span class="line-numbers"><a href="#n7" name="n7">7</a></span><span style="color:#036;font-weight:bold">MySchema</span>.execute(query_string, <span style="color:#606">only</span>: filter)
 </pre></div>
 </div>
 </div>
 
 <p>During that query, some elements will be hidden. This means that fields, types, arguments or enum values will be treated as if they were not defined at all.</p>
 
-<p>A mask must respond to <code>#call(schema_member)</code>. When that methods returns truthy, the schema member will be hidden.</p>
+<p>A filter must respond to <code>#call(schema_member, ctx)</code>. When that methods returns truthy, the schema member will be blacklisted or whitelisted.</p>
 
-<p>For example, here’s an implementation of <code>PermissionMask</code> above:</p>
+<p>For example, here’s an implementation of <code>PermissionWhitelist</code> above:</p>
 
-<div><div class="CodeRay">
-  <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span><span style="color:#080;font-weight:bold">class</span> <span style="color:#B06;font-weight:bold">PermissionMask</span>
+<div class="highlighter-coderay"><div class="CodeRay">
+  <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span><span style="color:#080;font-weight:bold">class</span> <span style="color:#B06;font-weight:bold">PermissionWhitelist</span>
 <span class="line-numbers"> <a href="#n2" name="n2">2</a></span>  <span style="color:#080;font-weight:bold">def</span> <span style="color:#06B;font-weight:bold">initialize</span>(person)
 <span class="line-numbers"> <a href="#n3" name="n3">3</a></span>    <span style="color:#33B">@person</span> = person
 <span class="line-numbers"> <a href="#n4" name="n4">4</a></span>  <span style="color:#080;font-weight:bold">end</span>
 <span class="line-numbers"> <a href="#n5" name="n5">5</a></span>
-<span class="line-numbers"> <a href="#n6" name="n6">6</a></span>  <span style="color:#777"># If this returns true, the schema member will be hidden</span>
-<span class="line-numbers"> <a href="#n7" name="n7">7</a></span>  <span style="color:#080;font-weight:bold">def</span> <span style="color:#06B;font-weight:bold">call</span>(schema_member)
-<span class="line-numbers"> <a href="#n8" name="n8">8</a></span>    <span style="color:#036;font-weight:bold">Permissions</span>.hidden?(person, schema_member)
+<span class="line-numbers"> <a href="#n6" name="n6">6</a></span>  <span style="color:#777"># If this returns true, the schema member will be allowed</span>
+<span class="line-numbers"> <a href="#n7" name="n7">7</a></span>  <span style="color:#080;font-weight:bold">def</span> <span style="color:#06B;font-weight:bold">call</span>(schema_member, ctx)
+<span class="line-numbers"> <a href="#n8" name="n8">8</a></span>    <span style="color:#036;font-weight:bold">Permissions</span>.allowed?(person, schema_member)
 <span class="line-numbers"> <a href="#n9" name="n9">9</a></span>  <span style="color:#080;font-weight:bold">end</span>
 <span class="line-numbers"><strong><a href="#n10" name="n10">10</a></strong></span><span style="color:#080;font-weight:bold">end</span>
 </pre></div>
@@ -142,12 +147,37 @@
 
 <p>This feature pairs nicely with attaching custom data to types. See the <a href="/graphql-ruby/schema/types_and_fields">types and fields guide</a> for information about assigning values to an object’s <code>metadata</code>.</p>
 
-<p>Then, you can check <code>metadata</code> in your mask. For example, to hide fields based on a metadata flag:</p>
+<p>Then, you can check <code>metadata</code> in your filter. For example, to hide fields based on a metadata flag:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#777"># Hide secret objects from this user</span>
-<span class="line-numbers"><a href="#n2" name="n2">2</a></span>top_secret = -&gt;(schema_member) { schema_member.metadata[<span style="color:#A60">:top_secret</span>]}
+<span class="line-numbers"><a href="#n2" name="n2">2</a></span>top_secret = -&gt;(schema_member, ctx) { schema_member.metadata[<span style="color:#A60">:top_secret</span>]}
 <span class="line-numbers"><a href="#n3" name="n3">3</a></span><span style="color:#036;font-weight:bold">MySchema</span>.execute(query_string, <span style="color:#606">except</span>: top_secret)
+</pre></div>
+</div>
+</div>
+
+<h2 id="printing-a-filtered-schema">Printing a Filtered Schema</h2>
+
+<p>You can see how filters will be applied to the schema by printing the schema with that filter. <a href="http://www.rubydoc.info/gems/graphql/GraphQL/Schema#to_definition-instance_method" target="_blank"><code>GraphQL::Schema#to_definition</code></a> accepts <code>only:</code> and <code>except:</code> options.</p>
+
+<p>For example, to see how the schema looks to a specific user:</p>
+
+<div class="highlighter-coderay"><div class="CodeRay">
+  <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span>example_user = <span style="color:#036;font-weight:bold">User</span>.new(<span style="color:#606">permission</span>: <span style="color:#A60">:admin</span>)
+<span class="line-numbers"><a href="#n2" name="n2">2</a></span>filter = <span style="color:#036;font-weight:bold">PermissionWhitelist</span>.new(example_user)
+<span class="line-numbers"><a href="#n3" name="n3">3</a></span>defn_string = <span style="color:#036;font-weight:bold">MySchema</span>.to_definition(<span style="color:#606">only</span>: filter)
+<span class="line-numbers"><a href="#n4" name="n4">4</a></span>puts defn_string
+<span class="line-numbers"><a href="#n5" name="n5">5</a></span><span style="color:#777"># =&gt; prints out the filtered schema</span>
+</pre></div>
+</div>
+</div>
+
+<p><code>Schema#to_definition</code> also accepts a context which will be passed to the filter as well, for example:</p>
+
+<div class="highlighter-coderay"><div class="CodeRay">
+  <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span>context = { <span style="color:#606">current_user</span>: example_user }
+<span class="line-numbers"><a href="#n2" name="n2">2</a></span>puts <span style="color:#036;font-weight:bold">MySchema</span>.to_definition(<span style="color:#606">only</span>: filter, <span style="color:#606">context</span>: context)
 </pre></div>
 </div>
 </div>

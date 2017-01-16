@@ -88,7 +88,7 @@
           <h1 class="guide-header">GraphQL::Pro — Installation</h1>
           <p><code>GraphQL::Pro</code> is distributed as a Ruby gem. When you buy <code>GraphQL::Pro</code>, you’ll receive credentials, which you can register with bundler:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span>bundle config gems.graphql.pro #{YOUR_CREDENTIALS}
 </pre></div>
 </div>
@@ -96,7 +96,7 @@
 
 <p>Then, you can add <code>graphql-pro</code> to your Gemfile, which a custom <code>source</code>:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span>source <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">gems.graphql.pro</span><span style="color:#710">&quot;</span></span> <span style="color:#080;font-weight:bold">do</span>
 <span class="line-numbers"><a href="#n2" name="n2">2</a></span>  gem <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">graphql-pro</span><span style="color:#710">&quot;</span></span>
 <span class="line-numbers"><a href="#n3" name="n3">3</a></span><span style="color:#080;font-weight:bold">end</span>
@@ -106,7 +106,7 @@
 
 <p>Then, install the gem with Bundler:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span>bundle install
 </pre></div>
 </div>
@@ -118,7 +118,7 @@
 
 <p>To update <code>GraphQL::Pro</code>, use Bundler:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span>bundle update graphql-pro
 </pre></div>
 </div>
@@ -136,7 +136,7 @@
 
 <p>First, get the checksum:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span># For example, to get the checksum of graphql-pro 1.0.0:
 <span class="line-numbers"><a href="#n2" name="n2">2</a></span>$ gem fetch graphql-pro -v 1.0.0 --source https://YOUR_KEY@gems.graphql.pro
 <span class="line-numbers"><a href="#n3" name="n3">3</a></span>$ ruby -rdigest/sha2 -e &quot;puts Digest::SHA512.new.hexdigest(File.read('graphql-pro-1.0.0.gem'))&quot;

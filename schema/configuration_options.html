@@ -103,7 +103,7 @@
 
 <p><code>query</code>, <code>mutation</code> and <code>subscriptions</code> are <a href="http://graphql.org/learn/schema/#the-query-and-mutation-types">root-level</a> <code>GraphQL::ObjectType</code>s.</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">QueryType</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">ObjectType</span>.define { ... }
 <span class="line-numbers"> <a href="#n2" name="n2">2</a></span><span style="color:#036;font-weight:bold">MutationType</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">ObjectType</span>.define { ... }
 <span class="line-numbers"> <a href="#n3" name="n3">3</a></span><span style="color:#036;font-weight:bold">SubscriptionType</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">ObjectType</span>.define { ... }
@@ -125,7 +125,7 @@
 
 <p>The clearest case of this is when a type implements an interface, but isn’t a return type of any other field. Since it’s not the return type of a field, it might not be found by traversal, so you can add it in <code>orphan_types</code>:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Schema</span>.define <span style="color:#080;font-weight:bold">do</span>
 <span class="line-numbers"><a href="#n2" name="n2">2</a></span>  <span style="color:#777"># ...</span>
 <span class="line-numbers"><a href="#n3" name="n3">3</a></span>  <span style="color:#777"># Make sure these types are present in the schema:</span>
@@ -149,7 +149,7 @@
 
 <p>These hooks are provided as objects that respond to <code>#call</code>, for example, a <code>Proc</code> literal:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Schema</span>.define <span style="color:#080;font-weight:bold">do</span>
 <span class="line-numbers"><a href="#n2" name="n2">2</a></span>  <span style="color:#777"># Hooks for query execution:</span>
 <span class="line-numbers"><a href="#n3" name="n3">3</a></span>  resolve_type -&gt;(obj, ctx) { ... }
@@ -173,7 +173,7 @@
 
 <p>You can specify behavior in these cases by defining a <a href="http://www.rubydoc.info/gems/graphql/Schema#type_error-instance_method" target="_blank"><code>Schema#type_error</code></a> hook:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">MySchema</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Schema</span>.define <span style="color:#080;font-weight:bold">do</span>
 <span class="line-numbers"><a href="#n2" name="n2">2</a></span>  type_error -&gt;(type_error, query_ctx) {
 <span class="line-numbers"><a href="#n3" name="n3">3</a></span>    <span style="color:#777"># Handle a failed runtime type coercion</span>
@@ -198,7 +198,7 @@
 
 <p>These options can prevent execution of malicious queries.</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Schema</span>.define <span style="color:#080;font-weight:bold">do</span>
 <span class="line-numbers"><a href="#n2" name="n2">2</a></span>  <span style="color:#777"># Prevent excessively deep or complex queries</span>
 <span class="line-numbers"><a href="#n3" name="n3">3</a></span>  max_depth <span style="color:#00D">8</span>
@@ -233,7 +233,7 @@
 
 <p>Add a middleware to a schema by calling <code>middleware</code> in <code>Schema::define</code>:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Schema</span>.define <span style="color:#080;font-weight:bold">do</span>
 <span class="line-numbers"><a href="#n2" name="n2">2</a></span>  middleware <span style="color:#036;font-weight:bold">MyMiddleware</span>.new
 <span class="line-numbers"><a href="#n3" name="n3">3</a></span><span style="color:#080;font-weight:bold">end</span>
@@ -245,7 +245,7 @@
 
 <p>This middleware only continues evaluation if the <code>current_user</code> is permitted to read the target object:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span><span style="color:#080;font-weight:bold">class</span> <span style="color:#B06;font-weight:bold">AuthorizationMiddleware</span>
 <span class="line-numbers"> <a href="#n2" name="n2">2</a></span>  <span style="color:#080;font-weight:bold">def</span> <span style="color:#06B;font-weight:bold">call</span>(parent_type, parent_object, field_definition, field_args, query_context)
 <span class="line-numbers"> <a href="#n3" name="n3">3</a></span>    current_user = query_context[<span style="color:#A60">:current_user</span>] <span style="color:#777"># passed in when creating the query</span>
@@ -264,7 +264,7 @@
 
 <p>Then, add the middleware to your schema:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Schema</span>.define <span style="color:#080;font-weight:bold">do</span>
 <span class="line-numbers"><a href="#n2" name="n2">2</a></span>  middleware <span style="color:#036;font-weight:bold">AuthorizationMiddleware</span>.new
 <span class="line-numbers"><a href="#n3" name="n3">3</a></span><span style="color:#080;font-weight:bold">end</span>
@@ -280,7 +280,7 @@
 
 <p>The minimal API is <code>.call(memo, visit_type, internal_representation_node)</code>. For example:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span>ast_node_logger = -&gt;(memo, visit_type, internal_representation_node) {
 <span class="line-numbers"><a href="#n2" name="n2">2</a></span>  <span style="color:#080;font-weight:bold">if</span> visit_type == <span style="color:#A60">:enter</span>
 <span class="line-numbers"><a href="#n3" name="n3">3</a></span>    puts <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">Visiting </span><span style="background-color:hsla(0,0%,0%,0.07);color:black"><span style="font-weight:bold;color:#666">#{</span>internal_representation_node.name<span style="font-weight:bold;color:#666">}</span></span><span style="color:#D20">!</span><span style="color:#710">&quot;</span></span>
@@ -317,7 +317,7 @@
 
 <p>For example:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span><span style="color:#080;font-weight:bold">class</span> <span style="color:#B06;font-weight:bold">CustomQueryExecutionStrategy</span>
 <span class="line-numbers"> <a href="#n2" name="n2">2</a></span>  <span style="color:#080;font-weight:bold">def</span> <span style="color:#06B;font-weight:bold">initialize</span>
 <span class="line-numbers"> <a href="#n3" name="n3">3</a></span>    <span style="color:#777"># ...</span>

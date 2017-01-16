@@ -92,7 +92,7 @@
 
 <p>To add mutations to your GraphQL schema, define a mutation type and pass it to your schema:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span><span style="color:#777"># Define the mutation type</span>
 <span class="line-numbers"> <a href="#n2" name="n2">2</a></span><span style="color:#036;font-weight:bold">MutationType</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">ObjectType</span>.define <span style="color:#080;font-weight:bold">do</span>
 <span class="line-numbers"> <a href="#n3" name="n3">3</a></span>  name <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">Mutation</span><span style="color:#710">&quot;</span></span>
@@ -118,7 +118,7 @@
 
 <p>After defining a mutation (see below), add it to your mutation type:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">MutationType</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">ObjectType</span>.define <span style="color:#080;font-weight:bold">do</span>
 <span class="line-numbers"><a href="#n2" name="n2">2</a></span>  name <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">Mutation</span><span style="color:#710">&quot;</span></span>
 <span class="line-numbers"><a href="#n3" name="n3">3</a></span>  <span style="color:#777"># Add the mutation's derived field to the mutation type</span>
@@ -139,7 +139,7 @@
 
 <p>For example:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">AddCommentMutation</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Relay</span>::<span style="color:#036;font-weight:bold">Mutation</span>.define <span style="color:#080;font-weight:bold">do</span>
 <span class="line-numbers"> <a href="#n2" name="n2">2</a></span>  <span style="color:#777"># Used to name derived types, eg `&quot;AddCommentInput&quot;`:</span>
 <span class="line-numbers"> <a href="#n3" name="n3">3</a></span>  name <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">AddComment</span><span style="color:#710">&quot;</span></span>
@@ -182,7 +182,7 @@
 
 <p>Each of these derived objects maintains a reference to the parent <code>Mutation</code> in the <code>mutation</code> attribute. So you can access it from the derived object:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#777"># Define a mutation:</span>
 <span class="line-numbers"><a href="#n2" name="n2">2</a></span><span style="color:#036;font-weight:bold">AddCommentMutation</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Relay</span>::<span style="color:#036;font-weight:bold">Mutation</span>.define { ... }
 <span class="line-numbers"><a href="#n3" name="n3">3</a></span><span style="color:#777"># Get the derived input type:</span>
@@ -212,7 +212,7 @@
 
 <p>Instead of specifying <code>return_field</code>s, you can specify a <code>return_type</code> for a mutation. This type will be used to expose the object returned from <code>resolve</code>.</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">CreateUser</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Relay</span>::<span style="color:#036;font-weight:bold">Mutation</span>.define <span style="color:#080;font-weight:bold">do</span>
 <span class="line-numbers"> <a href="#n2" name="n2">2</a></span>  return_type <span style="color:#036;font-weight:bold">UserMutationResultType</span>
 <span class="line-numbers"> <a href="#n3" name="n3">3</a></span>  <span style="color:#777"># ...</span>

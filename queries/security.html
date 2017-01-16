@@ -92,7 +92,7 @@
 
 <p>Always limit the number of items which can be returned from a list field. For example, use a <code>limit:</code> argument and make sure it’s not too big:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span>field <span style="color:#A60">:items</span>, types[<span style="color:#036;font-weight:bold">ItemType</span>] <span style="color:#080;font-weight:bold">do</span>
 <span class="line-numbers"><a href="#n2" name="n2">2</a></span>  argument <span style="color:#A60">:limit</span>, types.Int, <span style="color:#606">default_value</span>: <span style="color:#00D">20</span>
 <span class="line-numbers"><a href="#n3" name="n3">3</a></span>  resolve -&gt;(obj, args, ctx) {
@@ -111,7 +111,7 @@
 
 <p>You can apply a timeout to query execution with <code>TimeoutMiddleware</code>. For example:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">MySchema</span>.middleware &lt;&lt; <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Schema</span>::<span style="color:#036;font-weight:bold">TimeoutMiddleware</span>.new(<span style="color:#606">max_seconds</span>: <span style="color:#00D">2</span>)
 </pre></div>
 </div>
@@ -123,7 +123,7 @@
 
 <p>To log the error, pass a block to the middleware:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">MySchema</span>.middleware &lt;&lt; <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Schema</span>::<span style="color:#036;font-weight:bold">TimeoutMiddleware</span>.new(<span style="color:#606">max_seconds</span>: <span style="color:#00D">2</span>) <span style="color:#080;font-weight:bold">do</span> |err, query|
 <span class="line-numbers"><a href="#n2" name="n2">2</a></span>  <span style="color:#036;font-weight:bold">Rails</span>.logger.info(<span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">GraphQL Timeout: </span><span style="background-color:hsla(0,0%,0%,0.07);color:black"><span style="font-weight:bold;color:#666">#{</span>query.query_string<span style="font-weight:bold;color:#666">}</span></span><span style="color:#710">&quot;</span></span>)
 <span class="line-numbers"><a href="#n3" name="n3">3</a></span><span style="color:#080;font-weight:bold">end</span>
@@ -135,7 +135,7 @@
 
 <p>Fields have a “complexity” value which can be configured in their definition. It can be a constant (numeric) value, or a proc. It can be defined as a keyword <em>or</em> inside the configuration block. For example:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span><span style="color:#777"># Constant complexity:</span>
 <span class="line-numbers"> <a href="#n2" name="n2">2</a></span>field <span style="color:#A60">:top_score</span>, types.Int, <span style="color:#606">complexity</span>: <span style="color:#00D">10</span>
 <span class="line-numbers"> <a href="#n3" name="n3">3</a></span>
@@ -163,7 +163,7 @@
 
 <p>Then, define your <code>max_complexity</code> at the schema-level:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">MySchema</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Schema</span>.define <span style="color:#080;font-weight:bold">do</span>
 <span class="line-numbers"><a href="#n2" name="n2">2</a></span> <span style="color:#777"># ...</span>
 <span class="line-numbers"><a href="#n3" name="n3">3</a></span> max_complexity <span style="color:#00D">100</span>
@@ -174,7 +174,7 @@
 
 <p>Or, at the query-level, which overrides the schema-level setting:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">MySchema</span>.execute(query_string, <span style="color:#606">max_complexity</span>: <span style="color:#00D">100</span>)
 </pre></div>
 </div>
@@ -182,7 +182,7 @@
 
 <p>Using <code>nil</code> will disable the validation:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#777"># 😧 Anything goes!</span>
 <span class="line-numbers"><a href="#n2" name="n2">2</a></span><span style="color:#036;font-weight:bold">MySchema</span>.execute(query_string, <span style="color:#606">max_complexity</span>: <span style="color:#069">nil</span>)
 </pre></div>
@@ -191,7 +191,7 @@
 
 <p>To get a feeling for complexity of queries in your system, you can use the <code>QueryComplexity</code> query reducer. Hook it up to log out values from each query:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span>log_query_complexity = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Analysis</span>::<span style="color:#036;font-weight:bold">QueryComplexity</span>.new { |query, complexity| <span style="color:#036;font-weight:bold">Rails</span>.logger.info(<span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">[GraphQL Query Complexity] </span><span style="background-color:hsla(0,0%,0%,0.07);color:black"><span style="font-weight:bold;color:#666">#{</span>complexity<span style="font-weight:bold;color:#666">}</span></span><span style="color:#D20">  | staff? </span><span style="background-color:hsla(0,0%,0%,0.07);color:black"><span style="font-weight:bold;color:#666">#{</span>query.context[<span style="color:#A60">:current_user</span>].staff?<span style="font-weight:bold;color:#666">}</span></span><span style="color:#710">&quot;</span></span>)}
 <span class="line-numbers"><a href="#n2" name="n2">2</a></span><span style="color:#036;font-weight:bold">MySchema</span>.query_analyzers &lt;&lt; log_query_complexity
 </pre></div>
@@ -202,7 +202,7 @@
 
 <p>You can also reject queries based on the depth of their nesting. You can define <code>max_depth</code> at schema-level or query-level:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#777"># Schema-level:</span>
 <span class="line-numbers"><a href="#n2" name="n2">2</a></span><span style="color:#036;font-weight:bold">MySchema</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Schema</span>.define <span style="color:#080;font-weight:bold">do</span>
 <span class="line-numbers"><a href="#n3" name="n3">3</a></span>  <span style="color:#777"># ...</span>
@@ -217,7 +217,7 @@
 
 <p>You can use <code>nil</code> to disable the validation:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#777"># This query won't be validated:</span>
 <span class="line-numbers"><a href="#n2" name="n2">2</a></span><span style="color:#036;font-weight:bold">MySchema</span>.execute(query_string, <span style="color:#606">max_depth</span>: <span style="color:#069">nil</span>)
 </pre></div>
@@ -226,7 +226,7 @@
 
 <p>To get a feeling for depth of queries in your system, you can use the <code>QueryDepth</code> query reducer. Hook it up to log out values from each query:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span>log_query_depth = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Analysis</span>::<span style="color:#036;font-weight:bold">QueryDepth</span>.new { |query, depth| <span style="color:#036;font-weight:bold">Rails</span>.logger.info(<span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">[GraphQL Query Depth] </span><span style="background-color:hsla(0,0%,0%,0.07);color:black"><span style="font-weight:bold;color:#666">#{</span>depth<span style="font-weight:bold;color:#666">}</span></span><span style="color:#D20"> || staff?  </span><span style="background-color:hsla(0,0%,0%,0.07);color:black"><span style="font-weight:bold;color:#666">#{</span>query.context[<span style="color:#A60">:current_user</span>].staff?<span style="font-weight:bold;color:#666">}</span></span><span style="color:#710">&quot;</span></span>)}
 <span class="line-numbers"><a href="#n2" name="n2">2</a></span><span style="color:#036;font-weight:bold">MySchema</span>.query_analyzers &lt;&lt; log_query_depth
 </pre></div>
@@ -239,7 +239,7 @@
 
 <p>For example, you could store parsed <code>GraphQL::Language::Nodes::Document</code> objects in a cache:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span>parsed_document = <span style="color:#036;font-weight:bold">GraphQL</span>.parse(query_string)
 <span class="line-numbers"><a href="#n2" name="n2">2</a></span>operation_name = parsed_document.definitions.first.name
 <span class="line-numbers"><a href="#n3" name="n3">3</a></span><span style="color:#036;font-weight:bold">MyCache</span>.set(operation_name, parsed_document)
@@ -249,7 +249,7 @@
 
 <p>Then, later, you could fetch the document from storage and use it to run a query:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span><span style="color:#777"># later ...</span>
 <span class="line-numbers"> <a href="#n2" name="n2">2</a></span>operation_name = params[<span style="color:#A60">:operation_name</span>]
 <span class="line-numbers"> <a href="#n3" name="n3">3</a></span>document = <span style="color:#036;font-weight:bold">MyCache</span>.get(operation_name)

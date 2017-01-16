@@ -96,7 +96,7 @@
 
 <p>For example:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">PostType</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">ObjectType</span>.define <span style="color:#080;font-weight:bold">do</span>
 <span class="line-numbers"> <a href="#n2" name="n2">2</a></span>  <span style="color:#777"># `Post#comments` returns an ActiveRecord::Relation</span>
 <span class="line-numbers"> <a href="#n3" name="n3">3</a></span>  <span style="color:#777"># The GraphQL field returns a Connection</span>
@@ -112,7 +112,7 @@
 
 <p>You can also define custom arguments and a custom resolve function for connections, just like other fields:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span>connection <span style="color:#A60">:featured_comments</span>, <span style="color:#036;font-weight:bold">CommentType</span>.connection_type <span style="color:#080;font-weight:bold">do</span>
 <span class="line-numbers"> <a href="#n2" name="n2">2</a></span>  <span style="color:#777"># Add an argument:</span>
 <span class="line-numbers"> <a href="#n3" name="n3">3</a></span>  argument <span style="color:#A60">:since</span>, types.String
@@ -136,7 +136,7 @@
 
 <p>You can limit the number of results with <code>max_page_size:</code>:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span>connection <span style="color:#A60">:featured_comments</span>, <span style="color:#036;font-weight:bold">CommentType</span>.connection_type, <span style="color:#606">max_page_size</span>: <span style="color:#00D">50</span>
 </pre></div>
 </div>
@@ -146,7 +146,7 @@
 
 <p>You can customize a connection type with <code>.define_connection</code>:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span><span style="color:#777"># Make a customized connection type</span>
 <span class="line-numbers"> <a href="#n2" name="n2">2</a></span><span style="color:#036;font-weight:bold">PostConnectionWithTotalCountType</span> = <span style="color:#036;font-weight:bold">PostType</span>.define_connection <span style="color:#080;font-weight:bold">do</span>
 <span class="line-numbers"> <a href="#n3" name="n3">3</a></span>  name <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">PostConnectionWithTotalCount</span><span style="color:#710">&quot;</span></span>
@@ -164,7 +164,7 @@
 
 <p>Now, you can use <code>PostConnectionWithTotalCountType</code> to define a connection with the “totalCount” field:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">AuthorType</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">ObjectType</span>.define <span style="color:#080;font-weight:bold">do</span>
 <span class="line-numbers"><a href="#n2" name="n2">2</a></span>  <span style="color:#777"># Use the custom connection type:</span>
 <span class="line-numbers"><a href="#n3" name="n3">3</a></span>  connection <span style="color:#A60">:posts</span>, <span style="color:#036;font-weight:bold">PostConnectionWithTotalCountType</span>
@@ -175,7 +175,7 @@
 
 <p>This way, you can query your custom fields, for example:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span>{
 <span class="line-numbers"><a href="#n2" name="n2">2</a></span>  author(id: 1) {
 <span class="line-numbers"><a href="#n3" name="n3">3</a></span>    posts {
@@ -191,7 +191,7 @@
 
 <p>If you need custom fields on <code>edge</code>s, you can define an edge type and pass it to a connection:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span><span style="color:#777"># Person =&gt; Membership =&gt; Team</span>
 <span class="line-numbers"> <a href="#n2" name="n2">2</a></span><span style="color:#036;font-weight:bold">MembershipSinceEdgeType</span> = <span style="color:#036;font-weight:bold">TeamType</span>.define_edge <span style="color:#080;font-weight:bold">do</span>
 <span class="line-numbers"> <a href="#n3" name="n3">3</a></span>  name <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">MembershipSinceEdge</span><span style="color:#710">&quot;</span></span>
@@ -211,7 +211,7 @@
 
 <p>Then, pass the edge type when defining the connection type:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">TeamMembershipsConnectionType</span> = <span style="color:#036;font-weight:bold">TeamType</span>.define_connection(<span style="color:#606">edge_type</span>: <span style="color:#036;font-weight:bold">MembershipSinceEdgeType</span>) <span style="color:#080;font-weight:bold">do</span>
 <span class="line-numbers"><a href="#n2" name="n2">2</a></span>  <span style="color:#777"># Use a name so it doesn't conflict with &quot;TeamConnection&quot;</span>
 <span class="line-numbers"><a href="#n3" name="n3">3</a></span>  name <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">TeamMembershipsConnection</span><span style="color:#710">&quot;</span></span>
@@ -222,7 +222,7 @@
 
 <p>Now, you can query custom fields on the <code>edge</code>:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span>{
 <span class="line-numbers"> <a href="#n2" name="n2">2</a></span>  me {
 <span class="line-numbers"> <a href="#n3" name="n3">3</a></span>    teams {
@@ -243,7 +243,7 @@
 
 <p>For more robust custom edges, you can define a custom edge class. It will be <code>obj</code> in the edge type’s resolve function. For example, to define a membership edge:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span><span style="color:#777"># Make sure to familiarize yourself with GraphQL::Relay::Edge --</span>
 <span class="line-numbers"> <a href="#n2" name="n2">2</a></span><span style="color:#777"># you have to avoid naming conflicts here!</span>
 <span class="line-numbers"> <a href="#n3" name="n3">3</a></span><span style="color:#080;font-weight:bold">class</span> <span style="color:#B06;font-weight:bold">MembershipSinceEdge</span> &lt; <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Relay</span>::<span style="color:#036;font-weight:bold">Edge</span>
@@ -272,7 +272,7 @@
 
 <p>Then, hook it up with custom edge type and custom connection type:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span><span style="color:#777"># Person =&gt; Membership =&gt; Team</span>
 <span class="line-numbers"> <a href="#n2" name="n2">2</a></span><span style="color:#036;font-weight:bold">MembershipSinceEdgeType</span> = <span style="color:#036;font-weight:bold">BaseType</span>.define_edge <span style="color:#080;font-weight:bold">do</span>
 <span class="line-numbers"> <a href="#n3" name="n3">3</a></span>  name <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">MembershipSinceEdge</span><span style="color:#710">&quot;</span></span>
@@ -295,7 +295,7 @@
 
 <p>Maybe you need to make a connection object yourself (for example, to return a connection type from a mutation). You can create a connection object like this:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span>items = [...]     <span style="color:#777"># your collection objects</span>
 <span class="line-numbers"><a href="#n2" name="n2">2</a></span>args = {}         <span style="color:#777"># stub out arguments for this connection object</span>
 <span class="line-numbers"><a href="#n3" name="n3">3</a></span>connection_class = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Relay</span>::<span style="color:#036;font-weight:bold">BaseConnection</span>.connection_for_nodes(items)
@@ -308,7 +308,7 @@
 
 <p>For specifying a connection based on an <code>ActiveRecord::Relation</code> or <code>Sequel::Dataset</code>:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span>object = {}       <span style="color:#777"># your newly created object</span>
 <span class="line-numbers"><a href="#n2" name="n2">2</a></span>items = [...]     <span style="color:#777"># your AR or Sequel collection</span>
 <span class="line-numbers"><a href="#n3" name="n3">3</a></span>args = {}         <span style="color:#777"># stub out arguments for this connection object</span>
@@ -323,7 +323,7 @@
 
 <p>Additionally, connections may be provided with the <code>GraphQL::Field</code> that created them. This may be used for custom introspection or instrumentation. For example,</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span>  <span style="color:#036;font-weight:bold">Schema</span>.get_field(<span style="color:#036;font-weight:bold">TodoListType</span>, <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">todos</span><span style="color:#710">&quot;</span></span>)
 <span class="line-numbers"><a href="#n2" name="n2">2</a></span>  <span style="color:#777"># =&gt; #&lt;GraphQL::Field name=&quot;todos&quot;&gt;</span>
 <span class="line-numbers"><a href="#n3" name="n3">3</a></span>  context.irep_node.definitions[<span style="color:#036;font-weight:bold">TodoListType</span>]
@@ -339,7 +339,7 @@
 
 <p>First, define the custom connection:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span>require <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">set</span><span style="color:#710">&quot;</span></span> <span style="color:#777"># From Ruby's standard library</span>
 <span class="line-numbers"> <a href="#n2" name="n2">2</a></span><span style="color:#080;font-weight:bold">class</span> <span style="color:#B06;font-weight:bold">SetConnection</span> &lt; <span style="color:#036;font-weight:bold">BaseConnection</span>
 <span class="line-numbers"> <a href="#n3" name="n3">3</a></span>  <span style="color:#777"># derive a cursor from `item`</span>
@@ -365,7 +365,7 @@
 
 <p>Then, register the new connection with <code>GraphQL::Relay::BaseConnection</code>:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#777"># When exposing a `Set`, use `SetConnection`:</span>
 <span class="line-numbers"><a href="#n2" name="n2">2</a></span><span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Relay</span>::<span style="color:#036;font-weight:bold">BaseConnection</span>.register_connection_implementation(<span style="color:#036;font-weight:bold">Set</span>, <span style="color:#036;font-weight:bold">SetConnection</span>)
 </pre></div>
@@ -380,7 +380,7 @@
 
 <p>For example, to wrap a field with a connection field:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span>field = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Field</span>.new
 <span class="line-numbers"><a href="#n2" name="n2">2</a></span><span style="color:#777"># ... define the field</span>
 <span class="line-numbers"><a href="#n3" name="n3">3</a></span>connection_field = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Relay</span>::<span style="color:#036;font-weight:bold">ConnectionField</span>.create(field)
@@ -394,7 +394,7 @@
 
 <p>For example, to use URL-safe base-64 encoding:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span><span style="color:#080;font-weight:bold">module</span> <span style="color:#B06;font-weight:bold">URLSafeBase64Encoder</span>
 <span class="line-numbers"> <a href="#n2" name="n2">2</a></span>  <span style="color:#080;font-weight:bold">def</span> <span style="color:#069">self</span>.<span style="color:#06B;font-weight:bold">encode</span>(txt, <span style="color:#606">nonce</span>: <span style="color:#069">false</span>)
 <span class="line-numbers"> <a href="#n3" name="n3">3</a></span>    <span style="color:#036;font-weight:bold">Base64</span>.urlsafe_encode64(txt)

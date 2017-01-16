@@ -97,7 +97,7 @@
 
 <p>You must provide a function for generating UUIDs and fetching objects with them. In your schema, define <code>id_from_object</code> and <code>object_from_id</code>:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">MySchema</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Schema</span>.define <span style="color:#080;font-weight:bold">do</span>
 <span class="line-numbers"> <a href="#n2" name="n2">2</a></span>  id_from_object -&gt;(object, type_definition, query_ctx) {
 <span class="line-numbers"> <a href="#n3" name="n3">3</a></span>    <span style="color:#777"># Call your application's UUID method here</span>
@@ -117,7 +117,7 @@
 
 <p>An unencrypted ID generator is provided in the gem. It uses <code>Base64</code> to encode values. You can use it like this:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">MySchema</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Schema</span>.define <span style="color:#080;font-weight:bold">do</span>
 <span class="line-numbers"> <a href="#n2" name="n2">2</a></span>  <span style="color:#777"># Create UUIDs by joining the type name &amp; ID, then base64-encoding it</span>
 <span class="line-numbers"> <a href="#n3" name="n3">3</a></span>  id_from_object -&gt;(object, type_definition, query_ctx) {
@@ -146,7 +146,7 @@
 
 <p>To implement the node interface, include <code>GraphQL::Relay::Node.interface</code> in your list of interfaces:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">PostType</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">ObjectType</span>.define <span style="color:#080;font-weight:bold">do</span>
 <span class="line-numbers"><a href="#n2" name="n2">2</a></span>  name <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">Post</span><span style="color:#710">&quot;</span></span>
 <span class="line-numbers"><a href="#n3" name="n3">3</a></span>  <span style="color:#777"># Implement the &quot;Node&quot; interface for Relay</span>
@@ -159,7 +159,7 @@
 
 <p>To add a UUID field named <code>"id"</code>, use the <code>global_id_field</code> helper:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">PostType</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">ObjectType</span>.define <span style="color:#080;font-weight:bold">do</span>
 <span class="line-numbers"><a href="#n2" name="n2">2</a></span>  name <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">Post</span><span style="color:#710">&quot;</span></span>
 <span class="line-numbers"><a href="#n3" name="n3">3</a></span>  <span style="color:#777"># ...</span>
@@ -177,7 +177,7 @@
 
 <p>You should also provide a root-level <code>node</code> field so that Relay can refetch objects from your schema. It is provided as <code>GraphQL::Relay::Node.field</code>, so you can attach it like this:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">QueryType</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">ObjectType</span>.define <span style="color:#080;font-weight:bold">do</span>
 <span class="line-numbers"><a href="#n2" name="n2">2</a></span>  name <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">Query</span><span style="color:#710">&quot;</span></span>
 <span class="line-numbers"><a href="#n3" name="n3">3</a></span>  <span style="color:#777"># Used by Relay to lookup objects by UUID:</span>

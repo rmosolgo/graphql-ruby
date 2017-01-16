@@ -99,7 +99,7 @@
 
 <p>Query analyzers reuse concepts from <code>Array#reduce</code>, so let’s briefly revisit how that method works:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span>items = [<span style="color:#00D">1</span>, <span style="color:#00D">2</span>, <span style="color:#00D">3</span>, <span style="color:#00D">4</span>, <span style="color:#00D">5</span>]
 <span class="line-numbers"><a href="#n2" name="n2">2</a></span>initial_value = <span style="color:#00D">0</span>
 <span class="line-numbers"><a href="#n3" name="n3">3</a></span>reduce_result = items.reduce(initial_value) { |memo, item| memo + item }
@@ -120,7 +120,7 @@
 
 <p>A query analyzer has the same basic parts. Here’s the scaffold for an analyzer:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span><span style="color:#080;font-weight:bold">class</span> <span style="color:#B06;font-weight:bold">MyQueryAnalyzer</span>
 <span class="line-numbers"> <a href="#n2" name="n2">2</a></span>  <span style="color:#777"># Called before the visit.</span>
 <span class="line-numbers"> <a href="#n3" name="n3">3</a></span>  <span style="color:#777"># Returns the initial value for `memo`</span>
@@ -150,7 +150,7 @@
 
 <p>Query analyzers are added to the schema with <code>query_analyzer</code>, for example:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">MySchema</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Schema</span>.define <span style="color:#080;font-weight:bold">do</span>
 <span class="line-numbers"><a href="#n2" name="n2">2</a></span>  query_analyzer <span style="color:#036;font-weight:bold">MyQueryAnalyzer</span>.new
 <span class="line-numbers"><a href="#n3" name="n3">3</a></span><span style="color:#080;font-weight:bold">end</span>
@@ -169,7 +169,7 @@
 
 <p>Sometimes, you can only check permissions when you have the <em>actual</em> object. Let’s say you’re exposing documents in your API:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span>field <span style="color:#A60">:documents</span>, types[<span style="color:#036;font-weight:bold">DocumentType</span>] <span style="color:#080;font-weight:bold">do</span>
 <span class="line-numbers"><a href="#n2" name="n2">2</a></span>  resolve -&gt;(obj, args, ctx) {
 <span class="line-numbers"><a href="#n3" name="n3">3</a></span>    documents = obj.documents
@@ -184,7 +184,7 @@
 
 <p>You can “wrap” this resolve function to assert that the documents are ok for the current user:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span><span style="color:#777"># Take a resolve function and call it.</span>
 <span class="line-numbers"> <a href="#n2" name="n2">2</a></span><span style="color:#777"># Then, check that the result includes permitted records _only_.</span>
 <span class="line-numbers"> <a href="#n3" name="n3">3</a></span><span style="color:#777"># @return [Proc] a new resolve function that checks the return values</span>
@@ -217,7 +217,7 @@
 
 <p>This approach can be further parameterized by implementing it as a class, for example:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span><span style="color:#777"># Assert that the current user has `permission` on the return value of `block`</span>
 <span class="line-numbers"> <a href="#n2" name="n2">2</a></span><span style="color:#080;font-weight:bold">class</span> <span style="color:#B06;font-weight:bold">PermissionAssertion</span>
 <span class="line-numbers"> <a href="#n3" name="n3">3</a></span>  <span style="color:#777"># Get a permission level and the &quot;inner&quot; resolve function</span>

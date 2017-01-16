@@ -88,7 +88,7 @@
           <h1 class="guide-header">Queries — Executing Queries</h1>
           <p>You can execute queries with your <a href="http://www.rubydoc.info/gems/graphql/GraphQL/Schema" target="_blank"><code>GraphQL::Schema</code></a> at get a Ruby Hash as a result. For example, to execute a query from a string:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span>query_string = <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">{ ... }</span><span style="color:#710">&quot;</span></span>
 <span class="line-numbers"><a href="#n2" name="n2">2</a></span><span style="color:#036;font-weight:bold">MySchema</span>.execute(query_string)
 <span class="line-numbers"><a href="#n3" name="n3">3</a></span><span style="color:#777"># {</span>
@@ -118,7 +118,7 @@
 
 <p>For example, to provide variables to a query:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span>query_string = <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20"></span></span>
 <span class="line-numbers"> <a href="#n2" name="n2">2</a></span><span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#D20">  query getPost($postId: ID!) {</span></span>
 <span class="line-numbers"> <a href="#n3" name="n3">3</a></span><span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#D20">    post(id: $postId) {</span></span>
@@ -135,7 +135,7 @@
 
 <p>If the variable is a <a href="http://www.rubydoc.info/gems/graphql/GraphQL/InputObjectType" target="_blank"><code>GraphQL::InputObjectType</code></a>, you can provide a nested hash, for example:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span>query_string = <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20"></span></span>
 <span class="line-numbers"> <a href="#n2" name="n2">2</a></span><span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#D20">mutation createPost($postParams: PostInput!, $createdById: ID!){</span></span>
 <span class="line-numbers"> <a href="#n3" name="n3">3</a></span><span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#D20">  createPost(params: $postParams, createdById: $createdById) {</span></span>
@@ -171,7 +171,7 @@
 
 <p>Common uses for <code>context:</code> include the current user or auth token. To provide a <code>context:</code> value, pass a hash to <code>Schema#execute</code>:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span>context = {
 <span class="line-numbers"><a href="#n2" name="n2">2</a></span>  <span style="color:#606">current_user</span>: session[<span style="color:#A60">:current_user</span>],
 <span class="line-numbers"><a href="#n3" name="n3">3</a></span>  <span style="color:#606">current_organization</span>: session[<span style="color:#A60">:current_organization</span>],
@@ -184,7 +184,7 @@
 
 <p>Then, you can access those values during execution:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span>resolve -&gt;(obj, args,  ctx) {
 <span class="line-numbers"><a href="#n2" name="n2">2</a></span>  ctx[<span style="color:#A60">:current_user</span>] <span style="color:#777"># =&gt; #&lt;User id=123 ... &gt;</span>
 <span class="line-numbers"><a href="#n3" name="n3">3</a></span>  <span style="color:#777"># ...</span>
@@ -199,7 +199,7 @@
 
 <p>You can provide a root <code>obj</code> value with <code>root_value:</code>. For example, to base the query off of the current organization:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span>current_org = session[<span style="color:#A60">:current_organization</span>]
 <span class="line-numbers"><a href="#n2" name="n2">2</a></span><span style="color:#036;font-weight:bold">MySchema</span>.execute(query_string, <span style="color:#606">root_value</span>: current_org)
 </pre></div>
@@ -208,7 +208,7 @@
 
 <p>That value will be provided to root-level fields, such as mutation fields. For example:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">MutationType</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">ObjectType</span>.define <span style="color:#080;font-weight:bold">do</span>
 <span class="line-numbers"> <a href="#n2" name="n2">2</a></span>  name <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">Mutation</span><span style="color:#710">&quot;</span></span>
 <span class="line-numbers"> <a href="#n3" name="n3">3</a></span>  field <span style="color:#A60">:createPost</span>, types.Post <span style="color:#080;font-weight:bold">do</span>

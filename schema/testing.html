@@ -100,7 +100,7 @@
 
 <p>For example, consider a field which calculates its own value:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">PostType</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">ObjectType</span>.define <span style="color:#080;font-weight:bold">do</span>
 <span class="line-numbers"> <a href="#n2" name="n2">2</a></span>  <span style="color:#777"># ...</span>
 <span class="line-numbers"> <a href="#n3" name="n3">3</a></span>  field <span style="color:#A60">:isTrending</span>, types.Boolean <span style="color:#080;font-weight:bold">do</span>
@@ -116,7 +116,7 @@
 
 <p>You can refactor this by creating a new class and applying it to your GraphQL schema:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span><span style="color:#777"># app/models/post/trending.rb</span>
 <span class="line-numbers"> <a href="#n2" name="n2">2</a></span><span style="color:#080;font-weight:bold">class</span> <span style="color:#B06;font-weight:bold">Post</span>
 <span class="line-numbers"> <a href="#n3" name="n3">3</a></span>  <span style="color:#080;font-weight:bold">class</span> <span style="color:#B06;font-weight:bold">Trending</span>
@@ -149,7 +149,7 @@
 
 <p>This is an improvement because your behavior is not coupled to your GraphQL schema. Besides that, it’s easier to test: you can simply unit test the calculation class. For example:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span><span style="color:#777"># app/models/post/trending_spec.rb</span>
 <span class="line-numbers"> <a href="#n2" name="n2">2</a></span>describe <span style="color:#036;font-weight:bold">Post</span>::<span style="color:#036;font-weight:bold">Trending</span> <span style="color:#080;font-weight:bold">do</span>
 <span class="line-numbers"> <a href="#n3" name="n3">3</a></span>  let(<span style="color:#A60">:post</span>) { create(<span style="color:#A60">:post</span>) }
@@ -185,7 +185,7 @@
 
 <p>Access a type by name from the schema with <code>GraphQL::Schema#types</code>:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span>post = <span style="color:#036;font-weight:bold">MySchema</span>.types[<span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">Post</span><span style="color:#710">&quot;</span></span>] <span style="color:#777"># =&gt; PostType</span>
 <span class="line-numbers"><a href="#n2" name="n2">2</a></span>post.fields                   <span style="color:#777"># =&gt; {&quot;id&quot; =&gt; &lt;GraphQL::Field&gt;, ... }</span>
 <span class="line-numbers"><a href="#n3" name="n3">3</a></span>post.fields.keys              <span style="color:#777"># =&gt; [&quot;id&quot;, &quot;title&quot;, &quot;body&quot;, &quot;author&quot;, &quot;comments&quot;]</span>
@@ -199,7 +199,7 @@
 
 <p>You can get a type’s fields from the <code>GraphQL::ObjectType#fields</code> hash. For example:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span>post_type = <span style="color:#036;font-weight:bold">MySchema</span>.types[<span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">Post</span><span style="color:#710">&quot;</span></span>]
 <span class="line-numbers"><a href="#n2" name="n2">2</a></span>title_field = post_type.fields[<span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">title</span><span style="color:#710">&quot;</span></span>] <span style="color:#777">#=&gt; &lt;GraphQL::Field&gt;</span>
 <span class="line-numbers"><a href="#n3" name="n3">3</a></span>title_field.name <span style="color:#777">#=&gt; &quot;title&quot;</span>
@@ -209,7 +209,7 @@
 
 <p>You can test a resolve function by calling <code>GraphQL::Field#resolve</code>:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#777"># Because this field doesn't use context or variables, simply pass `nil`</span>
 <span class="line-numbers"><a href="#n2" name="n2">2</a></span>post = <span style="color:#036;font-weight:bold">Post</span>.new(<span style="color:#606">title</span>: <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">Welcome to my blog</span><span style="color:#710">&quot;</span></span>)
 <span class="line-numbers"><a href="#n3" name="n3">3</a></span>name_field.resolve(post, <span style="color:#069">nil</span>, <span style="color:#069">nil</span>) <span style="color:#777">#=&gt; &quot;Welcome to my blog&quot;</span>
@@ -233,7 +233,7 @@
 
 <p><code>GraphQL::BaseType#unwrap</code> may also be helpful. It returns the “inner-most” type. For example:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span>required_list_of_strings = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">NonNullType</span>.new(
 <span class="line-numbers"><a href="#n2" name="n2">2</a></span>  <span style="color:#606">of_type</span>: <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">ListType</span>.new(
 <span class="line-numbers"><a href="#n3" name="n3">3</a></span>    <span style="color:#606">of_type</span>: <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">STRING_TYPE</span>
@@ -251,7 +251,7 @@
 
 <p>You can execute queries on your schema in a test. For example, you can set it up like this:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span>describe <span style="color:#036;font-weight:bold">MySchema</span> <span style="color:#080;font-weight:bold">do</span>
 <span class="line-numbers"> <a href="#n2" name="n2">2</a></span>  <span style="color:#777"># You can override `context` or `variables` in</span>
 <span class="line-numbers"> <a href="#n3" name="n3">3</a></span>  <span style="color:#777"># more specific scopes</span>

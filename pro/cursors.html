@@ -100,7 +100,7 @@
 
 <p>To solve this bug, we should use a <em>value</em> to page through items (instead of <em>offset</em>). For example, if items are ordered by <code>id</code>, use the <code>id</code> for pagination:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span>LIMIT <span style="color:#00D">10</span>                      <span style="color:#777">-- page 1</span>
 <span class="line-numbers"><a href="#n2" name="n2">2</a></span><span style="color:#080;font-weight:bold">WHERE</span> id &gt; :last_id LIMIT <span style="color:#00D">10</span>  <span style="color:#777">-- page 2</span>
 </pre></div>
@@ -126,7 +126,7 @@
 
 <p>If you’re also switching to <a href="/graphql-ruby/pro/encoders">encrypted cursors</a>, you’ll need a <a href="/graphql-ruby/pro/encoders#versioning">versioned encoder</a>, too. This way, <em>both</em> unencrypted <em>and</em> encrypted cursors will be accepted! For example:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span><span style="color:#777"># Define an encrypted encoder for use with cursors:</span>
 <span class="line-numbers"> <a href="#n2" name="n2">2</a></span><span style="color:#036;font-weight:bold">EncryptedCursorEncoder</span> = <span style="color:#036;font-weight:bold">MyEncoder</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Pro</span>::<span style="color:#036;font-weight:bold">Encoder</span>.define <span style="color:#080;font-weight:bold">do</span>
 <span class="line-numbers"> <a href="#n3" name="n3">3</a></span>  key(<span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">f411f30495fe688cb349d...</span><span style="color:#710">&quot;</span></span>)
@@ -154,7 +154,7 @@
 
 <p>If you don’t want <code>GraphQL::Pro</code>’s new cursor behavior, re-register the offset-based <code>RelationConnection</code>:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">MySchema</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Schema</span>.define { ... }
 <span class="line-numbers"><a href="#n2" name="n2">2</a></span><span style="color:#777"># Always use the offset-based connection, override `GraphQL::Pro::RelationConnection`</span>
 <span class="line-numbers"><a href="#n3" name="n3">3</a></span><span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Relay</span>::<span style="color:#036;font-weight:bold">BaseConnection</span>.register_connection_implementation(

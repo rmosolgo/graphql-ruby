@@ -101,7 +101,7 @@
 
 <p>For example, you could add <code>errors</code> to <code>PostType</code>:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">PostType</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">ObjectType</span>.define <span style="color:#080;font-weight:bold">do</span>
 <span class="line-numbers"><a href="#n2" name="n2">2</a></span>  name <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">Post</span><span style="color:#710">&quot;</span></span>
 <span class="line-numbers"><a href="#n3" name="n3">3</a></span>  field <span style="color:#A60">:title</span>, types.String
@@ -116,7 +116,7 @@
 
 <p>Then, when creating a post, return the <code>Post</code>, even if the save failed:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span>resolve -&gt;(obj, args, ctx) {
 <span class="line-numbers"><a href="#n2" name="n2">2</a></span>  post = <span style="color:#036;font-weight:bold">Post</span>.new(args[<span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">post</span><span style="color:#710">&quot;</span></span>].to_h)
 <span class="line-numbers"><a href="#n3" name="n3">3</a></span>  <span style="color:#777"># Maybe this fails, no big deal:</span>
@@ -129,7 +129,7 @@
 
 <p>Then, when clients create a post, they should check the <code>errors</code> field to see if it was successful:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span>mutation {
 <span class="line-numbers"><a href="#n2" name="n2">2</a></span>  createPost(post: {title: &quot;GraphQL is Nice&quot;}) {
 <span class="line-numbers"><a href="#n3" name="n3">3</a></span>    id
@@ -149,7 +149,7 @@
 
 <p>A GraphQL response may have an <code>"errors"</code> key, for example:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">Schema</span>.execute(query_string)
 <span class="line-numbers"><a href="#n2" name="n2">2</a></span><span style="color:#777"># {</span>
 <span class="line-numbers"><a href="#n3" name="n3">3</a></span><span style="color:#777">#   &quot;errors&quot; =&gt; [</span>
@@ -162,7 +162,7 @@
 
 <p>You can add an error to the <code>"errors"</code> key by returning a <a href="http://www.rubydoc.info/gems/graphql/GraphQL/ExecutionError" target="_blank"><code>GraphQL::ExecutionError</code></a> from a <code>resolve</code> function. For example:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span>resolve -&gt;(obj, args, ctx) {
 <span class="line-numbers"> <a href="#n2" name="n2">2</a></span>  post_params = args[<span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">post</span><span style="color:#710">&quot;</span></span>].to_h
 <span class="line-numbers"> <a href="#n3" name="n3">3</a></span>  <span style="color:#080;font-weight:bold">if</span> obj.posts.create(post_params)
@@ -179,7 +179,7 @@
 
 <p>If some part of your <code>resolve</code> function would raise an error, you can rescue it and return a <a href="http://www.rubydoc.info/gems/graphql/GraphQL/ExecutionError" target="_blank"><code>GraphQL::ExecutionError</code></a> instead:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span>resolve -&gt;(obj, args, ctx) {
 <span class="line-numbers"> <a href="#n2" name="n2">2</a></span>  post_params = args[<span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">post</span><span style="color:#710">&quot;</span></span>].to_h
 <span class="line-numbers"> <a href="#n3" name="n3">3</a></span>  <span style="color:#080;font-weight:bold">begin</span>
@@ -199,7 +199,7 @@
 
 <p>If you don’t want to <code>begin ... rescue ... end</code> in every field, you can wrap <code>resolve</code> functions in error handling. For example, you could make an object that wraps another resolver:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span><span style="color:#777"># Wrap field resolver `resolve_func` with a handler for `error_superclass`.</span>
 <span class="line-numbers"> <a href="#n2" name="n2">2</a></span><span style="color:#777"># `RescueFrom` instances are valid field resolvers too.</span>
 <span class="line-numbers"> <a href="#n3" name="n3">3</a></span><span style="color:#080;font-weight:bold">class</span> <span style="color:#B06;font-weight:bold">RescueFrom</span>
@@ -223,7 +223,7 @@
 
 <p>Then, apply it to fields on an opt-in basis:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span>field <span style="color:#A60">:create_post</span>, <span style="color:#036;font-weight:bold">PostType</span> <span style="color:#080;font-weight:bold">do</span>
 <span class="line-numbers"><a href="#n2" name="n2">2</a></span>  <span style="color:#777"># Wrap the resolve function with `RescueFrom.new(err_class, ...)`</span>
 <span class="line-numbers"><a href="#n3" name="n3">3</a></span>  resolve <span style="color:#036;font-weight:bold">RescueFrom</span>.new(<span style="color:#036;font-weight:bold">ActiveRecord</span>::<span style="color:#036;font-weight:bold">RecordInvalid</span>, -&gt;(obj, args, ctx) { ... })

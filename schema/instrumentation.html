@@ -92,7 +92,7 @@
 
 <p>Field instrumentation can be attached during schema definition:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">MySchema</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Schema</span>.define <span style="color:#080;font-weight:bold">do</span>
 <span class="line-numbers"><a href="#n2" name="n2">2</a></span>  instrument(<span style="color:#A60">:field</span>, <span style="color:#036;font-weight:bold">FieldTimerInstrumentation</span>.new)
 <span class="line-numbers"><a href="#n3" name="n3">3</a></span><span style="color:#080;font-weight:bold">end</span>
@@ -104,7 +104,7 @@
 
 <p>Here’s an example field instrumenter:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span><span style="color:#080;font-weight:bold">class</span> <span style="color:#B06;font-weight:bold">FieldTimerInstrumentation</span>
 <span class="line-numbers"> <a href="#n2" name="n2">2</a></span>  <span style="color:#777"># If a field was flagged to be timed,</span>
 <span class="line-numbers"> <a href="#n3" name="n3">3</a></span>  <span style="color:#777"># wrap its resolve proc with a timer.</span>
@@ -139,7 +139,7 @@
 
 <p>Query instrumentation can be attached during schema definition:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">MySchema</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Schema</span>.define <span style="color:#080;font-weight:bold">do</span>
 <span class="line-numbers"><a href="#n2" name="n2">2</a></span>  instrument(<span style="color:#A60">:query</span>, <span style="color:#036;font-weight:bold">QueryTimerInstrumentation</span>)
 <span class="line-numbers"><a href="#n3" name="n3">3</a></span><span style="color:#080;font-weight:bold">end</span>
@@ -149,7 +149,7 @@
 
 <p>The instrumenter must implement <code>#before_query(query)</code> and <code>#after_query(query)</code>. The return values of these methods are not used. They receive the <a href="http://www.rubydoc.info/gems/graphql/GraphQL/Query" target="_blank"><code>GraphQL::Query</code></a> instance.</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span><span style="color:#080;font-weight:bold">module</span> <span style="color:#B06;font-weight:bold">MyQueryInstrumentation</span>
 <span class="line-numbers"> <a href="#n2" name="n2">2</a></span>  module_function
 <span class="line-numbers"> <a href="#n3" name="n3">3</a></span>

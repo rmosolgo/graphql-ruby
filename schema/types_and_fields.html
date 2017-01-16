@@ -115,7 +115,7 @@
   <li>
     <p><strong>By value</strong>. Pass a variable which holds the type.</p>
 
-    <div><div class="CodeRay">
+    <div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#777"># constant</span>
 <span class="line-numbers"><a href="#n2" name="n2">2</a></span>field <span style="color:#A60">:team</span>, <span style="color:#036;font-weight:bold">TeamType</span>
 <span class="line-numbers"><a href="#n3" name="n3">3</a></span><span style="color:#777"># local variable</span>
@@ -127,7 +127,7 @@
   <li>
     <p><strong>By proc</strong>, which will be lazy-evaluated to look up a type.</p>
 
-    <div><div class="CodeRay">
+    <div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span>field <span style="color:#A60">:team</span>, -&gt; { <span style="color:#036;font-weight:bold">TeamType</span> }
 <span class="line-numbers"><a href="#n2" name="n2">2</a></span>field <span style="color:#A60">:stadium</span>, -&gt; { <span style="color:#036;font-weight:bold">LookupTypeForModel</span>.lookup(<span style="color:#036;font-weight:bold">Stadium</span>) }
 </pre></div>
@@ -140,7 +140,7 @@
 
 <p><a href="http://www.rubydoc.info/gems/graphql/GraphQL/ObjectType" target="_blank"><code>GraphQL::ObjectType</code></a>s and <a href="http://www.rubydoc.info/gems/graphql/GraphQL/InterfaceType" target="_blank"><code>GraphQL::InterfaceType</code></a>s may expose their values with <em>fields</em>. A field definition looks like this:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">PostType</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">ObjectType</span>.define <span style="color:#080;font-weight:bold">do</span>
 <span class="line-numbers"><a href="#n2" name="n2">2</a></span>  <span style="color:#777"># ...</span>
 <span class="line-numbers"><a href="#n3" name="n3">3</a></span>  <span style="color:#777">#     name  , type        , description (optional)</span>
@@ -154,7 +154,7 @@
 
 <p>You can define a different resolution by providing a <code>resolve</code> function:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">PostType</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">ObjectType</span>.define <span style="color:#080;font-weight:bold">do</span>
 <span class="line-numbers"> <a href="#n2" name="n2">2</a></span>  <span style="color:#777"># ...</span>
 <span class="line-numbers"> <a href="#n3" name="n3">3</a></span>  <span style="color:#777">#     name   , type        , description (optional)</span>
@@ -180,7 +180,7 @@
 
 <p>In fact, the <code>field do ... end</code> block is passed to <a href="http://www.rubydoc.info/gems/graphql/GraphQL/Field" target="_blank"><code>GraphQL::Field</code></a>’s <code>.define</code> method, so you can define many things there:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span>field <span style="color:#080;font-weight:bold">do</span>
 <span class="line-numbers"><a href="#n2" name="n2">2</a></span>  name <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">teaser</span><span style="color:#710">&quot;</span></span>
 <span class="line-numbers"><a href="#n3" name="n3">3</a></span>  type types.String
@@ -199,7 +199,7 @@
 
 <p>Arguments are defined with the <code>argument</code> helper:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span>field <span style="color:#A60">:search_posts</span>, types[<span style="color:#036;font-weight:bold">PostType</span>] <span style="color:#080;font-weight:bold">do</span>
 <span class="line-numbers"> <a href="#n2" name="n2">2</a></span>  argument <span style="color:#A60">:category</span>, types.String
 <span class="line-numbers"> <a href="#n3" name="n3">3</a></span>  resolve -&gt;(obj, args, ctx) {
@@ -218,7 +218,7 @@
 
 <p>Use <code>!</code> to mark an argument as <em>required</em>:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#777"># This argument is a required string:</span>
 <span class="line-numbers"><a href="#n2" name="n2">2</a></span>argument <span style="color:#A60">:category</span>, !types.String
 </pre></div>
@@ -237,7 +237,7 @@
 
 <p>The <code>args</code> parameter of a <code>resolve</code> function will always be a <code>&lt;a href="http://www.rubydoc.info/gems/graphql/GraphQL/Query/Arguments" target="_blank"&gt;&lt;code&gt;GraphQL::Query::Arguments&lt;/code&gt;&lt;/a&gt;</code>. You can access specific arguments with <code>["arg_name"]</code> or <code>[:arg_name]</code>. You recursively turn it into a Ruby Hash with <code>to_h</code>. Inside <code>args</code>, scalars will be parsed into Ruby values and enums will be converted to their <code>value:</code> (if one was provided).</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span>resolve -&gt;(obj, args, ctx) {
 <span class="line-numbers"><a href="#n2" name="n2">2</a></span>  args[<span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">category</span><span style="color:#710">&quot;</span></span>] == args[<span style="color:#A60">:category</span>]
 <span class="line-numbers"><a href="#n3" name="n3">3</a></span>  <span style="color:#777"># =&gt; true</span>
@@ -255,7 +255,7 @@
 
 <p>First, make a custom definition:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">ObjectType</span>.accepts_definitions <span style="color:#606">resolves_to_class_names</span>: <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Define</span>.assign_metadata_key(<span style="color:#A60">:resolves_to_class_names</span>)
 <span class="line-numbers"><a href="#n2" name="n2">2</a></span><span style="color:#777"># or:</span>
 <span class="line-numbers"><a href="#n3" name="n3">3</a></span><span style="color:#777"># GraphQL::Field.accepts_definitions(...)</span>
@@ -266,7 +266,7 @@
 
 <p>Then, use the custom definition:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">Post</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">ObjectType</span>.define <span style="color:#080;font-weight:bold">do</span>
 <span class="line-numbers"><a href="#n2" name="n2">2</a></span>  <span style="color:#777"># ...</span>
 <span class="line-numbers"><a href="#n3" name="n3">3</a></span>  resolves_to_class_names [<span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">Post</span><span style="color:#710">&quot;</span></span>, <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">StaffUpdate</span><span style="color:#710">&quot;</span></span>]
@@ -277,7 +277,7 @@
 
 <p>Access <code>type.metadata</code> later:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">MySchema</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Schema</span>.define <span style="color:#080;font-weight:bold">do</span>
 <span class="line-numbers"> <a href="#n2" name="n2">2</a></span>  <span style="color:#777"># ...</span>
 <span class="line-numbers"> <a href="#n3" name="n3">3</a></span>  <span style="color:#777"># Use the type's declared `resolves_to_class_names`</span>

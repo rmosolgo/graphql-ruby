@@ -99,7 +99,7 @@
 
 <p>To use authorization, specify an authorization strategy in your schema:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">MySchema</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Schema</span>.define <span style="color:#080;font-weight:bold">do</span>
 <span class="line-numbers"><a href="#n2" name="n2">2</a></span>  <span style="color:#777"># ...</span>
 <span class="line-numbers"><a href="#n3" name="n3">3</a></span>  authorization <span style="color:#A60">:pundit</span>
@@ -115,7 +115,7 @@
 
 <p>Then, provide a <code>current_user:</code> in your execution context:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#777"># Authenticate somehow:</span>
 <span class="line-numbers"><a href="#n2" name="n2">2</a></span>current_user = <span style="color:#036;font-weight:bold">User</span>.find(session[<span style="color:#A60">:current_user_id</span>])
 <span class="line-numbers"><a href="#n3" name="n3">3</a></span><span style="color:#777"># Then pass the user as `current_user:`</span>
@@ -132,7 +132,7 @@
 
 <p>You can specify a permission at <strong>field-level</strong>, for example:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#777"># Only allow access to this `balance` if current user is the owner:</span>
 <span class="line-numbers"><a href="#n2" name="n2">2</a></span>field <span style="color:#A60">:balance</span>, <span style="color:#036;font-weight:bold">AccountBalanceType</span>, <span style="color:#606">authorize</span>: <span style="color:#A60">:owner</span>
 <span class="line-numbers"><a href="#n3" name="n3">3</a></span>
@@ -147,7 +147,7 @@
 
 <p>Also, you can specify authentication at <strong>type-level</strong>, for example:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">AccountBalanceType</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">ObjectType</span>.define <span style="color:#080;font-weight:bold">do</span>
 <span class="line-numbers"><a href="#n2" name="n2">2</a></span>  name <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">AccountBalance</span><span style="color:#710">&quot;</span></span>
 <span class="line-numbers"><a href="#n3" name="n3">3</a></span>  <span style="color:#777"># Only billing administrators can see</span>
@@ -178,7 +178,7 @@
 
 <p>The <code>view</code> keyword specifies visibility permission:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span><span style="color:#777"># These types and fields are</span>
 <span class="line-numbers"> <a href="#n2" name="n2">2</a></span><span style="color:#777"># invisible to non-admins:</span>
 <span class="line-numbers"> <a href="#n3" name="n3">3</a></span>
@@ -197,7 +197,7 @@
 
 <p>The <code>access</code> keyword specifies accessibility permission:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span><span style="color:#777"># Non-owners may _see_ these,</span>
 <span class="line-numbers"> <a href="#n2" name="n2">2</a></span><span style="color:#777"># but they may not request them:</span>
 <span class="line-numbers"> <a href="#n3" name="n3">3</a></span>field <span style="color:#A60">:telephone_number</span>, types.String, <span style="color:#606">access</span>: <span style="color:#A60">:owner</span>
@@ -213,7 +213,7 @@
 
 <p>When a user requests access to an unpermitted field, GraphQL returns an error message. You can customize this error message by providing an <code>unauthorized_fields</code> hook:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">MySchema</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Schema</span>.define <span style="color:#080;font-weight:bold">do</span>
 <span class="line-numbers"><a href="#n2" name="n2">2</a></span>  <span style="color:#777"># ...</span>
 <span class="line-numbers"><a href="#n3" name="n3">3</a></span>  unauthorized_fields -&gt;(irep_nodes, ctx) {
@@ -235,7 +235,7 @@
 
 <p>You can choose a built-in strategy or provide custom logic by providing a class:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">MySchema</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Schema</span>.define <span style="color:#080;font-weight:bold">do</span>
 <span class="line-numbers"><a href="#n2" name="n2">2</a></span>  <span style="color:#777"># choose one:</span>
 <span class="line-numbers"><a href="#n3" name="n3">3</a></span>  authorization(<span style="color:#A60">:pundit</span>)
@@ -252,7 +252,7 @@
 
 <p>A custom strategy class must implement <code>#initialize(ctx)</code> and <code>#allowed?(gate, object)</code>. For example:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span><span style="color:#080;font-weight:bold">class</span> <span style="color:#B06;font-weight:bold">MyAuthStrategy</span>
 <span class="line-numbers"> <a href="#n2" name="n2">2</a></span>  <span style="color:#080;font-weight:bold">def</span> <span style="color:#06B;font-weight:bold">initialize</span>(ctx)
 <span class="line-numbers"> <a href="#n3" name="n3">3</a></span>    <span style="color:#33B">@user</span> = ctx[<span style="color:#A60">:custom_user</span>]
@@ -299,7 +299,7 @@
 
 <p><code>GraphQL::Pro</code> includes built-in support for <a href="https://github.com/elabs/pundit">Pundit</a>:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">MySchema</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Schema</span>.define <span style="color:#080;font-weight:bold">do</span>
 <span class="line-numbers"><a href="#n2" name="n2">2</a></span>  authorize(<span style="color:#A60">:pundit</span>)
 <span class="line-numbers"><a href="#n3" name="n3">3</a></span><span style="color:#080;font-weight:bold">end</span>
@@ -316,7 +316,7 @@
 
 <p>You can also specify a custom policy name. Use the <code>pundit_policy_name:</code> option, for example:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span><span style="color:#777"># A pundit policy:</span>
 <span class="line-numbers"> <a href="#n2" name="n2">2</a></span><span style="color:#080;font-weight:bold">class</span> <span style="color:#B06;font-weight:bold">TotalBalancePolicy</span>
 <span class="line-numbers"> <a href="#n3" name="n3">3</a></span>  <span style="color:#080;font-weight:bold">def</span> <span style="color:#06B;font-weight:bold">initialize</span>(user, obj)
@@ -336,7 +336,7 @@
 
 <p>For <code>:pundit</code>, methods will be called with an extra <code>?</code>, so</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#606">view</span>: <span style="color:#A60">:viewer</span>
 <span class="line-numbers"><a href="#n2" name="n2">2</a></span><span style="color:#777"># =&gt; will call the policy's `#viewer?` method</span>
 </pre></div>
@@ -347,7 +347,7 @@
 
 <p><code>GraphQL::Pro</code> includes built-in support for <a href="https://github.com/CanCanCommunity/cancancan">CanCan</a>:</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">MySchema</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Schema</span>.define <span style="color:#080;font-weight:bold">do</span>
 <span class="line-numbers"><a href="#n2" name="n2">2</a></span>  authorize(<span style="color:#A60">:cancan</span>)
 <span class="line-numbers"><a href="#n3" name="n3">3</a></span><span style="color:#080;font-weight:bold">end</span>
@@ -357,7 +357,7 @@
 
 <p>GraphQL will initialize your <code>Ability</code> class at the beginning of the query and pass permissions to the <code>#can?</code> method.</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span>field <span style="color:#A60">:phone_number</span>, <span style="color:#036;font-weight:bold">PhoneNumberType</span>, <span style="color:#606">authorize</span>: <span style="color:#A60">:view</span>
 <span class="line-numbers"><a href="#n2" name="n2">2</a></span><span style="color:#777"># =&gt; calls `can?(:view, phone_number)`</span>
 </pre></div>
@@ -366,7 +366,7 @@
 
 <p>For compile-time checks (<code>view</code> and <code>access</code>), the object is always <code>nil</code>.</p>
 
-<div><div class="CodeRay">
+<div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span>field <span style="color:#A60">:social_security_number</span>, types.String, <span style="color:#606">view</span>: <span style="color:#A60">:admin</span>
 <span class="line-numbers"><a href="#n2" name="n2">2</a></span><span style="color:#777"># =&gt; calls `can?(:admin, nil)`</span>
 </pre></div>
