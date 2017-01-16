@@ -246,3 +246,13 @@ For compile-time checks (`view` and `access`), the object is always `nil`.
 field :social_security_number, types.String, view: :admin
 # => calls `can?(:admin, nil)`
 ```
+
+### Custom Ability Class
+
+By default, GraphQL looks for a top-level `Ability` class. You can specify a different class with the `ability_class:` option. For example:
+
+```ruby
+authorize(:cancan, ability_class: Permissions::CustomAbility)
+```
+
+Now, GraphQL will use `Permissions::CustomAbility#can?` to determine permissions.
