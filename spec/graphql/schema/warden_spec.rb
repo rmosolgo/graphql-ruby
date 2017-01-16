@@ -567,4 +567,28 @@ describe GraphQL::Schema::Warden do
       }
     end
   end
+
+  describe "default_mask" do
+    let(:default_mask) {
+      -> (member, ctx) { member.metadata[:hidden_enum_value] }
+    }
+    let(:schema) {
+      MaskHelpers::Schema.redefine(default_mask: default_mask)
+    }
+    let(:query_str) { <<-GRAPHQL
+      {
+        enum: __type(name: "Manner") { enumValues { name } }
+        input: __type(name: "WithinInput") { name }
+      }
+    GRAPHQL
+    }
+
+    it "is additive with query filters" do
+      query_except = -> (member, ctx) { member.metadata[:hidden_input_object_type] }
+      res = schema.execute(query_str, except: query_except)
+      assert_equal nil, res["data"]["input"]
+      enum_values = res["data"]["enum"]["enumValues"].map { |v| v["name"] }
+      refute_includes enum_values, "TRILL"
+    end
+  end
 end
