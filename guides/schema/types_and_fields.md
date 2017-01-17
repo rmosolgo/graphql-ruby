@@ -129,7 +129,7 @@ Only certain types are valid for arguments:
 - {{ "GraphQL::NonNullType" | api_doc }}s of a valid input type
 
 
-The `args` parameter of a `resolve` function will always be a `{{ "GraphQL::Query::Arguments" | api_doc }}`. You can access specific arguments with `["arg_name"]` or `[:arg_name]`. You recursively turn it into a Ruby Hash with `to_h`. Inside `args`, scalars will be parsed into Ruby values and enums will be converted to their `value:` (if one was provided).
+The `args` parameter of a `resolve` function will always be a {{ "GraphQL::Query::Arguments" | api_doc }}. You can access specific arguments with `["arg_name"]` or `[:arg_name]`. You recursively turn it into a Ruby Hash with `to_h`. Inside `args`, scalars will be parsed into Ruby values and enums will be converted to their `value:` (if one was provided).
 
 ```ruby
 resolve ->(obj, args, ctx) {
