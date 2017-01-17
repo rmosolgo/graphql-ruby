@@ -235,7 +235,7 @@
   <li><a href="http://www.rubydoc.info/gems/graphql/GraphQL/NonNullType" target="_blank"><code>GraphQL::NonNullType</code></a>s of a valid input type</li>
 </ul>
 
-<p>The <code>args</code> parameter of a <code>resolve</code> function will always be a <code>&lt;a href="http://www.rubydoc.info/gems/graphql/GraphQL/Query/Arguments" target="_blank"&gt;&lt;code&gt;GraphQL::Query::Arguments&lt;/code&gt;&lt;/a&gt;</code>. You can access specific arguments with <code>["arg_name"]</code> or <code>[:arg_name]</code>. You recursively turn it into a Ruby Hash with <code>to_h</code>. Inside <code>args</code>, scalars will be parsed into Ruby values and enums will be converted to their <code>value:</code> (if one was provided).</p>
+<p>The <code>args</code> parameter of a <code>resolve</code> function will always be a <a href="http://www.rubydoc.info/gems/graphql/GraphQL/Query/Arguments" target="_blank"><code>GraphQL::Query::Arguments</code></a>. You can access specific arguments with <code>["arg_name"]</code> or <code>[:arg_name]</code>. You recursively turn it into a Ruby Hash with <code>to_h</code>. Inside <code>args</code>, scalars will be parsed into Ruby values and enums will be converted to their <code>value:</code> (if one was provided).</p>
 
 <div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span>resolve -&gt;(obj, args, ctx) {

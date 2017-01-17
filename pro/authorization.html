@@ -301,7 +301,7 @@
 
 <div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">MySchema</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Schema</span>.define <span style="color:#080;font-weight:bold">do</span>
-<span class="line-numbers"><a href="#n2" name="n2">2</a></span>  authorize(<span style="color:#A60">:pundit</span>)
+<span class="line-numbers"><a href="#n2" name="n2">2</a></span>  authorization(<span style="color:#A60">:pundit</span>)
 <span class="line-numbers"><a href="#n3" name="n3">3</a></span><span style="color:#080;font-weight:bold">end</span>
 </pre></div>
 </div>
@@ -349,7 +349,7 @@
 
 <div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">MySchema</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Schema</span>.define <span style="color:#080;font-weight:bold">do</span>
-<span class="line-numbers"><a href="#n2" name="n2">2</a></span>  authorize(<span style="color:#A60">:cancan</span>)
+<span class="line-numbers"><a href="#n2" name="n2">2</a></span>  authorization(<span style="color:#A60">:cancan</span>)
 <span class="line-numbers"><a href="#n3" name="n3">3</a></span><span style="color:#080;font-weight:bold">end</span>
 </pre></div>
 </div>
@@ -372,6 +372,20 @@
 </pre></div>
 </div>
 </div>
+
+<h3 id="custom-ability-class">Custom Ability Class</h3>
+
+<p>By default, GraphQL looks for a top-level <code>Ability</code> class. You can specify a different class with the <code>ability_class:</code> option. For example:</p>
+
+<div class="highlighter-coderay"><div class="CodeRay">
+  <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">MySchema</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Schema</span>.define <span style="color:#080;font-weight:bold">do</span>
+<span class="line-numbers"><a href="#n2" name="n2">2</a></span>  authorization(<span style="color:#A60">:cancan</span>, <span style="color:#606">ability_class</span>: <span style="color:#036;font-weight:bold">Permissions</span>::<span style="color:#036;font-weight:bold">CustomAbility</span>)
+<span class="line-numbers"><a href="#n3" name="n3">3</a></span><span style="color:#080;font-weight:bold">end</span>
+</pre></div>
+</div>
+</div>
+
+<p>Now, GraphQL will use <code>Permissions::CustomAbility#can?</code> to determine permissions.</p>
 
         </div>
       </div>
