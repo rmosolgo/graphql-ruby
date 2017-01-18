@@ -4,111 +4,62 @@ module GraphQL
     # Turn query string values into something useful for query execution
     class LiteralInput
       def self.coerce(type, value, variables)
-        if value.is_a?(Language::Nodes::VariableIdentifier)
-          variables[value.name]
-        elsif value.nil?
+        case value
+        when nil
           nil
+        when Language::Nodes::VariableIdentifier
+          variables[value.name]
         else
-          LiteralKindCoercers::STRATEGIES.fetch(type.kind).coerce(value, type, variables)
+          case type
+          when GraphQL::ScalarType
+            type.coerce_input(value)
+          when GraphQL::EnumType
+            type.coerce_input(value.name)
+          when GraphQL::NonNullType
+            LiteralInput.coerce(type.of_type, value, variables)
+          when GraphQL::ListType
+            if value.is_a?(Array)
+              value.map { |element_ast| LiteralInput.coerce(type.of_type, element_ast, variables) }
+            else
+              [LiteralInput.coerce(type.of_type, value, variables)]
+            end
+          when GraphQL::InputObjectType
+            from_arguments(value.arguments, type.arguments, variables)
+          end
         end
       end
 
       def self.from_arguments(ast_arguments, argument_defns, variables)
         values_hash = {}
+        indexed_arguments = ast_arguments.each_with_object({}) { |a, memo| memo[a.name] = a }
+
         argument_defns.each do |arg_name, arg_defn|
-          ast_arg = ast_arguments.find { |ast_arg| ast_arg.name == arg_name }
-          if ast_arg.nil? && !arg_defn.default_value?
-            # If it wasn't in the document,
-            # and there's no provided default,
-            # then don't pass it to the resolve function
-            next
-          else
-            arg_value = :__graphql_argument_unset__
-
-            if ast_arg
-              case ast_arg.value
-              when GraphQL::Language::Nodes::VariableIdentifier
-                if variables.key?(ast_arg.value.name)
-                  arg_value = coerce(arg_defn.type, ast_arg.value, variables)
-                end
-              else
-                arg_value = coerce(arg_defn.type, ast_arg.value, variables)
+          ast_arg = indexed_arguments[arg_name]
+          # First, check the argument in the AST.
+          # If the value is a variable,
+          # only add a value if the variable is actually present.
+          # Otherwise, coerce the value in the AST and add it.
+          if ast_arg
+            if ast_arg.value.is_a?(GraphQL::Language::Nodes::VariableIdentifier)
+              if variables.key?(ast_arg.value.name)
+                values_hash[ast_arg.name] = coerce(arg_defn.type, ast_arg.value, variables)
               end
-            end
-
-            if arg_value == :__graphql_argument_unset__ && arg_defn.default_value?
-              arg_value = arg_defn.default_value
-            end
-
-            if arg_value != :__graphql_argument_unset__
-              values_hash[arg_name] = arg_value
+            else
+              values_hash[ast_arg.name] = coerce(arg_defn.type, ast_arg.value, variables)
             end
           end
+
+          # Then, the definition for a default value.
+          # If the definition has a default value and
+          # a value wasn't provided from the AST,
+          # then add the default value.
+          if arg_defn.default_value? && !values_hash.key?(arg_name)
+            values_hash[arg_name] = arg_defn.default_value
+          end
         end
+
         GraphQL::Query::Arguments.new(values_hash, argument_definitions: argument_defns)
       end
-
-      module LiteralKindCoercers
-        module NonNullLiteral
-          def self.coerce(value, type, variables)
-            LiteralInput.coerce(type.of_type, value, variables)
-          end
-        end
-
-        module ListLiteral
-          def self.coerce(value, type, variables)
-            if value.is_a?(Array)
-              value.map{ |element_ast| LiteralInput.coerce(type.of_type, element_ast, variables) }
-            else
-              [LiteralInput.coerce(type.of_type, value, variables)]
-            end
-          end
-        end
-
-        module InputObjectLiteral
-          def self.coerce(value, type, variables)
-            hash = {}
-            value.arguments.each do |arg|
-              field_type = type.arguments[arg.name].type
-              if arg.value.is_a?(GraphQL::Language::Nodes::VariableIdentifier)
-                if variables.key?(arg.value.name)
-                  hash[arg.name] = LiteralInput.coerce(field_type, arg.value, variables)
-                end
-              else
-                hash[arg.name] = LiteralInput.coerce(field_type, arg.value, variables)
-              end
-            end
-            type.input_fields.each do |arg_name, arg_defn|
-              if !hash.key?(arg_name) && arg_defn.default_value?
-                value = LiteralInput.coerce(arg_defn.type, arg_defn.default_value, variables)
-                hash[arg_name] = value
-              end
-            end
-            Arguments.new(hash, argument_definitions: type.arguments)
-          end
-        end
-
-        module EnumLiteral
-          def self.coerce(value, type, variables)
-            type.coerce_input(value.name)
-          end
-        end
-
-        module ScalarLiteral
-          def self.coerce(value, type, variables)
-            type.coerce_input(value)
-          end
-        end
-
-        STRATEGIES = {
-          TypeKinds::NON_NULL =>     NonNullLiteral,
-          TypeKinds::LIST =>         ListLiteral,
-          TypeKinds::INPUT_OBJECT => InputObjectLiteral,
-          TypeKinds::ENUM =>         EnumLiteral,
-          TypeKinds::SCALAR =>       ScalarLiteral,
-        }
-      end
-      private_constant :LiteralKindCoercers
     end
   end
 end
