@@ -76,11 +76,19 @@ module GraphQL
           continue_resolve_field(selection, parent_type, field, raw_value, field_ctx)
         end
 
-        FieldResult.new(
-          owner: owner,
-          field: field,
-          value: result,
-        )
+        if (
+            result == PROPAGATE_NULL ||
+            result.is_a?(GraphQL::Execution::Lazy) ||
+            (result.is_a?(SelectionResult) && result.invalid_null?)
+          )
+          FieldResult.new(
+            owner: owner,
+            field: field,
+            value: result,
+          )
+        else
+          result
+        end
       end
 
       def continue_resolve_field(selection, parent_type, field, raw_value, field_ctx)
