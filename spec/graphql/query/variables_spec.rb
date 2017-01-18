@@ -73,21 +73,63 @@ describe GraphQL::Query::Variables do
 
     describe "coercing null" do
       let(:provided_variables) {
-        {"int" => nil, "intWithDefault" => nil}
+        {"intWithVariable" => nil, "intWithDefault" => nil}
+      }
+      let(:args) { {} }
+      let(:schema) {
+        args_cache = args
+        query_type = GraphQL::ObjectType.define do
+          name "Query"
+          field :variables_test, types.Int do
+            argument :val, types.Int
+            argument :val_with_default, types.Int, default_value: 13
+            resolve ->(o, a, c) {
+              args_cache[c.ast_node.alias] = a
+              1
+            }
+          end
+        end
+
+        GraphQL::Schema.define do
+          query(query_type)
+        end
+      }
+
+      let(:query_string) {<<-GRAPHQL
+        query testVariables(
+          $intWithVariable: Int,
+          $intWithDefault: Int = 10,
+          $intDefaultNull: Int = null,
+          $intWithoutVariable: Int,
+        ) {
+          a: variables_test(val: $intWithVariable)
+          b: variables_test(val: $intWithDefault)
+          c: variables_test(val: $intDefaultNull)
+          d: variables_test(val: $intWithoutVariable)
+        }
+      GRAPHQL
+      }
+
+      let(:variables) { GraphQL::Query::Variables.new(
+        schema,
+        GraphQL::Schema::Warden.new(schema.default_mask, schema: schema, context: nil),
+        ast_variables,
+        provided_variables)
       }
 
       it "preserves explicit null" do
-        assert_equal nil, variables["int"]
-        assert_equal true, variables.key?("int")
+        assert_equal nil, variables["intWithVariable"]
+        assert_equal true, variables.key?("intWithVariable")
       end
 
       it "doesn't contain variables that weren't present" do
-        assert_equal nil, variables["animals"]
-        assert_equal false, variables.key?("animals")
+        assert_equal nil, variables["intWithoutVariable"]
+        assert_equal false, variables.key?("intWithoutVariable")
       end
 
       it "preserves explicit null when variable has a default value" do
         assert_equal nil, variables["intWithDefault"]
+        assert_equal true, variables.key?("intWithDefault")
       end
 
       it "uses null default value" do
