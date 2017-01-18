@@ -103,12 +103,15 @@ describe GraphQL::Query::Variables do
           $intWithoutVariable: Int,
         ) {
           a: variables_test(val: $intWithVariable)
-          b: variables_test(val: $intWithDefault)
-          c: variables_test(val: $intDefaultNull)
-          d: variables_test(val: $intWithoutVariable)
+          b: variables_test(val: $intWithoutVariable)
+          c: variables_test(val: $intWithDefault)
+          d: variables_test(val: $intDefaultNull)
+          e: variables_test(val_with_default: $intDefaultNull)
         }
       GRAPHQL
       }
+
+      let(:run_query) { schema.execute(query_string, variables: provided_variables) }
 
       let(:variables) { GraphQL::Query::Variables.new(
         schema,
@@ -117,24 +120,40 @@ describe GraphQL::Query::Variables do
         provided_variables)
       }
 
+      def assert_has_key_with_value(hash, key, has_key, value)
+        assert_equal(has_key, hash.key?(key))
+        assert_equal(value, hash[key])
+      end
+
       it "preserves explicit null" do
-        assert_equal nil, variables["intWithVariable"]
-        assert_equal true, variables.key?("intWithVariable")
+        assert_has_key_with_value(variables, "intWithVariable", true, nil)
+        run_query
+        assert_has_key_with_value(args["a"], "val", true, nil)
+        # Provided `nil` should override the default:
+        assert_has_key_with_value(args["e"], "val_with_default", true, nil)
       end
 
       it "doesn't contain variables that weren't present" do
-        assert_equal nil, variables["intWithoutVariable"]
-        assert_equal false, variables.key?("intWithoutVariable")
+        assert_has_key_with_value(variables, "intWithoutVariable", false, nil)
+        run_query
+        assert_has_key_with_value(args["b"], "val", false, nil)
       end
 
       it "preserves explicit null when variable has a default value" do
-        assert_equal nil, variables["intWithDefault"]
-        assert_equal true, variables.key?("intWithDefault")
+        assert_has_key_with_value(variables, "intWithDefault", true, nil)
+        run_query
+        assert_has_key_with_value(args["c"], "val", true, nil)
       end
 
       it "uses null default value" do
-        assert_equal nil, variables["intDefaultNull"]
-        assert_equal true, variables.key?("intDefaultNull")
+        assert_has_key_with_value(variables, "intDefaultNull", true, nil)
+        run_query
+        assert_has_key_with_value(args["d"], "val", true, nil)
+      end
+
+      it "applies argument default values" do
+        run_query
+        assert_has_key_with_value(args["d"], "val_with_default", true, 13)
       end
     end
   end
