@@ -70,14 +70,18 @@ module GraphQL
             hash = {}
             value.arguments.each do |arg|
               field_type = type.arguments[arg.name].type
-              hash[arg.name] = LiteralInput.coerce(field_type, arg.value, variables)
+              if arg.value.is_a?(GraphQL::Language::Nodes::VariableIdentifier)
+                if variables.key?(arg.value.name)
+                  hash[arg.name] = LiteralInput.coerce(field_type, arg.value, variables)
+                end
+              else
+                hash[arg.name] = LiteralInput.coerce(field_type, arg.value, variables)
+              end
             end
             type.input_fields.each do |arg_name, arg_defn|
-              if hash[arg_name].nil?
+              if !hash.key?(arg_name) && arg_defn.default_value?
                 value = LiteralInput.coerce(arg_defn.type, arg_defn.default_value, variables)
-                if !value.nil?
-                  hash[arg_name] = value
-                end
+                hash[arg_name] = value
               end
             end
             Arguments.new(hash, argument_definitions: type.arguments)

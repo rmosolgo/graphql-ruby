@@ -78,11 +78,19 @@ describe GraphQL::Query::Variables do
       let(:args) { {} }
       let(:schema) {
         args_cache = args
+
+        complex_val = GraphQL::InputObjectType.define do
+          name "ComplexVal"
+          argument :val, types.Int
+          argument :val_with_default, types.Int, default_value: 13
+        end
+
         query_type = GraphQL::ObjectType.define do
           name "Query"
           field :variables_test, types.Int do
             argument :val, types.Int
             argument :val_with_default, types.Int, default_value: 13
+            argument :complex_val, complex_val
             resolve ->(o, a, c) {
               args_cache[c.ast_node.alias] = a
               1
@@ -102,11 +110,25 @@ describe GraphQL::Query::Variables do
           $intDefaultNull: Int = null,
           $intWithoutVariable: Int,
         ) {
-          a: variables_test(val: $intWithVariable)
-          b: variables_test(val: $intWithoutVariable)
-          c: variables_test(val: $intWithDefault)
-          d: variables_test(val: $intDefaultNull)
-          e: variables_test(val_with_default: $intDefaultNull)
+          aa: variables_test(val: $intWithVariable)
+          ab: variables_test(val: $intWithoutVariable)
+          ac: variables_test(val: $intWithDefault)
+          ad: variables_test(val: $intDefaultNull)
+
+          ba: variables_test(val_with_default: $intWithVariable)
+          bb: variables_test(val_with_default: $intWithoutVariable)
+          bc: variables_test(val_with_default: $intWithDefault)
+          bd: variables_test(val_with_default: $intDefaultNull)
+
+          ca: variables_test(complex_val: { val: $intWithVariable })
+          cb: variables_test(complex_val: { val: $intWithoutVariable })
+          cc: variables_test(complex_val: { val: $intWithDefault })
+          cd: variables_test(complex_val: { val: $intDefaultNull })
+
+          da: variables_test(complex_val: { val_with_default: $intWithVariable })
+          db: variables_test(complex_val: { val_with_default: $intWithoutVariable })
+          dc: variables_test(complex_val: { val_with_default: $intWithDefault })
+          dd: variables_test(complex_val: { val_with_default: $intDefaultNull })
         }
       GRAPHQL
       }
@@ -128,32 +150,47 @@ describe GraphQL::Query::Variables do
       it "preserves explicit null" do
         assert_has_key_with_value(variables, "intWithVariable", true, nil)
         run_query
-        assert_has_key_with_value(args["a"], "val", true, nil)
-        # Provided `nil` should override the default:
-        assert_has_key_with_value(args["e"], "val_with_default", true, nil)
+        # Provided `nil` should be passed along to args
+        # and override any defaults (variable defaults and arg defaults)
+        assert_has_key_with_value(args["aa"], "val", true, nil)
+        assert_has_key_with_value(args["ba"], "val_with_default", true, nil)
+        assert_has_key_with_value(args["ca"]["complex_val"], "val", true, nil)
+        assert_has_key_with_value(args["da"]["complex_val"], "val_with_default", true, nil)
       end
 
       it "doesn't contain variables that weren't present" do
         assert_has_key_with_value(variables, "intWithoutVariable", false, nil)
         run_query
-        assert_has_key_with_value(args["b"], "val", false, nil)
+        assert_has_key_with_value(args["ab"], "val", false, nil)
+        # This one _is_ present, it gets the argument.default_value
+        assert_has_key_with_value(args["bb"], "val_with_default", true, 13)
+        assert_has_key_with_value(args["cb"]["complex_val"], "val", false, nil)
+        # This one _is_ present, it gets the argument.default_value
+        assert_has_key_with_value(args["db"]["complex_val"], "val_with_default", true, 13)
       end
 
       it "preserves explicit null when variable has a default value" do
         assert_has_key_with_value(variables, "intWithDefault", true, nil)
         run_query
-        assert_has_key_with_value(args["c"], "val", true, nil)
+        assert_has_key_with_value(args["ac"], "val", true, nil)
+        assert_has_key_with_value(args["bc"], "val_with_default", true, nil)
+        assert_has_key_with_value(args["cc"]["complex_val"], "val", true, nil)
+        assert_has_key_with_value(args["dc"]["complex_val"], "val_with_default", true, nil)
       end
 
       it "uses null default value" do
         assert_has_key_with_value(variables, "intDefaultNull", true, nil)
         run_query
-        assert_has_key_with_value(args["d"], "val", true, nil)
+        assert_has_key_with_value(args["ad"], "val", true, nil)
+        assert_has_key_with_value(args["bd"], "val_with_default", true, nil)
+        assert_has_key_with_value(args["cd"]["complex_val"], "val", true, nil)
+        assert_has_key_with_value(args["dd"]["complex_val"], "val_with_default", true, nil)
       end
 
       it "applies argument default values" do
         run_query
-        assert_has_key_with_value(args["d"], "val_with_default", true, 13)
+        # It wasn't present in the query string, but it gets argument.default_value:
+        assert_has_key_with_value(args["aa"], "val_with_default", true, 13)
       end
     end
   end
