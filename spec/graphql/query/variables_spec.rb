@@ -73,7 +73,17 @@ describe GraphQL::Query::Variables do
 
     describe "coercing null" do
       let(:provided_variables) {
-        {"intWithVariable" => nil, "intWithDefault" => nil}
+        {
+          "intWithVariable" => nil,
+          "intWithDefault" => nil,
+          "complexValWithVariable" => {
+            "val" => 1,
+            "val_with_default" => 2,
+          },
+          "complexValWithDefaultAndVariable" => {
+            "val" => 8,
+          },
+        }
       }
       let(:args) { {} }
       let(:schema) {
@@ -109,6 +119,12 @@ describe GraphQL::Query::Variables do
           $intWithDefault: Int = 10,
           $intDefaultNull: Int = null,
           $intWithoutVariable: Int,
+          $complexValWithVariable: ComplexVal,
+          $complexValWithoutVariable: ComplexVal,
+          $complexValWithOneDefault: ComplexVal = { val: 10 },
+          $complexValWithTwoDefaults: ComplexVal = { val: 11, val_with_default: 11 },
+          $complexValWithNullDefaults: ComplexVal = { val: null, val_with_default: null },
+          $complexValWithDefaultAndVariable: ComplexVal = { val: 99 },
         ) {
           aa: variables_test(val: $intWithVariable)
           ab: variables_test(val: $intWithoutVariable)
@@ -129,6 +145,13 @@ describe GraphQL::Query::Variables do
           db: variables_test(complex_val: { val_with_default: $intWithoutVariable })
           dc: variables_test(complex_val: { val_with_default: $intWithDefault })
           dd: variables_test(complex_val: { val_with_default: $intDefaultNull })
+
+          ea: variables_test(complex_val: $complexValWithVariable)
+          eb: variables_test(complex_val: $complexValWithoutVariable)
+          ec: variables_test(complex_val: $complexValWithOneDefault)
+          ed: variables_test(complex_val: $complexValWithTwoDefaults)
+          ee: variables_test(complex_val: $complexValWithNullDefaults)
+          ef: variables_test(complex_val: $complexValWithDefaultAndVariable)
         }
       GRAPHQL
       }
@@ -191,6 +214,27 @@ describe GraphQL::Query::Variables do
         run_query
         # It wasn't present in the query string, but it gets argument.default_value:
         assert_has_key_with_value(args["aa"], "val_with_default", true, 13)
+      end
+
+      it "applies coercion to input objects passed as variables" do
+        run_query
+        assert_has_key_with_value(args["ea"]["complex_val"], "val", true, 1)
+        assert_has_key_with_value(args["ea"]["complex_val"], "val_with_default", true, 2)
+
+        # Since the variable wasn't provided, it's not present at all:
+        assert_has_key_with_value(args["eb"], "complex_val", false, nil)
+
+        assert_has_key_with_value(args["ec"]["complex_val"], "val", true, 10)
+        assert_has_key_with_value(args["ec"]["complex_val"], "val_with_default", true, 13)
+
+        assert_has_key_with_value(args["ed"]["complex_val"], "val", true, 11)
+        assert_has_key_with_value(args["ed"]["complex_val"], "val_with_default", true, 11)
+
+        assert_has_key_with_value(args["ee"]["complex_val"], "val", true, nil)
+        assert_has_key_with_value(args["ee"]["complex_val"], "val_with_default", true, nil)
+
+        assert_has_key_with_value(args["ef"]["complex_val"], "val", true, 8)
+        assert_has_key_with_value(args["ef"]["complex_val"], "val_with_default", true, 13)
       end
     end
   end

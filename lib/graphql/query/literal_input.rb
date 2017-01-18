@@ -3,28 +3,28 @@ module GraphQL
   class Query
     # Turn query string values into something useful for query execution
     class LiteralInput
-      def self.coerce(type, value, variables)
-        case value
+      def self.coerce(type, ast_node, variables)
+        case ast_node
         when nil
           nil
         when Language::Nodes::VariableIdentifier
-          variables[value.name]
+          variables[ast_node.name]
         else
           case type
           when GraphQL::ScalarType
-            type.coerce_input(value)
+            type.coerce_input(ast_node)
           when GraphQL::EnumType
-            type.coerce_input(value.name)
+            type.coerce_input(ast_node.name)
           when GraphQL::NonNullType
-            LiteralInput.coerce(type.of_type, value, variables)
+            LiteralInput.coerce(type.of_type, ast_node, variables)
           when GraphQL::ListType
-            if value.is_a?(Array)
-              value.map { |element_ast| LiteralInput.coerce(type.of_type, element_ast, variables) }
+            if ast_node.is_a?(Array)
+              ast_node.map { |element_ast| LiteralInput.coerce(type.of_type, element_ast, variables) }
             else
-              [LiteralInput.coerce(type.of_type, value, variables)]
+              [LiteralInput.coerce(type.of_type, ast_node, variables)]
             end
           when GraphQL::InputObjectType
-            from_arguments(value.arguments, type.arguments, variables)
+            from_arguments(ast_node.arguments, type.arguments, variables)
           end
         end
       end
