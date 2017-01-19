@@ -17,7 +17,7 @@ describe GraphQL::StaticValidation::FragmentsAreUsed do
     assert_includes(errors, {
       "message"=>"Fragment unusedFields was defined, but not used",
       "locations"=>[{"line"=>8, "column"=>5}],
-      "fields"=>[],
+      "fields"=>["fragment unusedFields"],
     })
   end
 
