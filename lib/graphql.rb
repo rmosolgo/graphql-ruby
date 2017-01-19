@@ -37,6 +37,21 @@ module GraphQL
   def self.scan_with_ragel(query_string)
     GraphQL::Language::Lexer.tokenize(query_string)
   end
+
+  # Validate the query string using `schema`.
+  # @param string_or_document [String, GraphQL::Language::Nodes::Document]
+  # @param schema [GraphQL::Schema]
+  # @return [Array<GraphQL::StaticValidation::Message>]
+  def self.validate(string_or_document, schema:)
+    if string_or_document.is_a?(String)
+      query = GraphQL::Query.new(schema, string_or_document)
+    else
+      query = GraphQL::Query.new(schema, document: string_or_document)
+    end
+    validator = GraphQL::StaticValidation::Validator.new(schema: schema)
+    res = validator.validate(query)
+    res[:errors]
+  end
 end
 
 # Order matters for these:
