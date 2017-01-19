@@ -149,27 +149,16 @@ module GraphQL
           field_node.included ||= GraphQL::Execution::DirectiveChecks.include?(applicable_directives, context.query)
         }
 
-        visitor[Nodes::Document].leave << ->(ast_node, prev_ast_node) {
-          # Resolve fragment dependencies. Start with fragments with no
-          # dependencies and work along the spreads.
-          while fragment_node = @independent_fragments.pop
-            fragment_usages = @fragment_spreads[fragment_node.name]
-            while dependent_node = fragment_usages.pop
-              # Find the spreads for this reference
-              resolved_spread_nodes = dependent_node.spreads.select { |spr| spr.name == fragment_node.name }
-              spread_is_included = resolved_spread_nodes.any?(&:included?)
-              # Since we're going to resolve them, remove them from the dependcies
-              resolved_spread_nodes.each { |r_node| dependent_node.spreads.delete(r_node) }
-
-              # resolve the dependency (merge into dependent node)
-              deep_merge(dependent_node, fragment_node, spread_is_included)
-              owner = dependent_node.owner
-              if owner.ast_node.is_a?(Nodes::FragmentDefinition) && !any_fragment_spreads?(owner)
-                @independent_fragments.push(owner)
-              end
-            end
+        context.on_dependency_resolve do |defn_ast_node, frag_ast_node|
+          fragment_name = frag_ast_node.name
+          fragment_node = @fragments[fragment_name]
+          dependent_nodes = @fragment_spreads[fragment_name]
+          dependent_nodes.each do |dependent_node|
+            resolved_spread_nodes = dependent_node.spreads.select { |spr| spr.name == fragment_name }
+            spread_is_included = resolved_spread_nodes.any?(&:included?)
+            deep_merge(dependent_node, fragment_node, spread_is_included)
           end
-        }
+        end
       end
 
       private
