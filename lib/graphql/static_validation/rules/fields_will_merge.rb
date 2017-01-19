@@ -91,6 +91,8 @@ module GraphQL
             "$#{arg.name}"
           when GraphQL::Language::Nodes::Enum
             "#{arg.name}"
+          when GraphQL::Language::Nodes::InputObject
+            "{ #{arg.arguments.sort { |a, b| a.name <=> b.name }.map { |(k, v)| "#{k}: #{print_arg(v)}"}.join(",") } }"
           else
             GraphQL::Language.serialize(arg)
           end
