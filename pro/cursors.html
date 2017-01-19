@@ -158,7 +158,7 @@
   <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">MySchema</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Schema</span>.define { ... }
 <span class="line-numbers"><a href="#n2" name="n2">2</a></span><span style="color:#777"># Always use the offset-based connection, override `GraphQL::Pro::RelationConnection`</span>
 <span class="line-numbers"><a href="#n3" name="n3">3</a></span><span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Relay</span>::<span style="color:#036;font-weight:bold">BaseConnection</span>.register_connection_implementation(
-<span class="line-numbers"><a href="#n4" name="n4">4</a></span>  <span style="color:#036;font-weight:bold">ActiveRecord</span>, <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Relay</span>::<span style="color:#036;font-weight:bold">RelationConnection</span>
+<span class="line-numbers"><a href="#n4" name="n4">4</a></span>  <span style="color:#036;font-weight:bold">ActiveRecord</span>::<span style="color:#036;font-weight:bold">Relation</span>, <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Relay</span>::<span style="color:#036;font-weight:bold">RelationConnection</span>
 <span class="line-numbers"><a href="#n5" name="n5">5</a></span>)
 </pre></div>
 </div>
