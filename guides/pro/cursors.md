@@ -68,6 +68,6 @@ If you don't want `GraphQL::Pro`'s new cursor behavior, re-register the offset-b
 MySchema = GraphQL::Schema.define { ... }
 # Always use the offset-based connection, override `GraphQL::Pro::RelationConnection`
 GraphQL::Relay::BaseConnection.register_connection_implementation(
-  ActiveRecord, GraphQL::Relay::RelationConnection
+  ActiveRecord::Relation, GraphQL::Relay::RelationConnection
 )
 ```
