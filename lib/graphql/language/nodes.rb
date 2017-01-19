@@ -10,11 +10,13 @@ module GraphQL
       # - `to_query_string` turns an AST node into a GraphQL string
       class AbstractNode
         attr_accessor :line, :col
+        attr_accessor :parent
 
         # Initialize a node by extracting its position,
         # then calling the class's `initialize_node` method.
         # @param options [Hash] Initial attributes for this node
         def initialize(options={})
+          @parent = nil
           if options.key?(:position_source)
             position_source = options.delete(:position_source)
             @line, @col = position_source.line_and_column
@@ -28,13 +30,34 @@ module GraphQL
           raise NotImplementedError
         end
 
+        def path
+          # TODO: someday this could be a bug.
+          # If you move a node someplace else in the AST,
+          # this cached value will become stale.
+          @path ||= begin
+            parent_path = @parent ? @parent.path : []
+            new_path = parent_path.dup
+            (key = path_key) && new_path.push(key)
+            new_path
+          end
+        end
+
+        def path_key
+          nil
+        end
+
+        def assign_parent_to_each(nodes)
+          nodes.each { |n| n.parent = self }
+        end
+
         # Value equality
         # @return [Boolean] True if `self` is equivalent to `other`
         def eql?(other)
-          return true if equal?(other)
-          other.is_a?(self.class) &&
+          equal?(other) || (
+            other.is_a?(self.class) &&
             other.scalars.eql?(self.scalars) &&
             other.children.eql?(self.children)
+          )
         end
 
         # @return [Array<GraphQL::Language::Nodes::AbstractNode>] all nodes in the tree below this one
@@ -98,6 +121,7 @@ module GraphQL
       class NameOnlyNode < AbstractNode
         attr_accessor :name
         scalar_attributes :name
+        alias :path_key :name
 
         def initialize_node(name: nil)
           @name = name
@@ -112,6 +136,7 @@ module GraphQL
       class Argument < AbstractNode
         attr_accessor :name, :value
         scalar_attributes :name, :value
+        alias :path_key :name
 
         # @!attribute name
         #   @return [String] the key for this argument
@@ -122,6 +147,7 @@ module GraphQL
         def initialize_node(name: nil, value: nil)
           @name = name
           @value = value
+          value.is_a?(InputObject) && (value.parent = self)
         end
 
         def children
@@ -136,7 +162,12 @@ module GraphQL
 
         def initialize_node(name: nil, arguments: [])
           @name = name
+          assign_parent_to_each(arguments)
           @arguments = arguments
+        end
+
+        def path_key
+          @path_key ||= "@#{name}"
         end
       end
 
@@ -169,6 +200,7 @@ module GraphQL
         # @!attribute definitions
         #   @return [Array<OperationDefinition, FragmentDefinition>] top-level GraphQL units: operations or fragments
         def initialize_node(definitions: [])
+          assign_parent_to_each(definitions)
           @definitions = definitions
         end
 
@@ -188,6 +220,7 @@ module GraphQL
         attr_accessor :name, :alias, :arguments, :directives, :selections
         scalar_attributes :name, :alias
         child_attributes :arguments, :directives, :selections
+        alias :path_key :name
 
         # @!attribute selections
         #   @return [Array<Nodes::Field>] Selections on this object (or empty array if this is a scalar field)
@@ -196,6 +229,9 @@ module GraphQL
           @name = name
           # oops, alias is a keyword:
           @alias = kwargs.fetch(:alias, nil)
+          assign_parent_to_each(arguments)
+          assign_parent_to_each(directives)
+          assign_parent_to_each(selections)
           @arguments = arguments
           @directives = directives
           @selections = selections
@@ -216,8 +252,14 @@ module GraphQL
         def initialize_node(name: nil, type: nil, directives: [], selections: [])
           @name = name
           @type = type
+          assign_parent_to_each(directives)
+          assign_parent_to_each(selections)
           @directives = directives
           @selections = selections
+        end
+
+        def path_key
+          @path_key ||= "fragment #{name}"
         end
       end
 
@@ -232,7 +274,12 @@ module GraphQL
 
         def initialize_node(name: nil, directives: [])
           @name = name
+          assign_parent_to_each(directives)
           @directives = directives
+        end
+
+        def path_key
+          @path_key ||= "... #{name}"
         end
       end
 
@@ -243,12 +290,18 @@ module GraphQL
         child_attributes :directives, :selections
 
         # @!attribute type
-        #   @return [String, nil] Name of the type this fragment applies to, or `nil` if this fragment applies to any type
+        #   @return [TypeName, nil] Name of the type this fragment applies to, or `nil` if this fragment applies to any type
 
         def initialize_node(type: nil, directives: [], selections: [])
           @type = type
+          assign_parent_to_each(directives)
+          assign_parent_to_each(selections)
           @directives = directives
           @selections = selections
+        end
+
+        def path_key
+          @path_key ||= "... on #{type.name}"
         end
       end
 
@@ -261,6 +314,7 @@ module GraphQL
         #   @return [Array<Nodes::Argument>] A list of key-value pairs inside this input object
 
         def initialize_node(arguments: [])
+          assign_parent_to_each(arguments)
           @arguments = arguments
         end
 
@@ -304,9 +358,16 @@ module GraphQL
         def initialize_node(operation_type: nil, name: nil, variables: [], directives: [], selections: [])
           @operation_type = operation_type
           @name = name
+          assign_parent_to_each(variables)
+          assign_parent_to_each(directives)
+          assign_parent_to_each(selections)
           @variables = variables
           @directives = directives
           @selections = selections
+        end
+
+        def path_key
+          @path_key ||= "#{operation_type || "query"}#{ name ? " #{name}" : ""}"
         end
       end
 
@@ -332,10 +393,18 @@ module GraphQL
           @type = type
           @default_value = default_value
         end
+
+        def path_key
+          @path_key ||= "$#{name}"
+        end
       end
 
       # Usage of a variable in a query. Name does _not_ include `$`.
-      class VariableIdentifier < NameOnlyNode; end
+      class VariableIdentifier < NameOnlyNode
+        def path_key
+          @path_key ||= "$#{name}"
+        end
+      end
 
       class SchemaDefinition < AbstractNode
         attr_accessor :query, :mutation, :subscription
