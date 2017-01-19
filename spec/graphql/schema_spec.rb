@@ -319,4 +319,15 @@ type Query {
       refute_equal schema_2.middleware, schema.middleware
     end
   end
+
+  describe "#validate" do
+    it "returns errors on the query string" do
+      errors = schema.validate("{ cheese(id: 1) { flavor flavor: id } }")
+      assert_equal 1, errors.length
+      assert_equal "Field 'flavor' has a field conflict: flavor or id?", errors.first.message
+
+      errors = schema.validate("{ cheese(id: 1) { flavor id } }")
+      assert_equal [], errors
+    end
+  end
 end

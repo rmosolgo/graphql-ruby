@@ -148,6 +148,12 @@ module GraphQL
       rescue_middleware.remove_handler(*args, &block)
     end
 
+    # Validate a query string according to this schema.
+    # @see {GraphQL.validate}
+    def validate(string_or_document)
+      GraphQL.validate(string_or_document, schema: self)
+    end
+
     def define(**kwargs, &block)
       super
       ensure_defined
