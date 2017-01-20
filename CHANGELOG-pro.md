@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+## 1.0.2
+
+### Bug Fixes
+
+- `OrderedRelationConnection` exposes the underlying relation as `#nodes` (like `RelationConnection` does), supporting custom connection fields.
+
 ## 1.0.1
 
 ### New Features
