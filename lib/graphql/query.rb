@@ -178,11 +178,16 @@ module GraphQL
     # @return [GraphQL::Query::Arguments] Arguments for this node, merging default values, literal values and query variables
     def arguments_for(irep_node, definition)
       @arguments_cache[irep_node][definition] ||= begin
-        GraphQL::Query::LiteralInput.from_arguments(
-          irep_node.ast_node.arguments,
-          definition.arguments,
-          self.variables
-        )
+        ast_arguments = irep_node.ast_node.arguments
+        if ast_arguments.none?
+          definition.default_arguments
+        else
+          GraphQL::Query::LiteralInput.from_arguments(
+            irep_node.ast_node.arguments,
+            definition.arguments,
+            self.variables
+          )
+        end
       end
     end
 

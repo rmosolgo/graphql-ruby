@@ -29,10 +29,15 @@ module GraphQL
         end
       end
 
-      def self.from_arguments(ast_arguments, argument_defns, variables)
-        if argument_defns.none?
-          return GraphQL::Query::Arguments::NO_ARGS
+      def self.defaults_for(argument_defns)
+        if argument_defns.none? { |name, arg| arg.default_value? }
+          GraphQL::Query::Arguments::NO_ARGS
+        else
+          from_arguments([], argument_defns, nil)
         end
+      end
+
+      def self.from_arguments(ast_arguments, argument_defns, variables)
 
         values_hash = {}
         indexed_arguments = ast_arguments.each_with_object({}) { |a, memo| memo[a.name] = a }
