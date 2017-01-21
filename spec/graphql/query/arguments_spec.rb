@@ -134,6 +134,13 @@ describe GraphQL::Query::Arguments do
             1
           }
         end
+
+        field :noArgTest, types.Int do
+          resolve ->(obj, args, ctx) {
+            arg_values_array << args
+            1
+          }
+        end
       end
 
       GraphQL::Schema.define(query: query)
@@ -156,6 +163,13 @@ describe GraphQL::Query::Arguments do
       assert_equal true, last_args.key?(:b)
       assert_equal false, last_args.key?(:c)
       assert_equal({"a" => 1, "b" => 2}, last_args.to_h)
+    end
+
+    it "works from query literals" do
+      schema.execute("{ noArgTest }")
+
+      last_args = arg_values.last
+      assert GraphQL::Query::Arguments::NO_ARGS.eql?(last_args)
     end
 
     it "works from variables" do
