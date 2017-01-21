@@ -6,19 +6,19 @@ module GraphQL
       # Convenience for validators
       module MessageHelper
         # Error `message` is located at `node`
-        def message(message, nodes, context: nil, path: nil)
-          path ||= context.path
+        def message(message, nodes)
           nodes = Array(nodes)
-          GraphQL::StaticValidation::Message.new(message, nodes: nodes, path: path)
+          GraphQL::StaticValidation::Message.new(message, nodes: nodes)
         end
       end
 
       attr_reader :message, :path
 
-      def initialize(message, path: [], nodes: [])
+      def initialize(message, path: nil, nodes: [])
         @message = message
         @nodes = nodes
-        @path = path
+        first_node = nodes.first
+        @path = path ? path : (first_node ? first_node.path : [])
       end
 
       # A hash representation of this Message

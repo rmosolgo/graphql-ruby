@@ -11,7 +11,7 @@ module GraphQL
 
         visitor[GraphQL::Language::Nodes::OperationDefinition].enter << ->(ast_node, prev_ast_node) {
           if ast_node.operation_type == 'mutation'
-            context.errors << message('Schema is not configured for mutations', ast_node, context: context)
+            context.errors << message('Schema is not configured for mutations', ast_node)
             return GraphQL::Language::Visitor::SKIP
           end
         }

@@ -69,12 +69,12 @@ module GraphQL
 
         names = ast_fields.map(&:name).uniq
         if names.length != 1
-          errors << message("Field '#{name}' has a field conflict: #{names.join(" or ")}?", ast_fields.first, context: context)
+          errors << message("Field '#{name}' has a field conflict: #{names.join(" or ")}?", ast_fields.first)
         end
 
         args = ast_fields.map { |ast_node| field_args_string(ast_node) }.uniq
         if args.length != 1
-          errors << message("Field '#{name}' has an argument conflict: #{args.map{ |arg| GraphQL::Language.serialize(arg) }.join(" or ")}?", ast_fields.first, context: context)
+          errors << message("Field '#{name}' has an argument conflict: #{args.map{ |arg| GraphQL::Language.serialize(arg) }.join(" or ")}?", ast_fields.first)
         end
 
         errors

@@ -55,7 +55,9 @@ module GraphQL
       end
 
       # @return [Array<String>] Field names to get to the current field
+      # @deprecated see {GraphQL::Language::Nodes::AbstractNode#path}
       def path
+        warn("ValidationContext#path is deprecated, use AbstractNode#path instead")
         @type_stack.path.dup
       end
 

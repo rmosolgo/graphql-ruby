@@ -12,11 +12,11 @@ module GraphQL
         v[GraphQL::Language::Nodes::Document] << ->(node, parent) {
           defined_fragments = node.definitions
             .select { |defn| defn.is_a?(GraphQL::Language::Nodes::FragmentDefinition) }
-            .map { |node| FragmentInstance.new(node: node, path: context.path) }
+            .map { |node| FragmentInstance.new(node: node) }
         }
 
         v[GraphQL::Language::Nodes::FragmentSpread] << ->(node, parent) {
-          used_fragments << FragmentInstance.new(node: node, path: context.path)
+          used_fragments << FragmentInstance.new(node: node)
           if defined_fragments.none? { |defn| defn.name == node.name }
             GraphQL::Language::Visitor::SKIP
           end
@@ -29,12 +29,12 @@ module GraphQL
       def add_errors(context, used_fragments, defined_fragments)
         undefined_fragments = find_difference(used_fragments, defined_fragments.map(&:name))
         undefined_fragments.each do |fragment|
-          context.errors << message("Fragment #{fragment.name} was used, but not defined", fragment.node, path: fragment.path)
+          context.errors << message("Fragment #{fragment.name} was used, but not defined", fragment.node)
         end
 
         unused_fragments = find_difference(defined_fragments, used_fragments.map(&:name))
         unused_fragments.each do |fragment|
-          context.errors << message("Fragment #{fragment.name} was defined, but not used", fragment.node, path: fragment.path)
+          context.errors << message("Fragment #{fragment.name} was defined, but not used", fragment.node)
         end
       end
 
@@ -43,11 +43,10 @@ module GraphQL
       end
 
       class FragmentInstance
-        attr_reader :name, :node, :path
-        def initialize(node:, path:)
+        attr_reader :name, :node
+        def initialize(node:)
           @node = node
           @name = node.name
-          @path = path
         end
       end
     end

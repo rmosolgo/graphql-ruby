@@ -22,7 +22,7 @@ module GraphQL
         type_name = node.type.name
         type = context.warden.get_type(type_name)
         if type.nil?
-          context.errors << message("No such type #{type_name}, so it can't be a fragment condition", node, context: context)
+          context.errors << message("No such type #{type_name}, so it can't be a fragment condition", node)
           GraphQL::Language::Visitor::SKIP
         end
       end

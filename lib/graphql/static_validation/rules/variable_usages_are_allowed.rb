@@ -64,7 +64,7 @@ module GraphQL
       end
 
       def create_error(error_message, var_type, ast_var, arg_defn, arg_node, context)
-        message("#{error_message} on variable $#{ast_var.name} and argument #{arg_node.name} (#{var_type.to_s} / #{arg_defn.type.to_s})", arg_node, context: context)
+        message("#{error_message} on variable $#{ast_var.name} and argument #{arg_node.name} (#{var_type.to_s} / #{arg_defn.type.to_s})", arg_node)
       end
 
       def list_dimension(type)

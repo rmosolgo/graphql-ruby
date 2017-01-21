@@ -46,10 +46,6 @@ module GraphQL
           nil
         end
 
-        def assign_parent_to_each(nodes)
-          nodes.each { |n| n.parent = self }
-        end
-
         # Value equality
         # @return [Boolean] True if `self` is equivalent to `other`
         def eql?(other)
@@ -101,6 +97,21 @@ module GraphQL
         def to_query_string
           Generation.generate(self)
         end
+
+        private
+
+        def assign_parent_to_each(nodes)
+          nodes.each { |n| n.parent = self }
+        end
+
+        def assign_parent_to_value(value)
+          case value
+          when AbstractNode
+            value.parent = self
+          when Array
+            value.each { |v| assign_parent_to_value(v) }
+          end
+        end
       end
 
       # Base class for non-null type names and list type names
@@ -147,7 +158,7 @@ module GraphQL
         def initialize_node(name: nil, value: nil)
           @name = name
           @value = value
-          value.is_a?(InputObject) && (value.parent = self)
+          assign_parent_to_value(value)
         end
 
         def children
@@ -220,7 +231,6 @@ module GraphQL
         attr_accessor :name, :alias, :arguments, :directives, :selections
         scalar_attributes :name, :alias
         child_attributes :arguments, :directives, :selections
-        alias :path_key :name
 
         # @!attribute selections
         #   @return [Array<Nodes::Field>] Selections on this object (or empty array if this is a scalar field)
@@ -235,6 +245,10 @@ module GraphQL
           @arguments = arguments
           @directives = directives
           @selections = selections
+        end
+
+        def path_key
+          @alias || @name
         end
       end
 

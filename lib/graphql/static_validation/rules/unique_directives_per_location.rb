@@ -26,8 +26,7 @@ module GraphQL
           if used_directives[directive_name]
             context.errors << message(
               "The directive \"#{directive_name}\" can only be used once at this location.",
-              [used_directives[directive_name], ast_directive],
-              context: context
+              [used_directives[directive_name], ast_directive]
             )
           else
             used_directives[directive_name] = ast_directive

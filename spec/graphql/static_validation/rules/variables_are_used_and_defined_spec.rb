@@ -47,12 +47,12 @@ describe GraphQL::StaticValidation::VariablesAreUsedAndDefined do
       {
         "message"=>"Variable $undefinedVar is used by getCheese but not declared",
         "locations"=>[{"line"=>19, "column"=>22}],
-        "fields"=>["query getCheese", "c3", "id"],
+        "fields"=>["query getCheese", "c3", "id", "$undefinedVar"],
       },
       {
         "message"=>"Variable $undefinedFragmentVar is used by innerCheeseFields but not declared",
         "locations"=>[{"line"=>29, "column"=>22}],
-        "fields"=>["fragment innerCheeseFields", "c4", "id"],
+        "fields"=>["fragment innerCheeseFields", "c4", "id", "$undefinedFragmentVar"],
       },
     ]
 

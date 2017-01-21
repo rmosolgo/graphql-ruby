@@ -12,7 +12,7 @@ module GraphQL
 
       def validate_name_exists(node, context)
         if node.name.nil?
-          context.errors << message("Fragment definition has no name", node, context: context)
+          context.errors << message("Fragment definition has no name", node)
         end
       end
     end

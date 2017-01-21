@@ -26,42 +26,42 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
 
     query_root_error = {
       "message"=>"Argument 'id' on Field 'stringCheese' has an invalid value. Expected type 'Int!'.",
-      "locations"=>[{"line"=>3, "column"=>7}],
+      "locations"=>[{"line"=>3, "column"=>28}],
       "fields"=>["query getCheese", "stringCheese", "id"],
     }
     assert_includes(errors, query_root_error)
 
     directive_error = {
       "message"=>"Argument 'if' on Directive 'skip' has an invalid value. Expected type 'Boolean!'.",
-      "locations"=>[{"line"=>4, "column"=>30}],
-      "fields"=>["query getCheese", "cheese", "source", "if"],
+      "locations"=>[{"line"=>4, "column"=>36}],
+      "fields"=>["query getCheese", "cheese", "source", "@skip", "if"],
     }
     assert_includes(errors, directive_error)
 
     input_object_error = {
       "message"=>"Argument 'product' on Field 'badSource' has an invalid value. Expected type '[DairyProductInput]'.",
-      "locations"=>[{"line"=>6, "column"=>7}],
+      "locations"=>[{"line"=>6, "column"=>30}],
       "fields"=>["query getCheese", "badSource", "product"],
     }
     assert_includes(errors, input_object_error)
 
     input_object_field_error = {
       "message"=>"Argument 'source' on InputObject 'DairyProductInput' has an invalid value. Expected type 'DairyAnimal!'.",
-      "locations"=>[{"line"=>6, "column"=>40}],
+      "locations"=>[{"line"=>6, "column"=>41}],
       "fields"=>["query getCheese", "badSource", "product", "source"],
     }
     assert_includes(errors, input_object_field_error)
 
     missing_required_field_error = {
       "message"=>"Argument 'product' on Field 'missingSource' has an invalid value. Expected type '[DairyProductInput]'.",
-      "locations"=>[{"line"=>7, "column"=>7}],
+      "locations"=>[{"line"=>7, "column"=>34}],
       "fields"=>["query getCheese", "missingSource", "product"],
     }
     assert_includes(errors, missing_required_field_error)
 
     fragment_error = {
       "message"=>"Argument 'source' on Field 'similarCheese' has an invalid value. Expected type '[DairyAnimal!]!'.",
-      "locations"=>[{"line"=>13, "column"=>7}],
+      "locations"=>[{"line"=>13, "column"=>21}],
       "fields"=>["fragment cheeseFields", "similarCheese", "source"],
     }
     assert_includes(errors, fragment_error)
@@ -104,7 +104,7 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
       it "finds error" do
         assert_equal [{
           "message"=>"Argument 'arg' on Field 'field' has an invalid value. Expected type 'Int!'.",
-          "locations"=>[{"line"=>3, "column"=>11}],
+          "locations"=>[{"line"=>3, "column"=>17}],
           "fields"=>["query", "field", "arg"],
         }], errors
       end
@@ -127,7 +127,7 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
       it "finds error" do
         assert_equal [{
           "message"=>"Argument 'arg' on Field 'field' has an invalid value. Expected type '[Int!]'.",
-          "locations"=>[{"line"=>3, "column"=>11}],
+          "locations"=>[{"line"=>3, "column"=>17}],
           "fields"=>["query", "field", "arg"],
         }], errors
       end
@@ -176,13 +176,13 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
 
         assert_includes errors, {
           "message"=> "Argument 'arg' on Field 'field' has an invalid value. Expected type 'Input'.",
-          "locations"=>[{"line"=>3, "column"=>11}],
+          "locations"=>[{"line"=>3, "column"=>17}],
           "fields"=>["query", "field", "arg"]
         }
 
         assert_includes errors, {
           "message"=>"Argument 'b' on InputObject 'Input' has an invalid value. Expected type 'Int!'.",
-          "locations"=>[{"line"=>3, "column"=>22}],
+          "locations"=>[{"line"=>3, "column"=>32}],
           "fields"=>["query", "field", "arg", "b"]
         }
       end
@@ -199,7 +199,7 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
     it "finds invalid argument types" do
       assert_includes(errors, {
         "message"=>"Argument 'name' on Field '__type' has an invalid value. Expected type 'String!'.",
-        "locations"=>[{"line"=>3, "column"=>9}],
+        "locations"=>[{"line"=>3, "column"=>16}],
         "fields"=>["query", "__type", "name"],
       })
     end
