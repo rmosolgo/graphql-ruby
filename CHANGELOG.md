@@ -8,6 +8,13 @@
 
 ### Bug fixes
 
+## 1.4.2 (23 Jan 2016)
+
+### Bug fixes
+
+- Absent variables aren't present in `args` (_again_!) #494
+- Ensure definitions were executed when accessing `Field#resolve_proc` #502 (This could have caused errors when multiple instrumenters modified the same field in the schema.)
+
 ## 1.4.1 (16 Jan 2016)
 
 ### Bug fixes
