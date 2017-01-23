@@ -130,7 +130,7 @@ module GraphQL
 
     ensure_defined(
       :name, :deprecation_reason, :description, :description=, :property, :hash_key, :mutation, :arguments, :complexity,
-      :resolve, :resolve=, :lazy_resolve, :lazy_resolve=, :lazy_resolve_proc,
+      :resolve, :resolve=, :lazy_resolve, :lazy_resolve=, :lazy_resolve_proc, :resolve_proc,
       :type, :type=, :name=, :property=, :hash_key=,
       :relay_node_field,
     )
