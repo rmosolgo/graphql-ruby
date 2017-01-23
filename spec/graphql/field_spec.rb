@@ -190,4 +190,13 @@ describe GraphQL::Field do
       assert_equal({a: 1, b: 2, c: 3}, int_field_2.metadata)
     end
   end
+
+  describe "#resolve_proc" do
+    it "ensures the definition was called" do
+      field = GraphQL::Field.define do
+        resolve ->(o, a, c) { :whatever }
+      end
+      assert_instance_of Proc, field.resolve_proc
+    end
+  end
 end
