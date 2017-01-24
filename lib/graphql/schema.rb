@@ -148,6 +148,23 @@ module GraphQL
       rescue_middleware.remove_handler(*args, &block)
     end
 
+    # Validate a query string according to this schema.
+    # @param string_or_document [String, GraphQL::Language::Nodes::Document]
+    # @return [Array<GraphQL::StaticValidation::Message>]
+    def validate(string_or_document, rules: nil)
+      doc = if string_or_document.is_a?(String)
+        GraphQL.parse(string_or_document)
+      else
+        string_or_document
+      end
+      query = GraphQL::Query.new(self, document: doc)
+      validator_opts = { schema: self }
+      rules && (validator_opts[:rules] = rules)
+      validator = GraphQL::StaticValidation::Validator.new(validator_opts)
+      res = validator.validate(query)
+      res[:errors]
+    end
+
     def define(**kwargs, &block)
       super
       ensure_defined
