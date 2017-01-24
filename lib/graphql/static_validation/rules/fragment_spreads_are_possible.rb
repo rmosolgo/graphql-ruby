@@ -23,11 +23,14 @@ module GraphQL
 
         context.visitor[GraphQL::Language::Nodes::Document].leave << ->(doc_node, parent) {
           spreads_to_validate.each do |frag_spread|
-            fragment_child_name = context.fragments[frag_spread.node.name].type.name
-            fragment_child = context.warden.get_type(fragment_child_name)
-            # Might be non-existent type name
-            if fragment_child
-              validate_fragment_in_scope(frag_spread.parent_type, fragment_child, frag_spread.node, context, frag_spread.path)
+            frag_node = context.fragments[frag_spread.node.name]
+            if frag_node
+              fragment_child_name = frag_node.type.name
+              fragment_child = context.warden.get_type(fragment_child_name)
+              # Might be non-existent type name
+              if fragment_child
+                validate_fragment_in_scope(frag_spread.parent_type, fragment_child, frag_spread.node, context, frag_spread.path)
+              end
             end
           end
         }

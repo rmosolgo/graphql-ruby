@@ -129,11 +129,11 @@ describe GraphQL::InternalRepresentation::Rewrite do
       op_node = rewrite_result[nil]
 
       cheese_field = op_node.typed_children[Dummy::DairyAppQueryType]["cheese"]
-      assert_equal ["id1", "id2", "fatContent", "similarCow", "flavor"], cheese_field.typed_children[Dummy::CheeseType].keys
+      assert_equal ["fatContent", "flavor", "id1", "id2", "similarCow"], cheese_field.typed_children[Dummy::CheeseType].keys.sort
       assert_equal ["fatContent", "origin"], cheese_field.typed_children[Dummy::EdibleInterface].keys
       # Merge:
       similar_cow_field = cheese_field.typed_children[Dummy::CheeseType]["similarCow"]
-      assert_equal ["similarCowSource", "fatContent", "similarCheese", "id"], similar_cow_field.typed_children[Dummy::CheeseType].keys
+      assert_equal ["fatContent", "id", "similarCheese", "similarCowSource"], similar_cow_field.typed_children[Dummy::CheeseType].keys.sort
       # Deep merge:
       similar_sheep_field = similar_cow_field.typed_children[Dummy::CheeseType]["similarCheese"]
       assert_equal ["flavor", "source"], similar_sheep_field.typed_children[Dummy::CheeseType].keys
@@ -153,7 +153,6 @@ describe GraphQL::InternalRepresentation::Rewrite do
       cheese_flavor_node = cheese_field.typed_children[Dummy::CheeseType]["flavor"]
       assert_equal Dummy::CheeseType.get_field("flavor"), cheese_flavor_node.definition
       assert_equal Dummy::CheeseType, cheese_flavor_node.owner_type
-
 
       # nested spread inside fragment definition:
       cheese_2_field = op_node.typed_children[Dummy::DairyAppQueryType]["cheese2"].typed_children[Dummy::CheeseType]["similarCheese"]

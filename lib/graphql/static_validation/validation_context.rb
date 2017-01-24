@@ -12,7 +12,11 @@ module GraphQL
     # It also provides limited access to the {TypeStack} instance,
     # which tracks state as you climb in and out of different fields.
     class ValidationContext
-      attr_reader :query, :schema, :document, :errors, :visitor, :fragments, :operations, :warden
+      attr_reader :query, :schema,
+        :document, :errors, :visitor,
+        :fragments, :operations, :warden,
+        :dependencies
+
       def initialize(query)
         @query = query
         @schema = query.schema
@@ -33,6 +37,23 @@ module GraphQL
         @errors = []
         @visitor = GraphQL::Language::Visitor.new(document)
         @type_stack = GraphQL::StaticValidation::TypeStack.new(schema, visitor)
+        definition_dependencies = DefinitionDependencies.mount(self)
+        @on_dependency_resolve_handler = nil
+        visitor[GraphQL::Language::Nodes::Document].leave << -> (_n, _p) {
+          @dependencies = definition_dependencies.dependency_map(&@on_dependency_resolve_handler)
+        }
+      end
+
+
+      def on_dependency_resolve(&handler)
+        if @on_dependency_resolve_handler
+          # This is a make-believe API :S
+          # Rewrite is the only thing that actually needs this handler
+          # Is there a better way to get these two parts of code to talk?
+          raise("Already assigned a handler, multiple assignment is not supported")
+        else
+          @on_dependency_resolve_handler = handler
+        end
       end
 
       def object_types
