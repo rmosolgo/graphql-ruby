@@ -329,5 +329,11 @@ type Query {
       errors = schema.validate("{ cheese(id: 1) { flavor id } }")
       assert_equal [], errors
     end
+
+    it "accepts a list of custom rules" do
+      custom_rules = GraphQL::StaticValidation::ALL_RULES - [GraphQL::StaticValidation::FragmentsAreNamed]
+      errors = schema.validate("fragment on Cheese { id }", rules: custom_rules)
+      assert_equal([], errors)
+    end
   end
 end
