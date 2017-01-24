@@ -115,4 +115,22 @@ describe GraphQL::Define::InstanceDefinable do
       assert_equal :green, arugula.metadata[:color]
     end
   end
+
+  describe "typos" do
+    it "provides the right class name, method name and line number" do
+      err = assert_raises(NoMethodError) {
+        beet = Garden::Vegetable.define {
+          name "Beet"
+          nonsense :Blah
+        }
+        beet.name
+      }
+      assert_includes err.message, "Garden::Vegetable"
+      assert_includes err.message, "nonsense"
+      first_backtrace = err.backtrace.first
+      # This is the offset from the assertion to the `nonsense` call,
+      # it might change when this test changes:
+      assert_includes first_backtrace, "#{__LINE__ - 9}"
+    end
+  end
 end

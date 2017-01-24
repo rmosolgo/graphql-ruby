@@ -16,22 +16,13 @@ module GraphQL
         if definition
           definition.call(@target, *args, &block)
         else
-          p "Failed to find config #{name} in #{inspect}"
-          super
+          msg = "#{@target.class.name} can't define '#{name}'"
+          raise NoMethodError, msg, caller
         end
       end
 
       def respond_to_missing?(name, include_private = false)
-        return true if @dictionary[name]
-        super
-      end
-
-      def to_s
-        inspect
-      end
-
-      def inspect
-        "<DefinedObjectProxy #{@target} (#{@dictionary.keys})>"
+        @dictionary[name] || super
       end
     end
   end
