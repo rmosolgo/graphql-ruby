@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+## 1.0.4 (23 Jan 2017)
+
+### Bug Fixes
+
+- `OrderedRelationConnection` exposes more metadata methods: `parent`, `field`, `arguments`, `max_page_size`, `first`, `after`, `last`, `before`
+
 ## 1.0.3 (23 Jan 2017)
 
 ### Bug Fixes
