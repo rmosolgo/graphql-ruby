@@ -47,6 +47,8 @@ module GraphQL
         end
       end
 
+      NO_ARGS = self.new({}, argument_definitions: [])
+
       private
 
       class ArgumentValue
