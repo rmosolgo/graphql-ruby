@@ -65,7 +65,7 @@ describe GraphQL::StaticValidation::FieldsAreDefinedOnType do
         {
           "message"=>"Selections can't be made directly on unions (see selections on DairyProduct)",
           "locations"=>[
-            {"line"=>3, "column"=>7}
+            {"line"=>3, "column"=>43}
           ],
           "fields"=>["fragment dpFields", "source"],
         }

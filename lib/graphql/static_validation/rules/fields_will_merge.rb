@@ -2,6 +2,8 @@
 module GraphQL
   module StaticValidation
     class FieldsWillMerge
+      include GraphQL::StaticValidation::Message::MessageHelper
+
       def validate(context)
         fragments = {}
         has_selections = []
@@ -23,9 +25,8 @@ module GraphQL
 
       def find_conflicts(field_map, visited_fragments, context)
         field_map.each do |name, ast_fields|
-          comparison = FieldDefinitionComparison.new(name, ast_fields, context)
-          context.errors.push(*comparison.errors)
-
+          errs = compare_fields(name, ast_fields, context)
+          context.errors.concat(errs)
 
           subfield_map = {}
           ast_fields.each do |defn|
@@ -63,46 +64,25 @@ module GraphQL
       end
 
       # Compare two field definitions, add errors to the list if there are any
-      class FieldDefinitionComparison
-        include GraphQL::StaticValidation::Message::MessageHelper
-        NAMED_VALUES = [GraphQL::Language::Nodes::Enum, GraphQL::Language::Nodes::VariableIdentifier]
-        attr_reader :errors
-        def initialize(name, defs, context)
-          errors = []
+      def compare_fields(name, ast_fields, context)
+        errors = []
 
-          names = defs.map(&:name).uniq
-          if names.length != 1
-            errors << message("Field '#{name}' has a field conflict: #{names.join(" or ")}?", defs.first, context: context)
-          end
-
-          args = defs.map { |defn| reduce_list(defn.arguments)}.uniq
-          if args.length != 1
-            errors << message("Field '#{name}' has an argument conflict: #{args.map{ |arg| GraphQL::Language.serialize(arg) }.join(" or ")}?", defs.first, context: context)
-          end
-
-          @errors = errors
+        names = ast_fields.map(&:name).uniq
+        if names.length != 1
+          errors << message("Field '#{name}' has a field conflict: #{names.join(" or ")}?", ast_fields.first)
         end
 
-        private
-
-        def print_arg(arg)
-          case arg
-          when GraphQL::Language::Nodes::VariableIdentifier
-            "$#{arg.name}"
-          when GraphQL::Language::Nodes::Enum
-            "#{arg.name}"
-          else
-            GraphQL::Language.serialize(arg)
-          end
+        args = ast_fields.map { |ast_node| field_args_string(ast_node) }.uniq
+        if args.length != 1
+          errors << message("Field '#{name}' has an argument conflict: #{args.map{ |arg| GraphQL::Language.serialize(arg) }.join(" or ")}?", ast_fields.first)
         end
 
-        # Turn AST tree into a hash
-        # can't look up args, the names just have to match
-        def reduce_list(args)
-          args.reduce({}) do |memo, a|
-            memo[a.name] = print_arg(a.value)
-            memo
-          end
+        errors
+      end
+
+      def field_args_string(ast_field)
+        ast_field.arguments.each_with_object({}) do |arg, memo|
+          memo[arg.name] = GraphQL::Language::Generation.generate(arg.value)
         end
       end
     end

@@ -36,7 +36,7 @@ describe GraphQL::StaticValidation::RequiredArgumentsArePresent do
     directive_error = {
       "message"=>"Directive 'skip' is missing required arguments: if",
       "locations"=>[{"line"=>10, "column"=>10}],
-      "fields"=>["fragment cheeseFields", "id"],
+      "fields"=>["fragment cheeseFields", "id", "@skip"],
     }
     assert_includes(errors, directive_error)
   end

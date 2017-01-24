@@ -9,7 +9,7 @@ module GraphQL
         if !context.valid_literal?(node.value, arg_defn.type)
           kind_of_node = node_type(parent)
           error_arg_name = parent_name(parent, defn)
-          context.errors << message("Argument '#{node.name}' on #{kind_of_node} '#{error_arg_name}' has an invalid value. Expected type '#{arg_defn.type}'.", parent, context: context)
+          context.errors << message("Argument '#{node.name}' on #{kind_of_node} '#{error_arg_name}' has an invalid value. Expected type '#{arg_defn.type}'.", node)
         end
       end
     end

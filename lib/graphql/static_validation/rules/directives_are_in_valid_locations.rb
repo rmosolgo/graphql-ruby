@@ -44,7 +44,7 @@ module GraphQL
           required_location = SIMPLE_LOCATIONS[ast_parent.class]
           assert_includes_location(directive_defn, ast_directive, required_location, context)
         else
-          context.errors << message("Directives can't be applied to #{ast_parent.class.name}s", ast_directive, context: context)
+          context.errors << message("Directives can't be applied to #{ast_parent.class.name}s", ast_directive)
         end
       end
 
@@ -52,7 +52,7 @@ module GraphQL
         if !directive_defn.locations.include?(required_location)
           location_name = LOCATION_MESSAGE_NAMES[required_location]
           allowed_location_names = directive_defn.locations.map { |loc| LOCATION_MESSAGE_NAMES[loc] }
-          context.errors << message("'@#{directive_defn.name}' can't be applied to #{location_name} (allowed: #{allowed_location_names.join(", ")})", directive_ast, context: context)
+          context.errors << message("'@#{directive_defn.name}' can't be applied to #{location_name} (allowed: #{allowed_location_names.join(", ")})", directive_ast)
         end
       end
     end

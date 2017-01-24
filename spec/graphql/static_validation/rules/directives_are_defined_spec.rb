@@ -20,11 +20,11 @@ describe GraphQL::StaticValidation::DirectivesAreDefined do
         {
           "message"=>"Directive @nonsense is not defined",
           "locations"=>[{"line"=>5, "column"=>16}],
-          "fields"=>["query getCheese", "okCheese", "source"],
+          "fields"=>["query getCheese", "okCheese", "source", "@nonsense"],
         }, {
           "message"=>"Directive @moreNonsense is not defined",
           "locations"=>[{"line"=>7, "column"=>18}],
-          "fields"=>["query getCheese", "okCheese", "... on Cheese", "flavor"],
+          "fields"=>["query getCheese", "okCheese", "... on Cheese", "flavor", "@moreNonsense"],
         }
       ]
       assert_equal(expected, errors)

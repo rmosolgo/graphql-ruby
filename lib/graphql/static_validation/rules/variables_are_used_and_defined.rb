@@ -15,7 +15,7 @@ module GraphQL
       include GraphQL::StaticValidation::Message::MessageHelper
 
       class VariableUsage
-        attr_accessor :ast_node, :used_by, :declared_by, :path
+        attr_accessor :ast_node, :used_by, :declared_by
         def used?
           !!@used_by
         end
@@ -54,7 +54,6 @@ module GraphQL
           node.variables.each { |var|
             var_usage = var_hash[var.name]
             var_usage.declared_by = node
-            var_usage.path = context.path
           }
         }
         context.visitor[GraphQL::Language::Nodes::OperationDefinition].leave << pop_variable_context_stack
@@ -79,7 +78,6 @@ module GraphQL
           usage = declared_variables[node.name]
           usage.used_by = usage_context
           usage.ast_node = node
-          usage.path = context.path
         }
 
 
@@ -110,7 +108,6 @@ module GraphQL
             if child_usage.used?
               parent_usage.ast_node   = child_usage.ast_node
               parent_usage.used_by    = child_usage.used_by
-              parent_usage.path       = child_usage.path
             end
           end
           follow_spreads(def_node, parent_variables, spreads_for_context, fragment_definitions, visited_fragments)
@@ -123,12 +120,12 @@ module GraphQL
         # Declared but not used:
         node_variables
           .select { |name, usage| usage.declared? && !usage.used? }
-          .each { |var_name, usage| context.errors << message("Variable $#{var_name} is declared by #{usage.declared_by.name} but not used", usage.declared_by, path: usage.path) }
+          .each { |var_name, usage| context.errors << message("Variable $#{var_name} is declared by #{usage.declared_by.name} but not used", usage.declared_by) }
 
         # Used but not declared:
         node_variables
           .select { |name, usage| usage.used? && !usage.declared? }
-          .each { |var_name, usage| context.errors << message("Variable $#{var_name} is used by #{usage.used_by.name} but not declared", usage.ast_node, path: usage.path) }
+          .each { |var_name, usage| context.errors << message("Variable $#{var_name} is used by #{usage.used_by.name} but not declared", usage.ast_node) }
       end
     end
   end
