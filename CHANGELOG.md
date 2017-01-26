@@ -8,14 +8,14 @@
 
 ### Bug fixes
 
-## 1.4.2 (23 Jan 2016)
+## 1.4.2 (23 Jan 2017)
 
 ### Bug fixes
 
 - Absent variables aren't present in `args` (_again_!) #494
 - Ensure definitions were executed when accessing `Field#resolve_proc` #502 (This could have caused errors when multiple instrumenters modified the same field in the schema.)
 
-## 1.4.1 (16 Jan 2016)
+## 1.4.1 (16 Jan 2017)
 
 ### Bug fixes
 
@@ -24,7 +24,7 @@
 - `Schema#default_mask` & query `only:`/`except:` are combined, not overriden #485
 - Root types can be hidden with dynamic filters #480
 
-## 1.4.0 (8 Jan 2016)
+## 1.4.0 (8 Jan 2017)
 
 ### Breaking changes
 
