@@ -82,6 +82,11 @@ describe GraphQL::Relay::ArrayConnection do
 
       result = star_wars_query(query_string, "last" => 2)
       assert_equal(["Millenium Falcon", "Home One"], get_names(result))
+
+      result = star_wars_query(query_string, "last" => 10)
+      assert_equal(["X-Wing", "Y-Wing", "A-Wing", "Millenium Falcon", "Home One"], get_names(result))
+      assert_equal(false, result["data"]["rebels"]["ships"]["pageInfo"]["hasNextPage"])
+      assert_equal(false, result["data"]["rebels"]["ships"]["pageInfo"]["hasPreviousPage"])
     end
 
     it 'handles cursors beyond the bounds of the array' do
