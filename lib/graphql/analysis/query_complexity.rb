@@ -89,44 +89,13 @@ module GraphQL
 
         # Return the max possible complexity for types in this selection
         def max_possible_complexity
-          max_complexity = 0
-
-          @types.each do |type_defn, own_complexity|
-            type_complexity = @types.reduce(0) do |memo, (other_type, other_complexity)|
-              if types_overlap?(type_defn, other_type)
-                memo + other_complexity
-              else
-                memo
-              end
-            end
-
-            if type_complexity > max_complexity
-              max_complexity = type_complexity
-            end
-          end
-          max_complexity
+          @types.each_value.max || 0
         end
 
         # Store the complexity for the branch on `type_defn`.
         # Later we will see if this is the max complexity among branches.
         def merge(type_defn, complexity)
           @types[type_defn] += complexity
-        end
-
-        private
-        # True if:
-        # - type_1 is type_2
-        # - type_1 is a member of type_2's possible types
-        def types_overlap?(type_1, type_2)
-          if type_1 == type_2
-            true
-          elsif type_2.kind.union?
-            type_2.include?(type_1)
-          elsif type_1.kind.object? && type_2.kind.interface?
-            type_1.interfaces.include?(type_2)
-          else
-            false
-          end
         end
       end
     end

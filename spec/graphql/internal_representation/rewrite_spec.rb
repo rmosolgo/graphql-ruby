@@ -2,161 +2,200 @@
 require "spec_helper"
 
 describe GraphQL::InternalRepresentation::Rewrite do
-  let(:validator) { GraphQL::StaticValidation::Validator.new(schema: Dummy::Schema) }
-  let(:query) { GraphQL::Query.new(Dummy::Schema, query_string) }
-  let(:rewrite_result) {
-    validator.validate(query)[:irep]
+  let(:schema) {
+    GraphQL::Schema.from_definition <<-GRAPHQL
+    type Query {
+      plant(id: ID!): Plant
+    }
+
+    union Plant = Grain | Fruit | Vegetable | Nut
+
+    interface Tree {
+      name: String!
+      leafType: LeafType
+      habitats: [Habitat]
+    }
+
+    enum LeafType {
+      NEEDLE
+      LEAF
+    }
+
+    type Fruit implements Tree {
+      name: String!
+      color: [Int!]!
+      leafType: LeafType
+      habitats: [Habitat]
+    }
+
+    type Vegetable {
+      name: String!
+      edibleParts: [String!]!
+    }
+
+    type Grain {
+      name: String!
+    }
+
+    type Nut implements Tree {
+      name: String!
+      diameter: Int!
+      leafType: LeafType
+      habitats: [Habitat]
+    }
+
+    type Habitat {
+      residentName: String!
+      averageWeight: Int!
+      seasons: [String]
+    }
+    GRAPHQL
+
   }
-  describe "plain queries" do
-    let(:query_string) {%|
-    query getCheeses {
-      cheese1: cheese(id: 1) {
-        id1: id
-        id2: id
-        id3: id
+  let(:validator) { GraphQL::StaticValidation::Validator.new(schema: schema) }
+  let(:query) { GraphQL::Query.new(schema, query_string) }
+  let(:rewrite_result) {
+    res = validator.validate(query)
+    res[:errors].any? && raise(res[:errors].map(&:message).join("; "))
+    res[:irep]
+  }
+  # TODO: make sure all rewrite specs are covered
+
+  describe "building a tree over concrete types with fragments" do
+    let(:query_string) {
+      <<-GRAPHQL
+      query getPlant($id: ID!) {
+        plant(id: $id) {
+          __typename
+          ... on Tree {
+            leafType
+            habitats {
+              averageWeight
+            }
+          }
+          ... on Fruit {
+            name
+            color
+            ... on Tree {
+              leafType
+            }
+          }
+          ... on Nut {
+            leafType
+            ...NutFields
+          }
+        }
       }
-      cheese2: cheese(id: 2) {
-        id
+
+      fragment NutFields on Nut {
+        leafType
+        ... TreeFields
       }
+
+      fragment TreeFields on Tree {
+        habitats {
+          ... HabitatFields
+        }
+      }
+
+      fragment HabitatFields on Habitat {
+        seasons
+      }
+      GRAPHQL
     }
-    |}
 
-    it "produces a tree of nodes" do
-      op_node = rewrite_result["getCheeses"]
+    it "groups selections by object types which they apply to" do
+      doc = rewrite_result[schema.types["Query"]]["getPlant"]
 
-      root_children = op_node.typed_children[Dummy::DairyAppQueryType]
-      assert_equal 2, root_children.length
-      assert_equal Dummy::DairyAppQueryType, op_node.return_type
-      first_field = root_children.values.first
-      assert_equal 3, first_field.typed_children[Dummy::CheeseType].length
-      assert_equal Dummy::DairyAppQueryType, first_field.owner_type
-      assert_equal Dummy::CheeseType, first_field.return_type
+      plant_selection = doc.typed_children[schema.types["Query"]]["plant"]
+      assert_equal ["Fruit", "Grain", "Nut", "Vegetable"], plant_selection.typed_children.keys.map(&:name).sort
 
-      second_field = root_children.values.last
-      assert_equal 1, second_field.typed_children[Dummy::CheeseType].length
-      assert_equal Dummy::DairyAppQueryType.get_field("cheese"), second_field.definition
-      assert_equal Dummy::CheeseType, second_field.return_type
-      assert second_field.inspect.is_a?(String)
+      fruit_selections = plant_selection.typed_children[schema.types["Fruit"]]
+      assert_equal ["__typename", "color", "habitats", "leafType", "name"], fruit_selections.keys.sort
+      assert_equal 2, fruit_selections["leafType"].ast_nodes.size
+
+      nut_selections = plant_selection.typed_children[schema.types["Nut"]]
+      # `... on Tree`, `... on Nut`, and `NutFields`, but not `... on Fruit { ... on Tree }`
+      assert_equal 3, nut_selections["leafType"].ast_nodes.size
+      # Multi-level merging when including fragments:
+      habitats_selections = nut_selections["habitats"].typed_children[schema.types["Habitat"]]
+      assert_equal ["averageWeight", "seasons"], habitats_selections.keys
     end
   end
 
-  describe "dynamic fields" do
-    let(:query_string) {%|
+  describe "tracking directives on fragment spreads" do
+    let(:query_string) { <<-GRAPHQL
+      query getPlant($id: ID!) {
+        plant(id: $id) {
+          ... on Nut @skip(if: true) {
+            leafType
+          }
+
+          ... on Tree {
+            leafType @include(if: true)
+          }
+
+          ... on Nut {
+            leafType # no directives
+          }
+
+          ... NutFields @include(if: false)
+        }
+      }
+      fragment NutFields on Nut {
+        leafType @skip(if: false)
+      }
+    GRAPHQL
+    }
+
+    it "applies directives from all contexts" do
+      doc = rewrite_result[schema.types["Query"]]["getPlant"]
+      plant_selection = doc.typed_children[schema.types["Query"]]["plant"]
+      leaf_type_selection = plant_selection.typed_children[schema.types["Nut"]]["leafType"]
+      # Each occurrence in the AST:
+      assert_equal 4, leaf_type_selection.ast_nodes.size
+      # Inclusion contexts:
+      assert_equal 4, leaf_type_selection.ast_spreads.size
+      # Own directives:
+      assert_equal 2, leaf_type_selection.ast_directives.size
+    end
+  end
+
+  describe "deep fragment merging" do
+    let(:query_string) { <<-GRAPHQL
       {
-        cheese(id: 1) {
-          typename: __typename
+        plant(id: 1) {
+          ...TreeFields
+          ...NutFields
         }
       }
-    |}
 
-    it "gets dynamic field definitions" do
-      cheese_field = rewrite_result[nil].typed_children[Dummy::DairyAppQueryType]["cheese"]
-      typename_field = cheese_field.typed_children[Dummy::CheeseType]["typename"]
-      assert_equal "__typename", typename_field.definition.name
-      assert_equal "__typename", typename_field.definition_name
-    end
-  end
-
-  describe "merging fragments" do
-    let(:query_string) {%|
-    {
-      cheese(id: 1) {
-        id1: id
-        ... {
-          id2: id
-        }
-
-        fatContent
-        ... on Edible {
-          fatContent
-          origin
-        }
-
-        ... cheeseFields
-
-        ... similarCheeseField
-      }
-
-      cheese2: cheese(id: 2) {
-        similarCheese(source: COW) {
-          id
-        }
-        ... cheese2Fields
-      }
-    }
-
-    fragment cheeseFields on Cheese {
-      fatContent
-      flavor
-      similarCow: similarCheese(source: COW) {
-        similarCowSource: source,
-        id
-        ... similarCowFields
-      }
-    }
-
-    fragment similarCowFields on Cheese {
-      similarCheese(source: SHEEP) {
-        source
-      }
-    }
-
-    fragment similarCheeseField on Cheese {
-      # deep fragment merge
-      similarCow: similarCheese(source: COW) {
-        similarCowSource: source,
-        fatContent
-        similarCheese(source: SHEEP) {
-          flavor
+      fragment TreeFields on Tree {
+        habitats {
+          seasons
         }
       }
-    }
 
-    fragment cheese2InnerFields on Cheese {
-      id
-      fatContent
-    }
-
-    fragment cheese2Fields on Cheese {
-      similarCheese(source: COW) {
-        ... cheese2InnerFields
+      fragment NutFields on Nut {
+        habitats {
+          residentName
+          ... HabitatFields
+        }
       }
+
+      fragment HabitatFields on Habitat {
+        averageWeight
+      }
+      GRAPHQL
     }
 
-    |}
-
-    it "puts all fragment members as children" do
-      op_node = rewrite_result[nil]
-
-      cheese_field = op_node.typed_children[Dummy::DairyAppQueryType]["cheese"]
-      assert_equal ["fatContent", "flavor", "id1", "id2", "similarCow"], cheese_field.typed_children[Dummy::CheeseType].keys.sort
-      assert_equal ["fatContent", "origin"], cheese_field.typed_children[Dummy::EdibleInterface].keys
-      # Merge:
-      similar_cow_field = cheese_field.typed_children[Dummy::CheeseType]["similarCow"]
-      assert_equal ["fatContent", "id", "similarCheese", "similarCowSource"], similar_cow_field.typed_children[Dummy::CheeseType].keys.sort
-      # Deep merge:
-      similar_sheep_field = similar_cow_field.typed_children[Dummy::CheeseType]["similarCheese"]
-      assert_equal ["flavor", "source"], similar_sheep_field.typed_children[Dummy::CheeseType].keys
-
-      edible_origin_node = cheese_field.typed_children[Dummy::EdibleInterface]["origin"]
-      assert_equal Dummy::EdibleInterface.get_field("origin"), edible_origin_node.definition
-      assert_equal Dummy::EdibleInterface, edible_origin_node.owner_type
-
-      edible_fat_content_node = cheese_field.typed_children[Dummy::EdibleInterface]["fatContent"]
-      assert_equal Dummy::EdibleInterface.get_field("fatContent"), edible_fat_content_node.definition
-      assert_equal Dummy::EdibleInterface, edible_fat_content_node.owner_type
-
-      cheese_fat_content_node = cheese_field.typed_children[Dummy::CheeseType]["fatContent"]
-      assert_equal Dummy::CheeseType.get_field("fatContent"), cheese_fat_content_node.definition
-      assert_equal Dummy::CheeseType, cheese_fat_content_node.owner_type
-
-      cheese_flavor_node = cheese_field.typed_children[Dummy::CheeseType]["flavor"]
-      assert_equal Dummy::CheeseType.get_field("flavor"), cheese_flavor_node.definition
-      assert_equal Dummy::CheeseType, cheese_flavor_node.owner_type
-
-      # nested spread inside fragment definition:
-      cheese_2_field = op_node.typed_children[Dummy::DairyAppQueryType]["cheese2"].typed_children[Dummy::CheeseType]["similarCheese"]
-      assert_equal ["id", "fatContent"], cheese_2_field.typed_children[Dummy::CheeseType].keys
+    it "applies spreads to their parents only" do
+      doc = rewrite_result[schema.types["Query"]][nil]
+      plant_selection = doc.typed_children[schema.types["Query"]]["plant"]
+      nut_habitat_selections = plant_selection.typed_children[schema.types["Nut"]]["habitats"].typed_children[schema.types["Habitat"]]
+      assert_equal ["averageWeight", "residentName", "seasons"], nut_habitat_selections.keys.sort
+      fruit_habitat_selections = plant_selection.typed_children[schema.types["Fruit"]]["habitats"].typed_children[schema.types["Habitat"]]
+      assert_equal ["seasons"], fruit_habitat_selections.keys
     end
   end
 
@@ -218,11 +257,14 @@ describe GraphQL::InternalRepresentation::Rewrite do
       assert_equal 3, cheeses.length
       assert_equal 1, milks.length
 
+      expected_cheese_fields = ["cheeseInlineOrigin", "edibleInlineOrigin", "untypedInlineOrigin", "cheeseFragmentOrigin"]
       cheeses.each do |cheese|
-        assert_equal ["cheeseInlineOrigin", "cheeseFragmentOrigin", "edibleInlineOrigin", "untypedInlineOrigin"], cheese["selfAsEdible"].keys
+        assert_equal expected_cheese_fields, cheese["selfAsEdible"].keys
       end
+
+      expected_milk_fields = ["milkInlineOrigin", "edibleInlineOrigin", "untypedInlineOrigin", "milkFragmentOrigin"]
       milks.each do |milk|
-        assert_equal ["milkInlineOrigin", "milkFragmentOrigin", "edibleInlineOrigin", "untypedInlineOrigin"], milk["selfAsEdible"].keys
+        assert_equal expected_milk_fields, milk["selfAsEdible"].keys
       end
     end
   end

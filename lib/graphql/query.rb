@@ -154,8 +154,8 @@ module GraphQL
 
     def irep_selection
       @selection ||= begin
-        irep_root = internal_representation[selected_operation.name]
-        GraphQL::InternalRepresentation::Selection.new(query: self, nodes: [irep_root])
+        root_type = schema.root_type_for_operation(selected_operation.operation_type)
+        internal_representation[root_type][selected_operation.name]
       end
     end
 
@@ -178,12 +178,18 @@ module GraphQL
     # @return [GraphQL::Query::Arguments] Arguments for this node, merging default values, literal values and query variables
     def arguments_for(irep_node, definition)
       @arguments_cache[irep_node][definition] ||= begin
-        ast_arguments = irep_node.ast_node.arguments
+        ast_node = case irep_node
+        when GraphQL::Language::Nodes::AbstractNode
+          irep_node
+        else
+          irep_node.ast_node
+        end
+        ast_arguments = ast_node.arguments
         if ast_arguments.none?
           definition.default_arguments
         else
           GraphQL::Query::LiteralInput.from_arguments(
-            irep_node.ast_node.arguments,
+            ast_arguments,
             definition.arguments,
             self.variables
           )

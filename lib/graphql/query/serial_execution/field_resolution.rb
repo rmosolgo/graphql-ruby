@@ -6,7 +6,7 @@ module GraphQL
         attr_reader :irep_node, :parent_type, :target, :field, :arguments, :query
 
         def initialize(selection, parent_type, target, query_ctx)
-          @irep_node = selection.irep_node
+          @irep_node = selection
           @selection = selection
           @parent_type = parent_type
           @target = target

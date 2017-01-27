@@ -1,227 +1,194 @@
-# frozen_string_literal: true
 module GraphQL
   module InternalRepresentation
-    # Convert an AST into a tree of {InternalRepresentation::Node}s
-    #
-    # This rides along with {StaticValidation}, building a tree of nodes.
-    #
-    # However, if any errors occurred during validation, the resulting tree is bogus.
-    #  (For example, `nil` could have been pushed instead of a type.)
     class Rewrite
       include GraphQL::Language
 
-      # @return [Hash<String => InternalRepresentation::Node>] internal representation of each query root (operation, fragment)
+      NO_DIRECTIVES = [].freeze
+      # @return [Hash<String, Node>] Roots of this query
       attr_reader :operations
 
       def initialize
-        # { String => Node } Tracks the roots of the query
-        @operations = {}
-        @fragments = {}
-        # [String...] fragments which don't have fragments inside them
-        @independent_fragments = []
-        # Tracks the current node during traversal
-        # Stack<InternalRepresentation::Node>
-        @nodes = []
-        # This tracks dependencies from fragment to Node where it was used
-        # { frag_name => [dependent_node, dependent_node]}
-        @fragment_spreads = Hash.new { |h, k| h[k] = []}
-        # [[Nodes::Directive ...]] directive affecting the current scope
-        @parent_directives = []
+        @operations = Hash.new {|h, k| h[k] = {} }
       end
 
       def validate(context)
         visitor = context.visitor
+        query = context.query
+        spread_parents = Hash.new { |h, k| h[k] = Set.new }
+        nodes_stack = []
+        scope_stack = []
+        spreads_stack = []
 
-        visitor[Nodes::OperationDefinition].enter << ->(ast_node, prev_ast_node) {
-          node = Node.new(
-            return_type: context.type_definition && context.type_definition.unwrap,
-            ast_node: ast_node,
-            name: ast_node.name,
-            parent: nil,
-          )
-          @nodes.push(node)
-          @operations[ast_node.name] = node
+        visit_defn = VisitDefinition.new(context, @operations, nodes_stack, scope_stack)
+        visitor[Nodes::OperationDefinition].enter << visit_defn.method(:enter)
+        visitor[Nodes::OperationDefinition].leave << visit_defn.method(:leave)
+        visitor[Nodes::FragmentDefinition].enter << visit_defn.method(:enter)
+        visitor[Nodes::FragmentDefinition].leave << visit_defn.method(:leave)
+
+        visitor[Nodes::InlineFragment].enter << ->(ast_node, ast_parent) {
+          next_scope = Set.new
+          prev_scope = scope_stack.last
+          each_type(query, context.type_definition) do |obj_type|
+            # What this fragment can apply to is also determined by
+            # the scope around it (it can't widen the scope)
+            if prev_scope.include?(obj_type)
+              next_scope.add(obj_type)
+            end
+          end
+          scope_stack.push(next_scope)
+          spreads_stack.push(ast_node)
         }
 
-        visitor[Nodes::Field].enter << ->(ast_node, prev_ast_node) {
-          parent_node = @nodes.last
+        visitor[Nodes::InlineFragment].leave << ->(ast_node, ast_parent) {
+          scope_stack.pop
+          spreads_stack.pop
+        }
+
+        visitor[Nodes::Field].enter << ->(ast_node, ast_parent) {
           node_name = ast_node.alias || ast_node.name
-          owner_type = context.parent_type_definition.unwrap
-          # This node might not be novel, eg inside an inline fragment
-          node = parent_node.typed_children[owner_type][node_name] ||= Node.new(
-            return_type: context.type_definition && context.type_definition.unwrap,
-            ast_node: ast_node,
-            name: node_name,
-            definition_name: ast_node.name,
-            definition: context.field_definition,
-            parent: parent_node,
-            owner_type: owner_type,
-            included: false, # may be set to true on leaving the node
-          )
-          parent_node.children[node_name] ||= node
-          node.definitions[owner_type] = context.field_definition
-          @nodes.push(node)
-          @parent_directives.push([])
+          parent_nodes = nodes_stack.last
+          next_nodes = []
+          next_scope = Set.new
+          applicable_scope = scope_stack.last
+          applicable_spread = spreads_stack.last
+
+          applicable_scope.each do |obj_type|
+            # Can't use context.field_definition because that might be
+            # a definition on an interface type
+            field_defn = query.get_field(obj_type, ast_node.name)
+            if field_defn.nil?
+              # It's a non-existent field
+            else
+              field_return_type = field_defn.type
+              each_type(query, field_return_type.unwrap) do |obj_type|
+                next_scope.add(obj_type)
+              end
+              parent_nodes.each do |parent_node|
+                node = parent_node.typed_children[obj_type][node_name] ||= Node.new(
+                  name: node_name,
+                  owner_type: obj_type,
+                  query: query,
+                )
+                node.ast_nodes.push(ast_node)
+                node.ast_directives.merge(ast_node.directives)
+                node.definitions.add(field_defn)
+                applicable_spread && node.ast_spreads.add(applicable_spread)
+                next_nodes << node
+              end
+            end
+          end
+          nodes_stack.push(next_nodes)
+          scope_stack.push(next_scope)
+          spreads_stack.push(nil)
         }
 
-        visitor[Nodes::InlineFragment].enter << ->(ast_node, prev_ast_node) {
-          @parent_directives.push(InlineFragmentDirectives.new)
+        visitor[Nodes::Field].leave << ->(ast_node, ast_parent) {
+          nodes_stack.pop
+          scope_stack.pop
+          spreads_stack.pop
         }
 
-        visitor[Nodes::Directive].enter << ->(ast_node, prev_ast_node) {
-          # It could be a query error where a directive is somewhere it shouldn't be
-          if @parent_directives.any?
-            directive_irep_node = Node.new(
-              name: ast_node.name,
-              definition_name: ast_node.name,
-              ast_node: ast_node,
-              definition: context.directive_definition,
-              definitions: {context.directive_definition => context.directive_definition},
-              # This isn't used, the directive may have many parents in the case of inline fragment
-              parent: nil,
+        visitor[Nodes::FragmentSpread].enter << ->(ast_node, ast_parent) {
+          spread_parents[ast_node].merge(nodes_stack.last)
+        }
+
+        context.on_dependency_resolve do |defn_ast_node, spread_ast_nodes, frag_ast_node|
+          frag_name = frag_ast_node.name
+          spread_ast_nodes.each do |spread_ast_node|
+            parent_nodes = spread_parents[spread_ast_node]
+            parent_nodes.each do |parent_node|
+              each_type(query, parent_node.return_type) do |obj_type|
+                fragment_node = operations[obj_type][frag_name]
+                if fragment_node
+                  deep_merge_selections(query, parent_node, fragment_node, spread: spread_ast_node.node)
+                end
+              end
+            end
+          end
+        end
+      end
+
+      def deep_merge_selections(query, prev_parent, new_parent, spread:)
+        # p "prev parent: #{prev_parent.selections.map { |t, c| "#{t.name}: [#{c.keys.join(", ")}]"}.join(", ")}"
+        # p "new  parent: #{new_parent.selections.map { |t, c| "#{t.name}: [#{c.keys.join(", ")}]"}.join(", ")}"
+        new_parent.typed_children.each do |obj_type, new_fields|
+          prev_fields = prev_parent.typed_children[obj_type]
+          new_fields.each do |name, new_node|
+            prev_node = prev_fields[name]
+            # p "#{obj_type}.#{name} (prev? #{!!prev_node})"
+            node = if prev_node
+              prev_node.ast_nodes.concat(new_node.ast_nodes)
+              prev_node.definitions.merge(new_node.definitions)
+              prev_node.ast_directives.merge(new_node.ast_directives)
+              deep_merge_selections(query, prev_node, new_node, spread: nil)
+              prev_node
+            else
+              # TODO deep dup?
+              prev_fields[name] = new_node.dup
+              # prev_fields[name] = new_node.deep_copy
+            end
+            # merge the inclusion context, if there is one
+            spread && node.ast_spreads.add(spread)
+          end
+        end
+      end
+
+      def each_type(query, owner_type, &block)
+        self.class.each_type(query, owner_type, &block)
+      end
+
+      def self.each_type(query, owner_type)
+        case owner_type
+        when GraphQL::ObjectType, GraphQL::ScalarType, GraphQL::EnumType
+          yield(owner_type)
+        when GraphQL::UnionType, GraphQL::InterfaceType
+          query.possible_types(owner_type).each(&Proc.new)
+        when GraphQL::InputObjectType, nil
+          # this is an error, don't give 'em nothin
+        else
+          raise "Unexpected owner type: #{owner_type.inspect}"
+        end
+      end
+
+      class VisitDefinition
+        def initialize(context, operations, nodes_stack, scope_stack)
+          @context = context
+          @query = context.query
+          @operations = operations
+          @nodes_stack = nodes_stack
+          @scope_stack = scope_stack
+        end
+
+        def enter(ast_node, ast_parent)
+          # Either QueryType or the fragment type condition
+          owner_type = @context.type_definition && @context.type_definition.unwrap
+          next_nodes = []
+          next_scope = Set.new
+          defn_name = ast_node.name
+          Rewrite.each_type(@query, owner_type) do |obj_type|
+            next_scope.add(obj_type)
+            node = Node.new(
+              name: defn_name,
+              owner_type: obj_type,
+              query: @query,
+              ast_nodes: [ast_node],
+              definitions: [OperationDefinitionProxy.new(obj_type)],
             )
-            @parent_directives.last.push(directive_irep_node)
+            @operations[obj_type][defn_name] = node
+            next_nodes << node
           end
-        }
-
-        visitor[Nodes::FragmentSpread].enter << ->(ast_node, prev_ast_node) {
-          parent_node = @nodes.last
-          # Record _both sides_ of the dependency
-          spread_node = Node.new(
-            parent: parent_node,
-            name: ast_node.name,
-            ast_node: ast_node,
-            included: false, # this may be set to true on leaving the node
-          )
-          # The parent node has a reference to the fragment
-          parent_node.spreads.push(spread_node)
-          # And keep a reference from the fragment to the parent node
-          @fragment_spreads[ast_node.name].push(parent_node)
-          @nodes.push(spread_node)
-          @parent_directives.push([])
-        }
-
-        visitor[Nodes::FragmentDefinition].enter << ->(ast_node, prev_ast_node) {
-          node = Node.new(
-            parent: nil,
-            name: ast_node.name,
-            return_type: context.type_definition,
-            ast_node: ast_node,
-          )
-          @nodes.push(node)
-          @fragments[ast_node.name] = node
-        }
-
-        visitor[Nodes::InlineFragment].leave  << ->(ast_node, prev_ast_node) {
-          @parent_directives.pop
-        }
-
-        visitor[Nodes::FragmentSpread].leave  << ->(ast_node, prev_ast_node) {
-          # Capture any directives that apply to this spread
-          # so that they can be applied to fields when
-          # the fragment is merged in later
-          spread_node = @nodes.pop
-          applicable_directives = pop_applicable_directives(@parent_directives)
-          spread_node.included ||= GraphQL::Execution::DirectiveChecks.include?(applicable_directives, context.query)
-          spread_node.directives.merge(applicable_directives)
-        }
-
-        visitor[Nodes::FragmentDefinition].leave << ->(ast_node, prev_ast_node) {
-          # This fragment doesn't depend on any others,
-          # we should save it as the starting point for dependency resolution
-          frag_node = @nodes.pop
-          if !any_fragment_spreads?(frag_node)
-            @independent_fragments << frag_node
-          end
-        }
-
-        visitor[Nodes::OperationDefinition].leave << ->(ast_node, prev_ast_node) {
-          @nodes.pop
-        }
-
-        visitor[Nodes::Field].leave << ->(ast_node, prev_ast_node) {
-          # Pop this field's node
-          # and record any directives that were visited
-          # during this field & before it (eg, inline fragments)
-          field_node = @nodes.pop
-          applicable_directives = pop_applicable_directives(@parent_directives)
-          field_node.directives.merge(applicable_directives)
-          field_node.included ||= GraphQL::Execution::DirectiveChecks.include?(applicable_directives, context.query)
-        }
-
-        context.on_dependency_resolve do |defn_ast_node, frag_ast_node|
-          fragment_name = frag_ast_node.name
-          fragment_node = @fragments[fragment_name]
-          dependent_nodes = @fragment_spreads[fragment_name]
-          dependent_nodes.each do |dependent_node|
-            resolved_spread_nodes = dependent_node.spreads.select { |spr| spr.name == fragment_name }
-            spread_is_included = resolved_spread_nodes.any?(&:included?)
-            deep_merge(dependent_node, fragment_node, spread_is_included)
-          end
-        end
-      end
-
-      private
-
-      # Merge the children from `fragment_node` into `parent_node`.
-      # This is an implementation of "fragment inlining"
-      def deep_merge(parent_node, fragment_node, included)
-        fragment_node.typed_children.each do |type_defn, children|
-          children.each do |name, child_node|
-            deep_merge_child(parent_node, type_defn, name, child_node, included)
-          end
-        end
-      end
-
-      # Merge `node` into `parent_node`'s children, as `name`, applying `extra_included`
-      # `extra_included` comes from the spread node:
-      # - If the spread was included, first-level children should be included if _either_ node was included
-      # - If the spread was _not_ included, first-level children should be included if _a pre-existing_ node was included
-      #   (A copied node should be excluded)
-      def deep_merge_child(parent_node, type_defn, name, node, extra_included)
-        child_node = parent_node.typed_children[type_defn][name]
-        previously_included = child_node.nil? ? false : child_node.included?
-        next_included = extra_included ? (previously_included || node.included?) : previously_included
-
-        if child_node.nil?
-          child_node = parent_node.typed_children[type_defn][name] = node.dup
+          @nodes_stack.push(next_nodes)
+          @scope_stack.push(next_scope)
         end
 
-        child_node.included = next_included
-
-        node.typed_children.each do |type_defn, children|
-          children.each do |merge_child_name, merge_child_node|
-            deep_merge_child(child_node, type_defn, merge_child_name, merge_child_node, node.included)
-          end
-        end
-      end
-
-      # return true if node or _any_ children have a fragment spread
-      def any_fragment_spreads?(node)
-        node.spreads.any? || node.typed_children.any? { |type_defn, children| children.any? { |name, node| any_fragment_spreads?(node) } }
-      end
-
-      # pop off own directives,
-      # then check the last one to see if it's directives
-      # from an inline fragment. If it is, add them in
-      # @return [Array<Node>]
-      def pop_applicable_directives(directive_stack)
-        own_directives = directive_stack.pop
-        if directive_stack.last.is_a?(InlineFragmentDirectives)
-          own_directives = directive_stack.last + own_directives
-        end
-        own_directives
-      end
-
-
-      # It's an array, but can be identified with `is_a?`
-      class InlineFragmentDirectives
-        extend Forwardable
-        def initialize
-          @storage = []
+        def leave(ast_node, ast_parent)
+          @nodes_stack.pop
+          @scope_stack.pop
         end
 
-        def_delegators :@storage, :push, :+
+        # Behaves enough like a field definition
+        # to work in an irep node
+        OperationDefinitionProxy = Struct.new(:type)
       end
     end
   end

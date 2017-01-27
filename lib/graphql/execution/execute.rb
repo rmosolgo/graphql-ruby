@@ -26,7 +26,8 @@ module GraphQL
 
         selection_result = SelectionResult.new
 
-        selection.each_selection(type: current_type) do |name, subselection|
+        selection.typed_children[current_type].each do |name, subselection|
+          next if subselection.skipped?
           field = query.get_field(current_type, subselection.definition_name)
           field_result = resolve_field(
             selection_result,
@@ -56,7 +57,7 @@ module GraphQL
           selection: selection,
         )
 
-        arguments = query.arguments_for(selection.irep_node, field)
+        arguments = query.arguments_for(selection, field)
         raw_value = begin
           query_ctx.schema.middleware.invoke([parent_type, object, field, arguments, field_ctx])
         rescue GraphQL::ExecutionError => err

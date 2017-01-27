@@ -38,22 +38,17 @@ module GraphQL
         @visitor = GraphQL::Language::Visitor.new(document)
         @type_stack = GraphQL::StaticValidation::TypeStack.new(schema, visitor)
         definition_dependencies = DefinitionDependencies.mount(self)
-        @on_dependency_resolve_handler = nil
+        @on_dependency_resolve_handlers = []
         visitor[GraphQL::Language::Nodes::Document].leave << -> (_n, _p) {
-          @dependencies = definition_dependencies.dependency_map(&@on_dependency_resolve_handler)
+          @dependencies = definition_dependencies.dependency_map { |defn, spreads, frag|
+            @on_dependency_resolve_handlers.each { |h| h.call(defn, spreads, frag) }
+          }
         }
       end
 
 
       def on_dependency_resolve(&handler)
-        if @on_dependency_resolve_handler
-          # This is a make-believe API :S
-          # Rewrite is the only thing that actually needs this handler
-          # Is there a better way to get these two parts of code to talk?
-          raise("Already assigned a handler, multiple assignment is not supported")
-        else
-          @on_dependency_resolve_handler = handler
-        end
+        @on_dependency_resolve_handlers << handler
       end
 
       def object_types
