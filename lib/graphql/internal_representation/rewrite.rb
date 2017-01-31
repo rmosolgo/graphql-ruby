@@ -108,14 +108,40 @@ module GraphQL
         end
 
         visitor[Nodes::Document].leave << ->(_n, _p) {
+          # TODO: allow validation rules to access this
           # Post-validation: make some assertions about the rewritten query tree
           @operations.each do |obj_type, ops|
             ops.each do |op_name, op_node|
-              each_node(op_node) do |node|
-                if node.definitions.size > 1
-                  defn_names = node.definitions.map { |d| d.name }.sort.join(" or ")
-                  msg = "Field '#{node.name}' has a field conflict: #{defn_names}?"
-                  context.errors << GraphQL::StaticValidation::Message.new(msg, nodes: node.ast_nodes.to_a)
+              # TODO fix this jank
+              op_node.typed_children.each do |obj_type, children|
+                children.each do |name, op_child_node|
+                  each_node(op_child_node) do |node|
+                    if node.definitions.size > 1
+                      defn_names = node.definitions.map { |d| d.name }.sort.join(" or ")
+                      msg = "Field '#{node.name}' has a field conflict: #{defn_names}?"
+                      context.errors << GraphQL::StaticValidation::Message.new(msg, nodes: node.ast_nodes.to_a)
+                    end
+
+                    args = node.ast_nodes.map do |n|
+                      n.arguments.reduce({}) do |memo, a|
+                        arg_value = a.value
+                        memo[a.name] = case arg_value
+                          when GraphQL::Language::Nodes::VariableIdentifier
+                            "$#{arg_value.name}"
+                          when GraphQL::Language::Nodes::Enum
+                            "#{arg_value.name}"
+                          else
+                            GraphQL::Language.serialize(arg_value)
+                          end
+                        memo
+                      end
+                    end
+                    args.uniq!
+
+                    if args.length != 1
+                      context.errors <<  GraphQL::StaticValidation::Message.new("Field '#{node.name}' has an argument conflict: #{args.map{ |arg| GraphQL::Language.serialize(arg) }.join(" or ")}?", nodes: node.ast_nodes.to_a)
+                    end
+                  end
                 end
               end
             end
