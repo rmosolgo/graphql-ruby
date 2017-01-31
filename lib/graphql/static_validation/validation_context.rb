@@ -15,7 +15,7 @@ module GraphQL
       attr_reader :query, :schema,
         :document, :errors, :visitor,
         :fragments, :operations, :warden,
-        :dependencies
+        :dependencies, :each_irep_node_handlers
 
       def initialize(query)
         @query = query
@@ -39,6 +39,7 @@ module GraphQL
         @type_stack = GraphQL::StaticValidation::TypeStack.new(schema, visitor)
         definition_dependencies = DefinitionDependencies.mount(self)
         @on_dependency_resolve_handlers = []
+        @each_irep_node_handlers = []
         visitor[GraphQL::Language::Nodes::Document].leave << -> (_n, _p) {
           @dependencies = definition_dependencies.dependency_map { |defn, spreads, frag|
             @on_dependency_resolve_handlers.each { |h| h.call(defn, spreads, frag) }
@@ -53,6 +54,10 @@ module GraphQL
 
       def object_types
         @type_stack.object_types
+      end
+
+      def each_irep_node(&handler)
+        @each_irep_node_handlers << handler
       end
 
       # @return [GraphQL::BaseType] The current object type

@@ -7,7 +7,7 @@ module GraphQL
       # @return [GraphQL::ObjectType]
       attr_reader :owner_type
 
-      # @return [Hash<GraphQL::ObjectType, Hash<String, ReNode>>] selections on this node for each type
+      # @return [Hash<GraphQL::ObjectType, Hash<String => Node>>] selections on this node for each type
       attr_reader :typed_children
 
       # @return [Set<Language::Nodes::AbstractNode>] AST nodes which are represented by this node
@@ -30,8 +30,7 @@ module GraphQL
         @return_type ||= definitions.first.type.unwrap
       end
 
-      # TODO This should be part of the directive,
-      # not hardcoded here
+      # TODO This should be part of the directive, not hardcoded here
       def skipped?
         @skipped ||= begin
           nodes_skipped = ast_nodes.all? { |n| !GraphQL::Execution::DirectiveChecks.include?(n.directives, @query) }
