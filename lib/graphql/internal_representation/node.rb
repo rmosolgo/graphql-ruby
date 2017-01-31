@@ -61,26 +61,6 @@ module GraphQL
         @definitions = definitions
       end
 
-      # TODO: test deep merging frag into frag
-      def deep_copy
-        new_typed_children = Hash.new { |h1, k1| h1[k1] = {} }
-        @typed_children.each do |obj_type, fields|
-          fields.each do |name, node|
-            new_typed_children[obj_type][name] = node.deep_copy
-          end
-        end
-        self.class.new(
-          name: @name,
-          owner_type: @owner_type,
-          query: @query,
-          ast_nodes: @ast_nodes && @ast_nodes.dup,
-          ast_spreads: @ast_spreads && @ast_spreads.dup,
-          ast_directives: @ast_directives && @ast_directives.dup,
-          definitions: @definitions && @definitions.dup,
-          typed_children: new_typed_children,
-        )
-      end
-
       def definition_name
         @definition_name ||= definition.name
       end

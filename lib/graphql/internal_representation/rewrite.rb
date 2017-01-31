@@ -115,6 +115,7 @@ module GraphQL
           @operations.each do |obj_type, ops|
             ops.each do |op_name, op_node|
               # TODO fix this jank
+              next if op_node.ast_nodes.first.is_a?(Nodes::FragmentDefinition)
               op_node.typed_children.each do |obj_type, children|
                 children.each do |name, op_child_node|
                   each_node(op_child_node) do |node|
@@ -129,13 +130,13 @@ module GraphQL
                         n.arguments.reduce({}) do |memo, a|
                           arg_value = a.value
                           memo[a.name] = case arg_value
-                            when GraphQL::Language::Nodes::VariableIdentifier
-                              "$#{arg_value.name}"
-                            when GraphQL::Language::Nodes::Enum
-                              "#{arg_value.name}"
-                            else
-                              GraphQL::Language.serialize(arg_value)
-                            end
+                          when GraphQL::Language::Nodes::VariableIdentifier
+                            "$#{arg_value.name}"
+                          when GraphQL::Language::Nodes::Enum
+                            "#{arg_value.name}"
+                          else
+                            GraphQL::Language.serialize(arg_value)
+                          end
                           memo
                         end
                       end
@@ -170,7 +171,7 @@ module GraphQL
               deep_merge_selections(query, prev_node, new_node, spread: nil)
               prev_node
             else
-              prev_fields[name] = new_node.deep_copy
+              prev_fields[name] = new_node
             end
             # merge the inclusion context, if there is one
             spread && node.ast_spreads.add(spread)
