@@ -106,6 +106,21 @@ module GraphQL
             end
           end
         end
+
+        visitor[Nodes::Document].leave << ->(_n, _p) {
+          # Post-validation: make some assertions about the rewritten query tree
+          @operations.each do |obj_type, ops|
+            ops.each do |op_name, op_node|
+              each_node(op_node) do |node|
+                if node.definitions.size > 1
+                  defn_names = node.definitions.map { |d| d.name }.sort.join(" or ")
+                  msg = "Field '#{node.name}' has a field conflict: #{defn_names}?"
+                  context.errors << GraphQL::StaticValidation::Message.new(msg, nodes: node.ast_nodes.to_a)
+                end
+              end
+            end
+          end
+        }
       end
 
       def deep_merge_selections(query, prev_parent, new_parent, spread:)
@@ -123,12 +138,19 @@ module GraphQL
               deep_merge_selections(query, prev_node, new_node, spread: nil)
               prev_node
             else
-              # TODO deep dup?
-              prev_fields[name] = new_node.dup
-              # prev_fields[name] = new_node.deep_copy
+              prev_fields[name] = new_node.deep_copy
             end
             # merge the inclusion context, if there is one
             spread && node.ast_spreads.add(spread)
+          end
+        end
+      end
+
+      def each_node(node)
+        yield(node)
+        node.typed_children.each do |obj_type, children|
+          children.each do |name, node|
+            each_node(node, &Proc.new)
           end
         end
       end

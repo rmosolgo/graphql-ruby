@@ -26,7 +26,6 @@ module GraphQL
           comparison = FieldDefinitionComparison.new(name, ast_fields, context)
           context.errors.push(*comparison.errors)
 
-
           subfield_map = {}
           ast_fields.each do |defn|
             gather_fields_by_name(defn.selections, subfield_map, visited_fragments, context)
@@ -70,10 +69,10 @@ module GraphQL
         def initialize(name, defs, context)
           errors = []
 
-          names = defs.map(&:name).uniq
-          if names.length != 1
-            errors << message("Field '#{name}' has a field conflict: #{names.join(" or ")}?", defs.first, context: context)
-          end
+          # names = defs.map(&:name).uniq
+          # if names.length != 1
+          #   errors << message("Field '#{name}' has a field conflict: #{names.join(" or ")}?", defs.first, context: context)
+          # end
 
           args = defs.map { |defn| reduce_list(defn.arguments)}.uniq
           if args.length != 1
