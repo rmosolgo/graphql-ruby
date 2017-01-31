@@ -70,7 +70,9 @@ module GraphQL
                   query: query,
                 )
                 node.ast_nodes.push(ast_node)
-                node.ast_directives.merge(ast_node.directives)
+                if ast_node.directives.any?
+                  node.ast_directives.merge(ast_node.directives)
+                end
                 node.definitions.add(field_defn)
                 applicable_spread && node.ast_spreads.add(applicable_spread)
                 next_nodes << node
@@ -116,30 +118,32 @@ module GraphQL
               op_node.typed_children.each do |obj_type, children|
                 children.each do |name, op_child_node|
                   each_node(op_child_node) do |node|
-                    if node.definitions.size > 1
-                      defn_names = node.definitions.map { |d| d.name }.sort.join(" or ")
-                      msg = "Field '#{node.name}' has a field conflict: #{defn_names}?"
-                      context.errors << GraphQL::StaticValidation::Message.new(msg, nodes: node.ast_nodes.to_a)
-                    end
-
-                    args = node.ast_nodes.map do |n|
-                      n.arguments.reduce({}) do |memo, a|
-                        arg_value = a.value
-                        memo[a.name] = case arg_value
-                          when GraphQL::Language::Nodes::VariableIdentifier
-                            "$#{arg_value.name}"
-                          when GraphQL::Language::Nodes::Enum
-                            "#{arg_value.name}"
-                          else
-                            GraphQL::Language.serialize(arg_value)
-                          end
-                        memo
+                    if node.ast_nodes.size > 1
+                      if node.definitions.size > 1
+                        defn_names = node.definitions.map { |d| d.name }.sort.join(" or ")
+                        msg = "Field '#{node.name}' has a field conflict: #{defn_names}?"
+                        context.errors << GraphQL::StaticValidation::Message.new(msg, nodes: node.ast_nodes.to_a)
                       end
-                    end
-                    args.uniq!
 
-                    if args.length != 1
-                      context.errors <<  GraphQL::StaticValidation::Message.new("Field '#{node.name}' has an argument conflict: #{args.map{ |arg| GraphQL::Language.serialize(arg) }.join(" or ")}?", nodes: node.ast_nodes.to_a)
+                      args = node.ast_nodes.map do |n|
+                        n.arguments.reduce({}) do |memo, a|
+                          arg_value = a.value
+                          memo[a.name] = case arg_value
+                            when GraphQL::Language::Nodes::VariableIdentifier
+                              "$#{arg_value.name}"
+                            when GraphQL::Language::Nodes::Enum
+                              "#{arg_value.name}"
+                            else
+                              GraphQL::Language.serialize(arg_value)
+                            end
+                          memo
+                        end
+                      end
+                      args.uniq!
+
+                      if args.length != 1
+                        context.errors <<  GraphQL::StaticValidation::Message.new("Field '#{node.name}' has an argument conflict: #{args.map{ |arg| GraphQL::Language.serialize(arg) }.join(" or ")}?", nodes: node.ast_nodes.to_a)
+                      end
                     end
                   end
                 end
@@ -160,7 +164,9 @@ module GraphQL
             node = if prev_node
               prev_node.ast_nodes.concat(new_node.ast_nodes)
               prev_node.definitions.merge(new_node.definitions)
-              prev_node.ast_directives.merge(new_node.ast_directives)
+              if new_node.ast_directives.any?
+                prev_node.ast_directives.merge(new_node.ast_directives)
+              end
               deep_merge_selections(query, prev_node, new_node, spread: nil)
               prev_node
             else

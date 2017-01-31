@@ -11,13 +11,19 @@ module GraphQL
       attr_reader :typed_children
 
       # @return [Set<Language::Nodes::AbstractNode>] AST nodes which are represented by this node
-      attr_reader :ast_nodes
+      def ast_nodes
+        @ast_nodes ||= Set.new
+      end
 
       # @return [Set<Language::Nodes::AbstractNode>]
-      attr_reader :ast_spreads
+      def ast_spreads
+        @ast_spreads ||= Set.new
+      end
 
       # @return [Set<GraphQL::Field>] Field definitions for this node (there should only be one!)
-      attr_reader :definitions
+      def definitions
+        @definitions ||= Set.new
+      end
 
       # @return [GraphQL::BaseType]
       def return_type
@@ -28,19 +34,22 @@ module GraphQL
       # not hardcoded here
       def skipped?
         @skipped ||= begin
-          nodes_skipped = @ast_nodes.all? { |n| !GraphQL::Execution::DirectiveChecks.include?(n.directives, @query) }
-          res = nodes_skipped || (@ast_spreads.any? && @ast_spreads.all? { |n| !GraphQL::Execution::DirectiveChecks.include?(n.directives, @query) } )
+          nodes_skipped = ast_nodes.all? { |n| !GraphQL::Execution::DirectiveChecks.include?(n.directives, @query) }
+          res = nodes_skipped || (@ast_spreads && @ast_spreads.all? { |n| !GraphQL::Execution::DirectiveChecks.include?(n.directives, @query) } )
           res
         end
       end
 
       # @return [Set<GraphQL::Language::Nodes::Directive>]
-      attr_reader :ast_directives
+      def ast_directives
+        @ast_directives ||= Set.new
+      end
 
       def initialize(
           name:, owner_type:, query:,
-          ast_nodes: [], ast_directives: Set.new, ast_spreads: Set.new,
-          definitions: Set.new, typed_children: nil
+          ast_nodes: [],
+          ast_directives: nil, ast_spreads: nil,
+          definitions: nil, typed_children: nil
         )
         @name = name
         @query = query
@@ -64,9 +73,10 @@ module GraphQL
           name: @name,
           owner_type: @owner_type,
           query: @query,
-          ast_nodes: @ast_nodes.dup,
-          ast_spreads: @ast_spreads.dup,
-          definitions: @definitions.dup,
+          ast_nodes: @ast_nodes && @ast_nodes.dup,
+          ast_spreads: @ast_spreads && @ast_spreads.dup,
+          ast_directives: @ast_directives && @ast_directives.dup,
+          definitions: @definitions && @definitions.dup,
           typed_children: new_typed_children,
         )
       end
@@ -76,11 +86,11 @@ module GraphQL
       end
 
       def definition
-        @definition ||= @definitions.first
+        @definition ||= definitions.first
       end
 
       def ast_node
-        @ast_node ||= @ast_nodes.first
+        @ast_node ||= ast_nodes.first
       end
 
       def inspect
