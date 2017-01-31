@@ -398,6 +398,43 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
     end
   end
 
+  describe "same aliases allowed on non-overlapping fields" do
+    let(:query_string) {%|
+      {
+        pet {
+          ... on Dog {
+            name
+          }
+          ... on Cat {
+            name: nickname
+          }
+        }
+      }
+    |}
+
+    it "passes rule" do
+      assert_equal [], errors
+    end
+  end
+
+  describe "allows different args where no conflict is possible" do
+    let(:query_string) {%|
+      {
+        pet {
+          ... on Dog {
+            name(surname: true)
+          }
+          ... on Cat {
+            name
+          }
+        }
+      }
+    |}
+
+    it "passes rule" do
+      assert_equal [], errors
+    end
+  end
   describe "return types must be unambiguous" do
     let(:schema) {
       GraphQL::Schema.from_definition(%|
