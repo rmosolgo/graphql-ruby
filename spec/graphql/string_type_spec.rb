@@ -8,6 +8,13 @@ describe GraphQL::STRING_TYPE do
     assert_equal(true, string_type.default_scalar?)
   end
 
+  describe "coerce_result" do
+    it "requires string to be encoded as UTF-8" do
+      binary_str = "\0\0\0foo\255\255\255".dup.force_encoding("BINARY")
+      assert_equal nil, string_type.coerce_result(binary_str)
+    end
+  end
+
   describe "coerce_input" do
     it "accepts strings" do
       assert_equal "str", string_type.coerce_input("str")
