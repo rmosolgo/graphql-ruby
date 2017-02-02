@@ -990,7 +990,7 @@ end
       def self.record_comment(ts, te, meta)
         token = GraphQL::Language::Token.new(
           name: :COMMENT,
-          value: meta[:data][ts...te].pack("c*"),
+          value: meta[:data][ts...te].pack("c*").force_encoding("UTF-8"),
           line: meta[:line],
           col: meta[:col],
           prev_token: meta[:previous_token],
@@ -1004,7 +1004,7 @@ end
       def self.emit(token_name, ts, te, meta)
         meta[:tokens] << token = GraphQL::Language::Token.new(
           name: token_name,
-          value: meta[:data][ts...te].pack("c*"),
+          value: meta[:data][ts...te].pack("c*").force_encoding("UTF-8"),
           line: meta[:line],
           col: meta[:col],
           prev_token: meta[:previous_token],
