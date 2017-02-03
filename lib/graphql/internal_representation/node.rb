@@ -32,11 +32,11 @@ module GraphQL
 
       # TODO This should be part of the directive, not hardcoded here
       def skipped?
-        @skipped ||= begin
+        if @skipped.nil?
           nodes_skipped = ast_nodes.all? { |n| !GraphQL::Execution::DirectiveChecks.include?(n.directives, @query) }
-          res = nodes_skipped || (@ast_spreads && @ast_spreads.all? { |n| !GraphQL::Execution::DirectiveChecks.include?(n.directives, @query) } )
-          res
+          @skipped = nodes_skipped || (@ast_spreads && @ast_spreads.all? { |n| !GraphQL::Execution::DirectiveChecks.include?(n.directives, @query) } )
         end
+        @skipped
       end
 
       def included?
@@ -56,6 +56,7 @@ module GraphQL
         @ast_nodes = ast_nodes
         @ast_spreads = ast_spreads
         @definitions = definitions
+        @skipped = nil
       end
 
       def definition_name
