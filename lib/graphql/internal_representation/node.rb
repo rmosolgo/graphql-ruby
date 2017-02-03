@@ -26,15 +26,27 @@ module GraphQL
       end
 
       # @return [GraphQL::BaseType]
-      def return_type
-        @return_type ||= definitions.first.type.unwrap
-      end
+      attr_reader :return_type
 
       # TODO This should be part of the directive, not hardcoded here
       def skipped?
-        if @skipped.nil?
-          nodes_skipped = ast_nodes.all? { |n| !GraphQL::Execution::DirectiveChecks.include?(n.directives, @query) }
-          @skipped = nodes_skipped || (@ast_spreads && @ast_spreads.all? { |n| !GraphQL::Execution::DirectiveChecks.include?(n.directives, @query) } )
+        if !defined?(@skipped)
+          nodes_skipped = true
+          for n in ast_nodes
+            nodes_skipped &&= !GraphQL::Execution::DirectiveChecks.include?(n.directives, @query)
+          end
+
+          @skipped = if nodes_skipped
+            true
+          elsif @ast_spreads
+            nodes_skipped = true
+            for n in @ast_spreads
+              nodes_skipped &&= !GraphQL::Execution::DirectiveChecks.include?(n.directives, @query)
+            end
+            nodes_skipped
+          else
+            false
+          end
         end
         @skipped
       end
@@ -44,7 +56,7 @@ module GraphQL
       end
 
       def initialize(
-          name:, owner_type:, query:,
+          name:, owner_type:, query:, return_type:,
           ast_nodes: [],
           ast_spreads: nil,
           definitions: nil, typed_children: nil
@@ -56,7 +68,7 @@ module GraphQL
         @ast_nodes = ast_nodes
         @ast_spreads = ast_spreads
         @definitions = definitions
-        @skipped = nil
+        @return_type = return_type
       end
 
       def definition_name

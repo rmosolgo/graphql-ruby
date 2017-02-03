@@ -20,7 +20,9 @@ module GraphQL
 
       irep.each do |root_type, roots|
         roots.each do |name, op_node|
-          reduce_node(op_node, reducer_states)
+          if op_node.ast_node.is_a?(GraphQL::Language::Nodes::OperationDefinition)
+            reduce_node(op_node, reducer_states)
+          end
         end
       end
 

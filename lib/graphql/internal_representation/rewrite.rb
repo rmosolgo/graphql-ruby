@@ -83,8 +83,8 @@ module GraphQL
             if field_defn.nil?
               # It's a non-existent field
             else
-              field_return_type = field_defn.type
-              each_type(query, field_return_type.unwrap) do |obj_type|
+              field_return_type = field_defn.type.unwrap
+              each_type(query, field_return_type) do |obj_type|
                 next_scope.add(obj_type)
               end
               parent_nodes.each do |parent_node|
@@ -92,6 +92,7 @@ module GraphQL
                   name: node_name,
                   owner_type: obj_type,
                   query: query,
+                  return_type: field_return_type,
                 )
                 node.ast_nodes.push(ast_node)
                 node.definitions.add(field_defn)
@@ -200,6 +201,7 @@ module GraphQL
               owner_type: obj_type,
               query: @query,
               ast_nodes: [ast_node],
+              return_type: obj_type,
               definitions: [OperationDefinitionProxy.new(obj_type)],
             )
             @definitions[obj_type][defn_name] = node
