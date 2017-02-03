@@ -39,15 +39,14 @@ module GraphQL
         end
       end
 
-      # @return [Set<GraphQL::Language::Nodes::Directive>]
-      def ast_directives
-        @ast_directives ||= Set.new
+      def included?
+        !skipped?
       end
 
       def initialize(
           name:, owner_type:, query:,
           ast_nodes: [],
-          ast_directives: nil, ast_spreads: nil,
+          ast_spreads: nil,
           definitions: nil, typed_children: nil
         )
         @name = name
@@ -55,7 +54,6 @@ module GraphQL
         @owner_type = owner_type
         @typed_children = typed_children || Hash.new { |h1, k1| h1[k1] = {} }
         @ast_nodes = ast_nodes
-        @ast_directives = ast_directives
         @ast_spreads = ast_spreads
         @definitions = definitions
       end

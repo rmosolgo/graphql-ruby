@@ -156,8 +156,6 @@ describe GraphQL::InternalRepresentation::Rewrite do
       assert_equal 4, leaf_type_selection.ast_nodes.size
       # Inclusion contexts:
       assert_equal 4, leaf_type_selection.ast_spreads.size
-      # Own directives:
-      assert_equal 2, leaf_type_selection.ast_directives.size
     end
   end
 

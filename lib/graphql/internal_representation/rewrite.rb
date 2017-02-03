@@ -94,9 +94,6 @@ module GraphQL
                   query: query,
                 )
                 node.ast_nodes.push(ast_node)
-                if ast_node.directives.any?
-                  node.ast_directives.merge(ast_node.directives)
-                end
                 node.definitions.add(field_defn)
                 applicable_spread && node.ast_spreads.add(applicable_spread)
                 next_nodes << node
@@ -151,9 +148,6 @@ module GraphQL
             node = if prev_node
               prev_node.ast_nodes.concat(new_node.ast_nodes)
               prev_node.definitions.merge(new_node.definitions)
-              if new_node.ast_directives.any?
-                prev_node.ast_directives.merge(new_node.ast_directives)
-              end
               deep_merge_selections(query, prev_node, new_node, spread: nil)
               prev_node
             else
