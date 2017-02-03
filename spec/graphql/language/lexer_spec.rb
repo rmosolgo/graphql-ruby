@@ -16,6 +16,12 @@ describe GraphQL::Language::Lexer do
     |}
     let(:tokens) { subject.tokenize(query_string) }
 
+    it "makes utf-8 comments" do
+      tokens = subject.tokenize("# 不要!\n{")
+      comment_token = tokens.first.prev_token
+      assert_equal "# 不要!", comment_token.to_s
+    end
+
     it "keeps track of previous_token" do
       assert_equal tokens[0], tokens[1].prev_token
     end

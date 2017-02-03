@@ -990,7 +990,7 @@ end
       def self.record_comment(ts, te, meta)
         token = GraphQL::Language::Token.new(
           name: :COMMENT,
-          value: meta[:data][ts...te].pack("c*").force_encoding("UTF-8"),
+          value: meta[:data][ts...te].pack(PACK_DIRECTIVE).force_encoding(UTF_8_ENCODING),
           line: meta[:line],
           col: meta[:col],
           prev_token: meta[:previous_token],
@@ -1004,7 +1004,7 @@ end
       def self.emit(token_name, ts, te, meta)
         meta[:tokens] << token = GraphQL::Language::Token.new(
           name: token_name,
-          value: meta[:data][ts...te].pack("c*").force_encoding("UTF-8"),
+          value: meta[:data][ts...te].pack(PACK_DIRECTIVE).force_encoding(UTF_8_ENCODING),
           line: meta[:line],
           col: meta[:col],
           prev_token: meta[:previous_token],
@@ -1031,8 +1031,11 @@ end
 
       VALID_STRING = /\A(?:[^\\]|#{ESCAPES}|#{UTF_8})*\z/o
 
+      PACK_DIRECTIVE = "c*"
+      UTF_8_ENCODING = "UTF-8"
+
       def self.emit_string(ts, te, meta)
-        value = meta[:data][ts...te].pack("c*").force_encoding("UTF-8")
+        value = meta[:data][ts...te].pack(PACK_DIRECTIVE).force_encoding(UTF_8_ENCODING)
         if value !~ VALID_STRING
           meta[:tokens] << token = GraphQL::Language::Token.new(
             name: :BAD_UNICODE_ESCAPE,

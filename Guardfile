@@ -19,6 +19,6 @@ guard "rake", task: "build_parser" do
 end
 
 guard :rubocop, all_on_start: false do
-  watch(%r{^spec/*})
-  watch(%r{^lib/*})
+  watch(%r{^spec/.*.\rb})
+  watch(%r{^lib/.*\.rb})
 end
