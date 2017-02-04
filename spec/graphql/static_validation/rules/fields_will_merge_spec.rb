@@ -231,7 +231,7 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
     |}
 
     it "fails rule" do
-      assert_equal ["Field 'name' has a field conflict: nickname or name?"], error_messages
+      assert_equal ["Field 'name' has a field conflict: name or nickname?"], error_messages
     end
   end
 
@@ -317,8 +317,8 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
 
     it "fails rule" do
       assert_equal [
+        "Field 'name' has a field conflict: name or nickname?",
         "Field 'x' has a field conflict: name or nickname?",
-        "Field 'name' has a field conflict: nickname or name?",
       ], error_messages
     end
   end
@@ -337,7 +337,17 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
     |}
 
     it "fails rule" do
-      assert_equal ["Field 'x' has a field conflict: name or nickname?"], error_messages
+      expected_errors = [
+        {
+          "message"=>"Field 'x' has a field conflict: name or nickname?",
+          "locations"=>[
+            {"line"=>4, "column"=>11},
+            {"line"=>8, "column"=>11}
+          ],
+          "fields"=>[]
+        }
+      ]
+      assert_equal expected_errors, errors
     end
   end
 
@@ -388,6 +398,43 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
     end
   end
 
+  describe "same aliases allowed on non-overlapping fields" do
+    let(:query_string) {%|
+      {
+        pet {
+          ... on Dog {
+            name
+          }
+          ... on Cat {
+            name: nickname
+          }
+        }
+      }
+    |}
+
+    it "passes rule" do
+      assert_equal [], errors
+    end
+  end
+
+  describe "allows different args where no conflict is possible" do
+    let(:query_string) {%|
+      {
+        pet {
+          ... on Dog {
+            name(surname: true)
+          }
+          ... on Cat {
+            name
+          }
+        }
+      }
+    |}
+
+    it "passes rule" do
+      assert_equal [], errors
+    end
+  end
   describe "return types must be unambiguous" do
     let(:schema) {
       GraphQL::Schema.from_definition(%|

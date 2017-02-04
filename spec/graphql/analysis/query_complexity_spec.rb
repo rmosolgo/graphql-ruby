@@ -141,6 +141,7 @@ describe GraphQL::Analysis::QueryComplexity do
     describe "when there are no selections on any object types" do
       let(:query_string) {%|
         {
+          # 1 for everybody
           favoriteEdible {
             # 1 for everybody
             fatContent
@@ -156,7 +157,7 @@ describe GraphQL::Analysis::QueryComplexity do
 
       it "gets the max among interface types" do
         reduce_result
-        assert_equal 3, complexities.last
+        assert_equal 4, complexities.last
       end
     end
 

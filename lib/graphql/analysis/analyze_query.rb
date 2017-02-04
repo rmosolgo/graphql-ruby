@@ -18,8 +18,10 @@ module GraphQL
 
       irep = query.internal_representation
 
-      irep.each do |name, op_node|
-        reduce_node(op_node, reducer_states)
+      irep.each do |root_type, roots|
+        roots.each do |name, op_node|
+          reduce_node(op_node, reducer_states)
+        end
       end
 
       reducer_states.map { |r| r.finalize_reducer }

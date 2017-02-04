@@ -88,12 +88,12 @@ module GraphQL
 
         # @return [GraphQL::Language::Nodes::Field] The AST node for the currently-executing field
         def ast_node
-          selection.irep_node.ast_node
+          @selection.ast_node
         end
 
         # @return [GraphQL::InternalRepresentation::Node]
         def irep_node
-          selection.irep_node
+          @selection
         end
 
         # Add error to current field resolution.

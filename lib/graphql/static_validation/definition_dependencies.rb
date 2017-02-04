@@ -131,11 +131,13 @@ module GraphQL
               dependency_map[definition_node].concat(dependency_map[fragment_node])
               # Since we've regestered it, remove it from our to-do list
               deps = @immediate_dependencies[definition_node]
-              deps.delete_if { |spread| spread.name == fragment_name }
+              # Can't find a way to _just_ delete from `deps` and return the deleted entries
+              removed, remaining = deps.partition { |spread| spread.name == fragment_name }
+              @immediate_dependencies[definition_node] = remaining
               if block_given?
-                yield(definition_node, fragment_node)
+                yield(definition_node, removed, fragment_node)
               end
-              if deps.none? && definition_node.node.is_a?(GraphQL::Language::Nodes::FragmentDefinition)
+              if remaining.none? && definition_node.node.is_a?(GraphQL::Language::Nodes::FragmentDefinition)
                 # If all of this definition's dependencies have
                 # been resolved, we can now resolve its
                 # own dependents.
