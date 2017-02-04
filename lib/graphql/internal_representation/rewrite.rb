@@ -18,10 +18,10 @@ module GraphQL
       NO_DIRECTIVES = [].freeze
 
       # @return [Hash<String, Node>] Roots of this query
-      attr_reader :definitions
+      attr_reader :operations
 
       def initialize
-        @definitions = Hash.new {|h, k| h[k] = {} }
+        @operations = Hash.new {|h, k| h[k] = {} }
       end
 
       def validate(context)
@@ -39,12 +39,15 @@ module GraphQL
         # Array<[nil, Nodes::InlineFragment]>
         # Spreads that you're inside (only the last one matters)
         spreads_stack = []
+        fragment_definitions = Hash.new {|h, k| h[k] = {} }
 
-        visit_defn = VisitDefinition.new(context, @definitions, nodes_stack, scope_stack)
-        visitor[Nodes::OperationDefinition].enter << visit_defn.method(:enter)
-        visitor[Nodes::OperationDefinition].leave << visit_defn.method(:leave)
-        visitor[Nodes::FragmentDefinition].enter << visit_defn.method(:enter)
-        visitor[Nodes::FragmentDefinition].leave << visit_defn.method(:leave)
+        visit_op = VisitDefinition.new(context, @operations, nodes_stack, scope_stack)
+        visitor[Nodes::OperationDefinition].enter << visit_op.method(:enter)
+        visitor[Nodes::OperationDefinition].leave << visit_op.method(:leave)
+
+        visit_frag = VisitDefinition.new(context, fragment_definitions, nodes_stack, scope_stack)
+        visitor[Nodes::FragmentDefinition].enter << visit_frag.method(:enter)
+        visitor[Nodes::FragmentDefinition].leave << visit_frag.method(:leave)
 
         visitor[Nodes::InlineFragment].enter << ->(ast_node, ast_parent) {
           # Inline fragments provide two things to the rewritten tree:
@@ -128,7 +131,7 @@ module GraphQL
             parent_nodes = spread_parents[spread_ast_node]
             parent_nodes.each do |parent_node|
               each_type(query, parent_node.return_type) do |obj_type|
-                fragment_node = @definitions[obj_type][frag_name]
+                fragment_node = fragment_definitions[obj_type][frag_name]
                 if fragment_node
                   deep_merge_selections(query, parent_node, fragment_node, spread: spread_ast_node.node)
                 end

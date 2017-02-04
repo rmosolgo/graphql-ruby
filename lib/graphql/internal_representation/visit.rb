@@ -4,15 +4,10 @@ module GraphQL
     # Traverse a re-written query tree, calling handlers for each node
     module Visit
       module_function
-      def visit_each_node(definitions, handlers)
+      def visit_each_node(operations, handlers)
         # Post-validation: make some assertions about the rewritten query tree
-        definitions.each do |obj_type, ops|
+        operations.each do |obj_type, ops|
           ops.each do |op_name, op_node|
-            # Skip fragments, since they've been merged into the operations already
-            if op_node.ast_nodes.first.is_a?(GraphQL::Language::Nodes::FragmentDefinition)
-              next
-            end
-
             # Yield each node to listeners which were attached by validators
             op_node.typed_children.each do |obj_type, children|
               children.each do |name, op_child_node|
