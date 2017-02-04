@@ -91,6 +91,18 @@ module GraphQL
       def define(**kwargs, &block)
         # make sure the previous definition_proc was executed:
         ensure_defined
+
+        method_names = self.class.ensure_defined_method_names
+        @pending_methods = method_names.map { |n| self.class.instance_method(n) }
+        self.singleton_class.class_eval do
+          method_names.each do |method_name|
+            define_method(method_name) { |*args, &block|
+              ensure_defined
+              self.send(method_name, *args, &block)
+            }
+          end
+        end
+
         @pending_definition = Definition.new(kwargs, block)
         nil
       end
@@ -119,8 +131,18 @@ module GraphQL
       # @return [void]
       def ensure_defined
         if @pending_definition
+
           defn = @pending_definition
           @pending_definition = nil
+
+          pending_methods = @pending_methods
+          self.singleton_class.class_eval {
+            pending_methods.each do |method|
+              define_method(method.name, method)
+            end
+          }
+          @pending_methods = nil
+
           defn_proxy = DefinedObjectProxy.new(self)
           # Apply definition from `define(...)` kwargs
           defn.define_keywords.each do |keyword, value|
@@ -130,6 +152,8 @@ module GraphQL
           if defn.define_proc
             defn_proxy.instance_eval(&defn.define_proc)
           end
+
+
         end
         nil
       end
@@ -171,17 +195,18 @@ module GraphQL
         end
 
         def ensure_defined(*method_names)
-          ensure_defined_module = Module.new
-          ensure_defined_module.module_eval {
-            method_names.each do |method_name|
-              define_method(method_name) { |*args, &block|
-                ensure_defined
-                super(*args, &block)
-              }
-            end
-          }
-          self.prepend(ensure_defined_module)
+          @ensure_defined_method_names ||= []
+          @ensure_defined_method_names.concat(method_names)
           nil
+        end
+
+        def ensure_defined_method_names
+          own_method_names = @ensure_defined_method_names || []
+          if superclass.respond_to?(:ensure_defined_method_names)
+            superclass.ensure_defined_method_names + own_method_names
+          else
+            own_method_names
+          end
         end
 
         # @return [Hash] combined definitions for self and ancestors
