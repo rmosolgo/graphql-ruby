@@ -26,4 +26,4 @@ Want to add something? Please open a pull request [on GitHub](https://github.com
 
 ## Screencasts
 
-- [GraphQL Basics in Rails 5](https://github.com/rmosolgo/graphql-ruby/pull/470)
+- [GraphQL Basics in Rails 5](https://rubyplus.com/episodes/271-GraphQL-Basics-in-Rails-5)
