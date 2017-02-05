@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+require "graphql"
 require_relative "./data"
 module Dummy
   class NoSuchDairyError < StandardError; end

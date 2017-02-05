@@ -18,6 +18,7 @@ Gem::Specification.new do |s|
   s.files = Dir["{lib}/**/*", "MIT-LICENSE", "readme.md", ".yardopts"]
   s.test_files = Dir["spec/**/*"]
 
+  s.add_development_dependency "benchmark-ips"
   s.add_development_dependency "codeclimate-test-reporter", "~>0.4"
   s.add_development_dependency "guard", "~> 2.12"
   s.add_development_dependency "guard-bundler", "~> 2.1"

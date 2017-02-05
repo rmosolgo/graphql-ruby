@@ -94,3 +94,22 @@ namespace :site do
     puts 'Done.'
   end
 end
+
+namespace :bench do
+  def prepare_benchmark
+    $LOAD_PATH << "./lib" << "./spec/support"
+    require_relative("./benchmark/run.rb")
+  end
+
+  desc "Benchmark the introspection query"
+  task :query do
+    prepare_benchmark
+    GraphQLBenchmark.run("query")
+  end
+
+  desc "Benchmark validating the introspection query"
+  task :validate do
+    prepare_benchmark
+    GraphQLBenchmark.run("validate")
+  end
+end
