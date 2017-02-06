@@ -152,6 +152,10 @@ GraphQL::ObjectType.accepts_definitions resolves_to_class_names: GraphQL::Define
 # or:
 # GraphQL::Field.accepts_definitions(...)
 # GraphQL::Argument.accepts_definitions(...)
+
+MySchema = GraphQL::Schema.define do
+  # ...
+end
 ```
 
 
