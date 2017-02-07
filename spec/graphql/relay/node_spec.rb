@@ -141,7 +141,7 @@ describe GraphQL::Relay::Node do
     end
 
     it 'is marked as relay_nodes_field' do
-      assert GraphQL::Relay::Node.plural_identifying_field.relay_nodes_field
+      assert GraphQL::Relay::Node.plural_field.relay_nodes_field
     end
   end
 end

@@ -17,7 +17,7 @@ module GraphQL
         end
       end
 
-      def self.plural_identifying_field
+      def self.plural_field
         GraphQL::Field.define do
           type(!types[GraphQL::Relay::Node.interface])
           description("Fetches a list of objects given a list of IDs.")
