@@ -210,6 +210,7 @@ module StarWars
     end
 
     field :node, GraphQL::Relay::Node.field
+    field :nodes, GraphQL::Relay::Node.plural_identifying_field
   end
 
   MutationType = GraphQL::ObjectType.define do

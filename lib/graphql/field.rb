@@ -126,17 +126,21 @@ module GraphQL
       :type, :arguments,
       :property, :hash_key, :complexity, :mutation,
       :relay_node_field,
+      :relay_nodes_field,
       argument: GraphQL::Define::AssignArgument
 
     ensure_defined(
       :name, :deprecation_reason, :description, :description=, :property, :hash_key, :mutation, :arguments, :complexity,
       :resolve, :resolve=, :lazy_resolve, :lazy_resolve=, :lazy_resolve_proc, :resolve_proc,
       :type, :type=, :name=, :property=, :hash_key=,
-      :relay_node_field, :default_arguments
+      :relay_node_field, :relay_nodes_field, :default_arguments
     )
 
     # @return [Boolean] True if this is the Relay find-by-id field
     attr_accessor :relay_node_field
+
+    # @return [Boolean] True if this is the Relay find-by-ids field
+    attr_accessor :relay_nodes_field
 
     # @return [<#call(obj, args, ctx)>] A proc-like object which can be called to return the field's value
     attr_reader :resolve_proc
