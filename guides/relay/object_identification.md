@@ -89,3 +89,16 @@ QueryType = GraphQL::ObjectType.define do
   # ...
 end
 ```
+
+### `nodes` field
+
+You can also provide a root-level `nodes` field so that Relay can refetch objects by IDs. Similarly, it is provided as `GraphQL::Relay::Node.plural_field`:
+
+```ruby
+QueryType = GraphQL::ObjectType.define do
+  name "Query"
+  # Fetches a list of objects given a list of IDs
+  field :nodes, GraphQL::Relay::Node.plural_field
+  # ...
+end
+```

@@ -17,13 +17,30 @@ module GraphQL
         end
       end
 
+      def self.plural_field
+        GraphQL::Field.define do
+          type(!types[GraphQL::Relay::Node.interface])
+          description("Fetches a list of objects given a list of IDs.")
+          argument(:ids, !types[!types.ID], "IDs of the objects.")
+          resolve(GraphQL::Relay::Node::FindNodes)
+          relay_nodes_field(true)
+        end
+      end
+
       # @return [GraphQL::InterfaceType] The interface which all Relay types must implement
       def self.interface
         @interface ||= GraphQL::InterfaceType.define do
-          name "Node"
-          description "An object with an ID."
-          field :id, !types.ID, "ID of the object."
-          default_relay true
+          name("Node")
+          description("An object with an ID.")
+          field(:id, !types.ID, "ID of the object.")
+          default_relay(true)
+        end
+      end
+
+      # A field resolve for finding objects by IDs
+      module FindNodes
+        def self.call(obj, args, ctx)
+          args[:ids].map { |id| ctx.query.schema.object_from_id(id, ctx) }
         end
       end
 

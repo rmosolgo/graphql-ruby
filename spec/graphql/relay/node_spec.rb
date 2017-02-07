@@ -56,7 +56,6 @@ describe GraphQL::Relay::Node do
       end
     end
 
-
     it 'finds objects by id' do
       id = GraphQL::Schema::UniqueWithinType.encode("Faction", "1")
       result = star_wars_query(%|{
@@ -89,6 +88,60 @@ describe GraphQL::Relay::Node do
         }
       }}
       assert_equal(expected, result)
+    end
+  end
+
+  describe ".plural_identifying_field" do
+    it 'finds objects by ids' do
+      id = GraphQL::Schema::UniqueWithinType.encode("Faction", "1")
+      id2 = GraphQL::Schema::UniqueWithinType.encode("Faction", "2")
+
+      result = star_wars_query(%|{
+        nodes(ids: ["#{id}", "#{id2}"]) {
+          id,
+          ... on Faction {
+            name
+            ships(first: 1) {
+              edges {
+               node {
+                 name
+                 }
+              }
+            }
+          }
+        }
+      }|)
+
+      expected = {
+        "data" => {
+          "nodes" => [{
+            "id"=>"RmFjdGlvbi0x",
+            "name"=>"Alliance to Restore the Republic",
+            "ships"=>{
+              "edges"=>[
+                {"node"=>{
+                    "name" => "X-Wing"
+                  }
+                }
+              ]
+            }
+          }, {
+            "id" => "RmFjdGlvbi0y",
+            "name" => "Galactic Empire",
+            "ships" => {
+              "edges" => [
+                { "node" => { "name" => "TIE Fighter" } }
+              ]
+            }
+          }]
+        }
+      }
+
+      assert_equal(expected, result)
+    end
+
+    it 'is marked as relay_nodes_field' do
+      assert GraphQL::Relay::Node.plural_field.relay_nodes_field
     end
   end
 end
