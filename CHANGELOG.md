@@ -234,7 +234,7 @@
 
 ### Bug fixes
 
-- Previously, nested selections on different fragments were not distinguished. Consider a case like this:
+- Fix deep selection merging on divergently-typed fragments. #370, #373, #379 Previously, nested selections on different fragments were not distinguished. Consider a case like this:
 
   ```graphql
   ... on A { inner1 { inner2 } }
@@ -244,8 +244,6 @@
   Previously, an object of type `A` would resolve `inner1`, then the result would receive _both_ `inner2` and `inner3`. The same was true for an object of type `B`.
 
   Now, those are properly distinguished. An object of type `A` resolves `inner1`, then its result receives `inner2`. An object of type `B` receives `inner1`, then `inner3`.
-
-  #370, #373, #379
 
 ## 1.1.0 (1 Nov 2016)
 
