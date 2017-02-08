@@ -8,6 +8,18 @@
 
 ### Bug fixes
 
+## 1.4.3 (8 Feb 2017)
+
+### New features
+
+- `GraphQL::Relay::Nodes.plural_field` finds multiple nodes by UUID #525
+
+### Bug fixes
+
+- Properly handle errors from lazy mutation results #528
+- Encode all parsed strings as UTF-8 #516
+- Improve error messages #501 #519
+
 ## 1.4.2 (23 Jan 2017)
 
 ### Bug fixes
