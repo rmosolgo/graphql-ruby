@@ -190,5 +190,28 @@ describe GraphQL::Relay::Mutation do
 
       assert_equal(expected, result)
     end
+
+    it "supports raising an error in a lazy callback" do
+      result = star_wars_query(query_string, "clientMutationId" => "5678", "shipName" => "Ebon Hawk")
+
+      expected = {
+        "data" => {
+          "introduceShip" => {
+            "clientMutationId" => "5678",
+            "shipEdge" => nil,
+            "faction" => nil,
+          }
+        },
+        "errors" => [
+          {
+            "message" => "💥",
+            "locations" => [ { "line" => 3 , "column" => 7}],
+            "path" => ["introduceShip"]
+          }
+        ]
+      }
+
+      assert_equal(expected, result)
+    end
   end
 end
