@@ -161,7 +161,8 @@ module StarWars
       faction_id = inputs["factionId"]
       if inputs["shipName"] == 'Millennium Falcon'
         GraphQL::ExecutionError.new("Sorry, Millennium Falcon ship is reserved")
-
+      elsif inputs["shipName"] == "Ebon Hawk"
+        LazyWrapper.new { raise GraphQL::ExecutionError.new("💥")}
       else
         ship = DATA.create_ship(inputs["shipName"], faction_id)
         faction = DATA["Faction"][faction_id]
@@ -183,9 +184,16 @@ module StarWars
 
 
   class LazyWrapper
-    attr_reader :value
-    def initialize(value)
-      @value = value
+    def initialize(value = nil, &block)
+      if block_given?
+        @lazy_value = block
+      else
+        @value = value
+      end
+    end
+
+    def value
+      @resolved_value = @value || @lazy_value.call
     end
   end
 
