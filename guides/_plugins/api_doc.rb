@@ -12,11 +12,11 @@ module GraphQLSite
       %|<a href="#{API_DOC_ROOT}#{doc_path}" target="_blank"><code>#{input}</code></a>|
     end
 
-    def img_set_member(img_path, img_title)
+    def link_to_img(img_path, img_title)
       full_img_path = "#{@context.registers[:site].baseurl}#{img_path}"
       %|
         <a href="#{full_img_path}" target="_blank">
-          <img class="img-set-member" src="#{full_img_path}" title="#{img_title}" />
+          <img src="#{full_img_path}" title="#{img_title}" />
         </a>
       |
     end
