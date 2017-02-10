@@ -8,6 +8,18 @@
 
 ### Bug Fix
 
+## 1.1.0 (9 Feb 2017)
+
+### New Features
+
+- Add AppSignal monitoring platform
+- Add type- and field-level opting in and opting out of monitoring
+- Add `monitor_scalars: false` to skip monitoring on scalars
+
+### Bug Fixes
+
+- Fix `OrderedRelationConnection` when neither `first` nor `last` are provided (use `max_page_size` or don't limit)
+
 ## 1.0.4 (23 Jan 2017)
 
 ### Bug Fixes
