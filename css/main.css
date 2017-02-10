@@ -69,7 +69,7 @@ h1.guide-header {
   font-size: 1.5em;
 }
 
-.img-set {
+.monitoring-img-group {
   display: flex;
   flex-direction: row;
   margin-bottom: 20px;
@@ -78,13 +78,9 @@ h1.guide-header {
   align-items: center;
 }
 
-.img-set .img-set-member {
+.monitoring-img-group img {
   max-height: 200px;
   max-width: 500px;
-}
-
-.img-set a {
-  margin: 20px 0px;
 }
 
 /* pygments CSS, github theme */

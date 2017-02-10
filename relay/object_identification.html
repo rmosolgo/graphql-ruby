@@ -188,6 +188,21 @@
 </div>
 </div>
 
+<h3 id="nodes-field"><code>nodes</code> field</h3>
+
+<p>You can also provide a root-level <code>nodes</code> field so that Relay can refetch objects by IDs. Similarly, it is provided as <code>GraphQL::Relay::Node.plural_field</code>:</p>
+
+<div class="highlighter-coderay"><div class="CodeRay">
+  <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">QueryType</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">ObjectType</span>.define <span style="color:#080;font-weight:bold">do</span>
+<span class="line-numbers"><a href="#n2" name="n2">2</a></span>  name <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">Query</span><span style="color:#710">&quot;</span></span>
+<span class="line-numbers"><a href="#n3" name="n3">3</a></span>  <span style="color:#777"># Fetches a list of objects given a list of IDs</span>
+<span class="line-numbers"><a href="#n4" name="n4">4</a></span>  field <span style="color:#A60">:nodes</span>, <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Relay</span>::<span style="color:#036;font-weight:bold">Node</span>.plural_field
+<span class="line-numbers"><a href="#n5" name="n5">5</a></span>  <span style="color:#777"># ...</span>
+<span class="line-numbers"><a href="#n6" name="n6">6</a></span><span style="color:#080;font-weight:bold">end</span>
+</pre></div>
+</div>
+</div>
+
         </div>
       </div>
     </div>

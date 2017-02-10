@@ -86,13 +86,15 @@
         </div>
         <div class="cell -9of12">
           <h1 class="guide-header">GraphQL::Pro — Instrumentation For New Relic, Scout and Skylight</h1>
-          <p><code>GraphQL::Pro</code> includes instrumentation for <a href="https://newrelic.com/">New Relic</a>, <a href="https://scoutapp.com">Scout</a>, and <a href="skylight.io">Skylight</a>. All three platforms add:</p>
+          <p><code>GraphQL::Pro</code> includes instrumentation for several platforms which add:</p>
 
 <ul>
   <li>Tracking queries by name</li>
   <li>Tracking field resolution</li>
   <li>Observing database calls during resolution  </li>
 </ul>
+
+<p>By default, all fields in the schema are monitored, but you can <a href="#opting-in-opting-out">opt in or opt out</a> on a type-by-type or field-by-field basis.</p>
 
 <p>To add monitoring, provide one or more platform names to <code>monitoring(...)</code>:</p>
 
@@ -108,34 +110,171 @@
 </div>
 </div>
 
-<p>Supported platforms are <code>:new_relic</code>, <code>:scout</code> and <code>:skylight</code>.</p>
+<p>Supported platforms are:</p>
 
-<h2 id="previews">Previews</h2>
+<ul>
+  <li><a href="#appsignal">Appsignal</a></li>
+  <li><a href="#new-relic">New Relic</a></li>
+  <li><a href="#scout">Scout</a></li>
+  <li><a href="#skylight">Skylight</a></li>
+</ul>
 
-<div class="img-set">
+<h2 id="opting-in-opting-out">Opting in, Opting out</h2>
 
+<p>By default, <code>GraphQL::Pro</code> measures the resolution time of every field in the schema.</p>
+
+<p>You can <strong>opt out on a field- or type-basis</strong> by defining <code>monitoring(false)</code> in a field or type definition. For example:</p>
+
+<div class="highlighter-coderay"><div class="CodeRay">
+  <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span><span style="color:#777"># Fields returning `Post` will _not_ be monitored</span>
+<span class="line-numbers"> <a href="#n2" name="n2">2</a></span><span style="color:#036;font-weight:bold">PostType</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">ObjectType</span>.define <span style="color:#080;font-weight:bold">do</span>
+<span class="line-numbers"> <a href="#n3" name="n3">3</a></span>  name <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">Post</span><span style="color:#710">&quot;</span></span>
+<span class="line-numbers"> <a href="#n4" name="n4">4</a></span>  monitoring <span style="color:#069">false</span>
+<span class="line-numbers"> <a href="#n5" name="n5">5</a></span>  <span style="color:#777"># ...</span>
+<span class="line-numbers"> <a href="#n6" name="n6">6</a></span><span style="color:#080;font-weight:bold">end</span>
+<span class="line-numbers"> <a href="#n7" name="n7">7</a></span>
+<span class="line-numbers"> <a href="#n8" name="n8">8</a></span><span style="color:#036;font-weight:bold">CommentType</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">ObjectType</span>.define <span style="color:#080;font-weight:bold">do</span>
+<span class="line-numbers"> <a href="#n9" name="n9">9</a></span>  <span style="color:#777"># ...</span>
+<span class="line-numbers"><strong><a href="#n10" name="n10">10</a></strong></span>  <span style="color:#777"># This field won't be monitored:</span>
+<span class="line-numbers"><a href="#n11" name="n11">11</a></span>  field <span style="color:#A60">:created_at</span>, <span style="color:#036;font-weight:bold">DateTimeType</span>, <span style="color:#606">monitoring</span>: <span style="color:#069">false</span>
+<span class="line-numbers"><a href="#n12" name="n12">12</a></span>
+<span class="line-numbers"><a href="#n13" name="n13">13</a></span>  <span style="color:#777"># This field won't be monitored</span>
+<span class="line-numbers"><a href="#n14" name="n14">14</a></span>  field <span style="color:#A60">:author</span>, <span style="color:#036;font-weight:bold">AuthorType</span> <span style="color:#080;font-weight:bold">do</span>
+<span class="line-numbers"><a href="#n15" name="n15">15</a></span>    monitoring <span style="color:#069">false</span>
+<span class="line-numbers"><a href="#n16" name="n16">16</a></span>    resolve -&gt;(o, a, c) { ... }
+<span class="line-numbers"><a href="#n17" name="n17">17</a></span>  <span style="color:#080;font-weight:bold">end</span>
+<span class="line-numbers"><a href="#n18" name="n18">18</a></span><span style="color:#080;font-weight:bold">end</span>
+</pre></div>
+</div>
+</div>
+
+<p>You can also <strong>opt out of all scalars</strong> by providing <code>monitor_scalars: false</code> at schema-level. For example:</p>
+
+<div class="highlighter-coderay"><div class="CodeRay">
+  <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">MySchema</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Schema</span>.define <span style="color:#080;font-weight:bold">do</span>
+<span class="line-numbers"><a href="#n2" name="n2">2</a></span>  <span style="color:#777"># ...</span>
+<span class="line-numbers"><a href="#n3" name="n3">3</a></span>  <span style="color:#777"># Don't monitor any Strings, Ints, Floats, IDs, Booleans, or custom scalars</span>
+<span class="line-numbers"><a href="#n4" name="n4">4</a></span>  monitoring(<span style="color:#A60">:skylight</span>, <span style="color:#606">monitor_scalars</span>: <span style="color:#069">false</span>)
+<span class="line-numbers"><a href="#n5" name="n5">5</a></span><span style="color:#080;font-weight:bold">end</span>
+</pre></div>
+</div>
+</div>
+
+<p>If you opt out of scalars, you can specify <code>monitoring(true)</code> to keep an eye on <em>specific</em> fields or scalar types:</p>
+
+<div class="highlighter-coderay"><div class="CodeRay">
+  <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">CommentType</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">ObjectType</span>.define <span style="color:#080;font-weight:bold">do</span>
+<span class="line-numbers"> <a href="#n2" name="n2">2</a></span>  <span style="color:#777"># ...</span>
+<span class="line-numbers"> <a href="#n3" name="n3">3</a></span>  <span style="color:#777"># Opt in to monitoring this field:</span>
+<span class="line-numbers"> <a href="#n4" name="n4">4</a></span>  field <span style="color:#A60">:rating</span>, types.Float, <span style="color:#606">monitoring</span>: <span style="color:#069">true</span>
+<span class="line-numbers"> <a href="#n5" name="n5">5</a></span><span style="color:#080;font-weight:bold">end</span>
+<span class="line-numbers"> <a href="#n6" name="n6">6</a></span>
+<span class="line-numbers"> <a href="#n7" name="n7">7</a></span><span style="color:#036;font-weight:bold">DateTimeType</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Scalar</span>.define <span style="color:#080;font-weight:bold">do</span>
+<span class="line-numbers"> <a href="#n8" name="n8">8</a></span>  <span style="color:#777"># ...</span>
+<span class="line-numbers"> <a href="#n9" name="n9">9</a></span>  <span style="color:#777"># Always monitor fields that return this type:</span>
+<span class="line-numbers"><strong><a href="#n10" name="n10">10</a></strong></span>  monitoring <span style="color:#069">true</span>
+<span class="line-numbers"><a href="#n11" name="n11">11</a></span><span style="color:#080;font-weight:bold">end</span>
+</pre></div>
+</div>
+</div>
+
+<p>This gives you fine-tuned control over how your schema is instrumented.</p>
+
+<h2 id="appsignal">AppSignal</h2>
+
+<p>Add <a href="https://appsignal.com/">AppSignal</a> instrumentation with <code>monitoring(:appsignal)</code>, for example:</p>
+
+<div class="highlighter-coderay"><div class="CodeRay">
+  <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">MySchema</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Schema</span>.define <span style="color:#080;font-weight:bold">do</span>
+<span class="line-numbers"><a href="#n2" name="n2">2</a></span>  <span style="color:#777"># ...</span>
+<span class="line-numbers"><a href="#n3" name="n3">3</a></span>  monitoring(<span style="color:#A60">:appsignal</span>)
+<span class="line-numbers"><a href="#n4" name="n4">4</a></span><span style="color:#080;font-weight:bold">end</span>
+</pre></div>
+</div>
+</div>
+
+<div class="monitoring-img-group">
+  
+        <a href="/graphql-ruby/pro/appsignal_1.png" target="_blank">
+          <img src="/graphql-ruby/pro/appsignal_1.png" title="appsignal monitoring" />
+        </a>
+      
+  
+        <a href="/graphql-ruby/pro/appsignal_2.png" target="_blank">
+          <img src="/graphql-ruby/pro/appsignal_2.png" title="appsignal monitoring" />
+        </a>
+      
+</div>
+
+<h2 id="new-relic">New Relic</h2>
+
+<p>Add <a href="https://newrelic.com/">New Relic</a> instrumentation with <code>monitoring(:new_relic)</code>, for example:</p>
+
+<div class="highlighter-coderay"><div class="CodeRay">
+  <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">MySchema</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Schema</span>.define <span style="color:#080;font-weight:bold">do</span>
+<span class="line-numbers"><a href="#n2" name="n2">2</a></span>  <span style="color:#777"># ...</span>
+<span class="line-numbers"><a href="#n3" name="n3">3</a></span>  monitoring(<span style="color:#A60">:new_relic</span>)
+<span class="line-numbers"><a href="#n4" name="n4">4</a></span><span style="color:#080;font-weight:bold">end</span>
+</pre></div>
+</div>
+</div>
+
+<div class="monitoring-img-group">
+  
         <a href="/graphql-ruby/pro/newrelic_1.png" target="_blank">
-          <img class="img-set-member" src="/graphql-ruby/pro/newrelic_1.png" title="GraphQL New Relic Instrumentation 1" />
+          <img src="/graphql-ruby/pro/newrelic_1.png" title="new relic monitoring" />
         </a>
       
-
+  
         <a href="/graphql-ruby/pro/newrelic_2.png" target="_blank">
-          <img class="img-set-member" src="/graphql-ruby/pro/newrelic_2.png" title="GraphQL New Relic Instrumentation 2" />
+          <img src="/graphql-ruby/pro/newrelic_2.png" title="new relic monitoring" />
         </a>
       
+</div>
 
+<h2 id="scout">Scout</h2>
+
+<p>Add <a href="https://scoutapp.com">Scout</a> instrumentation with <code>monitoring(:scout)</code>, for example:</p>
+
+<div class="highlighter-coderay"><div class="CodeRay">
+  <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">MySchema</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Schema</span>.define <span style="color:#080;font-weight:bold">do</span>
+<span class="line-numbers"><a href="#n2" name="n2">2</a></span>  <span style="color:#777"># ...</span>
+<span class="line-numbers"><a href="#n3" name="n3">3</a></span>  monitoring(<span style="color:#A60">:scout</span>)
+<span class="line-numbers"><a href="#n4" name="n4">4</a></span><span style="color:#080;font-weight:bold">end</span>
+</pre></div>
+</div>
+</div>
+
+<div class="monitoring-img-group">
+  
         <a href="/graphql-ruby/pro/scout_1.png" target="_blank">
-          <img class="img-set-member" src="/graphql-ruby/pro/scout_1.png" title="GraphQL Scout Instrumentation 1" />
+          <img src="/graphql-ruby/pro/scout_1.png" title="scout monitoring" />
         </a>
       
-
+  
         <a href="/graphql-ruby/pro/scout_2.png" target="_blank">
-          <img class="img-set-member" src="/graphql-ruby/pro/scout_2.png" title="GraphQL Scout Instrumentation 2" />
+          <img src="/graphql-ruby/pro/scout_2.png" title="scout monitoring" />
         </a>
       
+</div>
 
+<h2 id="skylight">Skylight</h2>
+
+<p>Add <a href="http://skylight.io">Skylight</a> instrumentation with <code>monitoring(:skylight)</code>, for example:</p>
+
+<div class="highlighter-coderay"><div class="CodeRay">
+  <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">MySchema</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Schema</span>.define <span style="color:#080;font-weight:bold">do</span>
+<span class="line-numbers"><a href="#n2" name="n2">2</a></span>  <span style="color:#777"># ...</span>
+<span class="line-numbers"><a href="#n3" name="n3">3</a></span>  monitoring(<span style="color:#A60">:skylight</span>)
+<span class="line-numbers"><a href="#n4" name="n4">4</a></span><span style="color:#080;font-weight:bold">end</span>
+</pre></div>
+</div>
+</div>
+
+<div class="monitoring-img-group">
+  
         <a href="/graphql-ruby/pro/skylight_1.png" target="_blank">
-          <img class="img-set-member" src="/graphql-ruby/pro/skylight_1.png" title="GraphQL Skylight Instrumentation 1" />
+          <img src="/graphql-ruby/pro/skylight_1.png" title="skylight monitoring" />
         </a>
       
 </div>
