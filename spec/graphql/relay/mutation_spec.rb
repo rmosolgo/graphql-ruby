@@ -167,6 +167,70 @@ describe GraphQL::Relay::Mutation do
     end
   end
 
+  describe "specifying return interfaces" do
+    let(:result_interface) {
+      GraphQL::InterfaceType.define do
+        name "ResultInterface"
+        field :success, !types.Boolean
+        field :notice, types.String
+      end
+    }
+
+    let(:error_interface) {
+      GraphQL::InterfaceType.define do
+        name "ErrorInterface"
+        field :error, types.String
+      end
+    }
+
+    let(:mutation) {
+      interfaces = [result_interface, error_interface]
+      GraphQL::Relay::Mutation.define do
+        name "ReturnTypeWithInterfaceTest"
+
+        return_field :name, types.String
+
+        return_interfaces interfaces
+
+        resolve ->(obj, input, ctx) {
+          {
+            name: "Type Specific Field",
+            success: true,
+            notice: "Success Interface Field",
+            error: "Error Interface Field"
+          }
+        }
+      end
+    }
+
+    let(:schema) {
+      mutation_field = mutation.field
+
+      mutation_root = GraphQL::ObjectType.define do
+        name "Mutation"
+        field :custom, mutation_field
+      end
+
+      GraphQL::Schema.define do
+        mutation(mutation_root)
+        resolve_type ->(obj, ctx) { "not really used" }
+      end
+    }
+
+    it 'makes the mutation type implement the interfaces' do
+      assert_equal [result_interface, error_interface], mutation.return_type.interfaces
+    end
+
+    it "returns interface values and specific ones" do
+      result = schema.execute('mutation { custom(input: {clientMutationId: "123"}) { name, success, notice, error, clientMutationId } }')
+      assert_equal "Type Specific Field", result["data"]["custom"]["name"]
+      assert_equal "Success Interface Field", result["data"]["custom"]["notice"]
+      assert_equal true, result["data"]["custom"]["success"]
+      assert_equal "Error Interface Field", result["data"]["custom"]["error"]
+      assert_equal "123", result["data"]["custom"]["clientMutationId"]
+    end
+  end
+
   describe "handling errors" do
     it "supports returning an error in resolve" do
       result = star_wars_query(query_string, "clientMutationId" => "5678", "shipName" => "Millennium Falcon")
