@@ -17,7 +17,6 @@ module StarWars
     global_id_field :id
     field :name, types.String
     field :planet, types.String
-    connection :ships, Ship.connection_type
   end
 
   # Use an optional block to add fields to the connection type:
