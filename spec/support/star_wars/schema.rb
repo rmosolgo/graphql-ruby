@@ -8,6 +8,7 @@ module StarWars
     interfaces [GraphQL::Relay::Node.interface]
     global_id_field :id
     field :name, types.String
+    connection :ships, Ship.connection_type
   end
 
   BaseType = GraphQL::ObjectType.define do
@@ -16,6 +17,7 @@ module StarWars
     global_id_field :id
     field :name, types.String
     field :planet, types.String
+    connection :ships, Ship.connection_type
   end
 
   # Use an optional block to add fields to the connection type:
