@@ -3,13 +3,47 @@ module GraphQL
   class Schema
     # Used to convert your {GraphQL::Schema} to a GraphQL schema string
     #
-    # @example print your schema to standard output
+    # @example print your schema to standard output (via helper)
     #   MySchema = GraphQL::Schema.define(query: QueryType)
     #   puts GraphQL::Schema::Printer.print_schema(MySchema)
+    #
+    # @example print your schema to standard output
+    #   MySchema = GraphQL::Schema.define(query: QueryType)
+    #   puts GraphQL::Schema::Printer.new(MySchema).print_schema
+    #
+    # @example print a single type to standard output
+    #   query_root = GraphQL::ObjectType.define do
+    #     name "Query"
+    #     description "The query root of this schema"
+    #
+    #     field :post do
+    #       type post_type
+    #       resolve ->(obj, args, ctx) { Post.find(args["id"]) }
+    #     end
+    #   end
+    #
+    #   post_type = GraphQL::ObjectType.define do
+    #     name "Post"
+    #     description "A blog post"
+    #
+    #     field :id, !types.ID
+    #     field :title, !types.String
+    #     field :body, !types.String
+    #   end
+    #
+    #   MySchema = GraphQL::Schema.define(query: query_root)
+    #
+    #   printer = GraphQL::Schema::Printer.new(MySchema)
+    #   puts printer.print_type(post_type)
     #
     class Printer
       attr_reader :schema, :warden
 
+      # @param schema [GraphQL::Schema]
+      # @param context [Hash]
+      # @param only [<#call(member, ctx)>]
+      # @param except [<#call(member, ctx)>]
+      # @param warden [GraphQL::Warden]
       def initialize(schema, context: nil, only: nil, except: nil, warden: nil)
         @schema = schema
         @context = context
@@ -34,16 +68,17 @@ module GraphQL
         printer.print_schema
       end
 
+      # Return a GraphQL schema string for the defined types in the schema
+      # @param schema [GraphQL::Schema]
+      # @param context [Hash]
+      # @param only [<#call(member, ctx)>]
+      # @param except [<#call(member, ctx)>]
       def self.print_schema(schema, **args)
         printer = new(schema, **args)
         printer.print_schema
       end
 
       # Return a GraphQL schema string for the defined types in the schema
-      # @param context [Hash]
-      # @param only [<#call(member, ctx)>]
-      # @param except [<#call(member, ctx)>]
-      # @param schema [GraphQL::Schema]
       def print_schema
         directive_definitions = warden.directives.map { |directive| print_directive(directive) }
 
