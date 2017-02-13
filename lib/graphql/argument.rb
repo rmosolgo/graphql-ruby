@@ -17,10 +17,10 @@ module GraphQL
   #
   class Argument
     include GraphQL::Define::InstanceDefinable
-    accepts_definitions :name, :type, :description, :default_value
-    attr_accessor :type, :description, :default_value, :name
+    accepts_definitions :name, :type, :description, :default_value, :as
+    attr_accessor :type, :description, :default_value, :name, :as
 
-    ensure_defined(:name, :description, :default_value, :type=, :type)
+    ensure_defined(:name, :description, :default_value, :type=, :type, :as)
 
     def default_value?
       !!@has_default_value
