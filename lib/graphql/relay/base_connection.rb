@@ -47,7 +47,7 @@ module GraphQL
         end
       end
 
-      attr_reader :nodes, :arguments, :max_page_size, :parent, :field
+      attr_reader :nodes, :arguments, :max_page_size, :parent, :field, :context
 
       # Make a connection, wrapping `nodes`
       # @param nodes [Object] The collection of nodes
