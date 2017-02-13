@@ -154,8 +154,6 @@ describe GraphQL::InternalRepresentation::Rewrite do
       leaf_type_selection = plant_selection.typed_children[schema.types["Nut"]]["leafType"]
       # Only unskipped occurrences in the AST
       assert_equal 2, leaf_type_selection.ast_nodes.size
-      # Inclusion contexts:
-      assert_equal 2, leaf_type_selection.ast_spreads.size
     end
   end
 

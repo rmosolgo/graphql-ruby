@@ -36,9 +36,6 @@ module GraphQL
         # Array<Set<GraphQL::ObjectType>>
         # Object types that the current point of the irep_tree applies to
         scope_stack = []
-        # Array<[nil, Nodes::InlineFragment]>
-        # Spreads that you're inside (only the last one matters)
-        spreads_stack = []
         fragment_definitions = Hash.new {|h, k| h[k] = {} }
         skip_nodes = Set.new
 
@@ -54,14 +51,14 @@ module GraphQL
           # Inline fragments provide two things to the rewritten tree:
           # - They _may_ narrow the scope by their type condition
           # - They _may_ apply their directives to their children
-          next_scope = Set.new
-          prev_scope = scope_stack.last
 
           if skip?(ast_node, query)
             skip_nodes.add(ast_node)
           end
 
           if skip_nodes.none?
+            next_scope = Set.new
+            prev_scope = scope_stack.last
             each_type(query, context.type_definition) do |obj_type|
               # What this fragment can apply to is also determined by
               # the scope around it (it can't widen the scope)
@@ -69,33 +66,31 @@ module GraphQL
                 next_scope.add(obj_type)
               end
             end
+            scope_stack.push(next_scope)
           end
-          scope_stack.push(next_scope)
-          spreads_stack.push(ast_node)
         }
 
         visitor[Nodes::InlineFragment].leave << ->(ast_node, ast_parent) {
+          if skip_nodes.none?
+            scope_stack.pop
+          end
+
           if skip_nodes.include?(ast_node)
             skip_nodes.delete(ast_node)
           end
-
-          scope_stack.pop
-          spreads_stack.pop
         }
 
         visitor[Nodes::Field].enter << ->(ast_node, ast_parent) {
-          node_name = ast_node.alias || ast_node.name
-          parent_nodes = nodes_stack.last
-          next_nodes = []
-          next_scope = Set.new
-
           if skip?(ast_node, query)
             skip_nodes.add(ast_node)
           end
 
           if skip_nodes.none?
+            node_name = ast_node.alias || ast_node.name
+            parent_nodes = nodes_stack.last
+            next_nodes = []
+            next_scope = Set.new
             applicable_scope = scope_stack.last
-            applicable_spread = spreads_stack.last
 
             applicable_scope.each do |obj_type|
               # Can't use context.field_definition because that might be
@@ -117,25 +112,24 @@ module GraphQL
                   )
                   node.ast_nodes.push(ast_node)
                   node.definitions.add(field_defn)
-                  applicable_spread && node.ast_spreads.add(applicable_spread)
                   next_nodes << node
                 end
               end
             end
+            nodes_stack.push(next_nodes)
+            scope_stack.push(next_scope)
           end
-          nodes_stack.push(next_nodes)
-          scope_stack.push(next_scope)
-          spreads_stack.push(nil)
         }
 
         visitor[Nodes::Field].leave << ->(ast_node, ast_parent) {
+          if skip_nodes.none?
+            nodes_stack.pop
+            scope_stack.pop
+          end
+
           if skip_nodes.include?(ast_node)
             skip_nodes.delete(ast_node)
           end
-
-          nodes_stack.pop
-          scope_stack.pop
-          spreads_stack.pop
         }
 
         visitor[Nodes::FragmentSpread].enter << ->(ast_node, ast_parent) {
@@ -158,7 +152,7 @@ module GraphQL
               each_type(query, parent_node.return_type) do |obj_type|
                 fragment_node = fragment_definitions[obj_type][frag_name]
                 if fragment_node
-                  deep_merge_selections(query, parent_node, fragment_node, spread: spread_ast_node.node)
+                  deep_merge_selections(query, parent_node, fragment_node)
                 end
               end
             end
@@ -169,7 +163,7 @@ module GraphQL
       # Merge selections from `new_parent` into `prev_parent`.
       # If `new_parent` came from a spread in the AST, it's present as `spread`.
       # Selections are merged in place, not copied.
-      def deep_merge_selections(query, prev_parent, new_parent, spread:)
+      def deep_merge_selections(query, prev_parent, new_parent)
         new_parent.typed_children.each do |obj_type, new_fields|
           prev_fields = prev_parent.typed_children[obj_type]
           new_fields.each do |name, new_node|
@@ -177,13 +171,11 @@ module GraphQL
             node = if prev_node
               prev_node.ast_nodes.concat(new_node.ast_nodes)
               prev_node.definitions.merge(new_node.definitions)
-              deep_merge_selections(query, prev_node, new_node, spread: nil)
+              deep_merge_selections(query, prev_node, new_node)
               prev_node
             else
               prev_fields[name] = new_node
             end
-            # merge the inclusion context, if there is one
-            spread && node.ast_spreads.add(spread)
           end
         end
       end

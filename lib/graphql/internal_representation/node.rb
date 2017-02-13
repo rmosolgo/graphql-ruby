@@ -15,11 +15,6 @@ module GraphQL
         @ast_nodes ||= Set.new
       end
 
-      # @return [Set<Language::Nodes::AbstractNode>]
-      def ast_spreads
-        @ast_spreads ||= Set.new
-      end
-
       # @return [Set<GraphQL::Field>] Field definitions for this node (there should only be one!)
       def definitions
         @definitions ||= Set.new
@@ -31,7 +26,6 @@ module GraphQL
       def initialize(
           name:, owner_type:, query:, return_type:,
           ast_nodes: [],
-          ast_spreads: nil,
           definitions: nil, typed_children: nil
         )
         @name = name
@@ -39,7 +33,6 @@ module GraphQL
         @owner_type = owner_type
         @typed_children = typed_children || Hash.new { |h1, k1| h1[k1] = {} }
         @ast_nodes = ast_nodes
-        @ast_spreads = ast_spreads
         @definitions = definitions
         @return_type = return_type
       end
