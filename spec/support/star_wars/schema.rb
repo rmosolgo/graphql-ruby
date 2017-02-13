@@ -8,6 +8,7 @@ module StarWars
     interfaces [GraphQL::Relay::Node.interface]
     global_id_field :id
     field :name, types.String
+    # Test cyclical connection types:
     connection :ships, Ship.connection_type
   end
 
