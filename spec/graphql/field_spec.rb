@@ -192,6 +192,20 @@ describe GraphQL::Field do
       )
     end
 
+    it "keeps the same resolve_proc when it is a built in property resolve" do
+      int_field = GraphQL::Field.define do
+        name "a"
+        property :c
+      end
+
+      int_field_2 = int_field.redefine(name: "b")
+
+      object = Struct.new(:a, :b, :c).new(1, 2, 3)
+
+      assert_equal 3, int_field.resolve_proc.call(object, nil, nil)
+      assert_equal 3, int_field_2.resolve_proc.call(object, nil, nil)
+    end
+
     it "copies metadata, even out-of-bounds assignments" do
       int_field = GraphQL::Field.define do
         metadata(:a, 1)
