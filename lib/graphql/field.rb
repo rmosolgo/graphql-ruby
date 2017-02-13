@@ -220,6 +220,8 @@ module GraphQL
       @name = new_name
 
       if old_name != new_name && @resolve_proc.is_a?(Field::Resolve::NameResolve)
+        # Since the NameResolve would use the old field name,
+        # reset resolve proc when the name has changed
         self.resolve = nil
       end
     end
