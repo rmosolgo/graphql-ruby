@@ -1,0 +1,4 @@
+<%= type_ruby_name %> = GraphQL::UnionType.define do
+  name "<%= type_graphql_name %>"
+<% if possible_types.any? %>  possible_types [<%= normalized_possible_types.join(", ") %>]
+<% end %>end

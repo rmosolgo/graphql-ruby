@@ -1,14 +1,19 @@
-require 'graphql/generators/base_generator'
+# frozen_string_literal: true
+require 'rails/generators/named_base'
+
 module GraphQL
   module Generators
-    # Generate a `Relay::Mutation` by name.
+    # TODO: What other options should be supported?
     #
-    # ```
-    # rails g graphql:mutation CreatePostMutation ... ?
-    # ```
-    #
-    # What other options should be supported?
-    class MutationGenerator < BaseGenerator
+    # @example Generate a `Relay::Mutation` by name
+    #     rails g graphql:mutation CreatePostMutation
+    class MutationGenerator < Rails::Generators::NamedBase
+      desc "Create a Relay mutation by name"
+      source_root File.expand_path('../templates', __FILE__)
+
+      def create_mutation_file
+        template "mutation.erb", "app/graphql/mutations/#{file_name}.rb"
+      end
     end
   end
 end

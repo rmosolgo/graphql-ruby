@@ -2,6 +2,7 @@
 require "codeclimate-test-reporter"
 CodeClimate::TestReporter.start
 require "sqlite3"
+require "rails/generators"
 require "active_record"
 require "action_controller"
 require "sequel"

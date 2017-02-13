@@ -1,4 +1,6 @@
-require 'graphql/generators/base_generator'
+# frozen_string_literal: true
+require 'graphql/generators/type_generator'
+
 module GraphQL
   module Generators
     # Generate an interface type by name,
@@ -7,7 +9,19 @@ module GraphQL
     # ```
     # rails g graphql:interface NamedEntityType name:String!
     # ```
-    class InterfaceGenerator < BaseGenerator
+    class InterfaceGenerator < TypeGenerator
+      desc "Create a GraphQL::InterfaceType with the given name and fields"
+      source_root File.expand_path('../templates', __FILE__)
+
+      argument :fields,
+        type: :array,
+        default: [],
+        banner: "name:type name:type ...",
+        description: "Fields for this interface (type may be expressed as Ruby or GraphQL)"
+
+      def create_type_file
+        template "interface.erb", "app/graphql/types/#{type_file_name}.rb"
+      end
     end
   end
 end
