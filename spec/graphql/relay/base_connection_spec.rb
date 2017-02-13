@@ -15,6 +15,22 @@ describe GraphQL::Relay::BaseConnection do
     end
   end
 
+  describe "#context" do
+    module Encoder
+      module_function
+      def encode(str, nonce: false); str; end
+      def decode(str, nonce: false); str; end
+    end
+
+    let(:schema) { OpenStruct.new(cursor_encoder: Encoder) }
+    let(:context) { OpenStruct.new(schema: schema) }
+
+    it "Has public access to the field context" do
+      conn = GraphQL::Relay::BaseConnection.new([], {}, context: context)
+      assert_equal context, conn.context
+    end
+  end
+
   describe "#encode / #decode" do
     module ReverseEncoder
       module_function
