@@ -46,4 +46,40 @@ describe GraphQL::BaseType do
       refute_equal obj_edge, obj_2.connection_type
     end
   end
+
+  describe "#to_definition" do
+    post_type = GraphQL::ObjectType.define do
+      name "Post"
+      description "A blog post"
+
+      field :id, !types.ID
+      field :title, !types.String
+      field :body, !types.String
+    end
+
+    query_root = GraphQL::ObjectType.define do
+      name "Query"
+      description "The query root of this schema"
+
+      field :post do
+        type post_type
+        resolve ->(obj, args, ctx) { Post.find(args["id"]) }
+      end
+    end
+
+    schema = GraphQL::Schema.define(query: query_root)
+
+    expected = <<TYPE
+# A blog post
+type Post {
+  id: ID!
+  title: String!
+  body: String!
+}
+TYPE
+
+    it "prints the type definition" do
+      assert_equal expected.chomp, post_type.to_definition(schema)
+    end
+  end
 end
