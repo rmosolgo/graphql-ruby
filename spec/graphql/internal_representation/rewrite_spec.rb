@@ -152,10 +152,8 @@ describe GraphQL::InternalRepresentation::Rewrite do
       doc = rewrite_result[schema.types["Query"]]["getPlant"]
       plant_selection = doc.typed_children[schema.types["Query"]]["plant"]
       leaf_type_selection = plant_selection.typed_children[schema.types["Nut"]]["leafType"]
-      # Each occurrence in the AST:
-      assert_equal 4, leaf_type_selection.ast_nodes.size
-      # Inclusion contexts:
-      assert_equal 4, leaf_type_selection.ast_spreads.size
+      # Only unskipped occurrences in the AST
+      assert_equal 2, leaf_type_selection.ast_nodes.size
     end
   end
 

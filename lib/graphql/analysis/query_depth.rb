@@ -25,7 +25,7 @@ module GraphQL
       def call(memo, visit_type, irep_node)
         if irep_node.ast_node.is_a?(GraphQL::Language::Nodes::Field)
           # Don't validate introspection fields or skipped nodes
-          not_validated_node = GraphQL::Schema::DYNAMIC_FIELDS.include?(irep_node.definition_name) || irep_node.skipped?
+          not_validated_node = GraphQL::Schema::DYNAMIC_FIELDS.include?(irep_node.definition_name)
           if visit_type == :enter
             if not_validated_node
               memo[:skip_depth] += 1
