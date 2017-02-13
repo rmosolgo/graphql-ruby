@@ -10,14 +10,15 @@ module GraphQL
 
       # Create a connection which exposes edges of this type
       def self.create_type(wrapped_type, edge_type: nil, edge_class: nil, nodes_field: ConnectionType.default_nodes_field, &block)
-        edge_type ||= wrapped_type.edge_type
         edge_class ||= GraphQL::Relay::Edge
-        connection_type_name = "#{wrapped_type.name}Connection"
-        connection_type_description = "The connection type for #{wrapped_type.name}."
+        edge_type ||= wrapped_type.edge_type
 
-        connection_type = ObjectType.define do
-          name(connection_type_name)
-          description(connection_type_description)
+        # Any call that would trigger `wrapped_type.ensure_defined`
+        # must be inside this lazy block, otherwise we get weird
+        # cyclical dependency errors :S
+        ObjectType.define do
+          name("#{wrapped_type.name}Connection")
+          description("The connection type for #{wrapped_type.name}.")
           field :edges, types[edge_type] do
             description "A list of edges."
             resolve ->(obj, args, ctx) {
@@ -35,8 +36,6 @@ module GraphQL
           field :pageInfo, !PageInfo, "Information to aid in pagination.", property: :page_info
           block && instance_eval(&block)
         end
-
-        connection_type
       end
     end
   end
