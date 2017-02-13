@@ -215,15 +215,12 @@ module GraphQL
       @clean_type ||= GraphQL::BaseType.resolve_related_type(@dirty_type)
     end
 
-    # You can only set a field's name _once_ -- this to prevent
-    # passing the same {Field} to multiple `.field` calls.
-    #
-    # This is important because {#name} may be used by {#resolve}.
     def name=(new_name)
-      if @name.nil?
-        @name = new_name
-      elsif @name != new_name
-        raise("Can't rename an already-named field. (Tried to rename \"#{@name}\" to \"#{new_name}\".) If you're passing a field with the `field:` argument, make sure it's an unused instance of GraphQL::Field.")
+      old_name = @name
+      @name = new_name
+
+      if old_name != new_name && @resolve_proc.is_a?(Field::Resolve::NameResolve)
+        self.resolve = nil
       end
     end
 

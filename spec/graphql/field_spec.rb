@@ -78,15 +78,6 @@ describe GraphQL::Field do
   end
 
   describe "#name" do
-    it "can't be reassigned" do
-      field = GraphQL::Field.define do
-        name("something")
-      end
-      assert_equal "something", field.name
-      assert_raises(RuntimeError) { field.name = "somethingelse" }
-      assert_equal "something", field.name
-    end
-
     it "must be a string" do
       dummy_query = GraphQL::ObjectType.define do
         name "QueryType"
@@ -172,6 +163,33 @@ describe GraphQL::Field do
 
       assert_equal 1, int_field.arguments.size
       assert_equal 2, int_field_2.arguments.size
+    end
+
+    it "rebuilds when the resolve_proc is default NameResolve" do
+      int_field = GraphQL::Field.define do
+        name "a"
+      end
+
+      int_field_2 = int_field.redefine(name: "b")
+
+      object = Struct.new(:a, :b).new(1, 2)
+
+      assert_equal 1, int_field.resolve_proc.call(object, nil, nil)
+      assert_equal 2, int_field_2.resolve_proc.call(object, nil, nil)
+    end
+
+    it "keeps the same resolve_proc when it is not a NameResolve" do
+      int_field = GraphQL::Field.define do
+        name "a"
+        resolve ->(obj, _, _) { 'GraphQL is Kool' }
+      end
+
+      int_field_2 = int_field.redefine(name: "b")
+
+      assert_equal(
+        int_field.resolve_proc.call(nil, nil, nil),
+        int_field_2.resolve_proc.call(nil, nil, nil)
+      )
     end
 
     it "copies metadata, even out-of-bounds assignments" do
