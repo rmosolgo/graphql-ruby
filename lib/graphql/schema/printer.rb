@@ -13,9 +13,13 @@ module GraphQL
       def initialize(schema, context: nil, only: nil, except: nil, warden: nil)
         @schema = schema
         @context = context
-        @only = only
-        @except = except
-        @warden = warden || GraphQL::Schema::Warden.new(blacklist, schema: @schema, context: @context)
+
+        if warden.nil?
+          blacklist = build_blacklist(only, except)
+          warden = GraphQL::Schema::Warden.new(blacklist, schema: @schema, context: @context)
+        end
+
+        @warden = warden
       end
 
       # Return the GraphQL schema string for the introspection type system
@@ -74,11 +78,11 @@ module GraphQL
 
       private_constant :IS_USER_DEFINED_MEMBER
 
-      def blacklist
-        if @only
-          ->(m, ctx) { !(IS_USER_DEFINED_MEMBER.call(m) && @only.call(m, ctx)) }
-        elsif @except
-          ->(m, ctx) { !IS_USER_DEFINED_MEMBER.call(m) || @except.call(m, ctx) }
+      def build_blacklist(only, except)
+        if only
+          ->(m, ctx) { !(IS_USER_DEFINED_MEMBER.call(m) && only.call(m, ctx)) }
+        elsif except
+          ->(m, ctx) { !IS_USER_DEFINED_MEMBER.call(m) || except.call(m, ctx) }
         else
           ->(m, ctx) { !IS_USER_DEFINED_MEMBER.call(m) }
         end
