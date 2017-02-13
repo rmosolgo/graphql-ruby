@@ -28,33 +28,6 @@ module GraphQL
       # @return [GraphQL::BaseType]
       attr_reader :return_type
 
-      # TODO This should be part of the directive, not hardcoded here
-      def skipped?
-        if !defined?(@skipped)
-          nodes_skipped = true
-          for n in ast_nodes
-            nodes_skipped &&= !GraphQL::Execution::DirectiveChecks.include?(n.directives, @query)
-          end
-
-          @skipped = if nodes_skipped
-            true
-          elsif @ast_spreads
-            nodes_skipped = true
-            for n in @ast_spreads
-              nodes_skipped &&= !GraphQL::Execution::DirectiveChecks.include?(n.directives, @query)
-            end
-            nodes_skipped
-          else
-            false
-          end
-        end
-        @skipped
-      end
-
-      def included?
-        !skipped?
-      end
-
       def initialize(
           name:, owner_type:, query:, return_type:,
           ast_nodes: [],

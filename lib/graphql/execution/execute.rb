@@ -27,7 +27,6 @@ module GraphQL
         selection_result = SelectionResult.new
 
         selection.typed_children[current_type].each do |name, subselection|
-          next if subselection.skipped?
           field = query.get_field(current_type, subselection.definition_name)
           field_result = resolve_field(
             selection_result,

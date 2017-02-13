@@ -28,6 +28,24 @@ describe GraphQL::Directive do
     |
     }
 
+    describe "child fields" do
+      let(:query_string) { <<-GRAPHQL
+      {
+        __type(name: "Cheese") {
+          fields { name }
+          fields @skip(if: true) { isDeprecated }
+        }
+      }
+      GRAPHQL
+      }
+
+      it "skips child fields too" do
+        first_field = result["data"]["__type"]["fields"].first
+        assert first_field.key?("name")
+        assert !first_field.key?("isDeprecated")
+      end
+    end
+
     it "intercepts fields" do
       expected = { "data" =>{
         "cheese" => {

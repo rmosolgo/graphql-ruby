@@ -40,6 +40,7 @@ module GraphQL
         # Spreads that you're inside (only the last one matters)
         spreads_stack = []
         fragment_definitions = Hash.new {|h, k| h[k] = {} }
+        skip_nodes = Set.new
 
         visit_op = VisitDefinition.new(context, @operations, nodes_stack, scope_stack)
         visitor[Nodes::OperationDefinition].enter << visit_op.method(:enter)
@@ -55,11 +56,18 @@ module GraphQL
           # - They _may_ apply their directives to their children
           next_scope = Set.new
           prev_scope = scope_stack.last
-          each_type(query, context.type_definition) do |obj_type|
-            # What this fragment can apply to is also determined by
-            # the scope around it (it can't widen the scope)
-            if prev_scope.include?(obj_type)
-              next_scope.add(obj_type)
+
+          if skip?(ast_node, query)
+            skip_nodes.add(ast_node)
+          end
+
+          if skip_nodes.none?
+            each_type(query, context.type_definition) do |obj_type|
+              # What this fragment can apply to is also determined by
+              # the scope around it (it can't widen the scope)
+              if prev_scope.include?(obj_type)
+                next_scope.add(obj_type)
+              end
             end
           end
           scope_stack.push(next_scope)
@@ -67,6 +75,10 @@ module GraphQL
         }
 
         visitor[Nodes::InlineFragment].leave << ->(ast_node, ast_parent) {
+          if skip_nodes.include?(ast_node)
+            skip_nodes.delete(ast_node)
+          end
+
           scope_stack.pop
           spreads_stack.pop
         }
@@ -76,31 +88,38 @@ module GraphQL
           parent_nodes = nodes_stack.last
           next_nodes = []
           next_scope = Set.new
-          applicable_scope = scope_stack.last
-          applicable_spread = spreads_stack.last
 
-          applicable_scope.each do |obj_type|
-            # Can't use context.field_definition because that might be
-            # a definition on an interface type
-            field_defn = query.get_field(obj_type, ast_node.name)
-            if field_defn.nil?
-              # It's a non-existent field
-            else
-              field_return_type = field_defn.type.unwrap
-              each_type(query, field_return_type) do |obj_type|
-                next_scope.add(obj_type)
-              end
-              parent_nodes.each do |parent_node|
-                node = parent_node.typed_children[obj_type][node_name] ||= Node.new(
-                  name: node_name,
-                  owner_type: obj_type,
-                  query: query,
-                  return_type: field_return_type,
-                )
-                node.ast_nodes.push(ast_node)
-                node.definitions.add(field_defn)
-                applicable_spread && node.ast_spreads.add(applicable_spread)
-                next_nodes << node
+          if skip?(ast_node, query)
+            skip_nodes.add(ast_node)
+          end
+
+          if skip_nodes.none?
+            applicable_scope = scope_stack.last
+            applicable_spread = spreads_stack.last
+
+            applicable_scope.each do |obj_type|
+              # Can't use context.field_definition because that might be
+              # a definition on an interface type
+              field_defn = query.get_field(obj_type, ast_node.name)
+              if field_defn.nil?
+                # It's a non-existent field
+              else
+                field_return_type = field_defn.type.unwrap
+                each_type(query, field_return_type) do |obj_type|
+                  next_scope.add(obj_type)
+                end
+                parent_nodes.each do |parent_node|
+                  node = parent_node.typed_children[obj_type][node_name] ||= Node.new(
+                    name: node_name,
+                    owner_type: obj_type,
+                    query: query,
+                    return_type: field_return_type,
+                  )
+                  node.ast_nodes.push(ast_node)
+                  node.definitions.add(field_defn)
+                  applicable_spread && node.ast_spreads.add(applicable_spread)
+                  next_nodes << node
+                end
               end
             end
           end
@@ -110,14 +129,20 @@ module GraphQL
         }
 
         visitor[Nodes::Field].leave << ->(ast_node, ast_parent) {
+          if skip_nodes.include?(ast_node)
+            skip_nodes.delete(ast_node)
+          end
+
           nodes_stack.pop
           scope_stack.pop
           spreads_stack.pop
         }
 
         visitor[Nodes::FragmentSpread].enter << ->(ast_node, ast_parent) {
-          # Register the irep nodes that depend on this AST node:
-          spread_parents[ast_node].merge(nodes_stack.last)
+          if skip_nodes.none? && !skip?(ast_node, query)
+            # Register the irep nodes that depend on this AST node:
+            spread_parents[ast_node].merge(nodes_stack.last)
+          end
         }
 
         # Resolve fragment spreads.
@@ -180,6 +205,11 @@ module GraphQL
         else
           raise "Unexpected owner type: #{owner_type.inspect}"
         end
+      end
+
+      def skip?(ast_node, query)
+        dir = ast_node.directives
+        dir.any? && !GraphQL::Execution::DirectiveChecks.include?(dir, query)
       end
 
       class VisitDefinition
