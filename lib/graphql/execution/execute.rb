@@ -27,12 +27,11 @@ module GraphQL
         selection_result = SelectionResult.new
 
         selection.typed_children[current_type].each do |name, subselection|
-          field = query.get_field(current_type, subselection.definition_name)
           field_result = resolve_field(
             selection_result,
             subselection,
             current_type,
-            field,
+            subselection.definition,
             object,
             query_ctx
           )
