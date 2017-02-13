@@ -7,37 +7,55 @@ module GraphQL
     #   MySchema = GraphQL::Schema.define(query: QueryType)
     #   puts GraphQL::Schema::Printer.print_schema(MySchema)
     #
-    module Printer
-      extend self
+    class Printer
+      attr_reader :schema, :warden
 
-      # Return a GraphQL schema string for the defined types in the schema
-      # @param context [Hash]
-      # @param only [<#call(member, ctx)>]
-      # @param except [<#call(member, ctx)>]
-      # @param schema [GraphQL::Schema]
-      def print_schema(schema, context: nil, only: nil, except: nil)
-        blacklist = if only
-          ->(m, ctx) { !(IS_USER_DEFINED_MEMBER.call(m) && only.call(m, ctx)) }
-        elsif except
-          ->(m, ctx) { !IS_USER_DEFINED_MEMBER.call(m) || except.call(m, ctx) }
-        else
-          ->(m, ctx) { !IS_USER_DEFINED_MEMBER.call(m) }
-        end
-
-        warden = GraphQL::Schema::Warden.new(blacklist, schema: schema, context: context)
-
-        print_filtered_schema(schema, warden: warden)
+      def initialize(schema, context: nil, only: nil, except: nil, warden: nil)
+        @schema = schema
+        @context = context
+        @only = only
+        @except = except
+        @warden = warden || GraphQL::Schema::Warden.new(blacklist, schema: @schema, context: @context)
       end
 
       # Return the GraphQL schema string for the introspection type system
-      def print_introspection_schema
+      def self.print_introspection_schema
         query_root = ObjectType.define(name: "Root")
         schema = GraphQL::Schema.define(query: query_root)
         blacklist = ->(m, ctx) { m == query_root }
 
         warden = GraphQL::Schema::Warden.new(blacklist, schema: schema, context: nil)
 
-        print_filtered_schema(schema, warden: warden)
+        printer = new(schema, warden: warden)
+        printer.print_schema
+      end
+
+      def self.print_schema(schema, **args)
+        printer = new(schema, **args)
+        printer.print_schema
+      end
+
+      # Return a GraphQL schema string for the defined types in the schema
+      # @param context [Hash]
+      # @param only [<#call(member, ctx)>]
+      # @param except [<#call(member, ctx)>]
+      # @param schema [GraphQL::Schema]
+      def print_schema
+        directive_definitions = warden.directives.map { |directive| print_directive(directive) }
+
+        printable_types = warden.types.reject(&:default_scalar?)
+
+        type_definitions = printable_types
+          .sort_by(&:name)
+          .map { |type| print_type(type) }
+
+        [print_schema_definition].compact
+                                 .concat(directive_definitions)
+                                 .concat(type_definitions).join("\n\n")
+      end
+
+      def print_type(type)
+        TypeKindPrinters::STRATEGIES.fetch(type.kind).print(warden, type)
       end
 
       private
@@ -56,21 +74,17 @@ module GraphQL
 
       private_constant :IS_USER_DEFINED_MEMBER
 
-      def print_filtered_schema(schema, warden:)
-        directive_definitions = warden.directives.map { |directive| print_directive(warden, directive) }
-
-        printable_types = warden.types.reject(&:default_scalar?)
-
-        type_definitions = printable_types
-          .sort_by(&:name)
-          .map { |type| print_type(warden, type) }
-
-        [print_schema_definition(warden, schema)].compact
-                                         .concat(directive_definitions)
-                                         .concat(type_definitions).join("\n\n")
+      def blacklist
+        if @only
+          ->(m, ctx) { !(IS_USER_DEFINED_MEMBER.call(m) && @only.call(m, ctx)) }
+        elsif @except
+          ->(m, ctx) { !IS_USER_DEFINED_MEMBER.call(m) || @except.call(m, ctx) }
+        else
+          ->(m, ctx) { !IS_USER_DEFINED_MEMBER.call(m) }
+        end
       end
 
-      def print_schema_definition(warden, schema)
+      def print_schema_definition
         if (schema.query.nil? || schema.query.name == 'Query') &&
            (schema.mutation.nil? || schema.mutation.name == 'Mutation') &&
            (schema.subscription.nil? || schema.subscription.name == 'Subscription')
@@ -89,11 +103,7 @@ module GraphQL
         "schema {\n#{operations}}"
       end
 
-      def print_type(warden, type)
-        TypeKindPrinters::STRATEGIES.fetch(type.kind).print(warden, type)
-      end
-
-      def print_directive(warden, directive)
+      def print_directive(directive)
         TypeKindPrinters::DirectivePrinter.print(warden, directive)
       end
 

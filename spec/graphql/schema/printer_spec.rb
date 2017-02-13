@@ -590,4 +590,20 @@ SCHEMA
     context = { names: ["Varied", "Image", "Sub"] }
     assert_equal expected.chomp, schema.to_definition(context: context, except: except_filter)
   end
+
+  describe "#print_type" do
+    it "returns the type schema as a string" do
+      expected = <<SCHEMA
+# A blog post
+type Post {
+  id: ID!
+  title: String!
+  body: String!
+  comments: [Comment!]
+  comments_count: Int! @deprecated(reason: \"Use \\\"comments\\\".\")
+}
+SCHEMA
+      assert_equal expected.chomp, GraphQL::Schema::Printer.new(schema).print_type(schema.types['Post'])
+    end
+  end
 end

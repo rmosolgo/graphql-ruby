@@ -158,5 +158,10 @@ module GraphQL
     def define_edge(**kwargs, &block)
       GraphQL::Relay::EdgeType.create_type(self, **kwargs, &block)
     end
+
+    def to_definition(schema, printer: nil, **args)
+      printer ||= GraphQL::Schema::Printer.new(schema, **args)
+      printer.print_type(self)
+    end
   end
 end
