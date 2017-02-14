@@ -124,13 +124,15 @@ module GraphQL
     accepts_definitions :name, :description, :deprecation_reason,
       :resolve, :lazy_resolve,
       :type, :arguments,
-      :property, :hash_key, :complexity, :mutation,
+      :property, :hash_key, :complexity,
+      :mutation, :function,
       :relay_node_field,
       :relay_nodes_field,
       argument: GraphQL::Define::AssignArgument
 
     ensure_defined(
-      :name, :deprecation_reason, :description, :description=, :property, :hash_key, :mutation, :arguments, :complexity,
+      :name, :deprecation_reason, :description, :description=, :property, :hash_key,
+      :mutation, :arguments, :complexity, :function,
       :resolve, :resolve=, :lazy_resolve, :lazy_resolve=, :lazy_resolve_proc, :resolve_proc,
       :type, :type=, :name=, :property=, :hash_key=,
       :relay_node_field, :relay_nodes_field, :default_arguments
@@ -171,6 +173,9 @@ module GraphQL
 
     # @return [Object, nil] The key to access with `obj.[]` to resolve this field (overrides {#name} if present)
     attr_accessor :hash_key
+
+    # @return [Object, GraphQL::Function] The function used to derive this field
+    attr_accessor :function
 
     def initialize
       @complexity = 1
