@@ -44,5 +44,25 @@ module GraphQL
     def type
       @clean_type ||= GraphQL::BaseType.resolve_related_type(@dirty_type)
     end
+
+    # @api private
+    NO_DEFAULT_VALUE = Object.new
+    # @api private
+    def self.from_dsl(name, type = nil, description = nil, default_value: NO_DEFAULT_VALUE, &block)
+      argument = if block_given?
+        GraphQL::Argument.define(&block)
+      else
+        GraphQL::Argument.new
+      end
+
+      argument.name = name.to_s
+      type && argument.type = type
+      description && argument.description = description
+      if default_value != NO_DEFAULT_VALUE
+        argument.default_value = default_value
+      end
+
+      argument
+    end
   end
 end
