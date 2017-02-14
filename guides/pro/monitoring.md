@@ -1,5 +1,5 @@
 ---
-title: GraphQL::Pro — Instrumentation For New Relic, Scout and Skylight
+title: GraphQL::Pro — Instrumentation For Appsignal, New Relic, Scout and Skylight
 ---
 
 `GraphQL::Pro` includes instrumentation for several platforms which add:
