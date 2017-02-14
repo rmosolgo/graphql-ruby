@@ -86,62 +86,52 @@
         </div>
         <div class="cell -9of12">
           <h1 class="guide-header">GraphQL::Pro — Installation</h1>
-          <p><code>GraphQL::Pro</code> is distributed as a Ruby gem. When you buy <code>GraphQL::Pro</code>, you’ll receive credentials, which you can register with bundler:</p>
+          <p><code class="highlighter-rouge">GraphQL::Pro</code> is distributed as a Ruby gem. When you buy <code class="highlighter-rouge">GraphQL::Pro</code>, you’ll receive credentials, which you can register with bundler:</p>
 
-<div class="highlighter-coderay"><div class="CodeRay">
-  <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span>bundle config gems.graphql.pro #{YOUR_CREDENTIALS}
-</pre></div>
-</div>
+<div class="highlighter-rouge"><pre class="highlight"><code>bundle config gems.graphql.pro <span class="c">#{YOUR_CREDENTIALS}</span>
+</code></pre>
 </div>
 
-<p>Then, you can add <code>graphql-pro</code> to your Gemfile, which a custom <code>source</code>:</p>
+<p>Then, you can add <code class="highlighter-rouge">graphql-pro</code> to your Gemfile, which a custom <code class="highlighter-rouge">source</code>:</p>
 
-<div class="highlighter-coderay"><div class="CodeRay">
-  <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span>source <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">gems.graphql.pro</span><span style="color:#710">&quot;</span></span> <span style="color:#080;font-weight:bold">do</span>
-<span class="line-numbers"><a href="#n2" name="n2">2</a></span>  gem <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">graphql-pro</span><span style="color:#710">&quot;</span></span>
-<span class="line-numbers"><a href="#n3" name="n3">3</a></span><span style="color:#080;font-weight:bold">end</span>
-</pre></div>
-</div>
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="n">source</span> <span class="s2">"gems.graphql.pro"</span> <span class="k">do</span>
+  <span class="n">gem</span> <span class="s2">"graphql-pro"</span>
+<span class="k">end</span>
+</code></pre>
 </div>
 
 <p>Then, install the gem with Bundler:</p>
 
-<div class="highlighter-coderay"><div class="CodeRay">
-  <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span>bundle install
-</pre></div>
-</div>
+<div class="highlighter-rouge"><pre class="highlight"><code>bundle install
+</code></pre>
 </div>
 
-<p>Then, check out some of <code>GraphQL::Pro</code>’s features!</p>
+<p>Then, check out some of <code class="highlighter-rouge">GraphQL::Pro</code>’s features!</p>
 
 <h2 id="updates">Updates</h2>
 
-<p>To update <code>GraphQL::Pro</code>, use Bundler:</p>
+<p>To update <code class="highlighter-rouge">GraphQL::Pro</code>, use Bundler:</p>
 
-<div class="highlighter-coderay"><div class="CodeRay">
-  <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span>bundle update graphql-pro
-</pre></div>
-</div>
+<div class="highlighter-rouge"><pre class="highlight"><code>bundle update graphql-pro
+</code></pre>
 </div>
 
 <p>Be sure to check the <a href="https://github.com/rmosolgo/graphql-ruby/blob/master/CHANGELOG-pro.md">changelog</a> between versions!</p>
 
 <h2 id="dependencies">Dependencies</h2>
 
-<p><code>graphql-pro 1.0.0</code> requires <code>graphql ~&gt;1.4</code>.</p>
+<p><code class="highlighter-rouge">graphql-pro 1.0.0</code> requires <code class="highlighter-rouge">graphql ~&gt;1.4</code>.</p>
 
 <h2 id="verifying-integrity">Verifying Integrity</h2>
 
-<p>You can verify the integrity of <code>graphql-pro</code> by getting its checksum and comparing it to the <a href="https://github.com/rmosolgo/graphql-ruby/blob/master/guides/pro/checksums">published checksums</a>.</p>
+<p>You can verify the integrity of <code class="highlighter-rouge">graphql-pro</code> by getting its checksum and comparing it to the <a href="https://github.com/rmosolgo/graphql-ruby/blob/master/guides/pro/checksums">published checksums</a>.</p>
 
 <p>First, get the checksum:</p>
 
-<div class="highlighter-coderay"><div class="CodeRay">
-  <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span># For example, to get the checksum of graphql-pro 1.0.0:
-<span class="line-numbers"><a href="#n2" name="n2">2</a></span>$ gem fetch graphql-pro -v 1.0.0 --source https://YOUR_KEY@gems.graphql.pro
-<span class="line-numbers"><a href="#n3" name="n3">3</a></span>$ ruby -rdigest/sha2 -e &quot;puts Digest::SHA512.new.hexdigest(File.read('graphql-pro-1.0.0.gem'))&quot;
-</pre></div>
-</div>
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="c"># For example, to get the checksum of graphql-pro 1.0.0:</span>
+<span class="gp">$ </span>gem fetch graphql-pro -v 1.0.0 --source https://YOUR_KEY@gems.graphql.pro
+<span class="gp">$ </span>ruby -rdigest/sha2 -e <span class="s2">"puts Digest::SHA512.new.hexdigest(File.read('graphql-pro-1.0.0.gem'))"</span>
+</code></pre>
 </div>
 
 <p>Then, compare it to the corresponding checksum <a href="https://github.com/rmosolgo/graphql-ruby/blob/master/guides/pro/checksums">listed on GitHub</a>. If it the results don’t match, then the gem was compromised.</p>

@@ -86,7 +86,7 @@
         </div>
         <div class="cell -9of12">
           <h1 class="guide-header">Schema — Types and Fields</h1>
-          <p>Types, fields and arguments make up a schema’s type system. These objects are also open to extension via <code>metadata</code> and <code>accepts_definitions</code>.</p>
+          <p>Types, fields and arguments make up a schema’s type system. These objects are also open to extension via <code class="highlighter-rouge">metadata</code> and <code class="highlighter-rouge">accepts_definitions</code>.</p>
 
 <h2 id="types">Types</h2>
 
@@ -115,23 +115,19 @@
   <li>
     <p><strong>By value</strong>. Pass a variable which holds the type.</p>
 
-    <div class="highlighter-coderay"><div class="CodeRay">
-  <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#777"># constant</span>
-<span class="line-numbers"><a href="#n2" name="n2">2</a></span>field <span style="color:#A60">:team</span>, <span style="color:#036;font-weight:bold">TeamType</span>
-<span class="line-numbers"><a href="#n3" name="n3">3</a></span><span style="color:#777"># local variable</span>
-<span class="line-numbers"><a href="#n4" name="n4">4</a></span>field <span style="color:#A60">:stadium</span>, stadium_type
-</pre></div>
-</div>
+    <div class="highlighter-rouge"><pre class="highlight"><code><span class="c1"># constant</span>
+<span class="n">field</span> <span class="ss">:team</span><span class="p">,</span> <span class="no">TeamType</span>
+<span class="c1"># local variable</span>
+<span class="n">field</span> <span class="ss">:stadium</span><span class="p">,</span> <span class="n">stadium_type</span>
+</code></pre>
     </div>
   </li>
   <li>
     <p><strong>By proc</strong>, which will be lazy-evaluated to look up a type.</p>
 
-    <div class="highlighter-coderay"><div class="CodeRay">
-  <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span>field <span style="color:#A60">:team</span>, -&gt; { <span style="color:#036;font-weight:bold">TeamType</span> }
-<span class="line-numbers"><a href="#n2" name="n2">2</a></span>field <span style="color:#A60">:stadium</span>, -&gt; { <span style="color:#036;font-weight:bold">LookupTypeForModel</span>.lookup(<span style="color:#036;font-weight:bold">Stadium</span>) }
-</pre></div>
-</div>
+    <div class="highlighter-rouge"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:team</span><span class="p">,</span> <span class="o">-&gt;</span> <span class="p">{</span> <span class="no">TeamType</span> <span class="p">}</span>
+<span class="n">field</span> <span class="ss">:stadium</span><span class="p">,</span> <span class="o">-&gt;</span> <span class="p">{</span> <span class="no">LookupTypeForModel</span><span class="p">.</span><span class="nf">lookup</span><span class="p">(</span><span class="no">Stadium</span><span class="p">)</span> <span class="p">}</span>
+</code></pre>
     </div>
   </li>
 </ol>
@@ -140,89 +136,79 @@
 
 <p><a href="http://www.rubydoc.info/gems/graphql/GraphQL/ObjectType" target="_blank"><code>GraphQL::ObjectType</code></a>s and <a href="http://www.rubydoc.info/gems/graphql/GraphQL/InterfaceType" target="_blank"><code>GraphQL::InterfaceType</code></a>s may expose their values with <em>fields</em>. A field definition looks like this:</p>
 
-<div class="highlighter-coderay"><div class="CodeRay">
-  <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">PostType</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">ObjectType</span>.define <span style="color:#080;font-weight:bold">do</span>
-<span class="line-numbers"><a href="#n2" name="n2">2</a></span>  <span style="color:#777"># ...</span>
-<span class="line-numbers"><a href="#n3" name="n3">3</a></span>  <span style="color:#777">#     name  , type        , description (optional)</span>
-<span class="line-numbers"><a href="#n4" name="n4">4</a></span>  field <span style="color:#A60">:title</span>, types.String, <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">The title of the Post</span><span style="color:#710">&quot;</span></span>
-<span class="line-numbers"><a href="#n5" name="n5">5</a></span><span style="color:#080;font-weight:bold">end</span>
-</pre></div>
-</div>
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="no">PostType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+  <span class="c1"># ...</span>
+  <span class="c1">#     name  , type        , description (optional)</span>
+  <span class="n">field</span> <span class="ss">:title</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">String</span><span class="p">,</span> <span class="s2">"The title of the Post"</span>
+<span class="k">end</span>
+</code></pre>
 </div>
 
-<p>By default, fields are resolved by sending the name to the underlying object (eg <code>post.title</code> in the example above).</p>
+<p>By default, fields are resolved by sending the name to the underlying object (eg <code class="highlighter-rouge">post.title</code> in the example above).</p>
 
-<p>You can define a different resolution by providing a <code>resolve</code> function:</p>
+<p>You can define a different resolution by providing a <code class="highlighter-rouge">resolve</code> function:</p>
 
-<div class="highlighter-coderay"><div class="CodeRay">
-  <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">PostType</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">ObjectType</span>.define <span style="color:#080;font-weight:bold">do</span>
-<span class="line-numbers"> <a href="#n2" name="n2">2</a></span>  <span style="color:#777"># ...</span>
-<span class="line-numbers"> <a href="#n3" name="n3">3</a></span>  <span style="color:#777">#     name   , type        , description (optional)</span>
-<span class="line-numbers"> <a href="#n4" name="n4">4</a></span>  field <span style="color:#A60">:teaser</span>, types.String, <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">The teaser of the Post</span><span style="color:#710">&quot;</span></span> <span style="color:#080;font-weight:bold">do</span>
-<span class="line-numbers"> <a href="#n5" name="n5">5</a></span>    <span style="color:#777"># how to get the value?</span>
-<span class="line-numbers"> <a href="#n6" name="n6">6</a></span>    resolve -&gt;(obj, args, ctx) {
-<span class="line-numbers"> <a href="#n7" name="n7">7</a></span>      <span style="color:#777"># first 40 chars of the body</span>
-<span class="line-numbers"> <a href="#n8" name="n8">8</a></span>      obj.body[<span style="color:#00D">0</span>, <span style="color:#00D">40</span>]
-<span class="line-numbers"> <a href="#n9" name="n9">9</a></span>    }
-<span class="line-numbers"><strong><a href="#n10" name="n10">10</a></strong></span>  <span style="color:#080;font-weight:bold">end</span>
-<span class="line-numbers"><a href="#n11" name="n11">11</a></span><span style="color:#080;font-weight:bold">end</span>
-</pre></div>
-</div>
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="no">PostType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+  <span class="c1"># ...</span>
+  <span class="c1">#     name   , type        , description (optional)</span>
+  <span class="n">field</span> <span class="ss">:teaser</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">String</span><span class="p">,</span> <span class="s2">"The teaser of the Post"</span> <span class="k">do</span>
+    <span class="c1"># how to get the value?</span>
+    <span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
+      <span class="c1"># first 40 chars of the body</span>
+      <span class="n">obj</span><span class="p">.</span><span class="nf">body</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">40</span><span class="p">]</span>
+    <span class="p">}</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
 </div>
 
 <p>The resolve function receives inputs:</p>
 
 <ul>
-  <li><code>object</code>: The underlying object for this type (above, a <code>Post</code> instance)</li>
-  <li><code>arguments</code>: The arguments for this field (see below, a <a href="http://www.rubydoc.info/gems/graphql/GraphQL/Query/Arguments" target="_blank"><code>GraphQL::Query::Arguments</code></a> instance)</li>
-  <li><code>context</code>: The context for this query (see <a href="/graphql-ruby/queries/executing_queries">“Executing Queries”</a>, a <a href="http://www.rubydoc.info/gems/graphql/GraphQL/Query/Context" target="_blank"><code>GraphQL::Query::Context</code></a> instance)</li>
+  <li><code class="highlighter-rouge">object</code>: The underlying object for this type (above, a <code class="highlighter-rouge">Post</code> instance)</li>
+  <li><code class="highlighter-rouge">arguments</code>: The arguments for this field (see below, a <a href="http://www.rubydoc.info/gems/graphql/GraphQL/Query/Arguments" target="_blank"><code>GraphQL::Query::Arguments</code></a> instance)</li>
+  <li><code class="highlighter-rouge">context</code>: The context for this query (see <a href="/graphql-ruby/queries/executing_queries">“Executing Queries”</a>, a <a href="http://www.rubydoc.info/gems/graphql/GraphQL/Query/Context" target="_blank"><code>GraphQL::Query::Context</code></a> instance)</li>
 </ul>
 
-<p>In fact, the <code>field do ... end</code> block is passed to <a href="http://www.rubydoc.info/gems/graphql/GraphQL/Field" target="_blank"><code>GraphQL::Field</code></a>’s <code>.define</code> method, so you can define many things there:</p>
+<p>In fact, the <code class="highlighter-rouge">field do ... end</code> block is passed to <a href="http://www.rubydoc.info/gems/graphql/GraphQL/Field" target="_blank"><code>GraphQL::Field</code></a>’s <code class="highlighter-rouge">.define</code> method, so you can define many things there:</p>
 
-<div class="highlighter-coderay"><div class="CodeRay">
-  <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span>field <span style="color:#080;font-weight:bold">do</span>
-<span class="line-numbers"><a href="#n2" name="n2">2</a></span>  name <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">teaser</span><span style="color:#710">&quot;</span></span>
-<span class="line-numbers"><a href="#n3" name="n3">3</a></span>  type types.String
-<span class="line-numbers"><a href="#n4" name="n4">4</a></span>  description <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">...</span><span style="color:#710">&quot;</span></span>
-<span class="line-numbers"><a href="#n5" name="n5">5</a></span>  resolve -&gt;(obj, args, ctx) { ... }
-<span class="line-numbers"><a href="#n6" name="n6">6</a></span>  deprecation_reason <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">Too long, use .title instead</span><span style="color:#710">&quot;</span></span>
-<span class="line-numbers"><a href="#n7" name="n7">7</a></span>  complexity <span style="color:#00D">2</span>
-<span class="line-numbers"><a href="#n8" name="n8">8</a></span><span style="color:#080;font-weight:bold">end</span>
-</pre></div>
-</div>
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="n">field</span> <span class="k">do</span>
+  <span class="nb">name</span> <span class="s2">"teaser"</span>
+  <span class="n">type</span> <span class="n">types</span><span class="o">.</span><span class="no">String</span>
+  <span class="n">description</span> <span class="s2">"..."</span>
+  <span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span> <span class="p">.</span><span class="nf">.</span><span class="o">.</span> <span class="p">}</span>
+  <span class="n">deprecation_reason</span> <span class="s2">"Too long, use .title instead"</span>
+  <span class="n">complexity</span> <span class="mi">2</span>
+<span class="k">end</span>
+</code></pre>
 </div>
 
 <h2 id="arguments">Arguments</h2>
 
-<p>Fields can take <strong>arguments</strong> as input. These can be used to determine the return value (eg, filtering search results) or to modify the application state (eg, updating the database in <code>MutationType</code>).</p>
+<p>Fields can take <strong>arguments</strong> as input. These can be used to determine the return value (eg, filtering search results) or to modify the application state (eg, updating the database in <code class="highlighter-rouge">MutationType</code>).</p>
 
-<p>Arguments are defined with the <code>argument</code> helper:</p>
+<p>Arguments are defined with the <code class="highlighter-rouge">argument</code> helper:</p>
 
-<div class="highlighter-coderay"><div class="CodeRay">
-  <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span>field <span style="color:#A60">:search_posts</span>, types[<span style="color:#036;font-weight:bold">PostType</span>] <span style="color:#080;font-weight:bold">do</span>
-<span class="line-numbers"> <a href="#n2" name="n2">2</a></span>  argument <span style="color:#A60">:category</span>, types.String
-<span class="line-numbers"> <a href="#n3" name="n3">3</a></span>  resolve -&gt;(obj, args, ctx) {
-<span class="line-numbers"> <a href="#n4" name="n4">4</a></span>    args[<span style="color:#A60">:category</span>]
-<span class="line-numbers"> <a href="#n5" name="n5">5</a></span>    <span style="color:#777"># =&gt; maybe a string, eg &quot;Programming&quot;</span>
-<span class="line-numbers"> <a href="#n6" name="n6">6</a></span>    <span style="color:#080;font-weight:bold">if</span> args[<span style="color:#A60">:category</span>]
-<span class="line-numbers"> <a href="#n7" name="n7">7</a></span>      <span style="color:#036;font-weight:bold">Post</span>.where(<span style="color:#606">category</span>: category).limit(<span style="color:#00D">10</span>)
-<span class="line-numbers"> <a href="#n8" name="n8">8</a></span>    <span style="color:#080;font-weight:bold">else</span>
-<span class="line-numbers"> <a href="#n9" name="n9">9</a></span>      <span style="color:#036;font-weight:bold">Post</span>.all.limit(<span style="color:#00D">10</span>)
-<span class="line-numbers"><strong><a href="#n10" name="n10">10</a></strong></span>    <span style="color:#080;font-weight:bold">end</span>
-<span class="line-numbers"><a href="#n11" name="n11">11</a></span>  }
-<span class="line-numbers"><a href="#n12" name="n12">12</a></span><span style="color:#080;font-weight:bold">end</span>
-</pre></div>
-</div>
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:search_posts</span><span class="p">,</span> <span class="n">types</span><span class="p">[</span><span class="no">PostType</span><span class="p">]</span> <span class="k">do</span>
+  <span class="n">argument</span> <span class="ss">:category</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">String</span>
+  <span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">args</span><span class="p">[</span><span class="ss">:category</span><span class="p">]</span>
+    <span class="c1"># =&gt; maybe a string, eg "Programming"</span>
+    <span class="k">if</span> <span class="n">args</span><span class="p">[</span><span class="ss">:category</span><span class="p">]</span>
+      <span class="no">Post</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="ss">category: </span><span class="n">category</span><span class="p">).</span><span class="nf">limit</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+    <span class="k">else</span>
+      <span class="no">Post</span><span class="p">.</span><span class="nf">all</span><span class="p">.</span><span class="nf">limit</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+    <span class="k">end</span>
+  <span class="p">}</span>
+<span class="k">end</span>
+</code></pre>
 </div>
 
-<p>Use <code>!</code> to mark an argument as <em>required</em>:</p>
+<p>Use <code class="highlighter-rouge">!</code> to mark an argument as <em>required</em>:</p>
 
-<div class="highlighter-coderay"><div class="CodeRay">
-  <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#777"># This argument is a required string:</span>
-<span class="line-numbers"><a href="#n2" name="n2">2</a></span>argument <span style="color:#A60">:category</span>, !types.String
-</pre></div>
-</div>
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="c1"># This argument is a required string:</span>
+<span class="n">argument</span> <span class="ss">:category</span><span class="p">,</span> <span class="o">!</span><span class="n">types</span><span class="o">.</span><span class="no">String</span>
+</code></pre>
 </div>
 
 <p>Only certain types are valid for arguments:</p>
@@ -235,64 +221,56 @@
   <li><a href="http://www.rubydoc.info/gems/graphql/GraphQL/NonNullType" target="_blank"><code>GraphQL::NonNullType</code></a>s of a valid input type</li>
 </ul>
 
-<p>The <code>args</code> parameter of a <code>resolve</code> function will always be a <a href="http://www.rubydoc.info/gems/graphql/GraphQL/Query/Arguments" target="_blank"><code>GraphQL::Query::Arguments</code></a>. You can access specific arguments with <code>["arg_name"]</code> or <code>[:arg_name]</code>. You recursively turn it into a Ruby Hash with <code>to_h</code>. Inside <code>args</code>, scalars will be parsed into Ruby values and enums will be converted to their <code>value:</code> (if one was provided).</p>
+<p>The <code class="highlighter-rouge">args</code> parameter of a <code class="highlighter-rouge">resolve</code> function will always be a <a href="http://www.rubydoc.info/gems/graphql/GraphQL/Query/Arguments" target="_blank"><code>GraphQL::Query::Arguments</code></a>. You can access specific arguments with <code class="highlighter-rouge">["arg_name"]</code> or <code class="highlighter-rouge">[:arg_name]</code>. You recursively turn it into a Ruby Hash with <code class="highlighter-rouge">to_h</code>. Inside <code class="highlighter-rouge">args</code>, scalars will be parsed into Ruby values and enums will be converted to their <code class="highlighter-rouge">value:</code> (if one was provided).</p>
 
-<div class="highlighter-coderay"><div class="CodeRay">
-  <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span>resolve -&gt;(obj, args, ctx) {
-<span class="line-numbers"><a href="#n2" name="n2">2</a></span>  args[<span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">category</span><span style="color:#710">&quot;</span></span>] == args[<span style="color:#A60">:category</span>]
-<span class="line-numbers"><a href="#n3" name="n3">3</a></span>  <span style="color:#777"># =&gt; true</span>
-<span class="line-numbers"><a href="#n4" name="n4">4</a></span>  args.to_h
-<span class="line-numbers"><a href="#n5" name="n5">5</a></span>  <span style="color:#777"># =&gt; { &quot;category&quot; =&gt; &quot;Programming&quot; }</span>
-<span class="line-numbers"><a href="#n6" name="n6">6</a></span>  <span style="color:#777"># ...</span>
-<span class="line-numbers"><a href="#n7" name="n7">7</a></span>}
-</pre></div>
-</div>
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">args</span><span class="p">[</span><span class="s2">"category"</span><span class="p">]</span> <span class="o">==</span> <span class="n">args</span><span class="p">[</span><span class="ss">:category</span><span class="p">]</span>
+  <span class="c1"># =&gt; true</span>
+  <span class="n">args</span><span class="p">.</span><span class="nf">to_h</span>
+  <span class="c1"># =&gt; { "category" =&gt; "Programming" }</span>
+  <span class="c1"># ...</span>
+<span class="p">}</span>
+</code></pre>
 </div>
 
 <h2 id="extending-type-and-field-definitions">Extending type and field definitions</h2>
 
-<p>Types, fields, and arguments have a <code>metadata</code> hash which accepts values during definition.</p>
+<p>Types, fields, and arguments have a <code class="highlighter-rouge">metadata</code> hash which accepts values during definition.</p>
 
 <p>First, make a custom definition:</p>
 
-<div class="highlighter-coderay"><div class="CodeRay">
-  <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">ObjectType</span>.accepts_definitions <span style="color:#606">resolves_to_class_names</span>: <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Define</span>.assign_metadata_key(<span style="color:#A60">:resolves_to_class_names</span>)
-<span class="line-numbers"><a href="#n2" name="n2">2</a></span><span style="color:#777"># or:</span>
-<span class="line-numbers"><a href="#n3" name="n3">3</a></span><span style="color:#777"># GraphQL::Field.accepts_definitions(...)</span>
-<span class="line-numbers"><a href="#n4" name="n4">4</a></span><span style="color:#777"># GraphQL::Argument.accepts_definitions(...)</span>
-<span class="line-numbers"><a href="#n5" name="n5">5</a></span>
-<span class="line-numbers"><a href="#n6" name="n6">6</a></span><span style="color:#036;font-weight:bold">MySchema</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Schema</span>.define <span style="color:#080;font-weight:bold">do</span>
-<span class="line-numbers"><a href="#n7" name="n7">7</a></span>  <span style="color:#777"># ...</span>
-<span class="line-numbers"><a href="#n8" name="n8">8</a></span><span style="color:#080;font-weight:bold">end</span>
-</pre></div>
-</div>
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">accepts_definitions</span> <span class="ss">resolves_to_class_names: </span><span class="no">GraphQL</span><span class="o">::</span><span class="no">Define</span><span class="p">.</span><span class="nf">assign_metadata_key</span><span class="p">(</span><span class="ss">:resolves_to_class_names</span><span class="p">)</span>
+<span class="c1"># or:</span>
+<span class="c1"># GraphQL::Field.accepts_definitions(...)</span>
+<span class="c1"># GraphQL::Argument.accepts_definitions(...)</span>
+
+<span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+  <span class="c1"># ...</span>
+<span class="k">end</span>
+</code></pre>
 </div>
 
 <p>Then, use the custom definition:</p>
 
-<div class="highlighter-coderay"><div class="CodeRay">
-  <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">Post</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">ObjectType</span>.define <span style="color:#080;font-weight:bold">do</span>
-<span class="line-numbers"><a href="#n2" name="n2">2</a></span>  <span style="color:#777"># ...</span>
-<span class="line-numbers"><a href="#n3" name="n3">3</a></span>  resolves_to_class_names [<span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">Post</span><span style="color:#710">&quot;</span></span>, <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">StaffUpdate</span><span style="color:#710">&quot;</span></span>]
-<span class="line-numbers"><a href="#n4" name="n4">4</a></span><span style="color:#080;font-weight:bold">end</span>
-</pre></div>
-</div>
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="no">Post</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+  <span class="c1"># ...</span>
+  <span class="n">resolves_to_class_names</span> <span class="p">[</span><span class="s2">"Post"</span><span class="p">,</span> <span class="s2">"StaffUpdate"</span><span class="p">]</span>
+<span class="k">end</span>
+</code></pre>
 </div>
 
-<p>Access <code>type.metadata</code> later:</p>
+<p>Access <code class="highlighter-rouge">type.metadata</code> later:</p>
 
-<div class="highlighter-coderay"><div class="CodeRay">
-  <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">MySchema</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Schema</span>.define <span style="color:#080;font-weight:bold">do</span>
-<span class="line-numbers"> <a href="#n2" name="n2">2</a></span>  <span style="color:#777"># ...</span>
-<span class="line-numbers"> <a href="#n3" name="n3">3</a></span>  <span style="color:#777"># Use the type's declared `resolves_to_class_names`</span>
-<span class="line-numbers"> <a href="#n4" name="n4">4</a></span>  <span style="color:#777"># to figure out if `obj` is a member of that type</span>
-<span class="line-numbers"> <a href="#n5" name="n5">5</a></span>  resolve_type -&gt;(obj, ctx) {
-<span class="line-numbers"> <a href="#n6" name="n6">6</a></span>    class_name = obj.class.name
-<span class="line-numbers"> <a href="#n7" name="n7">7</a></span>    <span style="color:#036;font-weight:bold">MySchema</span>.types.values.find { |type| type.metadata[<span style="color:#A60">:resolves_to_class_names</span>].include?(class_name) }
-<span class="line-numbers"> <a href="#n8" name="n8">8</a></span>  }
-<span class="line-numbers"> <a href="#n9" name="n9">9</a></span><span style="color:#080;font-weight:bold">end</span>
-</pre></div>
-</div>
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+  <span class="c1"># ...</span>
+  <span class="c1"># Use the type's declared `resolves_to_class_names`</span>
+  <span class="c1"># to figure out if `obj` is a member of that type</span>
+  <span class="n">resolve_type</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">class_name</span> <span class="o">=</span> <span class="n">obj</span><span class="p">.</span><span class="nf">class</span><span class="p">.</span><span class="nf">name</span>
+    <span class="no">MySchema</span><span class="p">.</span><span class="nf">types</span><span class="p">.</span><span class="nf">values</span><span class="p">.</span><span class="nf">find</span> <span class="p">{</span> <span class="o">|</span><span class="n">type</span><span class="o">|</span> <span class="n">type</span><span class="p">.</span><span class="nf">metadata</span><span class="p">[</span><span class="ss">:resolves_to_class_names</span><span class="p">].</span><span class="nf">include?</span><span class="p">(</span><span class="n">class_name</span><span class="p">)</span> <span class="p">}</span>
+  <span class="p">}</span>
+<span class="k">end</span>
+</code></pre>
 </div>
 
 <p>This behavior is provided by <a href="http://www.rubydoc.info/gems/graphql/GraphQL/Define/InstanceDefinable" target="_blank"><code>GraphQL::Define::InstanceDefinable</code></a>.</p>

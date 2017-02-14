@@ -90,7 +90,7 @@
 
 <ul>
   <li>Expose errors <em>in</em> the schema itself</li>
-  <li>Add errors to the response’s <code>"errors"</code> key</li>
+  <li>Add errors to the response’s <code class="highlighter-rouge">"errors"</code> key</li>
 </ul>
 
 <p>Additionally, you can provide opt-in error support by wrapping resolvers (described below).</p>
@@ -99,137 +99,120 @@
 
 <p>You can expose errors as part of your schema. In a sense, this makes errors part of “business as usual”, instead of exceptional cases.</p>
 
-<p>For example, you could add <code>errors</code> to <code>PostType</code>:</p>
+<p>For example, you could add <code class="highlighter-rouge">errors</code> to <code class="highlighter-rouge">PostType</code>:</p>
 
-<div class="highlighter-coderay"><div class="CodeRay">
-  <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">PostType</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">ObjectType</span>.define <span style="color:#080;font-weight:bold">do</span>
-<span class="line-numbers"><a href="#n2" name="n2">2</a></span>  name <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">Post</span><span style="color:#710">&quot;</span></span>
-<span class="line-numbers"><a href="#n3" name="n3">3</a></span>  field <span style="color:#A60">:title</span>, types.String
-<span class="line-numbers"><a href="#n4" name="n4">4</a></span>  <span style="color:#777"># ...</span>
-<span class="line-numbers"><a href="#n5" name="n5">5</a></span>  field <span style="color:#A60">:errors</span>, types[types.String], <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">Reasons the object couldn't be created or updated</span><span style="color:#710">&quot;</span></span> <span style="color:#080;font-weight:bold">do</span>
-<span class="line-numbers"><a href="#n6" name="n6">6</a></span>    resolve -&gt;(obj, args, ctx) { obj.errors.full_messages }
-<span class="line-numbers"><a href="#n7" name="n7">7</a></span>  <span style="color:#080;font-weight:bold">end</span>
-<span class="line-numbers"><a href="#n8" name="n8">8</a></span><span style="color:#080;font-weight:bold">end</span>
-</pre></div>
-</div>
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="no">PostType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+  <span class="nb">name</span> <span class="s2">"Post"</span>
+  <span class="n">field</span> <span class="ss">:title</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">String</span>
+  <span class="c1"># ...</span>
+  <span class="n">field</span> <span class="ss">:errors</span><span class="p">,</span> <span class="n">types</span><span class="p">[</span><span class="n">types</span><span class="o">.</span><span class="no">String</span><span class="p">],</span> <span class="s2">"Reasons the object couldn't be created or updated"</span> <span class="k">do</span>
+    <span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span> <span class="n">obj</span><span class="p">.</span><span class="nf">errors</span><span class="p">.</span><span class="nf">full_messages</span> <span class="p">}</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
 </div>
 
-<p>Then, when creating a post, return the <code>Post</code>, even if the save failed:</p>
+<p>Then, when creating a post, return the <code class="highlighter-rouge">Post</code>, even if the save failed:</p>
 
-<div class="highlighter-coderay"><div class="CodeRay">
-  <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span>resolve -&gt;(obj, args, ctx) {
-<span class="line-numbers"><a href="#n2" name="n2">2</a></span>  post = <span style="color:#036;font-weight:bold">Post</span>.new(args[<span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">post</span><span style="color:#710">&quot;</span></span>].to_h)
-<span class="line-numbers"><a href="#n3" name="n3">3</a></span>  <span style="color:#777"># Maybe this fails, no big deal:</span>
-<span class="line-numbers"><a href="#n4" name="n4">4</a></span>  post.save
-<span class="line-numbers"><a href="#n5" name="n5">5</a></span>  post
-<span class="line-numbers"><a href="#n6" name="n6">6</a></span>}
-</pre></div>
-</div>
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">post</span> <span class="o">=</span> <span class="no">Post</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="s2">"post"</span><span class="p">].</span><span class="nf">to_h</span><span class="p">)</span>
+  <span class="c1"># Maybe this fails, no big deal:</span>
+  <span class="n">post</span><span class="p">.</span><span class="nf">save</span>
+  <span class="n">post</span>
+<span class="p">}</span>
+</code></pre>
 </div>
 
-<p>Then, when clients create a post, they should check the <code>errors</code> field to see if it was successful:</p>
+<p>Then, when clients create a post, they should check the <code class="highlighter-rouge">errors</code> field to see if it was successful:</p>
 
-<div class="highlighter-coderay"><div class="CodeRay">
-  <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span>mutation {
-<span class="line-numbers"><a href="#n2" name="n2">2</a></span>  createPost(post: {title: &quot;GraphQL is Nice&quot;}) {
-<span class="line-numbers"><a href="#n3" name="n3">3</a></span>    id
-<span class="line-numbers"><a href="#n4" name="n4">4</a></span>    title
-<span class="line-numbers"><a href="#n5" name="n5">5</a></span>    errors # in case the save failed
-<span class="line-numbers"><a href="#n6" name="n6">6</a></span>  }
-<span class="line-numbers"><a href="#n7" name="n7">7</a></span>}
-</pre></div>
-</div>
-</div>
+<pre><code class="language-graphql">mutation {
+  createPost(post: {title: "GraphQL is Nice"}) {
+    id
+    title
+    errors # in case the save failed
+  }
+}
+</code></pre>
 
-<p>If <code>errors</code> is present (and <code>id</code> is null), the client knows that the operation was unsuccessful, and they can discover why.</p>
+<p>If <code class="highlighter-rouge">errors</code> is present (and <code class="highlighter-rouge">id</code> is null), the client knows that the operation was unsuccessful, and they can discover why.</p>
 
-<p>This technique could be extended by creating dedicated error types, too.  </p>
+<p>This technique could be extended by creating dedicated error types, too.</p>
 
 <h2 id="the-errors-key">The “errors” Key</h2>
 
-<p>A GraphQL response may have an <code>"errors"</code> key, for example:</p>
+<p>A GraphQL response may have an <code class="highlighter-rouge">"errors"</code> key, for example:</p>
 
-<div class="highlighter-coderay"><div class="CodeRay">
-  <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">Schema</span>.execute(query_string)
-<span class="line-numbers"><a href="#n2" name="n2">2</a></span><span style="color:#777"># {</span>
-<span class="line-numbers"><a href="#n3" name="n3">3</a></span><span style="color:#777">#   &quot;errors&quot; =&gt; [</span>
-<span class="line-numbers"><a href="#n4" name="n4">4</a></span><span style="color:#777">#     { &quot;message&quot; =&gt; &quot;Something went wrong&quot; },</span>
-<span class="line-numbers"><a href="#n5" name="n5">5</a></span><span style="color:#777">#   ],</span>
-<span class="line-numbers"><a href="#n6" name="n6">6</a></span><span style="color:#777"># }</span>
-</pre></div>
-</div>
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="no">Schema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="n">query_string</span><span class="p">)</span>
+<span class="c1"># {</span>
+<span class="c1">#   "errors" =&gt; [</span>
+<span class="c1">#     { "message" =&gt; "Something went wrong" },</span>
+<span class="c1">#   ],</span>
+<span class="c1"># }</span>
+</code></pre>
 </div>
 
-<p>You can add an error to the <code>"errors"</code> key by returning a <a href="http://www.rubydoc.info/gems/graphql/GraphQL/ExecutionError" target="_blank"><code>GraphQL::ExecutionError</code></a> from a <code>resolve</code> function. For example:</p>
+<p>You can add an error to the <code class="highlighter-rouge">"errors"</code> key by returning a <a href="http://www.rubydoc.info/gems/graphql/GraphQL/ExecutionError" target="_blank"><code>GraphQL::ExecutionError</code></a> from a <code class="highlighter-rouge">resolve</code> function. For example:</p>
 
-<div class="highlighter-coderay"><div class="CodeRay">
-  <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span>resolve -&gt;(obj, args, ctx) {
-<span class="line-numbers"> <a href="#n2" name="n2">2</a></span>  post_params = args[<span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">post</span><span style="color:#710">&quot;</span></span>].to_h
-<span class="line-numbers"> <a href="#n3" name="n3">3</a></span>  <span style="color:#080;font-weight:bold">if</span> obj.posts.create(post_params)
-<span class="line-numbers"> <a href="#n4" name="n4">4</a></span>    <span style="color:#777"># on success, return the post:</span>
-<span class="line-numbers"> <a href="#n5" name="n5">5</a></span>    post
-<span class="line-numbers"> <a href="#n6" name="n6">6</a></span>  <span style="color:#080;font-weight:bold">else</span>
-<span class="line-numbers"> <a href="#n7" name="n7">7</a></span>    <span style="color:#777"># on error, return an error:</span>
-<span class="line-numbers"> <a href="#n8" name="n8">8</a></span>    <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">ExecutionError</span>.new(<span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">Invalid input for Post: </span><span style="background-color:hsla(0,0%,0%,0.07);color:black"><span style="font-weight:bold;color:#666">#{</span>post.errors.full_messages.join(<span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">, </span><span style="color:#710">&quot;</span></span>)<span style="font-weight:bold;color:#666">}</span></span><span style="color:#710">&quot;</span></span>)
-<span class="line-numbers"> <a href="#n9" name="n9">9</a></span>  <span style="color:#080;font-weight:bold">end</span>
-<span class="line-numbers"><strong><a href="#n10" name="n10">10</a></strong></span>}
-</pre></div>
-</div>
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">post_params</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="s2">"post"</span><span class="p">].</span><span class="nf">to_h</span>
+  <span class="k">if</span> <span class="n">obj</span><span class="p">.</span><span class="nf">posts</span><span class="p">.</span><span class="nf">create</span><span class="p">(</span><span class="n">post_params</span><span class="p">)</span>
+    <span class="c1"># on success, return the post:</span>
+    <span class="n">post</span>
+  <span class="k">else</span>
+    <span class="c1"># on error, return an error:</span>
+    <span class="no">GraphQL</span><span class="o">::</span><span class="no">ExecutionError</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"Invalid input for Post: </span><span class="si">#{</span><span class="n">post</span><span class="p">.</span><span class="nf">errors</span><span class="p">.</span><span class="nf">full_messages</span><span class="p">.</span><span class="nf">join</span><span class="p">(</span><span class="s2">", "</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="p">}</span>
+</code></pre>
 </div>
 
-<p>If some part of your <code>resolve</code> function would raise an error, you can rescue it and return a <a href="http://www.rubydoc.info/gems/graphql/GraphQL/ExecutionError" target="_blank"><code>GraphQL::ExecutionError</code></a> instead:</p>
+<p>If some part of your <code class="highlighter-rouge">resolve</code> function would raise an error, you can rescue it and return a <a href="http://www.rubydoc.info/gems/graphql/GraphQL/ExecutionError" target="_blank"><code>GraphQL::ExecutionError</code></a> instead:</p>
 
-<div class="highlighter-coderay"><div class="CodeRay">
-  <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span>resolve -&gt;(obj, args, ctx) {
-<span class="line-numbers"> <a href="#n2" name="n2">2</a></span>  post_params = args[<span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">post</span><span style="color:#710">&quot;</span></span>].to_h
-<span class="line-numbers"> <a href="#n3" name="n3">3</a></span>  <span style="color:#080;font-weight:bold">begin</span>
-<span class="line-numbers"> <a href="#n4" name="n4">4</a></span>    post = obj.posts.create!(post_params)
-<span class="line-numbers"> <a href="#n5" name="n5">5</a></span>    <span style="color:#777"># on success, return the post:</span>
-<span class="line-numbers"> <a href="#n6" name="n6">6</a></span>    post
-<span class="line-numbers"> <a href="#n7" name="n7">7</a></span>  <span style="color:#080;font-weight:bold">rescue</span> <span style="color:#036;font-weight:bold">ActiveRecord</span>::<span style="color:#036;font-weight:bold">RecordInvalid</span> =&gt; err
-<span class="line-numbers"> <a href="#n8" name="n8">8</a></span>    <span style="color:#777"># on error, return an error:</span>
-<span class="line-numbers"> <a href="#n9" name="n9">9</a></span>    <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">ExecutionError</span>.new(<span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">Invalid input for Post: </span><span style="background-color:hsla(0,0%,0%,0.07);color:black"><span style="font-weight:bold;color:#666">#{</span>post.errors.full_messages.join(<span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">, </span><span style="color:#710">&quot;</span></span>)<span style="font-weight:bold;color:#666">}</span></span><span style="color:#710">&quot;</span></span>)
-<span class="line-numbers"><strong><a href="#n10" name="n10">10</a></strong></span>  <span style="color:#080;font-weight:bold">end</span>
-<span class="line-numbers"><a href="#n11" name="n11">11</a></span>}
-</pre></div>
-</div>
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">post_params</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="s2">"post"</span><span class="p">].</span><span class="nf">to_h</span>
+  <span class="k">begin</span>
+    <span class="n">post</span> <span class="o">=</span> <span class="n">obj</span><span class="p">.</span><span class="nf">posts</span><span class="p">.</span><span class="nf">create!</span><span class="p">(</span><span class="n">post_params</span><span class="p">)</span>
+    <span class="c1"># on success, return the post:</span>
+    <span class="n">post</span>
+  <span class="k">rescue</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">RecordInvalid</span> <span class="o">=&gt;</span> <span class="n">err</span>
+    <span class="c1"># on error, return an error:</span>
+    <span class="no">GraphQL</span><span class="o">::</span><span class="no">ExecutionError</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"Invalid input for Post: </span><span class="si">#{</span><span class="n">post</span><span class="p">.</span><span class="nf">errors</span><span class="p">.</span><span class="nf">full_messages</span><span class="p">.</span><span class="nf">join</span><span class="p">(</span><span class="s2">", "</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="p">}</span>
+</code></pre>
 </div>
 
 <h2 id="error-handling-with-wrappers">Error Handling with Wrappers</h2>
 
-<p>If you don’t want to <code>begin ... rescue ... end</code> in every field, you can wrap <code>resolve</code> functions in error handling. For example, you could make an object that wraps another resolver:</p>
+<p>If you don’t want to <code class="highlighter-rouge">begin ... rescue ... end</code> in every field, you can wrap <code class="highlighter-rouge">resolve</code> functions in error handling. For example, you could make an object that wraps another resolver:</p>
 
-<div class="highlighter-coderay"><div class="CodeRay">
-  <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span><span style="color:#777"># Wrap field resolver `resolve_func` with a handler for `error_superclass`.</span>
-<span class="line-numbers"> <a href="#n2" name="n2">2</a></span><span style="color:#777"># `RescueFrom` instances are valid field resolvers too.</span>
-<span class="line-numbers"> <a href="#n3" name="n3">3</a></span><span style="color:#080;font-weight:bold">class</span> <span style="color:#B06;font-weight:bold">RescueFrom</span>
-<span class="line-numbers"> <a href="#n4" name="n4">4</a></span>  <span style="color:#080;font-weight:bold">def</span> <span style="color:#06B;font-weight:bold">initialize</span>(error_superclass, resolve_func)
-<span class="line-numbers"> <a href="#n5" name="n5">5</a></span>    <span style="color:#33B">@error_superclass</span> = error_superclass
-<span class="line-numbers"> <a href="#n6" name="n6">6</a></span>    <span style="color:#33B">@resolve_func</span> = resolve_func
-<span class="line-numbers"> <a href="#n7" name="n7">7</a></span>  <span style="color:#080;font-weight:bold">end</span>
-<span class="line-numbers"> <a href="#n8" name="n8">8</a></span>
-<span class="line-numbers"> <a href="#n9" name="n9">9</a></span>  <span style="color:#080;font-weight:bold">def</span> <span style="color:#06B;font-weight:bold">call</span>(obj, args, ctx)
-<span class="line-numbers"><strong><a href="#n10" name="n10">10</a></strong></span>    <span style="color:#33B">@resolve_func</span>.call(obj, args, ctx)
-<span class="line-numbers"><a href="#n11" name="n11">11</a></span>  <span style="color:#080;font-weight:bold">rescue</span> <span style="color:#33B">@error_superclass</span> =&gt; err
-<span class="line-numbers"><a href="#n12" name="n12">12</a></span>    <span style="color:#777"># Your error handling logic here:</span>
-<span class="line-numbers"><a href="#n13" name="n13">13</a></span>    <span style="color:#777"># - return an instance of `GraphQL::ExecutionError`</span>
-<span class="line-numbers"><a href="#n14" name="n14">14</a></span>    <span style="color:#777"># - or, return nil:</span>
-<span class="line-numbers"><a href="#n15" name="n15">15</a></span>    <span style="color:#069">nil</span>
-<span class="line-numbers"><a href="#n16" name="n16">16</a></span>  <span style="color:#080;font-weight:bold">end</span>
-<span class="line-numbers"><a href="#n17" name="n17">17</a></span><span style="color:#080;font-weight:bold">end</span>
-</pre></div>
-</div>
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="c1"># Wrap field resolver `resolve_func` with a handler for `error_superclass`.</span>
+<span class="c1"># `RescueFrom` instances are valid field resolvers too.</span>
+<span class="k">class</span> <span class="nc">RescueFrom</span>
+  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">error_superclass</span><span class="p">,</span> <span class="n">resolve_func</span><span class="p">)</span>
+    <span class="vi">@error_superclass</span> <span class="o">=</span> <span class="n">error_superclass</span>
+    <span class="vi">@resolve_func</span> <span class="o">=</span> <span class="n">resolve_func</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">call</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span>
+    <span class="vi">@resolve_func</span><span class="p">.</span><span class="nf">call</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span>
+  <span class="k">rescue</span> <span class="vi">@error_superclass</span> <span class="o">=&gt;</span> <span class="n">err</span>
+    <span class="c1"># Your error handling logic here:</span>
+    <span class="c1"># - return an instance of `GraphQL::ExecutionError`</span>
+    <span class="c1"># - or, return nil:</span>
+    <span class="kp">nil</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
 </div>
 
 <p>Then, apply it to fields on an opt-in basis:</p>
 
-<div class="highlighter-coderay"><div class="CodeRay">
-  <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span>field <span style="color:#A60">:create_post</span>, <span style="color:#036;font-weight:bold">PostType</span> <span style="color:#080;font-weight:bold">do</span>
-<span class="line-numbers"><a href="#n2" name="n2">2</a></span>  <span style="color:#777"># Wrap the resolve function with `RescueFrom.new(err_class, ...)`</span>
-<span class="line-numbers"><a href="#n3" name="n3">3</a></span>  resolve <span style="color:#036;font-weight:bold">RescueFrom</span>.new(<span style="color:#036;font-weight:bold">ActiveRecord</span>::<span style="color:#036;font-weight:bold">RecordInvalid</span>, -&gt;(obj, args, ctx) { ... })
-<span class="line-numbers"><a href="#n4" name="n4">4</a></span><span style="color:#080;font-weight:bold">end</span>
-</pre></div>
-</div>
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:create_post</span><span class="p">,</span> <span class="no">PostType</span> <span class="k">do</span>
+  <span class="c1"># Wrap the resolve function with `RescueFrom.new(err_class, ...)`</span>
+  <span class="n">resolve</span> <span class="no">RescueFrom</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="no">ActiveRecord</span><span class="o">::</span><span class="no">RecordInvalid</span><span class="p">,</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span> <span class="p">.</span><span class="nf">.</span><span class="o">.</span> <span class="p">})</span>
+<span class="k">end</span>
+</code></pre>
 </div>
 
 <p>This way, you get error handling with proper Ruby semantics and no overhead!</p>

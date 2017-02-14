@@ -86,50 +86,46 @@
         </div>
         <div class="cell -9of12">
           <h1 class="guide-header">GraphQL::Pro — Encrypted, Versioned Cursors and IDs</h1>
-          <p><code>GraphQL::Pro</code> includes a mechanism for serving encrypted, versioned cursors and IDs.  This provides some benefits:</p>
+          <p><code class="highlighter-rouge">GraphQL::Pro</code> includes a mechanism for serving encrypted, versioned cursors and IDs.  This provides some benefits:</p>
 
 <ul>
   <li>Users can’t reverse-engineer node IDs or connection cursors, removing a possible attack vector.</li>
   <li>You can gradually transition between cursor strategies, adding encrypting while supporting any “stale” encoders which clients already have.</li>
 </ul>
 
-<p><code>GraphQL::Pro</code>’s encrypted encoders provide a few security features:</p>
+<p><code class="highlighter-rouge">GraphQL::Pro</code>’s encrypted encoders provide a few security features:</p>
 
 <ul>
-  <li>Key-based encryption by <code>aes-128-gcm</code> by default</li>
+  <li>Key-based encryption by <code class="highlighter-rouge">aes-128-gcm</code> by default</li>
   <li>Authentication</li>
   <li>Nonces for cursors (but not IDs, that would be silly)</li>
 </ul>
 
 <h2 id="defining-an-encoder">Defining an Encoder</h2>
 
-<p>Encoders can be created with <code>Encoder.define { ... }</code>:</p>
+<p>Encoders can be created with <code class="highlighter-rouge">Encoder.define { ... }</code>:</p>
 
-<div class="highlighter-coderay"><div class="CodeRay">
-  <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">MyEncoder</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Pro</span>::<span style="color:#036;font-weight:bold">Encoder</span>.define <span style="color:#080;font-weight:bold">do</span>
-<span class="line-numbers"><a href="#n2" name="n2">2</a></span>  key(<span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">f411f30495fe688cb349d...</span><span style="color:#710">&quot;</span></span>)
-<span class="line-numbers"><a href="#n3" name="n3">3</a></span>  <span style="color:#777"># optional:</span>
-<span class="line-numbers"><a href="#n4" name="n4">4</a></span>  tag(<span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">81ce51c307</span><span style="color:#710">&quot;</span></span>)
-<span class="line-numbers"><a href="#n5" name="n5">5</a></span><span style="color:#080;font-weight:bold">end</span>
-</pre></div>
-</div>
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="no">MyEncoder</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">Encoder</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+  <span class="n">key</span><span class="p">(</span><span class="s2">"f411f30495fe688cb349d..."</span><span class="p">)</span>
+  <span class="c1"># optional:</span>
+  <span class="n">tag</span><span class="p">(</span><span class="s2">"81ce51c307"</span><span class="p">)</span>
+<span class="k">end</span>
+</code></pre>
 </div>
 
 <ul>
-  <li><code>key</code> is the encryption key for this encoder. You can generate one with: <code>require "securerandom"; SecureRandom.random_bytes(64)</code></li>
-  <li><code>tag</code>, if provided, is used as authentication data or for disambiguating versioned encoders</li>
+  <li><code class="highlighter-rouge">key</code> is the encryption key for this encoder. You can generate one with: <code class="highlighter-rouge">require "securerandom"; SecureRandom.random_bytes(64)</code></li>
+  <li><code class="highlighter-rouge">tag</code>, if provided, is used as authentication data or for disambiguating versioned encoders</li>
 </ul>
 
 <h2 id="encrypting-cursors">Encrypting Cursors</h2>
 
-<p>Encrypt cursors by attaching an encrypted encoder to <code>Schema#cursor_encoder</code>:</p>
+<p>Encrypt cursors by attaching an encrypted encoder to <code class="highlighter-rouge">Schema#cursor_encoder</code>:</p>
 
-<div class="highlighter-coderay"><div class="CodeRay">
-  <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">MySchema</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Schema</span>.define <span style="color:#080;font-weight:bold">do</span>
-<span class="line-numbers"><a href="#n2" name="n2">2</a></span>  cursor_encoder(<span style="color:#036;font-weight:bold">MyCursorEncoder</span>)
-<span class="line-numbers"><a href="#n3" name="n3">3</a></span><span style="color:#080;font-weight:bold">end</span>
-</pre></div>
-</div>
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+  <span class="n">cursor_encoder</span><span class="p">(</span><span class="no">MyCursorEncoder</span><span class="p">)</span>
+<span class="k">end</span>
+</code></pre>
 </div>
 
 <p>Now, built-in connection implementations will use that encoder for cursors.</p>
@@ -138,94 +134,84 @@
 
 <h2 id="encrypting-ids">Encrypting IDs</h2>
 
-<p>Encrypt IDs by using encoders in <code>Schema#id_from_object</code> and <code>Schema#object_from_id</code>:</p>
+<p>Encrypt IDs by using encoders in <code class="highlighter-rouge">Schema#id_from_object</code> and <code class="highlighter-rouge">Schema#object_from_id</code>:</p>
 
-<div class="highlighter-coderay"><div class="CodeRay">
-  <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">MySchema</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Schema</span>.define <span style="color:#080;font-weight:bold">do</span>
-<span class="line-numbers"> <a href="#n2" name="n2">2</a></span>  id_from_object -&gt;(object, type, ctx) {
-<span class="line-numbers"> <a href="#n3" name="n3">3</a></span>    id_data = <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="background-color:hsla(0,0%,0%,0.07);color:black"><span style="font-weight:bold;color:#666">#{</span>object.class.name<span style="font-weight:bold;color:#666">}</span></span><span style="color:#D20">/</span><span style="background-color:hsla(0,0%,0%,0.07);color:black"><span style="font-weight:bold;color:#666">#{</span>object.id<span style="font-weight:bold;color:#666">}</span></span><span style="color:#710">&quot;</span></span>
-<span class="line-numbers"> <a href="#n4" name="n4">4</a></span>    <span style="color:#036;font-weight:bold">MyIDEncoder</span>.encode(id_data)
-<span class="line-numbers"> <a href="#n5" name="n5">5</a></span>  }
-<span class="line-numbers"> <a href="#n6" name="n6">6</a></span>
-<span class="line-numbers"> <a href="#n7" name="n7">7</a></span>  object_from_id -&gt;(id, ctx) {
-<span class="line-numbers"> <a href="#n8" name="n8">8</a></span>    id_data = <span style="color:#036;font-weight:bold">MyIDEncoder</span>.decode(id)
-<span class="line-numbers"> <a href="#n9" name="n9">9</a></span>    class_name, id = id_data.split(<span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">/</span><span style="color:#710">&quot;</span></span>)
-<span class="line-numbers"><strong><a href="#n10" name="n10">10</a></strong></span>    class_name.constantize.find(id)
-<span class="line-numbers"><a href="#n11" name="n11">11</a></span>  }
-<span class="line-numbers"><a href="#n12" name="n12">12</a></span><span style="color:#080;font-weight:bold">end</span>
-</pre></div>
-</div>
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+  <span class="n">id_from_object</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">object</span><span class="p">,</span> <span class="n">type</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">id_data</span> <span class="o">=</span> <span class="s2">"</span><span class="si">#{</span><span class="n">object</span><span class="p">.</span><span class="nf">class</span><span class="p">.</span><span class="nf">name</span><span class="si">}</span><span class="s2">/</span><span class="si">#{</span><span class="n">object</span><span class="p">.</span><span class="nf">id</span><span class="si">}</span><span class="s2">"</span>
+    <span class="no">MyIDEncoder</span><span class="p">.</span><span class="nf">encode</span><span class="p">(</span><span class="n">id_data</span><span class="p">)</span>
+  <span class="p">}</span>
+
+  <span class="n">object_from_id</span> <span class="o">-&gt;</span><span class="p">(</span><span class="nb">id</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">id_data</span> <span class="o">=</span> <span class="no">MyIDEncoder</span><span class="p">.</span><span class="nf">decode</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span>
+    <span class="n">class_name</span><span class="p">,</span> <span class="nb">id</span> <span class="o">=</span> <span class="n">id_data</span><span class="p">.</span><span class="nf">split</span><span class="p">(</span><span class="s2">"/"</span><span class="p">)</span>
+    <span class="n">class_name</span><span class="p">.</span><span class="nf">constantize</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span>
+  <span class="p">}</span>
+<span class="k">end</span>
+</code></pre>
 </div>
 
 <p>Note that IDs are <em>not</em> encrypted with nonces. This means that if someone can <em>guess</em> how IDs are constructed, they can determine the encryption key (a kind of <a href="https://en.wikipedia.org/wiki/Known-plaintext_attack">known-plaintext attack</a>). To reduce this risk, make your plaintext IDs unpredictable, for example, by appending a salt or obfuscating their content.</p>
 
 <h2 id="versioning">Versioning</h2>
 
-<p>You can combine several encoders into a single chain of versioned encoders. Pass them to <code>.versioned</code>, newest-to-oldest:</p>
+<p>You can combine several encoders into a single chain of versioned encoders. Pass them to <code class="highlighter-rouge">.versioned</code>, newest-to-oldest:</p>
 
-<div class="highlighter-coderay"><div class="CodeRay">
-  <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span><span style="color:#777"># Define some encoders ...</span>
-<span class="line-numbers"> <a href="#n2" name="n2">2</a></span><span style="color:#036;font-weight:bold">NewSecureEncoder</span>       = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Pro</span>::<span style="color:#036;font-weight:bold">Encoder</span>.define { ... }
-<span class="line-numbers"> <a href="#n3" name="n3">3</a></span><span style="color:#036;font-weight:bold">OldSecureEncoder</span>       = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Pro</span>::<span style="color:#036;font-weight:bold">Encoder</span>.define { ... }
-<span class="line-numbers"> <a href="#n4" name="n4">4</a></span><span style="color:#036;font-weight:bold">LegacyInsecureEncoder</span>  = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Pro</span>::<span style="color:#036;font-weight:bold">Encoder</span>.define { ... }
-<span class="line-numbers"> <a href="#n5" name="n5">5</a></span>
-<span class="line-numbers"> <a href="#n6" name="n6">6</a></span><span style="color:#777"># Then order them by priority:</span>
-<span class="line-numbers"> <a href="#n7" name="n7">7</a></span><span style="color:#036;font-weight:bold">VersionedEncoder</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Pro</span>::<span style="color:#036;font-weight:bold">Encoder</span>.versioned(
-<span class="line-numbers"> <a href="#n8" name="n8">8</a></span>  <span style="color:#777"># Newest:</span>
-<span class="line-numbers"> <a href="#n9" name="n9">9</a></span>  <span style="color:#036;font-weight:bold">NewSecureEncoder</span>,
-<span class="line-numbers"><strong><a href="#n10" name="n10">10</a></strong></span>  <span style="color:#036;font-weight:bold">OldSecureEncoder</span>,
-<span class="line-numbers"><a href="#n11" name="n11">11</a></span>  <span style="color:#777"># Oldest:</span>
-<span class="line-numbers"><a href="#n12" name="n12">12</a></span>  <span style="color:#036;font-weight:bold">LegacyInsecureEncoder</span>
-<span class="line-numbers"><a href="#n13" name="n13">13</a></span>)
-</pre></div>
-</div>
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="c1"># Define some encoders ...</span>
+<span class="no">NewSecureEncoder</span>       <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">Encoder</span><span class="p">.</span><span class="nf">define</span> <span class="p">{</span> <span class="p">.</span><span class="nf">.</span><span class="o">.</span> <span class="p">}</span>
+<span class="no">OldSecureEncoder</span>       <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">Encoder</span><span class="p">.</span><span class="nf">define</span> <span class="p">{</span> <span class="p">.</span><span class="nf">.</span><span class="o">.</span> <span class="p">}</span>
+<span class="no">LegacyInsecureEncoder</span>  <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">Encoder</span><span class="p">.</span><span class="nf">define</span> <span class="p">{</span> <span class="p">.</span><span class="nf">.</span><span class="o">.</span> <span class="p">}</span>
+
+<span class="c1"># Then order them by priority:</span>
+<span class="no">VersionedEncoder</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">Encoder</span><span class="p">.</span><span class="nf">versioned</span><span class="p">(</span>
+  <span class="c1"># Newest:</span>
+  <span class="no">NewSecureEncoder</span><span class="p">,</span>
+  <span class="no">OldSecureEncoder</span><span class="p">,</span>
+  <span class="c1"># Oldest:</span>
+  <span class="no">LegacyInsecureEncoder</span>
+<span class="p">)</span>
+</code></pre>
 </div>
 
 <p>When receiving an ID or cursor, a versioned encoders tries each encoder in sequence. When creating a new ID or cursor, the encoder always uses the first encoder. This way, clients will receiving <em>new</em> encoders, but the server will still accept <em>old</em> encoders (until the old one is removed from the list).</p>
 
-<p><code>VersionedEncoder#decode_versioned</code> returns two values: the decoded data <em>and</em> the encoder which successfully decoded it. You can use this to determine how to process decoded data. For example, you can switch on the encoder:</p>
+<p><code class="highlighter-rouge">VersionedEncoder#decode_versioned</code> returns two values: the decoded data <em>and</em> the encoder which successfully decoded it. You can use this to determine how to process decoded data. For example, you can switch on the encoder:</p>
 
-<div class="highlighter-coderay"><div class="CodeRay">
-  <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span>data, encoder = <span style="color:#036;font-weight:bold">VersionedEncoder</span>.decode_versioned(id)
-<span class="line-numbers"> <a href="#n2" name="n2">2</a></span><span style="color:#080;font-weight:bold">case</span> encoder
-<span class="line-numbers"> <a href="#n3" name="n3">3</a></span><span style="color:#080;font-weight:bold">when</span> <span style="color:#036;font-weight:bold">UUIDEncoder</span>
-<span class="line-numbers"> <a href="#n4" name="n4">4</a></span>  find_by_uuid(data)
-<span class="line-numbers"> <a href="#n5" name="n5">5</a></span><span style="color:#080;font-weight:bold">when</span> <span style="color:#036;font-weight:bold">SQLPrimaryKeyEncoder</span>
-<span class="line-numbers"> <a href="#n6" name="n6">6</a></span>  find_by_pk(data)
-<span class="line-numbers"> <a href="#n7" name="n7">7</a></span><span style="color:#080;font-weight:bold">when</span> <span style="color:#069">nil</span>
-<span class="line-numbers"> <a href="#n8" name="n8">8</a></span>  <span style="color:#777"># `id` could not be decoded</span>
-<span class="line-numbers"> <a href="#n9" name="n9">9</a></span>  <span style="color:#069">nil</span>
-<span class="line-numbers"><strong><a href="#n10" name="n10">10</a></strong></span><span style="color:#080;font-weight:bold">end</span>
-</pre></div>
-</div>
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="n">data</span><span class="p">,</span> <span class="n">encoder</span> <span class="o">=</span> <span class="no">VersionedEncoder</span><span class="p">.</span><span class="nf">decode_versioned</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span>
+<span class="k">case</span> <span class="n">encoder</span>
+<span class="k">when</span> <span class="no">UUIDEncoder</span>
+  <span class="n">find_by_uuid</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+<span class="k">when</span> <span class="no">SQLPrimaryKeyEncoder</span>
+  <span class="n">find_by_pk</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+<span class="k">when</span> <span class="kp">nil</span>
+  <span class="c1"># `id` could not be decoded</span>
+  <span class="kp">nil</span>
+<span class="k">end</span>
+</code></pre>
 </div>
 
 <h2 id="encoding">Encoding</h2>
 
-<p>By default, encrypted bytes is stringified as base-64. You can specific a custom encoder with the <code>Encoder#encoder</code> definition. For example, you could define an encode which uses URL-safe base-64 functions:</p>
+<p>By default, encrypted bytes is stringified as base-64. You can specific a custom encoder with the <code class="highlighter-rouge">Encoder#encoder</code> definition. For example, you could define an encode which uses URL-safe base-64 functions:</p>
 
-<div class="highlighter-coderay"><div class="CodeRay">
-  <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span><span style="color:#080;font-weight:bold">module</span> <span style="color:#B06;font-weight:bold">URLSafeEncoder</span>
-<span class="line-numbers"> <a href="#n2" name="n2">2</a></span>  <span style="color:#080;font-weight:bold">def</span> <span style="color:#069">self</span>.<span style="color:#06B;font-weight:bold">encode</span>(str)
-<span class="line-numbers"> <a href="#n3" name="n3">3</a></span>    <span style="color:#036;font-weight:bold">Base64</span>.urlsafe_encode64(str)
-<span class="line-numbers"> <a href="#n4" name="n4">4</a></span>  <span style="color:#080;font-weight:bold">end</span>
-<span class="line-numbers"> <a href="#n5" name="n5">5</a></span>
-<span class="line-numbers"> <a href="#n6" name="n6">6</a></span>  <span style="color:#080;font-weight:bold">def</span> <span style="color:#069">self</span>.<span style="color:#06B;font-weight:bold">decode</span>(str)
-<span class="line-numbers"> <a href="#n7" name="n7">7</a></span>    <span style="color:#036;font-weight:bold">Base64</span>.urlsafe_decode64(str)
-<span class="line-numbers"> <a href="#n8" name="n8">8</a></span>  <span style="color:#080;font-weight:bold">end</span>
-<span class="line-numbers"> <a href="#n9" name="n9">9</a></span><span style="color:#080;font-weight:bold">end</span>
-</pre></div>
-</div>
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="k">module</span> <span class="nn">URLSafeEncoder</span>
+  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">encode</span><span class="p">(</span><span class="n">str</span><span class="p">)</span>
+    <span class="no">Base64</span><span class="p">.</span><span class="nf">urlsafe_encode64</span><span class="p">(</span><span class="n">str</span><span class="p">)</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">decode</span><span class="p">(</span><span class="n">str</span><span class="p">)</span>
+    <span class="no">Base64</span><span class="p">.</span><span class="nf">urlsafe_decode64</span><span class="p">(</span><span class="n">str</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
 </div>
 
 <p>Then attach it to your encoder:</p>
 
-<div class="highlighter-coderay"><div class="CodeRay">
-  <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">MyURLSafeEncoder</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">Pro</span>::<span style="color:#036;font-weight:bold">Encoder</span>.define <span style="color:#080;font-weight:bold">do</span>
-<span class="line-numbers"><a href="#n2" name="n2">2</a></span>  encoder <span style="color:#036;font-weight:bold">URLSafeEncoder</span>
-<span class="line-numbers"><a href="#n3" name="n3">3</a></span><span style="color:#080;font-weight:bold">end</span>
-</pre></div>
-</div>
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="no">MyURLSafeEncoder</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">Encoder</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+  <span class="n">encoder</span> <span class="no">URLSafeEncoder</span>
+<span class="k">end</span>
+</code></pre>
 </div>
 
 <p>Now, these node IDs and cursors will be URL-safe!</p>

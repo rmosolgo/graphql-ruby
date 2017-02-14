@@ -91,7 +91,7 @@
 <ul>
   <li><a href="#resolver-classes">Resolver classes</a></li>
   <li><a href="#dynamically-defining-types">Dynamically defining types</a></li>
-  <li><a href="#functional-composition--resolve">Functional composition and <code>resolve</code></a></li>
+  <li><a href="#functional-composition--resolve">Functional composition and <code class="highlighter-rouge">resolve</code></a></li>
 </ul>
 
 <p>Besides reducing duplicate code, these approaches also allow you to test parts of your schema in isolation.</p>
@@ -100,197 +100,179 @@
 
 <p>(Originally described by AlphaSights at https://m.alphasights.com/graphql-ruby-clean-up-your-query-type-d7ab05a47084.)</p>
 
-<p>Many examples use a Proc literal for a field’s <code>resolve</code>, for example:</p>
+<p>Many examples use a Proc literal for a field’s <code class="highlighter-rouge">resolve</code>, for example:</p>
 
-<div class="highlighter-coderay"><div class="CodeRay">
-  <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span>field <span style="color:#A60">:name</span>, types.String <span style="color:#080;font-weight:bold">do</span>
-<span class="line-numbers"><a href="#n2" name="n2">2</a></span>  <span style="color:#777"># Resolve taking a Proc literal:</span>
-<span class="line-numbers"><a href="#n3" name="n3">3</a></span>  resolve -&gt;(obj, args, ctx) { obj.name }
-<span class="line-numbers"><a href="#n4" name="n4">4</a></span><span style="color:#080;font-weight:bold">end</span>
-</pre></div>
-</div>
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:name</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">String</span> <span class="k">do</span>
+  <span class="c1"># Resolve taking a Proc literal:</span>
+  <span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span> <span class="n">obj</span><span class="p">.</span><span class="nf">name</span> <span class="p">}</span>
+<span class="k">end</span>
+</code></pre>
 </div>
 
-<p>However, you can pass <em>any</em> object to <code>resolve(...)</code>, so long as it responds to <code>.call(obj, args, ctx)</code>.</p>
+<p>However, you can pass <em>any</em> object to <code class="highlighter-rouge">resolve(...)</code>, so long as it responds to <code class="highlighter-rouge">.call(obj, args, ctx)</code>.</p>
 
 <p>This means you can pass in a module:</p>
 
-<div class="highlighter-coderay"><div class="CodeRay">
-  <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span><span style="color:#080;font-weight:bold">module</span> <span style="color:#B06;font-weight:bold">NameResolver</span>
-<span class="line-numbers"> <a href="#n2" name="n2">2</a></span>  <span style="color:#080;font-weight:bold">def</span> <span style="color:#069">self</span>.<span style="color:#06B;font-weight:bold">call</span>(obj, args, ctx)
-<span class="line-numbers"> <a href="#n3" name="n3">3</a></span>    obj.name
-<span class="line-numbers"> <a href="#n4" name="n4">4</a></span>  <span style="color:#080;font-weight:bold">end</span>
-<span class="line-numbers"> <a href="#n5" name="n5">5</a></span><span style="color:#080;font-weight:bold">end</span>
-<span class="line-numbers"> <a href="#n6" name="n6">6</a></span>
-<span class="line-numbers"> <a href="#n7" name="n7">7</a></span><span style="color:#777"># use `NameResolver` instead of a proc</span>
-<span class="line-numbers"> <a href="#n8" name="n8">8</a></span>field <span style="color:#A60">:name</span>, types.String <span style="color:#080;font-weight:bold">do</span>
-<span class="line-numbers"> <a href="#n9" name="n9">9</a></span>  resolve(<span style="color:#036;font-weight:bold">NameResolver</span>)
-<span class="line-numbers"><strong><a href="#n10" name="n10">10</a></strong></span><span style="color:#080;font-weight:bold">end</span>
-<span class="line-numbers"><a href="#n11" name="n11">11</a></span><span style="color:#777"># `resolve: resolver` is equivalent to `do resolve(resolver) end`</span>
-<span class="line-numbers"><a href="#n12" name="n12">12</a></span><span style="color:#777"># so this is the same:</span>
-<span class="line-numbers"><a href="#n13" name="n13">13</a></span>field <span style="color:#A60">:name</span>, types.String, <span style="color:#606">resolve</span>: <span style="color:#036;font-weight:bold">NameResolver</span>
-</pre></div>
-</div>
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="k">module</span> <span class="nn">NameResolver</span>
+  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">call</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span>
+    <span class="n">obj</span><span class="p">.</span><span class="nf">name</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="c1"># use `NameResolver` instead of a proc</span>
+<span class="n">field</span> <span class="ss">:name</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">String</span> <span class="k">do</span>
+  <span class="n">resolve</span><span class="p">(</span><span class="no">NameResolver</span><span class="p">)</span>
+<span class="k">end</span>
+<span class="c1"># `resolve: resolver` is equivalent to `do resolve(resolver) end`</span>
+<span class="c1"># so this is the same:</span>
+<span class="n">field</span> <span class="ss">:name</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">String</span><span class="p">,</span> <span class="ss">resolve: </span><span class="no">NameResolver</span>
+</code></pre>
 </div>
 
 <p>Or, you can pass an instance of a class:</p>
 
-<div class="highlighter-coderay"><div class="CodeRay">
-  <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span><span style="color:#080;font-weight:bold">class</span> <span style="color:#B06;font-weight:bold">MethodCallResolver</span>
-<span class="line-numbers"> <a href="#n2" name="n2">2</a></span>  <span style="color:#080;font-weight:bold">def</span> <span style="color:#06B;font-weight:bold">initialize</span>(method_name)
-<span class="line-numbers"> <a href="#n3" name="n3">3</a></span>    <span style="color:#33B">@method_name</span> = method_name
-<span class="line-numbers"> <a href="#n4" name="n4">4</a></span>  <span style="color:#080;font-weight:bold">end</span>
-<span class="line-numbers"> <a href="#n5" name="n5">5</a></span>
-<span class="line-numbers"> <a href="#n6" name="n6">6</a></span>  <span style="color:#080;font-weight:bold">def</span> <span style="color:#06B;font-weight:bold">call</span>(obj, args, ctx)
-<span class="line-numbers"> <a href="#n7" name="n7">7</a></span>    obj.public_send(<span style="color:#33B">@method_name</span>)
-<span class="line-numbers"> <a href="#n8" name="n8">8</a></span>  <span style="color:#080;font-weight:bold">end</span>
-<span class="line-numbers"> <a href="#n9" name="n9">9</a></span><span style="color:#080;font-weight:bold">end</span>
-<span class="line-numbers"><strong><a href="#n10" name="n10">10</a></strong></span>
-<span class="line-numbers"><a href="#n11" name="n11">11</a></span><span style="color:#777"># ...</span>
-<span class="line-numbers"><a href="#n12" name="n12">12</a></span>field <span style="color:#A60">:name</span>, types.String <span style="color:#080;font-weight:bold">do</span>
-<span class="line-numbers"><a href="#n13" name="n13">13</a></span>  resolve(<span style="color:#036;font-weight:bold">MethodCallResolver</span>.new(<span style="color:#A60">:name</span>))
-<span class="line-numbers"><a href="#n14" name="n14">14</a></span><span style="color:#080;font-weight:bold">end</span>  
-</pre></div>
-</div>
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MethodCallResolver</span>
+  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">method_name</span><span class="p">)</span>
+    <span class="vi">@method_name</span> <span class="o">=</span> <span class="n">method_name</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">call</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span>
+    <span class="n">obj</span><span class="p">.</span><span class="nf">public_send</span><span class="p">(</span><span class="vi">@method_name</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="c1"># ...</span>
+<span class="n">field</span> <span class="ss">:name</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">String</span> <span class="k">do</span>
+  <span class="n">resolve</span><span class="p">(</span><span class="no">MethodCallResolver</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="ss">:name</span><span class="p">))</span>
+<span class="k">end</span>  
+</code></pre>
 </div>
 
-<p>Or, you can generate the <code>resolve</code> Proc dynamically:</p>
+<p>Or, you can generate the <code class="highlighter-rouge">resolve</code> Proc dynamically:</p>
 
-<div class="highlighter-coderay"><div class="CodeRay">
-  <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span><span style="color:#777"># @return [Proc] A resolve proc which calls `method_name` on `obj`</span>
-<span class="line-numbers"> <a href="#n2" name="n2">2</a></span><span style="color:#080;font-weight:bold">def</span> <span style="color:#06B;font-weight:bold">resolve_with_method</span>(method_name)
-<span class="line-numbers"> <a href="#n3" name="n3">3</a></span>  -&gt;(obj, args, ctx) { obj.public_send(method_name) }
-<span class="line-numbers"> <a href="#n4" name="n4">4</a></span><span style="color:#080;font-weight:bold">end</span>
-<span class="line-numbers"> <a href="#n5" name="n5">5</a></span>
-<span class="line-numbers"> <a href="#n6" name="n6">6</a></span><span style="color:#777"># ...</span>
-<span class="line-numbers"> <a href="#n7" name="n7">7</a></span>
-<span class="line-numbers"> <a href="#n8" name="n8">8</a></span>field <span style="color:#A60">:name</span>, types.String <span style="color:#080;font-weight:bold">do</span>
-<span class="line-numbers"> <a href="#n9" name="n9">9</a></span>  resolve(resolve_with_method(<span style="color:#A60">:name</span>))
-<span class="line-numbers"><strong><a href="#n10" name="n10">10</a></strong></span><span style="color:#080;font-weight:bold">end</span>
-</pre></div>
-</div>
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="c1"># @return [Proc] A resolve proc which calls `method_name` on `obj`</span>
+<span class="k">def</span> <span class="nf">resolve_with_method</span><span class="p">(</span><span class="n">method_name</span><span class="p">)</span>
+  <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span> <span class="n">obj</span><span class="p">.</span><span class="nf">public_send</span><span class="p">(</span><span class="n">method_name</span><span class="p">)</span> <span class="p">}</span>
+<span class="k">end</span>
+
+<span class="c1"># ...</span>
+
+<span class="n">field</span> <span class="ss">:name</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">String</span> <span class="k">do</span>
+  <span class="n">resolve</span><span class="p">(</span><span class="n">resolve_with_method</span><span class="p">(</span><span class="ss">:name</span><span class="p">))</span>
+<span class="k">end</span>
+</code></pre>
 </div>
 
 <h2 id="dynamically-defining-types">Dynamically defining types</h2>
 
-<p>Many examples show how to use <code>.define</code> and store the result in a Ruby constant:</p>
+<p>Many examples show how to use <code class="highlighter-rouge">.define</code> and store the result in a Ruby constant:</p>
 
-<div class="highlighter-coderay"><div class="CodeRay">
-  <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#036;font-weight:bold">PostType</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">ObjectType</span>.define <span style="color:#080;font-weight:bold">do</span> ... <span style="color:#080;font-weight:bold">end</span>
-</pre></div>
-</div>
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="no">PostType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span> <span class="p">.</span><span class="nf">.</span><span class="p">.</span> <span class="nf">end</span>
+</code></pre>
 </div>
 
-<p>However, you can call <code>.define</code> anytime and store the result anywhere. For example, you can define a method which creates types:</p>
+<p>However, you can call <code class="highlighter-rouge">.define</code> anytime and store the result anywhere. For example, you can define a method which creates types:</p>
 
-<div class="highlighter-coderay"><div class="CodeRay">
-  <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span><span style="color:#777"># @return [GraphQL::ObjectType] a type derived from `model_class`</span>
-<span class="line-numbers"> <a href="#n2" name="n2">2</a></span><span style="color:#080;font-weight:bold">def</span> <span style="color:#06B;font-weight:bold">create_type</span>(model_class)
-<span class="line-numbers"> <a href="#n3" name="n3">3</a></span>  <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">ObjectType</span>.define <span style="color:#080;font-weight:bold">do</span>
-<span class="line-numbers"> <a href="#n4" name="n4">4</a></span>    name(model_class.name)
-<span class="line-numbers"> <a href="#n5" name="n5">5</a></span>    description(<span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">Generated programmatically from model: </span><span style="background-color:hsla(0,0%,0%,0.07);color:black"><span style="font-weight:bold;color:#666">#{</span>model_class.name<span style="font-weight:bold;color:#666">}</span></span><span style="color:#710">&quot;</span></span>)
-<span class="line-numbers"> <a href="#n6" name="n6">6</a></span>    <span style="color:#777"># Make a field for each column:</span>
-<span class="line-numbers"> <a href="#n7" name="n7">7</a></span>    model_class.columns.each <span style="color:#080;font-weight:bold">do</span> |column|
-<span class="line-numbers"> <a href="#n8" name="n8">8</a></span>      field(column.name, convert_type(column.type))
-<span class="line-numbers"> <a href="#n9" name="n9">9</a></span>    <span style="color:#080;font-weight:bold">end</span>
-<span class="line-numbers"><strong><a href="#n10" name="n10">10</a></strong></span>  <span style="color:#080;font-weight:bold">end</span>
-<span class="line-numbers"><a href="#n11" name="n11">11</a></span><span style="color:#080;font-weight:bold">end</span>
-<span class="line-numbers"><a href="#n12" name="n12">12</a></span>
-<span class="line-numbers"><a href="#n13" name="n13">13</a></span><span style="color:#777"># @return [GraphQL::BaseType] a GraphQL type for `database_type`</span>
-<span class="line-numbers"><a href="#n14" name="n14">14</a></span><span style="color:#080;font-weight:bold">def</span> <span style="color:#06B;font-weight:bold">convert_type</span>(database_type)
-<span class="line-numbers"><a href="#n15" name="n15">15</a></span>  <span style="color:#777"># ...</span>
-<span class="line-numbers"><a href="#n16" name="n16">16</a></span><span style="color:#080;font-weight:bold">end</span>
-</pre></div>
-</div>
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="c1"># @return [GraphQL::ObjectType] a type derived from `model_class`</span>
+<span class="k">def</span> <span class="nf">create_type</span><span class="p">(</span><span class="n">model_class</span><span class="p">)</span>
+  <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+    <span class="nb">name</span><span class="p">(</span><span class="n">model_class</span><span class="p">.</span><span class="nf">name</span><span class="p">)</span>
+    <span class="n">description</span><span class="p">(</span><span class="s2">"Generated programmatically from model: </span><span class="si">#{</span><span class="n">model_class</span><span class="p">.</span><span class="nf">name</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="c1"># Make a field for each column:</span>
+    <span class="n">model_class</span><span class="p">.</span><span class="nf">columns</span><span class="p">.</span><span class="nf">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">column</span><span class="o">|</span>
+      <span class="n">field</span><span class="p">(</span><span class="n">column</span><span class="p">.</span><span class="nf">name</span><span class="p">,</span> <span class="n">convert_type</span><span class="p">(</span><span class="n">column</span><span class="p">.</span><span class="nf">type</span><span class="p">))</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="c1"># @return [GraphQL::BaseType] a GraphQL type for `database_type`</span>
+<span class="k">def</span> <span class="nf">convert_type</span><span class="p">(</span><span class="n">database_type</span><span class="p">)</span>
+  <span class="c1"># ...</span>
+<span class="k">end</span>
+</code></pre>
 </div>
 
 <p>You can also define fields for associated objects. You’ll need a way to access them programmatically.</p>
 
-<div class="highlighter-coderay"><div class="CodeRay">
-  <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span><span style="color:#777"># Hash&lt;Model =&gt; GraphQL::ObjectType&gt;</span>
-<span class="line-numbers"> <a href="#n2" name="n2">2</a></span><span style="color:#036;font-weight:bold">MODEL_TO_TYPE</span> = {}
-<span class="line-numbers"> <a href="#n3" name="n3">3</a></span>
-<span class="line-numbers"> <a href="#n4" name="n4">4</a></span><span style="color:#080;font-weight:bold">def</span> <span style="color:#06B;font-weight:bold">create_type</span>(model_class)
-<span class="line-numbers"> <a href="#n5" name="n5">5</a></span>  <span style="color:#777"># ...</span>
-<span class="line-numbers"> <a href="#n6" name="n6">6</a></span>  <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">ObjectType</span>.define <span style="color:#080;font-weight:bold">do</span>
-<span class="line-numbers"> <a href="#n7" name="n7">7</a></span>    <span style="color:#777"># ...</span>
-<span class="line-numbers"> <a href="#n8" name="n8">8</a></span>    <span style="color:#777"># Make a field for associations</span>
-<span class="line-numbers"> <a href="#n9" name="n9">9</a></span>    model_class.associations.each <span style="color:#080;font-weight:bold">do</span> |association|
-<span class="line-numbers"><strong><a href="#n10" name="n10">10</a></strong></span>      <span style="color:#777"># The proc will be eval'd later - by that time, there will be a type in the lookup hash</span>
-<span class="line-numbers"><a href="#n11" name="n11">11</a></span>      field(association.name, -&gt; { <span style="color:#036;font-weight:bold">MODEL_TO_TYPE</span>[association.associated_model] })
-<span class="line-numbers"><a href="#n12" name="n12">12</a></span>    <span style="color:#080;font-weight:bold">end</span>
-<span class="line-numbers"><a href="#n13" name="n13">13</a></span>  <span style="color:#080;font-weight:bold">end</span>
-<span class="line-numbers"><a href="#n14" name="n14">14</a></span><span style="color:#080;font-weight:bold">end</span>
-<span class="line-numbers"><a href="#n15" name="n15">15</a></span>
-<span class="line-numbers"><a href="#n16" name="n16">16</a></span>all_models_in_application.each { |model_class| <span style="color:#036;font-weight:bold">MODEL_TO_TYPE</span>[model_class] = create_type(model_class) }
-</pre></div>
-</div>
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="c1"># Hash&lt;Model =&gt; GraphQL::ObjectType&gt;</span>
+<span class="no">MODEL_TO_TYPE</span> <span class="o">=</span> <span class="p">{}</span>
+
+<span class="k">def</span> <span class="nf">create_type</span><span class="p">(</span><span class="n">model_class</span><span class="p">)</span>
+  <span class="c1"># ...</span>
+  <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+    <span class="c1"># ...</span>
+    <span class="c1"># Make a field for associations</span>
+    <span class="n">model_class</span><span class="p">.</span><span class="nf">associations</span><span class="p">.</span><span class="nf">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">association</span><span class="o">|</span>
+      <span class="c1"># The proc will be eval'd later - by that time, there will be a type in the lookup hash</span>
+      <span class="n">field</span><span class="p">(</span><span class="n">association</span><span class="p">.</span><span class="nf">name</span><span class="p">,</span> <span class="o">-&gt;</span> <span class="p">{</span> <span class="no">MODEL_TO_TYPE</span><span class="p">[</span><span class="n">association</span><span class="p">.</span><span class="nf">associated_model</span><span class="p">]</span> <span class="p">})</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="n">all_models_in_application</span><span class="p">.</span><span class="nf">each</span> <span class="p">{</span> <span class="o">|</span><span class="n">model_class</span><span class="o">|</span> <span class="no">MODEL_TO_TYPE</span><span class="p">[</span><span class="n">model_class</span><span class="p">]</span> <span class="o">=</span> <span class="n">create_type</span><span class="p">(</span><span class="n">model_class</span><span class="p">)</span> <span class="p">}</span>
+</code></pre>
 </div>
 
-<p>There is one caveat to using <code>.define</code>. The block is called with <code>instance_eval</code>, so <code>self</code> is a definition proxy, not the outer <code>self</code>. For this reason, you may need to assign values to local variables, then use them in <code>.define</code>. (<code>.define</code> has access to the local scope, but not the outer <code>self</code>.)</p>
+<p>There is one caveat to using <code class="highlighter-rouge">.define</code>. The block is called with <code class="highlighter-rouge">instance_eval</code>, so <code class="highlighter-rouge">self</code> is a definition proxy, not the outer <code class="highlighter-rouge">self</code>. For this reason, you may need to assign values to local variables, then use them in <code class="highlighter-rouge">.define</code>. (<code class="highlighter-rouge">.define</code> has access to the local scope, but not the outer <code class="highlighter-rouge">self</code>.)</p>
 
-<div class="highlighter-coderay"><div class="CodeRay">
-  <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span><span style="color:#080;font-weight:bold">class</span> <span style="color:#B06;font-weight:bold">DynamicTypeDefinition</span>
-<span class="line-numbers"> <a href="#n2" name="n2">2</a></span>  attr_reader <span style="color:#A60">:model</span>
-<span class="line-numbers"> <a href="#n3" name="n3">3</a></span>  <span style="color:#080;font-weight:bold">def</span> <span style="color:#06B;font-weight:bold">initialize</span>(model)
-<span class="line-numbers"> <a href="#n4" name="n4">4</a></span>    <span style="color:#33B">@model</span> = model
-<span class="line-numbers"> <a href="#n5" name="n5">5</a></span>  <span style="color:#080;font-weight:bold">end</span>
-<span class="line-numbers"> <a href="#n6" name="n6">6</a></span>
-<span class="line-numbers"> <a href="#n7" name="n7">7</a></span>  <span style="color:#080;font-weight:bold">def</span> <span style="color:#06B;font-weight:bold">to_graphql_type</span>
-<span class="line-numbers"> <a href="#n8" name="n8">8</a></span>    <span style="color:#777"># This doesn't work because `model` is actually `self.model`, which doesn't work inside `.define`</span>
-<span class="line-numbers"> <a href="#n9" name="n9">9</a></span>    <span style="color:#777"># GraphQL::ObjectType.define do</span>
-<span class="line-numbers"><strong><a href="#n10" name="n10">10</a></strong></span>    <span style="color:#777">#   name(model.name)</span>
-<span class="line-numbers"><a href="#n11" name="n11">11</a></span>    <span style="color:#777"># end</span>
-<span class="line-numbers"><a href="#n12" name="n12">12</a></span>    <span style="color:#777">#</span>
-<span class="line-numbers"><a href="#n13" name="n13">13</a></span>    <span style="color:#777"># Instead, assign a local variable first:</span>
-<span class="line-numbers"><a href="#n14" name="n14">14</a></span>    model_name = model.name
-<span class="line-numbers"><a href="#n15" name="n15">15</a></span>    <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">ObjectType</span>.define <span style="color:#080;font-weight:bold">do</span>
-<span class="line-numbers"><a href="#n16" name="n16">16</a></span>      name(model_name)
-<span class="line-numbers"><a href="#n17" name="n17">17</a></span>    <span style="color:#080;font-weight:bold">end</span>
-<span class="line-numbers"><a href="#n18" name="n18">18</a></span>    <span style="color:#777"># 👌</span>
-<span class="line-numbers"><a href="#n19" name="n19">19</a></span>  <span style="color:#080;font-weight:bold">end</span>
-<span class="line-numbers"><strong><a href="#n20" name="n20">20</a></strong></span><span style="color:#080;font-weight:bold">end</span>
-</pre></div>
-</div>
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="k">class</span> <span class="nc">DynamicTypeDefinition</span>
+  <span class="kp">attr_reader</span> <span class="ss">:model</span>
+  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+    <span class="vi">@model</span> <span class="o">=</span> <span class="n">model</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">to_graphql_type</span>
+    <span class="c1"># This doesn't work because `model` is actually `self.model`, which doesn't work inside `.define`</span>
+    <span class="c1"># GraphQL::ObjectType.define do</span>
+    <span class="c1">#   name(model.name)</span>
+    <span class="c1"># end</span>
+    <span class="c1">#</span>
+    <span class="c1"># Instead, assign a local variable first:</span>
+    <span class="n">model_name</span> <span class="o">=</span> <span class="n">model</span><span class="p">.</span><span class="nf">name</span>
+    <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+      <span class="nb">name</span><span class="p">(</span><span class="n">model_name</span><span class="p">)</span>
+    <span class="k">end</span>
+    <span class="c1"># 👌</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
 </div>
 
-<h2 id="functional-composition--resolve">Functional composition &amp; <code>resolve</code></h2>
+<h2 id="functional-composition--resolve">Functional composition &amp; <code class="highlighter-rouge">resolve</code></h2>
 
-<p>You can modify procs by wrapping them in other procs. This is a simple way to combine elements for a <code>resolve</code> function.</p>
+<p>You can modify procs by wrapping them in other procs. This is a simple way to combine elements for a <code class="highlighter-rouge">resolve</code> function.</p>
 
 <p>For example, you can wrap a proc with authorization logic:</p>
 
-<div class="highlighter-coderay"><div class="CodeRay">
-  <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span><span style="color:#080;font-weight:bold">module</span> <span style="color:#B06;font-weight:bold">Auth</span>
-<span class="line-numbers"> <a href="#n2" name="n2">2</a></span>  <span style="color:#777"># Wrap resolve_proc in a check that `ctx[:current_user].can_read?(item_name)`</span>
-<span class="line-numbers"> <a href="#n3" name="n3">3</a></span>  <span style="color:#777">#</span>
-<span class="line-numbers"> <a href="#n4" name="n4">4</a></span>  <span style="color:#777"># @yield [obj, args, ctx] Field resolution parameters</span>
-<span class="line-numbers"> <a href="#n5" name="n5">5</a></span>  <span style="color:#777"># @yieldreturn [Object] The return value for this field</span>
-<span class="line-numbers"> <a href="#n6" name="n6">6</a></span>  <span style="color:#777"># @return [Proc] the passed-in block, modified to check for `can_read?(item_name)`</span>
-<span class="line-numbers"> <a href="#n7" name="n7">7</a></span>  <span style="color:#080;font-weight:bold">def</span> <span style="color:#069">self</span>.<span style="color:#06B;font-weight:bold">can_read</span>(item_name, &amp;block)
-<span class="line-numbers"> <a href="#n8" name="n8">8</a></span>    -&gt;(obj, args, ctx) <span style="color:#080;font-weight:bold">do</span>
-<span class="line-numbers"> <a href="#n9" name="n9">9</a></span>      <span style="color:#080;font-weight:bold">if</span> ctx[<span style="color:#A60">:current_user</span>].can_read?(item_name)
-<span class="line-numbers"><strong><a href="#n10" name="n10">10</a></strong></span>        <span style="color:#777"># continue to the next call:</span>
-<span class="line-numbers"><a href="#n11" name="n11">11</a></span>        block.call(obj, args, ctx)
-<span class="line-numbers"><a href="#n12" name="n12">12</a></span>      <span style="color:#080;font-weight:bold">else</span>
-<span class="line-numbers"><a href="#n13" name="n13">13</a></span>        <span style="color:#069">nil</span>
-<span class="line-numbers"><a href="#n14" name="n14">14</a></span>      <span style="color:#080;font-weight:bold">end</span>
-<span class="line-numbers"><a href="#n15" name="n15">15</a></span>    <span style="color:#080;font-weight:bold">end</span>
-<span class="line-numbers"><a href="#n16" name="n16">16</a></span>  <span style="color:#080;font-weight:bold">end</span>
-<span class="line-numbers"><a href="#n17" name="n17">17</a></span><span style="color:#080;font-weight:bold">end</span>
-<span class="line-numbers"><a href="#n18" name="n18">18</a></span>
-<span class="line-numbers"><a href="#n19" name="n19">19</a></span><span style="color:#777"># ...</span>
-<span class="line-numbers"><strong><a href="#n20" name="n20">20</a></strong></span>
-<span class="line-numbers"><a href="#n21" name="n21">21</a></span><span style="color:#036;font-weight:bold">QueryType</span> = <span style="color:#036;font-weight:bold">GraphQL</span>::<span style="color:#036;font-weight:bold">ObjectType</span>.define <span style="color:#080;font-weight:bold">do</span>
-<span class="line-numbers"><a href="#n22" name="n22">22</a></span>  field <span style="color:#A60">:findPost</span>, <span style="color:#036;font-weight:bold">PostType</span> <span style="color:#080;font-weight:bold">do</span>
-<span class="line-numbers"><a href="#n23" name="n23">23</a></span>    argument <span style="color:#A60">:id</span>, !types.Int
-<span class="line-numbers"><a href="#n24" name="n24">24</a></span>    resolve(<span style="color:#036;font-weight:bold">Auth</span>.can_read(<span style="color:#A60">:post</span>) <span style="color:#080;font-weight:bold">do</span> |obj, args, ctx|
-<span class="line-numbers"><a href="#n25" name="n25">25</a></span>      <span style="color:#036;font-weight:bold">Post</span>.find(args[<span style="color:#A60">:id</span>])
-<span class="line-numbers"><a href="#n26" name="n26">26</a></span>    <span style="color:#080;font-weight:bold">end</span>)
-<span class="line-numbers"><a href="#n27" name="n27">27</a></span>  <span style="color:#080;font-weight:bold">end</span>
-<span class="line-numbers"><a href="#n28" name="n28">28</a></span><span style="color:#080;font-weight:bold">end</span>
-</pre></div>
-</div>
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="k">module</span> <span class="nn">Auth</span>
+  <span class="c1"># Wrap resolve_proc in a check that `ctx[:current_user].can_read?(item_name)`</span>
+  <span class="c1">#</span>
+  <span class="c1"># @yield [obj, args, ctx] Field resolution parameters</span>
+  <span class="c1"># @yieldreturn [Object] The return value for this field</span>
+  <span class="c1"># @return [Proc] the passed-in block, modified to check for `can_read?(item_name)`</span>
+  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">can_read</span><span class="p">(</span><span class="n">item_name</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">block</span><span class="p">)</span>
+    <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="k">do</span>
+      <span class="k">if</span> <span class="n">ctx</span><span class="p">[</span><span class="ss">:current_user</span><span class="p">].</span><span class="nf">can_read?</span><span class="p">(</span><span class="n">item_name</span><span class="p">)</span>
+        <span class="c1"># continue to the next call:</span>
+        <span class="n">block</span><span class="p">.</span><span class="nf">call</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span>
+      <span class="k">else</span>
+        <span class="kp">nil</span>
+      <span class="k">end</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="c1"># ...</span>
+
+<span class="no">QueryType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+  <span class="n">field</span> <span class="ss">:findPost</span><span class="p">,</span> <span class="no">PostType</span> <span class="k">do</span>
+    <span class="n">argument</span> <span class="ss">:id</span><span class="p">,</span> <span class="o">!</span><span class="n">types</span><span class="o">.</span><span class="no">Int</span>
+    <span class="n">resolve</span><span class="p">(</span><span class="no">Auth</span><span class="p">.</span><span class="nf">can_read</span><span class="p">(</span><span class="ss">:post</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="o">|</span>
+      <span class="no">Post</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="ss">:id</span><span class="p">])</span>
+    <span class="k">end</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
 </div>
 
 <p>Now, the inner proc will only be called if the outer proc calls it.</p>
