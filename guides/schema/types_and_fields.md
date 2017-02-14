@@ -141,6 +141,45 @@ resolve ->(obj, args, ctx) {
 }
 ```
 
+## Mutations
+
+Registering a mutation root allows to define fields that can mutate your data.
+
+```
+Schema = GraphQL::Schema.define do
+  mutation MutationRoot
+end
+
+MutationRoot = GraphQL::ObjectType.define do
+  name "Mutation"
+
+  field :addPost, Post do
+    description "Find dairy products matching a description"
+
+    # Use Input Types to define complex argument types
+    argument :post, PostInputType
+    resolve ->(t, args, c) {
+      title = args['post']['title']
+      description = args['post']['description']
+      Post.create(title: title, description: description)
+    }
+  end
+end
+
+PostInputType = GraphQL::InputObjectType.define do
+  name "PostInputType"
+  description "Properties for creating a Post"
+
+  input_field :title, !types.String do
+    description "Title of the post."
+  end
+
+  input_field :description, types.String do
+    description "Description of the post."
+  end
+end
+```
+
 ## Extending type and field definitions
 
 Types, fields, and arguments have a `metadata` hash which accepts values during definition.
