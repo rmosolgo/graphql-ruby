@@ -170,7 +170,7 @@ describe GraphQL::Query::Arguments do
       assert_equal false, arguments.key?("f")
     end
 
-    it "works with `as`" do
+    it "detects keys using `as` to rename an arg at resolve time" do
       schema.execute("{ argTest(c: 1) }")
 
       last_args = arg_values.last
