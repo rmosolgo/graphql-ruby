@@ -330,9 +330,9 @@ module Dummy
     description "The root for mutations in this schema"
     field :pushValue, !types[!types.Int] do
       description("Push a value onto a global array :D")
-      argument :value, !types.Int
+      argument :value, !types.Int, as: :val
       resolve ->(o, args, ctx) {
-        GLOBAL_VALUES << args[:value]
+        GLOBAL_VALUES << args[:val]
         GLOBAL_VALUES
       }
     end
