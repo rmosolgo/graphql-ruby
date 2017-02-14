@@ -28,7 +28,7 @@ html{font-size:12px}*{box-sizing:border-box;text-rendering:geometricPrecision}bo
 
 .hack em { font-style: italic; }
 .hack strong { font-weight: bold; }
-.hack code {
+.hack p code {
   font-weight: normal;
   color: #cd3b60;
   border: 1px solid #cca5a5;
