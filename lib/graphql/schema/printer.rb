@@ -3,41 +3,91 @@ module GraphQL
   class Schema
     # Used to convert your {GraphQL::Schema} to a GraphQL schema string
     #
-    # @example print your schema to standard output
+    # @example print your schema to standard output (via helper)
     #   MySchema = GraphQL::Schema.define(query: QueryType)
     #   puts GraphQL::Schema::Printer.print_schema(MySchema)
     #
-    module Printer
-      extend self
+    # @example print your schema to standard output
+    #   MySchema = GraphQL::Schema.define(query: QueryType)
+    #   puts GraphQL::Schema::Printer.new(MySchema).print_schema
+    #
+    # @example print a single type to standard output
+    #   query_root = GraphQL::ObjectType.define do
+    #     name "Query"
+    #     description "The query root of this schema"
+    #
+    #     field :post do
+    #       type post_type
+    #       resolve ->(obj, args, ctx) { Post.find(args["id"]) }
+    #     end
+    #   end
+    #
+    #   post_type = GraphQL::ObjectType.define do
+    #     name "Post"
+    #     description "A blog post"
+    #
+    #     field :id, !types.ID
+    #     field :title, !types.String
+    #     field :body, !types.String
+    #   end
+    #
+    #   MySchema = GraphQL::Schema.define(query: query_root)
+    #
+    #   printer = GraphQL::Schema::Printer.new(MySchema)
+    #   puts printer.print_type(post_type)
+    #
+    class Printer
+      attr_reader :schema, :warden
 
-      # Return a GraphQL schema string for the defined types in the schema
+      # @param schema [GraphQL::Schema]
       # @param context [Hash]
       # @param only [<#call(member, ctx)>]
       # @param except [<#call(member, ctx)>]
-      # @param schema [GraphQL::Schema]
-      def print_schema(schema, context: nil, only: nil, except: nil)
-        blacklist = if only
-          ->(m, ctx) { !(IS_USER_DEFINED_MEMBER.call(m) && only.call(m, ctx)) }
-        elsif except
-          ->(m, ctx) { !IS_USER_DEFINED_MEMBER.call(m) || except.call(m, ctx) }
-        else
-          ->(m, ctx) { !IS_USER_DEFINED_MEMBER.call(m) }
-        end
+      # @param introspection [Boolean] Should include the introspection types in the string?
+      def initialize(schema, context: nil, only: nil, except: nil, introspection: false)
+        @schema = schema
+        @context = context
 
-        warden = GraphQL::Schema::Warden.new(blacklist, schema: schema, context: context)
-
-        print_filtered_schema(schema, warden: warden)
+        blacklist = build_blacklist(only, except, introspection: introspection)
+        @warden = GraphQL::Schema::Warden.new(blacklist, schema: @schema, context: @context)
       end
 
       # Return the GraphQL schema string for the introspection type system
-      def print_introspection_schema
+      def self.print_introspection_schema
         query_root = ObjectType.define(name: "Root")
         schema = GraphQL::Schema.define(query: query_root)
         blacklist = ->(m, ctx) { m == query_root }
+        printer = new(schema, except: blacklist, introspection: true)
+        printer.print_schema
+      end
 
-        warden = GraphQL::Schema::Warden.new(blacklist, schema: schema, context: nil)
+      # Return a GraphQL schema string for the defined types in the schema
+      # @param schema [GraphQL::Schema]
+      # @param context [Hash]
+      # @param only [<#call(member, ctx)>]
+      # @param except [<#call(member, ctx)>]
+      def self.print_schema(schema, **args)
+        printer = new(schema, **args)
+        printer.print_schema
+      end
 
-        print_filtered_schema(schema, warden: warden)
+      # Return a GraphQL schema string for the defined types in the schema
+      def print_schema
+        directive_definitions = warden.directives.map { |directive| print_directive(directive) }
+
+        printable_types = warden.types.reject(&:default_scalar?)
+
+        type_definitions = printable_types
+          .sort_by(&:name)
+          .map { |type| print_type(type) }
+
+        [print_schema_definition].compact
+                                 .concat(directive_definitions)
+                                 .concat(type_definitions).join("\n\n")
+      end
+
+      def print_type(type)
+        TypeKindPrinters::STRATEGIES.fetch(type.kind).print(warden, type)
       end
 
       private
@@ -56,21 +106,27 @@ module GraphQL
 
       private_constant :IS_USER_DEFINED_MEMBER
 
-      def print_filtered_schema(schema, warden:)
-        directive_definitions = warden.directives.map { |directive| print_directive(warden, directive) }
-
-        printable_types = warden.types.reject(&:default_scalar?)
-
-        type_definitions = printable_types
-          .sort_by(&:name)
-          .map { |type| print_type(warden, type) }
-
-        [print_schema_definition(warden, schema)].compact
-                                         .concat(directive_definitions)
-                                         .concat(type_definitions).join("\n\n")
+      def build_blacklist(only, except, introspection:)
+        if introspection
+          if only
+            ->(m, ctx) { !only.call(m, ctx) }
+          elsif except
+            except
+          else
+            ->(m, ctx) { false }
+          end
+        else
+          if only
+            ->(m, ctx) { !(IS_USER_DEFINED_MEMBER.call(m) && only.call(m, ctx)) }
+          elsif except
+            ->(m, ctx) { !IS_USER_DEFINED_MEMBER.call(m) || except.call(m, ctx) }
+          else
+            ->(m, ctx) { !IS_USER_DEFINED_MEMBER.call(m) }
+          end
+        end
       end
 
-      def print_schema_definition(warden, schema)
+      def print_schema_definition
         if (schema.query.nil? || schema.query.name == 'Query') &&
            (schema.mutation.nil? || schema.mutation.name == 'Mutation') &&
            (schema.subscription.nil? || schema.subscription.name == 'Subscription')
@@ -89,11 +145,7 @@ module GraphQL
         "schema {\n#{operations}}"
       end
 
-      def print_type(warden, type)
-        TypeKindPrinters::STRATEGIES.fetch(type.kind).print(warden, type)
-      end
-
-      def print_directive(warden, directive)
+      def print_directive(directive)
         TypeKindPrinters::DirectivePrinter.print(warden, directive)
       end
 
