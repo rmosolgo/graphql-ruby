@@ -43,17 +43,13 @@ module GraphQL
       # @param context [Hash]
       # @param only [<#call(member, ctx)>]
       # @param except [<#call(member, ctx)>]
-      # @param warden [GraphQL::Warden]
-      def initialize(schema, context: nil, only: nil, except: nil, warden: nil)
+      # @param introspection [Boolean] Should include the introspection types in the string?
+      def initialize(schema, context: nil, only: nil, except: nil, introspection: false)
         @schema = schema
         @context = context
 
-        if warden.nil?
-          blacklist = build_blacklist(only, except)
-          warden = GraphQL::Schema::Warden.new(blacklist, schema: @schema, context: @context)
-        end
-
-        @warden = warden
+        blacklist = build_blacklist(only, except, introspection: introspection)
+        @warden = GraphQL::Schema::Warden.new(blacklist, schema: @schema, context: @context)
       end
 
       # Return the GraphQL schema string for the introspection type system
@@ -61,10 +57,7 @@ module GraphQL
         query_root = ObjectType.define(name: "Root")
         schema = GraphQL::Schema.define(query: query_root)
         blacklist = ->(m, ctx) { m == query_root }
-
-        warden = GraphQL::Schema::Warden.new(blacklist, schema: schema, context: nil)
-
-        printer = new(schema, warden: warden)
+        printer = new(schema, except: blacklist, introspection: true)
         printer.print_schema
       end
 
@@ -113,13 +106,23 @@ module GraphQL
 
       private_constant :IS_USER_DEFINED_MEMBER
 
-      def build_blacklist(only, except)
-        if only
-          ->(m, ctx) { !(IS_USER_DEFINED_MEMBER.call(m) && only.call(m, ctx)) }
-        elsif except
-          ->(m, ctx) { !IS_USER_DEFINED_MEMBER.call(m) || except.call(m, ctx) }
+      def build_blacklist(only, except, introspection:)
+        if introspection
+          if only
+            ->(m, ctx) { !only.call(m, ctx) }
+          elsif except
+            except
+          else
+            ->(m, ctx) { false }
+          end
         else
-          ->(m, ctx) { !IS_USER_DEFINED_MEMBER.call(m) }
+          if only
+            ->(m, ctx) { !(IS_USER_DEFINED_MEMBER.call(m) && only.call(m, ctx)) }
+          elsif except
+            ->(m, ctx) { !IS_USER_DEFINED_MEMBER.call(m) || except.call(m, ctx) }
+          else
+            ->(m, ctx) { !IS_USER_DEFINED_MEMBER.call(m) }
+          end
         end
       end
 
