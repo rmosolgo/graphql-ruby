@@ -14,7 +14,7 @@ module GraphQL
   #   GraphQL::InputObjectType.define do
   #     argument :newName, !types.String
   #   end
-  #
+
   class Argument
     include GraphQL::Define::InstanceDefinable
     accepts_definitions :name, :type, :description, :default_value, :as
