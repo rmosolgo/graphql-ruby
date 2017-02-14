@@ -13,7 +13,7 @@ describe GraphQL::Query::Arguments do
       name "TestInput2"
       argument :a, types.Int
       argument :b, types.Int
-      argument :c, !test_input_1
+      argument :c, !test_input_1, as: :inputObject
     end
 
     GraphQL::Query::Arguments.new({
@@ -55,7 +55,7 @@ describe GraphQL::Query::Arguments do
     expected_type_info =[
       ["a", 1, "Int"],
       ["b", 2, "Int"],
-      ["c", { d: 3, e: 4 }, "TestInput1"],
+      ["inputObject", { d: 3, e: 4 }, "TestInput1"],
     ]
     assert_equal expected_type_info, type_info
   end
@@ -72,7 +72,7 @@ describe GraphQL::Query::Arguments do
     expected_hash = {
       "A" => 1,
       "B" => 2,
-      "C" => { d: 3 , e: 4 },
+      "INPUTOBJECT" => { d: 3 , e: 4 },
     }
     assert_equal expected_hash, new_arguments.to_h
   end
@@ -97,10 +97,14 @@ describe GraphQL::Query::Arguments do
   end
 
   describe "#[]" do
+    it "fetches using specified `as` keyword" do
+      assert arguments["inputObject"].is_a?(GraphQL::Query::Arguments)
+    end
+
     it "returns the value at that key" do
       assert_equal 1, arguments["a"]
       assert_equal 1, arguments[:a]
-      assert arguments["c"].is_a?(GraphQL::Query::Arguments)
+      assert arguments["inputObject"].is_a?(GraphQL::Query::Arguments)
     end
 
     it "returns nil for missing keys" do
@@ -127,7 +131,7 @@ describe GraphQL::Query::Arguments do
         field :argTest, types.Int do
           argument :a, types.Int
           argument :b, types.Int, default_value: 2
-          argument :c, types.Int
+          argument :c, types.Int, as: :specialKeyName
           argument :d, test_input_type
           resolve ->(obj, args, ctx) {
             arg_values_array << args
@@ -164,6 +168,14 @@ describe GraphQL::Query::Arguments do
       assert_equal true, arguments.key?("a")
       assert_equal false, arguments.key?(:f)
       assert_equal false, arguments.key?("f")
+    end
+
+    it "works with `as`" do
+      schema.execute("{ argTest(c: 1) }")
+
+      last_args = arg_values.last
+
+      assert_equal true, last_args.key?(:specialKeyName)
     end
 
     it "works from query literals" do

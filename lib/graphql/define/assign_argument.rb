@@ -10,7 +10,7 @@ module GraphQL
           GraphQL::Argument.new
         end
 
-        unsupported_keys = rest.keys - [:default_value]
+        unsupported_keys = rest.keys - [:default_value, :as]
         if unsupported_keys.any?
           raise ArgumentError.new("unknown keyword#{unsupported_keys.length > 1 ? 's' : ''}: #{unsupported_keys.join(', ')}")
         end
@@ -19,6 +19,7 @@ module GraphQL
         type && argument.type = type
         description && argument.description = description
         rest.key?(:default_value) && argument.default_value = rest[:default_value]
+        argument.as = rest[:as]
 
         target.arguments[name.to_s] = argument
       end

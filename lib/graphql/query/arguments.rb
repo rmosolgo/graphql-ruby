@@ -10,8 +10,14 @@ module GraphQL
       def initialize(values, argument_definitions:)
         @original_values = values
         @argument_values = values.inject({}) do |memo, (inner_key, inner_value)|
-          string_key = inner_key.to_s
-          arg_defn = argument_definitions[string_key]
+          arg_defn = argument_definitions[inner_key.to_s]
+
+          string_key = if arg_defn.as != nil
+            arg_defn.as.to_s
+          else
+            inner_key.to_s
+          end
+
           arg_value = wrap_value(inner_value, arg_defn.type)
           memo[string_key] = ArgumentValue.new(string_key, arg_value, arg_defn)
           memo

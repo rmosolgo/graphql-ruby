@@ -41,4 +41,9 @@ describe GraphQL::Argument do
     assert argument.default_value.nil?
     assert !argument.default_value?
   end
+
+  it "accepts a as to define " do
+    argument = GraphQL::Argument.define(name: :favoriteFood, type: GraphQL::STRING_TYPE, as: :favFood)
+    assert_equal argument.as , :favFood
+  end
 end
