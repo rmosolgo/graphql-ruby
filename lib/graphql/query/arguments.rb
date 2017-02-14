@@ -12,13 +12,8 @@ module GraphQL
         @argument_values = values.inject({}) do |memo, (inner_key, inner_value)|
           arg_defn = argument_definitions[inner_key.to_s]
 
-          string_key = if arg_defn.as != nil
-            arg_defn.as.to_s
-          else
-            inner_key.to_s
-          end
-
           arg_value = wrap_value(inner_value, arg_defn.type)
+          string_key = arg_defn.expose_as
           memo[string_key] = ArgumentValue.new(string_key, arg_value, arg_defn)
           memo
         end

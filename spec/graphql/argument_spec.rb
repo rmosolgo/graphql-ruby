@@ -42,8 +42,19 @@ describe GraphQL::Argument do
     assert !argument.default_value?
   end
 
-  it "accepts a `as` property to define the arg name at resolve time" do
-    argument = GraphQL::Argument.define(name: :favoriteFood, type: GraphQL::STRING_TYPE, as: :favFood)
-    assert_equal argument.as , :favFood
+  describe "#as, #exposed_as" do
+    it "accepts a `as` property to define the arg name at resolve time" do
+      argument = GraphQL::Argument.define(name: :favoriteFood, type: GraphQL::STRING_TYPE, as: :favFood)
+      assert_equal argument.as, :favFood
+    end
+
+    it "uses `name` or `as` for `expose_as`" do
+      arg_1 = GraphQL::Argument.define(name: :favoriteFood, type: GraphQL::STRING_TYPE, as: :favFood)
+      assert_equal arg_1.expose_as, "favFood"
+      arg_2 = GraphQL::Argument.define(name: :favoriteFood, type: GraphQL::STRING_TYPE)
+      assert_equal arg_2.expose_as, "favoriteFood"
+      arg_3 = arg_2.redefine { as :ff }
+      assert_equal arg_3.expose_as, "ff"
+    end
   end
 end
