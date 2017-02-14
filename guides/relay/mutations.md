@@ -130,3 +130,37 @@ end
 ```
 
 If you provide your own return type, it's up to you to support `clientMutationId`
+
+### Specifying a Return Interface
+
+An alternative to defining the whole return type from scratch is to specify `return_interfaces`.
+The result of the `resolve` block will be passed to the field definitions in the interfaces,
+and both interface-specific and mutation-specific fields will be available to clients.
+
+
+```ruby
+MutationResult = GraphQL::InterfaceType.define do
+  name "MutationResult"
+  field :success, !types.Boolean
+  field :notice, types.String
+  field :errors, types[ValidationError]
+end
+
+CreatePost = GraphQL::Relay::Mutation.define do
+  # ...
+  return_field :slug, types.String
+  return_field :url, types.String
+  return_interfaces [MutationResult],
+
+  # clientMutationId will also be available automatically
+  resolve ->(obj, input, ctx) {
+    post, notice = Post.create_with_input(...)
+    {
+      success: post.persisted?
+      notice: notice
+      url: post.url
+      errors: post.errors
+    }
+  }
+end
+```
