@@ -199,7 +199,7 @@ module GraphQL
           end
 
           if @wrap_result
-            unless mutation_result == nil || mutation_result.is_a?(Hash)
+            if !mutation_result.is_a?(Hash)
               raise StandardError, "Expected `#{mutation_result}` to be a Hash."\
                 " Return a hash when using `return_field` or specify a custom `return_type`."
             end
