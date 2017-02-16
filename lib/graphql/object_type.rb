@@ -22,7 +22,7 @@ module GraphQL
   #   end
   #
   class ObjectType < GraphQL::BaseType
-    accepts_definitions :interfaces, :fields, :mutation, field: GraphQL::Define::AssignObjectField
+    accepts_definitions :implements, :interfaces, :fields, :mutation, field: GraphQL::Define::AssignObjectField
 
     attr_accessor :fields, :mutation
     ensure_defined(:fields, :mutation, :interfaces)
@@ -61,6 +61,13 @@ module GraphQL
           @dirty_interfaces
         end
       end
+    end
+
+    # @param interface [GraphQL::Interface] add a new interface that this type implements
+    def implements=(interface)
+      @clean_interfaces = nil
+      @dirty_interfaces ||= []
+      @dirty_interfaces << interface
     end
 
     def kind
