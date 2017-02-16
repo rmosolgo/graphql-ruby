@@ -4,7 +4,7 @@ module GraphQL
     # Helpers for working with Relay-specific Node objects.
     module Node
       # @return [GraphQL::Field] a field for finding objects by their global ID.
-      def self.field
+      def self.field(resolve: nil)
         # We have to define it fresh each time because
         # its name will be modified and its description
         # _may_ be modified.
@@ -12,17 +12,17 @@ module GraphQL
           type(GraphQL::Relay::Node.interface)
           description("Fetches an object given its ID.")
           argument(:id, !types.ID, "ID of the object.")
-          resolve(GraphQL::Relay::Node::FindNode)
+          resolve(resolve || GraphQL::Relay::Node::FindNode)
           relay_node_field(true)
         end
       end
 
-      def self.plural_field
+      def self.plural_field(resolve: nil)
         GraphQL::Field.define do
           type(!types[GraphQL::Relay::Node.interface])
           description("Fetches a list of objects given a list of IDs.")
           argument(:ids, !types[!types.ID], "IDs of the objects.")
-          resolve(GraphQL::Relay::Node::FindNodes)
+          resolve(resolve || GraphQL::Relay::Node::FindNodes)
           relay_nodes_field(true)
         end
       end
