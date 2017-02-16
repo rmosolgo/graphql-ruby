@@ -58,7 +58,7 @@ describe GraphQL::Schema::ReduceTypes do
     let(:another_invalid_type) {
       GraphQL::ObjectType.define do
         name "AnotherInvalidType"
-        field :someField, String
+        field :someField, ![types.String]
       end
     }
 

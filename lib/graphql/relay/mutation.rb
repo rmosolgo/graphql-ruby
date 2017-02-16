@@ -199,6 +199,11 @@ module GraphQL
           end
 
           if @wrap_result
+            unless mutation_result == nil || mutation_result.is_a?(Hash)
+              raise StandardError, "Expected `#{mutation_result}` to be a Hash."\
+                " Return a hash when using `return_field` or specify a custom `return_type`."
+            end
+
             @mutation.result_class.new(client_mutation_id: args[:input][:clientMutationId], result: mutation_result)
           else
             mutation_result
