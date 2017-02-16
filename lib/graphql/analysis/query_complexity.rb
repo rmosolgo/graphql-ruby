@@ -27,7 +27,7 @@ module GraphQL
       end
 
       # Implement the query analyzer API
-      def call(memo, visit_type, irep_node)
+      def call(memo, visit_type, irep_node, context)
         if irep_node.ast_node.is_a?(GraphQL::Language::Nodes::Field)
           if visit_type == :enter
             memo[:complexities_on_type].push(TypeComplexity.new)

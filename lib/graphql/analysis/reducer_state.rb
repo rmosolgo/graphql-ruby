@@ -2,17 +2,18 @@
 module GraphQL
   module Analysis
     class ReducerState
-      attr_reader :reducer
+      attr_reader :reducer, :context
       attr_accessor :memo, :errors
 
-      def initialize(reducer, query)
+      def initialize(reducer, query, context)
         @reducer = reducer
         @memo = initialize_reducer(reducer, query)
         @errors = []
+        @context = context
       end
 
       def call(visit_type, irep_node)
-        @memo = @reducer.call(@memo, visit_type, irep_node)
+        @memo = @reducer.call(@memo, visit_type, irep_node, context)
       rescue AnalysisError => err
         @errors << err
       end

@@ -25,7 +25,7 @@ module GraphQL
         }
       end
 
-      def call(memo, visit_type, irep_node)
+      def call(memo, visit_type, irep_node, context)
         if irep_node.ast_node.is_a?(GraphQL::Language::Nodes::Field) && visit_type == :leave
           field = "#{irep_node.owner_type.name}.#{irep_node.definition.name}"
           memo[:used_fields] << field
