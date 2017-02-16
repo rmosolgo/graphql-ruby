@@ -36,7 +36,17 @@ describe GraphQL::ObjectType do
       end
 
       assert_equal([Dummy::EdibleInterface, Dummy::AnimalProductInterface], type.interfaces)
+    end
 
+    it "adds many interfaces" do
+      type = GraphQL::ObjectType.define do
+        name 'Hello'
+        implements Dummy::EdibleInterface, Dummy::AnimalProductInterface
+
+        field :hello, types.String
+      end
+
+      assert_equal([Dummy::EdibleInterface, Dummy::AnimalProductInterface], type.interfaces)
     end
 
     it "preserves existing interfaces and appends a new one" do

@@ -22,7 +22,8 @@ module GraphQL
   #   end
   #
   class ObjectType < GraphQL::BaseType
-    accepts_definitions :implements, :interfaces, :fields, :mutation, field: GraphQL::Define::AssignObjectField
+    accepts_definitions :interfaces, :fields, :mutation, field: GraphQL::Define::AssignObjectField
+    accepts_definitions implements: ->(type, *interfaces) { type.add_interfaces(*interfaces) }
 
     attr_accessor :fields, :mutation
     ensure_defined(:fields, :mutation, :interfaces)
@@ -32,7 +33,6 @@ module GraphQL
 
     # @!attribute mutation
     #   @return [GraphQL::Relay::Mutation, nil] The mutation this field was derived from, if it was derived from a mutation
-
 
     def initialize
       super
@@ -64,10 +64,10 @@ module GraphQL
     end
 
     # @param interface [GraphQL::Interface] add a new interface that this type implements
-    def implements=(interface)
+    def add_interfaces(*interfaces)
       @clean_interfaces = nil
       @dirty_interfaces ||= []
-      @dirty_interfaces << interface
+      @dirty_interfaces.push(*interfaces)
     end
 
     def kind
