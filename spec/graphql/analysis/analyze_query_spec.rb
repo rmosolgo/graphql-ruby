@@ -24,8 +24,16 @@ describe GraphQL::Analysis do
         memo
       }
     }
+    let(:context_analyzer) {
+      ->(memo, visit_type, irep_node, context) {
+        if context[:is_evil_user]
+          raise "Forbidden: Too Evil"
+        end
+        memo
+      }
+    }
     let(:type_collector) { TypeCollector.new }
-    let(:analyzers) { [type_collector, node_counter] }
+    let(:analyzers) { [type_collector, node_counter, context_analyzer] }
     let(:reduce_result) { GraphQL::Analysis.analyze_query(query, analyzers) }
     let(:variables) { {} }
     let(:query) { GraphQL::Query.new(Dummy::Schema, query_string, variables: variables) }
@@ -47,6 +55,14 @@ describe GraphQL::Analysis do
         GraphQL::Language::Nodes::Field => 3,
       }
       assert_equal expected_node_counts, node_counts
+    end
+
+    it "passes the query context to the analyzers" do
+      result = GraphQL::Query.new(Dummy::Schema, query_string, variables: variables, context: {
+        is_evil_user: true
+      }).result
+
+      assert_equal("", result)
     end
 
     describe "when a variable is missing" do
