@@ -170,11 +170,11 @@ PostInputType = GraphQL::InputObjectType.define do
   name "PostInputType"
   description "Properties for creating a Post"
 
-  input_field :title, !types.String do
+  argument :title, !types.String do
     description "Title of the post."
   end
 
-  input_field :description, types.String do
+  argument :description, types.String do
     description "Description of the post."
   end
 end
