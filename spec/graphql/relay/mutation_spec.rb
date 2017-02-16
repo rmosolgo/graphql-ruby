@@ -49,6 +49,36 @@ describe GraphQL::Relay::Mutation do
     assert_equal "Slave II", result["data"]["introduceShip"]["shipEdge"]["node"]["name"]
   end
 
+  it "raises when using a generated return type and resolve doesnt return a Hash" do
+    bad_mutation = GraphQL::Relay::Mutation.define do
+      name 'BadMutation'
+      description 'A mutation type that doesnt return a hash'
+
+      input_field :input, types.String
+      return_field :return, types.String
+
+      resolve ->(_, _, _) {
+        # Should have been { return: 'my_bad_return_value' }
+        'my_bad_return_value'
+      }
+    end
+
+    root = GraphQL::ObjectType.define do
+      name "MutationRoot"
+      field :bad, bad_mutation.field
+    end
+
+    schema = GraphQL::Schema.define { mutation(root) }
+
+    exception = assert_raises do
+      puts schema.execute('mutation { bad(input: { input: "graphql" }) { return } }')
+    end
+
+    expected_message = "Expected `my_bad_return_value` to be a Hash."\
+      " Return a hash when using `return_field` or specify a custom `return_type`."
+    assert_equal expected_message, exception.message
+  end
+
   it "returns the result & clientMutationId" do
     result = star_wars_query(query_string, "clientMutationId" => "1234")
     expected = {"data" => {
