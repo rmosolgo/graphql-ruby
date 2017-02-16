@@ -147,6 +147,7 @@ Registering a mutation root allows to define fields that can mutate your data.
 
 ```ruby
 Schema = GraphQL::Schema.define do
+  query QueryRoot
   mutation MutationRoot
 end
 
