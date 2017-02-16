@@ -145,7 +145,7 @@ resolve ->(obj, args, ctx) {
 
 Registering a mutation root allows to define fields that can mutate your data.
 
-```
+```ruby
 Schema = GraphQL::Schema.define do
   mutation MutationRoot
 end
@@ -154,7 +154,7 @@ MutationRoot = GraphQL::ObjectType.define do
   name "Mutation"
 
   field :addPost, Post do
-    description "Find dairy products matching a description"
+    description "Adds a Post."
 
     # Use Input Types to define complex argument types
     argument :post, PostInputType
