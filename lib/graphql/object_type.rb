@@ -48,6 +48,7 @@ module GraphQL
     end
 
     # @param new_interfaces [Array<GraphQL::Interface>] interfaces that this type implements
+    # @deprecated Use `implements` instead of `interfaces`.
     def interfaces=(new_interfaces)
       @clean_interfaces = nil
       @dirty_interfaces = new_interfaces
