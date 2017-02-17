@@ -102,3 +102,17 @@ QueryType = GraphQL::ObjectType.define do
   # ...
 end
 ```
+
+Both of these fields may be customized using the usual definition block:
+
+```ruby
+QueryType = GraphQL::ObjectType.define do
+  name "Query"
+
+  field :nodes, (GraphQL::Relay::Node.field do
+    resolve ->(_, args, _) { # your own custom logic here }
+  end)
+
+  # ...
+end
+```
