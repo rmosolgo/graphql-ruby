@@ -9,18 +9,57 @@ describe GraphQL::Relay::Node do
   end
 
   describe ".field" do
-    it 'accepts a custom definition' do
-      faction = StarWars::DATA['Faction'][1]
+    describe "with custom definition" do
+      it 'creates a field with the custom definition' do
+        faction = StarWars::DATA['Faction'][0]
 
-      node_field = GraphQL::Relay::Node.field do
-        name "nod3"
-        description "The Relay Node Field"
-        resolve ->(_, _ , _) { faction }
+        node_field = GraphQL::Relay::Node.field do
+          name "nod3"
+          description "The Relay Node Field"
+          resolve ->(_, _ , _) { faction }
+        end
+
+        assert_equal "nod3", node_field.name
+        assert_equal "The Relay Node Field", node_field.description
+        assert_equal faction, node_field.resolve(nil, { 'id' => '1' }, nil)
       end
 
-      assert_equal "nod3", node_field.name
-      assert_equal "The Relay Node Field", node_field.description
-      assert_equal faction, node_field.resolve_proc.call(nil, { 'id' => '1' }, nil)
+      it "executes the custom resolve instead of relay default" do
+        id = "resolver_is_hardcoded_so_this_does_not_matter"
+
+        result = star_wars_query(%|{
+          nodeWithCustomResolver(id: "#{id}") {
+            id,
+            ... on Faction {
+              name
+              ships(first: 1) {
+                edges {
+                 node {
+                   name
+                   }
+                }
+              }
+            }
+          }
+        }|)
+
+        expected = {"data" => {
+          "nodeWithCustomResolver"=>{
+            "id"=>"RmFjdGlvbi0x",
+            "name"=>"Alliance to Restore the Republic",
+            "ships"=>{
+              "edges"=>[
+                {"node"=>{
+                    "name" => "X-Wing"
+                  }
+                }
+              ]
+            }
+          }
+        }}
+
+        assert_equal(expected, result)
+      end
     end
 
     describe "Custom global IDs" do
@@ -106,18 +145,67 @@ describe GraphQL::Relay::Node do
   end
 
   describe ".plural_identifying_field" do
-    it 'accepts a custom definition' do
-      factions = StarWars::DATA['Faction']
+    describe "with custom definition" do
+      it 'creates a field with the custom definition' do
+        factions = StarWars::DATA['Faction']
 
-      node_field = GraphQL::Relay::Node.plural_field do
-        name "nodez"
-        description "The Relay Nodes Field"
-        resolve ->(_, _ , _) { factions }
+        node_field = GraphQL::Relay::Node.plural_field do
+          name "nodez"
+          description "The Relay Nodes Field"
+          resolve ->(_, _ , _) { factions }
+        end
+
+        assert_equal "nodez", node_field.name
+        assert_equal "The Relay Nodes Field", node_field.description
+        assert_equal factions, node_field.resolve_proc.call(nil, { 'ids' => ['1', '2'] }, nil)
       end
 
-      assert_equal "nod3", node_field.name
-      assert_equal "The Relay Node Field", node_field.description
-      assert_equal factions, node_field.resolve_proc.call(nil, { 'id' => '1' }, nil)
+      it "executes the custom resolve instead of relay default" do
+        id = ["resolver_is_hardcoded_so_this_does_not_matter", "another_id"]
+
+        result = star_wars_query(%|{
+          nodesWithCustomResolver(ids: ["#{id[0]}", "#{id[1]}"]) {
+            id,
+            ... on Faction {
+              name
+              ships(first: 1) {
+                edges {
+                 node {
+                   name
+                   }
+                }
+              }
+            }
+          }
+        }|)
+
+        expected = {
+          "data" => {
+            "nodesWithCustomResolver" => [
+              {
+                "id" => "RmFjdGlvbi0x",
+                "name" => "Alliance to Restore the Republic",
+                "ships" => {
+                  "edges"=>[
+                    { "node" => { "name" => "X-Wing" } }
+                  ]
+                }
+              },
+              {
+                "id" => "RmFjdGlvbi0y",
+                "name" => "Galactic Empire",
+                "ships" => {
+                  "edges"=>[
+                    { "node" => { "name" => "TIE Fighter" } }
+                  ]
+                }
+              },
+            ]
+          }
+        }
+
+        assert_equal(expected, result)
+      end
     end
 
     it 'finds objects by ids' do

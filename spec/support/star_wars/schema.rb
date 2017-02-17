@@ -220,9 +220,12 @@ module StarWars
     end
 
     field :node, GraphQL::Relay::Node.field
-    field :nodeWithCustomResolver, GraphQL::Relay::Node.field(
-      resolve: ->(_, _, _) { StarWars::DATA["Faction"]["1"] }
-    )
+
+    custom_node_field = GraphQL::Relay::Node.field do
+      resolve ->(_, _, _) { StarWars::DATA["Faction"]["1"] }
+    end
+    field :nodeWithCustomResolver, custom_node_field
+
     field :nodes, GraphQL::Relay::Node.plural_field
     field :nodesWithCustomResolver, GraphQL::Relay::Node.plural_field(
       resolve: ->(_, _, _) { [StarWars::DATA["Faction"]["1"], StarWars::DATA["Faction"]["2"]] }
