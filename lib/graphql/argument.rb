@@ -14,13 +14,17 @@ module GraphQL
   #   GraphQL::InputObjectType.define do
   #     argument :newName, !types.String
   #   end
-  #
+
   class Argument
     include GraphQL::Define::InstanceDefinable
-    accepts_definitions :name, :type, :description, :default_value
-    attr_accessor :type, :description, :default_value, :name
+    accepts_definitions :name, :type, :description, :default_value, :as
+    attr_accessor :type, :description, :default_value, :name, :as
 
-    ensure_defined(:name, :description, :default_value, :type=, :type)
+    ensure_defined(:name, :description, :default_value, :type=, :type, :as, :expose_as)
+
+    def initialize_copy(other)
+      @expose_as = nil
+    end
 
     def default_value?
       !!@has_default_value
@@ -43,6 +47,11 @@ module GraphQL
     # @return [GraphQL::BaseType] the input type for this argument
     def type
       @clean_type ||= GraphQL::BaseType.resolve_related_type(@dirty_type)
+    end
+
+    # @return [String] The name of this argument inside `resolve` functions
+    def expose_as
+      @expose_as ||= (@as || @name).to_s
     end
   end
 end

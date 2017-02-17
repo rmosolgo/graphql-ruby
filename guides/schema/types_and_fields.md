@@ -120,6 +120,18 @@ Use `!` to mark an argument as _required_:
 argument :category, !types.String
 ```
 
+Use `as: :alternateName` to use a different key from within your resolvers while
+exposing another key to clients.
+
+```ruby
+field :post, PostType do
+  argument :postId, types.Id, as: :id
+  resolve ->(obj, args, ctx) {
+    Post.find(args['id'])
+  }
+end
+```
+
 Only certain types are valid for arguments:
 
 - {{ "GraphQL::ScalarType" | api_doc }}, including built-in scalars (string, int, float, boolean, ID)
