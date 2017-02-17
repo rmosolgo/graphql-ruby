@@ -9,6 +9,45 @@ describe GraphQL::Relay::Node do
   end
 
   describe ".field" do
+    describe "with custom resolver" do
+      it "executes the custom resolve instead of relay default" do
+        id = "resolver_is_hardcoded_so_this_does_not_matter"
+
+        result = star_wars_query(%|{
+          nodeWithCustomResolver(id: "#{id}") {
+            id,
+            ... on Faction {
+              name
+              ships(first: 1) {
+                edges {
+                 node {
+                   name
+                   }
+                }
+              }
+            }
+          }
+        }|)
+
+        expected = {"data" => {
+          "nodeWithCustomResolver"=>{
+            "id"=>"RmFjdGlvbi0x",
+            "name"=>"Alliance to Restore the Republic",
+            "ships"=>{
+              "edges"=>[
+                {"node"=>{
+                    "name" => "X-Wing"
+                  }
+                }
+              ]
+            }
+          }
+        }}
+
+        assert_equal(expected, result)
+      end
+    end
+
     describe "Custom global IDs" do
       before do
         # TODO: make the schema eager-load so we can remove this
@@ -92,6 +131,55 @@ describe GraphQL::Relay::Node do
   end
 
   describe ".plural_identifying_field" do
+    describe "with custom resolver" do
+      it "executes the custom resolve instead of relay default" do
+        id = ["resolver_is_hardcoded_so_this_does_not_matter", "another_id"]
+
+        result = star_wars_query(%|{
+          nodesWithCustomResolver(ids: ["#{id[0]}", "#{id[1]}"]) {
+            id,
+            ... on Faction {
+              name
+              ships(first: 1) {
+                edges {
+                 node {
+                   name
+                   }
+                }
+              }
+            }
+          }
+        }|)
+
+        expected = {
+          "data" => {
+            "nodesWithCustomResolver" => [
+              {
+                "id" => "RmFjdGlvbi0x",
+                "name" => "Alliance to Restore the Republic",
+                "ships" => {
+                  "edges"=>[
+                    { "node" => { "name" => "X-Wing" } }
+                  ]
+                }
+              },
+              {
+                "id" => "RmFjdGlvbi0y",
+                "name" => "Galactic Empire",
+                "ships" => {
+                  "edges"=>[
+                    { "node" => { "name" => "TIE Fighter" } }
+                  ]
+                }
+              },
+            ]
+          }
+        }
+
+        assert_equal(expected, result)
+      end
+    end
+
     it 'finds objects by ids' do
       id = GraphQL::Schema::UniqueWithinType.encode("Faction", "1")
       id2 = GraphQL::Schema::UniqueWithinType.encode("Faction", "2")
