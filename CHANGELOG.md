@@ -8,11 +8,28 @@
 
 ### Bug fixes
 
+## 1.4.4 (17 Feb 2017)
+
+### New features
+
+- `Relay::Node.field` and `Relay::Node.plural_field` accept a custom `resolve:` argument #550
+- `Relay::BaseConnection#context` provides access to the query context #537
+- Allow re-assigning `Field#name` #541
+- Support `return_interfaces` on `Relay::Mutation`s #533
+- `BaseType#to_definition` stringifies the type to IDL #539
+- `argument ... as:` can be used to alias an argument inside the resolve function #542
+
+### Bug fixes
+
+- Fix negative offset from cursors on PostgresQL #510
+- Fix circular dependency issue on `.connection_type`s #535
+- Better error when `Relay::Mutation.resolve` doesn't return a Hash
+
 ## 1.4.3 (8 Feb 2017)
 
 ### New features
 
-- `GraphQL::Relay::Nodes.plural_field` finds multiple nodes by UUID #525
+- `GraphQL::Relay::Node.plural_field` finds multiple nodes by UUID #525
 
 ### Bug fixes
 
