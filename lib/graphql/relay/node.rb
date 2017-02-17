@@ -4,27 +4,39 @@ module GraphQL
     # Helpers for working with Relay-specific Node objects.
     module Node
       # @return [GraphQL::Field] a field for finding objects by their global ID.
-      def self.field(resolve: nil)
+      def self.field(**kwargs, &block)
         # We have to define it fresh each time because
         # its name will be modified and its description
         # _may_ be modified.
-        GraphQL::Field.define do
+        field = GraphQL::Field.define do
           type(GraphQL::Relay::Node.interface)
           description("Fetches an object given its ID.")
           argument(:id, !types.ID, "ID of the object.")
-          resolve(resolve || GraphQL::Relay::Node::FindNode)
+          resolve(GraphQL::Relay::Node::FindNode)
           relay_node_field(true)
         end
+
+        if kwargs.any? || block
+          field = field.redefine(kwargs, &block)
+        end
+
+        field
       end
 
-      def self.plural_field(resolve: nil)
-        GraphQL::Field.define do
+      def self.plural_field(**kwargs, &block)
+        field = GraphQL::Field.define do
           type(!types[GraphQL::Relay::Node.interface])
           description("Fetches a list of objects given a list of IDs.")
           argument(:ids, !types[!types.ID], "IDs of the objects.")
-          resolve(resolve || GraphQL::Relay::Node::FindNodes)
+          resolve(GraphQL::Relay::Node::FindNodes)
           relay_nodes_field(true)
         end
+
+        if kwargs.any? || block
+          field = field.redefine(kwargs, &block)
+        end
+
+        field
       end
 
       # @return [GraphQL::InterfaceType] The interface which all Relay types must implement
