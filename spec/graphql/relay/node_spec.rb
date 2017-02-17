@@ -18,8 +18,8 @@ describe GraphQL::Relay::Node do
         resolve ->(_, _ , _) { faction }
       end
 
-      node_field.name = "nod3"
-      node_field.description = "The Relay Node Field"
+      assert_equal "nod3", node_field.name
+      assert_equal "The Relay Node Field", node_field.description
       assert_equal faction, node_field.resolve_proc.call(nil, { 'id' => '1' }, nil)
     end
 
@@ -115,8 +115,8 @@ describe GraphQL::Relay::Node do
         resolve ->(_, _ , _) { factions }
       end
 
-      node_field.name = "nodez"
-      node_field.description = "The Relay Nodes Field"
+      assert_equal "nod3", node_field.name
+      assert_equal "The Relay Node Field", node_field.description
       assert_equal factions, node_field.resolve_proc.call(nil, { 'id' => '1' }, nil)
     end
 
