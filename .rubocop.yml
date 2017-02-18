@@ -4,6 +4,7 @@ AllCops:
   Exclude:
   - 'lib/graphql/language/lexer.rb'
   - 'lib/graphql/language/parser.rb'
+  - 'spec/tmp/**/*'
 
 # def ...
 # end

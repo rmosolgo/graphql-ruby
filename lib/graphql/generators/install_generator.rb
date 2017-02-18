@@ -1,4 +1,6 @@
-require 'graphql/generators/base_generator'
+# frozen_string_literal: true
+require 'rails/generators/base'
+
 module GraphQL
   module Generators
     # Add GraphQL to a Rails app with
@@ -38,7 +40,81 @@ module GraphQL
     # Accept a `--graphiql` option which adds
     # `graphiql-rails` to the Gemfile and mounts the
     # engine in `routes.rb` (Should this be the default?)
-    class InstallGenerator < BaseGenerator
+    class InstallGenerator < Rails::Generators::Base
+      desc "Install GraphQL folder structure and boilerplate code"
+      source_root File.expand_path('../templates', __FILE__)
+
+      class_option :schema,
+        type: :string,
+        default: nil,
+        desc: "Name for the schema constant (default: {app_name}Schema)"
+
+      class_option :skip_keeps,
+        type: :boolean,
+        default: false,
+        desc: "Skip .keep files for source control"
+
+      class_option :skip_graphiql,
+        type: :boolean,
+        default: false,
+        desc: "Skip graphiql-rails installation"
+
+      class_option :relay,
+        type: :boolean,
+        default: false,
+        desc: "Include GraphQL::Relay installation"
+
+      class_option :batch,
+        type: :boolean,
+        default: false,
+        desc: "Include GraphQL::Batch installation"
+
+
+      GRAPHIQL_ROUTE = <<-RUBY
+if Rails.env.development?
+    mount GraphiQL::Rails::Engine, at: "/graphiql", graphql_path: "/graphql"
+  end
+RUBY
+
+      def create_folder_structure
+        create_dir("app/graphql/mutations")
+        create_dir("app/graphql/resolvers")
+        create_dir("app/graphql/types")
+        template("query_type.erb", "app/graphql/types/query_type.rb")
+        template("schema.erb", "app/graphql/#{schema_name.underscore}.rb")
+        template("graphqls_controller.erb", "app/controllers/graphqls_controller.rb")
+        route("resource :graphql, only: :create")
+
+        if !options[:skip_graphiql]
+          gem("graphiql-rails", group: :development)
+          route(GRAPHIQL_ROUTE)
+        end
+
+        if options[:batch]
+          gem("graphql-batch")
+          create_dir("app/graphql/loaders")
+        end
+      end
+
+      private
+
+      def create_dir(dir)
+        empty_directory(dir)
+        if !options[:skip_keeps]
+          create_file("#{dir}/.keep")
+        end
+      end
+
+      def schema_name
+        @schema_name ||= begin
+          if options[:schema]
+            options[:schema]
+          else
+            require File.expand_path("config/application", destination_root)
+            "#{Rails.application.class.parent_name}Schema"
+          end
+        end
+      end
     end
   end
 end
