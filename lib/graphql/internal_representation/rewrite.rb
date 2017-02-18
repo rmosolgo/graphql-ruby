@@ -13,9 +13,33 @@ module GraphQL
     # The rewritten query tree serves as the basis for the `FieldsWillMerge` validation.
     #
     class Rewrite
-      include GraphQL::Language
+      # TODO:
+      # - Move to own file
+      # - Assert that directives can modify / capture AST nodes and rewrite nodes
+      class InterceptorChain
+        def initialize(query)
+          @interceptors = query.schema.interceptors.map { |i| i.new(query) }
+          @size = @interceptors.size
+        end
 
-      NO_DIRECTIVES = [].freeze
+        def enter(ast_node, idx: 0)
+          if idx == @size
+            yield
+          else
+            @interceptors[idx].enter(ast_node) { enter(ast_node, idx: idx + 1) { yield } }
+          end
+        end
+
+        def leave(ast_node, idx: 0)
+          if idx == @size
+            yield
+          else
+            @interceptors[idx].leave(ast_node) { leave(ast_node, idx: idx + 1) { yield } }
+          end
+        end
+      end
+
+      include GraphQL::Language
 
       # @return [Hash<String, Node>] Roots of this query
       attr_reader :operations
@@ -27,6 +51,7 @@ module GraphQL
       def validate(context)
         visitor = context.visitor
         query = context.query
+        interceptor = InterceptorChain.new(query)
         # Hash<Nodes::FragmentSpread => Set<InternalRepresentation::Node>>
         # A record of fragment spreads and the irep nodes that used them
         spread_parents = Hash.new { |h, k| h[k] = Set.new }
@@ -37,7 +62,6 @@ module GraphQL
         # Object types that the current point of the irep_tree applies to
         scope_stack = []
         fragment_definitions = Hash.new {|h, k| h[k] = {} }
-        skip_nodes = Set.new
 
         visit_op = VisitDefinition.new(context, @operations, nodes_stack, scope_stack)
         visitor[Nodes::OperationDefinition].enter << visit_op.method(:enter)
@@ -52,11 +76,7 @@ module GraphQL
           # - They _may_ narrow the scope by their type condition
           # - They _may_ apply their directives to their children
 
-          if skip?(ast_node, query)
-            skip_nodes.add(ast_node)
-          end
-
-          if skip_nodes.none?
+          interceptor.enter(ast_node) {
             next_scope = Set.new
             prev_scope = scope_stack.last
             each_type(query, context.type_definition) do |obj_type|
@@ -67,25 +87,18 @@ module GraphQL
               end
             end
             scope_stack.push(next_scope)
-          end
+          }
+
         }
 
         visitor[Nodes::InlineFragment].leave << ->(ast_node, ast_parent) {
-          if skip_nodes.none?
+          interceptor.leave(ast_node) {
             scope_stack.pop
-          end
-
-          if skip_nodes.include?(ast_node)
-            skip_nodes.delete(ast_node)
-          end
+          }
         }
 
         visitor[Nodes::Field].enter << ->(ast_node, ast_parent) {
-          if skip?(ast_node, query)
-            skip_nodes.add(ast_node)
-          end
-
-          if skip_nodes.none?
+          interceptor.enter(ast_node) do
             node_name = ast_node.alias || ast_node.name
             parent_nodes = nodes_stack.last
             next_nodes = []
@@ -121,21 +134,24 @@ module GraphQL
           end
         }
 
+
         visitor[Nodes::Field].leave << ->(ast_node, ast_parent) {
-          if skip_nodes.none?
+          interceptor.leave(ast_node) do
             nodes_stack.pop
             scope_stack.pop
-          end
-
-          if skip_nodes.include?(ast_node)
-            skip_nodes.delete(ast_node)
           end
         }
 
         visitor[Nodes::FragmentSpread].enter << ->(ast_node, ast_parent) {
-          if skip_nodes.none? && !skip?(ast_node, query)
+          interceptor.enter(ast_node) do
             # Register the irep nodes that depend on this AST node:
             spread_parents[ast_node].merge(nodes_stack.last)
+          end
+        }
+
+        visitor[Nodes::FragmentSpread].leave << ->(ast_node, ast_parent) {
+          interceptor.leave(ast_node) do
+            # No-op, but need the consistency here
           end
         }
 
@@ -197,11 +213,6 @@ module GraphQL
         else
           raise "Unexpected owner type: #{owner_type.inspect}"
         end
-      end
-
-      def skip?(ast_node, query)
-        dir = ast_node.directives
-        dir.any? && !GraphQL::Execution::DirectiveChecks.include?(dir, query)
       end
 
       class VisitDefinition

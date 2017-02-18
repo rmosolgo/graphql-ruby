@@ -8,12 +8,12 @@ module GraphQL
   #
   class Directive
     include GraphQL::Define::InstanceDefinable
-    accepts_definitions :locations, :name, :description, :arguments, :default_directive, argument: GraphQL::Define::AssignArgument
+    accepts_definitions :locations, :name, :description, :arguments, :default_directive, :installed, argument: GraphQL::Define::AssignArgument
 
     attr_accessor :locations, :arguments, :name, :description
     # @api private
     attr_writer :default_directive
-    ensure_defined(:locations, :arguments, :name, :description, :default_directive?, :default_arguments)
+    ensure_defined(:locations, :arguments, :name, :description, :default_directive?, :default_arguments, :installed)
 
     LOCATIONS = [
       QUERY =                  :QUERY,
@@ -61,6 +61,7 @@ module GraphQL
     def initialize
       @arguments = {}
       @default_directive = false
+      @installed_proc = NULL_INSTALL
     end
 
     def to_s
@@ -88,9 +89,20 @@ module GraphQL
     def default_arguments
       @default_arguments ||= GraphQL::Query::LiteralInput.defaults_for(self.arguments)
     end
+
+    def installed=(new_proc)
+      @installed_proc = new_proc || NULL_INSTALL
+    end
+
+    def installed(schema)
+      @installed_proc.call(schema)
+    end
+
+    NULL_INSTALL = ->(o) { }
   end
 end
 
 require "graphql/directive/include_directive"
 require "graphql/directive/skip_directive"
+require "graphql/directive/skip_interceptor"
 require "graphql/directive/deprecated_directive"

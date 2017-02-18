@@ -61,10 +61,16 @@ module GraphQL
       :cursor_encoder,
       directives: ->(schema, directives) { schema.directives = directives.reduce({}) { |m, d| m[d.name] = d; m  }},
       instrument: -> (schema, type, instrumenter) { schema.instrumenters[type] << instrumenter },
+      intercept: -> (schema, interceptor_class) { schema.interceptors.add(interceptor_class) },
       query_analyzer: ->(schema, analyzer) { schema.query_analyzers << analyzer },
       middleware: ->(schema, middleware) { schema.middleware << middleware },
       lazy_resolve: ->(schema, lazy_class, lazy_value_method) { schema.lazy_methods.set(lazy_class, lazy_value_method) },
-      rescue_from: ->(schema, err_class, &block) { schema.rescue_from(err_class, &block)}
+      rescue_from: ->(schema, err_class, &block) { schema.rescue_from(err_class, &block)},
+      directive: ->(schema, directive) {
+        # TODO Test this
+        schema.directives[directive.name] = directive
+        directive.installed(schema)
+      }
 
     attr_accessor \
       :query, :mutation, :subscription,
@@ -72,7 +78,7 @@ module GraphQL
       :max_depth, :max_complexity,
       :orphan_types, :directives,
       :query_analyzers, :instrumenters, :lazy_methods,
-      :cursor_encoder
+      :cursor_encoder, :interceptors
 
     # @return [MiddlewareChain] MiddlewareChain which is applied to fields during execution
     attr_accessor :middleware
@@ -98,6 +104,7 @@ module GraphQL
       @directives = DIRECTIVES.reduce({}) { |m, d| m[d.name] = d; m }
       @static_validator = GraphQL::StaticValidation::Validator.new(schema: self)
       @middleware = MiddlewareChain.new(final_step: GraphQL::Execution::Execute::FieldResolveStep)
+      @interceptors = Set.new
       @query_analyzers = []
       @resolve_type_proc = nil
       @object_from_id_proc = nil
@@ -111,6 +118,9 @@ module GraphQL
       @mutation_execution_strategy = self.class.default_execution_strategy
       @subscription_execution_strategy = self.class.default_execution_strategy
       @default_mask = GraphQL::Schema::NullMask
+      @directives.each do |name, d|
+        d.installed(self)
+      end
     end
 
     def initialize_copy(other)
@@ -119,6 +129,7 @@ module GraphQL
       @directives = other.directives.dup
       @static_validator = GraphQL::StaticValidation::Validator.new(schema: self)
       @middleware = other.middleware.dup
+      @interceptors = other.interceptors.dup
       @query_analyzers = other.query_analyzers.dup
 
       @possible_types = GraphQL::Schema::PossibleTypes.new(self)
