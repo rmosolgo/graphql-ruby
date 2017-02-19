@@ -406,7 +406,7 @@ module GraphQL
 
     def build_types_map
       all_types = orphan_types + [query, mutation, subscription, GraphQL::Introspection::SchemaType]
-      @types = GraphQL::Schema::TypeReducer.new(all_types.compact).reduce
+      @types = GraphQL::Schema::TypeReducer.new(all_types.compact, camelize: @camelize).reduce
     end
   end
 end

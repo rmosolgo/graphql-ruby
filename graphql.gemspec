@@ -41,6 +41,9 @@ Gem::Specification.new do |s|
   s.add_development_dependency "sequel"
   s.add_development_dependency "sqlite3"
 
+  # TODO(xuorig) probably can in house it:
+  s.add_runtime_dependency "activesupport"
+
   # website stuff
   s.add_development_dependency "github-pages"
 end

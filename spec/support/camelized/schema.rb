@@ -6,7 +6,6 @@ module Camelized
     field :a_field_with_arguments, types.String do
       argument :an_argument, !types.String
       resolve ->(shop, args, _) {
-        require 'byebug'; byebug
         args['an_argument']
       }
     end

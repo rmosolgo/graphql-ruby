@@ -1,14 +1,18 @@
 # frozen_string_literal: true
+
+require 'active_support/inflector'
+
 module GraphQL
   class Schema
     class TypeReducer
       # @param types [Array<GraphQL::BaseType>] members of a schema to crawl for all member types
-      # @return [GraphQL::Schema::TypeMap] `{name => Type}` pairs derived from `types`
+      # @param camelize Boolean if the type reduce should camelize field and argument names
       def initialize(types, camelize: false)
         @types = types
         @camelize = camelize
       end
 
+      # @return [GraphQL::Schema::TypeMap] `{name => Type}` pairs derived from `types`
       def reduce
         type_map = GraphQL::Schema::TypeMap.new
         types.each do |type|
@@ -41,11 +45,21 @@ module GraphQL
 
       def crawl_type(type, type_hash, context_description)
         if type.kind.fields?
-          type.all_fields.each do |field|
+          type.fields.keys.each do |name|
+            field = type.fields.delete(name)
+            field = camelize_field(field) if camelize
+
             reduce_type(field.type, type_hash, "Field #{type.name}.#{field.name}")
-            field.arguments.each do |name, argument|
+
+            field.arguments.keys.each do |argument_name|
+              argument = field.arguments.delete(argument_name)
+              argument = camelize_argument(argument) if camelize
+
               reduce_type(argument.type, type_hash, "Argument #{name} on #{type.name}.#{field.name}")
+              field.arguments[argument.name] = argument
             end
+
+            type.fields[field.name] = field
           end
         end
         if type.kind.object?
@@ -59,8 +73,12 @@ module GraphQL
           end
         end
         if type.kind.input_object?
-          type.arguments.each do |argument_name, argument|
+          type.arguments.keys.each do |argument_name|
+            argument = type.arguments.delete(argument_name)
+            argument = camelize_argument(argument) if camelize
+
             reduce_type(argument.type, type_hash, "Input field #{type.name}.#{argument_name}")
+            type.arguments[argument.name] = argument
           end
         end
       end
@@ -69,6 +87,28 @@ module GraphQL
         error_message = GraphQL::Schema::Validation.validate(type)
         if error_message
           raise GraphQL::Schema::InvalidTypeError.new("#{context_description} is invalid: #{error_message}")
+        end
+      end
+
+      def camelize_argument(argument)
+        defined_as = argument.name
+        camelized = ActiveSupport::Inflector.camelize(defined_as, false)
+
+        if argument.as
+          argument.redefine(name: camelized)
+        else
+          argument.redefine(name: camelized, as: defined_as)
+        end
+      end
+
+      def camelize_field(field)
+        defined_as = field.name
+        camelized = ActiveSupport::Inflector.camelize(defined_as, false)
+
+        if field.resolve_proc.is_a?(GraphQL::Field::Resolve::NameResolve)
+          field.redefine(name: camelized, property: defined_as.to_sym)
+        else
+          field.redefine(name: camelized)
         end
       end
     end
