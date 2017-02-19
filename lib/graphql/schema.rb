@@ -58,7 +58,7 @@ module GraphQL
       :orphan_types, :resolve_type, :type_error,
       :object_from_id, :id_from_object,
       :default_mask,
-      :cursor_encoder,
+      :cursor_encoder, :camelize,
       directives: ->(schema, directives) { schema.directives = directives.reduce({}) { |m, d| m[d.name] = d; m  }},
       instrument: -> (schema, type, instrumenter) { schema.instrumenters[type] << instrumenter },
       query_analyzer: ->(schema, analyzer) { schema.query_analyzers << analyzer },
@@ -72,7 +72,7 @@ module GraphQL
       :max_depth, :max_complexity,
       :orphan_types, :directives,
       :query_analyzers, :instrumenters, :lazy_methods,
-      :cursor_encoder
+      :cursor_encoder, :camelize
 
     # @return [MiddlewareChain] MiddlewareChain which is applied to fields during execution
     attr_accessor :middleware
