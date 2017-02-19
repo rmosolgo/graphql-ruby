@@ -29,7 +29,7 @@ module Camelized
   end
 
   Schema = GraphQL::Schema.define do
-    camelize(true)
+    rename :camelize
 
     query(QueryType)
     mutation(MutationType)

@@ -2,8 +2,8 @@
 require "spec_helper"
 
 describe GraphQL::Schema::ReduceTypes do
-  def reduce_types(types, camelize: false)
-    GraphQL::Schema::ReduceTypes.reduce(types, camelize: camelize)
+  def reduce_types(types, renamer: GraphQL::Schema::DefaultRenamer)
+    GraphQL::Schema::ReduceTypes.reduce(types, renamer: renamer)
   end
 
   it "finds types from a single type and its fields" do
@@ -108,7 +108,7 @@ describe GraphQL::Schema::ReduceTypes do
     }
 
     let(:types) {
-      reduce_types([type, input_type], camelize: true)
+      reduce_types([type, input_type], renamer: GraphQL::Schema::CamelizeRenamer)
     }
 
     it "camelizes field names" do
