@@ -4,19 +4,14 @@ require 'active_support/inflector'
 
 module GraphQL
   class Schema
-    class TypeReducer
+    module ReduceTypes
       # @param types [Array<GraphQL::BaseType>] members of a schema to crawl for all member types
       # @param camelize Boolean if the type reduce should camelize field and argument names
-      def initialize(types, camelize: false)
-        @types = types
-        @camelize = camelize
-      end
-
       # @return [GraphQL::Schema::TypeMap] `{name => Type}` pairs derived from `types`
-      def reduce
+      def self.reduce(types, camelize: false)
         type_map = GraphQL::Schema::TypeMap.new
         types.each do |type|
-          reduce_type(type, type_map, type.name)
+          reduce_type(type, type_map, type.name, camelize)
         end
         type_map
       end
@@ -27,7 +22,7 @@ module GraphQL
 
       # Based on `type`, add members to `type_hash`.
       # If `type` has already been visited, just return the `type_hash` as-is
-      def reduce_type(type, type_hash, context_description)
+      def self.reduce_type(type, type_hash, context_description, camelize)
         if !type.is_a?(GraphQL::BaseType)
           message = "#{context_description} has an invalid type: must be an instance of GraphQL::BaseType, not #{type.class.inspect} (#{type.inspect})"
           raise GraphQL::Schema::InvalidTypeError.new(message)
@@ -39,23 +34,23 @@ module GraphQL
         if !type_hash.fetch(type.name, nil).equal?(type)
           validate_type(type, context_description)
           type_hash[type.name] = type
-          crawl_type(type, type_hash, context_description)
+          crawl_type(type, type_hash, context_description, camelize)
         end
       end
 
-      def crawl_type(type, type_hash, context_description)
+      def self.crawl_type(type, type_hash, context_description, camelize)
         if type.kind.fields?
           type.fields.keys.each do |name|
             field = type.fields.delete(name)
             field = camelize_field(field) if camelize
 
-            reduce_type(field.type, type_hash, "Field #{type.name}.#{field.name}")
+            reduce_type(field.type, type_hash, "Field #{type.name}.#{field.name}", camelize)
 
             field.arguments.keys.each do |argument_name|
               argument = field.arguments.delete(argument_name)
               argument = camelize_argument(argument) if camelize
 
-              reduce_type(argument.type, type_hash, "Argument #{name} on #{type.name}.#{field.name}")
+              reduce_type(argument.type, type_hash, "Argument #{name} on #{type.name}.#{field.name}", camelize)
               field.arguments[argument.name] = argument
             end
 
@@ -64,12 +59,12 @@ module GraphQL
         end
         if type.kind.object?
           type.interfaces.each do |interface|
-            reduce_type(interface, type_hash, "Interface on #{type.name}")
+            reduce_type(interface, type_hash, "Interface on #{type.name}", camelize)
           end
         end
         if type.kind.union?
           type.possible_types.each do |possible_type|
-            reduce_type(possible_type, type_hash, "Possible type for #{type.name}")
+            reduce_type(possible_type, type_hash, "Possible type for #{type.name}", camelize)
           end
         end
         if type.kind.input_object?
@@ -77,20 +72,20 @@ module GraphQL
             argument = type.arguments.delete(argument_name)
             argument = camelize_argument(argument) if camelize
 
-            reduce_type(argument.type, type_hash, "Input field #{type.name}.#{argument_name}")
+            reduce_type(argument.type, type_hash, "Input field #{type.name}.#{argument_name}", camelize)
             type.arguments[argument.name] = argument
           end
         end
       end
 
-      def validate_type(type, context_description)
+      def self.validate_type(type, context_description)
         error_message = GraphQL::Schema::Validation.validate(type)
         if error_message
           raise GraphQL::Schema::InvalidTypeError.new("#{context_description} is invalid: #{error_message}")
         end
       end
 
-      def camelize_argument(argument)
+      def self.camelize_argument(argument)
         defined_as = argument.name
         camelized = ActiveSupport::Inflector.camelize(defined_as, false)
 
@@ -101,7 +96,7 @@ module GraphQL
         end
       end
 
-      def camelize_field(field)
+      def self.camelize_field(field)
         defined_as = field.name
         camelized = ActiveSupport::Inflector.camelize(defined_as, false)
 

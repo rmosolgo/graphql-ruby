@@ -8,7 +8,7 @@ require "graphql/schema/middleware_chain"
 require "graphql/schema/null_mask"
 require "graphql/schema/possible_types"
 require "graphql/schema/rescue_middleware"
-require "graphql/schema/type_reducer"
+require "graphql/schema/reduce_types"
 require "graphql/schema/timeout_middleware"
 require "graphql/schema/type_expression"
 require "graphql/schema/type_map"
@@ -406,7 +406,7 @@ module GraphQL
 
     def build_types_map
       all_types = orphan_types + [query, mutation, subscription, GraphQL::Introspection::SchemaType]
-      @types = GraphQL::Schema::TypeReducer.new(all_types.compact, camelize: @camelize).reduce
+      @types = GraphQL::Schema::ReduceTypes.reduce(all_types.compact, camelize: @camelize)
     end
   end
 end
