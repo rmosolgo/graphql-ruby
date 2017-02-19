@@ -46,6 +46,17 @@ describe GraphQL::Query::Executor do
     end
   end
 
+  describe "query camelized fields" do
+    let(:schema) { Camelized::Schema }
+    let(:query_string) {%| query { shop { aFieldWithArguments(anArgument: "test") } }|}
+
+    it "exposes fields as camelized even if they are defined otherwise" do
+      expected = {
+        "data" => { "shop" => { "aFieldWithArguments" => "test" } },
+      }
+      assert_equal(expected, result)
+    end
+  end
 
   describe "execution order" do
     let(:query_string) {%|
