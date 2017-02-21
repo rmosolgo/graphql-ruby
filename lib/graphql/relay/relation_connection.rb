@@ -17,7 +17,7 @@ module GraphQL
       end
 
       def has_next_page
-        !!(first && count(sliced_nodes.limit(limit + 1)) > limit)
+        !!(first && paged_nodes && @has_next_page)
       end
 
       def has_previous_page
@@ -34,7 +34,22 @@ module GraphQL
 
       # apply first / last limit results
       def paged_nodes
-        @paged_nodes ||= sliced_nodes.limit(limit)
+        @paged_nodes ||= begin
+          if limit
+            limit_more = limit + 1
+            more_nodes = sliced_nodes.limit(limit_more).to_a
+            if more_nodes.size > limit
+              @has_next_page = true
+              more_nodes[0..-2]
+            else
+              @has_next_page = false
+              more_nodes
+            end
+          else
+            @has_next_page = false
+            sliced_nodes
+          end
+        end
       end
 
       # Apply cursors to edges
