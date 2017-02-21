@@ -227,7 +227,6 @@ module GraphQL
               query: @query,
               ast_nodes: [ast_node],
               return_type: obj_type,
-              definitions: [OperationDefinitionProxy.new(obj_type)],
             )
             @definitions[obj_type][defn_name] = node
             next_nodes << node
@@ -240,10 +239,6 @@ module GraphQL
           @nodes_stack.pop
           @scope_stack.pop
         end
-
-        # Behaves enough like a field definition
-        # to work in an irep node
-        OperationDefinitionProxy = Struct.new(:type)
       end
     end
   end

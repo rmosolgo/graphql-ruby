@@ -24,7 +24,7 @@ module GraphQL
         end
       end
 
-      reducer_states.map { |r| r.finalize_reducer }
+      reducer_states.map(&:finalize_reducer)
     end
 
     private
