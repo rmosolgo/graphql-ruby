@@ -2,6 +2,10 @@
 require "spec_helper"
 
 describe GraphQL::Schema::Validation do
+  def integer_class_name
+    RUBY_VERSION >= "2.4.0" ? "Integer" : "Fixnum"
+  end
+
   def assert_error_includes(object, error_substring)
     validation_error = GraphQL::Schema::Validation.validate(object)
     assert_includes validation_error, error_substring
@@ -102,7 +106,7 @@ describe GraphQL::Schema::Validation do
     end
 
     it "requires String-or-nil description" do
-      assert_error_includes wrongly_described_type, "must return String or NilClass, not Fixnum"
+      assert_error_includes wrongly_described_type, "must return String or NilClass, not #{integer_class_name}"
     end
   end
 
@@ -129,7 +133,7 @@ describe GraphQL::Schema::Validation do
     }
 
     it "requires an Array for interfaces" do
-      assert_error_includes invalid_interfaces_object, "must be an Array of GraphQL::InterfaceType, not a Fixnum"
+      assert_error_includes invalid_interfaces_object, "must be an Array of GraphQL::InterfaceType, not a #{integer_class_name}"
       assert_error_includes invalid_interface_member_object, "must contain GraphQL::InterfaceType, not Symbol"
     end
 
@@ -163,7 +167,7 @@ describe GraphQL::Schema::Validation do
     }
 
     it "requires an array of ObjectTypes for possible_types" do
-      assert_error_includes non_array_union, "must be an Array of GraphQL::ObjectType, not a Fixnum"
+      assert_error_includes non_array_union, "must be an Array of GraphQL::ObjectType, not a #{integer_class_name}"
 
       assert_error_includes non_object_type_union, "must contain GraphQL::ObjectType, not GraphQL::InterfaceType"
     end
@@ -193,7 +197,7 @@ describe GraphQL::Schema::Validation do
     }
 
     it "requires {String => Argument} arguments" do
-      assert_error_includes invalid_arguments_input, "map String => GraphQL::Argument, not Fixnum => Symbol"
+      assert_error_includes invalid_arguments_input, "map String => GraphQL::Argument, not #{integer_class_name} => Symbol"
     end
 
     it "applies validation to its member Arguments" do
