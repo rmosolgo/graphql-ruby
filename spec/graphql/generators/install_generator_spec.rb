@@ -7,6 +7,7 @@ class GraphQLGeneratorsInstallGeneratorTest < Rails::Generators::TestCase
   destination File.expand_path("../../tmp/dummy", File.dirname(__FILE__))
 
   setup do
+    prepare_destination
     FileUtils.cd(File.expand_path("../../tmp", File.dirname(__FILE__))) do
       `rm -rf dummy`
       `rails new dummy --skip-active-record --skip-test-unit --skip-spring --skip-bundle`
