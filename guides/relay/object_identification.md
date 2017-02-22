@@ -58,7 +58,7 @@ To implement the node interface, include `GraphQL::Relay::Node.interface` in you
 PostType = GraphQL::ObjectType.define do
   name "Post"
   # Implement the "Node" interface for Relay
-  interfaces [GraphQL::Relay::Node.interface]
+  implements GraphQL::Relay::Node.interface
   # ...
 end
 ```

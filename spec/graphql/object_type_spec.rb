@@ -25,6 +25,43 @@ describe GraphQL::ObjectType do
     assert_equal([last_produced_dairy], cow_type.fields)
   end
 
+  describe "#implements" do
+    it "adds an interface" do
+      type = GraphQL::ObjectType.define do
+        name 'Hello'
+        implements Dummy::EdibleInterface
+        implements Dummy::AnimalProductInterface
+
+        field :hello, types.String
+      end
+
+      assert_equal([Dummy::EdibleInterface, Dummy::AnimalProductInterface], type.interfaces)
+    end
+
+    it "adds many interfaces" do
+      type = GraphQL::ObjectType.define do
+        name 'Hello'
+        implements Dummy::EdibleInterface, Dummy::AnimalProductInterface
+
+        field :hello, types.String
+      end
+
+      assert_equal([Dummy::EdibleInterface, Dummy::AnimalProductInterface], type.interfaces)
+    end
+
+    it "preserves existing interfaces and appends a new one" do
+      type = GraphQL::ObjectType.define do
+        name 'Hello'
+        interfaces [Dummy::EdibleInterface]
+        implements Dummy::AnimalProductInterface
+
+        field :hello, types.String
+      end
+
+      assert_equal([Dummy::EdibleInterface, Dummy::AnimalProductInterface], type.interfaces)
+    end
+  end
+
   describe '#get_field' do
     it "exposes fields" do
       field = type.get_field("id")
