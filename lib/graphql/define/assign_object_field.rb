@@ -36,6 +36,20 @@ module GraphQL
           raise("Couldn't find a field argument, received: #{field || type_or_field}")
         end
 
+        if field && function && block_given?
+          overrides = GraphQL::Field.define(kwargs, &block)
+
+          if overrides.description
+            field.description = overrides.description
+          end
+
+          if !overrides.arguments.empty?
+            overrides.arguments.each_pair do |name, values|
+              field.arguments[name] = values
+            end
+          end
+        end
+
         # Attach the field to the type
         owner_type.fields[name_s] = field
       end
