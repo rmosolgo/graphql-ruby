@@ -12,7 +12,6 @@ describe GraphQL::Function do
     deprecation_reason "It's useless"
     complexity -> { 10 }
     def call(o, a, c)
-      # TODO: method access?
       { name: a[:name] }
     end
   end
@@ -76,14 +75,13 @@ describe GraphQL::Function do
     let(:schema) {
       query_type = GraphQL::ObjectType.define do
         name "Query"
-        field :overwrittenDescription, function: TestFunc.new do
+        field :blockOverride, function: TestFunc.new do
           description "I have altered the description"
-        end
-
-        field :overwrittenArguments, function: TestFunc.new do
           argument :anArg, types.Int
           argument :oneMoreArg, types.String
         end
+
+        field :argOverride, types.String, "New Description", function: TestFunc.new
       end
 
       GraphQL::Schema.define do
@@ -92,14 +90,16 @@ describe GraphQL::Function do
     }
 
     it "can override description" do
-      field = schema.query.fields["overwrittenDescription"]
+      field = schema.query.fields["blockOverride"]
       assert_equal "I have altered the description", field.description
+      assert_equal ["name", "anArg", "oneMoreArg"], field.arguments.keys
     end
 
     it "can add to arguments" do
-      field = schema.query.fields["overwrittenArguments"]
-
-      assert_equal ["name", "anArg", "oneMoreArg"], field.arguments.keys
+      field = schema.query.fields["argOverride"]
+      assert_equal "New Description", field.description
+      assert_equal GraphQL::STRING_TYPE, field.type
+      assert_equal ["name"], field.arguments.keys
     end
   end
 end

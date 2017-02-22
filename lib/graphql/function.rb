@@ -18,7 +18,7 @@ module GraphQL
   #   QueryType = GraphQL::ObjectType.define do
   #     name "Query"
   #     field :post, function: FindRecord.new(model: Post, type: PostType)
-  #     field :post, function: FindRecord.new(model: Comment, type: CommentType)
+  #     field :comment, function: FindRecord.new(model: Comment, type: CommentType)
   #   end
   class Function
     def arguments
