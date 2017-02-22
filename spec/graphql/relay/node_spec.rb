@@ -9,7 +9,21 @@ describe GraphQL::Relay::Node do
   end
 
   describe ".field" do
-    describe "with custom resolver" do
+    describe "with custom definition" do
+      it 'creates a field with the custom definition' do
+        faction = StarWars::DATA['Faction'][0]
+
+        node_field = GraphQL::Relay::Node.field do
+          name "nod3"
+          description "The Relay Node Field"
+          resolve ->(_, _ , _) { faction }
+        end
+
+        assert_equal "nod3", node_field.name
+        assert_equal "The Relay Node Field", node_field.description
+        assert_equal faction, node_field.resolve(nil, { 'id' => '1' }, nil)
+      end
+
       it "executes the custom resolve instead of relay default" do
         id = "resolver_is_hardcoded_so_this_does_not_matter"
 
@@ -131,7 +145,21 @@ describe GraphQL::Relay::Node do
   end
 
   describe ".plural_identifying_field" do
-    describe "with custom resolver" do
+    describe "with custom definition" do
+      it 'creates a field with the custom definition' do
+        factions = StarWars::DATA['Faction']
+
+        node_field = GraphQL::Relay::Node.plural_field do
+          name "nodez"
+          description "The Relay Nodes Field"
+          resolve ->(_, _ , _) { factions }
+        end
+
+        assert_equal "nodez", node_field.name
+        assert_equal "The Relay Nodes Field", node_field.description
+        assert_equal factions, node_field.resolve_proc.call(nil, { 'ids' => ['1', '2'] }, nil)
+      end
+
       it "executes the custom resolve instead of relay default" do
         id = ["resolver_is_hardcoded_so_this_does_not_matter", "another_id"]
 
