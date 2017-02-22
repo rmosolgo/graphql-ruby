@@ -26,7 +26,7 @@ class LazyFindPerson
     # Initialize the loading state for this query,
     # or get the previously-initiated state
     @lazy_state = query_ctx[:lazy_find_person] ||= {
-      pending_ids: [],
+      pending_ids: Set.new,
       loaded_ids: {},
     }
     # Register this ID to be loaded later:
@@ -44,9 +44,10 @@ class LazyFindPerson
     else
       # The record hasn't been loaded yet, so
       # hit the database with all pending IDs
-      pending_ids = @lazy_state[:pending_ids]
+      pending_ids = @lazy_state[:pending_ids].to_a
       people = Person.where(id: pending_ids)
       people.each { |person| @lazy_state[:loaded_ids][person.id] = person }
+      @lazy_state[:pending_ids].clear
       # Now, get the matching person from the loaded result:
       @lazy_state[:loaded_ids][@person_id]
     end
