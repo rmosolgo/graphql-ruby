@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+## 1.1.1 (22 Feb 2017)
+
+### Bug Fixes
+
+- Fix monitoring when `Query#selected_operation` is nil
+
 ## 1.1.0 (9 Feb 2017)
 
 ### New Features
