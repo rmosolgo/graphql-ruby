@@ -33,7 +33,7 @@ class GraphQLGeneratorsInstallGeneratorTest < Rails::Generators::TestCase
     end
 
     assert_file "Gemfile" do |contents|
-      assert_includes contents, "gem 'graphiql-rails', group: :development"
+      assert_match %r{gem ('|")graphiql-rails('|"), :?group(:| =>) :development}, contents
     end
 
     expected_schema = <<-RUBY
@@ -60,7 +60,7 @@ RUBY
     run_generator(["--batch", "--relay"])
     assert_file "app/graphql/loaders/.keep"
     assert_file "Gemfile" do |contents|
-      assert_includes contents, "gem 'graphql-batch'"
+      assert_match %r{gem ('|")graphql-batch('|")}, contents
     end
 
     expected_query_type = <<-RUBY

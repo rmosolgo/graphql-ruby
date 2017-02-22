@@ -1,11 +1,13 @@
 appraise 'rails_3.2' do
   gem 'activerecord', '~> 3.2.21'
   gem 'actionpack', '~> 3.2.21'
+  gem 'test-unit'
 end
 
 appraise 'rails_4.1' do
   gem 'activerecord', '~> 4.1.10'
   gem 'actionpack', '~> 4.1.10'
+  gem 'test-unit'
 end
 
 appraise 'rails_4.2' do
