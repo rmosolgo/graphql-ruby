@@ -71,4 +71,35 @@ describe GraphQL::Function do
       assert_equal "graphql", res["data"]["test"]["name"]
     end
   end
+
+  describe "when overriding" do
+    let(:schema) {
+      query_type = GraphQL::ObjectType.define do
+        name "Query"
+        field :overwrittenDescription, function: TestFunc.new do
+          description "I have altered the description"
+        end
+
+        field :overwrittenArguments, function: TestFunc.new do
+          argument :anArg, types.Int
+          argument :oneMoreArg, types.String
+        end
+      end
+
+      GraphQL::Schema.define do
+        query(query_type)
+      end
+    }
+
+    it "can override description" do
+      field = schema.query.fields["overwrittenDescription"]
+      assert_equal "I have altered the description", field.description
+    end
+
+    it "can add to arguments" do
+      field = schema.query.fields["overwrittenArguments"]
+
+      assert_equal ["name", "anArg", "oneMoreArg"], field.arguments.keys
+    end
+  end
 end
