@@ -36,6 +36,7 @@ describe GraphQL::Function do
       query_type = GraphQL::ObjectType.define do
         name "Query"
         field :test, function: TestFunc.new
+        connection :testConn, function: TestFunc.new
       end
 
       relay_mutation = GraphQL::Relay::Mutation.define do
