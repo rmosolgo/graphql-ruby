@@ -26,11 +26,21 @@ rule
           }
         )
       }
-    | selection_set {
+    | LCURLY selection_list RCURLY {
         return make_node(
           :OperationDefinition, {
             operation_type: "query",
-            selections: val[0],
+            selections: val[1],
+            position_source: val[0],
+          }
+        )
+      }
+    | LCURLY RCURLY {
+        return make_node(
+          :OperationDefinition, {
+            operation_type: "query",
+            selections: [],
+            position_source: val[0],
           }
         )
       }

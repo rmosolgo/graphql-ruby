@@ -38,7 +38,19 @@ describe GraphQL::Query::Executor do
       it "returns an error" do
         expected = {
           "errors" => [
-            {"message" => "You must provide an operation name from: getCheese1, getCheese2"}
+            {"message" => "An operation name is required"}
+          ]
+        }
+        assert_equal(expected, result)
+      end
+    end
+
+    describe "when the named operation is not present" do
+      let(:operation_name) { "nonsenseOperation" }
+      it "returns an error" do
+        expected = {
+          "errors" => [
+            {"message" => 'No operation named "nonsenseOperation"'}
           ]
         }
         assert_equal(expected, result)
