@@ -9,25 +9,42 @@ module GraphQL
       def validate(context)
         context.visitor[GraphQL::Language::Nodes::Field] << ->(node, parent)  {
           field_defn = context.field_definition
-          validate_field_selections(node, field_defn, context)
+          validate_field_selections(node, field_defn.type.unwrap, context)
+        }
+
+        context.visitor[GraphQL::Language::Nodes::OperationDefinition] << ->(node, parent)  {
+          validate_field_selections(node, context.type_definition, context)
         }
       end
 
       private
 
-      def validate_field_selections(ast_field, field_defn, context)
-        resolved_type = field_defn.type.unwrap
 
-        if resolved_type.kind.scalar? && ast_field.selections.any?
-          error = message("Selections can't be made on scalars (field '#{ast_field.name}' returns #{resolved_type.name} but has selections [#{ast_field.selections.map(&:name).join(", ")}])", ast_field, context: context)
-        elsif resolved_type.kind.object? && ast_field.selections.none?
-          error = message("Objects must have selections (field '#{ast_field.name}' returns #{resolved_type.name} but has no selections)", ast_field, context: context)
+      def validate_field_selections(ast_node, resolved_type, context)
+        msg = if resolved_type.nil?
+          nil
+        elsif resolved_type.kind.scalar? && ast_node.selections.any?
+          "Selections can't be made on scalars (%{node_name} returns #{resolved_type.name} but has selections [#{ast_node.selections.map(&:name).join(", ")}])"
+        elsif resolved_type.kind.object? && ast_node.selections.none?
+          "Objects must have selections (%{node_name} returns #{resolved_type.name} but has no selections)"
         else
-          error = nil
+          nil
         end
 
-        if !error.nil?
-          context.errors << error
+        if msg
+          node_name = case ast_node
+          when GraphQL::Language::Nodes::Field
+            "field '#{ast_node.name}'"
+          when GraphQL::Language::Nodes::OperationDefinition
+            if ast_node.name.nil?
+              "anonymous query"
+            else
+              "#{ast_node.operation_type} '#{ast_node.name}'"
+            end
+          else
+            raise("Unexpected node #{ast_node}")
+          end
+          context.errors << message(msg % { node_name: node_name }, ast_node, context: context)
           GraphQL::Language::Visitor::SKIP
         end
       end

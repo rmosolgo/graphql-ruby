@@ -14,8 +14,12 @@ module GraphQL
     extend Forwardable
 
     class OperationNameMissingError < GraphQL::ExecutionError
-      def initialize(names)
-        msg = "You must provide an operation name from: #{names.join(", ")}"
+      def initialize(name)
+        msg = if name.nil?
+          %|An operation name is required|
+        else
+          %|No operation named "#{name}"|
+        end
         super(msg)
       end
     end
@@ -85,7 +89,7 @@ module GraphQL
       if @operations.any?
         @selected_operation = find_operation(@operations, @operation_name)
         if @selected_operation.nil?
-          @validation_errors << GraphQL::Query::OperationNameMissingError.new(@operations.keys)
+          @validation_errors << GraphQL::Query::OperationNameMissingError.new(@operation_name)
         else
           @ast_variables = @selected_operation.variables
           @mutation = @selected_operation.operation_type == "mutation"
@@ -251,12 +255,12 @@ module GraphQL
     end
 
     def find_operation(operations, operation_name)
-      if operations.length == 1
+      if operation_name.nil? && operations.length == 1
         operations.values.first
-      elsif operations.length == 0 || !operations.key?(operation_name)
+      elsif !operations.key?(operation_name)
         nil
       else
-        operations[operation_name]
+        operations.fetch(operation_name)
       end
     end
 
