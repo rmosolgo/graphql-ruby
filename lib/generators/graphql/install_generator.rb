@@ -24,22 +24,22 @@ module Graphql
     # Add a controller for serving GraphQL queries:
     #
     # ```
-    # app/controllers/graphql_queries_controller.rb
+    # app/controllers/graphql_controller.rb
     # ```
     #
     # Add a route for that controller:
     #
     # ```ruby
     # # config/routes.rb
-    # post "/graphql", to: "graphql_queries#create"
+    # post "/graphql", to: "graphql#execute"
     # ```
     #
     # Accept a `--relay` option which adds
     # The root `node(id: ID!)` field.
     #
-    # Accept a `--graphiql` option which adds
-    # `graphiql-rails` to the Gemfile and mounts the
-    # engine in `routes.rb` (Should this be the default?)
+    # Accept a `--batch` option which adds `GraphQL::Batch` setup.
+    #
+    # Use `--no-graphiql` to skip `graphiql-rails` installation.
     class InstallGenerator < Rails::Generators::Base
       desc "Install GraphQL folder structure and boilerplate code"
       source_root File.expand_path('../templates', __FILE__)
@@ -82,8 +82,8 @@ RUBY
         create_dir("app/graphql/types")
         template("query_type.erb", "app/graphql/types/query_type.rb")
         template("schema.erb", "app/graphql/#{schema_name.underscore}.rb")
-        template("graphqls_controller.erb", "app/controllers/graphqls_controller.rb")
-        route("resource :graphql, only: :create")
+        template("graphql_controller.erb", "app/controllers/graphql_controller.rb")
+        route('post "/graphql", to: "graphql#execute"')
 
         if !options[:skip_graphiql]
           gem("graphiql-rails", group: :development)

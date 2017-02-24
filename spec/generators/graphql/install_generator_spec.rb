@@ -20,7 +20,7 @@ class GraphQLGeneratorsInstallGeneratorTest < Rails::Generators::TestCase
     assert_file "app/graphql/types/.keep"
     assert_file "app/graphql/mutations/.keep"
     assert_file "app/graphql/resolvers/.keep"
-    expected_query_route = "resource :graphql, only: :create"
+    expected_query_route = %|post "/graphql", to: "graphql#execute"|
     expected_graphiql_route = %|
   if Rails.env.development?
     mount GraphiQL::Rails::Engine, at: "/graphiql", graphql_path: "/graphql"
@@ -61,7 +61,7 @@ end
 RUBY
 
     assert_file "app/graphql/types/query_type.rb", expected_query_type
-    assert_file "app/controllers/graphqls_controller.rb", EXPECTED_GRAPHQLS_CONTROLLER
+    assert_file "app/controllers/graphql_controller.rb", EXPECTED_GRAPHQLS_CONTROLLER
   end
 
   test "it generates graphql-batch and relay boilerplate" do
@@ -110,12 +110,12 @@ RUBY
     end
 
     assert_file "app/graphql/custom_schema.rb", /CustomSchema = GraphQL::Schema\.define/
-    assert_file "app/controllers/graphqls_controller.rb", /CustomSchema\.execute/
+    assert_file "app/controllers/graphql_controller.rb", /CustomSchema\.execute/
   end
 
   EXPECTED_GRAPHQLS_CONTROLLER = <<-RUBY
-class GraphqlsController < ApplicationController
-  def create
+class GraphqlController < ApplicationController
+  def execute
     variables = ensure_hash(params[:variables])
     query = params[:query]
     context = {
@@ -133,14 +133,16 @@ class GraphqlsController < ApplicationController
     case ambiguous_param
     when String
       if ambiguous_param.present?
-        JSON.parse(ambiguous_param)
+        ensure_hash(JSON.parse(ambiguous_param))
       else
         {}
       end
-    when Hash
+    when Hash, ActionController::Parameters
       ambiguous_param
-    else
+    when nil
       {}
+    else
+      raise ArgumentError, "Unexpected parameter: \#{ambiguous_param}"
     end
   end
 end
