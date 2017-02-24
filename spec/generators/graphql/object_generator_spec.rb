@@ -34,7 +34,7 @@ RUBY
     assert_file "app/graphql/types/page_type.rb", <<-RUBY
 Types::PageType = GraphQL::ObjectType.define do
   name "Page"
-  interfaces [GraphQL::Relay::Node.interface]
+  implements GraphQL::Relay::Node.interface
 end
 RUBY
   end
