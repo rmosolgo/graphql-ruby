@@ -1,7 +1,7 @@
 # frozen_string_literal: true
-require 'graphql/generators/type_generator'
+require 'generators/graphql/type_generator'
 
-module GraphQL
+module Graphql
   module Generators
     # Generate an interface type by name,
     # with the specified fields.
@@ -17,7 +17,7 @@ module GraphQL
         type: :array,
         default: [],
         banner: "name:type name:type ...",
-        description: "Fields for this interface (type may be expressed as Ruby or GraphQL)"
+        desc: "Fields for this interface (type may be expressed as Ruby or GraphQL)"
 
       def create_type_file
         template "interface.erb", "app/graphql/types/#{type_file_name}.rb"

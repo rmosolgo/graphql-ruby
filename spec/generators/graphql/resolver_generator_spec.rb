@@ -1,8 +1,8 @@
 require "spec_helper"
-require "graphql/generators/resolver_generator"
+require "generators/graphql/resolver_generator"
 
 class GraphQLGeneratorsResolverGeneratorTest < BaseGeneratorTest
-  tests GraphQL::Generators::ResolverGenerator
+  tests Graphql::Generators::ResolverGenerator
 
   test "it generates an empty resolver by name" do
     run_generator(["AttributeResolver"])

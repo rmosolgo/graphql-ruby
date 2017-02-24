@@ -1,8 +1,8 @@
 require "spec_helper"
-require "graphql/generators/object_generator"
+require "generators/graphql/object_generator"
 
 class GraphQLGeneratorsObjectGeneratorTest < BaseGeneratorTest
-  tests GraphQL::Generators::ObjectGenerator
+  tests Graphql::Generators::ObjectGenerator
 
   test "it generates fields with types" do
     commands = [

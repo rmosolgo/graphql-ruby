@@ -1,8 +1,8 @@
 require "spec_helper"
-require "graphql/generators/interface_generator"
+require "generators/graphql/interface_generator"
 
 class GraphQLGeneratorsInterfaceGeneratorTest < BaseGeneratorTest
-  tests GraphQL::Generators::InterfaceGenerator
+  tests Graphql::Generators::InterfaceGenerator
 
   test "it generates fields with types" do
     commands = [

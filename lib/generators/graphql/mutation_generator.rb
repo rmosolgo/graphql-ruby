@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 require 'rails/generators/named_base'
 
-module GraphQL
+module Graphql
   module Generators
     # TODO: What other options should be supported?
     #

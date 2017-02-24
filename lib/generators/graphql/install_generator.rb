@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 require 'rails/generators/base'
 
-module GraphQL
+module Graphql
   module Generators
     # Add GraphQL to a Rails app with
     # `rails g graphql:install`.

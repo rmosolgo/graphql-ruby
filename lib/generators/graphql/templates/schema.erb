@@ -20,6 +20,13 @@
     # find an object in your application
     # ...
   }
+
+  # Object Resolution
+  resolve_type -> (obj, ctx) {
+    # TODO: Implement this function
+    # to return the correct type for `obj`
+    raise(NotImplementedError)
+  }
 <% end %><% if options[:batch] %>
   # GraphQL::Batch setup:
   lazy_resolve(Promise, :sync)

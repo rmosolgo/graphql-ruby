@@ -1,14 +1,14 @@
 require "spec_helper"
-require "graphql/generators/install_generator"
+require "generators/graphql/install_generator"
 
 class GraphQLGeneratorsInstallGeneratorTest < Rails::Generators::TestCase
 
-  tests GraphQL::Generators::InstallGenerator
-  destination File.expand_path("../../tmp/dummy", File.dirname(__FILE__))
+  tests Graphql::Generators::InstallGenerator
+  destination File.expand_path("../../../tmp/dummy", File.dirname(__FILE__))
 
   setup do
     prepare_destination
-    FileUtils.cd(File.expand_path("../../tmp", File.dirname(__FILE__))) do
+    FileUtils.cd(File.expand_path("../../../tmp", File.dirname(__FILE__))) do
       `rm -rf dummy`
       `rails new dummy --skip-active-record --skip-test-unit --skip-spring --skip-bundle`
     end
@@ -49,6 +49,14 @@ Types::QueryType = GraphQL::ObjectType.define do
   name "Query"
   # Add root-level fields here.
   # They will be entry points for queries on your schema.
+
+  # TODO: remove me
+  field :testField, types.String do
+    description \"An example field added by the generator\"
+    resolve ->(obj, args, ctx) {
+      \"Hello World!\"
+    }
+  end
 end
 RUBY
 
@@ -68,6 +76,15 @@ Types::QueryType = GraphQL::ObjectType.define do
   name "Query"
   # Add root-level fields here.
   # They will be entry points for queries on your schema.
+
+  # TODO: remove me
+  field :testField, types.String do
+    description \"An example field added by the generator\"
+    resolve ->(obj, args, ctx) {
+      \"Hello World!\"
+    }
+  end
+
   field :node, GraphQL::Relay::Node.field
 end
 RUBY
@@ -151,6 +168,13 @@ DummySchema = GraphQL::Schema.define do
     # Then, based on `type_name` and `id`
     # find an object in your application
     # ...
+  }
+
+  # Object Resolution
+  resolve_type -> (obj, ctx) {
+    # TODO: Implement this function
+    # to return the correct type for `obj`
+    raise(NotImplementedError)
   }
 
   # GraphQL::Batch setup:

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
-require 'graphql/generators/type_generator'
+require 'generators/graphql/type_generator'
 
-module GraphQL
+module Graphql
   module Generators
     # Generate a union type by name
     # with the specified member types.
@@ -17,7 +17,7 @@ module GraphQL
         type: :array,
         default: [],
         banner: "type type ...",
-        description: "Possible types for this union (expressed as Ruby or GraphQL)"
+        desc: "Possible types for this union (expressed as Ruby or GraphQL)"
 
       def create_type_file
         template "union.erb", "app/graphql/types/#{type_file_name}.rb"

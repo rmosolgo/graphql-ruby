@@ -1,8 +1,8 @@
 require "spec_helper"
-require "graphql/generators/mutation_generator"
+require "generators/graphql/mutation_generator"
 
 class GraphQLGeneratorsMutationGeneratorTest < BaseGeneratorTest
-  tests GraphQL::Generators::MutationGenerator
+  tests Graphql::Generators::MutationGenerator
 
   test "it generates an empty resolver by name" do
     run_generator(["UpdateName"])

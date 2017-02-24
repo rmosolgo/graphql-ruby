@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 require "rails/generators/named_base"
 
-module GraphQL
+module Graphql
   module Generators
     # @example Generate a resolve function for a field.
     #     rails g graphql:resolver PostAuthorResolver

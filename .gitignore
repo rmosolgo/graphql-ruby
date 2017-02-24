@@ -14,5 +14,5 @@ _site
 .sass-cache
 .jekyll-metadata
 gh-pages/
-spec/tmp/*
+tmp/*
 __*

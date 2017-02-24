@@ -1,8 +1,8 @@
 require "spec_helper"
-require "graphql/generators/union_generator"
+require "generators/graphql/union_generator"
 
 class GraphQLGeneratorsUnionGeneratorTest < BaseGeneratorTest
-  tests GraphQL::Generators::UnionGenerator
+  tests Graphql::Generators::UnionGenerator
 
   test "it generates a union with possible types" do
     commands = [

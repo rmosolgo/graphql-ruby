@@ -2,14 +2,14 @@
 require 'rails/generators/base'
 require 'graphql'
 
-module GraphQL
+module Graphql
   module Generators
     class TypeGenerator < Rails::Generators::Base
       argument :type_name,
         type: :string,
         required: true,
         banner: "TypeName",
-        description: "Name of this object type (expressed as Ruby or GraphQL)"
+        desc: "Name of this object type (expressed as Ruby or GraphQL)"
 
       # Take a type expression in any combination of GraphQL or Ruby styles
       # and return it in a specified output style

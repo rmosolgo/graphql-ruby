@@ -1,7 +1,7 @@
 # frozen_string_literal: true
-require 'graphql/generators/type_generator'
+require 'generators/graphql/type_generator'
 
-module GraphQL
+module Graphql
   module Generators
     # Generate an object type by name,
     # with the specified fields.
@@ -19,12 +19,12 @@ module GraphQL
         type: :array,
         default: [],
         banner: "name:type name:type ...",
-        description: "Fields for this object (type may be expressed as Ruby or GraphQL)"
+        desc: "Fields for this object (type may be expressed as Ruby or GraphQL)"
 
       class_option :node,
         type: :boolean,
         default: false,
-        description: "Include the Relay Node interface"
+        desc: "Include the Relay Node interface"
 
       def create_type_file
         template "object.erb", "app/graphql/types/#{type_file_name}.rb"

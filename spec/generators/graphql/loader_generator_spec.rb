@@ -1,8 +1,8 @@
 require "spec_helper"
-require "graphql/generators/loader_generator"
+require "generators/graphql/loader_generator"
 
 class GraphQLGeneratorsLoaderGeneratorTest < BaseGeneratorTest
-  tests GraphQL::Generators::LoaderGenerator
+  tests Graphql::Generators::LoaderGenerator
 
   test "it generates an empty loader by name" do
     run_generator(["RecordLoader"])
