@@ -19,7 +19,6 @@ class GraphQLGeneratorsInstallGeneratorTest < Rails::Generators::TestCase
 
     assert_file "app/graphql/types/.keep"
     assert_file "app/graphql/mutations/.keep"
-    assert_file "app/graphql/resolvers/.keep"
     expected_query_route = %|post "/graphql", to: "graphql#execute"|
     expected_graphiql_route = %|
   if Rails.env.development?
@@ -97,10 +96,8 @@ RUBY
     run_generator(["--skip-keeps", "--skip-graphiql", "--schema=CustomSchema"])
     assert_no_file "app/graphql/types/.keep"
     assert_no_file "app/graphql/mutations/.keep"
-    assert_no_file "app/graphql/resolvers/.keep"
     assert_file "app/graphql/types"
     assert_file "app/graphql/mutations"
-    assert_file "app/graphql/resolvers"
     assert_file "Gemfile" do |contents|
       refute_includes contents, "graphiql-rails"
     end

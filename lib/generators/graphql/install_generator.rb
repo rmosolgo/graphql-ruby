@@ -3,8 +3,7 @@ require 'rails/generators/base'
 
 module Graphql
   module Generators
-    # Add GraphQL to a Rails app with
-    # `rails g graphql:install`.
+    # Add GraphQL to a Rails app with `rails g graphql:install`.
     #
     # Setup a folder structure for GraphQL:
     #
@@ -78,7 +77,6 @@ RUBY
 
       def create_folder_structure
         create_dir("app/graphql/mutations")
-        create_dir("app/graphql/resolvers")
         create_dir("app/graphql/types")
         template("query_type.erb", "app/graphql/types/query_type.rb")
         template("schema.erb", "app/graphql/#{schema_name.underscore}.rb")
