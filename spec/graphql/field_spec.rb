@@ -35,27 +35,30 @@ describe GraphQL::Field do
   it "passing arguments to root_value when fields accepting arguments" do
     schema = GraphQL::Schema.from_definition(" 
       type Todo {text: String}
-      type Query { allTodos: [Todo]}
-      type Mutation { todoAdd(text: String!): Todo}
+      type Query { all_todos: [Todo]}
+      type Mutation { todo_add(text: String!): Todo}
     ")
     Todo = Struct.new(:text)
     class RootResolver
       attr_accessor :todos
+
       def initialize
         @todos = [Todo.new("Pay the bills.")]
       end
-      def allTodos
+
+      def all_todos
         @todos
       end
-      def todoAdd(args) # this is a method and accepting arguments
+
+      def todo_add(args) # this is a method and accepting arguments
         todo = Todo.new(args[:text])
         @todos << todo
         todo
       end
     end
     root_values = RootResolver.new
-    schema.execute("mutation { todoAdd(text: \"Buy Milk\") { text } }", root_value: root_values)
-    result = schema.execute("query { allTodos { text } }", root_value: root_values)
+    schema.execute("mutation { todoAdd: todo_add(text: \"Buy Milk\") { text } }", root_value: root_values)
+    result = schema.execute("query { allTodos: all_todos { text } }", root_value: root_values)
     assert_equal(result.to_json, '{"data":{"allTodos":[{"text":"Pay the bills."},{"text":"Buy Milk"}]}}')
   end
 
