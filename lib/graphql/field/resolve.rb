@@ -19,6 +19,12 @@ module GraphQL
 
       # These only require `obj` as input
       class BuiltInResolve
+        protected
+        def method_with_arguments?(method, obj, args)
+          args.to_h.keys.size > 0 &&
+          obj.methods.include?(method.to_sym) &&
+          obj.method(method).parameters.size > 0
+        end
       end
 
       # Resolve the field by `public_send`ing `@method_name`
@@ -28,7 +34,11 @@ module GraphQL
         end
 
         def call(obj, args, ctx)
-          obj.public_send(@method_name)
+          if method_with_arguments?(@method_name, obj, args)
+            obj.public_send(@method_name, args)
+          else
+            obj.public_send(@method_name)
+          end
         end
       end
 
@@ -51,7 +61,11 @@ module GraphQL
         end
 
         def call(obj, args, ctx)
-          obj.public_send(@field.name)
+          if method_with_arguments?(@field.name, obj, args)
+            obj.public_send(@field.name, args)
+          else
+            obj.public_send(@field.name)
+          end
         end
       end
     end
