@@ -61,6 +61,27 @@ module GraphQL
     #   # Access it from metadata
     #   subaru_baja.metadata[:all_wheel_drive] # => true
     #
+    # @example Extending the definition of a class via a plugin
+    #   # A plugin is any object that responds to `.use(definition)`
+    #   module SubaruCar
+    #     extend self
+    #
+    #     def use(defn)
+    #       # `defn` has the same methods as within `.define { ... }` block
+    #       defn.make "Subaru"
+    #       defn.doors 4
+    #     end
+    #   end
+    #
+    #   # Use the plugin within a `.define { ... }` block
+    #   subaru_baja = Car.define do
+    #     use SubaruCar
+    #     model 'Baja'
+    #   end
+    #
+    #   subaru_baja.make # => "Subaru"
+    #   subaru_baja.doors # => [<Door>, <Door>, <Door>, <Door>]
+    #
     # @example Making a copy with an extended definition
     #   # Create an instance with `.define`:
     #   subaru_baja = Car.define do
