@@ -8,8 +8,8 @@ Gem::Specification.new do |s|
   s.name        = "graphql"
   s.version     = GraphQL::VERSION
   s.date        = Date.today.to_s
-  s.summary     = "A GraphQL server implementation for Ruby"
-  s.description = "A GraphQL server implementation for Ruby. Includes schema definition, query parsing, static validation, type definition, and query execution."
+  s.summary     = "A GraphQL language and runtime for Ruby"
+  s.description = "A plain-Ruby implementation of GraphQL."
   s.homepage    = "http://github.com/rmosolgo/graphql-ruby"
   s.authors     = ["Robert Mosolgo"]
   s.email       = ["rdmosolgo@gmail.com"]
