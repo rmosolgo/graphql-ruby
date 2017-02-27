@@ -2,8 +2,10 @@ AllCops:
   DisabledByDefault: true
   TargetRubyVersion: 2.1
   Exclude:
-  - 'lib/graphql/language/lexer.rb'
-  - 'lib/graphql/language/parser.rb'
+    - 'lib/graphql/language/lexer.rb'
+    - 'lib/graphql/language/parser.rb'
+    - 'gemfiles/**/*'
+    - 'tmp/**/*'
 
 # def ...
 # end

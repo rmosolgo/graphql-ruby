@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 require "codeclimate-test-reporter"
 CodeClimate::TestReporter.start
+require "rails/all"
+require "rails/generators"
 require "sqlite3"
-require "active_record"
-require "action_controller"
 require "sequel"
 require "graphql"
 require "benchmark"
