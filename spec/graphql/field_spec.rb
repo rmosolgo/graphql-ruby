@@ -34,11 +34,11 @@ describe GraphQL::Field do
 
   it "passing arguments to root_value when fields accepting arguments" do
     schema = GraphQL::Schema.from_definition(" 
-      type Todo {text: String}
+      type Todo {text: String, from_context: String}
       type Query { all_todos: [Todo]}
       type Mutation { todo_add(text: String!): Todo}
     ")
-    Todo = Struct.new(:text)
+    Todo = Struct.new(:text, :from_context)
     class RootResolver
       attr_accessor :todos
 
@@ -50,16 +50,16 @@ describe GraphQL::Field do
         @todos
       end
 
-      def todo_add(args) # this is a method and accepting arguments
-        todo = Todo.new(args[:text])
+      def todo_add(args, ctx) # this is a method and accepting arguments
+        todo = Todo.new(args[:text], ctx[:context_value])
         @todos << todo
         todo
       end
     end
     root_values = RootResolver.new
-    schema.execute("mutation { todoAdd: todo_add(text: \"Buy Milk\") { text } }", root_value: root_values)
-    result = schema.execute("query { allTodos: all_todos { text } }", root_value: root_values)
-    assert_equal(result.to_json, '{"data":{"allTodos":[{"text":"Pay the bills."},{"text":"Buy Milk"}]}}')
+    schema.execute("mutation { todoAdd: todo_add(text: \"Buy Milk\") { text } }", root_value: root_values, context: {context_value: "bar"})
+    result = schema.execute("query { allTodos: all_todos { text, from_context } }", root_value: root_values)
+    assert_equal(result.to_json, '{"data":{"allTodos":[{"text":"Pay the bills.","from_context":null},{"text":"Buy Milk","from_context":"bar"}]}}')
   end
 
   describe ".property " do

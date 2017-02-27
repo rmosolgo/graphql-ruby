@@ -35,7 +35,7 @@ module GraphQL
 
         def call(obj, args, ctx)
           if method_with_arguments?(@method_name, obj, args)
-            obj.public_send(@method_name, args)
+            obj.public_send(@method_name, args, ctx)
           else
             obj.public_send(@method_name)
           end
@@ -62,7 +62,7 @@ module GraphQL
 
         def call(obj, args, ctx)
           if method_with_arguments?(@field.name, obj, args)
-            obj.public_send(@field.name, args)
+            obj.public_send(@field.name, args, ctx)
           else
             obj.public_send(@field.name)
           end
