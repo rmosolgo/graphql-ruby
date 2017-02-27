@@ -117,10 +117,11 @@ describe GraphQL::Define::InstanceDefinable do
   end
 
   describe "#use" do
-    module TestPlugin
-      extend self
+    class TestPlugin
+      attr_reader :target
 
       def use(defn)
+        @target = defn.target
         defn.name('Arugula')
       end
     end
@@ -133,12 +134,15 @@ describe GraphQL::Define::InstanceDefinable do
       end
     end
 
-    it "sends a message to the specified plugin's :use method and access to the proxy object" do
+    it "sends a message to the specified plugin's :use method with access to the proxy object and target object" do
+      plugin = TestPlugin.new
+
       arugula = Garden::Vegetable.define do
-        use TestPlugin
+        use plugin
       end
 
       assert_equal 'Arugula', arugula.name
+      assert_equal arugula, plugin.target
     end
 
     it "passes kwargs to plugin's `use` method" do

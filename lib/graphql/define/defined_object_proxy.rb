@@ -2,6 +2,8 @@
 module GraphQL
   module Define
     class DefinedObjectProxy
+      attr_reader :target
+
       def initialize(target)
         @target = target
         @dictionary = target.class.dictionary
