@@ -21,18 +21,22 @@ module GraphQL
     #
     # @example Make a class definable
     #   class Car
-    #     attr_accessor :make, :model
+    #     include GraphQL::Define::InstanceDefinable
+    #     attr_accessor :make, :model, :doors
     #     accepts_definitions(
     #       # These attrs will be defined with plain setters, `{attr}=`
     #       :make, :model,
     #       # This attr has a custom definition which applies the config to the target
     #       doors: ->(car, doors_count) { doors_count.times { car.doors << Door.new } }
     #     )
+    #     ensure_defined(:make, :model, :doors)
     #
     #     def initialize
     #       @doors = []
     #     end
     #   end
+    #
+    #   class Door; end;
     #
     #   # Create an instance with `.define`:
     #   subaru_baja = Car.define do
