@@ -99,7 +99,7 @@
 
 <p>Query analyzers reuse concepts from <code class="highlighter-rouge">Array#reduce</code>, so let’s briefly revisit how that method works:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="n">items</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">]</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">items</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">]</span>
 <span class="n">initial_value</span> <span class="o">=</span> <span class="mi">0</span>
 <span class="n">reduce_result</span> <span class="o">=</span> <span class="n">items</span><span class="p">.</span><span class="nf">reduce</span><span class="p">(</span><span class="n">initial_value</span><span class="p">)</span> <span class="p">{</span> <span class="o">|</span><span class="n">memo</span><span class="p">,</span> <span class="n">item</span><span class="o">|</span> <span class="n">memo</span> <span class="o">+</span> <span class="n">item</span> <span class="p">}</span>
 <span class="n">final_value</span> <span class="o">=</span> <span class="s2">"Sum: </span><span class="si">#{</span><span class="n">reduce_result</span><span class="si">}</span><span class="s2">"</span>
@@ -118,7 +118,7 @@
 
 <p>A query analyzer has the same basic parts. Here’s the scaffold for an analyzer:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MyQueryAnalyzer</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MyQueryAnalyzer</span>
   <span class="c1"># Called before the visit.</span>
   <span class="c1"># Returns the initial value for `memo`</span>
   <span class="k">def</span> <span class="nf">initial_value</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
@@ -146,7 +146,7 @@
 
 <p>Query analyzers are added to the schema with <code class="highlighter-rouge">query_analyzer</code>, for example:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="n">query_analyzer</span> <span class="no">MyQueryAnalyzer</span><span class="p">.</span><span class="nf">new</span>
 <span class="k">end</span>
 </code></pre>
@@ -163,7 +163,7 @@
 
 <p>Sometimes, you can only check permissions when you have the <em>actual</em> object. Let’s say you’re exposing documents in your API:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:documents</span><span class="p">,</span> <span class="n">types</span><span class="p">[</span><span class="no">DocumentType</span><span class="p">]</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:documents</span><span class="p">,</span> <span class="n">types</span><span class="p">[</span><span class="no">DocumentType</span><span class="p">]</span> <span class="k">do</span>
   <span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
     <span class="n">documents</span> <span class="o">=</span> <span class="n">obj</span><span class="p">.</span><span class="nf">documents</span>
     <span class="c1"># sort, filter, etc</span>
@@ -176,7 +176,7 @@
 
 <p>You can “wrap” this resolve function to assert that the documents are ok for the current user:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="c1"># Take a resolve function and call it.</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># Take a resolve function and call it.</span>
 <span class="c1"># Then, check that the result includes permitted records _only_.</span>
 <span class="c1"># @return [Proc] a new resolve function that checks the return values</span>
 <span class="k">def</span> <span class="nf">assert_allowed_documents</span><span class="p">(</span><span class="n">resolve_func</span><span class="p">)</span>
@@ -207,7 +207,7 @@
 
 <p>This approach can be further parameterized by implementing it as a class, for example:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="c1"># Assert that the current user has `permission` on the return value of `block`</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># Assert that the current user has `permission` on the return value of `block`</span>
 <span class="k">class</span> <span class="nc">PermissionAssertion</span>
   <span class="c1"># Get a permission level and the "inner" resolve function</span>
   <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">permission</span><span class="p">,</span> <span class="n">resolve_func</span><span class="p">)</span>

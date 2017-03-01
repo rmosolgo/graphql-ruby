@@ -92,7 +92,7 @@
 
 <p>Field instrumentation can be attached during schema definition:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="n">instrument</span><span class="p">(</span><span class="ss">:field</span><span class="p">,</span> <span class="no">FieldTimerInstrumentation</span><span class="p">.</span><span class="nf">new</span><span class="p">)</span>
 <span class="k">end</span>
 </code></pre>
@@ -102,7 +102,7 @@
 
 <p>Here’s an example field instrumenter:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="k">class</span> <span class="nc">FieldTimerInstrumentation</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="k">class</span> <span class="nc">FieldTimerInstrumentation</span>
   <span class="c1"># If a field was flagged to be timed,</span>
   <span class="c1"># wrap its resolve proc with a timer.</span>
   <span class="k">def</span> <span class="nf">instrument</span><span class="p">(</span><span class="n">type</span><span class="p">,</span> <span class="n">field</span><span class="p">)</span>
@@ -135,7 +135,7 @@
 
 <p>Query instrumentation can be attached during schema definition:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="n">instrument</span><span class="p">(</span><span class="ss">:query</span><span class="p">,</span> <span class="no">QueryTimerInstrumentation</span><span class="p">)</span>
 <span class="k">end</span>
 </code></pre>
@@ -143,7 +143,7 @@
 
 <p>The instrumenter must implement <code class="highlighter-rouge">#before_query(query)</code> and <code class="highlighter-rouge">#after_query(query)</code>. The return values of these methods are not used. They receive the <a href="http://www.rubydoc.info/gems/graphql/GraphQL/Query" target="_blank"><code>GraphQL::Query</code></a> instance.</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="k">module</span> <span class="nn">MyQueryInstrumentation</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="k">module</span> <span class="nn">MyQueryInstrumentation</span>
   <span class="kp">module_function</span>
 
   <span class="c1"># Log the time of the query</span>

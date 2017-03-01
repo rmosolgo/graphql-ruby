@@ -100,9 +100,9 @@
 
 <p>To solve this bug, we should use a <em>value</em> to page through items (instead of <em>offset</em>). For example, if items are ordered by <code class="highlighter-rouge">id</code>, use the <code class="highlighter-rouge">id</code> for pagination:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="k">LIMIT</span> <span class="mi">10</span>                      <span class="c1">-- page 1
-</span><span class="k">WHERE</span> <span class="n">id</span> <span class="o">&gt;</span> <span class="p">:</span><span class="n">last_id</span> <span class="k">LIMIT</span> <span class="mi">10</span>  <span class="c1">-- page 2
-</span></code></pre>
+<div class="language-sql highlighter-rouge"><pre class="highlight"><code><span class="k">LIMIT</span> <span class="mi">10</span>                      <span class="c1">-- page 1</span>
+<span class="k">WHERE</span> <span class="n">id</span> <span class="o">&gt;</span> <span class="p">:</span><span class="n">last_id</span> <span class="k">LIMIT</span> <span class="mi">10</span>  <span class="c1">-- page 2</span>
+</code></pre>
 </div>
 
 <p>This way, even when items are added or removed, pagination will continue without interruption.</p>
@@ -124,7 +124,7 @@
 
 <p>If you’re also switching to <a href="/graphql-ruby/pro/encoders">encrypted cursors</a>, you’ll need a <a href="/graphql-ruby/pro/encoders#versioning">versioned encoder</a>, too. This way, <em>both</em> unencrypted <em>and</em> encrypted cursors will be accepted! For example:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="c1"># Define an encrypted encoder for use with cursors:</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># Define an encrypted encoder for use with cursors:</span>
 <span class="no">EncryptedCursorEncoder</span> <span class="o">=</span> <span class="no">MyEncoder</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">Encoder</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="n">key</span><span class="p">(</span><span class="s2">"f411f30495fe688cb349d..."</span><span class="p">)</span>
 <span class="k">end</span>
@@ -150,10 +150,10 @@
 
 <p>If you don’t want <code class="highlighter-rouge">GraphQL::Pro</code>’s new cursor behavior, re-register the offset-based <code class="highlighter-rouge">RelationConnection</code>:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="p">{</span> <span class="p">.</span><span class="nf">.</span><span class="o">.</span> <span class="p">}</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="p">{</span> <span class="p">.</span><span class="nf">.</span><span class="o">.</span> <span class="p">}</span>
 <span class="c1"># Always use the offset-based connection, override `GraphQL::Pro::RelationConnection`</span>
 <span class="no">GraphQL</span><span class="o">::</span><span class="no">Relay</span><span class="o">::</span><span class="no">BaseConnection</span><span class="p">.</span><span class="nf">register_connection_implementation</span><span class="p">(</span>
-  <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Relation</span><span class="p">,</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Relay</span><span class="o">::</span><span class="no">RelationConnection</span>
+  <span class="no">ActiveRecord</span><span class="p">,</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Relay</span><span class="o">::</span><span class="no">RelationConnection</span>
 <span class="p">)</span>
 </code></pre>
 </div>

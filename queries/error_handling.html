@@ -101,7 +101,7 @@
 
 <p>For example, you could add <code class="highlighter-rouge">errors</code> to <code class="highlighter-rouge">PostType</code>:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="no">PostType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">PostType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="nb">name</span> <span class="s2">"Post"</span>
   <span class="n">field</span> <span class="ss">:title</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">String</span>
   <span class="c1"># ...</span>
@@ -114,7 +114,7 @@
 
 <p>Then, when creating a post, return the <code class="highlighter-rouge">Post</code>, even if the save failed:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
   <span class="n">post</span> <span class="o">=</span> <span class="no">Post</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="s2">"post"</span><span class="p">].</span><span class="nf">to_h</span><span class="p">)</span>
   <span class="c1"># Maybe this fails, no big deal:</span>
   <span class="n">post</span><span class="p">.</span><span class="nf">save</span>
@@ -142,7 +142,7 @@
 
 <p>A GraphQL response may have an <code class="highlighter-rouge">"errors"</code> key, for example:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="no">Schema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="n">query_string</span><span class="p">)</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">Schema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="n">query_string</span><span class="p">)</span>
 <span class="c1"># {</span>
 <span class="c1">#   "errors" =&gt; [</span>
 <span class="c1">#     { "message" =&gt; "Something went wrong" },</span>
@@ -153,7 +153,7 @@
 
 <p>You can add an error to the <code class="highlighter-rouge">"errors"</code> key by returning a <a href="http://www.rubydoc.info/gems/graphql/GraphQL/ExecutionError" target="_blank"><code>GraphQL::ExecutionError</code></a> from a <code class="highlighter-rouge">resolve</code> function. For example:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
   <span class="n">post_params</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="s2">"post"</span><span class="p">].</span><span class="nf">to_h</span>
   <span class="k">if</span> <span class="n">obj</span><span class="p">.</span><span class="nf">posts</span><span class="p">.</span><span class="nf">create</span><span class="p">(</span><span class="n">post_params</span><span class="p">)</span>
     <span class="c1"># on success, return the post:</span>
@@ -168,7 +168,7 @@
 
 <p>If some part of your <code class="highlighter-rouge">resolve</code> function would raise an error, you can rescue it and return a <a href="http://www.rubydoc.info/gems/graphql/GraphQL/ExecutionError" target="_blank"><code>GraphQL::ExecutionError</code></a> instead:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
   <span class="n">post_params</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="s2">"post"</span><span class="p">].</span><span class="nf">to_h</span>
   <span class="k">begin</span>
     <span class="n">post</span> <span class="o">=</span> <span class="n">obj</span><span class="p">.</span><span class="nf">posts</span><span class="p">.</span><span class="nf">create!</span><span class="p">(</span><span class="n">post_params</span><span class="p">)</span>
@@ -186,7 +186,7 @@
 
 <p>If you don’t want to <code class="highlighter-rouge">begin ... rescue ... end</code> in every field, you can wrap <code class="highlighter-rouge">resolve</code> functions in error handling. For example, you could make an object that wraps another resolver:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="c1"># Wrap field resolver `resolve_func` with a handler for `error_superclass`.</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># Wrap field resolver `resolve_func` with a handler for `error_superclass`.</span>
 <span class="c1"># `RescueFrom` instances are valid field resolvers too.</span>
 <span class="k">class</span> <span class="nc">RescueFrom</span>
   <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">error_superclass</span><span class="p">,</span> <span class="n">resolve_func</span><span class="p">)</span>
@@ -208,7 +208,7 @@
 
 <p>Then, apply it to fields on an opt-in basis:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:create_post</span><span class="p">,</span> <span class="no">PostType</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:create_post</span><span class="p">,</span> <span class="no">PostType</span> <span class="k">do</span>
   <span class="c1"># Wrap the resolve function with `RescueFrom.new(err_class, ...)`</span>
   <span class="n">resolve</span> <span class="no">RescueFrom</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="no">ActiveRecord</span><span class="o">::</span><span class="no">RecordInvalid</span><span class="p">,</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span> <span class="p">.</span><span class="nf">.</span><span class="o">.</span> <span class="p">})</span>
 <span class="k">end</span>

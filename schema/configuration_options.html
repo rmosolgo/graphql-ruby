@@ -103,7 +103,7 @@
 
 <p><code class="highlighter-rouge">query</code>, <code class="highlighter-rouge">mutation</code> and <code class="highlighter-rouge">subscriptions</code> are <a href="http://graphql.org/learn/schema/#the-query-and-mutation-types">root-level</a> <code class="highlighter-rouge">GraphQL::ObjectType</code>s.</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="no">QueryType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="p">{</span> <span class="p">.</span><span class="nf">.</span><span class="o">.</span> <span class="p">}</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">QueryType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="p">{</span> <span class="p">.</span><span class="nf">.</span><span class="o">.</span> <span class="p">}</span>
 <span class="no">MutationType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="p">{</span> <span class="p">.</span><span class="nf">.</span><span class="o">.</span> <span class="p">}</span>
 <span class="no">SubscriptionType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="p">{</span> <span class="p">.</span><span class="nf">.</span><span class="o">.</span> <span class="p">}</span>
 
@@ -123,7 +123,7 @@
 
 <p>The clearest case of this is when a type implements an interface, but isn’t a return type of any other field. Since it’s not the return type of a field, it might not be found by traversal, so you can add it in <code class="highlighter-rouge">orphan_types</code>:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="c1"># ...</span>
   <span class="c1"># Make sure these types are present in the schema:</span>
   <span class="n">orphan_types</span> <span class="p">[</span><span class="no">AudioType</span><span class="p">,</span> <span class="no">VideoType</span><span class="p">,</span> <span class="no">ImageType</span><span class="p">]</span>
@@ -145,7 +145,7 @@
 
 <p>These hooks are provided as objects that respond to <code class="highlighter-rouge">#call</code>, for example, a <code class="highlighter-rouge">Proc</code> literal:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="c1"># Hooks for query execution:</span>
   <span class="n">resolve_type</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span> <span class="p">.</span><span class="nf">.</span><span class="o">.</span> <span class="p">}</span>
   <span class="n">id_from_object</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">type</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span> <span class="p">.</span><span class="nf">.</span><span class="o">.</span> <span class="p">}</span>
@@ -167,7 +167,7 @@
 
 <p>You can specify behavior in these cases by defining a <a href="http://www.rubydoc.info/gems/graphql/Schema#type_error-instance_method" target="_blank"><code>Schema#type_error</code></a> hook:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="n">type_error</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">type_error</span><span class="p">,</span> <span class="n">query_ctx</span><span class="p">)</span> <span class="p">{</span>
     <span class="c1"># Handle a failed runtime type coercion</span>
   <span class="p">}</span>
@@ -190,7 +190,7 @@
 
 <p>These options can prevent execution of malicious queries.</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="c1"># Prevent excessively deep or complex queries</span>
   <span class="n">max_depth</span> <span class="mi">8</span>
   <span class="n">max_complexity</span> <span class="mi">120</span>
@@ -223,7 +223,7 @@
 
 <p>Add a middleware to a schema by calling <code class="highlighter-rouge">middleware</code> in <code class="highlighter-rouge">Schema::define</code>:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="n">middleware</span> <span class="no">MyMiddleware</span><span class="p">.</span><span class="nf">new</span>
 <span class="k">end</span>
 </code></pre>
@@ -233,7 +233,7 @@
 
 <p>This middleware only continues evaluation if the <code class="highlighter-rouge">current_user</code> is permitted to read the target object:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="k">class</span> <span class="nc">AuthorizationMiddleware</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="k">class</span> <span class="nc">AuthorizationMiddleware</span>
   <span class="k">def</span> <span class="nf">call</span><span class="p">(</span><span class="n">parent_type</span><span class="p">,</span> <span class="n">parent_object</span><span class="p">,</span> <span class="n">field_definition</span><span class="p">,</span> <span class="n">field_args</span><span class="p">,</span> <span class="n">query_context</span><span class="p">)</span>
     <span class="n">current_user</span> <span class="o">=</span> <span class="n">query_context</span><span class="p">[</span><span class="ss">:current_user</span><span class="p">]</span> <span class="c1"># passed in when creating the query</span>
     <span class="k">if</span> <span class="n">current_user</span> <span class="o">&amp;&amp;</span> <span class="n">current_user</span><span class="p">.</span><span class="nf">can_read?</span><span class="p">(</span><span class="n">parent_object</span><span class="p">)</span>
@@ -250,7 +250,7 @@
 
 <p>Then, add the middleware to your schema:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="n">middleware</span> <span class="no">AuthorizationMiddleware</span><span class="p">.</span><span class="nf">new</span>
 <span class="k">end</span>
 </code></pre>
@@ -264,7 +264,7 @@
 
 <p>The minimal API is <code class="highlighter-rouge">.call(memo, visit_type, internal_representation_node)</code>. For example:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="n">ast_node_logger</span> <span class="o">=</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">memo</span><span class="p">,</span> <span class="n">visit_type</span><span class="p">,</span> <span class="n">internal_representation_node</span><span class="p">)</span> <span class="p">{</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">ast_node_logger</span> <span class="o">=</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">memo</span><span class="p">,</span> <span class="n">visit_type</span><span class="p">,</span> <span class="n">internal_representation_node</span><span class="p">)</span> <span class="p">{</span>
   <span class="k">if</span> <span class="n">visit_type</span> <span class="o">==</span> <span class="ss">:enter</span>
     <span class="nb">puts</span> <span class="s2">"Visiting </span><span class="si">#{</span><span class="n">internal_representation_node</span><span class="p">.</span><span class="nf">name</span><span class="si">}</span><span class="s2">!"</span>
   <span class="k">end</span>
@@ -299,7 +299,7 @@
 
 <p>For example:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="k">class</span> <span class="nc">CustomQueryExecutionStrategy</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="k">class</span> <span class="nc">CustomQueryExecutionStrategy</span>
   <span class="k">def</span> <span class="nf">initialize</span>
     <span class="c1"># ...</span>
   <span class="k">end</span>

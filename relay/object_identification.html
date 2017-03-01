@@ -97,7 +97,7 @@
 
 <p>You must provide a function for generating UUIDs and fetching objects with them. In your schema, define <code class="highlighter-rouge">id_from_object</code> and <code class="highlighter-rouge">object_from_id</code>:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="n">id_from_object</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">object</span><span class="p">,</span> <span class="n">type_definition</span><span class="p">,</span> <span class="n">query_ctx</span><span class="p">)</span> <span class="p">{</span>
     <span class="c1"># Call your application's UUID method here</span>
     <span class="c1"># It should return a string</span>
@@ -115,7 +115,7 @@
 
 <p>An unencrypted ID generator is provided in the gem. It uses <code class="highlighter-rouge">Base64</code> to encode values. You can use it like this:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="c1"># Create UUIDs by joining the type name &amp; ID, then base64-encoding it</span>
   <span class="n">id_from_object</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">object</span><span class="p">,</span> <span class="n">type_definition</span><span class="p">,</span> <span class="n">query_ctx</span><span class="p">)</span> <span class="p">{</span>
     <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">UniqueWithinType</span><span class="p">.</span><span class="nf">encode</span><span class="p">(</span><span class="n">type_definition</span><span class="p">.</span><span class="nf">name</span><span class="p">,</span> <span class="n">object</span><span class="p">.</span><span class="nf">id</span><span class="p">)</span>
@@ -142,7 +142,7 @@
 
 <p>To implement the node interface, include <code class="highlighter-rouge">GraphQL::Relay::Node.interface</code> in your list of interfaces:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="no">PostType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">PostType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="nb">name</span> <span class="s2">"Post"</span>
   <span class="c1"># Implement the "Node" interface for Relay</span>
   <span class="n">interfaces</span> <span class="p">[</span><span class="no">GraphQL</span><span class="o">::</span><span class="no">Relay</span><span class="o">::</span><span class="no">Node</span><span class="p">.</span><span class="nf">interface</span><span class="p">]</span>
@@ -153,7 +153,7 @@
 
 <p>To add a UUID field named <code class="highlighter-rouge">"id"</code>, use the <code class="highlighter-rouge">global_id_field</code> helper:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="no">PostType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">PostType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="nb">name</span> <span class="s2">"Post"</span>
   <span class="c1"># ...</span>
   <span class="c1"># `id` exposes the UUID</span>
@@ -169,7 +169,7 @@
 
 <p>You should also provide a root-level <code class="highlighter-rouge">node</code> field so that Relay can refetch objects from your schema. It is provided as <code class="highlighter-rouge">GraphQL::Relay::Node.field</code>, so you can attach it like this:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="no">QueryType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">QueryType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="nb">name</span> <span class="s2">"Query"</span>
   <span class="c1"># Used by Relay to lookup objects by UUID:</span>
   <span class="n">field</span> <span class="ss">:node</span><span class="p">,</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Relay</span><span class="o">::</span><span class="no">Node</span><span class="p">.</span><span class="nf">field</span>
@@ -182,7 +182,7 @@
 
 <p>You can also provide a root-level <code class="highlighter-rouge">nodes</code> field so that Relay can refetch objects by IDs. Similarly, it is provided as <code class="highlighter-rouge">GraphQL::Relay::Node.plural_field</code>:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="no">QueryType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">QueryType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="nb">name</span> <span class="s2">"Query"</span>
   <span class="c1"># Fetches a list of objects given a list of IDs</span>
   <span class="n">field</span> <span class="ss">:nodes</span><span class="p">,</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Relay</span><span class="o">::</span><span class="no">Node</span><span class="p">.</span><span class="nf">plural_field</span>

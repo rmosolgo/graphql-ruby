@@ -92,7 +92,7 @@
 
 <p>To add mutations to your GraphQL schema, define a mutation type and pass it to your schema:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="c1"># Define the mutation type</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># Define the mutation type</span>
 <span class="no">MutationType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="nb">name</span> <span class="s2">"Mutation"</span>
   <span class="c1"># ...</span>
@@ -116,7 +116,7 @@
 
 <p>After defining a mutation (see below), add it to your mutation type:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="no">MutationType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">MutationType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="nb">name</span> <span class="s2">"Mutation"</span>
   <span class="c1"># Add the mutation's derived field to the mutation type</span>
   <span class="n">field</span> <span class="ss">:addComment</span><span class="p">,</span> <span class="ss">field: </span><span class="no">AddCommentMutation</span><span class="p">.</span><span class="nf">field</span>
@@ -135,7 +135,7 @@
 
 <p>For example:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="no">AddCommentMutation</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Relay</span><span class="o">::</span><span class="no">Mutation</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">AddCommentMutation</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Relay</span><span class="o">::</span><span class="no">Mutation</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="c1"># Used to name derived types, eg `"AddCommentInput"`:</span>
   <span class="nb">name</span> <span class="s2">"AddComment"</span>
 
@@ -176,7 +176,7 @@
 
 <p>Each of these derived objects maintains a reference to the parent <code class="highlighter-rouge">Mutation</code> in the <code class="highlighter-rouge">mutation</code> attribute. So you can access it from the derived object:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="c1"># Define a mutation:</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># Define a mutation:</span>
 <span class="no">AddCommentMutation</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Relay</span><span class="o">::</span><span class="no">Mutation</span><span class="p">.</span><span class="nf">define</span> <span class="p">{</span> <span class="p">.</span><span class="nf">.</span><span class="o">.</span> <span class="p">}</span>
 <span class="c1"># Get the derived input type:</span>
 <span class="no">AddCommentMutationInput</span> <span class="o">=</span> <span class="no">AddCommentMutation</span><span class="p">.</span><span class="nf">input_type</span>
@@ -204,7 +204,7 @@
 
 <p>Instead of specifying <code class="highlighter-rouge">return_field</code>s, you can specify a <code class="highlighter-rouge">return_type</code> for a mutation. This type will be used to expose the object returned from <code class="highlighter-rouge">resolve</code>.</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="no">CreateUser</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Relay</span><span class="o">::</span><span class="no">Mutation</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">CreateUser</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Relay</span><span class="o">::</span><span class="no">Mutation</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="n">return_type</span> <span class="no">UserMutationResultType</span>
   <span class="c1"># ...</span>
   <span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">input</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
@@ -224,7 +224,7 @@
 The result of the <code class="highlighter-rouge">resolve</code> block will be passed to the field definitions in the interfaces,
 and both interface-specific and mutation-specific fields will be available to clients.</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="no">MutationResult</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">InterfaceType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">MutationResult</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">InterfaceType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="nb">name</span> <span class="s2">"MutationResult"</span>
   <span class="n">field</span> <span class="ss">:success</span><span class="p">,</span> <span class="o">!</span><span class="n">types</span><span class="o">.</span><span class="no">Boolean</span>
   <span class="n">field</span> <span class="ss">:notice</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">String</span>

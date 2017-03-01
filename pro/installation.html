@@ -88,13 +88,13 @@
           <h1 class="guide-header">GraphQL::Pro — Installation</h1>
           <p><code class="highlighter-rouge">GraphQL::Pro</code> is distributed as a Ruby gem. When you buy <code class="highlighter-rouge">GraphQL::Pro</code>, you’ll receive credentials, which you can register with bundler:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>bundle config gems.graphql.pro <span class="c">#{YOUR_CREDENTIALS}</span>
+<div class="language-sh highlighter-rouge"><pre class="highlight"><code>bundle config gems.graphql.pro <span class="c">#{YOUR_CREDENTIALS}</span>
 </code></pre>
 </div>
 
 <p>Then, you can add <code class="highlighter-rouge">graphql-pro</code> to your Gemfile, which a custom <code class="highlighter-rouge">source</code>:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="n">source</span> <span class="s2">"gems.graphql.pro"</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">source</span> <span class="s2">"gems.graphql.pro"</span> <span class="k">do</span>
   <span class="n">gem</span> <span class="s2">"graphql-pro"</span>
 <span class="k">end</span>
 </code></pre>
@@ -102,7 +102,7 @@
 
 <p>Then, install the gem with Bundler:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>bundle install
+<div class="language-sh highlighter-rouge"><pre class="highlight"><code>bundle install
 </code></pre>
 </div>
 
@@ -112,7 +112,7 @@
 
 <p>To update <code class="highlighter-rouge">GraphQL::Pro</code>, use Bundler:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>bundle update graphql-pro
+<div class="language-sh highlighter-rouge"><pre class="highlight"><code>bundle update graphql-pro
 </code></pre>
 </div>
 
@@ -128,7 +128,7 @@
 
 <p>First, get the checksum:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="c"># For example, to get the checksum of graphql-pro 1.0.0:</span>
+<div class="language-sh highlighter-rouge"><pre class="highlight"><code><span class="c"># For example, to get the checksum of graphql-pro 1.0.0:</span>
 <span class="gp">$ </span>gem fetch graphql-pro -v 1.0.0 --source https://YOUR_KEY@gems.graphql.pro
 <span class="gp">$ </span>ruby -rdigest/sha2 -e <span class="s2">"puts Digest::SHA512.new.hexdigest(File.read('graphql-pro-1.0.0.gem'))"</span>
 </code></pre>

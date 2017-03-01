@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>GraphQL Ruby - GraphQL::Pro — Instrumentation For Appsignal, New Relic, Scout and Skylight</title>
+    <title>GraphQL Ruby - GraphQL::Pro — Instrumentation For New Relic, Scout and Skylight</title>
     <link rel="stylesheet" href="/graphql-ruby/css/main.css">
     <link rel="icon" href="/graphql-ruby/graphql-ruby-icon.png">
     <meta name="generator">
@@ -85,8 +85,8 @@
           <h3><a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a></h3>
         </div>
         <div class="cell -9of12">
-          <h1 class="guide-header">GraphQL::Pro — Instrumentation For Appsignal, New Relic, Scout and Skylight</h1>
-          <p><code class="highlighter-rouge">GraphQL::Pro</code> includes instrumentation for several platforms which add:</p>
+          <h1 class="guide-header">GraphQL::Pro — Instrumentation For New Relic, Scout and Skylight</h1>
+          <p><code class="highlighter-rouge">GraphQL::Pro</code> includes instrumentation for <a href="https://newrelic.com/">New Relic</a>, <a href="https://scoutapp.com">Scout</a>, and <a href="skylight.io">Skylight</a>. All three platforms add:</p>
 
 <ul>
   <li>Tracking queries by name</li>
@@ -94,11 +94,9 @@
   <li>Observing database calls during resolution</li>
 </ul>
 
-<p>By default, all fields in the schema are monitored, but you can <a href="#opting-in-opting-out">opt in or opt out</a> on a type-by-type or field-by-field basis.</p>
-
 <p>To add monitoring, provide one or more platform names to <code class="highlighter-rouge">monitoring(...)</code>:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="c1"># ...</span>
   <span class="c1"># Send query info to New Relic:</span>
   <span class="n">monitoring</span><span class="p">(</span><span class="ss">:new_relic</span><span class="p">)</span>
@@ -108,157 +106,34 @@
 </code></pre>
 </div>
 
-<p>Supported platforms are:</p>
+<p>Supported platforms are <code class="highlighter-rouge">:new_relic</code>, <code class="highlighter-rouge">:scout</code> and <code class="highlighter-rouge">:skylight</code>.</p>
 
-<ul>
-  <li><a href="#appsignal">Appsignal</a></li>
-  <li><a href="#new-relic">New Relic</a></li>
-  <li><a href="#scout">Scout</a></li>
-  <li><a href="#skylight">Skylight</a></li>
-</ul>
+<h2 id="previews">Previews</h2>
 
-<h2 id="opting-in-opting-out">Opting in, Opting out</h2>
+<div class="img-set">
 
-<p>By default, <code class="highlighter-rouge">GraphQL::Pro</code> measures the resolution time of every field in the schema.</p>
-
-<p>You can <strong>opt out on a field- or type-basis</strong> by defining <code class="highlighter-rouge">monitoring(false)</code> in a field or type definition. For example:</p>
-
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="c1"># Fields returning `Post` will _not_ be monitored</span>
-<span class="no">PostType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
-  <span class="nb">name</span> <span class="s2">"Post"</span>
-  <span class="n">monitoring</span> <span class="kp">false</span>
-  <span class="c1"># ...</span>
-<span class="k">end</span>
-
-<span class="no">CommentType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
-  <span class="c1"># ...</span>
-  <span class="c1"># This field won't be monitored:</span>
-  <span class="n">field</span> <span class="ss">:created_at</span><span class="p">,</span> <span class="no">DateTimeType</span><span class="p">,</span> <span class="ss">monitoring: </span><span class="kp">false</span>
-
-  <span class="c1"># This field won't be monitored</span>
-  <span class="n">field</span> <span class="ss">:author</span><span class="p">,</span> <span class="no">AuthorType</span> <span class="k">do</span>
-    <span class="n">monitoring</span> <span class="kp">false</span>
-    <span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span> <span class="p">{</span> <span class="p">.</span><span class="nf">.</span><span class="o">.</span> <span class="p">}</span>
-  <span class="k">end</span>
-<span class="k">end</span>
-</code></pre>
-</div>
-
-<p>You can also <strong>opt out of all scalars</strong> by providing <code class="highlighter-rouge">monitor_scalars: false</code> at schema-level. For example:</p>
-
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
-  <span class="c1"># ...</span>
-  <span class="c1"># Don't monitor any Strings, Ints, Floats, IDs, Booleans, or custom scalars</span>
-  <span class="n">monitoring</span><span class="p">(</span><span class="ss">:skylight</span><span class="p">,</span> <span class="ss">monitor_scalars: </span><span class="kp">false</span><span class="p">)</span>
-<span class="k">end</span>
-</code></pre>
-</div>
-
-<p>If you opt out of scalars, you can specify <code class="highlighter-rouge">monitoring(true)</code> to keep an eye on <em>specific</em> fields or scalar types:</p>
-
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="no">CommentType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
-  <span class="c1"># ...</span>
-  <span class="c1"># Opt in to monitoring this field:</span>
-  <span class="n">field</span> <span class="ss">:rating</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">Float</span><span class="p">,</span> <span class="ss">monitoring: </span><span class="kp">true</span>
-<span class="k">end</span>
-
-<span class="no">DateTimeType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Scalar</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
-  <span class="c1"># ...</span>
-  <span class="c1"># Always monitor fields that return this type:</span>
-  <span class="n">monitoring</span> <span class="kp">true</span>
-<span class="k">end</span>
-</code></pre>
-</div>
-
-<p>This gives you fine-tuned control over how your schema is instrumented.</p>
-
-<h2 id="appsignal">AppSignal</h2>
-
-<p>Add <a href="https://appsignal.com/">AppSignal</a> instrumentation with <code class="highlighter-rouge">monitoring(:appsignal)</code>, for example:</p>
-
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
-  <span class="c1"># ...</span>
-  <span class="n">monitoring</span><span class="p">(</span><span class="ss">:appsignal</span><span class="p">)</span>
-<span class="k">end</span>
-</code></pre>
-</div>
-
-<div class="monitoring-img-group">
-  
-        <a href="/graphql-ruby/pro/appsignal_1.png" target="_blank">
-          <img src="/graphql-ruby/pro/appsignal_1.png" title="appsignal monitoring" />
-        </a>
-      
-  
-        <a href="/graphql-ruby/pro/appsignal_2.png" target="_blank">
-          <img src="/graphql-ruby/pro/appsignal_2.png" title="appsignal monitoring" />
-        </a>
-      
-</div>
-
-<h2 id="new-relic">New Relic</h2>
-
-<p>Add <a href="https://newrelic.com/">New Relic</a> instrumentation with <code class="highlighter-rouge">monitoring(:new_relic)</code>, for example:</p>
-
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
-  <span class="c1"># ...</span>
-  <span class="n">monitoring</span><span class="p">(</span><span class="ss">:new_relic</span><span class="p">)</span>
-<span class="k">end</span>
-</code></pre>
-</div>
-
-<div class="monitoring-img-group">
-  
         <a href="/graphql-ruby/pro/newrelic_1.png" target="_blank">
-          <img src="/graphql-ruby/pro/newrelic_1.png" title="new relic monitoring" />
+          <img class="img-set-member" src="/graphql-ruby/pro/newrelic_1.png" title="GraphQL New Relic Instrumentation 1" />
         </a>
       
-  
+
         <a href="/graphql-ruby/pro/newrelic_2.png" target="_blank">
-          <img src="/graphql-ruby/pro/newrelic_2.png" title="new relic monitoring" />
+          <img class="img-set-member" src="/graphql-ruby/pro/newrelic_2.png" title="GraphQL New Relic Instrumentation 2" />
         </a>
       
-</div>
 
-<h2 id="scout">Scout</h2>
-
-<p>Add <a href="https://scoutapp.com">Scout</a> instrumentation with <code class="highlighter-rouge">monitoring(:scout)</code>, for example:</p>
-
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
-  <span class="c1"># ...</span>
-  <span class="n">monitoring</span><span class="p">(</span><span class="ss">:scout</span><span class="p">)</span>
-<span class="k">end</span>
-</code></pre>
-</div>
-
-<div class="monitoring-img-group">
-  
         <a href="/graphql-ruby/pro/scout_1.png" target="_blank">
-          <img src="/graphql-ruby/pro/scout_1.png" title="scout monitoring" />
+          <img class="img-set-member" src="/graphql-ruby/pro/scout_1.png" title="GraphQL Scout Instrumentation 1" />
         </a>
       
-  
+
         <a href="/graphql-ruby/pro/scout_2.png" target="_blank">
-          <img src="/graphql-ruby/pro/scout_2.png" title="scout monitoring" />
+          <img class="img-set-member" src="/graphql-ruby/pro/scout_2.png" title="GraphQL Scout Instrumentation 2" />
         </a>
       
-</div>
 
-<h2 id="skylight">Skylight</h2>
-
-<p>Add <a href="http://skylight.io">Skylight</a> instrumentation with <code class="highlighter-rouge">monitoring(:skylight)</code>, for example:</p>
-
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
-  <span class="c1"># ...</span>
-  <span class="n">monitoring</span><span class="p">(</span><span class="ss">:skylight</span><span class="p">)</span>
-<span class="k">end</span>
-</code></pre>
-</div>
-
-<div class="monitoring-img-group">
-  
         <a href="/graphql-ruby/pro/skylight_1.png" target="_blank">
-          <img src="/graphql-ruby/pro/skylight_1.png" title="skylight monitoring" />
+          <img class="img-set-member" src="/graphql-ruby/pro/skylight_1.png" title="GraphQL Skylight Instrumentation 1" />
         </a>
       
 </div>

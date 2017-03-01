@@ -28,7 +28,7 @@ html{font-size:12px}*{box-sizing:border-box;text-rendering:geometricPrecision}bo
 
 .hack em { font-style: italic; }
 .hack strong { font-weight: bold; }
-.hack p code {
+.hack code {
   font-weight: normal;
   color: #cd3b60;
   border: 1px solid #cca5a5;
@@ -69,7 +69,7 @@ h1.guide-header {
   font-size: 1.5em;
 }
 
-.monitoring-img-group {
+.img-set {
   display: flex;
   flex-direction: row;
   margin-bottom: 20px;
@@ -78,9 +78,13 @@ h1.guide-header {
   align-items: center;
 }
 
-.monitoring-img-group img {
+.img-set .img-set-member {
   max-height: 200px;
   max-width: 500px;
+}
+
+.img-set a {
+  margin: 20px 0px;
 }
 
 /* pygments CSS, github theme */

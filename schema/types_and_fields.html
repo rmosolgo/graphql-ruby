@@ -115,7 +115,7 @@
   <li>
     <p><strong>By value</strong>. Pass a variable which holds the type.</p>
 
-    <div class="highlighter-rouge"><pre class="highlight"><code><span class="c1"># constant</span>
+    <div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># constant</span>
 <span class="n">field</span> <span class="ss">:team</span><span class="p">,</span> <span class="no">TeamType</span>
 <span class="c1"># local variable</span>
 <span class="n">field</span> <span class="ss">:stadium</span><span class="p">,</span> <span class="n">stadium_type</span>
@@ -125,7 +125,7 @@
   <li>
     <p><strong>By proc</strong>, which will be lazy-evaluated to look up a type.</p>
 
-    <div class="highlighter-rouge"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:team</span><span class="p">,</span> <span class="o">-&gt;</span> <span class="p">{</span> <span class="no">TeamType</span> <span class="p">}</span>
+    <div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:team</span><span class="p">,</span> <span class="o">-&gt;</span> <span class="p">{</span> <span class="no">TeamType</span> <span class="p">}</span>
 <span class="n">field</span> <span class="ss">:stadium</span><span class="p">,</span> <span class="o">-&gt;</span> <span class="p">{</span> <span class="no">LookupTypeForModel</span><span class="p">.</span><span class="nf">lookup</span><span class="p">(</span><span class="no">Stadium</span><span class="p">)</span> <span class="p">}</span>
 </code></pre>
     </div>
@@ -136,7 +136,7 @@
 
 <p><a href="http://www.rubydoc.info/gems/graphql/GraphQL/ObjectType" target="_blank"><code>GraphQL::ObjectType</code></a>s and <a href="http://www.rubydoc.info/gems/graphql/GraphQL/InterfaceType" target="_blank"><code>GraphQL::InterfaceType</code></a>s may expose their values with <em>fields</em>. A field definition looks like this:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="no">PostType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">PostType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="c1"># ...</span>
   <span class="c1">#     name  , type        , description (optional)</span>
   <span class="n">field</span> <span class="ss">:title</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">String</span><span class="p">,</span> <span class="s2">"The title of the Post"</span>
@@ -148,7 +148,7 @@
 
 <p>You can define a different resolution by providing a <code class="highlighter-rouge">resolve</code> function:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="no">PostType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">PostType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="c1"># ...</span>
   <span class="c1">#     name   , type        , description (optional)</span>
   <span class="n">field</span> <span class="ss">:teaser</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">String</span><span class="p">,</span> <span class="s2">"The teaser of the Post"</span> <span class="k">do</span>
@@ -172,7 +172,7 @@
 
 <p>In fact, the <code class="highlighter-rouge">field do ... end</code> block is passed to <a href="http://www.rubydoc.info/gems/graphql/GraphQL/Field" target="_blank"><code>GraphQL::Field</code></a>’s <code class="highlighter-rouge">.define</code> method, so you can define many things there:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="n">field</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">field</span> <span class="k">do</span>
   <span class="nb">name</span> <span class="s2">"teaser"</span>
   <span class="n">type</span> <span class="n">types</span><span class="o">.</span><span class="no">String</span>
   <span class="n">description</span> <span class="s2">"..."</span>
@@ -189,7 +189,7 @@
 
 <p>Arguments are defined with the <code class="highlighter-rouge">argument</code> helper:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:search_posts</span><span class="p">,</span> <span class="n">types</span><span class="p">[</span><span class="no">PostType</span><span class="p">]</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:search_posts</span><span class="p">,</span> <span class="n">types</span><span class="p">[</span><span class="no">PostType</span><span class="p">]</span> <span class="k">do</span>
   <span class="n">argument</span> <span class="ss">:category</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">String</span>
   <span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
     <span class="n">args</span><span class="p">[</span><span class="ss">:category</span><span class="p">]</span>
@@ -206,8 +206,20 @@
 
 <p>Use <code class="highlighter-rouge">!</code> to mark an argument as <em>required</em>:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="c1"># This argument is a required string:</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># This argument is a required string:</span>
 <span class="n">argument</span> <span class="ss">:category</span><span class="p">,</span> <span class="o">!</span><span class="n">types</span><span class="o">.</span><span class="no">String</span>
+</code></pre>
+</div>
+
+<p>Use <code class="highlighter-rouge">as: :alternateName</code> to use a different key from within your resolvers while
+exposing another key to clients.</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:post</span><span class="p">,</span> <span class="no">PostType</span> <span class="k">do</span>
+  <span class="n">argument</span> <span class="ss">:postId</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">Id</span><span class="p">,</span> <span class="ss">as: :id</span>
+  <span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
+    <span class="no">Post</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="s1">'id'</span><span class="p">])</span>
+  <span class="p">}</span>
+<span class="k">end</span>
 </code></pre>
 </div>
 
@@ -221,9 +233,9 @@
   <li><a href="http://www.rubydoc.info/gems/graphql/GraphQL/NonNullType" target="_blank"><code>GraphQL::NonNullType</code></a>s of a valid input type</li>
 </ul>
 
-<p>The <code class="highlighter-rouge">args</code> parameter of a <code class="highlighter-rouge">resolve</code> function will always be a <a href="http://www.rubydoc.info/gems/graphql/GraphQL/Query/Arguments" target="_blank"><code>GraphQL::Query::Arguments</code></a>. You can access specific arguments with <code class="highlighter-rouge">["arg_name"]</code> or <code class="highlighter-rouge">[:arg_name]</code>. You recursively turn it into a Ruby Hash with <code class="highlighter-rouge">to_h</code>. Inside <code class="highlighter-rouge">args</code>, scalars will be parsed into Ruby values and enums will be converted to their <code class="highlighter-rouge">value:</code> (if one was provided).</p>
+<p>The <code class="highlighter-rouge">args</code> parameter of a <code class="highlighter-rouge">resolve</code> function will always be a <code class="highlighter-rouge">&lt;a href="http://www.rubydoc.info/gems/graphql/GraphQL/Query/Arguments" target="_blank"&gt;&lt;code&gt;GraphQL::Query::Arguments&lt;/code&gt;&lt;/a&gt;</code>. You can access specific arguments with <code class="highlighter-rouge">["arg_name"]</code> or <code class="highlighter-rouge">[:arg_name]</code>. You recursively turn it into a Ruby Hash with <code class="highlighter-rouge">to_h</code>. Inside <code class="highlighter-rouge">args</code>, scalars will be parsed into Ruby values and enums will be converted to their <code class="highlighter-rouge">value:</code> (if one was provided).</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
   <span class="n">args</span><span class="p">[</span><span class="s2">"category"</span><span class="p">]</span> <span class="o">==</span> <span class="n">args</span><span class="p">[</span><span class="ss">:category</span><span class="p">]</span>
   <span class="c1"># =&gt; true</span>
   <span class="n">args</span><span class="p">.</span><span class="nf">to_h</span>
@@ -233,26 +245,62 @@
 </code></pre>
 </div>
 
+<h2 id="mutations">Mutations</h2>
+
+<p>Registering a mutation root allows to define fields that can mutate your data.</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">Schema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+  <span class="n">query</span> <span class="no">QueryRoot</span>
+  <span class="n">mutation</span> <span class="no">MutationRoot</span>
+<span class="k">end</span>
+
+<span class="no">MutationRoot</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+  <span class="nb">name</span> <span class="s2">"Mutation"</span>
+
+  <span class="n">field</span> <span class="ss">:addPost</span><span class="p">,</span> <span class="no">Post</span> <span class="k">do</span>
+    <span class="n">description</span> <span class="s2">"Adds a Post."</span>
+
+    <span class="c1"># Use Input Types to define complex argument types</span>
+    <span class="n">argument</span> <span class="ss">:post</span><span class="p">,</span> <span class="no">PostInputType</span>
+    <span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span> <span class="p">{</span>
+      <span class="n">title</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="s1">'post'</span><span class="p">][</span><span class="s1">'title'</span><span class="p">]</span>
+      <span class="n">description</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="s1">'post'</span><span class="p">][</span><span class="s1">'description'</span><span class="p">]</span>
+      <span class="no">Post</span><span class="p">.</span><span class="nf">create</span><span class="p">(</span><span class="ss">title: </span><span class="n">title</span><span class="p">,</span> <span class="ss">description: </span><span class="n">description</span><span class="p">)</span>
+    <span class="p">}</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="no">PostInputType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">InputObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+  <span class="nb">name</span> <span class="s2">"PostInputType"</span>
+  <span class="n">description</span> <span class="s2">"Properties for creating a Post"</span>
+
+  <span class="n">argument</span> <span class="ss">:title</span><span class="p">,</span> <span class="o">!</span><span class="n">types</span><span class="o">.</span><span class="no">String</span> <span class="k">do</span>
+    <span class="n">description</span> <span class="s2">"Title of the post."</span>
+  <span class="k">end</span>
+
+  <span class="n">argument</span> <span class="ss">:description</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">String</span> <span class="k">do</span>
+    <span class="n">description</span> <span class="s2">"Description of the post."</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
 <h2 id="extending-type-and-field-definitions">Extending type and field definitions</h2>
 
 <p>Types, fields, and arguments have a <code class="highlighter-rouge">metadata</code> hash which accepts values during definition.</p>
 
 <p>First, make a custom definition:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">accepts_definitions</span> <span class="ss">resolves_to_class_names: </span><span class="no">GraphQL</span><span class="o">::</span><span class="no">Define</span><span class="p">.</span><span class="nf">assign_metadata_key</span><span class="p">(</span><span class="ss">:resolves_to_class_names</span><span class="p">)</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">accepts_definitions</span> <span class="ss">resolves_to_class_names: </span><span class="no">GraphQL</span><span class="o">::</span><span class="no">Define</span><span class="p">.</span><span class="nf">assign_metadata_key</span><span class="p">(</span><span class="ss">:resolves_to_class_names</span><span class="p">)</span>
 <span class="c1"># or:</span>
 <span class="c1"># GraphQL::Field.accepts_definitions(...)</span>
 <span class="c1"># GraphQL::Argument.accepts_definitions(...)</span>
-
-<span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
-  <span class="c1"># ...</span>
-<span class="k">end</span>
 </code></pre>
 </div>
 
 <p>Then, use the custom definition:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="no">Post</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">Post</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="c1"># ...</span>
   <span class="n">resolves_to_class_names</span> <span class="p">[</span><span class="s2">"Post"</span><span class="p">,</span> <span class="s2">"StaffUpdate"</span><span class="p">]</span>
 <span class="k">end</span>
@@ -261,7 +309,7 @@
 
 <p>Access <code class="highlighter-rouge">type.metadata</code> later:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="c1"># ...</span>
   <span class="c1"># Use the type's declared `resolves_to_class_names`</span>
   <span class="c1"># to figure out if `obj` is a member of that type</span>

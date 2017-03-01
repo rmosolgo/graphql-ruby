@@ -92,14 +92,14 @@
 
 <p>You can install <code class="highlighter-rouge">graphql</code> from RubyGems by adding to your application’s <code class="highlighter-rouge">Gemfile</code>:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="c1"># Gemfile</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># Gemfile</span>
 <span class="n">gem</span> <span class="s2">"graphql"</span>
 </code></pre>
 </div>
 
 <p>Then, running <code class="highlighter-rouge">bundle install</code>:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="gp">$ </span>bundle install
+<div class="language-sh highlighter-rouge"><pre class="highlight"><code><span class="gp">$ </span>bundle install
 </code></pre>
 </div>
 
@@ -117,7 +117,7 @@
 
 <p>Types describe objects in your application and form the basis for <a href="http://graphql.org/learn/schema/#type-system">GraphQL’s type system</a>.</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="no">PostType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">PostType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="nb">name</span> <span class="s2">"Post"</span>
   <span class="n">description</span> <span class="s2">"A blog post"</span>
   <span class="c1"># `!` marks a field as "non-null"</span>
@@ -140,7 +140,7 @@
 
 <p>Before building a schema, you have to define an <a href="http://graphql.org/learn/schema/#the-query-and-mutation-types">entry point to your system, the “query root”</a>:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="no">QueryType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">QueryType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="nb">name</span> <span class="s2">"Query"</span>
   <span class="n">description</span> <span class="s2">"The query root of this schema"</span>
 
@@ -156,7 +156,7 @@
 
 <p>Then, build a schema with <code class="highlighter-rouge">QueryType</code> as the query entry point:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="no">Schema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">Schema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="n">query</span> <span class="no">QueryType</span>
 <span class="k">end</span>
 </code></pre>
@@ -168,7 +168,7 @@
 
 <p>You can execute queries from a query string:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="n">query_string</span> <span class="o">=</span> <span class="s2">"
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">query_string</span> <span class="o">=</span> <span class="s2">"
 {
   post(id: 1) {
     id
