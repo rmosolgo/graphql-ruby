@@ -8,6 +8,23 @@
 
 ### Bug Fix
 
+## 1.2.0 (1 Mar 2017)
+
+### New Features
+
+- Authorize fields based on their parent object, for example:
+
+  ```ruby
+  AccountType = GraphQL::ObjectType.define do
+    name "Account"
+    # This field is visible to all users:
+    field :name, types.String
+    # This is only visible when the current user is an `:owner`
+    # of this account
+    field :account_balance, types.Int, authorize: { parent_role: :owner }
+  end
+  ```
+
 ## 1.1.1 (22 Feb 2017)
 
 ### Bug Fixes
