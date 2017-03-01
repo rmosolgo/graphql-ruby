@@ -82,7 +82,7 @@ StudentType = GraphQL::ObjectType.define do
   field :gpa, types.Float do
     # only show `Student.gpa` if the
     # student is the viewer:
-    authorize { parent_role: :current_user }
+    authorize parent_role: :current_user
   end
 end
 ```
