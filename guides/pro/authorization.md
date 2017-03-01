@@ -207,7 +207,7 @@ For list types, each item of the list is authorized individually.
 
 ```ruby
 MySchema = GraphQL::Schema.define do
-  authorize(:pundit)
+  authorization(:pundit)
 end
 ```
 
@@ -247,7 +247,7 @@ view: :viewer
 
 ```ruby
 MySchema = GraphQL::Schema.define do
-  authorize(:cancan)
+  authorization(:cancan)
 end
 ```
 
@@ -264,3 +264,15 @@ For compile-time checks (`view` and `access`), the object is always `nil`.
 field :social_security_number, types.String, view: :admin
 # => calls `can?(:admin, nil)`
 ```
+
+### Custom Ability Class
+
+By default, GraphQL looks for a top-level `Ability` class. You can specify a different class with the `ability_class:` option. For example:
+
+```ruby
+MySchema = GraphQL::Schema.define do
+  authorization(:cancan, ability_class: Permissions::CustomAbility)
+end
+```
+
+Now, GraphQL will use `Permissions::CustomAbility#can?` to determine permissions.
