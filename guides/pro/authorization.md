@@ -71,6 +71,24 @@ Type-level permissions are applied according to an object's runtime type (unions
 
 If an object doesn't pass permission checks, it is removed from the response. If the object is part of a list, it is removed from the list.
 
+### Authorize Values by Parent
+
+You can also limit access to fields based on their parent objects with `parent_role:`. For example, to restrict a student's GPA to that student:
+
+```ruby
+StudentType = GraphQL::ObjectType.define do
+  name "Student"
+  field :name, !types.String
+  field :gpa, types.Float do
+    # only show `Student.gpa` if the
+    # student is the viewer:
+    authorize { parent_role: :current_user }
+  end
+end
+```
+
+This way, you can serve a subset of fields based on the object being queried.
+
 ## "Compile" Time Authorization
 
 Before executing a query, GraphQL checks that it is valid. You can assert that users only access fields and types which are allowed to them.
@@ -214,7 +232,7 @@ end
 field :balance, AccountBalanceType, authorize: { role: :admin, pundit_policy_name: "TotalBalancePolicy" }
 ```
 
-The permission is defined as a hash with a `role:` key and `pundit_policy_name:` key. You can pass a hash for `view:` and `access:` too.
+The permission is defined as a hash with a `role:` key and `pundit_policy_name:` key. You can pass a hash for `view:` and `access:` too. For `parent_role:`, you can specify a name with `parent_pundit_policy_name:`.
 
 For `:pundit`, methods will be called with an extra `?`, so
 
