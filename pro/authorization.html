@@ -300,7 +300,7 @@
 <p><code class="highlighter-rouge">GraphQL::Pro</code> includes built-in support for <a href="https://github.com/elabs/pundit">Pundit</a>:</p>
 
 <div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
-  <span class="n">authorize</span><span class="p">(</span><span class="ss">:pundit</span><span class="p">)</span>
+  <span class="n">authorization</span><span class="p">(</span><span class="ss">:pundit</span><span class="p">)</span>
 <span class="k">end</span>
 </code></pre>
 </div>
@@ -342,7 +342,7 @@
 <p><code class="highlighter-rouge">GraphQL::Pro</code> includes built-in support for <a href="https://github.com/CanCanCommunity/cancancan">CanCan</a>:</p>
 
 <div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
-  <span class="n">authorize</span><span class="p">(</span><span class="ss">:cancan</span><span class="p">)</span>
+  <span class="n">authorization</span><span class="p">(</span><span class="ss">:cancan</span><span class="p">)</span>
 <span class="k">end</span>
 </code></pre>
 </div>
@@ -360,6 +360,18 @@
 <span class="c1"># =&gt; calls `can?(:admin, nil)`</span>
 </code></pre>
 </div>
+
+<h3 id="custom-ability-class">Custom Ability Class</h3>
+
+<p>By default, GraphQL looks for a top-level <code class="highlighter-rouge">Ability</code> class. You can specify a different class with the <code class="highlighter-rouge">ability_class:</code> option. For example:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+  <span class="n">authorization</span><span class="p">(</span><span class="ss">:cancan</span><span class="p">,</span> <span class="ss">ability_class: </span><span class="no">Permissions</span><span class="o">::</span><span class="no">CustomAbility</span><span class="p">)</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<p>Now, GraphQL will use <code class="highlighter-rouge">Permissions::CustomAbility#can?</code> to determine permissions.</p>
 
         </div>
       </div>

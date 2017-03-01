@@ -153,7 +153,7 @@
 <div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="p">{</span> <span class="p">.</span><span class="nf">.</span><span class="o">.</span> <span class="p">}</span>
 <span class="c1"># Always use the offset-based connection, override `GraphQL::Pro::RelationConnection`</span>
 <span class="no">GraphQL</span><span class="o">::</span><span class="no">Relay</span><span class="o">::</span><span class="no">BaseConnection</span><span class="p">.</span><span class="nf">register_connection_implementation</span><span class="p">(</span>
-  <span class="no">ActiveRecord</span><span class="p">,</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Relay</span><span class="o">::</span><span class="no">RelationConnection</span>
+  <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Relation</span><span class="p">,</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Relay</span><span class="o">::</span><span class="no">RelationConnection</span>
 <span class="p">)</span>
 </code></pre>
 </div>
