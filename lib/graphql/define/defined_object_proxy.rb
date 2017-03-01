@@ -2,6 +2,8 @@
 module GraphQL
   module Define
     class DefinedObjectProxy
+      attr_reader :target
+
       def initialize(target)
         @target = target
         @dictionary = target.class.dictionary
@@ -9,6 +11,15 @@ module GraphQL
 
       def types
         GraphQL::Define::TypeDefiner.instance
+      end
+
+      def use(plugin, **kwargs)
+        # https://bugs.ruby-lang.org/issues/10708
+        if kwargs == {}
+          plugin.use(self)
+        else
+          plugin.use(self, **kwargs)
+        end
       end
 
       def method_missing(name, *args, &block)

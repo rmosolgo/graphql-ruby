@@ -116,6 +116,44 @@ describe GraphQL::Define::InstanceDefinable do
     end
   end
 
+  describe "#use" do
+    class TestPlugin
+      attr_reader :target
+
+      def use(defn)
+        @target = defn.target
+        defn.name('Arugula')
+      end
+    end
+
+    module TestPluginWithKwargs
+      extend self
+
+      def use(defn, name:)
+        defn.name(name)
+      end
+    end
+
+    it "sends a message to the specified plugin's :use method with access to the proxy object and target object" do
+      plugin = TestPlugin.new
+
+      arugula = Garden::Vegetable.define do
+        use plugin
+      end
+
+      assert_equal 'Arugula', arugula.name
+      assert_equal arugula, plugin.target
+    end
+
+    it "passes kwargs to plugin's `use` method" do
+      arugula = Garden::Vegetable.define do
+        use TestPluginWithKwargs, name: 'Arugula'
+      end
+
+      assert_equal 'Arugula', arugula.name
+    end
+  end
+
   describe "typos" do
     it "provides the right class name, method name and line number" do
       err = assert_raises(NoMethodError) {

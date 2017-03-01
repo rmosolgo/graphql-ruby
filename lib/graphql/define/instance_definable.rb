@@ -21,18 +21,22 @@ module GraphQL
     #
     # @example Make a class definable
     #   class Car
-    #     attr_accessor :make, :model
+    #     include GraphQL::Define::InstanceDefinable
+    #     attr_accessor :make, :model, :doors
     #     accepts_definitions(
     #       # These attrs will be defined with plain setters, `{attr}=`
     #       :make, :model,
     #       # This attr has a custom definition which applies the config to the target
     #       doors: ->(car, doors_count) { doors_count.times { car.doors << Door.new } }
     #     )
+    #     ensure_defined(:make, :model, :doors)
     #
     #     def initialize
     #       @doors = []
     #     end
     #   end
+    #
+    #   class Door; end;
     #
     #   # Create an instance with `.define`:
     #   subaru_baja = Car.define do
@@ -56,6 +60,27 @@ module GraphQL
     #
     #   # Access it from metadata
     #   subaru_baja.metadata[:all_wheel_drive] # => true
+    #
+    # @example Extending the definition of a class via a plugin
+    #   # A plugin is any object that responds to `.use(definition)`
+    #   module SubaruCar
+    #     extend self
+    #
+    #     def use(defn)
+    #       # `defn` has the same methods as within `.define { ... }` block
+    #       defn.make "Subaru"
+    #       defn.doors 4
+    #     end
+    #   end
+    #
+    #   # Use the plugin within a `.define { ... }` block
+    #   subaru_baja = Car.define do
+    #     use SubaruCar
+    #     model 'Baja'
+    #   end
+    #
+    #   subaru_baja.make # => "Subaru"
+    #   subaru_baja.doors # => [<Door>, <Door>, <Door>, <Door>]
     #
     # @example Making a copy with an extended definition
     #   # Create an instance with `.define`:
