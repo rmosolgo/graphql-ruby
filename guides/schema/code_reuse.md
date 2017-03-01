@@ -40,6 +40,8 @@ field :product, function: FindRecord.new(model_class: Product, type: Types::Prod
 field :category, function: FindRecord.new(model_class: Category, type: Types::CategoryType)
 ```
 
+Objects passed with the `function:` keyword must implement some field-related methods:
+
 - `#arguments => Hash<String => GraphQL::Argument>`
 - `#type => GraphQL::BaseType`
 - `#call(obj, args, ctx) => Object`
@@ -71,8 +73,9 @@ end
 
 Note that `types.` is _not_ available. Instead, you should reference GraphQL's built-in {{ "GraphQL::ScalarType" | api_doc }}s directly.
 
-`GraphQL::Function`'s DSL-defined attributes are inherited, so you can subclass functions as much as you like!
+#### Function Inheritance
 
+`GraphQL::Function`'s DSL-defined attributes are inherited, so you can subclass functions as much as you like!
 
 ```ruby
 class FindRecord < GraphQL::Function
@@ -82,6 +85,20 @@ end
 # 👌 Arguments, description, etc are inherited as usual:
 class BatchedFindRecord < FindRecord
   # ...
+end
+```
+
+#### Extending Functions
+
+Function attributes can be overridden by passing new values to the `field` helper. For example, to override the description:
+
+```ruby
+# Override the description:
+field :post, "Find a Post by ID", function: FindRecord.new(model: Post) do
+  # Add an argument:
+  argument :authorId, types.ID
+  # Provide custom configs:
+  authorize :admin
 end
 ```
 
