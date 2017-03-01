@@ -59,6 +59,20 @@ module StarWars
     field :fieldName, types.String, resolve: ->(obj, args, ctx) { obj.field.name }
   end
 
+  # Example of GraphQL::Function used with the connection helper:
+  class ShipsWithMaxPageSize < GraphQL::Function
+    argument :nameIncludes, GraphQL::STRING_TYPE
+    def call(obj, args, ctx)
+      all_ships = obj.ships.map { |ship_id| StarWars::DATA["Ship"][ship_id] }
+      if args[:nameIncludes]
+        all_ships = all_ships.select { |ship| ship.name.include?(args[:nameIncludes])}
+      end
+      all_ships
+    end
+
+    type Ship.connection_type
+  end
+
   Faction = GraphQL::ObjectType.define do
     name "Faction"
     interfaces [GraphQL::Relay::Node.interface]
@@ -76,17 +90,8 @@ module StarWars
       # You can define arguments here and use them in the connection
       argument :nameIncludes, types.String
     end
-    connection :shipsWithMaxPageSize, Ship.connection_type, max_page_size: 2 do
-      resolve ->(obj, args, ctx) {
-        all_ships = obj.ships.map {|ship_id| StarWars::DATA["Ship"][ship_id] }
-        if args[:nameIncludes]
-          all_ships = all_ships.select { |ship| ship.name.include?(args[:nameIncludes])}
-        end
-        all_ships
-      }
-      # You can define arguments here and use them in the connection
-      argument :nameIncludes, types.String
-    end
+
+    connection :shipsWithMaxPageSize, max_page_size: 2, function: ShipsWithMaxPageSize.new
 
     connection :bases, BaseConnectionWithTotalCountType do
       # Resolve field should return an Array, the Connection

@@ -20,6 +20,7 @@ module GraphQL
         elsif function
           GraphQL::Field.define(
             arguments: function.arguments,
+            complexity: function.complexity,
             name: name_s,
             type: function.type,
             resolve: function,

@@ -202,34 +202,34 @@ module Dummy
     end
   end
 
-  class FetchField
-    def self.create(type:, data:, id_type: !GraphQL::INT_TYPE)
-      desc = "Find a #{type.name} by id"
-      return_type = type
-      GraphQL::Field.define do
-        type(return_type)
-        description(desc)
-        argument :id, id_type
+  class FetchItem < GraphQL::Function
+    attr_reader :type, :description, :arguments
 
-        resolve ->(t, a, c) {
-          id_string = a["id"].to_s # Cheese has Int type, Milk has ID type :(
-          id, item = data.find { |id, item| id.to_s == id_string }
-          item
-        }
-      end
+    def initialize(type:, data:, id_type: !GraphQL::INT_TYPE)
+      @type = type
+      @data = data
+      @description = "Find a #{type.name} by id"
+      @arguments = self.class.arguments.merge({"id" => GraphQL::Argument.define(name: "id", type: id_type)})
+    end
+
+    def call(obj, args, ctx)
+      id_string = args["id"].to_s # Cheese has Int type, Milk has ID type :(
+      id, item = @data.find { |id, item| id.to_s == id_string }
+      item
     end
   end
 
-  class SingletonField
-    def self.create(type:, data:)
-      desc = "Find the only #{type.name}"
-      return_type = type
-      GraphQL::Field.define do
-        type(return_type)
-        description(desc)
+  class GetSingleton < GraphQL::Function
+    attr_reader :description, :type
 
-        resolve ->(t, a, c) {data}
-      end
+    def initialize(type:, data:)
+      @description = "Find the only #{type.name}"
+      @type = type
+      @data = data
+    end
+
+    def call(obj, args, ctx)
+      @data
     end
   end
 
@@ -255,12 +255,12 @@ module Dummy
     field :root, types.String do
       resolve ->(root_value, args, c) { root_value }
     end
-    field :cheese, field: FetchField.create(type: CheeseType, data: CHEESES)
-    field :milk, field: FetchField.create(type: MilkType, data: MILKS, id_type: !types.ID)
-    field :dairy, field: SingletonField.create(type: DairyType, data: DAIRY)
+    field :cheese, function: FetchItem.new(type: CheeseType, data: CHEESES)
+    field :milk, function: FetchItem.new(type: MilkType, data: MILKS, id_type: !types.ID)
+    field :dairy, function: GetSingleton.new(type: DairyType, data: DAIRY)
     field :fromSource, &SourceFieldDefn
     field :favoriteEdible, FavoriteFieldDefn
-    field :cow, field: SingletonField.create(type: CowType, data: COW)
+    field :cow, function: GetSingleton.new(type: CowType, data: COW)
     field :searchDairy do
       description "Find dairy products matching a description"
       type !DairyProductUnion

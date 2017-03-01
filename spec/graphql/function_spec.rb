@@ -10,7 +10,7 @@ describe GraphQL::Function do
 
     description "Returns the string you give it"
     deprecation_reason "It's useless"
-    complexity -> { 10 }
+    complexity 9
     def call(o, a, c)
       { name: a[:name] }
     end
@@ -24,10 +24,22 @@ describe GraphQL::Function do
       assert_equal "Returns the string you give it", f.description
       assert_equal "It's useless", f.deprecation_reason
       assert_equal({name: "stuff"}, f.call(nil, { name: "stuff" }, nil))
-      assert_instance_of Proc, f.complexity
+      assert_equal 9, f.complexity
 
       assert_equal TestFunc.new.type, TestFunc.new.type
     end
+  end
+
+  it "has default values" do
+    default_func = GraphQL::Function.new
+    assert_equal 1, default_func.complexity
+    assert_equal({}, default_func.arguments)
+    assert_equal(nil, default_func.type)
+    assert_equal(nil, default_func.description)
+    assert_equal(nil, default_func.deprecation_reason)
+    assert_raises(NotImplementedError) {
+      default_func.call(nil, nil, nil)
+    }
   end
 
   describe "use in a schema" do
@@ -53,6 +65,16 @@ describe GraphQL::Function do
         mutation(mutation_type)
       end
     }
+
+    it "gets attributes from the function" do
+      field = schema.query.fields["test"]
+      assert_equal ["name"], field.arguments.keys
+      assert_equal "TestFuncPayload", field.type.name
+      assert_equal "Returns the string you give it", field.description
+      assert_equal "It's useless", field.deprecation_reason
+      assert_equal({name: "stuff"}, field.resolve(nil, { name: "stuff" }, nil))
+      assert_equal 9, field.complexity
+    end
 
     it "can be used as a field" do
       query_str = <<-GRAPHQL
