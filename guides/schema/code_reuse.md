@@ -4,76 +4,101 @@ title: Schema — Code Reuse
 
 Here are a few techniques for code reuse with graphql-ruby:
 
-- [Resolver classes](#resolver-classes)
+- [Functions](#functions)
 - [Dynamically defining types](#dynamically-defining-types)
 - [Functional composition and `resolve`](#functional-composition--resolve)
 
 Besides reducing duplicate code, these approaches also allow you to test parts of your schema in isolation.
 
-## Resolver classes
+## Functions
 
-(Originally described by AlphaSights at https://m.alphasights.com/graphql-ruby-clean-up-your-query-type-d7ab05a47084.)
+{{ "GraphQL::Function" | api_doc }} can hold generalized field logic which can be specialized on a field-by-field basis.
 
-Many examples use a Proc literal for a field's `resolve`, for example:
-
-```ruby
-field :name, types.String do
-  # Resolve taking a Proc literal:
-  resolve ->(obj, args, ctx) { obj.name }
-end
-```
-
-However, you can pass _any_ object to `resolve(...)`, so long as it responds to `.call(obj, args, ctx)`.
-
-This means you can pass in a module:
+To define a function, make a class that extends {{ "GraphQL::Function" | api_doc }}:
 
 ```ruby
-module NameResolver
-  def self.call(obj, args, ctx)
-    obj.name
+class FindRecord < GraphQL::Function
+  attr_reader :type
+
+  def initialize(model_class:, type:)
+    @model_class = model_class
+    @type = type
   end
-end
 
-# use `NameResolver` instead of a proc
-field :name, types.String do
-  resolve(NameResolver)
-end
-# `resolve: resolver` is equivalent to `do resolve(resolver) end`
-# so this is the same:
-field :name, types.String, resolve: NameResolver
-```
-
-Or, you can pass an instance of a class:
-
-```ruby
-class MethodCallResolver
-  def initialize(method_name)
-    @method_name = method_name
-  end
+  argument :id, !types.ID
 
   def call(obj, args, ctx)
-    obj.public_send(@method_name)
+    @model_class.find(args[:id])
   end
 end
-
-# ...
-field :name, types.String do
-  resolve(MethodCallResolver.new(:name))
-end  
 ```
 
-Or, you can generate the `resolve` Proc dynamically:
+Then, connect the function to field definitions with the `function:` keyword:
 
 ```ruby
-# @return [Proc] A resolve proc which calls `method_name` on `obj`
-def resolve_with_method(method_name)
-  ->(obj, args, ctx) { obj.public_send(method_name) }
+field :product, function: FindRecord.new(model_class: Product, type: Types::ProductType)
+field :category, function: FindRecord.new(model_class: Category, type: Types::CategoryType)
+```
+
+Objects passed with the `function:` keyword must implement some field-related methods:
+
+- `#arguments => Hash<String => GraphQL::Argument>`
+- `#type => GraphQL::BaseType`
+- `#call(obj, args, ctx) => Object`
+- `#complexity => Integer, Proc`
+- `#description => String, nil`
+- `#deprecation_reason => String, nil`
+
+`GraphQL::Function` provides some help in implementing these:
+
+```ruby
+class MyFunc < GraphQL::Function
+  # Define a member of `#arguments`, just like the DSL:
+  argument :id, GraphQL::ID_TYPE
+
+  # Define documentation:
+  description "My Custom function"
+  deprecation_reason "Just an example"
+
+  type MyFuncReturnType
+  # or, define one on the fly:
+  type do
+    name "MyFuncReturnType"
+    # The returned object must implement these methods:
+    field :name, GraphQL::STRING_TYPE
+    field :count, GraphQL::INT_TYPE
+  end
+end
+```
+
+Note that `types.` is _not_ available. Instead, you should reference GraphQL's built-in {{ "GraphQL::ScalarType" | api_doc }}s directly.
+
+#### Function Inheritance
+
+`GraphQL::Function`'s DSL-defined attributes are inherited, so you can subclass functions as much as you like!
+
+```ruby
+class FindRecord < GraphQL::Function
+  # ...
 end
 
-# ...
+# 👌 Arguments, description, etc are inherited as usual:
+class BatchedFindRecord < FindRecord
+  # ...
+end
+```
 
-field :name, types.String do
-  resolve(resolve_with_method(:name))
+#### Extending Functions
+
+Function attributes can be overridden by passing new values to the `field` helper. For example, to override the description:
+
+```ruby
+# Override the description:
+field :post, "Find a Post by ID", function: FindRecord.new(model: Post) do
+  # Add an argument:
+  argument :authorId, types.ID
+  # Provide custom configs:
+  authorize :admin
 end
 ```
 

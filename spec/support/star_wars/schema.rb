@@ -59,6 +59,20 @@ module StarWars
     field :fieldName, types.String, resolve: ->(obj, args, ctx) { obj.field.name }
   end
 
+  # Example of GraphQL::Function used with the connection helper:
+  class ShipsWithMaxPageSize < GraphQL::Function
+    argument :nameIncludes, GraphQL::STRING_TYPE
+    def call(obj, args, ctx)
+      all_ships = obj.ships.map { |ship_id| StarWars::DATA["Ship"][ship_id] }
+      if args[:nameIncludes]
+        all_ships = all_ships.select { |ship| ship.name.include?(args[:nameIncludes])}
+      end
+      all_ships
+    end
+
+    type Ship.connection_type
+  end
+
   Faction = GraphQL::ObjectType.define do
     name "Faction"
     interfaces [GraphQL::Relay::Node.interface]
@@ -76,17 +90,8 @@ module StarWars
       # You can define arguments here and use them in the connection
       argument :nameIncludes, types.String
     end
-    connection :shipsWithMaxPageSize, Ship.connection_type, max_page_size: 2 do
-      resolve ->(obj, args, ctx) {
-        all_ships = obj.ships.map {|ship_id| StarWars::DATA["Ship"][ship_id] }
-        if args[:nameIncludes]
-          all_ships = all_ships.select { |ship| ship.name.include?(args[:nameIncludes])}
-        end
-        all_ships
-      }
-      # You can define arguments here and use them in the connection
-      argument :nameIncludes, types.String
-    end
+
+    connection :shipsWithMaxPageSize, max_page_size: 2, function: ShipsWithMaxPageSize.new
 
     connection :bases, BaseConnectionWithTotalCountType do
       # Resolve field should return an Array, the Connection
@@ -160,30 +165,52 @@ module StarWars
 
     # Here's the mutation operation:
     resolve ->(root_obj, inputs, ctx) {
-      faction_id = inputs["factionId"]
-      if inputs["shipName"] == 'Millennium Falcon'
+      IntroduceShipFunction.new.call(root_obj, inputs, ctx)
+    }
+  end
+
+  class IntroduceShipFunction < GraphQL::Function
+    description "Add a ship to this faction"
+
+    argument :shipName, GraphQL::STRING_TYPE
+    argument :factionId, !GraphQL::ID_TYPE
+
+    type(GraphQL::ObjectType.define do
+      name "IntroduceShipFunctionPayload"
+      field :shipEdge, Ship.edge_type, hash_key: :shipEdge
+      field :faction, Faction, hash_key: :shipEdge
+    end)
+
+    def call(obj, args, ctx)
+      faction_id = args["factionId"]
+      if args["shipName"] == 'Millennium Falcon'
         GraphQL::ExecutionError.new("Sorry, Millennium Falcon ship is reserved")
-      elsif inputs["shipName"] == "Ebon Hawk"
+      elsif args["shipName"] == "Ebon Hawk"
         LazyWrapper.new { raise GraphQL::ExecutionError.new("💥")}
       else
-        ship = DATA.create_ship(inputs["shipName"], faction_id)
+        ship = DATA.create_ship(args["shipName"], faction_id)
         faction = DATA["Faction"][faction_id]
         connection_class = GraphQL::Relay::BaseConnection.connection_for_nodes(faction.ships)
-        ships_connection = connection_class.new(faction.ships, inputs)
+        ships_connection = connection_class.new(faction.ships, args)
         ship_edge = GraphQL::Relay::Edge.new(ship, ships_connection)
         result = {
           shipEdge: ship_edge,
           faction: faction
         }
-        if inputs["shipName"] == "Slave II"
+        if args["shipName"] == "Slave II"
           LazyWrapper.new(result)
         else
           result
         end
       end
-    }
+    end
   end
 
+  IntroduceShipFunctionMutation = GraphQL::Relay::Mutation.define do
+    # Used as the root for derived types:
+    name "IntroduceShipFunction"
+    function IntroduceShipFunction.new
+  end
 
   class LazyWrapper
     def initialize(value = nil, &block)
@@ -236,6 +263,7 @@ module StarWars
     name "Mutation"
     # The mutation object exposes a field:
     field :introduceShip, field: IntroduceShipMutation.field
+    field :introduceShipFunction, IntroduceShipFunctionMutation.field
   end
 
   Schema = GraphQL::Schema.define do

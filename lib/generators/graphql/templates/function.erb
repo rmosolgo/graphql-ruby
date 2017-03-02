@@ -1,0 +1,17 @@
+class Functions::<%= name %> < GraphQL::Function
+  # Define `initialize` to store field-level options, eg
+  #
+  #     field :myField, function: Functions::<%= name %>.new(type: MyType)
+  #
+  # attr_reader :type
+  # def initialize(type:)
+  #   @type = type
+  # end
+
+  # add arguments by type:
+  # argument :id, !GraphQL::ID_TYPE
+
+  # Resolve function:
+  def call(obj, args, ctx)
+  end
+end

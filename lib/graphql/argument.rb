@@ -53,5 +53,26 @@ module GraphQL
     def expose_as
       @expose_as ||= (@as || @name).to_s
     end
+
+    NO_DEFAULT_VALUE = Object.new
+    # @api private
+    def self.from_dsl(name, type = nil, description = nil, default_value: NO_DEFAULT_VALUE, as: nil, &block)
+      argument = if block_given?
+        GraphQL::Argument.define(&block)
+      else
+        GraphQL::Argument.new
+      end
+
+      argument.name = name.to_s
+      type && argument.type = type
+      description && argument.description = description
+      if default_value != NO_DEFAULT_VALUE
+        argument.default_value = default_value
+      end
+      argument.as = as
+
+
+      argument
+    end
   end
 end

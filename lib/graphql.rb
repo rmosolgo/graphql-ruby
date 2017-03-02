@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+require "delegate"
 require "json"
 require "set"
 require "singleton"
@@ -85,3 +86,4 @@ require "graphql/static_validation"
 require "graphql/version"
 require "graphql/relay"
 require "graphql/compatibility"
+require "graphql/function"
