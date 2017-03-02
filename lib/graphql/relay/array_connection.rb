@@ -43,7 +43,7 @@ module GraphQL
         @starting_offset = if before
           [previous_offset, 0].max
         elsif last
-          nodes.count - last
+          [nodes.count - last, 0].max
         else
           previous_offset
         end
