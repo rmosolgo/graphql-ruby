@@ -32,6 +32,21 @@ Keep these points in mind when using value-based cursors:
 - For a given `ActiveRecord::Relation`, only columns of that specific model can be used in pagination. (This is because column names are turned into `WHERE` conditions.)
 - `RelationConnection` may add an additional `primary_key` ordering to ensure that the cursor value is unique. This behavior is inspired by `Relation#reverse_order` which also assumes that `primary_key` is the default sort.
 
+## Grouped Relations
+
+When using a grouped `ActiveRecord::Relation`, include a unique ID in your sort to ensure that each row in the result has a unique cursor. For example:
+
+```ruby
+# Bad: If two results have the same `max(price)`,
+# they will be identical from a pagination perspective:
+Products.select("max(price) as price").group("category_id").order("price")
+
+# Good: `category_id` is used to disambiguate any results with the same price:
+Products.select("max(price) as price").group("category_id").order("price, category_id")
+```
+
+For ungrouped relations, this issue is handled automatically by adding the model's `primary_key` to the order values.
+
 ## Backwards Compatibility
 
 `GraphQL::Pro`'s `RelationConnection` is backwards-compatible. If it receives an offset-based cursor, it uses that cursor for the next resolution, then returns value-based cursors in the next result.
@@ -71,3 +86,7 @@ GraphQL::Relay::BaseConnection.register_connection_implementation(
   ActiveRecord::Relation, GraphQL::Relay::RelationConnection
 )
 ```
+
+## ActiveRecord Versions
+
+`GraphQL::Pro::RelationConnection` supports ActiveRecord `> 4.1.0`.
