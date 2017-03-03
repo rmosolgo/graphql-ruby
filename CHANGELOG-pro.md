@@ -8,6 +8,16 @@
 
 ### Bug Fix
 
+## 1.2.1 (3 Mar 2017)
+
+### New Features
+
+- Formally support ActiveRecord `>= 4.1.0`
+
+### Bug Fix
+
+- Support grouped relations in `GraphQL::Pro::RelationConnection`
+
 ## 1.2.0 (1 Mar 2017)
 
 ### New Features
