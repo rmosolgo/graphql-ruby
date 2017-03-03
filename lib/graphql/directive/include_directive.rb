@@ -5,4 +5,8 @@ GraphQL::Directive::IncludeDirective = GraphQL::Directive.define do
   locations([GraphQL::Directive::FIELD, GraphQL::Directive::FRAGMENT_SPREAD, GraphQL::Directive::INLINE_FRAGMENT])
   argument :if, !GraphQL::BOOLEAN_TYPE, 'Included when true.'
   default_directive true
+
+  installed ->(schema) {
+    schema.interceptors.add(GraphQL::Directive::SkipInterceptor)
+  }
 end

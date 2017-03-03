@@ -6,4 +6,8 @@ GraphQL::Directive::SkipDirective = GraphQL::Directive.define do
 
   argument :if, !GraphQL::BOOLEAN_TYPE, 'Skipped when true.'
   default_directive true
+
+  installed ->(schema) {
+    schema.interceptors.add(GraphQL::Directive::SkipInterceptor)
+  }
 end
