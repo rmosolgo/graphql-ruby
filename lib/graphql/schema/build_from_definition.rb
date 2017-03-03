@@ -19,7 +19,7 @@ module GraphQL
           types = {}
           types.merge!(GraphQL::Schema::BUILT_IN_TYPES)
           directives = {}
-          type_resolver = -> (type) { -> { resolve_type(types, type) } }
+          type_resolver = ->(type) { -> { resolve_type(types, type) } }
 
           document.definitions.each do |definition|
             case definition
@@ -81,7 +81,7 @@ module GraphQL
           end
         end
 
-        NullResolveType = -> (obj, ctx) {
+        NullResolveType = ->(obj, ctx) {
           raise(NotImplementedError, "Generated Schema cannot use Interface or Union types for execution.")
         }
 

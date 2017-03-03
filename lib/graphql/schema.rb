@@ -60,7 +60,7 @@ module GraphQL
       :default_mask,
       :cursor_encoder,
       directives: ->(schema, directives) { schema.directives = directives.reduce({}) { |m, d| m[d.name] = d; m  }},
-      instrument: -> (schema, type, instrumenter) { schema.instrumenters[type] << instrumenter },
+      instrument: ->(schema, type, instrumenter) { schema.instrumenters[type] << instrumenter },
       query_analyzer: ->(schema, analyzer) { schema.query_analyzers << analyzer },
       middleware: ->(schema, middleware) { schema.middleware << middleware },
       lazy_resolve: ->(schema, lazy_class, lazy_value_method) { schema.lazy_methods.set(lazy_class, lazy_value_method) },

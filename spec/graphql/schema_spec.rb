@@ -236,7 +236,7 @@ type Query {
         name "Query"
         field :int, types.Int do
           argument :value, types.Int
-          resolve -> (obj, args, ctx) { args[:value] == 13 ? raise("13 is unlucky") : args[:value] }
+          resolve ->(obj, args, ctx) { args[:value] == 13 ? raise("13 is unlucky") : args[:value] }
         end
       end
     }
