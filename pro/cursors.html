@@ -118,6 +118,21 @@
   <li><code class="highlighter-rouge">RelationConnection</code> may add an additional <code class="highlighter-rouge">primary_key</code> ordering to ensure that the cursor value is unique. This behavior is inspired by <code class="highlighter-rouge">Relation#reverse_order</code> which also assumes that <code class="highlighter-rouge">primary_key</code> is the default sort.</li>
 </ul>
 
+<h2 id="grouped-relations">Grouped Relations</h2>
+
+<p>When using a grouped <code class="highlighter-rouge">ActiveRecord::Relation</code>, include a unique ID in your sort to ensure that each row in the result has a unique cursor. For example:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># Bad: If two results have the same `max(price)`,</span>
+<span class="c1"># they will be identical from a pagination perspective:</span>
+<span class="no">Products</span><span class="p">.</span><span class="nf">select</span><span class="p">(</span><span class="s2">"max(price) as price"</span><span class="p">).</span><span class="nf">group</span><span class="p">(</span><span class="s2">"category_id"</span><span class="p">).</span><span class="nf">order</span><span class="p">(</span><span class="s2">"price"</span><span class="p">)</span>
+
+<span class="c1"># Good: `category_id` is used to disambiguate any results with the same price:</span>
+<span class="no">Products</span><span class="p">.</span><span class="nf">select</span><span class="p">(</span><span class="s2">"max(price) as price"</span><span class="p">).</span><span class="nf">group</span><span class="p">(</span><span class="s2">"category_id"</span><span class="p">).</span><span class="nf">order</span><span class="p">(</span><span class="s2">"price, category_id"</span><span class="p">)</span>
+</code></pre>
+</div>
+
+<p>For ungrouped relations, this issue is handled automatically by adding the model’s <code class="highlighter-rouge">primary_key</code> to the order values.</p>
+
 <h2 id="backwards-compatibility">Backwards Compatibility</h2>
 
 <p><code class="highlighter-rouge">GraphQL::Pro</code>’s <code class="highlighter-rouge">RelationConnection</code> is backwards-compatible. If it receives an offset-based cursor, it uses that cursor for the next resolution, then returns value-based cursors in the next result.</p>
@@ -157,6 +172,10 @@
 <span class="p">)</span>
 </code></pre>
 </div>
+
+<h2 id="activerecord-versions">ActiveRecord Versions</h2>
+
+<p><code class="highlighter-rouge">GraphQL::Pro::RelationConnection</code> supports ActiveRecord <code class="highlighter-rouge">&gt; 4.1.0</code>.</p>
 
         </div>
       </div>
