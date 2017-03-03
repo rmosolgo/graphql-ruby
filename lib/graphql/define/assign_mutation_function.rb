@@ -15,7 +15,7 @@ module GraphQL
 
         target.arguments = function.arguments
         target.description = function.description
-        target.resolve = -> (o, a, c) {
+        target.resolve = ->(o, a, c) {
           res = function.call(o, a, c)
           ResultProxy.new(res, a[:clientMutationId])
         }

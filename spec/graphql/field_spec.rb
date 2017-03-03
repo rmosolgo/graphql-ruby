@@ -126,7 +126,7 @@ describe GraphQL::Field do
       int_field = GraphQL::Field.define do
         type types.Int
         argument :value, types.Int
-        resolve -> (obj, args, ctx) { args[:value] }
+        resolve ->(obj, args, ctx) { args[:value] }
       end
 
       query_type = GraphQL::ObjectType.define do

@@ -499,7 +499,7 @@ input Varied {
 }
 SCHEMA
 
-    only_filter = -> (member, ctx) {
+    only_filter = ->(member, ctx) {
       case member
       when GraphQL::ScalarType
         true
@@ -583,7 +583,7 @@ type Subscription {
 }
 SCHEMA
 
-    except_filter = -> (member, ctx) {
+    except_filter = ->(member, ctx) {
       ctx[:names].include?(member.name) || (member.respond_to?(:deprecation_reason) && member.deprecation_reason)
     }
 

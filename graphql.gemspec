@@ -35,7 +35,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency "racc", "~> 1.4"
   s.add_development_dependency "rails"
   s.add_development_dependency "rake", "~> 11.0"
-  s.add_development_dependency "rubocop", "~> 0.44"
+  s.add_development_dependency "rubocop", "~> 0.45"
   # following are required for relay helpers
   s.add_development_dependency "appraisal"
   s.add_development_dependency "sequel"

@@ -45,3 +45,7 @@ Style/MethodName:
 
 Style/WordArray:
   EnforcedStyle: brackets
+
+# ->(...) { ... }
+Style/SpaceInLambdaLiteral:
+  Enabled: true # Default is "require_no_space"

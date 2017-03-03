@@ -42,26 +42,26 @@ module GraphQL
 
       def mount(context)
         visitor = context.visitor
-        visitor[GraphQL::Language::Nodes::OperationDefinition] << -> (node, prev_node) {
+        visitor[GraphQL::Language::Nodes::OperationDefinition] << ->(node, prev_node) {
           @current_parent = @definitions[node.name] = NodeWithPath.new(node, context.path)
         }
 
-        visitor[GraphQL::Language::Nodes::OperationDefinition].leave << -> (node, prev_node) {
+        visitor[GraphQL::Language::Nodes::OperationDefinition].leave << ->(node, prev_node) {
           @current_parent = nil
         }
 
-        visitor[GraphQL::Language::Nodes::FragmentDefinition] << -> (node, prev_node) {
+        visitor[GraphQL::Language::Nodes::FragmentDefinition] << ->(node, prev_node) {
           @current_parent = @definitions[node.name] = NodeWithPath.new(node, context.path)
         }
 
-        visitor[GraphQL::Language::Nodes::FragmentDefinition].leave << -> (node, prev_node) {
+        visitor[GraphQL::Language::Nodes::FragmentDefinition].leave << ->(node, prev_node) {
           if @immediate_dependencies[@current_parent].none?
             @independent_fragments << @current_parent
           end
           @current_parent = nil
         }
 
-        visitor[GraphQL::Language::Nodes::FragmentSpread] << -> (node, prev_node) {
+        visitor[GraphQL::Language::Nodes::FragmentSpread] << ->(node, prev_node) {
           # Track both sides of the dependency
           @dependent_definitions[node.name] << @current_parent
           @immediate_dependencies[@current_parent] << NodeWithPath.new(node, context.path)
