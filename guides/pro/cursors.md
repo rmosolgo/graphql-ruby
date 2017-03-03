@@ -89,4 +89,4 @@ GraphQL::Relay::BaseConnection.register_connection_implementation(
 
 ## ActiveRecord Versions
 
-`GraphQL::Pro::RelationConnection` supports ActiveRecord `> 4.1.0`.
+`GraphQL::Pro::RelationConnection` supports ActiveRecord `>= 4.1.0`.
