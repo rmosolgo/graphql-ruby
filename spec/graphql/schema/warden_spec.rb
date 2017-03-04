@@ -112,7 +112,7 @@ module MaskHelpers
 
   module Data
     UVULAR_TRILL = OpenStruct.new({name: "Uvular Trill", symbol: "ʀ", manner: "TRILL"})
-    def self.unit
+    def self.unit(args, ctx)
       UVULAR_TRILL
     end
   end

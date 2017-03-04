@@ -9,7 +9,7 @@ module GraphQL
       # @return [Proc] A resolver for this field, based on its config
       def create_proc(field)
         if field.property
-          MethodResolve.new(field.property.to_sym)
+          MethodResolve.new(field)
         elsif !field.hash_key.nil?
           HashKeyResolve.new(field.hash_key)
         else
@@ -23,12 +23,17 @@ module GraphQL
 
       # Resolve the field by `public_send`ing `@method_name`
       class MethodResolve < BuiltInResolve
-        def initialize(method_name)
-          @method_name = method_name
+        def initialize(field)
+          @field = field
+          @method_name = field.property.to_sym
         end
 
         def call(obj, args, ctx)
-          obj.public_send(@method_name)
+          if @field.arguments.any?
+            obj.public_send(@method_name, args, ctx)
+          else
+            obj.public_send(@method_name)
+          end
         end
       end
 
@@ -51,20 +56,11 @@ module GraphQL
         end
 
         def call(obj, args, ctx)
-          if accepts_arguments?(obj)
+          if @field.arguments.any?
             obj.public_send(@field.name, args, ctx)
           else
             obj.public_send(@field.name)
           end
-        end
-
-        private
-        
-        def accepts_arguments?(obj)
-          !obj.is_a?(Struct) &&
-          !obj.is_a?(OpenStruct) &&
-          @field.arguments.any? &&
-          obj.method(@field.name).parameters.any?
         end
       end
     end
