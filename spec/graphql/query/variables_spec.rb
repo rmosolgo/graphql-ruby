@@ -33,6 +33,12 @@ describe GraphQL::Query::Variables do
     end
 
     describe "nullable variables" do
+      module ObjectWithThingsCount
+        def self.thingsCount(args, ctx) # rubocop:disable Style/MethodName
+          1
+        end
+      end
+
       let(:schema) { GraphQL::Schema.from_definition(%|
         type Query {
           thingsCount(ids: [ID!]): Int!
@@ -45,7 +51,7 @@ describe GraphQL::Query::Variables do
         }
       |}
       let(:result) {
-        schema.execute(query_string, variables: provided_variables, root_value: OpenStruct.new(thingsCount: 1))
+        schema.execute(query_string, variables: provided_variables, root_value: ObjectWithThingsCount)
       }
 
       describe "when they are present, but null" do
