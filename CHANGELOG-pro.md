@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+## 1.2.2 (6 Mar 2017)
+
+### Bug Fix
+
+- Raise `GraphQL::Pro::RelationConnection::InvalidRelationError` when a grouped, unordered relation is returned from a field. (This relation can't be stably paginated.)
+
 ## 1.2.1 (3 Mar 2017)
 
 ### New Features

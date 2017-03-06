@@ -47,6 +47,8 @@ Products.select("max(price) as price").group("category_id").order("price, catego
 
 For ungrouped relations, this issue is handled automatically by adding the model's `primary_key` to the order values.
 
+If you provide an unordered, grouped relation, `GraphQL::Pro::RelationConnection::InvalidRelationError` will be raised because an unordered relation _cannot_ be paginated in a stable way.
+
 ## Backwards Compatibility
 
 `GraphQL::Pro`'s `RelationConnection` is backwards-compatible. If it receives an offset-based cursor, it uses that cursor for the next resolution, then returns value-based cursors in the next result.
