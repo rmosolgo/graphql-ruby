@@ -108,4 +108,10 @@ namespace :bench do
     prepare_benchmark
     GraphQLBenchmark.run("validate")
   end
+
+  desc "Generate a profile of the introspection query"
+  task :profile do
+    prepare_benchmark
+    GraphQLBenchmark.profile
+  end
 end
