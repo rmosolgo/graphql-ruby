@@ -34,23 +34,43 @@ describe GraphQL::Execution::Execute do
     }
 
     let(:root) { MutationNullTestRoot }
-
-    before do
-      MutationNullTestRoot::INTS.clear
-    end
-
-    it "returns values for other mutations" do
-      query_str = <<-GRAPHQL
+    let(:query_str) do
+      <<-GRAPHQL
       mutation {
         one: push(int: 1)
         thirteen: push(int: 13)
         two: push(int: 2)
       }
       GRAPHQL
+    end
 
+    before do
+      MutationNullTestRoot::INTS.clear
+    end
+
+    it "propagates null to the root mutation and halts mutation execution" do
       res = schema.execute(query_str, root_value: root)
       assert_equal [1], MutationNullTestRoot::INTS
       assert_equal(nil, res["data"])
+    end
+
+    describe 'mutation fields are nullable' do
+      let(:schema) { GraphQL::Schema.from_definition <<-GRAPHQL
+        type Mutation {
+          push(int: Int!): Int
+        }
+
+        type Query {
+          ints: [Int!]
+        }
+      GRAPHQL
+      }
+
+      it 'does not halt execution and returns data for the successful mutations' do
+        res = schema.execute(query_str, root_value: root)
+        assert_equal [1, 2], MutationNullTestRoot::INTS
+        assert_equal({"one"=>1, "thirteen"=>nil, "two"=>2}, res["data"])
+      end
     end
   end
 end
