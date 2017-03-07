@@ -1,0 +1,287 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>GraphQL Ruby - GraphQL::Pro — Persisted Queries</title>
+    <link rel="stylesheet" href="/graphql-ruby/css/main.css">
+    <link rel="icon" href="/graphql-ruby/graphql-ruby-icon.png">
+    <meta name="generator">
+  </head>
+  <body class="hack">
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+      ga('create', 'UA-19264608-11', 'auto');
+      ga('send', 'pageview');
+    </script>
+    <div class="container">
+      <div style="display: flex; justify-content: center;">
+<strong style="white-space: pre; line-height: 1.1em; display: inline-block; font-size: 8px;">
+    ▄██████▄     ▄████████    ▄████████    ▄███████▄    ▄█    █▄    ████████▄    ▄█
+   ███    ███   ███    ███   ███    ███   ███    ███   ███    ███   ███    ███  ███
+   ███    █▀    ███    ███   ███    ███   ███    ███   ███    ███   ███    ███  ███
+  ▄███         ▄███▄▄▄▄██▀   ███    ███   ███    ███  ▄███▄▄▄▄███▄▄ ███    ███  ███
+ ▀▀███ ████▄  ▀▀███▀▀▀▀▀   ▀███████████ ▀█████████▀  ▀▀███▀▀▀▀███▀  ███    ███  ███
+   ███    ███ ▀███████████   ███    ███   ███          ███    ███   ███    ███  ███
+   ███    ███   ███    ███   ███    ███   ███          ███    ███   ███  ▀ ███  ███▌    ▄
+   ████████▀    ███    ███   ███    █▀   ▄████▀        ███    █▀     ▀██████▀▄█ █████▄▄██
+                ███    ███                                                      ▀
+</strong>
+      </div>
+      <p style="text-align: center;">A GraphQL server implementation for Ruby</p>
+
+      <div class="grid -between">
+        <div class="cell -3of12">
+          <h3>Guides</h3>
+          <ul>
+            <li><a href="/graphql-ruby/">Getting Started</a></li>
+            <li>
+              <strong>Schema</strong>
+              <ul>
+                <li><a href="/graphql-ruby/schema/types_and_fields">Types and Fields</a></li>
+                <li><a href="/graphql-ruby/schema/configuration_options">Configuration Options</a></li>
+                <li><a href="/graphql-ruby/schema/code_reuse">Code Reuse</a></li>
+                <li><a href="/graphql-ruby/schema/instrumentation">Instrumentation</a></li>
+                <li><a href="/graphql-ruby/schema/lazy_execution">Lazy Execution</a></li>
+                <li><a href="/graphql-ruby/schema/limiting_visibility">Limiting Visibility</a></li>
+                <li><a href="/graphql-ruby/schema/testing">Testing</a></li>
+              </ul>
+            </li>
+            <li>
+              <strong>Queries</strong>
+              <ul>
+                <li><a href="/graphql-ruby/queries/executing_queries">Executing Queries</a></li>
+                <li><a href="/graphql-ruby/queries/authorization">Authorization</a></li>
+                <li><a href="/graphql-ruby/queries/security">Security</a></li>
+                <li><a href="/graphql-ruby/queries/error_handling">Error Handling</a></li>
+                <li><a href="/graphql-ruby/queries/phases_of_execution">Phases of Execution</a></li>
+              </ul>
+            </li>
+            <li>
+              <strong>Relay</strong>
+              <ul>
+                <li><a href="/graphql-ruby/relay/object_identification">Object Identification</a></li>
+                <li><a href="/graphql-ruby/relay/connections">Connections</a></li>
+                <li><a href="/graphql-ruby/relay/mutations">Mutations</a></li>
+              </ul>
+            </li>
+            <li>
+              <strong>GraphQL::Pro</strong>
+              <ul>
+                <li><a href="http://graphql.pro">GraphQL::Pro Home</a></li>
+                <li><a href="/graphql-ruby/pro/installation">Installation & Updates</a></li>
+                <li><a href="/graphql-ruby/pro/authorization">Authorization</a></li>
+                <li><a href="/graphql-ruby/pro/persisted_queries">Persisted Queries</a></li>
+                <li><a href="/graphql-ruby/pro/monitoring">Monitoring</a></li>
+                <li><a href="/graphql-ruby/pro/cursors">Stable Cursors<br/>for ActiveRecord</a></li>
+                <li><a href="/graphql-ruby/pro/encoders">Encrypted, Versioned<br/>Cursors and Ids</a></li>
+              </ul>
+            </li>
+            <li><a href="/graphql-ruby/related_projects">Related Projects</a></li>
+          </ul>
+          <h3><a href="https://tinyletter.com/graphql-ruby">GraphQL Ruby Newsletter</a></h3>
+          <h3><a href="http://www.rubydoc.info/github/rmosolgo/graphql-ruby">API Docs</a></h3>
+          <h3><a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a></h3>
+        </div>
+        <div class="cell -9of12">
+          <h1 class="guide-header">GraphQL::Pro — Persisted Queries</h1>
+          <p><code class="highlighter-rouge">GraphQL::Pro::Repository</code> brings <strong>persisted queries</strong> to Ruby! In this approach, GraphQL queries are written to <code class="highlighter-rouge">.graphql</code> files and stored on the server. Then, clients may execute those predefined queries by name (using <a href="http://graphql.org/learn/queries/#operation-name"><code class="highlighter-rouge">operationName</code></a>).</p>
+
+<p>This provides several benefits:</p>
+
+<ul>
+  <li>Improved security: you can serve GraphQL without accepting arbitrary queries.</li>
+  <li>Improved stability: <code class="highlighter-rouge">.graphql</code> files are checked into source control and reviewed as first-class elements of the project.</li>
+  <li>Improved maintainability: If your <em>entire</em> GraphQL usage is described by a set of <code class="highlighter-rouge">.graphql</code> files, you can identify unused code and remove it.</li>
+</ul>
+
+<p>To make a repository, define one with a <code class="highlighter-rouge">schema</code> and a <code class="highlighter-rouge">path</code>:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># app/graphql/web_repository.rb</span>
+<span class="no">WebRepository</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">Repository</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+  <span class="n">schema</span> <span class="no">MySchema</span>
+  <span class="n">path</span> <span class="no">Rails</span><span class="p">.</span><span class="nf">root</span><span class="p">.</span><span class="nf">join</span><span class="p">(</span><span class="s2">"app/graphql/documents/"</span><span class="p">)</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<p>Then, you can execute queries by name with <code class="highlighter-rouge">Repository#execute</code>:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">result</span> <span class="o">=</span> <span class="no">WebRepository</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span>
+  <span class="ss">operation_name: </span><span class="n">params</span><span class="p">[</span><span class="ss">:operationName</span><span class="p">]</span>
+  <span class="ss">variables: </span><span class="n">ensure_hash</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="ss">:variables</span><span class="p">])</span>
+  <span class="ss">context: </span><span class="p">{</span>
+    <span class="ss">user: </span><span class="n">current_user</span>
+  <span class="p">}</span>
+<span class="p">)</span>
+<span class="n">render</span> <span class="ss">json: </span><span class="n">result</span>
+</code></pre>
+</div>
+
+<p>Notice that no query string is provided, only an <code class="highlighter-rouge">operation_name:</code>. If the named operation is not in the repository, the client will receive an error.</p>
+
+<p>Read on for more details about <code class="highlighter-rouge">GraphQL::Pro::Repository</code>:</p>
+
+<ul>
+  <li><a href="#client-usage">Client usage</a></li>
+  <li><a href="#arbitrary-input">Accepting other input</a> (for example, GraphiQL)</li>
+  <li><a href="#sources">Loading queries from other sources</a></li>
+  <li><a href="#watching-files">Watching files</a></li>
+  <li><a href="#analysis">Analysis</a></li>
+</ul>
+
+<h2 id="client-usage">Client Usage</h2>
+
+<p>To execute an operation by name, send the operation name and query variables. For example, with jQuery:</p>
+
+<div class="language-js highlighter-rouge"><pre class="highlight"><code><span class="kd">var</span> <span class="nx">payload</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="na">operationName</span><span class="p">:</span> <span class="s2">"GetCards"</span><span class="p">,</span>
+  <span class="na">variables</span><span class="p">:</span> <span class="p">{</span>
+    <span class="na">listId</span><span class="p">:</span> <span class="nx">listId</span><span class="p">,</span>
+  <span class="p">},</span>
+<span class="p">}</span>
+
+<span class="nx">$</span><span class="p">.</span><span class="nx">post</span><span class="p">(</span><span class="s2">"/graphql"</span><span class="p">,</span> <span class="nx">payload</span><span class="p">,</span> <span class="nx">responseHander</span><span class="p">)</span>
+</code></pre>
+</div>
+
+<p>Then, the server will use <code class="highlighter-rouge">params[:operationName]</code> to find an operation and execute it with <code class="highlighter-rouge">params[:variables]</code>.</p>
+
+<h2 id="arbitrary-input">Arbitrary Input</h2>
+
+<p>Sometimes, you want to use static queries <em>or</em> incoming query strings, for example:</p>
+
+<ul>
+  <li>You want to use GraphiQL while writing your static queries</li>
+  <li>You want to support existing clients while transitioning to static queries</li>
+</ul>
+
+<p>For these cases, you can set the the <code class="highlighter-rouge">arbitrary_input</code> setting:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">MyRepository</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">Repository</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+  <span class="c1"># ...</span>
+  <span class="c1"># Execute a provided query string if there is one:</span>
+  <span class="n">arbitrary_input</span> <span class="ss">:execute</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<p>This setting has three values:</p>
+
+<ul>
+  <li><code class="highlighter-rouge">:crash</code>: If non-<code class="highlighter-rouge">nil</code> arbitrary input is provided, raise <code class="highlighter-rouge">ArgumentError</code></li>
+  <li><code class="highlighter-rouge">:ignore</code> (default): Silently ignore provided query strings, use <code class="highlighter-rouge">operation_name</code> only</li>
+  <li><code class="highlighter-rouge">:execute</code>: If a query string is provided, execute that instead of using operations in the repository. If <code class="highlighter-rouge">operation_name</code> is present, it is looked up in the provided query string.</li>
+</ul>
+
+<p>You can also specify <code class="highlighter-rouge">arbitrary_input</code> on a query-by-query basis:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># Allow staff users to execute any query:</span>
+<span class="n">arbitrary_input</span> <span class="o">=</span> <span class="n">current_user</span><span class="p">.</span><span class="nf">staff?</span> <span class="p">?</span> <span class="ss">:execute</span> <span class="p">:</span> <span class="ss">:ignore</span>
+<span class="no">MyRepository</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="n">query_str</span><span class="p">,</span> <span class="ss">operation_name: </span><span class="n">operation_name</span><span class="p">,</span> <span class="ss">arbitrary_input: </span><span class="n">arbitrary_input</span><span class="p">)</span>
+</code></pre>
+</div>
+
+<p>Or,</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># Support legacy clients:</span>
+<span class="n">arbitrary_input</span> <span class="o">=</span> <span class="n">legacy_client?</span><span class="p">(</span><span class="n">request</span><span class="p">.</span><span class="nf">user_agent</span><span class="p">)</span> <span class="p">?</span> <span class="ss">:execute</span> <span class="p">:</span> <span class="ss">:ignore</span>
+<span class="no">MyRepository</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="n">query_str</span><span class="p">,</span> <span class="ss">operation_name: </span><span class="n">operation_name</span><span class="p">,</span> <span class="ss">arbitrary_input: </span><span class="n">arbitrary_input</span><span class="p">)</span>
+</code></pre>
+</div>
+
+<p>Of course, another option is to choose an execution platform at runtime:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="k">if</span> <span class="n">legacy_client?</span><span class="p">(</span><span class="n">request</span><span class="p">.</span><span class="nf">user_agent</span><span class="p">)</span>
+  <span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(.</span><span class="nf">.</span><span class="o">.</span><span class="p">)</span>
+<span class="k">else</span>
+  <span class="no">MyRepository</span><span class="p">.</span><span class="nf">execute</span><span class="p">(.</span><span class="nf">.</span><span class="o">.</span><span class="p">)</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<h2 id="sources">Sources</h2>
+
+<p>The easiest way to build a repository is from a set of files specified by <code class="highlighter-rouge">path</code>:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">AndroidRepository</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">Repository</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+  <span class="n">schema</span> <span class="no">MySchema</span>
+  <span class="n">path</span> <span class="no">Rails</span><span class="p">.</span><span class="nf">root</span><span class="p">.</span><span class="nf">join</span><span class="p">(</span><span class="s2">"app/graphql/documents/android"</span><span class="p">)</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<p>But you can also load GraphQL from a plain string:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">IOsRepository</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">Repository</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+  <span class="n">schema</span> <span class="no">MySchema</span>
+  <span class="c1"># Load GraphQL from some other place:</span>
+  <span class="n">string</span> <span class="no">RemoteStorage</span><span class="p">.</span><span class="nf">read_all</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<p>But take care: initializing a repository is costly. During initialization, the source document is parsed, validated and partitioned by operation. For this reason, building repositories at runtime is not recommended.</p>
+
+<h2 id="watching-files">Watching Files</h2>
+
+<p>On Rails, repository <code class="highlighter-rouge">path</code>s are automatically watched using Rails’ built-in reloading features. When a file in the path is edited, added, or removed, the repository reloads its documents.</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">WebRepository</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">Repository</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+  <span class="c1"># `.graphql` files in app/graphql/documents will be watched for changes:</span>
+  <span class="n">path</span> <span class="no">Rails</span><span class="p">.</span><span class="nf">root</span><span class="p">.</span><span class="nf">join</span><span class="p">(</span><span class="s2">"app/graphql/documents"</span><span class="p">)</span>
+</code></pre>
+</div>
+
+<p>To manually reload a repository from its path, call <code class="highlighter-rouge">Repository#reload</code>, for example:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">WebRepository</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">Repository</span><span class="p">.</span><span class="nf">define</span> <span class="p">{</span> <span class="p">.</span><span class="nf">.</span><span class="o">.</span> <span class="p">}</span>
+<span class="c1"># Reload the repository from .graphql files in its path:</span>
+<span class="no">WebRepository</span><span class="p">.</span><span class="nf">reload</span>
+</code></pre>
+</div>
+
+<h2 id="analysis">Analysis</h2>
+
+<p>Static queries are great for tooling and analysis.</p>
+
+<p>To find fields which are present in a schema but <em>not</em> used in a repository, call <code class="highlighter-rouge">Repository#unused_fields</code>. It returns a hash of <code class="highlighter-rouge">type =&gt; [field, field, ... ]</code> pairs containing unused field definitions. For example:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">MyAppRepository</span><span class="p">.</span><span class="nf">unused_fields</span>
+<span class="c1"># {</span>
+<span class="c1">#   #&lt;GraphQL::ObjectType name="Card"&gt; =&gt; [</span>
+<span class="c1">#     #&lt;GraphQL::Field name="rarity"&gt;,</span>
+<span class="c1">#     #&lt;GraphQL::Field name="cost"&gt;,</span>
+<span class="c1">#   ]</span>
+<span class="c1"># }</span>
+</code></pre>
+</div>
+
+<p>Before removing a field, consider whether any outstanding clients may depend on this field another way, either by sending arbitrary inputs or by consuming a different repository.</p>
+
+<p>Stay tuned! A future <code class="highlighter-rouge">graphql-ruby</code> release will include query diffing which can be used to detect breaking changes in repositories.</p>
+
+        </div>
+      </div>
+    </div>
+    <script>
+      // Find headers with IDs and wrap their text in `<a href=></a>`
+      // That way people can easily copy the link.
+      var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+      var header, idText, headerLink;
+      for (var i = 0; i < headers.length; i++) {
+        header = headers[i];
+        idText = header.id;
+        if (idText) {
+          headerLink = document.createElement("a");
+          headerLink.href = "#" + idText;
+          headerLink.textContent = header.textContent;
+          header.textContent = "";
+          header.appendChild(headerLink);
+        }
+      }
+    </script>
+  </body>
+</html>
