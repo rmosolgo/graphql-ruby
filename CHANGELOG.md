@@ -8,6 +8,15 @@
 
 ### Bug fixes
 
+## 1.4.5 (6 Mar 2017)
+
+### Bug Fixes
+
+- When an operation name is provided but no such operation is present, return an error (instead of executing the first operation) #563
+- Require unique operation names #563
+- Require selections on root type #563
+- If a non-null field returns `null`, don't resolve any more sibling fields. #575
+
 ## 1.4.4 (17 Feb 2017)
 
 ### New features
