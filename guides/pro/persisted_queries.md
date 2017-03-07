@@ -167,4 +167,6 @@ MyAppRepository.unused_fields
 # }
 ```
 
+Before removing a field, consider whether any outstanding clients may depend on this field another way, either by sending arbitrary inputs or by consuming a different repository.
+
 Stay tuned! A future `graphql-ruby` release will include query diffing which can be used to detect breaking changes in repositories.
