@@ -41,6 +41,13 @@ module GraphQL
           end
 
           selection_result.set(name, field_result)
+
+          # If the last subselection caused a null to propagate to _this_ selection,
+          # then we may as well quit executing fields because they
+          # won't be in the response
+          if selection_result.invalid_null?
+            break
+          end
         end
 
         selection_result
