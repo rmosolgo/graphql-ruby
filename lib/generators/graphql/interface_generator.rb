@@ -9,7 +9,7 @@ module Graphql
     # ```
     # rails g graphql:interface NamedEntityType name:String!
     # ```
-    class InterfaceGenerator < TypeGenerator
+    class InterfaceGenerator < TypeGeneratorBase
       desc "Create a GraphQL::InterfaceType with the given name and fields"
       source_root File.expand_path('../templates', __FILE__)
 
