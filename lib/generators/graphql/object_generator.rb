@@ -11,7 +11,7 @@ module Graphql
     # ```
     #
     # Add the Node interface with `--node`.
-    class ObjectGenerator < TypeGenerator
+    class ObjectGenerator < TypeGeneratorBase
       desc "Create a GraphQL::ObjectType with the given name and fields"
       source_root File.expand_path('../templates', __FILE__)
 

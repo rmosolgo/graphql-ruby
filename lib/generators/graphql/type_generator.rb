@@ -4,7 +4,7 @@ require 'graphql'
 
 module Graphql
   module Generators
-    class TypeGenerator < Rails::Generators::Base
+    class TypeGeneratorBase < Rails::Generators::Base
       argument :type_name,
         type: :string,
         required: true,

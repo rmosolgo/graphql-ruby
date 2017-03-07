@@ -9,7 +9,7 @@ module Graphql
     # ```
     # rails g graphql:union SearchResultType ImageType AudioType
     # ```
-    class UnionGenerator < TypeGenerator
+    class UnionGenerator < TypeGeneratorBase
       desc "Create a GraphQL::UnionType with the given name and possible types"
       source_root File.expand_path('../templates', __FILE__)
 
