@@ -8,8 +8,9 @@
 
 A Ruby implementation of [GraphQL](http://graphql.org/).
 
- - [Website](https://rmosolgo.github.io/graphql-ruby)
- - [API Documentation](http://www.rubydoc.info/github/rmosolgo/graphql-ruby)
+- [Website](https://rmosolgo.github.io/graphql-ruby)
+- [API Documentation](http://www.rubydoc.info/github/rmosolgo/graphql-ruby)
+- [Newsletter](https://tinyletter.com/graphql-ruby)
 
 ## Installation
 
@@ -27,6 +28,10 @@ $ bundle install
 ## Getting Started
 
 See "Getting Started" on the [website](https://rmosolgo.github.io/graphql-ruby/) or on [GitHub](https://github.com/rmosolgo/graphql-ruby/blob/master/guides/index.md)
+
+## Upgrade
+
+I also sell [GraphQL::Pro](http://graphql.pro) which provides several features on top of the GraphQL runtime, including [authorization](http://rmosolgo.github.io/graphql-ruby/pro/authorization), [monitoring](http://rmosolgo.github.io/graphql-ruby/pro/monitoring) plugins and [static queries](http://rmosolgo.github.io/graphql-ruby/pro/persisted_queries). Besides that, Pro customers get email support and an opportunity to support graphql-ruby's development!
 
 ## Goals
 

@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+## 1.3.0 (7 Mar 2017)
+
+## New Features
+
+- Serve static, persisted queries with `GraphQL::Pro::Repository`
+
 ## 1.2.2 (6 Mar 2017)
 
 ### Bug Fix

@@ -26,10 +26,13 @@ html{font-size:12px}*{box-sizing:border-box;text-rendering:geometricPrecision}bo
   background-color: #fbf9f9;
 }
 
+.hack code {
+  font-weight: 400;
+}
+
 .hack em { font-style: italic; }
 .hack strong { font-weight: bold; }
-.hack p code {
-  font-weight: normal;
+.hack p code, .hack ul code {
   color: #cd3b60;
   border: 1px solid #cca5a5;
   background-color: #fbf9f9;
