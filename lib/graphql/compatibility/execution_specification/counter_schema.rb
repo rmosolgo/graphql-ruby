@@ -10,7 +10,7 @@ module GraphQL
           has_count_interface = GraphQL::InterfaceType.define do
             name "HasCount"
             field :count, types.Int
-            field :counter, ->{ counter_type }
+            field :counter, ->{ has_count_interface }
           end
 
           counter_type = GraphQL::ObjectType.define do
@@ -29,7 +29,7 @@ module GraphQL
 
           has_counter_interface = GraphQL::InterfaceType.define do
             name "HasCounter"
-            field :counter, counter_type
+            field :counter, has_count_interface
           end
 
           query_type = GraphQL::ObjectType.define do
@@ -41,7 +41,7 @@ module GraphQL
           schema = GraphQL::Schema.define(
             query: query_type,
             resolve_type: ->(o, c) { o == :counter ? counter_type : nil },
-            orphan_types: [alt_counter_type],
+            orphan_types: [alt_counter_type, counter_type],
             query_execution_strategy: execution_strategy,
           )
           schema.metadata[:count] = 0

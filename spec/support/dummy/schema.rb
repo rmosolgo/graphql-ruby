@@ -24,7 +24,7 @@ module Dummy
   AnimalProductInterface = GraphQL::InterfaceType.define do
     name "AnimalProduct"
     description "Comes from an animal, no joke"
-    field :source, !types.String, "Animal which produced this product"
+    field :source, !DairyAnimalEnum, "Animal which produced this product"
   end
 
   BeverageUnion = GraphQL::UnionType.define do
@@ -98,7 +98,7 @@ module Dummy
     description "Dairy beverage"
     interfaces [EdibleInterface, AnimalProductInterface, LocalProductInterface]
     field :id, !types.ID
-    field :source, DairyAnimalEnum, "Animal which produced this milk", hash_key: :source
+    field :source, !DairyAnimalEnum, "Animal which produced this milk", hash_key: :source
     field :origin, !types.String, "Place the milk comes from"
     field :flavors, types[types.String], "Chocolate, Strawberry, etc" do
       argument :limit, types.Int

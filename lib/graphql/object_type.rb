@@ -23,7 +23,7 @@ module GraphQL
   #
   class ObjectType < GraphQL::BaseType
     accepts_definitions :interfaces, :fields, :mutation, field: GraphQL::Define::AssignObjectField
-    accepts_definitions implements: ->(type, *interfaces) { type.add_interfaces(*interfaces) }
+    accepts_definitions implements: ->(type, *interfaces, inherit: false) { type.implements(interfaces, inherit: inherit) }
 
     attr_accessor :fields, :mutation
     ensure_defined(:fields, :mutation, :interfaces)
@@ -37,38 +37,36 @@ module GraphQL
     def initialize
       super
       @fields = {}
+      @interface_fields = {}
       @dirty_interfaces = []
+      @dirty_inherited_interfaces = []
     end
 
     def initialize_copy(other)
       super
       @clean_interfaces = nil
+      @clean_inherited_interfaces = nil
       @dirty_interfaces = other.dirty_interfaces.dup
+      @dirty_inherited_interfaces = other.dirty_inherited_interfaces.dup
       @fields = other.fields.dup
     end
 
+    # This method declares interfaces for this type AND inherits any field definitions
     # @param new_interfaces [Array<GraphQL::Interface>] interfaces that this type implements
     # @deprecated Use `implements` instead of `interfaces`.
     def interfaces=(new_interfaces)
       @clean_interfaces = nil
-      @dirty_interfaces = new_interfaces
+      @clean_inherited_interfaces = nil
+      @clean_inherited_fields = nil
+
+      @dirty_inherited_interfaces = []
+      @dirty_inherited_fields = {}
+      implements(new_interfaces, inherit: true)
     end
 
     def interfaces
-      @clean_interfaces ||= begin
-        if @dirty_interfaces.respond_to?(:map)
-          @dirty_interfaces.map { |i_type| GraphQL::BaseType.resolve_related_type(i_type) }
-        else
-          @dirty_interfaces
-        end
-      end
-    end
-
-    # @param interface [GraphQL::Interface] add a new interface that this type implements
-    def add_interfaces(*interfaces)
-      @clean_interfaces = nil
-      @dirty_interfaces ||= []
-      @dirty_interfaces.push(*interfaces)
+      load_interfaces
+      @clean_interfaces
     end
 
     def kind
@@ -85,16 +83,50 @@ module GraphQL
       interface_fields.merge(self.fields).values
     end
 
+    # Declare that this object implements this interface.
+    # This declaration will be validated when the schema is defined.
+    # @param interfaces [Array<GraphQL::Interface>] add a new interface that this type implements
+    # @param inherits [Boolean] If true, copy the interfaces' field definitions to this type
+    def implements(interfaces, inherit: false)
+      if !interfaces.is_a?(Array)
+        raise ArgumentError, "`implements(interfaces)` must be an array, not #{interfaces.class} (#{interfaces})"
+      end
+
+      @clean_interfaces = nil
+      @clean_inherited_fields = nil
+      dirty_ifaces = inherit ? @dirty_inherited_interfaces : @dirty_interfaces
+      dirty_ifaces.concat(interfaces)
+    end
+
     protected
 
-    attr_reader :dirty_interfaces
+    attr_reader :dirty_interfaces, :dirty_inherited_interfaces
 
     private
 
-    # Create a {name => defn} hash for fields inherited from interfaces
+    def normalize_interfaces(ifaces)
+      ifaces.map { |i_type| GraphQL::BaseType.resolve_related_type(i_type) }
+    end
+
     def interface_fields
-      interfaces.reduce({}) do |memo, iface|
-        memo.merge!(iface.fields)
+      load_interfaces
+      @clean_inherited_fields
+    end
+
+    def load_interfaces
+      @clean_interfaces ||= begin
+        ensure_defined
+        clean_ifaces = normalize_interfaces(@dirty_interfaces)
+        clean_inherited_ifaces = normalize_interfaces(@dirty_inherited_interfaces)
+        inherited_fields = {}
+        clean_inherited_ifaces.each do |iface|
+          # This will be found later in schema validation:
+          if iface.is_a?(GraphQL::InterfaceType)
+            inherited_fields.merge!(iface.fields)
+          end
+        end
+        @clean_inherited_fields = inherited_fields
+        clean_inherited_ifaces + clean_ifaces
       end
     end
   end

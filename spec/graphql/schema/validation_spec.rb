@@ -11,6 +11,13 @@ describe GraphQL::Schema::Validation do
     assert_includes validation_error, error_substring
   end
 
+  def refute_error_includes(object, *error_substrings)
+    validation_error = GraphQL::Schema::Validation.validate(object)
+    error_substrings.each do |substr|
+      refute_includes(validation_error, substr)
+    end
+  end
+
   def assert_validation_warns(object, warning)
     assert_output("", warning + "\n") { GraphQL::Schema::Validation.validate(object) }
   end
@@ -111,13 +118,6 @@ describe GraphQL::Schema::Validation do
   end
 
   describe "validating ObjectTypes" do
-    let(:invalid_interfaces_object) {
-      GraphQL::ObjectType.define do
-        name "InvalidInterfaces"
-        interfaces(55)
-      end
-    }
-
     let(:invalid_interface_member_object) {
       GraphQL::ObjectType.define do
         name "InvalidInterfaceMember"
@@ -133,12 +133,77 @@ describe GraphQL::Schema::Validation do
     }
 
     it "requires an Array for interfaces" do
-      assert_error_includes invalid_interfaces_object, "must be an Array of GraphQL::InterfaceType, not a #{integer_class_name}"
       assert_error_includes invalid_interface_member_object, "must contain GraphQL::InterfaceType, not Symbol"
     end
 
     it "validates the fields" do
       assert_error_includes invalid_field_object, "must return GraphQL::BaseType, not Symbol"
+    end
+
+    it "requires interfaces to be implemented" do
+      iface_1 = GraphQL::InterfaceType.define do
+        name "Interface1"
+        field :field_1, types.String
+        field :field_2, types.Int
+      end
+
+      iface_2 = GraphQL::InterfaceType.define do
+        name "Interface2"
+        field :field_3, types.String do
+          argument :arg_1, types.Boolean
+        end
+        field :field_4, types.Int
+      end
+
+      iface_3 = GraphQL::InterfaceType.define do
+        name "Interface3"
+        field :field_5, types.String do
+          argument :arg_2, types.Float
+        end
+        field :field_6, types.Int do
+          argument :arg_3, types.Float
+        end
+        field :field_7, types.ID
+        field :field_8, !types[iface_2]
+        field :field_9, !types[iface_2]
+      end
+
+      obj_type = GraphQL::ObjectType.define do
+        name "Object1"
+        implements iface_1, inherit: true
+        implements iface_2, iface_3
+        field :field_2, types.Int do
+          # Acceptable extra optional argument:
+          argument :arg_0_extra, types.String
+          # Unacceptable extra required argument:
+          argument :arg_0_extra_2, !types.String
+        end
+        # Correct:
+        field :field_3, types.String do
+          argument :arg_1, types.Boolean
+        end
+        # Wrong return type:
+        field :field_4, types.Float
+        # Wrong argument type:
+        field :field_5, types.String do
+          argument :arg_2, types.Int
+        end
+        # Missing argument
+        field :field_6, types.Int
+        # Missing altogether:
+        # field :field_7
+        # Valid subtype:
+        field :field_8, !types[!iface_2]
+        # Invalid subtype:
+        field :field_9, types[iface_2]
+      end
+
+      assert_error_includes(obj_type, '"arg_0_extra_2" is not accepted by Interface1.field_2 but required by Object1.field_2')
+      assert_error_includes(obj_type, '"field_4" is required by Interface2 to return Int but Object1.field_4 returns Float')
+      assert_error_includes(obj_type, '"arg_2" is required by Interface3.field_5 to accept Float but Object1.field_5 accepts Int for "arg_2"')
+      assert_error_includes(obj_type, '"field_7" is required by Interface3 but not implemented by Object1')
+      assert_error_includes(obj_type, '"field_9" is required by Interface3 to return [Interface2]! but Object1.field_9 returns [Interface2]')
+      refute_error_includes(obj_type, "field_1", "field_3", "field_8")
     end
   end
 
