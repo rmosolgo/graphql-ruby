@@ -52,7 +52,7 @@ describe GraphQL::Introspection::TypeType do
           {"type"=>{"kind"=>"NON_NULL","name"=>nil, "ofType"=>{"name"=>"ID"}}},
           {"type"=>{"kind"=>"NON_NULL","name"=>nil, "ofType"=>{"name"=>"String"}}},
           {"type"=>{"kind"=>"INTERFACE", "name"=>"Edible", "ofType"=>nil}},
-          {"type"=>{"kind"=>"ENUM","name"=>"DairyAnimal", "ofType"=>nil}},
+          {"type"=>{"kind"=>"NON_NULL","name"=>nil,"ofType"=>{"name"=>"DairyAnimal"}}},
         ]
       },
       "dairyAnimal"=>{

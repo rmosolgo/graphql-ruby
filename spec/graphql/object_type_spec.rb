@@ -15,8 +15,19 @@ describe GraphQL::ObjectType do
     assert_equal(22, type.description.length)
   end
 
-  it "may have interfaces" do
-    assert_equal([Dummy::EdibleInterface, Dummy::AnimalProductInterface, Dummy::LocalProductInterface], type.interfaces)
+  describe "interfaces" do
+    it "may have interfaces" do
+      assert_equal([Dummy::EdibleInterface, Dummy::AnimalProductInterface, Dummy::LocalProductInterface], type.interfaces)
+    end
+
+    it "raises if the interfaces arent an array" do
+      type = GraphQL::ObjectType.define do
+        name "InvalidInterfaces"
+        interfaces(55)
+      end
+
+      assert_raises(ArgumentError) { type.name }
+    end
   end
 
   it "accepts fields definition" do
@@ -59,6 +70,29 @@ describe GraphQL::ObjectType do
       end
 
       assert_equal([Dummy::EdibleInterface, Dummy::AnimalProductInterface], type.interfaces)
+    end
+
+    it "can be used to inherit fields from the interface" do
+      type_1 = GraphQL::ObjectType.define do
+        name 'Hello'
+        implements Dummy::EdibleInterface
+        implements Dummy::AnimalProductInterface
+      end
+
+      type_2 = GraphQL::ObjectType.define do
+        name 'Hello'
+        implements Dummy::EdibleInterface
+        implements Dummy::AnimalProductInterface, inherit: true
+      end
+
+      type_3 = GraphQL::ObjectType.define do
+        name 'Hello'
+        implements Dummy::EdibleInterface, Dummy::AnimalProductInterface, inherit: true
+      end
+
+      assert_equal [], type_1.all_fields.map(&:name)
+      assert_equal ["source"], type_2.all_fields.map(&:name)
+      assert_equal ["fatContent", "origin", "selfAsEdible", "source"], type_3.all_fields.map(&:name)
     end
   end
 
