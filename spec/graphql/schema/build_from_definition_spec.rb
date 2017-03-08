@@ -700,4 +700,80 @@ SCHEMA
       assert_equal 'Specified query type "Foo" not found in document.', err.message
     end
   end
+
+  describe "executable schemas from string" do
+    let(:schema_defn) {
+      <<-GRAPHQL
+        type Todo {text: String, from_context: String}
+        type Query { all_todos: [Todo]}
+        type Mutation { todo_add(text: String!): Todo}
+      GRAPHQL
+    }
+
+    Todo = Struct.new(:text, :from_context)
+
+    class RootResolver
+      attr_accessor :todos
+
+      def initialize
+        @todos = [Todo.new("Pay the bills.")]
+      end
+
+      def all_todos
+        @todos
+      end
+
+      def todo_add(args, ctx) # this is a method and accepting arguments
+        todo = Todo.new(args[:text], ctx[:context_value])
+        @todos << todo
+        todo
+      end
+    end
+
+    it "calls methods with args if args are defined" do
+      schema = GraphQL::Schema.from_definition(schema_defn)
+      root_values = RootResolver.new
+      schema.execute("mutation { todoAdd: todo_add(text: \"Buy Milk\") { text } }", root_value: root_values, context: {context_value: "bar"})
+      result = schema.execute("query { allTodos: all_todos { text, from_context } }", root_value: root_values)
+      assert_equal(result.to_json, '{"data":{"allTodos":[{"text":"Pay the bills.","from_context":null},{"text":"Buy Milk","from_context":"bar"}]}}')
+    end
+
+    describe "custom resolve behavior" do
+      class AppResolver
+        def initialize
+          @todos = [Todo.new("Pay the bills.")]
+          @resolves = {
+            "Query" => {
+              "all_todos" => ->(obj, args, ctx) { @todos },
+            },
+            "Mutation" => {
+              "todo_add" => ->(obj, args, ctx) {
+                todo = Todo.new(args[:text], ctx[:context_value])
+                @todos << todo
+                todo
+              },
+            },
+            "Todo" => {
+              "text" => ->(obj, args, ctx) { obj.text },
+              "from_context" => ->(obj, args, ctx) { obj.from_context },
+            }
+          }
+        end
+
+        def call(type, field, obj, args, ctx)
+          @resolves
+            .fetch(type.name)
+            .fetch(field.name)
+            .call(obj, args, ctx)
+        end
+      end
+
+      it "accepts a default_resolve callable" do
+        schema = GraphQL::Schema.from_definition(schema_defn, default_resolve: AppResolver.new)
+        schema.execute("mutation { todoAdd: todo_add(text: \"Buy Milk\") { text } }", context: {context_value: "bar"})
+        result = schema.execute("query { allTodos: all_todos { text, from_context } }")
+        assert_equal(result.to_json, '{"data":{"allTodos":[{"text":"Pay the bills.","from_context":null},{"text":"Buy Milk","from_context":"bar"}]}}')
+      end
+    end
+  end
 end

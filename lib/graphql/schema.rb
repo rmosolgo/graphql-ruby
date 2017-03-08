@@ -359,10 +359,11 @@ module GraphQL
     end
 
     # Create schema from an IDL schema.
-    # @param definition_string String A schema definition string
+    # @param definition_string [String] A schema definition string
+    # @param default_resolve [<#call(type, field, obj, args, ctx)>] A callable for handling field resolution
     # @return [GraphQL::Schema] the schema described by `document`
-    def self.from_definition(definition_string)
-      GraphQL::Schema::BuildFromDefinition.from_definition(definition_string)
+    def self.from_definition(string, default_resolve: BuildFromDefinition::DefaultResolve)
+      GraphQL::Schema::BuildFromDefinition.from_definition(string, default_resolve: default_resolve)
     end
 
     # Error that is raised when [#Schema#from_definition] is passed an invalid schema definition string.
