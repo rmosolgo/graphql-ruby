@@ -88,7 +88,7 @@ AddCommentMutation = GraphQL::Relay::Mutation.define do
     # Use this helper to create the response that a
     # client-side RANGE_ADD mutation would expect.
     range_add = GraphQL::Relay::RangeAdd.new(
-    parent: post,
+      parent: post,
       collection: comments,
       item: new_comment,
       context: ctx,
