@@ -21,11 +21,29 @@ module GraphQL
       end
 
       # @api private
+      class ResolveMap
+        def initialize(resolve_hash)
+          @resolve_hash = resolve_hash
+        end
+
+        def call(type, field, obj, args, ctx)
+          @resolve_hash
+            .fetch(type.name)
+            .fetch(field.name)
+            .call(obj,args,ctx)
+        end
+      end
+
+      # @api private
       module Builder
         extend self
 
         def build(document, default_resolve: DefaultResolve)
           raise InvalidDocumentError.new('Must provide a document ast.') if !document || !document.is_a?(GraphQL::Language::Nodes::Document)
+
+          if default_resolve.is_a?(Hash)
+            default_resolve = ResolveMap.new(default_resolve)
+          end
 
           schema_definition = nil
           types = {}

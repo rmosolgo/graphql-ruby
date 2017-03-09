@@ -738,6 +738,35 @@ SCHEMA
       assert_equal(result.to_json, '{"data":{"allTodos":[{"text":"Pay the bills.","from_context":null},{"text":"Buy Milk","from_context":"bar"}]}}')
     end
 
+    describe "hash of resolvers" do
+      let(:resolve_hash) {
+        {
+          "Query" => {
+            "all_todos" => ->(obj, args, ctx) { obj },
+          },
+          "Mutation" => {
+            "todo_add" => ->(obj, args, ctx) {
+              todo = Todo.new(args[:text], ctx[:context_value])
+              obj << todo
+              todo
+            },
+          },
+          "Todo" => {
+            "text" => ->(obj, args, ctx) { obj.text },
+            "from_context" => ->(obj, args, ctx) { obj.from_context },
+          },
+        }
+      }
+
+      it "accepts a hash of resolve functions" do
+        todos =  [Todo.new("Pay the bills.")]
+        schema = GraphQL::Schema.from_definition(schema_defn, default_resolve: resolve_hash)
+        schema.execute("mutation { todoAdd: todo_add(text: \"Buy Milk\") { text } }", context: {context_value: "bar"}, root_value: todos)
+        result = schema.execute("query { allTodos: all_todos { text, from_context } }", root_value: todos)
+        assert_equal(result.to_json, '{"data":{"allTodos":[{"text":"Pay the bills.","from_context":null},{"text":"Buy Milk","from_context":"bar"}]}}')
+      end
+    end
+
     describe "custom resolve behavior" do
       class AppResolver
         def initialize
