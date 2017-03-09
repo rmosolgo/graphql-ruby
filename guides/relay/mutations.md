@@ -4,6 +4,7 @@ title:  Relay — Mutations
 
 Relay uses a [strict mutation API](https://facebook.github.io/relay/docs/graphql-mutations.html#content) for modifying the state of your application. This API makes mutations predictable to the client.
 
+On the client-side, Relay also requires you to specify how it should interpret the response from your GraphQL server, which may require your server-side mutations to return payloads with specific fields.
 
 ## Mutation root
 
@@ -50,6 +51,13 @@ To define a mutation, use `GraphQL::Relay::Mutation.define`. Inside the block, y
   - `return_field`s, which will be applied to the derived `ObjectType`
   - `resolve(->(object, inputs, ctx) { ... })`, the mutation which will actually happen
 
+Whereas you can have whatever combination and number of `input_field`s you wish, Relay expects different return fields when using certain mutator configuration you use on the client-side:
+
+- `FIELDS_CHANGE` — expects a field for the mutated object.
+- `NODE_DELETE` — expects fields for the destroyed object and the destroyed object’s parent
+- `RANGE_ADD` — expects fields for the newly created edge (see below) and its parent
+- `RANGE_DELETE` - expects fields for the ID(s) of the deleted children and their parent
+
 For example:
 
 ```ruby
@@ -63,19 +71,33 @@ AddCommentMutation = GraphQL::Relay::Mutation.define do
   input_field :content, !types.String
 
   # The result has access to these fields,
-  # resolve must return a hash with these keys
+  # resolve must return a hash with these keys.
+  # On the client-side this would be configured
+  # as RANGE_ADD mutation, so our returned fields
+  # must conform to that API.
   return_field :post, PostType
-  return_field :comment, CommentType
+  return_field :comment, CommentType.edge_type
 
   # The resolve proc is where you alter the system state.
   resolve ->(object, inputs, ctx) {
-    post = Post.find(inputs[:postId])
-    comment = post.comments.create!(author_id: inputs[:authorId], content: inputs[:content])
+    post = Post.find(args[:postId])
+    comments = post.comments
+    new_comment = comments.build(body: args[:body])
+    new_comment.save!
 
-    # The keys in this hash correspond to `return_field`s above:
-    {
-      comment: comment,
+    # Use this helper to create the response that a
+    # client-side RANGE_ADD mutation would expect.
+    range_add = GraphQL::Relay::RangeAdd.new(
+    parent: post,
+      collection: comments,
+      item: new_comment,
+      context: ctx,
+    )
+
+    response = {
       post: post,
+      commentsConnection: range_add.connection,
+      newCommentEdge: range_add.edge,
     }
   }
 end
