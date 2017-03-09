@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module GraphQL
   module InternalRepresentation
     # While visiting an AST, build a normalized, flattened tree of {InternalRepresentation::Node}s.
