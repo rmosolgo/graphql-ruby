@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module GraphQL
   module Relay
     # This provides some isolation from `GraphQL::Relay` internals.
