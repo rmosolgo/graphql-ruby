@@ -24,16 +24,11 @@ module GraphQL
       # Resolve the field by `public_send`ing `@method_name`
       class MethodResolve < BuiltInResolve
         def initialize(field)
-          @field = field
           @method_name = field.property.to_sym
         end
 
         def call(obj, args, ctx)
-          if @field.arguments.any?
-            obj.public_send(@method_name, args, ctx)
-          else
-            obj.public_send(@method_name)
-          end
+          obj.public_send(@method_name)
         end
       end
 
@@ -56,11 +51,7 @@ module GraphQL
         end
 
         def call(obj, args, ctx)
-          if @field.arguments.any?
-            obj.public_send(@field.name, args, ctx)
-          else
-            obj.public_send(@field.name)
-          end
+          obj.public_send(@field.name)
         end
       end
     end

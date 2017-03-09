@@ -3,17 +3,47 @@ module GraphQL
   class Schema
     module BuildFromDefinition
       class << self
-        def from_definition(definition_string)
+        def from_definition(definition_string, default_resolve:)
           document = GraphQL::parse(definition_string)
-          Builder.build(document)
+          Builder.build(document, default_resolve: default_resolve)
         end
       end
 
+      # @api private
+      module DefaultResolve
+        def self.call(type, field, obj, args, ctx)
+          if field.arguments.any?
+            obj.public_send(field.name, args, ctx)
+          else
+            obj.public_send(field.name)
+          end
+        end
+      end
+
+      # @api private
+      class ResolveMap
+        def initialize(resolve_hash)
+          @resolve_hash = resolve_hash
+        end
+
+        def call(type, field, obj, args, ctx)
+          @resolve_hash
+            .fetch(type.name)
+            .fetch(field.name)
+            .call(obj,args,ctx)
+        end
+      end
+
+      # @api private
       module Builder
         extend self
 
-        def build(document)
+        def build(document, default_resolve: DefaultResolve)
           raise InvalidDocumentError.new('Must provide a document ast.') if !document || !document.is_a?(GraphQL::Language::Nodes::Document)
+
+          if default_resolve.is_a?(Hash)
+            default_resolve = ResolveMap.new(default_resolve)
+          end
 
           schema_definition = nil
           types = {}
@@ -29,7 +59,7 @@ module GraphQL
             when GraphQL::Language::Nodes::EnumTypeDefinition
               types[definition.name] = build_enum_type(definition, type_resolver)
             when GraphQL::Language::Nodes::ObjectTypeDefinition
-              types[definition.name] = build_object_type(definition, type_resolver)
+              types[definition.name] = build_object_type(definition, type_resolver, default_resolve: default_resolve)
             when GraphQL::Language::Nodes::InterfaceTypeDefinition
               types[definition.name] = build_interface_type(definition, type_resolver)
             when GraphQL::Language::Nodes::UnionTypeDefinition
@@ -128,11 +158,13 @@ module GraphQL
           )
         end
 
-        def build_object_type(object_type_definition, type_resolver)
-          GraphQL::ObjectType.define(
+        def build_object_type(object_type_definition, type_resolver, default_resolve:)
+          type_def = nil
+          typed_resolve_fn = ->(field, obj, args, ctx) { default_resolve.call(type_def, field, obj, args, ctx) }
+          type_def = GraphQL::ObjectType.define(
             name: object_type_definition.name,
             description: object_type_definition.description,
-            fields: Hash[build_fields(object_type_definition.fields, type_resolver)],
+            fields: Hash[build_fields(object_type_definition.fields, type_resolver, default_resolve: typed_resolve_fn)],
             interfaces: object_type_definition.interfaces.map{ |interface_name| type_resolver.call(interface_name) },
           )
         end
@@ -209,11 +241,11 @@ module GraphQL
           GraphQL::InterfaceType.define(
             name: interface_type_definition.name,
             description: interface_type_definition.description,
-            fields: Hash[build_fields(interface_type_definition.fields, type_resolver)],
+            fields: Hash[build_fields(interface_type_definition.fields, type_resolver, default_resolve: nil)],
           )
         end
 
-        def build_fields(field_definitions, type_resolver)
+        def build_fields(field_definitions, type_resolver, default_resolve:)
           field_definitions.map do |field_definition|
             field_arguments = Hash[field_definition.arguments.map do |argument|
               kwargs = {}
@@ -232,16 +264,15 @@ module GraphQL
               [argument.name, arg]
             end]
 
-            [
-              field_definition.name,
-              GraphQL::Field.define(
-                name: field_definition.name,
-                description: field_definition.description,
-                type: type_resolver.call(field_definition.type),
-                arguments: field_arguments,
-                deprecation_reason: build_deprecation_reason(field_definition.directives),
-              )
-            ]
+            field = GraphQL::Field.define(
+              name: field_definition.name,
+              description: field_definition.description,
+              type: type_resolver.call(field_definition.type),
+              arguments: field_arguments,
+              resolve: ->(obj, args, ctx) { default_resolve.call(field, obj, args, ctx) },
+              deprecation_reason: build_deprecation_reason(field_definition.directives),
+            )
+            [field_definition.name, field]
           end
         end
 
