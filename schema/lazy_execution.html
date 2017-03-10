@@ -113,7 +113,7 @@
     <span class="c1"># Initialize the loading state for this query,</span>
     <span class="c1"># or get the previously-initiated state</span>
     <span class="vi">@lazy_state</span> <span class="o">=</span> <span class="n">query_ctx</span><span class="p">[</span><span class="ss">:lazy_find_person</span><span class="p">]</span> <span class="o">||=</span> <span class="p">{</span>
-      <span class="ss">pending_ids: </span><span class="p">[],</span>
+      <span class="ss">pending_ids: </span><span class="no">Set</span><span class="p">.</span><span class="nf">new</span><span class="p">,</span>
       <span class="ss">loaded_ids: </span><span class="p">{},</span>
     <span class="p">}</span>
     <span class="c1"># Register this ID to be loaded later:</span>
@@ -131,9 +131,10 @@
     <span class="k">else</span>
       <span class="c1"># The record hasn't been loaded yet, so</span>
       <span class="c1"># hit the database with all pending IDs</span>
-      <span class="n">pending_ids</span> <span class="o">=</span> <span class="vi">@lazy_state</span><span class="p">[</span><span class="ss">:pending_ids</span><span class="p">]</span>
+      <span class="n">pending_ids</span> <span class="o">=</span> <span class="vi">@lazy_state</span><span class="p">[</span><span class="ss">:pending_ids</span><span class="p">].</span><span class="nf">to_a</span>
       <span class="n">people</span> <span class="o">=</span> <span class="no">Person</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="ss">id: </span><span class="n">pending_ids</span><span class="p">)</span>
       <span class="n">people</span><span class="p">.</span><span class="nf">each</span> <span class="p">{</span> <span class="o">|</span><span class="n">person</span><span class="o">|</span> <span class="vi">@lazy_state</span><span class="p">[</span><span class="ss">:loaded_ids</span><span class="p">][</span><span class="n">person</span><span class="p">.</span><span class="nf">id</span><span class="p">]</span> <span class="o">=</span> <span class="n">person</span> <span class="p">}</span>
+      <span class="vi">@lazy_state</span><span class="p">[</span><span class="ss">:pending_ids</span><span class="p">].</span><span class="nf">clear</span>
       <span class="c1"># Now, get the matching person from the loaded result:</span>
       <span class="vi">@lazy_state</span><span class="p">[</span><span class="ss">:loaded_ids</span><span class="p">][</span><span class="vi">@person_id</span><span class="p">]</span>
     <span class="k">end</span>

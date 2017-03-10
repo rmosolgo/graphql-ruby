@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>GraphQL Ruby - Related Projects</title>
+    <title>GraphQL Ruby - Schema — Generators</title>
     <link rel="stylesheet" href="/graphql-ruby/css/main.css">
     <link rel="icon" href="/graphql-ruby/graphql-ruby-icon.png">
     <meta name="generator">
@@ -86,41 +86,85 @@
           <h3><a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a></h3>
         </div>
         <div class="cell -9of12">
-          <h1 class="guide-header">Related Projects</h1>
-          <p>Want to add something? Please open a pull request <a href="https://github.com/rmosolgo/graphql-ruby">on GitHub</a>!</p>
-
-<h2 id="code">Code</h2>
+          <h1 class="guide-header">Schema — Generators</h1>
+          <p>If you’re using GraphQL with Ruby on Rails, you can use generators to:</p>
 
 <ul>
-  <li><code class="highlighter-rouge">graphql-ruby</code> + Rails demo (<a href="https://github.com/rmosolgo/graphql-ruby-demo">src</a> / <a href="http://graphql-ruby-demo.herokuapp.com">heroku</a>)</li>
-  <li><code class="highlighter-rouge">graphql-ruby</code> + Sinatra demo (<a href="https://github.com/robinjmurphy/ruby-graphql-server-example">src</a> / <a href="https://ruby-graphql-server-example.herokuapp.com/">heroku</a>)</li>
-  <li><a href="https://github.com/shopify/graphql-batch"><code class="highlighter-rouge">graphql-batch</code></a>, a batched query execution strategy</li>
-  <li><a href="https://github.com/rmosolgo/graphql-libgraphqlparser-ruby"><code class="highlighter-rouge">graphql-libgraphqlparser</code></a>, bindings to <a href="https://github.com/graphql/libgraphqlparser">libgraphqlparser</a>, a C-level parser.</li>
-  <li>Rails Helpers:
-    <ul>
-      <li><a href="https://github.com/goco-inc/graphql-activerecord"><code class="highlighter-rouge">graphql-activerecord</code></a></li>
-      <li><a href="https://github.com/colepatrickturner/graphql-rails-resolver"><code class="highlighter-rouge">graphql-rails-resolve</code></a></li>
-    </ul>
-  </li>
-  <li><a href="https://github.com/apollostack/optics-agent-ruby">optics-agent-ruby</a>, a graphql-ruby agent for use with the <a href="http://www.apollodata.com/optics">Apollo Optics</a> GraphQL performance tool.</li>
+  <li><a href="#graphql-install">setup GraphQL</a>, including <a href="https://github.com/graphql/graphiql">GraphiQL</a>, <a href="https://github.com/Shopify/graphql-batch">GraphQL::Batch</a>, and <a href="https://facebook.github.io/relay/">Relay</a></li>
+  <li><a href="#scaffolding-types">scaffold types</a></li>
+  <li><a href="#scaffolding-functions">scaffold functions</a></li>
+  <li><a href="#scaffolding-mutations">scaffold Relay mutations</a></li>
+  <li><a href="#scaffolding-loaders">scaffold GraphQL::Batch loaders</a></li>
 </ul>
 
-<h2 id="blog-posts">Blog Posts</h2>
+<h2 id="graphqlinstall">graphql:install</h2>
+
+<p>You can add GraphQL to a Rails app with <code class="highlighter-rouge">graphql:install</code>:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>rails generate graphql:install
+</code></pre>
+</div>
+
+<p>This will:</p>
 
 <ul>
-  <li>Building a blog in GraphQL and Relay on Rails <a href="https://medium.com/@gauravtiwari/graphql-and-relay-on-rails-getting-started-955a49d251de">Introduction</a>, <a href="https://medium.com/@gauravtiwari/graphql-and-relay-on-rails-creating-types-and-schema-b3f9b232ccfc">Part 1</a>, <a href="https://medium.com/@gauravtiwari/graphql-and-relay-on-rails-first-relay-powered-react-component-cb3f9ee95eca">Part 2</a></li>
-  <li>https://medium.com/@khor/relay-facebook-on-rails-8b4af2057152</li>
-  <li>https://blog.jacobwgillespie.com/from-rest-to-graphql-b4e95e94c26b#.4cjtklrwt</li>
-  <li>http://mgiroux.me/2015/getting-started-with-rails-graphql-relay/</li>
-  <li>http://mgiroux.me/2015/uploading-files-using-relay-with-rails/</li>
-  <li>http://mgiroux.me/2016/journey-into-graphql-ruby-query-execution/</li>
+  <li>Set up a folder structure in <code class="highlighter-rouge">app/graphql/</code></li>
+  <li>Add schema definition</li>
+  <li>Add a <code class="highlighter-rouge">Query</code> type definition</li>
+  <li>Add a route and controller for executing queries</li>
+  <li>Install <a href="https://github.com/rmosolgo/graphiql-rails"><code class="highlighter-rouge">graphiql-rails</code></a></li>
 </ul>
 
-<h2 id="screencasts">Screencasts</h2>
+<p>After installing you can see your new schema by:</p>
 
 <ul>
-  <li><a href="https://rubyplus.com/episodes/271-GraphQL-Basics-in-Rails-5">GraphQL Basics in Rails 5</a></li>
+  <li><code class="highlighter-rouge">bundle install</code></li>
+  <li><code class="highlighter-rouge">rails server</code></li>
+  <li>Open <code class="highlighter-rouge">localhost:3000/graphiql</code></li>
 </ul>
+
+<h3 id="options">Options</h3>
+
+<ul>
+  <li><code class="highlighter-rouge">--relay</code> will add <a href="https://facebook.github.io/relay/">Relay</a>-specific code to your schema</li>
+  <li><code class="highlighter-rouge">--batch</code> will add <a href="https://github.com/Shopify/graphql-batch">GraphQL::Batch</a> to your gemfile and include the setup in your schema</li>
+  <li><code class="highlighter-rouge">--no-graphiql</code> will exclude <code class="highlighter-rouge">graphiql-rails</code> from the setup</li>
+  <li><code class="highlighter-rouge">--schema=MySchemaName</code> will be used for naming the schema (default is <code class="highlighter-rouge">#{app_name}Schema</code>)</li>
+</ul>
+
+<h2 id="scaffolding-types">Scaffolding Types</h2>
+
+<p>Several generators will add GraphQL types to your project. Run them with <code class="highlighter-rouge">-h</code> to see the options:</p>
+
+<ul>
+  <li><code class="highlighter-rouge">rails g graphql:object</code></li>
+  <li><code class="highlighter-rouge">rails g graphql:interface</code></li>
+  <li><code class="highlighter-rouge">rails g graphql:union</code></li>
+</ul>
+
+<h2 id="scaffolding-functions">Scaffolding Functions</h2>
+
+<p>You can prepare a <a href="http://www.rubydoc.info/gems/graphql/GraphQL/Function" target="_blank"><code>GraphQL::Function</code></a> with</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>rails g graphql:function #{function_name}
+</code></pre>
+</div>
+
+<h2 id="scaffolding-mutations">Scaffolding Mutations</h2>
+
+<p>You can prepare a Relay mutation with</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>rails g graphql:mutation #{mutation_name}
+</code></pre>
+</div>
+
+<h2 id="scaffolding-loaders">Scaffolding Loaders</h2>
+
+<p>You can prepare a GraphQL::Batch loader with</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>rails g graphql:loader
+</code></pre>
+</div>
 
         </div>
       </div>

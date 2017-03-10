@@ -234,7 +234,7 @@ exposing another key to clients.</p>
   <li><a href="http://www.rubydoc.info/gems/graphql/GraphQL/NonNullType" target="_blank"><code>GraphQL::NonNullType</code></a>s of a valid input type</li>
 </ul>
 
-<p>The <code class="highlighter-rouge">args</code> parameter of a <code class="highlighter-rouge">resolve</code> function will always be a <code class="highlighter-rouge">&lt;a href="http://www.rubydoc.info/gems/graphql/GraphQL/Query/Arguments" target="_blank"&gt;&lt;code&gt;GraphQL::Query::Arguments&lt;/code&gt;&lt;/a&gt;</code>. You can access specific arguments with <code class="highlighter-rouge">["arg_name"]</code> or <code class="highlighter-rouge">[:arg_name]</code>. You recursively turn it into a Ruby Hash with <code class="highlighter-rouge">to_h</code>. Inside <code class="highlighter-rouge">args</code>, scalars will be parsed into Ruby values and enums will be converted to their <code class="highlighter-rouge">value:</code> (if one was provided).</p>
+<p>The <code class="highlighter-rouge">args</code> parameter of a <code class="highlighter-rouge">resolve</code> function will always be a <a href="http://www.rubydoc.info/gems/graphql/GraphQL/Query/Arguments" target="_blank"><code>GraphQL::Query::Arguments</code></a>. You can access specific arguments with <code class="highlighter-rouge">["arg_name"]</code> or <code class="highlighter-rouge">[:arg_name]</code>. You recursively turn it into a Ruby Hash with <code class="highlighter-rouge">to_h</code>. Inside <code class="highlighter-rouge">args</code>, scalars will be parsed into Ruby values and enums will be converted to their <code class="highlighter-rouge">value:</code> (if one was provided).</p>
 
 <div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
   <span class="n">args</span><span class="p">[</span><span class="s2">"category"</span><span class="p">]</span> <span class="o">==</span> <span class="n">args</span><span class="p">[</span><span class="ss">:category</span><span class="p">]</span>
@@ -296,6 +296,10 @@ exposing another key to clients.</p>
 <span class="c1"># or:</span>
 <span class="c1"># GraphQL::Field.accepts_definitions(...)</span>
 <span class="c1"># GraphQL::Argument.accepts_definitions(...)</span>
+
+<span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+  <span class="c1"># ...</span>
+<span class="k">end</span>
 </code></pre>
 </div>
 

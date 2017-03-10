@@ -134,6 +134,8 @@
 
 <p>For ungrouped relations, this issue is handled automatically by adding the model’s <code class="highlighter-rouge">primary_key</code> to the order values.</p>
 
+<p>If you provide an unordered, grouped relation, <code class="highlighter-rouge">GraphQL::Pro::RelationConnection::InvalidRelationError</code> will be raised because an unordered relation <em>cannot</em> be paginated in a stable way.</p>
+
 <h2 id="backwards-compatibility">Backwards Compatibility</h2>
 
 <p><code class="highlighter-rouge">GraphQL::Pro</code>’s <code class="highlighter-rouge">RelationConnection</code> is backwards-compatible. If it receives an offset-based cursor, it uses that cursor for the next resolution, then returns value-based cursors in the next result.</p>

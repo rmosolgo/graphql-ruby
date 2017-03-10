@@ -90,76 +90,103 @@
           <p>Here are a few techniques for code reuse with graphql-ruby:</p>
 
 <ul>
-  <li><a href="#resolver-classes">Resolver classes</a></li>
+  <li><a href="#functions">Functions</a></li>
   <li><a href="#dynamically-defining-types">Dynamically defining types</a></li>
   <li><a href="#functional-composition--resolve">Functional composition and <code class="highlighter-rouge">resolve</code></a></li>
 </ul>
 
 <p>Besides reducing duplicate code, these approaches also allow you to test parts of your schema in isolation.</p>
 
-<h2 id="resolver-classes">Resolver classes</h2>
+<h2 id="functions">Functions</h2>
 
-<p>(Originally described by AlphaSights at https://m.alphasights.com/graphql-ruby-clean-up-your-query-type-d7ab05a47084.)</p>
+<p><a href="http://www.rubydoc.info/gems/graphql/GraphQL/Function" target="_blank"><code>GraphQL::Function</code></a> can hold generalized field logic which can be specialized on a field-by-field basis.</p>
 
-<p>Many examples use a Proc literal for a field’s <code class="highlighter-rouge">resolve</code>, for example:</p>
+<p>To define a function, make a class that extends <a href="http://www.rubydoc.info/gems/graphql/GraphQL/Function" target="_blank"><code>GraphQL::Function</code></a>:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:name</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">String</span> <span class="k">do</span>
-  <span class="c1"># Resolve taking a Proc literal:</span>
-  <span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span> <span class="n">obj</span><span class="p">.</span><span class="nf">name</span> <span class="p">}</span>
-<span class="k">end</span>
-</code></pre>
-</div>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="k">class</span> <span class="nc">FindRecord</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Function</span>
+  <span class="kp">attr_reader</span> <span class="ss">:type</span>
 
-<p>However, you can pass <em>any</em> object to <code class="highlighter-rouge">resolve(...)</code>, so long as it responds to <code class="highlighter-rouge">.call(obj, args, ctx)</code>.</p>
-
-<p>This means you can pass in a module:</p>
-
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="k">module</span> <span class="nn">NameResolver</span>
-  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">call</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span>
-    <span class="n">obj</span><span class="p">.</span><span class="nf">name</span>
+  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">model_class</span><span class="p">:,</span> <span class="n">type</span><span class="p">:)</span>
+    <span class="vi">@model_class</span> <span class="o">=</span> <span class="n">model_class</span>
+    <span class="vi">@type</span> <span class="o">=</span> <span class="n">type</span>
   <span class="k">end</span>
-<span class="k">end</span>
 
-<span class="c1"># use `NameResolver` instead of a proc</span>
-<span class="n">field</span> <span class="ss">:name</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">String</span> <span class="k">do</span>
-  <span class="n">resolve</span><span class="p">(</span><span class="no">NameResolver</span><span class="p">)</span>
-<span class="k">end</span>
-<span class="c1"># `resolve: resolver` is equivalent to `do resolve(resolver) end`</span>
-<span class="c1"># so this is the same:</span>
-<span class="n">field</span> <span class="ss">:name</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">String</span><span class="p">,</span> <span class="ss">resolve: </span><span class="no">NameResolver</span>
-</code></pre>
-</div>
-
-<p>Or, you can pass an instance of a class:</p>
-
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MethodCallResolver</span>
-  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">method_name</span><span class="p">)</span>
-    <span class="vi">@method_name</span> <span class="o">=</span> <span class="n">method_name</span>
-  <span class="k">end</span>
+  <span class="n">argument</span> <span class="ss">:id</span><span class="p">,</span> <span class="o">!</span><span class="n">types</span><span class="o">.</span><span class="no">ID</span>
 
   <span class="k">def</span> <span class="nf">call</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span>
-    <span class="n">obj</span><span class="p">.</span><span class="nf">public_send</span><span class="p">(</span><span class="vi">@method_name</span><span class="p">)</span>
+    <span class="vi">@model_class</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="ss">:id</span><span class="p">])</span>
   <span class="k">end</span>
 <span class="k">end</span>
-
-<span class="c1"># ...</span>
-<span class="n">field</span> <span class="ss">:name</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">String</span> <span class="k">do</span>
-  <span class="n">resolve</span><span class="p">(</span><span class="no">MethodCallResolver</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="ss">:name</span><span class="p">))</span>
-<span class="k">end</span>  
 </code></pre>
 </div>
 
-<p>Or, you can generate the <code class="highlighter-rouge">resolve</code> Proc dynamically:</p>
+<p>Then, connect the function to field definitions with the <code class="highlighter-rouge">function:</code> keyword:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># @return [Proc] A resolve proc which calls `method_name` on `obj`</span>
-<span class="k">def</span> <span class="nf">resolve_with_method</span><span class="p">(</span><span class="n">method_name</span><span class="p">)</span>
-  <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span> <span class="n">obj</span><span class="p">.</span><span class="nf">public_send</span><span class="p">(</span><span class="n">method_name</span><span class="p">)</span> <span class="p">}</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:product</span><span class="p">,</span> <span class="ss">function: </span><span class="no">FindRecord</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="ss">model_class: </span><span class="no">Product</span><span class="p">,</span> <span class="ss">type: </span><span class="no">Types</span><span class="o">::</span><span class="no">ProductType</span><span class="p">)</span>
+<span class="n">field</span> <span class="ss">:category</span><span class="p">,</span> <span class="ss">function: </span><span class="no">FindRecord</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="ss">model_class: </span><span class="no">Category</span><span class="p">,</span> <span class="ss">type: </span><span class="no">Types</span><span class="o">::</span><span class="no">CategoryType</span><span class="p">)</span>
+</code></pre>
+</div>
+
+<p>Objects passed with the <code class="highlighter-rouge">function:</code> keyword must implement some field-related methods:</p>
+
+<ul>
+  <li><code class="highlighter-rouge">#arguments =&gt; Hash&lt;String =&gt; GraphQL::Argument&gt;</code></li>
+  <li><code class="highlighter-rouge">#type =&gt; GraphQL::BaseType</code></li>
+  <li><code class="highlighter-rouge">#call(obj, args, ctx) =&gt; Object</code></li>
+  <li><code class="highlighter-rouge">#complexity =&gt; Integer, Proc</code></li>
+  <li><code class="highlighter-rouge">#description =&gt; String, nil</code></li>
+  <li><code class="highlighter-rouge">#deprecation_reason =&gt; String, nil</code></li>
+</ul>
+
+<p><code class="highlighter-rouge">GraphQL::Function</code> provides some help in implementing these:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MyFunc</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Function</span>
+  <span class="c1"># Define a member of `#arguments`, just like the DSL:</span>
+  <span class="n">argument</span> <span class="ss">:id</span><span class="p">,</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ID_TYPE</span>
+
+  <span class="c1"># Define documentation:</span>
+  <span class="n">description</span> <span class="s2">"My Custom function"</span>
+  <span class="n">deprecation_reason</span> <span class="s2">"Just an example"</span>
+
+  <span class="n">type</span> <span class="no">MyFuncReturnType</span>
+  <span class="c1"># or, define one on the fly:</span>
+  <span class="n">type</span> <span class="k">do</span>
+    <span class="nb">name</span> <span class="s2">"MyFuncReturnType"</span>
+    <span class="c1"># The returned object must implement these methods:</span>
+    <span class="n">field</span> <span class="ss">:name</span><span class="p">,</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">STRING_TYPE</span>
+    <span class="n">field</span> <span class="ss">:count</span><span class="p">,</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">INT_TYPE</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<p>Note that <code class="highlighter-rouge">types.</code> is <em>not</em> available. Instead, you should reference GraphQL’s built-in <a href="http://www.rubydoc.info/gems/graphql/GraphQL/ScalarType" target="_blank"><code>GraphQL::ScalarType</code></a>s directly.</p>
+
+<h4 id="function-inheritance">Function Inheritance</h4>
+
+<p><code class="highlighter-rouge">GraphQL::Function</code>’s DSL-defined attributes are inherited, so you can subclass functions as much as you like!</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="k">class</span> <span class="nc">FindRecord</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Function</span>
+  <span class="c1"># ...</span>
 <span class="k">end</span>
 
-<span class="c1"># ...</span>
+<span class="c1"># 👌 Arguments, description, etc are inherited as usual:</span>
+<span class="k">class</span> <span class="nc">BatchedFindRecord</span> <span class="o">&lt;</span> <span class="no">FindRecord</span>
+  <span class="c1"># ...</span>
+<span class="k">end</span>
+</code></pre>
+</div>
 
-<span class="n">field</span> <span class="ss">:name</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">String</span> <span class="k">do</span>
-  <span class="n">resolve</span><span class="p">(</span><span class="n">resolve_with_method</span><span class="p">(</span><span class="ss">:name</span><span class="p">))</span>
+<h4 id="extending-functions">Extending Functions</h4>
+
+<p>Function attributes can be overridden by passing new values to the <code class="highlighter-rouge">field</code> helper. For example, to override the description:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># Override the description:</span>
+<span class="n">field</span> <span class="ss">:post</span><span class="p">,</span> <span class="s2">"Find a Post by ID"</span><span class="p">,</span> <span class="ss">function: </span><span class="no">FindRecord</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="ss">model: </span><span class="no">Post</span><span class="p">)</span> <span class="k">do</span>
+  <span class="c1"># Add an argument:</span>
+  <span class="n">argument</span> <span class="ss">:authorId</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">ID</span>
+  <span class="c1"># Provide custom configs:</span>
+  <span class="n">authorize</span> <span class="ss">:admin</span>
 <span class="k">end</span>
 </code></pre>
 </div>

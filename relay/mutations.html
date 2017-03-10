@@ -89,6 +89,8 @@
           <h1 class="guide-header">Relay — Mutations</h1>
           <p>Relay uses a <a href="https://facebook.github.io/relay/docs/graphql-mutations.html#content">strict mutation API</a> for modifying the state of your application. This API makes mutations predictable to the client.</p>
 
+<p>On the client-side, Relay also requires you to specify how it should interpret the response from your GraphQL server, which may require your server-side mutations to return payloads with specific fields.</p>
+
 <h2 id="mutation-root">Mutation root</h2>
 
 <p>To add mutations to your GraphQL schema, define a mutation type and pass it to your schema:</p>
@@ -134,6 +136,15 @@
   - <code class="highlighter-rouge">return_field</code>s, which will be applied to the derived <code class="highlighter-rouge">ObjectType</code>
   - <code class="highlighter-rouge">resolve(-&gt;(object, inputs, ctx) { ... })</code>, the mutation which will actually happen</p>
 
+<p>Whereas you can have whatever combination and number of <code class="highlighter-rouge">input_field</code>s you wish, Relay expects different return fields when using certain mutator configuration you use on the client-side:</p>
+
+<ul>
+  <li><code class="highlighter-rouge">FIELDS_CHANGE</code> — expects a field for the mutated object.</li>
+  <li><code class="highlighter-rouge">NODE_DELETE</code> — expects fields for the destroyed object and the destroyed object’s parent</li>
+  <li><code class="highlighter-rouge">RANGE_ADD</code> — expects fields for the newly created edge (see below) and its parent</li>
+  <li><code class="highlighter-rouge">RANGE_DELETE</code> - expects fields for the ID(s) of the deleted children and their parent</li>
+</ul>
+
 <p>For example:</p>
 
 <div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">AddCommentMutation</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Relay</span><span class="o">::</span><span class="no">Mutation</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
@@ -146,19 +157,33 @@
   <span class="n">input_field</span> <span class="ss">:content</span><span class="p">,</span> <span class="o">!</span><span class="n">types</span><span class="o">.</span><span class="no">String</span>
 
   <span class="c1"># The result has access to these fields,</span>
-  <span class="c1"># resolve must return a hash with these keys</span>
+  <span class="c1"># resolve must return a hash with these keys.</span>
+  <span class="c1"># On the client-side this would be configured</span>
+  <span class="c1"># as RANGE_ADD mutation, so our returned fields</span>
+  <span class="c1"># must conform to that API.</span>
   <span class="n">return_field</span> <span class="ss">:post</span><span class="p">,</span> <span class="no">PostType</span>
-  <span class="n">return_field</span> <span class="ss">:comment</span><span class="p">,</span> <span class="no">CommentType</span>
+  <span class="n">return_field</span> <span class="ss">:comment</span><span class="p">,</span> <span class="no">CommentType</span><span class="p">.</span><span class="nf">edge_type</span>
 
   <span class="c1"># The resolve proc is where you alter the system state.</span>
   <span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">object</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
-    <span class="n">post</span> <span class="o">=</span> <span class="no">Post</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="n">inputs</span><span class="p">[</span><span class="ss">:postId</span><span class="p">])</span>
-    <span class="n">comment</span> <span class="o">=</span> <span class="n">post</span><span class="p">.</span><span class="nf">comments</span><span class="p">.</span><span class="nf">create!</span><span class="p">(</span><span class="ss">author_id: </span><span class="n">inputs</span><span class="p">[</span><span class="ss">:authorId</span><span class="p">],</span> <span class="ss">content: </span><span class="n">inputs</span><span class="p">[</span><span class="ss">:content</span><span class="p">])</span>
+    <span class="n">post</span> <span class="o">=</span> <span class="no">Post</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="ss">:postId</span><span class="p">])</span>
+    <span class="n">comments</span> <span class="o">=</span> <span class="n">post</span><span class="p">.</span><span class="nf">comments</span>
+    <span class="n">new_comment</span> <span class="o">=</span> <span class="n">comments</span><span class="p">.</span><span class="nf">build</span><span class="p">(</span><span class="ss">body: </span><span class="n">args</span><span class="p">[</span><span class="ss">:body</span><span class="p">])</span>
+    <span class="n">new_comment</span><span class="p">.</span><span class="nf">save!</span>
 
-    <span class="c1"># The keys in this hash correspond to `return_field`s above:</span>
-    <span class="p">{</span>
-      <span class="ss">comment: </span><span class="n">comment</span><span class="p">,</span>
+    <span class="c1"># Use this helper to create the response that a</span>
+    <span class="c1"># client-side RANGE_ADD mutation would expect.</span>
+    <span class="n">range_add</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Relay</span><span class="o">::</span><span class="no">RangeAdd</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span>
+      <span class="ss">parent: </span><span class="n">post</span><span class="p">,</span>
+      <span class="ss">collection: </span><span class="n">comments</span><span class="p">,</span>
+      <span class="ss">item: </span><span class="n">new_comment</span><span class="p">,</span>
+      <span class="ss">context: </span><span class="n">ctx</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">response</span> <span class="o">=</span> <span class="p">{</span>
       <span class="ss">post: </span><span class="n">post</span><span class="p">,</span>
+      <span class="ss">commentsConnection: </span><span class="n">range_add</span><span class="p">.</span><span class="nf">connection</span><span class="p">,</span>
+      <span class="ss">newCommentEdge: </span><span class="n">range_add</span><span class="p">.</span><span class="nf">edge</span><span class="p">,</span>
     <span class="p">}</span>
   <span class="p">}</span>
 <span class="k">end</span>
