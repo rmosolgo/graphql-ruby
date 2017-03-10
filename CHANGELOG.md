@@ -13,6 +13,18 @@
 ### Breaking changes
 
 - _Only_ UTF-8-encoded strings will be returned by `String` fields. Strings with other encodings (or objects whose `#to_s` method returns a string with a different encoding) will return `nil` instead of that string. #517
+- Substantial changes to the internal query representation (#512, #536). Query analyzers may notice some changes:
+  - Nodes skipped by directives are not visited
+  - Nodes are always on object types, so `Node#owner_type` always returns an object type. (Interfaces and Unions are replaced with concrete object types which are valid in the current scope.)
+
+  See [changes to `Analysis::QueryComplexity`](https://github.com/rmosolgo/graphql-ruby/compare/v1.4.5...v1.5.0#diff-8ff2cdf0fec46dfaab02363664d0d201) for an example migration. Here are some other specific changes:
+
+  - Nodes are tracked on object types only, not interface or union types
+  - Deprecated, buggy `Node#children` and `Node#path` were removed
+  - Buggy `#included` was removed
+  - Nodes excluded by directives are entirely absent from the rewritten tree
+  - Internal `InternalRepresentation::Selection` was removed (no longer needed)
+  - `Node#spreads` was replaced by `Node#ast_spreads` which returns a Set
 
 ### New features
 
@@ -31,6 +43,7 @@
   - Remove overhead from `ensure_defined` #483
   - Benchmark & Profile tasks for gem maintenance #520, #579
   - Fetch `has_next_page` while fetching items in `RelationConnection` #556
+  - Merge selections on concrete object types ahead of time #512
 - Support runnable schemas with `Schema.from_definition` #567, #584
 
 ### Bug fixes
