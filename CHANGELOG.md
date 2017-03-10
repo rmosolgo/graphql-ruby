@@ -8,6 +8,38 @@
 
 ### Bug fixes
 
+## 1.5.0 (10 Mar 2017)
+
+### Breaking changes
+
+- _Only_ UTF-8-encoded strings will be returned by `String` fields. Strings with other encodings (or objects whose `#to_s` method returns a string with a different encoding) will return `nil` instead of that string. #517
+
+### New features
+
+- `Schema#validate` returns a list of errors for a query string #513
+- `implements ...` adds interfaces to object types _without_ inherit-by-default #548, #574
+- `GraphQL::Relay::RangeAdd` for implementing `RANGE_ADD` mutations #587
+- `use ...` definition method for plugins #565
+- Rails generators #521, #580
+- `GraphQL::Function` for reusable resolve behavior with arguments & return type #545
+- Support for Ruby 2.4 #475
+- Relay `node` & `nodes` field can be extended with a custom block #552
+- Performance improvements:
+  - Resolve fragments only once when validating #504
+  - Reuse `Arguments` objects #500
+  - Skip needless `FieldResult`s #482
+  - Remove overhead from `ensure_defined` #483
+  - Benchmark & Profile tasks for gem maintenance #520, #579
+  - Fetch `has_next_page` while fetching items in `RelationConnection` #556
+- Support runnable schemas with `Schema.from_definition` #567, #584
+
+### Bug fixes
+
+- Support different arguments on non-overlapping typed fragments #512
+- Don't include children of `@skip`ped nodes when parallel branches are not skipped #536
+- Fix offset in ArrayConnection when it's larger than the array #571
+- Add missing `frozen_string_literal` comments #589
+
 ## 1.4.5 (6 Mar 2017)
 
 ### Bug Fixes
