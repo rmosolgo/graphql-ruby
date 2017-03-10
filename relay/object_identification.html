@@ -132,18 +132,13 @@
 </code></pre>
 </div>
 
-<h3 id="uuid-fields">UUID fields</h3>
+<h3 id="node-interface">Node interface</h3>
 
-<p>To participate in Relay’s caching and refetching, objects must do two things:</p>
+<p>One requirement for Relay’s object management is implementing the <code class="highlighter-rouge">"Node"</code> interface.</p>
 
-<ul>
-  <li>Implement the <code class="highlighter-rouge">"Node"</code> interface</li>
-  <li>Define an <code class="highlighter-rouge">"id"</code> field which returns a UUID</li>
-</ul>
+<p>To implement the node interface, include <a href="http://www.rubydoc.info/gems/graphql/GraphQL/Relay/Node#interface-class_method" target="_blank"><code>GraphQL::Relay::Node.interface</code></a> in your list of interfaces:</p>
 
-<p>To implement the node interface, include <code class="highlighter-rouge">GraphQL::Relay::Node.interface</code> in your list of interfaces:</p>
-
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">PostType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">Types</span><span class="o">::</span><span class="no">PostType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="nb">name</span> <span class="s2">"Post"</span>
   <span class="c1"># Implement the "Node" interface for Relay</span>
   <span class="n">implements</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Relay</span><span class="o">::</span><span class="no">Node</span><span class="p">.</span><span class="nf">interface</span>
@@ -152,9 +147,32 @@
 </code></pre>
 </div>
 
+<p>To tell GraphQL how to resolve members of the <code class="highlighter-rouge">"Node"</code> interface, you must also define <code class="highlighter-rouge">Schema#resolve_type</code>:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+  <span class="c1"># You'll also need to define `resolve_type` for</span>
+  <span class="c1"># telling the schema what type Relay `Node` objects are</span>
+  <span class="n">resolve_type</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">case</span> <span class="n">obj</span>
+    <span class="k">when</span> <span class="no">Post</span>
+      <span class="no">Types</span><span class="o">::</span><span class="no">PostType</span>
+    <span class="k">when</span> <span class="no">Comment</span>
+      <span class="no">Types</span><span class="o">::</span><span class="no">CommentType</span>
+    <span class="k">else</span>
+      <span class="k">raise</span><span class="p">(</span><span class="s2">"Unexpected object: </span><span class="si">#{</span><span class="n">obj</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="k">end</span>
+  <span class="p">}</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<h3 id="uuid-fields">UUID fields</h3>
+
+<p>Relay Nodes must have a field named <code class="highlighter-rouge">"id"</code> which returns a globally unique ID.</p>
+
 <p>To add a UUID field named <code class="highlighter-rouge">"id"</code>, use the <code class="highlighter-rouge">global_id_field</code> helper:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">PostType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">Types</span><span class="o">::</span><span class="no">PostType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="nb">name</span> <span class="s2">"Post"</span>
   <span class="c1"># ...</span>
   <span class="c1"># `id` exposes the UUID</span>
@@ -164,7 +182,7 @@
 </code></pre>
 </div>
 
-<p>Now, <code class="highlighter-rouge">PostType</code> can participate in Relay’s UUID-based features.</p>
+<p>This field will call the previously-defined <code class="highlighter-rouge">id_from_object</code> function.</p>
 
 <h3 id="node-field-find-by-uuid"><code class="highlighter-rouge">node</code> field (find-by-UUID)</h3>
 
