@@ -16,7 +16,7 @@ module GraphQL
   #       @type = type
   #     end
   #
-  #     argument :id, GraphQL::Id
+  #     argument :id, GraphQL::ID_TYPE
   #
   #     def resolve(obj, args, ctx)
   #        @model.find(args.id)

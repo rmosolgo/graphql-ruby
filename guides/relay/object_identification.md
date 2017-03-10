@@ -45,17 +45,14 @@ MySchema = GraphQL::Schema.define do
 end
 ```
 
-### UUID fields
+### Node interface
 
-To participate in Relay's caching and refetching, objects must do two things:
+One requirement for Relay's object management is implementing the `"Node"` interface.
 
-- Implement the `"Node"` interface
-- Define an `"id"` field which returns a UUID
-
-To implement the node interface, include `GraphQL::Relay::Node.interface` in your list of interfaces:
+To implement the node interface, include {{ "GraphQL::Relay::Node.interface" | api_doc }} in your list of interfaces:
 
 ```ruby
-PostType = GraphQL::ObjectType.define do
+Types::PostType = GraphQL::ObjectType.define do
   name "Post"
   # Implement the "Node" interface for Relay
   implements GraphQL::Relay::Node.interface
@@ -63,10 +60,33 @@ PostType = GraphQL::ObjectType.define do
 end
 ```
 
+To tell GraphQL how to resolve members of the `"Node"` interface, you must also define `Schema#resolve_type`:
+
+```ruby
+MySchema = GraphQL::Schema.define do
+  # You'll also need to define `resolve_type` for
+  # telling the schema what type Relay `Node` objects are
+  resolve_type ->(obj, ctx) {
+    case obj
+    when Post
+      Types::PostType
+    when Comment
+      Types::CommentType
+    else
+      raise("Unexpected object: #{obj}")
+    end
+  }
+end
+```
+
+### UUID fields
+
+Relay Nodes must have a field named `"id"` which returns a globally unique ID.
+
 To add a UUID field named `"id"`, use the `global_id_field` helper:
 
 ```ruby
-PostType = GraphQL::ObjectType.define do
+Types::PostType = GraphQL::ObjectType.define do
   name "Post"
   # ...
   # `id` exposes the UUID
@@ -75,7 +95,7 @@ PostType = GraphQL::ObjectType.define do
 end
 ```
 
-Now, `PostType` can participate in Relay's UUID-based features.
+This field will call the previously-defined `id_from_object` function.
 
 ### `node` field (find-by-UUID)
 
