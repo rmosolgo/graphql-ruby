@@ -5,6 +5,8 @@ module GraphQL
       # {GraphQL::Schema} uses this to match returned values to lazy resolution methods.
       # Methods may be registered for classes, they apply to its subclasses also.
       # The result of this lookup is cached for future resolutions.
+      # @api private
+      # @see {Schema#lazy?} looks up values from this map
       class LazyMethodMap
         def initialize
           @storage = Hash.new do |h, value_class|

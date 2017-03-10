@@ -3,6 +3,7 @@ module GraphQL
   module Execution
     # Boolean checks for how an AST node's directives should
     # influence its execution
+    # @api private
     module DirectiveChecks
       SKIP = "skip"
       INCLUDE = "include"

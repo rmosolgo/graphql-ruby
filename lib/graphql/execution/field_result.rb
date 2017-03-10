@@ -2,6 +2,7 @@
 module GraphQL
   module Execution
     # This is one key-value pair in a GraphQL response.
+    # @api private
     class FieldResult
       # @return [Any, Lazy] the GraphQL-ready response value, or a {Lazy} instance
       attr_reader :value

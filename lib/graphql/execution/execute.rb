@@ -2,6 +2,7 @@
 module GraphQL
   module Execution
     # A valid execution strategy
+    # @api private
     class Execute
       PROPAGATE_NULL = :__graphql_propagate_null__
 

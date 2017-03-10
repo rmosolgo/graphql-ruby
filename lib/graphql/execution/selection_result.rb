@@ -2,6 +2,7 @@
 module GraphQL
   module Execution
     # A set of key-value pairs suitable for a GraphQL response.
+    # @api private
     class SelectionResult
       def initialize
         @storage = {}
