@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 module GraphQL
   module Execution
+    # @api private
     module Typecast
       # @return [Boolean]
       def self.subtype?(parent_type, child_type)

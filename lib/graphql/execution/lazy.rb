@@ -10,6 +10,7 @@ module GraphQL
     # This is an itty-bitty promise-like object, with key differences:
     # - It has only two states, not-resolved and resolved
     # - It has no error-catching functionality
+    # @api private
     class Lazy
       # Traverse `val`, lazily resolving any values along the way
       # @param val [Object] A data structure containing mixed plain values and `Lazy` instances
@@ -19,16 +20,9 @@ module GraphQL
       end
 
       # Create a {Lazy} which will get its inner value by calling the block
-      # @param target [Object]
-      # @param method_name [Symbol]
       # @param get_value_func [Proc] a block to get the inner value (later)
-      def initialize(target = nil, method_name = nil, &get_value_func)
-        if block_given?
-          @get_value_func = get_value_func
-        else
-          @target = target
-          @method_name = method_name
-        end
+      def initialize(&get_value_func)
+        @get_value_func = get_value_func
         @resolved = false
       end
 
@@ -36,11 +30,7 @@ module GraphQL
       def value
         if !@resolved
           @resolved = true
-          if @get_value_func
-            @value = @get_value_func.call
-          else
-            @value = @target.public_send(@method_name)
-          end
+          @value = @get_value_func.call
         end
         @value
       rescue GraphQL::ExecutionError => err

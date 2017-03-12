@@ -3,6 +3,7 @@ module GraphQL
   module Execution
     class Lazy
       # Helpers for dealing with data structures containing {Lazy} instances
+      # @api private
       module Resolve
         # Mutate `value`, replacing {Lazy} instances in place with their resolved values
         # @return [void]
