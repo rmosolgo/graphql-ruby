@@ -8,7 +8,14 @@
 
 ### Bug fixes
 
-## 1.5.0 (10 Mar 2017)
+## 1.5.1 (12 Mar 2017)
+
+### Bug fixes
+
+- Fix rewrite performance regressions from 1.5.0 #599
+- Remove unused `GraphQL::Execution::Lazy` initialization API #597
+
+## 1.5.0 (10 Mar 2017), yanked
 
 ### Breaking changes
 
