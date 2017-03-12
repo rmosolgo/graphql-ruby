@@ -6,17 +6,21 @@ describe GraphQL::StaticValidation::DefinitionDependencies do
     let(:resolvers) {
       user =
       icon = OpenStruct.new(icon: "x", category: "y")
-      sub_comment_1 = OpenStruct.new(id: "3", icon: icon, user: OpenStruct.new(first_name: "A", last_name: "B", id: "21"))
-      sub_comment_2 = OpenStruct.new(id: "4", icon: icon, user: OpenStruct.new(first_name: "C", last_name: "D", id: "22"))
-      comment = OpenStruct.new(id: "2", comments: [sub_comment_1, sub_comment_2])
+      comment_1 = OpenStruct.new(id: "3", icon: icon, user: OpenStruct.new(first_name: "A", last_name: "B", id: "21"))
+      comment_2 = OpenStruct.new(id: "4", icon: icon, user: OpenStruct.new(first_name: "C", last_name: "D", id: "22"))
+      post = OpenStruct.new(id: "2", comments: [comment_1, comment_2])
       resolvers = Hash.new { |h, k| h[k] = Hash.new { |h2, k2| h2[k2] = ->(o, a, c) { o.public_send(k2) } } }
-      resolvers["Query"]["node"] = ->(o, a, c) { comment }
+      resolvers["Query"]["node"] = ->(o, a, c) { post }
       resolvers
     }
 
     let(:schema_defn) { <<-GRAPHQL
     type Query {
-      node(id: ID!): Commentable
+      node(id: ID!): Node
+    }
+
+    interface Node {
+      id: ID!
     }
 
     interface Commentable {
@@ -24,7 +28,12 @@ describe GraphQL::StaticValidation::DefinitionDependencies do
       comments: [Comment]
     }
 
-    type User {
+    type Post implements Commentable, Node {
+      id: ID!
+      comments: [Comment]
+    }
+
+    type User implements Node {
       first_name: String
       last_name: String
       id: ID!
@@ -35,10 +44,9 @@ describe GraphQL::StaticValidation::DefinitionDependencies do
       category: String
     }
 
-    type Comment implements Commentable {
+    type Comment implements Commentable, Node {
       id: ID!
       comment: String
-      comments: [Comment]
       created_at: String
       can_delete: Boolean
       deleted_at: String
@@ -49,8 +57,7 @@ describe GraphQL::StaticValidation::DefinitionDependencies do
     }
     let(:schema) {
       s = GraphQL::Schema.from_definition(schema_defn, default_resolve: resolvers)
-      comment_type = s.types["Comment"]
-      s.resolve_type = ->(obj, ctx) { s.types["Comment"] }
+      s.resolve_type = ->(obj, ctx) { s.types["Post"] }
       s
     }
     let(:query_string) { <<-GRAPHQL
@@ -108,7 +115,7 @@ describe GraphQL::StaticValidation::DefinitionDependencies do
 
     it "executes ok" do
       res = schema.execute(query_string, variables: {"id_0" => "5"})
-      pp res
+
       comment = res["data"]["node"]
       assert_equal "2", comment["id"]
       assert_equal "A", comment["comments"][0]["user"]["first_name"]
