@@ -26,7 +26,7 @@ module GraphQL
 
       def initialize(
           name:, owner_type:, query:, return_type:,
-          ast_nodes: [],
+          ast_nodes: nil,
           definitions: nil, typed_children: nil
         )
         @name = name

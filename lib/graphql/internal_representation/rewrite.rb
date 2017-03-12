@@ -111,7 +111,7 @@ module GraphQL
                     query: query,
                     return_type: field_return_type,
                   )
-                  node.ast_nodes.push(ast_node)
+                  node.ast_nodes.add(ast_node)
                   node.definitions.add(field_defn)
                   next_nodes << node
                 end
@@ -169,11 +169,10 @@ module GraphQL
           prev_fields = prev_parent.typed_children[obj_type]
           new_fields.each do |name, new_node|
             prev_node = prev_fields[name]
-            node = if prev_node
-              prev_node.ast_nodes.concat(new_node.ast_nodes)
+            if prev_node
+              prev_node.ast_nodes.merge(new_node.ast_nodes)
               prev_node.definitions.merge(new_node.definitions)
               deep_merge_selections(query, prev_node, new_node)
-              prev_node
             else
               prev_fields[name] = new_node
             end
@@ -226,7 +225,7 @@ module GraphQL
               name: defn_name,
               owner_type: obj_type,
               query: @query,
-              ast_nodes: [ast_node],
+              ast_nodes: Set.new([ast_node]),
               return_type: obj_type,
             )
             @definitions[obj_type][defn_name] = node
