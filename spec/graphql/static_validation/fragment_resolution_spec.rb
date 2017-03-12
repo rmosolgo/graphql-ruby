@@ -3,9 +3,6 @@ require "spec_helper"
 
 describe GraphQL::StaticValidation::DefinitionDependencies do
   describe "fragment resolution bug GIANT arrays of the same AST node" do
-    let(:resolvers) {
-      resolvers Hash.new
-    }
     let(:schema_defn) { <<-GRAPHQL
       schema {
   query: Query
