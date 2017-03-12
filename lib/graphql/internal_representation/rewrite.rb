@@ -22,7 +22,7 @@ module GraphQL
       attr_reader :operations
 
       def initialize
-        @operations = Hash.new {|h, k| h[k] = {} }
+        @operations = {}
       end
 
       def validate(context)
@@ -37,7 +37,7 @@ module GraphQL
         # Array<Set<GraphQL::ObjectType>>
         # Object types that the current point of the irep_tree applies to
         scope_stack = []
-        fragment_definitions = Hash.new {|h, k| h[k] = {} }
+        fragment_definitions = {}
         skip_nodes = Set.new
 
         visit_op = VisitDefinition.new(context, @operations, nodes_stack, scope_stack)
@@ -111,7 +111,7 @@ module GraphQL
                     query: query,
                     return_type: field_return_type,
                   )
-                  node.ast_nodes.push(ast_node)
+                  node.ast_nodes.add(ast_node)
                   node.definitions.add(field_defn)
                   next_nodes << node
                 end
@@ -150,11 +150,9 @@ module GraphQL
           spread_ast_nodes.each do |spread_ast_node|
             parent_nodes = spread_parents[spread_ast_node]
             parent_nodes.each do |parent_node|
-              each_type(query, parent_node.return_type) do |obj_type|
-                fragment_node = fragment_definitions[obj_type][frag_name]
-                if fragment_node
-                  deep_merge_selections(query, parent_node, fragment_node)
-                end
+              fragment_node = fragment_definitions[frag_name]
+              if fragment_node
+                deep_merge_selections(query, parent_node, fragment_node)
               end
             end
           end
@@ -169,11 +167,10 @@ module GraphQL
           prev_fields = prev_parent.typed_children[obj_type]
           new_fields.each do |name, new_node|
             prev_node = prev_fields[name]
-            node = if prev_node
-              prev_node.ast_nodes.concat(new_node.ast_nodes)
+            if prev_node
+              prev_node.ast_nodes.merge(new_node.ast_nodes)
               prev_node.definitions.merge(new_node.definitions)
               deep_merge_selections(query, prev_node, new_node)
-              prev_node
             else
               prev_fields[name] = new_node
             end
@@ -222,16 +219,18 @@ module GraphQL
           defn_name = ast_node.name
           Rewrite.each_type(@query, owner_type) do |obj_type|
             next_scope.add(obj_type)
-            node = Node.new(
-              name: defn_name,
-              owner_type: obj_type,
-              query: @query,
-              ast_nodes: [ast_node],
-              return_type: obj_type,
-            )
-            @definitions[obj_type][defn_name] = node
-            next_nodes << node
           end
+
+          node = Node.new(
+            name: defn_name,
+            owner_type: owner_type,
+            query: @query,
+            ast_nodes: Set.new([ast_node]),
+            return_type: owner_type,
+          )
+          @definitions[defn_name] = node
+          next_nodes << node
+
           @nodes_stack.push(next_nodes)
           @scope_stack.push(next_scope)
         end

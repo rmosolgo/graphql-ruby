@@ -157,10 +157,7 @@ module GraphQL
     end
 
     def irep_selection
-      @selection ||= begin
-        root_type = schema.root_type_for_operation(selected_operation.operation_type)
-        internal_representation[root_type][selected_operation.name]
-      end
+      @selection ||= internal_representation[selected_operation.name]
     end
 
 
