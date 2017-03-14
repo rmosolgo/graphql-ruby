@@ -67,6 +67,22 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
     assert_includes(errors, fragment_error)
   end
 
+  describe "using input objects for enums" do
+    let(:query_string) { <<-GRAPHQL
+      {
+        yakSource: searchDairy(product: [{source: {a: 1, b: 2}, fatContent: 1.1}]) { __typename }
+      }
+    GRAPHQL
+    }
+
+    it "adds an error" do
+      # TODO:
+      # It's annoying that this error cascades up, there should only be one:
+      assert_equal 2, errors.length
+    end
+  end
+
+
   describe "null value" do
     describe "nullable arg" do
       let(:schema) {

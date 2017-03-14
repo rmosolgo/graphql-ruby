@@ -8,20 +8,23 @@ module GraphQL
       def validate(context)
         visitor = context.visitor
         visitor[GraphQL::Language::Nodes::Argument] << ->(node, parent) {
-          if parent.is_a?(GraphQL::Language::Nodes::InputObject)
+          case parent
+          when GraphQL::Language::Nodes::InputObject
             arg_defn = context.argument_definition
             if arg_defn.nil?
               return
             else
               parent_defn = arg_defn.type.unwrap
-              if parent_defn.is_a?(GraphQL::ScalarType)
+              if !parent_defn.is_a?(GraphQL::InputObjectType)
                 return
               end
             end
-          elsif parent.is_a?(GraphQL::Language::Nodes::Directive)
+          when GraphQL::Language::Nodes::Directive
             parent_defn = context.schema.directives[parent.name]
-          else
+          when GraphQL::Language::Nodes::Field
             parent_defn = context.field_definition
+          else
+            raise "Unexpected argument parent: #{parent.class} (##{parent})"
           end
           validate_node(parent, node, parent_defn, context)
         }
