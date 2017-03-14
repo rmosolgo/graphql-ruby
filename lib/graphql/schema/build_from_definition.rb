@@ -27,10 +27,7 @@ module GraphQL
         end
 
         def call(type, field, obj, args, ctx)
-          @resolve_hash
-            .fetch(type.name)
-            .fetch(field.name)
-            .call(obj,args,ctx)
+          @resolve_hash[type.name][field.name].call(obj,args,ctx)
         end
       end
 
