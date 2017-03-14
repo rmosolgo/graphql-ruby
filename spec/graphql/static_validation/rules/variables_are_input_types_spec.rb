@@ -43,4 +43,18 @@ describe GraphQL::StaticValidation::VariablesAreInputTypes do
       "fields"=>["query getCheese"],
     })
   end
+
+  describe "typos" do
+    it "returns a client error" do
+      res = schema.execute <<-GRAPHQL
+        query GetCheese($id: IDX) {
+          cheese(id: $id) { flavor }
+        }
+      GRAPHQL
+
+      assert_equal false, res.key?("data")
+      assert_equal 1, res["errors"].length
+      assert_equal "IDX isn't a defined input type (on $id)", res["errors"][0]["message"]
+    end
+  end
 end

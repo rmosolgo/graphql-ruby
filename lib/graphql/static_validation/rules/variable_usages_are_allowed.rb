@@ -33,7 +33,10 @@ module GraphQL
       private
 
       def validate_usage(arguments, arg_node, ast_var, context)
-        var_type = to_query_type(ast_var.type, context.schema.types)
+        var_type = to_query_type(ast_var.type, context.query.warden)
+        if var_type.nil?
+          return
+        end
         if !ast_var.default_value.nil?
           var_type = GraphQL::NonNullType.new(of_type: var_type)
         end
@@ -53,13 +56,22 @@ module GraphQL
         end
       end
 
-      def to_query_type(ast_type, types)
-        if ast_type.is_a?(GraphQL::Language::Nodes::NonNullType)
-          GraphQL::NonNullType.new(of_type: to_query_type(ast_type.of_type, types))
-        elsif ast_type.is_a?(GraphQL::Language::Nodes::ListType)
-          GraphQL::ListType.new(of_type: to_query_type(ast_type.of_type, types))
+      def to_query_type(ast_type, warden)
+        case ast_type
+        when GraphQL::Language::Nodes::NonNullType
+          wrap_query_type(to_query_type(ast_type.of_type, warden), GraphQL::NonNullType)
+        when GraphQL::Language::Nodes::ListType
+          wrap_query_type(to_query_type(ast_type.of_type, warden), GraphQL::ListType)
         else
-          types[ast_type.name]
+          warden.get_type(ast_type.name)
+        end
+      end
+
+      def wrap_query_type(type, wrapper)
+        if type.nil?
+          nil
+        else
+          wrapper.new(of_type: type)
         end
       end
 
