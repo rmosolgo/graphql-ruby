@@ -103,6 +103,7 @@ describe GraphQL::Schema::Loader do
         argument :id, !types.ID
         argument :varied, variant_input_type, default_value: { id: "123", int: 234, float: 2.3, enum: :foo, sub: [{ string: "str" }] }
         argument :variedWithNull, variant_input_type_with_nulls, default_value: { id: nil, int: nil, float: nil, enum: nil, sub: nil, bigint: nil, bool: nil }
+        argument :enum, choice_type, default_value: :foo
       end
 
       field :content do

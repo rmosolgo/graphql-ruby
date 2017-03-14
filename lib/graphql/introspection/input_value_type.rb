@@ -11,7 +11,16 @@ GraphQL::Introspection::InputValueType = GraphQL::ObjectType.define do
     resolve ->(obj, args, ctx) {
       if obj.default_value?
         value = obj.default_value
-        value.nil? ? 'null' : GraphQL::Language.serialize(obj.type.coerce_result(value))
+        if value.nil?
+          'null'
+        else
+          coerced_default_value = obj.type.coerce_result(value)
+          if obj.type.unwrap.is_a?(GraphQL::EnumType)
+            coerced_default_value
+          else
+            GraphQL::Language.serialize(coerced_default_value)
+          end
+        end
       else
         nil
       end
