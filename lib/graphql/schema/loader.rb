@@ -107,7 +107,14 @@ module GraphQL
             )
           when "ARGUMENT"
             kwargs = {}
-            kwargs[:default_value] = JSON.parse(type["defaultValue"], quirks_mode: true) if type["defaultValue"]
+            if type["defaultValue"]
+              kwargs[:default_value] = begin
+                JSON.parse(type["defaultValue"], quirks_mode: true)
+              rescue JSON::ParserError
+                # Enum values are not valid JSON, they're bare identifiers
+                type["default_value"]
+              end
+            end
 
             Argument.define(
               name: type["name"],
