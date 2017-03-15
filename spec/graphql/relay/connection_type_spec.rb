@@ -56,5 +56,26 @@ describe GraphQL::Relay::ConnectionType do
         assert_equal ["Yavin", "Echo Base", "Secret Hideout"] , bases["nodes"].map { |e| e["name"] }
       end
     end
+
+
+    describe "when an execution error is raised" do
+      let(:query_string) {%|
+        {
+          basesWithNullName {
+            edges {
+              node {
+                name
+              }
+            }
+          }
+        }
+      |}
+
+      it "nullifies the parent and adds an error" do
+        result = star_wars_query(query_string)
+        assert_equal nil, result["data"]["basesWithNullName"]["edges"][0]["node"]
+        assert_equal "Boom!", result["errors"][0]["message"]
+      end
+    end
   end
 end

@@ -30,18 +30,19 @@ module GraphQL
       def value
         if !@resolved
           @resolved = true
-          @value = @get_value_func.call
+          @value = begin
+            @get_value_func.call
+          rescue GraphQL::ExecutionError => err
+            err
+          end
         end
         @value
-      rescue GraphQL::ExecutionError => err
-        @resolved = true
-        @value = err
       end
 
       # @return [Lazy] A {Lazy} whose value depends on another {Lazy}, plus any transformations in `block`
       def then(&block)
         self.class.new {
-          next_val = block.call(value)
+          block.call(value)
         }
       end
     end
