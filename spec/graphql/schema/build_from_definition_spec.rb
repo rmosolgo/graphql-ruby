@@ -739,31 +739,40 @@ SCHEMA
     end
 
     describe "hash of resolvers" do
+      let(:todos) { [Todo.new("Pay the bills.")] }
+      let(:schema) { GraphQL::Schema.from_definition(schema_defn, default_resolve: resolve_hash) }
       let(:resolve_hash) {
-        {
-          "Query" => {
-            "all_todos" => ->(obj, args, ctx) { obj },
-          },
-          "Mutation" => {
-            "todo_add" => ->(obj, args, ctx) {
-              todo = Todo.new(args[:text], ctx[:context_value])
-              obj << todo
-              todo
-            },
-          },
-          "Todo" => {
-            "text" => ->(obj, args, ctx) { obj.text },
-            "from_context" => ->(obj, args, ctx) { obj.from_context },
-          },
+        h = base_hash
+        h["Query"] ||= {}
+        h["Query"]["all_todos"] = ->(obj, args, ctx) { obj }
+        h["Mutation"] ||= {}
+        h["Mutation"]["todo_add"] = ->(obj, args, ctx) {
+          todo = Todo.new(args[:text], ctx[:context_value])
+          obj << todo
+          todo
         }
+        h
       }
+      describe "with defaults" do
+        let(:base_hash) {
+          # Fallback is to resolve by sending the field name
+          Hash.new { |h, k| h[k] = Hash.new { |h2, k2| ->(obj, args, ctx) { obj.public_send(k2) } } }
+        }
 
-      it "accepts a hash of resolve functions" do
-        todos =  [Todo.new("Pay the bills.")]
-        schema = GraphQL::Schema.from_definition(schema_defn, default_resolve: resolve_hash)
-        schema.execute("mutation { todoAdd: todo_add(text: \"Buy Milk\") { text } }", context: {context_value: "bar"}, root_value: todos)
-        result = schema.execute("query { allTodos: all_todos { text, from_context } }", root_value: todos)
-        assert_equal(result.to_json, '{"data":{"allTodos":[{"text":"Pay the bills.","from_context":null},{"text":"Buy Milk","from_context":"bar"}]}}')
+        it "accepts a hash of resolve functions" do
+          schema.execute("mutation { todoAdd: todo_add(text: \"Buy Milk\") { text } }", context: {context_value: "bar"}, root_value: todos)
+          result = schema.execute("query { allTodos: all_todos { text, from_context } }", root_value: todos)
+          assert_equal(result.to_json, '{"data":{"allTodos":[{"text":"Pay the bills.","from_context":null},{"text":"Buy Milk","from_context":"bar"}]}}')
+        end
+      end
+
+      describe "wihtout defaults" do
+        let(:base_hash) { {} }
+        it "raises a KeyError" do
+          assert_raises(KeyError) do
+            schema.execute("mutation { todoAdd: todo_add(text: \"Buy Milk\") { text } }", context: {context_value: "bar"}, root_value: todos)
+          end
+        end
       end
     end
 
