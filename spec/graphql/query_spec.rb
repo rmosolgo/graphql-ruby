@@ -422,22 +422,32 @@ describe GraphQL::Query do
   end
 
   describe "parse errors" do
-    it "adds an entry to the errors key" do
-      res = schema.execute(" { ")
-      assert_equal 1, res["errors"].length
-      assert_equal "Unexpected end of document", res["errors"][0]["message"]
-      assert_equal [], res["errors"][0]["locations"]
-
-      res = schema.execute <<-GRAPHQL
+    let(:invalid_query_string) {
+      <<-GRAPHQL
         {
           getStuff
           nonsense
           This is broken 1
         }
       GRAPHQL
+    }
+    it "adds an entry to the errors key" do
+      res = schema.execute(" { ")
+      assert_equal 1, res["errors"].length
+      assert_equal "Unexpected end of document", res["errors"][0]["message"]
+      assert_equal [], res["errors"][0]["locations"]
+
+      res = schema.execute(invalid_query_string)
       assert_equal 1, res["errors"].length
       assert_equal %|Parse error on "1" (INT) at [4, 26]|, res["errors"][0]["message"]
       assert_equal({"line" => 4, "column" => 26}, res["errors"][0]["locations"][0])
+    end
+
+    it "can be configured to raise" do
+      raise_schema = schema.redefine(parse_error: ->(err, ctx) { raise err })
+      assert_raises(GraphQL::ParseError) {
+        raise_schema.execute(invalid_query_string)
+      }
     end
   end
 end

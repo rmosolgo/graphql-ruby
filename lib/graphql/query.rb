@@ -68,6 +68,7 @@ module GraphQL
         GraphQL.parse(query_string)
       rescue GraphQL::ParseError => err
         @parse_error = err
+        @schema.parse_error(err, @context)
         nil
       end
       @document && @document.definitions.each do |part|
@@ -116,10 +117,7 @@ module GraphQL
         begin
           instrumenters.each { |i| i.before_query(self) }
           @result = if !valid?
-            all_errors = validation_errors + analysis_errors
-            if @parse_error
-              all_errors << @parse_error
-            end
+            all_errors = validation_errors + analysis_errors + context.errors
             if all_errors.any?
               { "errors" => all_errors.map(&:to_h) }
             else
