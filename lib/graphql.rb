@@ -17,6 +17,14 @@ module GraphQL
       @col = col
       @query = query
     end
+
+    def to_h
+      locations = line ? [{ "line" => line, "column" => col }] : []
+      {
+        "message" => message,
+        "locations" => locations,
+      }
+    end
   end
 
   # Turn a query string into an AST

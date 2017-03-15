@@ -63,8 +63,15 @@ module GraphQL
         @provided_variables = variables
       end
       @query_string = query_string
-      @document = document || GraphQL.parse(query_string)
-      @document.definitions.each do |part|
+      @parse_error = nil
+      @document = document || begin
+        GraphQL.parse(query_string)
+      rescue GraphQL::ParseError => err
+        @parse_error = err
+        @schema.parse_error(err, @context)
+        nil
+      end
+      @document && @document.definitions.each do |part|
         if part.is_a?(GraphQL::Language::Nodes::FragmentDefinition)
           @fragments[part.name] = part
         elsif part.is_a?(GraphQL::Language::Nodes::OperationDefinition)
@@ -110,7 +117,7 @@ module GraphQL
         begin
           instrumenters.each { |i| i.before_query(self) }
           @result = if !valid?
-            all_errors = validation_errors + analysis_errors
+            all_errors = validation_errors + analysis_errors + context.errors
             if all_errors.any?
               { "errors" => all_errors.map(&:to_h) }
             else
@@ -204,7 +211,7 @@ module GraphQL
     def valid?
       @was_validated ||= begin
         @was_validated = true
-        @valid = document_valid? && query_valid? && variables.errors.none?
+        @valid = @parse_error.nil? && document_valid? && query_valid? && variables.errors.none?
         true
       end
 

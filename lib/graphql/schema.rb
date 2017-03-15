@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 require "graphql/schema/base_64_encoder"
 require "graphql/schema/catchall_middleware"
+require "graphql/schema/default_parse_error"
 require "graphql/schema/default_type_error"
 require "graphql/schema/invalid_type_error"
 require "graphql/schema/instrumented_field_map"
@@ -55,7 +56,7 @@ module GraphQL
       :query, :mutation, :subscription,
       :query_execution_strategy, :mutation_execution_strategy, :subscription_execution_strategy,
       :max_depth, :max_complexity,
-      :orphan_types, :resolve_type, :type_error,
+      :orphan_types, :resolve_type, :type_error, :parse_error,
       :object_from_id, :id_from_object,
       :default_mask,
       :cursor_encoder,
@@ -103,6 +104,7 @@ module GraphQL
       @object_from_id_proc = nil
       @id_from_object_proc = nil
       @type_error_proc = DefaultTypeError
+      @parse_error_proc = DefaultParseError
       @instrumenters = Hash.new { |h, k| h[k] = [] }
       @lazy_methods = GraphQL::Execution::Lazy::LazyMethodMap.new
       @cursor_encoder = Base64Encoder
@@ -331,6 +333,21 @@ module GraphQL
     # @param new_proc [#call] A new callable for handling type errors during execution
     def type_error=(new_proc)
       @type_error_proc = new_proc
+    end
+
+    # A function to call when {#execute} receives an invalid query string
+    #
+    # @see {DefaultParseError} is the default behavior.
+    # @param err [GraphQL::ParseError] The error encountered during parsing
+    # @param ctx [GraphQL::Query::Context] The context for the query where the error occurred
+    # @return void
+    def parse_error(err, ctx)
+      @parse_error_proc.call(err, ctx)
+    end
+
+    # @param new_proc [#call] A new callable for handling parse errors during execution
+    def parse_error=(new_proc)
+      @parse_error_proc = new_proc
     end
 
     # Get a unique identifier from this object
