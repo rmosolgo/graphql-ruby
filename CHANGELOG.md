@@ -20,6 +20,17 @@
 ### Breaking changes
 
 - _Only_ UTF-8-encoded strings will be returned by `String` fields. Strings with other encodings (or objects whose `#to_s` method returns a string with a different encoding) will return `nil` instead of that string. #517
+
+  To opt into the _previous_ behavior, you can modify `GraphQL::STRING_TYPE`:
+
+  ```ruby
+  # app/graphql/my_schema.rb
+  # Restore previous string behavior:
+  GraphQL::STRING_TYPE.coerce_result = ->(value) { value.to_s }
+
+  MySchema = GraphQL::Schema.define { ... }
+  ```
+
 - Substantial changes to the internal query representation (#512, #536). Query analyzers may notice some changes:
   - Nodes skipped by directives are not visited
   - Nodes are always on object types, so `Node#owner_type` always returns an object type. (Interfaces and Unions are replaced with concrete object types which are valid in the current scope.)
