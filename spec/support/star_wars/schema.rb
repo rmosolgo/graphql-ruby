@@ -16,7 +16,17 @@ module StarWars
     name "Base"
     interfaces [GraphQL::Relay::Node.interface]
     global_id_field :id
-    field :name, types.String
+    field :name, !types.String do
+      resolve ->(obj, args, ctx) {
+        LazyWrapper.new {
+          if obj.id.nil?
+            raise GraphQL::ExecutionError, "Boom!"
+          else
+            obj.name
+          end
+        }
+      }
+    end
     field :planet, types.String
   end
 
@@ -243,6 +253,12 @@ module StarWars
     connection :newestBasesGroupedByFaction, BaseType.connection_type do
       resolve ->(obj, args, ctx) {
         Base.order('sum(faction_id) desc').group(:faction_id)
+      }
+    end
+
+    connection :basesWithNullName, BaseType.connection_type do
+      resolve ->(obj, args, ctx) {
+        [OpenStruct.new(id: nil)]
       }
     end
 
