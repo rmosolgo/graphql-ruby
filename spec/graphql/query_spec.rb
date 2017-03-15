@@ -420,4 +420,24 @@ describe GraphQL::Query do
       assert_equal({"cheeseId" => 2}, query.provided_variables)
     end
   end
+
+  describe "parse errors" do
+    it "adds an entry to the errors key" do
+      res = schema.execute(" { ")
+      assert_equal 1, res["errors"].length
+      assert_equal "Unexpected end of document", res["errors"][0]["message"]
+      assert_equal [], res["errors"][0]["locations"]
+
+      res = schema.execute <<-GRAPHQL
+        {
+          getStuff
+          nonsense
+          This is broken 1
+        }
+      GRAPHQL
+      assert_equal 1, res["errors"].length
+      assert_equal %|Parse error on "1" (INT) at [4, 26]|, res["errors"][0]["message"]
+      assert_equal({"line" => 4, "column" => 26}, res["errors"][0]["locations"][0])
+    end
+  end
 end
