@@ -144,5 +144,6 @@ end
 ```
 
 <div class="monitoring-img-group">
+  {{ "/pro/skylight_2.png" | link_to_img:"skylight monitoring" }}
   {{ "/pro/skylight_1.png" | link_to_img:"skylight monitoring" }}
 </div>
