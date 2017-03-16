@@ -61,4 +61,19 @@ describe GraphQL::StaticValidation::FragmentsAreFinite do
       assert_equal("Fragment frag2 was used, but not defined", errors.first["message"])
     end
   end
+
+  describe "a duplicate fragment name with a loop" do
+    let(:query_string) {%|
+      {
+        cheese(id: 1) { ... frag1 }
+      }
+      fragment frag1 on Cheese { id }
+      fragment frag1 on Cheese { ...frag1 }
+    |}
+
+    it "doesn't blow up" do
+      assert_equal 1, errors.length
+      assert_equal("Fragment name \"frag1\" must be unique", errors.first["message"])
+    end
+  end
 end
