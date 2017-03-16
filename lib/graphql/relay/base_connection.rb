@@ -74,21 +74,28 @@ module GraphQL
         @encoder.decode(data, nonce: true)
       end
 
-      # Provide easy access to provided arguments:
-      METHODS_FROM_ARGUMENTS = [:first, :after, :last, :before]
+      # The value passed as `first:`, if there was one. Negative numbers become `0`.
+      # @return [Integer, nil]
+      def first
+        @first ||= get_limited_arg(:first)
+      end
 
-      # @!method first
-      #   The value passed as `first:`, if there was one
-      # @!method after
-      #   The value passed as `after:`, if there was one
-      # @!method last
-      #   The value passed as `last:`, if there was one
-      # @!method before
-      #   The value passed as `before:`, if there was one
-      METHODS_FROM_ARGUMENTS.each do |arg_name|
-        define_method(arg_name) do
-          arguments[arg_name]
-        end
+      # The value passed as `after:`, if there was one
+      # @return [String, nil]
+      def after
+        arguments[:after]
+      end
+
+      # The value passed as `last:`, if there was one. Negative numbers become `0`.
+      # @return [Integer, nil]
+      def last
+        @last ||= get_limited_arg(:last)
+      end
+
+      # The value passed as `before:`, if there was one
+      # @return [String, nil]
+      def before
+        arguments[:before]
       end
 
       # These are the nodes to render for this connection,
@@ -136,6 +143,18 @@ module GraphQL
       end
 
       private
+
+      # Return a sanitized `arguments[arg_name]` (don't allow negatives)
+      def get_limited_arg(arg_name)
+        arg_value = arguments[arg_name]
+        if arg_value.nil?
+          arg_value
+        elsif arg_value < 0
+          0
+        else
+          arg_value
+        end
+      end
 
       def paged_nodes
         raise NotImplementedError, "must return nodes for this connection after paging"
