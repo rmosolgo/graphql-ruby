@@ -41,6 +41,7 @@
               <strong>Schema</strong>
               <ul>
                 <li><a href="/graphql-ruby/schema/types_and_fields">Types and Fields</a></li>
+                <li><a href="/graphql-ruby/schema/generators">Generators</a></li>
                 <li><a href="/graphql-ruby/schema/configuration_options">Configuration Options</a></li>
                 <li><a href="/graphql-ruby/schema/code_reuse">Code Reuse</a></li>
                 <li><a href="/graphql-ruby/schema/instrumentation">Instrumentation</a></li>
@@ -106,7 +107,14 @@
 
 <h2 id="getting-started">Getting Started</h2>
 
-<p>Building a GraphQL server goes like this:</p>
+<p>On Rails, you can get started with a few <a href="https://rmosolgo.github.io/graphql-ruby/schema/generators#graphqlinstall">GraphQL generators</a>:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>rails g graphql:install
+rails g graphql:object Post title:String rating:Int comments:[Comment]
+</code></pre>
+</div>
+
+<p>Or, you can build a GraphQL server by hand:</p>
 
 <ul>
   <li>Define some types</li>
