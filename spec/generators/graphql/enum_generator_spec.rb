@@ -10,10 +10,10 @@ class GraphQLGeneratorsEnumGeneratorTest < BaseGeneratorTest
 Types::FamilyType = GraphQL::EnumType.define do
   name "Family"
   value "NIGHTSHADE"
-  value "BRASSICA", Family::COLE
-  value "UMBELLIFER", :umbellifer
-  value "LEGUME", "bean & friends"
-  value "CURCURBITS", 5
+  value "BRASSICA", value: Family::COLE
+  value "UMBELLIFER", value: :umbellifer
+  value "LEGUME", value: "bean & friends"
+  value "CURCURBITS", value: 5
 end
 RUBY
 
