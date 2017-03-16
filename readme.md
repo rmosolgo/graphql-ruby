@@ -27,7 +27,11 @@ $ bundle install
 
 ## Getting Started
 
-See "Getting Started" on the [website](https://rmosolgo.github.io/graphql-ruby/) or on [GitHub](https://github.com/rmosolgo/graphql-ruby/blob/master/guides/index.md)
+```
+$ rails generate graphql:install
+```
+
+Or, see ["Getting Started"](https://rmosolgo.github.io/graphql-ruby/).
 
 ## Upgrade
 

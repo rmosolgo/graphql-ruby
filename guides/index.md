@@ -21,7 +21,14 @@ $ bundle install
 
 ## Getting Started
 
-Building a GraphQL server goes like this:
+On Rails, you can get started with a few [GraphQL generators](https://rmosolgo.github.io/graphql-ruby/schema/generators#graphqlinstall):
+
+```
+rails g graphql:install
+rails g graphql:object Post title:String rating:Int comments:[Comment]
+```
+
+Or, you can build a GraphQL server by hand:
 
 - Define some types
 - Connect them to a schema
