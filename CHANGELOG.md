@@ -8,6 +8,33 @@
 
 ### Bug fixes
 
+## 1.5.2 (16 Mar 2017)
+
+### Breaking Changes
+
+- Parse errors are no longer raised to the application. #607 Instead, they're returned to the client in the `"errors"` key. To preserve the previous behavior, you can implement `Schema#parse_error` to raise the error:
+
+  ```ruby
+  MySchema = GraphQL::Schema.define do
+    # ...
+    parse_error ->(err, ctx) { raise(err) }
+  end
+  ```
+
+### New Features
+
+- Add `graphq:enum` generator #611
+- Parse errors are returned to the client instead of raised #607
+
+### Bug Fixes
+
+- Handle negative cursor pagination args as `0` #612
+- Properly handle returned `GraphQL::ExecutionError`s from connection resolves #610
+- Properly handle invalid nulls in lazy scalar fields #609
+- Properly handle invalid input objects passed to enum arguments #604
+- Fix introspection response of enum default values #605
+- Allow `Schema.from_definition` default resolver hashes to have defaults #608
+
 ## 1.5.1 (12 Mar 2017)
 
 ### Bug fixes
