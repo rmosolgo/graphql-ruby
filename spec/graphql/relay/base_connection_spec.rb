@@ -2,6 +2,15 @@
 require 'spec_helper'
 
 describe GraphQL::Relay::BaseConnection do
+  module Encoder
+    module_function
+    def encode(str, nonce: false); str; end
+    def decode(str, nonce: false); str; end
+  end
+
+  let(:schema) { OpenStruct.new(cursor_encoder: Encoder) }
+  let(:context) { OpenStruct.new(schema: schema) }
+
   describe ".connection_for_nodes" do
     it "resolves most specific connection type" do
       class SpecialArray < Array; end
@@ -15,16 +24,25 @@ describe GraphQL::Relay::BaseConnection do
     end
   end
 
-  describe "#context" do
-    module Encoder
-      module_function
-      def encode(str, nonce: false); str; end
-      def decode(str, nonce: false); str; end
+  describe "arguments" do
+    it "limits pagination args to positive numbers" do
+      args = {
+        first: 1,
+        last: -1,
+      }
+      conn = GraphQL::Relay::BaseConnection.new([], args, context: context)
+      assert_equal 1, conn.first
+      assert_equal 0, conn.last
+
+      args = {
+        first: nil,
+      }
+      conn = GraphQL::Relay::BaseConnection.new([], args, context: context)
+      assert_equal nil, conn.first
     end
+  end
 
-    let(:schema) { OpenStruct.new(cursor_encoder: Encoder) }
-    let(:context) { OpenStruct.new(schema: schema) }
-
+  describe "#context" do
     it "Has public access to the field context" do
       conn = GraphQL::Relay::BaseConnection.new([], {}, context: context)
       assert_equal context, conn.context
