@@ -22,8 +22,13 @@ module GraphQL
       private
 
       def build_connection(nodes, args, parent, ctx)
-        connection_class = GraphQL::Relay::BaseConnection.connection_for_nodes(nodes)
-        connection_class.new(nodes, args, field: @field, max_page_size: @max_page_size, parent: parent, context: ctx)
+        if nodes.is_a? GraphQL::ExecutionError
+          ctx.add_error(nodes)
+          nil
+        else
+          connection_class = GraphQL::Relay::BaseConnection.connection_for_nodes(nodes)
+          connection_class.new(nodes, args, field: @field, max_page_size: @max_page_size, parent: parent, context: ctx)
+        end
       end
     end
   end

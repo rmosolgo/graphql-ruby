@@ -77,5 +77,34 @@ describe GraphQL::Relay::ConnectionType do
         assert_equal "Boom!", result["errors"][0]["message"]
       end
     end
+
+    describe "when an execution error is returned" do
+      let(:query_string) { <<-GRAPHQL
+        query getError($error: String!){
+          rebels {
+            ships(nameIncludes: $error) {
+              edges {
+                node {
+                  name
+                }
+              }
+            }
+          }
+        }
+      GRAPHQL
+      }
+
+      it "adds an error" do
+        result = star_wars_query(query_string, { "error" => "error"})
+        assert_equal 1, result["errors"].length
+        assert_equal "error from within connection", result["errors"][0]["message"]
+      end
+
+      it "adds an error for a lazy error" do
+        result = star_wars_query(query_string, { "error" => "lazyError"})
+        assert_equal 1, result["errors"].length
+        assert_equal "lazy error from within connection", result["errors"][0]["message"]
+      end
+    end
   end
 end

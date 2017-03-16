@@ -93,7 +93,14 @@ module StarWars
       resolve ->(obj, args, ctx) {
         all_ships = obj.ships.map {|ship_id| StarWars::DATA["Ship"][ship_id] }
         if args[:nameIncludes]
-          all_ships = all_ships.select { |ship| ship.name.include?(args[:nameIncludes])}
+          case args[:nameIncludes]
+          when "error"
+            all_ships = GraphQL::ExecutionError.new("error from within connection")
+          when "lazyError"
+            all_ships = LazyWrapper.new { GraphQL::ExecutionError.new("lazy error from within connection") }
+          else
+            all_ships = all_ships.select { |ship| ship.name.include?(args[:nameIncludes])}
+          end
         end
         all_ships
       }
