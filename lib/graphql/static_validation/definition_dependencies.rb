@@ -112,8 +112,13 @@ module GraphQL
       # Values are arrays of flattened dependencies
       def resolve_dependencies
         dependency_map = DependencyMap.new
-
+        max_loops = @definitions.size
+        loops = 0
         while fragment_node = @independent_fragments.pop
+          loops += 1
+          if loops > max_loops
+            raise("Resolution loops exceeded the number of definitions; infinite loop detected.")
+          end
           fragment_name = fragment_node.name
           # Since it's independent, let's remove it from here.
           # That way, we can use the remainder to identify cycles
