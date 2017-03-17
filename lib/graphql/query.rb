@@ -26,7 +26,7 @@ module GraphQL
       end
     end
 
-    attr_reader :schema, :document, :context, :fragments, :operations, :root_value, :max_depth, :query_string, :warden, :provided_variables
+    attr_reader :schema, :document, :context, :fragments, :operations, :root_value, :query_string, :warden, :provided_variables
 
     # Prepare query `query_string` on `schema`
     # @param schema [GraphQL::Schema]
@@ -93,13 +93,11 @@ module GraphQL
         end
       end
 
-      # TODO improve test and remove:
-      @max_depth = max_depth || schema.max_depth
       @validation_pipeline = GraphQL::Query::ValidationPipeline.new(
         query: self,
         parse_error: parse_error,
         operation_name_error: operation_name_error,
-        max_depth: @max_depth,
+        max_depth: max_depth || schema.max_depth,
         max_complexity: max_complexity || schema.max_complexity,
       )
 
