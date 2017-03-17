@@ -76,4 +76,32 @@ describe GraphQL::Execution::Execute do
       end
     end
   end
+
+  describe "execute callbacks" do
+    let(:schema) { Dummy::Schema }
+    let(:query_string) {%|
+      {
+        cheese(id: 1) {
+          id
+          flavor
+        }
+      }
+    |}
+
+    let(:before_execute) do
+      Proc.new { |query| raise RuntimeError unless query.mutation? }
+    end
+
+    let(:after_execute) do
+      Proc.new { |query| raise RuntimeError unless query.mutation? }
+    end
+
+    it 'calls before_execute when provided' do
+      assert_raises(RuntimeError) { schema.execute(query_string, before_execute: before_execute) }
+    end
+
+    it 'calls after_execute when provided' do
+      assert_raises(RuntimeError) { schema.execute(query_string, after_execute: after_execute) }
+    end
+  end
 end

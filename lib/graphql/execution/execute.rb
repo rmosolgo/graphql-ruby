@@ -6,6 +6,8 @@ module GraphQL
       PROPAGATE_NULL = :__graphql_propagate_null__
 
       def execute(ast_operation, root_type, query)
+        yield query.before_execute.call(query) unless query.before_execute.nil?
+
         result = resolve_selection(
           query.root_value,
           root_type,
@@ -15,6 +17,8 @@ module GraphQL
         )
 
         GraphQL::Execution::Lazy.resolve(result)
+
+        yield query.after_execute.call(query) unless query.after_execute.nil?
 
         result.to_h
       end
