@@ -77,31 +77,54 @@ describe GraphQL::Execution::Execute do
     end
   end
 
-  describe "execute callbacks" do
-    let(:schema) { Dummy::Schema }
-    let(:query_string) {%|
-      {
-        cheese(id: 1) {
+  describe "execute wrapper" do
+    let(:schema) {
+      DummyQueryType = GraphQL::ObjectType.define do
+        name "Query"
+        field :dairy do
+          type Dummy::DairyType
+          resolve ->(t, a, c) {
+            Dummy::DAIRY
+          }
+        end
+      end
+
+      GraphQL::Schema.define(query: DummyQueryType, mutation: Dummy::DairyAppMutationType, resolve_type: :pass, id_from_object: :pass)
+    }
+
+    let(:query_string) { %|
+      query getDairy {
+        dairy {
           id
-          flavor
         }
       }
     |}
 
-    let(:before_execute) do
-      Proc.new { |query| raise RuntimeError unless query.mutation? }
+    let(:mutation_string) {%|
+      mutation setInOrder {
+        first:  pushValue(value: 1)
+        second: pushValue(value: 5)
+        third:  pushValue(value: 2)
+        fourth: replaceValues(input: {values: [6,5,4]})
+      }
+    |}
+
+    let(:execute_wrapper) do
+      Proc.new do |query|
+        if query.mutation?
+          raise RuntimeError
+        else
+          raise TypeError
+        end
+      end
     end
 
-    let(:after_execute) do
-      Proc.new { |query| raise RuntimeError unless query.mutation? }
+    it 'calls on queries when provided' do
+      assert_raises(TypeError) { schema.execute(query_string, execute_wrapper: execute_wrapper) }
     end
 
-    it 'calls before_execute when provided' do
-      assert_raises(RuntimeError) { schema.execute(query_string, before_execute: before_execute) }
-    end
-
-    it 'calls after_execute when provided' do
-      assert_raises(RuntimeError) { schema.execute(query_string, after_execute: after_execute) }
+    it 'calls on mutations when provided' do
+      assert_raises(RuntimeError) { schema.execute(mutation_string, execute_wrapper: execute_wrapper) }
     end
   end
 end
