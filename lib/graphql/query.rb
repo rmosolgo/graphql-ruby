@@ -46,10 +46,7 @@ module GraphQL
       mask = GraphQL::Schema::Mask.combine(schema.default_mask, except: except, only: only)
       @context = Context.new(query: self, values: context)
       @warden = GraphQL::Schema::Warden.new(mask, schema: @schema, context: @context)
-      @max_depth = max_depth || schema.max_depth
-      @max_complexity = max_complexity || schema.max_complexity
       @root_value = root_value
-      @operation_name = operation_name
       @fragments = {}
       @operations = {}
       if variables.is_a?(String)
@@ -87,21 +84,23 @@ module GraphQL
       @mutation = false
       operation_name_error = nil
       if @operations.any?
-        @selected_operation = find_operation(@operations, @operation_name)
+        @selected_operation = find_operation(@operations, operation_name)
         if @selected_operation.nil?
-          operation_name_error = GraphQL::Query::OperationNameMissingError.new(@operation_name)
+          operation_name_error = GraphQL::Query::OperationNameMissingError.new(operation_name)
         else
           @ast_variables = @selected_operation.variables
           @mutation = @selected_operation.operation_type == "mutation"
         end
       end
 
+      # TODO improve test and remove:
+      @max_depth = max_depth || schema.max_depth
       @validation_pipeline = GraphQL::Query::ValidationPipeline.new(
         query: self,
         parse_error: parse_error,
         operation_name_error: operation_name_error,
         max_depth: @max_depth,
-        max_complexity: @max_complexity,
+        max_complexity: max_complexity || schema.max_complexity,
       )
 
       @result = nil
