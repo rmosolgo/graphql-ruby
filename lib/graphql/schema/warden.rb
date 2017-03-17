@@ -43,9 +43,8 @@ module GraphQL
       # @param schema [GraphQL::Schema]
       # @param deep_check [Boolean]
       def initialize(mask, context:, schema:)
-        @mask = mask
-        @context = context
         @schema = schema
+        @visibility_cache = read_through { |m| !mask.call(m, context) }
       end
 
       # @return [Array<GraphQL::BaseType>] Visible types in the schema
@@ -136,7 +135,6 @@ module GraphQL
       end
 
       def visible?(member)
-        @visibility_cache ||= read_through { |m| !@mask.call(m, @context) }
         @visibility_cache[member]
       end
 

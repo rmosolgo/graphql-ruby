@@ -42,7 +42,7 @@ module GraphQL
       fail ArgumentError, "a query string or document is required" unless query_string || document
 
       @schema = schema
-      mask = MergedMask.combine(schema.default_mask, except: except, only: only)
+      mask = GraphQL::Schema::Mask.combine(schema.default_mask, except: except, only: only)
       @context = Context.new(query: self, values: context)
       @warden = GraphQL::Schema::Warden.new(mask, schema: @schema, context: @context)
       @max_depth = max_depth || schema.max_depth
@@ -211,65 +211,6 @@ module GraphQL
         nil
       else
         operations.fetch(operation_name)
-      end
-    end
-
-    # @api private
-    class InvertedMask
-      def initialize(inner_mask)
-        @inner_mask = inner_mask
-      end
-
-      # Returns true when the inner mask returned false
-      # Returns false when the inner mask returned true
-      def call(member, ctx)
-        !@inner_mask.call(member, ctx)
-      end
-    end
-
-    # @api private
-    class LegacyMaskWrap
-      def initialize(inner_mask)
-        @inner_mask = inner_mask
-      end
-
-      def call(member, ctx)
-        @inner_mask.call(member)
-      end
-    end
-
-    # @api private
-    class MergedMask
-      def initialize(first_mask, second_mask)
-        @first_mask = first_mask
-        @second_mask = second_mask
-      end
-
-      def call(member, ctx)
-        @first_mask.call(member, ctx) || @second_mask.call(member, ctx)
-      end
-
-      def self.combine(default_mask, except:, only:)
-        query_mask = if except
-          wrap_if_legacy_mask(except)
-        elsif only
-          InvertedMask.new(wrap_if_legacy_mask(only))
-        end
-
-        if query_mask && (default_mask != GraphQL::Schema::NullMask)
-          self.new(default_mask, query_mask)
-        else
-          query_mask || default_mask
-        end
-      end
-
-      def self.wrap_if_legacy_mask(mask)
-        if (mask.is_a?(Proc) && mask.arity == 1) || mask.method(:call).arity == 1
-          warn("Schema.execute(..., except:) filters now accept two arguments, `(member, ctx)`. One-argument filters are deprecated.")
-          LegacyMaskWrap.new(mask)
-        else
-          mask
-        end
       end
     end
   end
