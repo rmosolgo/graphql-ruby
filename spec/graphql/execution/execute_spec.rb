@@ -76,4 +76,55 @@ describe GraphQL::Execution::Execute do
       end
     end
   end
+
+  describe "execute wrapper" do
+    let(:schema) {
+      DummyQueryType = GraphQL::ObjectType.define do
+        name "Query"
+        field :dairy do
+          type Dummy::DairyType
+          resolve ->(t, a, c) {
+            Dummy::DAIRY
+          }
+        end
+      end
+
+      GraphQL::Schema.define(query: DummyQueryType, mutation: Dummy::DairyAppMutationType, resolve_type: :pass, id_from_object: :pass)
+    }
+
+    let(:query_string) { %|
+      query getDairy {
+        dairy {
+          id
+        }
+      }
+    |}
+
+    let(:mutation_string) {%|
+      mutation setInOrder {
+        first:  pushValue(value: 1)
+      }
+    |}
+
+    let(:execute_wrapper) {
+      Proc.new do |query, resolver|
+        result = resolver.call
+        if query.mutation?
+          raise RuntimeError, "#{result} is a weird mutation!"
+        else
+          raise TypeError, "#{result} is a weird query!"
+        end
+      end
+    }
+
+    it 'calls on queries when provided' do
+      err = assert_raises(TypeError) { schema.execute(query_string, execute_wrapper: execute_wrapper) }
+      assert_match /weird query/, err.message
+    end
+
+    it 'calls on mutations when provided' do
+      err = assert_raises(RuntimeError) { schema.execute(mutation_string, execute_wrapper: execute_wrapper) }
+      assert_match /weird mutation/, err.message
+    end
+  end
 end

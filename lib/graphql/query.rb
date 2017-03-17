@@ -24,7 +24,7 @@ module GraphQL
       end
     end
 
-    attr_reader :schema, :document, :context, :fragments, :operations, :root_value, :max_depth, :query_string, :warden, :provided_variables
+    attr_reader :schema, :document, :context, :fragments, :operations, :root_value, :execute_wrapper, :max_depth, :query_string, :warden, :provided_variables
 
     # Prepare query `query_string` on `schema`
     # @param schema [GraphQL::Schema]
@@ -33,11 +33,12 @@ module GraphQL
     # @param variables [Hash] values for `$variables` in the query
     # @param operation_name [String] if the query string contains many operations, this is the one which should be executed
     # @param root_value [Object] the object used to resolve fields on the root type
+    # @param execute_wrapper [Proc] block which is called as part of running execute
     # @param max_depth [Numeric] the maximum number of nested selections allowed for this query (falls back to schema-level value)
     # @param max_complexity [Numeric] the maximum field complexity for this query (falls back to schema-level value)
     # @param except [<#call(schema_member, context)>] If provided, objects will be hidden from the schema when `.call(schema_member, context)` returns truthy
     # @param only [<#call(schema_member, context)>] If provided, objects will be hidden from the schema when `.call(schema_member, context)` returns false
-    def initialize(schema, query_string = nil, document: nil, context: nil, variables: {}, validate: true, operation_name: nil, root_value: nil, max_depth: nil, max_complexity: nil, except: nil, only: nil)
+    def initialize(schema, query_string = nil, document: nil, context: nil, variables: {}, validate: true, operation_name: nil, root_value: nil, execute_wrapper: nil, max_depth: nil, max_complexity: nil, except: nil, only: nil)
       fail ArgumentError, "a query string or document is required" unless query_string || document
 
       @schema = schema
@@ -54,6 +55,7 @@ module GraphQL
         @query_analyzers << GraphQL::Analysis::MaxQueryComplexity.new(@max_complexity)
       end
       @root_value = root_value
+      @execute_wrapper = execute_wrapper
       @operation_name = operation_name
       @fragments = {}
       @operations = {}
