@@ -19,7 +19,7 @@ module GraphQL
          if query.execute_wrapper.nil?
            result = resolver.call
          else
-           query.execute_wrapper.call(query) { result = resolver.call }
+           result = query.execute_wrapper.call(query, resolver)
          end
 
         GraphQL::Execution::Lazy.resolve(result)

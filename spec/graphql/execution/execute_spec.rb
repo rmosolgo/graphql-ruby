@@ -103,28 +103,28 @@ describe GraphQL::Execution::Execute do
     let(:mutation_string) {%|
       mutation setInOrder {
         first:  pushValue(value: 1)
-        second: pushValue(value: 5)
-        third:  pushValue(value: 2)
-        fourth: replaceValues(input: {values: [6,5,4]})
       }
     |}
 
-    let(:execute_wrapper) do
-      Proc.new do |query|
+    let(:execute_wrapper) {
+      Proc.new do |query, resolver|
+        result = resolver.call
         if query.mutation?
-          raise RuntimeError
+          raise RuntimeError, "#{result} is a weird mutation!"
         else
-          raise TypeError
+          raise TypeError, "#{result} is a weird query!"
         end
       end
-    end
+    }
 
     it 'calls on queries when provided' do
-      assert_raises(TypeError) { schema.execute(query_string, execute_wrapper: execute_wrapper) }
+      err = assert_raises(TypeError) { schema.execute(query_string, execute_wrapper: execute_wrapper) }
+      assert_match /weird query/, err.message
     end
 
     it 'calls on mutations when provided' do
-      assert_raises(RuntimeError) { schema.execute(mutation_string, execute_wrapper: execute_wrapper) }
+      err = assert_raises(RuntimeError) { schema.execute(mutation_string, execute_wrapper: execute_wrapper) }
+      assert_match /weird mutation/, err.message
     end
   end
 end
