@@ -7,6 +7,7 @@ require "graphql/query/serial_execution"
 require "graphql/query/variables"
 require "graphql/query/input_validation_result"
 require "graphql/query/variable_validation_error"
+require "graphql/query/validation_pipeline"
 
 module GraphQL
   # A combination of query string and {Schema} instance which can be reduced to a {#result}.
@@ -46,13 +47,6 @@ module GraphQL
       @warden = GraphQL::Schema::Warden.new(mask, schema: @schema, context: @context)
       @max_depth = max_depth || schema.max_depth
       @max_complexity = max_complexity || schema.max_complexity
-      @query_analyzers = schema.query_analyzers.dup
-      if @max_depth
-        @query_analyzers << GraphQL::Analysis::MaxQueryDepth.new(@max_depth)
-      end
-      if @max_complexity
-        @query_analyzers << GraphQL::Analysis::MaxQueryComplexity.new(@max_complexity)
-      end
       @root_value = root_value
       @operation_name = operation_name
       @fragments = {}
@@ -63,14 +57,15 @@ module GraphQL
         @provided_variables = variables
       end
       @query_string = query_string
-      @parse_error = nil
+      parse_error = nil
       @document = document || begin
         GraphQL.parse(query_string)
       rescue GraphQL::ParseError => err
-        @parse_error = err
+        parse_error = err
         @schema.parse_error(err, @context)
         nil
       end
+
       @document && @document.definitions.each do |part|
         if part.is_a?(GraphQL::Language::Nodes::FragmentDefinition)
           @fragments[part.name] = part
@@ -84,24 +79,30 @@ module GraphQL
       @resolved_types_cache = Hash.new { |h, k| h[k] = @schema.resolve_type(k, @context) }
 
       @arguments_cache = Hash.new { |h, k| h[k] = {} }
-      @validation_errors = []
-      @analysis_errors = []
-      @internal_representation = nil
-      @was_validated = false
 
       # Trying to execute a document
       # with no operations returns an empty hash
       @ast_variables = []
       @mutation = false
+      operation_name_error = nil
       if @operations.any?
         @selected_operation = find_operation(@operations, @operation_name)
         if @selected_operation.nil?
-          @validation_errors << GraphQL::Query::OperationNameMissingError.new(@operation_name)
+          operation_name_error = GraphQL::Query::OperationNameMissingError.new(@operation_name)
         else
           @ast_variables = @selected_operation.variables
           @mutation = @selected_operation.operation_type == "mutation"
         end
       end
+
+      @validation_pipeline = GraphQL::Query::ValidationPipeline.new(
+        query: self,
+        parse_error: parse_error,
+        operation_name_error: operation_name_error,
+        max_depth: @max_depth,
+        max_complexity: @max_complexity,
+      )
+
       @result = nil
       @executed = false
     end
@@ -152,34 +153,12 @@ module GraphQL
           @ast_variables,
           @provided_variables,
         )
-        @validation_errors.concat(vars.errors)
         vars
       end
     end
 
-    # @return [Hash<String, nil => GraphQL::InternalRepresentation::Node] Operation name -> Irep node pairs
-    def internal_representation
-      valid?
-      @internal_representation
-    end
-
     def irep_selection
       @selection ||= internal_representation[selected_operation.name]
-    end
-
-
-    # TODO this should probably contain error instances, not hashes
-    # @return [Array<Hash>] Static validation errors for the query string
-    def validation_errors
-      valid?
-      @validation_errors
-    end
-
-    # TODO this should probably contain error instances, not hashes
-    # @return [Array<Hash>] Errors for this particular query run (eg, exceeds max complexity)
-    def analysis_errors
-      valid?
-      @analysis_errors
     end
 
     # Node-level cache for calculating arguments. Used during execution and query analysis.
@@ -208,18 +187,9 @@ module GraphQL
     # @return [GraphQL::Language::Nodes::Document, nil]
     attr_reader :selected_operation
 
-    def valid?
-      @was_validated ||= begin
-        @was_validated = true
-        @valid = @parse_error.nil? && document_valid? && query_valid? && variables.errors.none?
-        true
-      end
-
-      @valid
-    end
+    def_delegators :@validation_pipeline, :valid?, :analysis_errors, :validation_errors, :internal_representation
 
     def_delegators :@warden, :get_type, :get_field, :possible_types, :root_type_for_operation
-
 
     # @param value [Object] Any runtime value
     # @return [GraphQL::ObjectType, nil] The runtime type of `value` from {Schema#resolve_type}
@@ -233,30 +203,6 @@ module GraphQL
     end
 
     private
-
-    # Assert that the passed-in query string is internally consistent
-    def document_valid?
-      validation_result = schema.static_validator.validate(self)
-      @validation_errors.concat(validation_result[:errors])
-      @internal_representation = validation_result[:irep]
-      @validation_errors.none?
-    end
-
-    # Given that we _could_ execute this query, _should_ we?
-    # - Does it violate any query analyzers?
-    def query_valid?
-      @analysis_errors = begin
-        if @query_analyzers.any?
-          reduce_results = GraphQL::Analysis.analyze_query(self, @query_analyzers)
-          reduce_results
-            .flatten # accept n-dimensional array
-            .select { |r| r.is_a?(GraphQL::AnalysisError) }
-        else
-          []
-        end
-      end
-      @analysis_errors.none?
-    end
 
     def find_operation(operations, operation_name)
       if operation_name.nil? && operations.length == 1
