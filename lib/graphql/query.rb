@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 require "graphql/query/arguments"
+require "graphql/query/arguments_cache"
 require "graphql/query/context"
 require "graphql/query/executor"
 require "graphql/query/literal_input"
@@ -78,7 +79,7 @@ module GraphQL
 
       @resolved_types_cache = Hash.new { |h, k| h[k] = @schema.resolve_type(k, @context) }
 
-      @arguments_cache = Hash.new { |h, k| h[k] = {} }
+      @arguments_cache = ArgumentsCache.build(self)
 
       # Trying to execute a document
       # with no operations returns an empty hash
@@ -162,26 +163,10 @@ module GraphQL
     end
 
     # Node-level cache for calculating arguments. Used during execution and query analysis.
+    # @api private
     # @return [GraphQL::Query::Arguments] Arguments for this node, merging default values, literal values and query variables
-    def arguments_for(irep_node, definition)
-      @arguments_cache[irep_node][definition] ||= begin
-        ast_node = case irep_node
-        when GraphQL::Language::Nodes::AbstractNode
-          irep_node
-        else
-          irep_node.ast_node
-        end
-        ast_arguments = ast_node.arguments
-        if ast_arguments.none?
-          definition.default_arguments
-        else
-          GraphQL::Query::LiteralInput.from_arguments(
-            ast_arguments,
-            definition.arguments,
-            self.variables
-          )
-        end
-      end
+    def arguments_for(irep_or_ast_node, definition)
+      @arguments_cache[irep_or_ast_node][definition]
     end
 
     # @return [GraphQL::Language::Nodes::Document, nil]

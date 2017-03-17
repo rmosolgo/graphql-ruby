@@ -11,18 +11,18 @@ module GraphQL
       module_function
 
       # @return [Boolean] Should this node be included in the query?
-      def include?(directive_irep_nodes, query)
-        directive_irep_nodes.each do |directive_irep_node|
-          name = directive_irep_node.name
+      def include?(directive_ast_nodes, query)
+        directive_ast_nodes.each do |directive_ast_node|
+          name = directive_ast_node.name
           directive_defn = query.schema.directives[name]
           case name
           when SKIP
-            args = query.arguments_for(directive_irep_node, directive_defn)
+            args = query.arguments_for(directive_ast_node, directive_defn)
             if args['if'] == true
               return false
             end
           when INCLUDE
-            args = query.arguments_for(directive_irep_node, directive_defn)
+            args = query.arguments_for(directive_ast_node, directive_defn)
             if args['if'] == false
               return false
             end
