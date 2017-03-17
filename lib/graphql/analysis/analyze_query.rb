@@ -13,8 +13,8 @@ module GraphQL
     # @param query [GraphQL::Query]
     # @param analyzers [Array<#call>] Objects that respond to `#call(memo, visit_type, irep_node)`
     # @return [Array<Any>] Results from those analyzers
-    def analyze_query(query, analyzers)
-      reducer_states = analyzers.map { |r| ReducerState.new(r, query) }
+    def analyze_query(query, analyzers, context: {})
+      reducer_states = analyzers.map { |r| ReducerState.new(r, query, context) }
 
       irep = query.internal_representation
 

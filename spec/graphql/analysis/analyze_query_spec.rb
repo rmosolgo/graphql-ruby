@@ -7,7 +7,7 @@ describe GraphQL::Analysis do
       []
     end
 
-    def call(memo, visit_type, irep_node)
+    def call(memo, visit_type, irep_node, context)
       if visit_type == :enter
         memo + [irep_node.return_type]
       else
@@ -18,9 +18,17 @@ describe GraphQL::Analysis do
 
   describe ".analyze_query" do
     let(:node_counter) {
-      ->(memo, visit_type, irep_node) {
+      ->(memo, visit_type, irep_node, context) {
         memo ||= Hash.new { |h,k| h[k] = 0 }
         visit_type == :enter && memo[irep_node.ast_node.class] += 1
+        memo
+      }
+    }
+    let(:context_analyzer) {
+      ->(memo, visit_type, irep_node, context) {
+        if context[:is_evil_user]
+          raise GraphQL::AnalysisError.new("Forbidden: Too Evil")
+        end
         memo
       }
     }
@@ -49,6 +57,21 @@ describe GraphQL::Analysis do
       assert_equal expected_node_counts, node_counts
     end
 
+    it "passes the query context to the analyzers" do
+      @previous_query_analyzers = Dummy::Schema.query_analyzers.dup
+      Dummy::Schema.query_analyzers.clear
+      Dummy::Schema.query_analyzers << context_analyzer
+
+      result = GraphQL::Query.new(Dummy::Schema, query_string, variables: variables, context: {
+        is_evil_user: true
+      }).result
+
+      assert_equal({ "message" => "Forbidden: Too Evil" }, result["errors"][0])
+
+      Dummy::Schema.query_analyzers.clear
+      Dummy::Schema.query_analyzers.push(*@previous_query_analyzers)
+    end
+
     describe "when a variable is missing" do
       let(:query_string) {%|
         query something($cheeseId: Int!){
@@ -58,7 +81,7 @@ describe GraphQL::Analysis do
           }
         }
       |}
-      let(:variable_accessor) { ->(memo, visit_type, irep_node) { query.variables["cheeseId"] } }
+      let(:variable_accessor) { ->(memo, visit_type, irep_node, context) { query.variables["cheeseId"] } }
 
       before do
         @previous_query_analyzers = Dummy::Schema.query_analyzers.dup
@@ -79,7 +102,7 @@ describe GraphQL::Analysis do
 
     describe "when processing fields" do
       let(:connection_counter) {
-        ->(memo, visit_type, irep_node) {
+        ->(memo, visit_type, irep_node, context) {
           memo ||= Hash.new { |h,k| h[k] = 0 }
           if visit_type == :enter
             if irep_node.ast_node.is_a?(GraphQL::Language::Nodes::Field)
@@ -120,7 +143,7 @@ describe GraphQL::Analysis do
 
   describe ".visit_analyzers" do
     class IdCatcher
-      def call(memo, visit_type, irep_node)
+      def call(memo, visit_type, irep_node, context)
         if visit_type == :enter
           if irep_node.ast_node.name == "id"
             raise GraphQL::AnalysisError.new("Don't use the id field.", ast_node: irep_node.ast_node)
@@ -137,7 +160,7 @@ describe GraphQL::Analysis do
         }
       end
 
-      def call(memo, visit_type, irep_node)
+      def call(memo, visit_type, irep_node, context)
         if visit_type == :enter
           if irep_node.ast_node.name == "flavor"
             memo[:errors] << GraphQL::AnalysisError.new("Don't use the flavor field.", ast_node: irep_node.ast_node)
