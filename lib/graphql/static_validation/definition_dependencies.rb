@@ -88,10 +88,6 @@ module GraphQL
           @unused_dependencies = []
         end
 
-        def invalid_fragment_name?(frag_name)
-          @cyclical_definitions.any? { |d| d.name == frag_name } || @unmet_dependencies.each_key.any? { |d| d.name == frag_name}
-        end
-
         # @return [Array<GraphQL::Language::Nodes::AbstractNode>] dependencies for `definition_node`
         def [](definition_node)
           @dependencies[definition_node]
