@@ -67,6 +67,18 @@ describe GraphQL::EnumType do
     end
   end
 
+  it "accepts a symbol as a variant and Ruby-land value" do
+    enum = GraphQL::EnumType.define do
+      name 'MessageFormat'
+      value :markdown
+    end
+
+    variant = enum.values['markdown']
+
+    assert_equal(variant.name, 'markdown')
+    assert_equal(variant.value, :markdown)
+  end
+
   it "has value description" do
     assert_equal("Animal with horns", enum.values["GOAT"].description)
   end
