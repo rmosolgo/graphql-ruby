@@ -5,7 +5,7 @@ module GraphQL
     module AssignEnumValue
       def self.call(enum_type, name, desc = nil, deprecation_reason: nil, value: name, &block)
         enum_value = GraphQL::EnumType::EnumValue.define(
-          name: name,
+          name: name.to_s,
           description: desc,
           deprecation_reason: deprecation_reason,
           value: value,
