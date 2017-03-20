@@ -12,6 +12,7 @@ module GraphQL
       GraphQL::StaticValidation::UniqueDirectivesPerLocation,
       GraphQL::StaticValidation::FragmentsAreFinite,
       GraphQL::StaticValidation::FragmentsAreNamed,
+      GraphQL::StaticValidation::FragmentNamesAreUnique,
       GraphQL::StaticValidation::FragmentsAreUsed,
       GraphQL::StaticValidation::FragmentTypesExist,
       GraphQL::StaticValidation::FragmentsAreOnCompositeTypes,
