@@ -71,9 +71,51 @@ describe GraphQL::StaticValidation::FragmentsAreFinite do
       fragment frag1 on Cheese { ...frag1 }
     |}
 
-    it "doesn't blow up" do
+    it "detects the loop" do
+      assert_equal 2, errors.length
+      assert_equal("Fragment frag1 contains an infinite loop", errors[0]["message"])
+      assert_equal("Fragment name \"frag1\" must be unique", errors[1]["message"])
+    end
+  end
+
+  describe "a duplicate operation name with a loop" do
+    let(:query_string) {%|
+      fragment frag1 on Cheese { ...frag1 }
+
+      query frag1 {
+        cheese(id: 1) {
+          ... frag1
+        }
+      }
+    |}
+
+    it "detects the loop" do
       assert_equal 1, errors.length
-      assert_equal("Fragment name \"frag1\" must be unique", errors.first["message"])
+      assert_equal("Fragment frag1 contains an infinite loop", errors[0]["message"])
+    end
+  end
+
+  describe "several duplicate operation names with a loop" do
+    let(:query_string) {%|
+      query frag1 {
+        cheese(id: 1) {
+          id
+        }
+      }
+
+      fragment frag1 on Cheese { ...frag1 }
+
+      query frag1 {
+        cheese(id: 1) {
+          ... frag1
+        }
+      }
+    |}
+
+    it "detects the loop" do
+      assert_equal 2, errors.length
+      assert_equal("Fragment frag1 contains an infinite loop", errors[0]["message"])
+      assert_equal("Operation name \"frag1\" must be unique", errors[1]["message"])
     end
   end
 end
