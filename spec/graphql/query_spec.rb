@@ -401,16 +401,36 @@ describe GraphQL::Query do
     end
   end
 
-  describe "#max_depth" do
+  describe "max_depth" do
+    let(:query_string) {
+      <<-GRAPHQL
+      {
+        cheese(id: 1) {
+          similarCheese(source: SHEEP) {
+            similarCheese(source: SHEEP) {
+              similarCheese(source: SHEEP) {
+                similarCheese(source: SHEEP) {
+                  id
+                }
+              }
+            }
+          }
+        }
+      }
+      GRAPHQL
+    }
+
     it "defaults to the schema's max_depth" do
-      assert_equal 5, query.max_depth
+      # Constrained by schema's setting of 5
+      assert_equal 1, result["errors"].length
     end
 
     describe "overriding max_depth" do
       let(:max_depth) { 12 }
 
       it "overrides the schema's max_depth" do
-        assert_equal 12, query.max_depth
+        assert result["data"].key?("cheese")
+        assert_equal nil, result["errors"]
       end
     end
   end

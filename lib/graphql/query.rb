@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 require "graphql/query/arguments"
+require "graphql/query/arguments_cache"
 require "graphql/query/context"
 require "graphql/query/executor"
 require "graphql/query/literal_input"
@@ -7,6 +8,7 @@ require "graphql/query/serial_execution"
 require "graphql/query/variables"
 require "graphql/query/input_validation_result"
 require "graphql/query/variable_validation_error"
+require "graphql/query/validation_pipeline"
 
 module GraphQL
   # A combination of query string and {Schema} instance which can be reduced to a {#result}.
@@ -24,7 +26,7 @@ module GraphQL
       end
     end
 
-    attr_reader :schema, :document, :context, :fragments, :operations, :root_value, :max_depth, :query_string, :warden, :provided_variables
+    attr_reader :schema, :document, :context, :fragments, :operations, :root_value, :query_string, :warden, :provided_variables
 
     # Prepare query `query_string` on `schema`
     # @param schema [GraphQL::Schema]
@@ -41,20 +43,10 @@ module GraphQL
       fail ArgumentError, "a query string or document is required" unless query_string || document
 
       @schema = schema
-      mask = MergedMask.combine(schema.default_mask, except: except, only: only)
+      mask = GraphQL::Schema::Mask.combine(schema.default_mask, except: except, only: only)
       @context = Context.new(query: self, values: context)
       @warden = GraphQL::Schema::Warden.new(mask, schema: @schema, context: @context)
-      @max_depth = max_depth || schema.max_depth
-      @max_complexity = max_complexity || schema.max_complexity
-      @query_analyzers = schema.query_analyzers.dup
-      if @max_depth
-        @query_analyzers << GraphQL::Analysis::MaxQueryDepth.new(@max_depth)
-      end
-      if @max_complexity
-        @query_analyzers << GraphQL::Analysis::MaxQueryComplexity.new(@max_complexity)
-      end
       @root_value = root_value
-      @operation_name = operation_name
       @fragments = {}
       @operations = {}
       if variables.is_a?(String)
@@ -63,14 +55,15 @@ module GraphQL
         @provided_variables = variables
       end
       @query_string = query_string
-      @parse_error = nil
+      parse_error = nil
       @document = document || begin
         GraphQL.parse(query_string)
       rescue GraphQL::ParseError => err
-        @parse_error = err
+        parse_error = err
         @schema.parse_error(err, @context)
         nil
       end
+
       @document && @document.definitions.each do |part|
         if part.is_a?(GraphQL::Language::Nodes::FragmentDefinition)
           @fragments[part.name] = part
@@ -83,25 +76,31 @@ module GraphQL
 
       @resolved_types_cache = Hash.new { |h, k| h[k] = @schema.resolve_type(k, @context) }
 
-      @arguments_cache = Hash.new { |h, k| h[k] = {} }
-      @validation_errors = []
-      @analysis_errors = []
-      @internal_representation = nil
-      @was_validated = false
+      @arguments_cache = ArgumentsCache.build(self)
 
       # Trying to execute a document
       # with no operations returns an empty hash
       @ast_variables = []
       @mutation = false
+      operation_name_error = nil
       if @operations.any?
-        @selected_operation = find_operation(@operations, @operation_name)
+        @selected_operation = find_operation(@operations, operation_name)
         if @selected_operation.nil?
-          @validation_errors << GraphQL::Query::OperationNameMissingError.new(@operation_name)
+          operation_name_error = GraphQL::Query::OperationNameMissingError.new(operation_name)
         else
           @ast_variables = @selected_operation.variables
           @mutation = @selected_operation.operation_type == "mutation"
         end
       end
+
+      @validation_pipeline = GraphQL::Query::ValidationPipeline.new(
+        query: self,
+        parse_error: parse_error,
+        operation_name_error: operation_name_error,
+        max_depth: max_depth || schema.max_depth,
+        max_complexity: max_complexity || schema.max_complexity,
+      )
+
       @result = nil
       @executed = false
     end
@@ -152,74 +151,27 @@ module GraphQL
           @ast_variables,
           @provided_variables,
         )
-        @validation_errors.concat(vars.errors)
         vars
       end
-    end
-
-    # @return [Hash<String, nil => GraphQL::InternalRepresentation::Node] Operation name -> Irep node pairs
-    def internal_representation
-      valid?
-      @internal_representation
     end
 
     def irep_selection
       @selection ||= internal_representation[selected_operation.name]
     end
 
-
-    # TODO this should probably contain error instances, not hashes
-    # @return [Array<Hash>] Static validation errors for the query string
-    def validation_errors
-      valid?
-      @validation_errors
-    end
-
-    # TODO this should probably contain error instances, not hashes
-    # @return [Array<Hash>] Errors for this particular query run (eg, exceeds max complexity)
-    def analysis_errors
-      valid?
-      @analysis_errors
-    end
-
     # Node-level cache for calculating arguments. Used during execution and query analysis.
+    # @api private
     # @return [GraphQL::Query::Arguments] Arguments for this node, merging default values, literal values and query variables
-    def arguments_for(irep_node, definition)
-      @arguments_cache[irep_node][definition] ||= begin
-        ast_node = case irep_node
-        when GraphQL::Language::Nodes::AbstractNode
-          irep_node
-        else
-          irep_node.ast_node
-        end
-        ast_arguments = ast_node.arguments
-        if ast_arguments.none?
-          definition.default_arguments
-        else
-          GraphQL::Query::LiteralInput.from_arguments(
-            ast_arguments,
-            definition.arguments,
-            self.variables
-          )
-        end
-      end
+    def arguments_for(irep_or_ast_node, definition)
+      @arguments_cache[irep_or_ast_node][definition]
     end
 
     # @return [GraphQL::Language::Nodes::Document, nil]
     attr_reader :selected_operation
 
-    def valid?
-      @was_validated ||= begin
-        @was_validated = true
-        @valid = @parse_error.nil? && document_valid? && query_valid? && variables.errors.none?
-        true
-      end
-
-      @valid
-    end
+    def_delegators :@validation_pipeline, :valid?, :analysis_errors, :validation_errors, :internal_representation
 
     def_delegators :@warden, :get_type, :get_field, :possible_types, :root_type_for_operation
-
 
     # @param value [Object] Any runtime value
     # @return [GraphQL::ObjectType, nil] The runtime type of `value` from {Schema#resolve_type}
@@ -234,30 +186,6 @@ module GraphQL
 
     private
 
-    # Assert that the passed-in query string is internally consistent
-    def document_valid?
-      validation_result = schema.static_validator.validate(self)
-      @validation_errors.concat(validation_result[:errors])
-      @internal_representation = validation_result[:irep]
-      @validation_errors.none?
-    end
-
-    # Given that we _could_ execute this query, _should_ we?
-    # - Does it violate any query analyzers?
-    def query_valid?
-      @analysis_errors = begin
-        if @query_analyzers.any?
-          reduce_results = GraphQL::Analysis.analyze_query(self, @query_analyzers)
-          reduce_results
-            .flatten # accept n-dimensional array
-            .select { |r| r.is_a?(GraphQL::AnalysisError) }
-        else
-          []
-        end
-      end
-      @analysis_errors.none?
-    end
-
     def find_operation(operations, operation_name)
       if operation_name.nil? && operations.length == 1
         operations.values.first
@@ -265,65 +193,6 @@ module GraphQL
         nil
       else
         operations.fetch(operation_name)
-      end
-    end
-
-    # @api private
-    class InvertedMask
-      def initialize(inner_mask)
-        @inner_mask = inner_mask
-      end
-
-      # Returns true when the inner mask returned false
-      # Returns false when the inner mask returned true
-      def call(member, ctx)
-        !@inner_mask.call(member, ctx)
-      end
-    end
-
-    # @api private
-    class LegacyMaskWrap
-      def initialize(inner_mask)
-        @inner_mask = inner_mask
-      end
-
-      def call(member, ctx)
-        @inner_mask.call(member)
-      end
-    end
-
-    # @api private
-    class MergedMask
-      def initialize(first_mask, second_mask)
-        @first_mask = first_mask
-        @second_mask = second_mask
-      end
-
-      def call(member, ctx)
-        @first_mask.call(member, ctx) || @second_mask.call(member, ctx)
-      end
-
-      def self.combine(default_mask, except:, only:)
-        query_mask = if except
-          wrap_if_legacy_mask(except)
-        elsif only
-          InvertedMask.new(wrap_if_legacy_mask(only))
-        end
-
-        if query_mask && (default_mask != GraphQL::Schema::NullMask)
-          self.new(default_mask, query_mask)
-        else
-          query_mask || default_mask
-        end
-      end
-
-      def self.wrap_if_legacy_mask(mask)
-        if (mask.is_a?(Proc) && mask.arity == 1) || mask.method(:call).arity == 1
-          warn("Schema.execute(..., except:) filters now accept two arguments, `(member, ctx)`. One-argument filters are deprecated.")
-          LegacyMaskWrap.new(mask)
-        else
-          mask
-        end
       end
     end
   end

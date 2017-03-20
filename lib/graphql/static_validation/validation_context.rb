@@ -12,28 +12,17 @@ module GraphQL
     # It also provides limited access to the {TypeStack} instance,
     # which tracks state as you climb in and out of different fields.
     class ValidationContext
+      extend Forwardable
+
       attr_reader :query, :schema,
         :document, :errors, :visitor,
-        :fragments, :operations, :warden,
-        :dependencies, :each_irep_node_handlers
+        :warden, :dependencies, :each_irep_node_handlers
+
+      def_delegators :@query, :schema, :document, :fragments, :operations, :warden
 
       def initialize(query)
         @query = query
-        @schema = query.schema
-        @document = query.document
-        @fragments = {}
-        @operations = {}
-        @warden = query.warden
-
-        document.definitions.each do |definition|
-          case definition
-          when GraphQL::Language::Nodes::FragmentDefinition
-            @fragments[definition.name] = definition
-          when GraphQL::Language::Nodes::OperationDefinition
-            @operations[definition.name] = definition
-          end
-        end
-
+        @literal_validator = LiteralValidator.new(warden: warden)
         @errors = []
         @visitor = GraphQL::Language::Visitor.new(document)
         @type_stack = GraphQL::StaticValidation::TypeStack.new(schema, visitor)
@@ -93,7 +82,6 @@ module GraphQL
       end
 
       def valid_literal?(ast_value, type)
-        @literal_validator ||= LiteralValidator.new(warden: @warden)
         @literal_validator.validate(ast_value, type)
       end
     end
