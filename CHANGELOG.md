@@ -8,6 +8,20 @@
 
 ### Bug fixes
 
+## 1.5.3 (20 Mar 2017)
+
+### Bug Fixes
+
+- Fix infinite loop triggered by user input. This query would cause an infinite loop:
+
+  ```graphql
+  query { ...frag }
+  fragment frag on Query { __typename }
+  fragment frag on Query { ...frag }
+  ```
+
+- Validate fragment name uniqueness
+
 ## 1.5.2 (16 Mar 2017)
 
 ### Breaking Changes
