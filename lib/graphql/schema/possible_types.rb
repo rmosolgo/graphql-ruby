@@ -26,10 +26,10 @@ module GraphQL
           type_defn.possible_types
         when GraphQL::InterfaceType
           @interface_implementers[type_defn]
-        when GraphQL::ObjectType
+        when GraphQL::BaseType
           [type_defn]
         else
-          raise "#{type_defn} doesn't have possible types"
+          raise "Unexpected possible_types object: #{type_defn}"
         end
       end
     end

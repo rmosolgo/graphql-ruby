@@ -559,7 +559,7 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
           }
         }
         fragment X on SomeBox {
-          scalar
+          scalar: deepBox { unreleatedField }
         }
         fragment Y on SomeBox {
           scalar: unrelatedField
@@ -567,7 +567,7 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
       |}
 
       it "fails rule" do
-        assert_includes error_messages, "Field 'scalar' has a field conflict: scalar or unrelatedField?"
+        assert_includes error_messages, "Field 'scalar' has a field conflict: deepBox or unrelatedField?"
       end
     end
   end
