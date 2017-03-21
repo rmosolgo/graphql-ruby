@@ -171,7 +171,7 @@ module GraphQL
 
     def_delegators :@validation_pipeline, :valid?, :analysis_errors, :validation_errors, :internal_representation
 
-    def_delegators :@warden, :get_type, :get_field, :possible_types, :possible_types_set, :root_type_for_operation
+    def_delegators :@warden, :get_type, :get_field, :possible_types, :root_type_for_operation
 
     # @param value [Object] Any runtime value
     # @return [GraphQL::ObjectType, nil] The runtime type of `value` from {Schema#resolve_type}

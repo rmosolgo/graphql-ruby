@@ -32,12 +32,17 @@ module GraphQLBenchmark
   def self.profile
     # Warm up any caches:
     SCHEMA.execute(document: DOCUMENT)
+    CARD_SCHEMA.validate(ABSTRACT_FRAGMENTS)
 
     result = RubyProf.profile do
-      SCHEMA.execute(document: DOCUMENT)
+      CARD_SCHEMA.validate(ABSTRACT_FRAGMENTS)
+      # SCHEMA.execute(document: DOCUMENT)
     end
 
     printer = RubyProf::FlatPrinter.new(result)
+    # printer = RubyProf::GraphHtmlPrinter.new(result)
+    # printer = RubyProf::FlatPrinterWithLineNumbers.new(result)
+
     printer.print(STDOUT, {})
   end
 end
