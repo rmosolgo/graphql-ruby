@@ -106,6 +106,7 @@ module GraphQL
                 end
                 parent_nodes.each do |parent_node|
                   node = parent_node.typed_children[obj_type][node_name] ||= Node.new(
+                    parent: parent_node,
                     name: node_name,
                     owner_type: obj_type,
                     query: query,
@@ -222,6 +223,7 @@ module GraphQL
           end
 
           node = Node.new(
+            parent: nil,
             name: defn_name,
             owner_type: owner_type,
             query: @query,
