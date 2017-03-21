@@ -121,6 +121,17 @@ describe GraphQL::InternalRepresentation::Rewrite do
       habitats_selections = nut_selections["habitats"].typed_children[schema.types["Habitat"]]
       assert_equal ["averageWeight", "seasons"], habitats_selections.keys
     end
+
+    it "tracks parent nodes" do
+      doc = rewrite_result["getPlant"]
+      assert_equal nil, doc.parent
+
+      plant_selection = doc.typed_children[schema.types["Query"]]["plant"]
+      assert_equal doc, plant_selection.parent
+
+      nut_selections = plant_selection.typed_children[schema.types["Nut"]]
+      assert_equal plant_selection, nut_selections["leafType"].parent
+    end
   end
 
   describe "tracking directives on fragment spreads" do

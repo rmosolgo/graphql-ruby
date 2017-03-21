@@ -24,14 +24,18 @@ module GraphQL
       # @return [GraphQL::BaseType]
       attr_reader :return_type
 
+      # @return [InternalRepresentation::Node, nil]
+      attr_reader :parent
+
       def initialize(
-          name:, owner_type:, query:, return_type:,
+          name:, owner_type:, query:, return_type:, parent:,
           ast_nodes: nil,
           definitions: nil, typed_children: nil
         )
         @name = name
         @query = query
         @owner_type = owner_type
+        @parent = parent
         @typed_children = typed_children || Hash.new { |h1, k1| h1[k1] = {} }
         @ast_nodes = ast_nodes
         @definitions = definitions
