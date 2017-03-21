@@ -76,7 +76,8 @@ AddCommentMutation = GraphQL::Relay::Mutation.define do
   # as RANGE_ADD mutation, so our returned fields
   # must conform to that API.
   return_field :post, PostType
-  return_field :comment, CommentType.edge_type
+  return_field :commentsConnection, CommentType.connection_type
+  return_field :newCommentEdge, CommentType.edge_type
 
   # The resolve proc is where you alter the system state.
   resolve ->(object, inputs, ctx) {
