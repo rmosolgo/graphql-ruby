@@ -213,11 +213,11 @@ module GraphQL
       if defined_field
         defined_field
       elsif field_name == "__typename"
-        GraphQL::Introspection::TypenameField.create(parent_type)
+        GraphQL::Introspection::TypenameField
       elsif field_name == "__schema" && parent_type == query
-        GraphQL::Introspection::SchemaField.create(self)
+        GraphQL::Introspection::SchemaField
       elsif field_name == "__type" && parent_type == query
-        GraphQL::Introspection::TypeByNameField.create(self)
+        GraphQL::Introspection::TypeByNameField
       else
         nil
       end

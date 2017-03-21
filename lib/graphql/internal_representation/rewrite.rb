@@ -81,14 +81,13 @@ module GraphQL
             parent_nodes = nodes_stack.last
             next_nodes = []
 
-            scopes_stack.last.each do |scope_type|
-              # Can't use context.field_definition because that might be
-              # a definition on an interface type
-              field_defn = query.get_field(scope_type, ast_node.name)
-              if field_defn.nil?
-                # It's a non-existent field
-              else
-                field_return_type = field_defn.type.unwrap
+            field_defn = context.field_definition
+            if field_defn.nil?
+              # It's a non-existent field
+              new_scope = nil
+            else
+              field_return_type = field_defn.type.unwrap
+              scopes_stack.last.each do |scope_type|
                 parent_nodes.each do |parent_node|
                   node = parent_node.scoped_children[scope_type][node_name] ||= Node.new(
                     parent: parent_node,
@@ -97,18 +96,15 @@ module GraphQL
                     query: query,
                     return_type: field_return_type,
                   )
-                  node.ast_nodes.add(ast_node)
-                  node.definitions.add(field_defn)
+                  node.ast_nodes << ast_node
+                  node.definitions << field_defn
                   next_nodes << node
                 end
               end
+              new_scope = Scope.new(query, field_return_type)
             end
+
             nodes_stack.push(next_nodes)
-            if context.field_definition
-              new_scope = scopes_stack.last.replace(context.field_definition.type.unwrap)
-            else
-              new_scope = nil
-            end
             scopes_stack.push(new_scope)
           end
         }
@@ -138,34 +134,16 @@ module GraphQL
         # can be shared between its usages.
         context.on_dependency_resolve do |defn_ast_node, spread_ast_nodes, frag_ast_node|
           frag_name = frag_ast_node.name
-          spread_ast_nodes.each do |spread_ast_node|
-            parent_nodes = spread_parents[spread_ast_node]
-            parent_nodes.each do |parent_node|
-              fragment_node = fragment_definitions[frag_name]
-              if fragment_node
-                parent_node.deep_merge_node(fragment_node)
+          fragment_node = fragment_definitions[frag_name]
+
+          if fragment_node
+            spread_ast_nodes.each do |spread_ast_node|
+              parent_nodes = spread_parents[spread_ast_node]
+              parent_nodes.each do |parent_node|
+                parent_node.deep_merge_node(fragment_node, merge_self: false)
               end
             end
           end
-        end
-      end
-
-      # @see {.each_type}
-      def each_type(query, owner_type, &block)
-        self.class.each_type(query, owner_type, &block)
-      end
-
-      # Call the block for each of `owner_type`'s possible types
-      def self.each_type(query, owner_type)
-        case owner_type
-        when GraphQL::ObjectType, GraphQL::ScalarType, GraphQL::EnumType
-          yield(owner_type)
-        when GraphQL::UnionType, GraphQL::InterfaceType
-          query.possible_types(owner_type).each(&Proc.new)
-        when GraphQL::InputObjectType, nil
-          # this is an error, don't give 'em nothin
-        else
-          raise "Unexpected owner type: #{owner_type.inspect}"
         end
       end
 
@@ -186,7 +164,6 @@ module GraphQL
         def enter(ast_node, ast_parent)
           # Either QueryType or the fragment type condition
           owner_type = @context.type_definition && @context.type_definition.unwrap
-          next_nodes = []
           defn_name = ast_node.name
 
           node = Node.new(
@@ -194,14 +171,13 @@ module GraphQL
             name: defn_name,
             owner_type: owner_type,
             query: @query,
-            ast_nodes: Set.new([ast_node]),
+            ast_nodes: [ast_node],
             return_type: owner_type,
           )
-          @definitions[defn_name] = node
-          next_nodes << node
 
+          @definitions[defn_name] = node
           @scopes_stack.push(Scope.new(@query, owner_type))
-          @nodes_stack.push(next_nodes)
+          @nodes_stack.push([node])
         end
 
         def leave(ast_node, ast_parent)

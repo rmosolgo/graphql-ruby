@@ -43,8 +43,10 @@ module GraphQL
           # It's not a valid fragment type, this error was handled someplace else
           return
         end
-        intersecting_types = context.warden.possible_types(parent_type.unwrap) & context.warden.possible_types(child_type.unwrap)
-        if intersecting_types.none?
+        parent_types = context.warden.possible_types(parent_type.unwrap)
+        child_types = context.warden.possible_types(child_type.unwrap)
+
+        if child_types.none? { |c| parent_types.include?(c) }
           name = node.respond_to?(:name) ? " #{node.name}" : ""
           context.errors << message("Fragment#{name} on #{child_type.name} can't be spread inside #{parent_type.name}", node, path: path)
         end
