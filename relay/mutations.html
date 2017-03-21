@@ -163,7 +163,8 @@
   <span class="c1"># as RANGE_ADD mutation, so our returned fields</span>
   <span class="c1"># must conform to that API.</span>
   <span class="n">return_field</span> <span class="ss">:post</span><span class="p">,</span> <span class="no">PostType</span>
-  <span class="n">return_field</span> <span class="ss">:comment</span><span class="p">,</span> <span class="no">CommentType</span><span class="p">.</span><span class="nf">edge_type</span>
+  <span class="n">return_field</span> <span class="ss">:commentsConnection</span><span class="p">,</span> <span class="no">CommentType</span><span class="p">.</span><span class="nf">connection_type</span>
+  <span class="n">return_field</span> <span class="ss">:newCommentEdge</span><span class="p">,</span> <span class="no">CommentType</span><span class="p">.</span><span class="nf">edge_type</span>
 
   <span class="c1"># The resolve proc is where you alter the system state.</span>
   <span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">object</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
