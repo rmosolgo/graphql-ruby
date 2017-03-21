@@ -107,6 +107,9 @@ describe GraphQL::InternalRepresentation::Rewrite do
     it "groups selections by object types which they apply to" do
       doc = rewrite_result["getPlant"]
 
+      plant_scoped_selection = doc.scoped_children[schema.types["Query"]]["plant"]
+      assert_equal ["Fruit", "Nut", "Plant", "Tree"], plant_scoped_selection.scoped_children.keys.map(&:name).sort
+
       plant_selection = doc.typed_children[schema.types["Query"]]["plant"]
       assert_equal ["Fruit", "Grain", "Nut", "Vegetable"], plant_selection.typed_children.keys.map(&:name).sort
 
@@ -264,14 +267,14 @@ describe GraphQL::InternalRepresentation::Rewrite do
       assert_equal 3, cheeses.length
       assert_equal 1, milks.length
 
-      expected_cheese_fields = ["cheeseInlineOrigin", "edibleInlineOrigin", "untypedInlineOrigin", "cheeseFragmentOrigin"]
+      expected_cheese_fields = ["cheeseFragmentOrigin", "cheeseInlineOrigin", "edibleInlineOrigin", "untypedInlineOrigin"]
       cheeses.each do |cheese|
-        assert_equal expected_cheese_fields, cheese["selfAsEdible"].keys
+        assert_equal expected_cheese_fields, cheese["selfAsEdible"].keys.sort
       end
 
-      expected_milk_fields = ["milkInlineOrigin", "edibleInlineOrigin", "untypedInlineOrigin", "milkFragmentOrigin"]
+      expected_milk_fields = ["edibleInlineOrigin", "milkFragmentOrigin", "milkInlineOrigin", "untypedInlineOrigin"]
       milks.each do |milk|
-        assert_equal expected_milk_fields, milk["selfAsEdible"].keys
+        assert_equal expected_milk_fields, milk["selfAsEdible"].keys.sort
       end
     end
   end
