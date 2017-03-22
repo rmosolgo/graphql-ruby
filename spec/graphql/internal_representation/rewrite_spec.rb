@@ -59,7 +59,6 @@ describe GraphQL::InternalRepresentation::Rewrite do
     res[:errors].any? && raise(res[:errors].map(&:message).join("; "))
     res[:irep]
   }
-  # TODO: make sure all rewrite specs are covered
 
   describe "building a tree over concrete types with fragments" do
     let(:query_string) {
@@ -107,6 +106,9 @@ describe GraphQL::InternalRepresentation::Rewrite do
     it "groups selections by object types which they apply to" do
       doc = rewrite_result["getPlant"]
 
+      plant_scoped_selection = doc.scoped_children[schema.types["Query"]]["plant"]
+      assert_equal ["Fruit", "Nut", "Plant", "Tree"], plant_scoped_selection.scoped_children.keys.map(&:name).sort
+
       plant_selection = doc.typed_children[schema.types["Query"]]["plant"]
       assert_equal ["Fruit", "Grain", "Nut", "Vegetable"], plant_selection.typed_children.keys.map(&:name).sort
 
@@ -129,8 +131,16 @@ describe GraphQL::InternalRepresentation::Rewrite do
       plant_selection = doc.typed_children[schema.types["Query"]]["plant"]
       assert_equal doc, plant_selection.parent
 
-      nut_selections = plant_selection.typed_children[schema.types["Nut"]]
-      assert_equal plant_selection, nut_selections["leafType"].parent
+      leaf_type_selection = plant_selection.typed_children[schema.types["Nut"]]["leafType"]
+      assert_equal plant_selection, leaf_type_selection.parent
+
+      habitats_selection = plant_selection.typed_children[schema.types["Nut"]]["habitats"]
+      assert_equal plant_selection, habitats_selection.parent
+
+      seasons_selection = habitats_selection.typed_children[schema.types["Habitat"]]["seasons"]
+      average_weight_selection = habitats_selection.typed_children[schema.types["Habitat"]]["averageWeight"]
+      assert_equal habitats_selection, seasons_selection.parent
+      assert_equal habitats_selection, average_weight_selection.parent
     end
   end
 
@@ -264,14 +274,14 @@ describe GraphQL::InternalRepresentation::Rewrite do
       assert_equal 3, cheeses.length
       assert_equal 1, milks.length
 
-      expected_cheese_fields = ["cheeseInlineOrigin", "edibleInlineOrigin", "untypedInlineOrigin", "cheeseFragmentOrigin"]
+      expected_cheese_fields = ["cheeseFragmentOrigin", "cheeseInlineOrigin", "edibleInlineOrigin", "untypedInlineOrigin"]
       cheeses.each do |cheese|
-        assert_equal expected_cheese_fields, cheese["selfAsEdible"].keys
+        assert_equal expected_cheese_fields, cheese["selfAsEdible"].keys.sort
       end
 
-      expected_milk_fields = ["milkInlineOrigin", "edibleInlineOrigin", "untypedInlineOrigin", "milkFragmentOrigin"]
+      expected_milk_fields = ["edibleInlineOrigin", "milkFragmentOrigin", "milkInlineOrigin", "untypedInlineOrigin"]
       milks.each do |milk|
-        assert_equal expected_milk_fields, milk["selfAsEdible"].keys
+        assert_equal expected_milk_fields, milk["selfAsEdible"].keys.sort
       end
     end
   end
