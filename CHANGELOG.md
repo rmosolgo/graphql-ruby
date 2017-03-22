@@ -8,11 +8,24 @@
 
 ### Bug fixes
 
+## 1.5.4 (22 Mar 2017)
+
+### Breaking Changes
+
+- Stop supporting deprecated one-argument schema masks #616
+
+### Bug Fixes
+
+- Return a client error for unknown variable types when default value is provided or when directives are present #627
+- Fix validation performance regression on nested abstract fragment conditions #622, #624
+- Put back `InternalRepresentation::Node#parent` and fix it for fragment fields #621
+- Ensure enum names are strings #619
+
 ## 1.5.3 (20 Mar 2017)
 
 ### Bug Fixes
 
-- Fix infinite loop triggered by user input. This query would cause an infinite loop:
+- Fix infinite loop triggered by user input. #620 This query would cause an infinite loop:
 
   ```graphql
   query { ...frag }
@@ -20,7 +33,7 @@
   fragment frag on Query { ...frag }
   ```
 
-- Validate fragment name uniqueness
+- Validate fragment name uniqueness #618
 
 ## 1.5.2 (16 Mar 2017)
 
