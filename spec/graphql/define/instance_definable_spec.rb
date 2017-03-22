@@ -78,6 +78,27 @@ describe GraphQL::Define::InstanceDefinable do
       okra.define { name "Okra" }
       assert_equal "Okra", okra.name
     end
+
+    describe "errors in define blocks" do
+      it "preserves the definition block to try again" do
+        magic_number = 12
+
+        radish = Garden::Vegetable.define {
+          name "Pre-error"
+          magic_number += 1
+          if magic_number == 13
+            raise "👻"
+          end
+          name "Radish"
+        }
+
+        # The first call triggers an error:
+        assert_raises(RuntimeError) { radish.name }
+        # Calling definintion-dependent method should re-run the block,
+        # not leave old values around:
+        assert_equal "Radish", radish.name
+      end
+    end
   end
 
   describe "#redefine" do

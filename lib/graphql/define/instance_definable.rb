@@ -116,18 +116,7 @@ module GraphQL
       def define(**kwargs, &block)
         # make sure the previous definition_proc was executed:
         ensure_defined
-
-        method_names = self.class.ensure_defined_method_names
-        @pending_methods = method_names.map { |n| self.class.instance_method(n) }
-        self.singleton_class.class_eval do
-          method_names.each do |method_name|
-            define_method(method_name) { |*args, &block|
-              ensure_defined
-              self.send(method_name, *args, &block)
-            }
-          end
-        end
-
+        stash_dependent_methods
         @pending_definition = Definition.new(kwargs, block)
         nil
       end
@@ -156,31 +145,67 @@ module GraphQL
       # @return [void]
       def ensure_defined
         if @pending_definition
-
           defn = @pending_definition
           @pending_definition = nil
 
-          pending_methods = @pending_methods
-          self.singleton_class.class_eval {
-            pending_methods.each do |method|
-              define_method(method.name, method)
+          revive_dependent_methods
+
+          begin
+            defn_proxy = DefinedObjectProxy.new(self)
+            # Apply definition from `define(...)` kwargs
+            defn.define_keywords.each do |keyword, value|
+              defn_proxy.public_send(keyword, value)
             end
-          }
-          @pending_methods = nil
-
-          defn_proxy = DefinedObjectProxy.new(self)
-          # Apply definition from `define(...)` kwargs
-          defn.define_keywords.each do |keyword, value|
-            defn_proxy.public_send(keyword, value)
+            # and/or apply definition from `define { ... }` block
+            if defn.define_proc
+              defn_proxy.instance_eval(&defn.define_proc)
+            end
+          rescue StandardError
+            # The definition block failed to run, so make this object pending again:
+            stash_dependent_methods
+            @pending_definition = defn
+            raise
           end
-          # and/or apply definition from `define { ... }` block
-          if defn.define_proc
-            defn_proxy.instance_eval(&defn.define_proc)
-          end
-
-
         end
         nil
+      end
+
+      # Take the pending methods and put them back on this object's singleton class.
+      # This reverts the process done by {#stash_dependent_methods}
+      # @return [void]
+      def revive_dependent_methods
+        pending_methods = @pending_methods
+        self.singleton_class.class_eval {
+          pending_methods.each do |method|
+            define_method(method.name, method)
+          end
+        }
+        @pending_methods = nil
+      end
+
+      # Find the method names which were declared as definition-dependent,
+      # then grab the method definitions off of this object's class
+      # and store them for later.
+      #
+      # Then make a dummy method for each of those method names which:
+      #
+      # - Triggers the pending definition, if there is one
+      # - Calls the same method again.
+      #
+      # It's assumed that {#ensure_defined} will put the original method definitions
+      # back in place with {#revive_dependent_methods}.
+      # @return [void]
+      def stash_dependent_methods
+        method_names = self.class.ensure_defined_method_names
+        @pending_methods = method_names.map { |n| self.class.instance_method(n) }
+        self.singleton_class.class_eval do
+          method_names.each do |method_name|
+            define_method(method_name) { |*args, &block|
+              ensure_defined
+              self.send(method_name, *args, &block)
+            }
+          end
+        end
       end
 
       class Definition
