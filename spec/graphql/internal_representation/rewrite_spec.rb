@@ -59,7 +59,6 @@ describe GraphQL::InternalRepresentation::Rewrite do
     res[:errors].any? && raise(res[:errors].map(&:message).join("; "))
     res[:irep]
   }
-  # TODO: make sure all rewrite specs are covered
 
   describe "building a tree over concrete types with fragments" do
     let(:query_string) {
@@ -132,8 +131,16 @@ describe GraphQL::InternalRepresentation::Rewrite do
       plant_selection = doc.typed_children[schema.types["Query"]]["plant"]
       assert_equal doc, plant_selection.parent
 
-      nut_selections = plant_selection.typed_children[schema.types["Nut"]]
-      assert_equal plant_selection, nut_selections["leafType"].parent
+      leaf_type_selection = plant_selection.typed_children[schema.types["Nut"]]["leafType"]
+      assert_equal plant_selection, leaf_type_selection.parent
+
+      habitats_selection = plant_selection.typed_children[schema.types["Nut"]]["habitats"]
+      assert_equal plant_selection, habitats_selection.parent
+
+      seasons_selection = habitats_selection.typed_children[schema.types["Habitat"]]["seasons"]
+      average_weight_selection = habitats_selection.typed_children[schema.types["Habitat"]]["averageWeight"]
+      assert_equal habitats_selection, seasons_selection.parent
+      assert_equal habitats_selection, average_weight_selection.parent
     end
   end
 

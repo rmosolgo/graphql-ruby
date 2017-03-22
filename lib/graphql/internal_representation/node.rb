@@ -77,6 +77,17 @@ module GraphQL
         @definitions = other_node.definitions.dup
       end
 
+      def ==(other)
+        other.is_a?(self.class) &&
+          other.name == name &&
+          other.parent == parent &&
+          other.return_type == return_type &&
+          other.owner_type == owner_type &&
+          other.scoped_children == scoped_children &&
+          other.definitions == definitions &&
+          other.ast_nodes == ast_nodes
+      end
+
       def definition_name
         @definition_name ||= definition.name
       end
@@ -90,7 +101,9 @@ module GraphQL
       end
 
       def inspect
-        "#<Node #{@owner_type}.#{@name} -> #{@return_type}>"
+        all_children_names = scoped_children.values.map(&:keys).flatten.uniq.join(", ")
+        all_locations = ast_nodes.map {|n| "#{n.line}:#{n.col}" }.join(", ")
+        "#<Node #{@owner_type}.#{@name} -> #{@return_type} {#{all_children_names}} @ [#{all_locations}] #{object_id}>"
       end
 
       # Merge selections from `new_parent` into `self`.
@@ -130,8 +143,6 @@ module GraphQL
               prev_node = new_tc[name]
               if prev_node
                 prev_node.deep_merge_node(new_node)
-              elsif scope_type == obj_type && new_node.scoped_children.none?
-                new_tc[name] = new_node
               else
                 copied_node = new_node.dup
                 copied_node.owner_type = obj_type
