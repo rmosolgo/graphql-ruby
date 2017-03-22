@@ -18,7 +18,9 @@ module GraphQL
           context.errors << message("Non-null variable $#{node.name} can't have a default value", node, context: context)
         else
           type = context.schema.type_from_ast(node.type)
-          if !context.valid_literal?(value, type)
+          if type.nil?
+            # This is handled by another validator
+          elsif !context.valid_literal?(value, type)
             context.errors << message("Default value for $#{node.name} doesn't match type #{type}", node, context: context)
           end
         end

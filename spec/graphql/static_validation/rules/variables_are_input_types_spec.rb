@@ -56,5 +56,19 @@ describe GraphQL::StaticValidation::VariablesAreInputTypes do
       assert_equal 1, res["errors"].length
       assert_equal "IDX isn't a defined input type (on $id)", res["errors"][0]["message"]
     end
+
+    it "returns a client error when there are directives" do
+      res = schema.execute <<-GRAPHQL
+        query GetCheese($msg: IDX) {
+          cheese(id: $id) @skip(if: true) { flavor }
+        }
+      GRAPHQL
+
+      assert_equal false, res.key?("data")
+      assert_equal 3, res["errors"].length
+      assert_equal "IDX isn't a defined input type (on $msg)", res["errors"][0]["message"]
+      assert_equal "Variable $msg is declared by GetCheese but not used", res["errors"][1]["message"]
+      assert_equal "Variable $id is used by GetCheese but not declared", res["errors"][2]["message"]
+    end
   end
 end

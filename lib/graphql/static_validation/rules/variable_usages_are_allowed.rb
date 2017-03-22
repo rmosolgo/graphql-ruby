@@ -33,7 +33,7 @@ module GraphQL
       private
 
       def validate_usage(arguments, arg_node, ast_var, context)
-        var_type = to_query_type(ast_var.type, context.query.warden)
+        var_type = context.schema.type_from_ast(ast_var.type)
         if var_type.nil?
           return
         end
@@ -53,25 +53,6 @@ module GraphQL
           context.errors << create_error("List dimension mismatch", var_type, ast_var, arg_defn, arg_node, context)
         elsif !non_null_levels_match(arg_defn_type, var_type)
           context.errors << create_error("Nullability mismatch", var_type, ast_var, arg_defn, arg_node, context)
-        end
-      end
-
-      def to_query_type(ast_type, warden)
-        case ast_type
-        when GraphQL::Language::Nodes::NonNullType
-          wrap_query_type(to_query_type(ast_type.of_type, warden), GraphQL::NonNullType)
-        when GraphQL::Language::Nodes::ListType
-          wrap_query_type(to_query_type(ast_type.of_type, warden), GraphQL::ListType)
-        else
-          warden.get_type(ast_type.name)
-        end
-      end
-
-      def wrap_query_type(type, wrapper)
-        if type.nil?
-          nil
-        else
-          wrapper.new(of_type: type)
         end
       end
 

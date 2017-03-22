@@ -45,6 +45,18 @@ describe GraphQL::StaticValidation::VariableDefaultValuesAreCorrectlyTyped do
     assert_equal(expected, errors)
   end
 
+  it "returns a client error when the type isn't found" do
+    res = schema.execute <<-GRAPHQL
+      query GetCheese($msg: IDX = 1) {
+        cheese(id: $msg) @skip(if: true) { flavor }
+      }
+    GRAPHQL
+
+    assert_equal false, res.key?("data")
+    assert_equal 1, res["errors"].length
+    assert_equal "IDX isn't a defined input type (on $msg)", res["errors"][0]["message"]
+  end
+
   describe "null default values" do
     describe "variables with valid default null values" do
       let(:schema) {
