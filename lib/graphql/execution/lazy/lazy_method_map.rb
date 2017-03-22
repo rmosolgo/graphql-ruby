@@ -1,4 +1,6 @@
 # frozen_string_literal: true
+require 'thread'
+
 module GraphQL
   module Execution
     class Lazy
@@ -9,20 +11,31 @@ module GraphQL
       # @see {Schema#lazy?} looks up values from this map
       class LazyMethodMap
         def initialize
+          @semaphore = Mutex.new
+          # Access to this hash must always be managed by the mutex
+          # since it may be modified at runtime
           @storage = Hash.new do |h, value_class|
-            registered_superclass = h.each_key.find { |lazy_class| value_class < lazy_class }
-            if registered_superclass.nil?
-              h[value_class] = nil
-            else
-              h[value_class] = h[registered_superclass]
-            end
+            @semaphore.synchronize {
+              registered_superclass = @storage.each_key.find { |lazy_class| value_class < lazy_class }
+              if registered_superclass.nil?
+                h[value_class] = nil
+              else
+                h[value_class] = @storage[registered_superclass]
+              end
+            }
           end
+        end
+
+        def initialize_copy(other)
+          @storage = other.storage.dup
         end
 
         # @param lazy_class [Class] A class which represents a lazy value (subclasses may also be used)
         # @param lazy_value_method [Symbol] The method to call on this class to get its value
         def set(lazy_class, lazy_value_method)
-          @storage[lazy_class] = lazy_value_method
+          @semaphore.synchronize {
+            @storage[lazy_class] = lazy_value_method
+          }
         end
 
         # @param value [Object] an object which may have a `lazy_value_method` registered for its class or superclasses
@@ -31,9 +44,9 @@ module GraphQL
           @storage[value.class]
         end
 
-        def each
-          @storage.each { |k, v| yield(k,v) }
-        end
+        protected
+
+        attr_reader :storage
       end
     end
   end
