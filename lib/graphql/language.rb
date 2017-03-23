@@ -18,6 +18,12 @@ module GraphQL
         end.join(",")
 
         "{#{serialized_hash}}"
+      elsif value.is_a?(Array)
+        serialized_array = value.map do |v|
+          serialize v
+        end.join(",")
+
+        "[#{serialized_array}]"
       else
         JSON.generate(value, quirks_mode: true)
       end
