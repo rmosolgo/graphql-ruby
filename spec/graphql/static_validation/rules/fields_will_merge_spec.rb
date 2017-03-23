@@ -156,7 +156,7 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
     |}
 
     it "fails rule" do
-      assert_equal [%q(Field 'doesKnowCommand' has an argument conflict: {"dogCommand":"SIT"} or {"dogCommand":"$dogCommand"}?)], error_messages
+      assert_equal [%q(Field 'doesKnowCommand' has an argument conflict: {dogCommand:"SIT"} or {dogCommand:"$dogCommand"}?)], error_messages
     end
   end
 
@@ -171,7 +171,7 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
     |}
 
     it "fails rule" do
-      assert_equal [%q(Field 'doesKnowCommand' has an argument conflict: {"dogCommand":"$varOne"} or {"dogCommand":"$varTwo"}?)], error_messages
+      assert_equal [%q(Field 'doesKnowCommand' has an argument conflict: {dogCommand:"$varOne"} or {dogCommand:"$varTwo"}?)], error_messages
     end
   end
 
@@ -246,7 +246,7 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
     |}
 
     it "fails rule" do
-      assert_equal [%q(Field 'doesKnowCommand' has an argument conflict: {} or {"dogCommand":"HEEL"}?)], error_messages
+      assert_equal [%q(Field 'doesKnowCommand' has an argument conflict: {} or {dogCommand:"HEEL"}?)], error_messages
     end
   end
 
@@ -261,7 +261,7 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
     |}
 
     it "fails rule" do
-      assert_equal [%q(Field 'doesKnowCommand' has an argument conflict: {"dogCommand":"SIT"} or {}?)], error_messages
+      assert_equal [%q(Field 'doesKnowCommand' has an argument conflict: {dogCommand:"SIT"} or {}?)], error_messages
     end
   end
 
@@ -276,7 +276,7 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
     |}
 
     it "fails rule" do
-      assert_equal [%q(Field 'doesKnowCommand' has an argument conflict: {"dogCommand":"SIT"} or {"dogCommand":"HEEL"}?)], error_messages
+      assert_equal [%q(Field 'doesKnowCommand' has an argument conflict: {dogCommand:"SIT"} or {dogCommand:"HEEL"}?)], error_messages
     end
   end
 
@@ -291,7 +291,7 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
     |}
 
     it "fails rule" do
-      assert_equal [%q(Field 'image' has an argument conflict: {"maxWidth":"10"} or {"maxWidth":"20"}?)], error_messages
+      assert_equal [%q(Field 'image' has an argument conflict: {maxWidth:"10"} or {maxWidth:"20"}?)], error_messages
     end
   end
 
