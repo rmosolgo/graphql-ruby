@@ -109,10 +109,25 @@ module GraphQL
             kwargs = {}
             if type["defaultValue"]
               kwargs[:default_value] = begin
-                JSON.parse(type["defaultValue"], quirks_mode: true)
-              rescue JSON::ParserError
-                # Enum values are not valid JSON, they're bare identifiers
-                type["default_value"]
+                default_value_str = type["defaultValue"]
+                dummy_query_str = "query getStuff($var: InputObj = #{default_value_str}) { __typename }"
+
+                # Returns a `GraphQL::Language::Nodes::Document`:
+                dummy_query_ast = GraphQL.parse(dummy_query_str)
+
+                # Reach into the AST for the default value:
+                input_value_ast = dummy_query_ast.definitions.first.variables.first.default_value
+
+                case input_value_ast
+                when String, Integer, Float, TrueClass, FalseClass
+                  input_value_ast
+                when GraphQL::Language::Nodes::Enum
+                  input_value_ast.name
+                when GraphQL::Language::Nodes::NullValue
+                  nil
+                else
+                  input_value_ast.to_h
+                end
               end
             end
 
