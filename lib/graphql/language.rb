@@ -12,7 +12,15 @@ module GraphQL
   module Language
     # @api private
     def self.serialize(value)
-      JSON.generate(value, quirks_mode: true)
+      if value.is_a?(Hash)
+        serialized_hash = value.map do |k, v|
+          "#{k}:#{serialize v}"
+        end.join(",")
+
+        "{#{serialized_hash}}"
+      else
+        JSON.generate(value, quirks_mode: true)
+      end
     end
   end
 end
