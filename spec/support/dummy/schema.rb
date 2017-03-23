@@ -168,6 +168,15 @@ module Dummy
     end
   end
 
+  ResourceOrderType = GraphQL::InputObjectType.define {
+    name "ResourceOrderType"
+    description "Properties used to determine ordering"
+
+    argument :direction, !types.String do
+      description "ASC or DESC"
+    end
+  }
+
   DairyProductInputType = GraphQL::InputObjectType.define {
     name "DairyProductInput"
     description "Properties for finding a dairy product"
@@ -188,6 +197,8 @@ module Dummy
 
     # ensure default can be false
     input_field :organic, types.Boolean, default_value: false
+
+    input_field :order_by, -> { ResourceOrderType }, default_value: { direction: 'ASC' }
   }
 
   DeepNonNullType = GraphQL::ObjectType.define do
