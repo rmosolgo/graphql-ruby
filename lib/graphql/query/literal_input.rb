@@ -7,6 +7,8 @@ module GraphQL
         case ast_node
         when nil
           nil
+        when Language::Nodes::NullValue
+          nil
         when Language::Nodes::VariableIdentifier
           variables[ast_node.name]
         else
