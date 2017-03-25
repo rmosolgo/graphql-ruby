@@ -470,4 +470,90 @@ describe GraphQL::Query do
       }
     end
   end
+
+  describe 'NullValue type arguments' do
+    let(:schema_definition) {
+      <<-SCHEMA_DEFINITION
+        schema {
+          query: Query
+        }
+
+        type Query {
+          foo(id: [ID]): Foo
+        }
+
+        type Foo {
+          bar: String!
+        }
+      SCHEMA_DEFINITION
+    }
+    let(:expected_args) { [] }
+    let(:default_resolver) do
+      {
+        'Query' => { 'foo' => ->(_obj, args, _ctx) { expected_args.push(args) } },
+        'Foo' => { 'bar' => ->(_obj, _args, _ctx) { 'baz' } }
+      }
+    end
+    let(:schema) { GraphQL::Schema.from_definition(schema_definition, default_resolve: default_resolver) }
+
+    it 'sets argument to nil when null is passed' do
+      query = <<-QUERY
+        {
+          foo(id: null) {
+            bar
+          }
+        }
+      QUERY
+
+      schema.execute(query)
+
+      assert(expected_args.first.key?('id'))
+      assert_nil(expected_args.first['id'])
+    end
+
+    it 'sets argument to nil when nil is passed via variable' do
+      query = <<-QUERY
+        query baz($id: [ID]) {
+          foo(id: $id) {
+            bar
+          }
+        }
+      QUERY
+
+      schema.execute(query, variables: { 'id' => nil })
+
+      assert(expected_args.first.key?('id'))
+      assert([nil], expected_args.first['id'])
+    end
+
+    it 'sets argument to [nil] when [null] is passed' do
+      query = <<-QUERY
+        {
+          foo(id: [null]) {
+            bar
+          }
+        }
+      QUERY
+
+      schema.execute(query)
+
+      assert(expected_args.first.key?('id'))
+      assert([nil], expected_args.first['id'])
+    end
+
+    it 'sets argument to [nil] when [nil] is passed via variable' do
+      query = <<-QUERY
+        query baz($id: [ID]) {
+          foo(id: $id) {
+            bar
+          }
+        }
+      QUERY
+
+      schema.execute(query, variables: { 'id' => [123] })
+
+      assert(expected_args.first.key?('id'))
+      assert([nil], expected_args.first['id'])
+    end
+  end
 end
