@@ -538,7 +538,7 @@ describe GraphQL::Query do
       schema.execute(query)
 
       assert(expected_args.first.key?('id'))
-      assert([nil], expected_args.first['id'])
+      assert_equal([nil], expected_args.first['id'])
     end
 
     it 'sets argument to [nil] when [nil] is passed via variable' do
@@ -550,10 +550,10 @@ describe GraphQL::Query do
         }
       QUERY
 
-      schema.execute(query, variables: { 'id' => [123] })
+      schema.execute(query, variables: { 'id' => [nil] })
 
       assert(expected_args.first.key?('id'))
-      assert([nil], expected_args.first['id'])
+      assert_equal([nil], expected_args.first['id'])
     end
   end
 end
