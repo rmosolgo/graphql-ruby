@@ -473,37 +473,26 @@ describe GraphQL::Query do
 
   describe 'NullValue type arguments' do
     let(:schema_definition) {
-      <<-SCHEMA_DEFINITION
-        schema {
-          query: Query
-        }
-
+      <<-GRAPHQL
         type Query {
-          foo(id: [ID]): Foo
+          foo(id: [ID]): Int
         }
-
-        type Foo {
-          bar: String!
-        }
-      SCHEMA_DEFINITION
+      GRAPHQL
     }
     let(:expected_args) { [] }
     let(:default_resolver) do
       {
-        'Query' => { 'foo' => ->(_obj, args, _ctx) { expected_args.push(args) } },
-        'Foo' => { 'bar' => ->(_obj, _args, _ctx) { 'baz' } }
+        'Query' => { 'foo' => ->(_obj, args, _ctx) { expected_args.push(args); 1 } },
       }
     end
     let(:schema) { GraphQL::Schema.from_definition(schema_definition, default_resolve: default_resolver) }
 
     it 'sets argument to nil when null is passed' do
-      query = <<-QUERY
+      query = <<-GRAPHQL
         {
-          foo(id: null) {
-            bar
-          }
+          foo(id: null)
         }
-      QUERY
+      GRAPHQL
 
       schema.execute(query)
 
@@ -512,13 +501,11 @@ describe GraphQL::Query do
     end
 
     it 'sets argument to nil when nil is passed via variable' do
-      query = <<-QUERY
+      query = <<-GRAPHQL
         query baz($id: [ID]) {
-          foo(id: $id) {
-            bar
-          }
+          foo(id: $id)
         }
-      QUERY
+      GRAPHQL
 
       schema.execute(query, variables: { 'id' => nil })
 
@@ -527,13 +514,11 @@ describe GraphQL::Query do
     end
 
     it 'sets argument to [nil] when [null] is passed' do
-      query = <<-QUERY
+      query = <<-GRAPHQL
         {
-          foo(id: [null]) {
-            bar
-          }
+          foo(id: [null])
         }
-      QUERY
+      GRAPHQL
 
       schema.execute(query)
 
@@ -542,13 +527,11 @@ describe GraphQL::Query do
     end
 
     it 'sets argument to [nil] when [nil] is passed via variable' do
-      query = <<-QUERY
+      query = <<-GRAPHQL
         query baz($id: [ID]) {
-          foo(id: $id) {
-            bar
-          }
+          foo(id: $id)
         }
-      QUERY
+      GRAPHQL
 
       schema.execute(query, variables: { 'id' => [123] })
 
