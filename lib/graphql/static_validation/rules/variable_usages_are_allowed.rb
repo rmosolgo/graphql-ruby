@@ -14,19 +14,25 @@ module GraphQL
 
         context.visitor[GraphQL::Language::Nodes::Argument] << ->(node, parent) {
           return if !node.value.is_a?(GraphQL::Language::Nodes::VariableIdentifier)
-          if parent.is_a?(GraphQL::Language::Nodes::Field)
+          arguments = nil
+
+          case parent
+          when GraphQL::Language::Nodes::Field
             arguments = context.field_definition.arguments
-          elsif parent.is_a?(GraphQL::Language::Nodes::Directive)
+          when GraphQL::Language::Nodes::Directive
             arguments = context.directive_definition.arguments
-          elsif parent.is_a?(GraphQL::Language::Nodes::InputObject)
-            arguments = context.argument_definition.type.unwrap.input_fields
+          when GraphQL::Language::Nodes::InputObject
+            arg_type = context.argument_definition.type.unwrap
+            if arg_type.is_a?(GraphQL::InputObjectType)
+              arguments = arg_type.input_fields
+            end
           else
             raise("Unexpected argument parent: #{parent}")
           end
           var_defn_ast = declared_variables[node.value.name]
           # Might be undefined :(
           # VariablesAreUsedAndDefined can't finalize its search until the end of the document.
-          var_defn_ast && validate_usage(arguments, node, var_defn_ast, context)
+          var_defn_ast && arguments && validate_usage(arguments, node, var_defn_ast, context)
         }
       end
 

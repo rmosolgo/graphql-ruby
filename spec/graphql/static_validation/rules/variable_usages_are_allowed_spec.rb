@@ -63,4 +63,21 @@ describe GraphQL::StaticValidation::VariableUsagesAreAllowed do
     ]
     assert_equal(expected, errors)
   end
+
+  describe "input objects that are out of place" do
+    let(:query_string) { <<-GRAPHQL
+      query getCheese($id: ID!) {
+        cheese(id: {blah: $id} ) {
+          __typename @nonsense(id: {blah: $id})
+          nonsense(id: {blah: {blah: $id}})
+        }
+      }
+    GRAPHQL
+    }
+
+    it "adds an error" do
+      assert_equal 3, errors.length
+      assert_equal "Argument 'id' on Field 'cheese' has an invalid value. Expected type 'Int!'.", errors[0]["message"]
+    end
+  end
 end

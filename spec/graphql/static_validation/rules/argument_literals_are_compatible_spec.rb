@@ -82,7 +82,6 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
     end
   end
 
-
   describe "null value" do
     describe "nullable arg" do
       let(:schema) {
