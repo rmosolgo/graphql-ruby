@@ -10,6 +10,7 @@ Want to add something? Please open a pull request [on GitHub](https://github.com
 - `graphql-ruby` + Sinatra demo ([src](https://github.com/robinjmurphy/ruby-graphql-server-example) / [heroku](https://ruby-graphql-server-example.herokuapp.com/))
 - [`graphql-batch`](https://github.com/shopify/graphql-batch), a batched query execution strategy
 - [`graphql-libgraphqlparser`](https://github.com/rmosolgo/graphql-libgraphqlparser-ruby), bindings to [libgraphqlparser](https://github.com/graphql/libgraphqlparser), a C-level parser.
+- [`graphql-docs`](https://github.com/gjtorikian/graphql-docs), a tool to automatically generate static HTML documentation from your GraphQL implementation
 - Rails Helpers:
   - [`graphql-activerecord`](https://github.com/goco-inc/graphql-activerecord)
   - [`graphql-rails-resolve`](https://github.com/colepatrickturner/graphql-rails-resolver)
