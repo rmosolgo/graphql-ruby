@@ -230,7 +230,7 @@ describe GraphQL::Schema::Loader do
       assert !varied.default_value.key?('bool'), 'Omits default value for unspecified arguments'
 
       array = field.arguments['array']
-      assert_equal array.default_value ["foo", "bar"]
+      assert_equal array.default_value, ["foo", "bar"]
     end
 
     it "does not set default value when there are none on input fields" do
