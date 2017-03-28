@@ -235,7 +235,6 @@ module GraphQL
       @possible_types.possible_types(type_defn)
     end
 
-
     # @see [GraphQL::Schema::Warden] Resticted access to root types
     # @return [GraphQL::ObjectType, nil]
     def root_type_for_operation(operation)

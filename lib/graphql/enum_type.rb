@@ -85,7 +85,6 @@ module GraphQL
       self.values = other.values.values
     end
 
-
     # @param new_values [Array<EnumValue>] The set of values contained in this type
     def values=(new_values)
       @values_by_name = {}

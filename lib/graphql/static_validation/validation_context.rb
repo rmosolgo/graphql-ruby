@@ -36,7 +36,6 @@ module GraphQL
         }
       end
 
-
       def on_dependency_resolve(&handler)
         @on_dependency_resolve_handlers << handler
       end

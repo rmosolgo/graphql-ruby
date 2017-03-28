@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 appraise 'rails_3.2' do
   gem 'activerecord', '~> 3.2.21'
   gem 'actionpack', '~> 3.2.21'

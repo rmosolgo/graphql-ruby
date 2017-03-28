@@ -32,7 +32,6 @@ module GraphQL
         @dependency_map ||= resolve_dependencies(&block)
       end
 
-
       def mount(context)
         visitor = context.visitor
         # When we encounter a spread,
