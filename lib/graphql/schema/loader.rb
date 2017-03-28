@@ -119,7 +119,7 @@ module GraphQL
                 input_value_ast = dummy_query_ast.definitions.first.variables.first.default_value
 
                 case input_value_ast
-                when String, Integer, Float, TrueClass, FalseClass
+                when String, Integer, Float, TrueClass, FalseClass, Array
                   input_value_ast
                 when GraphQL::Language::Nodes::Enum
                   input_value_ast.name
