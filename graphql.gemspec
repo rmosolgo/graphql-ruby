@@ -44,4 +44,6 @@ Gem::Specification.new do |s|
 
   # website stuff
   s.add_development_dependency "github-pages"
+
+  s.add_dependency 'concurrent-ruby', '~> 1.0'
 end
