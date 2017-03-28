@@ -110,6 +110,7 @@ module GraphQL
             if type["defaultValue"]
               kwargs[:default_value] = begin
                 default_value_str = type["defaultValue"]
+
                 dummy_query_str = "query getStuff($var: InputObj = #{default_value_str}) { __typename }"
 
                 # Returns a `GraphQL::Language::Nodes::Document`:
@@ -125,8 +126,15 @@ module GraphQL
                   input_value_ast.name
                 when GraphQL::Language::Nodes::NullValue
                   nil
-                else
+                when GraphQL::Language::Nodes::InputObject
                   input_value_ast.to_h
+                else
+                  fail(
+                    GraphQL::LoadtimeTypeError,
+                    "Encountered unexpected type when loading default value. "\
+                    "input_value_ast.class is #{input_value_ast.class} "\
+                    "default_value is #{default_value_str}"
+                  )
                 end
               end
             end
