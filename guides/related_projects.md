@@ -29,3 +29,6 @@ Want to add something? Please open a pull request [on GitHub](https://github.com
 ## Screencasts
 
 - [GraphQL Basics in Rails 5](https://rubyplus.com/episodes/271-GraphQL-Basics-in-Rails-5)
+
+## Presentations
+- [Rescuing Legacy Codebases with GraphQL and Rails](https://speakerdeck.com/nettofarah/rescuing-legacy-codebases-with-graphql-and-rails) by [@nettofarah](https://twitter.com/nettofarah)
