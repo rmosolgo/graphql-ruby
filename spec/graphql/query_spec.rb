@@ -149,7 +149,7 @@ describe GraphQL::Query do
 
       type Query { foo: String }
     '
-    exc = assert_raises(GraphQL::ExecutionError) { GraphQL::Query.new(schema, query_string) }
+    exc = assert_raises(GraphQL::Query::UserError) { GraphQL::Query.new(schema, query_string) }
     assert_equal "GraphQL query cannot contain a schema definition", exc.message
   end
 

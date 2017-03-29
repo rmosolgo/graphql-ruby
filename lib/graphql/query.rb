@@ -15,6 +15,9 @@ module GraphQL
   class Query
     extend Forwardable
 
+    class UserError < GraphQL::ExecutionError
+    end
+
     class OperationNameMissingError < GraphQL::ExecutionError
       def initialize(name)
         msg = if name.nil?
@@ -70,7 +73,7 @@ module GraphQL
         elsif part.is_a?(GraphQL::Language::Nodes::OperationDefinition)
           @operations[part.name] = part
         else
-          raise GraphQL::ExecutionError, "GraphQL query cannot contain a schema definition"
+          raise UserError, "GraphQL query cannot contain a schema definition"
         end
       end
 
