@@ -132,6 +132,20 @@ field :post, PostType do
 end
 ```
 
+Provide a `prepare` function to modify or validate the value of an argument before the field's `resolve` function is executed:
+
+```ruby
+field :posts, types[PostType] do
+  argument :startDate, types.String, prepare: ->(startDate) {
+    # return the prepared argument or GraphQL::ExecutionError.new("msg")
+    # to halt the execution of the field and add "msg" to the `errors` key.
+  }
+  resolve ->(obj, args, ctx) {
+    # use prepared args['startDate']
+  }
+end
+```
+
 Only certain types are valid for arguments:
 
 - {{ "GraphQL::ScalarType" | api_doc }}, including built-in scalars (string, int, float, boolean, ID)
