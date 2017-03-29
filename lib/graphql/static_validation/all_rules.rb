@@ -7,6 +7,7 @@ module GraphQL
     # which stops the visit on that node. That way it doesn't try to find fields on types that
     # don't exist, etc.
     ALL_RULES = [
+      GraphQL::StaticValidation::NoDefinitionsArePresent,
       GraphQL::StaticValidation::DirectivesAreDefined,
       GraphQL::StaticValidation::DirectivesAreInValidLocations,
       GraphQL::StaticValidation::UniqueDirectivesPerLocation,

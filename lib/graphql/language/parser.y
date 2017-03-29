@@ -265,7 +265,7 @@ rule
    | directive_definition
 
   schema_definition:
-      SCHEMA LCURLY operation_type_definition_list RCURLY { return make_node(:SchemaDefinition, val[2]) }
+      SCHEMA LCURLY operation_type_definition_list RCURLY { return make_node(:SchemaDefinition, position_source: val[0], **val[2]) }
 
   operation_type_definition_list:
       operation_type_definition
@@ -282,11 +282,11 @@ rule
     | enum_type_definition
     | input_object_type_definition
 
-  scalar_type_definition: SCALAR name directives_list_opt { return make_node(:ScalarTypeDefinition, name: val[1], directives: val[2], description: get_description(val[0])) }
+  scalar_type_definition: SCALAR name directives_list_opt { return make_node(:ScalarTypeDefinition, name: val[1], directives: val[2], description: get_description(val[0]), position_source: val[0]) }
 
   object_type_definition:
       TYPE name implements_opt directives_list_opt LCURLY field_definition_list RCURLY {
-        return make_node(:ObjectTypeDefinition, name: val[1], interfaces: val[2], directives: val[3], fields: val[5], description: get_description(val[0]))
+        return make_node(:ObjectTypeDefinition, name: val[1], interfaces: val[2], directives: val[3], fields: val[5], description: get_description(val[0]), position_source: val[0])
       }
 
   implements_opt:
@@ -317,7 +317,7 @@ rule
 
   interface_type_definition:
       INTERFACE name directives_list_opt LCURLY field_definition_list RCURLY {
-        return make_node(:InterfaceTypeDefinition, name: val[1], directives: val[2], fields: val[4], description: get_description(val[0]))
+        return make_node(:InterfaceTypeDefinition, name: val[1], directives: val[2], fields: val[4], description: get_description(val[0]), position_source: val[0])
       }
 
   union_members:
@@ -326,22 +326,22 @@ rule
 
   union_type_definition:
       UNION name directives_list_opt EQUALS union_members {
-        return make_node(:UnionTypeDefinition, name: val[1], directives: val[2], types: val[4], description: get_description(val[0]))
+        return make_node(:UnionTypeDefinition, name: val[1], directives: val[2], types: val[4], description: get_description(val[0]), position_source: val[0])
       }
 
   enum_type_definition:
       ENUM name directives_list_opt LCURLY enum_value_definitions RCURLY {
-         return make_node(:EnumTypeDefinition, name: val[1], directives: val[2], values: val[4], description: get_description(val[0]))
+         return make_node(:EnumTypeDefinition, name: val[1], directives: val[2], values: val[4], description: get_description(val[0]), position_source: val[0])
       }
 
   input_object_type_definition:
       INPUT name directives_list_opt LCURLY input_value_definition_list RCURLY {
-        return make_node(:InputObjectTypeDefinition, name: val[1], directives: val[2], fields: val[4], description: get_description(val[0]))
+        return make_node(:InputObjectTypeDefinition, name: val[1], directives: val[2], fields: val[4], description: get_description(val[0]), position_source: val[0])
       }
 
   directive_definition:
       DIRECTIVE DIR_SIGN name arguments_definitions_opt ON directive_locations {
-        return make_node(:DirectiveDefinition, name: val[2], arguments: val[3], locations: val[5], description: get_description(val[0]))
+        return make_node(:DirectiveDefinition, name: val[2], arguments: val[3], locations: val[5], description: get_description(val[0]), position_source: val[0])
       }
 
   directive_locations:

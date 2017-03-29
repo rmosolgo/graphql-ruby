@@ -1383,7 +1383,7 @@ module_eval(<<'.,.,', 'parser.y', 258)
 
 module_eval(<<'.,.,', 'parser.y', 267)
   def _reduce_106(val, _values, result)
-     return make_node(:SchemaDefinition, val[2]) 
+     return make_node(:SchemaDefinition, position_source: val[0], **val[2]) 
     result
   end
 .,.,
@@ -1418,14 +1418,14 @@ module_eval(<<'.,.,', 'parser.y', 274)
 
 module_eval(<<'.,.,', 'parser.y', 284)
   def _reduce_116(val, _values, result)
-     return make_node(:ScalarTypeDefinition, name: val[1], directives: val[2], description: get_description(val[0])) 
+     return make_node(:ScalarTypeDefinition, name: val[1], directives: val[2], description: get_description(val[0]), position_source: val[0]) 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 288)
   def _reduce_117(val, _values, result)
-            return make_node(:ObjectTypeDefinition, name: val[1], interfaces: val[2], directives: val[3], fields: val[5], description: get_description(val[0]))
+            return make_node(:ObjectTypeDefinition, name: val[1], interfaces: val[2], directives: val[3], fields: val[5], description: get_description(val[0]), position_source: val[0])
       
     result
   end
@@ -1505,7 +1505,7 @@ module_eval(<<'.,.,', 'parser.y', 315)
 
 module_eval(<<'.,.,', 'parser.y', 319)
   def _reduce_128(val, _values, result)
-            return make_node(:InterfaceTypeDefinition, name: val[1], directives: val[2], fields: val[4], description: get_description(val[0]))
+            return make_node(:InterfaceTypeDefinition, name: val[1], directives: val[2], fields: val[4], description: get_description(val[0]), position_source: val[0])
       
     result
   end
@@ -1527,7 +1527,7 @@ module_eval(<<'.,.,', 'parser.y', 324)
 
 module_eval(<<'.,.,', 'parser.y', 328)
   def _reduce_131(val, _values, result)
-            return make_node(:UnionTypeDefinition, name: val[1], directives: val[2], types: val[4], description: get_description(val[0]))
+            return make_node(:UnionTypeDefinition, name: val[1], directives: val[2], types: val[4], description: get_description(val[0]), position_source: val[0])
       
     result
   end
@@ -1535,7 +1535,7 @@ module_eval(<<'.,.,', 'parser.y', 328)
 
 module_eval(<<'.,.,', 'parser.y', 333)
   def _reduce_132(val, _values, result)
-             return make_node(:EnumTypeDefinition, name: val[1], directives: val[2], values: val[4], description: get_description(val[0]))
+             return make_node(:EnumTypeDefinition, name: val[1], directives: val[2], values: val[4], description: get_description(val[0]), position_source: val[0])
       
     result
   end
@@ -1543,7 +1543,7 @@ module_eval(<<'.,.,', 'parser.y', 333)
 
 module_eval(<<'.,.,', 'parser.y', 338)
   def _reduce_133(val, _values, result)
-            return make_node(:InputObjectTypeDefinition, name: val[1], directives: val[2], fields: val[4], description: get_description(val[0]))
+            return make_node(:InputObjectTypeDefinition, name: val[1], directives: val[2], fields: val[4], description: get_description(val[0]), position_source: val[0])
       
     result
   end
@@ -1551,7 +1551,7 @@ module_eval(<<'.,.,', 'parser.y', 338)
 
 module_eval(<<'.,.,', 'parser.y', 343)
   def _reduce_134(val, _values, result)
-            return make_node(:DirectiveDefinition, name: val[2], arguments: val[3], locations: val[5], description: get_description(val[0]))
+            return make_node(:DirectiveDefinition, name: val[2], arguments: val[3], locations: val[5], description: get_description(val[0]), position_source: val[0])
       
     result
   end
