@@ -3,7 +3,8 @@ require "codeclimate-test-reporter"
 CodeClimate::TestReporter.start
 require "rails/all"
 require "rails/generators"
-require "sqlite3"
+require "jdbc/sqlite3" if RUBY_ENGINE == 'jruby'
+require "sqlite3" if RUBY_ENGINE == 'ruby'
 require "sequel"
 require "graphql"
 require "benchmark"
