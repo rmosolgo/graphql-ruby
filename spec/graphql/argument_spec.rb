@@ -57,4 +57,17 @@ describe GraphQL::Argument do
       assert_equal arg_3.expose_as, "ff"
     end
   end
+
+  describe "prepare" do
+    it "accepts a prepare proc and calls it to generate the prepared value" do
+      prepare_proc = Proc.new { |arg| arg + 1 }
+      argument = GraphQL::Argument.define(name: :plusOne, type: GraphQL::INT_TYPE, prepare: prepare_proc)
+      assert_equal argument.prepare(1), 2
+    end
+
+    it "returns the value itself if no prepare proc is provided" do
+      argument = GraphQL::Argument.define(name: :someNumber, type: GraphQL::INT_TYPE)
+      assert_equal argument.prepare(1), 1
+    end
+  end
 end
