@@ -129,8 +129,7 @@ module GraphQL
                 when GraphQL::Language::Nodes::InputObject
                   input_value_ast.to_h
                 else
-                  fail(
-                    GraphQL::LoadtimeTypeError,
+                  raise(
                     "Encountered unexpected type when loading default value. "\
                     "input_value_ast.class is #{input_value_ast.class} "\
                     "default_value is #{default_value_str}"
