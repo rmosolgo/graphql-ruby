@@ -65,12 +65,11 @@ module GraphQL
       end
 
       @document && @document.definitions.each do |part|
-        if part.is_a?(GraphQL::Language::Nodes::FragmentDefinition)
+        case part
+        when GraphQL::Language::Nodes::FragmentDefinition
           @fragments[part.name] = part
-        elsif part.is_a?(GraphQL::Language::Nodes::OperationDefinition)
+        when GraphQL::Language::Nodes::OperationDefinition
           @operations[part.name] = part
-        else
-          raise GraphQL::ExecutionError, "GraphQL query cannot contain a schema definition"
         end
       end
 

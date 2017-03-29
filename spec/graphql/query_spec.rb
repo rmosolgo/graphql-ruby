@@ -143,16 +143,6 @@ describe GraphQL::Query do
     end
   end
 
-  it "fails to execute a query containing a type definition" do
-    query_string = '
-      { root }
-
-      type Query { foo: String }
-    '
-    exc = assert_raises(GraphQL::ExecutionError) { GraphQL::Query.new(schema, query_string) }
-    assert_equal "GraphQL query cannot contain a schema definition", exc.message
-  end
-
   it "uses root_value as the object for the root type" do
     result = GraphQL::Query.new(schema, '{ root }', root_value: "I am root").result
     assert_equal 'I am root', result.fetch('data').fetch('root')
