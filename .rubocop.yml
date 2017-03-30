@@ -19,7 +19,7 @@ Lint/EndAlignment:
   EnforcedStyleAlignWith: variable
 
 Metrics/ParameterLists:
-  Max: 6
+  Max: 7
   CountKeywordArgs: false
 
 Style/ClassAndModuleChildren:

@@ -76,4 +76,47 @@ describe GraphQL::Execution::Execute do
       end
     end
   end
+
+  describe "when a list member raises an error" do
+    let(:schema) {
+      parent_type = GraphQL::ObjectType.define do
+        name "Parent"
+        field :name, !types.String do
+          resolve ->(o, a, c) {
+            -> {
+              raise GraphQL::ExecutionError.new("👻")
+            }
+          }
+        end
+      end
+
+      query_type = GraphQL::ObjectType.define do
+        name "Query"
+        field :parents, !types[!parent_type] do
+          resolve ->(o, a, c) {
+            [OpenStruct.new(name: "A")]
+          }
+        end
+      end
+
+      GraphQL::Schema.define do
+        query query_type
+        lazy_resolve(Proc, :call)
+      end
+    }
+
+    it "handles the error & propagates the null" do
+      # puts schema.to_definition
+      res = schema.execute <<-GRAPHQL
+      {
+        parents {
+          name
+        }
+      }
+      GRAPHQL
+
+      assert_equal nil, res["data"]
+      assert_equal "👻", res["errors"].first["message"]
+    end
+  end
 end
