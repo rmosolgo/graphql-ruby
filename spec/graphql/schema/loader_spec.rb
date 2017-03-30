@@ -104,6 +104,7 @@ describe GraphQL::Schema::Loader do
         argument :varied, variant_input_type, default_value: { id: "123", int: 234, float: 2.3, enum: :foo, sub: [{ string: "str" }] }
         argument :variedWithNull, variant_input_type_with_nulls, default_value: { id: nil, int: nil, float: nil, enum: nil, sub: nil, bigint: nil, bool: nil }
         argument :enum, choice_type, default_value: :foo
+        argument :array, types[!types.String], default_value: ["foo", "bar"]
       end
 
       field :content do
@@ -223,10 +224,13 @@ describe GraphQL::Schema::Loader do
     it "sets correct default values for complex field arguments" do
       type = loaded_schema.types['Query']
       field = type.fields['post']
-      arg = field.arguments['varied']
 
-      assert_equal arg.default_value, { 'id' => "123", 'int' => 234, 'float' => 2.3, 'enum' => "FOO", 'sub' => [{ 'string' => "str" }] }
-      assert !arg.default_value.key?('bool'), 'Omits default value for unspecified arguments'
+      varied = field.arguments['varied']
+      assert_equal varied.default_value, { 'id' => "123", 'int' => 234, 'float' => 2.3, 'enum' => "FOO", 'sub' => [{ 'string' => "str" }] }
+      assert !varied.default_value.key?('bool'), 'Omits default value for unspecified arguments'
+
+      array = field.arguments['array']
+      assert_equal array.default_value, ["foo", "bar"]
     end
 
     it "does not set default value when there are none on input fields" do

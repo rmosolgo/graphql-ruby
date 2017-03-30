@@ -268,8 +268,24 @@ module GraphQL
         def to_h(options={})
           arguments.inject({}) do |memo, pair|
             v = pair.value
-            memo[pair.name] = v.is_a?(InputObject) ? v.to_h : v
+            memo[pair.name] = serialize_value_for_hash v
             memo
+          end
+        end
+
+        private
+
+        def serialize_value_for_hash(value)
+          if value.is_a? InputObject
+            value.to_h
+          elsif value.is_a? Array
+            value.map do |v|
+              serialize_value_for_hash v
+            end
+          elsif value.is_a? NullValue
+            nil
+          else
+            value
           end
         end
       end
