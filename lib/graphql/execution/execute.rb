@@ -72,22 +72,22 @@ module GraphQL
 
         result = if query.schema.lazy?(raw_value)
           field.prepare_lazy(raw_value, arguments, field_ctx).then { |inner_value|
-            continue_resolve_field(selection, parent_type, field, inner_value, field_ctx)
+            continue_resolve_field(owner, selection, parent_type, field, inner_value, field_ctx)
           }
         elsif raw_value.is_a?(GraphQL::Execution::Lazy)
           # It came from a connection resolve, assume it was already instrumented
           raw_value.then { |inner_value|
-            continue_resolve_field(selection, parent_type, field, inner_value, field_ctx)
+            continue_resolve_field(owner, selection, parent_type, field, inner_value, field_ctx)
           }
         else
-          continue_resolve_field(selection, parent_type, field, raw_value, field_ctx)
+          continue_resolve_field(owner, selection, parent_type, field, raw_value, field_ctx)
         end
 
         case result
         when PROPAGATE_NULL, GraphQL::Execution::Lazy, SelectionResult
           FieldResult.new(
             owner: owner,
-            field: field,
+            type: field.type,
             value: result,
           )
         else
@@ -95,7 +95,7 @@ module GraphQL
         end
       end
 
-      def continue_resolve_field(selection, parent_type, field, raw_value, field_ctx)
+      def continue_resolve_field(owner, selection, parent_type, field, raw_value, field_ctx)
         query = field_ctx.query
 
         case raw_value
@@ -115,6 +115,7 @@ module GraphQL
         end
 
         resolve_value(
+          owner,
           parent_type,
           field,
           field.type,
@@ -124,7 +125,7 @@ module GraphQL
         )
       end
 
-      def resolve_value(parent_type, field_defn, field_type, value, selection, field_ctx)
+      def resolve_value(owner, parent_type, field_defn, field_type, value, selection, field_ctx)
         if value.nil?
           if field_type.kind.non_null?
             type_error = GraphQL::InvalidNullError.new(parent_type, field_defn, value)
@@ -146,7 +147,7 @@ module GraphQL
           when GraphQL::TypeKinds::ENUM
             field_type.coerce_result(value, field_ctx.query.warden)
           when GraphQL::TypeKinds::LIST
-            wrapped_type = field_type.of_type
+            inner_type = field_type.of_type
             i = 0
             result = []
             value.each do |inner_value|
@@ -157,20 +158,24 @@ module GraphQL
                 field: field_defn,
               )
 
-              result << resolve_value(
+              inner_result = resolve_value(
+                owner,
                 parent_type,
                 field_defn,
-                wrapped_type,
+                inner_type,
                 inner_value,
                 selection,
                 inner_ctx,
               )
+
+              result << GraphQL::Execution::FieldResult.new(type: inner_type, owner: owner, value: inner_result)
               i += 1
             end
             result
           when GraphQL::TypeKinds::NON_NULL
             wrapped_type = field_type.of_type
             inner_value = resolve_value(
+              owner,
               parent_type,
               field_defn,
               wrapped_type,
@@ -196,6 +201,7 @@ module GraphQL
               PROPAGATE_NULL
             else
               resolve_value(
+                owner,
                 parent_type,
                 field_defn,
                 resolved_type,

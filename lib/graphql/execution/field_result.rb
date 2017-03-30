@@ -7,14 +7,11 @@ module GraphQL
       # @return [Any, Lazy] the GraphQL-ready response value, or a {Lazy} instance
       attr_reader :value
 
-      # @return [GraphQL::Field] The field which resolved this value
-      attr_reader :field
-
       # @return [SelectionResult] The result object that this field belongs to
       attr_reader :owner
 
-      def initialize(field:, value:, owner:)
-        @field = field
+      def initialize(type:, value:, owner:)
+        @type = type
         @owner = owner
         self.value = value
       end
@@ -35,7 +32,7 @@ module GraphQL
         end
 
         if new_value == GraphQL::Execution::Execute::PROPAGATE_NULL
-          if field.type.kind.non_null?
+          if @type.kind.non_null?
             @owner.propagate_null
           else
             @value = nil
