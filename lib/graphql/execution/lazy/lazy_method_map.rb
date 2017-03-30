@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 require 'thread'
 
-
 module GraphQL
   module Execution
     class Lazy
@@ -12,8 +11,8 @@ module GraphQL
       # @api private
       # @see {Schema#lazy?} looks up values from this map
       class LazyMethodMap
-        def initialize
-          @storage = Concurrent::Map.new
+        def initialize(use_concurrent: defined?(Concurrent::Map))
+          @storage = use_concurrent ? Concurrent::Map.new : ConcurrentishMap.new
         end
 
         def initialize_copy(other)
@@ -45,14 +44,18 @@ module GraphQL
           nil
         end
 
+        # Mock the Concurrent::Map API
         class ConcurrentishMap
+          extend Forwardable
+          # Technically this should be under the mutex too,
+          # but I know it's only used when the lock is already acquired.
+          def_delegators :@storage, :each, :size
+
           def initialize
             @semaphore = Mutex.new
             # Access to this hash must always be managed by the mutex
             # since it may be modified at runtime
-            @storage = Hash.new do |h, value_class|
-
-            end
+            @storage = {}
           end
 
           def []=(key, value)
@@ -62,13 +65,9 @@ module GraphQL
           end
 
           def compute_if_absent(key)
-            if @storage.key?(key)
-              @storage[key]
-            else
-              @semaphore.synchronize {
-                @storage[key] = yield
-              }
-            end
+            @semaphore.synchronize {
+              @storage.fetch(key) { @storage[key] = yield }
+            }
           end
         end
       end
