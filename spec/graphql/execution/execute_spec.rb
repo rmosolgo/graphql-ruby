@@ -79,8 +79,8 @@ describe GraphQL::Execution::Execute do
 
   describe "when a list member raises an error" do
     let(:schema) {
-      parent_type = GraphQL::ObjectType.define do
-        name "Parent"
+      thing_type = GraphQL::ObjectType.define do
+        name "Thing"
         field :name, !types.String do
           resolve ->(o, a, c) {
             -> {
@@ -92,7 +92,13 @@ describe GraphQL::Execution::Execute do
 
       query_type = GraphQL::ObjectType.define do
         name "Query"
-        field :parents, !types[!parent_type] do
+        field :things, !types[!thing_type] do
+          resolve ->(o, a, c) {
+            [OpenStruct.new(name: "A")]
+          }
+        end
+
+        field :nullableThings, !types[thing_type] do
           resolve ->(o, a, c) {
             [OpenStruct.new(name: "A")]
           }
@@ -106,16 +112,28 @@ describe GraphQL::Execution::Execute do
     }
 
     it "handles the error & propagates the null" do
-      # puts schema.to_definition
       res = schema.execute <<-GRAPHQL
       {
-        parents {
+        things {
           name
         }
       }
       GRAPHQL
 
       assert_equal nil, res["data"]
+      assert_equal "👻", res["errors"].first["message"]
+    end
+
+    it "allows nulls" do
+      res = schema.execute <<-GRAPHQL
+      {
+        nullableThings {
+          name
+        }
+      }
+      GRAPHQL
+
+      assert_equal [nil], res["data"]["nullableThings"]
       assert_equal "👻", res["errors"].first["message"]
     end
   end

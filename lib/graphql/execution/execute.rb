@@ -87,7 +87,7 @@ module GraphQL
         when PROPAGATE_NULL, GraphQL::Execution::Lazy, SelectionResult
           FieldResult.new(
             owner: owner,
-            field: field,
+            type: field.type,
             value: result,
           )
         else
@@ -147,7 +147,7 @@ module GraphQL
           when GraphQL::TypeKinds::ENUM
             field_type.coerce_result(value, field_ctx.query.warden)
           when GraphQL::TypeKinds::LIST
-            wrapped_type = field_type.of_type
+            inner_type = field_type.of_type
             i = 0
             result = []
             value.each do |inner_value|
@@ -162,13 +162,13 @@ module GraphQL
                 owner,
                 parent_type,
                 field_defn,
-                wrapped_type,
+                inner_type,
                 inner_value,
                 selection,
                 inner_ctx,
               )
 
-              result << GraphQL::Execution::FieldResult.new(field: field_defn, owner: owner, value: inner_result)
+              result << GraphQL::Execution::FieldResult.new(type: inner_type, owner: owner, value: inner_result)
               i += 1
             end
             result
