@@ -126,8 +126,7 @@ module GraphQL
 
       @possible_types = GraphQL::Schema::PossibleTypes.new(self)
 
-      @lazy_methods = GraphQL::Execution::Lazy::LazyMethodMap.new
-      other.lazy_methods.each { |lazy_class, lazy_method| @lazy_methods.set(lazy_class, lazy_method) }
+      @lazy_methods = other.lazy_methods.dup
 
       @instrumenters = Hash.new { |h, k| h[k] = [] }
       other.instrumenters.each do |key, insts|

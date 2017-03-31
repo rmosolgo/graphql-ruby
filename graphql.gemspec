@@ -21,6 +21,7 @@ Gem::Specification.new do |s|
 
   s.add_development_dependency "benchmark-ips"
   s.add_development_dependency "codeclimate-test-reporter", "~>0.4"
+  s.add_development_dependency "concurrent-ruby", "~>1.0"
   s.add_development_dependency "guard", "~> 2.12"
   s.add_development_dependency "guard-bundler", "~> 2.1"
   s.add_development_dependency "guard-minitest", "~> 2.4"
