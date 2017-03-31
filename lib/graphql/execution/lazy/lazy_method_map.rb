@@ -1,5 +1,10 @@
 # frozen_string_literal: true
 require 'thread'
+begin
+  require 'concurrent'
+rescue LoadError
+  # no problem, we'll fallback to our own map
+end
 
 module GraphQL
   module Execution
@@ -67,6 +72,19 @@ module GraphQL
           def compute_if_absent(key)
             @semaphore.synchronize {
               @storage.fetch(key) { @storage[key] = yield }
+            }
+          end
+
+          def initialize_copy(other)
+            @semaphore = Mutex.new
+            @storage = other.copy_storage
+          end
+
+          protected
+
+          def copy_storage
+            @semaphore.synchronize {
+              @storage.dup
             }
           end
         end

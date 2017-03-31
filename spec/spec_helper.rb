@@ -8,7 +8,6 @@ require "sqlite3" if RUBY_ENGINE == 'ruby'
 require "sequel"
 require "graphql"
 require "benchmark"
-require "concurrent"
 require "minitest/autorun"
 require "minitest/focus"
 require "minitest/reporters"
