@@ -44,12 +44,12 @@ end
 
 ## Nested input types
 
-You can also nest input types. Let take this a todo list as an example.
+You can also nest input types. Let's take this a todo list as an example:
 
 ```ruby
 AddTodoList = GraphQL::Relay::Mutation.define do
   name "AddTodoList"
- 
+
   # Create an input type for each todo item
   TodoItemInputObjectType = GraphQL::InputObjectType.define do
     name "TodoItem"
@@ -59,5 +59,14 @@ AddTodoList = GraphQL::Relay::Mutation.define do
 
   # Mutation takes an array of those
   input_field :todos, !types[!TodoItemInputObjectType]
+
+  resolve ->(obj, input, ctx) {
+    input[:todos]
+    # [
+    #   {name: "Get Milk", starred: true},
+    #   {name: "Vacuum", starred: false},
+    # ]
+    # ... create each todo...
+  }
 end
 ```
