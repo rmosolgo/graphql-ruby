@@ -169,9 +169,8 @@ module GraphQL
             input_field :clientMutationId, types.String, "A unique identifier for the client performing the mutation."
             relay_mutation.arguments.each do |input_field_name, field_obj|
               kwargs = {}
-              if field_obj.default_value?
-                kwargs[:default_value] = field_obj.default_value
-              end
+              kwargs[:default_value] = field_obj.default_value if field_obj.default_value?
+              kwargs[:as] = field_obj.as
               input_field(input_field_name, field_obj.type, field_obj.description, **kwargs)
             end
             mutation(relay_mutation)
