@@ -8,6 +8,19 @@
 
 ### Bug fixes
 
+## 1.5.5 (31 Mar 2017)
+
+### Bug Fixes
+
+- Improve threadsafety of `lazy_resolve` cache, use `Concurrent::Map` if it's available #631
+- Properly handle unexpeced input objects #638
+- Handle errors during definition by preseriving the definition #632
+- Fix `nil` input for nullable list types #637, #639
+- Handle invalid schema IDL with a validation error #647
+- Properly serialize input object default values #635
+- Fix `as:` on mutation `input_fied` #650
+- Fix null propagation for `nil` members of non-null list types #649
+
 ## 1.5.4 (22 Mar 2017)
 
 ### Breaking Changes
