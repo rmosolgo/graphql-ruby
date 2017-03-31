@@ -71,7 +71,15 @@ class MyFunc < GraphQL::Function
 end
 ```
 
+#### Types
+
 Note that `types.` is _not_ available. Instead, you should reference GraphQL's built-in {{ "GraphQL::ScalarType" | api_doc }}s directly.
+
+To make lists and non-null types, you can use:
+
+- {{ "BaseType#to_list_type" | api_doc }} to make a list, eg `PostType.to_list_type`
+- {{ "BaseType#to_non_null_type" | api_doc }} to make a non-null type, eg `PostType.to_non_null_type`
+
 
 #### Function Inheritance
 
