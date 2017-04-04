@@ -39,10 +39,11 @@ describe GraphQL::BaseType do
     it "resets connection types" do
       # Make sure the defaults have been calculated
       obj_edge = obj_type.edge_type
+      obj_conn = obj_type.connection_type
       obj_2 = obj_type.dup
       obj_2.name = "Cheese2"
       refute_equal obj_edge, obj_2.edge_type
-      refute_equal obj_edge, obj_2.connection_type
+      refute_equal obj_conn, obj_2.connection_type
     end
   end
 
