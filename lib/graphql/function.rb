@@ -78,6 +78,11 @@ module GraphQL
         end
       end
 
+      # Provides shorthand access to GraphQL's built-in types
+      def types
+        GraphQL::Define::TypeDefiner.instance
+      end
+
       # Get or set the return type for this function class & descendants
       # @return [GraphQL::BaseType]
       def type(premade_type = nil, &block)

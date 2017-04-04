@@ -4,6 +4,7 @@ require "spec_helper"
 describe GraphQL::Function do
   class TestFunc < GraphQL::Function
     argument :name, GraphQL::STRING_TYPE
+    argument :age, types.Int
     type do
       name "TestFuncPayload"
       field :name, types.String, hash_key: :name
@@ -20,7 +21,7 @@ describe GraphQL::Function do
   describe "function API" do
     it "exposes required info" do
       f = TestFunc.new
-      assert_equal ["name"], f.arguments.keys
+      assert_equal ["name", "age"], f.arguments.keys
       assert_equal "TestFuncPayload", f.type.name
       assert_equal "Returns the string you give it", f.description
       assert_equal "It's useless", f.deprecation_reason
@@ -69,7 +70,7 @@ describe GraphQL::Function do
 
     it "gets attributes from the function" do
       field = schema.query.fields["test"]
-      assert_equal ["name"], field.arguments.keys
+      assert_equal ["name", "age"], field.arguments.keys
       assert_equal "TestFuncPayload", field.type.name
       assert_equal "Returns the string you give it", field.description
       assert_equal "It's useless", field.deprecation_reason
@@ -115,14 +116,14 @@ describe GraphQL::Function do
     it "can override description" do
       field = schema.query.fields["blockOverride"]
       assert_equal "I have altered the description", field.description
-      assert_equal ["name", "anArg", "oneMoreArg"], field.arguments.keys
+      assert_equal ["name", "age", "anArg", "oneMoreArg"], field.arguments.keys
     end
 
     it "can add to arguments" do
       field = schema.query.fields["argOverride"]
       assert_equal "New Description", field.description
       assert_equal GraphQL::STRING_TYPE, field.type
-      assert_equal ["name"], field.arguments.keys
+      assert_equal ["name", "age"], field.arguments.keys
     end
   end
 end
