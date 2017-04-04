@@ -162,7 +162,7 @@ module GraphQL
             |
 
             log = []
-            res = self.class.lazy_schema.execute(query_str, context: {lazy_instrumentation: log, pushes: []})
+            self.class.lazy_schema.execute(query_str, context: {lazy_instrumentation: log, pushes: []})
             expected_log = [
               "PUSH",
               "Query.push: 1",

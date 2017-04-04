@@ -4,7 +4,7 @@ require 'spec_helper'
 describe GraphQL::Relay::ArrayConnection do
   def get_names(result)
     ships = result["data"]["rebels"]["ships"]["edges"]
-    names = ships.map { |e| e["node"]["name"] }
+    ships.map { |e| e["node"]["name"] }
   end
 
   def get_last_cursor(result)

@@ -39,7 +39,6 @@ module GraphQL
         def self.assert_property_mapping(property_name, from_class, to_class)
           ->(obj) {
             property_value = obj.public_send(property_name)
-            error_message = nil
             if !property_value.is_a?(Hash)
               "#{property_name} must be a hash of {#{from_class.name} => #{to_class.name}}, not a #{property_value.class.name} (#{property_value.inspect})"
             else
