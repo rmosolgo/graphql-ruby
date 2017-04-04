@@ -4,7 +4,7 @@ require 'spec_helper'
 describe GraphQL::Relay::RelationConnection do
   def get_names(result)
     ships = result["data"]["empire"]["bases"]["edges"]
-    names = ships.map { |e| e["node"]["name"] }
+    ships.map { |e| e["node"]["name"] }
   end
 
   def get_page_info(result)
@@ -253,7 +253,7 @@ describe GraphQL::Relay::RelationConnection do
 
     def get_names(result, field_name)
       bases = result["data"]["empire"][field_name]["edges"]
-      base_names = bases.map { |b| b["node"]["name"] }
+      bases.map { |b| b["node"]["name"] }
     end
 
     it "applies the default value" do
@@ -269,7 +269,7 @@ describe GraphQL::Relay::RelationConnection do
   describe "with a Sequel::Dataset" do
     def get_names(result)
       ships = result["data"]["empire"]["basesAsSequelDataset"]["edges"]
-      names = ships.map { |e| e["node"]["name"] }
+      ships.map { |e| e["node"]["name"] }
     end
 
     def get_page_info(result)

@@ -43,7 +43,7 @@ describe GraphQL::BaseType do
       obj_2 = obj_type.dup
       obj_2.name = "Cheese2"
       refute_equal obj_edge, obj_2.edge_type
-      refute_equal obj_edge, obj_2.connection_type
+      refute_equal obj_conn, obj_2.connection_type
     end
   end
 

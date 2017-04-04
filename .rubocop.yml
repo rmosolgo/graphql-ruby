@@ -18,6 +18,9 @@ Lint/DefEndAlignment:
 Lint/EndAlignment:
   EnforcedStyleAlignWith: variable
 
+Lint/UselessAssignment:
+  Enabled: true
+
 Metrics/ParameterLists:
   Max: 7
   CountKeywordArgs: false

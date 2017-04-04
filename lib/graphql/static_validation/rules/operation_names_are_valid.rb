@@ -12,7 +12,7 @@ module GraphQL
         }
 
         context.visitor[GraphQL::Language::Nodes::Document].leave << ->(node, _parent) {
-          op_count = op_names.values.inject(0) { |m, v| m += v.size }
+          op_count = op_names.values.inject(0) { |m, v| m + v.size }
 
           op_names.each do |name, nodes|
             if name.nil? && op_count > 1

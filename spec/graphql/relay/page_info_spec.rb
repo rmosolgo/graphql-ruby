@@ -16,7 +16,7 @@ describe GraphQL::Relay::PageInfo do
 
   let(:cursor_of_last_base) {
     result = star_wars_query(query_string, "first" => 100)
-    last_cursor = get_last_cursor(result)
+    get_last_cursor(result)
   }
 
   let(:query_string) {%|

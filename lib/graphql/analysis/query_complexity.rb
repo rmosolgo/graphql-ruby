@@ -53,7 +53,6 @@ module GraphQL
       # Get a complexity value for a field,
       # by getting the number or calling its proc
       def get_complexity(irep_node, query, child_complexity)
-        type_defn = irep_node.owner_type
         field_defn = irep_node.definition
         defined_complexity = field_defn.complexity
         case defined_complexity

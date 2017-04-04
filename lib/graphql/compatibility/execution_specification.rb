@@ -334,7 +334,7 @@ module GraphQL
                 __typename
               }
             }|
-            res = execute_query(query_string, context: {middleware_log: log})
+            execute_query(query_string, context: {middleware_log: log})
             assert_equal ["node", "__typename"], log
           end
 

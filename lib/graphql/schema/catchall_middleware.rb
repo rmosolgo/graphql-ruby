@@ -27,7 +27,7 @@ module GraphQL
       # whose message is {MESSAGE}
       def self.call(parent_type, parent_object, field_definition, field_args, query_context)
         yield
-      rescue StandardError => err
+      rescue StandardError
         GraphQL::ExecutionError.new(MESSAGE)
       end
     end

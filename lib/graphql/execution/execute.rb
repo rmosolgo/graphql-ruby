@@ -23,8 +23,6 @@ module GraphQL
       private
 
       def resolve_selection(object, current_type, selection, query_ctx, mutation: false )
-        query = query_ctx.query
-
         selection_result = SelectionResult.new
 
         selection.typed_children[current_type].each do |name, subselection|
@@ -174,7 +172,7 @@ module GraphQL
             result
           when GraphQL::TypeKinds::NON_NULL
             wrapped_type = field_type.of_type
-            inner_value = resolve_value(
+            resolve_value(
               owner,
               parent_type,
               field_defn,

@@ -33,7 +33,7 @@ module GraphQL
       private
 
       def parent_name(parent, type_defn)
-        field_name = if parent.is_a?(GraphQL::Language::Nodes::Field)
+        if parent.is_a?(GraphQL::Language::Nodes::Field)
           parent.alias || parent.name
         elsif parent.is_a?(GraphQL::Language::Nodes::InputObject)
           type_defn.name
