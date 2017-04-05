@@ -239,6 +239,7 @@ describe GraphQL::InputObjectType do
         a: String
         b: Int!
         c: String = "Default"
+        d: Boolean = false
       }
     |) }
     let(:input_type) { schema.types['ExampleInputObject'] }
@@ -273,6 +274,13 @@ describe GraphQL::InputObjectType do
       assert !result.key?('a')
       assert_equal 1, result['b']
       assert_equal 'Test', result['c']
+    end
+
+    it "false default values are returned" do
+      input = MinimumInputObject.new({"b" => 1})
+      result = input_type.coerce_input(input)
+
+      assert_equal false, result['d']
     end
   end
 
