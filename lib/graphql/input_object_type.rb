@@ -99,7 +99,7 @@ module GraphQL
           coerced_value = input_field_defn.default_value
         end
 
-        if coerced_value || value.key?(input_key)
+        if !coerced_value.nil? || value.key?(input_key)
           input_values[input_key] = coerced_value
         end
       end
