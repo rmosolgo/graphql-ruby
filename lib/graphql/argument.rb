@@ -40,6 +40,15 @@ module GraphQL
 
     ensure_defined(:name, :description, :default_value, :type=, :type, :as, :expose_as, :prepare)
 
+    # @api private
+    module DefaultPrepare
+      def self.call(value); value; end
+    end
+
+    def initialize
+      @prepare_proc = DefaultPrepare
+    end
+
     def initialize_copy(other)
       @expose_as = nil
     end
@@ -75,7 +84,6 @@ module GraphQL
     # @param value
     # @return [Object] The prepared `value` for this argument or `value` itself if no `prepare` function exists.
     def prepare(value)
-      return value unless @prepare_proc.respond_to?(:call)
       @prepare_proc.call(value)
     end
 
@@ -87,7 +95,7 @@ module GraphQL
 
     NO_DEFAULT_VALUE = Object.new
     # @api private
-    def self.from_dsl(name, type = nil, description = nil, default_value: NO_DEFAULT_VALUE, as: nil, prepare: nil, &block)
+    def self.from_dsl(name, type = nil, description = nil, default_value: NO_DEFAULT_VALUE, as: nil, prepare: DefaultPrepare, &block)
       argument = if block_given?
         GraphQL::Argument.define(&block)
       else
