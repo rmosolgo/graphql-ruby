@@ -49,14 +49,21 @@ module GraphQL
           # First, check the argument in the AST.
           # If the value is a variable,
           # only add a value if the variable is actually present.
-          # Otherwise, coerce the value in the AST and add it.
+          # Otherwise, coerce the value in the AST, prepare the value and add it.
           if ast_arg
-            if ast_arg.value.is_a?(GraphQL::Language::Nodes::VariableIdentifier)
-              if variables.key?(ast_arg.value.name)
-                values_hash[ast_arg.name] = coerce(arg_defn.type, ast_arg.value, variables)
+            value_is_a_variable = ast_arg.value.is_a?(GraphQL::Language::Nodes::VariableIdentifier)
+
+            if (!value_is_a_variable || (value_is_a_variable && variables.key?(ast_arg.value.name)))
+
+              value = coerce(arg_defn.type, ast_arg.value, variables)
+              value = arg_defn.prepare(value)
+
+              if value.is_a?(GraphQL::ExecutionError)
+                value.ast_node = ast_arg
+                raise value
               end
-            else
-              values_hash[ast_arg.name] = coerce(arg_defn.type, ast_arg.value, variables)
+
+              values_hash[ast_arg.name] = value
             end
           end
 

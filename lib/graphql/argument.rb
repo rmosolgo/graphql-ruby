@@ -14,13 +14,40 @@ module GraphQL
   #   GraphQL::InputObjectType.define do
   #     argument :newName, !types.String
   #   end
+  #
+  # @example defining an argument with a `prepare` function
+  #   GraphQL::Field.define do
+  #     argument :userId, types.ID, prepare: ->(userId) do
+  #       User.find_by(id: userId)
+  #     end
+  #   end
+  #
+  # @example returning an {ExecutionError} from a `prepare` function
+  #   GraphQL::Field.define do
+  #     argument :date do
+  #       type !types.String
+  #       prepare ->(date) do
+  #         return GraphQL::ExecutionError.new("Invalid date format") unless DateValidator.valid?(date)
+  #         Time.zone.parse(date)
+  #       end
+  #     end
+  #   end
 
   class Argument
     include GraphQL::Define::InstanceDefinable
-    accepts_definitions :name, :type, :description, :default_value, :as
+    accepts_definitions :name, :type, :description, :default_value, :as, :prepare
     attr_accessor :type, :description, :default_value, :name, :as
 
-    ensure_defined(:name, :description, :default_value, :type=, :type, :as, :expose_as)
+    ensure_defined(:name, :description, :default_value, :type=, :type, :as, :expose_as, :prepare)
+
+    # @api private
+    module DefaultPrepare
+      def self.call(value); value; end
+    end
+
+    def initialize
+      @prepare_proc = DefaultPrepare
+    end
 
     def initialize_copy(other)
       @expose_as = nil
@@ -54,9 +81,21 @@ module GraphQL
       @expose_as ||= (@as || @name).to_s
     end
 
+    # @param value
+    # @return [Object] The prepared `value` for this argument or `value` itself if no `prepare` function exists.
+    def prepare(value)
+      @prepare_proc.call(value)
+    end
+
+    # Assign a `prepare` function to prepare this argument's value before `resolve` functions are called.
+    # @param prepare_proc [Proc]
+    def prepare=(prepare_proc)
+      @prepare_proc = prepare_proc
+    end
+
     NO_DEFAULT_VALUE = Object.new
     # @api private
-    def self.from_dsl(name, type = nil, description = nil, default_value: NO_DEFAULT_VALUE, as: nil, &block)
+    def self.from_dsl(name, type = nil, description = nil, default_value: NO_DEFAULT_VALUE, as: nil, prepare: DefaultPrepare, &block)
       argument = if block_given?
         GraphQL::Argument.define(&block)
       else
@@ -70,6 +109,7 @@ module GraphQL
         argument.default_value = default_value
       end
       argument.as = as
+      argument.prepare = prepare
 
 
       argument
