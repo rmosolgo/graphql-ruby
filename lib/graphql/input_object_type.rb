@@ -95,12 +95,10 @@ module GraphQL
 
         if value.key?(input_key)
           coerced_value = input_field_defn.type.coerce_input(field_value)
-        else
-          coerced_value = input_field_defn.default_value
-        end
-
-        if !coerced_value.nil? || value.key?(input_key)
           input_values[input_key] = coerced_value
+        elsif input_field_defn.default_value?
+          default_value = input_field_defn.default_value
+          input_values[input_key] = default_value
         end
       end
 
