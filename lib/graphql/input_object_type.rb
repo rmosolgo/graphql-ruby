@@ -55,10 +55,6 @@ module GraphQL
       GraphQL::TypeKinds::INPUT_OBJECT
     end
 
-    def merge_input_fields!(input_fields)
-      @arguments.merge!(input_fields)
-    end
-
     def validate_non_null_input(input, warden)
       result = GraphQL::Query::InputValidationResult.new
 

@@ -169,7 +169,9 @@ module GraphQL
             input_field :clientMutationId, types.String, "A unique identifier for the client performing the mutation."
             mutation(relay_mutation)
           end
-          input_object_type.merge_input_fields!(input_fields)
+          input_fields.each do |name, arg|
+            input_object_type.arguments[name] = arg
+          end
 
           input_object_type
         end
