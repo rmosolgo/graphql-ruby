@@ -9,6 +9,9 @@ module GraphQL
   class Error < StandardError
   end
 
+  class CoercionError < Error
+  end
+
   class ParseError < Error
     attr_reader :line, :col, :query
     def initialize(message, line, col, query)

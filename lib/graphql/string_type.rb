@@ -5,7 +5,8 @@ GraphQL::STRING_TYPE = GraphQL::ScalarType.define do
 
   coerce_result ->(value) {
     str = value.to_s
-    str.encoding == Encoding::US_ASCII || str.encoding == Encoding::UTF_8 ? str : nil
+    return str if str.encoding == Encoding::US_ASCII || str.encoding == Encoding::UTF_8
+    raise GraphQL::CoercionError.new("The string `#{str}` was encoded as #{str.encoding}! GraphQL requires all strings to be UTF-8 encoded.")
   }
 
   coerce_input ->(value) { value.is_a?(String) ? value : nil }
