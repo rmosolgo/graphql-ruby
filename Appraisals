@@ -14,6 +14,7 @@ end
 appraise 'rails_4.2' do
   gem 'activerecord', '~> 4.2.4'
   gem 'actionpack', '~> 4.2.4'
+  gem 'concurrent-ruby', '1.0.0'
 end
 
 appraise 'rails_5.0' do
