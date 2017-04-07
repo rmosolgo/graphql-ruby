@@ -43,7 +43,7 @@ module GraphQL
         private
 
         def find_superclass_method(value_class)
-          @storage.each { |lazy_class, lazy_value_method|
+          @storage.each_pair { |lazy_class, lazy_value_method|
             return lazy_value_method if value_class < lazy_class
           }
           nil
@@ -54,7 +54,7 @@ module GraphQL
           extend Forwardable
           # Technically this should be under the mutex too,
           # but I know it's only used when the lock is already acquired.
-          def_delegators :@storage, :each, :size
+          def_delegators :@storage, :each_pair, :size
 
           def initialize
             @semaphore = Mutex.new
