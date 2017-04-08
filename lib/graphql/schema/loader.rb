@@ -30,7 +30,7 @@ module GraphQL
           kargs[root] = types.fetch(type.fetch("name")) if type
         end
 
-        Schema.define(**kargs)
+        Schema.define(**kargs, raise_definition_error: true)
       end
 
       NullResolveType = ->(obj, ctx) {

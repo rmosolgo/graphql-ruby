@@ -58,6 +58,7 @@ module GraphQL
       :query_execution_strategy, :mutation_execution_strategy, :subscription_execution_strategy,
       :max_depth, :max_complexity,
       :orphan_types, :resolve_type, :type_error, :parse_error,
+      :raise_definition_error,
       :object_from_id, :id_from_object,
       :default_mask,
       :cursor_encoder,
@@ -74,7 +75,8 @@ module GraphQL
       :max_depth, :max_complexity,
       :orphan_types, :directives,
       :query_analyzers, :instrumenters, :lazy_methods,
-      :cursor_encoder
+      :cursor_encoder,
+      :raise_definition_error
 
     # @return [MiddlewareChain] MiddlewareChain which is applied to fields during execution
     attr_accessor :middleware
@@ -179,8 +181,12 @@ module GraphQL
       @definition_error = nil
       nil
     rescue StandardError => err
-      # Raise this error _later_ to avoid messing with Rails constant loading
-      @definition_error = err
+      if @raise_definition_error
+        raise
+      else
+        # Raise this error _later_ to avoid messing with Rails constant loading
+        @definition_error = err
+      end
       nil
     end
 
