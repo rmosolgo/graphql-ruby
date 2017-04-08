@@ -96,6 +96,7 @@ module GraphQL
     attr_reader :static_validator, :object_from_id_proc, :id_from_object_proc, :resolve_type_proc
 
     def initialize
+      @definition_error = nil
       @orphan_types = []
       @directives = DIRECTIVES.reduce({}) { |m, d| m[d.name] = d; m }
       @static_validator = GraphQL::StaticValidation::Validator.new(schema: self)
@@ -175,6 +176,11 @@ module GraphQL
       validation_error = Validation.validate(self)
       validation_error && raise(NotImplementedError, validation_error)
       build_instrumented_field_map
+      @definition_error = nil
+      nil
+    rescue StandardError => err
+      # Raise this error _later_ to avoid messing with Rails constant loading
+      @definition_error = err
       nil
     end
 
@@ -195,12 +201,16 @@ module GraphQL
       @types ||= build_types_map
     end
 
-    # Execute a query on itself.
-    # See {Query#initialize} for arguments.
+    # Execute a query on itself. Raises an error if the schema definition is invalid.
+    # @see {Query#initialize} for arguments.
     # @return [Hash] query result, ready to be serialized as JSON
     def execute(*args)
-      query_obj = GraphQL::Query.new(self, *args)
-      query_obj.result
+      if @definition_error
+        raise @definition_error
+      else
+        query_obj = GraphQL::Query.new(self, *args)
+        query_obj.result
+      end
     end
 
     # Resolve field named `field_name` for type `parent_type`.
