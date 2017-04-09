@@ -16,10 +16,8 @@ module GraphQL
             end
           else
             case field_type.kind
-            when GraphQL::TypeKinds::SCALAR
-              field_type.coerce_result(value)
-            when GraphQL::TypeKinds::ENUM
-              field_type.coerce_result(value, query_ctx.query.warden)
+            when GraphQL::TypeKinds::SCALAR, GraphQL::TypeKinds::ENUM
+              field_type.coerce_result(value, query_ctx)
             when GraphQL::TypeKinds::LIST
               wrapped_type = field_type.of_type
               result = []

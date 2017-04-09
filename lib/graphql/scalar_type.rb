@@ -30,49 +30,79 @@ module GraphQL
   #     name "Time"
   #     description "Time since epoch in seconds"
   #
-  #     coerce_input ->(value) { Time.at(Float(value)) }
-  #     coerce_result ->(value) { value.to_f }
+  #     coerce_input ->(value, ctx) { Time.at(Float(value)) }
+  #     coerce_result ->(value, ctx) { value.to_f }
   #   end
   #
   class ScalarType < GraphQL::BaseType
     accepts_definitions :coerce, :coerce_input, :coerce_result
     ensure_defined :coerce_non_null_input, :coerce_result
 
+    module NoOpCoerce
+      def self.call(val, ctx)
+        val
+      end
+    end
+
+    def initialize
+      super
+      self.coerce = NoOpCoerce
+    end
+
     def coerce=(proc)
       self.coerce_input = proc
       self.coerce_result = proc
     end
 
-    def validate_non_null_input(value, warden)
+    def validate_non_null_input(value, ctx = GraphQL::Query::NullContext)
       result = Query::InputValidationResult.new
-      if coerce_non_null_input(value).nil?
+      if coerce_non_null_input(value, ctx).nil?
         result.add_problem("Could not coerce value #{GraphQL::Language.serialize(value)} to #{name}")
       end
       result
     end
 
-    def coerce_non_null_input(value)
-      @coerce_input_proc.call(value)
+    def coerce_non_null_input(value, ctx = GraphQL::Query::NullContext)
+      @coerce_input_proc.call(value, ctx)
     end
 
     def coerce_input=(proc)
       if !proc.nil?
-        @coerce_input_proc = proc
+        @coerce_input_proc = ensure_two_arg(proc)
       end
     end
 
-    def coerce_result(value)
-      @coerce_result_proc ? @coerce_result_proc.call(value) : value
+    def coerce_result(value, ctx = GraphQL::Query::NullContext)
+      @coerce_result_proc.call(value, ctx)
     end
 
     def coerce_result=(proc)
       if !proc.nil?
-        @coerce_result_proc = proc
+        @coerce_result_proc = ensure_two_arg(proc)
       end
     end
 
     def kind
       GraphQL::TypeKinds::SCALAR
+    end
+
+    private
+
+    def get_arity(callable)
+      case callable
+      when Proc
+        callable.arity
+      else
+        callable.method(:call).arity
+      end
+    end
+
+    def ensure_two_arg(callable)
+      if get_arity(callable) == 1
+        ->(val, ctx) { callable.call(val) }
+      else
+        callable
+      end
     end
   end
 end

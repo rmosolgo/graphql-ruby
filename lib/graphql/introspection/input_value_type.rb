@@ -14,7 +14,7 @@ GraphQL::Introspection::InputValueType = GraphQL::ObjectType.define do
         if value.nil?
           'null'
         else
-          coerced_default_value = obj.type.coerce_result(value)
+          coerced_default_value = obj.type.coerce_result(value, ctx)
           if obj.type.unwrap.is_a?(GraphQL::EnumType)
             coerced_default_value
           else

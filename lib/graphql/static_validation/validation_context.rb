@@ -22,7 +22,7 @@ module GraphQL
 
       def initialize(query)
         @query = query
-        @literal_validator = LiteralValidator.new(warden: warden)
+        @literal_validator = LiteralValidator.new(context: query.context)
         @errors = []
         @visitor = GraphQL::Language::Visitor.new(document)
         @type_stack = GraphQL::StaticValidation::TypeStack.new(schema, visitor)

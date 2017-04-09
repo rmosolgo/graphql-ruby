@@ -16,7 +16,8 @@ module GraphQL
           when GraphQL::ScalarType
             type.coerce_input(ast_node)
           when GraphQL::EnumType
-            type.coerce_input(ast_node.name)
+            # TODO This should provide ctx
+            type.coerce_input(ast_node.name )
           when GraphQL::NonNullType
             LiteralInput.coerce(type.of_type, ast_node, variables)
           when GraphQL::ListType

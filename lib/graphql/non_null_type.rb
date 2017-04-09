@@ -30,6 +30,7 @@ module GraphQL
   #
   class NonNullType < GraphQL::BaseType
     include GraphQL::BaseType::ModifiesAnotherType
+    extend Forwardable
 
     attr_reader :of_type
     def initialize(of_type:)
@@ -37,27 +38,21 @@ module GraphQL
       @of_type = of_type
     end
 
-    def valid_input?(value, warden)
-      validate_input(value, warden).valid?
+    def valid_input?(value, ctx)
+      validate_input(value, ctx).valid?
     end
 
-    def validate_input(value, warden)
+    def validate_input(value, ctx)
       if value.nil?
         result = GraphQL::Query::InputValidationResult.new
         result.add_problem("Expected value to not be null")
         result
       else
-        of_type.validate_input(value, warden)
+        of_type.validate_input(value, ctx)
       end
     end
 
-    def coerce_input(value)
-      of_type.coerce_input(value)
-    end
-
-    def coerce_result(value)
-      of_type.coerce_result(value)
-    end
+    def_delegators :@of_type, :coerce_input, :coerce_result
 
     def kind
       GraphQL::TypeKinds::NON_NULL

@@ -141,9 +141,9 @@ module GraphQL
         else
           case field_type.kind
           when GraphQL::TypeKinds::SCALAR
-            field_type.coerce_result(value)
+            field_type.coerce_result(value, field_ctx)
           when GraphQL::TypeKinds::ENUM
-            field_type.coerce_result(value, field_ctx.query.warden)
+            field_type.coerce_result(value, field_ctx)
           when GraphQL::TypeKinds::LIST
             inner_type = field_type.of_type
             i = 0

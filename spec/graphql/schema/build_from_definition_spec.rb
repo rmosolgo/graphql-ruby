@@ -352,8 +352,8 @@ type Root {
 
       built_schema = build_schema_and_compare_output(schema.chop)
       custom_scalar = built_schema.types["CustomScalar"]
-      assert_equal true, custom_scalar.valid_input?("anything", PermissiveWarden)
-      assert_equal true, custom_scalar.valid_input?(12345, PermissiveWarden)
+      assert_equal true, custom_scalar.valid_input?("anything")
+      assert_equal true, custom_scalar.valid_input?(12345)
     end
 
     it 'supports input object' do

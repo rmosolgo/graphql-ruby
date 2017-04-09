@@ -32,7 +32,7 @@ describe GraphQL::EnumType do
       assert_equal("YAK", enum.coerce_result("YAK"))
       # NOT OK
       assert_raises(GraphQL::EnumType::UnresolvedValueError) {
-        enum.coerce_result("YAK", NothingWarden)
+        enum.coerce_result("YAK", OpenStruct.new(warden: NothingWarden))
       }
     end
   end
@@ -84,7 +84,7 @@ describe GraphQL::EnumType do
   end
 
   describe "validate_input with bad input" do
-    let(:result) { enum.validate_input("bad enum", PermissiveWarden) }
+    let(:result) { enum.validate_input("bad enum") }
 
     it "returns an invalid result" do
       assert(!result.valid?)

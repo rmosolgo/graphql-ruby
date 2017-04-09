@@ -105,9 +105,9 @@ module GraphQL
       GraphQL::TypeKinds::ENUM
     end
 
-    def validate_non_null_input(value_name, warden)
+    def validate_non_null_input(value_name, ctx = GraphQL::Query::NullContext)
       result = GraphQL::Query::InputValidationResult.new
-      allowed_values = warden.enum_values(self)
+      allowed_values = ctx.warden.enum_values(self)
       matching_value = allowed_values.find { |v| v.name == value_name }
 
       if matching_value.nil?
@@ -125,7 +125,7 @@ module GraphQL
     #
     # @param value_name [String] the string representation of this enum value
     # @return [Object] the underlying value for this enum value
-    def coerce_non_null_input(value_name)
+    def coerce_non_null_input(value_name, ctx = GraphQL::Query::NullContext)
       if @values_by_name.key?(value_name)
         @values_by_name.fetch(value_name).value
       else
@@ -133,7 +133,8 @@ module GraphQL
       end
     end
 
-    def coerce_result(value, warden = nil)
+    def coerce_result(value, ctx = GraphQL::Query::NullContext)
+      warden = ctx.warden
       all_values = warden ? warden.enum_values(self) : @values_by_name.each_value
       enum_value = all_values.find { |val| val.value == value }
       if enum_value

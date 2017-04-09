@@ -40,11 +40,11 @@ module GraphQL
       "[#{of_type.to_s}]"
     end
 
-    def validate_non_null_input(value, warden)
+    def validate_non_null_input(value, ctx = GraphQL::Query::NullContext)
       result = GraphQL::Query::InputValidationResult.new
 
       ensure_array(value).each_with_index do |item, index|
-        item_result = of_type.validate_input(item, warden)
+        item_result = of_type.validate_input(item, ctx)
         if !item_result.valid?
           result.merge_result!(index, item_result)
         end
@@ -53,12 +53,12 @@ module GraphQL
       result
     end
 
-    def coerce_non_null_input(value)
-      ensure_array(value).map { |item| of_type.coerce_input(item) }
+    def coerce_non_null_input(value, ctx = GraphQL::Query::NullContext)
+      ensure_array(value).map { |item| of_type.coerce_input(item, ctx) }
     end
 
-    def coerce_result(value)
-      ensure_array(value).map { |item| item.nil? ? nil : of_type.coerce_result(item) }
+    def coerce_result(value, ctx = GraphQL::Query::NullContext)
+      ensure_array(value).map { |item| item.nil? ? nil : of_type.coerce_result(item, ctx) }
     end
 
     private

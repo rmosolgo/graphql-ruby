@@ -97,21 +97,28 @@ module GraphQL
 
     alias :inspect :to_s
 
-    def valid_input?(value, warden)
-      validate_input(value, warden).valid?
+    def valid_input?(value, ctx = GraphQL::Query::NullContext)
+      validate_input(value, ctx).valid?
     end
 
-    def validate_input(value, warden)
+    def validate_input(value, ctx = GraphQL::Query::NullContext)
       if value.nil?
         GraphQL::Query::InputValidationResult.new
       else
-        validate_non_null_input(value, warden)
+        validate_non_null_input(value, ctx)
       end
     end
 
-    def coerce_input(value)
-      return nil if value.nil?
-      coerce_non_null_input(value)
+    def coerce_input(value, ctx = GraphQL::Query::NullContext)
+      if value.nil?
+        nil
+      else
+        coerce_non_null_input(value, ctx)
+      end
+    end
+
+    def coerce_result(value, ctx = GraphQL::Query::NullContext)
+      raise NotImplementedError
     end
 
     # Types with fields may override this

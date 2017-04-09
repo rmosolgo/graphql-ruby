@@ -28,7 +28,7 @@ describe GraphQL::ScalarType do
   end
 
   describe "custom scalar errors" do
-    let(:result) { custom_scalar.validate_input("xyz", PermissiveWarden) }
+    let(:result) { custom_scalar.validate_input("xyz") }
 
     it "returns an invalid result" do
       assert !result.valid?
@@ -37,7 +37,7 @@ describe GraphQL::ScalarType do
   end
 
   describe "validate_input with good input" do
-    let(:result) { GraphQL::INT_TYPE.validate_input(150, PermissiveWarden) }
+    let(:result) { GraphQL::INT_TYPE.validate_input(150) }
 
     it "returns a valid result" do
       assert(result.valid?)
@@ -45,7 +45,7 @@ describe GraphQL::ScalarType do
   end
 
   describe "validate_input with bad input" do
-    let(:result) { GraphQL::INT_TYPE.validate_input("bad num", PermissiveWarden) }
+    let(:result) { GraphQL::INT_TYPE.validate_input("bad num") }
 
     it "returns an invalid result for bad input" do
       assert(!result.valid?)
