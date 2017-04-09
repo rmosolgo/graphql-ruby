@@ -97,11 +97,28 @@ module GraphQL
 
     alias :inspect :to_s
 
-    def valid_input?(value, ctx = GraphQL::Query::NullContext)
+    # Use this in places where there is no `ctx`
+    def valid_isolated_input?(value)
+      valid_input?(value, GraphQL::Query::NullContext)
+    end
+
+    def validate_isolated_input(value)
+      validate_input(value, GraphQL::Query::NullContext)
+    end
+
+    def coerce_isolated_input(value)
+      coerce_input(value, GraphQL::Query::NullContext)
+    end
+
+    def coerce_isolated_result(value)
+      coerce_result(value, GraphQL::Query::NullContext)
+    end
+
+    def valid_input?(value, ctx)
       validate_input(value, ctx).valid?
     end
 
-    def validate_input(value, ctx = GraphQL::Query::NullContext)
+    def validate_input(value, ctx)
       if value.nil?
         GraphQL::Query::InputValidationResult.new
       else
@@ -109,7 +126,7 @@ module GraphQL
       end
     end
 
-    def coerce_input(value, ctx = GraphQL::Query::NullContext)
+    def coerce_input(value, ctx)
       if value.nil?
         nil
       else
@@ -117,7 +134,7 @@ module GraphQL
       end
     end
 
-    def coerce_result(value, ctx = GraphQL::Query::NullContext)
+    def coerce_result(value, ctx)
       raise NotImplementedError
     end
 

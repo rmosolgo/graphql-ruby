@@ -8,8 +8,11 @@ module GraphQL
       # @return [Array<GraphQL::Query::VariableValidationError>]  Any errors encountered when parsing the provided variables and literal values
       attr_reader :errors
 
+      attr_reader :context
+
       def initialize(ctx, ast_variables, provided_variables)
         schema = ctx.schema
+        @context = ctx
         @provided_variables = provided_variables
         @errors = []
         @storage = ast_variables.each_with_object({}) do |ast_variable, memo|
@@ -35,7 +38,7 @@ module GraphQL
               memo[variable_name] = variable_type.coerce_input(provided_value, ctx)
             elsif default_value
               # Add the variable if it wasn't provided but it has a default value (including `null`)
-              memo[variable_name] = GraphQL::Query::LiteralInput.coerce(variable_type, default_value, {})
+              memo[variable_name] = GraphQL::Query::LiteralInput.coerce(variable_type, default_value, self)
             end
           end
         end

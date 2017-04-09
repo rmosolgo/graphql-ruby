@@ -104,7 +104,7 @@ module GraphQL
 
           if !type.default_value.nil?
             coerced_value = begin
-              type.type.coerce_result(type.default_value)
+              type.type.coerce_isolated_result(type.default_value)
             rescue => ex
               ex
             end

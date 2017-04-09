@@ -16,19 +16,19 @@ describe GraphQL::ScalarType do
   end
 
   it "coerces nil into nil" do
-    assert_equal(nil, custom_scalar.coerce_input(nil))
+    assert_equal(nil, custom_scalar.coerce_isolated_input(nil))
   end
 
   it "coerces input into objects" do
-    assert_equal(bignum, custom_scalar.coerce_input(bignum.to_s))
+    assert_equal(bignum, custom_scalar.coerce_isolated_input(bignum.to_s))
   end
 
   it "coerces result value for serialization" do
-    assert_equal(bignum.to_s, custom_scalar.coerce_result(bignum))
+    assert_equal(bignum.to_s, custom_scalar.coerce_isolated_result(bignum))
   end
 
   describe "custom scalar errors" do
-    let(:result) { custom_scalar.validate_input("xyz") }
+    let(:result) { custom_scalar.validate_isolated_input("xyz") }
 
     it "returns an invalid result" do
       assert !result.valid?
@@ -37,7 +37,7 @@ describe GraphQL::ScalarType do
   end
 
   describe "validate_input with good input" do
-    let(:result) { GraphQL::INT_TYPE.validate_input(150) }
+    let(:result) { GraphQL::INT_TYPE.validate_isolated_input(150) }
 
     it "returns a valid result" do
       assert(result.valid?)
@@ -45,7 +45,7 @@ describe GraphQL::ScalarType do
   end
 
   describe "validate_input with bad input" do
-    let(:result) { GraphQL::INT_TYPE.validate_input("bad num") }
+    let(:result) { GraphQL::INT_TYPE.validate_isolated_input("bad num") }
 
     it "returns an invalid result for bad input" do
       assert(!result.valid?)

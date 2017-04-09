@@ -202,8 +202,8 @@ describe GraphQL::Schema::Loader do
 
     it "has no-op coerce functions" do
       custom_scalar = loaded_schema.types["BigInt"]
-      assert_equal true, custom_scalar.valid_input?("anything")
-      assert_equal true, custom_scalar.valid_input?(12345)
+      assert_equal true, custom_scalar.valid_isolated_input?("anything")
+      assert_equal true, custom_scalar.valid_isolated_input?(12345)
     end
 
     it "sets correct default values on custom scalar arguments" do
