@@ -422,12 +422,20 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
       {
         pet {
           ... on Dog {
-            name(surname: true)
+            ...X
           }
           ... on Cat {
-            name
+            ...Y
           }
         }
+      }
+
+      fragment X on Pet {
+        name(surname: true)
+      }
+
+      fragment Y on Pet {
+        name
       }
     |}
 
@@ -435,6 +443,7 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
       assert_equal [], errors
     end
   end
+
   describe "return types must be unambiguous" do
     let(:schema) {
       GraphQL::Schema.from_definition(%|
