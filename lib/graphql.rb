@@ -9,9 +9,6 @@ module GraphQL
   class Error < StandardError
   end
 
-  class CoercionError < Error
-  end
-
   class ParseError < Error
     attr_reader :line, :col, :query
     def initialize(message, line, col, query)
@@ -85,12 +82,11 @@ require "graphql/schema"
 require "graphql/schema/loader"
 require "graphql/schema/printer"
 
-# Order does not matter for these:
-
 require "graphql/analysis_error"
 require "graphql/runtime_type_error"
 require "graphql/invalid_null_error"
 require "graphql/unresolved_type_error"
+require "graphql/string_encoding_error"
 require "graphql/query"
 require "graphql/internal_representation"
 require "graphql/static_validation"
