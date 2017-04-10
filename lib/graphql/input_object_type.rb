@@ -55,6 +55,49 @@ module GraphQL
       GraphQL::TypeKinds::INPUT_OBJECT
     end
 
+    def coerce_result(value, ctx = nil)
+      if ctx.nil?
+        warn_deprecated_coerce("coerce_isolated_result")
+        ctx = GraphQL::Query::NullContext
+      end
+
+      # Allow the application to provide values as :symbols, and convert them to the strings
+      value = value.reduce({}) { |memo, (k, v)| memo[k.to_s] = v; memo }
+
+      result = {}
+
+      arguments.each do |input_key, input_field_defn|
+        input_value = value[input_key]
+        if value.key?(input_key)
+          result[input_key] = if input_value.nil?
+            nil
+          else
+            input_field_defn.type.coerce_result(input_value, ctx)
+          end
+        end
+      end
+
+      result
+    end
+
+    private
+
+    def coerce_non_null_input(value, ctx)
+      input_values = {}
+
+      arguments.each do |input_key, input_field_defn|
+        field_value = value[input_key]
+
+        if value.key?(input_key)
+          input_values[input_key] = input_field_defn.type.coerce_input(field_value, ctx)
+        elsif input_field_defn.default_value?
+          input_values[input_key] = input_field_defn.default_value
+        end
+      end
+
+      GraphQL::Query::Arguments.new(input_values, argument_definitions: arguments)
+    end
+
     def validate_non_null_input(input, ctx)
       warden = ctx.warden
       result = GraphQL::Query::InputValidationResult.new
@@ -82,47 +125,6 @@ module GraphQL
         field_result = field.type.validate_input(input[name], ctx)
         if !field_result.valid?
           result.merge_result!(name, field_result)
-        end
-      end
-
-      result
-    end
-
-    def coerce_non_null_input(value, ctx)
-      input_values = {}
-
-      arguments.each do |input_key, input_field_defn|
-        field_value = value[input_key]
-
-        if value.key?(input_key)
-          input_values[input_key] = input_field_defn.type.coerce_input(field_value, ctx)
-        elsif input_field_defn.default_value?
-          input_values[input_key] = input_field_defn.default_value
-        end
-      end
-
-      GraphQL::Query::Arguments.new(input_values, argument_definitions: arguments)
-    end
-
-    def coerce_result(value, ctx = nil)
-      if ctx.nil?
-        warn_deprecated_coerce("coerce_isolated_result")
-        ctx = GraphQL::Query::NullContext
-      end
-
-      # Allow the application to provide values as :symbols, and convert them to the strings
-      value = value.reduce({}) { |memo, (k, v)| memo[k.to_s] = v; memo }
-
-      result = {}
-
-      arguments.each do |input_key, input_field_defn|
-        input_value = value[input_key]
-        if value.key?(input_key)
-          result[input_key] = if input_value.nil?
-            nil
-          else
-            input_field_defn.type.coerce_result(input_value, ctx)
-          end
         end
       end
 

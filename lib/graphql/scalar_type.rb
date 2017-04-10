@@ -54,18 +54,6 @@ module GraphQL
       self.coerce_result = proc
     end
 
-    def validate_non_null_input(value, ctx = GraphQL::Query::NullContext)
-      result = Query::InputValidationResult.new
-      if coerce_non_null_input(value, ctx).nil?
-        result.add_problem("Could not coerce value #{GraphQL::Language.serialize(value)} to #{name}")
-      end
-      result
-    end
-
-    def coerce_non_null_input(value, ctx = GraphQL::Query::NullContext)
-      @coerce_input_proc.call(value, ctx)
-    end
-
     def coerce_input=(coerce_input_fn)
       if !coerce_input_fn.nil?
         @coerce_input_proc = ensure_two_arg(coerce_input_fn, :coerce_input)
@@ -108,6 +96,18 @@ module GraphQL
       else
         callable
       end
+    end
+
+    def coerce_non_null_input(value, ctx)
+      @coerce_input_proc.call(value, ctx)
+    end
+
+    def validate_non_null_input(value, ctx)
+      result = Query::InputValidationResult.new
+      if coerce_non_null_input(value, ctx).nil?
+        result.add_problem("Could not coerce value #{GraphQL::Language.serialize(value)} to #{name}")
+      end
+      result
     end
   end
 end

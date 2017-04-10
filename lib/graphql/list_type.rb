@@ -40,10 +40,24 @@ module GraphQL
       "[#{of_type.to_s}]"
     end
 
+    def coerce_result(value, ctx = nil)
+      if ctx.nil?
+        warn_deprecated_coerce("coerce_isolated_result")
+        ctx = GraphQL::Query::NullContext
+      end
+      Array(value).map { |item| item.nil? ? nil : of_type.coerce_result(item, ctx) }
+    end
+
+    private
+
+    def coerce_non_null_input(value, ctx)
+      Array(value).map { |item| of_type.coerce_input(item, ctx) }
+    end
+
     def validate_non_null_input(value, ctx)
       result = GraphQL::Query::InputValidationResult.new
 
-      ensure_array(value).each_with_index do |item, index|
+      Array(value).each_with_index do |item, index|
         item_result = of_type.validate_input(item, ctx)
         if !item_result.valid?
           result.merge_result!(index, item_result)
@@ -51,24 +65,6 @@ module GraphQL
       end
 
       result
-    end
-
-    def coerce_non_null_input(value, ctx)
-      ensure_array(value).map { |item| of_type.coerce_input(item, ctx) }
-    end
-
-    def coerce_result(value, ctx = nil)
-      if ctx.nil?
-        warn_deprecated_coerce("coerce_isolated_result")
-        ctx = GraphQL::Query::NullContext
-      end
-      ensure_array(value).map { |item| item.nil? ? nil : of_type.coerce_result(item, ctx) }
-    end
-
-    private
-
-    def ensure_array(value)
-      value.is_a?(Array) ? value : [value]
     end
   end
 end

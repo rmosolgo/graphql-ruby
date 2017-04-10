@@ -105,34 +105,6 @@ module GraphQL
       GraphQL::TypeKinds::ENUM
     end
 
-    def validate_non_null_input(value_name, ctx)
-      result = GraphQL::Query::InputValidationResult.new
-      allowed_values = ctx.warden.enum_values(self)
-      matching_value = allowed_values.find { |v| v.name == value_name }
-
-      if matching_value.nil?
-        result.add_problem("Expected #{GraphQL::Language.serialize(value_name)} to be one of: #{allowed_values.map(&:name).join(', ')}")
-      end
-
-      result
-    end
-
-    # Get the underlying value for this enum value
-    #
-    # @example get episode value from Enum
-    #   episode = EpisodeEnum.coerce("NEWHOPE")
-    #   episode # => 6
-    #
-    # @param value_name [String] the string representation of this enum value
-    # @return [Object] the underlying value for this enum value
-    def coerce_non_null_input(value_name, ctx)
-      if @values_by_name.key?(value_name)
-        @values_by_name.fetch(value_name).value
-      else
-        nil
-      end
-    end
-
     def coerce_result(value, ctx = nil)
       if ctx.nil?
         warn_deprecated_coerce("coerce_isolated_result")
@@ -165,6 +137,36 @@ module GraphQL
     end
 
     class UnresolvedValueError < GraphQL::Error
+    end
+
+    private
+
+    # Get the underlying value for this enum value
+    #
+    # @example get episode value from Enum
+    #   episode = EpisodeEnum.coerce("NEWHOPE")
+    #   episode # => 6
+    #
+    # @param value_name [String] the string representation of this enum value
+    # @return [Object] the underlying value for this enum value
+    def coerce_non_null_input(value_name, ctx)
+      if @values_by_name.key?(value_name)
+        @values_by_name.fetch(value_name).value
+      else
+        nil
+      end
+    end
+
+    def validate_non_null_input(value_name, ctx)
+      result = GraphQL::Query::InputValidationResult.new
+      allowed_values = ctx.warden.enum_values(self)
+      matching_value = allowed_values.find { |v| v.name == value_name }
+
+      if matching_value.nil?
+        result.add_problem("Expected #{GraphQL::Language.serialize(value_name)} to be one of: #{allowed_values.map(&:name).join(', ')}")
+      end
+
+      result
     end
   end
 end
