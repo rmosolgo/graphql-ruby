@@ -218,7 +218,7 @@ module GraphQL
               value.to_s.inspect
             when EnumType
               return 'null' if value.nil?
-              type.coerce_result(value)
+              type.coerce_isolated_result(value)
             when InputObjectType
               return 'null' if value.nil?
               fields = value.to_h.map{ |field_name, field_value|

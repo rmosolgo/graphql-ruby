@@ -97,21 +97,58 @@ module GraphQL
 
     alias :inspect :to_s
 
-    def valid_input?(value, warden)
-      validate_input(value, warden).valid?
+    def valid_isolated_input?(value)
+      valid_input?(value, GraphQL::Query::NullContext)
     end
 
-    def validate_input(value, warden)
+    def validate_isolated_input(value)
+      validate_input(value, GraphQL::Query::NullContext)
+    end
+
+    def coerce_isolated_input(value)
+      coerce_input(value, GraphQL::Query::NullContext)
+    end
+
+    def coerce_isolated_result(value)
+      coerce_result(value, GraphQL::Query::NullContext)
+    end
+
+    def valid_input?(value, ctx = nil)
+      if ctx.nil?
+        warn_deprecated_coerce("valid_isolated_input?")
+        ctx = GraphQL::Query::NullContext
+      end
+
+      validate_input(value, ctx).valid?
+    end
+
+    def validate_input(value, ctx = nil)
+      if ctx.nil?
+        warn_deprecated_coerce("validate_isolated_input")
+        ctx = GraphQL::Query::NullContext
+      end
+
       if value.nil?
         GraphQL::Query::InputValidationResult.new
       else
-        validate_non_null_input(value, warden)
+        validate_non_null_input(value, ctx)
       end
     end
 
-    def coerce_input(value)
-      return nil if value.nil?
-      coerce_non_null_input(value)
+    def coerce_input(value, ctx = nil)
+      if value.nil?
+        nil
+      else
+        if ctx.nil?
+          warn_deprecated_coerce("coerce_isolated_input")
+          ctx = GraphQL::Query::NullContext
+        end
+        coerce_non_null_input(value, ctx)
+      end
+    end
+
+    def coerce_result(value, ctx)
+      raise NotImplementedError
     end
 
     # Types with fields may override this
@@ -167,6 +204,12 @@ module GraphQL
     def to_definition(schema, printer: nil, **args)
       printer ||= GraphQL::Schema::Printer.new(schema, **args)
       printer.print_type(self)
+    end
+
+    private
+
+    def warn_deprecated_coerce(alt_method_name)
+      warn("Coercing without a context is deprecated; use `#{alt_method_name}` if you don't want context-awareness")
     end
   end
 end

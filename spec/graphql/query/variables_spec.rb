@@ -17,8 +17,10 @@ describe GraphQL::Query::Variables do
   let(:ast_variables) { GraphQL.parse(query_string).definitions.first.variables }
   let(:schema) { Dummy::Schema }
   let(:variables) { GraphQL::Query::Variables.new(
-    schema,
-    GraphQL::Schema::Warden.new(schema.default_mask, schema: schema, context: nil),
+    OpenStruct.new({
+      schema: schema,
+      warden: GraphQL::Schema::Warden.new(schema.default_mask, schema: schema, context: nil),
+    }),
     ast_variables,
     provided_variables)
   }
@@ -165,8 +167,10 @@ describe GraphQL::Query::Variables do
       let(:run_query) { schema.execute(query_string, variables: provided_variables) }
 
       let(:variables) { GraphQL::Query::Variables.new(
-        schema,
-        GraphQL::Schema::Warden.new(schema.default_mask, schema: schema, context: nil),
+        OpenStruct.new({
+          schema: schema,
+          warden: GraphQL::Schema::Warden.new(schema.default_mask, schema: schema, context: nil),
+        }),
         ast_variables,
         provided_variables)
       }

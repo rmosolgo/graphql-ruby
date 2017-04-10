@@ -37,7 +37,7 @@ module GraphQL
         raise(NotImplementedError, "This schema was loaded from string, so it can't resolve types for objects")
       }
 
-      NullScalarCoerce = ->(val) { val }
+      NullScalarCoerce = ->(val, _ctx) { val }
 
       class << self
         private

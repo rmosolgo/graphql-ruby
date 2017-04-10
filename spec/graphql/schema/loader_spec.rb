@@ -23,8 +23,8 @@ describe GraphQL::Schema::Loader do
 
     big_int_type = GraphQL::ScalarType.define do
       name "BigInt"
-      coerce_input ->(value) { value =~ /\d+/ ? Integer(value) : nil }
-      coerce_result ->(value) { value.to_s }
+      coerce_input ->(value, _ctx) { value =~ /\d+/ ? Integer(value) : nil }
+      coerce_result ->(value, _ctx) { value.to_s }
     end
 
     variant_input_type = GraphQL::InputObjectType.define do
@@ -202,8 +202,8 @@ describe GraphQL::Schema::Loader do
 
     it "has no-op coerce functions" do
       custom_scalar = loaded_schema.types["BigInt"]
-      assert_equal true, custom_scalar.valid_input?("anything", PermissiveWarden)
-      assert_equal true, custom_scalar.valid_input?(12345, PermissiveWarden)
+      assert_equal true, custom_scalar.valid_isolated_input?("anything")
+      assert_equal true, custom_scalar.valid_isolated_input?(12345)
     end
 
     it "sets correct default values on custom scalar arguments" do

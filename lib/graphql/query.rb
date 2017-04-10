@@ -4,6 +4,7 @@ require "graphql/query/arguments_cache"
 require "graphql/query/context"
 require "graphql/query/executor"
 require "graphql/query/literal_input"
+require "graphql/query/null_context"
 require "graphql/query/serial_execution"
 require "graphql/query/variables"
 require "graphql/query/input_validation_result"
@@ -145,8 +146,7 @@ module GraphQL
     def variables
       @variables ||= begin
         vars = GraphQL::Query::Variables.new(
-          @schema,
-          @warden,
+          @context,
           @ast_variables,
           @provided_variables,
         )

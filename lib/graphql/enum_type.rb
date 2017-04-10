@@ -105,35 +105,13 @@ module GraphQL
       GraphQL::TypeKinds::ENUM
     end
 
-    def validate_non_null_input(value_name, warden)
-      result = GraphQL::Query::InputValidationResult.new
-      allowed_values = warden.enum_values(self)
-      matching_value = allowed_values.find { |v| v.name == value_name }
-
-      if matching_value.nil?
-        result.add_problem("Expected #{GraphQL::Language.serialize(value_name)} to be one of: #{allowed_values.map(&:name).join(', ')}")
+    def coerce_result(value, ctx = nil)
+      if ctx.nil?
+        warn_deprecated_coerce("coerce_isolated_result")
+        ctx = GraphQL::Query::NullContext
       end
 
-      result
-    end
-
-    # Get the underlying value for this enum value
-    #
-    # @example get episode value from Enum
-    #   episode = EpisodeEnum.coerce("NEWHOPE")
-    #   episode # => 6
-    #
-    # @param value_name [String] the string representation of this enum value
-    # @return [Object] the underlying value for this enum value
-    def coerce_non_null_input(value_name)
-      if @values_by_name.key?(value_name)
-        @values_by_name.fetch(value_name).value
-      else
-        nil
-      end
-    end
-
-    def coerce_result(value, warden = nil)
+      warden = ctx.warden
       all_values = warden ? warden.enum_values(self) : @values_by_name.each_value
       enum_value = all_values.find { |val| val.value == value }
       if enum_value
@@ -159,6 +137,36 @@ module GraphQL
     end
 
     class UnresolvedValueError < GraphQL::Error
+    end
+
+    private
+
+    # Get the underlying value for this enum value
+    #
+    # @example get episode value from Enum
+    #   episode = EpisodeEnum.coerce("NEWHOPE")
+    #   episode # => 6
+    #
+    # @param value_name [String] the string representation of this enum value
+    # @return [Object] the underlying value for this enum value
+    def coerce_non_null_input(value_name, ctx)
+      if @values_by_name.key?(value_name)
+        @values_by_name.fetch(value_name).value
+      else
+        nil
+      end
+    end
+
+    def validate_non_null_input(value_name, ctx)
+      result = GraphQL::Query::InputValidationResult.new
+      allowed_values = ctx.warden.enum_values(self)
+      matching_value = allowed_values.find { |v| v.name == value_name }
+
+      if matching_value.nil?
+        result.add_problem("Expected #{GraphQL::Language.serialize(value_name)} to be one of: #{allowed_values.map(&:name).join(', ')}")
+      end
+
+      result
     end
   end
 end

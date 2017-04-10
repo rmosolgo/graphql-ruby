@@ -5,34 +5,34 @@ describe GraphQL::EnumType do
   let(:enum) { Dummy::DairyAnimalEnum }
 
   it "coerces names to underlying values" do
-    assert_equal("YAK", enum.coerce_input("YAK"))
-    assert_equal(1, enum.coerce_input("COW"))
+    assert_equal("YAK", enum.coerce_isolated_input("YAK"))
+    assert_equal(1, enum.coerce_isolated_input("COW"))
   end
 
   it "coerces invalid names to nil" do
-    assert_equal(nil, enum.coerce_input("YAKKITY"))
+    assert_equal(nil, enum.coerce_isolated_input("YAKKITY"))
   end
 
   it "coerces result values to value's value" do
-    assert_equal("YAK", enum.coerce_result("YAK"))
-    assert_equal("COW", enum.coerce_result(1))
-    assert_equal("REINDEER", enum.coerce_result('reindeer'))
-    assert_equal("DONKEY", enum.coerce_result(:donkey))
+    assert_equal("YAK", enum.coerce_isolated_result("YAK"))
+    assert_equal("COW", enum.coerce_isolated_result(1))
+    assert_equal("REINDEER", enum.coerce_isolated_result('reindeer'))
+    assert_equal("DONKEY", enum.coerce_isolated_result(:donkey))
   end
 
   it "raises when a result value can't be coerced" do
     assert_raises(GraphQL::EnumType::UnresolvedValueError) {
-      enum.coerce_result(:nonsense)
+      enum.coerce_isolated_result(:nonsense)
     }
   end
 
   describe "resolving with a warden" do
     it "gets values from the warden" do
       # OK
-      assert_equal("YAK", enum.coerce_result("YAK"))
+      assert_equal("YAK", enum.coerce_isolated_result("YAK"))
       # NOT OK
       assert_raises(GraphQL::EnumType::UnresolvedValueError) {
-        enum.coerce_result("YAK", NothingWarden)
+        enum.coerce_result("YAK", OpenStruct.new(warden: NothingWarden))
       }
     end
   end
@@ -84,7 +84,7 @@ describe GraphQL::EnumType do
   end
 
   describe "validate_input with bad input" do
-    let(:result) { enum.validate_input("bad enum", PermissiveWarden) }
+    let(:result) { enum.validate_isolated_input("bad enum") }
 
     it "returns an invalid result" do
       assert(!result.valid?)

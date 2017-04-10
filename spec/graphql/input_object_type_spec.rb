@@ -26,18 +26,18 @@ describe GraphQL::InputObjectType do
   describe "input validation" do
     it "Accepts anything that yields key-value pairs to #all?" do
       values_obj = MinimumInputObject.new({"source" => "COW", "fatContent" => 0.4})
-      assert input_object.valid_input?(values_obj, PermissiveWarden)
+      assert input_object.valid_isolated_input?(values_obj)
     end
 
     describe "validate_input with non-enumerable input" do
       it "returns a valid result for MinimumInputObject" do
-        result = input_object.validate_input(MinimumInputObject.new({"source" => "COW", "fatContent" => 0.4}), PermissiveWarden)
+        result = input_object.validate_isolated_input(MinimumInputObject.new({"source" => "COW", "fatContent" => 0.4}))
         assert(result.valid?)
       end
 
       it "returns an invalid result for MinimumInvalidInputObject" do
         invalid_input = MinimumInputObject.new({"source" => "KOALA", "fatContent" => 0.4})
-        result = input_object.validate_input(invalid_input, PermissiveWarden)
+        result = input_object.validate_isolated_input(invalid_input)
         assert(!result.valid?)
       end
     end
@@ -57,13 +57,13 @@ describe GraphQL::InputObjectType do
 
       it "returns an invalid result when value is null for non-null argument" do
         invalid_input = MinimumInputObject.new({"a" => "Test", "b" => nil})
-        result = input_type.validate_input(invalid_input, PermissiveWarden)
+        result = input_type.validate_isolated_input(invalid_input)
         assert(!result.valid?)
       end
 
       it "returns valid result when value is null for nullable argument" do
         invalid_input = MinimumInputObject.new({"a" => nil, "b" => 1})
-        result = input_type.validate_input(invalid_input, PermissiveWarden)
+        result = input_type.validate_isolated_input(invalid_input)
         assert(result.valid?)
       end
     end
@@ -76,7 +76,7 @@ describe GraphQL::InputObjectType do
             "fatContent" => 0.4
           }
         end
-        let(:result) { input_object.validate_input(input, PermissiveWarden) }
+        let(:result) { input_object.validate_isolated_input(input) }
 
         it "returns a valid result" do
           assert(result.valid?)
@@ -91,7 +91,7 @@ describe GraphQL::InputObjectType do
               "fatContent" => 0.4,
             )
           end
-          let(:result) { input_object.validate_input(input, PermissiveWarden) }
+          let(:result) { input_object.validate_isolated_input(input) }
 
           it "returns a valid result" do
             assert(result.valid?)
@@ -100,7 +100,7 @@ describe GraphQL::InputObjectType do
       end
 
       describe "with bad enum and float" do
-        let(:result) { input_object.validate_input({"source" => "KOALA", "fatContent" => "bad_num"}, PermissiveWarden) }
+        let(:result) { input_object.validate_isolated_input({"source" => "KOALA", "fatContent" => "bad_num"}) }
 
         it "returns an invalid result" do
           assert(!result.valid?)
@@ -113,7 +113,7 @@ describe GraphQL::InputObjectType do
         end
 
         it "has correct problem explanation" do
-          expected = Dummy::DairyAnimalEnum.validate_input("KOALA", PermissiveWarden).problems[0]["explanation"]
+          expected = Dummy::DairyAnimalEnum.validate_isolated_input("KOALA").problems[0]["explanation"]
 
           source_problem = result.problems.detect { |p| p["path"] == ["source"] }
           actual = source_problem["explanation"]
@@ -123,7 +123,7 @@ describe GraphQL::InputObjectType do
       end
 
       describe 'with a string as input' do
-        let(:result) { input_object.validate_input("just a string", PermissiveWarden) }
+        let(:result) { input_object.validate_isolated_input("just a string") }
 
         it "returns an invalid result" do
           assert(!result.valid?)
@@ -140,7 +140,7 @@ describe GraphQL::InputObjectType do
       end
 
       describe 'with an array as input' do
-        let(:result) { input_object.validate_input(["string array"], PermissiveWarden) }
+        let(:result) { input_object.validate_isolated_input(["string array"]) }
 
         it "returns an invalid result" do
           assert(!result.valid?)
@@ -157,7 +157,7 @@ describe GraphQL::InputObjectType do
       end
 
       describe 'with a int as input' do
-        let(:result) { input_object.validate_input(10, PermissiveWarden) }
+        let(:result) { input_object.validate_isolated_input(10) }
 
         it "returns an invalid result" do
           assert(!result.valid?)
@@ -174,7 +174,7 @@ describe GraphQL::InputObjectType do
       end
 
       describe "with extra argument" do
-        let(:result) { input_object.validate_input({"source" => "COW", "fatContent" => 0.4, "isDelicious" => false}, PermissiveWarden) }
+        let(:result) { input_object.validate_isolated_input({"source" => "COW", "fatContent" => 0.4, "isDelicious" => false}) }
 
         it "returns an invalid result" do
           assert(!result.valid?)
@@ -193,10 +193,10 @@ describe GraphQL::InputObjectType do
       describe "list with one invalid element" do
         let(:list_type) { GraphQL::ListType.new(of_type: Dummy::DairyProductInputType) }
         let(:result) do
-          list_type.validate_input([
+          list_type.validate_isolated_input([
             { "source" => "COW", "fatContent" => 0.4 },
             { "source" => "KOALA", "fatContent" => 0.4 }
-          ], PermissiveWarden)
+          ])
         end
 
         it "returns an invalid result" do
@@ -213,7 +213,7 @@ describe GraphQL::InputObjectType do
         end
 
         it "has problem with correct explanation" do
-          expected = Dummy::DairyAnimalEnum.validate_input("KOALA", PermissiveWarden).problems[0]["explanation"]
+          expected = Dummy::DairyAnimalEnum.validate_isolated_input("KOALA").problems[0]["explanation"]
           actual = result.problems[0]["explanation"]
           assert_equal(expected, actual)
         end
@@ -223,7 +223,7 @@ describe GraphQL::InputObjectType do
 
   describe "coerce_result" do
     it "omits unspecified arguments" do
-      result = input_object.coerce_result(fatContent: 0.3)
+      result = input_object.coerce_isolated_result({fatContent: 0.3})
       assert_equal ["fatContent"], result.keys
       assert_equal 0.3, result["fatContent"]
     end
@@ -246,7 +246,7 @@ describe GraphQL::InputObjectType do
 
     it "null values are returned in coerced input" do
       input = MinimumInputObject.new({"a" => "Test", "b" => nil,"c" => "Test"})
-      result = input_type.coerce_input(input)
+      result = input_type.coerce_isolated_input(input)
 
       assert_equal 'Test', result['a']
 
@@ -258,7 +258,7 @@ describe GraphQL::InputObjectType do
 
     it "null values are preserved when argument has a default value" do
       input = MinimumInputObject.new({"a" => "Test", "b" => 1, "c" => nil})
-      result = input_type.coerce_input(input)
+      result = input_type.coerce_isolated_input(input)
 
       assert_equal 'Test', result['a']
       assert_equal 1, result['b']
@@ -269,7 +269,7 @@ describe GraphQL::InputObjectType do
 
     it "omitted arguments are not returned" do
       input = MinimumInputObject.new({"b" => 1, "c" => "Test"})
-      result = input_type.coerce_input(input)
+      result = input_type.coerce_isolated_input(input)
 
       assert !result.key?('a')
       assert_equal 1, result['b']
@@ -278,7 +278,7 @@ describe GraphQL::InputObjectType do
 
     it "false default values are returned" do
       input = MinimumInputObject.new({"b" => 1})
-      result = input_type.coerce_input(input)
+      result = input_type.coerce_isolated_input(input)
 
       assert_equal false, result['d']
     end
