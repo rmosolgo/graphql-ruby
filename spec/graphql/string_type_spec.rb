@@ -11,7 +11,9 @@ describe GraphQL::STRING_TYPE do
   describe "coerce_result" do
     it "requires string to be encoded as UTF-8" do
       binary_str = "\0\0\0foo\255\255\255".dup.force_encoding("BINARY")
-      assert_equal nil, string_type.coerce_result(binary_str)
+      assert_raises(GraphQL::CoercionError) {
+        assert_equal nil, string_type.coerce_result(binary_str)
+      }
     end
   end
 
