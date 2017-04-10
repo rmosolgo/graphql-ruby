@@ -8,6 +8,53 @@
 
 ### Bug fixes
 
+## 1.5.6 (9 Apr 2017)
+
+## Breaking Changes
+
+- Returned strings which aren't encoded as UTF-8 or ASCII will raise `GraphQL::StringEncodingError` instead of becoming `nil` #661
+
+  To preserve the previous behavior, Implement `Schema#type_error` to return `nil` for this error, eg:
+
+  ```ruby
+  GraphQL::Schema.define do
+    type_error ->(err, ctx) {
+      case err
+      # ...
+      when GraphQL::StringEncodingError
+        nil
+      end
+    }
+  ```
+
+- `coerce_non_null_input` and `validate_non_null_input` are private #667
+
+## Deprecations
+
+- One-argument `coerce_input` and `coerce_result` functions for custom scalars are deprecated. #667 Those functions now accept a second argument, `ctx`.
+
+  ```ruby
+  # From
+  ->(val) { val.to_i }
+  # To:
+  ->(val, ctx) { val.to_i }
+  ```
+
+- Calling `coerce_result`, `coerce_input`, `valid_input?` or `validate_input` without a `ctx` is deprecated. #667 Use `coerce_isolated_result` `coerce_isolated_input`, `valid_isolated_input?`, `validate_input` to explicitly bypass `ctx`.
+
+## New Features
+
+- Include `#types` in `GraphQL::Function` #654
+- Accept `prepare:` function for arguments #646
+- Scalar coerce functions receive `ctx` #667
+
+## Bug Fixes
+
+- Properly apply default values of `false` #658
+- Fix application of argument options in `GraphQL::Relay::Mutation` #660
+- Support concurrent-ruby `>1.0.0` #663
+- Only raise schema validation errors on `#execute` to avoid messing with Rails constant loading #665
+
 ## 1.5.5 (31 Mar 2017)
 
 ### Bug Fixes
@@ -18,7 +65,7 @@
 - Fix `nil` input for nullable list types #637, #639
 - Handle invalid schema IDL with a validation error #647
 - Properly serialize input object default values #635
-- Fix `as:` on mutation `input_fied` #650
+- Fix `as:` on mutation `input_field` #650
 - Fix null propagation for `nil` members of non-null list types #649
 
 ## 1.5.4 (22 Mar 2017)
