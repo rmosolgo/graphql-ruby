@@ -119,7 +119,7 @@ module GraphQL
           raise(NotImplementedError, "Generated Schema cannot use Interface or Union types for execution.")
         }
 
-        NullScalarCoerce = ->(val) { val }
+        NullScalarCoerce = ->(val, _ctx) { val }
 
         def build_enum_type(enum_type_definition, type_resolver)
           GraphQL::EnumType.define(

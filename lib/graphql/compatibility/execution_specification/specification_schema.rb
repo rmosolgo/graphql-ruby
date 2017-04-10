@@ -61,8 +61,8 @@ module GraphQL
 
           timestamp_type = GraphQL::ScalarType.define do
             name "Timestamp"
-            coerce_input ->(value) { Time.at(value.to_i) }
-            coerce_result ->(value) { value.to_i }
+            coerce_input ->(value, _ctx) { Time.at(value.to_i) }
+            coerce_result ->(value, _ctx) { value.to_i }
           end
 
           named_entity_interface_type = GraphQL::InterfaceType.define do
