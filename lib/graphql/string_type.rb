@@ -10,7 +10,6 @@ GraphQL::STRING_TYPE = GraphQL::ScalarType.define do
     else
       err = GraphQL::StringEncodingError.new(str)
       ctx.schema.type_error(err, ctx)
-      nil
     end
   }
 

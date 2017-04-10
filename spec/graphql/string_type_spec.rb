@@ -25,6 +25,7 @@ describe GraphQL::STRING_TYPE do
           query(GraphQL::ObjectType.define(name: "Query"))
           type_error ->(err, ctx) {
             ctx.errors << err
+            "🌾"
           }
         end
       }
@@ -34,7 +35,7 @@ describe GraphQL::STRING_TYPE do
       }
 
       it "calls the handler" do
-        assert_equal nil, string_type.coerce_result(binary_str, context)
+        assert_equal "🌾", string_type.coerce_result(binary_str, context)
         err = context.errors.last
         assert_instance_of GraphQL::StringEncodingError, err
       end
