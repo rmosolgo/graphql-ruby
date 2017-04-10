@@ -2,18 +2,18 @@
 require "spec_helper"
 
 describe GraphQL::Schema::ReduceTypes do
-  def reduce_types(types)
-    GraphQL::Schema::ReduceTypes.reduce(types)
+  def reduce_types(types, renamer: GraphQL::Schema::DefaultRenamer)
+    GraphQL::Schema::ReduceTypes.reduce(types, renamer: renamer)
   end
 
   it "finds types from a single type and its fields" do
     expected = {
       "Cheese" => Dummy::CheeseType,
-      "Float" => GraphQL::FLOAT_TYPE,
-      "String" => GraphQL::STRING_TYPE,
-      "Edible" => Dummy::EdibleInterface,
-      "DairyAnimal" => Dummy::DairyAnimalEnum,
       "Int" => GraphQL::INT_TYPE,
+      "String" => GraphQL::STRING_TYPE,
+      "DairyAnimal" => Dummy::DairyAnimalEnum,
+      "Float" => GraphQL::FLOAT_TYPE,
+      "Edible" => Dummy::EdibleInterface,
       "AnimalProduct" => Dummy::AnimalProductInterface,
       "LocalProduct" => Dummy::LocalProductInterface,
     }
@@ -86,6 +86,56 @@ describe GraphQL::Schema::ReduceTypes do
       assert_raises(RuntimeError) {
         reduce_types([type_1, type_2])
       }
+    end
+  end
+
+  describe "when camelize is true" do
+    let(:type) {
+      GraphQL::ObjectType.define do
+        name "MyType"
+        field :my_field, types.String
+        field :withArguments, types.String do
+          argument :my_argument, types.String
+        end
+      end
+    }
+
+    let(:input_type) {
+      GraphQL::InputObjectType.define do
+        name "MyInputType"
+        argument :my_input_argument, types.String
+      end
+    }
+
+    let(:types) {
+      reduce_types([type, input_type], renamer: GraphQL::Schema::CamelizeRenamer)
+    }
+
+    it "camelizes field names" do
+      expected_field = types["MyType"].fields["myField"]
+
+      assert_nil types["MyType"].fields["my_field"]
+      assert expected_field
+      assert_equal :my_field, expected_field.property
+    end
+
+
+    it "camelizes arguments" do
+      field_with_arguments = types["MyType"].fields["withArguments"]
+
+      expected_argument = field_with_arguments.arguments["myArgument"]
+
+      assert_nil field_with_arguments.arguments["my_argument"]
+      assert expected_argument
+      assert_equal "my_argument", expected_argument.expose_as
+    end
+
+    it "camelizes input object type arguments" do
+      expected_argument = types["MyInputType"].arguments["myInputArgument"]
+
+      assert_nil types["MyInputType"].arguments["my_input_argument"]
+      assert expected_argument
+      assert_equal "my_input_argument", expected_argument.expose_as
     end
   end
 

@@ -10,6 +10,8 @@ require "graphql/schema/mask"
 require "graphql/schema/null_mask"
 require "graphql/schema/possible_types"
 require "graphql/schema/rescue_middleware"
+require "graphql/schema/default_renamer"
+require "graphql/schema/camelize_renamer"
 require "graphql/schema/reduce_types"
 require "graphql/schema/timeout_middleware"
 require "graphql/schema/type_expression"
@@ -61,6 +63,7 @@ module GraphQL
       :object_from_id, :id_from_object,
       :default_mask,
       :cursor_encoder,
+      :rename,
       directives: ->(schema, directives) { schema.directives = directives.reduce({}) { |m, d| m[d.name] = d; m  }},
       instrument: ->(schema, type, instrumenter) { schema.instrumenters[type] << instrumenter },
       query_analyzer: ->(schema, analyzer) { schema.query_analyzers << analyzer },
@@ -74,7 +77,7 @@ module GraphQL
       :max_depth, :max_complexity,
       :orphan_types, :directives,
       :query_analyzers, :instrumenters, :lazy_methods,
-      :cursor_encoder
+      :cursor_encoder, :rename
 
     # @return [MiddlewareChain] MiddlewareChain which is applied to fields during execution
     attr_accessor :middleware
@@ -89,6 +92,7 @@ module GraphQL
 
     self.default_execution_strategy = GraphQL::Execution::Execute
 
+    BUILT_IN_RENAMERS = { camelize: CamelizeRenamer }
     BUILT_IN_TYPES = Hash[[INT_TYPE, STRING_TYPE, FLOAT_TYPE, BOOLEAN_TYPE, ID_TYPE].map{ |type| [type.name, type] }]
     DIRECTIVES = [GraphQL::Directive::IncludeDirective, GraphQL::Directive::SkipDirective, GraphQL::Directive::DeprecatedDirective]
     DYNAMIC_FIELDS = ["__type", "__typename", "__schema"]
@@ -288,6 +292,17 @@ module GraphQL
       @resolve_type_proc = new_resolve_type_proc
     end
 
+    def rename=(rename)
+      if built_in = BUILT_IN_RENAMERS[rename]
+        @rename = built_in
+      elsif rename.respond_to?(:rename_field) && rename.respond_to?(:rename_argument)
+        @rename = rename
+      else
+        raise ArgumentError, "rename should be a symbol for built in renamers or an object"\
+          " that responds to `rename_field` and `rename_argument`."
+      end
+    end
+
     # Fetch an application object by its unique id
     # @param id [String] A unique identifier, provided previously by this GraphQL schema
     # @param ctx [GraphQL::Query::Context] The context for the current query
@@ -423,7 +438,7 @@ module GraphQL
 
     def build_types_map
       all_types = orphan_types + [query, mutation, subscription, GraphQL::Introspection::SchemaType]
-      @types = GraphQL::Schema::ReduceTypes.reduce(all_types.compact)
+      @types = GraphQL::Schema::ReduceTypes.reduce(all_types.compact, renamer: @rename)
     end
   end
 end

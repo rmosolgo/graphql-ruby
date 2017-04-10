@@ -58,6 +58,31 @@ describe GraphQL::Query::Executor do
     end
   end
 
+  describe "query camelized fields" do
+    let(:schema) { Camelized::Schema }
+
+    describe "when querying object types with arguments" do
+      let(:query_string) {%| query { shop { aFieldWithArguments(anArgument: "test") } }|}
+
+      it "exposes fields and arguments as camelized even if they are defined otherwise" do
+        expected = {
+          "data" => { "shop" => { "aFieldWithArguments" => "test" } },
+        }
+        assert_equal(expected, result)
+      end
+    end
+
+    describe "when querying with input object type arguments" do
+      let(:query_string) {%| mutation { addProduct(productName: "shoes") }|}
+
+      it "exposes input type arguments as camelized even if they are defined otherwise" do
+        expected = {
+          "data" => { "addProduct" => "shoes" },
+        }
+        assert_equal(expected, result)
+      end
+    end
+  end
 
   describe "execution order" do
     let(:query_string) {%|
