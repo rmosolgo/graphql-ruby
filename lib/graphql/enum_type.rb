@@ -133,7 +133,12 @@ module GraphQL
       end
     end
 
-    def coerce_result(value, ctx)
+    def coerce_result(value, ctx = nil)
+      if ctx.nil?
+        warn_deprecated_coerce("coerce_isolated_result")
+        ctx = GraphQL::Query::NullContext
+      end
+
       warden = ctx.warden
       all_values = warden ? warden.enum_values(self) : @values_by_name.each_value
       enum_value = all_values.find { |val| val.value == value }

@@ -66,19 +66,23 @@ module GraphQL
       @coerce_input_proc.call(value, ctx)
     end
 
-    def coerce_input=(proc)
-      if !proc.nil?
-        @coerce_input_proc = ensure_two_arg(proc)
+    def coerce_input=(coerce_input_fn)
+      if !coerce_input_fn.nil?
+        @coerce_input_proc = ensure_two_arg(coerce_input_fn, :coerce_input)
       end
     end
 
-    def coerce_result(value, ctx = GraphQL::Query::NullContext)
+    def coerce_result(value, ctx = nil)
+      if ctx.nil?
+        warn_deprecated_coerce("coerce_isolated_result")
+        ctx = GraphQL::Query::NullContext
+      end
       @coerce_result_proc.call(value, ctx)
     end
 
-    def coerce_result=(proc)
-      if !proc.nil?
-        @coerce_result_proc = ensure_two_arg(proc)
+    def coerce_result=(coerce_result_fn)
+      if !coerce_result_fn.nil?
+        @coerce_result_proc = ensure_two_arg(coerce_result_fn, :coerce_result)
       end
     end
 
@@ -97,8 +101,9 @@ module GraphQL
       end
     end
 
-    def ensure_two_arg(callable)
+    def ensure_two_arg(callable, method_name)
       if get_arity(callable) == 1
+        warn("Scalar coerce functions receive two values (`val` and `ctx`), one-argument functions are deprecated (see #{name}.#{method_name}).")
         ->(val, ctx) { callable.call(val) }
       else
         callable

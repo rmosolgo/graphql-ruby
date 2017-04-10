@@ -104,7 +104,12 @@ module GraphQL
       GraphQL::Query::Arguments.new(input_values, argument_definitions: arguments)
     end
 
-    def coerce_result(value, ctx = GraphQL::Query::NullContext)
+    def coerce_result(value, ctx = nil)
+      if ctx.nil?
+        warn_deprecated_coerce("coerce_isolated_result")
+        ctx = GraphQL::Query::NullContext
+      end
+
       # Allow the application to provide values as :symbols, and convert them to the strings
       value = value.reduce({}) { |memo, (k, v)| memo[k.to_s] = v; memo }
 

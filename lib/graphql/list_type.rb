@@ -57,7 +57,11 @@ module GraphQL
       ensure_array(value).map { |item| of_type.coerce_input(item, ctx) }
     end
 
-    def coerce_result(value, ctx)
+    def coerce_result(value, ctx = nil)
+      if ctx.nil?
+        warn_deprecated_coerce("coerce_isolated_result")
+        ctx = GraphQL::Query::NullContext
+      end
       ensure_array(value).map { |item| item.nil? ? nil : of_type.coerce_result(item, ctx) }
     end
 

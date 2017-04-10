@@ -97,7 +97,6 @@ module GraphQL
 
     alias :inspect :to_s
 
-    # Use this in places where there is no `ctx`
     def valid_isolated_input?(value)
       valid_input?(value, GraphQL::Query::NullContext)
     end
@@ -114,11 +113,21 @@ module GraphQL
       coerce_result(value, GraphQL::Query::NullContext)
     end
 
-    def valid_input?(value, ctx)
+    def valid_input?(value, ctx = nil)
+      if ctx.nil?
+        warn_deprecated_coerce("valid_isolated_input?")
+        ctx = GraphQL::Query::NullContext
+      end
+
       validate_input(value, ctx).valid?
     end
 
-    def validate_input(value, ctx)
+    def validate_input(value, ctx = nil)
+      if ctx.nil?
+        warn_deprecated_coerce("validate_isolated_input")
+        ctx = GraphQL::Query::NullContext
+      end
+
       if value.nil?
         GraphQL::Query::InputValidationResult.new
       else
@@ -126,10 +135,14 @@ module GraphQL
       end
     end
 
-    def coerce_input(value, ctx)
+    def coerce_input(value, ctx = nil)
       if value.nil?
         nil
       else
+        if ctx.nil?
+          warn_deprecated_coerce("coerce_isolated_input")
+          ctx = GraphQL::Query::NullContext
+        end
         coerce_non_null_input(value, ctx)
       end
     end
@@ -191,6 +204,12 @@ module GraphQL
     def to_definition(schema, printer: nil, **args)
       printer ||= GraphQL::Schema::Printer.new(schema, **args)
       printer.print_type(self)
+    end
+
+    private
+
+    def warn_deprecated_coerce(alt_method_name)
+      warn("Coercing without a context is deprecated; use `#{alt_method_name}` if you don't want context-awareness")
     end
   end
 end
