@@ -105,6 +105,8 @@ module GraphQL
           raise InvalidDocumentError.new('Must provide schema definition with query type or a type named Query.') unless query_root_type
 
           Schema.define do
+            raise_definition_error true
+
             query query_root_type
             mutation mutation_root_type
             subscription subscription_root_type
