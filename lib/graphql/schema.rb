@@ -81,6 +81,9 @@ module GraphQL
       :cursor_encoder,
       :raise_definition_error
 
+    # Singleton instance of the provided subscriber class, if there is one.
+    attr_accessor :subscriber
+
     # @return [MiddlewareChain] MiddlewareChain which is applied to fields during execution
     attr_accessor :middleware
 

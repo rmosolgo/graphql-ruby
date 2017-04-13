@@ -1,53 +1,81 @@
 # frozen_string_literal: true
 require "spec_helper"
 
-class InMemorySubscriber
-  class << self
+class InMemoryBackend
+  # Here's the required API for a subscriber:
+  class Subscriber
+    def initialize(schema:, database:)
+      @database = database
+      @schema = schema
+    end
+
+    def register_query(query)
+    end
+
+    def register(obj, args, ctx)
+      @database.add(ctx.field.name, args, ctx)
+    end
+
+    def trigger(event, args, object)
+      subs = @database.fetch(event, args)
+      subs.each { |ctx|
+        res = @schema.execute(
+          document: ctx.query.document,
+          # TODO this won't work IRL:
+          variables: args,
+          context: {resubscribe: false},
+          root_value: object,
+        )
+        # This is like "broadcast"
+        socket = Socket.open(ctx[:socket_id])
+        socket.write(res)
+      }
+    end
+  end
+
+  # Subscription management database
+  class Database
     def subscriptions
       @subscriptions ||= Hash.new { |h, k| h[k] = [] }
     end
 
-    def clear
-      @subscriptions = nil
+    def fetch(field, args)
+      subscriptions[key(field, args)]
     end
 
-    def trigger(field, args)
-      k = key(field, args)
-      subs = subscriptions[k]
-      subs.each(&:trigger)
+    def add(field, args, sub)
+      subscriptions[key(field, args)] << sub
     end
+
+    private
 
     def key(field, args)
       "#{field}(#{JSON.dump(args.to_h)})"
     end
   end
 
-  def register(obj, args, ctx)
-    sub_key = self.class.key(ctx.field.name, args)
-    subscription = Subscription.new(ctx)
-    self.class.subscriptions[sub_key] << subscription
-  end
-
-  class Subscription
-    attr_reader :ctx
-
-    def initialize(ctx)
-      @ctx = ctx
+  # Pretend its a websocket:
+  class Socket
+    def self.open(id)
+      @sockets[id]
     end
 
-    def trigger
-      payloads = ctx[:payloads]
-      schema = ctx.schema
-      res = schema.execute(
-        document: ctx.query.document,
-        context: {payloads: payloads, resubscribe: false},
-        root_value: ctx[:root],
-      )
-      # This is like "broadcast"
-      payloads.push(res)
+    def self.clear
+      @sockets = Hash.new { |h, k| h[k] = self.new }
+    end
+
+    attr_reader :deliveries
+
+    def initialize
+      @deliveries = []
+    end
+
+    def write(response)
+      @deliveries << response
     end
   end
 
+  # Just a random stateful object for tracking what happens:
   class Payload
     attr_reader :str
 
@@ -64,7 +92,11 @@ end
 
 
 describe GraphQL::Subscriptions do
-  let(:root_object) { OpenStruct.new(payload: InMemorySubscriber::Payload.new) }
+  before do
+    InMemoryBackend::Socket.clear
+  end
+
+  let(:root_object) { OpenStruct.new(payload: InMemoryBackend::Payload.new) }
   let(:schema) {
     payload_type = GraphQL::ObjectType.define do
       name "Payload"
@@ -84,37 +116,45 @@ describe GraphQL::Subscriptions do
     GraphQL::Schema.define do
       query(query_type)
       subscription(subscription_type)
-      use(GraphQL::Subscriptions, subscriber: InMemorySubscriber)
+      use GraphQL::Subscriptions,
+        subscriber_class: InMemoryBackend::Subscriber,
+        options: {
+          database: InMemoryBackend::Database.new,
+        }
     end
   }
 
   describe "pushing updates" do
-    before do
-      InMemorySubscriber.clear
-    end
-
     it "sends updated data" do
       query_str = <<-GRAPHQL
-        subscription {
-          payload(id: "1") { str, int }
+        subscription ($id: ID!){
+          payload(id: $id) { str, int }
         }
       GRAPHQL
 
-      payloads = []
-      res = schema.execute(query_str, context: { payloads: payloads, root: root_object }, root_value: root_object)
+      # Initial subscriptions
+      res_1 = schema.execute(query_str, context: { socket_id: "1" }, variables: { "id" => "100" }, root_value: root_object)
+      res_2 = schema.execute(query_str, context: { socket_id: "2" }, variables: { "id" => "200" }, root_value: root_object)
 
-      # Initial Result:
-      assert_equal [], payloads
-      assert_equal({"str" => "Update", "int" => 1}, res["data"]["payload"])
+      # Initial response, no broadcasts et
+      assert_equal({"str" => "Update", "int" => 1}, res_1["data"]["payload"])
+      assert_equal({"str" => "Update", "int" => 2}, res_2["data"]["payload"])
+      socket_1 = InMemoryBackend::Socket.open("1")
+      socket_2 = InMemoryBackend::Socket.open("2")
+      assert_equal [], socket_1.deliveries
+      assert_equal [], socket_2.deliveries
 
-      # Hit:
-      InMemorySubscriber.trigger("payload", id: "1")
-      InMemorySubscriber.trigger("payload", id: "1")
-      # Miss:
-      InMemorySubscriber.trigger("payload", id: "2")
+      # Application stuff happens.
+      # The application signals graphql via `subscriber.trigger`:
+      schema.subscriber.trigger("payload", {"id" => "100"}, root_object)
+      schema.subscriber.trigger("payload", {"id" => "200"}, root_object)
+      schema.subscriber.trigger("payload", {"id" => "100"}, root_object)
+      schema.subscriber.trigger("payload", {"id" => "300"}, nil)
 
-      assert_equal({"str" => "Update", "int" => 2}, payloads[0]["data"]["payload"])
-      assert_equal({"str" => "Update", "int" => 3}, payloads[1]["data"]["payload"])
+      # Let's see what GraphQL sent over the wire:
+      assert_equal({"str" => "Update", "int" => 3}, socket_1.deliveries[0]["data"]["payload"])
+      assert_equal({"str" => "Update", "int" => 4}, socket_2.deliveries[0]["data"]["payload"])
+      assert_equal({"str" => "Update", "int" => 5}, socket_1.deliveries[1]["data"]["payload"])
     end
   end
 end

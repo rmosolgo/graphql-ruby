@@ -19,7 +19,8 @@ module GraphQL
 
       def before_query(query)
         if query.context[:resubscribe] != false
-          query.context[:subscriber] = @subscriber.new
+          query.context[:subscriber] = @subscriber
+          @subscriber.register_query(query)
         end
       end
 
