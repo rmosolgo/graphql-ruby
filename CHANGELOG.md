@@ -8,6 +8,13 @@
 
 ### Bug fixes
 
+## 1.5.7 (14 Apr 2017)
+
+### Bug fixes
+
+- `InternalRepresentation::Node#definition` returns `nil` instead of raising NoMethodError for operation fields #675
+- `Field#function` is properly populated for fields derived from `GraphQL::Function`s #674
+
 ## 1.5.6 (9 Apr 2017)
 
 ## Breaking Changes
