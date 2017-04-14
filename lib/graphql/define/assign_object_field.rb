@@ -25,6 +25,7 @@ module GraphQL
             type: function.type,
             resolve: function,
             description: function.description,
+            function: function,
             deprecation_reason: function.deprecation_reason,
           )
         elsif field.is_a?(GraphQL::Field)

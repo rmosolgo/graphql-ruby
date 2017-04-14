@@ -11,6 +11,11 @@ describe GraphQL::Relay::ConnectionField do
     assert_equal ["tests"], test_type.fields.keys
   end
 
+  it "keeps a reference to the function" do
+    conn_field = StarWars::Faction.fields["shipsWithMaxPageSize"]
+    assert_instance_of StarWars::ShipsWithMaxPageSize, conn_field.function
+  end
+
   it "leaves the original field untouched" do
     test_type = nil
 
