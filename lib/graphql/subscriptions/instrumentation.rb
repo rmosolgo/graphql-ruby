@@ -18,7 +18,8 @@ module GraphQL
       end
 
       def before_query(query)
-        if query.context[:resubscribe] != false
+        # It's a subscription, but it's not an update:
+        if query.subscription? && !query.subscription_name
           query.context[:subscriber] = @subscriber
           @subscriber.register_query(query)
         end
@@ -40,9 +41,13 @@ module GraphQL
           if subscriber
             # `Subscriber#register` has some side-effects to register the subscription
             subscriber.register(obj, args, ctx)
+            nil
+          elsif ctx.field.name == ctx.query.subscription_name
+            # The root object is _already_ the subscription update:
+            obj
+          else
+            nil
           end
-          # call the resolve function:
-          @inner_proc.call(obj, args, ctx)
         end
       end
     end
