@@ -89,11 +89,14 @@ module GraphQL
       end
 
       def definition_name
-        @definition_name ||= definition.name
+        definition && definition.name
       end
 
       def definition
-        @definition ||= @query.get_field(@owner_type, @definitions.first.name)
+        @definition ||= begin
+          first_def = @definitions.first
+          first_def && @query.get_field(@owner_type, first_def.name)
+        end
       end
 
       def ast_node

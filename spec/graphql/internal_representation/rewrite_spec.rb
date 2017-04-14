@@ -105,6 +105,7 @@ describe GraphQL::InternalRepresentation::Rewrite do
 
     it "groups selections by object types which they apply to" do
       doc = rewrite_result["getPlant"]
+      assert_equal nil, doc.definition
 
       plant_scoped_selection = doc.scoped_children[schema.types["Query"]]["plant"]
       assert_equal ["Fruit", "Nut", "Plant", "Tree"], plant_scoped_selection.scoped_children.keys.map(&:name).sort
