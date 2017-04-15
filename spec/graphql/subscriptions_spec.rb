@@ -4,18 +4,17 @@ require "spec_helper"
 class InMemoryBackend
   # Here's the required API for a subscriber:
   class Subscriber
-    def initialize(schema:, database:)
-      @database = database
+    def initialize(schema:, **options)
+      @database = options.fetch(:database)
       @schema = schema
     end
 
-    def register_query(query)
-    end
-
-    def register(obj, args, ctx)
-      # The `ctx` is functioning as subscription data.
-      # IRL you'd have some other model that persisted the subscription
-      @database.add(ctx.field.name, args, ctx)
+    def register(query, subscriptions)
+      subscriptions.each do |(args, ctx)|
+        # The `ctx` is functioning as subscription data.
+        # IRL you'd have some other model that persisted the subscription
+        @database.add(ctx.field.name, args, ctx)
+      end
     end
 
     def trigger(event, args, object)

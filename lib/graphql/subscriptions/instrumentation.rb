@@ -20,12 +20,15 @@ module GraphQL
       def before_query(query)
         # It's a subscription, but it's not an update:
         if query.subscription? && !query.subscription_name
-          query.context[:subscriber] = @subscriber
-          @subscriber.register_query(query)
+          query.context[:subscriptions] = []
         end
       end
 
       def after_query(query)
+        subscriptions = query.context[:subscriptions]
+        if subscriptions
+          @subscriber.register(query, subscriptions)
+        end
       end
 
       private
@@ -37,10 +40,9 @@ module GraphQL
 
         # Wrap the proc with subscription registration logic
         def call(obj, args, ctx)
-          subscriber = ctx[:subscriber]
-          if subscriber
-            # `Subscriber#register` has some side-effects to register the subscription
-            subscriber.register(obj, args, ctx)
+          subscriptions = ctx[:subscriptions]
+          if subscriptions
+            subscriptions << [args, ctx]
             nil
           elsif ctx.field.name == ctx.query.subscription_name
             # The root object is _already_ the subscription update:
