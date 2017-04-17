@@ -2,60 +2,46 @@
 require "spec_helper"
 
 class InMemoryBackend
-  # Here's the required API for a subscriber:
-  class Subscriber
-    def initialize(schema:, **options)
-      @database = options.fetch(:database)
-      @schema = schema
+  # Store API
+  class Database
+    def initialize
+      @subscriptions = Hash.new { |h, k| h[k] = [] }
     end
 
-    def register(query, subscriptions)
-      subscriptions.each do |ev|
-        # The `ctx` is functioning as subscription data.
+    def register(query, events)
+      events.each do |ev|
+        # The `context` is functioning as subscription data.
         # IRL you'd have some other model that persisted the subscription
-        @database.add(ev.name, ev.arguments, ev.context)
+        @subscriptions[ev.key] << ev.context
       end
     end
 
-    def trigger(event, args, object)
-      subs = @database.fetch(event, args)
-      subs.each { |ctx|
-        res = @schema.execute(
-          document: ctx.query.document,
-          variables: ctx.query.provided_variables,
-          subscription_name: event,
-          root_value: object,
-        )
-        # This is like "broadcast"
-        socket = Socket.open(ctx[:socket_id])
-        socket.write(res)
+    def each_subscription(key)
+      @subscriptions[key].map { |ctx|
+        query = ctx.query
+        yield({
+          query_string: query.query_string,
+          operation_name: query.operation_name,
+          variables: query.provided_variables,
+          context: {},
+          channel: ctx[:socket],
+          transport: :socket,
+        })
       }
     end
-  end
 
-  # Subscription management database
-  class Database
-    def subscriptions
-      @subscriptions ||= Hash.new { |h, k| h[k] = [] }
-    end
-
-    def fetch(field, args)
-      subscriptions[key(field, args)]
-    end
-
-    def add(field, args, sub)
-      subscriptions[key(field, args)] << sub
-    end
-
-    private
-
-    def key(field, args)
-      "#{field}(#{JSON.dump(args.to_h)})"
+    # Just for testing:
+    def size
+      @subscriptions.size
     end
   end
 
-  # Pretend its a websocket:
   class Socket
+    # Transport API:
+    def self.deliver(channel, result)
+      open(channel).deliveries << result
+    end
+
     def self.open(id)
       @sockets[id]
     end
@@ -68,10 +54,6 @@ class InMemoryBackend
 
     def initialize
       @deliveries = []
-    end
-
-    def write(response)
-      @deliveries << response
     end
   end
 
@@ -126,9 +108,9 @@ describe GraphQL::Subscriptions do
       query(query_type)
       subscription(subscription_type)
       use GraphQL::Subscriptions,
-        subscriber_class: InMemoryBackend::Subscriber,
-        options: {
-          database: db,
+        store: db,
+        transports: {
+          socket: InMemoryBackend::Socket
         }
     end
   }
@@ -143,8 +125,8 @@ describe GraphQL::Subscriptions do
       GRAPHQL
 
       # Initial subscriptions
-      res_1 = schema.execute(query_str, context: { socket_id: "1" }, variables: { "id" => "100" }, root_value: root_object)
-      res_2 = schema.execute(query_str, context: { socket_id: "2" }, variables: { "id" => "200" }, root_value: root_object)
+      res_1 = schema.execute(query_str, context: { socket: "1" }, variables: { "id" => "100" }, root_value: root_object)
+      res_2 = schema.execute(query_str, context: { socket: "2" }, variables: { "id" => "200" }, root_value: root_object)
 
       # Initial response is nil, no broadcasts yet
       assert_equal(nil, res_1["data"])
@@ -176,9 +158,9 @@ describe GraphQL::Subscriptions do
         }
       GRAPHQL
 
-      res = schema.execute(query_str, context: { socket_id: "1" }, variables: { "id" => "100" }, root_value: root_object)
+      res = schema.execute(query_str, context: { socket: "1" }, variables: { "id" => "100" }, root_value: root_object)
       assert_equal true, res.key?("errors")
-      assert_equal 0, database.subscriptions.size
+      assert_equal 0, database.size
     end
   end
 

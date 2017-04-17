@@ -5,6 +5,7 @@ module GraphQL
     # It delegates `[]` to the hash that's passed to `GraphQL::Query#initialize`.
     class Context
       extend GraphQL::Delegate
+
       attr_reader :execution_strategy
       # `strategy` is required by GraphQL::Batch
       alias_method :strategy, :execution_strategy
@@ -57,6 +58,7 @@ module GraphQL
 
       # @!method []=(key, value)
       #   Reassign `key` to the hash passed to {Schema#execute} as `context:`
+
 
       # @return [GraphQL::Schema::Warden]
       def warden
