@@ -38,7 +38,7 @@ class InMemoryBackend
 
   class Socket
     # Transport API:
-    def self.deliver(channel, result)
+    def self.deliver(channel, result, ctx)
       open(channel).deliveries << result
     end
 

@@ -10,7 +10,7 @@ module GraphQL
         @transports = transports
       end
 
-      def_delegators :@store, :register, :each_subscription
+      def_delegators :@store, :register, :delete, :each_subscription
 
       def trigger(event, args, object)
         event_key = Subscriptions::Event.serialize(event, args)
@@ -20,18 +20,23 @@ module GraphQL
           context = query_data.fetch(:context)
           operation_name = query_data.fetch(:operation_name)
 
-          result = @schema.execute(query_string, {
-            context: context,
-            subscription_key: event_key,
-            operation_name: operation_name,
-            variables: variables,
-            root_value: object,
-          })
+          query = GraphQL::Query.new(
+            @schema,
+            query_string,
+            {
+              context: context,
+              subscription_key: event_key,
+              operation_name: operation_name,
+              variables: variables,
+              root_value: object,
+            }
+          )
+          result = query.result
 
           transport_key = query_data.fetch(:transport)
           channel = query_data.fetch(:channel)
           transport = @transports.fetch(transport_key)
-          transport.deliver(channel, result)
+          transport.deliver(channel, result, query.context)
         end
       end
 
