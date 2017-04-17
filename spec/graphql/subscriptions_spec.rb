@@ -81,7 +81,6 @@ describe GraphQL::Subscriptions do
   let(:root_object) {
     OpenStruct.new(
       payload: InMemoryBackend::Payload.new,
-      otherPayload: InMemoryBackend::Payload.new,
     )
   }
   let(:database) { InMemoryBackend::Database.new }
@@ -95,9 +94,6 @@ describe GraphQL::Subscriptions do
     subscription_type = GraphQL::ObjectType.define do
       name "Subscription"
       field :payload, !payload_type do
-        argument :id, !types.ID
-      end
-      field :otherPayload, !payload_type do
         argument :id, !types.ID
       end
     end
@@ -119,8 +115,8 @@ describe GraphQL::Subscriptions do
     it "sends updated data" do
       query_str = <<-GRAPHQL
         subscription ($id: ID!){
-          payload(id: $id) { str, int }
-          otherPayload(id: "900") { int }
+          firstPayload: payload(id: $id) { str, int }
+          otherPayload: payload(id: "900") { int }
         }
       GRAPHQL
 
@@ -144,9 +140,9 @@ describe GraphQL::Subscriptions do
       schema.subscriber.trigger("payload", {"id" => "300"}, nil)
 
       # Let's see what GraphQL sent over the wire:
-      assert_equal({"str" => "Update", "int" => 1}, socket_1.deliveries[0]["data"]["payload"])
-      assert_equal({"str" => "Update", "int" => 2}, socket_2.deliveries[0]["data"]["payload"])
-      assert_equal({"str" => "Update", "int" => 3}, socket_1.deliveries[1]["data"]["payload"])
+      assert_equal({"str" => "Update", "int" => 1}, socket_1.deliveries[0]["data"]["firstPayload"])
+      assert_equal({"str" => "Update", "int" => 2}, socket_2.deliveries[0]["data"]["firstPayload"])
+      assert_equal({"str" => "Update", "int" => 3}, socket_1.deliveries[1]["data"]["firstPayload"])
     end
   end
 

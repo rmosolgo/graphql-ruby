@@ -22,7 +22,7 @@ module GraphQL
 
           result = @schema.execute(query_string, {
             context: context,
-            subscription_name: event,
+            subscription_key: event_key,
             operation_name: operation_name,
             variables: variables,
             root_value: object,

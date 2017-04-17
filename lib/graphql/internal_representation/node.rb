@@ -145,6 +145,13 @@ module GraphQL
       # @return [GraphQL::Query]
       attr_reader :query
 
+      def subscription_key
+        @subscription_key ||= Subscriptions::Event.serialize(
+          definition_name,
+          @query.arguments_for(self, definition),
+        )
+      end
+
       protected
 
       attr_writer :owner_type, :parent

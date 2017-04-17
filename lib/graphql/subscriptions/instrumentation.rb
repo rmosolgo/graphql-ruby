@@ -18,8 +18,7 @@ module GraphQL
       end
 
       def before_query(query)
-        # It's a subscription, but it's not an update:
-        if query.subscription? && !query.subscription_name
+        if query.subscription? && !query.subscription_update?
           query.context[:subscriptions] = []
         end
       end
@@ -48,11 +47,14 @@ module GraphQL
               context: ctx,
             )
             nil
-          elsif ctx.field.name == ctx.query.subscription_name
+          elsif ctx.irep_node.subscription_key == ctx.query.subscription_key
             # The root object is _already_ the subscription update:
             obj
           else
-            nil
+            # It should only:
+            # - Register the selection (first condition)
+            # - Pass `obj` to the child selection (second condition)
+            raise "An unselected subscription field should never be called"
           end
         end
       end
