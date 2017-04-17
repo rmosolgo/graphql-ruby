@@ -26,7 +26,7 @@ module GraphQL
 
       def after_query(query)
         subscriptions = query.context[:subscriptions]
-        if subscriptions
+        if subscriptions && subscriptions.any?
           @subscriber.register(query, subscriptions)
         end
       end
@@ -42,7 +42,11 @@ module GraphQL
         def call(obj, args, ctx)
           subscriptions = ctx[:subscriptions]
           if subscriptions
-            subscriptions << [args, ctx]
+            subscriptions << Subscriptions::Event.new(
+              name: ctx.field.name,
+              arguments: args,
+              context: ctx,
+            )
             nil
           elsif ctx.field.name == ctx.query.subscription_name
             # The root object is _already_ the subscription update:

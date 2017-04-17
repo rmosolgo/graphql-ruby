@@ -10,10 +10,10 @@ class InMemoryBackend
     end
 
     def register(query, subscriptions)
-      subscriptions.each do |(args, ctx)|
+      subscriptions.each do |ev|
         # The `ctx` is functioning as subscription data.
         # IRL you'd have some other model that persisted the subscription
-        @database.add(ctx.field.name, args, ctx)
+        @database.add(ev.name, ev.arguments, ev.context)
       end
     end
 
@@ -102,6 +102,7 @@ describe GraphQL::Subscriptions do
       otherPayload: InMemoryBackend::Payload.new,
     )
   }
+  let(:database) { InMemoryBackend::Database.new }
   let(:schema) {
     payload_type = GraphQL::ObjectType.define do
       name "Payload"
@@ -120,14 +121,14 @@ describe GraphQL::Subscriptions do
     end
 
     query_type = subscription_type.redefine(name: "Query")
-
+    db = database
     GraphQL::Schema.define do
       query(query_type)
       subscription(subscription_type)
       use GraphQL::Subscriptions,
         subscriber_class: InMemoryBackend::Subscriber,
         options: {
-          database: InMemoryBackend::Database.new,
+          database: db,
         }
     end
   }
@@ -165,5 +166,25 @@ describe GraphQL::Subscriptions do
       assert_equal({"str" => "Update", "int" => 2}, socket_2.deliveries[0]["data"]["payload"])
       assert_equal({"str" => "Update", "int" => 3}, socket_1.deliveries[1]["data"]["payload"])
     end
+  end
+
+  describe "subscribing" do
+    it "doesn't call the subscriber for invalid queries" do
+      query_str = <<-GRAPHQL
+        subscription ($id: ID){
+          payload(id: $id) { str, int }
+        }
+      GRAPHQL
+
+      res = schema.execute(query_str, context: { socket_id: "1" }, variables: { "id" => "100" }, root_value: root_object)
+      assert_equal true, res.key?("errors")
+      assert_equal 0, database.subscriptions.size
+    end
+  end
+
+  describe "trigger" do
+    it "coerces args somehow?"
+    it "pushes errors"
+    it "handles errors during trigger somehow?"
   end
 end

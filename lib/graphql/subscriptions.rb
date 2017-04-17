@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+require "graphql/subscriptions/event"
 require "graphql/subscriptions/instrumentation"
 
 module GraphQL

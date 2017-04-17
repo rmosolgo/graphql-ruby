@@ -51,6 +51,9 @@ module GraphQL
     # @return [String, nil] the triggered event, if this query is a subscription update
     attr_reader :subscription_name
 
+    # @return [String, nil]
+    attr_reader :operation_name
+
     # Prepare query `query_string` on `schema`
     # @param schema [GraphQL::Schema]
     # @param query_string [String]
