@@ -19,6 +19,9 @@ module GraphQL
           if @scoped_children.any?
             all_object_types = Set.new
             scoped_children.each_key { |t| all_object_types.merge(@query.possible_types(t)) }
+            # Remove any scoped children which don't follow this return type
+            # (This can happen with fragment merging where lexical scope is lost)
+            all_object_types &= @query.possible_types(@return_type)
             all_object_types.each do |t|
               new_tc[t] = get_typed_children(t)
             end
