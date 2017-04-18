@@ -1,6 +1,14 @@
 # frozen_string_literal: true
 module GraphQL
   module Subscriptions
+    # Hang along with the schema and:
+    #
+    # - Coordinate access to the application-provided store
+    # - Receive `trigger`s from the application
+    # - Respond to them by:
+    #   - loading data from the store
+    #   - evaluating the subscription
+    #   - sending the result over the specified application-provided transport
     class Subscriber
       extend Forwardable
 
@@ -12,6 +20,13 @@ module GraphQL
 
       def_delegators :@store, :register, :delete, :each_subscription
 
+      # Fetch subscription matching this field + arguments pair
+      # and evaluate them with `object` as underlying value.
+      #
+      # Results will be sent to the transport specified by the store.
+      #
+      # TODO handle raised errors during loading & delivering.
+      # Subscription deliveries should be isolated.
       def trigger(event, args, object)
         event_key = Subscriptions::Event.serialize(event, args)
         @store.each_subscription(event_key) do |query_data|
@@ -38,12 +53,6 @@ module GraphQL
           transport = @transports.fetch(transport_key)
           transport.deliver(channel, result, query.context)
         end
-      end
-
-      private
-
-      def serialize_event(event, args)
-        "#{event}(#{JSON.dump(args.to_h)})"
       end
     end
   end
