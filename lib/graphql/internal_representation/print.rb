@@ -19,10 +19,15 @@ module GraphQL
           name = op_node.name ? " " + op_node.name : ""
           op_type = op_node.operation_type
           query_str << "#{op_type}#{name}"
-        elsif node.name == node.definition_name
-          query_str << "#{padding}#{node.name}"
         else
-          query_str << "#{padding}#{node.name}: #{node.definition_name}"
+          if node.name == node.definition_name
+            query_str << "#{padding}#{node.name}"
+          else
+            query_str << "#{padding}#{node.name}: #{node.definition_name}"
+          end
+
+          args = node.ast_nodes.map { |n| n.arguments.map(&:to_query_string).join(",") }.uniq
+          query_str << args.map { |a| "(#{a})"}.join("|")
         end
 
         if node.typed_children.any?

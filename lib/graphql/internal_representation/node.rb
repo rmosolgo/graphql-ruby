@@ -114,19 +114,23 @@ module GraphQL
 
       # Merge selections from `new_parent` into `self`.
       # Selections are merged in place, not copied.
-      def deep_merge_node(new_parent, merge_self: true)
+      def deep_merge_node(new_parent, scope: nil, merge_self: true)
         if merge_self
           @ast_nodes.concat(new_parent.ast_nodes)
           @definitions.concat(new_parent.definitions)
         end
+        scope ||= Scope.new(@query, @return_type)
         new_parent.scoped_children.each do |obj_type, new_fields|
-          prev_fields = @scoped_children[obj_type]
-          new_fields.each do |name, new_node|
-            prev_node = prev_fields[name]
-            if prev_node
-              prev_node.deep_merge_node(new_node)
-            else
-              prev_fields[name] = new_node
+          inner_scope = scope.enter(obj_type)
+          inner_scope.each do |scoped_type|
+            prev_fields = @scoped_children[scoped_type]
+            new_fields.each do |name, new_node|
+              prev_node = prev_fields[name]
+              if prev_node
+                prev_node.deep_merge_node(new_node)
+              else
+                prev_fields[name] = new_node
+              end
             end
           end
         end

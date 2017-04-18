@@ -31,6 +31,8 @@ module GraphQL
         # Hash<Nodes::FragmentSpread => Set<InternalRepresentation::Node>>
         # A record of fragment spreads and the irep nodes that used them
         spread_parents = Hash.new { |h, k| h[k] = Set.new }
+        # Hash<Nodes::FragmentSpread => Scope>
+        spread_scopes = {}
         # Array<Set<InternalRepresentation::Node>>
         # The current point of the irep_tree during visitation
         nodes_stack = []
@@ -124,6 +126,7 @@ module GraphQL
           if skip_nodes.none? && !skip?(ast_node, query)
             # Register the irep nodes that depend on this AST node:
             spread_parents[ast_node].merge(nodes_stack.last)
+            spread_scopes[ast_node] = scopes_stack.last
           end
         }
 
@@ -139,8 +142,9 @@ module GraphQL
           if fragment_node
             spread_ast_nodes.each do |spread_ast_node|
               parent_nodes = spread_parents[spread_ast_node]
+              parent_scope = spread_scopes[spread_ast_node]
               parent_nodes.each do |parent_node|
-                parent_node.deep_merge_node(fragment_node, merge_self: false)
+                parent_node.deep_merge_node(fragment_node, scope: parent_scope, merge_self: false)
               end
             end
           end

@@ -24,11 +24,11 @@ describe GraphQL::InternalRepresentation::Print do
       expected_plan = <<-GRAPHQL
 query {
   ... on Query {
-    cheese {
+    cheese(id: 1) {
       ... on Cheese {
-        flavor
-        o2: origin
-        o: origin
+        flavor()
+        o2: origin()
+        o: origin()
       }
     }
   }
