@@ -8,6 +8,12 @@
 
 ### Bug fixes
 
+## 1.5.9 (19 Apr 2017)
+
+### Bug Fixes
+
+- Include instrumentation-related changes in introspection result #681
+
 ## 1.5.8 (18 Apr 2017)
 
 ### New features
