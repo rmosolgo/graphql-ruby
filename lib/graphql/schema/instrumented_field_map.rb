@@ -29,8 +29,11 @@ module GraphQL
       end
 
       def get(type_name, field_name)
-        type = @storage[type_name]
-        type && type[field_name]
+        @storage[type_name][field_name]
+      end
+
+      def get_all(type_name)
+        @storage[type_name]
       end
     end
   end
