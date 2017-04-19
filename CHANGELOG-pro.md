@@ -8,9 +8,17 @@
 
 ### Bug Fix
 
+## 1.4.0 (19 Apr 2017)
+
+### New Features
+
+- `ActiveRecord::Relation`s can be scoped by Pundit `Scope`s, CanCan `accessible_by`, or custom strategy's `#scope(gate, relation)` methods
+- Default authorization configuration can be provided with `authorization(..., fallback: { ... })`
+- Authorization's `:current_user` key can be customized with `authorization(..., current_user: ...)`
+
 ## 1.3.0 (7 Mar 2017)
 
-## New Features
+### New Features
 
 - Serve static, persisted queries with `GraphQL::Pro::Repository`
 

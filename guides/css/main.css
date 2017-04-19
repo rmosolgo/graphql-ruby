@@ -23,7 +23,6 @@ html{font-size:12px}*{box-sizing:border-box;text-rendering:geometricPrecision}bo
 .hack pre {
   padding: 1rem;
   border-radius: 2px;
-  background-color: #fbf9f9;
 }
 
 .hack code {
@@ -35,7 +34,6 @@ html{font-size:12px}*{box-sizing:border-box;text-rendering:geometricPrecision}bo
 .hack p code, .hack ul code {
   color: #cd3b60;
   border: 1px solid #cca5a5;
-  background-color: #fbf9f9;
   border-radius: 2px;
   padding: 2px;
 }
@@ -49,7 +47,7 @@ html{font-size:12px}*{box-sizing:border-box;text-rendering:geometricPrecision}bo
   color: #cd3b60;
   border-color: #cd3b60;
 }
-.hack a:hover {
+.hack a:hover, .hack a:hover code {
   color: white;
   background-color: #cd3b60;
 }
