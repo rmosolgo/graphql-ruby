@@ -152,10 +152,10 @@
   <span class="c1"># Used to name derived types, eg `"AddCommentInput"`:</span>
   <span class="nb">name</span> <span class="s2">"AddComment"</span>
 
-  <span class="c1"># Accessible from `input` in the resolve function:</span>
+  <span class="c1"># Accessible from `inputs` in the resolve function:</span>
   <span class="n">input_field</span> <span class="ss">:postId</span><span class="p">,</span> <span class="o">!</span><span class="n">types</span><span class="o">.</span><span class="no">ID</span>
   <span class="n">input_field</span> <span class="ss">:authorId</span><span class="p">,</span> <span class="o">!</span><span class="n">types</span><span class="o">.</span><span class="no">ID</span>
-  <span class="n">input_field</span> <span class="ss">:content</span><span class="p">,</span> <span class="o">!</span><span class="n">types</span><span class="o">.</span><span class="no">String</span>
+  <span class="n">input_field</span> <span class="ss">:body</span><span class="p">,</span> <span class="o">!</span><span class="n">types</span><span class="o">.</span><span class="no">String</span>
 
   <span class="c1"># The result has access to these fields,</span>
   <span class="c1"># resolve must return a hash with these keys.</span>
@@ -168,9 +168,9 @@
 
   <span class="c1"># The resolve proc is where you alter the system state.</span>
   <span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">object</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
-    <span class="n">post</span> <span class="o">=</span> <span class="no">Post</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="ss">:postId</span><span class="p">])</span>
+    <span class="n">post</span> <span class="o">=</span> <span class="no">Post</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="n">inputs</span><span class="p">[</span><span class="ss">:postId</span><span class="p">])</span>
     <span class="n">comments</span> <span class="o">=</span> <span class="n">post</span><span class="p">.</span><span class="nf">comments</span>
-    <span class="n">new_comment</span> <span class="o">=</span> <span class="n">comments</span><span class="p">.</span><span class="nf">build</span><span class="p">(</span><span class="ss">body: </span><span class="n">args</span><span class="p">[</span><span class="ss">:body</span><span class="p">])</span>
+    <span class="n">new_comment</span> <span class="o">=</span> <span class="n">comments</span><span class="p">.</span><span class="nf">build</span><span class="p">(</span><span class="ss">authorId: </span><span class="n">inputs</span><span class="p">[</span><span class="ss">:authorId</span><span class="p">],</span> <span class="ss">body: </span><span class="n">inputs</span><span class="p">[</span><span class="ss">:body</span><span class="p">])</span>
     <span class="n">new_comment</span><span class="p">.</span><span class="nf">save!</span>
 
     <span class="c1"># Use this helper to create the response that a</span>
