@@ -8,6 +8,18 @@
 
 ### Bug fixes
 
+## 1.5.8 (18 Apr 2017)
+
+### New features
+
+- Use Relay PageInfo descriptions from graphql-js #673
+
+### Bug Fixes
+
+- Allow fields with different arguments when fragments are included within inline fragments of non-overlapping types #680
+- Run `lazy_resolve` instrumentation for `connection` fields #679
+
+
 ## 1.5.7 (14 Apr 2017)
 
 ### Bug fixes
