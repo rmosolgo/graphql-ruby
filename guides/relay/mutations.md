@@ -65,10 +65,10 @@ AddCommentMutation = GraphQL::Relay::Mutation.define do
   # Used to name derived types, eg `"AddCommentInput"`:
   name "AddComment"
 
-  # Accessible from `input` in the resolve function:
+  # Accessible from `inputs` in the resolve function:
   input_field :postId, !types.ID
   input_field :authorId, !types.ID
-  input_field :content, !types.String
+  input_field :body, !types.String
 
   # The result has access to these fields,
   # resolve must return a hash with these keys.
@@ -81,9 +81,9 @@ AddCommentMutation = GraphQL::Relay::Mutation.define do
 
   # The resolve proc is where you alter the system state.
   resolve ->(object, inputs, ctx) {
-    post = Post.find(args[:postId])
+    post = Post.find(inputs[:postId])
     comments = post.comments
-    new_comment = comments.build(body: args[:body])
+    new_comment = comments.build(authorId: inputs[:authorId], body: inputs[:body])
     new_comment.save!
 
     # Use this helper to create the response that a
