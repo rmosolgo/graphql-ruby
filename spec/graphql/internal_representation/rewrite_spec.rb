@@ -108,7 +108,7 @@ describe GraphQL::InternalRepresentation::Rewrite do
       assert_equal nil, doc.definition
 
       plant_scoped_selection = doc.scoped_children[schema.types["Query"]]["plant"]
-      assert_equal ["Fruit", "Nut", "Plant", "Tree"], plant_scoped_selection.scoped_children.keys.map(&:name).sort
+      assert_equal ["Fruit", "Nut", "Plant"], plant_scoped_selection.scoped_children.keys.map(&:name).sort
 
       plant_selection = doc.typed_children[schema.types["Query"]]["plant"]
       assert_equal ["Fruit", "Grain", "Nut", "Vegetable"], plant_selection.typed_children.keys.map(&:name).sort

@@ -28,8 +28,8 @@ module GraphQL
               false
             end
           when GraphQL::UnionType
-            # A type is a subtype of that interface
-            # if the union includes that interface
+            # A type is a subtype of that union
+            # if the union includes that type
             parent_type.possible_types.include?(child_type)
           when GraphQL::ListType
             # A list type is a subtype of another list type
