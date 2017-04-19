@@ -2,12 +2,11 @@
 title: GraphQL::Pro — Authorization Framework
 ---
 
-`GraphQL::Pro` provides a comprehensive, unified authorization framework for the GraphQL runtime. Authorization can happen in two places:
+`GraphQL::Pro` provides a comprehensive, unified authorization framework for the GraphQL runtime.
 
-- __Runtime__: objects from `resolve` functions can be authorized for the current user.
-- __"Compile" time__: queries can be rejected if a user requests unauthorized fields or types.
+Fields and types can be [authorized at runtime](#runtime-authorization), [rejected during validation](#access-authorization), or [hidden entirely](#visibility-authorization). Default authorization can be [applied at schema-level](#fallback-authorization)
 
-`GraphQL::Pro` supports any authorization scheme and includes built-in [Pundit support](#pundit) and [CanCan support](#cancan)
+`GraphQL::Pro` integrates has out-of-the-box [Pundit support](#pundit) and [CanCan support](#cancan) and supports [custom authorization strategies](#custom-authorization-strategy)
 
 ## Configuration
 
@@ -35,6 +34,32 @@ result = MySchema.execute(query_string, context: { current_user: current_user })
 ```
 
 `current_user` will be used by the authorization hooks as described below.
+
+### Fallback Authorization
+
+You can specify a fallback auth configuration for the entire schema:
+
+```ruby
+MySchema = GraphQL::Schema.define do
+  # Always require logged-in users to see anything:
+  authorization(..., fallback: { view: :logged_in })
+end
+```
+
+This rule will be applied to fields which don't have a rule of their own or a rule on their return type.
+
+### Current User
+
+You can customize the `current_user:` context key with `authorization(..., current_user: ...)`:
+
+```ruby
+MySchema = GraphQL::Schema.define do
+  # Current user is identified as `ctx[:viewer]`
+  authorization :pundit, current_user: :viewer
+end
+```
+
+The authorization will use the specified key to find the current user in `ctx`.
 
 ## Runtime Authorization
 
@@ -89,33 +114,9 @@ end
 
 This way, you can serve a subset of fields based on the object being queried.
 
-## "Compile" Time Authorization
+## Access Authorization
 
-Before executing a query, GraphQL checks that it is valid. You can assert that users only access fields and types which are allowed to them.
-
-There are two kinds of compile-time authorization:
-
-- __Visibility__: you can hide fields and types from certain users. If they request these types or fields, the error message says that they don't exist.  
-- __Accessibility__: you can prevent access of fields and types from certain users. (They can see them, but if they request them, the request is rejected with an error message.)
-
-The `view` keyword specifies visibility permission:
-
-```ruby
-# These types and fields are
-# invisible to non-admins:
-
-# field-level:
-field :social_security_number, types.String, view: :admin
-
-# type-level:
-PassportApplicationType = GraphQL::ObjectType.define do
-  name "PassportApplication"
-  view :admin
-  # ...
-end
-```
-
-The `access` keyword specifies accessibility permission:
+You can prevent access to fields and types from certain users. (They can see them, but if they request them, the request is rejected with an error message.) Use the `access:` keyword for this feature.
 
 ```ruby
 # Non-owners may _see_ these,
@@ -145,61 +146,26 @@ The hook should return a {{ "GraphQL::AnalysisError" | api_doc }}. It is called 
 - `irep_nodes`: an array of {{ "GraphQL::InternalRepresentation::Node" | api_doc }}s which represent unpermitted fields in the incoming query.
 - `ctx`: the {{ "GraphQL::Query::Context" | api_doc }} (which includes `:current_user`).
 
-## Authorization Strategies
+## Visibility Authorization
 
-You can choose a built-in strategy or provide custom logic by providing a class:
+You can hide fields and types from certain users. If they request these types or fields, the error message says that they don't exist at all.
 
-```ruby
-MySchema = GraphQL::Schema.define do
-  # choose one:
-  authorization(:pundit)
-  # or:
-  authorization(:cancan)
-  # or:
-  authorization(MyAuthStrategy)
-end
-```
-
-As described below, `GraphQL::Pro` includes two built-in strategies, `:pundit` and `:cancan`.
-
-A custom strategy class must implement `#initialize(ctx)` and `#allowed?(gate, object)`. For example:
+The `view` keyword specifies visibility permission:
 
 ```ruby
-class MyAuthStrategy
-  def initialize(ctx)
-    @user = ctx[:custom_user]
-  end
+# These types and fields are
+# invisible to non-admins:
 
-  def allowed?(gate, object)
-    if object.nil?
-      # This is a compile-time check,
-      # so no object is available:
-      if gate.role == :admin
-        @user.admin?
-      else
-        @user.viewer?
-      end
-    else
-      # This is a runtime check,
-      # so we can use this specific object
-      @user.can?(gate.role, object)
-    end
-  end
+# field-level:
+field :social_security_number, types.String, view: :admin
+
+# type-level:
+PassportApplicationType = GraphQL::ObjectType.define do
+  name "PassportApplication"
+  view :admin
+  # ...
 end
 ```
-
-`gate` is the permission setting which responds to:
-
-- `#level`: where this check occurs: `:authorize`, `:view` or `:access`
-- `#role`: the value given to `authorize`, `view` or `access`
-- `#owner`: the field or type which has this permission check
-
-`object` is either:
-
-- `nil`, if the current check is `:view` or `:access`
-- The runtime object, if the current check is `authorize`
-
-For list types, each item of the list is authorized individually.
 
 ## Pundit
 
@@ -213,8 +179,8 @@ end
 
 Now, GraphQL will use your `*Policy` classes during execution. To find a policy class:
 
-- "Compile"-time checks use the type name (or return type name) to find a policy class
-- Runtime checks use the object to find a policy class (using Pundit's provided lookup)
+- [access](#access-authorization) and [visibility](#visibility-authorization) checks use the type name (or return type name) to find a policy class
+- [runtime](#runtime-authorization) checks use the object to find a policy class (using Pundit's provided lookup)
 
 You can also specify a custom policy name. Use the `pundit_policy_name:` option, for example:
 
@@ -232,7 +198,7 @@ end
 field :balance, AccountBalanceType, authorize: { role: :admin, pundit_policy_name: "TotalBalancePolicy" }
 ```
 
-The permission is defined as a hash with a `role:` key and `pundit_policy_name:` key. You can pass a hash for `view:` and `access:` too. For `parent_role:`, you can specify a name with `parent_pundit_policy_name:`.
+The permission is defined as a hash with a `role:` key and `pundit_policy_name:` key. You can pass a hash for `view:` and `access:` too. For [`parent_role:`](#authorize-values-by-parent), you can specify a name with `parent_pundit_policy_name:`.
 
 For `:pundit`, methods will be called with an extra `?`, so
 
@@ -240,6 +206,12 @@ For `:pundit`, methods will be called with an extra `?`, so
 view: :viewer
 # => will call the policy's `#viewer?` method
 ```
+
+### Policy Scopes
+
+When a resolve function returns an `ActiveRecord::Relation`, the policy's [`Scope` class](https://github.com/elabs/pundit#scopes) will be used if it's available.
+
+See [Scoping](#scoping) for details.
 
 ## CanCan
 
@@ -265,6 +237,12 @@ field :social_security_number, types.String, view: :admin
 # => calls `can?(:admin, nil)`
 ```
 
+### accessible_by
+
+When a resolve function returns an `ActiveRecord::Relation`, the relation's [`accessible_by` method](https://github.com/CanCanCommunity/cancancan/wiki/Fetching-Records) will be used to scope the relation.
+
+See [Scoping](#scoping) for details.
+
 ### Custom Ability Class
 
 By default, GraphQL looks for a top-level `Ability` class. You can specify a different class with the `ability_class:` option. For example:
@@ -276,3 +254,70 @@ end
 ```
 
 Now, GraphQL will use `Permissions::CustomAbility#can?` to determine permissions.
+
+## Custom Authorization Strategy
+
+You can provide custom authorization logic by providing a class:
+
+```ruby
+MySchema = GraphQL::Schema.define do
+  # choose one:
+  authorization(:pundit)
+  # or:
+  authorization(:cancan)
+  # or:
+  authorization(MyAuthStrategy)
+end
+```
+
+A custom strategy class must implement `#initialize(ctx)` and `#allowed?(gate, object)`. Optionally, it may implement `#scope(gate, relation)`. For example:
+
+```ruby
+class MyAuthStrategy
+  def initialize(ctx)
+    @user = ctx[:custom_user]
+  end
+
+  def allowed?(gate, object)
+    if object.nil?
+      # This is a compile-time check,
+      # so no object is available:
+      if gate.role == :admin
+        @user.admin?
+      else
+        @user.viewer?
+      end
+    else
+      # This is a runtime check,
+      # so we can use this specific object
+      @user.can?(gate.role, object)
+    end
+  end
+
+  def scope(gate, relation)
+    # Filter an ActiveRecord::Relation
+    # according to `@user` and `gate`
+    # ...
+  end
+end
+```
+
+`gate` is the permission setting which responds to:
+
+- `#level`: where this check occurs: `:authorize`, `:view` or `:access`
+- `#role`: the value given to `authorize`, `view` or `access`
+- `#owner`: the field or type which has this permission check
+
+`object` is either:
+
+- `nil`, if the current check is `:view` or `:access`
+- The runtime object, if the current check is `authorize`
+
+For list types, each item of the list is authorized individually.
+
+
+## Scoping
+
+`ActiveRecord::Relation`s get special treatment: they can be scoped with SQL by authorization strategies. The Pundit integration uses [policy scopes](#policy-scopes) and the CanCan integration uses [`accessible_by`](#accessible_by).
+
+[Custom authorization strategies](#custom-authorization-strategy) can implement `#scope(gate, relation)` to apply scoping to `ActiveRecord::Relation`s.
