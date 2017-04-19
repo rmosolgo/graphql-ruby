@@ -318,6 +318,6 @@ For list types, each item of the list is authorized individually.
 
 ## Scoping
 
-`ActiveRecord::Relation`s get special treatment: they can be scoped with SQL by authorization strategies. The Pundit integration uses [policy scopes](#policy-scopes) and the CanCan integration uses [`accessible_by`](#accessible_by).
+`ActiveRecord::Relation`s get special treatment: they can be scoped with SQL by authorization strategies. The Pundit integration uses [policy scopes](#policy-scopes) and the CanCan integration uses [`accessible_by`](#accessibleby).
 
 [Custom authorization strategies](#custom-authorization-strategy) can implement `#scope(gate, relation)` to apply scoping to `ActiveRecord::Relation`s.
