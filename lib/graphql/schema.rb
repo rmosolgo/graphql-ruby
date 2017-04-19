@@ -238,6 +238,12 @@ module GraphQL
       end
     end
 
+    # Fields for this type, after instrumentation is applied
+    # @return [Hash<String, GraphQL::Field>]
+    def get_fields(type)
+      @instrumented_field_map.get_all(type.name)
+    end
+
     def type_from_ast(ast_node)
       GraphQL::Schema::TypeExpression.build_type(self.types, ast_node)
     end

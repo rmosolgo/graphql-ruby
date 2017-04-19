@@ -92,7 +92,7 @@ module GraphQL
       # @param type_defn [GraphQL::ObjectType, GraphQL::InterfaceType]
       # @return [Array<GraphQL::Field>] Fields on `type_defn`
       def fields(type_defn)
-        @visible_fields ||= read_through { |t| t.all_fields.select { |f| visible_field?(f) } }
+        @visible_fields ||= read_through { |t| @schema.get_fields(t).each_value.select { |f| visible_field?(f) } }
         @visible_fields[type_defn]
       end
 

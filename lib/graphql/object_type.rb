@@ -73,11 +73,15 @@ module GraphQL
       GraphQL::TypeKinds::OBJECT
     end
 
+    # This fields doesnt have instrumenation applied
+    # @see [Schema#get_field] Get field with instrumentation
     # @return [GraphQL::Field] The field definition for `field_name` (may be inherited from interfaces)
     def get_field(field_name)
       fields[field_name] || interface_fields[field_name]
     end
 
+    # These fields don't have instrumenation applied
+    # @see [Schema#get_fields] Get fields with instrumentation
     # @return [Array<GraphQL::Field>] All fields, including ones inherited from interfaces
     def all_fields
       interface_fields.merge(self.fields).values

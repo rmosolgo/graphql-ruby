@@ -47,6 +47,8 @@ module GraphQL
       fields[field_name]
     end
 
+    # These fields don't have instrumenation applied
+    # @see [Schema#get_fields] Get fields with instrumentation
     # @return [Array<GraphQL::Field>] All fields on this type
     def all_fields
       fields.values
