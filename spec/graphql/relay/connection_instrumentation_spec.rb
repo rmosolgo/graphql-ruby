@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 require "spec_helper"
 
-describe GraphQL::Relay::ConnectionField do
+describe GraphQL::Relay::ConnectionInstrumentation do
   it "replaces the previous field definition" do
     test_type = GraphQL::ObjectType.define do
       name "Test"
@@ -16,7 +16,7 @@ describe GraphQL::Relay::ConnectionField do
     assert_instance_of StarWars::ShipsWithMaxPageSize, conn_field.function
   end
 
-  it "leaves the original field untouched" do
+  let(:build_schema) {
     test_type = nil
 
     test_field = GraphQL::Field.define do
@@ -29,7 +29,15 @@ describe GraphQL::Relay::ConnectionField do
       connection :tests, test_field
     end
 
-    conn_field = test_type.fields["tests"]
+    [
+      test_field,
+      GraphQL::Schema.define(query: test_type, raise_definition_error: true)
+    ]
+  }
+
+  it "leaves the original field untouched" do
+    test_field, test_schema = build_schema
+    conn_field = test_schema.get_field(test_schema.query, "tests")
 
     assert_equal 0, test_field.arguments.length
     assert_equal 4, conn_field.arguments.length
@@ -39,12 +47,8 @@ describe GraphQL::Relay::ConnectionField do
   end
 
   it "passes connection behaviors to redefinitions" do
-    test_type = GraphQL::ObjectType.define do
-      name "Test"
-      connection :tests, test_type.connection_type
-    end
-
-    connection_field = test_type.fields["tests"]
+    _test_field, test_schema = build_schema
+    connection_field = test_schema.get_field(test_schema.query, "tests")
     redefined_connection_field = connection_field.redefine { argument "name", types.String }
 
     assert_equal 4, connection_field.arguments.size

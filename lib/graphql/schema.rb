@@ -433,8 +433,15 @@ module GraphQL
 
     private
 
+    # Apply instrumentation to fields. Relay instrumentation is applied last
+    # so that user-provided instrumentation can wrap user-provided resolve functions,
+    # _then_ Relay helpers can wrap the returned objects.
     def build_instrumented_field_map
-      @instrumented_field_map = InstrumentedFieldMap.new(self, @instrumenters[:field])
+      all_instrumenters = @instrumenters[:field] + [
+        GraphQL::Relay::ConnectionInstrumentation,
+        GraphQL::Relay::Mutation::MutationInstrumentation,
+      ]
+      @instrumented_field_map = InstrumentedFieldMap.new(self, all_instrumenters)
     end
 
     def build_types_map

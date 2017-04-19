@@ -177,6 +177,16 @@ module GraphQL
     # @return [Object, GraphQL::Function] The function used to derive this field
     attr_accessor :function
 
+    attr_writer :connection
+
+    # @return [Boolean]
+    def connection?
+      @connection
+    end
+
+    # @return [nil, Integer]
+    attr_accessor :connection_max_page_size
+
     def initialize
       @complexity = 1
       @arguments = {}
@@ -184,6 +194,8 @@ module GraphQL
       @lazy_resolve_proc = DefaultLazyResolve
       @relay_node_field = false
       @default_arguments = nil
+      @connection = false
+      @connection_max_page_size = nil
     end
 
     def initialize_copy(other)
