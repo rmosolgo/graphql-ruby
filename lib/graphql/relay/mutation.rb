@@ -122,7 +122,7 @@ module GraphQL
       end
 
       def resolve=(new_resolve_proc)
-        @resolve_proc = MutationResolve.new(self, new_resolve_proc, wrap_result: has_generated_return_type?)
+        @resolve_proc = new_resolve_proc
       end
 
       def field
@@ -218,20 +218,34 @@ module GraphQL
         end
       end
 
+      module MutationInstrumentation
+        def self.instrument(type, field)
+          if field.mutation
+            new_resolve = MutationResolve.new(field.mutation, field.resolve_proc)
+            new_lazy_resolve = MutationResolve.new(field.mutation, field.lazy_resolve_proc)
+            field.redefine(resolve: new_resolve, lazy_resolve: new_lazy_resolve)
+          else
+            field
+          end
+        end
+      end
+
       class MutationResolve
-        def initialize(mutation, resolve, wrap_result:)
+        def initialize(mutation, resolve)
           @mutation = mutation
           @resolve = resolve
-          @wrap_result = wrap_result
+          @wrap_result = mutation.has_generated_return_type?
         end
 
         def call(obj, args, ctx)
-          mutation_result = @resolve.call(obj, args[:input], ctx)
+          begin
+            mutation_result = @resolve.call(obj, args[:input], ctx)
+          rescue GraphQL::ExecutionError => err
+            mutation_result = err
+          end
 
           if ctx.schema.lazy?(mutation_result)
-            @mutation.field.prepare_lazy(mutation_result, args, ctx).then { |inner_obj|
-              build_result(inner_obj, args, ctx)
-            }
+            mutation_result
           else
             build_result(mutation_result, args, ctx)
           end

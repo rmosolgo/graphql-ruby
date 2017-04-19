@@ -167,6 +167,7 @@ module GraphQL
               "PUSH",
               "Query.push: 1",
               "Query.push: 2",
+              "Query.pushes: [1, 2, 3]",
               "PUSH",
               "LazyPush.push: 3",
               "LazyPushEdge.node: 1",

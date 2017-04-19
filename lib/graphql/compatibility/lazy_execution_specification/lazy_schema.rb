@@ -37,6 +37,10 @@ module GraphQL
           def push
             @values.map { |v| LazyPush.new(@ctx, v) }
           end
+
+          def value
+            @values
+          end
         end
 
         module LazyInstrumentation
