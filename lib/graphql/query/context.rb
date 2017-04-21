@@ -71,6 +71,12 @@ module GraphQL
         )
       end
 
+      # Return this value to tell the runtime
+      # to exclude this field from the response altogether
+      def skip
+        GraphQL::Execution::Execute::SKIP
+      end
+
       class FieldResolutionContext
         extend Forwardable
 
@@ -84,7 +90,7 @@ module GraphQL
           @parent_type = parent_type
         end
 
-        def_delegators :@context, :[], :[]=, :spawn, :query, :schema, :warden, :errors, :execution_strategy, :strategy
+        def_delegators :@context, :[], :[]=, :spawn, :query, :schema, :warden, :errors, :execution_strategy, :strategy, :skip
 
         # @return [GraphQL::Language::Nodes::Field] The AST node for the currently-executing field
         def ast_node

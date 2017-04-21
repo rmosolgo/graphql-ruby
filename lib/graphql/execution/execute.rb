@@ -4,7 +4,10 @@ module GraphQL
     # A valid execution strategy
     # @api private
     class Execute
-      PROPAGATE_NULL = :__graphql_propagate_null__
+      # @api private
+      SKIP = Object.new
+      # @api private
+      PROPAGATE_NULL = Object.new
 
       def execute(ast_operation, root_type, query)
         result = resolve_selection(
@@ -34,6 +37,10 @@ module GraphQL
             object,
             query_ctx
           )
+
+          if field_result == SKIP
+            next
+          end
 
           if mutation
             GraphQL::Execution::Lazy.resolve(field_result)
@@ -138,6 +145,8 @@ module GraphQL
           else
             nil
           end
+        elsif value == SKIP
+          value
         else
           case field_type.kind
           when GraphQL::TypeKinds::SCALAR
