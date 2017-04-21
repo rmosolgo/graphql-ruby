@@ -58,10 +58,8 @@ module GraphQL
             # The root object is _already_ the subscription update:
             obj
           else
-            # It should only:
-            # - Register the selection (first condition)
-            # - Pass `obj` to the child selection (second condition)
-            raise "An unselected subscription field should never be called"
+            # This is a subscription update, but this event wasn't triggered.
+            ctx.skip
           end
         end
       end
