@@ -5,10 +5,12 @@ class InMemoryBackend
   # Store API
   class Database
     def initialize
+      @queries = {}
       @subscriptions = Hash.new { |h, k| h[k] = [] }
     end
 
-    def register(query, events)
+    def set(query, events)
+      @queries[query.context[:socket]] = query
       events.each do |ev|
         # The `context` is functioning as subscription data.
         # IRL you'd have some other model that persisted the subscription
@@ -16,18 +18,30 @@ class InMemoryBackend
       end
     end
 
-    def each_subscription(key)
-      @subscriptions[key].map { |ctx|
-        query = ctx.query
-        yield({
-          query_string: query.query_string,
-          operation_name: query.operation_name,
-          variables: query.provided_variables,
-          context: {},
-          channel: ctx[:socket],
-          transport: :socket,
-        })
+    def get(channel)
+      query = @queries[channel]
+      {
+        query_string: query.query_string,
+        operation_name: query.operation_name,
+        variables: query.provided_variables,
+        context: {},
+        transport: :socket,
       }
+    end
+
+    def each_channel(key)
+      @subscriptions[key].each do |ctx|
+        yield(ctx[:socket])
+      end
+    end
+
+    def delete(channel)
+      query = @queries.delete(channel)
+      if query
+        @subscriptions.each do |key, contexts|
+          contexts.delete(query.context)
+        end
+      end
     end
 
     # Just for testing:
@@ -57,6 +71,23 @@ class InMemoryBackend
     end
   end
 
+  class Queue
+    class << self
+      def pushes
+        @pushes ||= []
+      end
+
+      def clear
+        pushes.clear
+      end
+
+      def enqueue(schema, channel, event_key, object)
+        pushes << channel
+        schema.subscriber.process(channel, event_key, object)
+      end
+    end
+  end
+
   # Just a random stateful object for tracking what happens:
   class Payload
     attr_reader :str
@@ -76,6 +107,7 @@ end
 describe GraphQL::Subscriptions do
   before do
     InMemoryBackend::Socket.clear
+    InMemoryBackend::Queue.clear
   end
 
   let(:root_object) {
@@ -105,6 +137,7 @@ describe GraphQL::Subscriptions do
       subscription(subscription_type)
       use GraphQL::Subscriptions,
         store: db,
+        queue: InMemoryBackend::Queue,
         transports: {
           socket: InMemoryBackend::Socket
         }
@@ -161,8 +194,34 @@ describe GraphQL::Subscriptions do
   end
 
   describe "trigger" do
+    it "uses the provided queue" do
+      query_str = <<-GRAPHQL
+        subscription ($id: ID!){
+          payload(id: $id) { str, int }
+        }
+      GRAPHQL
+
+      schema.execute(query_str, context: { socket: "1" }, variables: { "id" => "8" }, root_value: root_object)
+      schema.subscriber.trigger("payload", { "id" => "8"}, root_object.payload)
+      assert_equal ["1"], InMemoryBackend::Queue.pushes
+    end
+
+    it "pushes errors" do
+      query_str = <<-GRAPHQL
+        subscription ($id: ID!){
+          payload(id: $id) { str, int }
+        }
+      GRAPHQL
+
+      schema.execute(query_str, context: { socket: "1" }, variables: { "id" => "8" }, root_value: root_object)
+      schema.subscriber.trigger("payload", { "id" => "8"}, OpenStruct.new(str: nil, int: nil))
+      socket = InMemoryBackend::Socket.open("1")
+      delivery = socket.deliveries.first
+      assert_equal nil, delivery.fetch("data")
+      assert_equal 1, delivery["errors"].length
+    end
+
     it "coerces args somehow?"
-    it "pushes errors"
     it "handles errors during trigger somehow?"
   end
 end

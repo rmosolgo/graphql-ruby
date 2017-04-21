@@ -12,47 +12,51 @@ module GraphQL
     class Subscriber
       extend Forwardable
 
-      def initialize(schema:, store:, transports:)
+      def initialize(schema:, store:, queue: InlineQueue, transports:)
         @schema = schema
         @store = store
+        @queue = queue
         @transports = transports
       end
 
-      def_delegators :@store, :register, :delete, :each_subscription
+      def_delegators :@store, :set, :get, :delete, :each_channel
 
-      # Fetch subscription matching this field + arguments pair
-      # and evaluate them with `object` as underlying value.
-      #
-      # Results will be sent to the transport specified by the store.
-      #
-      # TODO handle raised errors during loading & delivering.
-      # Subscription deliveries should be isolated.
+      # Fetch subscriptions matching this field + arguments pair
+      # And pass them off to the queue.
       def trigger(event, args, object)
         event_key = Subscriptions::Event.serialize(event, args)
-        @store.each_subscription(event_key) do |query_data|
-          query_string = query_data.fetch(:query_string)
-          variables = query_data.fetch(:variables)
-          context = query_data.fetch(:context)
-          operation_name = query_data.fetch(:operation_name)
-
-          query = GraphQL::Query.new(
-            @schema,
-            query_string,
-            {
-              context: context,
-              subscription_key: event_key,
-              operation_name: operation_name,
-              variables: variables,
-              root_value: object,
-            }
-          )
-          result = query.result
-
-          transport_key = query_data.fetch(:transport)
-          channel = query_data.fetch(:channel)
-          transport = @transports.fetch(transport_key)
-          transport.deliver(channel, result, query.context)
+        @store.each_channel(event_key) do |channel|
+          @queue.enqueue(@schema, channel, event_key, object)
         end
+      end
+
+      # TODO rename this.
+      # It runs the query and delivers it.
+      # It's probably called in a background job,
+      # but the default is inline.
+      def process(channel, event_key, object)
+        query_data = @store.get(channel)
+        query_string = query_data.fetch(:query_string)
+        variables = query_data.fetch(:variables)
+        context = query_data.fetch(:context)
+        operation_name = query_data.fetch(:operation_name)
+
+        query = GraphQL::Query.new(
+          @schema,
+          query_string,
+          {
+            context: context,
+            subscription_key: event_key,
+            operation_name: operation_name,
+            variables: variables,
+            root_value: object,
+          }
+        )
+        result = query.result
+
+        transport_key = query_data.fetch(:transport)
+        transport = @transports.fetch(transport_key)
+        transport.deliver(channel, result, query.context)
       end
     end
   end

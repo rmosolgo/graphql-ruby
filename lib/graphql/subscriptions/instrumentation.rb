@@ -31,7 +31,7 @@ module GraphQL
       def after_query(query)
         events = query.context[:events]
         if events && events.any?
-          @subscriber.register(query, events)
+          @subscriber.set(query, events)
         end
       end
 
