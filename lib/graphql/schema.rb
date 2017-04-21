@@ -419,12 +419,23 @@ module GraphQL
       !!lazy_method_name(obj)
     end
 
-    # Return a GraphQL schema string for the defined types in the schema
+    # Return the GraphQL IDL for the schema
     # @param context [Hash]
     # @param only [<#call(member, ctx)>]
     # @param except [<#call(member, ctx)>]
+    # @return [String]
     def to_definition(only: nil, except: nil, context: {})
       GraphQL::Schema::Printer.print_schema(self, only: only, except: except, context: context)
+    end
+
+    # Return the JSON response of {Introspection::INTROSPECTION_QUERY}.
+    # @param context [Hash]
+    # @param only [<#call(member, ctx)>]
+    # @param except [<#call(member, ctx)>]
+    # @return [String]
+    def to_json(only: nil, except: nil, context: {})
+      hash = execute(Introspection::INTROSPECTION_QUERY, only: only, except: except, context: context)
+      JSON.pretty_generate(hash)
     end
 
     protected
