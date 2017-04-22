@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+require "fileutils"
 module GraphQL
   # A rake task for dumping a schema as IDL or JSON.
   #
@@ -101,6 +102,8 @@ module GraphQL
       schema = @load_schema.call(self)
       context = @load_context.call(self)
       result = schema.public_send(method_name, only: @only, except: @except, context: context)
+      dir = File.dirname(file)
+      FileUtils.mkdir_p(dir)
       File.write(file, result)
     end
 
