@@ -24,7 +24,11 @@ module GraphQL
         def result
           result_name = irep_node.name
           raw_value = get_raw_value
-          { result_name => get_finished_value(raw_value) }
+          if raw_value == GraphQL::Execution::Execute::SKIP
+            {}
+          else
+            { result_name => get_finished_value(raw_value) }
+          end
         end
 
         # GraphQL::Batch depends on this
