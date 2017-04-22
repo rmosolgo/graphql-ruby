@@ -158,7 +158,12 @@ module GraphQL
             field :organization, !organization_type do
               argument :id, !types.ID
               resolve ->(obj, args, ctx) {
-                args[:id].start_with?("2") && obj[args[:id]]
+                if args[:id].start_with?("2")
+                  obj[args[:id]]
+                else
+                  # test context.skip
+                  ctx.skip
+                end
               }
             end
 

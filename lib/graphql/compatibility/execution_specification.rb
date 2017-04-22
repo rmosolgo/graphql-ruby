@@ -15,6 +15,7 @@ module GraphQL
     # - Typecasting
     # - Error handling (raise / return GraphQL::ExecutionError)
     # - Provides Irep & AST node to resolve fn
+    # - Skipping fields
     #
     # Some things are explicitly _not_ tested here, because they're handled
     # by other parts of the system:
@@ -95,6 +96,19 @@ module GraphQL
 
             res = execute_query(query_string)
             assert_equal ["SNCC"], res["data"]["node"]["organizations"].map { |o| o["name"] }
+          end
+
+          def test_it_skips_skipped_fields
+            query_str = <<-GRAPHQL
+            {
+              o3001: organization(id: "3001")  { name }
+              o2001: organization(id: "2001")  { name }
+            }
+            GRAPHQL
+
+            res = execute_query(query_str)
+            assert_equal ["o2001"], res["data"].keys
+            assert_equal false, res.key?("errors")
           end
 
           def test_it_propagates_nulls_to_field
