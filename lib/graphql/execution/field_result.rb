@@ -21,6 +21,7 @@ module GraphQL
       # If it is {Execute::PROPAGATE_NULL}, tell the owner to propagate null.
       # If the value is a {SelectionResult}, make a link with it, and if it's already null,
       # propagate the null as needed.
+      # If it's {Execute::Execution::SKIP}, remove this field result from its parent
       # @param new_value [Any] The GraphQL-ready value
       def value=(new_value)
         if new_value.is_a?(SelectionResult)
@@ -31,12 +32,15 @@ module GraphQL
           end
         end
 
-        if new_value == GraphQL::Execution::Execute::PROPAGATE_NULL
+        case new_value
+        when GraphQL::Execution::Execute::PROPAGATE_NULL
           if @type.kind.non_null?
             @owner.propagate_null
           else
             @value = nil
           end
+        when GraphQL::Execution::Execute::SKIP
+          @owner.delete(self)
         else
           @value = new_value
         end

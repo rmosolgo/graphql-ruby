@@ -38,6 +38,11 @@ module GraphQL
         end
       end
 
+      # TODO this should delete by key, ya dummy
+      def delete(field_result)
+        @storage.delete_if { |k, v| v == field_result }
+      end
+
       # A field has been unexpectedly nullified.
       # Tell the owner {FieldResult} if it is present.
       # Record {#invalid_null} in case an owner is added later.
