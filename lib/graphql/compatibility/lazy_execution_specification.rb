@@ -180,6 +180,25 @@ module GraphQL
             ]
             assert_equal expected_log, log
           end
+
+          def test_it_skips_ctx_skip
+            query_string = <<-GRAPHQL
+            {
+              p0: push(value: 15) { value }
+              p1: push(value: 1) { value }
+              p2: push(value: 2) {
+                value
+                p3: push(value: 15) {
+                  value
+                }
+              }
+            }
+            GRAPHQL
+            pushes = []
+            res = self.class.lazy_schema.execute(query_string, context: {pushes: pushes})
+            assert_equal [[1,2]], pushes
+            assert_equal({"data"=>{"p1"=>{"value"=>1}, "p2"=>{"value"=>2}}}, res)
+          end
         end
       end
     end
