@@ -24,18 +24,18 @@ module GraphQL
     #   end
     #
     class TimeoutMiddleware
-      # This key is used for storing timeout data in the {Query::Context} instance
-      DEFAULT_CONTEXT_KEY = :__timeout_at__
       # @param max_seconds [Numeric] how many seconds the query should be allowed to resolve new fields
-      # @param context_key [Symbol] what key should be used to read and write to the query context
-      def initialize(max_seconds:, context_key: DEFAULT_CONTEXT_KEY, &block)
+      def initialize(max_seconds:, context_key: nil, &block)
         @max_seconds = max_seconds
-        @context_key = context_key
+        if context_key
+          warn("TimeoutMiddleware's `context_key` is ignored, timeout data is now stored in isolated storage")
+        end
         @error_handler = block
       end
 
       def call(parent_type, parent_object, field_definition, field_args, query_context)
-        timeout_at = query_context[@context_key] ||= Time.now + @max_seconds
+        ns = query_context.namespace(TimeoutMiddleware)
+        timeout_at = ns[:timeout_at] ||= Time.now + @max_seconds
 
         if timeout_at < Time.now
           on_timeout(parent_type, parent_object, field_definition, field_args, query_context)

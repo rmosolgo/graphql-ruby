@@ -75,8 +75,10 @@ describe GraphQL::Query::Context do
   describe "empty values" do
     let(:context) { GraphQL::Query::Context.new(query: OpenStruct.new(schema: schema), values: nil) }
 
-    it "returns nil for any key" do
+    it "returns returns nil and reports key? => false" do
       assert_equal(nil, context[:some_key])
+      assert_equal(false, context.key?(:some_key))
+      assert_raises(KeyError) { context.fetch(:some_key) }
     end
   end
 
@@ -87,6 +89,17 @@ describe GraphQL::Query::Context do
       assert_equal(nil, context[:some_key])
       context[:some_key] = "wow!"
       assert_equal("wow!", context[:some_key])
+    end
+
+    describe "namespaces" do
+      let(:context) { GraphQL::Query::Context.new(query: OpenStruct.new(schema: schema), values: {a: 1}) }
+
+      it "doesn't conflict with base values" do
+        ns = context.namespace(:stuff)
+        ns[:b] = 2
+        assert_equal({a: 1}, context.to_h)
+        assert_equal({b: 2}, context.namespace(:stuff))
+      end
     end
   end
 
