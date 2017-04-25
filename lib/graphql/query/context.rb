@@ -4,6 +4,7 @@ module GraphQL
     # Expose some query-specific info to field resolve functions.
     # It delegates `[]` to the hash that's passed to `GraphQL::Query#initialize`.
     class Context
+      extend Forwardable
       attr_reader :execution_strategy
       # `strategy` is required by GraphQL::Batch
       alias_method :strategy, :execution_strategy
@@ -41,24 +42,32 @@ module GraphQL
       def initialize(query:, values:)
         @query = query
         @schema = query.schema
-        @values = values || {}
+        @provided_values = values || {}
+        # Namespaced storage, where user-provided values are in `nil` namespace:
+        @storage = Hash.new { |h, k| h[k] = {} }
+        @storage[nil] = @provided_values
         @errors = []
         @path = []
       end
 
-      # Lookup `key` from the hash passed to {Schema#execute} as `context:`
-      def [](key)
-        @values[key]
-      end
+      def_delegators :@provided_values, :[], :[]=, :to_h, :key?, :fetch
+
+      # @!method [](key)
+      #   Lookup `key` from the hash passed to {Schema#execute} as `context:`
+
+      # @!method []=(key, value)
+      #   Reassign `key` to the hash passed to {Schema#execute} as `context:`
 
       # @return [GraphQL::Schema::Warden]
       def warden
         @warden ||= @query.warden
       end
 
-      # Reassign `key` to the hash passed to {Schema#execute} as `context:`
-      def []=(key, value)
-        @values[key] = value
+      # Get an isolated hash for `ns`. Doesn't affect user-provided storage.
+      # @param ns [Object] a usage-specific namespace identifier
+      # @return [Hash] namespaced storage
+      def namespace(ns)
+        @storage[ns]
       end
 
       def spawn(key:, selection:, parent_type:, field:)
@@ -90,7 +99,10 @@ module GraphQL
           @parent_type = parent_type
         end
 
-        def_delegators :@context, :[], :[]=, :spawn, :query, :schema, :warden, :errors, :execution_strategy, :strategy, :skip
+        def_delegators :@context,
+          :[], :[]=, :key?, :fetch, :to_h, :namespace,
+          :spawn, :query, :schema, :warden, :errors,
+          :execution_strategy, :strategy, :skip
 
         # @return [GraphQL::Language::Nodes::Field] The AST node for the currently-executing field
         def ast_node
