@@ -8,6 +8,18 @@
 
 ### Bug fixes
 
+## 1.5.10 (25 Apr 2017)
+
+### New features
+
+- Support Rails 5.1 #693
+- Fall back to `String#encode` for non-UTF-8/non-ASCII strings #676
+
+### Bug Fixes
+
+- Correctly apply `Relay::Mutation`'s `return_field ... property:`  argument #692
+- Handle Rails 5.1's `ActionController::Parameters` #693
+
 ## 1.5.9 (19 Apr 2017)
 
 ### Bug Fixes
