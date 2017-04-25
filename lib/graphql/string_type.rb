@@ -4,10 +4,10 @@ GraphQL::STRING_TYPE = GraphQL::ScalarType.define do
   description "Represents textual data as UTF-8 character sequences. This type is most often used by GraphQL to represent free-form human-readable text."
 
   coerce_result ->(value, ctx) {
-    str = value.to_s
-    if str.encoding == Encoding::US_ASCII || str.encoding == Encoding::UTF_8
-      str
-    else
+    begin
+      str = value.to_s
+      str.encoding == Encoding::UTF_8 ? str : str.encode(Encoding::UTF_8)
+    rescue EncodingError
       err = GraphQL::StringEncodingError.new(str)
       ctx.schema.type_error(err, ctx)
     end

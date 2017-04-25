@@ -9,17 +9,41 @@ describe GraphQL::STRING_TYPE do
   end
 
   describe "coerce_result" do
+    let(:utf_8_str) { "foobar" }
+    let(:ascii_str) { "foobar".encode(Encoding::ASCII_8BIT) }
     let(:binary_str) { "\0\0\0foo\255\255\255".dup.force_encoding("BINARY") }
-    it "requires string to be encoded as UTF-8" do
-      err = assert_raises(GraphQL::StringEncodingError) {
-        string_type.coerce_isolated_result(binary_str)
-      }
 
-      assert_equal "String \"#{binary_str}\" was encoded as ASCII-8BIT! GraphQL requires UTF-8 encoding.", err.message
-      assert_equal binary_str, err.string
+    describe "encoding" do
+      subject { string_type.coerce_isolated_result(string) }
+
+      describe "when result is encoded as UTF-8" do
+        let(:string) { utf_8_str }
+
+        it "returns the string" do
+          assert_equal subject, string
+        end
+      end
+
+      describe "when the result is not UTF-8 but can be transcoded" do
+        let(:string) { ascii_str }
+
+        it "returns the string transcoded to UTF-8" do
+          assert_equal subject, string.encode(Encoding::UTF_8)
+        end
+      end
+
+      describe "when the result is not UTF-8 and cannot be transcoded" do
+        let(:string) { binary_str }
+
+        it "raises GraphQL::StringEncodingError" do
+          err = assert_raises(GraphQL::StringEncodingError) { subject }
+          assert_equal "String \"#{string}\" was encoded as ASCII-8BIT! GraphQL requires an encoding compatible with UTF-8.", err.message
+          assert_equal string, err.string
+        end
+      end
     end
 
-    describe "when the schema defines a custom hander" do
+    describe "when the schema defines a custom handler" do
       let(:schema) {
         GraphQL::Schema.define do
           query(GraphQL::ObjectType.define(name: "Query"))
