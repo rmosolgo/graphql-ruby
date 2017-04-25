@@ -428,14 +428,20 @@ module GraphQL
       GraphQL::Schema::Printer.print_schema(self, only: only, except: except, context: context)
     end
 
-    # Return the JSON response of {Introspection::INTROSPECTION_QUERY}.
+    # Return the Hash response of {Introspection::INTROSPECTION_QUERY}.
     # @param context [Hash]
     # @param only [<#call(member, ctx)>]
     # @param except [<#call(member, ctx)>]
+    # @return [Hash] GraphQL result
+    def as_json(only: nil, except: nil, context: {})
+      execute(Introspection::INTROSPECTION_QUERY, only: only, except: except, context: context)
+    end
+
+    # Returns the JSON response of {Introspection::INTROSPECTION_QUERY}.
+    # @see {#as_json}
     # @return [String]
-    def to_json(only: nil, except: nil, context: {})
-      hash = execute(Introspection::INTROSPECTION_QUERY, only: only, except: except, context: context)
-      JSON.pretty_generate(hash)
+    def to_json(*args)
+      JSON.pretty_generate(as_json(*args))
     end
 
     protected
