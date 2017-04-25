@@ -2,117 +2,11 @@
 require "spec_helper"
 
 describe GraphQL::Execution::Lazy do
-  class Wrapper
-    def initialize(item = nil, &block)
-      if block
-        @block = block
-      else
-        @item = item
-      end
-    end
-
-    def item
-      if @block
-        @item = @block.call()
-        @block = nil
-      end
-      @item
-    end
-  end
-
-  class SumAll
-    attr_reader :own_value
-    attr_accessor :value
-
-    def initialize(ctx, own_value)
-      @own_value = own_value
-      @all = ctx[:__sum_all__] ||= []
-      @all << self
-    end
-
-    def value
-      @value ||= begin
-        total_value = @all.map(&:own_value).reduce(&:+)
-        @all.each { |v| v.value = total_value}
-        @all.clear
-        total_value
-      end
-      @value
-    end
-  end
-
-  LazySum = GraphQL::ObjectType.define do
-    name "LazySum"
-    field :value, types.Int do
-      resolve ->(o, a, c) { o == 13 ? nil : o }
-    end
-    field :nestedSum, !LazySum do
-      argument :value, !types.Int
-      resolve ->(o, args, c) {
-        if args[:value] == 13
-          Wrapper.new(nil)
-        else
-          SumAll.new(c, o + args[:value])
-        end
-      }
-    end
-
-    field :nullableNestedSum, LazySum do
-      argument :value, types.Int
-      resolve ->(o, args, c) {
-        if args[:value] == 13
-          Wrapper.new(nil)
-        else
-          SumAll.new(c, o + args[:value])
-        end
-      }
-    end
-  end
-
-  LazyQuery = GraphQL::ObjectType.define do
-    name "Query"
-    field :int, !types.Int do
-      argument :value, !types.Int
-      argument :plus, types.Int, default_value: 0
-      resolve ->(o, a, c) { Wrapper.new(a[:value] + a[:plus])}
-    end
-
-    field :nestedSum, !LazySum do
-      argument :value, !types.Int
-      resolve ->(o, args, c) { SumAll.new(c, args[:value]) }
-    end
-
-    field :nullableNestedSum, LazySum do
-      argument :value, types.Int
-      resolve ->(o, args, c) {
-        if args[:value] == 13
-          Wrapper.new { raise GraphQL::ExecutionError.new("13 is unlucky") }
-        else
-          SumAll.new(c, args[:value])
-        end
-      }
-    end
-
-    field :listSum, types[LazySum] do
-      argument :values, types[types.Int]
-      resolve ->(o, args, c) { args[:values] }
-    end
-  end
-
-  LazySchema = GraphQL::Schema.define do
-    query(LazyQuery)
-    mutation(LazyQuery)
-    lazy_resolve(Wrapper, :item)
-    lazy_resolve(SumAll, :value)
-  end
-
-  def run_query(query_str)
-    LazySchema.execute(query_str)
-  end
+  include LazyHelpers
 
   describe "resolving" do
     it "calls value handlers" do
-      res = run_query('{  int(value: 2, plus: 1)}')
+      res = run_query('{  int(value: 2, plus: 1) }')
       assert_equal 3, res["data"]["int"]
     end
 
@@ -234,16 +128,16 @@ describe GraphQL::Execution::Lazy do
   end
 
   describe "LazyMethodMap" do
-    class SubWrapper < Wrapper; end
+    class SubWrapper < LazyHelpers::Wrapper; end
 
     let(:map) { GraphQL::Execution::Lazy::LazyMethodMap.new }
 
     it "finds methods for classes and subclasses" do
-      map.set(Wrapper, :item)
-      map.set(SumAll, :value)
-      b = Wrapper.new(1)
-      sub_b = Wrapper.new(2)
-      s = SumAll.new({}, 3)
+      map.set(LazyHelpers::Wrapper, :item)
+      map.set(LazyHelpers::SumAll, :value)
+      b = LazyHelpers::Wrapper.new(1)
+      sub_b = LazyHelpers::Wrapper.new(2)
+      s = LazyHelpers::SumAll.new({}, 3)
       assert_equal(:item, map.get(b))
       assert_equal(:item, map.get(sub_b))
       assert_equal(:value, map.get(s))

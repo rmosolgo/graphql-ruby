@@ -220,6 +220,17 @@ module GraphQL
       end
     end
 
+    # Execute several queries on itself. Raises an error if the schema definition is invalid.
+    # TODO yardoc
+    def multiplex(query_opts, shared_opts = {})
+      if @definition_error
+        raise @definition_error
+      else
+        queries = query_opts.map { |q| GraphQL::Query.new(self, nil, q.merge(shared_opts)) }
+        GraphQL::Execution::Multiplex.run_all(queries)
+      end
+    end
+
     # Resolve field named `field_name` for type `parent_type`.
     # Handles dynamic fields `__typename`, `__type` and `__schema`, too
     # @see [GraphQL::Schema::Warden] Restricted access to members of a schema
