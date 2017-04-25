@@ -10,21 +10,30 @@ module GraphQL
               @value = nil
             elsif value == 14
               @value = GraphQL::ExecutionError.new("oops!")
+            elsif value == 15
+              @skipped = true
+              @value = ctx.skip
             else
               @value = value
             end
             @context = ctx
             pushes = @context[:lazy_pushes] ||= []
-            pushes << @value
+            if !@skipped
+              pushes << @value
+            end
           end
 
           def push
-            if @context[:lazy_pushes].include?(@value)
-              @context[:lazy_instrumentation] && @context[:lazy_instrumentation] << "PUSH"
-              @context[:pushes] << @context[:lazy_pushes]
-              @context[:lazy_pushes] = []
+            if @skipped
+              @value
+            else
+              if @context[:lazy_pushes].include?(@value)
+                @context[:lazy_instrumentation] && @context[:lazy_instrumentation] << "PUSH"
+                @context[:pushes] << @context[:lazy_pushes]
+                @context[:lazy_pushes] = []
+              end
+              self
             end
-            self
           end
         end
 
