@@ -336,4 +336,12 @@ type Query {
       assert_equal([], errors)
     end
   end
+
+  describe "#as_json / #to_json" do
+    it "returns the instrospection result" do
+      result = schema.execute(GraphQL::Introspection::INTROSPECTION_QUERY)
+      assert_equal result, schema.as_json
+      assert_equal result, JSON.parse(schema.to_json)
+    end
+  end
 end
