@@ -8,6 +8,7 @@ module GraphQL
       attr_reader :query
 
       def initialize(query)
+        warn("Executor is deprecated; use Schema#execute")
         @query = query
       end
 
