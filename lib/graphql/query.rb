@@ -40,8 +40,10 @@ module GraphQL
     # @param max_complexity [Numeric] the maximum field complexity for this query (falls back to schema-level value)
     # @param except [<#call(schema_member, context)>] If provided, objects will be hidden from the schema when `.call(schema_member, context)` returns truthy
     # @param only [<#call(schema_member, context)>] If provided, objects will be hidden from the schema when `.call(schema_member, context)` returns false
-    def initialize(schema, query_string = nil, document: nil, context: nil, variables: {}, validate: true, operation_name: nil, root_value: nil, max_depth: nil, max_complexity: nil, except: nil, only: nil)
-      fail ArgumentError, "a query string or document is required" unless query_string || document
+    def initialize(schema, query_string = nil, query: nil, document: nil, context: nil, variables: {}, validate: true, operation_name: nil, root_value: nil, max_depth: nil, max_complexity: nil, except: nil, only: nil)
+      if !(query_string || document || query)
+        fail ArgumentError, "a query string or document is required"
+      end
 
       @schema = schema
       mask = GraphQL::Schema::Mask.combine(schema.default_mask, except: except, only: only)
@@ -58,7 +60,7 @@ module GraphQL
       @query_string = query_string
       parse_error = nil
       @document = document || begin
-        GraphQL.parse(query_string)
+        GraphQL.parse(query_string || query)
       rescue GraphQL::ParseError => err
         parse_error = err
         @schema.parse_error(err, @context)
@@ -127,7 +129,7 @@ module GraphQL
               nil
             end
           else
-            Executor.new(self).result
+            Execution::Multiplex.run_all([self]).first
           end
         ensure
           instrumenters.each { |i| i.after_query(self) }
