@@ -183,7 +183,7 @@ module StarWars
     # Result may have access to these fields:
     return_field :shipEdge, Ship.edge_type
     return_field :faction, Faction
-    return_field :aliasedFaction, Faction, property: :faction
+    return_field :aliasedFaction, Faction, property: :aliased_faction
 
     # Here's the mutation operation:
     resolve ->(root_obj, inputs, ctx) {
@@ -217,7 +217,8 @@ module StarWars
         ship_edge = GraphQL::Relay::Edge.new(ship, ships_connection)
         result = {
           shipEdge: ship_edge,
-          faction: faction
+          faction: faction,
+          aliased_faction: faction,
         }
         if args["shipName"] == "Slave II"
           LazyWrapper.new(result)

@@ -211,7 +211,10 @@ module GraphQL
 
         def self.define_subclass(mutation_defn)
           subclass = Class.new(self) do
-            attr_accessor(*mutation_defn.return_type.all_fields.map(&:name))
+            mutation_result_methods = mutation_defn.return_type.all_fields.map do |f|
+              f.property || f.name
+            end
+            attr_accessor(*mutation_result_methods)
             self.mutation = mutation_defn
           end
           subclass
