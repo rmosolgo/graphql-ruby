@@ -445,7 +445,7 @@ module GraphQL
     def build_instrumented_field_map
       all_instrumenters = @instrumenters[:field] + [
         GraphQL::Relay::ConnectionInstrumentation,
-        GraphQL::Relay::Mutation::MutationInstrumentation,
+        GraphQL::Relay::Mutation::Instrumentation,
       ]
       @instrumented_field_map = InstrumentedFieldMap.new(self, all_instrumenters)
     end

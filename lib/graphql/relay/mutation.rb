@@ -1,4 +1,8 @@
 # frozen_string_literal: true
+require "graphql/relay/mutation/instrumentation"
+require "graphql/relay/mutation/resolve"
+require "graphql/relay/mutation/result"
+
 module GraphQL
   module Relay
     # Define a Relay mutation:
@@ -178,9 +182,7 @@ module GraphQL
       end
 
       def result_class
-        @result_class ||= begin
-          Result.define_subclass(self)
-        end
+        @result_class ||= Result.define_subclass(self)
       end
 
       private
@@ -191,84 +193,6 @@ module GraphQL
           callable.arity
         else
           callable.method(:call).arity
-        end
-      end
-
-      # Use this when the mutation's return type was generated from `return_field`s.
-      # It delegates field lookups to the hash returned from `resolve`.
-      class Result
-        attr_reader :client_mutation_id
-        def initialize(client_mutation_id:, result:)
-          @client_mutation_id = client_mutation_id
-          result && result.each do |key, value|
-            self.public_send("#{key}=", value)
-          end
-        end
-
-        class << self
-          attr_accessor :mutation
-        end
-
-        def self.define_subclass(mutation_defn)
-          subclass = Class.new(self) do
-            attr_accessor(*mutation_defn.return_type.all_fields.map(&:name))
-            self.mutation = mutation_defn
-          end
-          subclass
-        end
-      end
-
-      module MutationInstrumentation
-        def self.instrument(type, field)
-          if field.mutation
-            new_resolve = MutationResolve.new(field.mutation, field.resolve_proc)
-            new_lazy_resolve = MutationResolve.new(field.mutation, field.lazy_resolve_proc)
-            field.redefine(resolve: new_resolve, lazy_resolve: new_lazy_resolve)
-          else
-            field
-          end
-        end
-      end
-
-      class MutationResolve
-        def initialize(mutation, resolve)
-          @mutation = mutation
-          @resolve = resolve
-          @wrap_result = mutation.has_generated_return_type?
-        end
-
-        def call(obj, args, ctx)
-          begin
-            mutation_result = @resolve.call(obj, args[:input], ctx)
-          rescue GraphQL::ExecutionError => err
-            mutation_result = err
-          end
-
-          if ctx.schema.lazy?(mutation_result)
-            mutation_result
-          else
-            build_result(mutation_result, args, ctx)
-          end
-        end
-
-        private
-
-        def build_result(mutation_result, args, ctx)
-          if mutation_result.is_a?(GraphQL::ExecutionError)
-            ctx.add_error(mutation_result)
-            mutation_result = nil
-          end
-
-          if @wrap_result
-            if mutation_result && !mutation_result.is_a?(Hash)
-              raise StandardError, "Expected `#{mutation_result}` to be a Hash."\
-                " Return a hash when using `return_field` or specify a custom `return_type`."
-            end
-
-            @mutation.result_class.new(client_mutation_id: args[:input][:clientMutationId], result: mutation_result)
-          else
-            mutation_result
-          end
         end
       end
     end
