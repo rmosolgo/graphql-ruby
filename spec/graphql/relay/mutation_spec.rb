@@ -113,6 +113,21 @@ describe GraphQL::Relay::Mutation do
     assert_equal StarWars::IntroduceShipMutation, StarWars::IntroduceShipMutation.result_class.mutation
   end
 
+  describe "return_field ... property:" do
+    it "resolves correctly" do
+      query_str = <<-GRAPHQL
+        mutation {
+          introduceShip(input: {shipName: "Bagel", factionId: "1"}) {
+            aliasedFaction { name }
+          }
+        }
+      GRAPHQL
+      result = star_wars_query(query_str)
+      faction_name = result["data"]["introduceShip"]["aliasedFaction"]["name"]
+      assert_equal("Alliance to Restore the Republic", faction_name)
+    end
+  end
+
   describe "aliased methods" do
     describe "on an unreached mutation" do
       it 'still ensures definitions' do

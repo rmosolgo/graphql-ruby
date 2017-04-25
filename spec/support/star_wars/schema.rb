@@ -183,6 +183,7 @@ module StarWars
     # Result may have access to these fields:
     return_field :shipEdge, Ship.edge_type
     return_field :faction, Faction
+    return_field :aliasedFaction, Faction, property: :faction
 
     # Here's the mutation operation:
     resolve ->(root_obj, inputs, ctx) {
