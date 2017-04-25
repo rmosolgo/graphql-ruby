@@ -248,4 +248,30 @@ describe GraphQL::Query::Variables do
       end
     end
   end
+
+  if ActionPack::VERSION::MAJOR > 3
+    describe "with a ActionController::Parameters" do
+      let(:query_string) { <<-GRAPHQL
+        query getCheeses($source: DairyAnimal!, $fatContent: Float!){
+          searchDairy(product: [{source: $source, fatContent: $fatContent}]) {
+            ... on Cheese { flavor }
+          }
+        }
+      GRAPHQL
+      }
+      let(:params) do
+        ActionController::Parameters.new(
+          "variables" => {
+            "source" => "COW",
+            "fatContent" => 0.4,
+          }
+        )
+      end
+
+      it "works" do
+        res = schema.execute(query_string, variables: params["variables"])
+        assert_equal 1, res["data"]["searchDairy"].length
+      end
+    end
+  end
 end
