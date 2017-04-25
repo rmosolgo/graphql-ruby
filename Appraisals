@@ -21,3 +21,7 @@ appraise 'rails_5.0' do
   gem 'activerecord', '~> 5.0.0'
   gem 'actionpack', '~> 5.0.0'
 end
+
+appraise 'rails_5.1' do
+  gem 'rails', '~> 5.1.0.rc2'
+end

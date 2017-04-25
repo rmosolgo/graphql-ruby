@@ -98,16 +98,27 @@ module GraphQL
       GraphQL::Query::Arguments.new(input_values, argument_definitions: arguments)
     end
 
+    # @api private
+    INVALID_OBJECT_MESSAGE = "Expected %{object} to be a key, value object responding to `to_h` or `to_unsafe_h`."
+
     def validate_non_null_input(input, ctx)
       warden = ctx.warden
       result = GraphQL::Query::InputValidationResult.new
 
-      if (input.to_h rescue nil).nil?
-        result.add_problem(
-          "Expected #{JSON.generate(input, quirks_mode: true)} to be a key, value object " \
-          " responding to `to_h`."
-        )
-        return result
+      # We're not actually _using_ the coerced result, we're just
+      # using these methods to make sure that the object will
+      # behave like a hash below, when we call `each` on it.
+      begin
+        input.to_h
+      rescue
+        begin
+          # Handle ActionController::Parameters:
+          input.to_unsafe_h
+        rescue
+          # We're not sure it'll act like a hash, so reject it:
+          result.add_problem(INVALID_OBJECT_MESSAGE % { object: JSON.generate(input, quirks_mode: true) })
+          return result
+        end
       end
 
 
