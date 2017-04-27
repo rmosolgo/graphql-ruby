@@ -18,7 +18,7 @@ module GraphQL
   #
   #     argument :id, GraphQL::ID_TYPE
   #
-  #     def resolve(obj, args, ctx)
+  #     def call(obj, args, ctx)
   #        @model.find(args.id)
   #     end
   #   end
