@@ -143,7 +143,7 @@
 
 <div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MyFunc</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Function</span>
   <span class="c1"># Define a member of `#arguments`, just like the DSL:</span>
-  <span class="n">argument</span> <span class="ss">:id</span><span class="p">,</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ID_TYPE</span>
+  <span class="n">argument</span> <span class="ss">:id</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">ID</span>
 
   <span class="c1"># Define documentation:</span>
   <span class="n">description</span> <span class="s2">"My Custom function"</span>
@@ -154,23 +154,12 @@
   <span class="n">type</span> <span class="k">do</span>
     <span class="nb">name</span> <span class="s2">"MyFuncReturnType"</span>
     <span class="c1"># The returned object must implement these methods:</span>
-    <span class="n">field</span> <span class="ss">:name</span><span class="p">,</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">STRING_TYPE</span>
-    <span class="n">field</span> <span class="ss">:count</span><span class="p">,</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">INT_TYPE</span>
+    <span class="n">field</span> <span class="ss">:name</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">String</span>
+    <span class="n">field</span> <span class="ss">:count</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">Int</span>
   <span class="k">end</span>
 <span class="k">end</span>
 </code></pre>
 </div>
-
-<h4 id="types">Types</h4>
-
-<p>Note that <code class="highlighter-rouge">types.</code> is <em>not</em> available. Instead, you should reference GraphQL’s built-in <a href="http://www.rubydoc.info/gems/graphql/GraphQL/ScalarType" target="_blank"><code>GraphQL::ScalarType</code></a>s directly.</p>
-
-<p>To make lists and non-null types, you can use:</p>
-
-<ul>
-  <li><a href="http://www.rubydoc.info/gems/graphql/BaseType#to_list_type-instance_method" target="_blank"><code>BaseType#to_list_type</code></a> to make a list, eg <code class="highlighter-rouge">PostType.to_list_type</code></li>
-  <li><a href="http://www.rubydoc.info/gems/graphql/BaseType#to_non_null_type-instance_method" target="_blank"><code>BaseType#to_non_null_type</code></a> to make a non-null type, eg <code class="highlighter-rouge">PostType.to_non_null_type</code></li>
-</ul>
 
 <h4 id="function-inheritance">Function Inheritance</h4>
 
