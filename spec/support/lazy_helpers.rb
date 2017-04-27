@@ -108,12 +108,29 @@ module LazyHelpers
     module_function
 
     def before_query(q)
+      add_check(q, "before #{q.selected_operation.name}")
       # TODO not threadsafe
       # This should use multiplex-level context
       SumAll.all.clear
     end
 
     def after_query(q)
+      add_check(q, "after #{q.selected_operation.name}")
+    end
+
+    def before_multiplex(multiplex)
+      add_check(multiplex, "before multiplex")
+    end
+
+    def after_multiplex(multiplex)
+      add_check(multiplex, "after multiplex")
+    end
+
+    def add_check(obj, text)
+      checks = obj.context[:instrumentation_checks]
+      if checks
+        checks << text
+      end
     end
   end
 
@@ -123,6 +140,7 @@ module LazyHelpers
     lazy_resolve(Wrapper, :item)
     lazy_resolve(SumAll, :value)
     instrument(:query, SumAllInstrumentation)
+    instrument(:multiplex, SumAllInstrumentation)
   end
 
   def run_query(query_str)
