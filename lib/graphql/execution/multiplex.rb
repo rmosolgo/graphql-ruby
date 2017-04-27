@@ -7,9 +7,17 @@ module GraphQL
       NO_OPERATION = {}.freeze
 
       def self.run_all(queries)
+        schema = queries.first.schema
+        query_instrumenters = schema.instrumenters[:query]
+
+        # TODO: this makes a lot of passes over the list of queries, can we reduce it?
+        queries.each do |query|
+          query_instrumenters.each { |i| i.before_query(query) }
+        end
+
         results = queries.map do |query|
           operation = query.selected_operation
-          if operation.nil?
+          if operation.nil? || !query.valid?
             NO_OPERATION
           else
             begin
@@ -32,11 +40,16 @@ module GraphQL
         GraphQL::Execution::Lazy.resolve(results)
 
         results.each_with_index.map do |data_result, idx|
-          if data_result.equal?(NO_OPERATION)
-            {}
+          query = queries[idx]
+          # Assign the result so that it can be accessed in instrumentation
+          query.result = if data_result.equal?(NO_OPERATION)
+            if !query.valid?
+              { "errors" => query.static_errors.map(&:to_h) }
+            else
+              {}
+            end
           else
             result = { "data" => data_result.to_h }
-            query = queries[idx]
             error_result = query.context.errors.map(&:to_h)
 
             if error_result.any?
@@ -45,6 +58,10 @@ module GraphQL
 
             result
           end
+        end
+      ensure
+        queries.each do |query|
+          query_instrumenters.each { |i| i.after_query(query) }
         end
       end
     end
