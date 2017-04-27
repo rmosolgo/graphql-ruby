@@ -125,7 +125,7 @@ module GraphQL
     # @return [Hash] A GraphQL response, with `"data"` and/or `"errors"` keys
     def result
       if !@executed
-        Execution::Multiplex.run_all([self])
+        Execution::Multiplex.run_queries(@schema, [self])
       end
       @result
     end

@@ -2,55 +2,51 @@
 require "spec_helper"
 
 describe GraphQL::Execution::Multiplex do
-  def multiplex(queries)
-    LazyHelpers::LazySchema.multiplex(queries)
+  def multiplex(*a)
+    LazyHelpers::LazySchema.multiplex(*a)
   end
 
-  describe "multiple queries in the same lazy context" do
-    let(:q1) { <<-GRAPHQL
-      {
+  let(:q1) { <<-GRAPHQL
+    query Q1 {
+      nestedSum(value: 3) {
+        value
+        nestedSum(value: 7) {
+          value
+        }
+      }
+    }
+    GRAPHQL
+  }
+  let(:q2) { <<-GRAPHQL
+    query Q2 {
+      nestedSum(value: 2) {
+        value
+        nestedSum(value: 11) {
+          value
+        }
+      }
+    }
+    GRAPHQL
+  }
+  let(:q3) { <<-GRAPHQL
+    query Q3 {
+      listSum(values: [1,2]) {
         nestedSum(value: 3) {
           value
-          nestedSum(value: 7) {
-            value
-          }
         }
       }
-    GRAPHQL
     }
-    let(:q2) { <<-GRAPHQL
-      {
-        nestedSum(value: 2) {
-          value
-          nestedSum(value: 11) {
-            value
-          }
-        }
-      }
     GRAPHQL
-    }
-    let(:q3) { <<-GRAPHQL
-      {
-        listSum(values: [1,2]) {
-          nestedSum(value: 3) {
-            value
-          }
-        }
-      }
-    GRAPHQL
-    }
+  }
 
+  let(:queries) { [{query: q1}, {query: q2}, {query: q3}] }
+
+  describe "multiple queries in the same lazy context" do
     it "runs multiple queries in the same lazy context" do
       expected_data = [
         {"data"=>{"nestedSum"=>{"value"=>14, "nestedSum"=>{"value"=>46}}}},
         {"data"=>{"nestedSum"=>{"value"=>14, "nestedSum"=>{"value"=>46}}}},
         {"data"=>{"listSum"=>[{"nestedSum"=>{"value"=>14}}, {"nestedSum"=>{"value"=>14}}]}},
-      ]
-
-      queries = [
-        {query: q1},
-        {query: q2},
-        {query: q3},
       ]
 
       res = multiplex(queries)
@@ -101,24 +97,30 @@ describe GraphQL::Execution::Multiplex do
         },
       ]
 
-      queries = [
+      res = multiplex([
         {query: q1},
         {query: q2},
         {query: q3},
         {query: q4},
-      ]
-
-      res = multiplex(queries)
+      ])
       assert_equal expected_res, res
     end
   end
 
   describe "context shared by a multiplex run" do
-    it "exists or something"
+    it "is provided as context:" do
+      checks = []
+      multiplex(queries, context: { instrumentation_checks: checks })
+      assert_equal ["before multiplex", "after multiplex"], checks
+    end
   end
 
   describe "instrumenting a multiplex run" do
-    it "runs query instrumentation for each query"
-    it "runs multiplex-level instrumentation"
+    it "runs query instrumentation for each query and multiplex-level instrumentation" do
+      checks = []
+      queries_with_context = queries.map { |q| q.merge(context: { instrumentation_checks: checks }) }
+      multiplex(queries_with_context, context: { instrumentation_checks: checks })
+      assert_equal ["before multiplex", "before Q1", "before Q2", "before Q3", "after Q1", "after Q2", "after Q3", "after multiplex"], checks
+    end
   end
 end
