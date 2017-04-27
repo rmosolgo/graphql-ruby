@@ -41,9 +41,6 @@ describe GraphQL::Execution::Multiplex do
     }
 
     it "runs multiple queries in the same lazy context" do
-      # TODO This is required because multiplex doesn't properly run instrumentation
-      LazyHelpers::SumAll.all.clear
-
       expected_data = [
         {"data"=>{"nestedSum"=>{"value"=>14, "nestedSum"=>{"value"=>46}}}},
         {"data"=>{"nestedSum"=>{"value"=>14, "nestedSum"=>{"value"=>46}}}},
@@ -62,7 +59,58 @@ describe GraphQL::Execution::Multiplex do
   end
 
   describe "when some have validation errors or runtime errors" do
-    it "returns a mix of errors and values"
+    let(:q1) { " { success: nullableNestedSum(value: 1) { value } }" }
+    let(:q2) { " { runtimeError: nullableNestedSum(value: 13) { value } }" }
+    let(:q3) { "{
+      invalidNestedNull: nullableNestedSum(value: 1) {
+        value
+        nullableNestedSum(value: 2) {
+          nestedSum(value: 13) {
+            value
+          }
+        }
+      }
+    }" }
+    let(:q4) { " { validationError: nullableNestedSum(value: true) }"}
+
+    it "handles errors in instrumentation"
+
+    it "returns a mix of errors and values" do
+      expected_res = [
+        {
+          "data"=>{"success"=>{"value"=>2}}
+        },
+        {
+          "data"=>{"runtimeError"=>nil},
+          "errors"=>[{
+            "message"=>"13 is unlucky",
+            "locations"=>[{"line"=>1, "column"=>4}],
+            "path"=>["runtimeError"]
+          }]
+        },
+        {
+          "data"=>{"invalidNestedNull"=>{"value" => 2,"nullableNestedSum" => nil}},
+          "errors"=>[{"message"=>"Cannot return null for non-nullable field LazySum.nestedSum"}],
+        },
+        {
+          "errors" => [{
+            "message"=>"Objects must have selections (field 'nullableNestedSum' returns LazySum but has no selections)",
+            "locations"=>[{"line"=>1, "column"=>4}],
+            "fields"=>["query", "validationError"]
+          }]
+        },
+      ]
+
+      queries = [
+        {query: q1},
+        {query: q2},
+        {query: q3},
+        {query: q4},
+      ]
+
+      res = multiplex(queries)
+      assert_equal expected_res, res
+    end
   end
 
   describe "context shared by a multiplex run" do
