@@ -11,7 +11,7 @@ bundle config gems.graphql.pro #{YOUR_CREDENTIALS}
 Then, you can add `graphql-pro` to your Gemfile, which a custom `source`:
 
 ```ruby
-source "gems.graphql.pro" do
+source "https://gems.graphql.pro" do
   gem "graphql-pro"
 end
 ```
