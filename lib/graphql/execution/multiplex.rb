@@ -6,16 +6,56 @@ module GraphQL
     class Multiplex
       NO_OPERATION = {}.freeze
 
-      def self.run_all(queries)
-        schema = queries.first.schema
-        query_instrumenters = schema.instrumenters[:query]
+      attr_reader :context, :queries, :schema
+      def initialize(schema:, queries:, context:)
+        @schema = schema
+        @queries = queries
+        @context = context
+      end
 
-        # TODO: this makes a lot of passes over the list of queries, can we reduce it?
-        queries.each do |query|
-          query_instrumenters.each { |i| i.before_query(query) }
+      class << self
+        def run_all(schema, query_options, *rest)
+          queries = query_options.map { |opts| GraphQL::Query.new(schema, nil, opts) }
+          run_queries(schema, queries, *rest)
         end
 
-        results = queries.map do |query|
+        def run_queries(schema, queries, context: {})
+          query_instrumenters = schema.instrumenters[:query]
+          multiplex_instrumenters = schema.instrumenters[:multiplex]
+          multiplex = self.new(schema: schema, queries: queries, context: context)
+
+          # First, run multiplex instrumentation, then query instrumentation for each query
+          multiplex_instrumenters.each { |i| i.before_multiplex(multiplex) }
+          queries.each do |query|
+            query_instrumenters.each { |i| i.before_query(query) }
+          end
+
+          # Then, do as much eager evaluation of the query as possible
+          results = queries.map do |query|
+            begin_query(query)
+          end
+
+          # Then, work through lazy results in a breadth-first way
+          GraphQL::Execution::Lazy.resolve(results)
+
+          # Then, find all errors and assign the result to the query object
+          results.each_with_index.map do |data_result, idx|
+            query = queries[idx]
+            finish_query(data_result, query)
+          end
+        ensure
+          # Finally, run teardown instrumentation for each query + the multiplex
+          queries.each do |query|
+            query_instrumenters.each { |i| i.after_query(query) }
+          end
+          multiplex_instrumenters.each { |i| i.after_multiplex(multiplex) }
+        end
+
+        private
+
+        # @param query [GraphQL::Query]
+        # @return [Hash] The initial result (may not be finished if there are lazy values)
+        def begin_query(query)
           operation = query.selected_operation
           if operation.nil? || !query.valid?
             NO_OPERATION
@@ -37,10 +77,10 @@ module GraphQL
           end
         end
 
-        GraphQL::Execution::Lazy.resolve(results)
-
-        results.each_with_index.map do |data_result, idx|
-          query = queries[idx]
+        # @param data_result [Hash] The result for the "data" key, if any
+        # @param query [GraphQL::Query] The query which was run
+        # @return [Hash] final result of this query, including all values and errors
+        def finish_query(data_result, query)
           # Assign the result so that it can be accessed in instrumentation
           query.result = if data_result.equal?(NO_OPERATION)
             if !query.valid?
@@ -58,10 +98,6 @@ module GraphQL
 
             result
           end
-        end
-      ensure
-        queries.each do |query|
-          query_instrumenters.each { |i| i.after_query(query) }
         end
       end
     end

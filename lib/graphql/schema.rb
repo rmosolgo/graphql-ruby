@@ -221,13 +221,12 @@ module GraphQL
     end
 
     # Execute several queries on itself. Raises an error if the schema definition is invalid.
-    # TODO yardoc
-    def multiplex(query_opts, shared_opts = {})
+    # @see {Multiplex.run_all} for arguments
+    def multiplex(*args)
       if @definition_error
         raise @definition_error
       else
-        queries = query_opts.map { |q| GraphQL::Query.new(self, nil, q.merge(shared_opts)) }
-        GraphQL::Execution::Multiplex.run_all(queries)
+        GraphQL::Execution::Multiplex.run_all(self, *args)
       end
     end
 
