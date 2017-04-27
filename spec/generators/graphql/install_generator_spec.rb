@@ -178,8 +178,7 @@ DummySchema = GraphQL::Schema.define do
   }
 
   # GraphQL::Batch setup:
-  lazy_resolve(Promise, :sync)
-  instrument(:query, GraphQL::Batch::Setup)
+  use GraphQL::Batch
 end
 RUBY
 end

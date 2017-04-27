@@ -29,6 +29,5 @@
   }
 <% end %><% if options[:batch] %>
   # GraphQL::Batch setup:
-  lazy_resolve(Promise, :sync)
-  instrument(:query, GraphQL::Batch::Setup)
+  use GraphQL::Batch
 <% end %>end
