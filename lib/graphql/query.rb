@@ -111,32 +111,28 @@ module GraphQL
       @executed = false
     end
 
-    # Get the result for this query, executing it once
-    # @return [Hash] A GraphQL response, with `"data"` and/or `"errors"` keys
-    def result
+    # @api private
+    def result=(result_hash)
       if @executed
-        @result
+        raise "Invariant: Can't reassign result"
       else
         @executed = true
-        instrumenters = @schema.instrumenters[:query]
-        begin
-          instrumenters.each { |i| i.before_query(self) }
-          @result = if !valid?
-            all_errors = validation_errors + analysis_errors + context.errors
-            if all_errors.any?
-              { "errors" => all_errors.map(&:to_h) }
-            else
-              nil
-            end
-          else
-            Execution::Multiplex.run_all([self]).first
-          end
-        ensure
-          instrumenters.each { |i| i.after_query(self) }
-        end
+        @result = result_hash
       end
     end
 
+    # Get the result for this query, executing it once
+    # @return [Hash] A GraphQL response, with `"data"` and/or `"errors"` keys
+    def result
+      if !@executed
+        Execution::Multiplex.run_all([self])
+      end
+      @result
+    end
+
+    def static_errors
+      validation_errors + analysis_errors + context.errors
+    end
 
     # This is the operation to run for this query.
     # If more than one operation is present, it must be named at runtime.
