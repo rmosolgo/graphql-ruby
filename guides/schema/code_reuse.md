@@ -54,7 +54,7 @@ Objects passed with the `function:` keyword must implement some field-related me
 ```ruby
 class MyFunc < GraphQL::Function
   # Define a member of `#arguments`, just like the DSL:
-  argument :id, GraphQL::ID_TYPE
+  argument :id, types.ID
 
   # Define documentation:
   description "My Custom function"
@@ -65,21 +65,11 @@ class MyFunc < GraphQL::Function
   type do
     name "MyFuncReturnType"
     # The returned object must implement these methods:
-    field :name, GraphQL::STRING_TYPE
-    field :count, GraphQL::INT_TYPE
+    field :name, types.String
+    field :count, types.Int
   end
 end
 ```
-
-#### Types
-
-Note that `types.` is _not_ available. Instead, you should reference GraphQL's built-in {{ "GraphQL::ScalarType" | api_doc }}s directly.
-
-To make lists and non-null types, you can use:
-
-- {{ "BaseType#to_list_type" | api_doc }} to make a list, eg `PostType.to_list_type`
-- {{ "BaseType#to_non_null_type" | api_doc }} to make a non-null type, eg `PostType.to_non_null_type`
-
 
 #### Function Inheritance
 

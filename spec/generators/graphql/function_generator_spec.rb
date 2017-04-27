@@ -20,7 +20,7 @@ class Functions::FindRecord < GraphQL::Function
   # end
 
   # add arguments by type:
-  # argument :id, !GraphQL::ID_TYPE
+  # argument :id, !types.ID
 
   # Resolve function:
   def call(obj, args, ctx)
