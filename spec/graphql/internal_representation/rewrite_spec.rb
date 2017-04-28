@@ -286,4 +286,42 @@ describe GraphQL::InternalRepresentation::Rewrite do
       end
     end
   end
+
+  describe "fragment definition without query" do
+    let(:query_string) {
+      <<-GRAPHQL
+      fragment NutFields on Nut {
+        leafType
+        ... TreeFields
+      }
+
+      fragment TreeFields on Tree {
+        habitats {
+          ... HabitatFields
+        }
+      }
+
+      fragment HabitatFields on Habitat {
+        seasons
+      }
+      GRAPHQL
+    }
+
+    let(:validator) {
+      rules = GraphQL::StaticValidation::ALL_RULES - [
+        GraphQL::StaticValidation::FragmentsAreUsed
+      ]
+      GraphQL::StaticValidation::Validator.new(schema: schema, rules: rules)
+    }
+
+    it "tracks fragment definitions without operation" do
+      doc = rewrite_result["NutFields"]
+
+      assert doc.typed_children[schema.types["Nut"]]["leafType"]
+
+      assert nut_selections = doc.typed_children[schema.types["Nut"]]
+      habitats_selections = nut_selections["habitats"].typed_children[schema.types["Habitat"]]
+      assert_equal ["seasons"], habitats_selections.keys
+    end
+  end
 end

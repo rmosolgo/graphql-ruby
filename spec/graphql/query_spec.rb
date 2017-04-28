@@ -529,4 +529,14 @@ describe GraphQL::Query do
       assert_equal([nil], expected_args.first['id'])
     end
   end
+
+  describe '#internal_representation' do
+    it "includes all definition roots" do
+      assert_kind_of GraphQL::InternalRepresentation::Node, query.internal_representation["getFlavor"]
+      assert_kind_of GraphQL::InternalRepresentation::Node, query.internal_representation["cheeseFields"]
+      assert_kind_of GraphQL::InternalRepresentation::Node, query.internal_representation["edibleFields"]
+      assert_kind_of GraphQL::InternalRepresentation::Node, query.internal_representation["milkFields"]
+      assert_kind_of GraphQL::InternalRepresentation::Node, query.internal_representation["dairyFields"]
+    end
+  end
 end
