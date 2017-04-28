@@ -221,7 +221,23 @@ module GraphQL
     end
 
     # Execute several queries on itself. Raises an error if the schema definition is invalid.
-    # @see {Multiplex.run_all} for arguments
+    # @example Run several queries at once
+    #   context = { ... }
+    #   queries = [
+    #     { query: params[:query_1], variables: params[:variables_1], context: context },
+    #     { query: params[:query_2], variables: params[:variables_2], context: context },
+    #   ]
+    #   results = MySchema.multiplex(queries)
+    #   render json: {
+    #     result_1: results[0],
+    #     result_2: results[1],
+    #   }
+    #
+    # @see {Query#execute} for query keyword arguments
+    # @see {Execution::Multiplex#run_queries} for multiplex keyword arguments
+    # @param queries [Array<Hash>] Keyword arguments for each query
+    # @param context [Hash] Multiplex-level context
+    # @return [Array<Hash>] One result for each query in the input
     def multiplex(*args)
       if @definition_error
         raise @definition_error

@@ -13,6 +13,21 @@ MySchema.execute(query_string)
 # }
 ```
 
+Or, you can execute multiple queries at once:
+
+```ruby
+MySchema.multiplex([
+  {query: query_string_1},
+  {query: query_string_2},
+  {query: query_string_3},
+])
+# [
+#   { "data" => { ... } },
+#   { "data" => { ... } },
+#   { "data" => { ... } },
+# ]
+```
+
 There are also several options you can use:
 
 - `variables:` provides values for `$`-named [query variables](http://graphql.org/learn/queries/#variables)
