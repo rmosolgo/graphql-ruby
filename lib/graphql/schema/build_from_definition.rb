@@ -58,9 +58,9 @@ module GraphQL
 
         def build_resolver(type, field, obj)
           if obj.method(field.name.to_sym).arity > 0 
-            return -> (o, a, c) { o.send(field.name, a) }
+            return ->(o, a, c) { o.send(field.name, a) }
           else
-            return -> (o, a, c) { o.send(field.name) }
+            return ->(o, a, c) { o.send(field.name) }
           end
         end
       end
