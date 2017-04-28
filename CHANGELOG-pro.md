@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+## 1.4.1 (19 Apr 2017)
+
+### New Features
+
+- Add `:datadog` monitoring
+
 ## 1.4.0 (19 Apr 2017)
 
 ### New Features

@@ -25,6 +25,7 @@ end
 Supported platforms are:
 
 - [Appsignal](#appsignal)
+- [Datadog APM](#datadog)
 - [New Relic](#new-relic)
 - [Scout](#scout)
 - [Skylight](#skylight)
@@ -98,6 +99,28 @@ end
 <div class="monitoring-img-group">
   {{ "/pro/appsignal_1.png" | link_to_img:"appsignal monitoring" }}
   {{ "/pro/appsignal_2.png" | link_to_img:"appsignal monitoring" }}
+</div>
+
+## Datadog
+
+Add [Datadog APM](https://www.datadoghq.com/apm/) instrumentation with `monitoring(:datadog)`, for example:
+
+```ruby
+MySchema = GraphQL::Schema.define do
+  # ...
+  monitoring(:datadog)
+end
+```
+
+This requires the [`ddtrace` gem](https://github.com/DataDog/dd-trace-rb), make sure to include it in your gemfile:
+
+```ruby
+gem "ddtrace"
+```
+
+<div class="monitoring-img-group">
+  {{ "/pro/datadog_1.png" | link_to_img:"datadog graphql monitoring" }}
+  {{ "/pro/datadog_2.png" | link_to_img:"datadog graphql monitoring" }}
 </div>
 
 ## New Relic
