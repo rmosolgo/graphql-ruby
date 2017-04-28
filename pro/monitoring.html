@@ -114,6 +114,7 @@
 
 <ul>
   <li><a href="#appsignal">Appsignal</a></li>
+  <li><a href="#datadog">Datadog APM</a></li>
   <li><a href="#new-relic">New Relic</a></li>
   <li><a href="#scout">Scout</a></li>
   <li><a href="#skylight">Skylight</a></li>
@@ -194,6 +195,36 @@
   
         <a href="/graphql-ruby/pro/appsignal_2.png" target="_blank">
           <img src="/graphql-ruby/pro/appsignal_2.png" title="appsignal monitoring" />
+        </a>
+      
+</div>
+
+<h2 id="datadog">Datadog</h2>
+
+<p>Add <a href="https://www.datadoghq.com/apm/">Datadog APM</a> instrumentation with <code class="highlighter-rouge">monitoring(:datadog)</code>, for example:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+  <span class="c1"># ...</span>
+  <span class="n">monitoring</span><span class="p">(</span><span class="ss">:datadog</span><span class="p">)</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<p>This requires the <a href="https://github.com/DataDog/dd-trace-rb"><code class="highlighter-rouge">ddtrace</code> gem</a>, make sure to include it in your gemfile:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">gem</span> <span class="s2">"ddtrace"</span>
+</code></pre>
+</div>
+
+<div class="monitoring-img-group">
+  
+        <a href="/graphql-ruby/pro/datadog_1.png" target="_blank">
+          <img src="/graphql-ruby/pro/datadog_1.png" title="datadog graphql monitoring" />
+        </a>
+      
+  
+        <a href="/graphql-ruby/pro/datadog_2.png" target="_blank">
+          <img src="/graphql-ruby/pro/datadog_2.png" title="datadog graphql monitoring" />
         </a>
       
 </div>
