@@ -30,11 +30,15 @@ module GraphQL
         end
 
         def call(type, field, obj, args, ctx)
-          type_hash = @resolve_hash[type.name]
-          type_hash && (resolver = type_hash[field.name])
+          type_hash = @resolve_hash[type.name.to_sym]
+          type_hash && (resolver = type_hash[field.name.to_sym])
 
           if resolver.nil?
-            raise(KeyError, "resolver not found for #{type.name}.#{field.name}")
+            if !obj.respond_to? field.name
+              raise(KeyError, "resolver not found for #{type.name}.#{field.name}")
+            else
+              obj.send field.name
+            end
           else
             resolver.call(obj, args, ctx)
           end
