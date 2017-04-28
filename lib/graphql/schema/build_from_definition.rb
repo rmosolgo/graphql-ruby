@@ -25,22 +25,42 @@ module GraphQL
 
       # @api private
       class ResolveMap
+        
         def initialize(resolve_hash)
-          @resolve_hash = resolve_hash
+          @resolve_hash = convert_keys_to_strings(resolve_hash)
+        end
+
+        def convert_keys_to_strings(h)
+          Hash[
+            h.map {|k, v| 
+              v = convert_keys_to_strings(v) if v.is_a?(Hash)
+              [k.to_s, v] 
+            }
+          ]
         end
 
         def call(type, field, obj, args, ctx)
-          type_hash = @resolve_hash[type.name.to_sym]
-          type_hash && (resolver = type_hash[field.name.to_sym])
+          type_hash = @resolve_hash[type.name]
+
+          if !type_hash
+            type_hash = @resolve_hash[type.name] = {}
+          end
+
+          type_hash && (resolver = type_hash[field.name])
 
           if resolver.nil?
-            if !obj.respond_to? field.name
-              raise(KeyError, "resolver not found for #{type.name}.#{field.name}")
-            else
-              obj.send field.name
-            end
+            raise(KeyError, "resolver not found for #{type.name}.#{field.name}") unless obj.respond_to?(field.name)
+            resolver = type_hash[field.name] = build_resolver(type, field, obj)
+          end
+
+          resolver.call(obj, args, ctx)
+        end
+
+        def build_resolver(type, field, obj)
+          if obj.method(field.name.to_sym).arity > 0 
+            return -> (o, a, c) { o.send(field.name, a) }
           else
-            resolver.call(obj, args, ctx)
+            return -> (o, a, c) { o.send(field.name) }
           end
         end
       end
