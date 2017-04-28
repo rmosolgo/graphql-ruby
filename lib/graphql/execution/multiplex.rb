@@ -1,9 +1,29 @@
 # frozen_string_literal: true
 module GraphQL
   module Execution
-    # @see {Schema#multiplex}
+    # Execute multiple queries under the same multiplex "umbrella".
+    # They can share a batching context and reduce redundant database hits.
+    #
+    # The flow is:
+    #
+    # - Multiplex instrumentation setup
+    # - Query instrumentation setup
+    # - Begin each query
+    # - Resolve lazy values, breadth-first across all queries
+    # - Finish each query (eg, get errors)
+    # - Query instrumentation teardown
+    # - Multiplex instrumentation teardown
+    #
+    # If one query raises an application error, all queries will be in undefined states.
+    #
+    # Validation errors and {GraphQL::ExecutionError}s are handled in isolation:
+    # one of these errors in one query will not affect the other queries.
+    #
+    # @see {Schema#multiplex} for public API
     # @api private
     class Multiplex
+      # Used internally to signal that the query shouldn't be executed
+      # @api private
       NO_OPERATION = {}.freeze
 
       attr_reader :context, :queries, :schema
