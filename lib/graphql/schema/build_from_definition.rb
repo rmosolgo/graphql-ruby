@@ -32,9 +32,9 @@ module GraphQL
 
         def convert_keys_to_strings(h)
           Hash[
-            h.map {|k, v| 
+            h.map {|k, v|
               v = convert_keys_to_strings(v) if v.is_a?(Hash)
-              [k.to_s, v] 
+              [k.to_s, v]
             }
           ]
         end
@@ -57,10 +57,28 @@ module GraphQL
         end
 
         def build_resolver(type, field, obj)
-          if obj.method(field.name.to_sym).arity > 0 
+          if obj.method(field.name.to_sym).arity > 0
             return ->(o, a, c) { o.send(field.name, a) }
-          else
-            return ->(o, a, c) { o.send(field.name) }
+          end
+          ->(o, a, c) { o.send(field.name) }
+        end
+
+        def after_build_schema(schema) 
+          hookup_union(schema)
+          hookup_scalars(schema)
+        end
+
+        def hookup_union(schema)
+          schema.resolve_type = @resolve_hash["__resolve_type"] if @resolve_hash["__resolve_type"]
+        end
+
+        def hookup_scalars(schema)
+          for _, type in schema.types
+            next unless type.is_a?(GraphQL::ScalarType) and @resolve_hash[type.name]
+          
+            type.coerce        = @resolve_hash[type.name]["coerce"]        if @resolve_hash[type.name]["coerce"]
+            type.coerce_input  = @resolve_hash[type.name]["coerce_input"]  if @resolve_hash[type.name]["coerce_input"]
+            type.coerce_result = @resolve_hash[type.name]["coerce_result"] if @resolve_hash[type.name]["coerce_result"]
           end
         end
       end
@@ -131,7 +149,7 @@ module GraphQL
 
           raise InvalidDocumentError.new('Must provide schema definition with query type or a type named Query.') unless query_root_type
 
-          Schema.define do
+          schema = Schema.define do
             raise_definition_error true
 
             query query_root_type
@@ -142,6 +160,12 @@ module GraphQL
 
             directives directives.values
           end
+
+          if default_resolve.respond_to? :after_build_schema
+            default_resolve.after_build_schema(schema)
+          end
+
+          schema
         end
 
         NullResolveType = ->(obj, ctx) {
