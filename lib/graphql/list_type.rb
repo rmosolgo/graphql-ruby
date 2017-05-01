@@ -39,6 +39,7 @@ module GraphQL
     def to_s
       "[#{of_type.to_s}]"
     end
+    alias_method :inspect, :to_s
 
     def coerce_result(value, ctx = nil)
       if ctx.nil?
