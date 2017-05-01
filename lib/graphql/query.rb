@@ -40,8 +40,10 @@ module GraphQL
     # @param max_complexity [Numeric] the maximum field complexity for this query (falls back to schema-level value)
     # @param except [<#call(schema_member, context)>] If provided, objects will be hidden from the schema when `.call(schema_member, context)` returns truthy
     # @param only [<#call(schema_member, context)>] If provided, objects will be hidden from the schema when `.call(schema_member, context)` returns false
-    def initialize(schema, query_string = nil, document: nil, context: nil, variables: {}, validate: true, operation_name: nil, root_value: nil, max_depth: nil, max_complexity: nil, except: nil, only: nil)
-      fail ArgumentError, "a query string or document is required" unless query_string || document
+    def initialize(schema, query_string = nil, query: nil, document: nil, context: nil, variables: {}, validate: true, operation_name: nil, root_value: nil, max_depth: nil, max_complexity: nil, except: nil, only: nil)
+      if !(query_string || document || query)
+        fail ArgumentError, "a query string or document is required"
+      end
 
       @schema = schema
       mask = GraphQL::Schema::Mask.combine(schema.default_mask, except: except, only: only)
@@ -50,6 +52,7 @@ module GraphQL
       @root_value = root_value
       @fragments = {}
       @operations = {}
+      @analysis_errors = []
       if variables.is_a?(String)
         raise ArgumentError, "Query variables should be a Hash, not a String. Try JSON.parse to prepare variables."
       else
@@ -58,7 +61,7 @@ module GraphQL
       @query_string = query_string
       parse_error = nil
       @document = document || begin
-        GraphQL.parse(query_string)
+        GraphQL.parse(query_string || query)
       rescue GraphQL::ParseError => err
         parse_error = err
         @schema.parse_error(err, @context)
@@ -105,32 +108,28 @@ module GraphQL
       @executed = false
     end
 
-    # Get the result for this query, executing it once
-    # @return [Hash] A GraphQL response, with `"data"` and/or `"errors"` keys
-    def result
+    # @api private
+    def result=(result_hash)
       if @executed
-        @result
+        raise "Invariant: Can't reassign result"
       else
         @executed = true
-        instrumenters = @schema.instrumenters[:query]
-        begin
-          instrumenters.each { |i| i.before_query(self) }
-          @result = if !valid?
-            all_errors = validation_errors + analysis_errors + context.errors
-            if all_errors.any?
-              { "errors" => all_errors.map(&:to_h) }
-            else
-              nil
-            end
-          else
-            Executor.new(self).result
-          end
-        ensure
-          instrumenters.each { |i| i.after_query(self) }
-        end
+        @result = result_hash
       end
     end
 
+    # Get the result for this query, executing it once
+    # @return [Hash] A GraphQL response, with `"data"` and/or `"errors"` keys
+    def result
+      if !@executed
+        Execution::Multiplex.run_queries(@schema, [self])
+      end
+      @result
+    end
+
+    def static_errors
+      validation_errors + analysis_errors + context.errors
+    end
 
     # This is the operation to run for this query.
     # If more than one operation is present, it must be named at runtime.
@@ -168,7 +167,13 @@ module GraphQL
     # @return [GraphQL::Language::Nodes::Document, nil]
     attr_reader :selected_operation
 
-    def_delegators :@validation_pipeline, :valid?, :analysis_errors, :validation_errors, :internal_representation
+    def_delegators :@validation_pipeline, :validation_errors, :internal_representation, :analyzers
+
+    attr_accessor :analysis_errors
+    def valid?
+      @validation_pipeline.valid? && analysis_errors.none?
+    end
+
 
     def_delegators :@warden, :get_type, :get_field, :possible_types, :root_type_for_operation
 
