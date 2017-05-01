@@ -21,7 +21,7 @@ module GraphQL
             scoped_children.each_key { |t| all_object_types.merge(@query.possible_types(t)) }
             # Remove any scoped children which don't follow this return type
             # (This can happen with fragment merging where lexical scope is lost)
-            all_object_types &= @query.possible_types(@return_type)
+            all_object_types &= @query.possible_types(@return_type.unwrap)
             all_object_types.each do |t|
               new_tc[t] = get_typed_children(t)
             end
@@ -109,7 +109,7 @@ module GraphQL
       def inspect
         all_children_names = scoped_children.values.map(&:keys).flatten.uniq.join(", ")
         all_locations = ast_nodes.map {|n| "#{n.line}:#{n.col}" }.join(", ")
-        "#<Node #{@owner_type}.#{@name} -> #{@return_type} {#{all_children_names}} @ [#{all_locations}] #{object_id}>"
+        "#<Node #{@owner_type}.#{@name} -> #{@return_type.unwrap} {#{all_children_names}} @ [#{all_locations}] #{object_id}>"
       end
 
       # Merge selections from `new_parent` into `self`.
@@ -119,7 +119,7 @@ module GraphQL
           @ast_nodes |= new_parent.ast_nodes
           @definitions |= new_parent.definitions
         end
-        scope ||= Scope.new(@query, @return_type)
+        scope ||= Scope.new(@query, @return_type.unwrap)
         new_parent.scoped_children.each do |obj_type, new_fields|
           inner_scope = scope.enter(obj_type)
           inner_scope.each do |scoped_type|
