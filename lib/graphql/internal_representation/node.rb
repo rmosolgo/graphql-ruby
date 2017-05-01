@@ -95,6 +95,10 @@ module GraphQL
         definition && definition.name
       end
 
+      def arguments
+        @query.arguments_for(self, definition)
+      end
+
       def definition
         @definition ||= begin
           first_def = @definitions.first
@@ -135,6 +139,9 @@ module GraphQL
           end
         end
       end
+
+      # @return [GraphQL::Query]
+      attr_reader :query
 
       protected
 

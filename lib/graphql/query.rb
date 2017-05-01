@@ -52,6 +52,7 @@ module GraphQL
       @root_value = root_value
       @fragments = {}
       @operations = {}
+      @analysis_errors = []
       if variables.is_a?(String)
         raise ArgumentError, "Query variables should be a Hash, not a String. Try JSON.parse to prepare variables."
       else
@@ -170,7 +171,13 @@ module GraphQL
     # @return [GraphQL::Language::Nodes::Document, nil]
     attr_reader :selected_operation
 
-    def_delegators :@validation_pipeline, :valid?, :analysis_errors, :validation_errors, :internal_representation
+    def_delegators :@validation_pipeline, :validation_errors, :internal_representation, :analyzers
+
+    attr_accessor :analysis_errors
+    def valid?
+      @validation_pipeline.valid? && analysis_errors.none?
+    end
+
 
     def_delegators :@warden, :get_type, :get_field, :possible_types, :root_type_for_operation
 

@@ -60,4 +60,32 @@ describe GraphQL::Analysis::MaxQueryComplexity do
       assert_equal "Query has complexity of 10, which exceeds max complexity of 7", result["errors"][0]["message"]
     end
   end
+
+  describe "across a multiplex" do
+    before do
+      Dummy::Schema.max_complexity = 9
+    end
+
+    let(:queries) { 5.times.map { |n|  { query: "{ cheese(id: #{n}) { id } }" } } }
+
+    it "returns errors for all queries" do
+      results = Dummy::Schema.multiplex(queries)
+      assert_equal 5, results.length
+      err_msg = "Query has complexity of 10, which exceeds max complexity of 9"
+      results.each do |res|
+        assert_equal err_msg, res["errors"][0]["message"]
+      end
+    end
+
+    describe "with a local override" do
+      it "uses the override" do
+        results = Dummy::Schema.multiplex(queries, max_complexity: 10)
+        assert_equal 5, results.length
+        results.each do |res|
+          assert_equal true, res.key?("data")
+          assert_equal false, res.key?("errors")
+        end
+      end
+    end
+  end
 end
