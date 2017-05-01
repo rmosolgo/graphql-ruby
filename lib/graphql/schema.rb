@@ -65,6 +65,7 @@ module GraphQL
       directives: ->(schema, directives) { schema.directives = directives.reduce({}) { |m, d| m[d.name] = d; m  }},
       instrument: ->(schema, type, instrumenter) { schema.instrumenters[type] << instrumenter },
       query_analyzer: ->(schema, analyzer) { schema.query_analyzers << analyzer },
+      multiplex_analyzer: ->(schema, analyzer) { schema.multiplex_analyzers << analyzer },
       middleware: ->(schema, middleware) { schema.middleware << middleware },
       lazy_resolve: ->(schema, lazy_class, lazy_value_method) { schema.lazy_methods.set(lazy_class, lazy_value_method) },
       rescue_from: ->(schema, err_class, &block) { schema.rescue_from(err_class, &block)}
@@ -74,7 +75,7 @@ module GraphQL
       :query_execution_strategy, :mutation_execution_strategy, :subscription_execution_strategy,
       :max_depth, :max_complexity,
       :orphan_types, :directives,
-      :query_analyzers, :instrumenters, :lazy_methods,
+      :query_analyzers, :multiplex_analyzers, :instrumenters, :lazy_methods,
       :cursor_encoder,
       :raise_definition_error
 
@@ -104,6 +105,7 @@ module GraphQL
       @static_validator = GraphQL::StaticValidation::Validator.new(schema: self)
       @middleware = MiddlewareChain.new(final_step: GraphQL::Execution::Execute::FieldResolveStep)
       @query_analyzers = []
+      @multiplex_analyzers = []
       @resolve_type_proc = nil
       @object_from_id_proc = nil
       @id_from_object_proc = nil
@@ -127,6 +129,7 @@ module GraphQL
       @static_validator = GraphQL::StaticValidation::Validator.new(schema: self)
       @middleware = other.middleware.dup
       @query_analyzers = other.query_analyzers.dup
+      @multiplex_analyzers = other.multiplex_analyzers.dup
 
       @possible_types = GraphQL::Schema::PossibleTypes.new(self)
 

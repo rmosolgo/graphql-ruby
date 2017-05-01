@@ -8,6 +8,7 @@ module GraphQL
     #
     # - Multiplex instrumentation setup
     # - Query instrumentation setup
+    # - Analyze the multiplex + each query
     # - Begin each query
     # - Resolve lazy values, breadth-first across all queries
     # - Finish each query (eg, get errors)
@@ -39,7 +40,7 @@ module GraphQL
           run_queries(schema, queries, *rest)
         end
 
-        def run_queries(schema, queries, context: {})
+        def run_queries(schema, queries, context: {}, max_complexity: nil)
           query_instrumenters = schema.instrumenters[:query]
           multiplex_instrumenters = schema.instrumenters[:multiplex]
           multiplex = self.new(schema: schema, queries: queries, context: context)
@@ -49,6 +50,13 @@ module GraphQL
           queries.each do |query|
             query_instrumenters.each { |i| i.before_query(query) }
           end
+
+          multiplex_analyzers = schema.multiplex_analyzers
+          if max_complexity ||= schema.max_complexity
+            multiplex_analyzers += [GraphQL::Analysis::MaxQueryComplexity.new(max_complexity)]
+          end
+
+          GraphQL::Analysis.analyze_multiplex(multiplex, multiplex_analyzers)
 
           # Then, do as much eager evaluation of the query as possible
           results = queries.map do |query|

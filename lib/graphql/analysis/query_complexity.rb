@@ -4,7 +4,7 @@ module GraphQL
     # Calculate the complexity of a query, using {Field#complexity} values.
     #
     # @example Log the complexity of incoming queries
-    #   MySchema.query_analyzers << GraphQL::AnalysisQueryComplexity.new do |query, complexity|
+    #   MySchema.query_analyzers << GraphQL::Analysis::QueryComplexity.new do |query, complexity|
     #     Rails.logger.info("Complexity: #{complexity}")
     #   end
     #
@@ -17,11 +17,11 @@ module GraphQL
       end
 
       # State for the query complexity calcuation:
-      # - `query` is needed for variables, then passed to handler
+      # - `target` is passed to handler
       # - `complexities_on_type` holds complexity scores for each type in an IRep node
-      def initial_value(query)
+      def initial_value(target)
         {
-          query: query,
+          target: target,
           complexities_on_type: [TypeComplexity.new],
         }
       end
@@ -34,7 +34,7 @@ module GraphQL
           else
             type_complexities = memo[:complexities_on_type].pop
             child_complexity = type_complexities.max_possible_complexity
-            own_complexity = get_complexity(irep_node, memo[:query], child_complexity)
+            own_complexity = get_complexity(irep_node, child_complexity)
             memo[:complexities_on_type].last.merge(irep_node.owner_type, own_complexity)
           end
         end
@@ -44,21 +44,20 @@ module GraphQL
       # Send the query and complexity to the block
       # @return [Object, GraphQL::AnalysisError] Whatever the handler returns
       def final_value(reduced_value)
-        total_complexity = reduced_value[:complexities_on_type].pop.max_possible_complexity
-        @complexity_handler.call(reduced_value[:query], total_complexity)
+        total_complexity = reduced_value[:complexities_on_type].last.max_possible_complexity
+        @complexity_handler.call(reduced_value[:target], total_complexity)
       end
 
       private
 
       # Get a complexity value for a field,
       # by getting the number or calling its proc
-      def get_complexity(irep_node, query, child_complexity)
+      def get_complexity(irep_node, child_complexity)
         field_defn = irep_node.definition
         defined_complexity = field_defn.complexity
         case defined_complexity
         when Proc
-          args = query.arguments_for(irep_node, field_defn)
-          defined_complexity.call(query.context, args, child_complexity)
+          defined_complexity.call(irep_node.query.context, irep_node.arguments, child_complexity)
         when Numeric
           defined_complexity + (child_complexity || 0)
         else
