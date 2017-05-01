@@ -701,6 +701,72 @@ SCHEMA
     end
   end
 
+  describe "executable schema with resolver maps" do
+    
+    class Something 
+      def capitalize(args)
+        args[:word].upcase
+      end
+    end
+
+    let(:definition) {
+      <<-GRAPHQL
+        scalar Date
+        type Something { capitalize(word:String!): String }
+        type A { a: String }
+        type B { b: String }
+        union Thing = A | B
+        type Query { hello: Something, thing: Thing, add_week(in: Date!): Date! }
+      GRAPHQL
+    }
+
+    let(:resolvers) {
+      {
+        Date: {
+          coerce_input: ->(val, ctx) {
+            Time.at(Float(val))
+          },
+          coerce_result: ->(val, ctx) {
+            val.to_f
+          }
+        },
+        __resolve_type: ->(obj, ctx) {
+          return ctx.schema.types['A']
+        },
+        Query: {
+          add_week: ->(o,a,c) {
+            raise "No Time" unless a[:in].is_a? Time
+            a[:in]
+          },
+          hello: ->(o,a,c) {
+            Something.new
+          },
+          thing: ->(o,a,c) {
+            OpenStruct.new({a: "a"})
+          }
+        }
+      }
+    }
+
+    it "resolves unions"  do
+      schema = GraphQL::Schema.from_definition(definition, default_resolve: resolvers)
+      result = schema.execute("query { thing { ... on A { a } } }")
+      assert_equal(result.to_json,'{"data":{"thing":{"a":"a"}}}')
+    end
+
+    it "resolves scalars" do
+      schema = GraphQL::Schema.from_definition(definition, default_resolve: resolvers)
+      result = schema.execute("query { add_week(in: 392277600.0) }")
+      assert_equal(result.to_json,'{"data":{"add_week":392277600.0}}')
+    end
+
+    it "passes args from graphql to the object"  do
+      schema = GraphQL::Schema.from_definition(definition, default_resolve: resolvers)
+      result = schema.execute("query { hello { capitalize(word: \"hello\") }}")
+      assert_equal(result.to_json,'{"data":{"hello":{"capitalize":"HELLO"}}}')
+    end
+  end
+
   describe "executable schemas from string" do
     let(:schema_defn) {
       <<-GRAPHQL
