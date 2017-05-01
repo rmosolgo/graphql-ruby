@@ -69,8 +69,6 @@ describe GraphQL::Execution::Multiplex do
     }" }
     let(:q4) { " { validationError: nullableNestedSum(value: true) }"}
 
-    it "handles errors in instrumentation"
-
     it "returns a mix of errors and values" do
       expected_res = [
         {
