@@ -30,15 +30,6 @@ module GraphQL
           @resolve_hash = convert_keys_to_strings(resolve_hash)
         end
 
-        def convert_keys_to_strings(h)
-          Hash[
-            h.map {|k, v|
-              v = convert_keys_to_strings(v) if v.is_a?(Hash)
-              [k.to_s, v]
-            }
-          ]
-        end
-
         def call(type, field, obj, args, ctx)
           type_hash = @resolve_hash[type.name]
 
@@ -46,7 +37,7 @@ module GraphQL
             type_hash = @resolve_hash[type.name] = {}
           end
 
-          type_hash && (resolver = type_hash[field.name])
+          resolver = type_hash[field.name]
 
           if resolver.nil?
             raise(KeyError, "resolver not found for #{type.name}.#{field.name}") unless obj.respond_to?(field.name)
@@ -56,18 +47,29 @@ module GraphQL
           resolver.call(obj, args, ctx)
         end
 
-        def build_resolver(type, field, obj)
-          if obj.method(field.name.to_sym).arity > 0
-            return ->(o, a, c) { o.send(field.name, a) }
-          end
-          ->(o, a, c) { o.send(field.name) }
-        end
-
         def after_build_schema(schema) 
           hookup_union(schema)
           hookup_scalars(schema)
         end
 
+        private
+
+        def build_resolver(type, field, obj)
+          method_arity = obj.method(field.name.to_sym).arity
+          case method_arity
+          # Some objects have dynamic missing method such as openstruct
+          # therefore they have an arity -1
+          when -1, 0
+            ->(o, a, c) { o.public_send(field.name) }
+          when 1
+            ->(o, a, c) { o.public_send(field.name, a) }
+          when 2
+            ->(o, a, c) { o.public_send(field.name, a, c) }
+          else 
+            raise "Unexpected resolve arity: #{method_arity}. Must be 0, 1, 2"
+          end
+        end
+       
         def hookup_union(schema)
           schema.resolve_type = @resolve_hash["__resolve_type"] if @resolve_hash["__resolve_type"]
         end
@@ -81,6 +83,15 @@ module GraphQL
             type.coerce_result = @resolve_hash[type.name]["coerce_result"] if @resolve_hash[type.name]["coerce_result"]
           end
         end
+       
+        def convert_keys_to_strings(h)
+          Hash[
+            h.map {|k, v|
+              v = convert_keys_to_strings(v) if v.is_a?(Hash)
+              [k.to_s, v]
+            }
+          ]
+        end        
       end
 
       # @api private
