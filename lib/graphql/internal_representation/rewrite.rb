@@ -93,7 +93,7 @@ module GraphQL
               # It's a non-existent field
               new_scope = nil
             else
-              field_return_type = field_defn.type.unwrap
+              field_return_type = field_defn.type
               scopes_stack.last.each do |scope_type|
                 parent_nodes.each do |parent_node|
                   node = parent_node.scoped_children[scope_type][node_name] ||= Node.new(
@@ -108,7 +108,7 @@ module GraphQL
                   next_nodes << node
                 end
               end
-              new_scope = Scope.new(query, field_return_type)
+              new_scope = Scope.new(query, field_return_type.unwrap)
             end
 
             nodes_stack.push(next_nodes)
@@ -181,7 +181,7 @@ module GraphQL
             owner_type: owner_type,
             query: @query,
             ast_nodes: [ast_node],
-            return_type: owner_type,
+            return_type: @context.type_definition,
           )
 
           @definitions[defn_name] = node
