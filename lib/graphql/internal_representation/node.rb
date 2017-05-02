@@ -113,7 +113,7 @@ module GraphQL
       def inspect
         all_children_names = scoped_children.values.map(&:keys).flatten.uniq.join(", ")
         all_locations = ast_nodes.map {|n| "#{n.line}:#{n.col}" }.join(", ")
-        "#<Node #{@owner_type}.#{@name} -> #{@return_type.unwrap} {#{all_children_names}} @ [#{all_locations}] #{object_id}>"
+        "#<Node #{@owner_type}.#{@name} -> #{@return_type} {#{all_children_names}} @ [#{all_locations}] #{object_id}>"
       end
 
       # Merge selections from `new_parent` into `self`.
