@@ -148,6 +148,16 @@ describe GraphQL::InternalRepresentation::Rewrite do
       assert_equal habitats_selection, seasons_selection.parent
       assert_equal habitats_selection, average_weight_selection.parent
     end
+
+    it "trackes field return type" do
+      doc = rewrite_result["getPlant"]
+
+      assert plant_selection = doc.typed_children[schema.types["Query"]]["plant"]
+      assert_equal "Plant", plant_selection.return_type.to_s
+
+      assert tree_selection = plant_selection.typed_children[schema.types["Fruit"]]
+      assert_equal "[Int!]!", tree_selection["color"].return_type.to_s
+    end
   end
 
   describe "tracking directives on fragment spreads" do
