@@ -106,39 +106,7 @@ module GraphQL
           else
             result
           end
-<<<<<<< HEAD
         end
-=======
-        elsif value == SKIP
-          value
-        else
-          case field_type.kind
-          when GraphQL::TypeKinds::SCALAR
-            field_type.coerce_result(value, field_ctx)
-          when GraphQL::TypeKinds::ENUM
-            field_type.coerce_result(value, field_ctx)
-          when GraphQL::TypeKinds::LIST
-            inner_type = field_type.of_type
-            i = 0
-            result = []
-            value.each do |inner_value|
-              inner_ctx = field_ctx.spawn(
-                key: i,
-                selection: selection,
-                parent_type: parent_type,
-                field: field_defn,
-              )
-
-              inner_result = resolve_value(
-                owner,
-                parent_type,
-                field_defn,
-                inner_type,
-                inner_value,
-                selection,
-                inner_ctx,
-              )
->>>>>>> feat(Context#skip) add API for skipping fields from user code
 
         def continue_resolve_field(owner, selection, parent_type, field, raw_value, field_ctx)
           if owner.invalid_null?
