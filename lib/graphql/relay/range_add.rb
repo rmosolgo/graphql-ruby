@@ -37,10 +37,16 @@ module GraphQL
       def initialize(collection:, item:, parent: nil, context: nil, edge_class: Relay::Edge)
         connection_class = BaseConnection.connection_for_nodes(collection)
         @parent = parent
+        # If context is nil or a mock, that's ok:
+        field = begin
+          context.irep_node.definition
+        rescue
+          nil
+        end
         @connection = connection_class.new(collection, {}, {
           parent: parent,
           context: context,
-          field: context.irep_node.definition,
+          field: field,
         })
         @edge = edge_class.new(item, @connection)
       end

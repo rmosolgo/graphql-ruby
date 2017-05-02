@@ -116,4 +116,12 @@ describe GraphQL::Relay::RangeAdd do
       assert_equal(["__1", "__2", "__3"], mutation_res["items"]["edges"].map { |e| e["cursor"] })
     end
   end
+
+  describe "when context doesn't expose the field" do
+    it "runs ok" do
+      ra = GraphQL::Relay::RangeAdd.new(item: 1, collection: [1,2,3])
+      assert ra.connection.is_a?(GraphQL::Relay::ArrayConnection)
+      assert_equal 1, ra.edge.node
+    end
+  end
 end
