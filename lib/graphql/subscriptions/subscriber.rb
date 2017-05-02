@@ -12,6 +12,7 @@ module GraphQL
     class Subscriber
       extend Forwardable
 
+      attr_reader :store, :queue, :transports
       def initialize(schema:, store:, queue: InlineQueue, transports:)
         @schema = schema
         @store = store

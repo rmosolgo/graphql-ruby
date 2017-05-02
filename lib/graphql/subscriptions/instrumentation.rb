@@ -53,7 +53,7 @@ module GraphQL
               arguments: args,
               context: ctx,
             )
-            nil
+            ctx.skip
           elsif ctx.irep_node.subscription_key == ctx.query.subscription_key
             # The root object is _already_ the subscription update:
             obj
