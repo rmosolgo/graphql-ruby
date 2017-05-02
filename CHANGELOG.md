@@ -2,6 +2,8 @@
 
 ### Breaking changes
 
+- `InternalRepresentation::Node#return_type` will now return the wrapping type. Use `return_type.unwrap` to access the old value #704
+
 ### Deprecations
 
 ### New features
