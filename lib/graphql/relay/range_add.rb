@@ -37,7 +37,11 @@ module GraphQL
       def initialize(collection:, item:, parent: nil, context: nil, edge_class: Relay::Edge)
         connection_class = BaseConnection.connection_for_nodes(collection)
         @parent = parent
-        @connection = connection_class.new(collection, {}, parent: parent, context: context)
+        @connection = connection_class.new(collection, {}, {
+          parent: parent,
+          context: context,
+          field: context.irep_node.definition,
+        })
         @edge = edge_class.new(item, @connection)
       end
     end
