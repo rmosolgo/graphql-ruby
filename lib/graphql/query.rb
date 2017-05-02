@@ -27,7 +27,7 @@ module GraphQL
       end
     end
 
-    attr_reader :schema, :document, :context, :fragments, :operations, :root_value, :query_string, :warden, :provided_variables
+    attr_reader :schema, :document, :context, :fragments, :operations, :root_value, :query_string, :warden, :provided_variables, :operation_name
 
     # Prepare query `query_string` on `schema`
     # @param schema [GraphQL::Schema]
@@ -83,13 +83,17 @@ module GraphQL
       @ast_variables = []
       @mutation = false
       operation_name_error = nil
+      @operation_name = nil
+
       if @operations.any?
-        @selected_operation = find_operation(@operations, operation_name)
-        if @selected_operation.nil?
+        selected_operation = find_operation(@operations, operation_name)
+        if selected_operation.nil?
           operation_name_error = GraphQL::Query::OperationNameMissingError.new(operation_name)
         else
-          @ast_variables = @selected_operation.variables
-          @mutation = @selected_operation.operation_type == "mutation"
+          @operation_name = selected_operation.name
+          @ast_variables = selected_operation.variables
+          @mutation = selected_operation.operation_type == "mutation"
+          @selected_operation = selected_operation
         end
       end
 
