@@ -45,7 +45,7 @@ module GraphQL
       # @return [Array<GraphQL::Field>] Field definitions for this node (there should only be one!)
       attr_reader :definitions
 
-      # @return [GraphQL::BaseType]
+      # @return [GraphQL::BaseType] The expected wrapped type this node must return.
       attr_reader :return_type
 
       # @return [InternalRepresentation::Node, nil]
