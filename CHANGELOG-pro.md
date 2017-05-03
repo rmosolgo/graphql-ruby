@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+## 1.4.2 (2 May 2017)
+
+### Bug Fix
+
+- Fix compatibility of `RelationConnection` and `RangeAdd` helper
+
 ## 1.4.1 (19 Apr 2017)
 
 ### New Features
@@ -27,6 +33,12 @@
 ### New Features
 
 - Serve static, persisted queries with `GraphQL::Pro::Repository`
+
+## 1.2.3 (2 May 2017)
+
+### Bug Fix
+
+- Fix compatibility of `RelationConnection` and `RangeAdd` helper
 
 ## 1.2.2 (6 Mar 2017)
 
