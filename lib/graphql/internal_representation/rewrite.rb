@@ -27,7 +27,8 @@ module GraphQL
 
       # @return [Hash<String, Node>] Roots of this query
       def operations
-        @document.operation_definitions
+        warn "#{self.class}#operations is deprecated; use `document.operation_definitions` instead"
+        document.operation_definitions
       end
 
       def validate(context)
