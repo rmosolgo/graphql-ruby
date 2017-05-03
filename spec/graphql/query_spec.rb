@@ -532,11 +532,11 @@ describe GraphQL::Query do
 
   describe '#internal_representation' do
     it "includes all definition roots" do
-      assert_kind_of GraphQL::InternalRepresentation::Node, query.internal_representation["getFlavor"]
-      assert_kind_of GraphQL::InternalRepresentation::Node, query.internal_representation["cheeseFields"]
-      assert_kind_of GraphQL::InternalRepresentation::Node, query.internal_representation["edibleFields"]
-      assert_kind_of GraphQL::InternalRepresentation::Node, query.internal_representation["milkFields"]
-      assert_kind_of GraphQL::InternalRepresentation::Node, query.internal_representation["dairyFields"]
+      assert_kind_of GraphQL::InternalRepresentation::Node, query.internal_representation.operation_definitions["getFlavor"]
+      assert_kind_of GraphQL::InternalRepresentation::Node, query.internal_representation.fragment_definitions["cheeseFields"]
+      assert_kind_of GraphQL::InternalRepresentation::Node, query.internal_representation.fragment_definitions["edibleFields"]
+      assert_kind_of GraphQL::InternalRepresentation::Node, query.internal_representation.fragment_definitions["milkFields"]
+      assert_kind_of GraphQL::InternalRepresentation::Node, query.internal_representation.fragment_definitions["dairyFields"]
     end
   end
 end

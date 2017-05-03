@@ -38,7 +38,7 @@ module GraphQL
         {
           errors: context.errors,
           # If there were errors, the irep is garbage
-          irep: context.errors.any? ? nil : rewrite.definitions,
+          irep: context.errors.any? ? nil : rewrite.document,
         }
       end
     end

@@ -104,7 +104,7 @@ describe GraphQL::InternalRepresentation::Rewrite do
     }
 
     it "groups selections by object types which they apply to" do
-      doc = rewrite_result["getPlant"]
+      doc = rewrite_result.operation_definitions["getPlant"]
       assert_equal nil, doc.definition
 
       plant_scoped_selection = doc.scoped_children[schema.types["Query"]]["plant"]
@@ -126,7 +126,7 @@ describe GraphQL::InternalRepresentation::Rewrite do
     end
 
     it "tracks parent nodes" do
-      doc = rewrite_result["getPlant"]
+      doc = rewrite_result.operation_definitions["getPlant"]
       assert_equal nil, doc.parent
 
       plant_selection = doc.typed_children[schema.types["Query"]]["plant"]
@@ -171,7 +171,7 @@ describe GraphQL::InternalRepresentation::Rewrite do
     }
 
     it "applies directives from all contexts" do
-      doc = rewrite_result["getPlant"]
+      doc = rewrite_result.operation_definitions["getPlant"]
       plant_selection = doc.typed_children[schema.types["Query"]]["plant"]
       leaf_type_selection = plant_selection.typed_children[schema.types["Nut"]]["leafType"]
       # Only unskipped occurrences in the AST
@@ -208,7 +208,7 @@ describe GraphQL::InternalRepresentation::Rewrite do
     }
 
     it "applies spreads to their parents only" do
-      doc = rewrite_result[nil]
+      doc = rewrite_result.operation_definitions[nil]
       plant_selection = doc.typed_children[schema.types["Query"]]["plant"]
       nut_habitat_selections = plant_selection.typed_children[schema.types["Nut"]]["habitats"].typed_children[schema.types["Habitat"]]
       assert_equal ["averageWeight", "residentName", "seasons"], nut_habitat_selections.keys.sort
@@ -315,7 +315,7 @@ describe GraphQL::InternalRepresentation::Rewrite do
     }
 
     it "tracks fragment definitions without operation" do
-      doc = rewrite_result["NutFields"]
+      doc = rewrite_result.fragment_definitions["NutFields"]
 
       assert doc.typed_children[schema.types["Nut"]]["leafType"]
 
