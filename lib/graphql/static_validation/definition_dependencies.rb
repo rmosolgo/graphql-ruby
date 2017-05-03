@@ -12,17 +12,19 @@ module GraphQL
       end
 
       def initialize
+        @node_paths = {}
+
         # { name => node } pairs for fragments
         @fragment_definitions = {}
 
         # This tracks dependencies from fragment to Node where it was used
-        # { frag_name => [dependent_node, dependent_node]}
+        # { fragment_definition_node => [dependent_node, dependent_node]}
         @dependent_definitions = Hash.new { |h, k| h[k] = Set.new }
 
         # First-level usages of spreads within definitions
         # (When a key has an empty list as its value,
         #  we can resolve that key's depenedents)
-        # { string => [node, node ...] }
+        # { definition_node => [node, node ...] }
         @immediate_dependencies = Hash.new { |h, k| h[k] = Set.new }
       end
 
@@ -38,8 +40,19 @@ module GraphQL
         # this node is the one who depends on it
         current_parent = nil
 
+        visitor[GraphQL::Language::Nodes::Document] << ->(node, prev_node) {
+          node.definitions.each do |definition|
+            case definition
+            when GraphQL::Language::Nodes::OperationDefinition
+            when GraphQL::Language::Nodes::FragmentDefinition
+              @fragment_definitions[definition.name] = definition
+            end
+          end
+        }
+
         visitor[GraphQL::Language::Nodes::OperationDefinition] << ->(node, prev_node) {
-          current_parent = NodeWithPath.new(node, context.path)
+          @node_paths[node] = NodeWithPath.new(node, context.path)
+          current_parent = node
         }
 
         visitor[GraphQL::Language::Nodes::OperationDefinition].leave << ->(node, prev_node) {
@@ -47,7 +60,8 @@ module GraphQL
         }
 
         visitor[GraphQL::Language::Nodes::FragmentDefinition] << ->(node, prev_node) {
-          current_parent = @fragment_definitions[node.name] = NodeWithPath.new(node, context.path)
+          @node_paths[node] = NodeWithPath.new(node, context.path)
+          current_parent = node
         }
 
         visitor[GraphQL::Language::Nodes::FragmentDefinition].leave << ->(node, prev_node) {
@@ -55,9 +69,11 @@ module GraphQL
         }
 
         visitor[GraphQL::Language::Nodes::FragmentSpread] << ->(node, prev_node) {
+          @node_paths[node] = NodeWithPath.new(node, context.path)
+
           # Track both sides of the dependency
-          @dependent_definitions[node.name] << current_parent
-          @immediate_dependencies[current_parent.name] << NodeWithPath.new(node, context.path)
+          @dependent_definitions[@fragment_definitions[node.name]] << current_parent
+          @immediate_dependencies[current_parent] << node
         }
       end
 
@@ -113,40 +129,39 @@ module GraphQL
         # determine them at the end. This way, we can treat fragments with the
         # same name as if they were the same name. If _any_ of the fragments
         # with that name has a dependency, we record it.
-        independent_fragment_names = @fragment_definitions.each_key.select { |name| !@immediate_dependencies.key?(name) }
+        independent_fragment_nodes = @fragment_definitions.values - @immediate_dependencies.keys
 
-        while fragment_name = independent_fragment_names.pop
+        while fragment_node = independent_fragment_nodes.pop
           loops += 1
           if loops > max_loops
             raise("Resolution loops exceeded the number of definitions; infinite loop detected.")
           end
-          fragment_node = @fragment_definitions[fragment_name]
           # Since it's independent, let's remove it from here.
           # That way, we can use the remainder to identify cycles
-          @immediate_dependencies.delete(fragment_name)
-          fragment_usages = @dependent_definitions[fragment_name]
+          @immediate_dependencies.delete(fragment_node)
+          fragment_usages = @dependent_definitions[fragment_node]
           if fragment_usages.none?
             # If we didn't record any usages during the visit,
             # then this fragment is unused.
-            dependency_map.unused_dependencies << fragment_node
+            dependency_map.unused_dependencies << @node_paths[fragment_node]
           else
             fragment_usages.each do |definition_node|
               # Register the dependency AND second-order dependencies
               dependency_map[definition_node] << fragment_node
               dependency_map[definition_node].concat(dependency_map[fragment_node])
               # Since we've regestered it, remove it from our to-do list
-              deps = @immediate_dependencies[definition_node.name]
+              deps = @immediate_dependencies[definition_node]
               # Can't find a way to _just_ delete from `deps` and return the deleted entries
-              removed, remaining = deps.partition { |spread| spread.name == fragment_name }
-              @immediate_dependencies[definition_node.name] = remaining
+              removed, remaining = deps.partition { |spread| spread.name == fragment_node.name }
+              @immediate_dependencies[definition_node] = remaining
               if block_given?
                 yield(definition_node, removed, fragment_node)
               end
-              if remaining.none? && definition_node.node.is_a?(GraphQL::Language::Nodes::FragmentDefinition)
+              if remaining.none? && definition_node.is_a?(GraphQL::Language::Nodes::FragmentDefinition)
                 # If all of this definition's dependencies have
                 # been resolved, we can now resolve its
                 # own dependents.
-                independent_fragment_names << definition_node.name
+                independent_fragment_nodes << definition_node
               end
             end
           end
@@ -155,21 +170,20 @@ module GraphQL
         # If any dependencies were _unmet_
         # (eg, spreads with no corresponding definition)
         # then they're still in there
-        @immediate_dependencies.each do |defn_name, deps|
+        @immediate_dependencies.each do |defn_node, deps|
           deps.each do |spread|
             if @fragment_definitions[spread.name].nil?
-              defn_node = @fragment_definitions[defn_name]
-              dependency_map.unmet_dependencies[defn_node] << spread
+              dependency_map.unmet_dependencies[@node_paths[defn_node]] << @node_paths[spread]
               deps.delete(spread)
             end
           end
           if deps.none?
-            @immediate_dependencies.delete(defn_name)
+            @immediate_dependencies.delete(defn_node)
           end
         end
 
         # Anything left in @immediate_dependencies is cyclical
-        cyclical_nodes = @immediate_dependencies.keys.map { |n| @fragment_definitions[n] }
+        cyclical_nodes = @immediate_dependencies.keys.map { |n| @node_paths[n] }
         # @immediate_dependencies also includes operation names, but we don't care about
         # those. They became nil when we looked them up on `@fragment_definitions`, so remove them.
         cyclical_nodes.compact!
