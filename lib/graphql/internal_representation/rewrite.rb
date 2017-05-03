@@ -144,7 +144,7 @@ module GraphQL
           frag_name = frag_ast_node.name
           fragment_node = @document.fragment_definitions[frag_name]
 
-          if fragment_node && fragment_node.ast_node.is_a?(Nodes::FragmentDefinition)
+          if fragment_node
             spread_ast_nodes.each do |spread_ast_node|
               parent_nodes = spread_parents[spread_ast_node]
               parent_scope = spread_scopes[spread_ast_node]
