@@ -27,7 +27,13 @@ module GraphQL
       end
     end
 
-    attr_reader :schema, :document, :context, :fragments, :operations, :root_value, :query_string, :warden, :provided_variables, :operation_name
+    attr_reader :schema, :context, :root_value, :warden, :provided_variables, :operation_name
+
+    attr_accessor :query_string
+
+    def document
+      with_prepared_ast { @document }
+    end
 
     # Prepare query `query_string` on `schema`
     # @param schema [GraphQL::Schema]
@@ -41,41 +47,23 @@ module GraphQL
     # @param except [<#call(schema_member, context)>] If provided, objects will be hidden from the schema when `.call(schema_member, context)` returns truthy
     # @param only [<#call(schema_member, context)>] If provided, objects will be hidden from the schema when `.call(schema_member, context)` returns false
     def initialize(schema, query_string = nil, query: nil, document: nil, context: nil, variables: {}, validate: true, operation_name: nil, root_value: nil, max_depth: nil, max_complexity: nil, except: nil, only: nil)
-      if !(query_string || document || query)
-        fail ArgumentError, "a query string or document is required"
-      end
-
       @schema = schema
       mask = GraphQL::Schema::Mask.combine(schema.default_mask, except: except, only: only)
       @context = Context.new(query: self, values: context)
       @warden = GraphQL::Schema::Warden.new(mask, schema: @schema, context: @context)
       @root_value = root_value
-      @fragments = {}
-      @operations = {}
+      @fragments = nil
+      @operations = nil
+
       @analysis_errors = []
       if variables.is_a?(String)
         raise ArgumentError, "Query variables should be a Hash, not a String. Try JSON.parse to prepare variables."
       else
         @provided_variables = variables
       end
-      @query_string = query_string
-      parse_error = nil
-      @document = document || begin
-        GraphQL.parse(query_string || query)
-      rescue GraphQL::ParseError => err
-        parse_error = err
-        @schema.parse_error(err, @context)
-        nil
-      end
 
-      @document && @document.definitions.each do |part|
-        case part
-        when GraphQL::Language::Nodes::FragmentDefinition
-          @fragments[part.name] = part
-        when GraphQL::Language::Nodes::OperationDefinition
-          @operations[part.name] = part
-        end
-      end
+      @query_string = query_string || query
+      @document = document
 
       @resolved_types_cache = Hash.new { |h, k| h[k] = @schema.resolve_type(k, @context) }
 
@@ -85,6 +73,7 @@ module GraphQL
       # with no operations returns an empty hash
       @ast_variables = []
       @mutation = false
+<<<<<<< HEAD
       operation_name_error = nil
       @operation_name = nil
 
@@ -99,14 +88,15 @@ module GraphQL
           @selected_operation = selected_operation
         end
       end
+=======
+      @operation_name = operation_name
+      @prepared_ast = false
+>>>>>>> feat(Query) support adding query string after initialization
 
-      @validation_pipeline = GraphQL::Query::ValidationPipeline.new(
-        query: self,
-        parse_error: parse_error,
-        operation_name_error: operation_name_error,
-        max_depth: max_depth || schema.max_depth,
-        max_complexity: max_complexity || schema.max_complexity,
-      )
+
+      @validation_pipeline = nil
+      @max_depth = max_depth || schema.max_depth
+      @max_complexity = max_complexity || schema.max_complexity
 
       @result = nil
       @executed = false
@@ -122,11 +112,21 @@ module GraphQL
       end
     end
 
+    def fragments
+      with_prepared_ast { @fragments }
+    end
+
+    def operations
+      with_prepared_ast { @operations }
+    end
+
     # Get the result for this query, executing it once
     # @return [Hash] A GraphQL response, with `"data"` and/or `"errors"` keys
     def result
       if !@executed
-        Execution::Multiplex.run_queries(@schema, [self])
+        with_prepared_ast {
+          Execution::Multiplex.run_queries(@schema, [self])
+        }
       end
       @result
     end
@@ -138,7 +138,9 @@ module GraphQL
     # This is the operation to run for this query.
     # If more than one operation is present, it must be named at runtime.
     # @return [GraphQL::Language::Nodes::OperationDefinition, nil]
-    attr_reader :selected_operation
+    def selected_operation
+      with_prepared_ast { @selected_operation }
+    end
 
     # Determine the values for variables of this query, using default values
     # if a value isn't provided at runtime.
@@ -168,14 +170,20 @@ module GraphQL
       @arguments_cache[irep_or_ast_node][definition]
     end
 
-    # @return [GraphQL::Language::Nodes::Document, nil]
-    attr_reader :selected_operation
+    # @return [GraphQL::Language::Nodes::OperationDefinition, nil]
+    def selected_operation
+      with_prepared_ast { @selected_operation }
+    end
 
-    def_delegators :@validation_pipeline, :validation_errors, :internal_representation, :analyzers
+    def validation_pipeline
+      with_prepared_ast { @validation_pipeline }
+    end
+
+    def_delegators :validation_pipeline, :validation_errors, :internal_representation, :analyzers
 
     attr_accessor :analysis_errors
     def valid?
-      @validation_pipeline.valid? && analysis_errors.none?
+      validation_pipeline.valid? && analysis_errors.none?
     end
 
 
@@ -202,6 +210,70 @@ module GraphQL
       else
         operations.fetch(operation_name)
       end
+    end
+
+    def prepare_ast
+      @prepared_ast = true
+      parse_error = nil
+      @document ||= begin
+        if query_string
+          GraphQL.parse(query_string)
+        end
+      rescue GraphQL::ParseError => err
+        parse_error = err
+        @schema.parse_error(err, @context)
+        nil
+      end
+
+
+      @fragments = {}
+      @operations = {}
+      if @document
+        @document.definitions.each do |part|
+          case part
+          when GraphQL::Language::Nodes::FragmentDefinition
+            @fragments[part.name] = part
+          when GraphQL::Language::Nodes::OperationDefinition
+            @operations[part.name] = part
+          end
+        end
+      elsif parse_error
+        # This will be handled later
+      else
+        raise ArgumentError, "a query string or document is required"
+      end
+
+      # Trying to execute a document
+      # with no operations returns an empty hash
+      @ast_variables = []
+      @mutation = false
+      operation_name_error = nil
+      if @operations.any?
+        @selected_operation = find_operation(@operations, @operation_name)
+        if @selected_operation.nil?
+          operation_name_error = GraphQL::Query::OperationNameMissingError.new(@operation_name)
+        else
+          @ast_variables = @selected_operation.variables
+          @mutation = @selected_operation.operation_type == "mutation"
+        end
+      end
+
+      @validation_pipeline = GraphQL::Query::ValidationPipeline.new(
+        query: self,
+        parse_error: parse_error,
+        operation_name_error: operation_name_error,
+        max_depth: @max_depth,
+        max_complexity: @max_complexity || schema.max_complexity,
+      )
+    end
+
+    # Since the query string is processed at the last possible moment,
+    # any internal values which depend on it should be accessed within this wrapper.
+    def with_prepared_ast
+      if !@prepared_ast
+        prepare_ast
+      end
+      yield
     end
   end
 end

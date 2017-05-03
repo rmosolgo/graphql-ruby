@@ -52,8 +52,19 @@ describe GraphQL::Query do
           variables: query_variables,
           operation_name: operation_name,
           max_depth: max_depth,
-        )
+        ).result
       }
+    end
+
+    it 'can be assigned later' do
+      query = GraphQL::Query.new(
+        schema,
+        variables: query_variables,
+        operation_name: operation_name,
+        max_depth: max_depth,
+      )
+      query.query_string = '{ __type(name: "Cheese") { name } }'
+      assert_equal "Cheese", query.result["data"] ["__type"]["name"]
     end
   end
 
