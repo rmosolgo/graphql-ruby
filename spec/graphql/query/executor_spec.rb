@@ -58,6 +58,27 @@ describe GraphQL::Query::Executor do
     end
   end
 
+  describe "operation and fragment defintions of the same name" do
+    let(:query_string) { %|
+      query Cheese { cheese(id: 1) { ...Cheese } }
+      query MoreCheese { cheese(id: 2) { ...Cheese } }
+      fragment Cheese on Cheese { flavor }
+    |}
+
+    let(:operation_name) { "Cheese" }
+
+    it "runs the named operation" do
+      expected = {
+        "data" => {
+          "cheese" => {
+            "flavor" => "Brie"
+          }
+        }
+      }
+      assert_equal(expected, result)
+    end
+  end
+
 
   describe "execution order" do
     let(:query_string) {%|
