@@ -813,5 +813,21 @@ SCHEMA
         assert_equal(result.to_json, '{"data":{"allTodos":[{"text":"Pay the bills.","from_context":null},{"text":"Buy Milk","from_context":"bar"}]}}')
       end
     end
+
+    describe "custom parser behavior" do
+      module BadParser
+        ParseError = Class.new(StandardError)
+
+        def self.parse(string)
+          raise ParseError
+        end
+      end
+
+      it 'accepts a parser callable' do
+        assert_raises(BadParser::ParseError) do
+          GraphQL::Schema.from_definition(schema_defn, parser: BadParser)
+        end
+      end
+    end
   end
 end
