@@ -730,7 +730,7 @@ SCHEMA
             val.to_f
           }
         },
-        __resolve_type: ->(obj, ctx) {
+        resolve_type: ->(obj, ctx) {
           return ctx.schema.types['A']
         },
         Query: {

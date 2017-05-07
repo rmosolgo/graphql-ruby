@@ -49,6 +49,13 @@ module GraphQL
               @resolve_hash[type_name_s] = fields
             end
           end
+
+          # Check the normalized hash, not the user input:
+          if @resolve_hash.key?("resolve_type")
+            define_singleton_method :resolve_type do |type, ctx|
+              @resolve_hash.fetch("resolve_type").call(type, ctx)
+            end
+          end
         end
 
         def call(type, field, obj, args, ctx)
@@ -57,7 +64,6 @@ module GraphQL
         end
 
         def after_build_schema(schema)
-          hookup_union(schema)
           hookup_scalars(schema)
         end
 
@@ -99,12 +105,6 @@ module GraphQL
               # Call through this time
               resolver.call(obj, args, ctx)
             end
-          end
-        end
-
-        def hookup_union(schema)
-          if @resolve_hash.key?("__resolve_type")
-            schema.resolve_type = @resolve_hash["__resolve_type"]
           end
         end
 
@@ -192,7 +192,11 @@ module GraphQL
             mutation mutation_root_type
             subscription subscription_root_type
             orphan_types types.values
-            resolve_type NullResolveType
+            if default_resolve.respond_to?(:resolve_type)
+              resolve_type(default_resolve.method(:resolve_type))
+            else
+              resolve_type(NullResolveType)
+            end
 
             directives directives.values
           end
