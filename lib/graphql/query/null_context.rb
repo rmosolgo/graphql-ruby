@@ -9,7 +9,7 @@ module GraphQL
         @query = nil
         @schema = GraphQL::Schema.new
         @warden = GraphQL::Schema::Warden.new(
-          GraphQL::Schema::NullMask,
+          GraphQL::Filter.new,
           context: self,
           schema: @schema,
         )
