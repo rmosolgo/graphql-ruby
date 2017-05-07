@@ -3,11 +3,14 @@ module GraphQL
   class Schema
     module BuildFromDefinition
       class << self
-        def from_definition(definition_string, default_resolve:)
-          document = GraphQL::parse(definition_string)
+        def from_definition(definition_string, default_resolve:, parser: DefaultParser)
+          document = parser.parse(definition_string)
           Builder.build(document, default_resolve: default_resolve)
         end
       end
+
+      # @api private
+      DefaultParser = GraphQL::Language::Parser
 
       # @api private
       module DefaultResolve
