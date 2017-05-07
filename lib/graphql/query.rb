@@ -48,9 +48,8 @@ module GraphQL
     # @param only [<#call(schema_member, context)>] If provided, objects will be hidden from the schema when `.call(schema_member, context)` returns false
     def initialize(schema, query_string = nil, query: nil, document: nil, context: nil, variables: {}, validate: true, operation_name: nil, root_value: nil, max_depth: nil, max_complexity: nil, except: nil, only: nil)
       @schema = schema
-      filter = schema.default_filter.merge(except: except, only: only)
+      @filter = schema.default_filter.merge(except: except, only: only)
       @context = Context.new(query: self, values: context)
-      @warden = GraphQL::Schema::Warden.new(filter, schema: @schema, context: @context)
       @root_value = root_value
       @fragments = nil
       @operations = nil
@@ -92,7 +91,6 @@ module GraphQL
       @operation_name = operation_name
       @prepared_ast = false
 >>>>>>> feat(Query) support adding query string after initialization
-
 
       @validation_pipeline = nil
       @max_depth = max_depth || schema.max_depth
@@ -150,12 +148,13 @@ module GraphQL
     # @return [GraphQL::Query::Variables] Variables to apply to this query
     def variables
       @variables ||= begin
-        vars = GraphQL::Query::Variables.new(
-          @context,
-          @ast_variables,
-          @provided_variables,
-        )
-        vars
+        with_prepared_ast {
+          GraphQL::Query::Variables.new(
+            @context,
+            @ast_variables,
+            @provided_variables,
+          )
+        }
       end
     end
 
@@ -186,8 +185,11 @@ module GraphQL
       validation_pipeline.valid? && analysis_errors.none?
     end
 
+    def warden
+      with_prepared_ast { @warden }
+    end
 
-    def_delegators :@warden, :get_type, :get_field, :possible_types, :root_type_for_operation
+    def_delegators :warden, :get_type, :get_field, :possible_types, :root_type_for_operation
 
     # @param value [Object] Any runtime value
     # @return [GraphQL::ObjectType, nil] The runtime type of `value` from {Schema#resolve_type}
@@ -198,6 +200,16 @@ module GraphQL
 
     def mutation?
       @mutation
+    end
+
+    # @return [void]
+    def merge_filters(only: nil, except: nil)
+      if @prepared_ast
+        raise "Can't add filters after preparing the query"
+      else
+        @filter = @filter.merge(only: only, except: except)
+      end
+      nil
     end
 
     private
@@ -214,6 +226,8 @@ module GraphQL
 
     def prepare_ast
       @prepared_ast = true
+      @warden = GraphQL::Schema::Warden.new(@filter, schema: @schema, context: @context)
+
       parse_error = nil
       @document ||= begin
         if query_string

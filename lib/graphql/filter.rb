@@ -13,13 +13,41 @@ module GraphQL
       (@except ? !@except.call(member, ctx) : true)
     end
 
-    def merge(only:, except:)
-      if only
-        merged_only = ->(m, c) { self.call(m,c) && only.call(m, c) }
-      else
-        merged_only = self
+    def merge(only: nil, except: nil)
+      onlies = [self].concat(Array(only))
+      merged_only = MergedOnly.build(onlies)
+      merged_except = MergedExcept.build(Array(except))
+      self.class.new(only: merged_only, except: merged_except)
+    end
+
+    private
+
+    class MergedOnly
+      def initialize(first, second)
+        @first = first
+        @second = second
       end
-      self.class.new(only: merged_only, except: except)
+
+      def call(member, ctx)
+        @first.call(member, ctx) && @second.call(member, ctx)
+      end
+
+      def self.build(onlies)
+        case onlies
+        when 0
+          nil
+        when 1
+          onlies[0]
+        else
+          onlies.reduce { |memo, only| self.new(memo, only) }
+        end
+      end
+    end
+
+    class MergedExcept < MergedOnly
+      def call(member, ctx)
+        @first.call(member, ctx) || @second.call(member, ctx)
+      end
     end
   end
 end
