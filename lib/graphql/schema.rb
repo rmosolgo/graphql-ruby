@@ -217,13 +217,12 @@ module GraphQL
     # Execute a query on itself. Raises an error if the schema definition is invalid.
     # @see {Query#initialize} for arguments.
     # @return [Hash] query result, ready to be serialized as JSON
-    def execute(*args)
-      if @definition_error
-        raise @definition_error
-      else
-        query_obj = GraphQL::Query.new(self, *args)
-        query_obj.result
+    def execute(query_str = nil, **kwargs)
+      if query_str
+        kwargs[:query] = query_str
       end
+      all_results = multiplex([kwargs])
+      all_results[0]
     end
 
     # Execute several queries on itself. Raises an error if the schema definition is invalid.
@@ -239,7 +238,7 @@ module GraphQL
     #     result_2: results[1],
     #   }
     #
-    # @see {Query#execute} for query keyword arguments
+    # @see {Query#initialize} for query keyword arguments
     # @see {Execution::Multiplex#run_queries} for multiplex keyword arguments
     # @param queries [Array<Hash>] Keyword arguments for each query
     # @param context [Hash] Multiplex-level context
