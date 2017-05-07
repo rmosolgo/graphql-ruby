@@ -1,4 +1,6 @@
 # frozen_string_literal: true
+require "graphql/schema/build_from_definition/resolve_map"
+
 module GraphQL
   class Schema
     module BuildFromDefinition
@@ -19,102 +21,6 @@ module GraphQL
             obj.public_send(field.name, args, ctx)
           else
             obj.public_send(field.name)
-          end
-        end
-      end
-
-      # @api private
-      class ResolveMap
-
-        def initialize(user_resolve_hash)
-          @resolve_hash = Hash.new do |h, k|
-            # For each type name, provide a new hash if one wasn't given:
-            h[k] = Hash.new do |h2, k2|
-              if k2 == "coerce_input" || k2 == "coerce_result"
-                # This isn't an object field, it's a scalar coerce function.
-                # Use a passthrough
-                Builder::NullScalarCoerce
-              else
-                # For each field, provide a resolver that will
-                # make runtime checks & replace itself
-                h2[k2] = SelfReplacingDefaultResolveFunction.new(h2, k2)
-              end
-            end
-          end
-          @user_resolve_hash = user_resolve_hash
-          # User-provided resolve functions take priority over the default:
-          @user_resolve_hash.each do |type_name, fields|
-            type_name_s = type_name.to_s
-            case fields
-            when Hash
-              fields.each do |field_name, resolve_fn|
-                @resolve_hash[type_name_s][field_name.to_s] = resolve_fn
-              end
-            when Proc
-              # for example, __resolve_type
-              @resolve_hash[type_name_s] = fields
-            end
-          end
-
-          # Check the normalized hash, not the user input:
-          if @resolve_hash.key?("resolve_type")
-            define_singleton_method :resolve_type do |type, ctx|
-              @resolve_hash.fetch("resolve_type").call(type, ctx)
-            end
-          end
-        end
-
-        def call(type, field, obj, args, ctx)
-          resolver = @resolve_hash[type.name][field.name]
-          resolver.call(obj, args, ctx)
-        end
-
-        def coerce_input(type, value, ctx)
-          @resolve_hash[type.name]["coerce_input"].call(value, ctx)
-        end
-
-        def coerce_result(type, value, ctx)
-          @resolve_hash[type.name]["coerce_result"].call(value, ctx)
-        end
-
-        private
-
-        class SelfReplacingDefaultResolveFunction
-          def initialize(field_map, field_name)
-            @field_map = field_map
-            @field_name = field_name
-          end
-
-          # Make some runtime checks about
-          # how `obj` implements the `field_name`.
-          #
-          # Create a new resolve function according to that implementation, then:
-          #   - update `field_map` with this implementation
-          #   - call the implementation now (to satisfy this field execution)
-          #
-          # If `obj` doesn't implement `field_name`, raise an error.
-          def call(obj, args, ctx)
-            method_name = @field_name
-            if !obj.respond_to?(method_name)
-              raise KeyError, "Can't resolve field #{method_name} on #{obj}"
-            else
-              method_arity = obj.method(method_name).arity
-              resolver = case method_arity
-              when 0, -1
-                # -1 Handles method_missing, eg openstruct
-                ->(o, a, c) { o.public_send(method_name) }
-              when 1
-                ->(o, a, c) { o.public_send(method_name, a) }
-              when 2
-                ->(o, a, c) { o.public_send(method_name, a, c) }
-              else
-                raise "Unexpected resolve arity: #{method_arity}. Must be 0, 1, 2"
-              end
-              # Call the resolver directly next time
-              @field_map[method_name] = resolver
-              # Call through this time
-              resolver.call(obj, args, ctx)
-            end
           end
         end
       end
