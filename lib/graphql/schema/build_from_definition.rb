@@ -30,9 +30,15 @@ module GraphQL
           @resolve_hash = Hash.new do |h, k|
             # For each type name, provide a new hash if one wasn't given:
             h[k] = Hash.new do |h2, k2|
-              # For each field, provide a resolver that will
-              # make runtime checks & replace itself
-              h2[k2] = SelfReplacingDefaultResolveFunction.new(h2, k2)
+              if k2 == "coerce_input" || k2 == "coerce_result"
+                # This isn't an object field, it's a scalar coerce function.
+                # Use a passthrough
+                Builder::NullScalarCoerce
+              else
+                # For each field, provide a resolver that will
+                # make runtime checks & replace itself
+                h2[k2] = SelfReplacingDefaultResolveFunction.new(h2, k2)
+              end
             end
           end
           @user_resolve_hash = user_resolve_hash
@@ -63,8 +69,12 @@ module GraphQL
           resolver.call(obj, args, ctx)
         end
 
-        def after_build_schema(schema)
-          hookup_scalars(schema)
+        def coerce_input(type, value, ctx)
+          @resolve_hash[type.name]["coerce_input"].call(value, ctx)
+        end
+
+        def coerce_result(type, value, ctx)
+          @resolve_hash[type.name]["coerce_result"].call(value, ctx)
         end
 
         private
@@ -107,16 +117,6 @@ module GraphQL
             end
           end
         end
-
-        def hookup_scalars(schema)
-          schema.types.each do |name, type|
-            if type.is_a?(GraphQL::ScalarType) && @resolve_hash.key?(type.name)
-              type.coerce        = @resolve_hash[type.name]["coerce"]        if @resolve_hash[type.name]["coerce"]
-              type.coerce_input  = @resolve_hash[type.name]["coerce_input"]  if @resolve_hash[type.name]["coerce_input"]
-              type.coerce_result = @resolve_hash[type.name]["coerce_result"] if @resolve_hash[type.name]["coerce_result"]
-            end
-          end
-        end
       end
 
       # @api private
@@ -150,7 +150,7 @@ module GraphQL
             when GraphQL::Language::Nodes::UnionTypeDefinition
               types[definition.name] = build_union_type(definition, type_resolver)
             when GraphQL::Language::Nodes::ScalarTypeDefinition
-              types[definition.name] = build_scalar_type(definition, type_resolver)
+              types[definition.name] = build_scalar_type(definition, type_resolver, default_resolve: default_resolve)
             when GraphQL::Language::Nodes::InputObjectTypeDefinition
               types[definition.name] = build_input_object_type(definition, type_resolver)
             when GraphQL::Language::Nodes::DirectiveDefinition
@@ -201,10 +201,6 @@ module GraphQL
             directives directives.values
           end
 
-          if default_resolve.respond_to? :after_build_schema
-            default_resolve.after_build_schema(schema)
-          end
-
           schema
         end
 
@@ -239,12 +235,21 @@ module GraphQL
           reason.value
         end
 
-        def build_scalar_type(scalar_type_definition, type_resolver)
-          GraphQL::ScalarType.define(
+        def build_scalar_type(scalar_type_definition, type_resolver, default_resolve:)
+          scalar_type = GraphQL::ScalarType.define(
             name: scalar_type_definition.name,
             description: scalar_type_definition.description,
             coerce: NullScalarCoerce,
           )
+
+          if default_resolve.respond_to?(:coerce_input)
+            scalar_type = scalar_type.redefine(
+              coerce_input: ->(val, ctx) { default_resolve.coerce_input(scalar_type, val, ctx) },
+              coerce_result: ->(val, ctx) { default_resolve.coerce_result(scalar_type, val, ctx) },
+            )
+          end
+
+          scalar_type
         end
 
         def build_union_type(union_type_definition, type_resolver)
