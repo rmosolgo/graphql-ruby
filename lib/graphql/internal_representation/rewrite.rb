@@ -18,11 +18,17 @@ module GraphQL
 
       NO_DIRECTIVES = [].freeze
 
-      # @return [Hash<String, Node>] Roots of this query
-      attr_reader :operations
+      # @return InternalRepresentation::Document
+      attr_reader :document
 
       def initialize
-        @operations = {}
+        @document = InternalRepresentation::Document.new
+      end
+
+      # @return [Hash<String, Node>] Roots of this query
+      def operations
+        warn "#{self.class}#operations is deprecated; use `document.operation_definitions` instead"
+        document.operation_definitions
       end
 
       def validate(context)
@@ -39,14 +45,13 @@ module GraphQL
         # Array<Scope>
         scopes_stack = []
 
-        fragment_definitions = {}
         skip_nodes = Set.new
 
-        visit_op = VisitDefinition.new(context, @operations, nodes_stack, scopes_stack)
+        visit_op = VisitDefinition.new(context, @document.operation_definitions, nodes_stack, scopes_stack)
         visitor[Nodes::OperationDefinition].enter << visit_op.method(:enter)
         visitor[Nodes::OperationDefinition].leave << visit_op.method(:leave)
 
-        visit_frag = VisitDefinition.new(context, fragment_definitions, nodes_stack, scopes_stack)
+        visit_frag = VisitDefinition.new(context, @document.fragment_definitions, nodes_stack, scopes_stack)
         visitor[Nodes::FragmentDefinition].enter << visit_frag.method(:enter)
         visitor[Nodes::FragmentDefinition].leave << visit_frag.method(:leave)
 
@@ -137,7 +142,7 @@ module GraphQL
         # can be shared between its usages.
         context.on_dependency_resolve do |defn_ast_node, spread_ast_nodes, frag_ast_node|
           frag_name = frag_ast_node.name
-          fragment_node = fragment_definitions[frag_name]
+          fragment_node = @document.fragment_definitions[frag_name]
 
           if fragment_node
             spread_ast_nodes.each do |spread_ast_node|
