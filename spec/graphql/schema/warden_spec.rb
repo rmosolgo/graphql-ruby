@@ -606,7 +606,7 @@ describe GraphQL::Schema::Warden do
     end
   end
 
-  describe "adding filters in instrumentation" do
+  describe "multiple filters" do
     let(:visible_enum_value) { ->(member, ctx) { !member.metadata[:hidden_enum_value] } }
     let(:visible_abstract_type) { ->(member, ctx) { !member.metadata[:hidden_abstract_type] } }
     let(:hidden_input_object) { ->(member, ctx) { member.metadata[:hidden_input_object_type] } }
@@ -622,34 +622,53 @@ describe GraphQL::Schema::Warden do
     GRAPHQL
     }
 
-    it "applies only/except filters" do
-      filters = {
-        only: visible_enum_value,
-        except: hidden_input_object,
-      }
-      res = MaskHelpers.run_query(query_str, context: { filters: filters })
-      assert_equal nil, res["data"]["input"]
-      enum_values = res["data"]["enum"]["enumValues"].map { |v| v["name"] }
-      assert_equal 5, enum_values.length
-      refute_includes enum_values, "TRILL"
-      # These are unaffected:
-      assert_includes res["data"]["abstractType"]["interfaces"].map { |i| i["name"] }, "LanguageMember"
-      assert_equal "Phoneme", res["data"]["type"]["name"]
+    describe "multiple filters for execution" do
+      it "applies all of them" do
+        res = MaskHelpers.run_query(
+          query_str,
+          only: [visible_enum_value, visible_abstract_type],
+          except: [hidden_input_object, hidden_type],
+        )
+        assert_equal nil, res["data"]["input"]
+        enum_values = res["data"]["enum"]["enumValues"].map { |v| v["name"] }
+        assert_equal 5, enum_values.length
+        refute_includes enum_values, "TRILL"
+        # These are also filtered out:
+        assert_equal 0, res["data"]["abstractType"]["interfaces"].length
+        assert_equal nil, res["data"]["type"]
+      end
     end
 
-    it "applies multiple filters" do
-      filters = {
-        only: [visible_enum_value, visible_abstract_type],
-        except: [hidden_input_object, hidden_type],
-      }
-      res = MaskHelpers.run_query(query_str, context: { filters: filters })
-      assert_equal nil, res["data"]["input"]
-      enum_values = res["data"]["enum"]["enumValues"].map { |v| v["name"] }
-      assert_equal 5, enum_values.length
-      refute_includes enum_values, "TRILL"
-      # These are also filtered out:
-      assert_equal 0, res["data"]["abstractType"]["interfaces"].length
-      assert_equal nil, res["data"]["type"]
+    describe "adding filters in instrumentation" do
+      it "applies only/except filters" do
+        filters = {
+          only: visible_enum_value,
+          except: hidden_input_object,
+        }
+        res = MaskHelpers.run_query(query_str, context: { filters: filters })
+        assert_equal nil, res["data"]["input"]
+        enum_values = res["data"]["enum"]["enumValues"].map { |v| v["name"] }
+        assert_equal 5, enum_values.length
+        refute_includes enum_values, "TRILL"
+        # These are unaffected:
+        assert_includes res["data"]["abstractType"]["interfaces"].map { |i| i["name"] }, "LanguageMember"
+        assert_equal "Phoneme", res["data"]["type"]["name"]
+      end
+
+      it "applies multiple filters" do
+        filters = {
+          only: [visible_enum_value, visible_abstract_type],
+          except: [hidden_input_object, hidden_type],
+        }
+        res = MaskHelpers.run_query(query_str, context: { filters: filters })
+        assert_equal nil, res["data"]["input"]
+        enum_values = res["data"]["enum"]["enumValues"].map { |v| v["name"] }
+        assert_equal 5, enum_values.length
+        refute_includes enum_values, "TRILL"
+        # These are also filtered out:
+        assert_equal 0, res["data"]["abstractType"]["interfaces"].length
+        assert_equal nil, res["data"]["type"]
+      end
     end
   end
 end
