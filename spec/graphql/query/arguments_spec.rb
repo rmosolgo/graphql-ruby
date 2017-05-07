@@ -113,6 +113,14 @@ describe GraphQL::Query::Arguments do
     end
   end
 
+  describe "fetch" do
+    it "returns the value or raises KeyError" do
+      assert_equal 1, arguments.fetch("a")
+      assert_equal 1, arguments.fetch(:a)
+      assert_raises(KeyError) { arguments.fetch("z") }
+    end
+  end
+
   describe "#key?" do
     let(:arg_values) { [] }
     let(:schema) {

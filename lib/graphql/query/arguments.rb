@@ -37,6 +37,13 @@ module GraphQL
         @unwrapped_values ||= unwrap_value(@original_values)
       end
 
+      # Returns the value for `key` or raises `KeyError` if `key` isn't present
+      # @param key [String, Symbol]
+      # @return [Object] the argument at `key`
+      def fetch(key)
+        @argument_values.fetch(key.to_s).value
+      end
+
       def_delegators :string_key_values, :keys, :values, :each
 
       # Access each key, value and type for the arguments in this set.
