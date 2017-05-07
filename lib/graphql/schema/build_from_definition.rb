@@ -25,73 +25,98 @@ module GraphQL
 
       # @api private
       class ResolveMap
-        
-        def initialize(resolve_hash)
-          @resolve_hash = convert_keys_to_strings(resolve_hash)
+
+        def initialize(user_resolve_hash)
+          @resolve_hash = Hash.new do |h, k|
+            # For each type name, provide a new hash if one wasn't given:
+            h[k] = Hash.new do |h2, k2|
+              # For each field, provide a resolver that will
+              # make runtime checks & replace itself
+              h2[k2] = SelfReplacingDefaultResolveFunction.new(h2, k2)
+            end
+          end
+          @user_resolve_hash = user_resolve_hash
+          # User-provided resolve functions take priority over the default:
+          @user_resolve_hash.each do |type_name, fields|
+            type_name_s = type_name.to_s
+            case fields
+            when Hash
+              fields.each do |field_name, resolve_fn|
+                @resolve_hash[type_name_s][field_name.to_s] = resolve_fn
+              end
+            when Proc
+              # for example, __resolve_type
+              @resolve_hash[type_name_s] = fields
+            end
+          end
         end
 
         def call(type, field, obj, args, ctx)
-          type_hash = @resolve_hash[type.name]
-
-          if !type_hash
-            type_hash = @resolve_hash[type.name] = {}
-          end
-
-          resolver = type_hash[field.name]
-
-          if resolver.nil?
-            raise(KeyError, "resolver not found for #{type.name}.#{field.name}") unless obj.respond_to?(field.name)
-            resolver = type_hash[field.name] = build_resolver(type, field, obj)
-          end
-
+          resolver = @resolve_hash[type.name][field.name]
           resolver.call(obj, args, ctx)
         end
 
-        def after_build_schema(schema) 
+        def after_build_schema(schema)
           hookup_union(schema)
           hookup_scalars(schema)
         end
 
         private
 
-        def build_resolver(type, field, obj)
-          method_arity = obj.method(field.name.to_sym).arity
-          case method_arity
-          # Some objects have dynamic missing method such as openstruct
-          # therefore they have an arity -1
-          when -1, 0
-            ->(o, a, c) { o.public_send(field.name) }
-          when 1
-            ->(o, a, c) { o.public_send(field.name, a) }
-          when 2
-            ->(o, a, c) { o.public_send(field.name, a, c) }
-          else 
-            raise "Unexpected resolve arity: #{method_arity}. Must be 0, 1, 2"
+        class SelfReplacingDefaultResolveFunction
+          def initialize(field_map, field_name)
+            @field_map = field_map
+            @field_name = field_name
+          end
+
+          # Make some runtime checks about
+          # how `obj` implements the `field_name`.
+          #
+          # Create a new resolve function according to that implementation, then:
+          #   - update `field_map` with this implementation
+          #   - call the implementation now (to satisfy this field execution)
+          #
+          # If `obj` doesn't implement `field_name`, raise an error.
+          def call(obj, args, ctx)
+            method_name = @field_name
+            if !obj.respond_to?(method_name)
+              raise KeyError, "Can't resolve field #{method_name} on #{obj}"
+            else
+              method_arity = obj.method(method_name).arity
+              resolver = case method_arity
+              when 0, -1
+                # -1 Handles method_missing, eg openstruct
+                ->(o, a, c) { o.public_send(method_name) }
+              when 1
+                ->(o, a, c) { o.public_send(method_name, a) }
+              when 2
+                ->(o, a, c) { o.public_send(method_name, a, c) }
+              else
+                raise "Unexpected resolve arity: #{method_arity}. Must be 0, 1, 2"
+              end
+              # Call the resolver directly next time
+              @field_map[method_name] = resolver
+              # Call through this time
+              resolver.call(obj, args, ctx)
+            end
           end
         end
-       
+
         def hookup_union(schema)
-          schema.resolve_type = @resolve_hash["__resolve_type"] if @resolve_hash["__resolve_type"]
+          if @resolve_hash.key?("__resolve_type")
+            schema.resolve_type = @resolve_hash["__resolve_type"]
+          end
         end
 
         def hookup_scalars(schema)
-          for _, type in schema.types
-            next unless type.is_a?(GraphQL::ScalarType) and @resolve_hash[type.name]
-          
-            type.coerce        = @resolve_hash[type.name]["coerce"]        if @resolve_hash[type.name]["coerce"]
-            type.coerce_input  = @resolve_hash[type.name]["coerce_input"]  if @resolve_hash[type.name]["coerce_input"]
-            type.coerce_result = @resolve_hash[type.name]["coerce_result"] if @resolve_hash[type.name]["coerce_result"]
+          schema.types.each do |name, type|
+            if type.is_a?(GraphQL::ScalarType) && @resolve_hash.key?(type.name)
+              type.coerce        = @resolve_hash[type.name]["coerce"]        if @resolve_hash[type.name]["coerce"]
+              type.coerce_input  = @resolve_hash[type.name]["coerce_input"]  if @resolve_hash[type.name]["coerce_input"]
+              type.coerce_result = @resolve_hash[type.name]["coerce_result"] if @resolve_hash[type.name]["coerce_result"]
+            end
           end
         end
-       
-        def convert_keys_to_strings(h)
-          Hash[
-            h.map {|k, v|
-              v = convert_keys_to_strings(v) if v.is_a?(Hash)
-              [k.to_s, v]
-            }
-          ]
-        end        
       end
 
       # @api private
