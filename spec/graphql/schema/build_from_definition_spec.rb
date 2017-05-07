@@ -701,6 +701,90 @@ SCHEMA
     end
   end
 
+  describe "executable schema with resolver maps" do
+    class Something
+      def capitalize(args)
+        args[:word].upcase
+      end
+    end
+
+    let(:definition) {
+      <<-GRAPHQL
+        scalar Date
+        scalar UndefinedScalar
+        type Something { capitalize(word:String!): String }
+        type A { a: String }
+        type B { b: String }
+        union Thing = A | B
+        type Query {
+          hello: Something
+          thing: Thing
+          add_week(in: Date!): Date!
+          undefined_scalar(str: String, int: Int): UndefinedScalar
+        }
+      GRAPHQL
+    }
+
+    let(:resolvers) {
+      {
+        Date: {
+          coerce_input: ->(val, ctx) {
+            Time.at(Float(val))
+          },
+          coerce_result: ->(val, ctx) {
+            val.to_f
+          }
+        },
+        resolve_type: ->(obj, ctx) {
+          return ctx.schema.types['A']
+        },
+        Query: {
+          add_week: ->(o,a,c) {
+            raise "No Time" unless a[:in].is_a? Time
+            a[:in]
+          },
+          hello: ->(o,a,c) {
+            Something.new
+          },
+          thing: ->(o,a,c) {
+            OpenStruct.new({a: "a"})
+          },
+          undefined_scalar: ->(o,a,c) {
+            a.values.first
+          }
+        }
+      }
+    }
+
+    let(:schema) { GraphQL::Schema.from_definition(definition, default_resolve: resolvers) }
+
+    it "resolves unions"  do
+      result = schema.execute("query { thing { ... on A { a } } }")
+      assert_equal(result.to_json,'{"data":{"thing":{"a":"a"}}}')
+    end
+
+    it "resolves scalars" do
+      result = schema.execute("query { add_week(in: 392277600.0) }")
+      assert_equal(result.to_json,'{"data":{"add_week":392277600.0}}')
+    end
+
+    it "passes args from graphql to the object"  do
+      result = schema.execute("query { hello { capitalize(word: \"hello\") }}")
+      assert_equal(result.to_json,'{"data":{"hello":{"capitalize":"HELLO"}}}')
+    end
+
+    it "handles undefined scalar resolution with identity function" do
+      result = schema.execute <<-GRAPHQL
+        {
+          str: undefined_scalar(str: "abc")
+          int: undefined_scalar(int: 123)
+        }
+      GRAPHQL
+
+      assert_equal({ "str" => "abc", "int" => 123 }, result["data"])
+    end
+  end
+
   describe "executable schemas from string" do
     let(:schema_defn) {
       <<-GRAPHQL
@@ -738,7 +822,7 @@ SCHEMA
       assert_equal(result.to_json, '{"data":{"allTodos":[{"text":"Pay the bills.","from_context":null},{"text":"Buy Milk","from_context":"bar"}]}}')
     end
 
-    describe "hash of resolvers" do
+    describe "hash of resolvers with defaults" do
       let(:todos) { [Todo.new("Pay the bills.")] }
       let(:schema) { GraphQL::Schema.from_definition(schema_defn, default_resolve: resolve_hash) }
       let(:resolve_hash) {
@@ -753,26 +837,16 @@ SCHEMA
         }
         h
       }
-      describe "with defaults" do
-        let(:base_hash) {
-          # Fallback is to resolve by sending the field name
-          Hash.new { |h, k| h[k] = Hash.new { |h2, k2| ->(obj, args, ctx) { obj.public_send(k2) } } }
-        }
 
-        it "accepts a hash of resolve functions" do
-          schema.execute("mutation { todoAdd: todo_add(text: \"Buy Milk\") { text } }", context: {context_value: "bar"}, root_value: todos)
-          result = schema.execute("query { allTodos: all_todos { text, from_context } }", root_value: todos)
-          assert_equal(result.to_json, '{"data":{"allTodos":[{"text":"Pay the bills.","from_context":null},{"text":"Buy Milk","from_context":"bar"}]}}')
-        end
-      end
+      let(:base_hash) {
+        # Fallback is to resolve by sending the field name
+        Hash.new { |h, k| h[k] = Hash.new { |h2, k2| ->(obj, args, ctx) { obj.public_send(k2) } } }
+      }
 
-      describe "wihtout defaults" do
-        let(:base_hash) { {} }
-        it "raises a KeyError" do
-          assert_raises(KeyError) do
-            schema.execute("mutation { todoAdd: todo_add(text: \"Buy Milk\") { text } }", context: {context_value: "bar"}, root_value: todos)
-          end
-        end
+      it "accepts a hash of resolve functions" do
+        schema.execute("mutation { todoAdd: todo_add(text: \"Buy Milk\") { text } }", context: {context_value: "bar"}, root_value: todos)
+        result = schema.execute("query { allTodos: all_todos { text, from_context } }", root_value: todos)
+        assert_equal(result.to_json, '{"data":{"allTodos":[{"text":"Pay the bills.","from_context":null},{"text":"Buy Milk","from_context":"bar"}]}}')
       end
     end
 

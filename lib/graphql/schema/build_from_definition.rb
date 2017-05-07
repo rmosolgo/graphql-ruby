@@ -1,4 +1,6 @@
 # frozen_string_literal: true
+require "graphql/schema/build_from_definition/resolve_map"
+
 module GraphQL
   class Schema
     module BuildFromDefinition
@@ -16,24 +18,6 @@ module GraphQL
             obj.public_send(field.name, args, ctx)
           else
             obj.public_send(field.name)
-          end
-        end
-      end
-
-      # @api private
-      class ResolveMap
-        def initialize(resolve_hash)
-          @resolve_hash = resolve_hash
-        end
-
-        def call(type, field, obj, args, ctx)
-          type_hash = @resolve_hash[type.name]
-          type_hash && (resolver = type_hash[field.name])
-
-          if resolver.nil?
-            raise(KeyError, "resolver not found for #{type.name}.#{field.name}")
-          else
-            resolver.call(obj, args, ctx)
           end
         end
       end
@@ -69,7 +53,7 @@ module GraphQL
             when GraphQL::Language::Nodes::UnionTypeDefinition
               types[definition.name] = build_union_type(definition, type_resolver)
             when GraphQL::Language::Nodes::ScalarTypeDefinition
-              types[definition.name] = build_scalar_type(definition, type_resolver)
+              types[definition.name] = build_scalar_type(definition, type_resolver, default_resolve: default_resolve)
             when GraphQL::Language::Nodes::InputObjectTypeDefinition
               types[definition.name] = build_input_object_type(definition, type_resolver)
             when GraphQL::Language::Nodes::DirectiveDefinition
@@ -104,17 +88,23 @@ module GraphQL
 
           raise InvalidDocumentError.new('Must provide schema definition with query type or a type named Query.') unless query_root_type
 
-          Schema.define do
+          schema = Schema.define do
             raise_definition_error true
 
             query query_root_type
             mutation mutation_root_type
             subscription subscription_root_type
             orphan_types types.values
-            resolve_type NullResolveType
+            if default_resolve.respond_to?(:resolve_type)
+              resolve_type(default_resolve.method(:resolve_type))
+            else
+              resolve_type(NullResolveType)
+            end
 
             directives directives.values
           end
+
+          schema
         end
 
         NullResolveType = ->(obj, ctx) {
@@ -148,12 +138,21 @@ module GraphQL
           reason.value
         end
 
-        def build_scalar_type(scalar_type_definition, type_resolver)
-          GraphQL::ScalarType.define(
+        def build_scalar_type(scalar_type_definition, type_resolver, default_resolve:)
+          scalar_type = GraphQL::ScalarType.define(
             name: scalar_type_definition.name,
             description: scalar_type_definition.description,
             coerce: NullScalarCoerce,
           )
+
+          if default_resolve.respond_to?(:coerce_input)
+            scalar_type = scalar_type.redefine(
+              coerce_input: ->(val, ctx) { default_resolve.coerce_input(scalar_type, val, ctx) },
+              coerce_result: ->(val, ctx) { default_resolve.coerce_result(scalar_type, val, ctx) },
+            )
+          end
+
+          scalar_type
         end
 
         def build_union_type(union_type_definition, type_resolver)
