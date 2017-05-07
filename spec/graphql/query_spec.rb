@@ -57,6 +57,32 @@ describe GraphQL::Query do
     end
   end
 
+  describe "operation_name" do
+    describe "when provided" do
+      let(:query_string) { <<-GRAPHQL
+        query q1 { cheese(id: 1) { flavor } }
+        query q2 { cheese(id: 2) { flavor } }
+      GRAPHQL
+      }
+      let(:operation_name) { "q2" }
+
+      it "returns the provided name" do
+        assert_equal "q2", query.operation_name
+      end
+    end
+
+    describe "when inferred" do
+      let(:query_string) { <<-GRAPHQL
+        query q3 { cheese(id: 3) { flavor } }
+      GRAPHQL
+      }
+
+      it "returns the inferred name" do
+        assert_equal "q3", query.operation_name
+      end
+    end
+  end
+
   describe "when passed a document instance" do
     let(:query) { GraphQL::Query.new(
       schema,
