@@ -48,9 +48,9 @@ module GraphQL
     # @param only [<#call(schema_member, context)>] If provided, objects will be hidden from the schema when `.call(schema_member, context)` returns false
     def initialize(schema, query_string = nil, query: nil, document: nil, context: nil, variables: {}, validate: true, operation_name: nil, root_value: nil, max_depth: nil, max_complexity: nil, except: nil, only: nil)
       @schema = schema
-      mask = GraphQL::Schema::Mask.combine(schema.default_mask, except: except, only: only)
+      filter = schema.default_filter.merge(except: except, only: only)
       @context = Context.new(query: self, values: context)
-      @warden = GraphQL::Schema::Warden.new(mask, schema: @schema, context: @context)
+      @warden = GraphQL::Schema::Warden.new(filter, schema: @schema, context: @context)
       @root_value = root_value
       @fragments = nil
       @operations = nil

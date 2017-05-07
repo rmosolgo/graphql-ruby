@@ -6,7 +6,6 @@ require "graphql/schema/default_type_error"
 require "graphql/schema/invalid_type_error"
 require "graphql/schema/instrumented_field_map"
 require "graphql/schema/middleware_chain"
-require "graphql/schema/mask"
 require "graphql/schema/null_mask"
 require "graphql/schema/possible_types"
 require "graphql/schema/rescue_middleware"
@@ -88,6 +87,10 @@ module GraphQL
 
     class << self
       attr_accessor :default_execution_strategy
+    end
+
+    def default_filter
+      GraphQL::Filter.new(except: default_mask)
     end
 
     self.default_execution_strategy = GraphQL::Execution::Execute

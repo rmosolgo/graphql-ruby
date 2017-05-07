@@ -49,7 +49,8 @@ module GraphQL
         @context = context
 
         blacklist = build_blacklist(only, except, introspection: introspection)
-        @warden = GraphQL::Schema::Warden.new(blacklist, schema: @schema, context: @context)
+        filter = GraphQL::Filter.new(except: blacklist)
+        @warden = GraphQL::Schema::Warden.new(filter, schema: @schema, context: @context)
       end
 
       # Return the GraphQL schema string for the introspection type system
