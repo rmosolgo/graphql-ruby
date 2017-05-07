@@ -1,21 +1,17 @@
 # frozen_string_literal: true
 module GraphQL
   class Schema
-    # Restrict access to a {GraphQL::Schema} with a user-defined mask.
-    #
-    # The mask is object that responds to `#visible?(schema_member)`.
+    # Restrict access to a {GraphQL::Schema} with a user-defined filter.
     #
     # When validating and executing a query, all access to schema members
     # should go through a warden. If you access the schema directly,
     # you may show a client something that it shouldn't be allowed to see.
     #
-    # Masks can be provided in {Schema#execute} (or {Query#initialize}) with the `mask:` keyword.
-    #
     # @example Hidding private fields
     #   private_members = -> (member, ctx) { member.metadata[:private] }
     #   result = Schema.execute(query_string, except: private_members)
     #
-    # @example Custom mask implementation
+    # @example Custom filter implementation
     #   # It must respond to `#call(member)`.
     #   class MissingRequiredFlags
     #     def initialize(user)
@@ -38,13 +34,13 @@ module GraphQL
     #
     # @api private
     class Warden
-      # @param mask [<#call(member)>] Objects are hidden when `.call(member, ctx)` returns true
+      # @param filter [<#call(member)>] Objects are hidden when `.call(member, ctx)` returns true
       # @param context [GraphQL::Query::Context]
       # @param schema [GraphQL::Schema]
       # @param deep_check [Boolean]
-      def initialize(mask, context:, schema:)
+      def initialize(filter, context:, schema:)
         @schema = schema
-        @visibility_cache = read_through { |m| !mask.call(m, context) }
+        @visibility_cache = read_through { |m| filter.call(m, context) }
       end
 
       # @return [Array<GraphQL::BaseType>] Visible types in the schema
