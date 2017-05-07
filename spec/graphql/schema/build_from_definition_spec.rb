@@ -702,8 +702,8 @@ SCHEMA
   end
 
   describe "executable schema with resolver maps" do
-    
-    class Something 
+
+    class Something
       def capitalize(args)
         args[:word].upcase
       end
@@ -804,7 +804,7 @@ SCHEMA
       assert_equal(result.to_json, '{"data":{"allTodos":[{"text":"Pay the bills.","from_context":null},{"text":"Buy Milk","from_context":"bar"}]}}')
     end
 
-    describe "hash of resolvers" do
+    describe "hash of resolvers with defaults" do
       let(:todos) { [Todo.new("Pay the bills.")] }
       let(:schema) { GraphQL::Schema.from_definition(schema_defn, default_resolve: resolve_hash) }
       let(:resolve_hash) {
@@ -819,17 +819,16 @@ SCHEMA
         }
         h
       }
-      describe "with defaults" do
-        let(:base_hash) {
-          # Fallback is to resolve by sending the field name
-          Hash.new { |h, k| h[k] = Hash.new { |h2, k2| ->(obj, args, ctx) { obj.public_send(k2) } } }
-        }
 
-        it "accepts a hash of resolve functions" do
-          schema.execute("mutation { todoAdd: todo_add(text: \"Buy Milk\") { text } }", context: {context_value: "bar"}, root_value: todos)
-          result = schema.execute("query { allTodos: all_todos { text, from_context } }", root_value: todos)
-          assert_equal(result.to_json, '{"data":{"allTodos":[{"text":"Pay the bills.","from_context":null},{"text":"Buy Milk","from_context":"bar"}]}}')
-        end
+      let(:base_hash) {
+        # Fallback is to resolve by sending the field name
+        Hash.new { |h, k| h[k] = Hash.new { |h2, k2| ->(obj, args, ctx) { obj.public_send(k2) } } }
+      }
+
+      it "accepts a hash of resolve functions" do
+        schema.execute("mutation { todoAdd: todo_add(text: \"Buy Milk\") { text } }", context: {context_value: "bar"}, root_value: todos)
+        result = schema.execute("query { allTodos: all_todos { text, from_context } }", root_value: todos)
+        assert_equal(result.to_json, '{"data":{"allTodos":[{"text":"Pay the bills.","from_context":null},{"text":"Buy Milk","from_context":"bar"}]}}')
       end
     end
 
