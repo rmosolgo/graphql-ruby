@@ -8,7 +8,6 @@ module GraphQL
       extend Forwardable
 
       def initialize(values, argument_definitions:)
-        @original_values = values
         @argument_values = values.inject({}) do |memo, (inner_key, inner_value)|
           arg_defn = argument_definitions[inner_key.to_s]
 
@@ -31,13 +30,20 @@ module GraphQL
         @argument_values.key?(key.to_s)
       end
 
-      # Get the original Ruby hash
-      # @return [Hash] the original values hash
+      # Get the hash of all values, with stringified keys
+      # @return [Hash] the stringified hash
       def to_h
-        @unwrapped_values ||= unwrap_value(@original_values)
+        @to_h ||= begin
+          h = {}
+          each_value do |arg_value|
+            arg_key = arg_value.definition.expose_as
+            h[arg_key] = unwrap_value(arg_value.value)
+          end
+          h
+        end
       end
 
-      def_delegators :string_key_values, :keys, :values, :each
+      def_delegators :to_h, :keys, :values, :each
 
       # Access each key, value and type for the arguments in this set.
       # @yield [argument_value] The {ArgumentValue} for each argument
@@ -95,21 +101,6 @@ module GraphQL
           end
         when GraphQL::Query::Arguments
           value.to_h
-        else
-          value
-        end
-      end
-
-      def string_key_values
-        @string_key_values ||= stringify_keys(to_h)
-      end
-
-      def stringify_keys(value)
-        case value
-        when Hash
-          value.inject({}) { |memo, (k, v)| memo[k.to_s] = stringify_keys(v); memo }
-        when Array
-          value.map { |v| stringify_keys(v) }
         else
           value
         end

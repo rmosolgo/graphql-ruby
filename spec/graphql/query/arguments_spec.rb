@@ -26,8 +26,8 @@ describe GraphQL::Query::Arguments do
     }, argument_definitions: test_input_2.arguments)
   }
 
-  it "returns keys as strings" do
-    assert_equal(["a", "b", "c"], arguments.keys)
+  it "returns keys as strings, with aliases" do
+    assert_equal(["a", "b", "inputObject"], arguments.keys)
   end
 
   it "delegates values to values hash" do
@@ -39,11 +39,11 @@ describe GraphQL::Query::Arguments do
     arguments.each do |key, value|
       pairs << [key, value]
     end
-    assert_equal([["a", 1], ["b", 2], ["c", {"d" => 3, "e" => 4}]], pairs)
+    assert_equal([["a", 1], ["b", 2], ["inputObject", {"d" => 3, "e" => 4}]], pairs)
   end
 
-  it "returns original Ruby hash values with to_h" do
-    assert_equal({ a: 1, b: 2, c: { d: 3, e: 4 } }, arguments.to_h)
+  it "returns a stringified, aliased hash with to_h" do
+    assert_equal({ "a"=> 1, "b" => 2, "inputObject" => { "d" => 3, "e" => 4 } }, arguments.to_h)
   end
 
   it "yields key, value, and arg_defnition" do
@@ -52,10 +52,11 @@ describe GraphQL::Query::Arguments do
       value = arg_value.value.is_a?(GraphQL::Query::Arguments) ? arg_value.value.to_h : arg_value.value
       type_info << [arg_value.key, value, arg_value.definition.type.unwrap.name]
     end
+
     expected_type_info =[
       ["a", 1, "Int"],
       ["b", 2, "Int"],
-      ["inputObject", { d: 3, e: 4 }, "TestInput1"],
+      ["inputObject", { "d" => 3, "e" => 4 }, "TestInput1"],
     ]
     assert_equal expected_type_info, type_info
   end
@@ -65,14 +66,18 @@ describe GraphQL::Query::Arguments do
     types = {}
     arguments.each_value do |arg_value|
       transformed_args[arg_value.key.upcase] = arg_value.value
-      types[arg_value.key.upcase] = arg_value.definition
+      defn = arg_value.definition
+      types[arg_value.key.upcase] = defn.redefine(
+        name: defn.name.upcase,
+        as: defn.as ? defn.as.to_s.upcase : nil,
+      )
     end
 
     new_arguments = GraphQL::Query::Arguments.new(transformed_args, argument_definitions: types)
     expected_hash = {
       "A" => 1,
       "B" => 2,
-      "INPUTOBJECT" => { d: 3 , e: 4 },
+      "INPUTOBJECT" => { "d"  => 3 , "e" => 4 },
     }
     assert_equal expected_hash, new_arguments.to_h
   end
@@ -176,6 +181,7 @@ describe GraphQL::Query::Arguments do
       last_args = arg_values.last
 
       assert_equal true, last_args.key?(:specialKeyName)
+      assert_equal true, last_args.key?("specialKeyName")
     end
 
     it "works from query literals" do
