@@ -702,7 +702,6 @@ SCHEMA
   end
 
   describe "executable schema with resolver maps" do
-
     class Something
       def capitalize(args)
         args[:word].upcase
@@ -712,11 +711,17 @@ SCHEMA
     let(:definition) {
       <<-GRAPHQL
         scalar Date
+        scalar UndefinedScalar
         type Something { capitalize(word:String!): String }
         type A { a: String }
         type B { b: String }
         union Thing = A | B
-        type Query { hello: Something, thing: Thing, add_week(in: Date!): Date! }
+        type Query {
+          hello: Something
+          thing: Thing
+          add_week(in: Date!): Date!
+          undefined_scalar(str: String, int: Int): UndefinedScalar
+        }
       GRAPHQL
     }
 
@@ -743,27 +748,40 @@ SCHEMA
           },
           thing: ->(o,a,c) {
             OpenStruct.new({a: "a"})
+          },
+          undefined_scalar: ->(o,a,c) {
+            a.values.first
           }
         }
       }
     }
 
+    let(:schema) { GraphQL::Schema.from_definition(definition, default_resolve: resolvers) }
+
     it "resolves unions"  do
-      schema = GraphQL::Schema.from_definition(definition, default_resolve: resolvers)
       result = schema.execute("query { thing { ... on A { a } } }")
       assert_equal(result.to_json,'{"data":{"thing":{"a":"a"}}}')
     end
 
     it "resolves scalars" do
-      schema = GraphQL::Schema.from_definition(definition, default_resolve: resolvers)
       result = schema.execute("query { add_week(in: 392277600.0) }")
       assert_equal(result.to_json,'{"data":{"add_week":392277600.0}}')
     end
 
     it "passes args from graphql to the object"  do
-      schema = GraphQL::Schema.from_definition(definition, default_resolve: resolvers)
       result = schema.execute("query { hello { capitalize(word: \"hello\") }}")
       assert_equal(result.to_json,'{"data":{"hello":{"capitalize":"HELLO"}}}')
+    end
+
+    it "handles undefined scalar resolution with identity function" do
+      result = schema.execute <<-GRAPHQL
+        {
+          str: undefined_scalar(str: "abc")
+          int: undefined_scalar(int: 123)
+        }
+      GRAPHQL
+
+      assert_equal({ "str" => "abc", "int" => 123 }, result["data"])
     end
   end
 
