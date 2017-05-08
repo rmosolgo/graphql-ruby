@@ -1,8 +1,7 @@
 ---
-title: Welcome
+layout: guide
+title: Getting Started
 ---
-
-[![Gem Version](https://badge.fury.io/rb/graphql.svg)](https://rubygems.org/gems/graphql)
 
 ## Installation
 

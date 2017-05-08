@@ -1,5 +1,7 @@
 ---
-title: Queries — Mutations
+title: Mutations
+layout: guide
+search: true
 ---
 
 ## Mutations

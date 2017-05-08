@@ -1,0 +1,31 @@
+---
+title: Welcome
+---
+<div class="hero">
+  <div class="hero-part">
+    <h2>Define Your Schema</h2>
+{% highlight ruby %}
+GraphQL::ObjectType.define do
+  name "Profile"
+  field :id, !types.ID
+  field :name, !types.String
+  field :avatar, Types::PhotoType
+end
+{% endhighlight %}
+  </div>
+  <div class="hero-part">
+    <h2>Run Queries</h2>
+{% highlight ruby %}
+result = MySchema.execute(
+  params[:query],
+  variables: params[:variables],
+  context: { current_user: current_user },
+)
+render json: result
+{% endhighlight %}
+  </div>
+</div>
+<p style="text-align: center;">
+  Build a GraphQL server in Ruby.
+  <a href="{{ site.baseurl}}/getting_started">Get Started</a>
+</p>
