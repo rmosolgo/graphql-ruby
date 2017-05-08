@@ -1,0 +1,82 @@
+---
+title: Guides Index
+sections:
+  - name: Schema
+    guides:
+    - path: /schema/types_and_fields
+      name: Types and Fields
+    - path: /schema/generators
+      name: Generators
+    - path: /schema/configuration_options
+      name: Configuration Options
+    - path: /schema/code_reuse
+      name: Code Reuse
+    - path: /schema/instrumentation
+      name: Instrumentation
+    - path: /schema/lazy_execution
+      name: Lazy Execution
+    - path: /schema/limiting_visibility
+      name: Limiting Visibility
+    - path: /schema/testing
+      name: Testing
+  - name: Queries
+    guides:
+    - path: /queries/executing_queries
+      name: Executing Queries
+    - path: /queries/authorization
+      name: Authorization
+    - path: /queries/security
+      name: Security
+    - path: /queries/error_handling
+      name: Error Handling
+    - path: /queries/phases_of_execution
+      name: Phases of Execution
+  - name: Relay
+    guides:
+    - path: /relay/object_identification
+      name: Object Identification
+    - path: /relay/connections
+      name: Connections
+    - path: /relay/mutations
+      name: Mutations
+  - name: GraphQL Pro
+    guides:
+    - url: http://graphql.pro
+      name: GraphQL::Pro Home
+    - path: /pro/installation
+      name: Installation & Updates
+    - path: /pro/authorization
+      name: Authorization
+    - path: /pro/persisted_queries
+      name: Persisted Queries
+    - path: /pro/monitoring
+      name: Monitoring
+    - path: /pro/cursors
+      name: Stable Cursors for ActiveRecord
+    - path: /pro/encoders
+      name: Encrypted, Versioned Cursors and Ids
+  - name: Other
+    guides:
+    - path: /related_projects
+      name: Related Projects
+    - path: /getting_started
+      name: Getting Started
+---
+
+<h1>Guides</h1>
+<div class="guides">
+  {% for section in page.sections %}
+    <div class="guide-section">
+      <h2>{{ section.name }}</h2>
+      <ul>
+        {% for guide in section.guides %}
+          <li>
+            <a href="{% if guide.url %}{{ guide.url }}{% else %}{{ site.baseurl }}{{ guide.path }}{% endif %}">
+              {{ guide.name }}
+            </a>
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endfor %}
+</div>

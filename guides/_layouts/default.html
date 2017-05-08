@@ -2,95 +2,26 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>GraphQL Ruby - {{ page.title }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>GraphQL - {{ page.title }}</title>
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400" rel="stylesheet" />
     <link rel="stylesheet" href="{{ site.baseurl }}/css/main.css">
     <link rel="icon" href="{{ site.baseurl }}/graphql-ruby-icon.png">
   </head>
-  <body class="hack">
-    <script>
-      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-      ga('create', 'UA-19264608-11', 'auto');
-      ga('send', 'pageview');
-    </script>
+  <body>
+    <div class="header">
+      <a href="{{ site.baseurl }}/" class="img-link">
+        <img src="{{ site.baseurl }}/graphql-ruby.png" />
+      </a>
+      <span>GraphQL Ruby</span>
+      <a href="{{ site.baseurl }}/getting_started">Getting Started</a>
+      <a href="{{ site.baseurl }}/guides">Guides</a>
+      <a href="http://www.rubydoc.info/github/rmosolgo/graphql-ruby">API Docs</a>
+      <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
+      <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+    </div>
     <div class="container">
-      <div style="display: flex; justify-content: center;">
-<strong style="white-space: pre; line-height: 1.1em; display: inline-block; font-size: 8px;">
-    ▄██████▄     ▄████████    ▄████████    ▄███████▄    ▄█    █▄    ████████▄    ▄█
-   ███    ███   ███    ███   ███    ███   ███    ███   ███    ███   ███    ███  ███
-   ███    █▀    ███    ███   ███    ███   ███    ███   ███    ███   ███    ███  ███
-  ▄███         ▄███▄▄▄▄██▀   ███    ███   ███    ███  ▄███▄▄▄▄███▄▄ ███    ███  ███
- ▀▀███ ████▄  ▀▀███▀▀▀▀▀   ▀███████████ ▀█████████▀  ▀▀███▀▀▀▀███▀  ███    ███  ███
-   ███    ███ ▀███████████   ███    ███   ███          ███    ███   ███    ███  ███
-   ███    ███   ███    ███   ███    ███   ███          ███    ███   ███  ▀ ███  ███▌    ▄
-   ████████▀    ███    ███   ███    █▀   ▄████▀        ███    █▀     ▀██████▀▄█ █████▄▄██
-                ███    ███                                                      ▀
-</strong>
-      </div>
-      <p style="text-align: center;">A GraphQL server implementation for Ruby</p>
-
-      <div class="grid -between">
-        <div class="cell -3of12">
-          <h3>Guides</h3>
-          <ul>
-            <li><a href="{{ site.baseurl }}/">Getting Started</a></li>
-            <li>
-              <strong>Schema</strong>
-              <ul>
-                <li><a href="{{ site.baseurl }}/schema/types_and_fields">Types and Fields</a></li>
-                <li><a href="{{ site.baseurl }}/schema/generators">Generators</a></li>
-                <li><a href="{{ site.baseurl }}/schema/configuration_options">Configuration Options</a></li>
-                <li><a href="{{ site.baseurl }}/schema/code_reuse">Code Reuse</a></li>
-                <li><a href="{{ site.baseurl }}/schema/instrumentation">Instrumentation</a></li>
-                <li><a href="{{ site.baseurl }}/schema/lazy_execution">Lazy Execution</a></li>
-                <li><a href="{{ site.baseurl }}/schema/limiting_visibility">Limiting Visibility</a></li>
-                <li><a href="{{ site.baseurl }}/schema/testing">Testing</a></li>
-              </ul>
-            </li>
-            <li>
-              <strong>Queries</strong>
-              <ul>
-                <li><a href="{{ site.baseurl }}/queries/executing_queries">Executing Queries</a></li>
-                <li><a href="{{ site.baseurl }}/queries/mutations">Mutations</a></li>
-                <li><a href="{{ site.baseurl }}/queries/authorization">Authorization</a></li>
-                <li><a href="{{ site.baseurl }}/queries/security">Security</a></li>
-                <li><a href="{{ site.baseurl }}/queries/error_handling">Error Handling</a></li>
-                <li><a href="{{ site.baseurl }}/queries/phases_of_execution">Phases of Execution</a></li>
-              </ul>
-            </li>
-            <li>
-              <strong>Relay</strong>
-              <ul>
-                <li><a href="{{ site.baseurl }}/relay/object_identification">Object Identification</a></li>
-                <li><a href="{{ site.baseurl }}/relay/connections">Connections</a></li>
-                <li><a href="{{ site.baseurl }}/relay/mutations">Mutations</a></li>
-              </ul>
-            </li>
-            <li>
-              <strong>GraphQL::Pro</strong>
-              <ul>
-                <li><a href="http://graphql.pro">GraphQL::Pro Home</a></li>
-                <li><a href="{{ site.baseurl }}/pro/installation">Installation & Updates</a></li>
-                <li><a href="{{ site.baseurl }}/pro/authorization">Authorization</a></li>
-                <li><a href="{{ site.baseurl }}/pro/persisted_queries">Persisted Queries</a></li>
-                <li><a href="{{ site.baseurl }}/pro/monitoring">Monitoring</a></li>
-                <li><a href="{{ site.baseurl }}/pro/cursors">Stable Cursors<br/>for ActiveRecord</a></li>
-                <li><a href="{{ site.baseurl }}/pro/encoders">Encrypted, Versioned<br/>Cursors and Ids</a></li>
-              </ul>
-            </li>
-            <li><a href="{{ site.baseurl }}/related_projects">Related Projects</a></li>
-          </ul>
-          <h3><a href="https://tinyletter.com/graphql-ruby">GraphQL Ruby Newsletter</a></h3>
-          <h3><a href="http://www.rubydoc.info/github/rmosolgo/graphql-ruby">API Docs</a></h3>
-          <h3><a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a></h3>
-        </div>
-        <div class="cell -9of12">
-          <h1 class="guide-header">{{ page.title }}</h1>
-          {{ content }}
-        </div>
-      </div>
+      {{ content }}
     </div>
     <script>
       // Find headers with IDs and wrap their text in `<a href={{id}}></a>`
