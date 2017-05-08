@@ -11,6 +11,7 @@ module GraphQLBenchmark
   BENCHMARK_PATH = File.expand_path("../", __FILE__)
   CARD_SCHEMA = GraphQL::Schema.from_definition(File.read(File.join(BENCHMARK_PATH, "schema.graphql")))
   ABSTRACT_FRAGMENTS = GraphQL.parse(File.read(File.join(BENCHMARK_PATH, "abstract_fragments.graphql")))
+  ABSTRACT_FRAGMENTS_2 = GraphQL.parse(File.read(File.join(BENCHMARK_PATH, "abstract_fragments_2.graphql")))
 
   module_function
   def self.run(task)
@@ -22,10 +23,10 @@ module GraphQLBenchmark
       when "validate"
         x.report("validate - introspection ") { CARD_SCHEMA.validate(DOCUMENT) }
         x.report("validate - abstract fragments") { CARD_SCHEMA.validate(ABSTRACT_FRAGMENTS) }
+        x.report("validate - abstract fragments 2") { CARD_SCHEMA.validate(ABSTRACT_FRAGMENTS_2) }
       else
         raise("Unexpected task #{task}")
       end
-      x.compare!
     end
   end
 
