@@ -1,4 +1,5 @@
 ---
+layout: guide
 title: GraphQL::Pro — Instrumentation For Appsignal, New Relic, Scout and Skylight
 ---
 

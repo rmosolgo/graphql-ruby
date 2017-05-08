@@ -1,4 +1,5 @@
 ---
+layout: guide
 title: Relay — Object Identification
 ---
 

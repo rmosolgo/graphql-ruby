@@ -1,4 +1,5 @@
 ---
+layout: guide
 title: GraphQL::Pro — Persisted Queries
 ---
 
