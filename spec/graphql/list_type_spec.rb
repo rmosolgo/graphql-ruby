@@ -49,20 +49,5 @@ describe GraphQL::ListType do
       hash = { 'float' => 1.0 }
       assert_equal([hash].inspect, input_object_list.coerce_isolated_input(hash).map(&:to_h).inspect)
     end
-
-    it "supports array-like objects" do
-      array_like = Class.new do
-        def initialize(value)
-          @value = value
-        end
-
-        def to_ary
-          [@value]
-        end
-      end
-      
-      hash = { 'float' => 1.0 }
-      assert_equal([hash].inspect, input_object_list.coerce_isolated_input(array_like.new(hash)).map(&:to_h).inspect)
-    end
   end
 end

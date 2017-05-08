@@ -69,13 +69,7 @@ module GraphQL
     end
 
     def ensure_array(value)
-      if value.is_a?(Array)
-        value
-      elsif value.respond_to?(:to_ary)
-        value.to_ary
-      else
-        [value]
-      end
+      value.is_a?(Array) ? value : [value]
     end
   end
 end
