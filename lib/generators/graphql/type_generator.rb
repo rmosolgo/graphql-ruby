@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 require 'rails/generators/base'
 require 'graphql'
+require 'active_support'
+require 'active_support/core_ext/string/inflections'
 
 module Graphql
   module Generators
@@ -39,10 +41,10 @@ module Graphql
             when "Int", "Float", "Boolean", "String", "ID"
               "types.#{type_expression}"
             else
-              "Types::#{type_expression}Type"
+              "Types::#{type_expression.camelize}Type"
             end
           when :graphql
-            type_expression
+            type_expression.camelize
           else
             raise "Unexpected normalize mode: #{mode}"
           end
