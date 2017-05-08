@@ -8,6 +8,22 @@
 
 ### Bug fixes
 
+## 1.5.11 (8 May 2017)
+
+### New features
+
+- `Schema.from_definition` accepts a `parser:` option (to work around lack of schema parser in `graphql-libgraphqlparser`) #712
+- `Query#internal_representation` exposes an `InternalRepresentation::Document` #701
+- Update generator usage of `graphql-batch` #697
+
+### Bug fixes
+
+- Handle fragments with the same name as operations #706
+- Fix type generator: ensure type name is camelized #718
+- Fix `Query#operation_name` to return the operation name #707
+- Fix pretty-print of non-null & list types #705
+- Fix single input objects passed to list-type arguments #716
+
 ## 1.5.10 (25 Apr 2017)
 
 ### New features
