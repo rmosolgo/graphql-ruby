@@ -113,8 +113,8 @@ module GraphQL
       # Selections are merged in place, not copied.
       def deep_merge_node(new_parent, merge_self: true)
         if merge_self
-          @ast_nodes.concat(new_parent.ast_nodes)
-          @definitions.concat(new_parent.definitions)
+          @ast_nodes |= new_parent.ast_nodes
+          @definitions |= new_parent.definitions
         end
         new_parent.scoped_children.each do |obj_type, new_fields|
           prev_fields = @scoped_children[obj_type]

@@ -8,6 +8,10 @@
 
 ### Bug fixes
 
+## 1.5.7.1 (9 May 2017)
+
+- Only merge unique AST nodes during fragment merging #721
+
 ## 1.5.7 (14 Apr 2017)
 
 ### Bug fixes

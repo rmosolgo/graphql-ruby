@@ -7,18 +7,25 @@ interface Node {
   id: ID!
 }
 
+interface Node2 {
+  id: ID
+}
+
 interface Commentable {
   id: ID!
   comments: [Comment!]!
 }
 
+interface Named {
+  name: String!
+}
 type Comment implements Node {
   author: Player
   body: String!
   id: ID!
 }
 
-type Card implements Node, Commentable {
+type Card implements Node, Commentable, Node2, Named {
   name: String!
   converted_mana_cost: Int!
   mana_cost: String!
@@ -30,7 +37,7 @@ type Card implements Node, Commentable {
   comments: [Comment!]!
 }
 
-type Printing implements Node, Commentable {
+type Printing implements Node, Commentable, Node2 {
   card: Card!
   expansion: Expansion!
   rarity: Rarity!
@@ -39,7 +46,7 @@ type Printing implements Node, Commentable {
   comments: [Comment!]!
 }
 
-type Expansion implements Node, Commentable {
+type Expansion implements Node, Commentable, Named {
   name: String!
   code: String!
   printings: [Printing!]!
@@ -48,7 +55,7 @@ type Expansion implements Node, Commentable {
   comments: [Comment!]!
 }
 
-type Block implements Node, Commentable {
+type Block implements Node, Commentable, Named {
   name: String!
   expansions: [Expansion!]!
   id: ID!
@@ -56,7 +63,7 @@ type Block implements Node, Commentable {
 }
 
 # Eg shard, guild, clan
-type Watermark implements Node, Commentable {
+type Watermark implements Node, Commentable, Named {
   name: String!
   cards: [Card!]!
   colors: [Color!]!
@@ -64,21 +71,21 @@ type Watermark implements Node, Commentable {
   comments: [Comment!]!
 }
 
-type Artist implements Node, Commentable {
+type Artist implements Node, Commentable, Named {
   name: String!
   printings: [Printing!]!
   id: ID!
   comments: [Comment!]!
 }
 
-type Player implements Node, Commentable {
+type Player implements Node, Commentable, Named {
   name: String!
   decks: [Deck!]!
   id: ID!
   comments: [Comment!]!
 }
 
-type Deck implements Node, Commentable {
+type Deck implements Node, Commentable, Named {
   name: String!
   colors: [Color!]!
   slots: [Slot!]!
