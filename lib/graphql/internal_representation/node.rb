@@ -21,7 +21,7 @@ module GraphQL
             scoped_children.each_key { |t| all_object_types.merge(@query.possible_types(t)) }
             # Remove any scoped children which don't follow this return type
             # (This can happen with fragment merging where lexical scope is lost)
-            all_object_types &= @query.possible_types(@return_type)
+            all_object_types &= @query.possible_types(@return_type.unwrap)
             all_object_types.each do |t|
               new_tc[t] = get_typed_children(t)
             end
@@ -45,7 +45,7 @@ module GraphQL
       # @return [Array<GraphQL::Field>] Field definitions for this node (there should only be one!)
       attr_reader :definitions
 
-      # @return [GraphQL::BaseType]
+      # @return [GraphQL::BaseType] The expected wrapped type this node must return.
       attr_reader :return_type
 
       # @return [InternalRepresentation::Node, nil]
@@ -123,7 +123,7 @@ module GraphQL
           @ast_nodes.concat(new_parent.ast_nodes)
           @definitions.concat(new_parent.definitions)
         end
-        scope ||= Scope.new(@query, @return_type)
+        scope ||= Scope.new(@query, @return_type.unwrap)
         new_parent.scoped_children.each do |obj_type, new_fields|
           inner_scope = scope.enter(obj_type)
           inner_scope.each do |scoped_type|

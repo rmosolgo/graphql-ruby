@@ -9,7 +9,7 @@ describe GraphQL::Analysis do
 
     def call(memo, visit_type, irep_node)
       if visit_type == :enter
-        memo + [irep_node.return_type]
+        memo + [irep_node.return_type.unwrap]
       else
         memo
       end
