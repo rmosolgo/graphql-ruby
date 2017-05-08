@@ -30,6 +30,15 @@ RUBY
     end
   end
 
+  test "it generates classifed file" do
+    run_generator(["page"])
+    assert_file "app/graphql/types/page_type.rb", <<-RUBY
+Types::PageType = GraphQL::ObjectType.define do
+  name "Page"
+end
+RUBY
+  end
+
   test "it makes Relay nodes" do
     run_generator(["Page", "--node"])
     assert_file "app/graphql/types/page_type.rb", <<-RUBY
