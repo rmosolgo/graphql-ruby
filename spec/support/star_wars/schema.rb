@@ -102,6 +102,8 @@ module StarWars
             all_ships = LazyWrapper.new { GraphQL::ExecutionError.new("lazy error from within connection") }
           when "lazyRaisedError"
             all_ships = LazyWrapper.new { raise GraphQL::ExecutionError.new("lazy raised error from within connection") }
+          when "null"
+            all_ships = nil
           else
             all_ships = all_ships.select { |ship| ship.name.include?(args[:nameIncludes])}
           end
