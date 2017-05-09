@@ -6,6 +6,7 @@ describe GraphQL::InternalRepresentation::Rewrite do
     GraphQL::Schema.from_definition <<-GRAPHQL
     type Query {
       plant(id: ID!): Plant
+      fruit(id: ID!): [Fruit!]
     }
 
     union Plant = Grain | Fruit | Vegetable | Nut
@@ -44,7 +45,11 @@ describe GraphQL::InternalRepresentation::Rewrite do
       habitats: [Habitat]
     }
 
-    type Habitat {
+    interface Environ {
+      seasons: [String]
+    }
+
+    type Habitat implements Environ {
       residentName: String!
       averageWeight: Int!
       seasons: [String]
@@ -284,6 +289,38 @@ describe GraphQL::InternalRepresentation::Rewrite do
       milks.each do |milk|
         assert_equal expected_milk_fields, milk["selfAsEdible"].keys.sort
       end
+    end
+  end
+
+  describe "fragment merging bug" do
+    let(:query_string) {
+      <<-GRAPHQL
+      {
+        ...Frag1
+        __type(name: "Query") {
+          ...Frag2
+        }
+      }
+
+      fragment Frag1 on Query {
+        __type(name: "Query") {
+          ...Frag2
+        }
+      }
+
+      fragment Frag2 on __Type {
+        __typename
+      }
+      GRAPHQL
+    }
+
+    it "finishes" do
+      doc = rewrite_result.operation_definitions[nil]
+      type_node = doc.typed_children[schema.types["Query"]]["__type"]
+      typename_node = type_node.typed_children[schema.types["__Type"]]["__typename"]
+      assert_equal 1, typename_node.ast_nodes.size
+      assert_equal 15, typename_node.ast_node.line
+      assert_equal 9, typename_node.ast_node.col
     end
   end
 
