@@ -8,6 +8,11 @@
 
 ### Bug fixes
 
+## 1.5.12 (9 May 2017)
+
+- Fix returning `nil` from connection resolve functions (now they become `null`) #719
+- Fix duplicate AST nodes when merging fragments #721
+
 ## 1.5.11 (8 May 2017)
 
 ### New features
