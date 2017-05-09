@@ -10,7 +10,10 @@ module GraphQL
 
       def call(obj, args, ctx)
         nodes = @underlying_resolve.call(obj, args, ctx)
-        if ctx.schema.lazy?(nodes)
+
+        if nodes.nil?
+          nil
+        elsif ctx.schema.lazy?(nodes)
           nodes
         else
           build_connection(nodes, args, obj, ctx)
