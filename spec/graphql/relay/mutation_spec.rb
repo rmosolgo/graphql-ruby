@@ -322,5 +322,24 @@ describe GraphQL::Relay::Mutation do
 
       assert_equal(expected, result)
     end
+
+    it "supports raising an error in the resolve function" do
+      result = star_wars_query(query_string, "clientMutationId" => "5678", "shipName" => "Leviathan")
+
+      expected = {
+        "data" => {
+          "introduceShip" => nil,
+        },
+        "errors" => [
+          {
+            "message" => "🔥",
+            "locations" => [ { "line" => 3 , "column" => 7}],
+            "path" => ["introduceShip"]
+          }
+        ]
+      }
+
+      assert_equal(expected, result)
+    end
   end
 end

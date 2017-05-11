@@ -11,8 +11,8 @@ module GraphQL
         # giving users access to the original resolve function in earlier instrumentation.
         def self.instrument(type, field)
           if field.mutation
-            new_resolve = Mutation::Resolve.new(field.mutation, field.resolve_proc)
-            new_lazy_resolve = Mutation::Resolve.new(field.mutation, field.lazy_resolve_proc)
+            new_resolve = Mutation::Resolve.new(field.mutation, field.resolve_proc, eager: true)
+            new_lazy_resolve = Mutation::Resolve.new(field.mutation, field.lazy_resolve_proc, eager: false)
             field.redefine(resolve: new_resolve, lazy_resolve: new_lazy_resolve)
           else
             field
