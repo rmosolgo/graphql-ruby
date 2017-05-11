@@ -8,6 +8,10 @@
 
 ### Bug fixes
 
+## 1.5.13 (11 May 2017)
+
+- Fix raising `ExecutionError` inside mutation resolve functions (it nullifies the field) #722
+
 ## 1.5.12 (9 May 2017)
 
 - Fix returning `nil` from connection resolve functions (now they become `null`) #719
