@@ -209,6 +209,8 @@ module StarWars
       faction_id = args["factionId"]
       if args["shipName"] == 'Millennium Falcon'
         GraphQL::ExecutionError.new("Sorry, Millennium Falcon ship is reserved")
+      elsif args["shipName"] == 'Leviathan'
+        raise GraphQL::ExecutionError.new("🔥")
       elsif args["shipName"] == "Ebon Hawk"
         LazyWrapper.new { raise GraphQL::ExecutionError.new("💥")}
       else
