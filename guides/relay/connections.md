@@ -1,6 +1,9 @@
 ---
 layout: guide
-title:  Relay — Connections
+title: Connections
+section: Relay
+desc: Build and customize Relay-style connection types
+index: 1
 ---
 
 Relay expresses [one-to-many relationships with _connections_](https://facebook.github.io/relay/docs/graphql-connections.html). Connections support pagination, filtering and metadata in a robust way.

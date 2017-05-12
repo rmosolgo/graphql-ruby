@@ -1,6 +1,9 @@
 ---
 layout: guide
-title:  Relay — Mutations
+title: Mutations
+section: Relay
+desc: Implement Relay-compliant mutation fields
+index: 2
 ---
 
 Relay uses a [strict mutation API](https://facebook.github.io/relay/docs/graphql-mutations.html#content) for modifying the state of your application. This API makes mutations predictable to the client.
