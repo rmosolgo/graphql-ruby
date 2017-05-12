@@ -1,5 +1,29 @@
 ---
 layout: default
 ---
+<p class="breadcrumb">
+  <a href="{{ site.baseurl }}/">GraphQL</a>
+  &raquo; <a href="{{ site.baseurl }}/guides">Guides</a>
+  {% if page.section %} &raquo; {{ page.section }}{% endif %}
+  &raquo; {{ page.title }}
+</p>
 <h1 class="guide-header">{{ page.title }}</h1>
 {{ content }}
+
+<script>
+  // Find headers with IDs and wrap their text in `<a href={{id}}></a>`
+  // That way people can easily copy the link.
+  var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+  var header, idText, headerLink;
+  for (var i = 0; i < headers.length; i++) {
+    header = headers[i];
+    idText = header.id;
+    if (idText) {
+      headerLink = document.createElement("a");
+      headerLink.href = "#" + idText;
+      headerLink.textContent = header.textContent;
+      header.textContent = "";
+      header.appendChild(headerLink);
+    }
+  }
+</script>

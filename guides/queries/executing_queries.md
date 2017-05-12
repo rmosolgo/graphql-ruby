@@ -1,6 +1,9 @@
 ---
 layout: guide
-title: Queries — Executing Queries
+section: Queries
+title: Executing Queries
+desc: Evaluate GraphQL queries with your schema
+index: 0
 ---
 
 

@@ -8,6 +8,7 @@ $brand-color-light:  #ed8090;
 $code-border: #d6d6d6;
 $code-background: #fafafa;
 $code-color: #777777;
+$muted-color: #777777;
 $font: 'Rubik', sans-serif;
 $code-font: 'Source Sans Pro', monospace;
 
@@ -63,10 +64,6 @@ pre {
   overflow-x: scroll;
 }
 
-code {
-  font-weight: 400;
-}
-
 p, li, pre {
   line-height: 1.3rem;
 }
@@ -80,9 +77,10 @@ ul {
   list-style-position: inside;
 }
 
-p code, ul code {
+code {
   font-family: $code-font;
   color: $code-color;
+  font-weight: 400;  
 }
 .code .line-numbers {
   display: none;
@@ -120,13 +118,30 @@ a:hover, a:hover code {
   max-width: 500px;
 }
 
+.guides-toc {
+  ul {
+    list-style: none;
+    display: flex;
+  }
+
+  li {
+    padding-right: 10px;
+  }
+}
+
+.breadcrumb {
+  color: $muted-color;
+}
+
 .guides {
-  display: flex;
-  flex-wrap: wrap;
-  .guide-section {
-    flex-basis: 250px;
-    flex-grow: 1;
-    flex-shrink: 1;
+  .guide-desc {
+    color: $muted-color;
+    margin-left: 5px;
+  }
+
+  ul {
+    margin-left: 10px;
+    list-style: none;
   }
 }
 
@@ -136,7 +151,7 @@ a:hover, a:hover code {
 }
 
 h1, h2, h3, h4 {
-  margin: 10px 0px;
+  margin: 15px 0px 10px 0px;
   a {
     text-decoration: none;
   }
@@ -151,6 +166,17 @@ h2 { font-size: 1.3rem; }
 h3 { font-size: 1.2rem; }
 h4 { font-size: 1.1rem; }
 
+table {
+  width: 100%;
+  margin: 0px 0px 15px 0px;
+  thead {
+    text-align: left;
+    border-bottom: 1px solid #aaaaaa;
+  }
+  td, th {
+    padding: 5px 10px 5px 0px;
+  }
+}
 /* pygments CSS, github theme */
 .highlight .hll { background-color: #ffffcc }
 .highlight .c { color: #999988; font-style: italic } /* Comment */
