@@ -1,6 +1,9 @@
 ---
 layout: guide
-title: GraphQL::Pro — Installation
+section: GraphQL Pro
+title: Installation
+desc: Get started with GraphQL::Pro
+index: 1
 ---
 
 `GraphQL::Pro` is distributed as a Ruby gem. When you buy `GraphQL::Pro`, you'll receive credentials, which you can register with bundler:
