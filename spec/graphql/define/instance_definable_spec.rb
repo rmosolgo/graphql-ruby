@@ -14,7 +14,7 @@ module Garden
     include GraphQL::Define::InstanceDefinable
     attr_accessor :name, :start_planting_on, :end_planting_on
     ensure_defined(:name, :start_planting_on, :end_planting_on)
-    accepts_definitions :name, plant_between: DefinePlantBetween, color: GraphQL::Define.assign_metadata_key(:color)
+    accepts_definitions :name, plant_between: DefinePlantBetween, has_leaves: GraphQL::Define.assign_metadata_key(:has_leaves), color: GraphQL::Define.assign_metadata_key(:color)
 
     # definition added later:
     attr_accessor :height
@@ -57,6 +57,14 @@ describe GraphQL::Define::InstanceDefinable do
       assert_equal "Tomato", tomato.name
       assert_equal Date.new(2000, 4, 20), tomato.start_planting_on
       assert_equal Date.new(2000, 6, 1), tomato.end_planting_on
+    end
+
+    it "accepts bare definitions" do
+      radish = Garden::Vegetable.define do
+        name "Radish"
+        has_leaves
+      end
+      assert_equal true, radish.metadata[:has_leaves]
     end
   end
 
