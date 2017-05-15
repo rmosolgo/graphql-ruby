@@ -29,9 +29,14 @@ body {
   flex-wrap: wrap;
   align-items: center;
   box-shadow: 0px 0px 10px 0px #d6d6d6;
+  $fade-time: 0.2s;
 
-  .img-link:hover {
-    background: white;
+
+  .img-link {
+    transition: background $fade-time;
+    &:hover {
+      background: white;
+    }
   }
 
   img {
@@ -41,6 +46,7 @@ body {
   }
 
   a, span {
+    transition: background-color $fade-time;
     padding: $margin;
     height: $height;
     display: flex;
@@ -190,6 +196,7 @@ table {
 
 #search-results {
   $bg: #eaeaea;
+  $fade-time: 0.1s;
   display: flex;
   flex-direction: column;
   background-color: $bg;
@@ -199,10 +206,13 @@ table {
     padding: 2px;
     margin: 4px 8px;
     border-bottom: 2px solid transparent;
+    transition: border-bottom-color $fade-time;
 
     .search-title {
       font-weight: bold;
       margin-right: 10px;
+      transition: color $fade-time;
+
     }
 
     .search-prefix, .search-suffix {
@@ -213,6 +223,9 @@ table {
     }
 
     &:hover {
+      .search-title {
+        color: $brand-color;
+      }
       background-color: $bg;
       border-bottom-color: $brand-color;
     }
