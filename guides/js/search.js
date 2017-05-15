@@ -101,7 +101,8 @@ var GraphQLRubySearch = {
           var prevMatch, nextMatch
           var previewGroup = []
           var previewLength = 120
-          var previewMargin = 30
+          var previewLead = 30
+          var previewTail = 50
           var idx, previewBegin, previewIntroLength, shouldFlush
           // Use the fourth hit to render whatever we've found
           var maxHits = 4
@@ -118,12 +119,12 @@ var GraphQLRubySearch = {
               // We're outside the bounds of an overlapping preview,
               // so render what's here
               idx = previewGroup[0]
-              if (idx < previewMargin) {
+              if (idx < previewLead) {
                 previewBegin = 0
                 previewIntroLength = idx
               } else {
-                previewBegin = idx - previewMargin
-                previewIntroLength = previewMargin
+                previewBegin = idx - previewLead
+                previewIntroLength = previewLead
               }
               // Lead-in:
               createSpan("…", "search-prefix")
@@ -137,7 +138,7 @@ var GraphQLRubySearch = {
                 if (idx < previewGroup.length - 1) {
                   tailLength = previewGroup[idx + 1] - afterMatchIdx
                 } else {
-                  tailLength = previewMargin
+                  tailLength = previewTail
                 }
                 createSpan(content.substr(afterMatchIdx, tailLength), "search-prefix")
               })
