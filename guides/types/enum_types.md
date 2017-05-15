@@ -1,7 +1,7 @@
 ---
 layout: guide
 section: Types
-title: Enums
+title: Enum Types
 desc: Enums are sets of named values
 index: 5
 ---

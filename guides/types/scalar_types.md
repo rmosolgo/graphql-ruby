@@ -1,7 +1,7 @@
 ---
 layout: guide
 section: Types
-title: Scalars
+title: Scalar Types
 desc: Scalars define values which are returned from fields
 index: 2
 ---
