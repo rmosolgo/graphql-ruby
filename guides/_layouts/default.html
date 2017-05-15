@@ -19,9 +19,17 @@
       <a href="http://www.rubydoc.info/github/rmosolgo/graphql-ruby">API Docs</a>
       <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
       <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+      <input
+        class="search-input"
+        onkeyup="GraphQLRubySearch.run(this)"
+        type="text"
+        placeholder="Search the guides..."
+      />
     </div>
+    <div id="search-results"></div>
     <div class="container">
       {{ content }}
     </div>
+    <script src="{{ site.baseurl }}/js/search.js"></script>
   </body>
 </html>

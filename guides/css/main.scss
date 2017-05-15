@@ -9,7 +9,9 @@ $code-border: #d6d6d6;
 $code-background: #fafafa;
 $code-color: #777777;
 $muted-color: #777777;
+$subtle-color: #aaaaaa;
 $font: 'Rubik', sans-serif;
+$font-color: black;
 $code-font: 'Source Sans Pro', monospace;
 
 body {
@@ -80,7 +82,7 @@ ul {
 code {
   font-family: $code-font;
   color: $code-color;
-  font-weight: 400;  
+  font-weight: 400;
 }
 .code .line-numbers {
   display: none;
@@ -171,10 +173,49 @@ table {
   margin: 0px 0px 15px 0px;
   thead {
     text-align: left;
-    border-bottom: 1px solid #aaaaaa;
+    border-bottom: 1px solid $subtle-color;
   }
   td, th {
     padding: 5px 10px 5px 0px;
+  }
+}
+
+.search-input {
+  font-size: 1em;
+  padding: 5px;
+  margin: 10px;
+  border: 1px solid $subtle-color;
+  border-radius: 3px;
+}
+
+#search-results {
+  $bg: #eaeaea;
+  display: flex;
+  flex-direction: column;
+  background-color: $bg;
+  .search-result {
+    text-decoration: none;
+    color: $font-color;
+    padding: 2px;
+    margin: 4px 8px;
+    border-bottom: 2px solid transparent;
+
+    .search-title {
+      font-weight: bold;
+      margin-right: 10px;
+    }
+
+    .search-prefix, .search-suffix {
+      color: $subtle-color;
+    }
+    .search-match {
+      color: $brand-color;
+    }
+
+    &:hover {
+      background-color: $bg;
+      border-bottom-color: $brand-color;
+    }
   }
 }
 /* pygments CSS, github theme */
