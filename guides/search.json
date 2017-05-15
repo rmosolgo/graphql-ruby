@@ -1,0 +1,5 @@
+---
+layout: null
+---
+
+{% search_data %}
