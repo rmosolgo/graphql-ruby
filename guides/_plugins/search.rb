@@ -16,10 +16,8 @@ module Jekyll
         .each_with_index do |page, page_idx|
           # Remove header and breadcrumbs
           if !page.output
-            puts "XX Dont work: #{page.data}"
+            puts "Failed to index: #{page.data}"
             next
-          else
-            puts "Indexing: #{page.data["title"]}"
           end
           guide_match = page.output.match(/<div class="guide-container">(.*)<\/div>/m)
           if guide_match
