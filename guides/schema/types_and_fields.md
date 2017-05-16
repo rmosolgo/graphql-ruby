@@ -1,5 +1,6 @@
 ---
 layout: guide
+search: true
 title: Schema — Types and Fields
 ---
 
@@ -24,7 +25,7 @@ Some parts of schema definition take types as an input. There are two good ways 
    field :team, -> { TeamType }
    field :stadium, -> { LookupTypeForModel.lookup(Stadium) }
    ```
-   
+
 ## Extending type and field definitions
 
 Types, fields, and arguments have a `metadata` hash which accepts values during definition.

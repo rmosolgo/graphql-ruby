@@ -1,5 +1,6 @@
 ---
 layout: guide
+search: true
 title: Lazy Execution
 section: Schema
 desc: Resolve functions can return "unfinished" results. GraphQL will defer finishing them until other fields have been resolved.

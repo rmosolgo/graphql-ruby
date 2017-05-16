@@ -1,5 +1,6 @@
 ---
 layout: guide
+search: true
 section: Queries
 title: Ahead-of-Time Analysis
 desc: Check incoming query strings and reject them if they don't pass your checks

@@ -1,5 +1,6 @@
 ---
 layout: guide
+search: true
 section: Types
 title: Scalar Types
 desc: Scalars define values which are returned from fields

@@ -1,5 +1,6 @@
 ---
 layout: guide
+search: true
 section: Fields
 title: Arguments
 desc: Fields may take arguments as inputs

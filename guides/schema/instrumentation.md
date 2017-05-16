@@ -1,5 +1,6 @@
 ---
 layout: guide
+search: true
 title: Instrumentation
 section: Schema
 desc: Programmatically modify resolve functions in your schema at build-time.

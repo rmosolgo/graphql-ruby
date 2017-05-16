@@ -23,10 +23,8 @@ task :build_parser do
 end
 
 namespace :site do
-
-
   desc "View the documentation site locally"
-  task :serve do
+  task serve: :build_doc do
     require "jekyll"
     options = {
       "source"      => File.expand_path("guides"),
@@ -41,7 +39,7 @@ namespace :site do
   end
 
   desc "Commit the local site to the gh-pages branch and publish to GitHub Pages"
-  task :publish do
+  task publish: :build_doc do
     # Ensure the gh-pages dir exists so we can generate into it.
     puts "Checking for gh-pages dir..."
     unless File.exist?("./gh-pages")
@@ -88,6 +86,45 @@ namespace :site do
       sh "git push origin gh-pages"
     end
     puts 'Done.'
+  end
+
+  task :build_doc do
+    require "yard"
+    def to_rubydoc_url(path)
+      "http://www.rubydoc.info/gems/graphql/" + path
+        .gsub("::", "/")                        # namespaces
+        .sub(/#(.+)$/, "#\\1-instance_method")  # instance methods
+        .sub(/\.(.+)$/, "#\\1-class_method")    # class methods
+    end
+    puts "Preparing YARD docs for search index"
+    registry = YARD::Registry.load!(".yardoc")
+    files_target = "guides/yardoc"
+    FileUtils.rm_rf(files_target)
+    FileUtils.mkdir_p(files_target)
+
+    docs = registry.all(:class, :module)
+    docs.each do |code_object|
+      if code_object.visibility == :private
+        next
+      end
+      rubydoc_url = to_rubydoc_url(code_object.path)
+      page_content = <<-PAGE
+---
+layout: doc_stub
+search: true
+title: #{code_object.path}
+url: #{rubydoc_url}
+rubydoc_url: #{rubydoc_url}
+---
+
+#{code_object.format.gsub(/-{2,}/, " ").gsub(/^\s+/, "")}
+PAGE
+
+      filename = code_object.path.gsub(/\W+/, "_")
+      filepath = "guides/yardoc/#{filename}.md"
+      File.write(filepath, page_content)
+    end
+    puts "Wrote #{docs.size} YARD docs to #{files_target}"
   end
 end
 

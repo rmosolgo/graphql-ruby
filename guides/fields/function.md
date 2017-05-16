@@ -1,5 +1,6 @@
 ---
 layout: guide
+search: true
 section: Fields
 title: GraphQL::Function
 desc: Create reusable resolve behavior with GraphQL::Function

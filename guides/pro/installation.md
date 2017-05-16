@@ -1,5 +1,6 @@
 ---
 layout: guide
+search: true
 section: GraphQL Pro
 title: Installation
 desc: Get started with GraphQL::Pro

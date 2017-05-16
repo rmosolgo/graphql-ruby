@@ -1,5 +1,6 @@
 ---
 layout: guide
+search: true
 title: Limiting Visibility
 section: Schema
 desc: Flag types and fields so that only some clients can see them.

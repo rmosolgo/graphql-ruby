@@ -1,5 +1,6 @@
 ---
 layout: guide
+search: true
 section: Fields
 title: Instrumentation
 desc: Wrap and modify resolution behavior at schema build-time

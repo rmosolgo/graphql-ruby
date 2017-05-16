@@ -1,5 +1,6 @@
 ---
 layout: guide
+search: true
 section: GraphQL Pro
 title: Monitoring
 desc: GraphQL plugins for NewRelic, AppSignal, Scout, Skylight and Datadog
