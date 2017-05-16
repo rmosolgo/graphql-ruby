@@ -1,5 +1,6 @@
 ---
 layout: guide
+search: true
 title: Mutations
 section: Relay
 desc: Implement Relay-compliant mutation fields

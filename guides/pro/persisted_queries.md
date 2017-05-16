@@ -1,5 +1,6 @@
 ---
 layout: guide
+search: true
 section: GraphQL Pro
 title: Persisted Queries
 desc: A filesystem-based approach to static, persisted queries

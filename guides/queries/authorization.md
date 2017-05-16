@@ -1,5 +1,6 @@
 ---
 layout: guide
+search: true
 title: Queries — Authorization
 ---
 

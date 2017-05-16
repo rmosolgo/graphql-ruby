@@ -1,5 +1,6 @@
 ---
 layout: guide
+search: true
 title: Generators
 section: Schema
 desc: Use Rails generators to install GraphQL and scaffold new types.

@@ -1,5 +1,6 @@
 ---
 layout: guide
+search: true
 section: GraphQL Pro
 title: Encrypted, Versioned Cursors and IDs
 desc: Increased opacity and configurability for Relay identifiers

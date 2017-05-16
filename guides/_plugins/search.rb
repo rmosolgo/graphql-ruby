@@ -12,18 +12,27 @@ module Jekyll
       search_tree = build_search_tree
 
       pages
-        .select { |page|
-          # skip non-guide pages and skip blank guides (like the graphql-pro homepage)
-          page.data["layout"] == "guide" && page.output
-        }
+        .select { |page| page.data["search"] }
         .each_with_index do |page, page_idx|
           # Remove header and breadcrumbs
-          guide_content = page.output.match(/<div class="guide-container">(.*)<\/div>/m)[1]
+          if !page.output
+            puts "XX Dont work: #{page.data}"
+            next
+          else
+            puts "Indexing: #{page.data["title"]}"
+          end
+          guide_match = page.output.match(/<div class="guide-container">(.*)<\/div>/m)
+          if guide_match
+            guide_content = guide_match[1]
+          else
+            guide_content = page.output
+          end
           # Remove HTML and extraneous whitespace
           stripped_content = strip_html(guide_content).gsub(/\s+/, " ")
           # Metadata for showing the preview and adding a hyperlink:
+          path = page.data["url"] || (baseurl + page.url)
           page_data << {
-            path: baseurl + page.url,
+            path: path,
             content: stripped_content,
             title: page.data["title"],
           }

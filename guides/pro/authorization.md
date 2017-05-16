@@ -1,5 +1,6 @@
 ---
 layout: guide
+search: true
 section: GraphQL Pro
 title: Authorization Framework
 desc: GraphQL::Pro's comprehensive access control system, including CanCan and Pundit integrations
