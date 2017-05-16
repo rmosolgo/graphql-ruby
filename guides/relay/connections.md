@@ -1,5 +1,6 @@
 ---
 layout: guide
+search: true
 title: Connections
 section: Relay
 desc: Build and customize Relay-style connection types

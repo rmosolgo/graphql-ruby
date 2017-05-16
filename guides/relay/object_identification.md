@@ -1,5 +1,6 @@
 ---
 layout: guide
+search: true
 title: Object Identification
 section: Relay
 desc: Working with Relay-style global IDs

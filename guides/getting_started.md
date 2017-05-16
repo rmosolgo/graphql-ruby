@@ -1,5 +1,6 @@
 ---
 layout: guide
+search: true
 title: Getting Started
 other: true
 desc: Start here!

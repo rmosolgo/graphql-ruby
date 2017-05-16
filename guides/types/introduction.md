@@ -1,5 +1,6 @@
 ---
 layout: guide
+search: true
 section: Types
 title: Introduction
 desc: GraphQL types and the Ruby DSL

@@ -1,5 +1,6 @@
 ---
 layout: guide
+search: true
 section: Fields
 title: Introduction
 desc: Implement fields and resolvers with the Ruby DSL

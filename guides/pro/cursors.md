@@ -1,5 +1,6 @@
 ---
 layout: guide
+search: true
 section: GraphQL Pro
 title: Stable Cursors for ActiveRecord
 desc: Value-based cursors for stable pagination over ActiveRecord::Relations

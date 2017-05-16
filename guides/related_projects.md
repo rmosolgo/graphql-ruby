@@ -1,5 +1,6 @@
 ---
 layout: guide
+search: true
 title: Related Projects
 other: true
 desc: Code, blog posts and presentations about GraphQL Ruby

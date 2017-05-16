@@ -1,5 +1,6 @@
 ---
 layout: guide
+search: true
 section: Queries
 title: Executing Queries
 desc: Evaluate GraphQL queries with your schema

@@ -1,5 +1,6 @@
 ---
 layout: guide
+search: true
 section: Queries
 title: Phases of Execution
 desc: The steps GraphQL takes to run your query
