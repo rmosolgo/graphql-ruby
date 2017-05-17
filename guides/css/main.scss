@@ -5,9 +5,11 @@
 
 $brand-color: #a5152a;
 $brand-color-light:  #ed8090;
+$brand-color-extralight:  #f9e8ee;
 $code-border: #d6d6d6;
 $code-background: #fafafa;
 $code-color: #777777;
+$code-border-radius: 2px;
 $muted-color: #777777;
 $subtle-color: #aaaaaa;
 $font: 'Rubik', sans-serif;
@@ -66,7 +68,7 @@ pre {
   font-family: $code-font;
   padding: 0.5rem;
   border: 1px solid $code-border;
-  border-radius: 2px;
+  border-radius: $code-border-radius;
   background-color: $code-background;
   margin: 10px 0px;
   overflow-x: scroll;
@@ -151,6 +153,13 @@ a:hover, a:hover code {
     margin-left: 10px;
     list-style: none;
   }
+}
+
+.guide-footer {
+  background: $brand-color-extralight;
+  margin: 25px 0px 0px 0px;
+  padding: 10px;
+  border-radius: $code-border-radius;
 }
 
 .hero {
