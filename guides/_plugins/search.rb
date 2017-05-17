@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module Jekyll
   class SearchTag < Liquid::Tag
     # required for strip_html:
@@ -80,6 +81,7 @@ module Jekyll
     end
 
     # From https://dev.mysql.com/doc/refman/5.5/en/fulltext-stopwords.html
+    # rubocop:disable Style/WordArray
     STOP_WORDS = Set.new(%W(
       a's	able	about	above	according
       accordingly	across	actually	after	afterwards
@@ -191,6 +193,7 @@ module Jekyll
       you'll	you're	you've	your	yours
       yourself	yourselves	zero
       ))
+      # rubocop:enable Style/WordArray
   end
 end
 
