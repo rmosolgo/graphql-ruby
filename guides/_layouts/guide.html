@@ -11,6 +11,11 @@ layout: default
 <div class="guide-container">
   {{ content }}
 </div>
+<p class="guide-footer">
+  Suggestion, improvement, or correction?
+  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/{{ page.path }}">Edit this file</a> or
+  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: {{ page.title }}">report an issue</a>.
+</p>
 <script>
   // Find headers with IDs and wrap their text in `<a href={{id}}></a>`
   // That way people can easily copy the link.
