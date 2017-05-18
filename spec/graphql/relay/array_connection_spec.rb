@@ -89,6 +89,27 @@ describe GraphQL::Relay::ArrayConnection do
       assert_equal(false, result["data"]["rebels"]["ships"]["pageInfo"]["hasPreviousPage"])
     end
 
+    it 'works with before and after specified together' do
+      result = star_wars_query(query_string, "first" => 1)
+      assert_equal(["X-Wing"], get_names(result))
+
+      first_cursor = get_last_cursor(result)
+
+      # There is no records between before and after if they point to the same cursor
+      result = star_wars_query(query_string, "before" => first_cursor, "after" => first_cursor, "last" => 2)
+      assert_equal([], get_names(result))
+
+      result = star_wars_query(query_string, "after" => first_cursor, "first" => 2)
+      assert_equal(["Y-Wing", "A-Wing"], get_names(result))
+
+      # After the last result, find the next 2:
+      second_cursor = get_last_cursor(result)
+
+      # There is only 2 results between the cursors
+      result = star_wars_query(query_string, "after" => first_cursor, "before" => second_cursor, "first" => 5)
+      assert_equal(["Y-Wing", "A-Wing"], get_names(result))
+    end
+
     it 'handles cursors beyond the bounds of the array' do
       overreaching_cursor = Base64.strict_encode64("100")
       result = star_wars_query(query_string, "after" => overreaching_cursor, "first" => 2)
@@ -157,13 +178,13 @@ describe GraphQL::Relay::ArrayConnection do
 
       it "applies to queries by `last`" do
         last_cursor = "Ng=="
-        second_to_last_two_names = ["Death Star", "Shield Generator"]
+
         result = star_wars_query(query_string, "last" => 100, "before" => last_cursor)
-        assert_equal(second_to_last_two_names, get_names(result))
+        assert_equal(["Death Star", "Shield Generator"], get_names(result))
         assert_equal(true, get_page_info(result)["hasPreviousPage"])
 
         result = star_wars_query(query_string, "before" => last_cursor)
-        assert_equal(second_to_last_two_names, get_names(result))
+        assert_equal(["Yavin", "Echo Base"], get_names(result))
         assert_equal(false, get_page_info(result)["hasPreviousPage"], "hasPreviousPage is false when last is not specified")
 
         third_cursor = "Mw=="
