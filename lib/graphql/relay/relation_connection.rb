@@ -68,8 +68,8 @@ module GraphQL
               items = items.offset(offset).limit(last)
             end
           else
-            # TODO: I don't think #last works quite the same way in Sequel vs ActiveRecord
-            items = items.last(last)
+            offset = (relation_offset(items) || 0) + relation_count(items) - last
+            items = items.offset(offset).limit(last)
           end
         end
 
