@@ -27,12 +27,18 @@ module GraphQL
       end
     end
 
-    attr_reader :schema, :context, :root_value, :warden, :provided_variables, :operation_name
+    attr_reader :schema, :context, :root_value, :warden, :provided_variables
 
     attr_accessor :query_string
 
+    # @return [GraphQL::Language::Nodes::Document]
     def document
       with_prepared_ast { @document }
+    end
+
+    # @return [String, nil] The name of the operation to run (may be inferred)
+    def operation_name
+      with_prepared_ast { @operation_name }
     end
 
     # Prepare query `query_string` on `schema`
@@ -72,25 +78,8 @@ module GraphQL
       # with no operations returns an empty hash
       @ast_variables = []
       @mutation = false
-<<<<<<< HEAD
-      operation_name_error = nil
-      @operation_name = nil
-
-      if @operations.any?
-        selected_operation = find_operation(@operations, operation_name)
-        if selected_operation.nil?
-          operation_name_error = GraphQL::Query::OperationNameMissingError.new(operation_name)
-        else
-          @operation_name = selected_operation.name
-          @ast_variables = selected_operation.variables
-          @mutation = selected_operation.operation_type == "mutation"
-          @selected_operation = selected_operation
-        end
-      end
-=======
       @operation_name = operation_name
       @prepared_ast = false
->>>>>>> feat(Query) support adding query string after initialization
 
       @validation_pipeline = nil
       @max_depth = max_depth || schema.max_depth
@@ -239,7 +228,6 @@ module GraphQL
         nil
       end
 
-
       @fragments = {}
       @operations = {}
       if @document
@@ -267,6 +255,9 @@ module GraphQL
         if @selected_operation.nil?
           operation_name_error = GraphQL::Query::OperationNameMissingError.new(@operation_name)
         else
+          if @operation_name.nil?
+            @operation_name = @selected_operation.name
+          end
           @ast_variables = @selected_operation.variables
           @mutation = @selected_operation.operation_type == "mutation"
         end
