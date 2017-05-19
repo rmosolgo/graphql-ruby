@@ -11,12 +11,14 @@ module GraphQL
         if item_index.nil?
           raise("Can't generate cursor, item not found in connection: #{item}")
         else
-          offset = item_index + 1
+          offset = item_index + 1 + ((relation_offset(paged_nodes) || 0) - (relation_offset(sliced_nodes) || 0))
 
           if after
             offset += offset_from_cursor(after)
           elsif before
-            offset += offset_from_cursor(before) - sliced_nodes_count
+            offset += offset_from_cursor(before) - 1 - sliced_nodes_count
+          else
+
           end
 
           encode(offset.to_s)
@@ -100,26 +102,41 @@ module GraphQL
         end
       end
 
+      # If a relation contains a `.group` clause, a `.count` will return a Hash.
+      def relation_count(relation)
+        count_or_hash = relation.count
+        count_or_hash.is_a?(Integer) ? count_or_hash : count_or_hash.length
+      end
+
       # Apply cursors to edges
       def sliced_nodes
         return @sliced_nodes if defined? @sliced_nodes
 
         @sliced_nodes = nodes
-        @sliced_nodes = @sliced_nodes.offset(offset_from_cursor(after)) if after
+
+        if after
+          offset = (relation_offset(@sliced_nodes) || 0) + offset_from_cursor(after)
+          @sliced_nodes = @sliced_nodes.offset(offset) if after
+        end
+
         if before && after
-          @sliced_nodes = @sliced_nodes.limit(offset_from_cursor(before) - offset_from_cursor(after))
+          if offset_from_cursor(after) < offset_from_cursor(before)
+            @sliced_nodes = @sliced_nodes.limit(offset_from_cursor(before) - offset_from_cursor(after) - 1)
+          else
+            @sliced_nodes = @sliced_nodes.limit(0)
+          end
         elsif before
           @sliced_nodes = @sliced_nodes.limit(offset_from_cursor(before) - 1)
         end
+
         @sliced_nodes
       end
 
       def sliced_nodes_count
         return @sliced_nodes_count if defined? @sliced_nodes_count
 
-        count_or_hash = nodes.count
         # If a relation contains a `.group` clause, a `.count` will return a Hash.
-        @sliced_nodes_count = count_or_hash.is_a?(Integer) ? count_or_hash : count_or_hash.length
+        @sliced_nodes_count = relation_count(sliced_nodes)
       end
 
       def offset_from_cursor(cursor)
