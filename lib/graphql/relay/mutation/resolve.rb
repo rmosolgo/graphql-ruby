@@ -7,38 +7,35 @@ module GraphQL
       # Also, pass the `clientMutationId` to that result object.
       # @api private
       class Resolve
-        def initialize(mutation, resolve, eager:)
+        def initialize(mutation, resolve)
           @mutation = mutation
           @resolve = resolve
           @wrap_result = mutation.has_generated_return_type?
-          @eager = eager
         end
 
         def call(obj, args, ctx)
-          error_raised = false
-          begin
-            mutation_result = @resolve.call(obj, args[:input], ctx)
+          mutation_result = begin
+            @resolve.call(obj, args[:input], ctx)
           rescue GraphQL::ExecutionError => err
-            mutation_result = err
-            error_raised = true
+            err
           end
 
           if ctx.schema.lazy?(mutation_result)
             mutation_result
           else
-            build_result(mutation_result, args, ctx, raised: error_raised)
+            build_result(mutation_result, args, ctx)
           end
         end
 
         private
 
-        def build_result(mutation_result, args, ctx, raised: false)
+        def build_result(mutation_result, args, ctx)
           if mutation_result.is_a?(GraphQL::ExecutionError)
             ctx.add_error(mutation_result)
             mutation_result = nil
           end
 
-          if @eager && raised
+          if mutation_result.nil?
             nil
           elsif @wrap_result
             if mutation_result && !mutation_result.is_a?(Hash)
