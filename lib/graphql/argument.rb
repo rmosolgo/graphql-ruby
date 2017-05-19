@@ -42,7 +42,7 @@ module GraphQL
 
     # @api private
     module DefaultPrepare
-      def self.call(value); value; end
+      def self.call(value, ctx); value; end
     end
 
     def initialize
@@ -81,16 +81,17 @@ module GraphQL
       @expose_as ||= (@as || @name).to_s
     end
 
-    # @param value
+    # @param value [Object] The incoming value from variables or query string literal
+    # @param ctx [GraphQL::Query::Context]
     # @return [Object] The prepared `value` for this argument or `value` itself if no `prepare` function exists.
-    def prepare(value)
-      @prepare_proc.call(value)
+    def prepare(value, ctx)
+      @prepare_proc.call(value, ctx)
     end
 
     # Assign a `prepare` function to prepare this argument's value before `resolve` functions are called.
-    # @param prepare_proc [Proc]
+    # @param prepare_proc [#<call(value, ctx)>]
     def prepare=(prepare_proc)
-      @prepare_proc = prepare_proc
+      @prepare_proc = BackwardsCompatibility.wrap_arity(prepare_proc, from: 1, to: 2, name: "Argument#prepare(value, ctx)")
     end
 
     NO_DEFAULT_VALUE = Object.new
