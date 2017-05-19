@@ -7,14 +7,6 @@ module GraphQL
         encode(idx.to_s)
       end
 
-      def has_next_page
-        !!(first && sliced_nodes.count > first)
-      end
-
-      def has_previous_page
-        !!(last && sliced_nodes.count > last)
-      end
-
       private
 
       def first
