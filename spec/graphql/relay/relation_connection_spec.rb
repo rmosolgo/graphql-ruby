@@ -120,7 +120,7 @@ describe GraphQL::Relay::RelationConnection do
       second_cursor = get_last_cursor(result)
 
       result = star_wars_query(query_string, "after" => first_cursor, "before" => second_cursor, "first" => 3)
-      assert_equal(["Headquarters"], get_names(result))
+      assert_equal([], get_names(result))
     end
 
     it 'handles cursors beyond the bounds of the array' do
