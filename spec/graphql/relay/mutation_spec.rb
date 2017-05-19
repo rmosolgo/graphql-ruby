@@ -282,11 +282,7 @@ describe GraphQL::Relay::Mutation do
 
       expected = {
         "data" => {
-          "introduceShip" => {
-            "clientMutationId" => "5678",
-            "shipEdge" => nil,
-            "faction" => nil,
-          }
+          "introduceShip" => nil,
         },
         "errors" => [
           {
@@ -305,11 +301,7 @@ describe GraphQL::Relay::Mutation do
 
       expected = {
         "data" => {
-          "introduceShip" => {
-            "clientMutationId" => "5678",
-            "shipEdge" => nil,
-            "faction" => nil,
-          }
+          "introduceShip" => nil,
         },
         "errors" => [
           {
