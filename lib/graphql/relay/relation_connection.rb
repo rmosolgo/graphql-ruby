@@ -17,8 +17,6 @@ module GraphQL
             offset += offset_from_cursor(after)
           elsif before
             offset += offset_from_cursor(before) - 1 - sliced_nodes_count
-          else
-
           end
 
           encode(offset.to_s)
