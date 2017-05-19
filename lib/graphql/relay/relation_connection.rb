@@ -11,102 +11,124 @@ module GraphQL
         if item_index.nil?
           raise("Can't generate cursor, item not found in connection: #{item}")
         else
-          offset = starting_offset + item_index + 1
+          offset = item_index + 1
+
+          if after
+            offset += offset_from_cursor(after)
+          elsif before
+            offset += offset_from_cursor(before) - sliced_nodes_count
+          end
+
           encode(offset.to_s)
         end
       end
 
       def has_next_page
-        !!(first && paged_nodes && @has_next_page)
+        !!(first && sliced_nodes_count > first)
       end
 
       def has_previous_page
-        !!(last && starting_offset > 0)
+        !!(last && sliced_nodes_count > last)
+      end
+
+      def first
+        return @first if defined? @first
+
+        @first = get_limited_arg(:first)
+        @first = max_page_size if @first && max_page_size && @first > max_page_size
+        @first
+      end
+
+      def last
+        return @last if defined? @last
+
+        @last = get_limited_arg(:last)
+        @last = max_page_size if @last && max_page_size && @last > max_page_size
+        @last
       end
 
       private
 
-      # If a relation contains a `.group` clause, a `.count` will return a Hash.
-      def count(nodes)
-        count_or_hash = nodes.count
-        count_or_hash.is_a?(Integer) ? count_or_hash : count_or_hash.length
-      end
-
       # apply first / last limit results
       def paged_nodes
-        @paged_nodes ||= begin
-          if limit
-            limit_more = limit + 1
-            more_nodes = sliced_nodes.limit(limit_more).to_a
-            if more_nodes.size > limit
-              @has_next_page = true
-              more_nodes[0..-2]
-            else
-              @has_next_page = false
-              more_nodes
+        return @paged_nodes if defined? @paged_nodes
+
+        items = sliced_nodes
+
+        if first
+          if relation_limit(items).nil? || relation_limit(items) > first
+            items = items.limit(first)
+          end
+        end
+
+        if last
+          if relation_limit(items)
+            if last <= relation_limit(items)
+              offset = (relation_offset(items) || 0) + (relation_limit(items) - last)
+              items = items.offset(offset).limit(last)
             end
           else
-            @has_next_page = false
-            sliced_nodes
+            # TODO: I don't think #last works quite the same way in Sequel vs ActiveRecord
+            items = items.last(last)
           end
+        end
+
+        if max_page_size && !first && !last
+          if relation_limit(items).nil? || relation_limit(items) > max_page_size
+            items = items.limit(max_page_size)
+          end
+        end
+
+        @paged_nodes = items
+      end
+
+      def relation_offset(relation)
+        case relation
+        when ActiveRecord::Relation
+          relation.offset_value
+        when Sequel::Dataset
+          relation.opts[:offset]
+        end
+      end
+
+      def relation_limit(relation)
+        case relation
+        when ActiveRecord::Relation
+          relation.limit_value
+        when Sequel::Dataset
+          relation.opts[:limit]
         end
       end
 
       # Apply cursors to edges
       def sliced_nodes
-        @sliced_nodes ||= nodes.offset(starting_offset)
+        return @sliced_nodes if defined? @sliced_nodes
+
+        @sliced_nodes = nodes
+        @sliced_nodes = @sliced_nodes.offset(offset_from_cursor(after)) if after
+        if before && after
+          @sliced_nodes = @sliced_nodes.limit(offset_from_cursor(before) - offset_from_cursor(after))
+        elsif before
+          @sliced_nodes = @sliced_nodes.limit(offset_from_cursor(before) - 1)
+        end
+        @sliced_nodes
+      end
+
+      def sliced_nodes_count
+        return @sliced_nodes_count if defined? @sliced_nodes_count
+
+        count_or_hash = nodes.count
+        # If a relation contains a `.group` clause, a `.count` will return a Hash.
+        @sliced_nodes_count = count_or_hash.is_a?(Integer) ? count_or_hash : count_or_hash.length
       end
 
       def offset_from_cursor(cursor)
         decode(cursor).to_i
       end
 
-      def starting_offset
-        @starting_offset ||= begin
-          if before
-            [previous_offset, 0].max
-          elsif last
-            [count(nodes) - last, 0].max
-          else
-            previous_offset
-          end
-        end
-      end
-
-      # Offset from the previous selection, if there was one
-      # Otherwise, zero
-      def previous_offset
-        @previous_offset ||= if after
-          offset_from_cursor(after)
-        elsif before
-          prev_page_size = [max_page_size, last].compact.min || 0
-          offset_from_cursor(before) - prev_page_size - 1
-        else
-          0
-        end
-      end
-
-      # Limit to apply to this query:
-      # - find a value from the query
-      # - don't exceed max_page_size
-      # - otherwise, don't limit
-      def limit
-        @limit ||= begin
-          limit_from_arguments = if first
-            first
-          else
-            if previous_offset < 0
-              previous_offset + (last ? last : 0)
-            else
-              last
-            end
-          end
-          [limit_from_arguments, max_page_size].compact.min
-        end
-      end
-
       def paged_nodes_array
-        @paged_nodes_array ||= paged_nodes.to_a
+        return @paged_nodes_array if defined?(@paged_nodes_array)
+        @paged_nodes_array = paged_nodes.to_a
       end
     end
 
