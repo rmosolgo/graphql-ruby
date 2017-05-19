@@ -40,7 +40,8 @@ module GraphQL
       end
 
       def self.from_arguments(ast_arguments, argument_defns, variables)
-
+        # Variables is nil when making .defaults_for
+        context = variables ? variables.context : {}
         values_hash = {}
         indexed_arguments = ast_arguments.each_with_object({}) { |a, memo| memo[a.name] = a }
 
@@ -56,7 +57,7 @@ module GraphQL
             if (!value_is_a_variable || (value_is_a_variable && variables.key?(ast_arg.value.name)))
 
               value = coerce(arg_defn.type, ast_arg.value, variables)
-              value = arg_defn.prepare(value)
+              value = arg_defn.prepare(value, context)
 
               if value.is_a?(GraphQL::ExecutionError)
                 value.ast_node = ast_arg
