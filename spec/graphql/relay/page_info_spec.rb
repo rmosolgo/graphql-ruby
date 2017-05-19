@@ -75,8 +75,8 @@ describe GraphQL::Relay::PageInfo do
       result = star_wars_query(query_string, "last" => 1, "first" => 1, "before" => cursor_of_last_base)
       assert_equal(true, get_page_info(result)["hasNextPage"])
       assert_equal(true, get_page_info(result)["hasPreviousPage"])
-      assert_equal("Mg==", get_page_info(result)["startCursor"])
-      assert_equal("Mg==", get_page_info(result)["endCursor"])
+      assert_equal("MQ==", get_page_info(result)["startCursor"])
+      assert_equal("MQ==", get_page_info(result)["endCursor"])
     end
 
     it "startCursor and endCursor are the cursors of the first and last edge" do
