@@ -11,7 +11,8 @@ describe GraphQL::Query::LiteralInput do
           field :addToArgumentValue do
             type !types.Int
             argument :value do
-              type !types.Int
+              type types.Int
+              default_value 3
               prepare ->(arg, ctx) do
                 return GraphQL::ExecutionError.new("Can't return more than 3 digits") if arg > 998
                 arg + ctx[:val]
@@ -27,6 +28,11 @@ describe GraphQL::Query::LiteralInput do
       it "prepares values from query literals" do
         result = schema.execute("{ addToArgumentValue(value: 1) }", context: { val: 1 })
         assert_equal(result["data"]["addToArgumentValue"], 2)
+      end
+
+      it "prepares default values" do
+        result = schema.execute("{ addToArgumentValue }", context: { val: 4 })
+        assert_equal(7, result["data"]["addToArgumentValue"])
       end
 
       it "prepares values from variables" do

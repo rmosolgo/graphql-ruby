@@ -32,7 +32,7 @@ module GraphQL
       end
 
       def self.defaults_for(argument_defns)
-        if argument_defns.none? { |name, arg| arg.default_value? }
+        if argument_defns.values.none?(&:default_value?)
           GraphQL::Query::Arguments::NO_ARGS
         else
           from_arguments([], argument_defns, nil)
@@ -41,7 +41,7 @@ module GraphQL
 
       def self.from_arguments(ast_arguments, argument_defns, variables)
         # Variables is nil when making .defaults_for
-        context = variables ? variables.context : {}
+        context = variables ? variables.context : nil
         values_hash = {}
         indexed_arguments = ast_arguments.each_with_object({}) { |a, memo| memo[a.name] = a }
 
@@ -73,7 +73,12 @@ module GraphQL
           # a value wasn't provided from the AST,
           # then add the default value.
           if arg_defn.default_value? && !values_hash.key?(arg_name)
-            values_hash[arg_name] = arg_defn.default_value
+            value = arg_defn.default_value
+            # `context` isn't present when pre-calculating defaults
+            if context
+              value = arg_defn.prepare(value, context)
+            end
+            values_hash[arg_name] = value
           end
         end
 
