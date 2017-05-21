@@ -1,7 +1,10 @@
 ---
 layout: guide
 search: true
-title: Schema — Testing
+title: Testing
+section: Schema
+desc: Techniques for testing your GraphQL system
+index: 7
 ---
 
 There are a few ways to test the behavior of your GraphQL schema:

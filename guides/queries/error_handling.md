@@ -1,7 +1,7 @@
 ---
 layout: guide
 search: true
-title: Queries — Error Handling
+title: Error Handling
 ---
 
 Sometimes errors happen! There are a few ways to express them in GraphQL:
