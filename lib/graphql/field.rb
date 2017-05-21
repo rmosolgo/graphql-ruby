@@ -135,7 +135,7 @@ module GraphQL
       :mutation, :arguments, :complexity, :function,
       :resolve, :resolve=, :lazy_resolve, :lazy_resolve=, :lazy_resolve_proc, :resolve_proc,
       :type, :type=, :name=, :property=, :hash_key=,
-      :relay_node_field, :relay_nodes_field, :default_arguments
+      :relay_node_field, :relay_nodes_field
     )
 
     # @return [Boolean] True if this is the Relay find-by-id field
@@ -193,7 +193,6 @@ module GraphQL
       @resolve_proc = build_default_resolver
       @lazy_resolve_proc = DefaultLazyResolve
       @relay_node_field = false
-      @default_arguments = nil
       @connection = false
       @connection_max_page_size = nil
     end
@@ -201,7 +200,6 @@ module GraphQL
     def initialize_copy(other)
       super
       @arguments = other.arguments.dup
-      @default_arguments = nil
     end
 
     # Get a value for this field
@@ -280,11 +278,6 @@ module GraphQL
       GraphQL::Execution::Lazy.new {
         lazy_resolve(obj, args, ctx)
       }
-    end
-
-    # @return [GraphQL::Query::Arguments] Arguments to use when no args are provided in the query
-    def default_arguments
-      @default_arguments ||= GraphQL::Query::LiteralInput.defaults_for(self.arguments)
     end
 
     private
