@@ -1,6 +1,6 @@
 title: GraphQL Ruby
-baseurl: "/graphql-ruby"
-url: "https://rmosolgo.github.io"
+baseurl: ""
+url: "http://graphql-ruby.org"
 
 exclude:
   - .gitignore
