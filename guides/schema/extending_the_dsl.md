@@ -1,32 +1,13 @@
 ---
 layout: guide
 search: true
-title: Schema — Types and Fields
+section: Schema
+title: Extending the DSL
+desc: Customize the DSL for your application
+index: 6
 ---
 
-Types, fields and arguments make up a schema's type system. These objects are also open to extension via `metadata` and `accepts_definitions`.
-
-### Referencing Types
-
-Some parts of schema definition take types as an input. There are two good ways to provide types:
-
-1. __By value__. Pass a variable which holds the type.
-
-   ```ruby
-   # constant
-   field :team, TeamType
-   # local variable
-   field :stadium, stadium_type
-   ```
-
-2. __By proc__, which will be lazy-evaluated to look up a type.
-
-   ```ruby
-   field :team, -> { TeamType }
-   field :stadium, -> { LookupTypeForModel.lookup(Stadium) }
-   ```
-
-## Extending type and field definitions
+You can extend GraphQL's domain-specific language (DSL) for you own usage.
 
 Types, fields, and arguments have a `metadata` hash which accepts values during definition.
 
@@ -42,7 +23,6 @@ MySchema = GraphQL::Schema.define do
   # ...
 end
 ```
-
 
 Then, use the custom definition:
 

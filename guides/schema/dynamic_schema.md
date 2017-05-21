@@ -1,17 +1,9 @@
 ---
 layout: guide
 search: true
-title: Schema — Code Reuse
+title: Dynamic definition
+desc: You can your schema dynamically based on other data
 ---
-
-Here are a few techniques for code reuse with graphql-ruby:
-
-- [Dynamically defining types](#dynamically-defining-types)
-- [Functional composition and `resolve`](#functional-composition--resolve)
-
-Besides reducing duplicate code, these approaches also allow you to test parts of your schema in isolation.
-
-## Dynamically defining types
 
 Many examples show how to use `.define` and store the result in a Ruby constant:
 
@@ -85,42 +77,3 @@ class DynamicTypeDefinition
   end
 end
 ```
-
-## Functional composition & `resolve`
-
-You can modify procs by wrapping them in other procs. This is a simple way to combine elements for a `resolve` function.
-
-For example, you can wrap a proc with authorization logic:
-
-```ruby
-module Auth
-  # Wrap resolve_proc in a check that `ctx[:current_user].can_read?(item_name)`
-  #
-  # @yield [obj, args, ctx] Field resolution parameters
-  # @yieldreturn [Object] The return value for this field
-  # @return [Proc] the passed-in block, modified to check for `can_read?(item_name)`
-  def self.can_read(item_name, &block)
-    ->(obj, args, ctx) do
-      if ctx[:current_user].can_read?(item_name)
-        # continue to the next call:
-        block.call(obj, args, ctx)
-      else
-        nil
-      end
-    end
-  end
-end
-
-# ...
-
-QueryType = GraphQL::ObjectType.define do
-  field :findPost, PostType do
-    argument :id, !types.Int
-    resolve(Auth.can_read(:post) do |obj, args, ctx|
-      Post.find(args[:id])
-    end)
-  end
-end
-```
-
-Now, the inner proc will only be called if the outer proc calls it.

@@ -1,17 +1,15 @@
 ---
 layout: guide
 search: true
-title: Queries — Authorization
+section: Fields
+title: Wrapping Resolve Functions
+desc: Modify execution by wrapping each field's resolve function
+index: 5
 ---
 
-GraphQL offers a few ways to ensure that clients access data according to their permissions.
+You can modify field resolution by applying wrappers to the resolve functions. Wrappers can also be applied by [field instrumentation]({{site.baseurl}}/fields/instrumentation.html).
 
-- __Query analyzers__ can assert that the query is valid before running it.
-- __Resolve wrappers__ can assert that returned objects are permitted to a given user.
-
-## Resolve Wrapper
-
-Sometimes, you can only check permissions when you have the _actual_ object. Let's say you're exposing documents in your API:
+For example, you can apply runtime authorization checks. Let's say you're exposing documents in your API:
 
 ```ruby
 field :documents, types[DocumentType] do
