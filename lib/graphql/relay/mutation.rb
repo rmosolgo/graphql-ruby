@@ -184,17 +184,6 @@ module GraphQL
       def result_class
         @result_class ||= Result.define_subclass(self)
       end
-
-      private
-
-      def get_arity(callable)
-        case callable
-        when Proc
-          callable.arity
-        else
-          callable.method(:call).arity
-        end
-      end
     end
   end
 end

@@ -13,7 +13,7 @@ module GraphQL
     attr_accessor :locations, :arguments, :name, :description
     # @api private
     attr_writer :default_directive
-    ensure_defined(:locations, :arguments, :name, :description, :default_directive?, :default_arguments)
+    ensure_defined(:locations, :arguments, :name, :description, :default_directive?)
 
     LOCATIONS = [
       QUERY =                  :QUERY,
@@ -82,11 +82,6 @@ module GraphQL
     # @return [Boolean] Is this directive supplied by default? (eg `@skip`)
     def default_directive?
       @default_directive
-    end
-
-    # @return [GraphQL::Query::Arguments] Arguments to use when no args are provided in the query
-    def default_arguments
-      @default_arguments ||= GraphQL::Query::LiteralInput.defaults_for(self.arguments)
     end
   end
 end

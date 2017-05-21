@@ -66,6 +66,7 @@ require "graphql/argument"
 require "graphql/field"
 require "graphql/type_kinds"
 
+require "graphql/backwards_compatibility"
 require "graphql/scalar_type"
 require "graphql/boolean_type"
 require "graphql/float_type"
