@@ -196,14 +196,6 @@ describe GraphQL::Query::Arguments do
       assert_equal({"a" => 1, "b" => 2}, last_args.to_h)
     end
 
-    it "uses Field#default_arguments when no args are provided" do
-      schema.execute("{ argTest noArgTest noDefaultsTest }")
-
-      assert schema.query.get_field("argTest").default_arguments.eql?(arg_values[0])
-      assert GraphQL::Query::Arguments::NO_ARGS.eql?(arg_values[1])
-      assert GraphQL::Query::Arguments::NO_ARGS.eql?(arg_values[2])
-    end
-
     it "works from variables" do
       variables = { "arg" => { "a" => 1, "d" => nil } }
       schema.execute("query ArgTest($arg: TestInput){ argTest(d: $arg) }", variables: variables)
