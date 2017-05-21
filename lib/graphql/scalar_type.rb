@@ -80,22 +80,8 @@ module GraphQL
 
     private
 
-    def get_arity(callable)
-      case callable
-      when Proc
-        callable.arity
-      else
-        callable.method(:call).arity
-      end
-    end
-
     def ensure_two_arg(callable, method_name)
-      if get_arity(callable) == 1
-        warn("Scalar coerce functions receive two values (`val` and `ctx`), one-argument functions are deprecated (see #{name}.#{method_name}).")
-        ->(val, ctx) { callable.call(val) }
-      else
-        callable
-      end
+      GraphQL::BackwardsCompatibility.wrap_arity(callable, from: 1, to: 2, name: "#{name}.#{method_name}(val, ctx)")
     end
 
     def coerce_non_null_input(value, ctx)
