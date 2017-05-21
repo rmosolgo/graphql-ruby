@@ -2,9 +2,10 @@
 title: Mutations
 layout: guide
 search: true
+section: Queries
+desc: Creating, Updating and Deleting
+index: 3
 ---
-
-## Mutations
 
 Mutations are queries with side effects. Mutations are used to mutate your data. In order to use mutations you need to define a mutation root that allows for defining fields that can mutate your data.
 
