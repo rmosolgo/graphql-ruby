@@ -1,18 +1,12 @@
 ---
+title: Instrumentation
 layout: guide
 search: true
-title: Instrumentation
-section: Schema
-desc: Programmatically modify resolve functions in your schema at build-time.
+section: Queries
+desc: Wrap query execution with custom logic
 ---
 
-Instrumentation provides hooks for inserting custom code around field resolution and query execution.
-
-## Field Instrumentation
-
-## Query Instrumentation
-
-Query instrumentation can be attached during schema definition:
+You can call hooks _before_ and _after_ each query. Query instrumentation can be attached during schema definition:
 
 ```ruby
 MySchema = GraphQL::Schema.define do

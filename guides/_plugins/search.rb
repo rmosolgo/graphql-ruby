@@ -17,7 +17,7 @@ module Jekyll
         .each_with_index do |page, page_idx|
           # Remove header and breadcrumbs
           if !page.output
-            puts "Failed to index: #{page.data}"
+            puts "\nFailed to index: #{page.data}"
             next
           end
           guide_match = page.output.match(/<div class="guide-container">(.*)<\/div>/m)
