@@ -6,6 +6,7 @@
 $brand-color: #a5152a;
 $brand-color-light:  #ed8090;
 $brand-color-extralight:  #f9e8ee;
+$faint-color: #f0f0f0;
 $code-border: #d6d6d6;
 $code-background: #fafafa;
 $code-color: #777777;
@@ -164,7 +165,50 @@ a:hover, a:hover code {
 
 .hero {
   display: flex;
+  flex-direction: column;
   justify-content: space-around;
+  .hero-title {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    img, h1 {
+      margin: 20px 10px 30px 10px;
+    }
+  }
+
+  .hero-part {
+    padding: 10px;
+
+    &.shaded {
+      background: $faint-color;
+    }
+
+    h2 {
+      color: $brand-color;
+      text-shadow: #cccccc 1px 1px 1px;
+      font-size: 1.4em;
+    }
+  }
+  .hero-feature {
+    display: flex;
+    flex-basis: 50%;
+    flex-grow: 0;
+    flex-shrink: 0;
+    justify-content: space-between;
+
+    .teaser p {
+      font-size: 1.2em;
+      line-height: 2em;
+    }
+
+    .teaser:first-child {
+      margin-right: 10px;
+    }
+    .teaser:last-child {
+      margin-left: 10px;
+    }
+  }
 }
 
 h1, h2, h3, h4 {
