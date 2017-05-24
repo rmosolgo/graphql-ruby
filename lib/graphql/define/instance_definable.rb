@@ -279,7 +279,7 @@ module GraphQL
           @key = key
         end
 
-        def call(defn, value)
+        def call(defn, value = true)
           defn.metadata[@key] = value
         end
       end
