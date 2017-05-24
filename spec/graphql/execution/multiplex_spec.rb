@@ -109,7 +109,7 @@ describe GraphQL::Execution::Multiplex do
     it "is provided as context:" do
       checks = []
       multiplex(queries, context: { instrumentation_checks: checks })
-      assert_equal ["before multiplex", "after multiplex"], checks
+      assert_equal ["before multiplex 1", "before multiplex 2", "after multiplex 2", "after multiplex 1"], checks
     end
   end
 
@@ -118,7 +118,14 @@ describe GraphQL::Execution::Multiplex do
       checks = []
       queries_with_context = queries.map { |q| q.merge(context: { instrumentation_checks: checks }) }
       multiplex(queries_with_context, context: { instrumentation_checks: checks })
-      assert_equal ["before multiplex", "before Q1", "before Q2", "before Q3", "after Q1", "after Q2", "after Q3", "after multiplex"], checks
+      assert_equal [
+        "before multiplex 1",
+        "before multiplex 2",
+        "before Q1", "before Q2", "before Q3",
+        "after Q1", "after Q2", "after Q3",
+        "after multiplex 2",
+        "after multiplex 1",
+      ], checks
     end
   end
 end

@@ -104,8 +104,10 @@ module LazyHelpers
     end
   end
 
-  module SumAllInstrumentation
-    module_function
+  class SumAllInstrumentation
+    def initialize(counter:)
+      @counter = counter
+    end
 
     def before_query(q)
       add_check(q, "before #{q.selected_operation.name}")
@@ -119,11 +121,11 @@ module LazyHelpers
     end
 
     def before_multiplex(multiplex)
-      add_check(multiplex, "before multiplex")
+      add_check(multiplex, "before multiplex #@counter")
     end
 
     def after_multiplex(multiplex)
-      add_check(multiplex, "after multiplex")
+      add_check(multiplex, "after multiplex #@counter")
     end
 
     def add_check(obj, text)
@@ -139,8 +141,9 @@ module LazyHelpers
     mutation(LazyQuery)
     lazy_resolve(Wrapper, :item)
     lazy_resolve(SumAll, :value)
-    instrument(:query, SumAllInstrumentation)
-    instrument(:multiplex, SumAllInstrumentation)
+    instrument(:query, SumAllInstrumentation.new(counter: nil))
+    instrument(:multiplex, SumAllInstrumentation.new(counter: 1))
+    instrument(:multiplex, SumAllInstrumentation.new(counter: 2))
   end
 
   def run_query(query_str)
