@@ -6,8 +6,9 @@ module Jekyll
 
     # @return [Hash] with array of pages & search index for them
     def render(context)
-      pages = context.registers[:site].pages
-      baseurl = context.registers[:site].baseurl
+      site = context.registers[:site]
+      pages = site.pages
+      baseurl = site.baseurl
       # This will be an array of pages, indexed by `search_tree`
       page_data = []
       search_tree = build_search_tree
