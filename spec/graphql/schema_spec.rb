@@ -228,6 +228,21 @@ type Query {
       end
     end
 
+    # Use this to assert instrumenters are called as a stack
+    class StackCheckInstrumenter
+      def initialize(counter)
+        @counter = counter
+      end
+
+      def before_query(query)
+        @counter.counts << :in
+      end
+
+      def after_query(query)
+        @counter.counts << :out
+      end
+    end
+
     let(:variable_counter) {
       VariableCountInstrumenter.new
     }
@@ -246,6 +261,7 @@ type Query {
       GraphQL::Schema.define do
         query(spec.query_type)
         instrument(:field, MultiplyInstrumenter.new(3))
+        instrument(:query, StackCheckInstrumenter.new(spec.variable_counter))
         instrument(:query, spec.variable_counter)
       end
     }
@@ -258,7 +274,7 @@ type Query {
     it "can wrap query execution" do
       schema.execute("query getInt($val: Int = 5){ int(value: $val) } ")
       schema.execute("query getInt($val: Int = 5, $val2: Int = 3){ int(value: $val) int2: int(value: $val2) } ")
-      assert_equal [1, :end, 2, :end], variable_counter.counts
+      assert_equal [:in, 1, :end, :out, :in, 2, :end, :out], variable_counter.counts
     end
 
     it "runs even when a runtime error occurs" do
@@ -266,7 +282,7 @@ type Query {
       assert_raises(RuntimeError) {
         schema.execute("query getInt($val: Int = 13){ int(value: $val) } ")
       }
-      assert_equal [1, :end, 1, :end], variable_counter.counts
+      assert_equal [:in, 1, :end, :out, :in, 1, :end, :out], variable_counter.counts
     end
 
     it "can be applied after the fact" do

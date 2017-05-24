@@ -73,10 +73,11 @@ module GraphQL
           end
         ensure
           # Finally, run teardown instrumentation for each query + the multiplex
+          # Use `reverse_each` so instrumenters are treated like a stack
           queries.each do |query|
-            query_instrumenters.each { |i| i.after_query(query) }
+            query_instrumenters.reverse_each { |i| i.after_query(query) }
           end
-          multiplex_instrumenters.each { |i| i.after_multiplex(multiplex) }
+          multiplex_instrumenters.reverse_each { |i| i.after_multiplex(multiplex) }
         end
 
         private
