@@ -160,6 +160,9 @@ var GraphQLRubySearch = {
     }
   },
 
+  // The precompiled search index:
+  _indexPath: "{{ site.baseurl }}/zz_search.json",
+
   // Store the index here after loading it once:
   _index: null,
 
@@ -170,7 +173,7 @@ var GraphQLRubySearch = {
       indexPromise = Promise.resolve(this._index)
     } else {
       var _this = this
-      indexPromise = fetch("{{ site.baseurl }}/search.json")
+      indexPromise = fetch(this._indexPath)
         .then(function(response) { return response.json() })
         .then(function(index) {
           _this._index = index

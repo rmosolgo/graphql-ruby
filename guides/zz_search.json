@@ -1,0 +1,7 @@
+---
+layout: null
+# Named zz_* so that all _other_ pages are rendered before this one
+# That way, their content is available to `search_data`
+---
+
+{% search_data %}
