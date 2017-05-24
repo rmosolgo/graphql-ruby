@@ -2,6 +2,7 @@
 layout: guide
 search: true
 title: Error Handling
+desc: Handle errors during execution
 ---
 
 Sometimes errors happen! There are a few ways to express them in GraphQL:

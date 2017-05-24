@@ -7,17 +7,30 @@ desc: GraphQL's interface and union types contain one or more objects with somet
 index: 3
 ---
 
-## Execution Functions
+## Type Resolution
 
-During execution, a GraphQL schema may need help from you, which you can provide in these hooks:
+When we have a member of an interface or union, which object type should we use? Your GraphQL schema may need help from you, which you can provide as `resolve_type(obj, ctx)`.
 
-- `resolve_type(obj, ctx)`: When we have a member of an interface or union, which object type should we use?
-
-These hooks are provided as objects that respond to `#call`, for example, a `Proc` literal:
+Provide `resolve_type` as an object that responds to `#call`, for example, a `Proc` literal:
 
 ```ruby
 GraphQL::Schema.define do
   resolve_type ->(obj, ctx) { ... }
+end
+```
+
+or, a module:
+
+```ruby
+module ResolveType
+  def self.call(obj, ctx)
+    # ...
+  end
+end
+
+
+GraphQL::Schema.define do
+  resolve_type ResolveType
 end
 ```
 
