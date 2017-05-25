@@ -55,7 +55,18 @@ module StarWars
   class SequelBase < Sequel::Model(:bases)
   end
 
-  rebels  = OpenStruct.new({
+  class FactionRecord
+    attr_reader :id, :name, :ships, :bases, :basesClone
+    def initialize(id:, name:, ships:, bases:, basesClone:)
+      @id = id
+      @name = name
+      @ships = ships
+      @bases = bases
+      @basesClone = basesClone
+    end
+  end
+
+  rebels  = FactionRecord.new({
     id: '1',
     name: 'Alliance to Restore the Republic',
     ships:  ['1', '2', '3', '4', '5'],
@@ -64,7 +75,7 @@ module StarWars
   })
 
 
-  empire = OpenStruct.new({
+  empire = FactionRecord.new({
     id: '2',
     name: 'Galactic Empire',
     ships: ['6', '7', '8'],

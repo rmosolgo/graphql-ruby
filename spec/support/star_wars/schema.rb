@@ -83,13 +83,20 @@ module StarWars
     type Ship.connection_type
   end
 
+  ShipConnectionWithParentType = Ship.define_connection do
+    name "ShipConnectionWithParent"
+    field :parentClassName, !types.String do
+      resolve ->(o, a, c) { o.parent.class.name }
+    end
+  end
+
   Faction = GraphQL::ObjectType.define do
     name "Faction"
     interfaces [GraphQL::Relay::Node.interface]
 
     field :id, !types.ID, resolve: GraphQL::Relay::GlobalIdResolve.new(type: Faction)
     field :name, types.String
-    connection :ships, Ship.connection_type do
+    connection :ships, ShipConnectionWithParentType do
       resolve ->(obj, args, ctx) {
         all_ships = obj.ships.map {|ship_id| StarWars::DATA["Ship"][ship_id] }
         if args[:nameIncludes]
@@ -104,6 +111,9 @@ module StarWars
             all_ships = LazyWrapper.new { raise GraphQL::ExecutionError.new("lazy raised error from within connection") }
           when "null"
             all_ships = nil
+          when "lazyObject"
+            prev_all_ships = all_ships
+            all_ships = LazyWrapper.new { prev_all_ships }
           else
             all_ships = all_ships.select { |ship| ship.name.include?(args[:nameIncludes])}
           end
