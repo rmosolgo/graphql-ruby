@@ -179,10 +179,6 @@ def self.run_lexer(query_string)
 		act = 0;
 		
 	end
-	emit_token = ->(name) {
-	emit(name, ts, te, meta)
-	}
-	
 	begin
 		_trans = 0;
 		_have = 0;
@@ -293,7 +289,7 @@ def self.run_lexer(query_string)
 									begin
 										te = p+1;
 										begin
-											emit_token.call(:RCURLY) 
+											emit(:RCURLY, ts, te, meta) 
 										end
 										
 									end
@@ -307,7 +303,7 @@ def self.run_lexer(query_string)
 									begin
 										te = p+1;
 										begin
-											emit_token.call(:LCURLY) 
+											emit(:LCURLY, ts, te, meta) 
 										end
 										
 									end
@@ -321,7 +317,7 @@ def self.run_lexer(query_string)
 									begin
 										te = p+1;
 										begin
-											emit_token.call(:RPAREN) 
+											emit(:RPAREN, ts, te, meta) 
 										end
 										
 									end
@@ -335,7 +331,7 @@ def self.run_lexer(query_string)
 									begin
 										te = p+1;
 										begin
-											emit_token.call(:LPAREN) 
+											emit(:LPAREN, ts, te, meta) 
 										end
 										
 									end
@@ -349,7 +345,7 @@ def self.run_lexer(query_string)
 									begin
 										te = p+1;
 										begin
-											emit_token.call(:RBRACKET) 
+											emit(:RBRACKET, ts, te, meta) 
 										end
 										
 									end
@@ -363,7 +359,7 @@ def self.run_lexer(query_string)
 									begin
 										te = p+1;
 										begin
-											emit_token.call(:LBRACKET) 
+											emit(:LBRACKET, ts, te, meta) 
 										end
 										
 									end
@@ -377,7 +373,7 @@ def self.run_lexer(query_string)
 									begin
 										te = p+1;
 										begin
-											emit_token.call(:COLON) 
+											emit(:COLON, ts, te, meta) 
 										end
 										
 									end
@@ -405,7 +401,7 @@ def self.run_lexer(query_string)
 									begin
 										te = p+1;
 										begin
-											emit_token.call(:VAR_SIGN) 
+											emit(:VAR_SIGN, ts, te, meta) 
 										end
 										
 									end
@@ -419,7 +415,7 @@ def self.run_lexer(query_string)
 									begin
 										te = p+1;
 										begin
-											emit_token.call(:DIR_SIGN) 
+											emit(:DIR_SIGN, ts, te, meta) 
 										end
 										
 									end
@@ -433,7 +429,7 @@ def self.run_lexer(query_string)
 									begin
 										te = p+1;
 										begin
-											emit_token.call(:ELLIPSIS) 
+											emit(:ELLIPSIS, ts, te, meta) 
 										end
 										
 									end
@@ -447,7 +443,7 @@ def self.run_lexer(query_string)
 									begin
 										te = p+1;
 										begin
-											emit_token.call(:EQUALS) 
+											emit(:EQUALS, ts, te, meta) 
 										end
 										
 									end
@@ -461,7 +457,7 @@ def self.run_lexer(query_string)
 									begin
 										te = p+1;
 										begin
-											emit_token.call(:BANG) 
+											emit(:BANG, ts, te, meta) 
 										end
 										
 									end
@@ -475,7 +471,7 @@ def self.run_lexer(query_string)
 									begin
 										te = p+1;
 										begin
-											emit_token.call(:PIPE) 
+											emit(:PIPE, ts, te, meta) 
 										end
 										
 									end
@@ -505,7 +501,7 @@ def self.run_lexer(query_string)
 									begin
 										te = p+1;
 										begin
-											emit_token.call(:UNKNOWN_CHAR) 
+											emit(:UNKNOWN_CHAR, ts, te, meta) 
 										end
 										
 									end
@@ -520,7 +516,7 @@ def self.run_lexer(query_string)
 										te = p;
 										p = p - 1;
 										begin
-											emit_token.call(:INT) 
+											emit(:INT, ts, te, meta) 
 										end
 										
 									end
@@ -535,7 +531,7 @@ def self.run_lexer(query_string)
 										te = p;
 										p = p - 1;
 										begin
-											emit_token.call(:FLOAT) 
+											emit(:FLOAT, ts, te, meta) 
 										end
 										
 									end
@@ -550,7 +546,7 @@ def self.run_lexer(query_string)
 										te = p;
 										p = p - 1;
 										begin
-											emit_token.call(:IDENTIFIER) 
+											emit(:IDENTIFIER, ts, te, meta) 
 										end
 										
 									end
@@ -595,7 +591,7 @@ def self.run_lexer(query_string)
 										te = p;
 										p = p - 1;
 										begin
-											emit_token.call(:UNKNOWN_CHAR) 
+											emit(:UNKNOWN_CHAR, ts, te, meta) 
 										end
 										
 									end
@@ -609,7 +605,7 @@ def self.run_lexer(query_string)
 									begin
 										p = ((te))-1;
 										begin
-											emit_token.call(:INT) 
+											emit(:INT, ts, te, meta) 
 										end
 										
 									end
@@ -623,7 +619,7 @@ def self.run_lexer(query_string)
 									begin
 										p = ((te))-1;
 										begin
-											emit_token.call(:UNKNOWN_CHAR) 
+											emit(:UNKNOWN_CHAR, ts, te, meta) 
 										end
 										
 									end
@@ -643,7 +639,7 @@ def self.run_lexer(query_string)
 										begin
 											p = ((te))-1;
 											begin
-												emit_token.call(:INT) 
+												emit(:INT, ts, te, meta) 
 											end
 											
 										end
@@ -651,7 +647,7 @@ def self.run_lexer(query_string)
 										begin
 											p = ((te))-1;
 											begin
-												emit_token.call(:FLOAT) 
+												emit(:FLOAT, ts, te, meta) 
 											end
 											
 										end
@@ -659,7 +655,7 @@ def self.run_lexer(query_string)
 										begin
 											p = ((te))-1;
 											begin
-												emit_token.call(:ON) 
+												emit(:ON, ts, te, meta) 
 											end
 											
 										end
@@ -667,7 +663,7 @@ def self.run_lexer(query_string)
 										begin
 											p = ((te))-1;
 											begin
-												emit_token.call(:FRAGMENT) 
+												emit(:FRAGMENT, ts, te, meta) 
 											end
 											
 										end
@@ -675,7 +671,7 @@ def self.run_lexer(query_string)
 										begin
 											p = ((te))-1;
 											begin
-												emit_token.call(:TRUE) 
+												emit(:TRUE, ts, te, meta) 
 											end
 											
 										end
@@ -683,7 +679,7 @@ def self.run_lexer(query_string)
 										begin
 											p = ((te))-1;
 											begin
-												emit_token.call(:FALSE) 
+												emit(:FALSE, ts, te, meta) 
 											end
 											
 										end
@@ -691,7 +687,7 @@ def self.run_lexer(query_string)
 										begin
 											p = ((te))-1;
 											begin
-												emit_token.call(:NULL) 
+												emit(:NULL, ts, te, meta) 
 											end
 											
 										end
@@ -699,7 +695,7 @@ def self.run_lexer(query_string)
 										begin
 											p = ((te))-1;
 											begin
-												emit_token.call(:QUERY) 
+												emit(:QUERY, ts, te, meta) 
 											end
 											
 										end
@@ -707,7 +703,7 @@ def self.run_lexer(query_string)
 										begin
 											p = ((te))-1;
 											begin
-												emit_token.call(:MUTATION) 
+												emit(:MUTATION, ts, te, meta) 
 											end
 											
 										end
@@ -715,7 +711,7 @@ def self.run_lexer(query_string)
 										begin
 											p = ((te))-1;
 											begin
-												emit_token.call(:SUBSCRIPTION) 
+												emit(:SUBSCRIPTION, ts, te, meta) 
 											end
 											
 										end
@@ -723,7 +719,7 @@ def self.run_lexer(query_string)
 										begin
 											p = ((te))-1;
 											begin
-												emit_token.call(:SCHEMA) 
+												emit(:SCHEMA, ts, te, meta) 
 											end
 											
 										end
@@ -731,7 +727,7 @@ def self.run_lexer(query_string)
 										begin
 											p = ((te))-1;
 											begin
-												emit_token.call(:SCALAR) 
+												emit(:SCALAR, ts, te, meta) 
 											end
 											
 										end
@@ -739,7 +735,7 @@ def self.run_lexer(query_string)
 										begin
 											p = ((te))-1;
 											begin
-												emit_token.call(:TYPE) 
+												emit(:TYPE, ts, te, meta) 
 											end
 											
 										end
@@ -747,7 +743,7 @@ def self.run_lexer(query_string)
 										begin
 											p = ((te))-1;
 											begin
-												emit_token.call(:IMPLEMENTS) 
+												emit(:IMPLEMENTS, ts, te, meta) 
 											end
 											
 										end
@@ -755,7 +751,7 @@ def self.run_lexer(query_string)
 										begin
 											p = ((te))-1;
 											begin
-												emit_token.call(:INTERFACE) 
+												emit(:INTERFACE, ts, te, meta) 
 											end
 											
 										end
@@ -763,7 +759,7 @@ def self.run_lexer(query_string)
 										begin
 											p = ((te))-1;
 											begin
-												emit_token.call(:UNION) 
+												emit(:UNION, ts, te, meta) 
 											end
 											
 										end
@@ -771,7 +767,7 @@ def self.run_lexer(query_string)
 										begin
 											p = ((te))-1;
 											begin
-												emit_token.call(:ENUM) 
+												emit(:ENUM, ts, te, meta) 
 											end
 											
 										end
@@ -779,7 +775,7 @@ def self.run_lexer(query_string)
 										begin
 											p = ((te))-1;
 											begin
-												emit_token.call(:INPUT) 
+												emit(:INPUT, ts, te, meta) 
 											end
 											
 										end
@@ -787,7 +783,7 @@ def self.run_lexer(query_string)
 										begin
 											p = ((te))-1;
 											begin
-												emit_token.call(:DIRECTIVE) 
+												emit(:DIRECTIVE, ts, te, meta) 
 											end
 											
 										end
@@ -803,7 +799,7 @@ def self.run_lexer(query_string)
 										begin
 											p = ((te))-1;
 											begin
-												emit_token.call(:IDENTIFIER) 
+												emit(:IDENTIFIER, ts, te, meta) 
 											end
 											
 										end
@@ -811,7 +807,7 @@ def self.run_lexer(query_string)
 										begin
 											p = ((te))-1;
 											begin
-												emit_token.call(:UNKNOWN_CHAR) 
+												emit(:UNKNOWN_CHAR, ts, te, meta) 
 											end
 											
 											
