@@ -28,7 +28,7 @@ module GraphQL
   #
   # @example Defining an enum input
   #    field :coders, types[CoderType] do
-  #      argument :knowing, types[LanguageType]
+  #      argument :knowing, types[LanguageEnum]
   #      resolve ->(obj, args, ctx) {
   #        Coder.where(language: args[:knowing])
   #      }
