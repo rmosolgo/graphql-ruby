@@ -49,40 +49,40 @@
   UNKNOWN_CHAR =         /./;
 
   main := |*
-    INT           => { emit_token.call(:INT) };
-    FLOAT         => { emit_token.call(:FLOAT) };
-    ON            => { emit_token.call(:ON) };
-    FRAGMENT      => { emit_token.call(:FRAGMENT) };
-    TRUE          => { emit_token.call(:TRUE) };
-    FALSE         => { emit_token.call(:FALSE) };
-    NULL          => { emit_token.call(:NULL) };
-    QUERY         => { emit_token.call(:QUERY) };
-    MUTATION      => { emit_token.call(:MUTATION) };
-    SUBSCRIPTION  => { emit_token.call(:SUBSCRIPTION) };
-    SCHEMA        => { emit_token.call(:SCHEMA) };
-    SCALAR        => { emit_token.call(:SCALAR) };
-    TYPE          => { emit_token.call(:TYPE) };
-    IMPLEMENTS    => { emit_token.call(:IMPLEMENTS) };
-    INTERFACE     => { emit_token.call(:INTERFACE) };
-    UNION         => { emit_token.call(:UNION) };
-    ENUM          => { emit_token.call(:ENUM) };
-    INPUT         => { emit_token.call(:INPUT) };
-    DIRECTIVE     => { emit_token.call(:DIRECTIVE) };
-    RCURLY        => { emit_token.call(:RCURLY) };
-    LCURLY        => { emit_token.call(:LCURLY) };
-    RPAREN        => { emit_token.call(:RPAREN) };
-    LPAREN        => { emit_token.call(:LPAREN) };
-    RBRACKET      => { emit_token.call(:RBRACKET) };
-    LBRACKET      => { emit_token.call(:LBRACKET) };
-    COLON         => { emit_token.call(:COLON) };
+    INT           => { emit(:INT, ts, te, meta) };
+    FLOAT         => { emit(:FLOAT, ts, te, meta) };
+    ON            => { emit(:ON, ts, te, meta) };
+    FRAGMENT      => { emit(:FRAGMENT, ts, te, meta) };
+    TRUE          => { emit(:TRUE, ts, te, meta) };
+    FALSE         => { emit(:FALSE, ts, te, meta) };
+    NULL          => { emit(:NULL, ts, te, meta) };
+    QUERY         => { emit(:QUERY, ts, te, meta) };
+    MUTATION      => { emit(:MUTATION, ts, te, meta) };
+    SUBSCRIPTION  => { emit(:SUBSCRIPTION, ts, te, meta) };
+    SCHEMA        => { emit(:SCHEMA, ts, te, meta) };
+    SCALAR        => { emit(:SCALAR, ts, te, meta) };
+    TYPE          => { emit(:TYPE, ts, te, meta) };
+    IMPLEMENTS    => { emit(:IMPLEMENTS, ts, te, meta) };
+    INTERFACE     => { emit(:INTERFACE, ts, te, meta) };
+    UNION         => { emit(:UNION, ts, te, meta) };
+    ENUM          => { emit(:ENUM, ts, te, meta) };
+    INPUT         => { emit(:INPUT, ts, te, meta) };
+    DIRECTIVE     => { emit(:DIRECTIVE, ts, te, meta) };
+    RCURLY        => { emit(:RCURLY, ts, te, meta) };
+    LCURLY        => { emit(:LCURLY, ts, te, meta) };
+    RPAREN        => { emit(:RPAREN, ts, te, meta) };
+    LPAREN        => { emit(:LPAREN, ts, te, meta) };
+    RBRACKET      => { emit(:RBRACKET, ts, te, meta) };
+    LBRACKET      => { emit(:LBRACKET, ts, te, meta) };
+    COLON         => { emit(:COLON, ts, te, meta) };
     QUOTED_STRING => { emit_string(ts + 1, te - 1, meta) };
-    VAR_SIGN      => { emit_token.call(:VAR_SIGN) };
-    DIR_SIGN      => { emit_token.call(:DIR_SIGN) };
-    ELLIPSIS      => { emit_token.call(:ELLIPSIS) };
-    EQUALS        => { emit_token.call(:EQUALS) };
-    BANG          => { emit_token.call(:BANG) };
-    PIPE          => { emit_token.call(:PIPE) };
-    IDENTIFIER    => { emit_token.call(:IDENTIFIER) };
+    VAR_SIGN      => { emit(:VAR_SIGN, ts, te, meta) };
+    DIR_SIGN      => { emit(:DIR_SIGN, ts, te, meta) };
+    ELLIPSIS      => { emit(:ELLIPSIS, ts, te, meta) };
+    EQUALS        => { emit(:EQUALS, ts, te, meta) };
+    BANG          => { emit(:BANG, ts, te, meta) };
+    PIPE          => { emit(:PIPE, ts, te, meta) };
+    IDENTIFIER    => { emit(:IDENTIFIER, ts, te, meta) };
     COMMENT       => { record_comment(ts, te, meta) };
 
     NEWLINE => {
@@ -92,7 +92,7 @@
 
     BLANK   => { meta[:col] += te - ts };
 
-    UNKNOWN_CHAR => { emit_token.call(:UNKNOWN_CHAR) };
+    UNKNOWN_CHAR => { emit(:UNKNOWN_CHAR, ts, te, meta) };
 
   *|;
 }%%
@@ -131,11 +131,10 @@ module GraphQL
           previous_token: nil,
         }
 
-        %% write init;
+        p ||= 0
+        pe ||= data.length
 
-        emit_token = ->(name) {
-          emit(name, ts, te, meta)
-        }
+        %% write init;
 
         %% write exec;
 

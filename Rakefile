@@ -19,7 +19,7 @@ desc "Use Racc & Ragel to regenerate parser.rb & lexer.rb from configuration fil
 task :build_parser do
   `rm -f lib/graphql/language/parser.rb lib/graphql/language/lexer.rb `
   `racc lib/graphql/language/parser.y -o lib/graphql/language/parser.rb`
-  `ragel -R lib/graphql/language/lexer.rl`
+  `ragel -R -F1 lib/graphql/language/lexer.rl`
 end
 
 namespace :site do
