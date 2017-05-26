@@ -131,6 +131,9 @@ module GraphQL
           previous_token: nil,
         }
 
+        p ||= 0
+        pe ||= data.length
+
         %% write init;
 
         emit_token = ->(name) {
