@@ -83,7 +83,7 @@ describe GraphQL::Analysis do
           memo ||= Hash.new { |h,k| h[k] = 0 }
           if visit_type == :enter
             if irep_node.ast_node.is_a?(GraphQL::Language::Nodes::Field)
-              if irep_node.definition.resolve_proc.is_a?(GraphQL::Relay::ConnectionResolve)
+              if irep_node.definition.connection?
                 memo[:connection] ||= 0
                 memo[:connection] += 1
               else

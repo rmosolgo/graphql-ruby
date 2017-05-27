@@ -39,6 +39,6 @@ end
 # Load support files
 Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each { |f| require f }
 
-def star_wars_query(string, variables={})
-  GraphQL::Query.new(StarWars::Schema, string, variables: variables).result
+def star_wars_query(string, variables={}, context: {})
+  GraphQL::Query.new(StarWars::Schema, string, variables: variables, context: context).result
 end
