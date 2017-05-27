@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::StaticValidation::VariablesAreInputTypes
-url: http://www.rubydoc.info/gems/graphql/GraphQL/StaticValidation/VariablesAreInputTypes
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/StaticValidation/VariablesAreInputTypes
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/StaticValidation/VariablesAreInputTypes
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/StaticValidation/VariablesAreInputTypes
 ---
 
 Class: GraphQL::StaticValidation::VariablesAreInputTypes < Object

@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::Relay::ConnectionInstrumentation
-url: http://www.rubydoc.info/gems/graphql/GraphQL/Relay/ConnectionInstrumentation
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/Relay/ConnectionInstrumentation
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Relay/ConnectionInstrumentation
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Relay/ConnectionInstrumentation
 ---
 
 Module: GraphQL::Relay::ConnectionInstrumentation

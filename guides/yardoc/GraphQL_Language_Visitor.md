@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::Language::Visitor
-url: http://www.rubydoc.info/gems/graphql/GraphQL/Language/Visitor
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/Language/Visitor
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Language/Visitor
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Language/Visitor
 ---
 
 Class: GraphQL::Language::Visitor < Object

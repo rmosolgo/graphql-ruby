@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::InvalidNullError
-url: http://www.rubydoc.info/gems/graphql/GraphQL/InvalidNullError
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/InvalidNullError
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/InvalidNullError
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/InvalidNullError
 ---
 
 Class: GraphQL::InvalidNullError < GraphQL::RuntimeTypeError

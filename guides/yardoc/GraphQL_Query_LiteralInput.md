@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::Query::LiteralInput
-url: http://www.rubydoc.info/gems/graphql/GraphQL/Query/LiteralInput
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/Query/LiteralInput
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Query/LiteralInput
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Query/LiteralInput
 ---
 
 Class: GraphQL::Query::LiteralInput < Object

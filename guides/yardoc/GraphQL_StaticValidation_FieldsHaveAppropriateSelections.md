@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::StaticValidation::FieldsHaveAppropriateSelections
-url: http://www.rubydoc.info/gems/graphql/GraphQL/StaticValidation/FieldsHaveAppropriateSelections
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/StaticValidation/FieldsHaveAppropriateSelections
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/StaticValidation/FieldsHaveAppropriateSelections
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/StaticValidation/FieldsHaveAppropriateSelections
 ---
 
 Class: GraphQL::StaticValidation::FieldsHaveAppropriateSelections < ...

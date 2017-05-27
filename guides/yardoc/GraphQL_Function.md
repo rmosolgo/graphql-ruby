@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::Function
-url: http://www.rubydoc.info/gems/graphql/GraphQL/Function
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/Function
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Function
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Function
 ---
 
 Class: GraphQL::Function < Object

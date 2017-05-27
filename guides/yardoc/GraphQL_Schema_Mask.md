@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::Schema::Mask
-url: http://www.rubydoc.info/gems/graphql/GraphQL/Schema/Mask
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/Schema/Mask
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Schema/Mask
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Schema/Mask
 ---
 
 Module: GraphQL::Schema::Mask

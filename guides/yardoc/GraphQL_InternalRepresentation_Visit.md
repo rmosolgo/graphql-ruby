@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::InternalRepresentation::Visit
-url: http://www.rubydoc.info/gems/graphql/GraphQL/InternalRepresentation/Visit
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/InternalRepresentation/Visit
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/InternalRepresentation/Visit
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/InternalRepresentation/Visit
 ---
 
 Module: GraphQL::InternalRepresentation::Visit

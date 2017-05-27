@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::Compatibility::QueryParserSpecification::ParseErrorSpecification
-url: http://www.rubydoc.info/gems/graphql/GraphQL/Compatibility/QueryParserSpecification/ParseErrorSpecification
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/Compatibility/QueryParserSpecification/ParseErrorSpecification
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Compatibility/QueryParserSpecification/ParseErrorSpecification
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Compatibility/QueryParserSpecification/ParseErrorSpecification
 ---
 
 Module: GraphQL::Compatibility::QueryParserSpecification::ParseError...

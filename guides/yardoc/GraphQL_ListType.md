@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::ListType
-url: http://www.rubydoc.info/gems/graphql/GraphQL/ListType
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/ListType
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/ListType
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/ListType
 ---
 
 Class: GraphQL::ListType < GraphQL::BaseType

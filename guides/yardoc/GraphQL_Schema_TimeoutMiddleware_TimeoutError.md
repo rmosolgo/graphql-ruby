@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::Schema::TimeoutMiddleware::TimeoutError
-url: http://www.rubydoc.info/gems/graphql/GraphQL/Schema/TimeoutMiddleware/TimeoutError
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/Schema/TimeoutMiddleware/TimeoutError
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Schema/TimeoutMiddleware/TimeoutError
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Schema/TimeoutMiddleware/TimeoutError
 ---
 
 Class: GraphQL::Schema::TimeoutMiddleware::TimeoutError < GraphQL::E...

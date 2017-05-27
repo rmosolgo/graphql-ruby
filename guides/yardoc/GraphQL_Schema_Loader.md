@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::Schema::Loader
-url: http://www.rubydoc.info/gems/graphql/GraphQL/Schema/Loader
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/Schema/Loader
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Schema/Loader
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Schema/Loader
 ---
 
 Module: GraphQL::Schema::Loader

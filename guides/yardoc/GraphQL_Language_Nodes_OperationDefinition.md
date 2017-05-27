@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::Language::Nodes::OperationDefinition
-url: http://www.rubydoc.info/gems/graphql/GraphQL/Language/Nodes/OperationDefinition
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/Language/Nodes/OperationDefinition
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Language/Nodes/OperationDefinition
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Language/Nodes/OperationDefinition
 ---
 
 Class: GraphQL::Language::Nodes::OperationDefinition < GraphQL::Lang...

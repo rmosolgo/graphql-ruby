@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: Graphql::Generators::InstallGenerator
-url: http://www.rubydoc.info/gems/graphql/Graphql/Generators/InstallGenerator
-rubydoc_url: http://www.rubydoc.info/gems/graphql/Graphql/Generators/InstallGenerator
+url: http://www.rubydoc.info/gems/graphql/1.6.0/Graphql/Generators/InstallGenerator
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/Graphql/Generators/InstallGenerator
 ---
 
 - Class: Graphql::Generators::InstallGenerator < Rails::Generators::Base

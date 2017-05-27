@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::Schema::Warden
-url: http://www.rubydoc.info/gems/graphql/GraphQL/Schema/Warden
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/Schema/Warden
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Schema/Warden
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Schema/Warden
 ---
 
 Class: GraphQL::Schema::Warden < Object

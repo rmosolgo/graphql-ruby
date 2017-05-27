@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::Query::NullContext
-url: http://www.rubydoc.info/gems/graphql/GraphQL/Query/NullContext
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/Query/NullContext
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Query/NullContext
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Query/NullContext
 ---
 
 Class: GraphQL::Query::NullContext < Object

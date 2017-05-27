@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::Schema::TypeMap
-url: http://www.rubydoc.info/gems/graphql/GraphQL/Schema/TypeMap
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/Schema/TypeMap
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Schema/TypeMap
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Schema/TypeMap
 ---
 
 Class: GraphQL::Schema::TypeMap < Object

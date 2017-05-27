@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::ScalarType
-url: http://www.rubydoc.info/gems/graphql/GraphQL/ScalarType
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/ScalarType
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/ScalarType
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/ScalarType
 ---
 
 Class: GraphQL::ScalarType < GraphQL::BaseType

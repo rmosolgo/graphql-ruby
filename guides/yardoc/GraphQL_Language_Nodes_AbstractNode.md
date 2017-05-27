@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::Language::Nodes::AbstractNode
-url: http://www.rubydoc.info/gems/graphql/GraphQL/Language/Nodes/AbstractNode
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/Language/Nodes/AbstractNode
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Language/Nodes/AbstractNode
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Language/Nodes/AbstractNode
 ---
 
 Class: GraphQL::Language::Nodes::AbstractNode < Object

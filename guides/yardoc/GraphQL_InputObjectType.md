@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::InputObjectType
-url: http://www.rubydoc.info/gems/graphql/GraphQL/InputObjectType
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/InputObjectType
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/InputObjectType
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/InputObjectType
 ---
 
 Class: GraphQL::InputObjectType < GraphQL::BaseType

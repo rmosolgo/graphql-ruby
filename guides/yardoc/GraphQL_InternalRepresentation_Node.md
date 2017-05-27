@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::InternalRepresentation::Node
-url: http://www.rubydoc.info/gems/graphql/GraphQL/InternalRepresentation/Node
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/InternalRepresentation/Node
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/InternalRepresentation/Node
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/InternalRepresentation/Node
 ---
 
 Class: GraphQL::InternalRepresentation::Node < Object

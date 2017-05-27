@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::Relay::BaseConnection
-url: http://www.rubydoc.info/gems/graphql/GraphQL/Relay/BaseConnection
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/Relay/BaseConnection
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Relay/BaseConnection
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Relay/BaseConnection
 ---
 
 Class: GraphQL::Relay::BaseConnection < Object

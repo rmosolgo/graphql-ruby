@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::Define::TypeDefiner
-url: http://www.rubydoc.info/gems/graphql/GraphQL/Define/TypeDefiner
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/Define/TypeDefiner
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Define/TypeDefiner
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Define/TypeDefiner
 ---
 
 Class: GraphQL::Define::TypeDefiner < Object

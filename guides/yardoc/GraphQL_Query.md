@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::Query
-url: http://www.rubydoc.info/gems/graphql/GraphQL/Query
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/Query
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Query
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Query
 ---
 
 Class: GraphQL::Query < Object

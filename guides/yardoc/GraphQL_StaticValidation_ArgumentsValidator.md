@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::StaticValidation::ArgumentsValidator
-url: http://www.rubydoc.info/gems/graphql/GraphQL/StaticValidation/ArgumentsValidator
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/StaticValidation/ArgumentsValidator
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/StaticValidation/ArgumentsValidator
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/StaticValidation/ArgumentsValidator
 ---
 
 Class: GraphQL::StaticValidation::ArgumentsValidator < Object

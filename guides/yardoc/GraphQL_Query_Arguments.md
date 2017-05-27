@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::Query::Arguments
-url: http://www.rubydoc.info/gems/graphql/GraphQL/Query/Arguments
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/Query/Arguments
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Query/Arguments
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Query/Arguments
 ---
 
 Class: GraphQL::Query::Arguments < Object

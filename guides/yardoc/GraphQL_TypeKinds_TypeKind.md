@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::TypeKinds::TypeKind
-url: http://www.rubydoc.info/gems/graphql/GraphQL/TypeKinds/TypeKind
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/TypeKinds/TypeKind
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/TypeKinds/TypeKind
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/TypeKinds/TypeKind
 ---
 
 Class: GraphQL::TypeKinds::TypeKind < Object

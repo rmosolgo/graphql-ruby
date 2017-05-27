@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::Relay::ArrayConnection
-url: http://www.rubydoc.info/gems/graphql/GraphQL/Relay/ArrayConnection
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/Relay/ArrayConnection
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Relay/ArrayConnection
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Relay/ArrayConnection
 ---
 
 Class: GraphQL::Relay::ArrayConnection < GraphQL::Relay::BaseConnection

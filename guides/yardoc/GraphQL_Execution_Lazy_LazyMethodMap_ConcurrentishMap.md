@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::Execution::Lazy::LazyMethodMap::ConcurrentishMap
-url: http://www.rubydoc.info/gems/graphql/GraphQL/Execution/Lazy/LazyMethodMap/ConcurrentishMap
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/Execution/Lazy/LazyMethodMap/ConcurrentishMap
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Execution/Lazy/LazyMethodMap/ConcurrentishMap
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Execution/Lazy/LazyMethodMap/ConcurrentishMap
 ---
 
 Class: GraphQL::Execution::Lazy::LazyMethodMap::ConcurrentishMap < O...

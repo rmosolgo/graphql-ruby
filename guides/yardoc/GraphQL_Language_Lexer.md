@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::Language::Lexer
-url: http://www.rubydoc.info/gems/graphql/GraphQL/Language/Lexer
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/Language/Lexer
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Language/Lexer
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Language/Lexer
 ---
 
 Module: GraphQL::Language::Lexer

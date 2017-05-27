@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::Schema::UniqueWithinType
-url: http://www.rubydoc.info/gems/graphql/GraphQL/Schema/UniqueWithinType
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/Schema/UniqueWithinType
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Schema/UniqueWithinType
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Schema/UniqueWithinType
 ---
 
 Module: GraphQL::Schema::UniqueWithinType

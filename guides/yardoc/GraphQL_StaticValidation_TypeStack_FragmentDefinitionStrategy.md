@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::StaticValidation::TypeStack::FragmentDefinitionStrategy
-url: http://www.rubydoc.info/gems/graphql/GraphQL/StaticValidation/TypeStack/FragmentDefinitionStrategy
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/StaticValidation/TypeStack/FragmentDefinitionStrategy
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/StaticValidation/TypeStack/FragmentDefinitionStrategy
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/StaticValidation/TypeStack/FragmentDefinitionStrategy
 ---
 
 Module: GraphQL::StaticValidation::TypeStack::FragmentDefinitionStra...

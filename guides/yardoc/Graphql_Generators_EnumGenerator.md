@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: Graphql::Generators::EnumGenerator
-url: http://www.rubydoc.info/gems/graphql/Graphql/Generators/EnumGenerator
-rubydoc_url: http://www.rubydoc.info/gems/graphql/Graphql/Generators/EnumGenerator
+url: http://www.rubydoc.info/gems/graphql/1.6.0/Graphql/Generators/EnumGenerator
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/Graphql/Generators/EnumGenerator
 ---
 
 Class: Graphql::Generators::EnumGenerator < Graphql::Generators::Typ...

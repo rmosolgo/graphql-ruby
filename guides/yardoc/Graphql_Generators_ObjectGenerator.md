@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: Graphql::Generators::ObjectGenerator
-url: http://www.rubydoc.info/gems/graphql/Graphql/Generators/ObjectGenerator
-rubydoc_url: http://www.rubydoc.info/gems/graphql/Graphql/Generators/ObjectGenerator
+url: http://www.rubydoc.info/gems/graphql/1.6.0/Graphql/Generators/ObjectGenerator
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/Graphql/Generators/ObjectGenerator
 ---
 
 Class: Graphql::Generators::ObjectGenerator < Graphql::Generators::T...

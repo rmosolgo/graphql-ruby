@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::Relay::Mutation::Result
-url: http://www.rubydoc.info/gems/graphql/GraphQL/Relay/Mutation/Result
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/Relay/Mutation/Result
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Relay/Mutation/Result
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Relay/Mutation/Result
 ---
 
 Class: GraphQL::Relay::Mutation::Result < Object

@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::Compatibility::ExecutionSpecification
-url: http://www.rubydoc.info/gems/graphql/GraphQL/Compatibility/ExecutionSpecification
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/Compatibility/ExecutionSpecification
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Compatibility/ExecutionSpecification
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Compatibility/ExecutionSpecification
 ---
 
 Module: GraphQL::Compatibility::ExecutionSpecification

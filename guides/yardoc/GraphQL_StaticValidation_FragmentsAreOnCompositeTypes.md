@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::StaticValidation::FragmentsAreOnCompositeTypes
-url: http://www.rubydoc.info/gems/graphql/GraphQL/StaticValidation/FragmentsAreOnCompositeTypes
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/StaticValidation/FragmentsAreOnCompositeTypes
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/StaticValidation/FragmentsAreOnCompositeTypes
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/StaticValidation/FragmentsAreOnCompositeTypes
 ---
 
 Class: GraphQL::StaticValidation::FragmentsAreOnCompositeTypes < Object

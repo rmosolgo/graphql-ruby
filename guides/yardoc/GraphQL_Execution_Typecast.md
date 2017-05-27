@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::Execution::Typecast
-url: http://www.rubydoc.info/gems/graphql/GraphQL/Execution/Typecast
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/Execution/Typecast
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Execution/Typecast
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Execution/Typecast
 ---
 
 Module: GraphQL::Execution::Typecast

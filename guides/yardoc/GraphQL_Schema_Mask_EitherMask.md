@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::Schema::Mask::EitherMask
-url: http://www.rubydoc.info/gems/graphql/GraphQL/Schema/Mask/EitherMask
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/Schema/Mask/EitherMask
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Schema/Mask/EitherMask
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Schema/Mask/EitherMask
 ---
 
 Class: GraphQL::Schema::Mask::EitherMask < Object

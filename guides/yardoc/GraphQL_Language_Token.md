@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::Language::Token
-url: http://www.rubydoc.info/gems/graphql/GraphQL/Language/Token
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/Language/Token
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Language/Token
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Language/Token
 ---
 
 Class: GraphQL::Language::Token < Object

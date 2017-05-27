@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::Analysis::QueryComplexity::TypeComplexity
-url: http://www.rubydoc.info/gems/graphql/GraphQL/Analysis/QueryComplexity/TypeComplexity
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/Analysis/QueryComplexity/TypeComplexity
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Analysis/QueryComplexity/TypeComplexity
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Analysis/QueryComplexity/TypeComplexity
 ---
 
 Class: GraphQL::Analysis::QueryComplexity::TypeComplexity < Object

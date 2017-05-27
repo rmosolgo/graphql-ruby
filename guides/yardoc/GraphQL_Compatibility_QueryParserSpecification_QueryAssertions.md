@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::Compatibility::QueryParserSpecification::QueryAssertions
-url: http://www.rubydoc.info/gems/graphql/GraphQL/Compatibility/QueryParserSpecification/QueryAssertions
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/Compatibility/QueryParserSpecification/QueryAssertions
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Compatibility/QueryParserSpecification/QueryAssertions
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Compatibility/QueryParserSpecification/QueryAssertions
 ---
 
 Module: GraphQL::Compatibility::QueryParserSpecification::QueryAsser...

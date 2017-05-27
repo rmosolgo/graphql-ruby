@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::Execution::Multiplex
-url: http://www.rubydoc.info/gems/graphql/GraphQL/Execution/Multiplex
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/Execution/Multiplex
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Execution/Multiplex
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Execution/Multiplex
 ---
 
 Class: GraphQL::Execution::Multiplex < Object

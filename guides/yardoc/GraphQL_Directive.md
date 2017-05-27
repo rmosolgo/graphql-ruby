@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::Directive
-url: http://www.rubydoc.info/gems/graphql/GraphQL/Directive
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/Directive
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Directive
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Directive
 ---
 
 Class: GraphQL::Directive < Object

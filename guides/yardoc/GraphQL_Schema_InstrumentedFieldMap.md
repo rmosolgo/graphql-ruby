@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::Schema::InstrumentedFieldMap
-url: http://www.rubydoc.info/gems/graphql/GraphQL/Schema/InstrumentedFieldMap
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/Schema/InstrumentedFieldMap
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Schema/InstrumentedFieldMap
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Schema/InstrumentedFieldMap
 ---
 
 Class: GraphQL::Schema::InstrumentedFieldMap < Object

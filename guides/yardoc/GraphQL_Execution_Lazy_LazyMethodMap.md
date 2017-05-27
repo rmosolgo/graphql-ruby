@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::Execution::Lazy::LazyMethodMap
-url: http://www.rubydoc.info/gems/graphql/GraphQL/Execution/Lazy/LazyMethodMap
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/Execution/Lazy/LazyMethodMap
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Execution/Lazy/LazyMethodMap
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Execution/Lazy/LazyMethodMap
 ---
 
 Class: GraphQL::Execution::Lazy::LazyMethodMap < Object

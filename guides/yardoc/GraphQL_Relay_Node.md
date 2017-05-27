@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::Relay::Node
-url: http://www.rubydoc.info/gems/graphql/GraphQL/Relay/Node
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/Relay/Node
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Relay/Node
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Relay/Node
 ---
 
 Module: GraphQL::Relay::Node

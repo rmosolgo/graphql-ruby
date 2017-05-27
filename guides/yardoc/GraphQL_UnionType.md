@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::UnionType
-url: http://www.rubydoc.info/gems/graphql/GraphQL/UnionType
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/UnionType
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/UnionType
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/UnionType
 ---
 
 Class: GraphQL::UnionType < GraphQL::BaseType

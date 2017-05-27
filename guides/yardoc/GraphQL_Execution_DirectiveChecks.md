@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::Execution::DirectiveChecks
-url: http://www.rubydoc.info/gems/graphql/GraphQL/Execution/DirectiveChecks
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/Execution/DirectiveChecks
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Execution/DirectiveChecks
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Execution/DirectiveChecks
 ---
 
 Module: GraphQL::Execution::DirectiveChecks

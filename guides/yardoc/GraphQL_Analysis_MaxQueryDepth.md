@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::Analysis::MaxQueryDepth
-url: http://www.rubydoc.info/gems/graphql/GraphQL/Analysis/MaxQueryDepth
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/Analysis/MaxQueryDepth
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Analysis/MaxQueryDepth
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Analysis/MaxQueryDepth
 ---
 
 Class: GraphQL::Analysis::MaxQueryDepth < GraphQL::Analysis::QueryDepth

@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::Relay::RelationConnection
-url: http://www.rubydoc.info/gems/graphql/GraphQL/Relay/RelationConnection
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/Relay/RelationConnection
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Relay/RelationConnection
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Relay/RelationConnection
 ---
 
 Class: GraphQL::Relay::RelationConnection < GraphQL::Relay::BaseConn...

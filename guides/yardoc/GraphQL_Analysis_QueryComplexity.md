@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::Analysis::QueryComplexity
-url: http://www.rubydoc.info/gems/graphql/GraphQL/Analysis/QueryComplexity
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/Analysis/QueryComplexity
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Analysis/QueryComplexity
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Analysis/QueryComplexity
 ---
 
 Class: GraphQL::Analysis::QueryComplexity < Object

@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::Schema::Validation
-url: http://www.rubydoc.info/gems/graphql/GraphQL/Schema/Validation
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/Schema/Validation
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Schema/Validation
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Schema/Validation
 ---
 
 Class: GraphQL::Schema::Validation < Object

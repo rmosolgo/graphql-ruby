@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::Relay::RangeAdd
-url: http://www.rubydoc.info/gems/graphql/GraphQL/Relay/RangeAdd
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/Relay/RangeAdd
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Relay/RangeAdd
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Relay/RangeAdd
 ---
 
 Class: GraphQL::Relay::RangeAdd < Object

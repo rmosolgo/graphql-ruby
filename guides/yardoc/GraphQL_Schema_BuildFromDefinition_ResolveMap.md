@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::Schema::BuildFromDefinition::ResolveMap
-url: http://www.rubydoc.info/gems/graphql/GraphQL/Schema/BuildFromDefinition/ResolveMap
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/Schema/BuildFromDefinition/ResolveMap
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Schema/BuildFromDefinition/ResolveMap
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Schema/BuildFromDefinition/ResolveMap
 ---
 
 Class: GraphQL::Schema::BuildFromDefinition::ResolveMap < Object

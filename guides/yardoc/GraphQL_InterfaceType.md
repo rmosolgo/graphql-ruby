@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::InterfaceType
-url: http://www.rubydoc.info/gems/graphql/GraphQL/InterfaceType
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/InterfaceType
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/InterfaceType
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/InterfaceType
 ---
 
 Class: GraphQL::InterfaceType < GraphQL::BaseType

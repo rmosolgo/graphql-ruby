@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::StaticValidation::VariablesAreUsedAndDefined
-url: http://www.rubydoc.info/gems/graphql/GraphQL/StaticValidation/VariablesAreUsedAndDefined
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/StaticValidation/VariablesAreUsedAndDefined
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/StaticValidation/VariablesAreUsedAndDefined
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/StaticValidation/VariablesAreUsedAndDefined
 ---
 
 Class: GraphQL::StaticValidation::VariablesAreUsedAndDefined < Object

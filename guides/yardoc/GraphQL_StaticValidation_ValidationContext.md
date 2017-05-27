@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::StaticValidation::ValidationContext
-url: http://www.rubydoc.info/gems/graphql/GraphQL/StaticValidation/ValidationContext
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/StaticValidation/ValidationContext
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/StaticValidation/ValidationContext
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/StaticValidation/ValidationContext
 ---
 
 Class: GraphQL::StaticValidation::ValidationContext < Object

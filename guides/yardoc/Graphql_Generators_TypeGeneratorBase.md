@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: Graphql::Generators::TypeGeneratorBase
-url: http://www.rubydoc.info/gems/graphql/Graphql/Generators/TypeGeneratorBase
-rubydoc_url: http://www.rubydoc.info/gems/graphql/Graphql/Generators/TypeGeneratorBase
+url: http://www.rubydoc.info/gems/graphql/1.6.0/Graphql/Generators/TypeGeneratorBase
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/Graphql/Generators/TypeGeneratorBase
 ---
 
 Class: Graphql::Generators::TypeGeneratorBase < Rails::Generators::Base

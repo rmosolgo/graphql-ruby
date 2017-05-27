@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::Field::Resolve
-url: http://www.rubydoc.info/gems/graphql/GraphQL/Field/Resolve
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/Field/Resolve
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Field/Resolve
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Field/Resolve
 ---
 
 Module: GraphQL::Field::Resolve

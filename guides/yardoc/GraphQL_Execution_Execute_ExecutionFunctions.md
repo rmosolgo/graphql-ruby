@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::Execution::Execute::ExecutionFunctions
-url: http://www.rubydoc.info/gems/graphql/GraphQL/Execution/Execute/ExecutionFunctions
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/Execution/Execute/ExecutionFunctions
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Execution/Execute/ExecutionFunctions
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Execution/Execute/ExecutionFunctions
 ---
 
 Module: GraphQL::Execution::Execute::ExecutionFunctions

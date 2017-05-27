@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::Schema::PossibleTypes
-url: http://www.rubydoc.info/gems/graphql/GraphQL/Schema/PossibleTypes
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/Schema/PossibleTypes
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Schema/PossibleTypes
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Schema/PossibleTypes
 ---
 
 Class: GraphQL::Schema::PossibleTypes < Object

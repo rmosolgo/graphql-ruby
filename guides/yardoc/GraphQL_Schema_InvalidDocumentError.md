@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::Schema::InvalidDocumentError
-url: http://www.rubydoc.info/gems/graphql/GraphQL/Schema/InvalidDocumentError
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/Schema/InvalidDocumentError
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Schema/InvalidDocumentError
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Schema/InvalidDocumentError
 ---
 
 Class: GraphQL::Schema::InvalidDocumentError < GraphQL::Error

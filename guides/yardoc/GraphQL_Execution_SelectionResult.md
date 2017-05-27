@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::Execution::SelectionResult
-url: http://www.rubydoc.info/gems/graphql/GraphQL/Execution/SelectionResult
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/Execution/SelectionResult
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Execution/SelectionResult
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Execution/SelectionResult
 ---
 
 Class: GraphQL::Execution::SelectionResult < Object

@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::Language::Nodes::InlineFragment
-url: http://www.rubydoc.info/gems/graphql/GraphQL/Language/Nodes/InlineFragment
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/Language/Nodes/InlineFragment
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Language/Nodes/InlineFragment
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Language/Nodes/InlineFragment
 ---
 
 Class: GraphQL::Language::Nodes::InlineFragment < GraphQL::Language:...

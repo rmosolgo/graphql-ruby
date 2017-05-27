@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::Language::Nodes::VariableIdentifier
-url: http://www.rubydoc.info/gems/graphql/GraphQL/Language/Nodes/VariableIdentifier
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/Language/Nodes/VariableIdentifier
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Language/Nodes/VariableIdentifier
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Language/Nodes/VariableIdentifier
 ---
 
 Class: GraphQL::Language::Nodes::VariableIdentifier < GraphQL::Langu...

@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::Language::Nodes::InputObject
-url: http://www.rubydoc.info/gems/graphql/GraphQL/Language/Nodes/InputObject
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/Language/Nodes/InputObject
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Language/Nodes/InputObject
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Language/Nodes/InputObject
 ---
 
 Class: GraphQL::Language::Nodes::InputObject < GraphQL::Language::No...

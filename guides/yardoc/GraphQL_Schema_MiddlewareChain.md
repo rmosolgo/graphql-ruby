@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::Schema::MiddlewareChain
-url: http://www.rubydoc.info/gems/graphql/GraphQL/Schema/MiddlewareChain
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/Schema/MiddlewareChain
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Schema/MiddlewareChain
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Schema/MiddlewareChain
 ---
 
 Class: GraphQL::Schema::MiddlewareChain < Object

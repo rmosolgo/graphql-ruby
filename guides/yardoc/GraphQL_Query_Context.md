@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::Query::Context
-url: http://www.rubydoc.info/gems/graphql/GraphQL/Query/Context
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/Query/Context
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Query/Context
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Query/Context
 ---
 
 Class: GraphQL::Query::Context < Object

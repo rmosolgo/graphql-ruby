@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::RakeTask
-url: http://www.rubydoc.info/gems/graphql/GraphQL/RakeTask
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/RakeTask
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/RakeTask
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/RakeTask
 ---
 
 Class: GraphQL::RakeTask < Object

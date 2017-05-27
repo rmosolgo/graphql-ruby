@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::Analysis
-url: http://www.rubydoc.info/gems/graphql/GraphQL/Analysis
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/Analysis
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Analysis
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Analysis
 ---
 
 Module: GraphQL::Analysis

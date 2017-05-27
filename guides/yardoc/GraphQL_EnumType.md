@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::EnumType
-url: http://www.rubydoc.info/gems/graphql/GraphQL/EnumType
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/EnumType
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/EnumType
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/EnumType
 ---
 
 Class: GraphQL::EnumType < GraphQL::BaseType

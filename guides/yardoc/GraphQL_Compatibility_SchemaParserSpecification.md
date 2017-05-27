@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::Compatibility::SchemaParserSpecification
-url: http://www.rubydoc.info/gems/graphql/GraphQL/Compatibility/SchemaParserSpecification
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/Compatibility/SchemaParserSpecification
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Compatibility/SchemaParserSpecification
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Compatibility/SchemaParserSpecification
 ---
 
 Module: GraphQL::Compatibility::SchemaParserSpecification

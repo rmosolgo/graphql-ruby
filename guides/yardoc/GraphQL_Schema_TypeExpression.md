@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::Schema::TypeExpression
-url: http://www.rubydoc.info/gems/graphql/GraphQL/Schema/TypeExpression
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/Schema/TypeExpression
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Schema/TypeExpression
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Schema/TypeExpression
 ---
 
 Module: GraphQL::Schema::TypeExpression

@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: Graphql::Generators::UnionGenerator
-url: http://www.rubydoc.info/gems/graphql/Graphql/Generators/UnionGenerator
-rubydoc_url: http://www.rubydoc.info/gems/graphql/Graphql/Generators/UnionGenerator
+url: http://www.rubydoc.info/gems/graphql/1.6.0/Graphql/Generators/UnionGenerator
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/Graphql/Generators/UnionGenerator
 ---
 
 Class: Graphql::Generators::UnionGenerator < Graphql::Generators::Ty...

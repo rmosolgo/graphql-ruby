@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::Define::InstanceDefinable
-url: http://www.rubydoc.info/gems/graphql/GraphQL/Define/InstanceDefinable
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/Define/InstanceDefinable
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Define/InstanceDefinable
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Define/InstanceDefinable
 ---
 
 Module: GraphQL::Define::InstanceDefinable

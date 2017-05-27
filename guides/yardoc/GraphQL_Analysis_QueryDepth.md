@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::Analysis::QueryDepth
-url: http://www.rubydoc.info/gems/graphql/GraphQL/Analysis/QueryDepth
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/Analysis/QueryDepth
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Analysis/QueryDepth
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Analysis/QueryDepth
 ---
 
 Class: GraphQL::Analysis::QueryDepth < Object

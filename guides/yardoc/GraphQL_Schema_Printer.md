@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::Schema::Printer
-url: http://www.rubydoc.info/gems/graphql/GraphQL/Schema/Printer
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/Schema/Printer
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Schema/Printer
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Schema/Printer
 ---
 
 Class: GraphQL::Schema::Printer < Object

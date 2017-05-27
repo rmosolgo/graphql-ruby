@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::Schema
-url: http://www.rubydoc.info/gems/graphql/GraphQL/Schema
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/Schema
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Schema
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Schema
 ---
 
 Class: GraphQL::Schema < Object

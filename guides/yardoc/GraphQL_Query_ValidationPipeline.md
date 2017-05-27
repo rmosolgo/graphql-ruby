@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::Query::ValidationPipeline
-url: http://www.rubydoc.info/gems/graphql/GraphQL/Query/ValidationPipeline
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/Query/ValidationPipeline
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Query/ValidationPipeline
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Query/ValidationPipeline
 ---
 
 Class: GraphQL::Query::ValidationPipeline < Object

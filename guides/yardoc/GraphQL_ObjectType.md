@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::ObjectType
-url: http://www.rubydoc.info/gems/graphql/GraphQL/ObjectType
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/ObjectType
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/ObjectType
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/ObjectType
 ---
 
 Class: GraphQL::ObjectType < GraphQL::BaseType

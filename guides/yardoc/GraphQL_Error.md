@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::Error
-url: http://www.rubydoc.info/gems/graphql/GraphQL/Error
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/Error
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Error
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Error
 ---
 
 Class: GraphQL::Error < StandardError

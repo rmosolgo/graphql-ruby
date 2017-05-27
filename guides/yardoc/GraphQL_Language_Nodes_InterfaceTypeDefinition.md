@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::Language::Nodes::InterfaceTypeDefinition
-url: http://www.rubydoc.info/gems/graphql/GraphQL/Language/Nodes/InterfaceTypeDefinition
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/Language/Nodes/InterfaceTypeDefinition
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Language/Nodes/InterfaceTypeDefinition
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Language/Nodes/InterfaceTypeDefinition
 ---
 
 Class: GraphQL::Language::Nodes::InterfaceTypeDefinition < GraphQL::...

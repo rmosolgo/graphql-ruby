@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::Schema::RescueMiddleware
-url: http://www.rubydoc.info/gems/graphql/GraphQL/Schema/RescueMiddleware
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/Schema/RescueMiddleware
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Schema/RescueMiddleware
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Schema/RescueMiddleware
 ---
 
 Class: GraphQL::Schema::RescueMiddleware < Object

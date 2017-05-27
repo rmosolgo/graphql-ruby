@@ -2,8 +2,8 @@
 layout: doc_stub
 search: true
 title: GraphQL::Schema::Printer::TypeKindPrinters::InterfacePrinter
-url: http://www.rubydoc.info/gems/graphql/GraphQL/Schema/Printer/TypeKindPrinters/InterfacePrinter
-rubydoc_url: http://www.rubydoc.info/gems/graphql/GraphQL/Schema/Printer/TypeKindPrinters/InterfacePrinter
+url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Schema/Printer/TypeKindPrinters/InterfacePrinter
+rubydoc_url: http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Schema/Printer/TypeKindPrinters/InterfacePrinter
 ---
 
 Class: GraphQL::Schema::Printer::TypeKindPrinters::InterfacePrinter ...
