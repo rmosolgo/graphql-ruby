@@ -149,8 +149,8 @@ describe GraphQL::InternalRepresentation::Rewrite do
       assert_equal habitats_selection, average_weight_selection.parent
     end
 
-    it "trackes field return type" do
-      doc = rewrite_result["getPlant"]
+    it "tracks field return type" do
+      doc = rewrite_result.operation_definitions["getPlant"]
 
       assert plant_selection = doc.typed_children[schema.types["Query"]]["plant"]
       assert_equal "Plant", plant_selection.return_type.to_s
