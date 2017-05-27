@@ -62,7 +62,12 @@ module GraphQL
       :default_mask,
       :cursor_encoder,
       directives: ->(schema, directives) { schema.directives = directives.reduce({}) { |m, d| m[d.name] = d; m  }},
-      instrument: ->(schema, type, instrumenter) { schema.instrumenters[type] << instrumenter },
+      instrument: ->(schema, type, instrumenter, after_built_ins: false) {
+        if type == :field && after_built_ins
+          type = :field_after_built_ins
+        end
+        schema.instrumenters[type] << instrumenter
+      },
       query_analyzer: ->(schema, analyzer) { schema.query_analyzers << analyzer },
       multiplex_analyzer: ->(schema, analyzer) { schema.multiplex_analyzers << analyzer },
       middleware: ->(schema, middleware) { schema.middleware << middleware },
@@ -244,11 +249,9 @@ module GraphQL
     # @param context [Hash] Multiplex-level context
     # @return [Array<Hash>] One result for each query in the input
     def multiplex(*args)
-      if @definition_error
-        raise @definition_error
-      else
+      with_definition_error_check {
         GraphQL::Execution::Multiplex.run_all(self, *args)
-      end
+      }
     end
 
     # Resolve field named `field_name` for type `parent_type`.
@@ -256,17 +259,19 @@ module GraphQL
     # @see [GraphQL::Schema::Warden] Restricted access to members of a schema
     # @return [GraphQL::Field, nil] The field named `field_name` on `parent_type`
     def get_field(parent_type, field_name)
-      defined_field = @instrumented_field_map.get(parent_type.name, field_name)
-      if defined_field
-        defined_field
-      elsif field_name == "__typename"
-        GraphQL::Introspection::TypenameField
-      elsif field_name == "__schema" && parent_type == query
-        GraphQL::Introspection::SchemaField
-      elsif field_name == "__type" && parent_type == query
-        GraphQL::Introspection::TypeByNameField
-      else
-        nil
+      with_definition_error_check do
+        defined_field = @instrumented_field_map.get(parent_type.name, field_name)
+        if defined_field
+          defined_field
+        elsif field_name == "__typename"
+          GraphQL::Introspection::TypenameField
+        elsif field_name == "__schema" && parent_type == query
+          GraphQL::Introspection::SchemaField
+        elsif field_name == "__type" && parent_type == query
+          GraphQL::Introspection::TypeByNameField
+        else
+          nil
+        end
       end
     end
 
@@ -489,20 +494,32 @@ module GraphQL
 
     private
 
+    # Wrap Relay-related objects in wrappers
+    # @api private
+    BUILT_IN_INSTRUMENTERS = [
+      GraphQL::Relay::ConnectionInstrumentation,
+      GraphQL::Relay::Mutation::Instrumentation,
+    ]
+
     # Apply instrumentation to fields. Relay instrumentation is applied last
     # so that user-provided instrumentation can wrap user-provided resolve functions,
     # _then_ Relay helpers can wrap the returned objects.
     def build_instrumented_field_map
-      all_instrumenters = @instrumenters[:field] + [
-        GraphQL::Relay::ConnectionInstrumentation,
-        GraphQL::Relay::Mutation::Instrumentation,
-      ]
+      all_instrumenters = @instrumenters[:field] + BUILT_IN_INSTRUMENTERS + @instrumenters[:field_after_built_ins]
       @instrumented_field_map = InstrumentedFieldMap.new(self, all_instrumenters)
     end
 
     def build_types_map
       all_types = orphan_types + [query, mutation, subscription, GraphQL::Introspection::SchemaType]
       @types = GraphQL::Schema::ReduceTypes.reduce(all_types.compact)
+    end
+
+    def with_definition_error_check
+      if @definition_error
+        raise @definition_error
+      else
+        yield
+      end
     end
   end
 end

@@ -309,6 +309,26 @@ module StarWars
     field :introduceShipFunction, IntroduceShipFunctionMutation.field
   end
 
+  class ClassNameRecorder
+    def initialize(context_key)
+      @context_key = context_key
+    end
+
+    def instrument(type, field)
+      inner_resolve = field.resolve_proc
+      key = @context_key
+      field.redefine {
+        resolve ->(o, a, c) {
+          res = inner_resolve.call(o, a, c)
+          if c[key]
+            c[key] << res.class.name
+          end
+          res
+        }
+      }
+    end
+  end
+
   Schema = GraphQL::Schema.define do
     query(QueryType)
     mutation(MutationType)
@@ -337,5 +357,8 @@ module StarWars
     end
 
     lazy_resolve(LazyWrapper, :value)
+
+    instrument(:field, ClassNameRecorder.new(:before_built_ins))
+    instrument(:field, ClassNameRecorder.new(:after_built_ins), after_built_ins: true)
   end
 end
