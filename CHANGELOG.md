@@ -8,6 +8,18 @@
 
 ### Bug fixes
 
+## 1.5.14 (17 May 2017)
+
+### New features
+
+- `UniqueWithinType` Relay ID generator supports `-` in the ID #742
+- `assign_metadata_key` assigns `true` when the definition method is called without arguments #724
+- Improved lexer performance #737
+
+### Bug fixes
+
+- Assign proper `parent` when a `connection` resolve returns a promise #736
+
 ## 1.5.13 (11 May 2017)
 
 - Fix raising `ExecutionError` inside mutation resolve functions (it nullifies the field) #722
