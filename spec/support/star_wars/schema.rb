@@ -164,7 +164,7 @@ module StarWars
       resolve ->(obj, args, ctx) {
         all_bases = SequelBase.where(faction_id: obj.id)
         if args[:nameIncludes]
-          all_bases = all_bases.where("name LIKE ?", "%#{args[:nameIncludes]}%")
+          all_bases = all_bases.where(Sequel.like(:name, "%#{args[:nameIncludes]}%"))
         end
         all_bases
       }
