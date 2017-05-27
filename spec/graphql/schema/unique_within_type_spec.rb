@@ -27,11 +27,18 @@ describe GraphQL::Schema::UniqueWithinType do
       assert_equal("250cda0e-a89d-41cf-99e1-2872d89f1100", id)
     end
 
-    it "raises an error if you try and use a reserved character in the ID" do
+    it "allows using the separator in the ID" do
+      global_id = GraphQL::Schema::UniqueWithinType.encode("SomeUUIDType", "250cda0e-a89d-41cf-99e1-2872d89f1100")
+      type_name, id = GraphQL::Schema::UniqueWithinType.decode(global_id)
+      assert_equal("SomeUUIDType", type_name)
+      assert_equal("250cda0e-a89d-41cf-99e1-2872d89f1100", id)
+    end
+
+    it "raises an error if you try and use a reserved character in the typename" do
       err = assert_raises(RuntimeError) {
-        GraphQL::Schema::UniqueWithinType.encode("Best-Thing", "234")
+        GraphQL::Schema::UniqueWithinType.encode("Best-Thing", "234-567")
       }
-      assert_includes err.message, "encode(Best-Thing, 234) contains reserved characters `-`"
+      assert_includes err.message, "encode(Best-Thing, 234-567) contains reserved characters `-` in the type name"
     end
   end
 end
