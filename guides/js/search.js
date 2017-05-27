@@ -183,12 +183,13 @@ var GraphQLRubySearch = {
     return indexPromise
   },
 
+  // Return true if we actually highlighted something
   _moveHighlight: function(diff) {
     var allResults = document.querySelectorAll(".search-result")
     var highlightClass = "highlight-search-result"
     if (!allResults.length) {
       // No search results to highlight
-      return
+      return false
     }
     var highlightedResult = document.querySelector("." + highlightClass)
     var nextHighlightedResult
@@ -211,12 +212,16 @@ var GraphQLRubySearch = {
     }
     nextHighlightedResult.classList.add(highlightClass)
     nextHighlightedResult.focus()
+    return true
   }
 }
 
 document.addEventListener("keydown", function(ev) {
   var diff = ev.keyCode == 38 ? -1 : (ev.keyCode == 40 ? 1 : 0)
   if (diff) {
-    GraphQLRubySearch._moveHighlight(diff)
+    var highlighted = GraphQLRubySearch._moveHighlight(diff)
+    if (highlighted) {
+      ev.preventDefault()
+    }
   }
 })
