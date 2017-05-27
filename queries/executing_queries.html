@@ -2,98 +2,64 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>GraphQL Ruby - Queries — Executing Queries</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>GraphQL - Executing Queries</title>
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400" rel="stylesheet" />
     <link rel="stylesheet" href="/css/main.css">
     <link rel="icon" href="/graphql-ruby-icon.png">
   </head>
-  <body class="hack">
-    <script>
-      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-      ga('create', 'UA-19264608-11', 'auto');
-      ga('send', 'pageview');
-    </script>
-    <div class="container">
-      <div style="display: flex; justify-content: center;">
-<strong style="white-space: pre; line-height: 1.1em; display: inline-block; font-size: 8px;">
-    ▄██████▄     ▄████████    ▄████████    ▄███████▄    ▄█    █▄    ████████▄    ▄█
-   ███    ███   ███    ███   ███    ███   ███    ███   ███    ███   ███    ███  ███
-   ███    █▀    ███    ███   ███    ███   ███    ███   ███    ███   ███    ███  ███
-  ▄███         ▄███▄▄▄▄██▀   ███    ███   ███    ███  ▄███▄▄▄▄███▄▄ ███    ███  ███
- ▀▀███ ████▄  ▀▀███▀▀▀▀▀   ▀███████████ ▀█████████▀  ▀▀███▀▀▀▀███▀  ███    ███  ███
-   ███    ███ ▀███████████   ███    ███   ███          ███    ███   ███    ███  ███
-   ███    ███   ███    ███   ███    ███   ███          ███    ███   ███  ▀ ███  ███▌    ▄
-   ████████▀    ███    ███   ███    █▀   ▄████▀        ███    █▀     ▀██████▀▄█ █████▄▄██
-                ███    ███                                                      ▀
-</strong>
+  <body>
+    <div class="header">
+      <div class="nav">
+        <a href="/" class="img-link">
+          <img src="/graphql-ruby.png" />
+        </a>
+        <span>GraphQL Ruby</span>
+        <a href="/getting_started">Getting Started</a>
+        <a href="/guides">Guides</a>
+        <a href="http://www.rubydoc.info/github/rmosolgo/graphql-ruby">API Docs</a>
+        <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
+        <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+        <input
+          class="search-input"
+          onkeyup="GraphQLRubySearch.run(this)"
+          type="text"
+          placeholder="Search the docs..."
+        />
       </div>
-      <p style="text-align: center;">A GraphQL server implementation for Ruby</p>
-
-      <div class="grid -between">
-        <div class="cell -3of12">
-          <h3>Guides</h3>
-          <ul>
-            <li><a href="/">Getting Started</a></li>
-            <li>
-              <strong>Schema</strong>
-              <ul>
-                <li><a href="/schema/types_and_fields">Types and Fields</a></li>
-                <li><a href="/schema/generators">Generators</a></li>
-                <li><a href="/schema/configuration_options">Configuration Options</a></li>
-                <li><a href="/schema/code_reuse">Code Reuse</a></li>
-                <li><a href="/schema/instrumentation">Instrumentation</a></li>
-                <li><a href="/schema/lazy_execution">Lazy Execution</a></li>
-                <li><a href="/schema/limiting_visibility">Limiting Visibility</a></li>
-                <li><a href="/schema/testing">Testing</a></li>
-              </ul>
-            </li>
-            <li>
-              <strong>Queries</strong>
-              <ul>
-                <li><a href="/queries/executing_queries">Executing Queries</a></li>
-                <li><a href="/queries/authorization">Authorization</a></li>
-                <li><a href="/queries/security">Security</a></li>
-                <li><a href="/queries/error_handling">Error Handling</a></li>
-                <li><a href="/queries/phases_of_execution">Phases of Execution</a></li>
-              </ul>
-            </li>
-            <li>
-              <strong>Relay</strong>
-              <ul>
-                <li><a href="/relay/object_identification">Object Identification</a></li>
-                <li><a href="/relay/connections">Connections</a></li>
-                <li><a href="/relay/mutations">Mutations</a></li>
-              </ul>
-            </li>
-            <li>
-              <strong>GraphQL::Pro</strong>
-              <ul>
-                <li><a href="http://graphql.pro">GraphQL::Pro Home</a></li>
-                <li><a href="/pro/installation">Installation & Updates</a></li>
-                <li><a href="/pro/authorization">Authorization</a></li>
-                <li><a href="/pro/persisted_queries">Persisted Queries</a></li>
-                <li><a href="/pro/monitoring">Monitoring</a></li>
-                <li><a href="/pro/cursors">Stable Cursors<br/>for ActiveRecord</a></li>
-                <li><a href="/pro/encoders">Encrypted, Versioned<br/>Cursors and Ids</a></li>
-              </ul>
-            </li>
-            <li><a href="/related_projects">Related Projects</a></li>
-          </ul>
-          <h3><a href="https://tinyletter.com/graphql-ruby">GraphQL Ruby Newsletter</a></h3>
-          <h3><a href="http://www.rubydoc.info/github/rmosolgo/graphql-ruby">API Docs</a></h3>
-          <h3><a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a></h3>
-        </div>
-        <div class="cell -9of12">
-          <h1 class="guide-header">Queries — Executing Queries</h1>
-          <p>You can execute queries with your <a href="http://www.rubydoc.info/gems/graphql/GraphQL/Schema" target="_blank"><code>GraphQL::Schema</code></a> at get a Ruby Hash as a result. For example, to execute a query from a string:</p>
+      <div id="search-results"></div>
+    </div>
+    <div class="container">
+      <p class="breadcrumb">
+  <a href="/">GraphQL</a>
+  &raquo; <a href="/guides">Guides</a>
+   &raquo; Queries
+  &raquo; Executing Queries
+</p>
+<h1 class="guide-header">Executing Queries</h1>
+<div class="guide-container">
+  <p>You can execute queries with your <a href="http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Schema" target="_blank" title="API docs for GraphQL::Schema"><code>GraphQL::Schema</code></a> at get a Ruby Hash as a result. For example, to execute a query from a string:</p>
 
 <div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">query_string</span> <span class="o">=</span> <span class="s2">"{ ... }"</span>
 <span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="n">query_string</span><span class="p">)</span>
 <span class="c1"># {</span>
 <span class="c1">#   "data" =&gt; { ... }</span>
 <span class="c1"># }</span>
+</code></pre>
+</div>
+
+<p>Or, you can execute multiple queries at once:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">MySchema</span><span class="p">.</span><span class="nf">multiplex</span><span class="p">([</span>
+  <span class="p">{</span><span class="ss">query: </span><span class="n">query_string_1</span><span class="p">},</span>
+  <span class="p">{</span><span class="ss">query: </span><span class="n">query_string_2</span><span class="p">},</span>
+  <span class="p">{</span><span class="ss">query: </span><span class="n">query_string_3</span><span class="p">},</span>
+<span class="p">])</span>
+<span class="c1"># [</span>
+<span class="c1">#   { "data" =&gt; { ... } },</span>
+<span class="c1">#   { "data" =&gt; { ... } },</span>
+<span class="c1">#   { "data" =&gt; { ... } },</span>
+<span class="c1"># ]</span>
 </code></pre>
 </div>
 
@@ -104,12 +70,12 @@
   <li><code class="highlighter-rouge">context:</code> accepts application-specific data to pass to <code class="highlighter-rouge">resolve</code> functions</li>
   <li><code class="highlighter-rouge">root_value:</code> will be provided to root-level <code class="highlighter-rouge">resolve</code> functions as <code class="highlighter-rouge">obj</code></li>
   <li><code class="highlighter-rouge">operation_name:</code> picks a <a href="http://graphql.org/learn/queries/#operation-name">named operation</a> from the incoming string to execute</li>
-  <li><code class="highlighter-rouge">document:</code> accepts an already-parsed query (instead of a string), see <a href="http://www.rubydoc.info/gems/graphql/GraphQL#parse-class_method" target="_blank"><code>GraphQL.parse</code></a></li>
+  <li><code class="highlighter-rouge">document:</code> accepts an already-parsed query (instead of a string), see <a href="http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL#parse-class_method" target="_blank" title="API docs for GraphQL.parse"><code>GraphQL.parse</code></a></li>
   <li><code class="highlighter-rouge">validate:</code> may be <code class="highlighter-rouge">false</code> to skip static validation for this query</li>
   <li><code class="highlighter-rouge">max_depth:</code> and <code class="highlighter-rouge">max_complexity:</code> may override schema-level values</li>
 </ul>
 
-<p>Some of these options are described in more detail below, see <a href="http://www.rubydoc.info/gems/graphql/GraphQL/Query#initialize-instance_method" target="_blank"><code>GraphQL::Query#initialize</code></a> for more information.</p>
+<p>Some of these options are described in more detail below, see <a href="http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Query#initialize-instance_method" target="_blank" title="API docs for GraphQL::Query#initialize"><code>GraphQL::Query#initialize</code></a> for more information.</p>
 
 <h2 id="variables">Variables</h2>
 
@@ -130,7 +96,7 @@
 </code></pre>
 </div>
 
-<p>If the variable is a <a href="http://www.rubydoc.info/gems/graphql/GraphQL/InputObjectType" target="_blank"><code>GraphQL::InputObjectType</code></a>, you can provide a nested hash, for example:</p>
+<p>If the variable is a <a href="http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/InputObjectType" target="_blank" title="API docs for GraphQL::InputObjectType"><code>GraphQL::InputObjectType</code></a>, you can provide a nested hash, for example:</p>
 
 <div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">query_string</span> <span class="o">=</span> <span class="s2">"
 mutation createPost($postParams: PostInput!, $createdById: ID!){
@@ -184,7 +150,7 @@ mutation createPost($postParams: PostInput!, $createdById: ID!){
 </code></pre>
 </div>
 
-<p>Note that <code class="highlighter-rouge">ctx</code> is <em>not</em> the hash that you passed it. It’s an instance of <a href="http://www.rubydoc.info/gems/graphql/GraphQL/Query/Context" target="_blank"><code>GraphQL::Query::Context</code></a>, but it delegates <code class="highlighter-rouge">#[](key)</code> to the hash you provide.</p>
+<p>Note that <code class="highlighter-rouge">ctx</code> is <em>not</em> the hash that you passed it. It’s an instance of <a href="http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Query/Context" target="_blank" title="API docs for GraphQL::Query::Context"><code>GraphQL::Query::Context</code></a>, but it delegates <code class="highlighter-rouge">#[](key)</code> to the hash you provide.</p>
 
 <h2 id="root-value">Root Value</h2>
 
@@ -209,27 +175,33 @@ mutation createPost($postParams: PostInput!, $createdById: ID!){
 </code></pre>
 </div>
 
-<p><a href="http://www.rubydoc.info/gems/graphql/GraphQL/Relay/Mutation" target="_blank"><code>GraphQL::Relay::Mutation</code></a> fields will also receive <code class="highlighter-rouge">root_value:</code> as <code class="highlighter-rouge">obj</code> (assuming they’re attached directly to your <code class="highlighter-rouge">MutationType</code>).</p>
+<p><a href="http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Relay/Mutation" target="_blank" title="API docs for GraphQL::Relay::Mutation"><code>GraphQL::Relay::Mutation</code></a> fields will also receive <code class="highlighter-rouge">root_value:</code> as <code class="highlighter-rouge">obj</code> (assuming they’re attached directly to your <code class="highlighter-rouge">MutationType</code>).</p>
 
-        </div>
-      </div>
+</div>
+<p class="guide-footer">
+  Suggestion, improvement, or correction?
+  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/queries/executing_queries.md">Edit this file</a> or
+  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: Executing Queries">report an issue</a>.
+</p>
+<script>
+  // Find headers with IDs and wrap their text in `<a href=></a>`
+  // That way people can easily copy the link.
+  var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+  var header, idText, headerLink;
+  for (var i = 0; i < headers.length; i++) {
+    header = headers[i];
+    idText = header.id;
+    if (idText) {
+      headerLink = document.createElement("a");
+      headerLink.href = "#" + idText;
+      headerLink.textContent = header.textContent;
+      header.textContent = "";
+      header.appendChild(headerLink);
+    }
+  }
+</script>
+
     </div>
-    <script>
-      // Find headers with IDs and wrap their text in `<a href=></a>`
-      // That way people can easily copy the link.
-      var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
-      var header, idText, headerLink;
-      for (var i = 0; i < headers.length; i++) {
-        header = headers[i];
-        idText = header.id;
-        if (idText) {
-          headerLink = document.createElement("a");
-          headerLink.href = "#" + idText;
-          headerLink.textContent = header.textContent;
-          header.textContent = "";
-          header.appendChild(headerLink);
-        }
-      }
-    </script>
+    <script src="/js/search.js"></script>
   </body>
 </html>

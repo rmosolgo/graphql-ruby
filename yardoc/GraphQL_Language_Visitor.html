@@ -1,0 +1,26 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta http-equiv="refresh" content="1;url=http://www.rubydoc.info/gems/graphql/GraphQL/Language/Visitor" />
+  </head>
+  <body>
+    <p>Class: GraphQL::Language::Visitor &lt; Object
+Depth-first traversal through the tree, calling hooks at each stop. 
+Examples:
+# Create a visitor, add hooks, then search a document
+total_field_count = 0
+visitor = GraphQL::Language::Visitor.new(document)
+# Whenever you find a field, increment the field count:
+visitor[GraphQL::Language::Nodes::Field] « -&gt;(node) { total_field_count += 1 }
+# When we finish, print the field count:
+visitor[GraphQL::Language::Nodes::Document].leave « -&gt;(node) { p total_field_count }
+visitor.visit
+# =&gt; 6
+Class methods:
+apply_hooks
+Instance methods:
+[], begin_visit, end_visit, initialize, visit, visit_node</p>
+
+
+  </body>
+</html>

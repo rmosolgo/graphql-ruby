@@ -2,92 +2,43 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>GraphQL Ruby - Queries — Error Handling</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>GraphQL - Error Handling</title>
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400" rel="stylesheet" />
     <link rel="stylesheet" href="/css/main.css">
     <link rel="icon" href="/graphql-ruby-icon.png">
   </head>
-  <body class="hack">
-    <script>
-      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-      ga('create', 'UA-19264608-11', 'auto');
-      ga('send', 'pageview');
-    </script>
-    <div class="container">
-      <div style="display: flex; justify-content: center;">
-<strong style="white-space: pre; line-height: 1.1em; display: inline-block; font-size: 8px;">
-    ▄██████▄     ▄████████    ▄████████    ▄███████▄    ▄█    █▄    ████████▄    ▄█
-   ███    ███   ███    ███   ███    ███   ███    ███   ███    ███   ███    ███  ███
-   ███    █▀    ███    ███   ███    ███   ███    ███   ███    ███   ███    ███  ███
-  ▄███         ▄███▄▄▄▄██▀   ███    ███   ███    ███  ▄███▄▄▄▄███▄▄ ███    ███  ███
- ▀▀███ ████▄  ▀▀███▀▀▀▀▀   ▀███████████ ▀█████████▀  ▀▀███▀▀▀▀███▀  ███    ███  ███
-   ███    ███ ▀███████████   ███    ███   ███          ███    ███   ███    ███  ███
-   ███    ███   ███    ███   ███    ███   ███          ███    ███   ███  ▀ ███  ███▌    ▄
-   ████████▀    ███    ███   ███    █▀   ▄████▀        ███    █▀     ▀██████▀▄█ █████▄▄██
-                ███    ███                                                      ▀
-</strong>
+  <body>
+    <div class="header">
+      <div class="nav">
+        <a href="/" class="img-link">
+          <img src="/graphql-ruby.png" />
+        </a>
+        <span>GraphQL Ruby</span>
+        <a href="/getting_started">Getting Started</a>
+        <a href="/guides">Guides</a>
+        <a href="http://www.rubydoc.info/github/rmosolgo/graphql-ruby">API Docs</a>
+        <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
+        <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+        <input
+          class="search-input"
+          onkeyup="GraphQLRubySearch.run(this)"
+          type="text"
+          placeholder="Search the docs..."
+        />
       </div>
-      <p style="text-align: center;">A GraphQL server implementation for Ruby</p>
-
-      <div class="grid -between">
-        <div class="cell -3of12">
-          <h3>Guides</h3>
-          <ul>
-            <li><a href="/">Getting Started</a></li>
-            <li>
-              <strong>Schema</strong>
-              <ul>
-                <li><a href="/schema/types_and_fields">Types and Fields</a></li>
-                <li><a href="/schema/generators">Generators</a></li>
-                <li><a href="/schema/configuration_options">Configuration Options</a></li>
-                <li><a href="/schema/code_reuse">Code Reuse</a></li>
-                <li><a href="/schema/instrumentation">Instrumentation</a></li>
-                <li><a href="/schema/lazy_execution">Lazy Execution</a></li>
-                <li><a href="/schema/limiting_visibility">Limiting Visibility</a></li>
-                <li><a href="/schema/testing">Testing</a></li>
-              </ul>
-            </li>
-            <li>
-              <strong>Queries</strong>
-              <ul>
-                <li><a href="/queries/executing_queries">Executing Queries</a></li>
-                <li><a href="/queries/authorization">Authorization</a></li>
-                <li><a href="/queries/security">Security</a></li>
-                <li><a href="/queries/error_handling">Error Handling</a></li>
-                <li><a href="/queries/phases_of_execution">Phases of Execution</a></li>
-              </ul>
-            </li>
-            <li>
-              <strong>Relay</strong>
-              <ul>
-                <li><a href="/relay/object_identification">Object Identification</a></li>
-                <li><a href="/relay/connections">Connections</a></li>
-                <li><a href="/relay/mutations">Mutations</a></li>
-              </ul>
-            </li>
-            <li>
-              <strong>GraphQL::Pro</strong>
-              <ul>
-                <li><a href="http://graphql.pro">GraphQL::Pro Home</a></li>
-                <li><a href="/pro/installation">Installation & Updates</a></li>
-                <li><a href="/pro/authorization">Authorization</a></li>
-                <li><a href="/pro/persisted_queries">Persisted Queries</a></li>
-                <li><a href="/pro/monitoring">Monitoring</a></li>
-                <li><a href="/pro/cursors">Stable Cursors<br/>for ActiveRecord</a></li>
-                <li><a href="/pro/encoders">Encrypted, Versioned<br/>Cursors and Ids</a></li>
-              </ul>
-            </li>
-            <li><a href="/related_projects">Related Projects</a></li>
-          </ul>
-          <h3><a href="https://tinyletter.com/graphql-ruby">GraphQL Ruby Newsletter</a></h3>
-          <h3><a href="http://www.rubydoc.info/github/rmosolgo/graphql-ruby">API Docs</a></h3>
-          <h3><a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a></h3>
-        </div>
-        <div class="cell -9of12">
-          <h1 class="guide-header">Queries — Error Handling</h1>
-          <p>Sometimes errors happen! There are a few ways to express them in GraphQL:</p>
+      <div id="search-results"></div>
+    </div>
+    <div class="container">
+      <p class="breadcrumb">
+  <a href="/">GraphQL</a>
+  &raquo; <a href="/guides">Guides</a>
+  
+  &raquo; Error Handling
+</p>
+<h1 class="guide-header">Error Handling</h1>
+<div class="guide-container">
+  <p>Sometimes errors happen! There are a few ways to express them in GraphQL:</p>
 
 <ul>
   <li>Expose errors <em>in</em> the schema itself</li>
@@ -152,7 +103,7 @@
 </code></pre>
 </div>
 
-<p>You can add an error to the <code class="highlighter-rouge">"errors"</code> key by returning a <a href="http://www.rubydoc.info/gems/graphql/GraphQL/ExecutionError" target="_blank"><code>GraphQL::ExecutionError</code></a> from a <code class="highlighter-rouge">resolve</code> function. For example:</p>
+<p>You can add an error to the <code class="highlighter-rouge">"errors"</code> key by returning a <a href="http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/ExecutionError" target="_blank" title="API docs for GraphQL::ExecutionError"><code>GraphQL::ExecutionError</code></a> from a <code class="highlighter-rouge">resolve</code> function. For example:</p>
 
 <div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
   <span class="n">post_params</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="s2">"post"</span><span class="p">].</span><span class="nf">to_h</span>
@@ -167,7 +118,7 @@
 </code></pre>
 </div>
 
-<p>If some part of your <code class="highlighter-rouge">resolve</code> function would raise an error, you can rescue it and return a <a href="http://www.rubydoc.info/gems/graphql/GraphQL/ExecutionError" target="_blank"><code>GraphQL::ExecutionError</code></a> instead:</p>
+<p>If some part of your <code class="highlighter-rouge">resolve</code> function would raise an error, you can rescue it and return a <a href="http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/ExecutionError" target="_blank" title="API docs for GraphQL::ExecutionError"><code>GraphQL::ExecutionError</code></a> instead:</p>
 
 <div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
   <span class="n">post_params</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="s2">"post"</span><span class="p">].</span><span class="nf">to_h</span>
@@ -218,25 +169,31 @@
 
 <p>This way, you get error handling with proper Ruby semantics and no overhead!</p>
 
-        </div>
-      </div>
+</div>
+<p class="guide-footer">
+  Suggestion, improvement, or correction?
+  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/queries/error_handling.md">Edit this file</a> or
+  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: Error Handling">report an issue</a>.
+</p>
+<script>
+  // Find headers with IDs and wrap their text in `<a href=></a>`
+  // That way people can easily copy the link.
+  var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+  var header, idText, headerLink;
+  for (var i = 0; i < headers.length; i++) {
+    header = headers[i];
+    idText = header.id;
+    if (idText) {
+      headerLink = document.createElement("a");
+      headerLink.href = "#" + idText;
+      headerLink.textContent = header.textContent;
+      header.textContent = "";
+      header.appendChild(headerLink);
+    }
+  }
+</script>
+
     </div>
-    <script>
-      // Find headers with IDs and wrap their text in `<a href=></a>`
-      // That way people can easily copy the link.
-      var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
-      var header, idText, headerLink;
-      for (var i = 0; i < headers.length; i++) {
-        header = headers[i];
-        idText = header.id;
-        if (idText) {
-          headerLink = document.createElement("a");
-          headerLink.href = "#" + idText;
-          headerLink.textContent = header.textContent;
-          header.textContent = "";
-          header.appendChild(headerLink);
-        }
-      }
-    </script>
+    <script src="/js/search.js"></script>
   </body>
 </html>

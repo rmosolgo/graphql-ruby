@@ -1,0 +1,191 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>GraphQL - Getting Started</title>
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="icon" href="/graphql-ruby-icon.png">
+  </head>
+  <body>
+    <div class="header">
+      <div class="nav">
+        <a href="/" class="img-link">
+          <img src="/graphql-ruby.png" />
+        </a>
+        <span>GraphQL Ruby</span>
+        <a href="/getting_started">Getting Started</a>
+        <a href="/guides">Guides</a>
+        <a href="http://www.rubydoc.info/github/rmosolgo/graphql-ruby">API Docs</a>
+        <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
+        <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+        <input
+          class="search-input"
+          onkeyup="GraphQLRubySearch.run(this)"
+          type="text"
+          placeholder="Search the docs..."
+        />
+      </div>
+      <div id="search-results"></div>
+    </div>
+    <div class="container">
+      <p class="breadcrumb">
+  <a href="/">GraphQL</a>
+  &raquo; <a href="/guides">Guides</a>
+  
+  &raquo; Getting Started
+</p>
+<h1 class="guide-header">Getting Started</h1>
+<div class="guide-container">
+  <h2 id="installation">Installation</h2>
+
+<p>You can install <code class="highlighter-rouge">graphql</code> from RubyGems by adding to your application’s <code class="highlighter-rouge">Gemfile</code>:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># Gemfile</span>
+<span class="n">gem</span> <span class="s2">"graphql"</span>
+</code></pre>
+</div>
+
+<p>Then, running <code class="highlighter-rouge">bundle install</code>:</p>
+
+<div class="language-sh highlighter-rouge"><pre class="highlight"><code><span class="gp">$ </span>bundle install
+</code></pre>
+</div>
+
+<h2 id="getting-started">Getting Started</h2>
+
+<p>On Rails, you can get started with a few <a href="https://rmosolgo.github.io/graphql-ruby/schema/generators#graphqlinstall">GraphQL generators</a>:</p>
+
+<div class="language-sh highlighter-rouge"><pre class="highlight"><code><span class="c"># Add graphql-ruby boilerplate and mount graphiql in development  </span>
+rails g graphql:install
+<span class="c"># Make your first object type</span>
+rails g graphql:object Post title:String rating:Int comments:[Comment]
+</code></pre>
+</div>
+
+<p>Or, you can build a GraphQL server by hand:</p>
+
+<ul>
+  <li>Define some types</li>
+  <li>Connect them to a schema</li>
+  <li>Execute queries with your schema</li>
+</ul>
+
+<h3 id="declare-types">Declare types</h3>
+
+<p>Types describe objects in your application and form the basis for <a href="http://graphql.org/learn/schema/#type-system">GraphQL’s type system</a>.</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">PostType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+  <span class="nb">name</span> <span class="s2">"Post"</span>
+  <span class="n">description</span> <span class="s2">"A blog post"</span>
+  <span class="c1"># `!` marks a field as "non-null"</span>
+  <span class="n">field</span> <span class="ss">:id</span><span class="p">,</span> <span class="o">!</span><span class="n">types</span><span class="o">.</span><span class="no">ID</span>
+  <span class="n">field</span> <span class="ss">:title</span><span class="p">,</span> <span class="o">!</span><span class="n">types</span><span class="o">.</span><span class="no">String</span>
+  <span class="n">field</span> <span class="ss">:body</span><span class="p">,</span> <span class="o">!</span><span class="n">types</span><span class="o">.</span><span class="no">String</span>
+  <span class="n">field</span> <span class="ss">:comments</span><span class="p">,</span> <span class="n">types</span><span class="p">[</span><span class="o">!</span><span class="no">CommentType</span><span class="p">]</span>
+<span class="k">end</span>
+
+<span class="no">CommentType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+  <span class="nb">name</span> <span class="s2">"Comment"</span>
+  <span class="n">field</span> <span class="ss">:id</span><span class="p">,</span> <span class="o">!</span><span class="n">types</span><span class="o">.</span><span class="no">ID</span>
+  <span class="n">field</span> <span class="ss">:body</span><span class="p">,</span> <span class="o">!</span><span class="n">types</span><span class="o">.</span><span class="no">String</span>
+  <span class="n">field</span> <span class="ss">:created_at</span><span class="p">,</span> <span class="o">!</span><span class="n">types</span><span class="o">.</span><span class="no">String</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<h3 id="build-a-schema">Build a Schema</h3>
+
+<p>Before building a schema, you have to define an <a href="http://graphql.org/learn/schema/#the-query-and-mutation-types">entry point to your system, the “query root”</a>:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">QueryType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+  <span class="nb">name</span> <span class="s2">"Query"</span>
+  <span class="n">description</span> <span class="s2">"The query root of this schema"</span>
+
+  <span class="n">field</span> <span class="ss">:post</span> <span class="k">do</span>
+    <span class="n">type</span> <span class="no">PostType</span>
+    <span class="n">argument</span> <span class="ss">:id</span><span class="p">,</span> <span class="o">!</span><span class="n">types</span><span class="o">.</span><span class="no">ID</span>
+    <span class="n">description</span> <span class="s2">"Find a Post by ID"</span>
+    <span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span> <span class="no">Post</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="s2">"id"</span><span class="p">])</span> <span class="p">}</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<p>Then, build a schema with <code class="highlighter-rouge">QueryType</code> as the query entry point:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">Schema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+  <span class="n">query</span> <span class="no">QueryType</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<p>This schema is ready to serve GraphQL queries! See <a href="/schema/configuration_options">“Configuration Options”</a> for all the schema options.</p>
+
+<h3 id="execute-queries">Execute queries</h3>
+
+<p>You can execute queries from a query string:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">query_string</span> <span class="o">=</span> <span class="s2">"
+{
+  post(id: 1) {
+    id
+    title
+  }
+}"</span>
+<span class="n">result_hash</span> <span class="o">=</span> <span class="no">Schema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="n">query_string</span><span class="p">)</span>
+<span class="c1"># {</span>
+<span class="c1">#   "data" =&gt; {</span>
+<span class="c1">#     "post" =&gt; {</span>
+<span class="c1">#        "id" =&gt; 1,</span>
+<span class="c1">#        "title" =&gt; "GraphQL is nice"</span>
+<span class="c1">#     }</span>
+<span class="c1">#   }</span>
+<span class="c1"># }</span>
+</code></pre>
+</div>
+
+<p>See <a href="/queries/executing_queries">“Executing Queries”</a> for more information about running queries on your schema.</p>
+
+<h2 id="use-with-relay">Use with Relay</h2>
+
+<p>If you’re building a backend for <a href="http://facebook.github.io/relay/">Relay</a>, you’ll need:</p>
+
+<ul>
+  <li>A JSON dump of the schema, which you can get by sending <a href="https://github.com/rmosolgo/graphql-ruby/blob/master/lib/graphql/introspection/introspection_query.rb"><code class="highlighter-rouge">GraphQL::Introspection::INTROSPECTION_QUERY</code></a></li>
+  <li>Relay-specific helpers for GraphQL, see the <code class="highlighter-rouge">GraphQL::Relay</code> guides.</li>
+</ul>
+
+<h2 id="use-with-apollo-client">Use with Apollo Client</h2>
+
+<p><a href="http://dev.apollodata.com/">Apollo Client</a> is a full featured, simple to use GraphQL client with convenient integrations for popular view layers. You don’t need to do anything special to connect Apollo Client to a <code class="highlighter-rouge">graphql-ruby</code> server.</p>
+
+</div>
+<p class="guide-footer">
+  Suggestion, improvement, or correction?
+  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/getting_started.md">Edit this file</a> or
+  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: Getting Started">report an issue</a>.
+</p>
+<script>
+  // Find headers with IDs and wrap their text in `<a href=></a>`
+  // That way people can easily copy the link.
+  var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+  var header, idText, headerLink;
+  for (var i = 0; i < headers.length; i++) {
+    header = headers[i];
+    idText = header.id;
+    if (idText) {
+      headerLink = document.createElement("a");
+      headerLink.href = "#" + idText;
+      headerLink.textContent = header.textContent;
+      header.textContent = "";
+      header.appendChild(headerLink);
+    }
+  }
+</script>
+
+    </div>
+    <script src="/js/search.js"></script>
+  </body>
+</html>

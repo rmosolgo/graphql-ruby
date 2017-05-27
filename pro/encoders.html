@@ -2,92 +2,43 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>GraphQL Ruby - GraphQL::Pro — Encrypted, Versioned Cursors and IDs</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>GraphQL - Encrypted, Versioned Cursors and IDs</title>
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400" rel="stylesheet" />
     <link rel="stylesheet" href="/css/main.css">
     <link rel="icon" href="/graphql-ruby-icon.png">
   </head>
-  <body class="hack">
-    <script>
-      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-      ga('create', 'UA-19264608-11', 'auto');
-      ga('send', 'pageview');
-    </script>
-    <div class="container">
-      <div style="display: flex; justify-content: center;">
-<strong style="white-space: pre; line-height: 1.1em; display: inline-block; font-size: 8px;">
-    ▄██████▄     ▄████████    ▄████████    ▄███████▄    ▄█    █▄    ████████▄    ▄█
-   ███    ███   ███    ███   ███    ███   ███    ███   ███    ███   ███    ███  ███
-   ███    █▀    ███    ███   ███    ███   ███    ███   ███    ███   ███    ███  ███
-  ▄███         ▄███▄▄▄▄██▀   ███    ███   ███    ███  ▄███▄▄▄▄███▄▄ ███    ███  ███
- ▀▀███ ████▄  ▀▀███▀▀▀▀▀   ▀███████████ ▀█████████▀  ▀▀███▀▀▀▀███▀  ███    ███  ███
-   ███    ███ ▀███████████   ███    ███   ███          ███    ███   ███    ███  ███
-   ███    ███   ███    ███   ███    ███   ███          ███    ███   ███  ▀ ███  ███▌    ▄
-   ████████▀    ███    ███   ███    █▀   ▄████▀        ███    █▀     ▀██████▀▄█ █████▄▄██
-                ███    ███                                                      ▀
-</strong>
+  <body>
+    <div class="header">
+      <div class="nav">
+        <a href="/" class="img-link">
+          <img src="/graphql-ruby.png" />
+        </a>
+        <span>GraphQL Ruby</span>
+        <a href="/getting_started">Getting Started</a>
+        <a href="/guides">Guides</a>
+        <a href="http://www.rubydoc.info/github/rmosolgo/graphql-ruby">API Docs</a>
+        <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
+        <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+        <input
+          class="search-input"
+          onkeyup="GraphQLRubySearch.run(this)"
+          type="text"
+          placeholder="Search the docs..."
+        />
       </div>
-      <p style="text-align: center;">A GraphQL server implementation for Ruby</p>
-
-      <div class="grid -between">
-        <div class="cell -3of12">
-          <h3>Guides</h3>
-          <ul>
-            <li><a href="/">Getting Started</a></li>
-            <li>
-              <strong>Schema</strong>
-              <ul>
-                <li><a href="/schema/types_and_fields">Types and Fields</a></li>
-                <li><a href="/schema/generators">Generators</a></li>
-                <li><a href="/schema/configuration_options">Configuration Options</a></li>
-                <li><a href="/schema/code_reuse">Code Reuse</a></li>
-                <li><a href="/schema/instrumentation">Instrumentation</a></li>
-                <li><a href="/schema/lazy_execution">Lazy Execution</a></li>
-                <li><a href="/schema/limiting_visibility">Limiting Visibility</a></li>
-                <li><a href="/schema/testing">Testing</a></li>
-              </ul>
-            </li>
-            <li>
-              <strong>Queries</strong>
-              <ul>
-                <li><a href="/queries/executing_queries">Executing Queries</a></li>
-                <li><a href="/queries/authorization">Authorization</a></li>
-                <li><a href="/queries/security">Security</a></li>
-                <li><a href="/queries/error_handling">Error Handling</a></li>
-                <li><a href="/queries/phases_of_execution">Phases of Execution</a></li>
-              </ul>
-            </li>
-            <li>
-              <strong>Relay</strong>
-              <ul>
-                <li><a href="/relay/object_identification">Object Identification</a></li>
-                <li><a href="/relay/connections">Connections</a></li>
-                <li><a href="/relay/mutations">Mutations</a></li>
-              </ul>
-            </li>
-            <li>
-              <strong>GraphQL::Pro</strong>
-              <ul>
-                <li><a href="http://graphql.pro">GraphQL::Pro Home</a></li>
-                <li><a href="/pro/installation">Installation & Updates</a></li>
-                <li><a href="/pro/authorization">Authorization</a></li>
-                <li><a href="/pro/persisted_queries">Persisted Queries</a></li>
-                <li><a href="/pro/monitoring">Monitoring</a></li>
-                <li><a href="/pro/cursors">Stable Cursors<br/>for ActiveRecord</a></li>
-                <li><a href="/pro/encoders">Encrypted, Versioned<br/>Cursors and Ids</a></li>
-              </ul>
-            </li>
-            <li><a href="/related_projects">Related Projects</a></li>
-          </ul>
-          <h3><a href="https://tinyletter.com/graphql-ruby">GraphQL Ruby Newsletter</a></h3>
-          <h3><a href="http://www.rubydoc.info/github/rmosolgo/graphql-ruby">API Docs</a></h3>
-          <h3><a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a></h3>
-        </div>
-        <div class="cell -9of12">
-          <h1 class="guide-header">GraphQL::Pro — Encrypted, Versioned Cursors and IDs</h1>
-          <p><code class="highlighter-rouge">GraphQL::Pro</code> includes a mechanism for serving encrypted, versioned cursors and IDs.  This provides some benefits:</p>
+      <div id="search-results"></div>
+    </div>
+    <div class="container">
+      <p class="breadcrumb">
+  <a href="/">GraphQL</a>
+  &raquo; <a href="/guides">Guides</a>
+   &raquo; GraphQL Pro
+  &raquo; Encrypted, Versioned Cursors and IDs
+</p>
+<h1 class="guide-header">Encrypted, Versioned Cursors and IDs</h1>
+<div class="guide-container">
+  <p><code class="highlighter-rouge">GraphQL::Pro</code> includes a mechanism for serving encrypted, versioned cursors and IDs.  This provides some benefits:</p>
 
 <ul>
   <li>Users can’t reverse-engineer node IDs or connection cursors, removing a possible attack vector.</li>
@@ -131,7 +82,7 @@
 
 <p>Now, built-in connection implementations will use that encoder for cursors.</p>
 
-<p>If you implement your own connections, you can access the encoder’s encryption methods via <a href="http://www.rubydoc.info/gems/graphql/GraphQL/Relay/BaseConnection#encode-instance_method" target="_blank"><code>GraphQL::Relay::BaseConnection#encode</code></a> and <a href="http://www.rubydoc.info/gems/graphql/GraphQL/Relay/BaseConnection#decode-instance_method" target="_blank"><code>GraphQL::Relay::BaseConnection#decode</code></a>.</p>
+<p>If you implement your own connections, you can access the encoder’s encryption methods via <a href="http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Relay/BaseConnection#encode-instance_method" target="_blank" title="API docs for GraphQL::Relay::BaseConnection#encode"><code>GraphQL::Relay::BaseConnection#encode</code></a> and <a href="http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Relay/BaseConnection#decode-instance_method" target="_blank" title="API docs for GraphQL::Relay::BaseConnection#decode"><code>GraphQL::Relay::BaseConnection#decode</code></a>.</p>
 
 <h2 id="encrypting-ids">Encrypting IDs</h2>
 
@@ -217,25 +168,31 @@
 
 <p>Now, these node IDs and cursors will be URL-safe!</p>
 
-        </div>
-      </div>
+</div>
+<p class="guide-footer">
+  Suggestion, improvement, or correction?
+  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/pro/encoders.md">Edit this file</a> or
+  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: Encrypted, Versioned Cursors and IDs">report an issue</a>.
+</p>
+<script>
+  // Find headers with IDs and wrap their text in `<a href=></a>`
+  // That way people can easily copy the link.
+  var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+  var header, idText, headerLink;
+  for (var i = 0; i < headers.length; i++) {
+    header = headers[i];
+    idText = header.id;
+    if (idText) {
+      headerLink = document.createElement("a");
+      headerLink.href = "#" + idText;
+      headerLink.textContent = header.textContent;
+      header.textContent = "";
+      header.appendChild(headerLink);
+    }
+  }
+</script>
+
     </div>
-    <script>
-      // Find headers with IDs and wrap their text in `<a href=></a>`
-      // That way people can easily copy the link.
-      var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
-      var header, idText, headerLink;
-      for (var i = 0; i < headers.length; i++) {
-        header = headers[i];
-        idText = header.id;
-        if (idText) {
-          headerLink = document.createElement("a");
-          headerLink.href = "#" + idText;
-          headerLink.textContent = header.textContent;
-          header.textContent = "";
-          header.appendChild(headerLink);
-        }
-      }
-    </script>
+    <script src="/js/search.js"></script>
   </body>
 </html>

@@ -1,0 +1,37 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta http-equiv="refresh" content="1;url=http://www.rubydoc.info/gems/graphql/GraphQL/ListType" />
+  </head>
+  <body>
+    <p>Class: GraphQL::ListType &lt; GraphQL::BaseType
+A list type modifies another type. 
+List types can be created with the type helper (<code class="highlighter-rouge">types[InnerType]</code>)
+or BaseType#to_list_type (<code class="highlighter-rouge">InnerType.to_list_type</code>) 
+For return types, it says that the returned value will be a list of
+the modified. 
+For input types, it says that the incoming value will be a list of
+the modified type. 
+Given a list type, you can always get the underlying type with
+#unwrap. 
+Examples:
+# A field which returns a list of items
+field :items, types[ItemType]
+# or
+field :items, ItemType.to_list_type
+# A field which accepts a list of strings
+field :newNames do
+# …
+argument :values, types[types.String]
+# or
+argument :values, types.String.to_list_type
+end
+Includes:
+GraphQL::BaseType::ModifiesAnotherType
+Instance methods:
+coerce_non_null_input, coerce_result, initialize, kind, to_s,
+validate_non_null_input</p>
+
+
+  </body>
+</html>

@@ -1,0 +1,89 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>GraphQL - Introduction</title>
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="icon" href="/graphql-ruby-icon.png">
+  </head>
+  <body>
+    <div class="header">
+      <div class="nav">
+        <a href="/" class="img-link">
+          <img src="/graphql-ruby.png" />
+        </a>
+        <span>GraphQL Ruby</span>
+        <a href="/getting_started">Getting Started</a>
+        <a href="/guides">Guides</a>
+        <a href="http://www.rubydoc.info/github/rmosolgo/graphql-ruby">API Docs</a>
+        <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
+        <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+        <input
+          class="search-input"
+          onkeyup="GraphQLRubySearch.run(this)"
+          type="text"
+          placeholder="Search the docs..."
+        />
+      </div>
+      <div id="search-results"></div>
+    </div>
+    <div class="container">
+      <p class="breadcrumb">
+  <a href="/">GraphQL</a>
+  &raquo; <a href="/guides">Guides</a>
+   &raquo; Fields
+  &raquo; Introduction
+</p>
+<h1 class="guide-header">Introduction</h1>
+<div class="guide-container">
+  <h2 id="list-fields">List Fields</h2>
+
+<p>Always limit the number of items which can be returned from a list field. For example, use a <code class="highlighter-rouge">limit:</code> argument and make sure it’s not too big:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:items</span><span class="p">,</span> <span class="n">types</span><span class="p">[</span><span class="no">ItemType</span><span class="p">]</span> <span class="k">do</span>
+  <span class="n">argument</span> <span class="ss">:limit</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">Int</span><span class="p">,</span> <span class="ss">default_value: </span><span class="mi">20</span>
+  <span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1"># Cap the number of items at 30</span>
+    <span class="n">limit</span> <span class="o">=</span> <span class="p">[</span><span class="n">args</span><span class="p">[</span><span class="ss">:limit</span><span class="p">],</span> <span class="mi">30</span><span class="p">].</span><span class="nf">min</span>
+    <span class="n">obj</span><span class="p">.</span><span class="nf">items</span><span class="p">.</span><span class="nf">limit</span><span class="p">(</span><span class="n">limit</span><span class="p">)</span>
+  <span class="p">}</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<p>This way, you won’t hit your database for 1000 items!</p>
+
+<h2 id="relay-connections">Relay Connections</h2>
+
+<p>Relay connections accept a <a href="http://localhost:4000/graphql-ruby/relay/connections.html#maximum-page-size"><code class="highlighter-rouge">max_page_size</code> option</a> which limits the number of nodes.</p>
+
+</div>
+<p class="guide-footer">
+  Suggestion, improvement, or correction?
+  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/fields/limits.md">Edit this file</a> or
+  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: Introduction">report an issue</a>.
+</p>
+<script>
+  // Find headers with IDs and wrap their text in `<a href=></a>`
+  // That way people can easily copy the link.
+  var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+  var header, idText, headerLink;
+  for (var i = 0; i < headers.length; i++) {
+    header = headers[i];
+    idText = header.id;
+    if (idText) {
+      headerLink = document.createElement("a");
+      headerLink.href = "#" + idText;
+      headerLink.textContent = header.textContent;
+      header.textContent = "";
+      header.appendChild(headerLink);
+    }
+  }
+</script>
+
+    </div>
+    <script src="/js/search.js"></script>
+  </body>
+</html>

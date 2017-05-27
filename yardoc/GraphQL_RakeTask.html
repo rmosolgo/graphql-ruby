@@ -1,0 +1,32 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta http-equiv="refresh" content="1;url=http://www.rubydoc.info/gems/graphql/GraphQL/RakeTask" />
+  </head>
+  <body>
+    <p>Class: GraphQL::RakeTask &lt; Object
+A rake task for dumping a schema as IDL or JSON. 
+By default, schemas are looked up by name as constants using
+<code class="highlighter-rouge">schema_name:</code>. You can provide a <code class="highlighter-rouge">load_schema</code> function to return
+your schema another way. 
+<code class="highlighter-rouge">load_context:</code>, <code class="highlighter-rouge">only:</code> and <code class="highlighter-rouge">except:</code> are supported so that you can
+keep an eye on how filters affect your schema. 
+Examples:
+# Dump a Schema to .graphql + .json files
+require “graphql/rake_task”
+GraphQL::RakeTask.new(schema_name: “MySchema”)
+# $ rake graphql:schema:dump
+# Schema IDL dumped to ./schema.graphql
+# Schema JSON dumped to ./schema.json
+# Invoking the task from Ruby
+require “rake”
+Rake::Task[“graphql:schema:dump”].invoke
+Includes:
+Rake::DSL
+Instance methods:
+define_task, idl_path, initialize, json_path, rake_namespace,
+write_outfile</p>
+
+
+  </body>
+</html>

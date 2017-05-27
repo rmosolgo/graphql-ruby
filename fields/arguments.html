@@ -1,0 +1,142 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>GraphQL - Arguments</title>
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="icon" href="/graphql-ruby-icon.png">
+  </head>
+  <body>
+    <div class="header">
+      <div class="nav">
+        <a href="/" class="img-link">
+          <img src="/graphql-ruby.png" />
+        </a>
+        <span>GraphQL Ruby</span>
+        <a href="/getting_started">Getting Started</a>
+        <a href="/guides">Guides</a>
+        <a href="http://www.rubydoc.info/github/rmosolgo/graphql-ruby">API Docs</a>
+        <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
+        <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+        <input
+          class="search-input"
+          onkeyup="GraphQLRubySearch.run(this)"
+          type="text"
+          placeholder="Search the docs..."
+        />
+      </div>
+      <div id="search-results"></div>
+    </div>
+    <div class="container">
+      <p class="breadcrumb">
+  <a href="/">GraphQL</a>
+  &raquo; <a href="/guides">Guides</a>
+   &raquo; Fields
+  &raquo; Arguments
+</p>
+<h1 class="guide-header">Arguments</h1>
+<div class="guide-container">
+  <p>Fields can take <strong>arguments</strong> as input. These can be used to determine the return value (eg, filtering search results) or to modify the application state (eg, updating the database in <code class="highlighter-rouge">MutationType</code>).</p>
+
+<p>Arguments are defined with the <code class="highlighter-rouge">argument</code> helper:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:search_posts</span><span class="p">,</span> <span class="n">types</span><span class="p">[</span><span class="no">PostType</span><span class="p">]</span> <span class="k">do</span>
+  <span class="n">argument</span> <span class="ss">:category</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">String</span>
+  <span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">args</span><span class="p">[</span><span class="ss">:category</span><span class="p">]</span>
+    <span class="c1"># =&gt; maybe a string, eg "Programming"</span>
+    <span class="k">if</span> <span class="n">args</span><span class="p">[</span><span class="ss">:category</span><span class="p">]</span>
+      <span class="no">Post</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="ss">category: </span><span class="n">category</span><span class="p">).</span><span class="nf">limit</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+    <span class="k">else</span>
+      <span class="no">Post</span><span class="p">.</span><span class="nf">all</span><span class="p">.</span><span class="nf">limit</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+    <span class="k">end</span>
+  <span class="p">}</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<p>Use <code class="highlighter-rouge">!</code> to mark an argument as <em>required</em>:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># This argument is a required string:</span>
+<span class="n">argument</span> <span class="ss">:category</span><span class="p">,</span> <span class="o">!</span><span class="n">types</span><span class="o">.</span><span class="no">String</span>
+</code></pre>
+</div>
+
+<p>Use <code class="highlighter-rouge">as: :alternateName</code> to use a different key from within your resolvers while
+exposing another key to clients.</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:post</span><span class="p">,</span> <span class="no">PostType</span> <span class="k">do</span>
+  <span class="n">argument</span> <span class="ss">:postId</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">Id</span><span class="p">,</span> <span class="ss">as: :id</span>
+  <span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
+    <span class="no">Post</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="s1">'id'</span><span class="p">])</span>
+  <span class="p">}</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<p>Provide a <code class="highlighter-rouge">prepare</code> function to modify or validate the value of an argument before the field’s <code class="highlighter-rouge">resolve</code> function is executed:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:posts</span><span class="p">,</span> <span class="n">types</span><span class="p">[</span><span class="no">PostType</span><span class="p">]</span> <span class="k">do</span>
+  <span class="n">argument</span> <span class="ss">:startDate</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">String</span><span class="p">,</span> <span class="ss">prepare: </span><span class="o">-&gt;</span><span class="p">(</span><span class="n">startDate</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1"># return the prepared argument or GraphQL::ExecutionError.new("msg")</span>
+    <span class="c1"># to halt the execution of the field and add "msg" to the `errors` key.</span>
+  <span class="p">}</span>
+  <span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1"># use prepared args['startDate']</span>
+  <span class="p">}</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<p>Only certain types are valid for arguments:</p>
+
+<ul>
+  <li><a href="http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/ScalarType" target="_blank" title="API docs for GraphQL::ScalarType"><code>GraphQL::ScalarType</code></a>, including built-in scalars (string, int, float, boolean, ID)</li>
+  <li><a href="http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/EnumType" target="_blank" title="API docs for GraphQL::EnumType"><code>GraphQL::EnumType</code></a></li>
+  <li><a href="http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/InputObjectType" target="_blank" title="API docs for GraphQL::InputObjectType"><code>GraphQL::InputObjectType</code></a>, which allows key-value pairs as input</li>
+  <li><a href="http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/ListType" target="_blank" title="API docs for GraphQL::ListType"><code>GraphQL::ListType</code></a>s of a valid input type</li>
+  <li><a href="http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/NonNullType" target="_blank" title="API docs for GraphQL::NonNullType"><code>GraphQL::NonNullType</code></a>s of a valid input type</li>
+</ul>
+
+<p>The <code class="highlighter-rouge">args</code> parameter of a <code class="highlighter-rouge">resolve</code> function will always be a <a href="http://www.rubydoc.info/gems/graphql/1.6.0/GraphQL/Query/Arguments" target="_blank" title="API docs for GraphQL::Query::Arguments"><code>GraphQL::Query::Arguments</code></a>. You can access specific arguments with <code class="highlighter-rouge">["arg_name"]</code> or <code class="highlighter-rouge">[:arg_name]</code>. You recursively turn it into a Ruby Hash with <code class="highlighter-rouge">to_h</code>. Inside <code class="highlighter-rouge">args</code>, scalars will be parsed into Ruby values and enums will be converted to their <code class="highlighter-rouge">value:</code> (if one was provided).</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">args</span><span class="p">[</span><span class="s2">"category"</span><span class="p">]</span> <span class="o">==</span> <span class="n">args</span><span class="p">[</span><span class="ss">:category</span><span class="p">]</span>
+  <span class="c1"># =&gt; true</span>
+  <span class="n">args</span><span class="p">.</span><span class="nf">to_h</span>
+  <span class="c1"># =&gt; { "category" =&gt; "Programming" }</span>
+  <span class="c1"># ...</span>
+<span class="p">}</span>
+</code></pre>
+</div>
+
+</div>
+<p class="guide-footer">
+  Suggestion, improvement, or correction?
+  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/fields/arguments.md">Edit this file</a> or
+  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: Arguments">report an issue</a>.
+</p>
+<script>
+  // Find headers with IDs and wrap their text in `<a href=></a>`
+  // That way people can easily copy the link.
+  var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+  var header, idText, headerLink;
+  for (var i = 0; i < headers.length; i++) {
+    header = headers[i];
+    idText = header.id;
+    if (idText) {
+      headerLink = document.createElement("a");
+      headerLink.href = "#" + idText;
+      headerLink.textContent = header.textContent;
+      header.textContent = "";
+      header.appendChild(headerLink);
+    }
+  }
+</script>
+
+    </div>
+    <script src="/js/search.js"></script>
+  </body>
+</html>

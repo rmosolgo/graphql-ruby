@@ -1,0 +1,42 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta http-equiv="refresh" content="1;url=http://www.rubydoc.info/gems/graphql/GraphQL/NonNullType" />
+  </head>
+  <body>
+    <p>Class: GraphQL::NonNullType &lt; GraphQL::BaseType
+A non-null type modifies another type. 
+Non-null types can be created with <code class="highlighter-rouge">!</code> (<code class="highlighter-rouge">InnerType!</code>) or
+BaseType#to_non_null_type (<code class="highlighter-rouge">InnerType.to_non_null_type</code>) 
+For return types, it says that the returned value will <em>always</em> be
+present. 
+(If the application fails to return a value, InvalidNullError will
+be passed to Schema#type_error.) 
+For input types, it says that the incoming value <em>must</em> be provided
+by the query. 
+(If a value isn’t provided, Query::VariableValidationError will be
+raised). 
+Given a non-null type, you can always get the underlying type with
+#unwrap. 
+Examples:
+# A field which <em>always</em> returns an error
+field :items, !ItemType
+# or
+field :items, ItemType.to_non_null_type
+# A field which <em>requires</em> a string input
+field :newNames do
+# …
+argument :values, !types.String
+# or
+argument :values, types.String.to_non_null_type
+end
+Includes:
+GraphQL::BaseType::ModifiesAnotherType
+Extended by:
+Forwardable
+Instance methods:
+initialize, kind, to_s, valid_input?, validate_input</p>
+
+
+  </body>
+</html>
