@@ -10,23 +10,25 @@
   </head>
   <body>
     <div class="header">
-      <a href="{{ site.baseurl }}/" class="img-link">
-        <img src="{{ site.baseurl }}/graphql-ruby.png" />
-      </a>
-      <span>GraphQL Ruby</span>
-      <a href="{{ site.baseurl }}/getting_started">Getting Started</a>
-      <a href="{{ site.baseurl }}/guides">Guides</a>
-      <a href="http://www.rubydoc.info/github/rmosolgo/graphql-ruby">API Docs</a>
-      <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
-      <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
-      <input
-        class="search-input"
-        onkeyup="GraphQLRubySearch.run(this)"
-        type="text"
-        placeholder="Search the docs..."
-      />
+      <div class="nav">
+        <a href="{{ site.baseurl }}/" class="img-link">
+          <img src="{{ site.baseurl }}/graphql-ruby.png" />
+        </a>
+        <span>GraphQL Ruby</span>
+        <a href="{{ site.baseurl }}/getting_started">Getting Started</a>
+        <a href="{{ site.baseurl }}/guides">Guides</a>
+        <a href="http://www.rubydoc.info/github/rmosolgo/graphql-ruby">API Docs</a>
+        <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
+        <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+        <input
+          class="search-input"
+          onkeyup="GraphQLRubySearch.run(this)"
+          type="text"
+          placeholder="Search the docs..."
+        />
+      </div>
+      <div id="search-results"></div>
     </div>
-    <div id="search-results"></div>
     <div class="container">
       {{ content }}
     </div>

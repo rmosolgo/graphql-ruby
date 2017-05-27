@@ -182,4 +182,41 @@ var GraphQLRubySearch = {
     }
     return indexPromise
   },
+
+  _moveHighlight: function(diff) {
+    var allResults = document.querySelectorAll(".search-result")
+    var highlightClass = "highlight-search-result"
+    if (!allResults.length) {
+      // No search results to highlight
+      return
+    }
+    var highlightedResult = document.querySelector("." + highlightClass)
+    var nextHighlightedResult
+    var result
+    for (var i = 0; i < allResults.length; i++) {
+      result = allResults[i]
+      if (result == highlightedResult) {
+        nextHighlightedResult = allResults[i + diff]
+        break
+      }
+    }
+    if (!nextHighlightedResult) {
+      // Either nothing was highlighted yet,
+      // or we were at the end of results and we loop around
+      nextHighlightedResult = allResults[0]
+    }
+
+    if (highlightedResult) {
+      highlightedResult.classList.remove(highlightClass)
+    }
+    nextHighlightedResult.classList.add(highlightClass)
+    nextHighlightedResult.focus()
+  }
 }
+
+document.addEventListener("keydown", function(ev) {
+  var diff = ev.keyCode == 38 ? -1 : (ev.keyCode == 40 ? 1 : 0)
+  if (diff) {
+    GraphQLRubySearch._moveHighlight(diff)
+  }
+})
