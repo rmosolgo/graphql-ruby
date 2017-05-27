@@ -2,15 +2,66 @@
 
 ### Breaking changes
 
-- `InternalRepresentation::Node#return_type` will now return the wrapping type. Use `return_type.unwrap` to access the old value #704
-
 ### Deprecations
 
 ### New features
 
 ### Bug fixes
 
-## 1.5.14 (17 May 2017)
+## 1.6.0 (27 May 2017)
+
+### Breaking changes
+
+- `InternalRepresentation::Node#return_type` will now return the wrapping type. Use `return_type.unwrap` to access the old value #704
+- `instrument(:query, ...)` instrumenters are applied as a stack instead of a queue #735. If you depend on queue-based behavior, move your `before_query` and `after_query` hooks to separate instrumenters.
+- In a `Relay::Mutation`, Raising or returning a `GraphQL::Execution` will nullify the mutation field, not the field's children. #731
+- `args.to_h` returns a slightly different hash #714
+  - keys are always `String`s
+  - if an argument is aliased with `as:`, the alias is used as the key
+- `InternalRepresentation::Node#return_type` includes the original "wrapper" types (non-null or list types), call `.unwrap` to get the inner type #20
+
+  ```ruby
+  # before
+  irep_node.return_type
+  # after
+  irep_node.return_type.unwrap
+  ```
+
+### Deprecations
+
+- Argument `prepare` functions which take one argument are deprecated #730
+
+  ```ruby
+  # before
+  argument :id, !types.ID, prepare: ->(val) { ... }
+  # after
+  argument :id, !types.ID, prepare: ->(val, ctx) { ... }
+  ```
+
+### New features
+
+- `Schema#multiplex(queries)` runs multiple queries concurrently #691
+- `GraphQL::RakeTask` supports dumping the schema to IDL or JSON #687
+- Improved support for `Schema.from_definition` #699 :
+  - Custom scalars are supported with `coerce_input` and `coerce_result` functions
+  - `resolve_type` function will be used for abstract types
+  - Default resolve behavior is to check `obj` for a method and call it with 0, 1, or 2 arguments.
+- `ctx.skip` may be returned from field resolve functions to exclude the field from the response entirely #688
+- `instrument(:field, ..., after_built_ins: true)` to apply field instrumentation after Relay wrappers #740
+- Argument `prepare` functions are invoked with `(val, ctx)` (previously, it was only `(val)`) #730
+- `args.to_h` returns stringified, aliased arguments #714
+- `ctx.namespace(:my_namespace)` provides namespaced key-value storage #689
+- `GraphQL::Query` can be initialized without a query_string; it can be added after initialization #710
+- Improved filter support #713
+  - `Schema.execute(only:, except:)` accept a callable _or_ an array of callables (multiple filters)
+  - Filters can be added to a query via `Query#merge_filters(only:, except:)`. You can add a filter to every query by merging it in during query instrumentation.
+
+### Bug fixes
+
+- Correctly apply cursors and `max_page_size` in `Relay::RelationConnection` and `Relay::ArrayConnection` #728
+- Nullify a mutation field when it raises or returns an error #731
+
+## 1.5.14 (27 May 2017)
 
 ### New features
 

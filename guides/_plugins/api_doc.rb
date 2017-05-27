@@ -1,7 +1,9 @@
 # frozen_string_literal: true
+require_relative "../../lib/graphql/version"
+
 module GraphQLSite
   module APIDoc
-    API_DOC_ROOT = "http://www.rubydoc.info/gems/graphql/"
+    API_DOC_ROOT = "http://www.rubydoc.info/gems/graphql/#{GraphQL::VERSION}/"
 
     def api_doc(input)
       if !input.start_with?("GraphQL")

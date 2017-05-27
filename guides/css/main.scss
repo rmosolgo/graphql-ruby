@@ -23,38 +23,40 @@ body {
 }
 
 .header {
-  background: white;
+  box-shadow: 0px 0px 10px 0px #d6d6d6;
   z-index: 1;
   position: relative;
-  $height: 30px;
-  $margin: 10px;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  box-shadow: 0px 0px 10px 0px #d6d6d6;
-  $fade-time: 0.2s;
-
-
-  .img-link {
-    transition: background $fade-time;
-    &:hover {
-      background: white;
-    }
-  }
-
-  img {
-    height: $height;
-    width: auto;
-    margin: $margin;
-  }
-
-  a, span {
-    transition: background-color $fade-time;
-    padding: $margin;
-    height: $height;
+  
+  .nav {
+    background: white;
+    $height: 30px;
+    $margin: 10px;
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    text-decoration: none;
+    $fade-time: 0.2s;
+
+    .img-link {
+      transition: background $fade-time;
+      &:hover {
+        background: white;
+      }
+    }
+
+    img {
+      height: $height;
+      width: auto;
+      margin: $margin;
+    }
+
+    a, span {
+      transition: background-color $fade-time;
+      padding: $margin;
+      height: $height;
+      display: flex;
+      align-items: center;
+      text-decoration: none;
+    }
   }
 }
 
@@ -249,15 +251,15 @@ table {
 
 #search-results {
   $bg: #eaeaea;
+  $bg-highlight: #f9f9f9;
   $fade-time: 0.1s;
   display: flex;
   flex-direction: column;
-  background-color: $bg;
   .search-result {
+    background-color: $bg;
     text-decoration: none;
     color: $font-color;
-    padding: 2px;
-    margin: 4px 8px;
+    padding: 6px 10px;
     border-bottom: 2px solid transparent;
     transition: border-bottom-color $fade-time;
 
@@ -275,11 +277,15 @@ table {
       color: $brand-color;
     }
 
-    &:hover {
+    &:focus, &:hover {
+      outline: none;
       .search-title {
         color: $brand-color;
       }
-      background-color: $bg;
+      background-color: $bg-highlight;
+    }
+
+    &:hover {
       border-bottom-color: $brand-color;
     }
   }
