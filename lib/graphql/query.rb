@@ -27,7 +27,7 @@ module GraphQL
       end
     end
 
-    attr_reader :schema, :context, :root_value, :warden, :provided_variables
+    attr_reader :schema, :context, :root_value, :warden, :provided_variables, :operation_name
 
     attr_accessor :query_string
 
@@ -37,8 +37,8 @@ module GraphQL
     end
 
     # @return [String, nil] The name of the operation to run (may be inferred)
-    def operation_name
-      with_prepared_ast { @operation_name }
+    def selected_operation_name
+      selected_operation.name
     end
 
     # Prepare query `query_string` on `schema`

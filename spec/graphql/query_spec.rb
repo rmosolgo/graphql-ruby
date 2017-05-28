@@ -79,6 +79,7 @@ describe GraphQL::Query do
 
       it "returns the provided name" do
         assert_equal "q2", query.operation_name
+        assert_equal "q2", query.selected_operation_name
       end
     end
 
@@ -88,8 +89,9 @@ describe GraphQL::Query do
       GRAPHQL
       }
 
-      it "returns the inferred name" do
-        assert_equal "q3", query.operation_name
+      it "returns nil" do
+        assert_equal nil, query.operation_name
+        assert_equal "q3", query.selected_operation_name
       end
     end
   end
