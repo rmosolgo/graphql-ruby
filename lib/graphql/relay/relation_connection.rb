@@ -83,19 +83,17 @@ module GraphQL
       end
 
       def relation_offset(relation)
-        case relation
-        when ActiveRecord::Relation
+        if relation.respond_to?(:offset_value)
           relation.offset_value
-        when Sequel::Dataset
+        else
           relation.opts[:offset]
         end
       end
 
       def relation_limit(relation)
-        case relation
-        when ActiveRecord::Relation
+        if relation.respond_to?(:limit_value)
           relation.limit_value
-        when Sequel::Dataset
+        else
           relation.opts[:limit]
         end
       end
