@@ -1,6 +1,7 @@
 .ruby-version
 doc/
 .yardoc/
+guides/yardoc/
 pkg/
 Gemfile.lock
 gemfiles/*.lock
