@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 namespace :site do
   desc "View the documentation site locally"
   task serve: :build_doc do
