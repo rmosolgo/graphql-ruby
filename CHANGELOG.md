@@ -6,7 +6,15 @@
 
 ### New features
 
+## 1.6.1 (28 May 2017)
+
+### New Features
+
+- `Query#selected_operation_name` returns the operation to execute, even if it was inferred (not provided as `operation_name:`) #746
+
 ### Bug fixes
+
+- Return `nil` from `Query#operation_name` if no `operation_name:` was provided #746
 
 ## 1.6.0 (27 May 2017)
 
