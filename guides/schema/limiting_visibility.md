@@ -11,7 +11,7 @@ Sometimes, you want to hide schema elements from some users. For example:
 - some elements are feature flagged; or
 - some elements require higher permissions
 
-If you only want to limit _access_ to these fields, consider the options described in the [authorization guide]({{site.baseurl}}/queries/authorization).
+If you only want to limit _access_ to these fields, consider using [field instrumentation]({{ site.baseurl }}/fields/instrumentation) to check objects at runtime or [query analyzers]({{ site.baseurl }}/queries/analysis) to check queries before running them.
 
 If you want to _completely hide_ some fields, types, enum values or arguments, read on!
 
@@ -57,7 +57,7 @@ The `schema_member` may be any of:
 
 ## Use with Metadata
 
-This feature pairs nicely with attaching custom data to types. See the [types and fields guide]({{ site.baseurl }}/schema/types_and_fields) for information about assigning values to an object's `metadata`.
+This feature pairs nicely with attaching custom data to types. See the ["Extending the DSL"]({{ site.baseurl }}/schema/extending_the_dsl) for information about assigning values to an object's `metadata`.
 
 Then, you can check `metadata` in your filter. For example, to hide fields based on a metadata flag:
 

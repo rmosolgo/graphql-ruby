@@ -8,7 +8,7 @@ desc: Use Rails generators to install GraphQL and scaffold new types.
 
 If you're using GraphQL with Ruby on Rails, you can use generators to:
 
-- [setup GraphQL](#graphql-install), including [GraphiQL](https://github.com/graphql/graphiql), [GraphQL::Batch](https://github.com/Shopify/graphql-batch), and [Relay](https://facebook.github.io/relay/)
+- [setup GraphQL](#graphqlinstall), including [GraphiQL](https://github.com/graphql/graphiql), [GraphQL::Batch](https://github.com/Shopify/graphql-batch), and [Relay](https://facebook.github.io/relay/)
 - [scaffold types](#scaffolding-types)
 - [scaffold functions](#scaffolding-functions)
 - [scaffold Relay mutations](#scaffolding-mutations)

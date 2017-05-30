@@ -24,7 +24,7 @@ module GraphQLSite
       full_img_path = "#{@context.registers[:site].baseurl}#{img_path}"
       %|
         <a href="#{full_img_path}" target="_blank">
-          <img src="#{full_img_path}" title="#{img_title}" />
+          <img src="#{full_img_path}" title="#{img_title}" alt="#{img_title}" />
         </a>
       |
     end

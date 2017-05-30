@@ -26,7 +26,7 @@ $ bundle install
 On Rails, you can get started with a few [GraphQL generators](https://rmosolgo.github.io/graphql-ruby/schema/generators#graphqlinstall):
 
 ```sh
-# Add graphql-ruby boilerplate and mount graphiql in development  
+# Add graphql-ruby boilerplate and mount graphiql in development
 rails g graphql:install
 # Make your first object type
 rails g graphql:object Post title:String rating:Int comments:[Comment]
@@ -87,7 +87,7 @@ Schema = GraphQL::Schema.define do
 end
 ```
 
-This schema is ready to serve GraphQL queries! See ["Configuration Options"]({{ site.baseurl }}/schema/configuration_options) for all the schema options.
+This schema is ready to serve GraphQL queries! [Browse the guides]({{ site.baseurl }}/guides) to learn about other GraphQL Ruby features.
 
 ### Execute queries
 

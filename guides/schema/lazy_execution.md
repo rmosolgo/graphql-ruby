@@ -15,7 +15,7 @@ With lazy execution, you can optimize access to external services (such as datab
 [`graphql-batch`](https://github.com/shopify/graphql-batch) provides a powerful, flexible toolkit for lazy resolution with GraphQL.
 
 
-Lazy resolution can be [instrumented]({{ site.baseurl }}/schema/instrumentation).
+Lazy resolution can be [instrumented]({{ site.baseurl }}/fields/instrumentation).
 
 ## Example: Batched Find
 
