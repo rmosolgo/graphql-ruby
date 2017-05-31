@@ -57,6 +57,14 @@ You can limit the number of results with `max_page_size:`:
 connection :featured_comments, CommentType.connection_type, max_page_size: 50
 ```
 
+In addition, you can set a global default for all connection that do not specify a `max_page_size`:
+
+```ruby
+MySchema = GraphQL::Schema.define do
+  default_max_page_size 100
+end
+```
+
 ## Connection types
 
 You can customize a connection type with `.define_connection`:
