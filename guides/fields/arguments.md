@@ -49,7 +49,7 @@ Provide a `prepare` function to modify or validate the value of an argument befo
 
 ```ruby
 field :posts, types[PostType] do
-  argument :startDate, types.String, prepare: ->(startDate) {
+  argument :startDate, types.String, prepare: ->(startDate, ctx) {
     # return the prepared argument or GraphQL::ExecutionError.new("msg")
     # to halt the execution of the field and add "msg" to the `errors` key.
   }
