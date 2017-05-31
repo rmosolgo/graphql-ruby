@@ -57,13 +57,13 @@ module GraphQL
       # @param parent [Object] The object which this collection belongs to
       # @param context [GraphQL::Query::Context] The context from the field being resolved
       def initialize(nodes, arguments, field: nil, max_page_size: nil, parent: nil, context: nil)
+        @context = context
         @nodes = nodes
         @arguments = arguments
-        @max_page_size = max_page_size
         @field = field
         @parent = parent
-        @context = context
         @encoder = context ? @context.schema.cursor_encoder : GraphQL::Schema::Base64Encoder
+        @max_page_size = max_page_size.nil? && context ? @context.schema.default_max_page_size : max_page_size
       end
 
       def encode(data)
