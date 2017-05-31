@@ -17,7 +17,7 @@ end
 The instrumenter must implement `#before_query(query)` and `#after_query(query)`. The return values of these methods are not used. They receive the {{ "GraphQL::Query" | api_doc }} instance.
 
 ```ruby
-module MyQueryInstrumentation
+module QueryTimerInstrumentation
   module_function
 
   # Log the time of the query
