@@ -79,7 +79,7 @@ exposing another key to clients.</p>
 <p>Provide a <code class="highlighter-rouge">prepare</code> function to modify or validate the value of an argument before the field’s <code class="highlighter-rouge">resolve</code> function is executed:</p>
 
 <div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:posts</span><span class="p">,</span> <span class="n">types</span><span class="p">[</span><span class="no">PostType</span><span class="p">]</span> <span class="k">do</span>
-  <span class="n">argument</span> <span class="ss">:startDate</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">String</span><span class="p">,</span> <span class="ss">prepare: </span><span class="o">-&gt;</span><span class="p">(</span><span class="n">startDate</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">argument</span> <span class="ss">:startDate</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">String</span><span class="p">,</span> <span class="ss">prepare: </span><span class="o">-&gt;</span><span class="p">(</span><span class="n">startDate</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
     <span class="c1"># return the prepared argument or GraphQL::ExecutionError.new("msg")</span>
     <span class="c1"># to halt the execution of the field and add "msg" to the `errors` key.</span>
   <span class="p">}</span>
