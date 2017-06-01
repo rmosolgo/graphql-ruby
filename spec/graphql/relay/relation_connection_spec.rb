@@ -206,7 +206,7 @@ describe GraphQL::Relay::RelationConnection do
 
       it "applies to queries by `last`" do
         second_to_last_two_names = ["Death Star", "Shield Generator"]
-        first_second_and_third_names = ["Yavin", "Echo Base"]
+        first_and_second_names = ["Yavin", "Echo Base"]
 
         last_cursor = "Ng=="
         result = star_wars_query(query_string, "last" => 100, "before" => last_cursor)
@@ -214,15 +214,15 @@ describe GraphQL::Relay::RelationConnection do
         assert_equal(true, result["data"]["empire"]["bases"]["pageInfo"]["hasPreviousPage"])
 
         result = star_wars_query(query_string, "before" => last_cursor)
-        assert_equal(first_second_and_third_names, get_names(result))
+        assert_equal(first_and_second_names, get_names(result))
         assert_equal(false, result["data"]["empire"]["bases"]["pageInfo"]["hasPreviousPage"], "hasPreviousPage is false when last is not specified")
 
         third_cursor = "Mw=="
         result = star_wars_query(query_string, "last" => 100, "before" => third_cursor)
-        assert_equal(first_second_and_third_names, get_names(result))
+        assert_equal(first_and_second_names, get_names(result))
 
         result = star_wars_query(query_string, "before" => third_cursor)
-        assert_equal(first_second_and_third_names, get_names(result))
+        assert_equal(first_and_second_names, get_names(result))
       end
     end
 

@@ -187,12 +187,12 @@ describe GraphQL::Relay::ArrayConnection do
         assert_equal(["Yavin", "Echo Base"], get_names(result))
         assert_equal(false, get_page_info(result)["hasPreviousPage"], "hasPreviousPage is false when last is not specified")
 
-        fourth_cursor = "Mw=="
+        third_cursor = "Mw=="
         first_and_second_names = ["Yavin", "Echo Base"]
-        result = star_wars_query(query_string, "last" => 100, "before" => fourth_cursor)
+        result = star_wars_query(query_string, "last" => 100, "before" => third_cursor)
         assert_equal(first_and_second_names, get_names(result))
 
-        result = star_wars_query(query_string, "before" => fourth_cursor)
+        result = star_wars_query(query_string, "before" => third_cursor)
         assert_equal(first_and_second_names, get_names(result))
       end
     end
