@@ -40,7 +40,27 @@ module GraphQL
           run_queries(schema, queries, *rest)
         end
 
+        # @param schema [GraphQL::Schema]
+        # @param queries [Array<GraphQL::Query>]
+        # @param context [Hash]
+        # @param max_complexity [Integer]
+        # @return [Array<Hash>] One result per query
         def run_queries(schema, queries, context: {}, max_complexity: nil)
+          has_custom_strategy = schema.query_execution_strategy || schema.mutation_execution_strategy || schema.subscription_execution_strategy
+          if has_custom_strategy
+            if queries.length == 1
+              return [run_one_legacy(schema, queries.first)]
+            else
+              raise ArgumentError, "Multiplexing doesn't support custom execution strategies, run one query at a time instead"
+            end
+          else
+            run_as_multiplex(schema, queries, context: context, max_complexity: max_complexity)
+          end
+        end
+
+        private
+
+        def run_as_multiplex(schema, queries, context:, max_complexity:)
           query_instrumenters = schema.instrumenters[:query]
           multiplex_instrumenters = schema.instrumenters[:multiplex]
           multiplex = self.new(schema: schema, queries: queries, context: context)
@@ -79,8 +99,6 @@ module GraphQL
           end
           multiplex_instrumenters.reverse_each { |i| i.after_multiplex(multiplex) }
         end
-
-        private
 
         # @param query [GraphQL::Query]
         # @return [Hash] The initial result (may not be finished if there are lazy values)
@@ -127,6 +145,24 @@ module GraphQL
 
             result
           end
+        end
+
+        # use the old `query_execution_strategy` etc to run this query
+        def run_one_legacy(schema, query)
+          instrumenters = schema.instrumenters[:query]
+          instrumenters.each { |i| i.before_query(query) }
+          query.result = if !query.valid?
+            all_errors = query.validation_errors + query.analysis_errors + query.context.errors
+            if all_errors.any?
+              { "errors" => all_errors.map(&:to_h) }
+            else
+              nil
+            end
+          else
+            GraphQL::Query::Executor.new(query).result
+          end
+        ensure
+          instrumenters.reverse_each { |i| i.after_query(query) }
         end
       end
     end
