@@ -256,11 +256,22 @@ module GraphQL
 
     # Resolve field named `field_name` for type `parent_type`.
     # Handles dynamic fields `__typename`, `__type` and `__schema`, too
-    # @see [GraphQL::Schema::Warden] Restricted access to members of a schema
+    # @param parent_type [String, GraphQL::BaseType]
+    # @param field_name [String]
     # @return [GraphQL::Field, nil] The field named `field_name` on `parent_type`
+    # @see [GraphQL::Schema::Warden] Restricted access to members of a schema
     def get_field(parent_type, field_name)
       with_definition_error_check do
-        defined_field = @instrumented_field_map.get(parent_type.name, field_name)
+        parent_type_name = case parent_type
+        when GraphQL::BaseType
+          parent_type.name
+        when String
+          parent_type
+        else
+          raise "Unexpected parent_type: #{parent_type}"
+        end
+
+        defined_field = @instrumented_field_map.get(parent_type_name, field_name)
         if defined_field
           defined_field
         elsif field_name == "__typename"
