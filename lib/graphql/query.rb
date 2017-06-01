@@ -188,7 +188,11 @@ module GraphQL
     end
 
     def mutation?
-      @mutation
+      with_prepared_ast { @mutation }
+    end
+
+    def query?
+      with_prepared_ast { @query }
     end
 
     # @return [void]
@@ -260,6 +264,7 @@ module GraphQL
           end
           @ast_variables = @selected_operation.variables
           @mutation = @selected_operation.operation_type == "mutation"
+          @query = @selected_operation.operation_type == "query"
         end
       end
 
