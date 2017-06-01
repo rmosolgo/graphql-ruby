@@ -360,4 +360,13 @@ type Query {
       assert_equal result, JSON.parse(schema.to_json)
     end
   end
+
+  describe "#get_field" do
+    it "returns fields by type or type name" do
+      field = schema.get_field("Cheese", "id")
+      assert_instance_of GraphQL::Field, field
+      field_2 = schema.get_field(Dummy::CheeseType, "id")
+      assert_equal field, field_2
+    end
+  end
 end
