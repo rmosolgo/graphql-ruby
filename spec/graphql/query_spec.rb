@@ -578,4 +578,18 @@ describe GraphQL::Query do
       assert_kind_of GraphQL::InternalRepresentation::Node, query.internal_representation.fragment_definitions["dairyFields"]
     end
   end
+
+  describe "query_execution_strategy" do
+    class DummyStrategy
+      def execute(ast_operation, root_type, query_object)
+        { "dummy" => true }
+      end
+    end
+
+    it "is used for running a query, if it's present and not the default" do
+      dummy_schema = schema.redefine(query_execution_strategy: DummyStrategy)
+      result = dummy_schema.execute(" { __typename }")
+      assert_equal({"data"=>{"dummy"=>true}}, result)
+    end
+  end
 end
