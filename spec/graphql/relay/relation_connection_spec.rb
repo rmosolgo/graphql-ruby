@@ -225,6 +225,65 @@ describe GraphQL::Relay::RelationConnection do
         assert_equal(first_and_second_names, get_names(result))
       end
     end
+
+    describe "applying default_max_page_size" do
+      let(:query_string) {%|
+        query getBases($first: Int, $after: String, $last: Int, $before: String){
+          empire {
+            bases: basesWithDefaultMaxLimitRelation(first: $first, after: $after, last: $last, before: $before) {
+              ... basesConnection
+            }
+          }
+        }
+
+        fragment basesConnection on BaseConnection {
+          edges {
+            cursor
+            node {
+              name
+            }
+          },
+          pageInfo {
+            hasNextPage
+            hasPreviousPage
+            startCursor
+            endCursor
+          }
+        }
+        |}
+
+      it "applies to queries by `first`" do
+        result = star_wars_query(query_string, "first" => 100)
+        assert_equal(3, result["data"]["empire"]["bases"]["edges"].size)
+        assert_equal(true, result["data"]["empire"]["bases"]["pageInfo"]["hasNextPage"])
+
+        # Max page size is applied _without_ `first`, also
+        result = star_wars_query(query_string)
+        assert_equal(3, result["data"]["empire"]["bases"]["edges"].size)
+        assert_equal(false, result["data"]["empire"]["bases"]["pageInfo"]["hasNextPage"], "hasNextPage is false when first is not specified")
+      end
+
+      it "applies to queries by `last`" do
+        second_to_last_three_names = ["Secret Hideout", "Death Star", "Shield Generator"]
+        first_second_and_third_names = ["Yavin", "Echo Base", "Secret Hideout"]
+
+        last_cursor = "Ng=="
+        result = star_wars_query(query_string, "last" => 100, "before" => last_cursor)
+        assert_equal(second_to_last_three_names, get_names(result))
+        assert_equal(true, result["data"]["empire"]["bases"]["pageInfo"]["hasPreviousPage"])
+
+        result = star_wars_query(query_string, "before" => last_cursor)
+        assert_equal(first_second_and_third_names, get_names(result))
+        assert_equal(false, result["data"]["empire"]["bases"]["pageInfo"]["hasPreviousPage"], "hasPreviousPage is false when last is not specified")
+
+        fourth_cursor = "NA=="
+        result = star_wars_query(query_string, "last" => 100, "before" => fourth_cursor)
+        assert_equal(first_second_and_third_names, get_names(result))
+
+        result = star_wars_query(query_string, "before" => fourth_cursor)
+        assert_equal(first_second_and_third_names, get_names(result))
+      end
+    end
   end
 
   describe "without a block" do

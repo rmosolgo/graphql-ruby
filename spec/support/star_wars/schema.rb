@@ -96,7 +96,7 @@ module StarWars
 
     field :id, !types.ID, resolve: GraphQL::Relay::GlobalIdResolve.new(type: Faction)
     field :name, types.String
-    connection :ships, ShipConnectionWithParentType do
+    connection :ships, ShipConnectionWithParentType, max_page_size: 1000 do
       resolve ->(obj, args, ctx) {
         all_ships = obj.ships.map {|ship_id| StarWars::DATA["Ship"][ship_id] }
         if args[:nameIncludes]
@@ -159,7 +159,15 @@ module StarWars
       resolve ->(object, args, context) { Base.all.to_a }
     end
 
-    connection :basesAsSequelDataset, BaseConnectionWithTotalCountType do
+    connection :basesWithDefaultMaxLimitRelation, BaseType.connection_type do
+      resolve ->(object, args, context) { Base.all }
+    end
+
+    connection :basesWithDefaultMaxLimitArray, BaseType.connection_type do
+      resolve ->(object, args, context) { Base.all.to_a }
+    end
+
+    connection :basesAsSequelDataset, BaseConnectionWithTotalCountType, max_page_size: 1000 do
       argument :nameIncludes, types.String
       resolve ->(obj, args, ctx) {
         all_bases = SequelBase.where(faction_id: obj.id)
@@ -332,6 +340,7 @@ module StarWars
   Schema = GraphQL::Schema.define do
     query(QueryType)
     mutation(MutationType)
+    default_max_page_size 3
 
     resolve_type ->(object, ctx) {
       if object == :test_error

@@ -196,5 +196,65 @@ describe GraphQL::Relay::ArrayConnection do
         assert_equal(first_and_second_names, get_names(result))
       end
     end
+
+    describe "applying default_max_page_size" do
+      def get_names(result)
+        result["data"]["rebels"]["bases"]["edges"].map { |e| e["node"]["name"] }
+      end
+
+      def get_page_info(result)
+        result["data"]["rebels"]["bases"]["pageInfo"]
+      end
+
+      let(:query_string) {%|
+        query getShips($first: Int, $after: String, $last: Int, $before: String){
+          rebels {
+            bases: basesWithDefaultMaxLimitArray(first: $first, after: $after, last: $last, before: $before) {
+              edges {
+                cursor
+                node {
+                  name
+                }
+              }
+              pageInfo {
+                hasNextPage
+                hasPreviousPage
+              }
+            }
+          }
+        }
+      |}
+
+      it "applies to queries by `first`" do
+        result = star_wars_query(query_string, "first" => 100)
+        assert_equal(["Yavin", "Echo Base", "Secret Hideout"], get_names(result))
+        assert_equal(true, get_page_info(result)["hasNextPage"])
+
+        # Max page size is applied _without_ `first`, also
+        result = star_wars_query(query_string)
+        assert_equal(["Yavin", "Echo Base", "Secret Hideout"], get_names(result))
+        assert_equal(false, get_page_info(result)["hasNextPage"], "hasNextPage is false when first is not specified")
+      end
+
+      it "applies to queries by `last`" do
+        last_cursor = "Ng=="
+
+        result = star_wars_query(query_string, "last" => 100, "before" => last_cursor)
+        assert_equal(["Secret Hideout", "Death Star", "Shield Generator"], get_names(result))
+        assert_equal(true, get_page_info(result)["hasPreviousPage"])
+
+        result = star_wars_query(query_string, "before" => last_cursor)
+        assert_equal(["Yavin", "Echo Base", "Secret Hideout"], get_names(result))
+        assert_equal(false, get_page_info(result)["hasPreviousPage"], "hasPreviousPage is false when last is not specified")
+
+        fourth_cursor = "NA=="
+        first_second_and_third_names = ["Yavin", "Echo Base", "Secret Hideout"]
+        result = star_wars_query(query_string, "last" => 100, "before" => fourth_cursor)
+        assert_equal(first_second_and_third_names, get_names(result))
+
+        result = star_wars_query(query_string, "before" => fourth_cursor)
+        assert_equal(first_second_and_third_names, get_names(result))
+      end
+    end
   end
 end

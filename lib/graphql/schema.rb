@@ -55,7 +55,7 @@ module GraphQL
     accepts_definitions \
       :query, :mutation, :subscription,
       :query_execution_strategy, :mutation_execution_strategy, :subscription_execution_strategy,
-      :max_depth, :max_complexity,
+      :max_depth, :max_complexity, :default_max_page_size,
       :orphan_types, :resolve_type, :type_error, :parse_error,
       :raise_definition_error,
       :object_from_id, :id_from_object,
@@ -77,7 +77,7 @@ module GraphQL
     attr_accessor \
       :query, :mutation, :subscription,
       :query_execution_strategy, :mutation_execution_strategy, :subscription_execution_strategy,
-      :max_depth, :max_complexity,
+      :max_depth, :max_complexity, :default_max_page_size,
       :orphan_types, :directives,
       :query_analyzers, :multiplex_analyzers, :instrumenters, :lazy_methods,
       :cursor_encoder,
