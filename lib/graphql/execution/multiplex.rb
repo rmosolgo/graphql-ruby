@@ -51,7 +51,7 @@ module GraphQL
             if queries.length == 1
               return [run_one_legacy(schema, queries.first)]
             else
-              raise "Multiplexing doesn't support custom execution strategies, run one query at a time instead"
+              raise ArgumentError, "Multiplexing doesn't support custom execution strategies, run one query at a time instead"
             end
           else
             run_as_multiplex(schema, queries, context: context, max_complexity: max_complexity)

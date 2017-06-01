@@ -580,6 +580,8 @@ describe GraphQL::Query do
   end
 
   describe "query_execution_strategy" do
+    let(:custom_execution_schema) { schema.redefine(query_execution_strategy: DummyStrategy) }
+
     class DummyStrategy
       def execute(ast_operation, root_type, query_object)
         { "dummy" => true }
@@ -587,9 +589,19 @@ describe GraphQL::Query do
     end
 
     it "is used for running a query, if it's present and not the default" do
-      dummy_schema = schema.redefine(query_execution_strategy: DummyStrategy)
-      result = dummy_schema.execute(" { __typename }")
+      result = custom_execution_schema.execute(" { __typename }")
       assert_equal({"data"=>{"dummy"=>true}}, result)
+    end
+
+    it "can't run a multiplex" do
+      err = assert_raises ArgumentError do
+        custom_execution_schema.multiplex([
+          {query: " { __typename }"},
+          {query: " { __typename }"},
+        ])
+      end
+      msg = "Multiplexing doesn't support custom execution strategies, run one query at a time instead"
+      assert_equal msg, err.message
     end
   end
 end
