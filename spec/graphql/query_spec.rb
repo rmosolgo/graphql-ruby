@@ -500,6 +500,24 @@ describe GraphQL::Query do
     end
   end
 
+  describe "#mutation?" do
+    let(:query_string) { <<-GRAPHQL
+    query Q { __typename }
+    mutation M { pushValue(value: 1) }
+    GRAPHQL
+    }
+
+    it "returns true if the selected operation is a mutation" do
+      query_query = GraphQL::Query.new(schema, query_string, operation_name: "Q")
+      assert_equal false, query_query.mutation?
+      assert_equal true, query_query.query?
+
+      mutation_query = GraphQL::Query.new(schema, query_string, operation_name: "M")
+      assert_equal true, mutation_query.mutation?
+      assert_equal false, mutation_query.query?
+    end
+  end
+
   describe 'NullValue type arguments' do
     let(:schema_definition) {
       <<-GRAPHQL
