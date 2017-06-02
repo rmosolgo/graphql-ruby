@@ -88,6 +88,14 @@
 </code></pre>
 </div>
 
+<p>In addition, you can set a global default for all connection that do not specify a <code class="highlighter-rouge">max_page_size</code>:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+  <span class="n">default_max_page_size</span> <span class="mi">100</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
 <h2 id="connection-types">Connection types</h2>
 
 <p>You can customize a connection type with <code class="highlighter-rouge">.define_connection</code>:</p>
@@ -329,7 +337,7 @@
 
 <p>Now, all connections will use URL-safe base-64 encoding.</p>
 
-<p>From a connection instance, the <code class="highlighter-rouge">cursor_encoders</code> methods available via <a href="http://www.rubydoc.info/gems/graphql/1.6.1/GraphQL/Relay/BaseConnection#encode-instance_method" target="_blank" title="API docs for GraphQL::Relay::BaseConnection#encode"><code>GraphQL::Relay::BaseConnection#encode</code></a> and <a href="http://www.rubydoc.info/gems/graphql/1.6.1/GraphQL/Relay/BaseConnection#decode-instance_method" target="_blank" title="API docs for GraphQL::Relay::BaseConnection#decode"><code>GraphQL::Relay::BaseConnection#decode</code></a></p>
+<p>From a connection instance, the <code class="highlighter-rouge">cursor_encoders</code> methods available via <a href="http://www.rubydoc.info/gems/graphql/1.6.2/GraphQL/Relay/BaseConnection#encode-instance_method" target="_blank" title="API docs for GraphQL::Relay::BaseConnection#encode"><code>GraphQL::Relay::BaseConnection#encode</code></a> and <a href="http://www.rubydoc.info/gems/graphql/1.6.2/GraphQL/Relay/BaseConnection#decode-instance_method" target="_blank" title="API docs for GraphQL::Relay::BaseConnection#decode"><code>GraphQL::Relay::BaseConnection#decode</code></a></p>
 
 </div>
 <p class="guide-footer">
