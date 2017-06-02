@@ -6,6 +6,22 @@
 
 ### New features
 
+### Bug fixes
+
+## 1.6.2 (2 Jun 2017)
+
+### New features
+
+- `Schema.define { default_max_page_size(...) }` provides a Connection `max_page_size` when no other is provided #752
+- `Schema#get_field(type, field)` accepts a string type name #756
+- `Schema.define { rescue_from(...) }` accepts multiple error classes for the handler #758
+
+### Bug fixes
+
+- Use `*_execution_strategy` when executing a single query (doesn't support `Schema#multiplex`) #755
+- Fix NameError when `ActiveRecord` isn't loaded #747
+- Fix `Query#mutation?` etc to support lazily-loaded AST #754
+
 ## 1.6.1 (28 May 2017)
 
 ### New Features
@@ -134,7 +150,6 @@
 
 - Allow fields with different arguments when fragments are included within inline fragments of non-overlapping types #680
 - Run `lazy_resolve` instrumentation for `connection` fields #679
-
 
 ## 1.5.7 (14 Apr 2017)
 
@@ -399,7 +414,6 @@
   end
   ```
 
-
 ### New features
 
 - You can add a `nodes` field directly to a connection. #451 That way you can say `{ friends { nodes } }` instead of `{ freinds { edges { node } } }`. Either pass `nodes_field: true` when defining a custom connection type, for example:
@@ -552,11 +566,9 @@
 
   You can see PR #373 for how built-in analyzers were changed to reflect this.
 
-
 ### Deprecations
 
 - `InternalRepresentation::Node#children` and `InternalRepresentation::Node#definitions` are deprecated due to the bug described below and the breaking change described above. Instead, use `InternalRepresentation::Node#typed_children` and `InternalRepresentation::Node#defininition`. #373
-
 
 ### New features
 
@@ -599,7 +611,6 @@
 - Schema members respond to `#redefine { ... }` for making shallow copies with extended definitions. #357
 - `Schema#instrument` provides an avenue for observing query and field resolution with no overhead.
 - Some `SerialExecution` objects were converted to functions, resulting in a modest performance improvement for query resolution.
-
 
 ### Bug fixes
 
@@ -648,7 +659,6 @@
 - Use `JSON.generate(val, quirks_mode: true)` for compatibility with other JSON implementations #316
 - Improvements for compatibility with 1.9.3 branch #315 #314 #313
 - Raise a descriptive error when calculating a `cursor` for a node which isn't present in the connection's members #327
-
 
 ## 0.19.3 (13 Oct 2016)
 
@@ -861,7 +871,6 @@
 - Execution errors include a `"path"` key which points to the field in the response where the error occurred. #259
 - Parsing directives from the Schema language is now supported #273
 
-
 ### Bug fixes
 
 - `@skip` and `@include` over multiple selections are now handled according to the spec #256
@@ -897,7 +906,6 @@
 
 - If a schema receives a query on `mutation` or `subscription` but that root doesn't exist, return a validation error #254
 - `Query::Arguments#to_h` only includes keys that were provided in the query or have a default value #251
-
 
 ## 0.18.11 (11 Sep 2016)
 
@@ -1459,7 +1467,6 @@
 
 - `GraphQL::Query::ParallelExecution` has been extracted to [`graphql-parallel`](https://github.com/rmosolgo/graphql-parallel)
 
-
 ## 0.8.0 (4 Sept 2015)
 
 ### New features
@@ -1506,7 +1513,6 @@
 
 - Properly parse empty strings
 - Fix argument / variable compatibility validation
-
 
 ## 0.6.0 (14 Aug 2015)
 
