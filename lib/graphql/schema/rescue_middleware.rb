@@ -15,18 +15,18 @@ module GraphQL
       # @example Rescue from not-found by telling the user
       #   MySchema.rescue_from(ActiveRecord::RecordNotFound) { "An item could not be found" }
       #
-      # @param error_class [Class] a class of error to rescue from
-      # @yield [err] A handler to return a message for this error instance
+      # @param error_classes [Class] one or more classes of errors to rescue from
+      # @yield [err] A handler to return a message for these error instances
       # @yieldparam [Exception] an error that was rescued
       # @yieldreturn [String] message to put in GraphQL response
-      def rescue_from(error_class, &block)
-        rescue_table[error_class] = block
+      def rescue_from(*error_classes, &block)
+        error_classes.map{ |error_class| rescue_table[error_class] = block }
       end
 
-      # Remove the handler for `error_class`
+      # Remove the handler for `error_classs`
       # @param error_class [Class] the error class whose handler should be removed
-      def remove_handler(error_class)
-        rescue_table.delete(error_class)
+      def remove_handler(*error_classes)
+        error_classes.map{ |error_class| rescue_table.delete(error_class) }
       end
 
       # Implement the requirement for {GraphQL::Schema::MiddlewareChain}
