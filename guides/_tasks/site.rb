@@ -89,7 +89,7 @@ rubydoc_url: %{url}
 %{documentation}
 PAGE
 
-    puts "Preparing YARD docs for search index"
+    puts "Preparing YARD docs @ v#{GraphQL::VERSION} for search index..."
     registry = YARD::Registry.load!(".yardoc")
     files_target = "guides/yardoc"
     FileUtils.rm_rf(files_target)
@@ -113,6 +113,6 @@ PAGE
       filepath = "guides/yardoc/#{filename}.md"
       File.write(filepath, page_content)
     end
-    puts "Wrote #{docs.size} YARD docs to #{files_target}"
+    puts "Wrote #{docs.size} YARD docs to #{files_target}."
   end
 end
