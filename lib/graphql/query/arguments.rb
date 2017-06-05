@@ -21,13 +21,15 @@ module GraphQL
       # @param key [String, Symbol] name or index of value to access
       # @return [Object] the argument at that key
       def [](key)
-        @argument_values.fetch(key.to_s, NULL_ARGUMENT_VALUE).value
+        key_s = key.is_a?(String) ? key : key.to_s
+        @argument_values.fetch(key_s, NULL_ARGUMENT_VALUE).value
       end
 
       # @param key [String, Symbol] name of value to access
       # @return [Boolean] true if the argument was present in this field
       def key?(key)
-        @argument_values.key?(key.to_s)
+        key_s = key.is_a?(String) ? key : key.to_s
+        @argument_values.key?(key_s)
       end
 
       # Get the hash of all values, with stringified keys
