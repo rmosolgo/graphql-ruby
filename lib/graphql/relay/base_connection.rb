@@ -26,16 +26,14 @@ module GraphQL
         # @return [subclass of BaseConnection] a connection Class for wrapping `nodes`
         def connection_for_nodes(nodes)
           # Check for class _names_ because classes can be redefined in Rails development
-          ancestor_names = nodes.class.ancestors.map(&:name)
-          implementation_class_name = ancestor_names.find do |ancestor_class_name|
-            CONNECTION_IMPLEMENTATIONS.include? ancestor_class_name
+          nodes.class.ancestors.each do |ancestor|
+            conn_impl = CONNECTION_IMPLEMENTATIONS[ancestor.name]
+            if conn_impl
+              return conn_impl
+            end
           end
-
-          if implementation_class_name.nil?
-            raise("No connection implementation to wrap #{nodes.class} (#{nodes})")
-          else
-            CONNECTION_IMPLEMENTATIONS[implementation_class_name]
-          end
+          # Should have found a connection during the loop:
+          raise("No connection implementation to wrap #{nodes.class} (#{nodes})")
         end
 
         # Add `connection_class` as the connection wrapper for `nodes_class`
