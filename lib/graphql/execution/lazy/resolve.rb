@@ -14,8 +14,10 @@ module GraphQL
 
         def self.resolve_in_place(value)
           lazies = []
+          acc = []
+          each_lazy(acc, value)
 
-          each_lazy(value) do |field_result|
+          acc.each do |field_result|
             inner_lazy = field_result.value.then do |inner_v|
               field_result.value = inner_v
               resolve_in_place(inner_v)
@@ -26,25 +28,26 @@ module GraphQL
           Lazy.new { lazies.map(&:value) }
         end
 
-        # If `value` is a collection, call `block`
-        # with any {Lazy} instances in the collection
+        # If `value` is a collection,
+        # add any {Lazy} instances in the collection
+        # to `acc`
         # @return [void]
-        def self.each_lazy(value, &block)
+        def self.each_lazy(acc, value)
           case value
           when SelectionResult
             value.each do |key, field_result|
-              each_lazy(field_result, &block)
+              each_lazy(acc, field_result)
             end
           when Array
             value.each do |field_result|
-              each_lazy(field_result, &block)
+              each_lazy(acc, field_result)
             end
           when FieldResult
             field_value = value.value
             if field_value.is_a?(Lazy)
-              yield(value)
+              acc << value
             else
-              each_lazy(field_value, &block)
+              each_lazy(acc, field_value)
             end
           end
         end

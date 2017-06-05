@@ -2,6 +2,8 @@
 module GraphQL
   module InternalRepresentation
     class Node
+      # @api private
+      DEFAULT_TYPED_CHILDREN = Proc.new { |h, k| h[k] = {} }
       # @return [String] the name this node has in the response
       attr_reader :name
 
@@ -15,7 +17,7 @@ module GraphQL
       # @return [Hash<GraphQL::ObjectType, Hash<String => Node>>]
       def typed_children
         @typed_childen ||= begin
-          new_tc = Hash.new { |h, k| h[k] = {} }
+          new_tc = Hash.new(&DEFAULT_TYPED_CHILDREN)
           if @scoped_children.any?
             all_object_types = Set.new
             scoped_children.each_key { |t| all_object_types.merge(@query.possible_types(t)) }

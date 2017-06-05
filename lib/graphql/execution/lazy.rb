@@ -40,9 +40,9 @@ module GraphQL
       end
 
       # @return [Lazy] A {Lazy} whose value depends on another {Lazy}, plus any transformations in `block`
-      def then(&block)
+      def then
         self.class.new {
-          block.call(value)
+          yield(value)
         }
       end
     end
