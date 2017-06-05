@@ -7,25 +7,43 @@ module GraphQL
       module Resolve
         # Mutate `value`, replacing {Lazy} instances in place with their resolved values
         # @return [void]
+
+        # This object can be passed like an array, but it doesn't allocate an
+        # array until it's used.
+        #
+        # There's one crucial difference: you have to _capture_ the result
+        # of `#<<`. (This _works_ with arrays but isn't required, since it has a side-effect.)
+        # @api private
+        module NullAccumulator
+          def self.<<(item)
+            [item]
+          end
+
+          def self.empty?
+            true
+          end
+        end
+
         def self.resolve(value)
           lazies = resolve_in_place(value)
           deep_sync(lazies)
         end
 
         def self.resolve_in_place(value)
-          lazies = []
-          acc = []
-          each_lazy(acc, value)
+          acc = each_lazy(NullAccumulator, value)
 
-          acc.each do |field_result|
-            inner_lazy = field_result.value.then do |inner_v|
-              field_result.value = inner_v
-              resolve_in_place(inner_v)
+          if acc.empty?
+            Lazy::NullResult
+          else
+            acc.each_with_index do |field_result, idx|
+              acc[idx] = field_result.value.then do |inner_v|
+                field_result.value = inner_v
+                resolve_in_place(inner_v)
+              end
             end
-            lazies.push(inner_lazy)
-          end
 
-          Lazy.new { lazies.map(&:value) }
+            Lazy.new { acc.each_with_index { |l, idx| acc[idx] = l.value }; acc }
+          end
         end
 
         # If `value` is a collection,
@@ -36,20 +54,22 @@ module GraphQL
           case value
           when SelectionResult
             value.each do |key, field_result|
-              each_lazy(acc, field_result)
+              acc = each_lazy(acc, field_result)
             end
           when Array
             value.each do |field_result|
-              each_lazy(acc, field_result)
+              acc = each_lazy(acc, field_result)
             end
           when FieldResult
             field_value = value.value
             if field_value.is_a?(Lazy)
-              acc << value
+              acc = acc << value
             else
-              each_lazy(acc, field_value)
+              acc = each_lazy(acc, field_value)
             end
           end
+
+          acc
         end
 
         # Traverse `val`, triggering resolution for each {Lazy}.
