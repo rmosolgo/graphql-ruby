@@ -509,6 +509,7 @@ module GraphQL
     # @api private
     BUILT_IN_INSTRUMENTERS = [
       GraphQL::Relay::ConnectionInstrumentation,
+      GraphQL::Relay::EdgesInstrumentation,
       GraphQL::Relay::Mutation::Instrumentation,
     ]
 

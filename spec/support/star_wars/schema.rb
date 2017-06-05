@@ -178,7 +178,11 @@ module StarWars
       }
     end
 
-    connection :basesWithCustomEdge, CustomEdgeBaseConnectionType, property: :bases
+    connection :basesWithCustomEdge, CustomEdgeBaseConnectionType do
+      resolve ->(o, a, c) {
+        LazyNodesWrapper.new(o.bases)
+      }
+    end
   end
 
   # Define a mutation. It will also:
@@ -270,6 +274,19 @@ module StarWars
       @resolved_value = @value || @lazy_value.call
     end
   end
+
+  LazyNodesWrapper = Struct.new(:relation)
+  class LazyNodesRelationConnection < GraphQL::Relay::RelationConnection
+    def initialize(wrapper, *args)
+      super(wrapper.relation, *args)
+    end
+
+    def edge_nodes
+      LazyWrapper.new { super }
+    end
+  end
+
+  GraphQL::Relay::BaseConnection.register_connection_implementation(LazyNodesWrapper, LazyNodesRelationConnection)
 
   QueryType = GraphQL::ObjectType.define do
     name "Query"
