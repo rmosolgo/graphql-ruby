@@ -4,8 +4,14 @@ module GraphQL
     # A valid execution strategy
     # @api private
     class Execute
+
       # @api private
-      SKIP = Object.new
+      class Skip; end
+
+      # Just a singleton for implementing {Query::Context#skip}
+      # @api private
+      SKIP = Skip.new
+
       # @api private
       PROPAGATE_NULL = Object.new
 
@@ -40,7 +46,7 @@ module GraphQL
               query_ctx
             )
 
-            if field_result == SKIP
+            if field_result.is_a?(Skip)
               next
             end
 
@@ -147,7 +153,7 @@ module GraphQL
             else
               nil
             end
-          elsif value == SKIP
+          elsif value.is_a?(Skip)
             value
           else
             case field_type.kind

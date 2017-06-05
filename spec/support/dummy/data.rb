@@ -1,7 +1,13 @@
 # frozen_string_literal: true
 require 'ostruct'
 module Dummy
-  Cheese = Struct.new(:id, :flavor, :origin, :fat_content, :source)
+  Cheese = Struct.new(:id, :flavor, :origin, :fat_content, :source) do
+    def ==(other)
+      # This is buggy on purpose -- it shouldn't be called during execution.
+      other.id == id
+    end
+  end
+
   CHEESES = {
     1 => Cheese.new(1, "Brie", "France", 0.19, 1),
     2 => Cheese.new(2, "Gouda", "Netherlands", 0.3, 1),
