@@ -126,6 +126,7 @@ module GraphQL
       :type, :arguments,
       :property, :hash_key, :complexity,
       :mutation, :function,
+      :edge_class,
       :relay_node_field,
       :relay_nodes_field,
       argument: GraphQL::Define::AssignArgument
@@ -135,7 +136,7 @@ module GraphQL
       :mutation, :arguments, :complexity, :function,
       :resolve, :resolve=, :lazy_resolve, :lazy_resolve=, :lazy_resolve_proc, :resolve_proc,
       :type, :type=, :name=, :property=, :hash_key=,
-      :relay_node_field, :relay_nodes_field
+      :relay_node_field, :relay_nodes_field, :edges?, :edge_class
     )
 
     # @return [Boolean] True if this is the Relay find-by-id field
@@ -182,6 +183,15 @@ module GraphQL
     # @return [Boolean]
     def connection?
       @connection
+    end
+
+    # @return [nil, Class]
+    # @api private
+    attr_accessor :edge_class
+
+    # @return [Boolean]
+    def edges?
+      !!@edge_class
     end
 
     # @return [nil, Integer]
