@@ -124,3 +124,7 @@ If you're building a backend for [Relay](http://facebook.github.io/relay/), you'
 ## Use with Apollo Client
 
 [Apollo Client](http://dev.apollodata.com/) is a full featured, simple to use GraphQL client with convenient integrations for popular view layers. You don't need to do anything special to connect Apollo Client to a `graphql-ruby` server.
+
+## Use with GraphQL.js Client
+
+[GraphQL.js Client](https://github.com/f/graphql.js) is a tiny and platform and framework agnostic, easy to setup and use GraphQL client that works with `graphql-ruby` servers, since GraphQL requests are simple query strings transport over HTTP.
