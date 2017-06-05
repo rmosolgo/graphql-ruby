@@ -35,6 +35,7 @@ module GraphQL
       def method_missing(name, *args, &block)
         definition = @dictionary[name]
         if definition
+          args = args + [block] if args.count == definition.method(:call).arity - 2 && block
           definition.call(@target, *args, &block)
         else
           msg = "#{@target.class.name} can't define '#{name}'"
