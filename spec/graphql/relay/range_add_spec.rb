@@ -29,10 +29,15 @@ describe GraphQL::Relay::RangeAdd do
       field :price, !types.Int
       field :name, !types.String
     end
+    items_connection = item.define_connection do
+      field :field_name, !types.String do
+        resolve ->(o, a, c) { o.field.name }
+      end
+    end
     menu = GraphQL::ObjectType.define do
       name "Menu"
       field :name, !types.String
-      field :items, !item.connection_type
+      field :items, !items_connection
     end
     query = GraphQL::ObjectType.define do
       name "Query"
@@ -45,7 +50,7 @@ describe GraphQL::Relay::RangeAdd do
       input_field :menu_idx, !types.Int
 
       return_field :item_edge, item.edge_type
-      return_field :items, item.connection_type
+      return_field :items, items_connection
       return_field :menu, menu
       resolve ->(obj, input, ctx) {
         this_menu = menus[input[:menu_idx]]
@@ -94,6 +99,7 @@ describe GraphQL::Relay::RangeAdd do
             }
             cursor
           }
+          field_name
         }
       }
     }
@@ -108,6 +114,14 @@ describe GraphQL::Relay::RangeAdd do
       assert_equal({"name"=>"Chilaquiles", "price"=>699}, mutation_res["item_edge"]["node"])
       assert_equal(["California Burrito", "Fish Taco", "Chilaquiles"], mutation_res["items"]["edges"].map { |e| e["node"]["name"] })
       assert_equal(["__1", "__2", "__3"], mutation_res["items"]["edges"].map { |e| e["cursor"] })
+    end
+  end
+
+  describe "when context doesn't expose the field" do
+    it "runs ok" do
+      ra = GraphQL::Relay::RangeAdd.new(item: 1, collection: [1,2,3])
+      assert ra.connection.is_a?(GraphQL::Relay::ArrayConnection)
+      assert_equal 1, ra.edge.node
     end
   end
 end
