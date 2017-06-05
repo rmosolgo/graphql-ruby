@@ -2,9 +2,9 @@
 require_relative "../../lib/graphql/version"
 
 module GraphQLSite
-  module APIDoc
-    API_DOC_ROOT = "http://www.rubydoc.info/gems/graphql/#{GraphQL::VERSION}/"
+  API_DOC_ROOT = "http://www.rubydoc.info/gems/graphql/#{GraphQL::VERSION}/"
 
+  module APIDoc
     def api_doc(input)
       if !input.start_with?("GraphQL")
         ruby_ident = "GraphQL::#{input}"
@@ -29,6 +29,15 @@ module GraphQLSite
       |
     end
   end
+
+  class APIDocRoot < Liquid::Tag
+    def render(context)
+      API_DOC_ROOT
+    end
+  end
 end
 
+
+
 Liquid::Template.register_filter(GraphQLSite::APIDoc)
+Liquid::Template.register_tag("api_doc_root", GraphQLSite::APIDocRoot)
