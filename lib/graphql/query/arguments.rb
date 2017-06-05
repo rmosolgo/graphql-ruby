@@ -5,7 +5,7 @@ module GraphQL
     #
     # {Arguments} recursively wraps the input in {Arguments} instances.
     class Arguments
-      extend Forwardable
+      extend GraphQL::Delegate
 
       def initialize(values, argument_definitions:)
         @argument_values = values.inject({}) do |memo, (inner_key, inner_value)|

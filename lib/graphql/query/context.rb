@@ -4,7 +4,7 @@ module GraphQL
     # Expose some query-specific info to field resolve functions.
     # It delegates `[]` to the hash that's passed to `GraphQL::Query#initialize`.
     class Context
-      extend Forwardable
+      extend GraphQL::Delegate
       attr_reader :execution_strategy
       # `strategy` is required by GraphQL::Batch
       alias_method :strategy, :execution_strategy
@@ -87,7 +87,7 @@ module GraphQL
       end
 
       class FieldResolutionContext
-        extend Forwardable
+        extend GraphQL::Delegate
 
         attr_reader :path, :selection, :field, :parent_type
 

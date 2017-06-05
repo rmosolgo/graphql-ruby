@@ -8,7 +8,7 @@ module GraphQL
     #
     # If you want a type, but want to handle the undefined case, use {#fetch}.
     class TypeMap
-      extend Forwardable
+      extend GraphQL::Delegate
       def_delegators :@storage, :key?, :keys, :values, :to_h, :fetch, :each, :each_value
 
       def initialize
