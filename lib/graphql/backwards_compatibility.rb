@@ -25,7 +25,7 @@ module GraphQL
 
     def get_arity(callable)
       case callable
-      when Proc
+      when Method, Proc
         callable.arity
       else
         callable.method(:call).arity

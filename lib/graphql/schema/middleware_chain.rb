@@ -66,20 +66,11 @@ module GraphQL
       end
 
       def wrap(callable)
-        if get_arity(callable) == 6
+        if BackwardsCompatibility.get_arity(callable) == 6
           warn("Middleware that takes a next_middleware parameter is deprecated (#{callable.inspect}); instead, accept a block and use yield.")
           MiddlewareWrapper.new(callable)
         else
           callable
-        end
-      end
-
-      def get_arity(callable)
-        case callable
-        when Proc, Method
-          callable.arity
-        else
-          callable.method(:call).arity
         end
       end
     end
