@@ -609,6 +609,9 @@ describe GraphQL::Query do
     it "is used for running a query, if it's present and not the default" do
       result = custom_execution_schema.execute(" { __typename }")
       assert_equal({"data"=>{"dummy"=>true}}, result)
+
+      result = custom_execution_schema.execute(" mutation { __typename } ")
+      assert_equal({"data"=>{"__typename" => "Mutation"}}, result)
     end
 
     it "can't run a multiplex" do

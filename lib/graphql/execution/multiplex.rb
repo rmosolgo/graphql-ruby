@@ -46,8 +46,7 @@ module GraphQL
         # @param max_complexity [Integer]
         # @return [Array<Hash>] One result per query
         def run_queries(schema, queries, context: {}, max_complexity: nil)
-          has_custom_strategy = schema.query_execution_strategy || schema.mutation_execution_strategy || schema.subscription_execution_strategy
-          if has_custom_strategy
+          if has_custom_strategy?(schema)
             if queries.length == 1
               return [run_one_legacy(schema, queries.first)]
             else
@@ -163,6 +162,12 @@ module GraphQL
           end
         ensure
           instrumenters.reverse_each { |i| i.after_query(query) }
+        end
+
+        def has_custom_strategy?(schema)
+          schema.query_execution_strategy != GraphQL::Execution::Execute ||
+            schema.mutation_execution_strategy != GraphQL::Execution::Execute ||
+            schema.subscription_execution_strategy != GraphQL::Execution::Execute
         end
       end
     end
