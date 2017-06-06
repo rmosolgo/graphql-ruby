@@ -109,6 +109,9 @@ module GraphQL
         end
 
         def continue_resolve_field(owner, selection, parent_type, field, raw_value, field_ctx)
+          if owner.invalid_null?
+            return
+          end
           query = field_ctx.query
 
           case raw_value
