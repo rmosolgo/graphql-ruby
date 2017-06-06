@@ -98,7 +98,7 @@ module GraphQL
       GraphQL::Filter.new(except: default_mask)
     end
 
-    self.default_execution_strategy = nil
+    self.default_execution_strategy = GraphQL::Execution::Execute
 
     BUILT_IN_TYPES = Hash[[INT_TYPE, STRING_TYPE, FLOAT_TYPE, BOOLEAN_TYPE, ID_TYPE].map{ |type| [type.name, type] }]
     DIRECTIVES = [GraphQL::Directive::IncludeDirective, GraphQL::Directive::SkipDirective, GraphQL::Directive::DeprecatedDirective]
