@@ -598,11 +598,25 @@ describe GraphQL::Query do
   end
 
   describe "query_execution_strategy" do
-    let(:custom_execution_schema) { schema.redefine(query_execution_strategy: DummyStrategy) }
+    let(:custom_execution_schema) {
+      schema.redefine do
+        query_execution_strategy DummyStrategy
+        instrument(:multiplex, DummyMultiplexInstrumenter)
+      end
+    }
 
     class DummyStrategy
       def execute(ast_operation, root_type, query_object)
         { "dummy" => true }
+      end
+    end
+
+    class DummyMultiplexInstrumenter
+      def self.before_multiplex(m)
+        m.queries.first.context[:before_multiplex] = true
+      end
+
+      def self.after_multiplex(m)
       end
     end
 
@@ -612,6 +626,12 @@ describe GraphQL::Query do
 
       result = custom_execution_schema.execute(" mutation { __typename } ")
       assert_equal({"data"=>{"__typename" => "Mutation"}}, result)
+    end
+
+    it "treats the query as a one-item multiplex" do
+      ctx = {}
+      custom_execution_schema.execute(" { __typename }", context: ctx)
+      assert_equal true, ctx[:before_multiplex]
     end
 
     it "can't run a multiplex" do

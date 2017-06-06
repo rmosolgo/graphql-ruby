@@ -47,37 +47,24 @@ module GraphQL
         # @return [Array<Hash>] One result per query
         def run_queries(schema, queries, context: {}, max_complexity: nil)
           if has_custom_strategy?(schema)
-            if queries.length == 1
-              return [run_one_legacy(schema, queries.first)]
-            else
+            if queries.length != 1
               raise ArgumentError, "Multiplexing doesn't support custom execution strategies, run one query at a time instead"
+            else
+              with_instrumentation(schema, queries, context: context, max_complexity: max_complexity) do
+                [run_one_legacy(schema, queries.first)]
+              end
             end
           else
-            run_as_multiplex(schema, queries, context: context, max_complexity: max_complexity)
+            with_instrumentation(schema, queries, context: context, max_complexity: max_complexity) do
+              run_as_multiplex(queries)
+            end
           end
         end
 
         private
 
-        def run_as_multiplex(schema, queries, context:, max_complexity:)
-          query_instrumenters = schema.instrumenters[:query]
-          multiplex_instrumenters = schema.instrumenters[:multiplex]
-          multiplex = self.new(schema: schema, queries: queries, context: context)
-
-          # First, run multiplex instrumentation, then query instrumentation for each query
-          multiplex_instrumenters.each { |i| i.before_multiplex(multiplex) }
-          queries.each do |query|
-            query_instrumenters.each { |i| i.before_query(query) }
-          end
-
-          multiplex_analyzers = schema.multiplex_analyzers
-          if max_complexity ||= schema.max_complexity
-            multiplex_analyzers += [GraphQL::Analysis::MaxQueryComplexity.new(max_complexity)]
-          end
-
-          GraphQL::Analysis.analyze_multiplex(multiplex, multiplex_analyzers)
-
-          # Then, do as much eager evaluation of the query as possible
+        def run_as_multiplex(queries)
+          # Do as much eager evaluation of the query as possible
           results = queries.map do |query|
             begin_query(query)
           end
@@ -90,13 +77,6 @@ module GraphQL
             query = queries[idx]
             finish_query(data_result, query)
           end
-        ensure
-          # Finally, run teardown instrumentation for each query + the multiplex
-          # Use `reverse_each` so instrumenters are treated like a stack
-          queries.each do |query|
-            query_instrumenters.reverse_each { |i| i.after_query(query) }
-          end
-          multiplex_instrumenters.reverse_each { |i| i.after_multiplex(multiplex) }
         end
 
         # @param query [GraphQL::Query]
@@ -148,8 +128,6 @@ module GraphQL
 
         # use the old `query_execution_strategy` etc to run this query
         def run_one_legacy(schema, query)
-          instrumenters = schema.instrumenters[:query]
-          instrumenters.each { |i| i.before_query(query) }
           query.result = if !query.valid?
             all_errors = query.validation_errors + query.analysis_errors + query.context.errors
             if all_errors.any?
@@ -160,14 +138,44 @@ module GraphQL
           else
             GraphQL::Query::Executor.new(query).result
           end
-        ensure
-          instrumenters.reverse_each { |i| i.after_query(query) }
         end
 
         def has_custom_strategy?(schema)
           schema.query_execution_strategy != GraphQL::Execution::Execute ||
             schema.mutation_execution_strategy != GraphQL::Execution::Execute ||
             schema.subscription_execution_strategy != GraphQL::Execution::Execute
+        end
+
+        # Apply multiplex & query instrumentation to `queries`.
+        #
+        # It yields when the queries should be executed, then runs teardown.
+        def with_instrumentation(schema, queries, context:, max_complexity:)
+          query_instrumenters = schema.instrumenters[:query]
+          multiplex_instrumenters = schema.instrumenters[:multiplex]
+          multiplex = self.new(schema: schema, queries: queries, context: context)
+
+          # First, run multiplex instrumentation, then query instrumentation for each query
+          multiplex_instrumenters.each { |i| i.before_multiplex(multiplex) }
+          queries.each do |query|
+            query_instrumenters.each { |i| i.before_query(query) }
+          end
+
+          multiplex_analyzers = schema.multiplex_analyzers
+          if max_complexity ||= schema.max_complexity
+            multiplex_analyzers += [GraphQL::Analysis::MaxQueryComplexity.new(max_complexity)]
+          end
+
+          GraphQL::Analysis.analyze_multiplex(multiplex, multiplex_analyzers)
+
+          # Let them be executed
+          yield
+        ensure
+          # Finally, run teardown instrumentation for each query + the multiplex
+          # Use `reverse_each` so instrumenters are treated like a stack
+          queries.each do |query|
+            query_instrumenters.reverse_each { |i| i.after_query(query) }
+          end
+          multiplex_instrumenters.reverse_each { |i| i.after_multiplex(multiplex) }
         end
       end
     end
