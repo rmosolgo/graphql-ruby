@@ -103,7 +103,7 @@ module GraphQL
       end
 
       class NodeWithPath
-        extend Forwardable
+        extend GraphQL::Delegate
         attr_reader :node, :path
         def initialize(node, path)
           @node = node

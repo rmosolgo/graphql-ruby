@@ -40,11 +40,16 @@ module GraphQL
       end
 
       # @return [Lazy] A {Lazy} whose value depends on another {Lazy}, plus any transformations in `block`
-      def then(&block)
+      def then
         self.class.new {
-          block.call(value)
+          yield(value)
         }
       end
+
+      # This can be used for fields which _had no_ lazy results
+      # @api private
+      NullResult = Lazy.new(){}
+      NullResult.value
     end
   end
 end

@@ -69,7 +69,7 @@ module GraphQL
       # Find the maximum possible complexity among those combinations.
       class TypeComplexity
         def initialize
-          @types = Hash.new { |h, k| h[k] = 0 }
+          @types = Hash.new(0)
         end
 
         # Return the max possible complexity for types in this selection

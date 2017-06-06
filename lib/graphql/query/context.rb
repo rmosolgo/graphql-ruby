@@ -4,7 +4,7 @@ module GraphQL
     # Expose some query-specific info to field resolve functions.
     # It delegates `[]` to the hash that's passed to `GraphQL::Query#initialize`.
     class Context
-      extend Forwardable
+      extend GraphQL::Delegate
       attr_reader :execution_strategy
       # `strategy` is required by GraphQL::Batch
       alias_method :strategy, :execution_strategy
@@ -73,7 +73,8 @@ module GraphQL
       def spawn(key:, selection:, parent_type:, field:)
         FieldResolutionContext.new(
           context: self,
-          path: path + [key],
+          parent: self,
+          key: key,
           selection: selection,
           parent_type: parent_type,
           field: field,
@@ -87,21 +88,29 @@ module GraphQL
       end
 
       class FieldResolutionContext
-        extend Forwardable
+        extend GraphQL::Delegate
 
-        attr_reader :path, :selection, :field, :parent_type
+        attr_reader :selection, :field, :parent_type, :query, :schema
 
-        def initialize(context:, path:, selection:, field:, parent_type:)
+        def initialize(context:, key:, selection:, parent:, field:, parent_type:)
           @context = context
-          @path = path
+          @key = key
+          @parent = parent
           @selection = selection
           @field = field
           @parent_type = parent_type
+          # This is needed constantly, so set it ahead of time:
+          @query = context.query
+          @schema = context.schema
+        end
+
+        def path
+          @path ||= @parent.path.dup << @key
         end
 
         def_delegators :@context,
           :[], :[]=, :key?, :fetch, :to_h, :namespace,
-          :spawn, :query, :schema, :warden, :errors,
+          :spawn, :schema, :warden, :errors,
           :execution_strategy, :strategy, :skip
 
         # @return [GraphQL::Language::Nodes::Field] The AST node for the currently-executing field
@@ -131,7 +140,8 @@ module GraphQL
         def spawn(key:, selection:, parent_type:, field:)
           FieldResolutionContext.new(
             context: @context,
-            path: path + [key],
+            parent: self,
+            key: key,
             selection: selection,
             parent_type: parent_type,
             field: field,
