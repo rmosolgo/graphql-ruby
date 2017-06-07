@@ -8,6 +8,18 @@
 
 ### Bug fixes
 
+## 1.6.3 (7 Jun 2017)
+
+### Bug fixes
+
+- Run multiplex instrumentation when running a single query with a legacy execution strategy #766
+- Check _each_ strategy when looking for overridden execution strategy #765
+- Correctly wrap `Method`s with BackwardsCompatibility #763
+- Various performance improvements #764
+- Don't call `#==(other)` on user-provided objects (use `.is_a?` instead) #761
+- Support lazy object from custom connection `#edge_nodes` #762
+- If a lazy field returns an invalid null, stop evaluating its siblings #767
+
 ## 1.6.2 (2 Jun 2017)
 
 ### New features
