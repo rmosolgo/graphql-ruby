@@ -10,23 +10,27 @@
   </head>
   <body>
     <div class="header">
-      <div class="nav">
-        <a href="/" class="img-link">
-          <img src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
-        </a>
-        <a href="/getting_started">Get Started</a>
-        <a href="/guides">Guides</a>
-        <a href="http://www.rubydoc.info/gems/graphql/1.6.2/">API</a>
-        <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
-        <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
-        <input
-          class="search-input"
-          onkeyup="GraphQLRubySearch.run(this)"
-          type="text"
-          placeholder="Search the docs..."
-        />
+      <div class="header-container">
+        <div class="nav">
+          <a href="/" class="img-link">
+            <img src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+          </a>
+          <a href="/getting_started">Get Started</a>
+          <a href="/guides">Guides</a>
+          <a href="http://www.rubydoc.info/gems/graphql/1.6.3/">API</a>
+          <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
+          <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+          <input
+            class="search-input"
+            onkeyup="GraphQLRubySearch.run(this)"
+            type="text"
+            placeholder="Search the docs..."
+          />
+        </div>
       </div>
-      <div id="search-results"></div>
+      <div class="search-results-container">
+        <div id="search-results"></div>
+      </div>
     </div>
     <div class="container">
       <p class="breadcrumb">
@@ -95,7 +99,7 @@
 
 <h2 id="scaffolding-functions">Scaffolding Functions</h2>
 
-<p>You can prepare a <a href="http://www.rubydoc.info/gems/graphql/1.6.2/GraphQL/Function" target="_blank" title="API docs for GraphQL::Function"><code>GraphQL::Function</code></a> with</p>
+<p>You can prepare a <a href="http://www.rubydoc.info/gems/graphql/1.6.3/GraphQL/Function" target="_blank" title="API docs for GraphQL::Function"><code>GraphQL::Function</code></a> with</p>
 
 <div class="highlighter-rouge"><pre class="highlight"><code>rails g graphql:function #{function_name}
 </code></pre>

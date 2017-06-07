@@ -10,23 +10,27 @@
   </head>
   <body>
     <div class="header">
-      <div class="nav">
-        <a href="/" class="img-link">
-          <img src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
-        </a>
-        <a href="/getting_started">Get Started</a>
-        <a href="/guides">Guides</a>
-        <a href="http://www.rubydoc.info/gems/graphql/1.6.2/">API</a>
-        <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
-        <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
-        <input
-          class="search-input"
-          onkeyup="GraphQLRubySearch.run(this)"
-          type="text"
-          placeholder="Search the docs..."
-        />
+      <div class="header-container">
+        <div class="nav">
+          <a href="/" class="img-link">
+            <img src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+          </a>
+          <a href="/getting_started">Get Started</a>
+          <a href="/guides">Guides</a>
+          <a href="http://www.rubydoc.info/gems/graphql/1.6.3/">API</a>
+          <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
+          <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+          <input
+            class="search-input"
+            onkeyup="GraphQLRubySearch.run(this)"
+            type="text"
+            placeholder="Search the docs..."
+          />
+        </div>
       </div>
-      <div id="search-results"></div>
+      <div class="search-results-container">
+        <div id="search-results"></div>
+      </div>
     </div>
     <div class="container">
       <p class="breadcrumb">
@@ -37,7 +41,7 @@
 </p>
 <h1 class="guide-header">Multiplex</h1>
 <div class="guide-container">
-  <p>Some clients may send <em>several</em> queries to the server at once (for example, <a href="http://dev.apollodata.com/core/network.html#query-batching">Apollo Client’s query batching</a>). You can execute them concurrently with <a href="http://www.rubydoc.info/gems/graphql/1.6.2/GraphQL/Schema#multiplex-instance_method" target="_blank" title="API docs for GraphQL::Schema#multiplex"><code>Schema#multiplex</code></a>.</p>
+  <p>Some clients may send <em>several</em> queries to the server at once (for example, <a href="http://dev.apollodata.com/core/network.html#query-batching">Apollo Client’s query batching</a>). You can execute them concurrently with <a href="http://www.rubydoc.info/gems/graphql/1.6.3/GraphQL/Schema#multiplex-instance_method" target="_blank" title="API docs for GraphQL::Schema#multiplex"><code>Schema#multiplex</code></a>.</p>
 
 <p>Multiplex runs have their own context, analyzers and instrumentation.</p>
 
@@ -82,7 +86,7 @@
 
 <h2 id="multiplex-level-context">Multiplex-Level Context</h2>
 
-<p>You can add values to <a href="http://www.rubydoc.info/gems/graphql/1.6.2/GraphQL/Execution/Multiplex#context-instance_method" target="_blank" title="API docs for GraphQL::Execution::Multiplex#context"><code>Execution::Multiplex#context</code></a> by providing a <code class="highlighter-rouge">context:</code> hash:</p>
+<p>You can add values to <a href="http://www.rubydoc.info/gems/graphql/1.6.3/GraphQL/Execution/Multiplex#context-instance_method" target="_blank" title="API docs for GraphQL::Execution::Multiplex#context"><code>Execution::Multiplex#context</code></a> by providing a <code class="highlighter-rouge">context:</code> hash:</p>
 
 <div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">MySchema</span><span class="p">.</span><span class="nf">multiplex</span><span class="p">(</span><span class="n">queries</span><span class="p">,</span> <span class="ss">context: </span><span class="p">{</span> <span class="ss">current_user: </span><span class="n">current_user</span> <span class="p">})</span>
 </code></pre>
@@ -109,13 +113,13 @@
   <li><code class="highlighter-rouge">call(...)</code> is called for each node in <em>each</em> query, so it will visit every node in the multiplex in sequence.</li>
 </ul>
 
-<p>Multiplex analyzers may return <a href="http://www.rubydoc.info/gems/graphql/1.6.2/GraphQL/AnalysisError" target="_blank" title="API docs for GraphQL::AnalysisError"><code>AnalysisError</code></a> to halt execution of the whole multiplex.</p>
+<p>Multiplex analyzers may return <a href="http://www.rubydoc.info/gems/graphql/1.6.3/GraphQL/AnalysisError" target="_blank" title="API docs for GraphQL::AnalysisError"><code>AnalysisError</code></a> to halt execution of the whole multiplex.</p>
 
 <h2 id="multiplex-instrumentation">Multiplex Instrumentation</h2>
 
 <p>You can add hooks for each multiplex run with multiplex instrumentation.</p>
 
-<p>An instrumenter must implement <code class="highlighter-rouge">.before_multiplex(multiplex)</code> and <code class="highlighter-rouge">.after_multiplex(multiplex)</code>. Then, it can be mounted with <code class="highlighter-rouge">instrument(:multiplex, MyMultiplexAnalyzer)</code>. See <a href="http://www.rubydoc.info/gems/graphql/1.6.2/GraphQL/Execution/Multiplex" target="_blank" title="API docs for GraphQL::Execution::Multiplex"><code>Execution::Multiplex</code></a> for available methods.</p>
+<p>An instrumenter must implement <code class="highlighter-rouge">.before_multiplex(multiplex)</code> and <code class="highlighter-rouge">.after_multiplex(multiplex)</code>. Then, it can be mounted with <code class="highlighter-rouge">instrument(:multiplex, MyMultiplexAnalyzer)</code>. See <a href="http://www.rubydoc.info/gems/graphql/1.6.3/GraphQL/Execution/Multiplex" target="_blank" title="API docs for GraphQL::Execution::Multiplex"><code>Execution::Multiplex</code></a> for available methods.</p>
 
 <p>For example:</p>
 
