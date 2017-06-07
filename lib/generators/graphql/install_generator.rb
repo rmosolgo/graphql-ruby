@@ -105,9 +105,22 @@ RUBY
             route(GRAPHIQL_ROUTE)
           end
         end
+
+        if gemfile_modified?
+          say "Gemfile has been modified, make sure you `bundle install`"
+        end
       end
 
       private
+
+      def gemfile_modified?
+        @gemfile_modified
+      end
+
+      def gem(*args)
+        @gemfile_modified = true
+        super(*args)
+      end
 
       def create_dir(dir)
         empty_directory(dir)
