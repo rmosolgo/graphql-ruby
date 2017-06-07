@@ -8,7 +8,12 @@ module GraphQL
         @value = value
         @validation_result = validation_result
 
-        msg = "Variable #{variable_ast.name} of type #{type} was provided invalid value"
+        problems = validation_result.problems.map do |p|
+          path_str = p['path'].size > 0 ? " on path '#{p['path'].join(" > ")}'" : ""
+          "#{p['explanation']}#{path_str}"
+        end
+
+        msg = "Variable #{variable_ast.name} of type #{type} was provided invalid value with problems: \n#{problems.join('\n')}"
         super(msg)
         self.ast_node = variable_ast
       end
