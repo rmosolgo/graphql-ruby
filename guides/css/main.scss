@@ -26,9 +26,8 @@ body {
   box-shadow: 0px 0px 10px 0px #d6d6d6;
   z-index: 1;
   position: relative;
-
+  background: white;
   .nav {
-    background: white;
     $height: 30px;
     $margin: 10px;
     display: flex;
@@ -69,6 +68,11 @@ body {
       text-decoration: none;
     }
   }
+}
+
+.header-container {
+  max-width: 1040px;
+  margin: 0px auto;
 }
 
 .container {
@@ -260,44 +264,49 @@ table {
   border-radius: 3px;
 }
 
-#search-results {
+.search-results-container {
   $bg: #eaeaea;
   $bg-highlight: #f9f9f9;
-  $fade-time: 0.1s;
-  display: flex;
-  flex-direction: column;
-  .search-result {
-    background-color: $bg;
-    text-decoration: none;
-    color: $font-color;
-    padding: 6px 10px;
-    border-bottom: 2px solid transparent;
-    transition: border-bottom-color $fade-time;
+  background-color: $bg;
 
-    .search-title {
-      font-weight: bold;
-      margin-right: 10px;
-      transition: color $fade-time;
+  #search-results {
+    $fade-time: 0.1s;
+    display: flex;
+    flex-direction: column;
+    max-width: 1040px;
+    margin: 0 auto;
+    .search-result {
+      text-decoration: none;
+      color: $font-color;
+      padding: 6px 10px;
+      border-bottom: 2px solid transparent;
+      transition: border-bottom-color $fade-time;
 
-    }
-
-    .search-prefix, .search-suffix {
-      color: $subtle-color;
-    }
-    .search-match {
-      color: $brand-color;
-    }
-
-    &:focus, &:hover {
-      outline: none;
       .search-title {
+        font-weight: bold;
+        margin-right: 10px;
+        transition: color $fade-time;
+
+      }
+
+      .search-prefix, .search-suffix {
+        color: $subtle-color;
+      }
+      .search-match {
         color: $brand-color;
       }
-      background-color: $bg-highlight;
-    }
 
-    &:hover {
-      border-bottom-color: $brand-color;
+      &:focus, &:hover {
+        outline: none;
+        .search-title {
+          color: $brand-color;
+        }
+        background-color: $bg-highlight;
+      }
+
+      &:hover {
+        border-bottom-color: $brand-color;
+      }
     }
   }
 }
