@@ -64,6 +64,10 @@ describe GraphQL::Execution::Multiplex do
           nestedSum(value: 13) {
             value
           }
+          # This field will never get executed
+          ns2: nestedSum(value: 13) {
+            value
+          }
         }
       }
     }" }

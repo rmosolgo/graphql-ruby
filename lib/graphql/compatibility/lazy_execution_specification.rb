@@ -66,9 +66,9 @@ module GraphQL
             |
             res = self.class.lazy_schema.execute(query_str, context: {pushes: []})
             assert_equal nil, res["data"]
-            assert_equal 2, res["errors"].length
+            # The first fail causes the second field to never resolve
+            assert_equal 1, res["errors"].length
             assert_equal ["push", "push", "fail1", "value"], res["errors"][0]["path"]
-            assert_equal ["push", "push", "fail2", "value"], res["errors"][1]["path"]
           end
 
           def test_it_resolves_mutation_values_eagerly
