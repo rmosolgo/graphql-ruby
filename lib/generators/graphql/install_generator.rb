@@ -68,6 +68,11 @@ module Graphql
         default: false,
         desc: "Include GraphQL::Batch installation"
 
+      # These two options are taken from Rails' own generators'
+      class_option :api,
+        type: :boolean,
+        desc: "Preconfigure smaller stack for API only apps"
+
 
       GRAPHIQL_ROUTE = <<-RUBY
 if Rails.env.development?
@@ -83,14 +88,17 @@ RUBY
         template("graphql_controller.erb", "app/controllers/graphql_controller.rb")
         route('post "/graphql", to: "graphql#execute"')
 
-        if !options[:skip_graphiql]
-          gem("graphiql-rails", group: :development)
-          route(GRAPHIQL_ROUTE)
-        end
-
         if options[:batch]
           gem("graphql-batch")
           create_dir("app/graphql/loaders")
+        end
+
+        if options.api?
+          say("Skipped graphiql, as this rails project is API only")
+          say("  You may wish to use GraphiQL.app for development: https://github.com/skevy/graphiql-app")
+        elsif !options[:skip_graphiql]
+          gem("graphiql-rails", group: :development)
+          route(GRAPHIQL_ROUTE)
         end
       end
 
