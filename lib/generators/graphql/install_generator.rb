@@ -98,7 +98,12 @@ RUBY
           say("  You may wish to use GraphiQL.app for development: https://github.com/skevy/graphiql-app")
         elsif !options[:skip_graphiql]
           gem("graphiql-rails", group: :development)
-          route(GRAPHIQL_ROUTE)
+
+          # This is a little cheat just to get cleaner shell output:
+          log :route, 'graphiql-rails'
+          shell.mute do
+            route(GRAPHIQL_ROUTE)
+          end
         end
       end
 
