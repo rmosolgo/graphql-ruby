@@ -186,7 +186,7 @@ module GraphQL
             end
 
             out = "(\n".dup
-            out << arguments.map.with_index{ |arg, i|
+            out << arguments.sort_by(&:name).map.with_index{ |arg, i|
               "#{print_description(arg, "  #{indentation}", i == 0)}  #{indentation}"\
               "#{print_input_value(arg)}"
             }.join("\n")
@@ -244,7 +244,7 @@ module GraphQL
           include DescriptionPrinter
           def print_fields(warden, type)
             fields = warden.fields(type)
-            fields.map.with_index { |field, i|
+            fields.sort_by(&:name).map.with_index { |field, i|
               "#{print_description(field, '  ', i == 0)}"\
               "  #{field.name}#{print_args(warden, field, '  ')}: #{field.type}#{print_deprecated(field)}"
             }.join("\n")
@@ -275,7 +275,7 @@ module GraphQL
           def self.print(warden, type)
             interfaces = warden.interfaces(type)
             if interfaces.any?
-              implementations = " implements #{interfaces.map(&:to_s).join(", ")}"
+              implementations = " implements #{interfaces.sort_by(&:name).map(&:to_s).join(", ")}"
             else
               implementations = nil
             end
@@ -301,7 +301,7 @@ module GraphQL
           def self.print(warden, type)
             possible_types = warden.possible_types(type)
             "#{print_description(type)}"\
-            "union #{type.name} = #{possible_types.map(&:to_s).join(" | ")}"
+            "union #{type.name} = #{possible_types.sort_by(&:name).map(&:to_s).join(" | ")}"
           end
         end
 
@@ -311,7 +311,7 @@ module GraphQL
           def self.print(warden, type)
             enum_values = warden.enum_values(type)
 
-            values = enum_values.map.with_index { |v, i|
+            values = enum_values.sort_by(&:name).map.with_index { |v, i|
               "#{print_description(v, '  ', i == 0)}"\
               "  #{v.name}#{print_deprecated(v)}"
             }.join("\n")
@@ -326,7 +326,7 @@ module GraphQL
           extend DescriptionPrinter
           def self.print(warden, type)
             arguments = warden.arguments(type)
-            fields = arguments.map.with_index{ |field, i|
+            fields = arguments.sort_by(&:name).map.with_index{ |field, i|
               "#{print_description(field, "  ", i == 0)}"\
               "  #{print_input_value(field)}"
             }.join("\n")
