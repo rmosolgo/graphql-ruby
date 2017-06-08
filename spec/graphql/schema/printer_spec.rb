@@ -136,13 +136,13 @@ schema {
   query: Root
 }
 
-# Directs the executor to include this field or fragment only when the \`if\` argument is true.
+# Directs the executor to include this field or fragment only when the `if` argument is true.
 directive @include(
   # Included when true.
   if: Boolean!
 ) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
 
-# Directs the executor to skip this field or fragment when the \`if\` argument is true.
+# Directs the executor to skip this field or fragment when the `if` argument is true.
 directive @skip(
   # Skipped when true.
   if: Boolean!
@@ -163,29 +163,32 @@ directive @deprecated(
 # skipping a field. Directives provide this by describing additional information
 # to the executor.
 type __Directive {
-  name: String!
+  args: [__InputValue!]!
   description: String
   locations: [__DirectiveLocation!]!
-  args: [__InputValue!]!
-  onOperation: Boolean! @deprecated(reason: "Use \`locations\`.")
-  onFragment: Boolean! @deprecated(reason: "Use \`locations\`.")
-  onField: Boolean! @deprecated(reason: "Use \`locations\`.")
+  name: String!
+  onField: Boolean! @deprecated(reason: "Use `locations`.")
+  onFragment: Boolean! @deprecated(reason: "Use `locations`.")
+  onOperation: Boolean! @deprecated(reason: "Use `locations`.")
 }
 
 # A Directive can be adjacent to many parts of the GraphQL language, a
 # __DirectiveLocation describes one such possible adjacencies.
 enum __DirectiveLocation {
-  # Location adjacent to a query operation.
-  QUERY
+  # Location adjacent to an argument definition.
+  ARGUMENT_DEFINITION
 
-  # Location adjacent to a mutation operation.
-  MUTATION
+  # Location adjacent to an enum definition.
+  ENUM
 
-  # Location adjacent to a subscription operation.
-  SUBSCRIPTION
+  # Location adjacent to an enum value definition.
+  ENUM_VALUE
 
   # Location adjacent to a field.
   FIELD
+
+  # Location adjacent to a field definition.
+  FIELD_DEFINITION
 
   # Location adjacent to a fragment definition.
   FRAGMENT_DEFINITION
@@ -196,95 +199,91 @@ enum __DirectiveLocation {
   # Location adjacent to an inline fragment.
   INLINE_FRAGMENT
 
-  # Location adjacent to a schema definition.
-  SCHEMA
-
-  # Location adjacent to a scalar definition.
-  SCALAR
-
-  # Location adjacent to an object type definition.
-  OBJECT
-
-  # Location adjacent to a field definition.
-  FIELD_DEFINITION
-
-  # Location adjacent to an argument definition.
-  ARGUMENT_DEFINITION
-
-  # Location adjacent to an interface definition.
-  INTERFACE
-
-  # Location adjacent to a union definition.
-  UNION
-
-  # Location adjacent to an enum definition.
-  ENUM
-
-  # Location adjacent to an enum value definition.
-  ENUM_VALUE
+  # Location adjacent to an input object field definition.
+  INPUT_FIELD_DEFINITION
 
   # Location adjacent to an input object type definition.
   INPUT_OBJECT
 
-  # Location adjacent to an input object field definition.
-  INPUT_FIELD_DEFINITION
+  # Location adjacent to an interface definition.
+  INTERFACE
+
+  # Location adjacent to a mutation operation.
+  MUTATION
+
+  # Location adjacent to an object type definition.
+  OBJECT
+
+  # Location adjacent to a query operation.
+  QUERY
+
+  # Location adjacent to a scalar definition.
+  SCALAR
+
+  # Location adjacent to a schema definition.
+  SCHEMA
+
+  # Location adjacent to a subscription operation.
+  SUBSCRIPTION
+
+  # Location adjacent to a union definition.
+  UNION
 }
 
 # One possible value for a given Enum. Enum values are unique values, not a
 # placeholder for a string or numeric value. However an Enum value is returned in
 # a JSON response as a string.
 type __EnumValue {
-  name: String!
+  deprecationReason: String
   description: String
   isDeprecated: Boolean!
-  deprecationReason: String
+  name: String!
 }
 
 # Object and Interface types are described by a list of Fields, each of which has
 # a name, potentially a list of arguments, and a return type.
 type __Field {
-  name: String!
-  description: String
   args: [__InputValue!]!
-  type: __Type!
-  isDeprecated: Boolean!
   deprecationReason: String
+  description: String
+  isDeprecated: Boolean!
+  name: String!
+  type: __Type!
 }
 
 # Arguments provided to Fields or Directives and the input fields of an
 # InputObject are represented as Input Values which describe their type and
 # optionally a default value.
 type __InputValue {
-  name: String!
-  description: String
-  type: __Type!
-
   # A GraphQL-formatted string representing the default value for this input value.
   defaultValue: String
+  description: String
+  name: String!
+  type: __Type!
 }
 
 # A GraphQL Schema defines the capabilities of a GraphQL server. It exposes all
 # available types and directives on the server, as well as the entry points for
 # query, mutation, and subscription operations.
 type __Schema {
-  # A list of all types supported by this server.
-  types: [__Type!]!
-
-  # The type that query operations will be rooted at.
-  queryType: __Type!
+  # A list of all directives supported by this server.
+  directives: [__Directive!]!
 
   # If this server supports mutation, the type that mutation operations will be rooted at.
   mutationType: __Type
 
+  # The type that query operations will be rooted at.
+  queryType: __Type!
+
   # If this server support subscription, the type that subscription operations will be rooted at.
   subscriptionType: __Type
 
-  # A list of all directives supported by this server.
-  directives: [__Directive!]!
+  # A list of all types supported by this server.
+  types: [__Type!]!
 }
 
 # The fundamental unit of any GraphQL Schema is the type. There are many kinds of
-# types in GraphQL as represented by the \`__TypeKind\` enum.
+# types in GraphQL as represented by the `__TypeKind` enum.
 #
 # Depending on the kind of a type, certain fields describe information about that
 # type. Scalar types provide no information beyond a name and description, while
@@ -292,42 +291,42 @@ type __Schema {
 # they describe. Abstract types, Union and Interface, provide the Object types
 # possible at runtime. List and NonNull types compose other types.
 type __Type {
+  description: String
+  enumValues(includeDeprecated: Boolean = false): [__EnumValue!]
+  fields(includeDeprecated: Boolean = false): [__Field!]
+  inputFields: [__InputValue!]
+  interfaces: [__Type!]
   kind: __TypeKind!
   name: String
-  description: String
-  fields(includeDeprecated: Boolean = false): [__Field!]
-  interfaces: [__Type!]
-  possibleTypes: [__Type!]
-  enumValues(includeDeprecated: Boolean = false): [__EnumValue!]
-  inputFields: [__InputValue!]
   ofType: __Type
+  possibleTypes: [__Type!]
 }
 
-# An enum describing what kind of type a given \`__Type\` is.
+# An enum describing what kind of type a given `__Type` is.
 enum __TypeKind {
+  # Indicates this type is an enum. `enumValues` is a valid field.
+  ENUM
+
+  # Indicates this type is an input object. `inputFields` is a valid field.
+  INPUT_OBJECT
+
+  # Indicates this type is an interface. `fields` and `possibleTypes` are valid fields.
+  INTERFACE
+
+  # Indicates this type is a list. `ofType` is a valid field.
+  LIST
+
+  # Indicates this type is a non-null. `ofType` is a valid field.
+  NON_NULL
+
+  # Indicates this type is an object. `fields` and `interfaces` are valid fields.
+  OBJECT
+
   # Indicates this type is a scalar.
   SCALAR
 
-  # Indicates this type is an object. \`fields\` and \`interfaces\` are valid fields.
-  OBJECT
-
-  # Indicates this type is an interface. \`fields\` and \`possibleTypes\` are valid fields.
-  INTERFACE
-
-  # Indicates this type is a union. \`possibleTypes\` is a valid field.
+  # Indicates this type is a union. `possibleTypes` is a valid field.
   UNION
-
-  # Indicates this type is an enum. \`enumValues\` is a valid field.
-  ENUM
-
-  # Indicates this type is an input object. \`inputFields\` is a valid field.
-  INPUT_OBJECT
-
-  # Indicates this type is a list. \`ofType\` is a valid field.
-  LIST
-
-  # Indicates this type is a non-null. \`ofType\` is a valid field.
-  NON_NULL
 }
 SCHEMA
       assert_equal expected.chomp, GraphQL::Schema::Printer.print_introspection_schema
@@ -384,15 +383,15 @@ SCHEMA
     it "returns the schema as a string for the defined types" do
       expected = <<SCHEMA
 type Audio {
+  duration: Int!
   id: ID!
   name: String!
-  duration: Int!
 }
 
 enum Choice {
-  FOO
   BAR
   BAZ @deprecated(reason: "Use \\\"BAR\\\".")
+  FOO
   WOZ @deprecated
 }
 
@@ -403,10 +402,11 @@ type Comment implements Node {
 
 # Autogenerated input type of CreatePost
 input CreatePostInput {
+  body: String!
+
   # A unique identifier for the client performing the mutation.
   clientMutationId: String
   title: String!
-  body: String!
 }
 
 # Autogenerated return type of CreatePost
@@ -417,14 +417,14 @@ type CreatePostPayload {
 }
 
 type Image {
+  height: Int!
   id: ID!
   name: String!
   width: Int!
-  height: Int!
 }
 
 # Media objects
-union Media = Image | Audio
+union Media = Audio | Image
 
 type Mutation {
   # Create a blog post
@@ -437,11 +437,11 @@ interface Node {
 
 # A blog post
 type Post {
-  id: ID!
-  title: String!
   body: String!
   comments: [Comment!]
-  comments_count: Int! @deprecated(reason: \"Use \\\"comments\\\".\")
+  comments_count: Int! @deprecated(reason: "Use \\\"comments\\\".")
+  id: ID!
+  title: String!
 }
 
 # The query root of this schema
@@ -449,7 +449,7 @@ type Query {
   post(
     # Post ID
     id: ID!
-    varied: Varied = {id: \"123\", int: 234, float: 2.3, enum: FOO, sub: [{string: \"str\"}]}
+    varied: Varied = {id: "123", int: 234, float: 2.3, enum: FOO, sub: [{string: "str"}]}
     variedWithNulls: Varied = {id: null, int: null, float: null, enum: null, sub: null}
   ): Post
 }
@@ -457,10 +457,10 @@ type Query {
 # Test
 input Sub {
   # Something
-  string: String
+  int: Int
 
   # Something
-  int: Int
+  string: String
 }
 
 type Subscription {
@@ -468,14 +468,15 @@ type Subscription {
 }
 
 input Varied {
-  id: ID
-  int: Int
-  float: Float
   bool: Boolean
   enum: Choice = FOO
+  float: Float
+  id: ID
+  int: Int
   sub: [Sub]
 }
 SCHEMA
+
       assert_equal expected.chomp, GraphQL::Schema::Printer.print_schema(schema)
     end
   end
@@ -483,8 +484,8 @@ SCHEMA
   it "applies an `only` filter" do
     expected = <<SCHEMA
 enum Choice {
-  FOO
   BAR
+  FOO
 }
 
 type Subscription {
@@ -492,10 +493,10 @@ type Subscription {
 }
 
 input Varied {
-  int: Int
-  float: Float
   bool: Boolean
   enum: Choice = FOO
+  float: Float
+  int: Int
 }
 SCHEMA
 
@@ -520,14 +521,14 @@ SCHEMA
   it "applies an `except` filter" do
     expected = <<SCHEMA
 type Audio {
+  duration: Int!
   id: ID!
   name: String!
-  duration: Int!
 }
 
 enum Choice {
-  FOO
   BAR
+  FOO
 }
 
 # A blog comment
@@ -537,10 +538,11 @@ type Comment implements Node {
 
 # Autogenerated input type of CreatePost
 input CreatePostInput {
+  body: String!
+
   # A unique identifier for the client performing the mutation.
   clientMutationId: String
   title: String!
-  body: String!
 }
 
 # Autogenerated return type of CreatePost
@@ -564,10 +566,10 @@ interface Node {
 
 # A blog post
 type Post {
-  id: ID!
-  title: String!
   body: String!
   comments: [Comment!]
+  id: ID!
+  title: String!
 }
 
 # The query root of this schema
@@ -596,11 +598,11 @@ SCHEMA
       expected = <<SCHEMA
 # A blog post
 type Post {
-  id: ID!
-  title: String!
   body: String!
   comments: [Comment!]
   comments_count: Int! @deprecated(reason: \"Use \\\"comments\\\".\")
+  id: ID!
+  title: String!
 }
 SCHEMA
       assert_equal expected.chomp, GraphQL::Schema::Printer.new(schema).print_type(schema.types['Post'])

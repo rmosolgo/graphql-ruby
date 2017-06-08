@@ -72,9 +72,9 @@ describe GraphQL::BaseType do
     expected = <<TYPE
 # A blog post
 type Post {
+  body: String!
   id: ID!
   title: String!
-  body: String!
 }
 TYPE
 

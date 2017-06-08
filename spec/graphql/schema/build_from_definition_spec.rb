@@ -19,11 +19,11 @@ schema {
 }
 
 type HelloScalars {
-  str: String!
-  int: Int
+  bool: Boolean
   float: Float
   id: ID
-  bool: Boolean
+  int: Int
+  str: String!
 }
       SCHEMA
 
@@ -60,11 +60,11 @@ directive @foo(
 
 # With an enum
 enum Color {
-  RED
+  BLUE
 
   # Not a creative color
   GREEN
-  BLUE
+  RED
 }
 
 # What a great type
@@ -142,11 +142,11 @@ schema {
 }
 
 type HelloScalars {
-  nonNullStr: String!
-  listOfStrs: [String]
   listOfNonNullStrs: [String!]
-  nonNullListOfStrs: [String]!
+  listOfStrs: [String]
   nonNullListOfNonNullStrs: [String!]!
+  nonNullListOfStrs: [String]!
+  nonNullStr: String!
 }
       SCHEMA
 
@@ -160,8 +160,8 @@ schema {
 }
 
 type Recurse {
-  str: String
   recurse: Recurse
+  str: String
 }
       SCHEMA
 
@@ -195,10 +195,10 @@ schema {
 }
 
 type Hello {
-  str(int: Int): String
+  booleanToStr(bool: Boolean): String
   floatToStr(float: Float): String
   idToStr(id: ID): String
-  booleanToStr(bool: Boolean): String
+  str(int: Int): String
   strToStr(bool: String): String
 }
       SCHEMA
@@ -281,8 +281,8 @@ schema {
 }
 
 enum Hello {
-  WO
   RLD
+  WO
 }
 
 type OutputEnumRoot {
@@ -382,14 +382,14 @@ schema {
 }
 
 enum Color {
-  RED
   BLUE
+  RED
 }
 
 type Hello {
-  str(int: Int = 2): String
   hello(color: Color = RED): String
   nullable(color: Color = null): String
+  str(int: Int = 2): String
 }
       SCHEMA
 
@@ -404,9 +404,9 @@ schema {
 }
 
 type HelloScalars {
-  str: String
-  int: Int
   bool: Boolean
+  int: Int
+  str: String
 }
 
 type Mutation {
@@ -420,8 +420,8 @@ type Mutation {
     it 'supports simple type with mutation and default values' do
       schema = <<-SCHEMA
 enum Color {
-  RED
   BLUE
+  RED
 }
 
 type Mutation {
@@ -444,9 +444,9 @@ schema {
 }
 
 type HelloScalars {
-  str: String
-  int: Int
   bool: Boolean
+  int: Int
+  str: String
 }
 
 type Subscription {
@@ -494,15 +494,15 @@ union Union = Concrete
     it 'supports @deprecated' do
       schema = <<-SCHEMA
 enum MyEnum {
-  VALUE
   OLD_VALUE @deprecated
   OTHER_VALUE @deprecated(reason: "Terrible reasons")
+  VALUE
 }
 
 type Query {
+  enum: MyEnum
   field1: String @deprecated
   field2: Int @deprecated(reason: "Because I said so")
-  enum: MyEnum
 }
       SCHEMA
 
