@@ -8,7 +8,7 @@ index: 0
 ---
 
 
-You can execute queries with your {{ "GraphQL::Schema" | api_doc }} at get a Ruby Hash as a result. For example, to execute a query from a string:
+You can execute queries with your {{ "GraphQL::Schema" | api_doc }} and get a Ruby Hash as a result. For example, to execute a query from a string:
 
 ```ruby
 query_string = "{ ... }"
