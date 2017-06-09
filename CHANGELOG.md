@@ -8,6 +8,12 @@
 
 ### Bug fixes
 
+## 1.5.15 (9 Jun 2017)
+
+### New features
+
+- Performance improvements backported from 1.6.x
+
 ## 1.5.14 (17 May 2017)
 
 ### New features
