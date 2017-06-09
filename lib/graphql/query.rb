@@ -14,7 +14,7 @@ require "graphql/query/validation_pipeline"
 module GraphQL
   # A combination of query string and {Schema} instance which can be reduced to a {#result}.
   class Query
-    extend Forwardable
+    extend GraphQL::Delegate
 
     class OperationNameMissingError < GraphQL::ExecutionError
       def initialize(name)

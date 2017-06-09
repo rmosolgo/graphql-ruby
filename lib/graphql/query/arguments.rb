@@ -5,7 +5,7 @@ module GraphQL
     #
     # {Arguments} recursively wraps the input in {Arguments} instances.
     class Arguments
-      extend Forwardable
+      extend GraphQL::Delegate
 
       def initialize(values, argument_definitions:)
         @original_values = values

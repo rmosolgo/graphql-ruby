@@ -72,7 +72,7 @@ module GraphQL
       end
 
       class FieldResolutionContext
-        extend Forwardable
+        extend GraphQL::Delegate
 
         attr_reader :path, :selection, :field, :parent_type
 
