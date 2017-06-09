@@ -93,6 +93,18 @@ RUBY
     assert_file "app/graphql/dummy_schema.rb", EXPECTED_RELAY_BATCH_SCHEMA
   end
 
+  test "it doesn't install graphiql when API Only" do
+    run_generator(['--api'])
+
+    assert_file "Gemfile" do |contents|
+      refute_includes contents, "graphiql-rails"
+    end
+
+    assert_file "config/routes.rb" do |contents|
+      refute_includes contents, "GraphiQL::Rails"
+    end
+  end
+
   test "it can skip keeps, skip graphiql and customize schema name" do
     run_generator(["--skip-keeps", "--skip-graphiql", "--schema=CustomSchema"])
     assert_no_file "app/graphql/types/.keep"
