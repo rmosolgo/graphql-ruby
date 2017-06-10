@@ -10,14 +10,15 @@ module GraphQL
     #   - evaluating the subscription
     #   - sending the result over the specified application-provided transport
     class Subscriber
-      extend Forwardable
+      extend GraphQL::Delegate
 
-      attr_reader :store, :queue, :transports
-      def initialize(schema:, store:, queue: InlineQueue, transports:)
+      attr_reader :store, :queue, :transports, :schema
+      def initialize(schema:, store:, queue: InlineQueue, execute: SchemaExecute, transports:)
         @schema = schema
         @store = store
         @queue = queue
         @transports = transports
+        @execute = execute
       end
 
       def_delegators :@store, :set, :get, :delete, :each_channel
@@ -36,28 +37,7 @@ module GraphQL
       # It's probably called in a background job,
       # but the default is inline.
       def process(channel, event_key, object)
-        query_data = @store.get(channel)
-        query_string = query_data.fetch(:query_string)
-        variables = query_data.fetch(:variables)
-        context = query_data.fetch(:context)
-        operation_name = query_data.fetch(:operation_name)
-
-        query = GraphQL::Query.new(
-          @schema,
-          query_string,
-          {
-            context: context,
-            subscription_key: event_key,
-            operation_name: operation_name,
-            variables: variables,
-            root_value: object,
-          }
-        )
-        result = query.result
-
-        transport_key = query_data.fetch(:transport)
-        transport = @transports.fetch(transport_key)
-        transport.deliver(channel, result, query.context)
+        @execute.call(self, channel, event_key, object)
       end
     end
   end

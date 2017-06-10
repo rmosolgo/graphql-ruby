@@ -6,8 +6,13 @@ module GraphQL
     # @api private
     module InlineQueue
       module_function
-      def enqueue(schema, channel, event_key, object)
-        schema.subscriber.process(channel, event_key, object)
+      # @param subscriber [GraphQL::Subscriptions::Subscriber]
+      # @param channel [String]
+      # @param event_key [String]
+      # @param object [Object]
+      # @return [void]
+      def enqueue(subscriber, channel, event_key, object)
+        subscriber.process(channel, event_key, object)
       end
     end
   end

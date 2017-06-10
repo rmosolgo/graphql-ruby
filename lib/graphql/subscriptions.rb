@@ -2,6 +2,7 @@
 require "graphql/subscriptions/event"
 require "graphql/subscriptions/inline_queue"
 require "graphql/subscriptions/instrumentation"
+require "graphql/subscriptions/schema_execute"
 require "graphql/subscriptions/subscriber"
 module GraphQL
   # A plugin for attaching subscription behavior to the schema
@@ -26,6 +27,7 @@ module GraphQL
     #
     # @param store [<#register(query, events), #each_subscription(event_key, &block)>]
     # @param transports [Hash<String => <#deliver(channel, result, ctx)>]
+    # @param queue [<#enqueue(...)>]
     def use(defn, store:, transports:, queue: InlineQueue)
       schema = defn.target
       schema.subscriber = Subscriptions::Subscriber.new(

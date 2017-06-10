@@ -8,6 +8,7 @@ module GraphQL
         @storage = {}
         @owner = nil
         @invalid_null = false
+        @skipped = false
       end
 
       # @param key [String] The name for this value in the result
@@ -29,9 +30,16 @@ module GraphQL
         end
       end
 
+      # TODO: is there a better way to return nil when nothing was entered?
+      def skipped=(was_skipped)
+        @skipped = was_skipped
+      end
+
       # @return [Hash] A plain Hash representation of this result
       def to_h
         if @invalid_null
+          nil
+        elsif @storage.empty? && @skipped
           nil
         else
           flatten(self)

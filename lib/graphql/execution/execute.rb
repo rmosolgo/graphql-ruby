@@ -47,6 +47,7 @@ module GraphQL
             )
 
             if field_result.is_a?(Skip)
+              selection_result.skipped = true
               next
             end
 
