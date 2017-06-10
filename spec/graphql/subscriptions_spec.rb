@@ -3,8 +3,9 @@ require "spec_helper"
 
 class InMemoryBackend
   # Store API
-  class Database
-    def initialize
+  module Database
+    module_function
+    def clear
       @queries = {}
       @subscriptions = Hash.new { |h, k| h[k] = [] }
     end
@@ -101,13 +102,38 @@ class InMemoryBackend
       @counter += 1
     end
   end
+
+  SchemaDefinition = <<-GRAPHQL
+  type Subscription {
+    payload(id: ID!): Payload!
+  }
+
+  type Payload {
+    str: String!
+    int: Int!
+  }
+
+  type Query {
+    dummy: Int
+  }
+  GRAPHQL
+
+  Schema = GraphQL::Schema.from_definition(SchemaDefinition).redefine do
+    use GraphQL::Subscriptions,
+      store: InMemoryBackend::Database,
+      queue: InMemoryBackend::Queue,
+      transports: {
+        socket: InMemoryBackend::Socket
+      }
+  end
 end
 
 
 describe GraphQL::Subscriptions do
   before do
-    InMemoryBackend::Socket.clear
-    InMemoryBackend::Queue.clear
+    socket.clear
+    queue.clear
+    database.clear
   end
 
   let(:root_object) {
@@ -115,34 +141,11 @@ describe GraphQL::Subscriptions do
       payload: InMemoryBackend::Payload.new,
     )
   }
-  let(:database) { InMemoryBackend::Database.new }
-  let(:schema) {
-    payload_type = GraphQL::ObjectType.define do
-      name "Payload"
-      field :str, !types.String
-      field :int, !types.Int
-    end
 
-    subscription_type = GraphQL::ObjectType.define do
-      name "Subscription"
-      field :payload, !payload_type do
-        argument :id, !types.ID
-      end
-    end
-
-    query_type = subscription_type.redefine(name: "Query")
-    db = database
-    GraphQL::Schema.define do
-      query(query_type)
-      subscription(subscription_type)
-      use GraphQL::Subscriptions,
-        store: db,
-        queue: InMemoryBackend::Queue,
-        transports: {
-          socket: InMemoryBackend::Socket
-        }
-    end
-  }
+  let(:database) { InMemoryBackend::Database }
+  let(:socket) { InMemoryBackend::Socket }
+  let(:queue) { InMemoryBackend::Queue }
+  let(:schema) { InMemoryBackend::Schema }
 
   describe "pushing updates" do
     it "sends updated data" do
@@ -160,8 +163,8 @@ describe GraphQL::Subscriptions do
       # Initial response is nil, no broadcasts yet
       assert_equal(nil, res_1["data"])
       assert_equal(nil, res_2["data"])
-      socket_1 = InMemoryBackend::Socket.open("1")
-      socket_2 = InMemoryBackend::Socket.open("2")
+      socket_1 = socket.open("1")
+      socket_2 = socket.open("2")
       assert_equal [], socket_1.deliveries
       assert_equal [], socket_2.deliveries
 
@@ -203,7 +206,7 @@ describe GraphQL::Subscriptions do
 
       schema.execute(query_str, context: { socket: "1" }, variables: { "id" => "8" }, root_value: root_object)
       schema.subscriber.trigger("payload", { "id" => "8"}, root_object.payload)
-      assert_equal ["1"], InMemoryBackend::Queue.pushes
+      assert_equal ["1"], queue.pushes
     end
 
     it "pushes errors" do
@@ -215,8 +218,8 @@ describe GraphQL::Subscriptions do
 
       schema.execute(query_str, context: { socket: "1" }, variables: { "id" => "8" }, root_value: root_object)
       schema.subscriber.trigger("payload", { "id" => "8"}, OpenStruct.new(str: nil, int: nil))
-      socket = InMemoryBackend::Socket.open("1")
-      delivery = socket.deliveries.first
+      socket_1 = socket.open("1")
+      delivery = socket_1.deliveries.first
       assert_equal nil, delivery.fetch("data")
       assert_equal 1, delivery["errors"].length
     end
