@@ -311,6 +311,43 @@ describe GraphQL::Subscriptions do
       assert_equal [3], socket.deliveries("3").map { |d| d["data"]["myEvent"]["int"] }
     end
 
-    it "handles errors during trigger somehow?"
+    describe "errors" do
+      class ErrorPayload
+        def int
+          raise "Boom!"
+        end
+
+        def str
+          raise GraphQL::ExecutionError.new("This is handled")
+        end
+      end
+
+      it "lets unhandled errors crash "do
+        query_str = <<-GRAPHQL
+          subscription($type: PayloadType) {
+            myEvent(type: $type) { int }
+          }
+        GRAPHQL
+
+        schema.execute(query_str, context: { socket: "1", me: "1" }, variables: { "type" => "ONE" }, root_value: root_object)
+        err = assert_raises(RuntimeError) {
+          schema.subscriber.trigger("myEvent", { "type" => "ONE" }, ErrorPayload.new, scope: "1")
+        }
+        assert_equal "Boom!", err.message
+      end
+    end
+
+    it "sends query errors to the subscriber" do
+      query_str = <<-GRAPHQL
+        subscription($type: PayloadType) {
+          myEvent(type: $type) { str }
+        }
+      GRAPHQL
+
+      schema.execute(query_str, context: { socket: "1", me: "1" }, variables: { "type" => "ONE" }, root_value: root_object)
+      schema.subscriber.trigger("myEvent", { "type" => "ONE" }, ErrorPayload.new, scope: "1")
+      res = socket.deliveries("1").first
+      assert_equal "This is handled", res["errors"][0]["message"]
+    end
   end
 end
