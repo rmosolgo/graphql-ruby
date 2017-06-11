@@ -49,6 +49,10 @@ class InMemoryBackend
     def size
       @subscriptions.size
     end
+
+    def subscriptions
+      @subscriptions
+    end
   end
 
   class Socket
@@ -106,11 +110,20 @@ class InMemoryBackend
   SchemaDefinition = <<-GRAPHQL
   type Subscription {
     payload(id: ID!): Payload!
+    event(type: PayloadType = ONE, userId: ID!): Payload
+    myEvent(type: PayloadType): Payload
   }
 
   type Payload {
     str: String!
     int: Int!
+  }
+
+  # Arbitrary "kinds" of payloads which may be
+  # subscribed to separately
+  enum PayloadType {
+    ONE
+    TWO
   }
 
   type Query {
@@ -224,7 +237,50 @@ describe GraphQL::Subscriptions do
       assert_equal 1, delivery["errors"].length
     end
 
-    it "coerces args somehow?"
+    it "coerces args" do
+      query_str = <<-GRAPHQL
+        subscription($type: PayloadType) {
+          e1: event(userId: "3", type: $type) { int }
+        }
+      GRAPHQL
+
+      # Subscribe with explicit `TYPE`
+      schema.execute(query_str, context: { socket: "1" }, variables: { "type" => "ONE" }, root_value: root_object)
+      # Subscribe with default `TYPE`
+      schema.execute(query_str, context: { socket: "2" }, root_value: root_object)
+      # Subscribe with non-matching `TYPE`
+      schema.execute(query_str, context: { socket: "3" }, variables: { "type" => "TWO" }, root_value: root_object)
+      # Subscribe with explicit null
+      schema.execute(query_str, context: { socket: "4" }, variables: { "type" => nil }, root_value: root_object)
+
+      # Trigger the subscription with coerceable args, different orders:
+      schema.subscriber.trigger("event", {"userId" => 3, "type" => "ONE"}, OpenStruct.new(str: "", int: 1))
+      schema.subscriber.trigger("event", {"type" => "ONE", "userId" => "3"}, OpenStruct.new(str: "", int: 2))
+      # This is a non-trigger
+      schema.subscriber.trigger("event", {"userId" => "3", "type" => "TWO"}, OpenStruct.new(str: "", int: 3))
+      # These get default value of ONE
+      schema.subscriber.trigger("event", {"userId" => "3"}, OpenStruct.new(str: "", int: 4))
+      # Trigger with null updates subscribers to null
+      schema.subscriber.trigger("event", {"userId" => 3, "type" => nil}, OpenStruct.new(str: "", int: 5))
+
+      socket_1 = socket.open("1")
+      assert_equal [1,2,4], socket_1.deliveries.map { |d| d["data"]["e1"]["int"] }
+
+      # Same as socket_1
+      socket_2 = socket.open("2")
+      assert_equal [1,2,4], socket_2.deliveries.map { |d| d["data"]["e1"]["int"] }
+
+      # Received the "non-trigger"
+      socket_3 = socket.open("3")
+      assert_equal [3], socket_3.deliveries.map { |d| d["data"]["e1"]["int"] }
+
+      # Received the trigger with null
+      socket_4 = socket.open("4")
+      assert_equal [5], socket_4.deliveries.map { |d| d["data"]["e1"]["int"] }
+    end
+
+    it "coerces input objects"
+    it "allows context-scoped subscriptions somehow?"
     it "handles errors during trigger somehow?"
   end
 end

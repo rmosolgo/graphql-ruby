@@ -14,9 +14,22 @@ module GraphQL
         else
           case type
           when GraphQL::ScalarType
-            type.coerce_input(ast_node, variables.context)
+            # TODO smell
+            # This gets used for plain values during subscriber.trigger
+            if variables
+              type.coerce_input(ast_node, variables.context)
+            else
+              type.coerce_isolated_input(ast_node)
+            end
           when GraphQL::EnumType
-            type.coerce_input(ast_node.name, variables.context)
+            # TODO smell
+            # This gets used for plain values sometimes
+            v = ast_node.is_a?(GraphQL::Language::Nodes::Enum) ? ast_node.name : ast_node
+            if variables
+              type.coerce_input(v, variables.context)
+            else
+              type.coerce_isolated_input(v)
+            end
           when GraphQL::NonNullType
             LiteralInput.coerce(type.of_type, ast_node, variables)
           when GraphQL::ListType
@@ -43,7 +56,14 @@ module GraphQL
         # Variables is nil when making .defaults_for
         context = variables ? variables.context : nil
         values_hash = {}
-        indexed_arguments = ast_arguments.each_with_object({}) { |a, memo| memo[a.name] = a }
+        indexed_arguments = case ast_arguments
+        when Hash
+          ast_arguments
+        when Array
+          ast_arguments.each_with_object({}) { |a, memo| memo[a.name] = a }
+        else
+          raise ArgumentError, "Unexpected ast_arguments: #{ast_arguments}"
+        end
 
         argument_defns.each do |arg_name, arg_defn|
           ast_arg = indexed_arguments[arg_name]
@@ -51,12 +71,17 @@ module GraphQL
           # If the value is a variable,
           # only add a value if the variable is actually present.
           # Otherwise, coerce the value in the AST, prepare the value and add it.
-          if ast_arg
-            value_is_a_variable = ast_arg.value.is_a?(GraphQL::Language::Nodes::VariableIdentifier)
+          #
+          # TODO: since indexed_arguments can come from a plain Ruby hash,
+          # have to check for `false` or `nil` as hash values. This is getting smelly :S
+          if indexed_arguments.key?(arg_name)
+            arg_value = ast_arg.is_a?(GraphQL::Language::Nodes::Argument) ? ast_arg.value : ast_arg
 
-            if (!value_is_a_variable || (value_is_a_variable && variables.key?(ast_arg.value.name)))
+            value_is_a_variable = arg_value.is_a?(GraphQL::Language::Nodes::VariableIdentifier)
 
-              value = coerce(arg_defn.type, ast_arg.value, variables)
+            if (!value_is_a_variable || (value_is_a_variable && variables.key?(arg_value.name)))
+
+              value = coerce(arg_defn.type, arg_value, variables)
               value = arg_defn.prepare(value, context)
 
               if value.is_a?(GraphQL::ExecutionError)
@@ -64,7 +89,7 @@ module GraphQL
                 raise value
               end
 
-              values_hash[ast_arg.name] = value
+              values_hash[arg_name] = value
             end
           end
 

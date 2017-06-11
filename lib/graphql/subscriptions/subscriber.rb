@@ -26,7 +26,12 @@ module GraphQL
       # Fetch subscriptions matching this field + arguments pair
       # And pass them off to the queue.
       def trigger(event, args, object)
-        event_key = Subscriptions::Event.serialize(event, args)
+        field = @schema.get_field("Subscription", event)
+        if !field
+          raise "No subscription matching trigger: #{event}"
+        end
+
+        event_key = Subscriptions::Event.serialize(event, args, field)
         @store.each_channel(event_key) do |channel|
           @queue.enqueue(@schema, channel, event_key, object)
         end

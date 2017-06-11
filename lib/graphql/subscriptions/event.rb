@@ -23,12 +23,26 @@ module GraphQL
         @name = name
         @arguments = arguments
         @context = context
-        @key = self.class.serialize(name, arguments)
+        @key = self.class.serialize(name, arguments, @context.field)
       end
 
       # @return [String] an identifier for this unit of subscription
-      def self.serialize(name, arguments)
-        "#{name}(#{JSON.dump(arguments.to_h)})"
+      def self.serialize(name, arguments, field)
+        normalized_args = case arguments
+        when GraphQL::Query::Arguments
+          arguments
+        when Hash
+          GraphQL::Query::LiteralInput.from_arguments(
+            arguments,
+            field.arguments,
+            nil,
+          )
+        else
+          raise ArgumentError, "Unexpected arguments: #{arguments}, must be Hash or GraphQL::Arguments"
+        end
+
+        sorted_h = normalized_args.to_h.sort.to_h
+        "#{name}(#{JSON.dump(sorted_h)})"
       end
     end
   end

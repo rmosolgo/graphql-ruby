@@ -149,6 +149,7 @@ module GraphQL
         @subscription_key ||= Subscriptions::Event.serialize(
           definition_name,
           @query.arguments_for(self, definition),
+          definition,
         )
       end
 
