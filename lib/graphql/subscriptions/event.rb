@@ -23,11 +23,17 @@ module GraphQL
         @name = name
         @arguments = arguments
         @context = context
-        @key = self.class.serialize(name, arguments, @context.field)
+        field = context.field
+        scope_val = if field.subscription_scope
+          context[field.subscription_scope]
+        else
+          nil
+        end
+        @key = self.class.serialize(name, arguments, field, scope: scope_val)
       end
 
       # @return [String] an identifier for this unit of subscription
-      def self.serialize(name, arguments, field)
+      def self.serialize(name, arguments, field, scope:)
         normalized_args = case arguments
         when GraphQL::Query::Arguments
           arguments
@@ -42,7 +48,7 @@ module GraphQL
         end
 
         sorted_h = normalized_args.to_h.sort.to_h
-        "#{name}(#{JSON.dump(sorted_h)})"
+        JSON.dump([scope, name, sorted_h])
       end
     end
   end

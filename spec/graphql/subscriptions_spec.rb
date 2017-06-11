@@ -25,7 +25,7 @@ class InMemoryBackend
         query_string: query.query_string,
         operation_name: query.operation_name,
         variables: query.provided_variables,
-        context: {},
+        context: { me: query.context[:me] },
         transport: :socket,
       }
     end
@@ -58,7 +58,7 @@ class InMemoryBackend
   class Socket
     # Transport API:
     def self.deliver(channel, result, ctx)
-      open(channel).deliveries << result
+      deliveries(channel) << result
     end
 
     def self.open(id)
@@ -73,6 +73,10 @@ class InMemoryBackend
 
     def initialize
       @deliveries = []
+    end
+
+    def self.deliveries(id)
+      @sockets[id].deliveries
     end
   end
 
@@ -144,6 +148,9 @@ class InMemoryBackend
         socket: InMemoryBackend::Socket
       }
   end
+
+  # TODO don't hack this
+  Schema.get_field("Subscription", "myEvent").subscription_scope = :me
 end
 
 
@@ -268,23 +275,42 @@ describe GraphQL::Subscriptions do
       # Trigger with null updates subscribers to null
       schema.subscriber.trigger("event", { "stream" => {"userId" => 3, "type" => nil} }, OpenStruct.new(str: "", int: 5))
 
-      socket_1 = socket.open("1")
-      assert_equal [1,2,4], socket_1.deliveries.map { |d| d["data"]["e1"]["int"] }
+      assert_equal [1,2,4], socket.deliveries("1").map { |d| d["data"]["e1"]["int"] }
 
       # Same as socket_1
-      socket_2 = socket.open("2")
-      assert_equal [1,2,4], socket_2.deliveries.map { |d| d["data"]["e1"]["int"] }
+      assert_equal [1,2,4], socket.deliveries("2").map { |d| d["data"]["e1"]["int"] }
 
       # Received the "non-trigger"
-      socket_3 = socket.open("3")
-      assert_equal [3], socket_3.deliveries.map { |d| d["data"]["e1"]["int"] }
+      assert_equal [3], socket.deliveries("3").map { |d| d["data"]["e1"]["int"] }
 
       # Received the trigger with null
-      socket_4 = socket.open("4")
-      assert_equal [5], socket_4.deliveries.map { |d| d["data"]["e1"]["int"] }
+      assert_equal [5], socket.deliveries("4").map { |d| d["data"]["e1"]["int"] }
     end
 
-    it "allows context-scoped subscriptions somehow?"
+    it "allows context-scoped subscriptions" do
+      query_str = <<-GRAPHQL
+        subscription($type: PayloadType) {
+          myEvent(type: $type) { int }
+        }
+      GRAPHQL
+
+      # Subscriptions for user 1
+      schema.execute(query_str, context: { socket: "1", me: "1" }, variables: { "type" => "ONE" }, root_value: root_object)
+      schema.execute(query_str, context: { socket: "2", me: "1" }, variables: { "type" => "TWO" }, root_value: root_object)
+      # Subscription for user 2
+      schema.execute(query_str, context: { socket: "3", me: "2" }, variables: { "type" => "ONE" }, root_value: root_object)
+
+      schema.subscriber.trigger("myEvent", { "type" => "ONE" }, OpenStruct.new(str: "", int: 1), scope: "1")
+      schema.subscriber.trigger("myEvent", { "type" => "TWO" }, OpenStruct.new(str: "", int: 2), scope: "1")
+      schema.subscriber.trigger("myEvent", { "type" => "ONE" }, OpenStruct.new(str: "", int: 3), scope: "2")
+
+      # Delivered to user 1
+      assert_equal [1], socket.deliveries("1").map { |d| d["data"]["myEvent"]["int"] }
+      assert_equal [2], socket.deliveries("2").map { |d| d["data"]["myEvent"]["int"] }
+      # Delivered to user 2
+      assert_equal [3], socket.deliveries("3").map { |d| d["data"]["myEvent"]["int"] }
+    end
+
     it "handles errors during trigger somehow?"
   end
 end

@@ -146,11 +146,19 @@ module GraphQL
       attr_reader :query
 
       def subscription_key
-        @subscription_key ||= Subscriptions::Event.serialize(
-          definition_name,
-          @query.arguments_for(self, definition),
-          definition,
-        )
+        @subscription_key ||= begin
+          scope = if definition.subscription_scope
+            @query.context[definition.subscription_scope]
+          else
+            nil
+          end
+          Subscriptions::Event.serialize(
+            definition_name,
+            @query.arguments_for(self, definition),
+            definition,
+            scope: scope
+          )
+        end
       end
 
       protected
