@@ -39,7 +39,9 @@ module GraphQL
               [LiteralInput.coerce(type.of_type, ast_node, variables)]
             end
           when GraphQL::InputObjectType
-            from_arguments(ast_node.arguments, type.arguments, variables)
+            # TODO smell: handling AST vs handling plain Ruby
+            next_args = ast_node.is_a?(Hash) ? ast_node : ast_node.arguments
+            from_arguments(next_args, type.arguments, variables)
           end
         end
       end

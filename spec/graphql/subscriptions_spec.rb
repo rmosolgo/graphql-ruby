@@ -110,13 +110,18 @@ class InMemoryBackend
   SchemaDefinition = <<-GRAPHQL
   type Subscription {
     payload(id: ID!): Payload!
-    event(type: PayloadType = ONE, userId: ID!): Payload
+    event(stream: StreamInput): Payload
     myEvent(type: PayloadType): Payload
   }
 
   type Payload {
     str: String!
     int: Int!
+  }
+
+  input StreamInput {
+    userId: ID!
+    type: PayloadType = ONE
   }
 
   # Arbitrary "kinds" of payloads which may be
@@ -240,7 +245,7 @@ describe GraphQL::Subscriptions do
     it "coerces args" do
       query_str = <<-GRAPHQL
         subscription($type: PayloadType) {
-          e1: event(userId: "3", type: $type) { int }
+          e1: event(stream: { userId: "3", type: $type }) { int }
         }
       GRAPHQL
 
@@ -254,14 +259,14 @@ describe GraphQL::Subscriptions do
       schema.execute(query_str, context: { socket: "4" }, variables: { "type" => nil }, root_value: root_object)
 
       # Trigger the subscription with coerceable args, different orders:
-      schema.subscriber.trigger("event", {"userId" => 3, "type" => "ONE"}, OpenStruct.new(str: "", int: 1))
-      schema.subscriber.trigger("event", {"type" => "ONE", "userId" => "3"}, OpenStruct.new(str: "", int: 2))
+      schema.subscriber.trigger("event", { "stream" => {"userId" => 3, "type" => "ONE"} }, OpenStruct.new(str: "", int: 1))
+      schema.subscriber.trigger("event", { "stream" => {"type" => "ONE", "userId" => "3"} }, OpenStruct.new(str: "", int: 2))
       # This is a non-trigger
-      schema.subscriber.trigger("event", {"userId" => "3", "type" => "TWO"}, OpenStruct.new(str: "", int: 3))
+      schema.subscriber.trigger("event", { "stream" => {"userId" => "3", "type" => "TWO"} }, OpenStruct.new(str: "", int: 3))
       # These get default value of ONE
-      schema.subscriber.trigger("event", {"userId" => "3"}, OpenStruct.new(str: "", int: 4))
+      schema.subscriber.trigger("event", { "stream" => {"userId" => "3"} }, OpenStruct.new(str: "", int: 4))
       # Trigger with null updates subscribers to null
-      schema.subscriber.trigger("event", {"userId" => 3, "type" => nil}, OpenStruct.new(str: "", int: 5))
+      schema.subscriber.trigger("event", { "stream" => {"userId" => 3, "type" => nil} }, OpenStruct.new(str: "", int: 5))
 
       socket_1 = socket.open("1")
       assert_equal [1,2,4], socket_1.deliveries.map { |d| d["data"]["e1"]["int"] }
@@ -279,7 +284,6 @@ describe GraphQL::Subscriptions do
       assert_equal [5], socket_4.deliveries.map { |d| d["data"]["e1"]["int"] }
     end
 
-    it "coerces input objects"
     it "allows context-scoped subscriptions somehow?"
     it "handles errors during trigger somehow?"
   end
