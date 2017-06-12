@@ -7,8 +7,8 @@ module GraphQL
     #
     # @example Validate a query
     #   validator = GraphQL::StaticValidation::Validator.new(schema: MySchema)
-    #   document = GraphQL.parse(query_string)
-    #   errors = validator.validate(document)
+    #   query = GraphQL::Query.new(MySchema, query_string)
+    #   errors = validator.validate(query)[:errors]
     #
     class Validator
       # @param schema [GraphQL::Schema]
