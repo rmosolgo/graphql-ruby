@@ -2,7 +2,7 @@
 layout: guide
 search: true
 section: Fields
-title: Introduction
+title: Limits
 desc: Always limit lists of items
 index: 4
 ---
