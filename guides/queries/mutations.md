@@ -22,7 +22,7 @@ Then add your mutations here:
 MutationRoot = GraphQL::ObjectType.define do
   name "Mutation"
 
-  field ratePost, PostType do
+  field :ratePost, PostType do
     description "Rates a post"
     argument :postId, !types.Int
     argument :stars, !types.Int
