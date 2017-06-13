@@ -55,7 +55,7 @@
 <div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">MutationRoot</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="nb">name</span> <span class="s2">"Mutation"</span>
 
-  <span class="n">field</span> <span class="n">ratePost</span><span class="p">,</span> <span class="no">PostType</span> <span class="k">do</span>
+  <span class="n">field</span> <span class="ss">:ratePost</span><span class="p">,</span> <span class="no">PostType</span> <span class="k">do</span>
     <span class="n">description</span> <span class="s2">"Rates a post"</span>
     <span class="n">argument</span> <span class="ss">:postId</span><span class="p">,</span> <span class="o">!</span><span class="n">types</span><span class="o">.</span><span class="no">Int</span>
     <span class="n">argument</span> <span class="ss">:stars</span><span class="p">,</span> <span class="o">!</span><span class="n">types</span><span class="o">.</span><span class="no">Int</span>
