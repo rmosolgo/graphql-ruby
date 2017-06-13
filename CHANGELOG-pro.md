@@ -8,6 +8,17 @@
 
 ### Bug Fix
 
+## 1.4.3 (13 Jun 2017)
+
+### New Features
+
+- `OrderedRelationConnection` supports ordering by joined fields
+
+### Bug Fix
+
+- Update auth plugin for new Relay instrumenters
+- `Pro::Encoder` supports `encoder(...)` as documented
+
 ## 1.4.2 (2 May 2017)
 
 ### Bug Fix
