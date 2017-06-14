@@ -12,9 +12,6 @@ module GraphQL
     #   - {#max_page_size} (the specified maximum page size that can be returned from a connection)
     #
     class BaseConnection
-      # Just to encode data in the cursor, use something that won't conflict
-      CURSOR_SEPARATOR = "---"
-
       # Map of collection class names -> connection_classes
       # eg `{"Array" => ArrayConnection}`
       CONNECTION_IMPLEMENTATIONS = {}
@@ -119,19 +116,19 @@ module GraphQL
 
       # Used by `pageInfo`
       def start_cursor
-        if start_node = (respond_to?(:paged_nodes_array, true) ? paged_nodes_array : paged_nodes).first
-          return cursor_from_node(start_node)
+        if start_node = paged_nodes.first
+          cursor_from_node(start_node)
         else
-          return nil
+          nil
         end
       end
 
       # Used by `pageInfo`
       def end_cursor
-        if end_node = (respond_to?(:paged_nodes_array, true) ? paged_nodes_array : paged_nodes).last
-          return cursor_from_node(end_node)
+        if end_node = paged_nodes.last
+          cursor_from_node(end_node)
         else
-          return nil
+          nil
         end
       end
 
