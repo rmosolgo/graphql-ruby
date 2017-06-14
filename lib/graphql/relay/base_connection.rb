@@ -42,7 +42,7 @@ module GraphQL
         end
       end
 
-      attr_reader :nodes, :arguments, :max_page_size, :parent, :field, :context
+      attr_reader :nodes, :arguments, :max_page_size, :parent, :field
 
       # Make a connection, wrapping `nodes`
       # @param nodes [Object] The collection of nodes
@@ -50,15 +50,14 @@ module GraphQL
       # @param field [GraphQL::Field] The underlying field
       # @param max_page_size [Int] The maximum number of results to return
       # @param parent [Object] The object which this collection belongs to
-      # @param context [GraphQL::Query::Context] The context from the field being resolved
-      def initialize(nodes, arguments, field: nil, max_page_size: nil, parent: nil, context: nil)
-        @context = context
+      def initialize(nodes, arguments, field: nil, max_page_size: nil, parent: nil, encoder: nil, context: nil)
         @nodes = nodes
         @arguments = arguments
         @field = field
         @parent = parent
-        @encoder = context ? @context.schema.cursor_encoder : GraphQL::Schema::Base64Encoder
-        @max_page_size = max_page_size.nil? && context ? @context.schema.default_max_page_size : max_page_size
+        @encoder = encoder.nil? ? GraphQL::Schema::Base64Encoder : encoder
+        @max_page_size = max_page_size
+        @context = context
       end
 
       def encode(data)
@@ -67,6 +66,12 @@ module GraphQL
 
       def decode(data)
         @encoder.decode(data, nonce: true)
+      end
+
+      # @deprecated(reason: "Explicitly pass max_page_size and cursor")
+      def context
+        warn("Access to context is deprecated in BaseConection. Explicitly pass `max_page_size` and `cursor`")
+        @context
       end
 
       # The value passed as `first:`, if there was one. Negative numbers become `0`.
