@@ -2,12 +2,6 @@
 require 'spec_helper'
 
 describe GraphQL::Relay::BaseConnection do
-  module Encoder
-    module_function
-    def encode(str, nonce: false); str; end
-    def decode(str, nonce: false); str; end
-  end
-
   describe ".connection_for_nodes" do
     it "resolves most specific connection type" do
       class SpecialArray < Array; end
@@ -40,14 +34,14 @@ describe GraphQL::Relay::BaseConnection do
   end
 
   describe "#encode / #decode" do
-    module ReverseEncoder
+    module ReverseCoder
       module_function
       def encode(str, nonce: false); str.reverse; end
       def decode(str, nonce: false); str.reverse; end
     end
 
-    it "Uses the schema's encoder" do
-      conn = GraphQL::Relay::BaseConnection.new([], {}, encoder: ReverseEncoder)
+    it "Uses the schema's coder" do
+      conn = GraphQL::Relay::BaseConnection.new([], {}, coder: ReverseCoder)
 
       assert_equal "1/nosreP", conn.encode("Person/1")
       assert_equal "Person/1", conn.decode("1/nosreP")

@@ -369,4 +369,10 @@ type Query {
       assert_equal field, field_2
     end
   end
+
+  describe "#cursor_encoder" do
+    it "delegates to cursor_coder" do
+      assert_equal schema.cursor_encoder, schema.cursor_coder
+    end
+  end
 end

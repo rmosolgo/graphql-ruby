@@ -50,22 +50,23 @@ module GraphQL
       # @param field [GraphQL::Field] The underlying field
       # @param max_page_size [Int] The maximum number of results to return
       # @param parent [Object] The object which this collection belongs to
-      def initialize(nodes, arguments, field: nil, max_page_size: nil, parent: nil, encoder: nil, context: nil)
+      # @param coder [Object] The object encodes and decodes a cursor
+      def initialize(nodes, arguments, field: nil, max_page_size: nil, parent: nil, coder: nil, context: nil)
         @nodes = nodes
         @arguments = arguments
         @field = field
         @parent = parent
-        @encoder = encoder.nil? ? GraphQL::Schema::Base64Encoder : encoder
+        @coder = coder.nil? ? GraphQL::Schema::Base64Encoder : coder
         @max_page_size = max_page_size
         @context = context
       end
 
       def encode(data)
-        @encoder.encode(data, nonce: true)
+        @coder.encode(data, nonce: true)
       end
 
       def decode(data)
-        @encoder.decode(data, nonce: true)
+        @coder.decode(data, nonce: true)
       end
 
       # @deprecated(reason: "Explicitly pass max_page_size and cursor")

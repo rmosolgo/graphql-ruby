@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+require "graphql/schema/coders/base_64_coder"
 require "graphql/schema/base_64_encoder"
 require "graphql/schema/catchall_middleware"
 require "graphql/schema/default_parse_error"
@@ -60,6 +61,7 @@ module GraphQL
       :raise_definition_error,
       :object_from_id, :id_from_object,
       :default_mask,
+      :cursor_coder,
       :cursor_encoder,
       directives: ->(schema, directives) { schema.directives = directives.reduce({}) { |m, d| m[d.name] = d; m  }},
       instrument: ->(schema, type, instrumenter, after_built_ins: false) {
@@ -80,7 +82,7 @@ module GraphQL
       :max_depth, :max_complexity, :default_max_page_size,
       :orphan_types, :directives,
       :query_analyzers, :multiplex_analyzers, :instrumenters, :lazy_methods,
-      :cursor_encoder,
+      :cursor_coder,
       :raise_definition_error
 
     # @return [MiddlewareChain] MiddlewareChain which is applied to fields during execution
@@ -122,7 +124,7 @@ module GraphQL
       @instrumenters = Hash.new { |h, k| h[k] = [] }
       @lazy_methods = GraphQL::Execution::Lazy::LazyMethodMap.new
       @lazy_methods.set(GraphQL::Relay::ConnectionResolve::LazyNodesWrapper, :never_called)
-      @cursor_encoder = Base64Encoder
+      @cursor_coder = Coders::Base64Coder
       # Default to the built-in execution strategy:
       @query_execution_strategy = self.class.default_execution_strategy
       @mutation_execution_strategy = self.class.default_execution_strategy
@@ -163,6 +165,14 @@ module GraphQL
 
     def remove_handler(*args, &block)
       rescue_middleware.remove_handler(*args, &block)
+    end
+
+    def cursor_encoder
+      warn <<-MSG.gsub(/^\s*/, "")
+        cursor_encoder has been renamed to cursor_coder. Please rename in your schema.
+        For example, `cursor_encoder(MyEncoder)` will become `cursor_coder(MyEncoder)`
+      MSG
+      cursor_coder
     end
 
     # Validate a query string according to this schema.
