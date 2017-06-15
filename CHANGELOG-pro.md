@@ -8,6 +8,17 @@
 
 ### Bug Fix
 
+## 1.4.4 (15 Jun 2017)
+
+### New Features
+
+- Add `Schema#unauthorized_object(obj, ctx)` hook for failed runtime checks
+
+### Bug Fix
+
+- Prevent usage of `parent_role:` with `view:` or `access:` (since parent role requires a runtime check)
+- Fix versioned, encrypted cursors with 16-byte legacy cursors
+
 ## 1.4.3 (13 Jun 2017)
 
 ### New Features
