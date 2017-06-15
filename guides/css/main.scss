@@ -256,6 +256,10 @@ table {
   }
 }
 
+li p, li div {
+  display: inline-block;
+}
+
 .search-input {
   font-size: 1em;
   padding: 5px;

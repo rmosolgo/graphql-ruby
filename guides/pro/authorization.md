@@ -99,7 +99,7 @@ Field-level and type-level permissions are additive: both checks must pass for a
 
 Type-level permissions are applied according to an object's runtime type (unions and interfaces don't have authorization checks).
 
-If an object doesn't pass permission checks, it is removed from the response. If the object is part of a list, it is removed from the list.
+If an object doesn't pass permission checks, it is removed from the response. If the object is part of a list, it is removed from the list. You can override this behavior with the [`unauthorized_object` hook](#unauthorized-object).
 
 ### Authorize Values by Parent
 
@@ -118,6 +118,75 @@ end
 ```
 
 This way, you can serve a subset of fields based on the object being queried.
+
+### Unauthorized Object
+
+When an object fails a runtime authorization check, the default behavior is:
+
+- return `nil` instead; OR
+- if the object is part of a list, remove it from that list.
+
+You can override this behavior by providing a schema-level `unauthorized_object` function:
+
+```ruby
+MySchema = GraphQL::Schema.define do
+  unauthorized_object ->(obj, ctx) { ... }
+end
+# OR
+MySchema = GraphQL::Schema.define do
+  unauthorized_object(MyUnauthorizedObjectHook)
+end
+```
+
+The function is called with two arguments:
+
+- `obj` is the object which failed a runtime check
+- `ctx` is the field context for the failed check
+
+Within the function, you can:
+
+- Write log entries
+- Add GraphQL errors, for example:
+
+  ```ruby
+  # Add an error to the graphql response:
+  err = GraphQL::ExecutionError.new("You don't have permission to see #{obj.name}")
+  ctx.add_error(err)
+  ```
+
+- Return a different value for the query.
+
+  To return a different value, use `yield` (or `next` for a Proc). For example:
+
+  ```ruby
+  module MyUnauthorizedObjectHook
+    def self.call(obj, ctx)
+      if obj.is_a?(User)
+        # Write a log entry
+        logger.log("Invalid user access: #{ctx[:current_user]} tried to access #{obj}")
+        # Replace an unauthorized object with a null object
+        yield(AnonymousUser)
+      end
+    end
+  end
+  ```
+
+  For procs, use `next` instead of `yield`:
+
+  ```ruby
+  -> (obj, ctx) {
+    if obj.is_a?(User)
+      # Write a log entry
+      logger.log("Invalid user access: #{ctx[:current_user]} tried to access #{obj}")
+      # Replace an unauthorized object with a null object
+      next(AnonymousUser)
+    end
+  }
+  ```
+
+  (`yield` isn't valid for procs. Long story 😅.)
+
+  Using `yield` allows the library to skip objects entirely when nothing is yielded.
 
 ## Access Authorization
 
