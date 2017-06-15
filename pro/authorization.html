@@ -133,7 +133,7 @@
 
 <p>Type-level permissions are applied according to an object’s runtime type (unions and interfaces don’t have authorization checks).</p>
 
-<p>If an object doesn’t pass permission checks, it is removed from the response. If the object is part of a list, it is removed from the list.</p>
+<p>If an object doesn’t pass permission checks, it is removed from the response. If the object is part of a list, it is removed from the list. You can override this behavior with the <a href="#unauthorized-object"><code class="highlighter-rouge">unauthorized_object</code> hook</a>.</p>
 
 <h3 id="authorize-values-by-parent">Authorize Values by Parent</h3>
 
@@ -152,6 +152,84 @@
 </div>
 
 <p>This way, you can serve a subset of fields based on the object being queried.</p>
+
+<h3 id="unauthorized-object">Unauthorized Object</h3>
+
+<p>When an object fails a runtime authorization check, the default behavior is:</p>
+
+<ul>
+  <li>return <code class="highlighter-rouge">nil</code> instead; OR</li>
+  <li>if the object is part of a list, remove it from that list.</li>
+</ul>
+
+<p>You can override this behavior by providing a schema-level <code class="highlighter-rouge">unauthorized_object</code> function:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+  <span class="n">unauthorized_object</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span> <span class="p">.</span><span class="nf">.</span><span class="o">.</span> <span class="p">}</span>
+<span class="k">end</span>
+<span class="c1"># OR</span>
+<span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+  <span class="n">unauthorized_object</span><span class="p">(</span><span class="no">MyUnauthorizedObjectHook</span><span class="p">)</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<p>The function is called with two arguments:</p>
+
+<ul>
+  <li><code class="highlighter-rouge">obj</code> is the object which failed a runtime check</li>
+  <li><code class="highlighter-rouge">ctx</code> is the field context for the failed check</li>
+</ul>
+
+<p>Within the function, you can:</p>
+
+<ul>
+  <li>Write log entries</li>
+  <li>
+    <p>Add GraphQL errors, for example:</p>
+
+    <div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># Add an error to the graphql response:</span>
+<span class="n">err</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ExecutionError</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"You don't have permission to see </span><span class="si">#{</span><span class="n">obj</span><span class="p">.</span><span class="nf">name</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="n">ctx</span><span class="p">.</span><span class="nf">add_error</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+</code></pre>
+    </div>
+  </li>
+  <li>
+    <p>Return a different value for the query.</p>
+
+    <p>To return a different value, use <code class="highlighter-rouge">yield</code> (or <code class="highlighter-rouge">next</code> for a Proc). For example:</p>
+
+    <div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="k">module</span> <span class="nn">MyUnauthorizedObjectHook</span>
+  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">call</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">obj</span><span class="p">.</span><span class="nf">is_a?</span><span class="p">(</span><span class="no">User</span><span class="p">)</span>
+      <span class="c1"># Write a log entry</span>
+      <span class="n">logger</span><span class="p">.</span><span class="nf">log</span><span class="p">(</span><span class="s2">"Invalid user access: </span><span class="si">#{</span><span class="n">ctx</span><span class="p">[</span><span class="ss">:current_user</span><span class="p">]</span><span class="si">}</span><span class="s2"> tried to access </span><span class="si">#{</span><span class="n">obj</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+      <span class="c1"># Replace an unauthorized object with a null object</span>
+      <span class="k">yield</span><span class="p">(</span><span class="no">AnonymousUser</span><span class="p">)</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+    </div>
+
+    <p>For procs, use <code class="highlighter-rouge">next</code> instead of <code class="highlighter-rouge">yield</code>:</p>
+
+    <div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="o">-&gt;</span> <span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">if</span> <span class="n">obj</span><span class="p">.</span><span class="nf">is_a?</span><span class="p">(</span><span class="no">User</span><span class="p">)</span>
+    <span class="c1"># Write a log entry</span>
+    <span class="n">logger</span><span class="p">.</span><span class="nf">log</span><span class="p">(</span><span class="s2">"Invalid user access: </span><span class="si">#{</span><span class="n">ctx</span><span class="p">[</span><span class="ss">:current_user</span><span class="p">]</span><span class="si">}</span><span class="s2"> tried to access </span><span class="si">#{</span><span class="n">obj</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="c1"># Replace an unauthorized object with a null object</span>
+    <span class="k">next</span><span class="p">(</span><span class="no">AnonymousUser</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="p">}</span>
+</code></pre>
+    </div>
+
+    <p>(<code class="highlighter-rouge">yield</code> isn’t valid for procs. Long story 😅.)</p>
+
+    <p>Using <code class="highlighter-rouge">yield</code> allows the library to skip objects entirely when nothing is yielded.</p>
+  </li>
+</ul>
 
 <h2 id="access-authorization">Access Authorization</h2>
 
