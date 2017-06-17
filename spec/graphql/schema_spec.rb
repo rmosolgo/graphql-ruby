@@ -168,6 +168,13 @@ type Query {
       built_schema = GraphQL::Schema.from_definition(schema)
       assert_equal schema.chop, GraphQL::Schema::Printer.print_schema(built_schema)
     end
+
+    it "builds from a file" do
+      schema = GraphQL::Schema.from_definition("spec/support/magic_cards/schema.graphql")
+      assert_instance_of GraphQL::Schema, schema
+      expected_types =  ["Card", "Color", "Expansion", "Printing"]
+      assert_equal expected_types, (expected_types & schema.types.keys)
+    end
   end
 
   describe ".from_introspection" do
