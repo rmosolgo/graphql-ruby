@@ -33,15 +33,8 @@ module GraphQL
         # and the arguments, then uses them to eval if a matching function is found.
         PATTERN = /^\@(.*)$/
 
-        def self.instrument(schema_or_type, field = nil)
-          target = if field
-            # This is being called as field instrumentation
-            field
-          else
-            # This is being called as a schema or type instrumentation
-            schema_or_type
-          end
-
+        # @param target [<#redefine, #description>]
+        def self.instrument(target)
           if target.description.nil?
             target
           else

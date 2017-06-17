@@ -20,7 +20,7 @@ describe GraphQL::Schema::BuildFromDefinition::DefineInstrumentation do
         description "Calls prop\n@name \"f2\"\n@property :prop\n"
       end
 
-      field_2 = instrumentation.instrument(nil, field)
+      field_2 = instrumentation.instrument(field)
 
       assert_equal :prop, field_2.property
       assert_equal "f2", field_2.name
