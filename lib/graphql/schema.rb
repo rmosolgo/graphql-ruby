@@ -61,6 +61,7 @@ module GraphQL
       :object_from_id, :id_from_object,
       :default_mask,
       :cursor_encoder,
+      :description,
       directives: ->(schema, directives) { schema.directives = directives.reduce({}) { |m, d| m[d.name] = d; m  }},
       instrument: ->(schema, type, instrumenter, after_built_ins: false) {
         if type == :field && after_built_ins
@@ -448,15 +449,21 @@ module GraphQL
     # @param definition_or_path [String] A schema definition string, or a path to a file containing the definition
     # @param default_resolve [<#call(type, field, obj, args, ctx)>] A callable for handling field resolution
     # @param parser [Object] An object for handling definition string parsing (must respond to `parse`)
+    # @param definitions [Boolean] If true, parse `@`-definitions (this is UNSAFE, parse trusted input only)
     # @return [GraphQL::Schema] the schema described by `document`
-    def self.from_definition(definition_or_path, default_resolve: BuildFromDefinition::DefaultResolve, parser: BuildFromDefinition::DefaultParser)
+    def self.from_definition(definition_or_path, default_resolve: BuildFromDefinition::DefaultResolve, parser: BuildFromDefinition::DefaultParser, definitions: false)
       # If the file ends in `.graphql`, treat it like a filepath
       definition = if definition_or_path.end_with?(".graphql")
         File.read(definition_or_path)
       else
         definition_or_path
       end
-      GraphQL::Schema::BuildFromDefinition.from_definition(definition, default_resolve: default_resolve, parser: parser)
+      GraphQL::Schema::BuildFromDefinition.from_definition(
+        definition,
+        default_resolve: default_resolve,
+        parser: parser,
+        definitions: definitions,
+      )
     end
 
     # Error that is raised when [#Schema#from_definition] is passed an invalid schema definition string.
@@ -496,6 +503,9 @@ module GraphQL
     def to_json(*args)
       JSON.pretty_generate(as_json(*args))
     end
+
+    # @return [String, nil] Used for loading definitions only
+    attr_accessor :description
 
     protected
 
