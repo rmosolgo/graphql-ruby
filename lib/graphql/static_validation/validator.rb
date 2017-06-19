@@ -21,14 +21,18 @@ module GraphQL
       # Validate `query` against the schema. Returns an array of message hashes.
       # @param query [GraphQL::Query]
       # @return [Array<Hash>]
-      def validate(query)
+      def validate(query, validate: true)
         context = GraphQL::StaticValidation::ValidationContext.new(query)
         rewrite = GraphQL::InternalRepresentation::Rewrite.new
 
         # Put this first so its enters and exits are always called
         rewrite.validate(context)
-        @rules.each do |rules|
-          rules.new.validate(context)
+
+        # If the caller opted out of validation, don't attach these
+        if validate
+          @rules.each do |rules|
+            rules.new.validate(context)
+          end
         end
 
         context.visitor.visit

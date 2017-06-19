@@ -518,6 +518,27 @@ describe GraphQL::Query do
     end
   end
 
+  describe "validate: false" do
+    it "doesn't validate the query" do
+      invalid_query_string = "{ nonExistantField }"
+      # Can assign attribute
+      query = GraphQL::Query.new(schema, invalid_query_string)
+      query.validate = false
+      assert_equal true, query.valid?
+      assert_equal 0, query.static_errors.length
+
+      # Can pass keyword argument
+      query = GraphQL::Query.new(schema, invalid_query_string, validate: false)
+      assert_equal true, query.valid?
+      assert_equal 0, query.static_errors.length
+
+      # Can pass `true`
+      query = GraphQL::Query.new(schema, invalid_query_string, validate: true)
+      assert_equal false, query.valid?
+      assert_equal 1, query.static_errors.length
+    end
+  end
+
   describe 'NullValue type arguments' do
     let(:schema_definition) {
       <<-GRAPHQL
