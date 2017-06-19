@@ -24,7 +24,7 @@ module GraphQL
         def result
           result_name = irep_node.name
           raw_value = get_raw_value
-          if raw_value == GraphQL::Execution::Execute::SKIP
+          if raw_value.is_a?(GraphQL::Execution::Execute::Skip)
             {}
           else
             { result_name => get_finished_value(raw_value) }
