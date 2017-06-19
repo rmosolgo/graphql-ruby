@@ -38,6 +38,7 @@ class GraphQLGeneratorsInstallGeneratorTest < Rails::Generators::TestCase
 
     expected_schema = <<-RUBY
 DummySchema = GraphQL::Schema.define do
+  mutation(Types::MutationType)
   query(Types::QueryType)
 end
 RUBY
@@ -160,8 +161,9 @@ RUBY
 
   EXPECTED_RELAY_BATCH_SCHEMA = <<-RUBY
 DummySchema = GraphQL::Schema.define do
-  query(Types::QueryType)
 
+  mutation(Types::MutationType)
+  query(Types::QueryType)
   # Relay Object Identification:
 
   # Return a string UUID for `object`

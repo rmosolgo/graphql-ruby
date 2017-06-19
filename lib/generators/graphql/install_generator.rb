@@ -61,6 +61,11 @@ module Graphql
         default: false,
         desc: "Skip graphiql-rails installation"
 
+      class_option :skip_mutation_root_type,
+        type: :boolean,
+        default: false,
+        desc: "Skip creation of the mutation root type"
+
       class_option :relay,
         type: :boolean,
         default: false,
@@ -91,9 +96,7 @@ RUBY
         template("query_type.erb", "app/graphql/types/query_type.rb")
         insert_root_type('query', 'QueryType')
 
-        unless no? 'Create root mutation type? Y/n'
-          create_mutation_root_type
-        end
+        create_mutation_root_type unless options.skip_mutation_root_type?
 
         template("graphql_controller.erb", "app/controllers/graphql_controller.rb")
         route('post "/graphql", to: "graphql#execute"')
