@@ -4,7 +4,8 @@ require "spec_helper"
 describe GraphQL::StaticValidation::Validator do
   let(:validator) { GraphQL::StaticValidation::Validator.new(schema: Dummy::Schema) }
   let(:query) { GraphQL::Query.new(Dummy::Schema, query_string) }
-  let(:errors) { validator.validate(query)[:errors].map(&:to_h) }
+  let(:validate) { true }
+  let(:errors) { validator.validate(query, validate: validate)[:errors].map(&:to_h) }
 
 
   describe "validation order" do
@@ -29,6 +30,14 @@ describe GraphQL::StaticValidation::Validator do
       it "handles args on invalid fields" do
         # nonsenseField, nonsenseArg, bogusField, bogusArg, undefinedVar
         assert_equal(5, errors.length)
+      end
+
+      describe "when validate: false" do
+        let(:validate) { false }
+
+        it "skips validation" do
+          assert_equal 0, errors.length
+        end
       end
     end
 

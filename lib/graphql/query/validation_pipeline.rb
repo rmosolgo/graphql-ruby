@@ -14,10 +14,11 @@ module GraphQL
     #
     # @api private
     class ValidationPipeline
-      def initialize(query:, parse_error:, operation_name_error:, max_depth:, max_complexity:)
+      def initialize(query:, validate:, parse_error:, operation_name_error:, max_depth:, max_complexity:)
         @validation_errors = []
         @analysis_errors = []
         @internal_representation = nil
+        @validate = validate
         @parse_error = parse_error
         @operation_name_error = operation_name_error
         @query = query
@@ -76,7 +77,7 @@ module GraphQL
         elsif @operation_name_error
           @validation_errors << @operation_name_error
         else
-          validation_result = @schema.static_validator.validate(@query)
+          validation_result = @schema.static_validator.validate(@query, validate: @validate)
           @validation_errors.concat(validation_result[:errors])
           @internal_representation = validation_result[:irep]
 

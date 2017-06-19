@@ -29,6 +29,9 @@ module GraphQL
 
     attr_reader :schema, :context, :root_value, :warden, :provided_variables, :operation_name
 
+    # @return [Boolean] if false, static validation is skipped (execution behavior for invalid queries is undefined)
+    attr_accessor :validate
+
     attr_accessor :query_string
 
     # @return [GraphQL::Language::Nodes::Document]
@@ -59,6 +62,7 @@ module GraphQL
       @root_value = root_value
       @fragments = nil
       @operations = nil
+      @validate = validate
 
       @analysis_errors = []
       if variables.is_a?(String)
@@ -270,6 +274,7 @@ module GraphQL
 
       @validation_pipeline = GraphQL::Query::ValidationPipeline.new(
         query: self,
+        validate: @validate,
         parse_error: parse_error,
         operation_name_error: operation_name_error,
         max_depth: @max_depth,
