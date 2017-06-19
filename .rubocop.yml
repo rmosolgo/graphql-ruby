@@ -28,19 +28,19 @@ Metrics/ParameterLists:
 Style/ClassAndModuleChildren:
   EnforcedStyle: nested
 
-Style/EmptyLineBetweenDefs:
+Layout/EmptyLineBetweenDefs:
   AllowAdjacentOneLineDefs: true
 
 Style/FrozenStringLiteralComment:
   Enabled: true
 
-Style/IndentationWidth:
+Layout/IndentationWidth:
   Width: 2
 
 Style/LambdaCall:
   EnforcedStyle: call
 
-Style/LeadingCommentSpace:
+Layout/LeadingCommentSpace:
   Enabled: true
 
 Style/MethodName:
@@ -50,5 +50,5 @@ Style/WordArray:
   EnforcedStyle: brackets
 
 # ->(...) { ... }
-Style/SpaceInLambdaLiteral:
+Layout/SpaceInLambdaLiteral:
   Enabled: true # Default is "require_no_space"
