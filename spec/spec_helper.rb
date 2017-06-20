@@ -13,6 +13,7 @@ require "benchmark"
 require "minitest/autorun"
 require "minitest/focus"
 require "minitest/reporters"
+require "pry"
 Minitest::Reporters.use! Minitest::Reporters::DefaultReporter.new(color: true)
 
 Minitest::Spec.make_my_diffs_pretty!
