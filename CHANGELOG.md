@@ -8,6 +8,20 @@
 
 ### Bug fixes
 
+## 1.6.4 (20 Jun 2017)
+
+### New features
+
+- `Schema.to_definitiion` sorts fields and arguments alphabettically #775
+- `validate: false` skips static validations in query execution #790
+
+### Bug fixes
+
+- `graphql:install` adds `operation_name: params[:operationName]` #786
+- `graphql:install` skips `graphiql-rails` for API-only apps #772
+- `SerialExecution` calls `.is_a?(Skip)` to avoid user-defined `#==` methods #794
+- `prepare:` functions which return `ExecutionError` are properly handled when default values are present #801
+
 ## 1.6.3 (7 Jun 2017)
 
 ### Bug fixes
