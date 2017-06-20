@@ -3,20 +3,19 @@ require "spec_helper"
 require "generators/graphql/install_generator"
 
 class GraphQLGeneratorsInstallGeneratorTest < Rails::Generators::TestCase
-
   tests Graphql::Generators::InstallGenerator
   destination File.expand_path("../../../tmp/dummy", File.dirname(__FILE__))
 
   setup do
     prepare_destination
-    FileUtils.cd(File.expand_path("../../../tmp", File.dirname(__FILE__))) do
-      `rm -rf dummy`
+
+    FileUtils.cd(File.join(destination_root, '..')) do
       `rails new dummy --skip-active-record --skip-test-unit --skip-spring --skip-bundle`
     end
   end
 
   test "it generates a folder structure" do
-    run_generator([])
+    run_generator
 
     assert_file "app/graphql/types/.keep"
     assert_file "app/graphql/mutations/.keep"
