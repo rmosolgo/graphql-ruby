@@ -109,11 +109,11 @@ module GraphQL
       # using these methods to make sure that the object will
       # behave like a hash below, when we call `each` on it.
       begin
-        input.to_h
+        input = input.to_h
       rescue
         begin
           # Handle ActionController::Parameters:
-          input.to_unsafe_h
+          input = input.to_unsafe_h
         rescue
           # We're not sure it'll act like a hash, so reject it:
           result.add_problem(INVALID_OBJECT_MESSAGE % { object: JSON.generate(input, quirks_mode: true) })
