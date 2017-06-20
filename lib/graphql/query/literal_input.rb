@@ -77,6 +77,10 @@ module GraphQL
             # `context` isn't present when pre-calculating defaults
             if context
               value = arg_defn.prepare(value, context)
+              if value.is_a?(GraphQL::ExecutionError)
+                value.ast_node = ast_arg
+                raise value
+              end
             end
             values_hash[arg_name] = value
           end

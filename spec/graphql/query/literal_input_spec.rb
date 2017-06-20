@@ -20,6 +20,19 @@ describe GraphQL::Query::LiteralInput do
             end
             resolve ->(t, a, c) { a[:value] }
           end
+
+          field :fieldWithArgumentThatIsBadByDefault do
+            type types.Int
+            argument :value do
+              type types.Int
+              default_value 7
+              prepare ->(arg, ctx) do
+                GraphQL::ExecutionError.new("Always bad")
+              end
+            end
+
+            resolve ->(*args) { 42 }
+          end
         end
 
         GraphQL::Schema.define(query: query)
@@ -33,6 +46,11 @@ describe GraphQL::Query::LiteralInput do
       it "prepares default values" do
         result = schema.execute("{ addToArgumentValue }", context: { val: 4 })
         assert_equal(7, result["data"]["addToArgumentValue"])
+      end
+
+      it "raises an execution error if the default value is bad" do
+        result = schema.execute("{ fieldWithArgumentThatIsBadByDefault }", context: { })
+        assert_equal(result["errors"], [{"message" => "Always bad"}])
       end
 
       it "prepares values from variables" do
