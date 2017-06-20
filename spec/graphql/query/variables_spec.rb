@@ -16,7 +16,8 @@ describe GraphQL::Query::Variables do
   |}
   let(:ast_variables) { GraphQL.parse(query_string).definitions.first.variables }
   let(:schema) { Dummy::Schema }
-  let(:variables) { GraphQL::Query::Variables.new(
+  let(:variables) {
+    GraphQL::Query::Variables.new(
     OpenStruct.new({
       schema: schema,
       warden: GraphQL::Schema::Warden.new(schema.default_filter, schema: schema, context: nil),
@@ -31,6 +32,29 @@ describe GraphQL::Query::Variables do
 
       it "coerces single items into one-element lists" do
         assert_equal ["YAK"], variables["animals"]
+      end
+    end
+
+    describe "validating input objects" do
+      let(:query_string) {%|
+      query searchMyDairy (
+        $product: DairyProductInput
+      ) {
+        searchDairy(product: $product) {
+          ... on Cheese {
+            flavor
+          }
+        }
+      }
+      |}
+
+      describe "when provided input is an array" do
+        let(:provided_variables) { { "product" => [] } }
+
+        it "validates invalid input objects" do
+          expected = "Variable product of type DairyProductInput was provided invalid value"
+          assert_equal expected, variables.errors.first.message
+        end
       end
     end
 
