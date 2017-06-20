@@ -40,9 +40,9 @@ module Graphql
       private
 
       def assign_names!(name)
-        @field_name = name.camelize
-        @mutation_name = name.camelize
-        @file_name = name.underscore
+        @field_name = name.camelize(:upper)
+        @mutation_name = name.camelize(:upper)
+        @file_name = name.camelize.underscore
       end
     end
   end
