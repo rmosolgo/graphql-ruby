@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 require "spec_helper"
-require "pry"
 
 describe GraphQL::Query::Variables do
   let(:query_string) {%|
