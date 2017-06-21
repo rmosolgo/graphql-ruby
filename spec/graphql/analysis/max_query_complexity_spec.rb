@@ -50,7 +50,7 @@ describe GraphQL::Analysis::MaxQueryComplexity do
     end
   end
 
-  describe "when complexity is overriden at query-level" do
+  describe "when max_complexity is decreased at query-level" do
     before do
       Dummy::Schema.max_complexity = 100
     end
@@ -58,6 +58,17 @@ describe GraphQL::Analysis::MaxQueryComplexity do
 
     it "is applied" do
       assert_equal "Query has complexity of 10, which exceeds max complexity of 7", result["errors"][0]["message"]
+    end
+  end
+
+  describe "when max_complexity is increased at query-level" do
+    before do
+      Dummy::Schema.max_complexity = 1
+    end
+    let(:result) { Dummy::Schema.execute(query_string, max_complexity: 10) }
+
+    it "doesn't error" do
+      assert_equal nil, result["errors"]
     end
   end
 
