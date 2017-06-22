@@ -3,7 +3,7 @@ layout: guide
 search: true
 section: Schema
 title: Dynamic definition
-desc: You can your schema dynamically based on other data
+desc: You can define your schema dynamically based on other data
 ---
 
 Many examples show how to use `.define` and store the result in a Ruby constant:
