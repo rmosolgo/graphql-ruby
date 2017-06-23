@@ -185,7 +185,7 @@ describe GraphQL::Define::InstanceDefinable do
 
   describe "typos" do
     it "provides the right class name, method name and line number" do
-      err = assert_raises(NoMethodError) {
+      err = assert_raises(GraphQL::Define::NoDefinitionError) {
         beet = Garden::Vegetable.define {
           name "Beet"
           nonsense :Blah
