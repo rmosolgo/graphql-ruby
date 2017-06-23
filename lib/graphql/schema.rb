@@ -450,13 +450,13 @@ module GraphQL
     # @param default_resolve [<#call(type, field, obj, args, ctx)>] A callable for handling field resolution
     # @param parser [Object] An object for handling definition string parsing (must respond to `parse`)
     # @return [GraphQL::Schema] the schema described by `document`
-    def self.from_definition(definition_or_path, default_resolve: BuildFromDefinition::DefaultResolve, parser: BuildFromDefinition::DefaultParser)
+    def self.from_definition(definition_or_path, helpers: nil, default_resolve: BuildFromDefinition::DefaultResolve, parser: BuildFromDefinition::DefaultParser)
       # If the file ends in `.graphql`, treat it like a filepath
       definition = if definition_or_path.end_with?(".graphql")
         File.read(definition_or_path)
       elsif definition_or_path.end_with?(".erb")
         erb_template = File.read(definition_or_path)
-        GraphQL::Schema::Template.run(erb_template)
+        GraphQL::Schema::Template.run(erb_template, helpers: helpers)
       else
         definition_or_path
       end

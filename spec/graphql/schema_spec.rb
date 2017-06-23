@@ -176,8 +176,21 @@ type Query {
       assert_equal expected_types, (expected_types & schema.types.keys)
     end
 
+    module ErbHelpers
+      def colors
+        [
+          "RED",
+          "GREEN",
+          "BLACK",
+          "BLUE",
+          "WHITE",
+          "COLORLESS",
+        ].map { |c| "\n  #{c}" }.join
+      end
+    end
+
     it "builds from an ERB file" do
-      schema = GraphQL::Schema.from_definition("spec/support/magic_cards/schema.graphql.erb")
+      schema = GraphQL::Schema.from_definition("spec/support/magic_cards/schema.graphql.erb", helpers: ErbHelpers)
       assert_instance_of GraphQL::Schema, schema
       expected_types =  ["Card", "Color", "Expansion", "Printing", "PrintingConnection", "PrintingEdge", "PageInfo"]
       assert_equal expected_types, (expected_types & schema.types.keys)
