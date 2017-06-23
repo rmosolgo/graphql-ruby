@@ -10,6 +10,7 @@ require "graphql/schema/null_mask"
 require "graphql/schema/possible_types"
 require "graphql/schema/rescue_middleware"
 require "graphql/schema/reduce_types"
+require "graphql/schema/template"
 require "graphql/schema/timeout_middleware"
 require "graphql/schema/type_expression"
 require "graphql/schema/type_map"
@@ -453,6 +454,9 @@ module GraphQL
       # If the file ends in `.graphql`, treat it like a filepath
       definition = if definition_or_path.end_with?(".graphql")
         File.read(definition_or_path)
+      elsif definition_or_path.end_with?(".erb")
+        erb_template = File.read(definition_or_path)
+        GraphQL::Schema::Template.run(erb_template)
       else
         definition_or_path
       end

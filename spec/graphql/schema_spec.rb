@@ -175,6 +175,14 @@ type Query {
       expected_types =  ["Card", "Color", "Expansion", "Printing"]
       assert_equal expected_types, (expected_types & schema.types.keys)
     end
+
+    it "builds from an ERB file" do
+      schema = GraphQL::Schema.from_definition("spec/support/magic_cards/schema.graphql.erb")
+      assert_instance_of GraphQL::Schema, schema
+      expected_types =  ["Card", "Color", "Expansion", "Printing", "PrintingConnection", "PrintingEdge", "PageInfo"]
+      assert_equal expected_types, (expected_types & schema.types.keys)
+      assert_equal "PrintingConnection!", schema.get_field("Card", "printings").type.to_s
+    end
   end
 
   describe ".from_introspection" do
