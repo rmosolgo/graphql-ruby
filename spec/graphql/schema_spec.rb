@@ -353,6 +353,18 @@ type Query {
     end
   end
 
+  describe "#execute" do
+    it "adheres to max_complexity when provided" do
+      result = schema.execute("subscription { test }", max_complexity: 0)
+      assert_equal result, {
+                     "errors" => [
+                       {
+                         "message" => "Query has complexity of 1, which exceeds max complexity of 0"
+                       }
+                     ]}
+    end
+  end
+
   describe "#as_json / #to_json" do
     it "returns the instrospection result" do
       result = schema.execute(GraphQL::Introspection::INTROSPECTION_QUERY)
