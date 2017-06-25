@@ -76,8 +76,8 @@ module GraphQL
             selection: selection,
           )
 
-          arguments = query.arguments_for(selection, field)
           raw_value = begin
+            arguments = query.arguments_for(selection, field)
             query_ctx.schema.middleware.invoke([parent_type, object, field, arguments, field_ctx])
           rescue GraphQL::ExecutionError => err
             err
@@ -116,7 +116,7 @@ module GraphQL
 
           case raw_value
           when GraphQL::ExecutionError
-            raw_value.ast_node = field_ctx.ast_node
+            raw_value.ast_node ||= field_ctx.ast_node
             raw_value.path = field_ctx.path
             query.context.errors.push(raw_value)
           when Array
