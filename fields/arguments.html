@@ -67,10 +67,11 @@
 </code></pre>
 </div>
 
-<p>Use <code class="highlighter-rouge">default_value: value</code> to provide a default value for the argument if not supplied in the query.
-<code class="highlighter-rouge">ruby
-argument :category, !types.String, default_value: "Programming"
-</code></p>
+<p>Use <code class="highlighter-rouge">default_value: value</code> to provide a default value for the argument if not supplied in the query.</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">argument</span> <span class="ss">:category</span><span class="p">,</span> <span class="o">!</span><span class="n">types</span><span class="o">.</span><span class="no">String</span><span class="p">,</span> <span class="ss">default_value: </span><span class="s2">"Programming"</span>
+</code></pre>
+</div>
 
 <p>Use <code class="highlighter-rouge">as: :alternateName</code> to use a different key from within your resolvers while
 exposing another key to clients.</p>
