@@ -35,9 +35,9 @@ module GraphQL
       end
 
       class << self
-        def run_all(schema, query_options, *rest)
+        def run_all(schema, query_options, *rest, max_complexity: nil)
           queries = query_options.map { |opts| GraphQL::Query.new(schema, nil, opts) }
-          run_queries(schema, queries, *rest)
+          run_queries(schema, queries, *rest, max_complexity: max_complexity)
         end
 
         # @param schema [GraphQL::Schema]
@@ -161,7 +161,7 @@ module GraphQL
           end
 
           multiplex_analyzers = schema.multiplex_analyzers
-          if max_complexity
+          if max_complexity ||= schema.max_complexity
             multiplex_analyzers += [GraphQL::Analysis::MaxQueryComplexity.new(max_complexity)]
           end
 
