@@ -28,8 +28,6 @@ Gem::Specification.new do |s|
   s.add_development_dependency "guard-rake"
   s.add_development_dependency "guard-rubocop"
   s.add_development_dependency "listen", "~> 3.0.0"
-  s.add_development_dependency "pry"
-  s.add_development_dependency "pry-stack_explorer"
   s.add_development_dependency "m"
   # Remove this limit when minitest-reports is compatible
   # https://github.com/kern/minitest-reporters/pull/220
