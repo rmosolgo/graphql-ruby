@@ -25,6 +25,10 @@ gemfile:
 - gemfiles/rails_5.1.gemfile
 
 matrix:
+  include:
+  - addons:
+      postgresql: 9.4
+
   exclude:
   - rvm: 2.4.1
     gemfile: gemfiles/rails_3.2.gemfile
