@@ -161,7 +161,7 @@ module GraphQL
           end
 
           multiplex_analyzers = schema.multiplex_analyzers
-          if max_complexity ||= schema.max_complexity
+          if max_complexity
             multiplex_analyzers += [GraphQL::Analysis::MaxQueryComplexity.new(max_complexity)]
           end
 
