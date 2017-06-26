@@ -4,5 +4,8 @@ gemspec
 
 gem 'ruby-prof', :platform => :ruby
 gem 'sqlite3', :platform => :ruby
+gem 'pry'
+gem 'pry-stack_explorer', :platform => :ruby
+gem 'm'
 
 gem 'activerecord-jdbcsqlite3-adapter', :platform => :jruby
