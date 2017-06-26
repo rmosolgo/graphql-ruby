@@ -23,6 +23,12 @@ module StarWars
   # Set up "Bases" in ActiveRecord
   if jruby?
     ActiveRecord::Base.establish_connection(adapter: "jdbcsqlite3", database: "./_test_.db")
+  elsif ENV['DATABASE'] == 'POSTGRESQL'
+    ActiveRecord::Base.establish_connection(
+      adapter: "postgresql",
+      username: "postgres",
+      database: "graphql_ruby_test"
+    )
   else
     ActiveRecord::Base.establish_connection(adapter: "sqlite3", database: "./_test_.db")
   end

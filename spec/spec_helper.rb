@@ -6,6 +6,7 @@ require "rails/all"
 require "rails/generators"
 require "jdbc/sqlite3" if RUBY_ENGINE == 'jruby'
 require "sqlite3" if RUBY_ENGINE == 'ruby'
+require "pg" if RUBY_ENGINE == 'ruby'
 require "sequel"
 require "graphql"
 require "graphql/rake_task"
