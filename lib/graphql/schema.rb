@@ -249,9 +249,9 @@ module GraphQL
     # @param queries [Array<Hash>] Keyword arguments for each query
     # @param context [Hash] Multiplex-level context
     # @return [Array<Hash>] One result for each query in the input
-    def multiplex(*args, max_complexity: nil)
+    def multiplex(*args, max_complexity: nil, context: {})
       with_definition_error_check {
-        GraphQL::Execution::Multiplex.run_all(self, *args, max_complexity: max_complexity)
+        GraphQL::Execution::Multiplex.run_all(self, *args, context: context, max_complexity: max_complexity)
       }
     end
 
