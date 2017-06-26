@@ -35,17 +35,18 @@ module GraphQL
       end
 
       class << self
-        def run_all(schema, query_options, *args, **kwargs)
+        def run_all(schema, query_options, *args)
           queries = query_options.map { |opts| GraphQL::Query.new(schema, nil, opts) }
-          run_queries(schema, queries, *args, **kwargs)
+          run_queries(schema, queries, *args)
         end
 
         # @param schema [GraphQL::Schema]
         # @param queries [Array<GraphQL::Query>]
         # @param context [Hash]
-        # @param max_complexity [Integer]
+        # @param max_complexity [Integer, nil]
         # @return [Array<Hash>] One result per query
-        def run_queries(schema, queries, context: {}, max_complexity: nil)
+        def run_queries(schema, queries, context: {}, max_complexity: schema.max_complexity)
+
           if has_custom_strategy?(schema)
             if queries.length != 1
               raise ArgumentError, "Multiplexing doesn't support custom execution strategies, run one query at a time instead"
@@ -161,7 +162,7 @@ module GraphQL
           end
 
           multiplex_analyzers = schema.multiplex_analyzers
-          if max_complexity ||= schema.max_complexity
+          if max_complexity
             multiplex_analyzers += [GraphQL::Analysis::MaxQueryComplexity.new(max_complexity)]
           end
 
