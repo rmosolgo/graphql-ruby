@@ -35,9 +35,9 @@ module GraphQL
       end
 
       class << self
-        def run_all(schema, query_options, context: {}, max_complexity: nil)
+        def run_all(schema, query_options, *args, **kwargs)
           queries = query_options.map { |opts| GraphQL::Query.new(schema, nil, opts) }
-          run_queries(schema, queries, context: context, max_complexity: max_complexity)
+          run_queries(schema, queries, *args, **kwargs)
         end
 
         # @param schema [GraphQL::Schema]
