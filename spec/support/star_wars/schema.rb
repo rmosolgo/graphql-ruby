@@ -304,14 +304,10 @@ module StarWars
 
     connection :newestBasesGroupedByFaction, BaseType.connection_type do
       resolve ->(obj, args, ctx) {
-        # Base.order('sum(faction_id) desc').group(:faction_id)
-
         Base
           .having('id in (select max(id) from bases group by faction_id)')
           .order(faction_id: :desc)
           .group(:id)
-
-        # Base.joins('inner join (select faction_id, sum(faction_id) as faction_score from bases group by faction_id) abc on abc.faction_id = bases.faction_id').having('id in (select max(id) from bases group by faction_id)').order('abc.faction_score desc').group('id, faction_score')
       }
     end
 
