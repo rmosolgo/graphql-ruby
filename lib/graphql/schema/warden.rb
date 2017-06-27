@@ -45,14 +45,14 @@ module GraphQL
 
       # @return [Array<GraphQL::BaseType>] Visible types in the schema
       def types
-        @types ||= @schema.types.each_value.select { |t| visible?(t) }
+        @types ||= @schema.types.each_value.select { |t| visible_type?(t) }
       end
 
       # @return [GraphQL::BaseType, nil] The type named `type_name`, if it exists (else `nil`)
       def get_type(type_name)
         @visible_types ||= read_through do |name|
           type_defn = @schema.types.fetch(name, nil)
-          if type_defn && visible?(type_defn)
+          if type_defn && visible_type?(type_defn)
             type_defn
           else
             nil
@@ -128,6 +128,21 @@ module GraphQL
 
       def visible_field?(field_defn)
         visible?(field_defn) && visible?(field_defn.type.unwrap)
+      end
+
+      def visible_type?(type_defn)
+        visible?(type_defn) && accessible_from_members?(type_defn)
+      end
+
+      def accessible_from_members?(type_defn)
+        members = @schema.get_members_of_type(type_defn.unwrap)
+        # Types should be visible if there are
+        # no member definitions with that type
+        return true unless members.any?
+
+        # only hide the type when there are fields
+        # but none are visible.
+        members.any? { |member| visible?(member) }
       end
 
       def visible?(member)
