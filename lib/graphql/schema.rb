@@ -528,8 +528,8 @@ module GraphQL
       @instrumented_field_map = InstrumentedFieldMap.new(self, all_instrumenters)
     end
 
-    # A map of Type => Array<Field>
-    # for a given type, returns the fields of that type.
+    # A map of Type => Array<Field|Argument>
+    # for a given type, returns the fields or arguments of that type.
     def build_type_references_map
       @type_references_map = GraphQL::Schema::TypeReferencesMap.from_fields(
         @instrumented_field_map.all_fields
@@ -537,11 +537,8 @@ module GraphQL
     end
 
     def build_types_map
-      @types = GraphQL::Schema::ReduceTypes.reduce(all_types)
-    end
-
-    def all_types
-      (orphan_types + [query, mutation, subscription, GraphQL::Introspection::SchemaType]).compact
+      all_types = orphan_types + [query, mutation, subscription, GraphQL::Introspection::SchemaType]
+      @types = GraphQL::Schema::ReduceTypes.reduce(all_types.compact)
     end
 
     def with_definition_error_check
