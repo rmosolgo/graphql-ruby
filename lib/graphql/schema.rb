@@ -17,6 +17,7 @@ require "graphql/schema/unique_within_type"
 require "graphql/schema/validation"
 require "graphql/schema/warden"
 require "graphql/schema/build_from_definition"
+require "graphql/schema/type_references_map"
 
 module GraphQL
   # A GraphQL schema which may be queried with {GraphQL::Query}.
@@ -190,6 +191,7 @@ module GraphQL
       validation_error = Validation.validate(self)
       validation_error && raise(NotImplementedError, validation_error)
       build_instrumented_field_map
+      build_type_references_map
       @definition_error = nil
       nil
     rescue StandardError => err
@@ -291,6 +293,10 @@ module GraphQL
     # @return [Hash<String, GraphQL::Field>]
     def get_fields(type)
       @instrumented_field_map.get_all(type.name)
+    end
+
+    def get_members_of_type(type)
+      @type_references_map.fetch(type.to_s, [])
     end
 
     def type_from_ast(ast_node)
@@ -522,9 +528,20 @@ module GraphQL
       @instrumented_field_map = InstrumentedFieldMap.new(self, all_instrumenters)
     end
 
+    # A map of Type => Array<Field>
+    # for a given type, returns the fields of that type.
+    def build_type_references_map
+      @type_references_map = GraphQL::Schema::TypeReferencesMap.from_fields(
+        @instrumented_field_map.all_fields
+      )
+    end
+
     def build_types_map
-      all_types = orphan_types + [query, mutation, subscription, GraphQL::Introspection::SchemaType]
-      @types = GraphQL::Schema::ReduceTypes.reduce(all_types.compact)
+      @types = GraphQL::Schema::ReduceTypes.reduce(all_types)
+    end
+
+    def all_types
+      (orphan_types + [query, mutation, subscription, GraphQL::Introspection::SchemaType]).compact
     end
 
     def with_definition_error_check
