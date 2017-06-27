@@ -226,7 +226,8 @@ module GraphQL
       if query_str
         kwargs[:query] = query_str
       end
-      all_results = multiplex([kwargs])
+      # Since we're running one query, don't run a multiplex-level complexity analyzer
+      all_results = multiplex([kwargs], max_complexity: nil)
       all_results[0]
     end
 
@@ -248,9 +249,9 @@ module GraphQL
     # @param queries [Array<Hash>] Keyword arguments for each query
     # @param context [Hash] Multiplex-level context
     # @return [Array<Hash>] One result for each query in the input
-    def multiplex(*args)
+    def multiplex(queries, **kwargs)
       with_definition_error_check {
-        GraphQL::Execution::Multiplex.run_all(self, *args)
+        GraphQL::Execution::Multiplex.run_all(self, queries, **kwargs)
       }
     end
 
