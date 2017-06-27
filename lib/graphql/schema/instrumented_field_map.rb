@@ -35,6 +35,10 @@ module GraphQL
       def get_all(type_name)
         @storage[type_name]
       end
+
+      def all_fields
+        @storage.values.map(&:values).flatten
+      end
     end
   end
 end
