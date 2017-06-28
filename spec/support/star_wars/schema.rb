@@ -306,8 +306,8 @@ module StarWars
       resolve ->(obj, args, ctx) {
         Base
           .having('id in (select max(id) from bases group by faction_id)')
-          .order(faction_id: :desc)
           .group(:id)
+          .order('faction_id desc')
       }
     end
 
