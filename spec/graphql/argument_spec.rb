@@ -56,6 +56,14 @@ describe GraphQL::Argument do
       arg_3 = arg_2.redefine { as :ff }
       assert_equal arg_3.expose_as, "ff"
     end
+
+    it "can be set in the passed block" do
+      argument = GraphQL::Argument.define do
+        name "arg"
+        as "arg_name"
+      end
+      assert_equal "arg_name", argument.as
+    end
   end
 
   describe "prepare" do
@@ -68,6 +76,15 @@ describe GraphQL::Argument do
     it "returns the value itself if no prepare proc is provided" do
       argument = GraphQL::Argument.define(name: :someNumber, type: GraphQL::INT_TYPE)
       assert_equal argument.prepare(1, nil), 1
+    end
+
+    it "can be set in the passed block" do
+      prepare_proc = Proc.new { |arg, ctx| arg + ctx[:val] }
+      argument = GraphQL::Argument.define do
+        name "arg"
+        prepare prepare_proc
+      end
+      assert_equal argument.prepare(1, {val: 1}), 2
     end
   end
 end
