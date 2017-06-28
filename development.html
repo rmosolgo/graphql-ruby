@@ -1,0 +1,140 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>GraphQL - Development</title>
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="icon" href="/graphql-ruby-icon.png">
+  </head>
+  <body>
+    <div class="header">
+      <div class="header-container">
+        <div class="nav">
+          <a href="/" class="img-link">
+            <img src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+          </a>
+          <a href="/getting_started">Get Started</a>
+          <a href="/guides">Guides</a>
+          <a href="http://www.rubydoc.info/gems/graphql/1.6.4/">API</a>
+          <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
+          <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+          <input
+            class="search-input"
+            onkeyup="GraphQLRubySearch.run(this)"
+            type="text"
+            placeholder="Search the docs..."
+          />
+        </div>
+      </div>
+      <div class="search-results-container">
+        <div id="search-results"></div>
+      </div>
+    </div>
+    <div class="container">
+      <p class="breadcrumb">
+  <a href="/">GraphQL</a>
+  &raquo; <a href="/guides">Guides</a>
+  
+  &raquo; Development
+</p>
+<h1 class="guide-header">Development</h1>
+<div class="guide-container">
+  <p>So, you want to hack on GraphQL Ruby! Here are some tips for getting started.</p>
+
+<ul>
+  <li><a href="#setup">Setup</a> your development environment</li>
+  <li><a href="#running-the-tests">Run the tests</a> to verify your setup</li>
+  <li><a href="#coding-guidelines">Coding guidelines</a> for working on your contribution</li>
+  <li>Special tools for building the <a href="#lexer-and-parser">lexer and parser</a></li>
+  <li>Building and publishing the <a href="#website">GraphQL Ruby website</a></li>
+</ul>
+
+<h3 id="setup">Setup</h3>
+
+<p>Get your own copy of graphql-ruby by forking <a href="https://github.com/rmosolgo/graphql-ruby"><code class="highlighter-rouge">rmosolgo/graphql-ruby</code> on GitHub</a> and cloning your fork.</p>
+
+<p>Then, install the dependencies:</p>
+
+<ul>
+  <li><code class="highlighter-rouge">bundle install</code></li>
+  <li>Optional: <a href="http://www.colm.net/open-source/ragel/">Ragel 6.10</a> is required to build the lexer</li>
+</ul>
+
+<h3 id="running-the-tests">Running the Tests</h3>
+
+<p>You can run all the tests with</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>bundle exec rake        # tests &amp; Rubocop
+bundle exec rake test   # tests only
+</code></pre>
+</div>
+
+<p>You can run a <strong>specific file</strong> with <code class="highlighter-rouge">TEST=</code>:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>bundle exec rake test TEST=spec/graphql/query_spec.rb
+# run tests in `query_spec.rb` only
+</code></pre>
+</div>
+
+<p>You can focus on a <strong>specific example</strong> with <code class="highlighter-rouge">focus</code>:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">focus</span>
+<span class="n">it</span> <span class="s2">"does something cool"</span> <span class="k">do</span>
+  <span class="c1"># ...</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<p>Then, only <code class="highlighter-rouge">focus</code>ed tests will run:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>bundle exec rake test
+# only the focused test will be run
+</code></pre>
+</div>
+
+<p>(This is provided by <code class="highlighter-rouge">minitest-focus</code>.)</p>
+
+<p>You can <strong>watch files</strong> with <code class="highlighter-rouge">guard</code>:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>bundle exec guard
+</code></pre>
+</div>
+
+<p>When a file in <code class="highlighter-rouge">lib/</code> is modified, <code class="highlighter-rouge">guard</code> will run the corresponding file in <code class="highlighter-rouge">spec</code>.</p>
+
+<h3 id="coding-guidelines">Coding Guidelines</h3>
+
+<h3 id="lexer-and-parser">Lexer and Parser</h3>
+
+<h3 id="website">Website</h3>
+
+</div>
+<p class="guide-footer">
+  Suggestion, improvement, or correction?
+  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/development.md">Edit this file</a> or
+  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: Development">report an issue</a>.
+</p>
+<script>
+  // Find headers with IDs and wrap their text in `<a href=></a>`
+  // That way people can easily copy the link.
+  var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+  var header, idText, headerLink;
+  for (var i = 0; i < headers.length; i++) {
+    header = headers[i];
+    idText = header.id;
+    if (idText) {
+      headerLink = document.createElement("a");
+      headerLink.href = "#" + idText;
+      headerLink.textContent = header.textContent;
+      header.textContent = "";
+      header.appendChild(headerLink);
+    }
+  }
+</script>
+
+    </div>
+    <script src="/js/search.js"></script>
+  </body>
+</html>
