@@ -92,8 +92,12 @@ pre {
   overflow-x: scroll;
 }
 
-p, li, pre {
+p, li {
   line-height: 1.3rem;
+}
+
+pre {
+  line-height: 1.4rem;
 }
 
 p, ul {
