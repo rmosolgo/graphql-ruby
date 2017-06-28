@@ -109,9 +109,10 @@ module GraphQL
       if default_value != NO_DEFAULT_VALUE
         argument.default_value = default_value
       end
-      argument.as = as
-      argument.prepare = prepare
-
+      as && argument.as = as
+      if prepare != DefaultPrepare
+        argument.prepare = prepare
+      end
 
       argument
     end
