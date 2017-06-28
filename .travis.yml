@@ -31,11 +31,6 @@ gemfile:
 - gemfiles/rails_5.1.gemfile
 
 matrix:
-  include:
-  - env: DATABASE=POSTGRESQL
-    gemfile: Gemfile
-    rvm: 2.4.1
-
   exclude:
   - rvm: 2.4.1
     gemfile: gemfiles/rails_3.2.gemfile
@@ -51,3 +46,6 @@ matrix:
     gemfile: gemfiles/rails_5.1.gemfile # Rails 5 requires Ruby 2.2.2+
   - rvm: jruby-9.1.9.0
     gemfile: gemfiles/rails_5.1.gemfile # Rails 5 is not supported atm
+  - rvm: 2.4.1
+    env: DATABASE=POSTGRESQL
+    gemfile: Gemfile
