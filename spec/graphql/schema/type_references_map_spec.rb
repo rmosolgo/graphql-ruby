@@ -15,10 +15,13 @@ describe GraphQL::Schema::TypeReferencesMap do
   it "it builds a map from a list of fields" do
     result = GraphQL::Schema::TypeReferencesMap.from_fields(fields)
     expected = {
-      "String!" => [Dummy::CheeseType.fields["flavor"]],
-      "ID!" => [Dummy::DairyType.fields["id"], Dummy::CowType.fields["id"]],
-      "String" => [Dummy::CowType.fields["name"]],
-      "Cheese" => [Dummy::CheeseType.fields["similarCheese"]]
+      "String" => [Dummy::CheeseType.fields["flavor"], Dummy::CowType.fields["name"]],
+      "ID" => [Dummy::DairyType.fields["id"], Dummy::CowType.fields["id"]],
+      "Cheese" => [Dummy::CheeseType.fields["similarCheese"]],
+      "DairyAnimal" => [
+        Dummy::CheeseType.fields["similarCheese"].arguments["source"],
+        Dummy::CheeseType.fields["similarCheese"].arguments["nullableSource"]
+      ]
     }
     assert_equal expected, result
   end
