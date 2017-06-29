@@ -49,6 +49,4 @@ I also sell [GraphQL::Pro](http://graphql.pro) which provides several features o
 
 - __Say hi & ask questions__ in the [#ruby channel on Slack](https://graphql-slack.herokuapp.com/) or [on Twitter](https://twitter.com/rmosolgo)!
 - __Report bugs__ by posting a description, full stack trace, and all relevant code in a  [GitHub issue](https://github.com/rmosolgo/graphql-ruby/issues).
-- __Features & patches__ are welcome! Consider discussing it in an [issue](https://github.com/rmosolgo/graphql-ruby/issues) or in the [#ruby channel on Slack](https://graphql-slack.herokuapp.com/) to make sure we're on the same page.
-- __Run the tests__ with `rake test` or start up guard with `bundle exec guard`.
-- __Build the site__ with `rake site:serve`, then visit `http://localhost:4000/graphql-ruby/`.
+- __Start hacking__ with the [Development guide](http://graphql-ruby.org/development).
