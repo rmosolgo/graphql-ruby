@@ -46,6 +46,8 @@
 <ul>
   <li><a href="#setup">Setup</a> your development environment</li>
   <li><a href="#running-the-tests">Run the tests</a> to verify your setup</li>
+  <li><a href="#debugging-with-pry">Debug</a> with pry</li>
+  <li><a href="#running-the-benchmarks">Run the benchmarks</a> to test performance in your environment</li>
   <li><a href="#coding-guidelines">Coding guidelines</a> for working on your contribution</li>
   <li>Special tools for building the <a href="#lexer-and-parser">lexer and parser</a></li>
   <li>Building and publishing the <a href="#website">GraphQL Ruby website</a></li>
@@ -104,11 +106,92 @@ bundle exec rake test   # tests only
 
 <p>When a file in <code class="highlighter-rouge">lib/</code> is modified, <code class="highlighter-rouge">guard</code> will run the corresponding file in <code class="highlighter-rouge">spec</code>.</p>
 
+<h3 id="debugging-with-pry">Debugging with Pry</h3>
+
+<p><a href="http://pryrepl.org/"><code class="highlighter-rouge">pry</code></a> is included with GraphQL-Ruby’s development setup to help with debugging.</p>
+
+<p>To pause execution in Ruby code, add:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="nb">binding</span><span class="p">.</span><span class="nf">pry</span>
+</code></pre>
+</div>
+
+<p>Then, the program will pause and your terminal will become a Ruby REPL. Feel free to use <code class="highlighter-rouge">pry</code> in your development process!</p>
+
+<h3 id="running-the-benchmarks">Running the Benchmarks</h3>
+
+<p>This project includes some Rake tasks to record benchmarks:</p>
+
+<div class="language-sh highlighter-rouge"><pre class="highlight"><code><span class="gp">$ </span>bundle <span class="nb">exec </span>rake -T | grep bench:
+rake bench:profile         <span class="c"># Generate a profile of the introspection query</span>
+rake bench:query           <span class="c"># Benchmark the introspection query</span>
+rake bench:validate        <span class="c"># Benchmark validation of several queries</span>
+</code></pre>
+</div>
+
+<p>You can save results by sending the output into a file:</p>
+
+<div class="language-sh highlighter-rouge"><pre class="highlight"><code><span class="gp">$ </span>bundle <span class="nb">exec </span>rake bench:validate &gt; before.txt
+<span class="gp">$ </span>cat before.txt
+<span class="c"># ...</span>
+<span class="c"># --&gt; benchmark output here</span>
+</code></pre>
+</div>
+
+<p>If you want to check performance, create a baseline by running these tasks before your changes. Then, make your changes and run the tasks again and compare your results.</p>
+
+<p>Keep these points in mind when using benchmarks:</p>
+
+<ul>
+  <li>The results are hardware-specific: computers with different hardware will have different results. So don’t compare your results to results from other computers.</li>
+  <li>The results are environment-specific: CPU and memory availability are affected by other processes on your computer. So try to create similar environments for your before-and-after testing.</li>
+</ul>
+
 <h3 id="coding-guidelines">Coding Guidelines</h3>
+
+<p>GraphQL-Ruby uses a thorough test suite to make sure things work reliably day-after-day. Please include tests that describe your changes, for example:</p>
+
+<ul>
+  <li>If you contribute a bug fix, include a test for the code that <em>was</em> broken (and is now fixed)</li>
+  <li>If you contribute a feature, include tests for all intended uses of that feature</li>
+  <li>If you modify existing behavior, update the tests to cover all intended behaviors for that code</li>
+</ul>
+
+<p>Don’t fret about coding style or organization.  There’s a minimal Rubocop config in <code class="highlighter-rouge">.rubocop.yml</code> which runs during CI. You can run it manually with <code class="highlighter-rouge">bundle exec rake rubocop</code>.</p>
 
 <h3 id="lexer-and-parser">Lexer and Parser</h3>
 
+<p>The lexer and parser use a multistep build process:</p>
+
+<ul>
+  <li>Write the definition (<code class="highlighter-rouge">lexer.rl</code> or <code class="highlighter-rouge">parser.y</code>)</li>
+  <li>Run the generator (Ragel or Racc) to create <code class="highlighter-rouge">.rb</code> files (<code class="highlighter-rouge">lexer.rb</code> or <code class="highlighter-rouge">parser.rb</code>)</li>
+  <li><code class="highlighter-rouge">require</code> those <code class="highlighter-rouge">.rb</code> files in GraphQL-Ruby</li>
+</ul>
+
+<p>To update the lexer or parser, you should update their corresponding <em>definitions</em> (<code class="highlighter-rouge">lexer.rl</code> or <code class="highlighter-rouge">parser.y</code>). Then, you can run <code class="highlighter-rouge">bundle exec build_parser</code> to re-generate the <code class="highlighter-rouge">.rb</code> files.</p>
+
+<p>You will need Ragel to build the lexer (see above).</p>
+
+<p>If you start <strong>guard</strong> (<code class="highlighter-rouge">bundle exec guard</code>), the <code class="highlighter-rouge">.rb</code> files will be rebuilt whenever the definition files are modified.</p>
+
 <h3 id="website">Website</h3>
+
+<p>To update the website, update the <code class="highlighter-rouge">.md</code> files in <code class="highlighter-rouge">guides/</code>.</p>
+
+<p>To preview your changes, you can serve the website locally:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>bundle exec rake site:serve
+</code></pre>
+</div>
+
+<p>Then visit <code class="highlighter-rouge">http://localhost:4000</code>.</p>
+
+<p>To publish the website with GitHub pages, run the Rake task:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>bundle exec rake site:publish
+</code></pre>
+</div>
 
 </div>
 <p class="guide-footer">
