@@ -69,16 +69,28 @@ module MaskHelpers
     end
   end
 
+  Chereme = GraphQL::ObjectType.define do
+    name "Chereme"
+    description "A basic unit of signed communication"
+    field :name, types.String.to_non_null_type
+  end
+
   QueryType = GraphQL::ObjectType.define do
     name "Query"
     field :languages, LanguageType.to_list_type do
-      argument :within, WithinInputType, "Find languages nearby a point"
+      argument :within, WithinInputType, "Find languages nearby a point" do
+        metadata :hidden_argument_with_input_object, true
+      end
     end
     field :language, LanguageType do
       metadata :hidden_field, true
       argument :name, !types.String do
         metadata :hidden_argument, true
       end
+    end
+
+    field :chereme, Chereme do
+      metadata :hidden_field, true
     end
 
     field :phonemes, PhonemeType.to_list_type do
@@ -224,6 +236,16 @@ describe GraphQL::Schema::Warden do
     let(:mask) {
       ->(member, ctx) { member.metadata[:hidden_field] || member.metadata[:hidden_type] }
     }
+
+    it "hides types if no other fields are using it" do
+      query_string = %|
+      {
+        Chereme: __type(name: "Chereme") { fields { name } }
+      }|
+
+      res = MaskHelpers.query_with_mask(query_string, mask)
+      assert_nil res["data"]["Chereme"]
+    end
 
     it "causes validation errors" do
       query_string = %|{ phoneme(symbol: "ϕ") { name } }|
@@ -373,11 +395,26 @@ describe GraphQL::Schema::Warden do
     end
   end
 
-
   describe "hiding arguments" do
     let(:mask) {
       ->(member, ctx) { member.metadata[:hidden_argument] || member.metadata[:hidden_input_type] }
     }
+
+    describe "hiding all arguments pointing to an input type" do
+      let(:mask) {
+        ->(member, ctx) { member.metadata[:hidden_argument_with_input_object] }
+      }
+
+      it "hides the input type" do
+        query_string = %|
+        {
+          __type(name: "WithinInput") { fields { name } }
+        }|
+
+        res = MaskHelpers.query_with_mask(query_string, mask)
+        assert_nil res["data"]["__type"]
+      end
+    end
 
     it "isn't present in introspection" do
       query_string = %|
@@ -421,6 +458,7 @@ describe GraphQL::Schema::Warden do
         WithinInput: __type(name: "WithinInput") { inputFields { name } }
       }|
       res = MaskHelpers.query_with_mask(query_string, mask)
+
       input_field_names = res["data"]["WithinInput"]["inputFields"].map { |f| f["name"] }
       refute_includes input_field_names, "miles"
     end
