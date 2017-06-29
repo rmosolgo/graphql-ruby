@@ -27,6 +27,20 @@ describe GraphQL::Schema::ReduceTypes do
     assert_equal(Dummy::DairyProductInputType, result["DairyProductInput"])
   end
 
+  it "finds scalar types" do
+    type = GraphQL::ObjectType.define do
+      name "ArgTypeTest"
+      field :s, types.String
+    end
+    result = reduce_types([type.connection_type])
+    pp result.keys
+    expected_types = [
+      "ArgTypeTest", "ArgTypeTestConnection", "ArgTypeTestEdge",
+      "Boolean", "Int", "PageInfo", "String"
+    ]
+    assert_equal expected_types, result.keys.sort
+  end
+
   it "finds types from nested InputObjectTypes" do
     type_child = GraphQL::InputObjectType.define do
       name "InputTypeChild"
