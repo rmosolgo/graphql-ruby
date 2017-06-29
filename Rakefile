@@ -36,7 +36,7 @@ namespace :bench do
     GraphQLBenchmark.run("query")
   end
 
-  desc "Benchmark validating the introspection query"
+  desc "Benchmark validation of several queries"
   task :validate do
     prepare_benchmark
     GraphQLBenchmark.run("validate")
