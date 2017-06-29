@@ -38,7 +38,7 @@ module GraphQL
           definition.call(@target, *args, &block)
         else
           msg = "#{@target.class.name} can't define '#{name}'"
-          raise NoMethodError, msg, caller
+          raise NoDefinitionError, msg, caller
         end
       end
 

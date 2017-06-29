@@ -96,11 +96,11 @@ module GraphQL
 
     NO_DEFAULT_VALUE = Object.new
     # @api private
-    def self.from_dsl(name, type = nil, description = nil, default_value: NO_DEFAULT_VALUE, as: nil, prepare: DefaultPrepare, &block)
+    def self.from_dsl(name, type = nil, description = nil, default_value: NO_DEFAULT_VALUE, as: nil, prepare: DefaultPrepare, **kwargs, &block)
       argument = if block_given?
         GraphQL::Argument.define(&block)
       else
-        GraphQL::Argument.new
+        GraphQL::Argument.define(**kwargs)
       end
 
       argument.name = name.to_s

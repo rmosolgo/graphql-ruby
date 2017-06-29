@@ -24,17 +24,17 @@ describe GraphQL::Define::AssignArgument do
   end
 
   it "passing unknown keyword arguments will raise" do
-    err = assert_raises ArgumentError do
+    err = assert_raises GraphQL::Define::NoDefinitionError do
       define_argument(:a, GraphQL::STRING_TYPE, blah: nil)
     end
 
-    assert_equal 'unknown keyword: blah', err.message
+    assert_equal "GraphQL::Argument can't define 'blah'", err.message
 
-    err = assert_raises ArgumentError do
+    err = assert_raises GraphQL::Define::NoDefinitionError do
       define_argument(:a, GraphQL::STRING_TYPE, blah: nil, blah2: nil)
     end
 
-    assert_equal 'unknown keywords: blah, blah2', err.message
+    assert_equal "GraphQL::Argument can't define 'blah'", err.message
   end
 
   def define_argument(*args)

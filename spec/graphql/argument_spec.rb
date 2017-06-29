@@ -19,6 +19,18 @@ describe GraphQL::Argument do
     assert_includes err.message, expected_error
   end
 
+  it "accepts custom keywords" do
+    type = GraphQL::ObjectType.define do
+      name "Something"
+      field :something, types.String do
+        argument "flagged", types.Int, metadata_flag: :flag_1
+      end
+    end
+
+    arg = type.fields["something"].arguments["flagged"]
+    assert_equal true, arg.metadata[:flag_1]
+  end
+
   it "accepts proc type" do
     argument = GraphQL::Argument.define(name: :favoriteFood, type: -> { GraphQL::STRING_TYPE })
     assert_equal GraphQL::STRING_TYPE, argument.type
