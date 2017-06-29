@@ -1,0 +1,31 @@
+type Card {
+  name: String!
+  <%= connection_field(printings: "Printing") %>
+  expansions: [Expansion!]!
+  colors: [Color!]!
+  convertedManaCost: Int!
+}
+
+type Expansion {
+  name: String!
+  symbol: String!
+  printings: [Printing!]!
+  cards: [Card!]!
+}
+
+type Printing {
+  card: Card!
+  expansion: Expansion!
+}
+
+enum Color {
+  <%= colors %>
+}
+
+<%= connection_type("Printing") %>
+<%= page_info %>
+
+<%= type "Query", {
+  card: [{name: :String}, :Card],
+  expansion: [{symbol: "String!"}, :Expansion],
+} %>

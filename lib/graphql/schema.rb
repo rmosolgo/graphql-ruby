@@ -10,6 +10,7 @@ require "graphql/schema/null_mask"
 require "graphql/schema/possible_types"
 require "graphql/schema/rescue_middleware"
 require "graphql/schema/reduce_types"
+require "graphql/schema/template"
 require "graphql/schema/timeout_middleware"
 require "graphql/schema/type_expression"
 require "graphql/schema/type_map"
@@ -445,13 +446,23 @@ module GraphQL
       GraphQL::Schema::Loader.load(introspection_result)
     end
 
-    # Create schema from an IDL schema.
-    # @param definition_string [String] A schema definition string
+    # Create schema from an IDL schema or file containing an IDL definition.
+    # @param definition_or_path [String] A schema definition string, or a path to a file containing the definition
     # @param default_resolve [<#call(type, field, obj, args, ctx)>] A callable for handling field resolution
     # @param parser [Object] An object for handling definition string parsing (must respond to `parse`)
-    # @return [GraphQL::Schema] the schema described by `document`
-    def self.from_definition(string, default_resolve: BuildFromDefinition::DefaultResolve, parser: BuildFromDefinition::DefaultParser)
-      GraphQL::Schema::BuildFromDefinition.from_definition(string, default_resolve: default_resolve, parser: parser)
+    # @param helpers [Module] Extra helper methods for rendering ERB
+    # @return [GraphQL::Schema] the schema described by `definition_or_path`
+    def self.from_definition(definition_or_path, helpers: nil, default_resolve: BuildFromDefinition::DefaultResolve, parser: BuildFromDefinition::DefaultParser)
+      # If the file ends in `.graphql`, treat it like a filepath
+      definition = if definition_or_path.end_with?(".graphql")
+        File.read(definition_or_path)
+      elsif definition_or_path.end_with?(".erb")
+        erb_template = File.read(definition_or_path)
+        GraphQL::Schema::Template.run(erb_template, helpers: helpers)
+      else
+        definition_or_path
+      end
+      GraphQL::Schema::BuildFromDefinition.from_definition(definition, default_resolve: default_resolve, parser: parser)
     end
 
     # Error that is raised when [#Schema#from_definition] is passed an invalid schema definition string.
