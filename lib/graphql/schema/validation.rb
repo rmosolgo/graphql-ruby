@@ -274,10 +274,10 @@ module GraphQL
           Rules::FIELDS_ARE_VALID,
         ],
         GraphQL::Schema => [
+          Rules::SCHEMA_INSTRUMENTERS_ARE_VALID,
           Rules::SCHEMA_CAN_RESOLVE_TYPES,
           Rules::SCHEMA_CAN_FETCH_IDS,
           Rules::SCHEMA_CAN_GENERATE_IDS,
-          Rules::SCHEMA_INSTRUMENTERS_ARE_VALID,
         ],
       }
     end
