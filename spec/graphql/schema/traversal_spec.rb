@@ -1,9 +1,11 @@
 # frozen_string_literal: true
 require "spec_helper"
 
-describe GraphQL::Schema::ReduceTypes do
+describe GraphQL::Schema::Traversal do
   def reduce_types(types)
-    GraphQL::Schema::ReduceTypes.reduce(types)
+    schema = GraphQL::Schema.define(orphan_types: types, resolve_type: :dummy)
+    traversal = GraphQL::Schema::Traversal.new(schema, introspection: false)
+    traversal.type_map
   end
 
   it "finds types from a single type and its fields" do
@@ -18,13 +20,27 @@ describe GraphQL::Schema::ReduceTypes do
       "LocalProduct" => Dummy::LocalProductInterface,
     }
     result = reduce_types([Dummy::CheeseType])
-    assert_equal(expected.keys, result.keys)
+    assert_equal(expected.keys.sort, result.keys.sort)
     assert_equal(expected, result.to_h)
   end
 
   it "finds type from arguments" do
     result = reduce_types([Dummy::DairyAppQueryType])
     assert_equal(Dummy::DairyProductInputType, result["DairyProductInput"])
+  end
+
+  it "finds types from field instrumentation" do
+    type = GraphQL::ObjectType.define do
+      name "ArgTypeTest"
+      connection :t, type.connection_type
+    end
+
+    result = reduce_types([type])
+    expected_types = [
+      "ArgTypeTest", "ArgTypeTestConnection", "ArgTypeTestEdge",
+      "Boolean", "Int", "PageInfo", "String"
+    ]
+    assert_equal expected_types, result.keys.sort
   end
 
   it "finds types from nested InputObjectTypes" do
@@ -92,7 +108,7 @@ describe GraphQL::Schema::ReduceTypes do
   describe "when getting a type which doesnt exist" do
     it "raises an error" do
       type_map = reduce_types([])
-      assert_raises(RuntimeError) { type_map["SomeType"] }
+      assert_raises(KeyError) { type_map.fetch("SomeType") }
     end
   end
 

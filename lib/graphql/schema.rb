@@ -4,15 +4,13 @@ require "graphql/schema/catchall_middleware"
 require "graphql/schema/default_parse_error"
 require "graphql/schema/default_type_error"
 require "graphql/schema/invalid_type_error"
-require "graphql/schema/instrumented_field_map"
 require "graphql/schema/middleware_chain"
 require "graphql/schema/null_mask"
 require "graphql/schema/possible_types"
 require "graphql/schema/rescue_middleware"
-require "graphql/schema/reduce_types"
 require "graphql/schema/timeout_middleware"
+require "graphql/schema/traversal"
 require "graphql/schema/type_expression"
-require "graphql/schema/type_map"
 require "graphql/schema/unique_within_type"
 require "graphql/schema/validation"
 require "graphql/schema/warden"
@@ -185,11 +183,11 @@ module GraphQL
     def define(**kwargs, &block)
       super
       ensure_defined
-      build_types_map
       # Assert that all necessary configs are present:
       validation_error = Validation.validate(self)
       validation_error && raise(NotImplementedError, validation_error)
-      build_instrumented_field_map
+      rebuild_artifacts
+
       @definition_error = nil
       nil
     rescue StandardError => err
@@ -209,14 +207,17 @@ module GraphQL
     def instrument(instrumentation_type, instrumenter)
       @instrumenters[instrumentation_type] << instrumenter
       if instrumentation_type == :field
-        build_instrumented_field_map
+        rebuild_artifacts
       end
     end
 
     # @see [GraphQL::Schema::Warden] Restricted access to members of a schema
     # @return [GraphQL::Schema::TypeMap] `{ name => type }` pairs of types in this schema
     def types
-      @types ||= build_types_map
+      @types ||= begin
+        rebuild_artifacts
+        @types
+      end
     end
 
     # Execute a query on itself. Raises an error if the schema definition is invalid.
@@ -272,7 +273,7 @@ module GraphQL
           raise "Unexpected parent_type: #{parent_type}"
         end
 
-        defined_field = @instrumented_field_map.get(parent_type_name, field_name)
+        defined_field = @instrumented_field_map[parent_type_name][field_name]
         if defined_field
           defined_field
         elsif field_name == "__typename"
@@ -290,7 +291,7 @@ module GraphQL
     # Fields for this type, after instrumentation is applied
     # @return [Hash<String, GraphQL::Field>]
     def get_fields(type)
-      @instrumented_field_map.get_all(type.name)
+      @instrumented_field_map[type.name]
     end
 
     def type_from_ast(ast_node)
@@ -517,14 +518,20 @@ module GraphQL
     # Apply instrumentation to fields. Relay instrumentation is applied last
     # so that user-provided instrumentation can wrap user-provided resolve functions,
     # _then_ Relay helpers can wrap the returned objects.
-    def build_instrumented_field_map
-      all_instrumenters = @instrumenters[:field] + BUILT_IN_INSTRUMENTERS + @instrumenters[:field_after_built_ins]
-      @instrumented_field_map = InstrumentedFieldMap.new(self, all_instrumenters)
-    end
+    # def build_instrumented_field_map
+    #   all_instrumenters = @instrumenters[:field] + BUILT_IN_INSTRUMENTERS + @instrumenters[:field_after_built_ins]
+    #   @instrumented_field_map = InstrumentedFieldMap.new(self, all_instrumenters)
+    # end
+    #
+    # def build_types_map
+    #   all_types = orphan_types + [query, mutation, subscription, GraphQL::Introspection::SchemaType]
+    #   @types = GraphQL::Schema::ReduceTypes.reduce(all_types.compact)
+    # end
 
-    def build_types_map
-      all_types = orphan_types + [query, mutation, subscription, GraphQL::Introspection::SchemaType]
-      @types = GraphQL::Schema::ReduceTypes.reduce(all_types.compact)
+    def rebuild_artifacts
+      traversal = Traversal.new(self)
+      @types = traversal.type_map
+      @instrumented_field_map = traversal.instrumented_field_map
     end
 
     def with_definition_error_check
