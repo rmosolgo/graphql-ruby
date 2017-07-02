@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 require 'rails/generators/base'
+require_relative 'core'
 
 module Graphql
   module Generators
@@ -40,6 +41,8 @@ module Graphql
     #
     # Use `--no-graphiql` to skip `graphiql-rails` installation.
     class InstallGenerator < Rails::Generators::Base
+      include Core
+
       desc "Install GraphQL folder structure and boilerplate code"
       source_root File.expand_path('../templates', __FILE__)
 
@@ -57,6 +60,11 @@ module Graphql
         type: :boolean,
         default: false,
         desc: "Skip graphiql-rails installation"
+
+      class_option :skip_mutation_root_type,
+        type: :boolean,
+        default: false,
+        desc: "Skip creation of the mutation root type"
 
       class_option :relay,
         type: :boolean,
@@ -81,10 +89,15 @@ if Rails.env.development?
 RUBY
 
       def create_folder_structure
-        create_dir("app/graphql/mutations")
         create_dir("app/graphql/types")
+        template("schema.erb", schema_file_path)
+
+        # Note: Yuo can't have a schema without the query type, otherwise introspection breaks
         template("query_type.erb", "app/graphql/types/query_type.rb")
-        template("schema.erb", "app/graphql/#{schema_name.underscore}.rb")
+        insert_root_type('query', 'QueryType')
+
+        create_mutation_root_type unless options.skip_mutation_root_type?
+
         template("graphql_controller.erb", "app/controllers/graphql_controller.rb")
         route('post "/graphql", to: "graphql#execute"')
 
@@ -120,24 +133,6 @@ RUBY
       def gem(*args)
         @gemfile_modified = true
         super(*args)
-      end
-
-      def create_dir(dir)
-        empty_directory(dir)
-        if !options[:skip_keeps]
-          create_file("#{dir}/.keep")
-        end
-      end
-
-      def schema_name
-        @schema_name ||= begin
-          if options[:schema]
-            options[:schema]
-          else
-            require File.expand_path("config/application", destination_root)
-            "#{Rails.application.class.parent_name}Schema"
-          end
-        end
       end
     end
   end
