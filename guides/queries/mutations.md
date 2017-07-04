@@ -7,19 +7,19 @@ desc: Creating, Updating and Deleting
 index: 3
 ---
 
-Mutations are queries with side effects. Mutations are used to mutate your data. In order to use mutations you need to define a mutation root that allows for defining fields that can mutate your data.
+Mutations are queries with side effects. Mutations are used to mutate your data. In order to use mutations you need to define a mutation root type that allows for defining fields that can mutate your data.
 
 ```ruby
 Schema = GraphQL::Schema.define do
-  query QueryRoot
-  mutation MutationRoot
+  query QueryType
+  mutation MutationType
 end
 ```
 
 Then add your mutations here:
 
 ```ruby
-MutationRoot = GraphQL::ObjectType.define do
+MutationType = GraphQL::ObjectType.define do
   name "Mutation"
 
   field :ratePost, PostType do
@@ -51,7 +51,7 @@ Instead of specifying a long list of arguments, you can also specify an input ty
 
 
 ```ruby
-MutationRoot = GraphQL::ObjectType.define do
+MutationType = GraphQL::ObjectType.define do
   name "Mutation"
 
   field :addPost, PostType do
