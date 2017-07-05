@@ -41,18 +41,18 @@
 </p>
 <h1 class="guide-header">Mutations</h1>
 <div class="guide-container">
-  <p>Mutations are queries with side effects. Mutations are used to mutate your data. In order to use mutations you need to define a mutation root that allows for defining fields that can mutate your data.</p>
+  <p>Mutations are queries with side effects. Mutations are used to mutate your data. In order to use mutations you need to define a mutation root type that allows for defining fields that can mutate your data.</p>
 
 <div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">Schema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
-  <span class="n">query</span> <span class="no">QueryRoot</span>
-  <span class="n">mutation</span> <span class="no">MutationRoot</span>
+  <span class="n">query</span> <span class="no">QueryType</span>
+  <span class="n">mutation</span> <span class="no">MutationType</span>
 <span class="k">end</span>
 </code></pre>
 </div>
 
 <p>Then add your mutations here:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">MutationRoot</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">MutationType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="nb">name</span> <span class="s2">"Mutation"</span>
 
   <span class="n">field</span> <span class="ss">:ratePost</span><span class="p">,</span> <span class="no">PostType</span> <span class="k">do</span>
@@ -81,7 +81,7 @@
 
 <p>Instead of specifying a long list of arguments, you can also specify an input type. This allows you to have all input fields in an Input type.</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">MutationRoot</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">MutationType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="nb">name</span> <span class="s2">"Mutation"</span>
 
   <span class="n">field</span> <span class="ss">:addPost</span><span class="p">,</span> <span class="no">PostType</span> <span class="k">do</span>
