@@ -80,4 +80,53 @@ describe GraphQL::StaticValidation::VariableUsagesAreAllowed do
       assert_equal "Argument 'id' on Field 'cheese' has an invalid value. Expected type 'Int!'.", errors[0]["message"]
     end
   end
+
+  describe "list-type variables" do
+    let(:schema) {
+      GraphQL::Schema.from_definition <<-GRAPHQL
+      input ImageSize {
+        height: Int
+        width: Int
+        scale: Int
+      }
+
+      type Query {
+        imageUrl(height: Int, width: Int, size: ImageSize, sizes: [ImageSize!]): String!
+      }
+      GRAPHQL
+    }
+
+    describe "nullability mismatch" do
+      let(:query_string) {
+        <<-GRAPHQL
+        # This variable _should_ be [ImageSize!]
+        query ($sizes: [ImageSize]) {
+          imageUrl(sizes: $sizes)
+        }
+        GRAPHQL
+      }
+
+      it "finds invalid inner definitions" do
+        assert_equal 1, errors.size
+        expected_message = "Nullability mismatch on variable $sizes and argument sizes ([ImageSize] / [ImageSize!])"
+        assert_equal [expected_message], errors.map { |e| e["message"] }
+      end
+    end
+
+    describe "list dimension mismatch" do
+      let(:query_string) {
+        <<-GRAPHQL
+        query ($sizes: [ImageSize]) {
+          imageUrl(sizes: [$sizes])
+        }
+        GRAPHQL
+      }
+
+      it "finds invalid inner definitions" do
+        assert_equal 1, errors.size
+        expected_message = "List dimension mismatch on variable $sizes and argument sizes ([[ImageSize]] / [ImageSize!])"
+        assert_equal [expected_message], errors.map { |e| e["message"] }
+      end
+    end
+  end
 end
