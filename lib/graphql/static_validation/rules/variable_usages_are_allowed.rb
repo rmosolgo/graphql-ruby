@@ -7,7 +7,6 @@ module GraphQL
       def validate(context)
         # holds { name => ast_node } pairs
         declared_variables = {}
-
         context.visitor[GraphQL::Language::Nodes::OperationDefinition] << ->(node, parent) {
           declared_variables = node.variables.each_with_object({}) { |var, memo| memo[var.name] = var }
         }
@@ -18,6 +17,7 @@ module GraphQL
 
           node_values.each do |node_value|
             arguments = nil
+
 
             case parent
             when GraphQL::Language::Nodes::Field
@@ -57,6 +57,8 @@ module GraphQL
         var_inner_type = var_type.unwrap
         arg_inner_type = arg_defn_type.unwrap
 
+        var_type = wrap_var_type_with_depth_of_arg(var_type, arg_node)
+
         if var_inner_type != arg_inner_type
           context.errors << create_error("Type mismatch", var_type, ast_var, arg_defn, arg_node, context)
         elsif list_dimension(var_type) != list_dimension(arg_defn_type)
@@ -68,6 +70,29 @@ module GraphQL
 
       def create_error(error_message, var_type, ast_var, arg_defn, arg_node, context)
         message("#{error_message} on variable $#{ast_var.name} and argument #{arg_node.name} (#{var_type.to_s} / #{arg_defn.type.to_s})", arg_node, context: context)
+      end
+
+      def wrap_var_type_with_depth_of_arg(var_type, arg_node)
+        arg_node_value = arg_node.value
+        return var_type unless arg_node_value.is_a?(Array)
+        new_var_type = var_type
+
+        array_depth = 1 + depth_of_array(arg_node_value)
+
+        array_depth.times do
+          new_var_type = GraphQL::ListType.new(of_type: new_var_type)
+        end
+
+        new_var_type
+      end
+
+      def depth_of_array(some_array)
+        result = 0
+        while (flattened = some_array.flatten) != some_array
+          result += 1
+          some_array = flattened
+        end
+        result
       end
 
       def list_dimension(type)

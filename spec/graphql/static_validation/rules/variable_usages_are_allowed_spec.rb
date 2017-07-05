@@ -128,5 +128,19 @@ describe GraphQL::StaticValidation::VariableUsagesAreAllowed do
         assert_equal [expected_message], errors.map { |e| e["message"] }
       end
     end
+
+    describe 'list is in the argument' do
+      let(:query_string) {
+        <<-GRAPHQL
+        query ($size: ImageSize!) {
+          imageUrl(sizes: [$size])
+        }
+        GRAPHQL
+      }
+
+      it "works" do
+        assert_equal 0, errors.size
+      end
+    end
   end
 end
