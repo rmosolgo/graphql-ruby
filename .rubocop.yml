@@ -6,6 +6,7 @@ AllCops:
     - 'lib/graphql/language/parser.rb'
     - 'gemfiles/**/*'
     - 'tmp/**/*'
+    - 'vendor/**/*'
 
 # def ...
 # end

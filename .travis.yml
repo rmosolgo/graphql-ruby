@@ -17,6 +17,12 @@ rvm:
 - 2.4.1
 - jruby-9.1.9.0
 
+services:
+  - postgresql
+
+before_script:
+  - psql -c 'create database graphql_ruby_test;' -U postgres
+
 gemfile:
 - gemfiles/rails_3.2.gemfile
 - gemfiles/rails_4.1.gemfile
@@ -25,6 +31,11 @@ gemfile:
 - gemfiles/rails_5.1.gemfile
 
 matrix:
+  include:
+  - env: DATABASE=POSTGRESQL
+    gemfile: Gemfile
+    rvm: 2.4.1
+
   exclude:
   - rvm: 2.4.1
     gemfile: gemfiles/rails_3.2.gemfile
