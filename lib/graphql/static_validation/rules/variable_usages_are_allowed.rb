@@ -13,26 +13,30 @@ module GraphQL
         }
 
         context.visitor[GraphQL::Language::Nodes::Argument] << ->(node, parent) {
-          return if !node.value.is_a?(GraphQL::Language::Nodes::VariableIdentifier)
-          arguments = nil
+          node_values = Array.wrap(node.value)
+          return if !(node_values.all? { |value| value.is_a? GraphQL::Language::Nodes::VariableIdentifier })
 
-          case parent
-          when GraphQL::Language::Nodes::Field
-            arguments = context.field_definition.arguments
-          when GraphQL::Language::Nodes::Directive
-            arguments = context.directive_definition.arguments
-          when GraphQL::Language::Nodes::InputObject
-            arg_type = context.argument_definition.type.unwrap
-            if arg_type.is_a?(GraphQL::InputObjectType)
-              arguments = arg_type.input_fields
+          node_values.each do |node_value|
+            arguments = nil
+
+            case parent
+            when GraphQL::Language::Nodes::Field
+              arguments = context.field_definition.arguments
+            when GraphQL::Language::Nodes::Directive
+              arguments = context.directive_definition.arguments
+            when GraphQL::Language::Nodes::InputObject
+              arg_type = context.argument_definition.type.unwrap
+              if arg_type.is_a?(GraphQL::InputObjectType)
+                arguments = arg_type.input_fields
+              end
+            else
+              raise("Unexpected argument parent: #{parent}")
             end
-          else
-            raise("Unexpected argument parent: #{parent}")
+            var_defn_ast = declared_variables[node_value.name]
+            # Might be undefined :(
+            # VariablesAreUsedAndDefined can't finalize its search until the end of the document.
+            var_defn_ast && arguments && validate_usage(arguments, node, var_defn_ast, context)
           end
-          var_defn_ast = declared_variables[node.value.name]
-          # Might be undefined :(
-          # VariablesAreUsedAndDefined can't finalize its search until the end of the document.
-          var_defn_ast && arguments && validate_usage(arguments, node, var_defn_ast, context)
         }
       end
 
