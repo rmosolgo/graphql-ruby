@@ -18,7 +18,6 @@ module GraphQL
           node_values.each do |node_value|
             arguments = nil
 
-
             case parent
             when GraphQL::Language::Nodes::Field
               arguments = context.field_definition.arguments
