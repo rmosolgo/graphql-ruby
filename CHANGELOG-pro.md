@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+## 1.4.5 (6 Jul 2017)
+
+### Bug Fix
+
+- Correctly fall back to offset-based cursors with `before:` argument
+
 ## 1.4.4 (15 Jun 2017)
 
 ### New Features
