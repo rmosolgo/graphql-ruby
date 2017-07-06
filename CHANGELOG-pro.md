@@ -8,6 +8,10 @@
 
 ### Bug Fix
 
+## 1.4.6 (6 Jul 2017)
+
+- Fix typo in RelationConnection source
+
 ## 1.4.5 (6 Jul 2017)
 
 ### Bug Fix
