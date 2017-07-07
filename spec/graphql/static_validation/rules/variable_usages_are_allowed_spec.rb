@@ -152,7 +152,6 @@ describe GraphQL::StaticValidation::VariableUsagesAreAllowed do
         GRAPHQL
       }
 
-      focus
       it "is a valid query" do
         assert_equal 0, errors.size
       end
