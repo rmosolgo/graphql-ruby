@@ -142,5 +142,34 @@ describe GraphQL::StaticValidation::VariableUsagesAreAllowed do
         assert_equal 0, errors.size
       end
     end
+
+    describe 'argument contains a list with literal values' do
+      let(:query_string) {
+        <<-GRAPHQL
+        query  {
+          imageUrl(sizes: [{height: 100, width: 100, scale: 1}])
+        }
+        GRAPHQL
+      }
+
+      focus
+      it "is a valid query" do
+        assert_equal 0, errors.size
+      end
+    end
+
+    describe 'argument contains a list with both literal and variable values' do
+      let(:query_string) {
+        <<-GRAPHQL
+        query($size1: ImageSize, $size2: ImageSize)  {
+          imageUrl(sizes: [{height: 100, width: 100, scale: 1}, $size1, {height: 1920, width: 1080, scale: 2}, $size2])
+        }
+        GRAPHQL
+      }
+
+      it "is a valid query" do
+        assert_equal 0, errors.size
+      end
+    end
   end
 end

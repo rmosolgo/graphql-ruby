@@ -15,22 +15,22 @@ module GraphQL
           node_values = Array.wrap(node.value)
           return if !(node_values.all? { |value| value.is_a? GraphQL::Language::Nodes::VariableIdentifier })
 
-          node_values.each do |node_value|
-            arguments = nil
-
-            case parent
-            when GraphQL::Language::Nodes::Field
-              arguments = context.field_definition.arguments
-            when GraphQL::Language::Nodes::Directive
-              arguments = context.directive_definition.arguments
-            when GraphQL::Language::Nodes::InputObject
-              arg_type = context.argument_definition.type.unwrap
-              if arg_type.is_a?(GraphQL::InputObjectType)
-                arguments = arg_type.input_fields
-              end
-            else
-              raise("Unexpected argument parent: #{parent}")
+          arguments = nil
+          case parent
+          when GraphQL::Language::Nodes::Field
+            arguments = context.field_definition.arguments
+          when GraphQL::Language::Nodes::Directive
+            arguments = context.directive_definition.arguments
+          when GraphQL::Language::Nodes::InputObject
+            arg_type = context.argument_definition.type.unwrap
+            if arg_type.is_a?(GraphQL::InputObjectType)
+              arguments = arg_type.input_fields
             end
+          else
+            raise("Unexpected argument parent: #{parent}")
+          end
+
+          node_values.each do |node_value|
             var_defn_ast = declared_variables[node_value.name]
             # Might be undefined :(
             # VariablesAreUsedAndDefined can't finalize its search until the end of the document.
@@ -76,22 +76,28 @@ module GraphQL
         return var_type unless arg_node_value.is_a?(Array)
         new_var_type = var_type
 
-        array_depth = 1 + depth_of_array(arg_node_value)
-
-        array_depth.times do
+        depth_of_array(arg_node_value).times do
           new_var_type = GraphQL::ListType.new(of_type: new_var_type)
         end
 
         new_var_type
       end
 
-      def depth_of_array(some_array)
-        result = 0
-        while (flattened = some_array.flatten) != some_array
-          result += 1
-          some_array = flattened
+      # @return [Integer] Returns the max depth of `array`, or `0` if it isn't an array at all
+      def depth_of_array(array)
+        case array
+        when Array
+          max_child_depth = 0
+          array.each do |item|
+            item_depth = depth_of_array(item)
+            if item_depth > max_child_depth
+              max_child_depth = item_depth
+            end
+          end
+          1 + max_child_depth
+        else
+          0
         end
-        result
       end
 
       def list_dimension(type)
