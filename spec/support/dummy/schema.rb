@@ -152,7 +152,7 @@ module Dummy
 
   CowType = GraphQL::ObjectType.define do
     name "Cow"
-    description "A farm where milk is harvested and cheese is produced"
+    description "A bovine animal that produces milk"
     field :id, !types.ID
     field :name, types.String
     field :last_produced_dairy, DairyProductUnion
@@ -166,6 +166,29 @@ module Dummy
       type !GraphQL::STRING_TYPE
       resolve ->(t, a, c) { raise GraphQL::ExecutionError, "BOOM" }
     end
+  end
+
+  GoatType = GraphQL::ObjectType.define do
+    name "Goat"
+    description "An caprinae animal that produces milk"
+    field :id, !types.ID
+    field :name, types.String
+    field :last_produced_dairy, DairyProductUnion
+  end
+
+  AnimalUnion = GraphQL::UnionType.define do
+    name "Animal"
+    description "Species of living things"
+    possible_types [CowType, GoatType]
+  end
+
+  AnimalAsCowUnion = GraphQL::UnionType.define do
+    name "AnimalAsCow"
+    description "All animals go mooooo!"
+    possible_types [CowType]
+    resolve_type ->(obj, ctx) {
+      CowType
+    }
   end
 
   ResourceOrderType = GraphQL::InputObjectType.define {
@@ -271,7 +294,7 @@ module Dummy
     field :dairy, function: GetSingleton.new(type: DairyType, data: DAIRY)
     field :fromSource, &SourceFieldDefn
     field :favoriteEdible, FavoriteFieldDefn
-    field :cow, function: GetSingleton.new(type: CowType, data: COW)
+    field :cow, function: GetSingleton.new(type: CowType, data: COWS[1])
     field :searchDairy do
       description "Find dairy products matching a description"
       type !DairyProductUnion
@@ -285,6 +308,14 @@ module Dummy
         end
         products.first
       }
+    end
+
+    field :allAnimal, !types[AnimalUnion] do
+      resolve ->(obj, args, ctx) { COWS.values + GOATS.values }
+    end
+
+    field :allAnimalAsCow, !types[AnimalAsCowUnion] do
+      resolve ->(obj, args, ctx) { COWS.values + GOATS.values }
     end
 
     field :allDairy, types[DairyProductUnion] do

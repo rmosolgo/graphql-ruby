@@ -86,7 +86,7 @@ module GraphQL
 
     # Find out which possible type to use for `value`.
     # Returns self if there are no possible types (ie, not Union or Interface)
-    def resolve_type(value)
+    def resolve_type(value, ctx)
       self
     end
 

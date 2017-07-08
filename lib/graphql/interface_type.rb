@@ -42,6 +42,10 @@ module GraphQL
       GraphQL::TypeKinds::INTERFACE
     end
 
+    def resolve_type(value, ctx)
+      ctx.query.resolve_type(value)
+    end
+
     # @return [GraphQL::Field] The defined field for `field_name`
     def get_field(field_name)
       fields[field_name]

@@ -210,7 +210,7 @@ module GraphQL
               )
             when GraphQL::TypeKinds::UNION, GraphQL::TypeKinds::INTERFACE
               query = field_ctx.query
-              resolved_type = query.resolve_type(value)
+              resolved_type = field_type.resolve_type(value, field_ctx)
               possible_types = query.possible_types(field_type)
 
               if !possible_types.include?(resolved_type)

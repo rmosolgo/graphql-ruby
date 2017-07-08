@@ -24,13 +24,14 @@ module GraphQL
   #  }
   #
   class UnionType < GraphQL::BaseType
-    accepts_definitions :possible_types
+    accepts_definitions :possible_types, :resolve_type
     ensure_defined :possible_types
 
     def initialize
       super
       @dirty_possible_types = []
       @clean_possible_types = nil
+      @resolve_type_proc = nil
     end
 
     def initialize_copy(other)
@@ -64,8 +65,25 @@ module GraphQL
       end
     end
 
+    def resolve_type(value, ctx)
+      if !@resolve_type_proc.nil?
+        resolved_type = @resolve_type_proc.call(value, ctx)
+        if !include?(resolved_type)
+          raise(NotImplementedError, "Unrecognized possible type kind: #{resolved_type}")
+        end
+
+        return resolved_type
+      end
+
+      ctx.query.resolve_type(value)
+    end
+
+    def resolve_type=(new_resolve_type_proc)
+      @resolve_type_proc = new_resolve_type_proc
+    end
+
     protected
 
-    attr_reader :dirty_possible_types
+    attr_reader :dirty_possible_types, :resolve_type_proc
   end
 end

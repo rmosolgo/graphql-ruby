@@ -25,9 +25,13 @@ module Dummy
     milks: [MILKS[1]]
   )
 
-  COW = OpenStruct.new(
-    id: 1,
-    name: "Billy",
-    last_produced_dairy: MILKS[1]
-  )
+  Cow = Struct.new(:id, :name, :last_produced_dairy)
+  COWS = {
+    1 => Cow.new(1, "Billy", MILKS[1])
+  }
+
+  Goat = Struct.new(:id, :name, :last_produced_dairy)
+  GOATS = {
+    1 => Goat.new(1, "Gilly", MILKS[1]),
+  }
 end
