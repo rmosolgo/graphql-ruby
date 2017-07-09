@@ -20,6 +20,7 @@ Want to add something? Please open a pull request [on GitHub](https://github.com
   - [`graphql-rails-resolve`](https://github.com/colepatrickturner/graphql-rails-resolver)
   - [`graphql-query-resolver`](https://github.com/nettofarah/graphql-query-resolver), a graphql-ruby add-on to minimize N+1 queries.
 - [optics-agent-ruby](https://github.com/apollostack/optics-agent-ruby), a graphql-ruby agent for use with the [Apollo Optics](http://www.apollodata.com/optics) GraphQL performance tool.
+- [`search_object_graphql`](https://github.com/rstankov/SearchObjectGraphQL), a DSL for defining search resolvers for GraphQL.
 
 ## Blog Posts
 
