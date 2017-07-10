@@ -26,6 +26,58 @@ describe GraphQL::UnionType do
     assert_equal(false, union.include?(type_3))
   end
 
+  it '#resolve_type raises error if resolved type is not in possible_types' do
+    assert_raises(NotImplementedError) {
+      test_str = 'Hello world'
+      union.resolve_type = ->(value, ctx) {
+        "This is not the types you are looking for"
+      }
+
+      union.resolve_type(test_str, nil)
+    }
+  end
+
+  describe "#resolve_type" do
+    let(:result) { Dummy::Schema.execute(query_string) }
+    let(:query_string) {%|
+      {
+        allAnimal {
+          type: __typename
+          ... on Cow {
+            cowName: name
+          }
+          ... on Goat {
+            goatName: name
+          }
+        }
+
+        allAnimalAsCow {
+          type: __typename
+          ... on Cow {
+            name
+          }
+        }
+      }
+    |}
+
+    it 'returns correct types for general schema and specific union' do
+      expected_result = {
+        # When using Query#resolve_type
+        "allAnimal" => [
+          { "type" => "Cow", "cowName" => "Billy" },
+          { "type" => "Goat", "goatName" => "Gilly" }
+        ],
+
+        # When using UnionType#resolve_type
+        "allAnimalAsCow" => [
+          { "type" => "Cow", "name" => "Billy" },
+          { "type" => "Cow", "name" => "Gilly" }
+        ]
+      }
+      assert_equal expected_result, result["data"]
+    end
+  end
+
   describe "typecasting from union to union" do
     let(:result) { Dummy::Schema.execute(query_string) }
     let(:query_string) {%|
