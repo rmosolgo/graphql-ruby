@@ -36,14 +36,12 @@ module GraphQL
             Lazy::NullResult
           else
             Lazy.new {
-              next_values = []
               acc.each_with_index { |field_result, idx|
-                lazy = field_result.value
-                inner_v = lazy.value
+                inner_v = field_result.value.value
                 field_result.value = inner_v
-                next_values << inner_v
+                acc[idx] = inner_v
               }
-              resolve_in_place(next_values)
+              resolve_in_place(acc)
             }
           end
         end
@@ -84,9 +82,9 @@ module GraphQL
           when Lazy
             deep_sync(val.value)
           when Array
-            val.each { |v| deep_sync(v) }
+            val.each { |v| deep_sync(v.value) }
           when Hash
-            val.each { |k, v| deep_sync(v) }
+            val.each { |k, v| deep_sync(v.value) }
           end
         end
       end
