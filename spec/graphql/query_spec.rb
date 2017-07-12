@@ -94,6 +94,21 @@ describe GraphQL::Query do
         assert_equal "q3", query.selected_operation_name
       end
     end
+
+    describe "assigning operation_name=" do
+      let(:query_string) { <<-GRAPHQL
+          query q3 { manchego: cheese(id: 3) { flavor } }
+          query q2 { gouda: cheese(id: 2) { flavor } }
+        GRAPHQL
+      }
+
+      it "runs the assigned name" do
+        query = GraphQL::Query.new(Dummy::Schema, query_string, operation_name: "q3")
+        query.operation_name = "q2"
+        res = query.result
+        assert_equal "Gouda", res["data"]["gouda"]["flavor"]
+      end
+    end
   end
 
   describe "when passed a document instance" do
