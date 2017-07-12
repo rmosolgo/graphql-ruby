@@ -19,6 +19,9 @@ describe GraphQL::Execution::Lazy do
             value
             nestedSum(value: 1) {
               value
+              nestedSum(value: -50) {
+                value
+              }
             }
           }
         }
@@ -28,6 +31,9 @@ describe GraphQL::Execution::Lazy do
             value
             nestedSum(value: 2) {
               value
+              nestedSum(value: -50) {
+                value
+              }
             }
           }
         }
@@ -41,8 +47,20 @@ describe GraphQL::Execution::Lazy do
       |
 
       expected_data = {
-        "a"=>{"value"=>14, "nestedSum"=>{"value"=>46, "nestedSum"=>{"value"=>95}}},
-        "b"=>{"value"=>14, "nestedSum"=>{"value"=>46, "nestedSum"=>{"value"=>95}}},
+        "a"=>{"value"=>14, "nestedSum"=>{
+          "value"=>46,
+          "nestedSum"=>{
+            "value"=>95,
+            "nestedSum"=>{"value"=>90}
+          }
+        }},
+        "b"=>{"value"=>14, "nestedSum"=>{
+          "value"=>46,
+          "nestedSum"=>{
+            "value"=>95,
+            "nestedSum"=>{"value"=>90}
+          }
+        }},
         "c"=>[
           {"nestedSum"=>{"value"=>14}},
           {"nestedSum"=>{"value"=>14}}
