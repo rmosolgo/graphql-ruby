@@ -45,7 +45,7 @@ describe GraphQL::Query::SerialExecution::ValueResolution do
     GraphQL::Schema.define do
       query(query_root)
       orphan_types [some_object]
-      resolve_type ->(obj, ctx) do
+      resolve_type ->(type, obj, ctx) do
         if obj.is_a?(Symbol)
           other_object
         else

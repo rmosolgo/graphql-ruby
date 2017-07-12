@@ -419,7 +419,7 @@ module Dummy
 
     rescue_from(NoSuchDairyError) { |err| err.message  }
 
-    resolve_type ->(obj, ctx) {
+    resolve_type ->(type, obj, ctx) {
       Schema.types[obj.class.name.split("::").last]
     }
   end

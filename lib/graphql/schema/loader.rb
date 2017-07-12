@@ -33,7 +33,7 @@ module GraphQL
         Schema.define(**kargs, raise_definition_error: true)
       end
 
-      NullResolveType = ->(obj, ctx) {
+      NullResolveType = ->(type, obj, ctx) {
         raise(NotImplementedError, "This schema was loaded from string, so it can't resolve types for objects")
       }
 

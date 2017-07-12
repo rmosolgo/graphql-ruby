@@ -110,7 +110,7 @@ module GraphQL
           schema
         end
 
-        NullResolveType = ->(obj, ctx) {
+        NullResolveType = ->(type, obj, ctx) {
           raise(NotImplementedError, "Generated Schema cannot use Interface or Union types for execution.")
         }
 

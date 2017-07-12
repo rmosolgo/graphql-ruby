@@ -120,7 +120,7 @@ module MaskHelpers
     query QueryType
     mutation MutationType
     subscription MutationType
-    resolve_type ->(obj, ctx) { PhonemeType }
+    resolve_type ->(type, obj, ctx) { PhonemeType }
     instrument :query, FilterInstrumentation
   end
 

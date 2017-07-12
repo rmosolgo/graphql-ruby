@@ -46,8 +46,8 @@ module GraphQL
 
           # Check the normalized hash, not the user input:
           if @resolve_hash.key?("resolve_type")
-            define_singleton_method :resolve_type do |type, ctx|
-              @resolve_hash.fetch("resolve_type").call(type, ctx)
+            define_singleton_method :resolve_type do |type, obj, ctx|
+              @resolve_hash.fetch("resolve_type").call(type, obj, ctx)
             end
           end
         end
