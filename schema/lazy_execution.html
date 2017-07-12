@@ -51,6 +51,8 @@
 
 <p><a href="https://github.com/shopify/graphql-batch"><code class="highlighter-rouge">graphql-batch</code></a> provides a powerful, flexible toolkit for lazy resolution with GraphQL.</p>
 
+<p><a href="https://github.com/sheerun/dataloader"><code class="highlighter-rouge">dataloader</code></a> is more general <a href="https://github.com/lgierth/promise.rb"><code class="highlighter-rouge">promise</code></a>-based utilify for batching queries within the same thread.</p>
+
 <p>Lazy resolution can be <a href="/fields/instrumentation">instrumented</a>.</p>
 
 <h2 id="example-batched-find">Example: Batched Find</h2>
@@ -130,7 +132,7 @@
 
 <p>Will only make one query to load the <code class="highlighter-rouge">author</code> values.</p>
 
-<p>The example above is simple and has some shortcomings. Consider the <code class="highlighter-rouge">graphql-batch</code> gem for a robust solution to batched resolution.</p>
+<p>The example above is simple and has some shortcomings. Consider the <code class="highlighter-rouge">graphql-batch</code> or <code class="highlighter-rouge">dataloader</code> gem for a robust solution to batched resolution.</p>
 
 </div>
 <p class="guide-footer">
