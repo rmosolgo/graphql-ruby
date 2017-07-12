@@ -253,7 +253,8 @@ module GraphQL
       elsif parse_error
         # This will be handled later
       else
-        raise ArgumentError, "a query string or document is required"
+        parse_error = GraphQL::ExecutionError.new("No query string was present")
+        @context.add_error(parse_error)
       end
 
       # Trying to execute a document

@@ -45,15 +45,15 @@ describe GraphQL::Query do
   let(:result) { query.result }
 
   describe "when passed no query string or document" do
-    it 'fails with an ArgumentError' do
-      assert_raises(ArgumentError) {
-        GraphQL::Query.new(
-          schema,
-          variables: query_variables,
-          operation_name: operation_name,
-          max_depth: max_depth,
-        ).result
-      }
+    it 'returns an error to the client' do
+      res = GraphQL::Query.new(
+        schema,
+        variables: query_variables,
+        operation_name: operation_name,
+        max_depth: max_depth,
+      ).result
+      assert_equal 1, res["errors"].length
+      assert_equal "No query string was present", res["errors"][0]["message"]
     end
 
     it 'can be assigned later' do
