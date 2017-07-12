@@ -45,15 +45,15 @@ describe GraphQL::Query do
   let(:result) { query.result }
 
   describe "when passed no query string or document" do
-    it 'fails with an ArgumentError' do
-      assert_raises(ArgumentError) {
-        GraphQL::Query.new(
-          schema,
-          variables: query_variables,
-          operation_name: operation_name,
-          max_depth: max_depth,
-        ).result
-      }
+    it 'returns an error to the client' do
+      res = GraphQL::Query.new(
+        schema,
+        variables: query_variables,
+        operation_name: operation_name,
+        max_depth: max_depth,
+      ).result
+      assert_equal 1, res["errors"].length
+      assert_equal "No query string was present", res["errors"][0]["message"]
     end
 
     it 'can be assigned later' do
@@ -92,6 +92,21 @@ describe GraphQL::Query do
       it "returns nil" do
         assert_equal nil, query.operation_name
         assert_equal "q3", query.selected_operation_name
+      end
+    end
+
+    describe "assigning operation_name=" do
+      let(:query_string) { <<-GRAPHQL
+          query q3 { manchego: cheese(id: 3) { flavor } }
+          query q2 { gouda: cheese(id: 2) { flavor } }
+        GRAPHQL
+      }
+
+      it "runs the assigned name" do
+        query = GraphQL::Query.new(Dummy::Schema, query_string, operation_name: "q3")
+        query.operation_name = "q2"
+        res = query.result
+        assert_equal "Gouda", res["data"]["gouda"]["flavor"]
       end
     end
   end

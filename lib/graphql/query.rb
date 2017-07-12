@@ -27,7 +27,10 @@ module GraphQL
       end
     end
 
-    attr_reader :schema, :context, :root_value, :warden, :provided_variables, :operation_name
+    attr_reader :schema, :context, :root_value, :warden, :provided_variables
+
+    # @return [nil, String] The operation name provided by client or the one inferred from the document. Used to determine which operation to run.
+    attr_accessor :operation_name
 
     # @return [Boolean] if false, static validation is skipped (execution behavior for invalid queries is undefined)
     attr_accessor :validate
@@ -250,7 +253,8 @@ module GraphQL
       elsif parse_error
         # This will be handled later
       else
-        raise ArgumentError, "a query string or document is required"
+        parse_error = GraphQL::ExecutionError.new("No query string was present")
+        @context.add_error(parse_error)
       end
 
       # Trying to execute a document

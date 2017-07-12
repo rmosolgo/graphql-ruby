@@ -24,6 +24,13 @@ describe GraphQL::Query::Context do
     field :pushContext, types.Int do
       resolve ->(t,a,c) { CTX << c; 1 }
     end
+
+    field :pushQueryError, types.Int do
+      resolve ->(t,a,c) {
+        c.query.context.add_error(GraphQL::ExecutionError.new("Query-level error"))
+        1
+      }
+    end
   }}
   let(:schema) { GraphQL::Schema.define(query: query_type, mutation: nil)}
   let(:result) { schema.execute(query_string, context: {"some_key" => "some value"})}
@@ -116,6 +123,17 @@ describe GraphQL::Query::Context do
       last_ctx.add_error(err)
       assert_equal ["pushContext"], err.path
       assert_equal [2, 9], [err.ast_node.line, err.ast_node.col]
+    end
+  end
+
+  describe "query-level errors" do
+    let(:query_string) { %|
+      { pushQueryError }
+    |}
+
+    it "allows query-level errors" do
+      expected_err = { "message" => "Query-level error" }
+      assert_equal [expected_err], result["errors"]
     end
   end
 end
