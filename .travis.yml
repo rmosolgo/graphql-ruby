@@ -32,6 +32,7 @@ gemfile:
 - gemfiles/rails_5.1.gemfile
 
 matrix:
+  fast_finish: true
   include:
   - env: DATABASE=POSTGRESQL
     gemfile: Gemfile
