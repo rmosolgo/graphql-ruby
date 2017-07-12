@@ -24,11 +24,17 @@ module GraphQL
               p2: push(value: 2) {
                 push(value: 3) {
                   value
+                  push(value: 21) {
+                    value
+                  }
                 }
               }
               p3: push(value: 4) {
                 push(value: 5) {
                   value
+                  push(value: 22) {
+                    value
+                  }
                 }
               }
             }
@@ -37,14 +43,15 @@ module GraphQL
 
             expected_data = {
               "p1"=>{"value"=>1},
-              "p2"=>{"push"=>{"value"=>3}},
-              "p3"=>{"push"=>{"value"=>5}},
+              "p2"=>{"push"=>{"value"=>3, "push"=>{"value"=>21}}},
+              "p3"=>{"push"=>{"value"=>5, "push"=>{"value"=>22}}},
             }
             assert_equal expected_data, res["data"]
 
             expected_pushes = [
               [1,2,4], # first level
               [3,5], # second level
+              [21, 22],
             ]
             assert_equal expected_pushes, pushes
           end

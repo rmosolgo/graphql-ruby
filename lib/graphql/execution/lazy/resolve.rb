@@ -35,14 +35,14 @@ module GraphQL
           if acc.empty?
             Lazy::NullResult
           else
-            acc.each_with_index do |field_result, idx|
-              acc[idx] = field_result.value.then do |inner_v|
+            Lazy.new {
+              acc.each_with_index { |field_result, idx|
+                inner_v = field_result.value.value
                 field_result.value = inner_v
-                resolve_in_place(inner_v)
-              end
-            end
-
-            Lazy.new { acc.each_with_index { |l, idx| acc[idx] = l.value }; acc }
+                acc[idx] = inner_v
+              }
+              resolve_in_place(acc)
+            }
           end
         end
 
@@ -62,9 +62,10 @@ module GraphQL
             end
           when FieldResult
             field_value = value.value
-            if field_value.is_a?(Lazy)
+            case field_value
+            when Lazy
               acc = acc << value
-            else
+            when SelectionResult
               acc = each_lazy(acc, field_value)
             end
           end
