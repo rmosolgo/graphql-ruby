@@ -14,6 +14,8 @@ With lazy execution, you can optimize access to external services (such as datab
 
 [`graphql-batch`](https://github.com/shopify/graphql-batch) provides a powerful, flexible toolkit for lazy resolution with GraphQL.
 
+[`dataloader`](https://github.com/sheerun/dataloader) is more general [`promise`](https://github.com/lgierth/promise.rb)-based utilify for batching queries within the same thread.
+
 
 Lazy resolution can be [instrumented]({{ site.baseurl }}/fields/instrumentation).
 
@@ -89,4 +91,4 @@ Now, calls to `author` will use batched database access. For example, this query
 
 Will only make one query to load the `author` values.
 
-The example above is simple and has some shortcomings. Consider the `graphql-batch` gem for a robust solution to batched resolution.
+The example above is simple and has some shortcomings. Consider the `graphql-batch` or `dataloader` gem for a robust solution to batched resolution.
