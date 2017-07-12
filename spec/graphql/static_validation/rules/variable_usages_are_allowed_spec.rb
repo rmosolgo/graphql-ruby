@@ -141,6 +141,48 @@ describe GraphQL::StaticValidation::VariableUsagesAreAllowed do
       it "is a valid query" do
         assert_equal 0, errors.size
       end
+
+      describe "mixed with invalid literals" do
+        let(:query_string) {
+          <<-GRAPHQL
+          query ($size: ImageSize!) {
+            imageUrl(sizes: [$size, 1, true])
+          }
+          GRAPHQL
+        }
+
+        it "is an invalid query" do
+          assert_equal 1, errors.size
+        end
+      end
+
+      describe "mixed with invalid variables" do
+        let(:query_string) {
+          <<-GRAPHQL
+          query ($size: ImageSize!, $wrongSize: Boolean!) {
+            imageUrl(sizes: [$size, $wrongSize])
+          }
+          GRAPHQL
+        }
+
+        it "is an invalid query" do
+          assert_equal 1, errors.size
+        end
+      end
+
+      describe "mixed with valid literals and invalid variables" do
+        let(:query_string) {
+          <<-GRAPHQL
+          query ($size: ImageSize!, $wrongSize: Boolean!) {
+            imageUrl(sizes: [$size, {height: 100} $wrongSize])
+          }
+          GRAPHQL
+        }
+
+        it "is an invalid query" do
+          assert_equal 1, errors.size
+        end
+      end
     end
   end
 end
