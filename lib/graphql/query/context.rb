@@ -87,6 +87,17 @@ module GraphQL
         GraphQL::Execution::Execute::SKIP
       end
 
+      # Add error at query-level.
+      # @param error [GraphQL::ExecutionError] an execution error
+      # @return [void]
+      def add_error(error)
+        if !error.is_a?(ExecutionError)
+          raise TypeError, "expected error to be a ExecutionError, but was #{error.class}"
+        end
+        errors << error
+        nil
+      end
+
       class FieldResolutionContext
         extend GraphQL::Delegate
 
