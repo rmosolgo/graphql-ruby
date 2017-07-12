@@ -21,6 +21,15 @@ module Dummy
     field :selfAsEdible, EdibleInterface, resolve: ->(o, a, c) { o }
   end
 
+  EdibleAsMilkInterface = EdibleInterface.redefine do
+    name "EdibleAsMilk"
+    description "Milk :+1:"
+    field :fatContent, !types.Float, "Percentage which is fat"
+    field :origin, !types.String, "Place the edible comes from"
+    field :selfAsEdible, EdibleInterface, resolve: ->(o, a, c) { o }
+    resolve_type ->(obj, ctx) { MilkType }
+  end
+
   AnimalProductInterface = GraphQL::InterfaceType.define do
     name "AnimalProduct"
     description "Comes from an animal, no joke"
@@ -328,6 +337,10 @@ module Dummy
     end
 
     field :allEdible, types[EdibleInterface] do
+      resolve ->(obj, args, ctx) { CHEESES.values + MILKS.values }
+    end
+
+    field :allEdibleAsMilk, types[EdibleAsMilkInterface] do
       resolve ->(obj, args, ctx) { CHEESES.values + MILKS.values }
     end
 

@@ -23,14 +23,15 @@ module GraphQL
   #   end
   #
   class InterfaceType < GraphQL::BaseType
-    accepts_definitions :fields, field: GraphQL::Define::AssignObjectField
+    accepts_definitions :fields, :resolve_type, field: GraphQL::Define::AssignObjectField
 
-    attr_accessor :fields
-    ensure_defined :fields
+    attr_accessor :fields, :resolve_type_proc
+    ensure_defined :fields, :resolve_type_proc, :resolve_type
 
     def initialize
       super
       @fields = {}
+      @resolve_type_proc = nil
     end
 
     def initialize_copy(other)
@@ -43,7 +44,11 @@ module GraphQL
     end
 
     def resolve_type(value, ctx)
-      ctx.query.resolve_type(value)
+      ctx.query.resolve_type(self, value)
+    end
+
+    def resolve_type=(resolve_type_callable)
+      @resolve_type_proc = resolve_type_callable
     end
 
     # @return [GraphQL::Field] The defined field for `field_name`

@@ -337,15 +337,29 @@ module GraphQL
     # Determine the GraphQL type for a given object.
     # This is required for unions and interfaces (including Relay's `Node` interface)
     # @see [GraphQL::Schema::Warden] Restricted access to members of a schema
+    # @param type [GraphQL::UnionType, GraphQL:InterfaceType] the abstract type which is being resolved
     # @param object [Any] An application object which GraphQL is currently resolving on
     # @param ctx [GraphQL::Query::Context] The context for the current query
     # @return [GraphQL::ObjectType] The type for exposing `object` in GraphQL
-    def resolve_type(object, ctx)
-      if @resolve_type_proc.nil?
-        raise(NotImplementedError, "Can't determine GraphQL type for: #{object.inspect}, define `resolve_type (obj, ctx) -> { ... }` inside `Schema.define`.")
+    def resolve_type(type, object, ctx = :__undefined__)
+      if ctx == :__undefined__
+        # Old method signature
+        ctx = object
+        object = type
+        type = nil
       end
 
-      type_result = @resolve_type_proc.call(object, ctx)
+      # Prefer a type-local function; fall back to the schema-level function
+      type_proc = type && type.resolve_type_proc
+      type_result = if type_proc
+        type_proc.call(object, ctx)
+      else
+        if @resolve_type_proc.nil?
+          raise(NotImplementedError, "Can't determine GraphQL type for: #{object.inspect}, define `resolve_type (obj, ctx) -> { ... }` inside `Schema.define`.")
+        end
+        @resolve_type_proc.call(type, object, ctx)
+      end
+
       if type_result.nil?
         nil
       elsif !type_result.is_a?(GraphQL::BaseType)
@@ -357,7 +371,8 @@ module GraphQL
     end
 
     def resolve_type=(new_resolve_type_proc)
-      @resolve_type_proc = new_resolve_type_proc
+      callable = GraphQL::BackwardsCompatibility.wrap_arity(new_resolve_type_proc, from: 2, to: 3, last: true, name: "Schema#resolve_type(type, obj, ctx)")
+      @resolve_type_proc = callable
     end
 
     # Fetch an application object by its unique id

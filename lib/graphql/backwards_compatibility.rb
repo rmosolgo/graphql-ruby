@@ -8,7 +8,9 @@ module GraphQL
     # check its arity, and if needed, apply a wrapper so that
     # it can be called with `to` arguments.
     # If a wrapper is applied, warn the application with `name`.
-    def wrap_arity(callable, from:, to:, name:)
+    #
+    # If `last`, then use the last arguments to call the function.
+    def wrap_arity(callable, from:, to:, name:, last: false)
       arity = get_arity(callable)
       case arity
       when to
@@ -17,7 +19,8 @@ module GraphQL
       when from
         # It has the old arity, so wrap it with an arity converter
         warn("#{name} with #{from} arguments is deprecated, it now accepts #{to} arguments")
-        ArityWrapper.new(callable, from)
+        wrapper = last ? LastArgumentsWrapper : FirstArgumentsWrapper
+        wrapper.new(callable, from)
       else
         raise "Can't wrap #{callable} (arity: #{arity}) to have arity #{to}"
       end
@@ -32,7 +35,7 @@ module GraphQL
       end
     end
 
-    class ArityWrapper
+    class FirstArgumentsWrapper
       def initialize(callable, old_arity)
         @callable = callable
         @old_arity = old_arity
@@ -40,6 +43,13 @@ module GraphQL
 
       def call(*args)
         backwards_compat_args = args.first(@old_arity)
+        @callable.call(*backwards_compat_args)
+      end
+    end
+
+    class LastArgumentsWrapper < FirstArgumentsWrapper
+      def call(*args)
+        backwards_compat_args = args.last(@old_arity)
         @callable.call(*backwards_compat_args)
       end
     end

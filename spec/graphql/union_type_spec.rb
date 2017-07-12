@@ -27,13 +27,14 @@ describe GraphQL::UnionType do
   end
 
   it '#resolve_type raises error if resolved type is not in possible_types' do
-    assert_raises(NotImplementedError) {
-      test_str = 'Hello world'
-      union.resolve_type = ->(value, ctx) {
-        "This is not the types you are looking for"
-      }
+    test_str = 'Hello world'
+    union.resolve_type = ->(value, ctx) {
+      "This is not the types you are looking for"
+    }
+    fake_ctx = OpenStruct.new(query: GraphQL::Query.new(Dummy::Schema, ""))
 
-      union.resolve_type(test_str, nil)
+    assert_raises(RuntimeError) {
+      union.resolve_type(test_str, fake_ctx)
     }
   end
 
