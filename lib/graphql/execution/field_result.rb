@@ -47,7 +47,7 @@ module GraphQL
       end
 
       def inspect
-        "#<FieldResult #{value.inspect} (#{field.type})>"
+        "#<FieldResult #{value.inspect} (#{@type})>"
       end
     end
   end

@@ -35,14 +35,16 @@ module GraphQL
           if acc.empty?
             Lazy::NullResult
           else
-            acc.each_with_index do |field_result, idx|
-              acc[idx] = field_result.value.then do |inner_v|
+            Lazy.new {
+              next_values = []
+              acc.each_with_index { |field_result, idx|
+                lazy = field_result.value
+                inner_v = lazy.value
                 field_result.value = inner_v
-                resolve_in_place(inner_v)
-              end
-            end
-
-            Lazy.new { acc.each_with_index { |l, idx| acc[idx] = l.value }; acc }
+                next_values << inner_v
+              }
+              resolve_in_place(next_values)
+            }
           end
         end
 
@@ -62,9 +64,10 @@ module GraphQL
             end
           when FieldResult
             field_value = value.value
-            if field_value.is_a?(Lazy)
+            case field_value
+            when Lazy
               acc = acc << value
-            else
+            when SelectionResult
               acc = each_lazy(acc, field_value)
             end
           end
@@ -81,9 +84,9 @@ module GraphQL
           when Lazy
             deep_sync(val.value)
           when Array
-            val.each { |v| deep_sync(v.value) }
+            val.each { |v| deep_sync(v) }
           when Hash
-            val.each { |k, v| deep_sync(v.value) }
+            val.each { |k, v| deep_sync(v) }
           end
         end
       end

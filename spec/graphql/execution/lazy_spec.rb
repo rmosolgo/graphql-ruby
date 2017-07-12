@@ -17,12 +17,18 @@ describe GraphQL::Execution::Lazy do
           value
           nestedSum(value: 7) {
             value
+            nestedSum(value: 1) {
+              value
+            }
           }
         }
         b: nestedSum(value: 2) {
           value
           nestedSum(value: 11) {
             value
+            nestedSum(value: 2) {
+              value
+            }
           }
         }
 
@@ -35,9 +41,12 @@ describe GraphQL::Execution::Lazy do
       |
 
       expected_data = {
-        "a"=>{"value"=>14, "nestedSum"=>{"value"=>46}},
-        "b"=>{"value"=>14, "nestedSum"=>{"value"=>46}},
-        "c"=>[{"nestedSum"=>{"value"=>14}}, {"nestedSum"=>{"value"=>14}}],
+        "a"=>{"value"=>14, "nestedSum"=>{"value"=>46, "nestedSum"=>{"value"=>95}}},
+        "b"=>{"value"=>14, "nestedSum"=>{"value"=>46, "nestedSum"=>{"value"=>95}}},
+        "c"=>[
+          {"nestedSum"=>{"value"=>14}},
+          {"nestedSum"=>{"value"=>14}}
+        ],
       }
 
       assert_equal expected_data, res["data"]
