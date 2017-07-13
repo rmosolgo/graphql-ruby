@@ -7,15 +7,15 @@ module GraphQL
       def validate(context)
         # holds { name => ast_node } pairs
         declared_variables = {}
-
         context.visitor[GraphQL::Language::Nodes::OperationDefinition] << ->(node, parent) {
           declared_variables = node.variables.each_with_object({}) { |var, memo| memo[var.name] = var }
         }
 
         context.visitor[GraphQL::Language::Nodes::Argument] << ->(node, parent) {
-          return if !node.value.is_a?(GraphQL::Language::Nodes::VariableIdentifier)
-          arguments = nil
+          node_values = Array.wrap(node.value).select { |value| value.is_a? GraphQL::Language::Nodes::VariableIdentifier }
+          return if node_values.none?
 
+          arguments = nil
           case parent
           when GraphQL::Language::Nodes::Field
             arguments = context.field_definition.arguments
@@ -29,10 +29,13 @@ module GraphQL
           else
             raise("Unexpected argument parent: #{parent}")
           end
-          var_defn_ast = declared_variables[node.value.name]
-          # Might be undefined :(
-          # VariablesAreUsedAndDefined can't finalize its search until the end of the document.
-          var_defn_ast && arguments && validate_usage(arguments, node, var_defn_ast, context)
+
+          node_values.each do |node_value|
+            var_defn_ast = declared_variables[node_value.name]
+            # Might be undefined :(
+            # VariablesAreUsedAndDefined can't finalize its search until the end of the document.
+            var_defn_ast && arguments && validate_usage(arguments, node, var_defn_ast, context)
+          end
         }
       end
 
@@ -53,6 +56,8 @@ module GraphQL
         var_inner_type = var_type.unwrap
         arg_inner_type = arg_defn_type.unwrap
 
+        var_type = wrap_var_type_with_depth_of_arg(var_type, arg_node)
+
         if var_inner_type != arg_inner_type
           context.errors << create_error("Type mismatch", var_type, ast_var, arg_defn, arg_node, context)
         elsif list_dimension(var_type) != list_dimension(arg_defn_type)
@@ -64,6 +69,35 @@ module GraphQL
 
       def create_error(error_message, var_type, ast_var, arg_defn, arg_node, context)
         message("#{error_message} on variable $#{ast_var.name} and argument #{arg_node.name} (#{var_type.to_s} / #{arg_defn.type.to_s})", arg_node, context: context)
+      end
+
+      def wrap_var_type_with_depth_of_arg(var_type, arg_node)
+        arg_node_value = arg_node.value
+        return var_type unless arg_node_value.is_a?(Array)
+        new_var_type = var_type
+
+        depth_of_array(arg_node_value).times do
+          new_var_type = GraphQL::ListType.new(of_type: new_var_type)
+        end
+
+        new_var_type
+      end
+
+      # @return [Integer] Returns the max depth of `array`, or `0` if it isn't an array at all
+      def depth_of_array(array)
+        case array
+        when Array
+          max_child_depth = 0
+          array.each do |item|
+            item_depth = depth_of_array(item)
+            if item_depth > max_child_depth
+              max_child_depth = item_depth
+            end
+          end
+          1 + max_child_depth
+        else
+          0
+        end
       end
 
       def list_dimension(type)
