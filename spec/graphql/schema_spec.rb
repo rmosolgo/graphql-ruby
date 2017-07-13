@@ -293,6 +293,27 @@ type Query {
       res = schema.execute("query { int(value: 2) } ")
       assert_equal 24, res["data"]["int"]
     end
+
+    class CyclicalDependencyInstrumentation
+      def initialize(schema)
+        @schema = schema
+      end
+
+      def instrument(type, field)
+        @schema.types # infinite loop
+        field
+      end
+    end
+
+    describe "field instrumenters which cause loops" do
+      it "has a nice error message" do
+        assert_raises(GraphQL::Schema::CyclicalDefinitionError) do
+          schema.redefine {
+            instrument(:field, CyclicalDependencyInstrumentation.new(self.target))
+          }
+        end
+      end
+    end
   end
 
   describe "#lazy? / #lazy_method_name" do

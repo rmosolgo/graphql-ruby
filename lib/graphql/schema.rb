@@ -126,6 +126,7 @@ module GraphQL
       @mutation_execution_strategy = self.class.default_execution_strategy
       @subscription_execution_strategy = self.class.default_execution_strategy
       @default_mask = GraphQL::Schema::NullMask
+      @rebuilding_artifacts = false
     end
 
     def initialize_copy(other)
@@ -191,7 +192,7 @@ module GraphQL
       @definition_error = nil
       nil
     rescue StandardError => err
-      if @raise_definition_error
+      if @raise_definition_error || err.is_a?(CyclicalDefinitionError)
         raise
       else
         # Raise this error _later_ to avoid messing with Rails constant loading
@@ -530,23 +531,20 @@ module GraphQL
       GraphQL::Relay::Mutation::Instrumentation,
     ]
 
-    # Apply instrumentation to fields. Relay instrumentation is applied last
-    # so that user-provided instrumentation can wrap user-provided resolve functions,
-    # _then_ Relay helpers can wrap the returned objects.
-    # def build_instrumented_field_map
-    #   all_instrumenters = @instrumenters[:field] + BUILT_IN_INSTRUMENTERS + @instrumenters[:field_after_built_ins]
-    #   @instrumented_field_map = InstrumentedFieldMap.new(self, all_instrumenters)
-    # end
-    #
-    # def build_types_map
-    #   all_types = orphan_types + [query, mutation, subscription, GraphQL::Introspection::SchemaType]
-    #   @types = GraphQL::Schema::ReduceTypes.reduce(all_types.compact)
-    # end
-
     def rebuild_artifacts
-      traversal = Traversal.new(self)
-      @types = traversal.type_map
-      @instrumented_field_map = traversal.instrumented_field_map
+      if @rebuilding_artifacts
+        raise CyclicalDefinitionError, "Part of the schema build process re-triggered the schema build process, causing an infinite loop. Avoid using Schema#types, Schema#possible_types, and Schema#get_field during schema build."
+      else
+        @rebuilding_artifacts = true
+        traversal = Traversal.new(self)
+        @types = traversal.type_map
+        @instrumented_field_map = traversal.instrumented_field_map
+      end
+    ensure
+      @rebuilding_artifacts = false
+    end
+
+    class CyclicalDefinitionError < GraphQL::Error
     end
 
     def with_definition_error_check
