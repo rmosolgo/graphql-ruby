@@ -14,6 +14,7 @@ describe GraphQL::Schema::Traversal do
       "Float" => GraphQL::FLOAT_TYPE,
       "String" => GraphQL::STRING_TYPE,
       "Edible" => Dummy::EdibleInterface,
+      "EdibleAsMilk" => Dummy::EdibleAsMilkInterface,
       "DairyAnimal" => Dummy::DairyAnimalEnum,
       "Int" => GraphQL::INT_TYPE,
       "AnimalProduct" => Dummy::AnimalProductInterface,

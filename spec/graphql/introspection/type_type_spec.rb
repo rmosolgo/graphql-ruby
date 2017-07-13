@@ -41,6 +41,7 @@ describe GraphQL::Introspection::TypeType do
       "milkType"=>{
         "interfaces"=>[
           {"name"=>"Edible"},
+          {"name"=>"EdibleAsMilk"},
           {"name"=>"AnimalProduct"},
           {"name"=>"LocalProduct"},
         ],

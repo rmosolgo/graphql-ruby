@@ -8,7 +8,7 @@ module Dummy
     end
 
     # Alias for when this is treated as milk in EdibleAsMilkInterface
-    def fatContent
+    def fatContent # rubocop:disable Style/MethodName
       fat_content
     end
   end
