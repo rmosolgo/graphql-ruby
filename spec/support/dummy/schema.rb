@@ -21,6 +21,12 @@ module Dummy
     field :selfAsEdible, EdibleInterface, resolve: ->(o, a, c) { o }
   end
 
+  EdibleAsMilkInterface = EdibleInterface.redefine do
+    name "EdibleAsMilk"
+    description "Milk :+1:"
+    resolve_type ->(obj, ctx) { MilkType }
+  end
+
   AnimalProductInterface = GraphQL::InterfaceType.define do
     name "AnimalProduct"
     description "Comes from an animal, no joke"
@@ -48,7 +54,7 @@ module Dummy
     name "Cheese"
     class_names ["Cheese"]
     description "Cultured dairy product"
-    interfaces [EdibleInterface, AnimalProductInterface, LocalProductInterface]
+    interfaces [EdibleInterface, EdibleAsMilkInterface, AnimalProductInterface, LocalProductInterface]
 
     # Can have (name, type, desc)
     field :id, !types.Int, "Unique identifier"
@@ -96,7 +102,7 @@ module Dummy
   MilkType = GraphQL::ObjectType.define do
     name "Milk"
     description "Dairy beverage"
-    interfaces [EdibleInterface, AnimalProductInterface, LocalProductInterface]
+    interfaces [EdibleInterface, EdibleAsMilkInterface, AnimalProductInterface, LocalProductInterface]
     field :id, !types.ID
     field :source, !DairyAnimalEnum, "Animal which produced this milk", hash_key: :source
     field :origin, !types.String, "Place the milk comes from"
@@ -331,6 +337,10 @@ module Dummy
       resolve ->(obj, args, ctx) { CHEESES.values + MILKS.values }
     end
 
+    field :allEdibleAsMilk, types[EdibleAsMilkInterface] do
+      resolve ->(obj, args, ctx) { CHEESES.values + MILKS.values }
+    end
+
     field :error do
       description "Raise an error"
       type GraphQL::STRING_TYPE
@@ -406,7 +416,7 @@ module Dummy
 
     rescue_from(NoSuchDairyError) { |err| err.message  }
 
-    resolve_type ->(obj, ctx) {
+    resolve_type ->(type, obj, ctx) {
       Schema.types[obj.class.name.split("::").last]
     }
   end

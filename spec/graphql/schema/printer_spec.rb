@@ -123,7 +123,7 @@ describe GraphQL::Schema::Printer do
       query: query_root,
       mutation: mutation_root,
       subscription: subscription_root,
-      resolve_type: :pass,
+      resolve_type: ->(a,b,c) { :pass },
       orphan_types: [media_union_type]
     )
   }

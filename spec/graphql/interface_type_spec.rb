@@ -93,4 +93,48 @@ describe GraphQL::InterfaceType do
       assert_equal 4, interface_2.fields.size
     end
   end
+
+  describe "#resolve_type" do
+    let(:result) { Dummy::Schema.execute(query_string) }
+    let(:query_string) {%|
+      {
+        allEdible {
+          __typename
+          ... on Milk {
+            milkFatContent: fatContent
+          }
+          ... on Cheese {
+            cheeseFatContent: fatContent
+          }
+        }
+
+        allEdibleAsMilk {
+          __typename
+          ... on Milk {
+            fatContent
+          }
+        }
+      }
+    |}
+
+    it 'returns correct types for general schema and specific interface' do
+      expected_result = {
+        # Uses schema-level resolve_type
+        "allEdible"=>[
+          {"__typename"=>"Cheese", "cheeseFatContent"=>0.19},
+          {"__typename"=>"Cheese", "cheeseFatContent"=>0.3},
+          {"__typename"=>"Cheese", "cheeseFatContent"=>0.065},
+          {"__typename"=>"Milk", "milkFatContent"=>0.04}
+        ],
+        # Uses type-level resolve_type
+        "allEdibleAsMilk"=>[
+          {"__typename"=>"Milk", "fatContent"=>0.19},
+          {"__typename"=>"Milk", "fatContent"=>0.3},
+          {"__typename"=>"Milk", "fatContent"=>0.065},
+          {"__typename"=>"Milk", "fatContent"=>0.04}
+        ]
+      }
+      assert_equal expected_result, result["data"]
+    end
+  end
 end

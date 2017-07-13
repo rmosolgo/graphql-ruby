@@ -178,7 +178,7 @@ module GraphQL
             query_execution_strategy execution_strategy
             query query_type
 
-            resolve_type ->(obj, ctx) {
+            resolve_type ->(type, obj, ctx) {
               if obj.respond_to?(:birthdate)
                 person_type
               elsif obj.respond_to?(:leader_id)

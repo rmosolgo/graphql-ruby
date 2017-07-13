@@ -125,7 +125,7 @@ describe GraphQL::Schema::Loader do
       query: query_root,
       mutation: mutation_root,
       orphan_types: [audio_type, video_type],
-      resolve_type: :pass,
+      resolve_type: ->(a,b,c) { :pass },
     )
   }
 

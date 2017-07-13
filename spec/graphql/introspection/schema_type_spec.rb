@@ -23,6 +23,7 @@ describe GraphQL::Introspection::SchemaType do
             {"name"=>"allAnimalAsCow"},
             {"name"=>"allDairy"},
             {"name"=>"allEdible"},
+            {"name"=>"allEdibleAsMilk"},
             {"name"=>"cheese"},
             {"name"=>"cow"},
             {"name"=>"dairy"},

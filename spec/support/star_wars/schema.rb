@@ -362,7 +362,7 @@ module StarWars
     mutation(MutationType)
     default_max_page_size 3
 
-    resolve_type ->(object, ctx) {
+    resolve_type ->(type, object, ctx) {
       if object == :test_error
         :not_a_type
       elsif object.is_a?(Base)

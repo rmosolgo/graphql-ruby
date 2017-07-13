@@ -6,6 +6,11 @@ module Dummy
       # This is buggy on purpose -- it shouldn't be called during execution.
       other.id == id
     end
+
+    # Alias for when this is treated as milk in EdibleAsMilkInterface
+    def fatContent # rubocop:disable Style/MethodName
+      fat_content
+    end
   end
 
   CHEESES = {

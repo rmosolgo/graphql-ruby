@@ -258,7 +258,7 @@ describe GraphQL::Relay::Mutation do
 
       GraphQL::Schema.define do
         mutation(mutation_root)
-        resolve_type ->(obj, ctx) { "not really used" }
+        resolve_type NO_OP_RESOLVE_TYPE
       end
     }
 

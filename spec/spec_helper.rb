@@ -40,6 +40,11 @@ module NothingWarden
   end
 end
 
+# Use this when a schema requires a `resolve_type` hook
+# but you know it won't be called
+NO_OP_RESOLVE_TYPE = ->(type, obj, ctx) {
+  raise "this should never be called"
+}
 # Load support files
 Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each { |f| require f }
 

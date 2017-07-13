@@ -40,7 +40,7 @@ module GraphQL
 
           schema = GraphQL::Schema.define(
             query: query_type,
-            resolve_type: ->(o, c) { o == :counter ? counter_type : nil },
+            resolve_type: ->(t, o, c) { o == :counter ? counter_type : nil },
             orphan_types: [alt_counter_type, counter_type],
             query_execution_strategy: execution_strategy,
           )

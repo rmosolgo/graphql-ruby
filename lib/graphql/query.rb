@@ -77,7 +77,13 @@ module GraphQL
       @query_string = query_string || query
       @document = document
 
-      @resolved_types_cache = Hash.new { |h, k| h[k] = @schema.resolve_type(k, @context) }
+      # A two-layer cache of type resolution:
+      # { abstract_type => { value => resolved_type } }
+      @resolved_types_cache = Hash.new do |h1, k1|
+        h1[k1] = Hash.new do |h2, k2|
+          h2[k2] = @schema.resolve_type(k1, k2, @context)
+        end
+      end
 
       @arguments_cache = ArgumentsCache.build(self)
 
@@ -187,11 +193,17 @@ module GraphQL
 
     def_delegators :warden, :get_type, :get_field, :possible_types, :root_type_for_operation
 
+    # @param abstract_type [GraphQL::UnionType, GraphQL::InterfaceType]
     # @param value [Object] Any runtime value
     # @return [GraphQL::ObjectType, nil] The runtime type of `value` from {Schema#resolve_type}
     # @see {#possible_types} to apply filtering from `only` / `except`
-    def resolve_type(value)
-      @resolved_types_cache[value]
+    def resolve_type(abstract_type, value = :__undefined__)
+      if value.is_a?(Symbol) && value == :__undefined__
+        # Old method signature
+        value = abstract_type
+        abstract_type = nil
+      end
+      @resolved_types_cache[abstract_type][value]
     end
 
     def mutation?

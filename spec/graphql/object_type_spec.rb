@@ -17,7 +17,12 @@ describe GraphQL::ObjectType do
 
   describe "interfaces" do
     it "may have interfaces" do
-      assert_equal([Dummy::EdibleInterface, Dummy::AnimalProductInterface, Dummy::LocalProductInterface], type.interfaces)
+      assert_equal([
+        Dummy::EdibleInterface,
+        Dummy::EdibleAsMilkInterface,
+        Dummy::AnimalProductInterface,
+        Dummy::LocalProductInterface
+      ], type.interfaces)
     end
 
     it "raises if the interfaces arent an array" do
@@ -129,8 +134,8 @@ describe GraphQL::ObjectType do
 
       type_2.fields["nonsense"] = GraphQL::Field.define(name: "nonsense", type: type)
 
-      assert_equal 3, type.interfaces.size
-      assert_equal 4, type_2.interfaces.size
+      assert_equal 4, type.interfaces.size
+      assert_equal 5, type_2.interfaces.size
       assert_equal 8, type.fields.size
       assert_equal 9, type_2.fields.size
     end
