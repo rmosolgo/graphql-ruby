@@ -202,7 +202,7 @@ describe GraphQL::StaticValidation::VariableUsagesAreAllowed do
     describe 'argument contains a list with both literal and variable values' do
       let(:query_string) {
         <<-GRAPHQL
-        query($size1: ImageSize, $size2: ImageSize)  {
+        query($size1: !ImageSize, $size2: !ImageSize)  {
           imageUrl(sizes: [{height: 100, width: 100, scale: 1}, $size1, {height: 1920, width: 1080, scale: 2}, $size2])
         }
         GRAPHQL
