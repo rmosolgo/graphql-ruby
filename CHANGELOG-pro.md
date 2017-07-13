@@ -8,7 +8,15 @@
 
 ### Bug Fix
 
+## 1.4.7 (13 Jul 2017)
+
+### Bug Fix
+
+- Update authorization instrumentation for `graphql >= 1.6.5`
+
 ## 1.4.6 (6 Jul 2017)
+
+### Bug Fix
 
 - Fix typo in RelationConnection source
 
