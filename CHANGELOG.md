@@ -8,11 +8,61 @@
 
 ### Bug fixes
 
+## 1.6.5 (13 Jul 2017)
+
+### Breaking changes
+
+- `Schema#types[](type_name)` returns `nil` when there's no type named `type_name` (it used to raise `RuntimeError`). To get an error for missing types, use `.fetch` instead, for example:
+
+  ```ruby
+  # Old way:
+  MySchema.types[type_name]       # => may raise RuntimeError
+  # New way:
+  MySchema.types.fetch(type_name) # => may raise KeyError
+  ```
+
+- Schema build steps happen in one pass instead of two passes #819 . This means that `instrument(:field)` hooks may not access `Schema#types`, `Schema#possible_types` or `Schema#get_field`, since the underlying data hasn't been prepared yet. There's not really a clear upgrade path here. It's a bit of a mess. If you're affected by this, feel free to open an issue and we'll try to find something that works!
+
+### Deprecations
+
+- `Schema#resolve_type` is now called with `(abstract_type, obj, ctx)` instead of `(obj, ctx)` #834 . To update, add an unused parameter to the beginning of your `resolve_type` hook:
+
+  ```ruby
+  MySchema = GraphQL::Schema.define do
+    # Old way:
+    resolve_type ->(obj, ctx) { ... }
+    # New way:
+    resolve_type ->(type, obj, ctx) { ... }
+  end
+  ```
+
+### New features
+
+- `rails g graphql:mutation` will add Mutation boilerplate if it wasn't added already #812
+- `InterfaceType` and `UnionType` both accept `resolve_type ->(obj, ctx) { ... }` functions for type-specific resolution. This function takes precedence over `Schema#resolve_type` #829 #834
+- `Schema#resolve_type` is called with three arguments, `(abstract_type, obj, ctx)`, so you can distinguish object type based on interface or union.
+- `Query#operation_name=` may be assigned during query instrumentation #833
+- `query.context.add_error(err)` may be used to add query-level errors #833
+
+### Bug fixes
+
+- `argument(...)` DSL accepts custom keywords #809
+- Use single-query `max_complexity` overrides #812
+- Return a client error when `InputObjectType` receives an array as input #803
+- Properly handle raised errors in `prepare` functions #805
+- Fix using `as` and `prepare` in `argument do ... end` blocks #817
+- When types are added to the schema with `instrument(:field, ...)`, make sure they're in `Schema#types` #819
+- Raise an error when duplicate `EnumValue` is created #831
+- Properly resolve all query levels breadth-first when using `lazy_resolve` #835
+- Fix tests to run on PostgresQL; Run CI on PostgresQL #814
+- When no query string is present, return a client error instead of raising `ArgumentError` #833
+- Properly validate lists containing variables #824
+
 ## 1.6.4 (20 Jun 2017)
 
 ### New features
 
-- `Schema.to_definitiion` sorts fields and arguments alphabettically #775
+- `Schema.to_definition` sorts fields and arguments alphabetically #775
 - `validate: false` skips static validations in query execution #790
 
 ### Bug fixes
