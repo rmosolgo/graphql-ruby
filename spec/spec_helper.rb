@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 def rails_should_be_installed?
-  ENV['WITHOUT_RAILS']
+  ENV['WITHOUT_RAILS'] != 'yes'
 end
 require "codeclimate-test-reporter"
 CodeClimate::TestReporter.start
