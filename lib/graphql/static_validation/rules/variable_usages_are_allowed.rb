@@ -12,7 +12,13 @@ module GraphQL
         }
 
         context.visitor[GraphQL::Language::Nodes::Argument] << ->(node, parent) {
-          node_values = Array.wrap(node.value).select { |value| value.is_a? GraphQL::Language::Nodes::VariableIdentifier }
+          node_values = if node.value.is_a?(Array)
+            node.value
+          else
+            [node.value]
+          end
+          node_values = node_values.select { |value| value.is_a? GraphQL::Language::Nodes::VariableIdentifier }
+
           return if node_values.none?
 
           arguments = nil
