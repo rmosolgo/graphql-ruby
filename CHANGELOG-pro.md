@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+## 1.4.8 (14 Jul 2017)
+
+### Bug Fix
+
+- Update `authorization` to use type-level `resolve_type` hooks
+
 ## 1.4.7 (13 Jul 2017)
 
 ### Bug Fix
