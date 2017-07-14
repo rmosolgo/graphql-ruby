@@ -113,9 +113,13 @@ describe GraphQL::EnumType do
 
   describe "validates enum value name uniqueness" do
     it "raises an exception when adding a duplicate enum value name" do
-      assert_raises "Enum value names must be unique. Value `COW` already exists on Enum `DairyAnimalEnum`." do
+      expected_message = "Enum value names must be unique. Value `COW` already exists on Enum `DairyAnimalEnum`."
+
+      exception = assert_raises do
         enum.add_value(GraphQL::EnumType::EnumValue.define(name: "COW"))
       end
+
+      assert_equal(expected_message, expected_message)
     end
   end
 end
