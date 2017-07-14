@@ -94,7 +94,7 @@ module GraphQL
     # @param enum_value [EnumValue] A value to add to this type's set of values
     def add_value(enum_value)
       if @values_by_name.key?(enum_value.name)
-        raise "Enum value names must be unique. `#{enum_value.name}` already exists."
+        raise "Enum value names must be unique. Value `#{enum_value.name}` already exists on Enum `#{name}`."
       end
 
       @values_by_name[enum_value.name] = enum_value
