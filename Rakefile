@@ -4,6 +4,7 @@ Bundler::GemHelper.install_tasks
 
 require "rake/testtask"
 require_relative "guides/_tasks/site"
+require_relative "lib/graphql/rake_task/validate"
 
 Rake::TestTask.new do |t|
   t.libs << "spec" << "lib"
@@ -22,7 +23,6 @@ task :build_parser do
   `racc lib/graphql/language/parser.y -o lib/graphql/language/parser.rb`
   `ragel -R -F1 lib/graphql/language/lexer.rl`
 end
-
 
 namespace :bench do
   def prepare_benchmark
