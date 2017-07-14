@@ -1,9 +1,17 @@
 # frozen_string_literal: true
+
+def rails_should_be_installed?
+  ENV['WITHOUT_RAILS']
+end
 require "codeclimate-test-reporter"
 CodeClimate::TestReporter.start
-require "rake"
-require "rails/all"
-require "rails/generators"
+
+if rails_should_be_installed?
+  require "rake"
+  require "rails/all"
+  require "rails/generators"
+end
+
 require "jdbc/sqlite3" if RUBY_ENGINE == 'jruby'
 require "sqlite3" if RUBY_ENGINE == 'ruby'
 require "pg" if RUBY_ENGINE == 'ruby'
@@ -45,8 +53,15 @@ end
 NO_OP_RESOLVE_TYPE = ->(type, obj, ctx) {
   raise "this should never be called"
 }
+
 # Load support files
-Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each { |f| require f }
+Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each do |f|
+  unless rails_should_be_installed?
+    next if f.end_with?('star_wars/data.rb')
+    next if f.end_with?('base_generator_test.rb')
+  end
+  require f
+end
 
 def star_wars_query(string, variables={}, context: {})
   GraphQL::Query.new(StarWars::Schema, string, variables: variables, context: context).result
