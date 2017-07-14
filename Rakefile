@@ -7,7 +7,15 @@ require_relative "guides/_tasks/site"
 
 Rake::TestTask.new do |t|
   t.libs << "spec" << "lib"
-  t.pattern = "spec/**/*_spec.rb"
+
+  if defined?(Rails)
+    t.pattern = "spec/**/*_spec.rb"
+  else
+    t.test_files = Dir['spec/**/*_spec.rb'].reject do |f|
+      f.end_with?('_generator_spec.rb')
+    end
+  end
+
   t.warning = false
 end
 
