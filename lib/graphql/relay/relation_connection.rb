@@ -100,7 +100,12 @@ module GraphQL
 
       # If a relation contains a `.group` clause, a `.count` will return a Hash.
       def relation_count(relation)
-        count_or_hash = relation.count
+        count_or_hash = case relation
+        when ActiveRecord::Relation
+          relation.count(:all)
+        else # eg, Sequel::Dataset, don't mess up others
+          relation.count
+        end
         count_or_hash.is_a?(Integer) ? count_or_hash : count_or_hash.length
       end
 
