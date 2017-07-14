@@ -481,6 +481,14 @@ describe GraphQL::Relay::RelationConnection do
   end
 
   describe "for an ActiveRecord::Relation" do
+    describe "#has_next_page" do
+      it "handles joined, aliased relations" do
+        relation = StarWars::Base.select("id AS crazy_id")
+        connection = GraphQL::Relay::RelationConnection.new(relation, { first: 1 })
+        assert connection.has_next_page
+      end
+    end
+
     describe "#edge_nodes" do
       it "returns the nodes for the current page" do
         # Offset
