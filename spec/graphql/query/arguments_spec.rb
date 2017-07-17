@@ -241,4 +241,42 @@ describe GraphQL::Query::Arguments do
       assert_equal({"d" => nil, "b" => 2}, test_defaults.to_h)
     end
   end
+
+  describe "prepare" do
+    let(:arg_values) { [] }
+    let(:schema) {
+      arg_values_array = arg_values
+      test_input_1 = GraphQL::InputObjectType.define do
+        name "TestInput1"
+        argument :a, types.Int, prepare: ->(value, ctx) do
+          value * 10
+        end
+      end
+
+      test_input_2 = GraphQL::InputObjectType.define do
+        name "TestInput2"
+        argument :b, !test_input_1, as: :inputObject
+      end
+
+      query = GraphQL::ObjectType.define do
+        name "Query"
+        field :prepareTest, types.Int do
+          argument :a, test_input_2
+          resolve ->(obj, args, ctx) {
+            arg_values_array << args
+            1
+          }
+        end
+      end
+
+      GraphQL::Schema.define(query: query)
+    }
+
+    it "returns prepared argument value for nested input type" do
+      schema.execute("query prepareTest($arg: TestInput2 = {b: {a: 2}}){ prepareTest(a: $arg) }")
+
+      args = arg_values[0].values[0]
+      assert_equal 2 * 10, args['inputObject']['a']
+    end
+  end
 end
