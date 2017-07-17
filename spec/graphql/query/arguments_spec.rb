@@ -272,7 +272,7 @@ describe GraphQL::Query::Arguments do
       GraphQL::Schema.define(query: query)
     }
 
-    it "returns prepared arguemnt value for nested input type" do
+    it "returns prepared argument value for nested input type" do
       schema.execute("query prepareTest($arg: TestInput2 = {b: {a: 2}}){ prepareTest(a: $arg) }")
 
       args = arg_values[0].values[0]
