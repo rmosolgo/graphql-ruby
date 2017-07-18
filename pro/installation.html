@@ -17,7 +17,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="http://www.rubydoc.info/gems/graphql/1.6.5/">API</a>
+          <a href="http://www.rubydoc.info/gems/graphql/1.6.6/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <input
@@ -81,15 +81,45 @@
 
 <p>You can verify the integrity of <code class="highlighter-rouge">graphql-pro</code> by getting its checksum and comparing it to the <a href="https://github.com/rmosolgo/graphql-ruby/blob/master/guides/pro/checksums">published checksums</a>.</p>
 
-<p>First, get the checksum:</p>
+<p>Include the <code class="highlighter-rouge">graphql:pro:validate</code> task in your <code class="highlighter-rouge">Rakefile</code>:</p>
 
-<div class="language-sh highlighter-rouge"><pre class="highlight"><code><span class="c"># For example, to get the checksum of graphql-pro 1.0.0:</span>
-<span class="gp">$ </span>gem fetch graphql-pro -v 1.0.0 --source https://YOUR_KEY@gems.graphql.pro
-<span class="gp">$ </span>ruby -rdigest/sha2 -e <span class="s2">"puts Digest::SHA512.new.hexdigest(File.read('graphql-pro-1.0.0.gem'))"</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># Rakefile</span>
+<span class="nb">require</span> <span class="s2">"graphql/rake_task/validate"</span>
 </code></pre>
 </div>
 
-<p>Then, compare it to the corresponding checksum <a href="https://github.com/rmosolgo/graphql-ruby/blob/master/guides/pro/checksums">listed on GitHub</a>. If it the results don’t match, then the gem was compromised.</p>
+<p>Then invoke it with a version:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>$ bundle exec rake graphql:pro:validate[1.0.0]
+Validating graphql-pro v1.0.0
+  - Checking for graphql-pro credentials...
+    ✓ found
+  - Fetching the gem...
+    ✓ fetched
+  - Validating digest...
+    ✓ validated from GitHub
+    ✓ validated from graphql-ruby.org
+✔ graphql-pro 1.0.0 validated successfully!
+</code></pre>
+</div>
+
+<p>In case of a failure, please open an issue:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>Validating graphql-pro v1.4.800
+  - Checking for graphql-pro credentials...
+    ✓ found
+  - Fetching the gem...
+    ✓ fetched
+  - Validating digest...
+    ✘ SHA mismatch:
+      Downloaded:       c9cab2619aa6540605ce7922784fc84dbba3623383fdce6b17fde01d8da0aff49d666810c97f66310013c030e3ab7712094ee2d8f1ea9ce79aaf65c1684d992a
+      GitHub:           404: Not Found
+      graphql-ruby.org: 404: Not Found
+
+      This download of graphql-pro is invalid, please open an issue:
+      https://github.com/rmosolgo/graphql-ruby/issues/new?title=graphql-pro%20digest%20mismatch%20(1.4.800)
+</code></pre>
+</div>
 
 </div>
 <p class="guide-footer">

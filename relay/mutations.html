@@ -17,7 +17,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="http://www.rubydoc.info/gems/graphql/1.6.5/">API</a>
+          <a href="http://www.rubydoc.info/gems/graphql/1.6.6/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <input
@@ -84,11 +84,14 @@
 
 <h2 id="relay-mutations">Relay mutations</h2>
 
-<p>To define a mutation, use <code class="highlighter-rouge">GraphQL::Relay::Mutation.define</code>. Inside the block, you should configure:
-  - <code class="highlighter-rouge">name</code>, which will name the mutation field &amp; derived types
-  - <code class="highlighter-rouge">input_field</code>s, which will be applied to the derived <code class="highlighter-rouge">InputObjectType</code>
-  - <code class="highlighter-rouge">return_field</code>s, which will be applied to the derived <code class="highlighter-rouge">ObjectType</code>
-  - <code class="highlighter-rouge">resolve(-&gt;(object, inputs, ctx) { ... })</code>, the mutation which will actually happen</p>
+<p>To define a mutation, use <code class="highlighter-rouge">GraphQL::Relay::Mutation.define</code>. Inside the block, you should configure:</p>
+
+<ul>
+  <li><code class="highlighter-rouge">name</code>, which will name the mutation field &amp; derived types</li>
+  <li><code class="highlighter-rouge">input_field</code>s, which will be applied to the derived <code class="highlighter-rouge">InputObjectType</code></li>
+  <li><code class="highlighter-rouge">return_field</code>s, which will be applied to the derived <code class="highlighter-rouge">ObjectType</code></li>
+  <li><code class="highlighter-rouge">resolve(-&gt;(object, inputs, ctx) { ... })</code>, the mutation which will actually happen</li>
+</ul>
 
 <p>Whereas you can have whatever combination and number of <code class="highlighter-rouge">input_field</code>s you wish, Relay expects different return fields when using certain mutator configuration you use on the client-side:</p>
 
