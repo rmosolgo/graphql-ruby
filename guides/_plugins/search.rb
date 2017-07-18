@@ -1,4 +1,6 @@
 # frozen_string_literal: true
+require "set"
+
 module Jekyll
   class SearchTag < Liquid::Tag
     # required for strip_html:
@@ -12,6 +14,7 @@ module Jekyll
       # This will be an array of pages, indexed by `search_tree`
       page_data = []
       search_tree = build_search_tree
+      skipped_words = Set.new
 
       pages
         .select { |page| page.data["search"] }
@@ -43,6 +46,12 @@ module Jekyll
           # Skip whitespace, only process words
           while scanner.skip_until(/\w+/)
             word = scanner.matched
+            # If a word is really long, it's probably a false match
+            if word.length > 40
+              skipped_words << word
+              next
+            end
+            # Skip stop words
             if STOP_WORDS.include?(word)
               next
             end
@@ -58,6 +67,11 @@ module Jekyll
             end
           end
         end
+
+      if skipped_words.any?
+        puts "Skipped some very long words (#{skipped_words.length}):"
+        puts skipped_words.to_a.sort
+      end
 
       {
         pages: page_data,
