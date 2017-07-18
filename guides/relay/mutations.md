@@ -51,6 +51,7 @@ end
 ## Relay mutations
 
 To define a mutation, use `GraphQL::Relay::Mutation.define`. Inside the block, you should configure:
+
   - `name`, which will name the mutation field & derived types
   - `input_field`s, which will be applied to the derived `InputObjectType`
   - `return_field`s, which will be applied to the derived `ObjectType`
