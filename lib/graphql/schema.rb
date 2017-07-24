@@ -356,7 +356,7 @@ module GraphQL
         type_proc.call(object, ctx)
       else
         if @resolve_type_proc.nil?
-          raise(NotImplementedError, "Can't determine GraphQL type for: #{object.inspect}, define `resolve_type (obj, ctx) -> { ... }` inside `Schema.define`.")
+          raise(NotImplementedError, "Can't determine GraphQL type for: #{object.inspect}, define `resolve_type (type, obj, ctx) -> { ... }` inside `Schema.define`.")
         end
         @resolve_type_proc.call(type, object, ctx)
       end
