@@ -43,12 +43,12 @@
 <div class="guide-container">
   <h2 id="type-resolution">Type Resolution</h2>
 
-<p>When we have a member of an interface or union, which object type should we use? Your GraphQL schema may need help from you, which you can provide as <code class="highlighter-rouge">resolve_type(obj, ctx)</code>.</p>
+<p>When we have a member of an interface or union, which object type should we use? Your GraphQL schema may need help from you, which you can provide as <code class="highlighter-rouge">resolve_type(type, obj, ctx)</code>.</p>
 
 <p>Provide <code class="highlighter-rouge">resolve_type</code> as an object that responds to <code class="highlighter-rouge">#call</code>, for example, a <code class="highlighter-rouge">Proc</code> literal:</p>
 
 <div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
-  <span class="n">resolve_type</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span> <span class="p">.</span><span class="nf">.</span><span class="o">.</span> <span class="p">}</span>
+  <span class="n">resolve_type</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">type</span><span class="p">,</span> <span class="n">obj</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span> <span class="p">.</span><span class="nf">.</span><span class="o">.</span> <span class="p">}</span>
 <span class="k">end</span>
 </code></pre>
 </div>
@@ -56,7 +56,7 @@
 <p>or, a module:</p>
 
 <div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="k">module</span> <span class="nn">ResolveType</span>
-  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">call</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span>
+  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">call</span><span class="p">(</span><span class="n">type</span><span class="p">,</span> <span class="n">obj</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span>
     <span class="c1"># ...</span>
   <span class="k">end</span>
 <span class="k">end</span>
