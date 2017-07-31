@@ -115,7 +115,7 @@ end
 
 The are both Rack apps, so you can mount them in Sinatra or any other Rack app.
 
-##### Authorizing the UI
+#### Authorizing the UI
 
 You should only allow admin users to see `/graphql/ui` because it allows viewers to delete stored operations.
 
