@@ -1,0 +1,21 @@
+{
+  "name": "graphql-pro",
+  "version": "0.0.1",
+  "description": "JavaScript client for graphql-pro",
+  "main": "index.js",
+  "repository": "https://github.com/rmosolgo/graphql-pro-js",
+  "author": "Robert Mosolgo",
+  "license": "LGPL-3.0",
+  "bin": "./src/cli.js",
+  "devDependencies": {
+    "jest": "^20.0.4",
+    "nock": "^9.0.14"
+  },
+  "scripts": {
+    "test": "jest"
+  },
+  "dependencies": {
+    "glob": "^7.1.2",
+    "graphql": "^0.10.5"
+  }
+}
