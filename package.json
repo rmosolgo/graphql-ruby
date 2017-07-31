@@ -1,6 +1,6 @@
 {
   "name": "graphql-pro",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "JavaScript client for graphql-pro",
   "main": "index.js",
   "repository": "https://github.com/rmosolgo/graphql-pro-js",
