@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     
-      <title>GraphQL Pro - GraphQL::Pro Home</title>
+      <title>GraphQL Pro - OperationStore - Authentication</title>
     
     <link href="https://fonts.googleapis.com/css?family=Rubik:300,400" rel="stylesheet" />
     <link rel="stylesheet" href="/css/main.css">
@@ -38,18 +38,35 @@
       <p class="breadcrumb">
   <a href="/">GraphQL</a>
   &raquo; <a href="/guides">Guides</a>
-   &raquo; GraphQL Pro
-  &raquo; GraphQL::Pro Home
+   &raquo; GraphQL Pro - OperationStore
+  &raquo; Authentication
 </p>
-<h1 class="guide-header">GraphQL::Pro Home</h1>
+<h1 class="guide-header">Authentication</h1>
 <div class="guide-container">
-  
+  <p>When you <a href="/operation_store/client_workflow#add-a-client">add a client</a>, you also associate a <em>secret</em> with that client. You can use the default or provide your own and you can update a client secret at any time. By updating a secret, old secrets become invalid.</p>
+
+<p>This secret is used to add an authorization header, generated with HMAC-SHA256. With this header, the server can assert:</p>
+
+<ul>
+  <li>The request came from an authorized client</li>
+  <li>The request was not corrupted in transit</li>
+</ul>
+
+<p>For more info about HMAC, see <a href="https://en.wikipedia.org/wiki/Hash-based_message_authentication_code">Wikipedia</a> or Ruby’s <a href="https://ruby-doc.org/stdlib-2.4.0/libdoc/openssl/rdoc/OpenSSL/HMAC.html">OpenSSL::HMAC</a> support.</p>
+
+<p>The Authorization header takes the form:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="s2">"GraphQL::Pro </span><span class="si">#{</span><span class="n">client_name</span><span class="si">}</span><span class="s2"> </span><span class="si">#{</span><span class="n">hmac</span><span class="si">}</span><span class="s2">"</span>
+</code></pre>
+</div>
+
+<p><a href="http://github.com/rmosolgo/graphql-pro-js"><code class="highlighter-rouge">graphql-pro-js</code></a> adds this header to outgoing requests by using the provided <code class="highlighter-rouge">--client</code> and <code class="highlighter-rouge">--secret</code> values.</p>
 
 </div>
 <p class="guide-footer">
   Suggestion, improvement, or correction?
-  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/pro/home.md">Edit this file</a> or
-  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: GraphQL::Pro Home">report an issue</a>.
+  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/operation_store/authentication.md">Edit this file</a> or
+  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: Authentication">report an issue</a>.
 </p>
 <script>
   // Find headers with IDs and wrap their text in `<a href=></a>`

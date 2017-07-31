@@ -1,0 +1,228 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+      <title>GraphQL Pro - OperationStore - Getting Started</title>
+    
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="icon" href="/graphql-ruby-icon.png">
+  </head>
+  <body>
+    <div class="header">
+      <div class="header-container">
+        <div class="nav">
+          <a href="/" class="img-link">
+            <img src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+          </a>
+          <a href="/getting_started">Get Started</a>
+          <a href="/guides">Guides</a>
+          <a href="http://www.rubydoc.info/gems/graphql/1.6.6/">API</a>
+          <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
+          <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+          <input
+            class="search-input"
+            onkeyup="GraphQLRubySearch.run(this)"
+            type="text"
+            placeholder="Search the docs..."
+          />
+        </div>
+      </div>
+      <div class="search-results-container">
+        <div id="search-results"></div>
+      </div>
+    </div>
+    <div class="container">
+      <p class="breadcrumb">
+  <a href="/">GraphQL</a>
+  &raquo; <a href="/guides">Guides</a>
+   &raquo; GraphQL Pro - OperationStore
+  &raquo; Getting Started
+</p>
+<h1 class="guide-header">Getting Started</h1>
+<div class="guide-container">
+  <p>To use <code class="highlighter-rouge">GraphQL::Pro::OperationStore</code> with your app, follow these steps:</p>
+
+<ul>
+  <li><a href="#dependencies">Check the dependencies</a> to make sure <code class="highlighter-rouge">OperationStore</code> is supported</li>
+  <li><a href="#prepare-the-database">Prepare the database</a> for <code class="highlighter-rouge">OperationStore</code>’s  data</li>
+  <li><a href="#add-operationstore">Add <code class="highlighter-rouge">OperationStore</code></a> to your GraphQL schema</li>
+  <li><a href="#add-routes">Add routes</a> for the UI and sync API</li>
+  <li><a href="#update-the-controller">Update your controller</a> to support persisted queries</li>
+  <li><a href="/operation_store/client_workflow">Add a client</a> to start syncing queries</li>
+</ul>
+
+<h4 id="dependencies">Dependencies</h4>
+
+<p><code class="highlighter-rouge">OperationStore</code> requires two gems in your application environment:</p>
+
+<ul>
+  <li><code class="highlighter-rouge">ActiveRecord</code> to access tables in your database. (Using another ORM or backend? Please <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Backend support request for OperationStore" target="_blank">open an issue</a>
+ to request support!)</li>
+  <li><code class="highlighter-rouge">Rack</code>: to serve the UI and Sync API. (In Rails, this is provided by <code class="highlighter-rouge">config/routes.md</code>.)</li>
+</ul>
+
+<p>These are bundled with Rails by default.</p>
+
+<h4 id="prepare-the-database">Prepare the Database</h4>
+
+<p><code class="highlighter-rouge">GraphQL::Pro::OperationStore</code> requires some database tables. You can add these with a migration:</p>
+
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code><span class="gp">$ </span>rails generate migration SetupOperationStore
+</code></pre>
+</div>
+
+<p>Then open the migration file and add:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># ...</span>
+<span class="c1"># implement the change method with:</span>
+<span class="k">def</span> <span class="nf">change</span>
+  <span class="n">create_table</span> <span class="ss">:graphql_clients</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+    <span class="n">t</span><span class="p">.</span><span class="nf">column</span> <span class="ss">:name</span><span class="p">,</span> <span class="ss">:string</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
+    <span class="n">t</span><span class="p">.</span><span class="nf">column</span> <span class="ss">:secret</span><span class="p">,</span> <span class="ss">:string</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
+    <span class="n">t</span><span class="p">.</span><span class="nf">timestamps</span>
+  <span class="k">end</span>
+  <span class="n">add_index</span> <span class="ss">:graphql_clients</span><span class="p">,</span> <span class="ss">:name</span><span class="p">,</span> <span class="ss">unique: </span><span class="kp">true</span>
+  <span class="n">add_index</span> <span class="ss">:graphql_clients</span><span class="p">,</span> <span class="ss">:secret</span><span class="p">,</span> <span class="ss">unique: </span><span class="kp">true</span>
+
+  <span class="n">create_table</span> <span class="ss">:graphql_client_operations</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+    <span class="n">t</span><span class="p">.</span><span class="nf">references</span> <span class="ss">:graphql_client</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
+    <span class="n">t</span><span class="p">.</span><span class="nf">references</span> <span class="ss">:graphql_operation</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
+    <span class="n">t</span><span class="p">.</span><span class="nf">column</span> <span class="ss">:alias</span><span class="p">,</span> <span class="ss">:string</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
+    <span class="n">t</span><span class="p">.</span><span class="nf">timestamps</span>
+  <span class="k">end</span>
+  <span class="n">add_index</span> <span class="ss">:graphql_client_operations</span><span class="p">,</span> <span class="p">[</span><span class="ss">:graphql_client_id</span><span class="p">,</span> <span class="ss">:alias</span><span class="p">],</span> <span class="ss">unique: </span><span class="kp">true</span><span class="p">,</span> <span class="ss">name: </span><span class="s2">"graphql_client_operations_pairs"</span>
+
+  <span class="n">create_table</span> <span class="ss">:graphql_operations</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+    <span class="n">t</span><span class="p">.</span><span class="nf">column</span> <span class="ss">:digest</span><span class="p">,</span> <span class="ss">:string</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
+    <span class="n">t</span><span class="p">.</span><span class="nf">column</span> <span class="ss">:body</span><span class="p">,</span> <span class="ss">:text</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
+    <span class="n">t</span><span class="p">.</span><span class="nf">column</span> <span class="ss">:name</span><span class="p">,</span> <span class="ss">:string</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
+    <span class="n">t</span><span class="p">.</span><span class="nf">timestamps</span>
+  <span class="k">end</span>
+  <span class="n">add_index</span> <span class="ss">:graphql_operations</span><span class="p">,</span> <span class="ss">:digest</span><span class="p">,</span> <span class="ss">unique: </span><span class="kp">true</span>
+
+  <span class="n">create_table</span> <span class="ss">:graphql_index_entries</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+    <span class="n">t</span><span class="p">.</span><span class="nf">column</span> <span class="ss">:name</span><span class="p">,</span> <span class="ss">:string</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
+  <span class="k">end</span>
+  <span class="n">add_index</span> <span class="ss">:graphql_index_entries</span><span class="p">,</span> <span class="ss">:name</span><span class="p">,</span> <span class="ss">unique: </span><span class="kp">true</span>
+
+  <span class="n">create_table</span> <span class="ss">:graphql_index_references</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+    <span class="n">t</span><span class="p">.</span><span class="nf">references</span> <span class="ss">:graphql_index_entry</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
+    <span class="n">t</span><span class="p">.</span><span class="nf">references</span> <span class="ss">:graphql_operation</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
+  <span class="k">end</span>
+  <span class="n">add_index</span> <span class="ss">:graphql_index_references</span><span class="p">,</span> <span class="p">[</span><span class="ss">:graphql_index_entry_id</span><span class="p">,</span> <span class="ss">:graphql_operation_id</span><span class="p">],</span> <span class="ss">unique: </span><span class="kp">true</span><span class="p">,</span> <span class="ss">name: </span><span class="s2">"graphql_index_reference_pairs"</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<h4 id="add-operationstore">Add <code class="highlighter-rouge">OperationStore</code></h4>
+
+<p>To hook up the storage to your schema, add the plugin:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+  <span class="c1"># ...</span>
+  <span class="n">use</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">OperationStore</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<h4 id="add-routes">Add Routes</h4>
+
+<p>To use <code class="highlighter-rouge">OperationStore</code>, add two routes to your app:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># config/routes.rb</span>
+
+<span class="c1"># Include GraphQL::Pro's routing extensions:</span>
+<span class="n">using</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span>
+
+<span class="no">Rails</span><span class="p">.</span><span class="nf">application</span><span class="p">.</span><span class="nf">routes</span><span class="p">.</span><span class="nf">draw</span> <span class="k">do</span>
+  <span class="c1"># ...</span>
+  <span class="c1"># Add the UI</span>
+  <span class="c1"># TODO: authorize, see below</span>
+  <span class="n">mount</span> <span class="no">MySchema</span><span class="p">.</span><span class="nf">ui</span><span class="p">,</span> <span class="ss">at: </span><span class="s2">"/graphql/ui"</span>
+  <span class="c1"># Add the Sync API (authorization built-in)</span>
+  <span class="n">mount</span> <span class="no">MySchema</span><span class="p">.</span><span class="nf">operation_store_sync</span><span class="p">,</span> <span class="ss">at: </span><span class="s2">"/graphql/sync"</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<p><code class="highlighter-rouge">MySchema.operation_store_sync</code> receives pushes from clients. See <a href="/operation_store/client_workflow">Client Workflow</a> for more info on how this endpoint is used.</p>
+
+<p><code class="highlighter-rouge">MySchema.ui</code> is a web view to the <code class="highlighter-rouge">OperationStore</code>, visible at <code class="highlighter-rouge">/graphql/ui</code>:</p>
+
+<p><a href="/operation_store/graphql_ui.png" target="_blank" class="img-link">
+  <img src="/operation_store/graphql_ui.png" title="GraphQL UI" alt="GraphQL UI" />
+</a></p>
+
+<p>The are both Rack apps, so you can mount them in Sinatra or any other Rack app.</p>
+
+<h5 id="authorizing-the-ui">Authorizing the UI</h5>
+
+<p>You should only allow admin users to see <code class="highlighter-rouge">/graphql/ui</code> because it allows viewers to delete stored operations.</p>
+
+<p>Use <a href="http://api.rubyonrails.org/v5.1/classes/ActionDispatch/Routing/Mapper/Scoping.html#method-i-constraints">Rails routing constraints</a> to restrict acccess to authorized users, for example:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># Check the secure session for a staff flag:</span>
+<span class="no">STAFF_ONLY</span> <span class="o">=</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">request</span><span class="p">)</span> <span class="p">{</span> <span class="n">request</span><span class="p">.</span><span class="nf">session</span><span class="p">[</span><span class="s2">"staff"</span><span class="p">]</span> <span class="o">==</span> <span class="kp">true</span> <span class="p">}</span>
+<span class="c1"># Only serve the GraphQL UI to staff users:</span>
+<span class="n">constraints</span><span class="p">(</span><span class="no">STAFF_ONLY</span><span class="p">)</span> <span class="k">do</span>
+  <span class="n">mount</span> <span class="no">MySchema</span><span class="p">.</span><span class="nf">ui</span><span class="p">,</span> <span class="ss">at: </span><span class="s2">"/graphql/ui"</span><span class="p">,</span> <span class="p">:</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<h4 id="update-the-controller">Update the Controller</h4>
+
+<p>Add <code class="highlighter-rouge">operation_id:</code> to your GraphQL context:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># app/controllers/graphql_controller.rb</span>
+<span class="n">context</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="c1"># ...</span>
+  <span class="ss">operation_id: </span><span class="n">params</span><span class="p">[</span><span class="ss">:operationId</span><span class="p">]</span>
+<span class="p">}</span>
+
+<span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span>
+  <span class="c1"># ...</span>
+  <span class="ss">context: </span><span class="n">context</span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre>
+</div>
+
+<p><code class="highlighter-rouge">OperationStore</code> will use <code class="highlighter-rouge">stored_operation</code> to fetch the operation from the database.</p>
+
+<p>See <a href="/operation_store/server_management">Server Management</a> for details about rejecting GraphQL from <code class="highlighter-rouge">params[:query]</code>.</p>
+
+<h4 id="next-steps">Next Steps</h4>
+
+<p>Sync your operations with the <a href="/operation_store/client_workflow">Client Workflow</a>.</p>
+
+</div>
+<p class="guide-footer">
+  Suggestion, improvement, or correction?
+  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/operation_store/getting_started.md">Edit this file</a> or
+  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: Getting Started">report an issue</a>.
+</p>
+<script>
+  // Find headers with IDs and wrap their text in `<a href=></a>`
+  // That way people can easily copy the link.
+  var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+  var header, idText, headerLink;
+  for (var i = 0; i < headers.length; i++) {
+    header = headers[i];
+    idText = header.id;
+    if (idText) {
+      headerLink = document.createElement("a");
+      headerLink.href = "#" + idText;
+      headerLink.textContent = header.textContent;
+      header.textContent = "";
+      header.appendChild(headerLink);
+    }
+  }
+</script>
+
+    </div>
+    <script src="/js/search.js"></script>
+  </body>
+</html>

@@ -1,0 +1,143 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+      <title>GraphQL Pro - OperationStore - Client Workflow</title>
+    
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="icon" href="/graphql-ruby-icon.png">
+  </head>
+  <body>
+    <div class="header">
+      <div class="header-container">
+        <div class="nav">
+          <a href="/" class="img-link">
+            <img src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+          </a>
+          <a href="/getting_started">Get Started</a>
+          <a href="/guides">Guides</a>
+          <a href="http://www.rubydoc.info/gems/graphql/1.6.6/">API</a>
+          <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
+          <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+          <input
+            class="search-input"
+            onkeyup="GraphQLRubySearch.run(this)"
+            type="text"
+            placeholder="Search the docs..."
+          />
+        </div>
+      </div>
+      <div class="search-results-container">
+        <div id="search-results"></div>
+      </div>
+    </div>
+    <div class="container">
+      <p class="breadcrumb">
+  <a href="/">GraphQL</a>
+  &raquo; <a href="/guides">Guides</a>
+   &raquo; GraphQL Pro - OperationStore
+  &raquo; Client Workflow
+</p>
+<h1 class="guide-header">Client Workflow</h1>
+<div class="guide-container">
+  <p>To use persisted queries with your client application, you must:</p>
+
+<ul>
+  <li>Set up <code class="highlighter-rouge">OperationStore</code>, as described in <a href="/operation_store/getting_started">Getting Started</a></li>
+  <li><a href="#add-a-client">Add the client</a> to the system</li>
+  <li><a href="#syncing">Sync operations</a> from the client to the server</li>
+  <li><a href="#client-usage">Send <code class="highlighter-rouge">params[:operationId]</code></a> from the client app</li>
+</ul>
+
+<p>This documentation also touches on <a href="https://github.com/rmosolgo/graphql-pro-js"><code class="highlighter-rouge">graphql-pro-js</code></a>, a JavaScript client library for using <code class="highlighter-rouge">OperationStore</code>.</p>
+
+<h3 id="add-a-client">Add a Client</h3>
+
+<p>Clients are registered via <a href="/operation_store/getting_started#add-routes">the UI</a>:</p>
+
+<p><a href="/operation_store/add_a_client.png" target="_blank" class="img-link">
+  <img src="/operation_store/add_a_client.png" title="Add a Client for Persisted Queries" alt="Add a Client for Persisted Queries" />
+</a></p>
+
+<p>A default <code class="highlighter-rouge">secret</code> is provided for you, but you can also enter your own. The <code class="highlighter-rouge">secret</code> is used for <a href="(/operation_store/authorization)">HMAC authorization</a>.</p>
+
+<p>(Are you interested in a Ruby API for this? Please <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=OperationStore Ruby API" target="_blank">open an issue</a>
+ or email <code class="highlighter-rouge">support@graphql.pro</code>.)</p>
+
+<h3 id="syncing">Syncing</h3>
+
+<p>Once a client is registered, it can push queries to the server via <a href="/operation_store/getting_started#add-routes">the Sync API</a>.</p>
+
+<p>The easiest way to sync is with <code class="highlighter-rouge">graphql-pro sync</code>, a command-line tool written in JavaScript: <a href="https://github.com/rmosolgo/graphql-pro-js"><code class="highlighter-rouge">graphql-pro-js</code></a>.</p>
+
+<p>In short, it:</p>
+
+<ul>
+  <li>Finds GraphQL queries from <code class="highlighter-rouge">.graphql</code> files or <code class="highlighter-rouge">relay-compiler</code> output in the provided <code class="highlighter-rouge">--path</code></li>
+  <li>Adds an <a href="/operation_store/authorization">Authentication header</a> based on the provided <code class="highlighter-rouge">--client</code> and <code class="highlighter-rouge">--secret</code></li>
+  <li>Sends the operations to the provided <code class="highlighter-rouge">--url</code></li>
+  <li>Generates a JavaScript module into the provided <code class="highlighter-rouge">--outfile</code></li>
+</ul>
+
+<p>For example:</p>
+
+<p><a href="/operation_store/sync_example.png" target="_blank" class="img-link">
+  <img src="/operation_store/sync_example.png" title="OperationStore client sync" alt="OperationStore client sync" />
+</a></p>
+
+<p>See the readme for <a href="https://github.com/rmosolgo/graphql-pro-js#use-with-relay">Relay support</a>, <a href="https://github.com/rmosolgo/graphql-pro-js#use-with-apollo-client">Apollo Client support</a>, and <a href="https://github.com/rmosolgo/graphql-pro-js#use-with-plain-javascript">plain JS usage</a>.</p>
+
+<p>For help syncing in another language, you can take inspiration from the <a href="https://github.com/rmosolgo/graphql-pro-js">JavaScript implementation</a>, <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Implementing operation sync in another language" target="_blank">open an issue</a>
+, or email <code class="highlighter-rouge">support@graphql.pro</code>.</p>
+
+<h3 id="client-usage">Client Usage</h3>
+
+<p><code class="highlighter-rouge">graphql-pro-js</code> generates <a href="https://github.com/rmosolgo/graphql-pro-js#use-with-apollo-client">Apollo middleware</a> and a <a href="https://github.com/rmosolgo/graphql-pro-js#use-with-relay">Relay helper function</a> to get started quickly.</p>
+
+<p>To run stored operations from another client, send a param called <code class="highlighter-rouge">operationId</code> which is composed of:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code> <span class="p">{</span>
+   <span class="c1"># ...</span>
+   <span class="ss">operationId: </span><span class="s2">"my-relay-app/ce79aa2784fc..."</span>
+   <span class="c1">#            ^ client id  / ^ operation id</span>
+ <span class="p">}</span>
+</code></pre>
+</div>
+
+<p>The server will use those values to fetch an operation from the database.</p>
+
+<h4 id="next-steps">Next Steps</h4>
+
+<p>Learn more about <code class="highlighter-rouge">OperationStore</code>’s <a href="/operation_store/authentication">authentication</a> or read some tips for <a href="/operation_store/server_management">server management</a>.</p>
+
+</div>
+<p class="guide-footer">
+  Suggestion, improvement, or correction?
+  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/operation_store/client_workflow.md">Edit this file</a> or
+  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: Client Workflow">report an issue</a>.
+</p>
+<script>
+  // Find headers with IDs and wrap their text in `<a href=></a>`
+  // That way people can easily copy the link.
+  var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+  var header, idText, headerLink;
+  for (var i = 0; i < headers.length; i++) {
+    header = headers[i];
+    idText = header.id;
+    if (idText) {
+      headerLink = document.createElement("a");
+      headerLink.href = "#" + idText;
+      headerLink.textContent = header.textContent;
+      header.textContent = "";
+      header.appendChild(headerLink);
+    }
+  }
+</script>
+
+    </div>
+    <script src="/js/search.js"></script>
+  </body>
+</html>

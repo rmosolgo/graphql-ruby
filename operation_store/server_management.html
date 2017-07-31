@@ -1,0 +1,145 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+      <title>GraphQL Pro - OperationStore - Server Management</title>
+    
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="icon" href="/graphql-ruby-icon.png">
+  </head>
+  <body>
+    <div class="header">
+      <div class="header-container">
+        <div class="nav">
+          <a href="/" class="img-link">
+            <img src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+          </a>
+          <a href="/getting_started">Get Started</a>
+          <a href="/guides">Guides</a>
+          <a href="http://www.rubydoc.info/gems/graphql/1.6.6/">API</a>
+          <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
+          <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+          <input
+            class="search-input"
+            onkeyup="GraphQLRubySearch.run(this)"
+            type="text"
+            placeholder="Search the docs..."
+          />
+        </div>
+      </div>
+      <div class="search-results-container">
+        <div id="search-results"></div>
+      </div>
+    </div>
+    <div class="container">
+      <p class="breadcrumb">
+  <a href="/">GraphQL</a>
+  &raquo; <a href="/guides">Guides</a>
+   &raquo; GraphQL Pro - OperationStore
+  &raquo; Server Management
+</p>
+<h1 class="guide-header">Server Management</h1>
+<div class="guide-container">
+  <p>After <a href="/operation_store/getting_started">getting started</a>, here some things to keep in mind.</p>
+
+<h3 id="rejecting-arbitrary-queries">Rejecting Arbitrary Queries</h3>
+
+<p>With persisted queries, you can stop accepting arbitrary GraphQL input. This way, malicious users can’t run large or inappropriate queries on your server.</p>
+
+<p>In short, you can ignore arbitrary GraphQL by <em>skipping</em> the first argument of <code class="highlighter-rouge">MySchema.execute</code>:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># app/controllers/graphql.rb</span>
+
+<span class="c1"># Don't pass a query string; ignore `params[:query]`</span>
+<span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span>
+  <span class="ss">context: </span><span class="n">context</span><span class="p">,</span>
+  <span class="ss">variables: </span><span class="n">params</span><span class="p">[</span><span class="ss">:variables</span><span class="p">],</span>
+  <span class="ss">operation_name: </span><span class="n">params</span><span class="p">[</span><span class="ss">:operationName</span><span class="p">],</span>
+<span class="p">)</span>
+</code></pre>
+</div>
+
+<p>However, take these points into consideration:</p>
+
+<ul>
+  <li>Are any previous clients using arbitrary GraphQL? (For example, old versions of native apps or old web pages may still be sending GraphQL.)</li>
+  <li>Should some users still be allowed to send custom strings? (For example, do staff members use GraphiQL to develop new features or debug issues?)</li>
+</ul>
+
+<p>If those apply to you, you can apply some logic to <code class="highlighter-rouge">query_string</code>:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># Allow arbitrary GraphQL:</span>
+<span class="c1"># - from staff users</span>
+<span class="c1"># - in development</span>
+<span class="n">query_string</span> <span class="o">=</span> <span class="k">if</span> <span class="n">current_user</span><span class="p">.</span><span class="nf">staff?</span> <span class="o">||</span> <span class="no">Rails</span><span class="p">.</span><span class="nf">env</span><span class="p">.</span><span class="nf">development?</span>
+  <span class="n">params</span><span class="p">[</span><span class="ss">:query</span><span class="p">]</span>
+<span class="k">else</span>
+  <span class="kp">nil</span>
+<span class="k">end</span>
+
+<span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span>
+  <span class="n">query_string</span><span class="p">,</span> <span class="c1"># maybe nil, that's OK.</span>
+  <span class="ss">context: </span><span class="n">context</span><span class="p">,</span>
+  <span class="ss">variables: </span><span class="n">params</span><span class="p">[</span><span class="ss">:variables</span><span class="p">],</span>
+  <span class="ss">operation_name: </span><span class="n">params</span><span class="p">[</span><span class="ss">:operationName</span><span class="p">],</span>
+<span class="p">)</span>
+</code></pre>
+</div>
+
+<h3 id="deleting-data">Deleting Data</h3>
+
+<p>Clients can only <em>add</em> to the database, but as an administrator, you can also delete entries from the database. (Make sure you <a href="/operation_store/getting_started.html#authorizing-the-ui">authorize access to the UI</a>.)This is a dangerous operation: by deleting something, any clients who depend on that data will crash.</p>
+
+<p>Some reasons to delete from the database are:</p>
+
+<ul>
+  <li>Data was pushed in error; the data is not used</li>
+  <li>The queries are invalid or unsafe; it’s better to remove them than to keep them</li>
+</ul>
+
+<p>If this is true, you can use “Delete” buttons to remove individual operations or entire clients.</p>
+
+<h3 id="integration-with-your-application">Integration with Your Application</h3>
+
+<p>It’s on the road map to add a Ruby API to <code class="highlighter-rouge">OperationStore</code> so that you can integrate it with your application. For example, you might:</p>
+
+<ul>
+  <li>Create clients that correspond to users in your system</li>
+  <li>Show client secrets via the UI so that users can save them</li>
+  <li>Render your own administration dashboards with <code class="highlighter-rouge">OperationStore</code> data</li>
+</ul>
+
+<p>If this interests you, please <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=OperationStore Ruby API" target="_blank">open an issue</a>
+ or email <code class="highlighter-rouge">support@graphql.pro</code>.</p>
+
+</div>
+<p class="guide-footer">
+  Suggestion, improvement, or correction?
+  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/operation_store/server_management.md">Edit this file</a> or
+  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: Server Management">report an issue</a>.
+</p>
+<script>
+  // Find headers with IDs and wrap their text in `<a href=></a>`
+  // That way people can easily copy the link.
+  var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+  var header, idText, headerLink;
+  for (var i = 0; i < headers.length; i++) {
+    header = headers[i];
+    idText = header.id;
+    if (idText) {
+      headerLink = document.createElement("a");
+      headerLink.href = "#" + idText;
+      headerLink.textContent = header.textContent;
+      header.textContent = "";
+      header.appendChild(headerLink);
+    }
+  }
+</script>
+
+    </div>
+    <script src="/js/search.js"></script>
+  </body>
+</html>
