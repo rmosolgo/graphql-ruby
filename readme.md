@@ -1,4 +1,4 @@
-# GraphQL::Pro JavaScript Client
+# GraphQL::Pro JavaScript Client [![Build Status](https://travis-ci.org/rmosolgo/graphql-pro-js.svg?branch=master)](https://travis-ci.org/rmosolgo/graphql-pro-js)
 
 
 JavaScript support for GraphQL projects using [graphql-pro](http://graphql.pro)'s `OperationStore` for persisted queries.
