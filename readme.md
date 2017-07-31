@@ -134,15 +134,15 @@ $.post("/graphql", {
 
 ## Authorization
 
-`OperationStore` uses HMAC-SHA256 to [authorize requests](http://graphql-ruby.org/operation_store/authorization).
+`OperationStore` uses HMAC-SHA256 to [authenticate requests](http://graphql-ruby.org/operation_store/authentication).
 
-Pass the key to `graphql-pro sync` as `--secret` to authorize it:
+Pass the key to `graphql-pro sync` as `--secret` to authenticate it:
 
 ```bash
 $ export MY_SECRET_KEY= "abcdefg..."
 $ graphql-pro sync ... --secret=$MY_SECRET_KEY
 # ...
-Authorizing with HMAC
+Authenticating with HMAC
 # ...
 ```
 

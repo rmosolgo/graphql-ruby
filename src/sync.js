@@ -39,7 +39,7 @@ function sync(options) {
   var hashFunc = options.hash || md5
   var encryptionKey = options.secret
   if (encryptionKey) {
-    logger.log("Authorizing with HMAC")
+    logger.log("Authenticating with HMAC")
   }
   var sendFunc = options.send || sendPayload
   var filesMode = options.mode || (graphqlGlob.indexOf("__generated__") > -1 ? "relay" : "project")
