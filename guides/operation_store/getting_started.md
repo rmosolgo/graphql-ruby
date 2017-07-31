@@ -126,7 +126,7 @@ Use [Rails routing constraints](http://api.rubyonrails.org/v5.1/classes/ActionDi
 STAFF_ONLY = ->(request) { request.session["staff"] == true }
 # Only serve the GraphQL UI to staff users:
 constraints(STAFF_ONLY) do
-  mount MySchema.ui, at: "/graphql/ui", :
+  mount MySchema.ui, at: "/graphql/ui"
 end
 ```
 
