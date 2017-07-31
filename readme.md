@@ -15,7 +15,7 @@ See the [server-side docs on http://graphql-ruby.org](http://graphql-ruby.org/op
 
 This package contains a command line utility, `graphql-pro sync`:
 
-```bash
+```
 $ graphql-pro sync # ...
 Authorizing with HMAC
 Syncing 4 operations to http://myapp.com/graphql/operations...
@@ -28,11 +28,13 @@ Generating client module in app/javascript/graphql/OperationStoreClient.js...
 
 `sync` Takes several options:
 
-- `--url`
-- `--path`
-- `--client`
-- `--secret`
-- `--outfile`
+option | description
+--------|----------
+`--url` | [Sync API](http://graphql-ruby.org/operation_store/getting_started.html#add-routes) url
+`--path` | Local directory to search for `.graphql` / `.graphql.js` files
+`--client` | Client ID ([created on server](http://graphql-ruby.org/operation_store/client_workflow))
+`--secret` | Client Secret ([created on server](http://graphql-ruby.org/operation_store/client_workflow))
+`--outfile` | Destination for generated JS code
 
 You can see these and a few others with `graphql-pro sync --help`.
 
@@ -89,7 +91,7 @@ Use the `--path` option to point at your `.graphql` files:
 $ graphql-pro sync --path=src/graphql/ --url=...
 ```
 
-Then, load the generated module and add its `.apolloMiddleware` to your network interface with `.use[...]`:
+Then, load the generated module and add its `.apolloMiddleware` to your network interface with `.use([...])`:
 
 ```js
 // load the generated module
@@ -132,7 +134,7 @@ $.post("/graphql", {
 
 ## Authorization
 
-`OperationStore::Endpoint` uses HMAC-SHA256 to authorize requests.
+`OperationStore` uses HMAC-SHA256 to [authorize requests](http://graphql-ruby.org/operation_store/authorization).
 
 Pass the key to `graphql-pro sync` as `--secret` to authorize it:
 
