@@ -168,7 +168,7 @@
 <span class="no">STAFF_ONLY</span> <span class="o">=</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">request</span><span class="p">)</span> <span class="p">{</span> <span class="n">request</span><span class="p">.</span><span class="nf">session</span><span class="p">[</span><span class="s2">"staff"</span><span class="p">]</span> <span class="o">==</span> <span class="kp">true</span> <span class="p">}</span>
 <span class="c1"># Only serve the GraphQL UI to staff users:</span>
 <span class="n">constraints</span><span class="p">(</span><span class="no">STAFF_ONLY</span><span class="p">)</span> <span class="k">do</span>
-  <span class="n">mount</span> <span class="no">MySchema</span><span class="p">.</span><span class="nf">ui</span><span class="p">,</span> <span class="ss">at: </span><span class="s2">"/graphql/ui"</span><span class="p">,</span> <span class="p">:</span>
+  <span class="n">mount</span> <span class="no">MySchema</span><span class="p">.</span><span class="nf">ui</span><span class="p">,</span> <span class="ss">at: </span><span class="s2">"/graphql/ui"</span>
 <span class="k">end</span>
 </code></pre>
 </div>
