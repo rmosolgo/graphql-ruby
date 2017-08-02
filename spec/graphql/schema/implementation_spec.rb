@@ -2,8 +2,8 @@
 require "spec_helper"
 
 describe GraphQL::Schema::Implementation do
-  def build_schema(graphql_str)
-    implementation = GraphQL::Schema::Implementation.new(namespace: TestImplementation)
+  def build_schema(graphql_str, namespace:)
+    implementation = GraphQL::Schema::Implementation.new(namespace: namespace)
     schema = GraphQL::Schema.from_definition(graphql_str, default_resolve: implementation)
     implementation.set_schema(schema)
     schema
@@ -96,7 +96,7 @@ describe GraphQL::Schema::Implementation do
     }
 
     it "builds a working schema" do
-      schema = build_schema(schema_graphql)
+      schema = build_schema(schema_graphql, namespace: TestImplementation)
       res = schema.execute <<~GRAPHQL
         {
           cards {
@@ -125,6 +125,85 @@ describe GraphQL::Schema::Implementation do
       }
 
       assert_equal expected_data, res["data"]
+    end
+
+    describe "implementation validation" do
+      module ExtraArgTestImplementation
+        include TestImplementation
+
+        class Card
+          def initialize(obj, ctx)
+          end
+
+          def is_facecard(something:)
+          end
+        end
+      end
+
+      module PositionalArgTestImplementation
+        include TestImplementation
+
+        class Query
+          def initialize(obj, ctx)
+          end
+
+          def suit(letter)
+          end
+        end
+      end
+
+      module OptionalKeywordTestImplementation
+        include TestImplementation
+
+        class Query
+          def initialize(obj, ctx)
+          end
+
+          def suit(letter: "H")
+          end
+        end
+      end
+
+      module MissingInitializeSignatureTestImplementation
+        include TestImplementation
+        class Suit
+          def initialize(letter)
+            @letter = letter
+          end
+        end
+      end
+
+      it "raises on invalid arguments" do
+        err = assert_raises(GraphQL::Schema::Implementation::InvalidImplementationError) do
+          build_schema(schema_graphql, namespace: ExtraArgTestImplementation)
+        end
+
+        assert_includes err.message, "unexpected keyword"
+        assert_includes err.message, "ExtraArgTestImplementation::Card#is_facecard"
+        line_no = ExtraArgTestImplementation::Card.instance_method(:is_facecard).source_location[1]
+        assert_includes err.message, "implementation_spec.rb:#{line_no}"
+
+        err = assert_raises(GraphQL::Schema::Implementation::InvalidImplementationError) do
+          build_schema(schema_graphql, namespace: PositionalArgTestImplementation)
+        end
+
+        assert_includes err.message, "positional arguments"
+        assert_includes err.message, "PositionalArgTestImplementation::Query#suit"
+        line_no = PositionalArgTestImplementation::Query.instance_method(:suit).source_location[1]
+        assert_includes err.message, "implementation_spec.rb:#{line_no}"
+
+        err = assert_raises(GraphQL::Schema::Implementation::InvalidImplementationError) do
+          build_schema(schema_graphql, namespace: OptionalKeywordTestImplementation)
+        end
+
+        assert_includes err.message, "unexpected default value"
+        assert_includes err.message, "OptionalKeywordTestImplementation::Query#suit"
+        line_no = OptionalKeywordTestImplementation::Query.instance_method(:suit).source_location[1]
+        assert_includes err.message, "implementation_spec.rb:#{line_no}"
+      end
+
+      it "raises on invalid #initialize signature"
+      it "raises on invalid inheritance"
     end
   end
 end
