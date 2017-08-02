@@ -95,7 +95,7 @@ To use `OperationStore`, add two routes to your app:
 # config/routes.rb
 
 # Include GraphQL::Pro's routing extensions:
-using GraphQL::Pro
+using GraphQL::Pro::Routes
 
 Rails.application.routes.draw do
   # ...
