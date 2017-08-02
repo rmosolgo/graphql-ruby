@@ -34,6 +34,26 @@ GraphQL::Schema.define do
 end
 ```
 
+## Type-Level Resolution Hooks
+
+Instead of a single, top-level `resolve_type` function, you can provide type-level functions:
+
+```ruby
+MyUnion = GraphQL::UnionType.define do
+  resolve_type ->(obj, ctx) {
+    # resolve `obj` as a member of `MyUnion`
+  }
+end
+
+MyInterface = GraphQL::InterfaceType.define do
+  resolve_type ->(obj, ctx) {
+    # resolve `obj` as a member of `MyInterface`
+  }
+end
+```
+
+These functions take priority over the schema-level function.
+
 ## Orphan Types
 
 The schema builds its type system by traversing its data entry points. In some cases, types should be present in the schema but aren't available via traversal, so you have to add them yourself.
