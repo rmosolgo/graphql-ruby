@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# test_via: ../query.rb
 module GraphQL
   class Query
     module ArgumentsCache
