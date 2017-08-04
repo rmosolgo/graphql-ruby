@@ -3,8 +3,7 @@ require "spec_helper"
 
 class InMemoryBackend
   # Store API
-  module Database
-    module_function
+  class Database
     def clear
       @queries = {}
       @subscriptions = Hash.new { |h, k| h[k] = [] }
@@ -81,18 +80,27 @@ class InMemoryBackend
   end
 
   class Queue
-    class << self
-      def pushes
-        @pushes ||= []
-      end
+    attr_reader :pushes
 
-      def clear
-        pushes.clear
-      end
+    def initialize(schema:, store:)
+      @schema = schema
+      @store = store
+      @pushes = []
+    end
 
-      def enqueue(schema, channel, event_key, object)
-        pushes << channel
-        schema.subscriber.process(channel, event_key, object)
+    def clear
+      pushes.clear
+    end
+
+    def enqueue(channel, event_key, object)
+      pushes << channel
+      @schema.subscriber.process(channel, event_key, object)
+    end
+
+    def enqueue_all(event, object)
+      event_key = event.key
+      @store.each_channel(event_key) do |channel|
+        enqueue(channel, event_key, object)
       end
     end
   end
@@ -149,7 +157,7 @@ class InMemoryBackend
       }
   end
 
-  # TODO don't hack this
+  # TODO don't hack this (no way to add metadata from IDL parser right now)
   Schema.get_field("Subscription", "myEvent").subscription_scope = :me
 end
 
@@ -169,7 +177,7 @@ describe GraphQL::Subscriptions do
 
   let(:database) { InMemoryBackend::Database }
   let(:socket) { InMemoryBackend::Socket }
-  let(:queue) { InMemoryBackend::Queue }
+  let(:queue) { schema.subscriber.queue }
   let(:schema) { InMemoryBackend::Schema }
 
   describe "pushing updates" do

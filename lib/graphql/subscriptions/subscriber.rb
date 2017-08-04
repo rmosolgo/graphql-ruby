@@ -9,6 +9,10 @@ module GraphQL
     #   - loading data from the store
     #   - evaluating the subscription
     #   - sending the result over the specified application-provided transport
+    #
+    # TODO:
+    #  - add generator for installing
+    #  - better api than `schema.subscriber`
     class Subscriber
       extend GraphQL::Delegate
 
@@ -16,7 +20,7 @@ module GraphQL
       def initialize(schema:, store:, queue: InlineQueue, execute: SchemaExecute, transports:)
         @schema = schema
         @store = store
-        @queue = queue
+        @queue = queue.new(schema: schema, store: store)
         @transports = transports
         @execute = execute
       end
@@ -25,16 +29,19 @@ module GraphQL
 
       # Fetch subscriptions matching this field + arguments pair
       # And pass them off to the queue.
-      def trigger(event, args, object, scope: nil)
-        field = @schema.get_field("Subscription", event)
+      def trigger(event_name, args, object, scope: nil)
+        field = @schema.get_field("Subscription", event_name)
         if !field
-          raise "No subscription matching trigger: #{event}"
+          raise "No subscription matching trigger: #{event_name}"
         end
 
-        event_key = Subscriptions::Event.serialize(event, args, field, scope: scope)
-        @store.each_channel(event_key) do |channel|
-          @queue.enqueue(@schema, channel, event_key, object)
-        end
+        event = Subscriptions::Event.new(
+          name: event_name,
+          arguments: args,
+          field: field,
+          scope: scope,
+        )
+        @queue.enqueue_all(event, object)
       end
 
       # TODO rename this.

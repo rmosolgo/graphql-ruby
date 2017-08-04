@@ -19,16 +19,13 @@ module GraphQL
       # @return [String] An opaque string which identifies this event, derived from `name` and `arguments`
       attr_reader :key
 
-      def initialize(name:, arguments:, context:)
+      def initialize(name:, arguments:, field: nil, context: nil, scope: nil)
         @name = name
         @arguments = arguments
         @context = context
-        field = context.field
-        scope_val = if field.subscription_scope
-          context[field.subscription_scope]
-        else
-          nil
-        end
+        field ||= context.field
+        scope_val = scope || (context && field.subscription_scope && context[field.subscription_scope])
+
         @key = self.class.serialize(name, arguments, field, scope: scope_val)
       end
 
