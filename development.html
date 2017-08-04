@@ -106,7 +106,7 @@ bundle exec rake test   # tests only
 </code></pre>
 </div>
 
-<p>When a file in <code class="highlighter-rouge">lib/</code> is modified, <code class="highlighter-rouge">guard</code> will run the corresponding file in <code class="highlighter-rouge">spec</code>.</p>
+<p>When a file in <code class="highlighter-rouge">lib/</code> is modified, <code class="highlighter-rouge">guard</code> will run the corresponding file in <code class="highlighter-rouge">spec</code>. Guard also respects <code class="highlighter-rouge"># test_via:</code> comments, so it will run that test when the file changes (if there is no corresponding file by name).</p>
 
 <h3 id="debugging-with-pry">Debugging with Pry</h3>
 
