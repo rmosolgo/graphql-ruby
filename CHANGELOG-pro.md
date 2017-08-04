@@ -8,7 +8,13 @@
 
 ### Bug Fix
 
-## 1.5.0 (31 Jul 2017)
+## 1.5.2 (4 Aug 2017)
+
+### Bug Fix
+
+- Bump `graphql` dependency to `1.6`
+
+## 1.5.1 (2 Aug 2017)
 
 ### New Features
 
