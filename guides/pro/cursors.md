@@ -11,7 +11,7 @@ index: 5
 
 A new `RelationConnection` is applied by default. It is backwards-compatible with existing offset-based cursors. See ["Opting Out"](#opting-out) below if you wish to continue using offset-based pagination.
 
-To enforce the opacity of your cursors, consider an [encrypted encoder]({{ site.baseurl }}/pro/encoders).
+To enforce the opacity of your cursors, consider an {% internal_link "encrypted encoder","/pro/encoders" %}.
 
 ## What's the difference?
 
@@ -58,7 +58,7 @@ If you provide an unordered, grouped relation, `GraphQL::Pro::RelationConnection
 
 `GraphQL::Pro`'s `RelationConnection` is backwards-compatible. If it receives an offset-based cursor, it uses that cursor for the next resolution, then returns value-based cursors in the next result.
 
-If you're also switching to [encrypted cursors]({{ site.baseurl }}/pro/encoders), you'll need a [versioned encoder]({{ site.baseurl }}/pro/encoders#versioning), too. This way, _both_ unencrypted _and_ encrypted cursors will be accepted! For example:
+If you're also switching to {% internal_link "encrypted cursors","/pro/encoders" %}, you'll need a {% internal_link "versioned encoder","/pro/encoders#versioning" %}, too. This way, _both_ unencrypted _and_ encrypted cursors will be accepted! For example:
 
 ```ruby
 # Define an encrypted encoder for use with cursors:

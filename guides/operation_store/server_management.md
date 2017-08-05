@@ -7,7 +7,7 @@ desc: Tips for administering persisted queries with OperationStore
 index: 3
 ---
 
-After [getting started]({{ site.baseurl }}/operation_store/getting_started), here some things to keep in mind.
+After {% internal_link "getting started","/operation_store/getting_started" %}, here some things to keep in mind.
 
 ### Rejecting Arbitrary Queries
 
@@ -53,7 +53,7 @@ MySchema.execute(
 
 ### Deleting Data
 
-Clients can only _add_ to the database, but as an administrator, you can also delete entries from the database. (Make sure you [authorize access to the UI]({{ site.baseurl}}/operation_store/getting_started.html#authorizing-the-ui).)This is a dangerous operation: by deleting something, any clients who depend on that data will crash.
+Clients can only _add_ to the database, but as an administrator, you can also delete entries from the database. (Make sure you {% internal_link "authorize access to the UI","/operation_store/getting_started.html#authorizing-the-ui" %}.)This is a dangerous operation: by deleting something, any clients who depend on that data will crash.
 
 Some reasons to delete from the database are:
 

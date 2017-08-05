@@ -48,7 +48,7 @@ results = MySchema.multiplex(queries)
 
 ## Validation and Error Handling
 
-Each query is validated and [analyzed]({{ site.baseurl }}/queries/analysis) independently. The `results` array may include a mix of successful results and failed results
+Each query is validated and {% internal_link "analyzed","/queries/analysis" %} independently. The `results` array may include a mix of successful results and failed results
 
 ## Multiplex-Level Context
 
@@ -71,7 +71,7 @@ MySchema = GraphQL::Schema.define do
 end
 ```
 
-The API is the same as [query analyzers]({{ site.baseurl }}/queries/analysis), with some considerations:
+The API is the same as {% internal_link "query analyzers","/queries/analysis" %}, with some considerations:
 
 - `initial_value` is called at the start of the _multiplex_ (not query)
 - `final` is called at the end of the _multiplex_ (not query)

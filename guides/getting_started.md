@@ -87,7 +87,7 @@ Schema = GraphQL::Schema.define do
 end
 ```
 
-This schema is ready to serve GraphQL queries! [Browse the guides]({{ site.baseurl }}/guides) to learn about other GraphQL Ruby features.
+This schema is ready to serve GraphQL queries! {% internal_link "Browse the guides","/guides" %} to learn about other GraphQL Ruby features.
 
 ### Execute queries
 
@@ -112,7 +112,7 @@ result_hash = Schema.execute(query_string)
 # }
 ```
 
-See ["Executing Queries"]({{ site.baseurl }}/queries/executing_queries) for more information about running queries on your schema.
+See {% internal_link "Executing Queries","/queries/executing_queries" %} for more information about running queries on your schema.
 
 ## Use with Relay
 

@@ -56,6 +56,44 @@ module GraphQLSite
       text && text.strip[1..-2]
     end
   end
+
+  # Build a URL relative to `site.baseurl`,
+  # asserting that the page exists.
+  class InternalLink < Liquid::Tag
+    GUIDES_ROOT = "guides/"
+
+    def initialize(tag_name, guide_info, tokens)
+      text, path = guide_info.split(",")
+      # remove whitespace and quotes if value is present
+      @text = strip_arg(text)
+      @path = strip_arg(path)
+      if @path && @path.start_with?("/")
+        @path = @path[1..-1]
+      end
+      if !exist?(@path)
+        raise "Internal link failed, couldn't find file for: #{path}"
+      end
+    end
+
+    def render(context)
+      <<~HTML
+      <a href="#{context["site"]["baseurl"]}/#{@path}">#{@text}</a>
+      HTML
+    end
+
+    private
+
+    def strip_arg(text)
+      text && text.strip[1..-2]
+    end
+
+    POSSIBLE_EXTENSIONS = [".html", ".md"]
+    def exist?(path)
+      filepath =  GUIDES_ROOT + path.split("#").first
+      filepath = filepath.sub(".html", "")
+      POSSIBLE_EXTENSIONS.any? { |ext| File.exist?(filepath + ext) }
+    end
+  end
 end
 
 
@@ -63,3 +101,4 @@ end
 Liquid::Template.register_filter(GraphQLSite::APIDoc)
 Liquid::Template.register_tag("api_doc_root", GraphQLSite::APIDocRoot)
 Liquid::Template.register_tag("open_an_issue", GraphQLSite::OpenAnIssue)
+Liquid::Template.register_tag("internal_link", GraphQLSite::InternalLink)

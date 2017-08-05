@@ -14,7 +14,7 @@ To use `GraphQL::Pro::OperationStore` with your app, follow these steps:
 - [Add `OperationStore`](#add-operationstore) to your GraphQL schema
 - [Add routes](#add-routes) for the UI and sync API
 - [Update your controller](#update-the-controller) to support persisted queries
-- [Add a client]({{ site.baseurl }}/operation_store/client_workflow) to start syncing queries
+- {% internal_link "Add a client","/operation_store/client_workflow" %} to start syncing queries
 
 #### Dependencies
 
@@ -107,7 +107,7 @@ Rails.application.routes.draw do
 end
 ```
 
-`MySchema.operation_store_sync` receives pushes from clients. See [Client Workflow]({{ site.baseurl }}/operation_store/client_workflow) for more info on how this endpoint is used.
+`MySchema.operation_store_sync` receives pushes from clients. See {% internal_link "Client Workflow","/operation_store/client_workflow" %} for more info on how this endpoint is used.
 
 `MySchema.ui` is a web view to the `OperationStore`, visible at `/graphql/ui`:
 
@@ -149,8 +149,8 @@ MySchema.execute(
 
 `OperationStore` will use `stored_operation` to fetch the operation from the database.
 
-See [Server Management]({{ site.baseurl }}/operation_store/server_management) for details about rejecting GraphQL from `params[:query]`.
+See {% internal_link "Server Management","/operation_store/server_management" %} for details about rejecting GraphQL from `params[:query]`.
 
 #### Next Steps
 
-Sync your operations with the [Client Workflow]({{ site.baseurl }}/operation_store/client_workflow).
+Sync your operations with the {% internal_link "Client Workflow","/operation_store/client_workflow" %}.

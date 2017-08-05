@@ -17,10 +17,10 @@ In this guide, you'll find:
 
 In other guides, you can read more about:
 
-- [Getting Started]({{ site.baseurl }}/operation_store/getting_started) installing `OperationStore` in your app
-- [Workflow]({{ site.baseurl }}/operation_store/client_workflow) and usage for client apps
-- [Authentication]({{ site.baseurl }}/operation_store/authentication) for the sync API
-- [Server Management]({{ site.baseurl }}/operation_store/server_management) after your system is running
+- {% internal_link "Getting Started","/operation_store/getting_started" %} installing `OperationStore` in your app
+- {% internal_link "Workflow","/operation_store/client_workflow" %} and usage for client apps
+- {% internal_link "Authentication","/operation_store/authentication" %} for the sync API
+- {% internal_link "Server Management","/operation_store/server_management" %} after your system is running
 
 ### What are Persisted Queries?
 
@@ -101,7 +101,7 @@ Persisted queries improve _visibility_ because you can track GraphQL usage from 
 
 `OperationStore` uses tables in your database to store normalized, deduplicated GraphQL strings. The database is immutable: new operations may be added, but operations are never modified or removed.
 
-When clients [sync their operations]({{ site.baseurl }}/operation_store/client_workflow), requests are [authenticated]({{ site.baseurl }}/operation_store/authentication), then the incoming GraphQL is validated, normalized, and added to the database if needed. Also, the incoming client name is associated with all operations in the payload.
+When clients {% internal_link "sync their operations","/operation_store/client_workflow" %}, requests are {% internal_link "authenticated","/operation_store/authentication" %}, then the incoming GraphQL is validated, normalized, and added to the database if needed. Also, the incoming client name is associated with all operations in the payload.
 
 Then, at runtime, clients send an _operation ID_ to run a persisted query. It looks like this in `params`:
 
@@ -113,4 +113,4 @@ params[:operationId] # => "relay-app-v1/810c97f6631001..."
 
 ### Getting Started
 
-See the [getting started guide]({{ site.baseurl }}/operation_store/getting_started) to add `OperationStore` to your app.
+See the {% internal_link "getting started guide","/operation_store/getting_started" %} to add `OperationStore` to your app.

@@ -17,7 +17,7 @@ With lazy execution, you can optimize access to external services (such as datab
 [`dataloader`](https://github.com/sheerun/dataloader) is more general [`promise`](https://github.com/lgierth/promise.rb)-based utilify for batching queries within the same thread.
 
 
-Lazy resolution can be [instrumented]({{ site.baseurl }}/fields/instrumentation).
+Lazy resolution can be {% internal_link "instrumented","/fields/instrumentation" %}.
 
 ## Example: Batched Find
 
