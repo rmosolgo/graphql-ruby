@@ -1383,7 +1383,7 @@ module_eval(<<'.,.,', 'parser.y', 258)
 
 module_eval(<<'.,.,', 'parser.y', 267)
   def _reduce_106(val, _values, result)
-     return make_node(:SchemaDefinition, position_source: val[0], **val[2]) 
+     return make_node(:SchemaDefinition, position_source: val[0], description: get_description(val[0]), **val[2]) 
     result
   end
 .,.,

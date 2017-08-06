@@ -1,13 +1,14 @@
 # frozen_string_literal: true
+require "graphql/schema/build_from_definition/define_instrumentation"
 require "graphql/schema/build_from_definition/resolve_map"
 
 module GraphQL
   class Schema
     module BuildFromDefinition
       class << self
-        def from_definition(definition_string, default_resolve:, parser: DefaultParser)
+        def from_definition(definition_string, default_resolve:, parser:, definitions:)
           document = parser.parse(definition_string)
-          Builder.build(document, default_resolve: default_resolve)
+          Builder.build(document, default_resolve: default_resolve, definitions: definitions)
         end
       end
 
@@ -25,12 +26,15 @@ module GraphQL
         end
       end
 
-      # @api private
       module Builder
         extend self
-
-        def build(document, default_resolve: DefaultResolve)
-          raise InvalidDocumentError.new('Must provide a document ast.') if !document || !document.is_a?(GraphQL::Language::Nodes::Document)
+        # @param document [GraphQL::Language::Nodes::Document]
+        # @param default_resolve [<#call, #coerce_input, #coerce_result, #resolve_type>]
+        # @param definitions [Boolean]
+        def build(document, default_resolve:, definitions:)
+          if !document || !document.is_a?(GraphQL::Language::Nodes::Document)
+            raise InvalidDocumentError.new('Must provide a document AST.')
+          end
 
           if default_resolve.is_a?(Hash)
             default_resolve = ResolveMap.new(default_resolve)
@@ -38,6 +42,10 @@ module GraphQL
 
           schema_definition = nil
           types = {}
+          instrumenters = []
+          if definitions
+            instrumenters << DefineInstrumentation
+          end
           types.merge!(GraphQL::Schema::BUILT_IN_TYPES)
           directives = {}
           type_resolver = ->(type) { -> { resolve_type(types, type) } }
@@ -68,6 +76,21 @@ module GraphQL
             directives[built_in_directive.name] = built_in_directive unless directives[built_in_directive.name]
           end
 
+          types.each do |name, type|
+            if type.is_a?(GraphQL::EnumType)
+              type.values.each do |v_name, v|
+                v2 = apply_instrumenters(instrumenters, v)
+                type.add_value(v2)
+              end
+            elsif type.kind.fields?
+              type.fields.each do |f_name, f|
+                f2 = apply_instrumenters(instrumenters, f)
+                type.fields[f_name] = f2
+              end
+            end
+            types[name] = apply_instrumenters(instrumenters, type)
+          end
+
           if schema_definition
             if schema_definition.query
               raise InvalidDocumentError.new("Specified query type \"#{schema_definition.query}\" not found in document.") unless types[schema_definition.query]
@@ -83,17 +106,20 @@ module GraphQL
               raise InvalidDocumentError.new("Specified subscription type \"#{schema_definition.subscription}\" not found in document.") unless types[schema_definition.subscription]
               subscription_root_type = types[schema_definition.subscription]
             end
+
+            schema_description = schema_definition.description
           else
             query_root_type = types['Query']
             mutation_root_type = types['Mutation']
             subscription_root_type = types['Subscription']
+            schema_definition = nil
           end
 
           raise InvalidDocumentError.new('Must provide schema definition with query type or a type named Query.') unless query_root_type
 
           schema = Schema.define do
             raise_definition_error true
-
+            description schema_description
             query query_root_type
             mutation mutation_root_type
             subscription subscription_root_type
@@ -107,6 +133,8 @@ module GraphQL
             directives directives.values
           end
 
+          schema = apply_instrumenters(instrumenters, schema)
+
           schema
         end
 
@@ -115,6 +143,10 @@ module GraphQL
         }
 
         NullScalarCoerce = ->(val, _ctx) { val }
+
+        def apply_instrumenters(instrumenters, obj)
+          instrumenters.reduce(obj) { |o, i| i.instrument(o) }
+        end
 
         def build_enum_type(enum_type_definition, type_resolver)
           GraphQL::EnumType.define(
@@ -286,7 +318,12 @@ module GraphQL
 
         def resolve_type(types, ast_node)
           type = GraphQL::Schema::TypeExpression.build_type(types, ast_node)
-          raise InvalidDocumentError.new("Type \"#{ast_node.name}\" not found in document.") unless type
+          if type.nil?
+            while ast_node.respond_to?(:of_type)
+              ast_node = ast_node.of_type
+            end
+            raise InvalidDocumentError.new("Type \"#{ast_node.name}\" not found in document.")
+          end
           type
         end
       end

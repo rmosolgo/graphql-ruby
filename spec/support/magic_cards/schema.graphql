@@ -1,0 +1,44 @@
+type Card {
+  name: String!
+  printings: [Printing!]!
+  expansions: [Expansion!]!
+  # Color identity
+  # @complexity 4
+  colors: [Color!]!
+  convertedManaCost: Int!
+}
+
+# A set of cards printed and released together
+# @metadata "thing", :ok
+type Expansion {
+  name: String!
+  symbol: String!
+  printings: [Printing!]!
+  cards: [Card!]!
+}
+
+type Printing {
+  card: Card!
+  expansion: Expansion!
+}
+
+enum Color {
+  # @value :red
+  RED
+  GREEN
+  BLACK
+  BLUE
+  WHITE
+  COLORLESS
+}
+
+type Query {
+  card(name: String!): Card
+  expansion(symbol: String!): Expansion
+}
+
+# @max_depth 100
+# @resolve_type MagicCards::ResolveType
+schema {
+  query: Query
+}

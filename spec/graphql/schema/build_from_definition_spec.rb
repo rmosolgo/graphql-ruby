@@ -904,4 +904,21 @@ SCHEMA
       end
     end
   end
+
+  describe "parsing definitions" do
+    it "applies definitions to schema, types and fields" do
+      schema = GraphQL::Schema.from_definition("./spec/support/magic_cards/schema.graphql", definitions: true)
+      # Schema definitions:
+      assert_equal 100, schema.max_depth
+      assert_equal MagicCards::ResolveType, schema.resolve_type_proc
+
+      # Field definitions
+      assert_equal 4, schema.get_field("Card", "colors").complexity
+      assert_equal "Color identity", schema.get_field("Card", "colors").description
+
+      # Type definitions:
+      assert_equal :ok, schema.types["Expansion"].metadata["thing"]
+      assert_equal :red, schema.types["Color"].values["RED"].value
+    end
+  end
 end
