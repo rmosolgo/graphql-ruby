@@ -3,6 +3,7 @@ require "graphql/schema/base_64_encoder"
 require "graphql/schema/catchall_middleware"
 require "graphql/schema/default_parse_error"
 require "graphql/schema/default_type_error"
+require "graphql/schema/implementation"
 require "graphql/schema/invalid_type_error"
 require "graphql/schema/middleware_chain"
 require "graphql/schema/null_mask"
@@ -467,8 +468,8 @@ module GraphQL
     # @param default_resolve [<#call(type, field, obj, args, ctx)>] A callable for handling field resolution
     # @param parser [Object] An object for handling definition string parsing (must respond to `parse`)
     # @return [GraphQL::Schema] the schema described by `document`
-    def self.from_definition(string, default_resolve: BuildFromDefinition::DefaultResolve, parser: BuildFromDefinition::DefaultParser)
-      GraphQL::Schema::BuildFromDefinition.from_definition(string, default_resolve: default_resolve, parser: parser)
+    def self.from_definition(string, default_resolve: BuildFromDefinition::DefaultResolve, parser: BuildFromDefinition::DefaultParser, implementation: nil)
+      GraphQL::Schema::BuildFromDefinition.from_definition(string, default_resolve: default_resolve, parser: parser, implementation: nil)
     end
 
     # Error that is raised when [#Schema#from_definition] is passed an invalid schema definition string.

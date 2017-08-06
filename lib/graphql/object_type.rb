@@ -102,6 +102,10 @@ module GraphQL
       dirty_ifaces.concat(interfaces)
     end
 
+    def resolve_type(val, ctx)
+      self
+    end
+
     protected
 
     attr_reader :dirty_interfaces, :dirty_inherited_interfaces
