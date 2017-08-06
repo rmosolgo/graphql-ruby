@@ -5,9 +5,16 @@ module GraphQL
   class Schema
     module BuildFromDefinition
       class << self
-        def from_definition(definition_string, default_resolve:, parser: DefaultParser)
+        def from_definition(definition_string, default_resolve:, parser: DefaultParser, implementation: nil)
           document = parser.parse(definition_string)
-          Builder.build(document, default_resolve: default_resolve)
+          if implementation
+            implementation_obj = GraphQL::Schema::Implementation.new(namespace: implementation)
+            schema = Builder.build(document, default_resolve: implementation_obj)
+            implementation_obj.set_schema(schema)
+            schema
+          else
+            Builder.build(document, default_resolve: default_resolve)
+          end
         end
       end
 

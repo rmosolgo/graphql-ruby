@@ -3,10 +3,7 @@ require "spec_helper"
 
 describe GraphQL::Schema::Implementation do
   def build_schema(graphql_str, namespace:)
-    implementation = GraphQL::Schema::Implementation.new(namespace: namespace)
-    schema = GraphQL::Schema.from_definition(graphql_str, default_resolve: implementation)
-    implementation.set_schema(schema)
-    schema
+    GraphQL::Schema.from_definition(graphql_str, implementation: namespace)
   end
 
   module TestImplementation
@@ -116,6 +113,10 @@ describe GraphQL::Schema::Implementation do
       }
 
       assert_equal expected_data, res["data"]
+    end
+
+    describe "arguments" do
+      it "camelizes argument names"
     end
 
     describe "special keyword arguments" do
