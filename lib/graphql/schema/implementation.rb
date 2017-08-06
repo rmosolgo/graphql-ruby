@@ -3,7 +3,6 @@ require "graphql/schema/implementation/apply_proxies"
 require "graphql/schema/implementation/build_resolve"
 require "graphql/schema/implementation/invalid_implementation_error"
 require "graphql/schema/implementation/method_call_implementation"
-require "graphql/schema/implementation/proxied_object"
 require "graphql/schema/implementation/public_send_implementation"
 require "graphql/schema/implementation/type_missing"
 

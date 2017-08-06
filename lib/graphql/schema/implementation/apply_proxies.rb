@@ -16,8 +16,7 @@ module GraphQL
             ->(o, a, c) {
               proxy_cls = @proxy_map[owner_type_name]
               proxy = proxy_cls.new(o, c)
-              proxied_object = ProxiedObject.new(o, proxy)
-              old_resolve.call(proxied_object, a, c)
+              old_resolve.call(proxy, a, c)
             }
           else
             field.resolve_proc
@@ -57,8 +56,7 @@ module GraphQL
           else
             concrete_type = type.resolve_type(obj, ctx)
             proxy_cls = proxies[concrete_type.name]
-            proxy = proxy_cls.new(obj, ctx)
-            ProxiedObject.new(obj, proxy)
+            proxy_cls.new(obj, ctx)
           end
         end
       end

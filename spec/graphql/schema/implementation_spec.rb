@@ -10,10 +10,7 @@ describe GraphQL::Schema::Implementation do
   end
 
   module TestImplementation
-    class Query
-      def initialize(object, context)
-      end
-
+    class Query < GraphQL::Object
       def cards
         [
           CardObject.new("H", 5),
@@ -27,35 +24,29 @@ describe GraphQL::Schema::Implementation do
       end
     end
 
-    class Card
-      def initialize(obj, ctx)
-        @card = obj
-      end
-
+    class Card < GraphQL::Object
       def is_facecard
-        @card.number > 10 || @card.number == 1
+        object.number > 10 || object.number == 1
       end
     end
 
-    class Suit
-      def initialize(letter, context)
-        @letter = letter
-      end
+    class Suit < GraphQL::Object
+      alias :letter :object
 
       NAMES = { "H" => "Hearts", "C" => "Clubs", "S" => "Spades", "D" => "Diamonds"}
 
       def name
-        NAMES[@letter]
+        NAMES[letter]
       end
 
       def cards
         1.upto(12) do |i|
-          CardObject.new(@letter, i)
+          CardObject.new(letter, i)
         end
       end
 
       def color
-        if @letter == "H" || @letter == "D"
+        if letter == "H" || letter == "D"
           "RED"
         else
           "BLACK"
@@ -125,6 +116,33 @@ describe GraphQL::Schema::Implementation do
       }
 
       assert_equal expected_data, res["data"]
+    end
+
+    describe "special keyword arguments" do
+      it "will provide ast_node"
+      it "will provide irep_node"
+      it "will provide custom metadata ??"
+    end
+
+    describe "abstract type resolution" do
+      it "uses {Type}#resolve_type / Schema#resolve_type"
+    end
+
+    describe "scalars" do
+      it "coerces input"
+      it "coerces output"
+    end
+
+    describe "type missing" do
+      it "can provide implementations on the fly (eg, edge/connection types)"
+    end
+
+    describe "custom introspection" do
+      it "can provide new implementations of introspection types"
+    end
+
+    describe "field missing" do
+      it "can return dynamic types"
     end
 
     describe "implementation validation" do
@@ -201,9 +219,6 @@ describe GraphQL::Schema::Implementation do
         line_no = OptionalKeywordTestImplementation::Query.instance_method(:suit).source_location[1]
         assert_includes err.message, "implementation_spec.rb:#{line_no}"
       end
-
-      it "raises on invalid #initialize signature"
-      it "raises on invalid inheritance"
     end
   end
 end

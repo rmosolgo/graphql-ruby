@@ -11,8 +11,7 @@ module GraphQL
           @no_arguments = graphql_arguments.length == 0 && special_arguments.length == 0
         end
 
-        def call(obj, args, ctx)
-          proxy = obj.proxy
+        def call(proxy, args, ctx)
           if @no_arguments
             proxy.public_send(@method_name)
           else

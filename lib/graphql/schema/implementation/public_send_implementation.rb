@@ -9,8 +9,8 @@ module GraphQL
         end
 
         # TODO compile this method?
-        def call(obj, args, ctx)
-          obj.object.public_send(@method_name)
+        def call(proxy, args, ctx)
+          proxy.__proxied_object.public_send(@method_name)
         end
       end
     end
