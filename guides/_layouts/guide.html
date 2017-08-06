@@ -7,6 +7,17 @@ layout: default
   {% if page.section %} &raquo; {{ page.section }}{% endif %}
   &raquo; {{ page.title }}
 </p>
+{% if page.experimental %}
+  <div class="experimental-header">
+    <p>
+      <strong>⚠ Experimental ⚠</strong>
+    </p>
+    <p>
+      This feature may get big changes in future releases.
+      Check the <a href="https://github.com/rmosolgo/graphql-ruby/blob/master/CHANGELOG.md">changelog</a> for update notes.
+    </p>
+  </div>
+{% endif %}
 <h1 class="guide-header">{{ page.title }}</h1>
 <div class="guide-container">
   {{ content }}
