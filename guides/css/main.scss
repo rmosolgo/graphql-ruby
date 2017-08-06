@@ -6,6 +6,8 @@
 $brand-color: #a5152a;
 $brand-color-light:  #ed8090;
 $brand-color-extralight:  #f9e8ee;
+$experimental-background: #fff7cf;
+$experimental-color: #655400;
 $faint-color: #f0f0f0;
 $code-border: #d6d6d6;
 $code-background: #fafafa;
@@ -195,6 +197,21 @@ a:hover, a:hover code {
   }
 }
 
+.experimental-header {
+  background-color: $experimental-background;
+  color: $experimental-color;
+  border-radius: $code-border-radius;
+  padding: 10px 10px 0px 10px;
+  border: 1px solid $experimental-color;
+  a {
+    color: $experimental-color;
+    &:hover {
+      background-color: $experimental-color;
+      color: $experimental-background;
+    }
+  }
+}
+
 .guide-footer {
   background: $brand-color-extralight;
   margin: 25px 0px 0px 0px;
@@ -266,7 +283,7 @@ h2 { font-size: 1.3rem; }
 h3 { font-size: 1.2rem; }
 h4 { font-size: 1.1rem; }
 h5 { font-size: 1.05rem; }
-
+em { font-style: italic; }
 
 table {
   width: 100%;
