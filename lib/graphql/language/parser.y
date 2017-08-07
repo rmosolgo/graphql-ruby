@@ -354,23 +354,24 @@ end
 
 ---- inner ----
 
-def initialize(query_string)
+def initialize(query_string, filename:)
   @query_string = query_string
+  @filename = filename
 end
 
 def parse_document
   @document ||= begin
     @tokens ||= GraphQL.scan(@query_string)
     if @tokens.none?
-      make_node(:Document, definitions: [])
+      make_node(:Document, definitions: [], filename: @filename)
     else
       do_parse
     end
   end
 end
 
-def self.parse(query_string)
-  self.new(query_string).parse_document
+def self.parse(query_string, filename: nil)
+  self.new(query_string, filename: filename).parse_document
 end
 
 private
@@ -405,17 +406,17 @@ end
 
 def on_error(parser_token_id, lexer_token, vstack)
   if lexer_token == "$"
-    raise GraphQL::ParseError.new("Unexpected end of document", nil, nil, @query_string)
+    raise GraphQL::ParseError.new("Unexpected end of document", nil, nil, @query_string, filename: @filename)
   else
     parser_token_name = token_to_str(parser_token_id)
     if parser_token_name.nil?
-      raise GraphQL::ParseError.new("Parse Error on unknown token: {token_id: #{parser_token_id}, lexer_token: #{lexer_token}} from #{@query_string}", nil, nil, @query_string)
+      raise GraphQL::ParseError.new("Parse Error on unknown token: {token_id: #{parser_token_id}, lexer_token: #{lexer_token}} from #{@query_string}", nil, nil, @query_string, filename: @filename)
     else
       line, col = lexer_token.line_and_column
       if lexer_token.name == :BAD_UNICODE_ESCAPE
-        raise GraphQL::ParseError.new("Parse error on bad Unicode escape sequence: #{lexer_token.to_s.inspect} (#{parser_token_name}) at [#{line}, #{col}]", line, col, @query_string)
+        raise GraphQL::ParseError.new("Parse error on bad Unicode escape sequence: #{lexer_token.to_s.inspect} (#{parser_token_name}) at [#{line}, #{col}]", line, col, @query_string, filename: @filename)
       else
-        raise GraphQL::ParseError.new("Parse error on #{lexer_token.to_s.inspect} (#{parser_token_name}) at [#{line}, #{col}]", line, col, @query_string)
+        raise GraphQL::ParseError.new("Parse error on #{lexer_token.to_s.inspect} (#{parser_token_name}) at [#{line}, #{col}]", line, col, @query_string, filename: @filename)
       end
     end
   end
@@ -427,6 +428,8 @@ def make_node(node_name, assigns)
       assigns[key] = value.to_s
     end
   end
+
+  assigns[:filename] = @filename
 
   GraphQL::Language::Nodes.const_get(node_name).new(assigns)
 end
