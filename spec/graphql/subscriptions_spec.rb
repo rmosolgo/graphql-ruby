@@ -3,7 +3,8 @@ require "spec_helper"
 
 class InMemoryBackend
   # Store API
-  class Database
+  module Database
+    module_function
     def clear
       @queries = {}
       @subscriptions = Hash.new { |h, k| h[k] = [] }

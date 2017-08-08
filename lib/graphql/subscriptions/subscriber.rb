@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# test_via: ../subscriptions.rb
 module GraphQL
   module Subscriptions
     # Hang along with the schema and:
