@@ -286,7 +286,12 @@ module GraphQL
 
         def resolve_type(types, ast_node)
           type = GraphQL::Schema::TypeExpression.build_type(types, ast_node)
-          raise InvalidDocumentError.new("Type \"#{ast_node.name}\" not found in document.") unless type
+          if type.nil?
+            while ast_node.respond_to?(:of_type)
+              ast_node = ast_node.of_type
+            end
+            raise InvalidDocumentError.new("Type \"#{ast_node.name}\" not found in document.")
+          end
           type
         end
       end
