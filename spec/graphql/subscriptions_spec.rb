@@ -2,15 +2,19 @@
 require "spec_helper"
 
 class InMemoryBackend
-  # Store API
-  module Database
-    module_function
-    def clear
+  class Subscriptions < GraphQL::Subscriptions::Implementation
+    attr_reader :deliveries, :pushes, :extra
+
+    def initialize(schema:, extra:)
+      super
+      @extra = extra
       @queries = {}
       @subscriptions = Hash.new { |h, k| h[k] = [] }
+      @deliveries = Hash.new { |h, k| h[k] = [] }
+      @pushes = []
     end
 
-    def set(query, events)
+    def subscribed(query, events)
       @queries[query.context[:socket]] = query
       events.each do |ev|
         # The `context` is functioning as subscription data.
@@ -19,7 +23,13 @@ class InMemoryBackend
       end
     end
 
-    def get(channel)
+    def each_channel(key)
+      @subscriptions[key].each do |ctx|
+        yield(ctx[:socket])
+      end
+    end
+
+    def get_subscription(channel)
       query = @queries[channel]
       {
         query_string: query.query_string,
@@ -30,13 +40,7 @@ class InMemoryBackend
       }
     end
 
-    def each_channel(key)
-      @subscriptions[key].each do |ctx|
-        yield(ctx[:socket])
-      end
-    end
-
-    def delete(channel)
+    def delete_subscription(channel)
       query = @queries.delete(channel)
       if query
         @subscriptions.each do |key, contexts|
@@ -45,7 +49,30 @@ class InMemoryBackend
       end
     end
 
+    def deliver(channel, result, ctx)
+      @deliveries[channel] << result
+    end
+
+    def enqueue(channel, event_key, object)
+      @pushes << channel
+      execute(channel, event_key, object)
+    end
+
+    def enqueue_all(event, object)
+      event_key = event.key
+      each_channel(event_key) do |channel|
+        enqueue(channel, event_key, object)
+      end
+    end
+
     # Just for testing:
+    def reset
+      @queries.clear
+      @subscriptions.clear
+      @deliveries.clear
+      @pushes.clear
+    end
+
     def size
       @subscriptions.size
     end
@@ -54,58 +81,6 @@ class InMemoryBackend
       @subscriptions
     end
   end
-
-  class Socket
-    # Transport API:
-    def self.deliver(channel, result, ctx)
-      deliveries(channel) << result
-    end
-
-    def self.open(id)
-      @sockets[id]
-    end
-
-    def self.clear
-      @sockets = Hash.new { |h, k| h[k] = self.new }
-    end
-
-    attr_reader :deliveries
-
-    def initialize
-      @deliveries = []
-    end
-
-    def self.deliveries(id)
-      @sockets[id].deliveries
-    end
-  end
-
-  class Queue
-    attr_reader :pushes
-
-    def initialize(schema:, store:)
-      @schema = schema
-      @store = store
-      @pushes = []
-    end
-
-    def clear
-      pushes.clear
-    end
-
-    def enqueue(channel, event_key, object)
-      pushes << channel
-      @schema.subscriber.process(channel, event_key, object)
-    end
-
-    def enqueue_all(event, object)
-      event_key = event.key
-      @store.each_channel(event_key) do |channel|
-        enqueue(channel, event_key, object)
-      end
-    end
-  end
-
   # Just a random stateful object for tracking what happens:
   class Payload
     attr_reader :str
@@ -151,23 +126,17 @@ class InMemoryBackend
 
   Schema = GraphQL::Schema.from_definition(SchemaDefinition).redefine do
     use GraphQL::Subscriptions,
-      store: InMemoryBackend::Database,
-      queue: InMemoryBackend::Queue,
-      transports: {
-        socket: InMemoryBackend::Socket
-      }
+      implementation: Subscriptions,
+      extra: 123
   end
 
   # TODO don't hack this (no way to add metadata from IDL parser right now)
   Schema.get_field("Subscription", "myEvent").subscription_scope = :me
 end
 
-
 describe GraphQL::Subscriptions do
   before do
-    socket.clear
-    queue.clear
-    database.clear
+    schema.subscriber.implementation.reset
   end
 
   let(:root_object) {
@@ -176,11 +145,9 @@ describe GraphQL::Subscriptions do
     )
   }
 
-  let(:database) { InMemoryBackend::Database }
-  let(:socket) { InMemoryBackend::Socket }
-  let(:queue) { schema.subscriber.queue }
   let(:schema) { InMemoryBackend::Schema }
-
+  let(:implementation) { schema.subscriber.implementation }
+  let(:deliveries) { implementation.deliveries }
   describe "pushing updates" do
     it "sends updated data" do
       query_str = <<-GRAPHQL
@@ -197,10 +164,8 @@ describe GraphQL::Subscriptions do
       # Initial response is nil, no broadcasts yet
       assert_equal(nil, res_1["data"])
       assert_equal(nil, res_2["data"])
-      socket_1 = socket.open("1")
-      socket_2 = socket.open("2")
-      assert_equal [], socket_1.deliveries
-      assert_equal [], socket_2.deliveries
+      assert_equal [], deliveries["1"]
+      assert_equal [], deliveries["2"]
 
       # Application stuff happens.
       # The application signals graphql via `subscriber.trigger`:
@@ -210,9 +175,9 @@ describe GraphQL::Subscriptions do
       schema.subscriber.trigger("payload", {"id" => "300"}, nil)
 
       # Let's see what GraphQL sent over the wire:
-      assert_equal({"str" => "Update", "int" => 1}, socket_1.deliveries[0]["data"]["firstPayload"])
-      assert_equal({"str" => "Update", "int" => 2}, socket_2.deliveries[0]["data"]["firstPayload"])
-      assert_equal({"str" => "Update", "int" => 3}, socket_1.deliveries[1]["data"]["firstPayload"])
+      assert_equal({"str" => "Update", "int" => 1}, deliveries["1"][0]["data"]["firstPayload"])
+      assert_equal({"str" => "Update", "int" => 2}, deliveries["2"][0]["data"]["firstPayload"])
+      assert_equal({"str" => "Update", "int" => 3}, deliveries["1"][1]["data"]["firstPayload"])
     end
   end
 
@@ -226,7 +191,7 @@ describe GraphQL::Subscriptions do
 
       res = schema.execute(query_str, context: { socket: "1" }, variables: { "id" => "100" }, root_value: root_object)
       assert_equal true, res.key?("errors")
-      assert_equal 0, database.size
+      assert_equal 0, implementation.size
     end
   end
 
@@ -240,7 +205,7 @@ describe GraphQL::Subscriptions do
 
       schema.execute(query_str, context: { socket: "1" }, variables: { "id" => "8" }, root_value: root_object)
       schema.subscriber.trigger("payload", { "id" => "8"}, root_object.payload)
-      assert_equal ["1"], queue.pushes
+      assert_equal ["1"], implementation.pushes
     end
 
     it "pushes errors" do
@@ -252,8 +217,7 @@ describe GraphQL::Subscriptions do
 
       schema.execute(query_str, context: { socket: "1" }, variables: { "id" => "8" }, root_value: root_object)
       schema.subscriber.trigger("payload", { "id" => "8"}, OpenStruct.new(str: nil, int: nil))
-      socket_1 = socket.open("1")
-      delivery = socket_1.deliveries.first
+      delivery = deliveries["1"].first
       assert_equal nil, delivery.fetch("data")
       assert_equal 1, delivery["errors"].length
     end
@@ -284,16 +248,16 @@ describe GraphQL::Subscriptions do
       # Trigger with null updates subscribers to null
       schema.subscriber.trigger("event", { "stream" => {"userId" => 3, "type" => nil} }, OpenStruct.new(str: "", int: 5))
 
-      assert_equal [1,2,4], socket.deliveries("1").map { |d| d["data"]["e1"]["int"] }
+      assert_equal [1,2,4], deliveries["1"].map { |d| d["data"]["e1"]["int"] }
 
       # Same as socket_1
-      assert_equal [1,2,4], socket.deliveries("2").map { |d| d["data"]["e1"]["int"] }
+      assert_equal [1,2,4], deliveries["2"].map { |d| d["data"]["e1"]["int"] }
 
       # Received the "non-trigger"
-      assert_equal [3], socket.deliveries("3").map { |d| d["data"]["e1"]["int"] }
+      assert_equal [3], deliveries["3"].map { |d| d["data"]["e1"]["int"] }
 
       # Received the trigger with null
-      assert_equal [5], socket.deliveries("4").map { |d| d["data"]["e1"]["int"] }
+      assert_equal [5], deliveries["4"].map { |d| d["data"]["e1"]["int"] }
     end
 
     it "allows context-scoped subscriptions" do
@@ -314,10 +278,10 @@ describe GraphQL::Subscriptions do
       schema.subscriber.trigger("myEvent", { "type" => "ONE" }, OpenStruct.new(str: "", int: 3), scope: "2")
 
       # Delivered to user 1
-      assert_equal [1], socket.deliveries("1").map { |d| d["data"]["myEvent"]["int"] }
-      assert_equal [2], socket.deliveries("2").map { |d| d["data"]["myEvent"]["int"] }
+      assert_equal [1], deliveries["1"].map { |d| d["data"]["myEvent"]["int"] }
+      assert_equal [2], deliveries["2"].map { |d| d["data"]["myEvent"]["int"] }
       # Delivered to user 2
-      assert_equal [3], socket.deliveries("3").map { |d| d["data"]["myEvent"]["int"] }
+      assert_equal [3], deliveries["3"].map { |d| d["data"]["myEvent"]["int"] }
     end
 
     describe "errors" do
@@ -355,8 +319,14 @@ describe GraphQL::Subscriptions do
 
       schema.execute(query_str, context: { socket: "1", me: "1" }, variables: { "type" => "ONE" }, root_value: root_object)
       schema.subscriber.trigger("myEvent", { "type" => "ONE" }, ErrorPayload.new, scope: "1")
-      res = socket.deliveries("1").first
+      res = deliveries["1"].first
       assert_equal "This is handled", res["errors"][0]["message"]
+    end
+  end
+
+  describe "implementation" do
+    it "is initialized with keywords" do
+      assert_equal 123, schema.subscriber.implementation.extra
     end
   end
 end

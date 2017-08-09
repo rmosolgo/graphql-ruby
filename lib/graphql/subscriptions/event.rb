@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 module GraphQL
-  module Subscriptions
+  class Subscriptions
     # This thing can be:
     # - Subscribed to by `subscription { ... }`
     # - Triggered by `MySchema.subscriber.trigger(name, arguments, obj)`

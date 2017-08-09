@@ -1,12 +1,12 @@
 # frozen_string_literal: true
+# test_via: ../subscriptions.rb
 module GraphQL
-  module Subscriptions
+  class Subscriptions
     # Wrap the root fields of the subscription type with special logic for:
     # - Registering the subscription during the first execution
     # - Evaluating the triggered portion(s) of the subscription during later execution
     class Instrumentation
-      def initialize(schema:, subscriber:)
-        @subscriber = subscriber
+      def initialize(schema:)
         @schema = schema
       end
 
@@ -31,7 +31,7 @@ module GraphQL
       def after_query(query)
         events = query.context[:events]
         if events && events.any?
-          @subscriber.set(query, events)
+          @schema.subscriber.implementation.subscribed(query, events)
         end
       end
 
