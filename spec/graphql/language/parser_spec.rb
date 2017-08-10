@@ -43,4 +43,32 @@ describe GraphQL::Language::Parser do
     document = subject.parse(schema_string)
     assert_equal schema_string, document.to_query_string
   end
+
+  describe ".parse_file" do
+    it "assigns filename to all nodes" do
+      example_filename = "spec/support/parser/filename_example.graphql"
+      doc = GraphQL.parse_file(example_filename)
+      assert_equal example_filename, doc.filename
+      field = doc.definitions[0].selections[0].selections[0]
+      assert_equal example_filename, field.filename
+    end
+
+    it "raises errors with filename" do
+      error_filename = "spec/support/parser/filename_example_error_1.graphql"
+      err = assert_raises(GraphQL::ParseError) {
+        GraphQL.parse_file(error_filename)
+      }
+
+      assert_includes err.message, error_filename
+
+      error_filename_2 = "spec/support/parser/filename_example_error_2.graphql"
+      err_2 = assert_raises(GraphQL::ParseError) {
+        GraphQL.parse_file(error_filename_2)
+      }
+
+      assert_includes err_2.message, error_filename_2
+      assert_includes err_2.message, "3, 11"
+
+    end
+  end
 end
