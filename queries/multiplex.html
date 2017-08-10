@@ -41,6 +41,7 @@
    &raquo; Queries
   &raquo; Multiplex
 </p>
+
 <h1 class="guide-header">Multiplex</h1>
 <div class="guide-container">
   <p>Some clients may send <em>several</em> queries to the server at once (for example, <a href="http://dev.apollodata.com/core/network.html#query-batching">Apollo Client’s query batching</a>). You can execute them concurrently with <a href="http://www.rubydoc.info/gems/graphql/1.6.6/GraphQL/Schema#multiplex-instance_method" target="_blank" title="API docs for GraphQL::Schema#multiplex"><code>Schema#multiplex</code></a>.</p>
@@ -84,7 +85,8 @@
 
 <h2 id="validation-and-error-handling">Validation and Error Handling</h2>
 
-<p>Each query is validated and <a href="/queries/analysis">analyzed</a> independently. The <code class="highlighter-rouge">results</code> array may include a mix of successful results and failed results</p>
+<p>Each query is validated and <a href="/queries/analysis">analyzed</a>
+ independently. The <code class="highlighter-rouge">results</code> array may include a mix of successful results and failed results</p>
 
 <h2 id="multiplex-level-context">Multiplex-Level Context</h2>
 
@@ -107,7 +109,8 @@
 </code></pre>
 </div>
 
-<p>The API is the same as <a href="/queries/analysis">query analyzers</a>, with some considerations:</p>
+<p>The API is the same as <a href="/queries/analysis">query analyzers</a>
+, with some considerations:</p>
 
 <ul>
   <li><code class="highlighter-rouge">initial_value</code> is called at the start of the <em>multiplex</em> (not query)</li>

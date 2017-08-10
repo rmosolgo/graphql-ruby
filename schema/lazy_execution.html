@@ -41,6 +41,7 @@
    &raquo; Schema
   &raquo; Lazy Execution
 </p>
+
 <h1 class="guide-header">Lazy Execution</h1>
 <div class="guide-container">
   <p>With lazy execution, you can optimize access to external services (such as databases) by making batched calls. Building a lazy loader has three steps:</p>
@@ -51,11 +52,8 @@
   <li>In <code class="highlighter-rouge">resolve</code> functions, return instances of the lazy-loading class</li>
 </ul>
 
-<p><a href="https://github.com/shopify/graphql-batch"><code class="highlighter-rouge">graphql-batch</code></a> provides a powerful, flexible toolkit for lazy resolution with GraphQL.</p>
-
-<p><a href="https://github.com/sheerun/dataloader"><code class="highlighter-rouge">dataloader</code></a> is more general <a href="https://github.com/lgierth/promise.rb"><code class="highlighter-rouge">promise</code></a>-based utilify for batching queries within the same thread.</p>
-
-<p>Lazy resolution can be <a href="/fields/instrumentation">instrumented</a>.</p>
+<p>Lazy resolution can be <a href="/fields/instrumentation">instrumented</a>
+.</p>
 
 <h2 id="example-batched-find">Example: Batched Find</h2>
 
@@ -134,7 +132,15 @@
 
 <p>Will only make one query to load the <code class="highlighter-rouge">author</code> values.</p>
 
-<p>The example above is simple and has some shortcomings. Consider the <code class="highlighter-rouge">graphql-batch</code> or <code class="highlighter-rouge">dataloader</code> gem for a robust solution to batched resolution.</p>
+<h2 id="gems-for-batching">Gems for batching</h2>
+
+<p>The example above is simple and has some shortcomings. Consider the following gems for a robust solution to batched resolution:</p>
+
+<ul>
+  <li><a href="https://github.com/shopify/graphql-batch"><code class="highlighter-rouge">graphql-batch</code></a> provides a powerful, flexible toolkit for lazy resolution with GraphQL.</li>
+  <li><a href="https://github.com/sheerun/dataloader"><code class="highlighter-rouge">dataloader</code></a> is more general promise-based utility for batching queries within the same thread.</li>
+  <li><a href="https://github.com/exAspArk/batch-loader"><code class="highlighter-rouge">batch-loader</code></a> works with any Ruby code including GraphQL, no extra dependencies or primitives.</li>
+</ul>
 
 </div>
 <p class="guide-footer">

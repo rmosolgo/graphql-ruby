@@ -41,6 +41,7 @@
    &raquo; Relay
   &raquo; Connections
 </p>
+
 <h1 class="guide-header">Connections</h1>
 <div class="guide-container">
   <p>Relay expresses <a href="https://facebook.github.io/relay/docs/graphql-connections.html">one-to-many relationships with <em>connections</em></a>. Connections support pagination, filtering and metadata in a robust way.</p>
@@ -76,7 +77,7 @@
     <span class="n">comments</span> <span class="o">=</span> <span class="n">post</span><span class="p">.</span><span class="nf">comments</span><span class="p">.</span><span class="nf">featured</span>
 
     <span class="k">if</span> <span class="n">args</span><span class="p">[</span><span class="ss">:since</span><span class="p">]</span>
-      <span class="n">comments</span> <span class="o">=</span> <span class="n">comments</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="s2">"created_at &gt;= "</span><span class="p">,</span> <span class="n">since</span><span class="p">)</span>
+      <span class="n">comments</span> <span class="o">=</span> <span class="n">comments</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="s2">"created_at &gt;= "</span><span class="p">,</span> <span class="n">args</span><span class="p">[</span><span class="ss">:since</span><span class="p">])</span>
     <span class="k">end</span>
 
     <span class="n">comments</span>
