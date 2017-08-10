@@ -19,10 +19,8 @@ module GraphQL
               n.arguments.reduce({}) do |memo, a|
                 arg_value = a.value
                 memo[a.name] = case arg_value
-                when GraphQL::Language::Nodes::VariableIdentifier
-                  "$#{arg_value.name}"
-                when GraphQL::Language::Nodes::Enum
-                  "#{arg_value.name}"
+                when GraphQL::Language::Nodes::AbstractNode
+                  arg_value.to_query_string
                 else
                   GraphQL::Language.serialize(arg_value)
                 end
