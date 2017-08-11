@@ -278,5 +278,17 @@ describe GraphQL::Query::Arguments do
       args = arg_values[0].values[0]
       assert_equal 2 * 10, args['inputObject']['a']
     end
+
+    it "returns prepared argument value for nested input type" do
+      query_str = "
+        query($arg: TestInput2){
+          prepareTest(a: $arg)
+      }"
+
+      schema.execute(query_str, variables: { "arg" => { "b" => { "a" => 3 } } } )
+
+      args = arg_values[0].values[0]
+      assert_equal 30, args['inputObject']['a']
+    end
   end
 end
