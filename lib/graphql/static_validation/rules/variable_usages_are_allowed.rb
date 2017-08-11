@@ -83,7 +83,9 @@ module GraphQL
         new_var_type = var_type
 
         depth_of_array(arg_node_value).times do
-          new_var_type = GraphQL::ListType.new(of_type: new_var_type)
+          # Since the array _is_ present, treat it like a non-null type
+          # (It satisfies a non-null requirement AND a nullable requirement)
+          new_var_type = new_var_type.to_list_type.to_non_null_type
         end
 
         new_var_type
