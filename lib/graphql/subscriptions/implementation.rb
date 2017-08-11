@@ -7,9 +7,20 @@ module GraphQL
         @schema = schema
       end
 
-      def execute(channel, event_key, object)
+      # `event` was triggered on `object`, and `subscription_id` was subscribed,
+      # so it should be updated.
+      #
+      # Load `subscription_id`'s GraphQL data, re-evaluate the query, and deliver the result.
+      #
+      # This is where a queue may be inserted to push updates in the background.
+      #
+      # @param subscription_id [String]
+      # @param event [GraphQL::Subscriptions::Event] The event which was triggered
+      # @param object [Object] The value for the subscription field
+      # @return [void]
+      def execute(subscription_id, event, object)
         # Lookup the saved data for this subscription
-        query_data = get_subscription(channel)
+        query_data = read_subscription(subscription_id)
         # Fetch the required keys from the saved data
         query_string = query_data.fetch(:query_string)
         variables = query_data.fetch(:variables)
@@ -22,7 +33,7 @@ module GraphQL
           query_string,
           {
             context: context,
-            subscription_key: event_key,
+            subscription_key: event.key,
             operation_name: operation_name,
             variables: variables,
             root_value: object,
@@ -30,42 +41,52 @@ module GraphQL
         )
         result = query.result
 
-        deliver(channel, result, query.context)
+        deliver(subscription_id, result, query.context)
       end
 
       # Event `event` occurred on `object`,
       # Update all subscribers.
       # @param event [Subscriptions::Event]
       # @param object [Object]
-      def enqueue_all(event, object)
-        event_key = event.key
-        each_channel(event_key) do |channel|
-          enqueue(channel, event_key, object)
+      # @return [void]
+      def execute_all(event, object)
+        each_subscription_id(event) do |subscription_id|
+          execute(subscription_id, event, object)
         end
       end
 
-      def enqueue(channel, event_key, object)
-        execute(channel, event_key, object)
-      end
-
-      # Get each channel subscribed to `event_key` and yield them
-      # @param event_key [String]
-      # @yieldparam channel [String]
+      # Get each `subscription_id` subscribed to `event_key` and yield them
+      # @param event [GraphQL::Subscriptions::Event]
+      # @yieldparam subscription_id [String]
       # @return [void]
-      def each_channel(event_key)
+      def each_subscription_id(event)
         raise NotImplementedError
       end
 
-      def get_subscription(channel)
+      # The system wants to send an update to this subscription.
+      # Read its data and return it.
+      # @param subscription_id [String]
+      # @return [Hash] Containing required keys
+      def read_subscription(subscription_id)
         raise NotImplementedError
       end
 
-      # Deliver the payload to the channel
-      def deliver(channel, result, context)
+      # A subscription query was re-evaluated, returning `result`.
+      # The result should be send to `subscription_id`.
+      # @param subscription_id [String]
+      # @param result [Hash]
+      # @param context [GraphQL::Query::Context]
+      # @return [void]
+      def deliver(subscription_id, result, context)
         raise NotImplementedError
       end
 
-      def subscribed(query, events)
+      # `query` was executed and found subscriptions to `events`.
+      # Update the database to reflect this new state.
+      # @param query [GraphQL::Query]
+      # @param events [Array<GraphQL::Subscriptions::Event>]
+      # @return [void]
+      def write_subscription(query, events)
         raise NotImplementedError
       end
     end

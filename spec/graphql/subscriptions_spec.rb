@@ -14,7 +14,7 @@ class InMemoryBackend
       @pushes = []
     end
 
-    def subscribed(query, events)
+    def write_subscription(query, events)
       @queries[query.context[:socket]] = query
       events.each do |ev|
         # The `context` is functioning as subscription data.
@@ -23,13 +23,13 @@ class InMemoryBackend
       end
     end
 
-    def each_channel(key)
-      @subscriptions[key].each do |ctx|
+    def each_subscription_id(event)
+      @subscriptions[event.key].each do |ctx|
         yield(ctx[:socket])
       end
     end
 
-    def get_subscription(channel)
+    def read_subscription(channel)
       query = @queries[channel]
       {
         query_string: query.query_string,
@@ -53,16 +53,9 @@ class InMemoryBackend
       @deliveries[channel] << result
     end
 
-    def enqueue(channel, event_key, object)
+    def execute(channel, event, object)
       @pushes << channel
-      execute(channel, event_key, object)
-    end
-
-    def enqueue_all(event, object)
-      event_key = event.key
-      each_channel(event_key) do |channel|
-        enqueue(channel, event_key, object)
-      end
+      super
     end
 
     # Just for testing:

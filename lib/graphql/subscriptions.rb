@@ -2,9 +2,11 @@
 require "graphql/subscriptions/event"
 require "graphql/subscriptions/implementation"
 require "graphql/subscriptions/instrumentation"
+require "graphql/subscriptions/memory_storage"
 
 module GraphQL
   class Subscriptions
+    # @return [GraphQL::Subscriptions::Implementation] A long-lived instance of the user-provided implementation class
     attr_reader :implementation
 
     def self.use(defn, options = {})
@@ -38,7 +40,7 @@ module GraphQL
         field: field,
         scope: scope,
       )
-      @implementation.enqueue_all(event, object)
+      @implementation.execute_all(event, object)
     end
   end
 end
