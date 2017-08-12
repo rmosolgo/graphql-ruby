@@ -633,6 +633,18 @@ describe GraphQL::Query do
     end
   end
 
+  describe '#irep_selection' do
+    it "returns the irep for the selected operation" do
+      assert_kind_of GraphQL::InternalRepresentation::Node, query.irep_selection
+      assert_equal 'getFlavor', query.irep_selection.name
+    end
+
+    it "returns nil when there is no selected operation" do
+      query = GraphQL::Query.new(schema, '# Only a comment')
+      assert_equal nil, query.irep_selection
+    end
+  end
+
   describe "query_execution_strategy" do
     let(:custom_execution_schema) {
       schema.redefine do
