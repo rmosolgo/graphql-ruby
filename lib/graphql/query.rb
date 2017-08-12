@@ -44,6 +44,7 @@ module GraphQL
 
     # @return [String, nil] The name of the operation to run (may be inferred)
     def selected_operation_name
+      return nil unless selected_operation
       selected_operation.name
     end
 
