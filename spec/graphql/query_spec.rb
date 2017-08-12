@@ -68,7 +68,7 @@ describe GraphQL::Query do
     end
   end
 
-  describe "operation_name" do
+  describe "#operation_name" do
     describe "when provided" do
       let(:query_string) { <<-GRAPHQL
         query q1 { cheese(id: 1) { flavor } }
@@ -79,7 +79,6 @@ describe GraphQL::Query do
 
       it "returns the provided name" do
         assert_equal "q2", query.operation_name
-        assert_equal "q2", query.selected_operation_name
       end
     end
 
@@ -91,7 +90,44 @@ describe GraphQL::Query do
 
       it "returns nil" do
         assert_equal nil, query.operation_name
-        assert_equal "q3", query.selected_operation_name
+      end
+    end
+
+    describe "#selected_operation_name" do
+      describe "when an operation isprovided" do
+        let(:query_string) { <<-GRAPHQL
+          query q1 { cheese(id: 1) { flavor } }
+          query q2 { cheese(id: 2) { flavor } }
+        GRAPHQL
+        }
+        let(:operation_name) { "q2" }
+
+        it "returns the provided name" do
+          assert_equal "q2", query.selected_operation_name
+        end
+      end
+
+      describe "when operation is inferred" do
+        let(:query_string) { <<-GRAPHQL
+          query q3 { cheese(id: 3) { flavor } }
+        GRAPHQL
+        }
+
+        it "returns the inferred operation name" do
+          assert_equal "q3", query.selected_operation_name
+        end
+      end
+
+      describe "when there are no operations" do
+        let(:query_string) { <<-GRAPHQL
+          # Only Comments
+          # In this Query
+        GRAPHQL
+        }
+
+        it "returns the inferred operation name" do
+          assert_equal nil, query.selected_operation_name
+        end
       end
     end
 
