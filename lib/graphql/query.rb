@@ -161,7 +161,10 @@ module GraphQL
     end
 
     def irep_selection
-      @selection ||= internal_representation.operation_definitions[selected_operation.name]
+      @selection ||= begin
+        return nil unless selected_operation
+        internal_representation.operation_definitions[selected_operation.name]
+      end
     end
 
     # Node-level cache for calculating arguments. Used during execution and query analysis.
