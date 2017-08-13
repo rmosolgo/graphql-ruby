@@ -123,11 +123,18 @@ describe GraphQL::Relay::RelationConnection do
       assert_equal([], get_names(result))
     end
 
-    it 'handles cursors beyond the bounds of the array' do
+    it 'handles cursors above the bounds of the array' do
       overreaching_cursor = Base64.strict_encode64("100")
       result = star_wars_query(query_string, "after" => overreaching_cursor, "first" => 2)
       assert_equal([], get_names(result))
     end
+
+    it 'handles cursors below the bounds of the array' do
+      underreaching_cursor = Base64.strict_encode64("1")
+      result = star_wars_query(query_string, "before" => underreaching_cursor, "first" => 2)
+      assert_equal([], get_names(result))
+    end
+
 
     it 'handles grouped connections with only last argument' do
       grouped_conn_query = <<-GRAPHQL
@@ -439,6 +446,18 @@ describe GraphQL::Relay::RelationConnection do
         result = star_wars_query(query_string, "before" => last_cursor, "last" => 10)
         assert_equal(["Death Star", "Shield Generator"], get_names(result))
 
+      end
+
+      it 'handles cursors above the bounds of the array' do
+        overreaching_cursor = Base64.strict_encode64("100")
+        result = star_wars_query(query_string, "after" => overreaching_cursor, "first" => 2)
+        assert_equal([], get_names(result))
+      end
+
+      it 'handles cursors below the bounds of the array' do
+        underreaching_cursor = Base64.strict_encode64("1")
+        result = star_wars_query(query_string, "before" => underreaching_cursor, "first" => 2)
+        assert_equal([], get_names(result))
       end
 
       it "applies custom arguments" do

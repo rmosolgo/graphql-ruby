@@ -121,15 +121,24 @@ module GraphQL
 
         if before && after
           if offset_from_cursor(after) < offset_from_cursor(before)
-            @sliced_nodes = @sliced_nodes.limit(offset_from_cursor(before) - offset_from_cursor(after) - 1)
+            @sliced_nodes = limit_nodes(@sliced_nodes,  offset_from_cursor(before) - offset_from_cursor(after) - 1)
           else
-            @sliced_nodes = @sliced_nodes.limit(0)
+            @sliced_nodes = limit_nodes(@sliced_nodes, 0)
           end
+
         elsif before
-          @sliced_nodes = @sliced_nodes.limit(offset_from_cursor(before) - 1)
+          @sliced_nodes = limit_nodes(@sliced_nodes, offset_from_cursor(before) - 1)
         end
 
         @sliced_nodes
+      end
+
+      def limit_nodes(sliced_nodes, limit)
+        if limit > 0 || defined?(ActiveRecord::Relation) && sliced_nodes.is_a?(ActiveRecord::Relation)
+          sliced_nodes.limit(limit)
+        else
+          sliced_nodes.where(false)
+        end
       end
 
       def sliced_nodes_count
