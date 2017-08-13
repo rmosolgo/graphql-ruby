@@ -24,28 +24,28 @@ describe GraphQL::StaticValidation::ArgumentsAreDefined do
 
     query_root_error = {
       "message"=>"Field 'cheese' doesn't accept argument 'silly'",
-      "locations"=>[{"line"=>4, "column"=>7}],
+      "locations"=>[{"line"=>4, "column"=>14}],
       "fields"=>["query getCheese", "cheese", "silly"],
     }
     assert_includes(errors, query_root_error)
 
     input_obj_record = {
       "message"=>"InputObject 'DairyProductInput' doesn't accept argument 'wacky'",
-      "locations"=>[{"line"=>5, "column"=>29}],
+      "locations"=>[{"line"=>5, "column"=>30}],
       "fields"=>["query getCheese", "searchDairy", "product", "wacky"],
     }
     assert_includes(errors, input_obj_record)
 
     fragment_error = {
       "message"=>"Field 'similarCheese' doesn't accept argument 'nonsense'",
-      "locations"=>[{"line"=>9, "column"=>7}],
+      "locations"=>[{"line"=>9, "column"=>36}],
       "fields"=>["fragment cheeseFields", "similarCheese", "nonsense"],
     }
     assert_includes(errors, fragment_error)
 
     directive_error = {
       "message"=>"Directive 'skip' doesn't accept argument 'something'",
-      "locations"=>[{"line"=>10, "column"=>10}],
+      "locations"=>[{"line"=>10, "column"=>16}],
       "fields"=>["fragment cheeseFields", "id", "something"],
     }
     assert_includes(errors, directive_error)
@@ -61,7 +61,7 @@ describe GraphQL::StaticValidation::ArgumentsAreDefined do
     it "finds undefined arguments" do
       assert_includes(errors, {
         "message"=>"Field '__type' doesn't accept argument 'somethingInvalid'",
-        "locations"=>[{"line"=>3, "column"=>9}],
+        "locations"=>[{"line"=>3, "column"=>16}],
         "fields"=>["query", "__type", "somethingInvalid"],
       })
     end
