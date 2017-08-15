@@ -2,7 +2,7 @@
 require "spec_helper"
 
 class InMemoryBackend
-  class Subscriptions < GraphQL::Subscriptions::Implementation
+  class Subscriptions < GraphQL::Subscriptions
     attr_reader :deliveries, :pushes, :extra
 
     def initialize(schema:, extra:)
@@ -118,8 +118,7 @@ class InMemoryBackend
   GRAPHQL
 
   Schema = GraphQL::Schema.from_definition(SchemaDefinition).redefine do
-    use GraphQL::Subscriptions,
-      implementation: Subscriptions,
+    use InMemoryBackend::Subscriptions,
       extra: 123
   end
 
@@ -129,7 +128,7 @@ end
 
 describe GraphQL::Subscriptions do
   before do
-    schema.subscriber.implementation.reset
+    schema.subscriptions.reset
   end
 
   let(:root_object) {
@@ -139,7 +138,7 @@ describe GraphQL::Subscriptions do
   }
 
   let(:schema) { InMemoryBackend::Schema }
-  let(:implementation) { schema.subscriber.implementation }
+  let(:implementation) { schema.subscriptions }
   let(:deliveries) { implementation.deliveries }
   describe "pushing updates" do
     it "sends updated data" do
@@ -161,11 +160,11 @@ describe GraphQL::Subscriptions do
       assert_equal [], deliveries["2"]
 
       # Application stuff happens.
-      # The application signals graphql via `subscriber.trigger`:
-      schema.subscriber.trigger("payload", {"id" => "100"}, root_object.payload)
-      schema.subscriber.trigger("payload", {"id" => "200"}, root_object.payload)
-      schema.subscriber.trigger("payload", {"id" => "100"}, root_object.payload)
-      schema.subscriber.trigger("payload", {"id" => "300"}, nil)
+      # The application signals graphql via `subscriptions.trigger`:
+      schema.subscriptions.trigger("payload", {"id" => "100"}, root_object.payload)
+      schema.subscriptions.trigger("payload", {"id" => "200"}, root_object.payload)
+      schema.subscriptions.trigger("payload", {"id" => "100"}, root_object.payload)
+      schema.subscriptions.trigger("payload", {"id" => "300"}, nil)
 
       # Let's see what GraphQL sent over the wire:
       assert_equal({"str" => "Update", "int" => 1}, deliveries["1"][0]["data"]["firstPayload"])
@@ -175,7 +174,7 @@ describe GraphQL::Subscriptions do
   end
 
   describe "subscribing" do
-    it "doesn't call the subscriber for invalid queries" do
+    it "doesn't call the subscriptions for invalid queries" do
       query_str = <<-GRAPHQL
         subscription ($id: ID){
           payload(id: $id) { str, int }
@@ -197,7 +196,7 @@ describe GraphQL::Subscriptions do
       GRAPHQL
 
       schema.execute(query_str, context: { socket: "1" }, variables: { "id" => "8" }, root_value: root_object)
-      schema.subscriber.trigger("payload", { "id" => "8"}, root_object.payload)
+      schema.subscriptions.trigger("payload", { "id" => "8"}, root_object.payload)
       assert_equal ["1"], implementation.pushes
     end
 
@@ -209,7 +208,7 @@ describe GraphQL::Subscriptions do
       GRAPHQL
 
       schema.execute(query_str, context: { socket: "1" }, variables: { "id" => "8" }, root_value: root_object)
-      schema.subscriber.trigger("payload", { "id" => "8"}, OpenStruct.new(str: nil, int: nil))
+      schema.subscriptions.trigger("payload", { "id" => "8"}, OpenStruct.new(str: nil, int: nil))
       delivery = deliveries["1"].first
       assert_equal nil, delivery.fetch("data")
       assert_equal 1, delivery["errors"].length
@@ -232,14 +231,14 @@ describe GraphQL::Subscriptions do
       schema.execute(query_str, context: { socket: "4" }, variables: { "type" => nil }, root_value: root_object)
 
       # Trigger the subscription with coerceable args, different orders:
-      schema.subscriber.trigger("event", { "stream" => {"userId" => 3, "type" => "ONE"} }, OpenStruct.new(str: "", int: 1))
-      schema.subscriber.trigger("event", { "stream" => {"type" => "ONE", "userId" => "3"} }, OpenStruct.new(str: "", int: 2))
+      schema.subscriptions.trigger("event", { "stream" => {"userId" => 3, "type" => "ONE"} }, OpenStruct.new(str: "", int: 1))
+      schema.subscriptions.trigger("event", { "stream" => {"type" => "ONE", "userId" => "3"} }, OpenStruct.new(str: "", int: 2))
       # This is a non-trigger
-      schema.subscriber.trigger("event", { "stream" => {"userId" => "3", "type" => "TWO"} }, OpenStruct.new(str: "", int: 3))
+      schema.subscriptions.trigger("event", { "stream" => {"userId" => "3", "type" => "TWO"} }, OpenStruct.new(str: "", int: 3))
       # These get default value of ONE
-      schema.subscriber.trigger("event", { "stream" => {"userId" => "3"} }, OpenStruct.new(str: "", int: 4))
-      # Trigger with null updates subscribers to null
-      schema.subscriber.trigger("event", { "stream" => {"userId" => 3, "type" => nil} }, OpenStruct.new(str: "", int: 5))
+      schema.subscriptions.trigger("event", { "stream" => {"userId" => "3"} }, OpenStruct.new(str: "", int: 4))
+      # Trigger with null updates subscriptionss to null
+      schema.subscriptions.trigger("event", { "stream" => {"userId" => 3, "type" => nil} }, OpenStruct.new(str: "", int: 5))
 
       assert_equal [1,2,4], deliveries["1"].map { |d| d["data"]["e1"]["int"] }
 
@@ -266,9 +265,9 @@ describe GraphQL::Subscriptions do
       # Subscription for user 2
       schema.execute(query_str, context: { socket: "3", me: "2" }, variables: { "type" => "ONE" }, root_value: root_object)
 
-      schema.subscriber.trigger("myEvent", { "type" => "ONE" }, OpenStruct.new(str: "", int: 1), scope: "1")
-      schema.subscriber.trigger("myEvent", { "type" => "TWO" }, OpenStruct.new(str: "", int: 2), scope: "1")
-      schema.subscriber.trigger("myEvent", { "type" => "ONE" }, OpenStruct.new(str: "", int: 3), scope: "2")
+      schema.subscriptions.trigger("myEvent", { "type" => "ONE" }, OpenStruct.new(str: "", int: 1), scope: "1")
+      schema.subscriptions.trigger("myEvent", { "type" => "TWO" }, OpenStruct.new(str: "", int: 2), scope: "1")
+      schema.subscriptions.trigger("myEvent", { "type" => "ONE" }, OpenStruct.new(str: "", int: 3), scope: "2")
 
       # Delivered to user 1
       assert_equal [1], deliveries["1"].map { |d| d["data"]["myEvent"]["int"] }
@@ -297,13 +296,13 @@ describe GraphQL::Subscriptions do
 
         schema.execute(query_str, context: { socket: "1", me: "1" }, variables: { "type" => "ONE" }, root_value: root_object)
         err = assert_raises(RuntimeError) {
-          schema.subscriber.trigger("myEvent", { "type" => "ONE" }, ErrorPayload.new, scope: "1")
+          schema.subscriptions.trigger("myEvent", { "type" => "ONE" }, ErrorPayload.new, scope: "1")
         }
         assert_equal "Boom!", err.message
       end
     end
 
-    it "sends query errors to the subscriber" do
+    it "sends query errors to the subscriptions" do
       query_str = <<-GRAPHQL
         subscription($type: PayloadType) {
           myEvent(type: $type) { str }
@@ -311,7 +310,7 @@ describe GraphQL::Subscriptions do
       GRAPHQL
 
       schema.execute(query_str, context: { socket: "1", me: "1" }, variables: { "type" => "ONE" }, root_value: root_object)
-      schema.subscriber.trigger("myEvent", { "type" => "ONE" }, ErrorPayload.new, scope: "1")
+      schema.subscriptions.trigger("myEvent", { "type" => "ONE" }, ErrorPayload.new, scope: "1")
       res = deliveries["1"].first
       assert_equal "This is handled", res["errors"][0]["message"]
     end
@@ -319,7 +318,7 @@ describe GraphQL::Subscriptions do
 
   describe "implementation" do
     it "is initialized with keywords" do
-      assert_equal 123, schema.subscriber.implementation.extra
+      assert_equal 123, schema.subscriptions.extra
     end
   end
 end

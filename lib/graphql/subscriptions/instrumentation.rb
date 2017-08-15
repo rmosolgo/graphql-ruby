@@ -31,7 +31,7 @@ module GraphQL
       def after_query(query)
         events = query.context[:events]
         if events && events.any?
-          @schema.subscriber.implementation.write_subscription(query, events)
+          @schema.subscriptions.write_subscription(query, events)
         end
       end
 

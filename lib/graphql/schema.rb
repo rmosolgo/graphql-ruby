@@ -81,8 +81,9 @@ module GraphQL
       :cursor_encoder,
       :raise_definition_error
 
-    # Singleton instance of the provided subscriber class, if there is one.
-    attr_accessor :subscriber
+    # Single, long-lived instance of the provided subscriptions class, if there is one.
+    # @return [GraphQL::Subscriptions]
+    attr_accessor :subscriptions
 
     # @return [MiddlewareChain] MiddlewareChain which is applied to fields during execution
     attr_accessor :middleware
