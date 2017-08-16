@@ -1,6 +1,9 @@
 # frozen_string_literal: true
 require "graphql/subscriptions/event"
 require "graphql/subscriptions/instrumentation"
+if defined?(ActionCable)
+  require "graphql/subscriptions/action_cable_subscriptions"
+end
 
 module GraphQL
   class Subscriptions
@@ -63,7 +66,7 @@ module GraphQL
       variables = query_data.fetch(:variables)
       context = query_data.fetch(:context)
       operation_name = query_data.fetch(:operation_name)
-
+      p "Running query #{operation_name.inspect} on #{object.inspect}"
       # Re-evaluate the saved query
       query = GraphQL::Query.new(
         @schema,
@@ -77,7 +80,6 @@ module GraphQL
         }
       )
       result = query.result
-
       deliver(subscription_id, result, query.context)
     end
 

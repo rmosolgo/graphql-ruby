@@ -23,13 +23,13 @@ module GraphQL
       # If needed, prepare to gather events which this query subscribes to
       def before_query(query)
         if query.subscription? && !query.subscription_update?
-          query.context[:events] = []
+          query.context.namespace(:subscriptions)[:events] = []
         end
       end
 
       # After checking the root fields, pass the gathered events to the store
       def after_query(query)
-        events = query.context[:events]
+        events = query.context.namespace(:subscriptions)[:events]
         if events && events.any?
           @schema.subscriptions.write_subscription(query, events)
         end
@@ -44,7 +44,7 @@ module GraphQL
 
         # Wrap the proc with subscription registration logic
         def call(obj, args, ctx)
-          events = ctx[:events]
+          events = ctx.namespace(:subscriptions)[:events]
           if events
             # This is the first execution, so gather an Event
             # for the backend to register:
@@ -56,7 +56,7 @@ module GraphQL
             ctx.skip
           elsif ctx.irep_node.subscription_key == ctx.query.subscription_key
             # The root object is _already_ the subscription update:
-            obj
+            @inner_proc.call(obj, args, ctx)
           else
             # This is a subscription update, but this event wasn't triggered.
             ctx.skip
