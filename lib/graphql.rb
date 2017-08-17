@@ -26,42 +26,32 @@ module GraphQL
   class Error < StandardError
   end
 
-  class ParseError < Error
-    attr_reader :line, :col, :query
-    def initialize(message, line, col, query)
-      super(message)
-      @line = line
-      @col = col
-      @query = query
-    end
-
-    def to_h
-      locations = line ? [{ "line" => line, "column" => col }] : []
-      {
-        "message" => message,
-        "locations" => locations,
-      }
-    end
-  end
-
-  # Turn a query string into an AST
-  # @param query_string [String] a GraphQL query string
+  # Turn a query string or schema definition into an AST
+  # @param graphql_string [String] a GraphQL query string or schema definition
   # @return [GraphQL::Language::Nodes::Document]
-  def self.parse(query_string)
-    parse_with_racc(query_string)
+  def self.parse(graphql_string)
+    parse_with_racc(graphql_string)
   end
 
-  def self.parse_with_racc(string)
-    GraphQL::Language::Parser.parse(string)
+  # Read the contents of `filename` and parse them as GraphQL
+  # @param filename [String] Path to a `.graphql` file containing IDL or query
+  # @return [GraphQL::Language::Nodes::Document]
+  def self.parse_file(filename)
+    content = File.read(filename)
+    parse_with_racc(content, filename: filename)
+  end
+
+  def self.parse_with_racc(string, filename: nil)
+    GraphQL::Language::Parser.parse(string, filename: filename)
   end
 
   # @return [Array<GraphQL::Language::Token>]
-  def self.scan(query_string)
-    scan_with_ragel(query_string)
+  def self.scan(graphql_string)
+    scan_with_ragel(graphql_string)
   end
 
-  def self.scan_with_ragel(query_string)
-    GraphQL::Language::Lexer.tokenize(query_string)
+  def self.scan_with_ragel(graphql_string)
+    GraphQL::Language::Lexer.tokenize(graphql_string)
   end
 end
 
@@ -113,3 +103,4 @@ require "graphql/version"
 require "graphql/compatibility"
 require "graphql/function"
 require "graphql/filter"
+require "graphql/parse_error"

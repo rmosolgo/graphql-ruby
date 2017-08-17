@@ -8,6 +8,32 @@
 
 ### Bug fixes
 
+## 1.6.7 (11 Aug 2017)
+
+### New features
+
+- Add `GraphQL.parse_file` and `AbstractNode#filename` #873
+- Support `.graphql` filepaths with `Schema.from_definition` #872
+
+### Bug fixes
+
+- Fix variable usage inside non-null list #888
+- Fix unqualified usage of ActiveRecord::Relation #885
+- Fix `FieldsWillMerge` handling of equivalent input objects
+- Fix to call `prepare:` on nested input types
+
+## 1.6.6 (14 Jul 2017)
+
+### New features
+
+- Validate `graphql-pro` downloads with `rake graphql:pro:validate[$VERSION]` #846
+
+### Bug fixes
+
+- Remove usage of Rails-only `Array.wrap` #840
+- Fix `RelationConnection` to count properly when relation contains an alias #838
+- Print name of Enum type when a duplicate value is added #843
+
 ## 1.6.5 (13 Jul 2017)
 
 ### Breaking changes

@@ -46,4 +46,4 @@ end
 
 It can be attached as shown above. You can use `redefine { ... }` to make a shallow copy of the  {{ "GraphQL::Field" | api_doc }} and extend its definition.
 
-{{ "GraphQL::Field#lazy_resolve_proc" | api_doc }} can also be instrumented. This is called for objects registered with [lazy execution]({{ site.baseurl }}/schema/lazy_execution).
+{{ "GraphQL::Field#lazy_resolve_proc" | api_doc }} can also be instrumented. This is called for objects registered with {% internal_link "lazy execution","/schema/lazy_execution" %}.

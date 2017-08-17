@@ -9,7 +9,7 @@ module GraphQL
       # - `scalars` returns all scalar (Ruby) values attached to this one. Used for comparing nodes.
       # - `to_query_string` turns an AST node into a GraphQL string
       class AbstractNode
-        attr_accessor :line, :col
+        attr_accessor :line, :col, :filename
 
         # Initialize a node by extracting its position,
         # then calling the class's `initialize_node` method.
@@ -19,6 +19,8 @@ module GraphQL
             position_source = options.delete(:position_source)
             @line, @col = position_source.line_and_column
           end
+
+          @filename = options.delete(:filename)
 
           initialize_node(options)
         end

@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 require "fileutils"
+require "graphql/rake_task/validate"
+
 module GraphQL
   # A rake task for dumping a schema as IDL or JSON.
   #

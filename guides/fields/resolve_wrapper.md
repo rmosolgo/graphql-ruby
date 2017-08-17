@@ -7,7 +7,7 @@ desc: Modify execution by wrapping each field's resolve function
 index: 5
 ---
 
-You can modify field resolution by applying wrappers to the resolve functions. Wrappers can also be applied by [field instrumentation]({{site.baseurl}}/fields/instrumentation.html).
+You can modify field resolution by applying wrappers to the resolve functions. Wrappers can also be applied by {% internal_link "field instrumentation","/fields/instrumentation.html" %}.
 
 For example, you can apply runtime authorization checks. Let's say you're exposing documents in your API:
 
