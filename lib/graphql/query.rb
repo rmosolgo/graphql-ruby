@@ -5,6 +5,7 @@ require "graphql/query/context"
 require "graphql/query/executor"
 require "graphql/query/literal_input"
 require "graphql/query/null_context"
+require "graphql/query/result"
 require "graphql/query/serial_execution"
 require "graphql/query/variables"
 require "graphql/query/input_validation_result"
@@ -99,17 +100,17 @@ module GraphQL
       @max_depth = max_depth || schema.max_depth
       @max_complexity = max_complexity || schema.max_complexity
 
-      @result = nil
+      @result_values = nil
       @executed = false
     end
 
     # @api private
-    def result=(result_hash)
+    def result_values=(result_hash)
       if @executed
         raise "Invariant: Can't reassign result"
       else
         @executed = true
-        @result = result_hash
+        @result_values = result_hash
       end
     end
 
@@ -129,7 +130,7 @@ module GraphQL
           Execution::Multiplex.run_queries(@schema, [self])
         }
       end
-      @result
+      @result ||= Query::Result.new(query: self, values: @result_values)
     end
 
     def static_errors
