@@ -58,36 +58,4 @@ MySchema = GraphQL::Schema.define do
 end
 ```
 
-And hook up the {{ "GraphQL::Subscriptions" | api_doc }} plugin:
-
-```ruby
-# app/graphql/my_schema.rb
-MySchema = GraphQL::Schema.define do
-  # ...
-  use GraphQL::Subscriptions, {
-    # options, see below
-  }
-end
-```
-
-## Plugin Options
-
-Plugin options correspond to the parts of the subscription system:
-
-- `queue:` provides a {% internal_link "Queue implementation", "subscriptions/queue" %}
-- `store:` provides a {% internal_link "Store implementation", "subscriptions/store" %}
-- `transports:` provides one or more {% internal_link "Transport implementations", "subscriptions/transport" %}
-
-For example:
-
-```ruby
-use GraphQL::Subscriptions, {
-  queue: MyApp::Subscriptions::Queue,
-  store: MyApp::Subscriptions::Store,
-  transports: {
-    "action_cable" => MyApp::Subscriptions::ActionCableTransport,
-  }
-}
-```
-
-`GraphQL::Subscriptions` will use these objects to manage subscription lifecycle.
+See {% internal_link "Implementing Subscriptions","subscriptions/implementation" %} for more about actually delivering updates.

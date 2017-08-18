@@ -12,9 +12,7 @@ _Subscriptions_ allow GraphQL clients to observe specific events and receive upd
 
 - The __Subscription type__ is the entry point for subscription queries
 - __Triggers__ begin the update process
-- The __Store__ manages subscriber state (_who_ subscribed to _what_)
-- The __Queue__ runs subscription queries after events happen (eg, ActiveJob)
-- The __Transport__ delivers updates to clients
+- The __Implementation__ provides application-specific methods for executing & delivering updates.
 
 ### Subscription Type
 
@@ -28,20 +26,12 @@ After an event occurs in our application, _triggers_ begin the update process by
 
 Read more in the {% internal_link "Triggers guide","subscriptions/triggers" %}.
 
-### Store
+### Implementation
 
-As clients subscribe and unsubscribe, you must keep track of their subscription status. The _Store_ manages this state.
+Besides the GraphQL component, your application must provide some subscription-related plumbing, for example:
 
-Read more in the {% internal_link "Store guide","subscriptions/store" %}
+- __state management__: How does your application keep track of who is subscribed to what?
+- __transport__: How does your application deliver payloads to clients?
+- __queueing__: How does your application distribute the work of re-running subscription queries?
 
-### Queue
-
-After a trigger, clients must be updated with new data. The _Queue_ evaluates GraphQL queries and delivers the result to clients.
-
-Read more in the {% internal_link "Queue guide","subscriptions/transport" %}
-
-### Transport
-
-Clients must receive data somehow. A _Transport_ is a way to send data to a client (eg, websocket, native push notification, or webhook).
-
-Read more in the {% internal_link "Transport guide","subscriptions/transport" %}
+Read more in the {% internal_link "Implementation guide", "subscriptions/implementation" %} or check out the {% internal_link "ActionCable implementation", "subscriptions/action_cable_implementation" %}.
