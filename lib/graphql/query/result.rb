@@ -21,7 +21,7 @@ module GraphQL
 
       def_delegators :@query, :context, :mutation?, :query?
 
-      def_delegators :@to_h, :[], :keys, :values
+      def_delegators :@to_h, :[], :keys, :values, :to_json, :as_json
 
       # Delegate any hash-like method to the underlying hash.
       def method_missing(method_name, *args, &block)
@@ -40,9 +40,20 @@ module GraphQL
         "#<GraphQL::Query::Result @query=... @to_h=#{@to_h} >"
       end
 
+      # A result is equal to another object when:
+      #
+      # - The other object is a Hash whose value matches `result.to_h`
+      # - The other object is a Result whose value matches `result.to_h`
+      #
+      # (The query is ignored for comparing result equality.)
+      #
+      # @return [Boolean]
       def ==(other)
-        if other.is_a?(Hash)
+        case other
+        when Hash
           @to_h == other
+        when Query::Result
+          @to_h == other.to_h
         else
           super
         end
