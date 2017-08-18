@@ -77,6 +77,8 @@ module GraphQL
           results.each_with_index.map do |data_result, idx|
             query = queries[idx]
             finish_query(data_result, query)
+            # Get the Query::Result, not the Hash
+            query.result
           end
         end
 
@@ -109,7 +111,7 @@ module GraphQL
         # @return [Hash] final result of this query, including all values and errors
         def finish_query(data_result, query)
           # Assign the result so that it can be accessed in instrumentation
-          query.result = if data_result.equal?(NO_OPERATION)
+          query.result_values = if data_result.equal?(NO_OPERATION)
             if !query.valid?
               { "errors" => query.static_errors.map(&:to_h) }
             else
@@ -129,7 +131,7 @@ module GraphQL
 
         # use the old `query_execution_strategy` etc to run this query
         def run_one_legacy(schema, query)
-          query.result = if !query.valid?
+          query.result_values = if !query.valid?
             all_errors = query.validation_errors + query.analysis_errors + query.context.errors
             if all_errors.any?
               { "errors" => all_errors.map(&:to_h) }
