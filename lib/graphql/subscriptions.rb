@@ -66,12 +66,10 @@ module GraphQL
       variables = query_data.fetch(:variables)
       context = query_data.fetch(:context)
       operation_name = query_data.fetch(:operation_name)
-      p "Running query #{operation_name.inspect} on #{object.inspect}"
       # Re-evaluate the saved query
-      query = GraphQL::Query.new(
-        @schema,
-        query_string,
+      result = @schema.execute(
         {
+          query: query_string,
           context: context,
           subscription_key: event.key,
           operation_name: operation_name,
@@ -79,8 +77,7 @@ module GraphQL
           root_value: object,
         }
       )
-      result = query.result
-      deliver(subscription_id, result, query.context)
+      deliver(subscription_id, result)
     end
 
     # Event `event` occurred on `object`,

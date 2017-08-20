@@ -49,7 +49,7 @@ class InMemoryBackend
       end
     end
 
-    def deliver(channel, result, ctx)
+    def deliver(channel, result)
       @deliveries[channel] << result
     end
 
@@ -117,7 +117,14 @@ class InMemoryBackend
   }
   GRAPHQL
 
-  Schema = GraphQL::Schema.from_definition(SchemaDefinition).redefine do
+  Resolvers = {
+    "Subscription" => {
+      "payload" => ->(o,a,c) { o },
+      "myEvent" => ->(o,a,c) { o },
+      "event" => ->(o,a,c) { o },
+    },
+  }
+  Schema = GraphQL::Schema.from_definition(SchemaDefinition, default_resolve: Resolvers).redefine do
     use InMemoryBackend::Subscriptions,
       extra: 123
   end

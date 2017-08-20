@@ -33,25 +33,21 @@ module GraphQL
     #         channel: self,
     #       }
     #
-    #       exec_options = {
+    #       result = MySchema.execute({
     #         query: query,
     #         context: context,
     #         variables: variables,
     #         operation_name: operation_name
-    #       }
-    #
-    #       # TODO: Add a `Result` class to make this not janky.
-    #       query = GraphQL::Query.new(MySchema, exec_options)
-    #       MySchema.execute(exec_options)
+    #       })
     #
     #       payload = {
-    #         result: query.subscription? ? nil : result,
-    #         more: query.subscription?,
+    #         result: result.to_h,
+    #         more: result.subscription?,
     #       }
     #
     #       # Track the subscription here so we can remove it
     #       # on unsubscribe.
-    #       if context[:subscription_id]
+    #       if result.context[:subscription_id]
     #         @subscription_ids << context[:subscription_id]
     #       end
     #
@@ -84,8 +80,8 @@ module GraphQL
 
       # This subscription was re-evaluated.
       # Send it to the specific stream where this client was waiting.
-      def deliver(subscription_id, result, context)
-        payload = { result: result, more: true }
+      def deliver(subscription_id, result)
+        payload = { result: result.to_h, more: true }
         ActionCable.server.broadcast(SUBSCRIPTION_PREFIX + subscription_id, payload)
       end
 
