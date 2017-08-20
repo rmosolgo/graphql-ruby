@@ -71,15 +71,11 @@ To tell GraphQL how to resolve members of the `"Node"` interface, you must also 
 MySchema = GraphQL::Schema.define do
   # You'll also need to define `resolve_type` for
   # telling the schema what type Relay `Node` objects are
-  resolve_type ->(obj, ctx) {
-    case obj
-    when Post
-      Types::PostType
-    when Comment
-      Types::CommentType
-    else
-      raise("Unexpected object: #{obj}")
-    end
+  resolve_type ->(type, obj, ctx) {
+    obj.graphql_schema_type
+    # Implement #graphql_schema_type on obj.
+    # obj of type Post would implement and return Types::PostType
+    # obj of type Comment would implement and return Types::CommentType
   }
 end
 ```
