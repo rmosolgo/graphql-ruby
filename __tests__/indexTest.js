@@ -1,5 +1,5 @@
-var graphqlPro = require("../index.js")
+var graphqlRubyClient = require("../index.js")
 
 it("exports the sync function", () => {
-  expect(graphqlPro.sync).toBeInstanceOf(Function)
+  expect(graphqlRubyClient.sync).toBeInstanceOf(Function)
 })

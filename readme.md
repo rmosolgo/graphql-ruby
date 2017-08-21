@@ -1,5 +1,4 @@
-# GraphQL::Pro JavaScript Client [![Build Status](https://travis-ci.org/rmosolgo/graphql-pro-js.svg?branch=master)](https://travis-ci.org/rmosolgo/graphql-pro-js)
-
+# GraphQL::Ruby JavaScript Client [![Build Status](https://travis-ci.org/rmosolgo/graphql-ruby-client.svg?branch=master)](https://travis-ci.org/rmosolgo/graphql-ruby-client)
 
 JavaScript support for GraphQL projects using [graphql-pro](http://graphql.pro)'s `OperationStore` for persisted queries.
 
@@ -13,10 +12,10 @@ See the [server-side docs on http://graphql-ruby.org](http://graphql-ruby.org/op
 
 ## `sync` utility
 
-This package contains a command line utility, `graphql-pro sync`:
+This package contains a command line utility, `graphql-ruby-client sync`:
 
 ```
-$ graphql-pro sync # ...
+$ graphql-ruby-client sync # ...
 Authorizing with HMAC
 Syncing 4 operations to http://myapp.com/graphql/operations...
   3 added
@@ -36,17 +35,17 @@ option | description
 `--secret` | Client Secret ([created on server](http://graphql-ruby.org/operation_store/client_workflow))
 `--outfile` | Destination for generated JS code
 
-You can see these and a few others with `graphql-pro sync --help`.
+You can see these and a few others with `graphql-ruby-client sync --help`.
 
 ## Use with Relay
 
-`graphql-pro` can persist queries from `relay-compiler` using the embedded `@relayHash` value.
+`graphql-ruby-client` can persist queries from `relay-compiler` using the embedded `@relayHash` value.
 
 To sync your queries with the server, use the `--path` option to point to your `__generated__` directory, for example:
 
 ```bash
 # sync a Relay project
-$ graphql-pro sync --path=src/__generated__  --outfile=src/OperationStoreClient.js --url=...
+$ graphql-ruby-client sync --path=src/__generated__  --outfile=src/OperationStoreClient.js --url=...
 ```
 
 Then, the generated code may be integrated with Relay's [Network Layer](https://facebook.github.io/relay/docs/network-layer.html):
@@ -88,7 +87,7 @@ function fetchQuery(operation, variables, cacheConfig, uploadables) {
 Use the `--path` option to point at your `.graphql` files:
 
 ```
-$ graphql-pro sync --path=src/graphql/ --url=...
+$ graphql-ruby-client sync --path=src/graphql/ --url=...
 ```
 
 Then, load the generated module and add its `.apolloMiddleware` to your network interface with `.use([...])`:
@@ -136,11 +135,11 @@ $.post("/graphql", {
 
 `OperationStore` uses HMAC-SHA256 to [authenticate requests](http://graphql-ruby.org/operation_store/authentication).
 
-Pass the key to `graphql-pro sync` as `--secret` to authenticate it:
+Pass the key to `graphql-ruby-client sync` as `--secret` to authenticate it:
 
 ```bash
 $ export MY_SECRET_KEY= "abcdefg..."
-$ graphql-pro sync ... --secret=$MY_SECRET_KEY
+$ graphql-ruby-client sync ... --secret=$MY_SECRET_KEY
 # ...
 Authenticating with HMAC
 # ...

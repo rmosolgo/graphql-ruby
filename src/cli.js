@@ -3,7 +3,7 @@ var parseArgs = require('minimist')
 var argv = parseArgs(process.argv.slice(2))
 
 if (argv.help || argv.h) {
-  console.log(`usage: graphql-pro sync <options>
+  console.log(`usage: graphql-ruby-client sync <options>
 
   Read .graphql files and push the contained
   operations to a GraphQL::Pro::OperationStore
@@ -31,7 +31,7 @@ optional arguments:
   var commandName = argv._[0]
 
   if (commandName !== "sync") {
-    console.log("Only `graphql-pro sync` is supported")
+    console.log("Only `graphql-ruby-client sync` is supported")
   } else {
     var sync = require("./sync")
     var result = sync({
