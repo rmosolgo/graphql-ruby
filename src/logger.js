@@ -27,7 +27,7 @@ Logger.prototype.colorize = function(color, text) {
   if (!prefix) {
     throw new Error("No color named: " + color)
   }
-  return prefix + "[" + color + "] " +  text + colors.reset
+  return prefix + text + colors.reset
 }
 
 function addColorizeShortcut(color) {
