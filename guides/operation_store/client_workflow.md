@@ -30,7 +30,7 @@ A default `secret` is provided for you, but you can also enter your own. The `se
 
 Once a client is registered, it can push queries to the server via {% internal_link "the Sync API","/operation_store/getting_started#add-routes" %}.
 
-The easiest way to sync is with `graphql-pro sync`, a command-line tool written in JavaScript: [`graphql-ruby-client`](https://github.com/rmosolgo/graphql-ruby-client).
+The easiest way to sync is with `graphql-ruby-client sync`, a command-line tool written in JavaScript: [`graphql-ruby-client`](https://github.com/rmosolgo/graphql-ruby-client).
 
 In short, it:
 
