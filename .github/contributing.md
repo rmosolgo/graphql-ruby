@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for getting involved! I hope the information below will help you contribute to `graphql-pro-js`.
+Thanks for getting involved! I hope the information below will help you contribute to `graphql-ruby-client`.
 
 ## Issues
 
@@ -19,6 +19,6 @@ It's important for code to fit in with design and maintenance goals of the proje
 
 ## Legal
 
-By submitting a Pull Request, you disavow any rights or claims to any changes submitted to `graphql-pro-js` and assign the copyright of those changes to Robert Mosolgo, the author and maintainer of `graphql-pro-js`. If you cannot or don't want to reassign those rights (your employment contract for your employer may not allow this), don't submit a PR. Instead, open an issue so that someone else can give it a try.
+By submitting a Pull Request, you disavow any rights or claims to any changes submitted to `graphql-ruby-client` and assign the copyright of those changes to Robert Mosolgo, the author and maintainer of `graphql-ruby-client`. If you cannot or don't want to reassign those rights (your employment contract for your employer may not allow this), don't submit a PR. Instead, open an issue so that someone else can give it a try.
 
 In short, contributing code means that the code belongs to the maintainer. That's generally what you want, since the burden of upkeep, support and distribution falls on the maintainer anyways. I hope this doesn't prohibit you from contributing!
