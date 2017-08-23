@@ -1,7 +1,7 @@
 var sync = require("../sync")
 var fs = require("fs")
 var nock = require("nock")
-var Logger = require("../logger")
+var Logger = require("../sync/logger")
 var logger = new Logger
 
 describe("sync operations", () => {

@@ -9,7 +9,7 @@ function withExampleClient(mapName, callback) {
   fs.writeFileSync(filename, jsCode)
 
   // Load the module and use it
-  var exampleModule = require("../../" + mapName)
+  var exampleModule = require("../../../" + mapName)
   callback(exampleModule)
 
   // Clean up the generated file
