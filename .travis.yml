@@ -11,7 +11,7 @@ before_install:
   - gem install bundler
 
 rvm:
-- 2.1.0 # Lowest version officially supported by that gem
+- 2.1.10 # Lowest version officially supported by the gem is 2.1
 - 2.2.7
 - 2.3.4
 - 2.4.1
