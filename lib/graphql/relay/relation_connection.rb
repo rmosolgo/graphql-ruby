@@ -24,11 +24,11 @@ module GraphQL
       end
 
       def has_next_page
-        !!(first && sliced_nodes_count > first)
+        !!(first && paged_nodes_length >= first && sliced_nodes_count > first)
       end
 
       def has_previous_page
-        !!(last && sliced_nodes_count > last)
+        !!(last && paged_nodes_length >= last && sliced_nodes_count > last)
       end
 
       def first
@@ -155,6 +155,14 @@ module GraphQL
       def paged_nodes_array
         return @paged_nodes_array if defined?(@paged_nodes_array)
         @paged_nodes_array = paged_nodes.to_a
+      end
+
+      def paged_nodes_length
+        if paged_nodes.respond_to?(:length)
+          paged_nodes.length
+        else
+          paged_nodes_array.length
+        end
       end
     end
 
