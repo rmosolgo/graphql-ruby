@@ -32,7 +32,7 @@ gemfile:
 matrix:
   include:
   - env: DATABASE=POSTGRESQL
-    gemfile: Gemfile
+    gemfile: gemfiles/rails_5.1.gemfile
     rvm: 2.4.1
   - env: WITHOUT_RAILS=yes
     gemfile: gemfiles/without_rails.gemfile
