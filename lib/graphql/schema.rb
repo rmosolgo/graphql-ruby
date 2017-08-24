@@ -221,6 +221,11 @@ module GraphQL
       end
     end
 
+    # @return [Hash] pairs of `{ name => [Field || Argument] }` type references in this schema
+    def get_members_of_type(type_name)
+      @type_reference_map.fetch(type_name, [])
+    end
+
     # Execute a query on itself. Raises an error if the schema definition is invalid.
     # @see {Query#initialize} for arguments.
     # @return [Hash] query result, ready to be serialized as JSON
@@ -545,6 +550,7 @@ module GraphQL
         traversal = Traversal.new(self)
         @types = traversal.type_map
         @instrumented_field_map = traversal.instrumented_field_map
+        @type_reference_map = traversal.type_reference_map
       end
     ensure
       @rebuilding_artifacts = false
