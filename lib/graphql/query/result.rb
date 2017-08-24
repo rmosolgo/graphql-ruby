@@ -19,7 +19,7 @@ module GraphQL
       # @return [Hash] The resulting hash of "data" and/or "errors"
       attr_reader :to_h
 
-      def_delegators :@query, :context, :mutation?, :query?
+      def_delegators :@query, :context, :mutation?, :query?, :subscription?
 
       def_delegators :@to_h, :[], :keys, :values, :to_json, :as_json
 
