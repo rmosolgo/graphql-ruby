@@ -68,7 +68,8 @@ module GraphQL
               items = items.offset(offset).limit(last)
             end
           else
-            offset = (relation_offset(items) || 0) + relation_count(items) - last
+            slice_count = relation_count(items)
+            offset = (relation_offset(items) || 0) + slice_count - [last, slice_count].min
             items = items.offset(offset).limit(last)
           end
         end
