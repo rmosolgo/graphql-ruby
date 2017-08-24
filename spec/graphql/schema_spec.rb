@@ -17,6 +17,12 @@ describe GraphQL::Schema do
     end
   end
 
+  describe "#union_memberships" do
+    it "returns a list of unions that include the type" do
+      assert_equal [schema.types["Animal"], schema.types["AnimalAsCow"]], schema.union_memberships(schema.types["Cow"])
+    end
+  end
+
   describe "#get_members_of_type" do
     it "returns a list of Field and Arguments of that type" do
       assert_equal [schema.types["Query"].fields["cow"]], schema.get_members_of_type("Cow")

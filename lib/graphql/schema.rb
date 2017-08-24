@@ -226,6 +226,10 @@ module GraphQL
       @type_reference_map.fetch(type_name, [])
     end
 
+    def union_memberships(type)
+      @unions.select { |union| possible_types(union).include?(type) }
+    end
+
     # Execute a query on itself. Raises an error if the schema definition is invalid.
     # @see {Query#initialize} for arguments.
     # @return [Hash] query result, ready to be serialized as JSON
@@ -551,6 +555,7 @@ module GraphQL
         @types = traversal.type_map
         @instrumented_field_map = traversal.instrumented_field_map
         @type_reference_map = traversal.type_reference_map
+        @unions = traversal.unions
       end
     ensure
       @rebuilding_artifacts = false

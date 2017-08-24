@@ -13,6 +13,9 @@ module GraphQL
       # @return [Hash<String => [GraphQL::Field || GraphQL::Argument]]
       attr_reader :type_reference_map
 
+      # @return [[GraphQL::UnionType]]
+      attr_reader :unions
+
       # @param schema [GraphQL::Schema]
       def initialize(schema, introspection: true)
         @schema = schema
@@ -25,6 +28,7 @@ module GraphQL
         @type_map = {}
         @instrumented_field_map = Hash.new { |h, k| h[k] = {} }
         @type_reference_map = Hash.new { |h, k| h[k] = [] }
+        @unions = []
         visit(schema, nil)
       end
 
@@ -61,6 +65,7 @@ module GraphQL
             when GraphQL::InterfaceType
               visit_fields(type_defn)
             when GraphQL::UnionType
+              @unions << type_defn
               type_defn.possible_types.each { |t| visit(t, "Possible type for #{type_defn.name}") }
             when GraphQL::InputObjectType
               type_defn.arguments.each do |name, arg|
