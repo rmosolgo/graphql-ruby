@@ -69,10 +69,18 @@ module MaskHelpers
     end
   end
 
+  Chereme = GraphQL::ObjectType.define do
+    name "Chereme"
+    description "A basic unit of signed communication"
+    field :name, types.String.to_non_null_type
+  end
+
   QueryType = GraphQL::ObjectType.define do
     name "Query"
     field :languages, LanguageType.to_list_type do
-      argument :within, WithinInputType, "Find languages nearby a point"
+      argument :within, WithinInputType, "Find languages nearby a point" do
+        metadata :hidden_argument_with_input_object, true
+      end
     end
     field :language, LanguageType do
       metadata :hidden_field, true
@@ -80,6 +88,10 @@ module MaskHelpers
         metadata :hidden_argument, true
       end
     end
+
+     field :chereme, Chereme do
+       metadata :hidden_field, true
+     end
 
     field :phonemes, PhonemeType.to_list_type do
       argument :manners, MannerEnum.to_list_type, "Filter phonemes by manner of articulation"
@@ -224,6 +236,16 @@ describe GraphQL::Schema::Warden do
     let(:mask) {
       ->(member, ctx) { member.metadata[:hidden_field] || member.metadata[:hidden_type] }
     }
+
+    it "hides types if no other fields are using it" do
+      query_string = %|
+      {
+        Chereme: __type(name: "Chereme") { fields { name } }
+      }|
+
+       res = MaskHelpers.query_with_mask(query_string, mask)
+       assert_nil res["data"]["Chereme"]
+     end
 
     it "causes validation errors" do
       query_string = %|{ phoneme(symbol: "ϕ") { name } }|

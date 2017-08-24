@@ -45,14 +45,14 @@ module GraphQL
 
       # @return [Array<GraphQL::BaseType>] Visible types in the schema
       def types
-        @types ||= @schema.types.each_value.select { |t| visible?(t) }
+        @types ||= @schema.types.each_value.select { |t| visible_type?(t) }
       end
 
       # @return [GraphQL::BaseType, nil] The type named `type_name`, if it exists (else `nil`)
       def get_type(type_name)
         @visible_types ||= read_through do |name|
           type_defn = @schema.types.fetch(name, nil)
-          if type_defn && visible?(type_defn)
+          if type_defn && visible_type?(type_defn)
             type_defn
           else
             nil
@@ -81,7 +81,7 @@ module GraphQL
 
       # @return [Array<GraphQL::BaseType>] The types which may be member of `type_defn`
       def possible_types(type_defn)
-        @visible_possible_types ||= read_through { |type_defn| @schema.possible_types(type_defn).select { |t| visible?(t) } }
+        @visible_possible_types ||= read_through { |type_defn| @schema.possible_types(type_defn).select { |t| visible_type?(t) } }
         @visible_possible_types[type_defn]
       end
 
@@ -126,8 +126,42 @@ module GraphQL
 
       private
 
+      def union_memberships(obj_type)
+        @unions ||=  read_through { |obj_type| @schema.union_memberships(obj_type) }
+        @unions[obj_type]
+      end
+
       def visible_field?(field_defn)
-        visible?(field_defn) && visible?(field_defn.type.unwrap)
+        visible?(field_defn) && visible_type?(field_defn.type.unwrap)
+      end
+
+      def visible_type?(type_defn)
+        return false unless visible?(type_defn)
+        return false unless referenced_by_visible_members?(type_defn)
+
+        if type_defn.kind.object? && has_abstract_type?(type_defn)
+          member_or_implements?(type_defn)
+        else
+          true
+        end
+      end
+
+      def referenced_by_visible_members?(type_defn)
+        members = @schema.get_members_of_type(type_defn.unwrap.name)
+        # Types should be visible if there are
+        # no member definitions with that type
+        return true unless members.any?
+        # Only hide the type when there are fields
+        # but none are visible.
+        members.any? { |member| visible?(member) }
+      end
+
+      def member_or_implements?(type_defn)
+        interfaces(type_defn).any? || union_memberships(type_defn).select { |u| visible?(u) }.any?
+      end
+
+      def has_abstract_type?(type_defn)
+        union_memberships(type_defn).any? || type_defn.interfaces.any?
       end
 
       def visible?(member)
