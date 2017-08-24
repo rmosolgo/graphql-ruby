@@ -8,6 +8,12 @@ describe GraphQL::Schema::Traversal do
     traversal.type_map
   end
 
+  def type_references(types)
+    schema = GraphQL::Schema.define(orphan_types: types, resolve_type: :dummy)
+    traversal = GraphQL::Schema::Traversal.new(schema, introspection: false)
+    traversal.type_reference_map
+  end
+
   it "finds types from directives" do
     expected = {
       "Boolean" => GraphQL::BOOLEAN_TYPE, # `skip` argument
@@ -129,5 +135,32 @@ describe GraphQL::Schema::Traversal do
     it "is found through Schema.define(types:)" do
       assert_equal Dummy::HoneyType, Dummy::Schema.types["Honey"]
     end
+  end
+
+  it "finds all references to types from fields and arguments" do
+    c_type = GraphQL::InputObjectType.define do
+      name "C"
+      input_field :someField, GraphQL::STRING_TYPE
+    end
+
+    b_type = GraphQL::ObjectType.define do
+      name "B"
+      field :anotherField, !GraphQL::STRING_TYPE do |field|
+        field.argument :anArgument, c_type
+      end
+    end
+
+    a_type = GraphQL::ObjectType.define do
+      name "A"
+      field :someField, b_type
+    end
+
+    expected = {
+      "B" => [a_type.fields["someField"]],
+      "String" => [b_type.fields["anotherField"], c_type.input_fields["someField"]],
+      "C" => [b_type.fields["anotherField"].arguments["anArgument"]]
+    }
+
+    assert_equal expected, type_references([a_type, b_type, c_type])
   end
 end
