@@ -19,7 +19,7 @@ describe("sync operations", () => {
       var url = null
       var options = {
         client: "test-1",
-        path: "./src/__tests__/documents",
+        path: "./__tests__/documents",
         url: "bogus",
         quiet: true,
         send: (sendPayload, options) => {
@@ -37,7 +37,7 @@ describe("sync operations", () => {
       var payload = null
       var options = {
         client: "test-1",
-        path: "./src/__tests__/documents",
+        path: "./__tests__/documents",
         url: "bogus",
         quiet: true,
         send: (sendPayload, opts) => { payload = sendPayload },
@@ -65,7 +65,7 @@ describe("sync operations", () => {
       var payload = null
       var options = {
         client: "test-1",
-        path: "./src/__tests__/documents",
+        path: "./__tests__/documents",
         url: "bogus",
         quiet: true,
         hash: (graphQLBody) => {
@@ -94,7 +94,7 @@ describe("sync operations", () => {
       var options = {
         client: "test-1",
         quiet: true,
-        path: "./src/__generated__",
+        path: "./__generated__",
         url: "bogus",
         send: (sendPayload, opts) => { payload = sendPayload },
       }
@@ -118,7 +118,7 @@ describe("sync operations", () => {
       var options = {
         client: "test-1",
         quiet: true,
-        path: "./src/__tests__/project/",
+        path: "./__tests__/project/",
         url: "bogus",
         // mode: "project" is the default
         send: (sendPayload, opts) => { payload = sendPayload },
@@ -141,7 +141,7 @@ describe("sync operations", () => {
       var options = {
         client: "test-1",
         quiet: true,
-        path: "./src/__tests__/project",
+        path: "./__tests__/project",
         url: "bogus",
         mode: "file",
         send: (sendPayload, opts) => { payload = sendPayload },
@@ -168,24 +168,24 @@ describe("sync operations", () => {
     it("Generates a usable artifact for middleware", () => {
       var options = {
         client: "test-1",
-        path: "./src/__tests__/project",
+        path: "./__tests__/project",
         url: "bogus",
         quiet: true,
         send: (sendPayload, opts) => { },
       }
       sync(options)
 
-      var generatedCode = fs.readFileSync("./src/OperationStoreClient.js", "utf8")
+      var generatedCode = fs.readFileSync("./OperationStoreClient.js", "utf8")
       expect(generatedCode).toMatch('"GetStuff": "5f0da489cf508a7c65ff5fa144e50545"')
       expect(generatedCode).toMatch('module.exports = OperationStoreClient')
       expect(generatedCode).toMatch('var _client = "test-1"')
-      fs.unlinkSync("./src/OperationStoreClient.js")
+      fs.unlinkSync("./OperationStoreClient.js")
     })
 
     it("Takes an outfile option", () => {
       var options = {
         client: "test-2",
-        path: "./src/__tests__/project",
+        path: "./__tests__/project",
         url: "bogus",
         quiet: true,
         outfile: "__crazy_outfile.js",
@@ -207,7 +207,7 @@ describe("sync operations", () => {
 
       var options = {
         client: "test-1",
-        path: "./src/__tests__/project",
+        path: "./__tests__/project",
         url: "bogus",
         send: (sendPayload, opts) => { },
       }
@@ -215,7 +215,7 @@ describe("sync operations", () => {
 
       var expectedCalls = [
         ["Syncing 2 operations to " + logger.bright("bogus") + "..."],
-        ["Generating client module in " + logger.bright("src/OperationStoreClient.js") + "..."],
+        ["Generating client module in " + logger.bright("OperationStoreClient.js") + "..."],
         [logger.green("✓ Done!")],
       ]
 
@@ -227,7 +227,7 @@ describe("sync operations", () => {
 
       var options = {
         client: "test-1",
-        path: "./src/__tests__/project",
+        path: "./__tests__/project",
         url: "bogus",
         quiet: true,
         send: (sendPayload, opts) => { },
@@ -257,7 +257,7 @@ describe("sync operations", () => {
 
       var options = {
         client: "test-1",
-        path: "./src/__tests__/project",
+        path: "./__tests__/project",
         url: "http://example.com/stored_operations/sync",
         quiet: false,
       }
@@ -297,7 +297,7 @@ describe("sync operations", () => {
 
       var options = {
         client: "test-1",
-        path: "./src/__tests__/project",
+        path: "./__tests__/project",
         url: "http://example.com/stored_operations/sync",
         quiet: false,
       }
@@ -315,7 +315,7 @@ describe("sync operations", () => {
           ["  " + logger.green("1 added")],
           ["  " + logger.reset("2 not modified")],
           ["  " + logger.dim("0 failed")],
-          ["Generating client module in " + logger.bright("src/OperationStoreClient.js") + "..."],
+          ["Generating client module in " + logger.bright("OperationStoreClient.js") + "..."],
           [logger.green("✓ Done!")],
         ]
         var expectedErrorCalls = []

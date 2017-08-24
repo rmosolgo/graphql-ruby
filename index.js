@@ -1,4 +1,4 @@
-var sync = require("./src/sync")
+var sync = require("./sync")
 
 module.exports = {
   sync: sync,

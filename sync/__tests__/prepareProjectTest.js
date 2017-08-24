@@ -3,11 +3,11 @@ var prepareProject = require("../prepareProject")
 describe("merging a project", () => {
   it("builds out separate operations", () => {
     var filenames = [
-      "./src/__tests__/project/op_2.graphql",
-      "./src/__tests__/project/op_1.graphql",
-      "./src/__tests__/project/frag_1.graphql",
-      "./src/__tests__/project/frag_2.graphql",
-      "./src/__tests__/project/frag_3.graphql",
+      "./__tests__/project/op_2.graphql",
+      "./__tests__/project/op_1.graphql",
+      "./__tests__/project/frag_1.graphql",
+      "./__tests__/project/frag_2.graphql",
+      "./__tests__/project/frag_3.graphql",
     ]
     var ops = prepareProject(filenames)
 
@@ -28,10 +28,10 @@ describe("merging a project", () => {
 
   it("blows up on duplicate names", () => {
     var filenames = [
-      "./src/__tests__/documents/doc1.graphql",
-      "./src/__tests__/project/op_2.graphql",
-      "./src/__tests__/project/op_1.graphql",
-      "./src/__tests__/project/frag_1.graphql",
+      "./__tests__/documents/doc1.graphql",
+      "./__tests__/project/op_2.graphql",
+      "./__tests__/project/op_1.graphql",
+      "./__tests__/project/frag_1.graphql",
     ]
     expect(() => {
       prepareProject(filenames)
