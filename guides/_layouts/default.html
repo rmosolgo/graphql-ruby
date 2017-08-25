@@ -8,12 +8,191 @@
     {% else %}
       <title>GraphQL - {{ page.title }}</title>
     {% endif %}
-    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400" rel="stylesheet" />
+    <!-- <link href="https://fonts.googleapis.com/css?family=Rubik:300,400" rel="stylesheet" /> -->
+    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,500,700" rel="stylesheet">
     <link rel="stylesheet" href="{{ site.baseurl }}/css/main.css">
     <link rel="icon" href="{{ site.baseurl }}/graphql-ruby-icon.png">
   </head>
   <body>
-    <div class="header">
+
+    <div class="navigation">
+      <div class="container">
+        <div class="wrapper">
+          <div class="logo">
+            <a href="{{ site.baseurl }}/">
+              <img src="{{ site.baseurl }}/images/logo.svg" />
+            </a>
+          </div>
+
+          <div class="menu">
+            <ul>
+              <li>
+                <a href="{{ site.baseurl }}/getting_started">Get started</a>
+              </li>
+
+              <li>
+                <a href="{{ site.baseurl }}/guides">Guides</a>
+              </li>
+
+              <li>
+                <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+              </li> 
+
+              <li>
+                <a href="{% api_doc_root %}">API</a>
+              </li>   
+
+              <li>
+                <a href="https://tinyletter.com/graphql-ruby">Newsletter </a>
+              </li>                
+
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <header>
+      <div class="container">
+
+        <div class="payoff">
+          <h1>GraphQL-Ruby</h1>
+          <a class="btn btn-big" href="www.google.nl">Get started! </a>          
+        </div>
+
+      </div>
+    </header>
+
+<section class="steps">
+  <div class="container">
+    <h1>How to start going?</h1>
+    <div class="wrap">
+      <div class="step">
+        <div class="icon">
+          <img src="{{ site.baseurl }}/images/step-1.svg" />
+        </div>
+        <div class="content">    
+          <h2>Install the Gem</h2>
+          <p>Get going fast with the graphql gem, battle-tested and trusted by GitHub and Shopify.</p>
+      <div class="teaser">
+{% highlight bash %}
+# Download the gem:
+gem install graphql
+# Setup with Rails:
+rails generate graphql:install
+{% endhighlight %}
+      </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="icon">
+          <img src="{{ site.baseurl }}/images/step-2.svg" />
+        </div>
+        <div class="content">    
+          <h2>Define Your Schema</h2>
+          <p>Describe your application with the GraphQL type system to create a self-documenting, strongly-typed API.</p>
+          <div class="teaser">
+            {% highlight ruby %}
+            # app/graphql/types/profile_type.rb
+            Types::ProfileType = GraphQL::ObjectType.define do
+              name "Profile"
+              field :id, !types.ID
+              field :name, !types.String
+              field :avatar, Types::PhotoType
+            end
+            {% endhighlight %}
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="icon">
+          <img src="{{ site.baseurl }}/images/step-3.svg" />
+        </div> 
+        <div class="content">      
+          <h2>Run Queries</h2>
+          <p>Serve queries to build a great UI or webservice.</p>
+      <div class="teaser">
+{% highlight ruby %}
+# app/controllers/graphql_controller.rb
+result = MySchema.execute(
+  params[:query],
+  variables: params[:variables],
+  context: { current_user: current_user },
+)
+render json: result
+{% endhighlight %}
+      </div>
+      <div class="teaser">
+        <div>
+      </div>    
+    </div>
+
+  </div>
+</section>    
+
+<section class="partner">
+  <div class="container">
+    <h1>Companies that love GraphQL</h1>
+    <img src="{{ site.baseurl }}/images/partners.svg"
+  </div>
+</section>
+
+<section class="cta">
+  <div class="container">
+    <h1>Browse the documentation</h1>
+    <a class="btn btn-big" href="{{ site.baseurl }}/getting_started">Let’s get there!</a>
+  </div>
+</section>
+
+<section class="benefits">
+  <h1>Why this code is so much better</h1>
+  <div class="container">
+    <div class="row">
+
+      <div class="benefit">
+        <div class="inner">
+          <img src="{{ site.baseurl }}/images/benefit-1.svg">
+          <h2>Easy and Quick</h2>
+          <p>Getting started with Graphene is incredibly easy. You will enjoy creating new APIs. But I need more text here.</p>
+        </div>
+      </div>   
+
+      <div class="benefit">
+        <div class="inner">
+          <img src="{{ site.baseurl }}/images/benefit-2.svg">
+          <h2>Declarative</h2>
+          <p>GQuery responses are decided by the client rather than the server. A GraphQL query returns exactly what a client asks for and no more.</p>          
+        </div>
+      </div>   
+
+      <div class="benefit">
+        <div class="inner">
+          <img src="{{ site.baseurl }}/images/benefit-3.svg">
+          <h2>Ruby</h2>
+          <p>Graphene will work out of box with your current stack. We have integrations with Django, SQLAlchemy, Flask, and Google App Engine.</p>          
+        </div>
+      </div>       
+
+    </div>
+  </div>
+</section>
+
+<section class="statement">
+  <div class="container">
+    <h1>Works well with <a href="#">Apollo</a> and <a href="#">React Modern</a></h1>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <p>Add <a href="http://graphql.org">GraphQL</a> to your Ruby app. <a href="{{ site.baseurl}}/getting_started">Get Started!</a></p>
+  </div>
+</footer>
+
+<!--     <div class="header">
       <div class="header-container">
         <div class="nav">
           <a href="{{ site.baseurl }}/" class="img-link">
@@ -35,7 +214,7 @@
       <div class="search-results-container">
         <div id="search-results"></div>
       </div>
-    </div>
+    </div> -->
     <div class="container">
       {{ content }}
     </div>

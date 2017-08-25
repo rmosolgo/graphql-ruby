@@ -3,7 +3,11 @@
 
 @import "reset";
 
-$brand-color: #a5152a;
+$black:       #252525;
+$gray-l:      #FAFAFA;
+
+
+$brand-color: #D74B4B;
 $brand-color-light:  #ed8090;
 $brand-color-extralight:  #f9e8ee;
 $experimental-background: #fff7cf;
@@ -15,17 +19,122 @@ $code-color: #777777;
 $code-border-radius: 2px;
 $muted-color: #777777;
 $subtle-color: #aaaaaa;
-$font: 'Rubik', sans-serif;
+$font: 'Roboto', sans-serif;
 $font-color: black;
 $code-font: 'Monaco', monospace;
 
+*{
+  box-sizing: border-box;
+}
+
 body {
   font-family: $font;
-  background: #fafafa;
+  background: white;
 }
 
 strong, b {
     font-weight: bold;
+}
+
+h1{
+  font-size: 32px;
+  line-height: 38px;
+}
+
+h2{
+  font-size: 24px;
+  line-height: 28px;
+}
+
+
+.container {
+  max-width: 1000px;
+  margin: 0px auto;
+}
+
+header{
+  background-color: $brand-color;
+  height: 100vh;
+  position: relative;
+  display: flex;
+  align-items: center;
+  &:after{
+    background-image: url("/images/pattern.svg");
+    width: 100%;
+    height: 100%;
+    content: "";
+    position: absolute;
+  }
+  .payoff{
+    text-align: center;
+    position: relative;
+    z-index: 99999;
+    h1{
+      color: white;
+      font-size: 36px;
+      text-align: center;
+    }
+    .btn{
+      margin-top: 30px;
+      color: white;
+    }
+  }
+}
+
+.navigation{
+    height: 80px;
+    align-items: center;
+    background-color: $brand-color;
+    z-index: 999;
+    position: fixed;
+    width: 100%;
+    top: 0;
+    .wrapper{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo img{
+      height: 20px;
+    }
+
+    .menu{
+      ul{
+        padding: 0;
+        margin: 0;
+        li{
+          display: inline-flex;
+          a{
+            display: flex;
+            align-items: center;
+            height: 80px;
+            padding: 0 15px;
+            text-decoration: none;
+            color: white;            
+          }
+        }
+      }
+    }
+  }
+
+.btn{
+  color: white;
+  display: flex;
+  align-items: center;
+  display: inline-flex;
+  border: 1px solid white;
+  border-radius: 4px;
+  text-decoration: none;
+  &.btn-big{
+    font-size: 16px;
+    padding: 0 30px;
+    height: 48px;
+  }
+
+  &:hover{
+    background-color: darken($brand-color, 2%);
+  }
 }
 
 .header {
@@ -76,16 +185,141 @@ strong, b {
   }
 }
 
+.steps .container{
+  width: 700px;
+}
+
+.steps{
+  padding: 120px 0;
+  h1{
+    margin-bottom: 80px;
+  }
+
+  .wrap{
+    position: relative;
+    &:before{
+      content: "";
+      position: absolute;
+      background-color: #E5E5E5;
+      width: 2px;
+      left: 39px; 
+      height: 100%;
+    }
+  }
+
+  .step{
+    display: flex;
+    margin-bottom: 80px;
+    position: relative;
+    .icon{
+      img{
+        max-width: 80px;
+        max-height: 80px;
+      }
+
+    }
+    .content{
+      margin-left: 80px;
+      width: 100%;
+      h2{
+        margin: 0 0 10px 0;
+        padding: 0;
+        font-weight: 600;
+      }
+      p{
+        font-size: 24px;
+        line-height: 40px;
+        color: #969696;
+        font-weight: 300;
+      }
+      // code{
+      //   background-color: $gray-l;
+      //   padding: 30px;
+      //   display: block;
+      //   line-height: 20px;
+      }
+    }
+  }
+
+
+.partner{
+  background-color: #F2F2F2;
+  text-align: center;
+  padding: 60px 0 120px;
+  h1{
+    margin-bottom: 80px;
+  }
+}
+
+.cta{
+  height: 350px;
+  display: flex;
+  align-items: center;
+  background-color: $brand-color;
+  text-align: center;
+  color: white;
+  h1{
+    margin-bottom: 40px;
+  }
+}
+
+.benefits{
+  padding: 120px 0;
+  h1{
+    margin-bottom: 80px;
+    text-align: center;
+  }
+  .row{
+    margin: 0 -15px;
+    display: flex;
+    .benefit{
+      width: 33.3333333%;
+      padding: 0 15px;
+      .inner{
+        text-align: center;
+        h2{
+          margin-bottom: 20px;
+          margin-top: 40px;
+        }
+        p{
+          font-size: 16px;
+          color: #969696;
+          line-height: 32px;
+        }
+      }
+    }
+  }
+}
+
+.statement{
+  background-color: #F2F2F2;
+  height: 200px;
+  display: flex;
+  align-items: center;
+}
+
+footer{
+  background-color: $black;
+  display: flex;
+  align-items: center;
+  color: white;
+  height: 80px;
+  a{
+    color: white;
+    &:hover{
+      color: $brand-color;
+      background-color: transparent;
+    }
+  }
+}
+
+
+
+
+
 .header-container {
   max-width: 1040px;
   margin: 0px auto;
-}
-
-.container {
-  max-width: 1000px;
-  margin: 0px auto;
-  padding: 10px 20px;
-  background: white;
 }
 
 pre {
@@ -278,12 +512,12 @@ h1, h2, h3, h4, h5 {
   margin-bottom: 15px;
 }
 
-h1 { font-size: 1.5rem; }
-h2 { font-size: 1.3rem; }
-h3 { font-size: 1.2rem; }
-h4 { font-size: 1.1rem; }
-h5 { font-size: 1.05rem; }
-em { font-style: italic; }
+// h1 { font-size: 1.5rem; }
+// h2 { font-size: 1.3rem; }
+// h3 { font-size: 1.2rem; }
+// h4 { font-size: 1.1rem; }
+// h5 { font-size: 1.05rem; }
+// em { font-style: italic; }
 
 table {
   width: 100%;
@@ -417,3 +651,4 @@ li p, li div {
 .highlight .vg { color: #008080 } /* Name.Variable.Global */
 .highlight .vi { color: #008080 } /* Name.Variable.Instance */
 .highlight .il { color: #009999 } /* Literal.Number.Integer.Long */
+
