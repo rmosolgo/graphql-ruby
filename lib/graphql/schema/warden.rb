@@ -137,12 +137,17 @@ module GraphQL
 
       def visible_type?(type_defn)
         return false unless visible?(type_defn)
-        return false unless referenced_by_visible_members?(type_defn)
+
+        referenced = referenced_by_visible_members?(type_defn)
 
         if type_defn.kind.object? && has_abstract_type?(type_defn)
-          member_or_implements?(type_defn)
+          if orphan?(type_defn)
+            member_or_implements?(type_defn)
+          else
+            referenced || member_or_implements?(type_defn)
+          end
         else
-          true
+          referenced
         end
       end
 
@@ -162,6 +167,10 @@ module GraphQL
 
       def has_abstract_type?(type_defn)
         union_memberships(type_defn).any? || type_defn.interfaces.any?
+      end
+
+      def orphan?(type_defn)
+        @schema.orphan_types.include?(type_defn)
       end
 
       def visible?(member)

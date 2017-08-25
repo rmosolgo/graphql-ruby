@@ -69,10 +69,21 @@ module MaskHelpers
     end
   end
 
+  CheremeInput = GraphQL::InputObjectType.define do
+    name "CheremeInput"
+    input_field :name, types.String
+  end
+
   Chereme = GraphQL::ObjectType.define do
     name "Chereme"
     description "A basic unit of signed communication"
     field :name, types.String.to_non_null_type
+  end
+
+  Character = GraphQL::ObjectType.define do
+    name "Character"
+    interfaces [LanguageMemberInterface]
+    field :code, types.Int
   end
 
   QueryType = GraphQL::ObjectType.define do
@@ -89,9 +100,9 @@ module MaskHelpers
       end
     end
 
-     field :chereme, Chereme do
-       metadata :hidden_field, true
-     end
+    field :chereme, Chereme do
+      metadata :hidden_field, true
+    end
 
     field :phonemes, PhonemeType.to_list_type do
       argument :manners, MannerEnum.to_list_type, "Filter phonemes by manner of articulation"
@@ -113,6 +124,12 @@ module MaskHelpers
     field :add_phoneme, PhonemeType do
       argument :symbol, types.String
     end
+
+    field :add_chereme, types.String do
+      argument :chereme, CheremeInput do
+        metadata :hidden_argument, true
+      end
+    end
   end
 
   module FilterInstrumentation
@@ -132,6 +149,7 @@ module MaskHelpers
     query QueryType
     mutation MutationType
     subscription MutationType
+    orphan_types [Character]
     resolve_type ->(type, obj, ctx) { PhonemeType }
     instrument :query, FilterInstrumentation
   end
@@ -238,11 +256,11 @@ describe GraphQL::Schema::Warden do
     }
 
     it "hides types if no other fields are using it" do
-      query_string = %|
-        {
-          Chereme: __type(name: "Chereme") { fields { name } }
-        }
-      |
+       query_string = %|
+         {
+           Chereme: __type(name: "Chereme") { fields { name } }
+         }
+       |
 
        res = MaskHelpers.query_with_mask(query_string, mask)
        assert_nil res["data"]["Chereme"]
@@ -393,6 +411,20 @@ describe GraphQL::Schema::Warden do
         interfaces_names = res["data"]["__type"]["interfaces"].map { |i| i["name"] }
         refute_includes interfaces_names, "LanguageMember"
       end
+
+      it "hides implementations if they are not referenced anywhere else" do
+        query_string = %|
+        {
+          __type(name: "Character") {
+            fields { name }
+          }
+        }
+        |
+
+        res = MaskHelpers.query_with_mask(query_string, mask)
+        type = res["data"]["__type"]
+        assert_equal nil, type
+      end
     end
   end
 
@@ -401,6 +433,17 @@ describe GraphQL::Schema::Warden do
     let(:mask) {
       ->(member, ctx) { member.metadata[:hidden_argument] || member.metadata[:hidden_input_type] }
     }
+
+    it "hides types if no other fields or arguments are using it" do
+       query_string = %|
+         {
+           CheremeInput: __type(name: "CheremeInput") { fields { name } }
+         }
+       |
+
+       res = MaskHelpers.query_with_mask(query_string, mask)
+       assert_nil res["data"]["CheremeInput"]
+     end
 
     it "isn't present in introspection" do
       query_string = %|
