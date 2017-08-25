@@ -37,7 +37,7 @@ module GraphQL
           else
             Lazy.new {
               acc.each_with_index { |field_result, idx|
-                inner_v = GraphQL::Tracing.trace("execute.field.lazy", { context: field_result.context }) do
+                inner_v = GraphQL::Tracing.trace("execute_field_lazy", { context: field_result.context }) do
                   field_result.value.value
                 end
                 field_result.value = inner_v

@@ -3,6 +3,11 @@ require "graphql/tracing/active_support_notifications_tracing"
 module GraphQL
   # Library entry point for performance metric reporting.
   #
+  # {ActiveSupportNotificationsTracing} is imported by default
+  # when `ActiveSupport::Notifications` is found.
+  #
+  # You can remove it with `GraphQL::Tracing.install(nil)`.
+  #
   # @example Sending custom events
   #   GraphQL::Tracing.trace("my_custom_event", { ... }) do
   #     # do stuff ...
@@ -15,12 +20,12 @@ module GraphQL
   # lex | `{ query_string: String }`
   # parse | `{ query_string: String }`
   # validate | `{ query: GraphQL::Query, validate: Boolean }`
-  # analyze.multiplex |  `{ multiplex: GraphQL::Execution::Multiplex }`
-  # analyze.query | `{ query: GraphQL::Query }`
-  # execute.eager | `{ query: GraphQL::Query }`
-  # execute.lazy | `{ query: GraphQL::Query?, queries: Array<GraphQL::Query>? }`
-  # execute.field | `{ context: GraphQL::Query::Context::FieldResolutionContext }`
-  # execute.field.lazy | `{ context: GraphQL::Query::Context::FieldResolutionContext }`
+  # analyze_multiplex |  `{ multiplex: GraphQL::Execution::Multiplex }`
+  # analyze_query | `{ query: GraphQL::Query }`
+  # execute_query | `{ query: GraphQL::Query }`
+  # execute_query_lazy | `{ query: GraphQL::Query?, queries: Array<GraphQL::Query>? }`
+  # execute_field | `{ context: GraphQL::Query::Context::FieldResolutionContext }`
+  # execute_field_lazy | `{ context: GraphQL::Query::Context::FieldResolutionContext }`
   #
   module Tracing
     class << self

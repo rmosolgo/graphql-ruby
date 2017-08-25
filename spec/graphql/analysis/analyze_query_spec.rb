@@ -60,10 +60,10 @@ describe GraphQL::Analysis do
         # The query_trace is on the list _first_ because it finished first
         _lex, _parse, _validate, query_trace, multiplex_trace, *_rest = traces
 
-        assert_equal "analyze.multiplex", multiplex_trace[:key]
+        assert_equal "analyze_multiplex", multiplex_trace[:key]
         assert_instance_of GraphQL::Execution::Multiplex, multiplex_trace[:multiplex]
 
-        assert_equal "analyze.query", query_trace[:key]
+        assert_equal "analyze_query", query_trace[:key]
         assert_instance_of GraphQL::Query, query_trace[:query]
       end
     end
