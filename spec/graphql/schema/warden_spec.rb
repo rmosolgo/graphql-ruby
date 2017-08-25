@@ -239,9 +239,10 @@ describe GraphQL::Schema::Warden do
 
     it "hides types if no other fields are using it" do
       query_string = %|
-      {
-        Chereme: __type(name: "Chereme") { fields { name } }
-      }|
+        {
+          Chereme: __type(name: "Chereme") { fields { name } }
+        }
+      |
 
        res = MaskHelpers.query_with_mask(query_string, mask)
        assert_nil res["data"]["Chereme"]
