@@ -89,18 +89,28 @@ describe GraphQL::Query::Arguments do
       assert_equal 1, arguments.fetch("a")
     end
 
-    it 'returns nil for something that exists but isnt provided' do
+    it "returns nil for something that exists but isnt provided" do
       assert_equal nil, arguments.fetch(:unused)
       assert_equal nil, arguments.fetch('unused')
     end
 
-    it 'raises for something that doesnt exist' do
+    it "raises for something that doesnt exist" do
       assert_raises(RuntimeError) {
         arguments.fetch(:this_doesnt_exist)
       }
       assert_raises(RuntimeError) {
         arguments.fetch('this_doesnt_exist')
       }
+    end
+
+    it "accepts a default for a something that exists but isnt provided" do
+      assert_equal 'PROVIDED DEFAULT', arguments.fetch(:unused, 'PROVIDED DEFAULT')
+      assert_equal 'PROVIDED DEFAULT', arguments.fetch('unused', 'PROVIDED DEFAULT')
+    end
+
+    it "doesnt use a default for a something that exists but is provided" do
+      assert_equal 1, arguments.fetch(:a, 'PROVIDED DEFAULT')
+      assert_equal 1, arguments.fetch('a', 'PROVIDED DEFAULT')
     end
   end
 
