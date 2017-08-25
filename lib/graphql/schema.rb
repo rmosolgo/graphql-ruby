@@ -223,6 +223,7 @@ module GraphQL
 
     # @return [Hash] pairs of `{ name => [Field || Argument] }` type references in this schema
     def get_members_of_type(type_name)
+      rebuild_artifacts unless defined?(@type_reference_map)
       @type_reference_map.fetch(type_name, [])
     end
 
