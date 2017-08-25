@@ -85,11 +85,11 @@ module GraphQL
 
       def visit_fields(type_defn)
         type_defn.all_fields.each do |field_defn|
-          @type_reference_map[field_defn.type.unwrap.name] << field_defn
           instrumented_field_defn = @field_instrumenters.reduce(field_defn) do |defn, inst|
             inst.instrument(type_defn, defn)
           end
           @instrumented_field_map[type_defn.name][instrumented_field_defn.name] = instrumented_field_defn
+          @type_reference_map[instrumented_field_defn.type.unwrap.name] << instrumented_field_defn
           visit(instrumented_field_defn.type, "Field #{type_defn.name}.#{instrumented_field_defn.name}'s return type")
           instrumented_field_defn.arguments.each do |name, arg|
             @type_reference_map[arg.type.unwrap.to_s] << arg
