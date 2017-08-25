@@ -14,6 +14,7 @@ describe GraphQL::Query::Arguments do
       argument :a, types.Int
       argument :b, types.Int
       argument :c, !test_input_1, as: :inputObject
+      argument :unused, types.Int
     end
 
     GraphQL::Query::Arguments.new({
@@ -80,6 +81,27 @@ describe GraphQL::Query::Arguments do
       "INPUTOBJECT" => { "d"  => 3 , "e" => 4 },
     }
     assert_equal expected_hash, new_arguments.to_h
+  end
+
+  describe "fetch" do
+    it "returns the value for something that exists and is provided" do
+      assert_equal 1, arguments.fetch(:a)
+      assert_equal 1, arguments.fetch("a")
+    end
+
+    it 'returns nil for something that exists but isnt provided' do
+      assert_equal nil, arguments.fetch(:unused)
+      assert_equal nil, arguments.fetch('unused')
+    end
+
+    it 'raises for something that doesnt exist' do
+      assert_raises(RuntimeError) {
+        arguments.fetch(:this_doesnt_exist)
+      }
+      assert_raises(RuntimeError) {
+        arguments.fetch('this_doesnt_exist')
+      }
+    end
   end
 
   describe "nested hashes" do

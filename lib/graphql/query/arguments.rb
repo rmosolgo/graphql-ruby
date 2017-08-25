@@ -8,6 +8,7 @@ module GraphQL
       extend GraphQL::Delegate
 
       def initialize(values, argument_definitions:)
+        @argument_definitions = argument_definitions
         @argument_values = values.inject({}) do |memo, (inner_key, inner_value)|
           arg_defn = argument_definitions[inner_key.to_s]
 
@@ -30,6 +31,15 @@ module GraphQL
       def key?(key)
         key_s = key.is_a?(String) ? key : key.to_s
         @argument_values.key?(key_s)
+      end
+
+      def fetch(key)
+        key_s = key.is_a?(String) ? key : key.to_s
+        if @argument_definitions.key?(key_s)
+          @argument_values.fetch(key_s, NULL_ARGUMENT_VALUE).value
+        else
+          fail "Unknown key '#{key}', expected one of #{@argument_definitions.keys}"
+        end
       end
 
       # Get the hash of all values, with stringified keys
