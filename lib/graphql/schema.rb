@@ -221,13 +221,19 @@ module GraphQL
       end
     end
 
-    # @return [Hash] pairs of `{ name => [Field || Argument] }` type references in this schema
+    # Returns a list of Arguments and Fields referencing a certain type
+    # @param type_name [String]
+    # @return [Hash]
     def get_members_of_type(type_name)
       rebuild_artifacts unless defined?(@type_reference_map)
       @type_reference_map.fetch(type_name, [])
     end
 
+    # Returns a list of Union types in which a type is a member
+    # @param type [GraphQL::ObjectType]
+    # @return [Array<GraphQL::UnionType>] The field named `field_name` on `parent_type`    def union_memberships(type)
     def union_memberships(type)
+      rebuild_artifacts unless defined?(@unions)
       @unions.select { |union| possible_types(union).include?(type) }
     end
 
