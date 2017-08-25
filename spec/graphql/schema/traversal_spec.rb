@@ -14,6 +14,12 @@ describe GraphQL::Schema::Traversal do
     traversal.type_reference_map
   end
 
+  def unions(types)
+    schema = GraphQL::Schema.define(orphan_types: types, resolve_type: :dummy)
+    traversal = GraphQL::Schema::Traversal.new(schema, introspection: false)
+    traversal.unions
+  end
+
   it "finds types from directives" do
     expected = {
       "Boolean" => GraphQL::BOOLEAN_TYPE, # `skip` argument
@@ -162,5 +168,27 @@ describe GraphQL::Schema::Traversal do
     }
 
     assert_equal expected, type_references([a_type, b_type, c_type])
+  end
+
+  it "finds all union types" do
+    b_type = GraphQL::ObjectType.define do
+      name "B"
+    end
+
+    c_type = GraphQL::ObjectType.define do
+      name "C"
+    end
+
+    union = GraphQL::UnionType.define do
+      name "AUnion"
+      possible_types [b_type, c_type]
+    end
+
+    another_union = GraphQL::UnionType.define do
+      name "AnotherUnion"
+      possible_types [b_type, c_type]
+    end
+
+    assert_equal [union, another_union], unions([union, another_union, b_type, c_type])
   end
 end
