@@ -33,10 +33,10 @@ module GraphQL
         @argument_values.key?(key_s)
       end
 
-      def fetch(key, default = (default_provided = true; nil))
+      def fetch(key, default = (no_default_provided = true; nil))
         key_s = key.is_a?(String) ? key : key.to_s
         if @argument_definitions.key?(key_s)
-          if default_provided
+          if no_default_provided
             @argument_values.fetch(key_s, NULL_ARGUMENT_VALUE).value
           else
             if @argument_values.key?(key_s)
