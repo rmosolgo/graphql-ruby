@@ -71,7 +71,7 @@ module GraphQL
           end
 
           # Then, work through lazy results in a breadth-first way
-          GraphQL::Execution::Lazy.resolve(results)
+          GraphQL::Execution::Execute::ExecutionFunctions.lazy_resolve_root_selection(results, { queries: queries })
 
           # Then, find all errors and assign the result to the query object
           results.each_with_index.map do |data_result, idx|
@@ -88,15 +88,7 @@ module GraphQL
             NO_OPERATION
           else
             begin
-              op_type = operation.operation_type
-              root_type = query.root_type_for_operation(op_type)
-              GraphQL::Execution::Execute::ExecutionFunctions.resolve_selection(
-                query.root_value,
-                root_type,
-                query.irep_selection,
-                query.context,
-                mutation: query.mutation?
-              )
+              GraphQL::Execution::Execute::ExecutionFunctions.resolve_root_selection(query)
             rescue GraphQL::ExecutionError => err
               query.context.errors << err
               {}

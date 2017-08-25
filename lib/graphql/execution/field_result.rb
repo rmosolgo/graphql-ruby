@@ -10,7 +10,11 @@ module GraphQL
       # @return [SelectionResult] The result object that this field belongs to
       attr_reader :owner
 
-      def initialize(type:, value:, owner:)
+      # @return [GraphQL::Query::FieldResolutionContext] The context for this field
+      attr_reader :context
+
+      def initialize(type:, value:, owner:, context:)
+        @context = context
         @type = type
         @owner = owner
         self.value = value
