@@ -35,18 +35,19 @@ module GraphQL
 
       def fetch(key, default = (no_default_provided = true; nil))
         key_s = key.is_a?(String) ? key : key.to_s
-        if @argument_definitions.key?(key_s)
-          if no_default_provided
-            @argument_values.fetch(key_s, NULL_ARGUMENT_VALUE).value
-          else
-            if @argument_values.key?(key_s)
-              @argument_values[key_s].value
-            else
-              default
-            end
-          end
-        else
+
+        unless @argument_definitions.key?(key_s)
           fail "Unknown key '#{key}', expected one of #{@argument_definitions.keys}"
+        end
+
+        if no_default_provided
+          return @argument_values.fetch(key_s, NULL_ARGUMENT_VALUE).value
+        end
+
+        if @argument_values.key?(key_s)
+          @argument_values[key_s].value
+        else
+          default
         end
       end
 
