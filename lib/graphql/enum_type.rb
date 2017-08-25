@@ -138,9 +138,24 @@ module GraphQL
       accepts_definitions(*ATTRIBUTES)
       attr_accessor(*ATTRIBUTES)
       ensure_defined(*ATTRIBUTES)
+
+      def name=(new_name)
+        # Validate that the name is correct
+        unless new_name =~ /^[_a-zA-Z][_a-zA-Z0-9]*$/
+          raise(
+            GraphQL::EnumType::InvalidEnumNameError,
+            "Names must match /^[_a-zA-Z][_a-zA-Z0-9]*$/ but '#{new_name}' does not"
+          )
+        end
+
+        @name = new_name
+      end
     end
 
     class UnresolvedValueError < GraphQL::Error
+    end
+
+    class InvalidEnumNameError < GraphQL::Error
     end
 
     private
