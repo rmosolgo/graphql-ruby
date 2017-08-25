@@ -53,7 +53,13 @@ module GraphQL
           return
         end
         if !ast_var.default_value.nil?
-          var_type = GraphQL::NonNullType.new(of_type: var_type)
+          unless var_type.is_a?(GraphQL::NonNullType)
+            # If the value is required, but the argument is not,
+            # and yet there's a non-nil default, then we impliclty
+            # make the argument also a required type.
+
+            var_type = GraphQL::NonNullType.new(of_type: var_type)
+          end
         end
 
         arg_defn = arguments[arg_node.name]
