@@ -83,17 +83,15 @@ module TestTracing
       yield
       traces
     end
-  end
-end
 
-module GraphQL
-  module Tracing
-    def self.trace(key, data)
+    def trace(key, data)
       data[:key] = key
       result = yield
       data[:result] = result
-      TestTracing.traces << data
+      traces << data
       result
     end
   end
 end
+
+GraphQL::Tracing.install(TestTracing)
