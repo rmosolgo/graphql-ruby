@@ -12,12 +12,12 @@ module GraphQL
         "lex" => "graphql.lex",
         "parse" => "graphql.parse",
         "validate" => "graphql.validate",
-        "analyze.multiplex" => "graphql.analyze.multiplex",
-        "analyze.query" => "graphql.analyze.query",
-        "execute.eager" => "graphql.execute.eager",
-        "execute.lazy" => "graphql.execute.lazy",
-        "execute.field" => "graphql.execute.field",
-        "execute.field.lazy" => "graphql.execute.field.lazy",
+        "analyze_multiplex" => "graphql.analyze_multiplex",
+        "analyze_query" => "graphql.analyze_query",
+        "execute_query" => "graphql.execute_query",
+        "execute_query_lazy" => "graphql.execute_query_lazy",
+        "execute_field" => "graphql.execute_field",
+        "execute_field_lazy" => "graphql.execute_field_lazy",
       }
 
       def self.trace(key, metadata)

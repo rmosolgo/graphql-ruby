@@ -158,17 +158,17 @@ describe GraphQL::Execution::Execute do
 
       exec_traces = traces[5..-1]
       expected_traces = [
-        "execute.field",
-        "execute.field",
-        "execute.eager",
+        "execute_field",
+        "execute_field",
+        "execute_query",
         "lazy_loader",
-        "execute.field",
-        "execute.field.lazy",
-        "execute.field",
-        "execute.field.lazy",
-        "execute.field.lazy",
-        "execute.field.lazy",
-        "execute.lazy",
+        "execute_field",
+        "execute_field_lazy",
+        "execute_field",
+        "execute_field_lazy",
+        "execute_field_lazy",
+        "execute_field_lazy",
+        "execute_query_lazy",
       ]
       assert_equal expected_traces, exec_traces.map { |t| t[:key] }
 

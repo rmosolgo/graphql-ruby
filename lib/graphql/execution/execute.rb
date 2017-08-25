@@ -27,7 +27,7 @@ module GraphQL
         module_function
 
         def resolve_root_selection(query)
-          GraphQL::Tracing.trace("execute.eager", query: query) do
+          GraphQL::Tracing.trace("execute_query", query: query) do
             operation = query.selected_operation
             op_type = operation.operation_type
             root_type = query.root_type_for_operation(op_type)
@@ -46,7 +46,7 @@ module GraphQL
             query = queries[0]
           end
 
-          GraphQL::Tracing.trace("execute.lazy", {queries: queries, query: query}) do
+          GraphQL::Tracing.trace("execute_query_lazy", {queries: queries, query: query}) do
             GraphQL::Execution::Lazy.resolve(result)
           end
         end
@@ -94,7 +94,7 @@ module GraphQL
             selection: selection,
           )
 
-          GraphQL::Tracing.trace("execute.field", { context: field_ctx }) do
+          GraphQL::Tracing.trace("execute_field", { context: field_ctx }) do
             raw_value = begin
               arguments = query.arguments_for(selection, field)
               query_ctx.schema.middleware.invoke([parent_type, object, field, arguments, field_ctx])
