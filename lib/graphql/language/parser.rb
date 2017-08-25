@@ -21,11 +21,17 @@ end
 
 def parse_document
   @document ||= begin
-    @tokens ||= GraphQL.scan(@query_string)
-    if @tokens.none?
-      make_node(:Document, definitions: [], filename: @filename)
-    else
-      do_parse
+    # Break the string into tokens
+    GraphQL::Tracing.trace("lex", {query_string: @query_string}) do
+      @tokens ||= GraphQL.scan(@query_string)
+    end
+    # From the tokens, build an AST
+    GraphQL::Tracing.trace("parse", {query_string: @query_string}) do
+      if @tokens.none?
+        make_node(:Document, definitions: [], filename: @filename)
+      else
+        do_parse
+      end
     end
   end
 end

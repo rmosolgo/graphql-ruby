@@ -5,20 +5,22 @@ module GraphQL
 
     # @return [void]
     def analyze_multiplex(multiplex, analyzers)
-      reducer_states = analyzers.map { |r| ReducerState.new(r, multiplex) }
-      query_results = multiplex.queries.map do |query|
-        if query.valid?
-          analyze_query(query, query.analyzers, multiplex_states: reducer_states)
-        else
-          []
+      GraphQL::Tracing.trace("analyze.multiplex", { multiplex: multiplex }) do
+        reducer_states = analyzers.map { |r| ReducerState.new(r, multiplex) }
+        query_results = multiplex.queries.map do |query|
+          if query.valid?
+            analyze_query(query, query.analyzers, multiplex_states: reducer_states)
+          else
+            []
+          end
         end
-      end
 
-      multiplex_results = reducer_states.map(&:finalize_reducer)
-      multiplex_errors = analysis_errors(multiplex_results)
+        multiplex_results = reducer_states.map(&:finalize_reducer)
+        multiplex_errors = analysis_errors(multiplex_results)
 
-      multiplex.queries.each_with_index do |query, idx|
-        query.analysis_errors = multiplex_errors + analysis_errors(query_results[idx])
+        multiplex.queries.each_with_index do |query, idx|
+          query.analysis_errors = multiplex_errors + analysis_errors(query_results[idx])
+        end
       end
       nil
     end
@@ -35,15 +37,17 @@ module GraphQL
     # @param analyzers [Array<#call>] Objects that respond to `#call(memo, visit_type, irep_node)`
     # @return [Array<Any>] Results from those analyzers
     def analyze_query(query, analyzers, multiplex_states: [])
-      reducer_states = analyzers.map { |r| ReducerState.new(r, query) } + multiplex_states
+      GraphQL::Tracing.trace("analyze.query", { query: query }) do
+        reducer_states = analyzers.map { |r| ReducerState.new(r, query) } + multiplex_states
 
-      irep = query.internal_representation
+        irep = query.internal_representation
 
-      irep.operation_definitions.each do |name, op_node|
-        reduce_node(op_node, reducer_states)
+        irep.operation_definitions.each do |name, op_node|
+          reduce_node(op_node, reducer_states)
+        end
+
+        reducer_states.map(&:finalize_reducer)
       end
-
-      reducer_states.map(&:finalize_reducer)
     end
 
     private

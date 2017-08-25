@@ -67,3 +67,33 @@ end
 def star_wars_query(string, variables={}, context: {})
   GraphQL::Query.new(StarWars::Schema, string, variables: variables, context: context).result
 end
+
+module TestTracing
+  class << self
+    def clear
+      traces.clear
+    end
+
+    def traces
+      @traces ||= []
+    end
+
+    def with_trace
+      clear
+      yield
+      traces
+    end
+  end
+end
+
+module GraphQL
+  module Tracing
+    def self.trace(key, data)
+      data[:key] = key
+      result = yield
+      data[:result] = result
+      TestTracing.traces << data
+      result
+    end
+  end
+end

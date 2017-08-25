@@ -16,15 +16,8 @@ module GraphQL
       PROPAGATE_NULL = Object.new
 
       def execute(ast_operation, root_type, query)
-        result = resolve_selection(
-          query.root_value,
-          root_type,
-          query.irep_selection,
-          query.context,
-          mutation: query.mutation?
-        )
-
-        GraphQL::Execution::Lazy.resolve(result)
+        result = resolve_root_selection(query)
+        lazy_resolve_root_selection(result, {query: query})
 
         result.to_h
       end
@@ -32,6 +25,31 @@ module GraphQL
       # @api private
       module ExecutionFunctions
         module_function
+
+        def resolve_root_selection(query)
+          GraphQL::Tracing.trace("execute.eager", query: query) do
+            operation = query.selected_operation
+            op_type = operation.operation_type
+            root_type = query.root_type_for_operation(op_type)
+            resolve_selection(
+              query.root_value,
+              root_type,
+              query.irep_selection,
+              query.context,
+              mutation: query.mutation?
+            )
+          end
+        end
+
+        def lazy_resolve_root_selection(result, query: nil, queries: nil)
+          if query.nil? && queries.length == 1
+            query = queries[0]
+          end
+
+          GraphQL::Tracing.trace("execute.lazy", {queries: queries, query: query}) do
+            GraphQL::Execution::Lazy.resolve(result)
+          end
+        end
 
         def resolve_selection(object, current_type, selection, query_ctx, mutation: false )
           selection_result = SelectionResult.new
@@ -76,35 +94,38 @@ module GraphQL
             selection: selection,
           )
 
-          raw_value = begin
-            arguments = query.arguments_for(selection, field)
-            query_ctx.schema.middleware.invoke([parent_type, object, field, arguments, field_ctx])
-          rescue GraphQL::ExecutionError => err
-            err
-          end
+          GraphQL::Tracing.trace("execute.field", { context: field_ctx }) do
+            raw_value = begin
+              arguments = query.arguments_for(selection, field)
+              query_ctx.schema.middleware.invoke([parent_type, object, field, arguments, field_ctx])
+            rescue GraphQL::ExecutionError => err
+              err
+            end
 
-          result = if query.schema.lazy?(raw_value)
-            field.prepare_lazy(raw_value, arguments, field_ctx).then { |inner_value|
-              continue_resolve_field(owner, selection, parent_type, field, inner_value, field_ctx)
-            }
-          elsif raw_value.is_a?(GraphQL::Execution::Lazy)
-            # It came from a connection resolve, assume it was already instrumented
-            raw_value.then { |inner_value|
-              continue_resolve_field(owner, selection, parent_type, field, inner_value, field_ctx)
-            }
-          else
-            continue_resolve_field(owner, selection, parent_type, field, raw_value, field_ctx)
-          end
+            result = if query.schema.lazy?(raw_value)
+              field.prepare_lazy(raw_value, arguments, field_ctx).then { |inner_value|
+                continue_resolve_field(owner, selection, parent_type, field, inner_value, field_ctx)
+              }
+            elsif raw_value.is_a?(GraphQL::Execution::Lazy)
+              # It came from a connection resolve, assume it was already instrumented
+              raw_value.then { |inner_value|
+                continue_resolve_field(owner, selection, parent_type, field, inner_value, field_ctx)
+              }
+            else
+              continue_resolve_field(owner, selection, parent_type, field, raw_value, field_ctx)
+            end
 
-          case result
-          when PROPAGATE_NULL, GraphQL::Execution::Lazy, SelectionResult
-            FieldResult.new(
-              owner: owner,
-              type: field.type,
-              value: result,
-            )
-          else
-            result
+            case result
+            when PROPAGATE_NULL, GraphQL::Execution::Lazy, SelectionResult
+              FieldResult.new(
+                owner: owner,
+                type: field.type,
+                value: result,
+                context: field_ctx,
+              )
+            else
+              result
+            end
           end
         end
 
@@ -186,7 +207,12 @@ module GraphQL
                   inner_ctx,
                 )
 
-                result << GraphQL::Execution::FieldResult.new(type: inner_type, owner: owner, value: inner_result)
+                result << GraphQL::Execution::FieldResult.new(
+                  type: inner_type,
+                  owner: owner,
+                  value: inner_result,
+                  context: inner_ctx,
+                )
                 i += 1
               end
               result
