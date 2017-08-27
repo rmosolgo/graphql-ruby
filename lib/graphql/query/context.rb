@@ -48,7 +48,10 @@ module GraphQL
         @storage[nil] = @provided_values
         @errors = []
         @path = []
+        @value = nil
       end
+
+      attr_accessor :value
 
       def_delegators :@provided_values, :[], :[]=, :to_h, :key?, :fetch
 
@@ -70,17 +73,6 @@ module GraphQL
         @storage[ns]
       end
 
-      def spawn(key:, selection:, parent_type:, field:)
-        FieldResolutionContext.new(
-          context: self,
-          parent: self,
-          key: key,
-          selection: selection,
-          parent_type: parent_type,
-          field: field,
-        )
-      end
-
       # Return this value to tell the runtime
       # to exclude this field from the response altogether
       def skip
@@ -98,6 +90,35 @@ module GraphQL
         nil
       end
 
+      def inspect
+        "#<Query::Context ...>"
+      end
+
+      def spawn(key:, selection:, parent_type:, field:)
+        FieldResolutionContext.new(
+          context: self,
+          parent: self,
+          key: key,
+          selection: selection,
+          parent_type: parent_type,
+          field: field,
+        )
+      end
+
+      # @return [Boolean] True if this selection has been nullified by a null child
+      def invalid_null?
+        @invalid_null
+      end
+
+      def delete(child)
+        @value.delete(child)
+      end
+
+      def propagate_null
+        @value.propagate_null
+        @invalid_null = true
+      end
+
       class FieldResolutionContext
         extend GraphQL::Delegate
 
@@ -110,6 +131,7 @@ module GraphQL
           @selection = selection
           @field = field
           @parent_type = parent_type
+          @type = field.type
           # This is needed constantly, so set it ahead of time:
           @query = context.query
           @schema = context.schema
@@ -148,6 +170,41 @@ module GraphQL
           nil
         end
 
+        def inspect
+          "#<GraphQL Context @ #{irep_node.owner_type.name}.#{field.name}>"
+        end
+
+        attr_reader :value
+
+        # Set a new value for this field in the response.
+        # It may be updated after resolving a {Lazy}.
+        # If it is {Execute::PROPAGATE_NULL}, tell the owner to propagate null.
+        # If the value is a {SelectionResult}, make a link with it, and if it's already null,
+        # propagate the null as needed.
+        # If it's {Execute::Execution::SKIP}, remove this field result from its parent
+        # @param new_value [Any] The GraphQL-ready value
+        def value=(new_value)
+          if new_value.is_a?(GraphQL::Execution::SelectionResult)
+            if new_value.invalid_null?
+              new_value = GraphQL::Execution::Execute::PROPAGATE_NULL
+            else
+              new_value.owner = self
+            end
+          end
+
+          case new_value
+          when GraphQL::Execution::Execute::PROPAGATE_NULL
+            if @type.kind.non_null?
+              @parent.propagate_null
+            end
+            @value = nil
+          when GraphQL::Execution::Execute::SKIP
+            @parent.delete(self)
+          else
+            @value = new_value
+          end
+        end
+
         def spawn(key:, selection:, parent_type:, field:)
           FieldResolutionContext.new(
             context: @context,
@@ -157,6 +214,46 @@ module GraphQL
             parent_type: parent_type,
             field: field,
           )
+        end
+
+        # @return [Boolean] True if this selection has been nullified by a null child
+        def invalid_null?
+          @invalid_null
+        end
+
+        protected
+
+        def propagate_null
+          case @value
+          when Array
+            if list_of_non_null_items?(@type)
+              @parent.propagate_null
+              @invalid_null = true
+            end
+          when Execution::SelectionResult
+            @invalid_null = true
+            @value.propagate_null
+          else
+            raise "Unexpected value for propagate_null (#{self.value.class}): #{value}"
+          end
+        end
+
+        def delete(child)
+          @value.delete(child)
+        end
+
+        private
+
+        def list_of_non_null_items?(type)
+          case type
+          when GraphQL::NonNullType
+            # Unwrap [T]!
+            list_of_non_null_items?(type.of_type)
+          when GraphQL::ListType
+            type.of_type.is_a?(GraphQL::NonNullType)
+          else
+            raise "Unexpected list_of_non_null_items check: #{type}"
+          end
         end
       end
     end

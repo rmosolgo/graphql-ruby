@@ -38,7 +38,12 @@ module GraphQL
             Lazy.new {
               acc.each_with_index { |field_result, idx|
                 inner_v = field_result.value.value
-                field_result.value = inner_v
+                # HACK: some-but-not-all types will
+                # assign themselves during continuation (ObjectTypes?)
+                # This hack makes sure you don't re-re-assign it.
+                if field_result.value.is_a?(Lazy)
+                  field_result.value = inner_v
+                end
                 acc[idx] = inner_v
               }
               resolve_in_place(acc)
@@ -60,12 +65,12 @@ module GraphQL
             value.each do |field_result|
               acc = each_lazy(acc, field_result)
             end
-          when FieldResult
+          when GraphQL::Query::Context::FieldResolutionContext
             field_value = value.value
             case field_value
             when Lazy
               acc = acc << value
-            when SelectionResult
+            when SelectionResult, Array
               acc = each_lazy(acc, field_value)
             end
           end

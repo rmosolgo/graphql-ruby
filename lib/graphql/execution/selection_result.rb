@@ -60,7 +60,7 @@ module GraphQL
 
       # @param field_result [FieldResult] The field that this selection belongs to (used for propagating nulls)
       def owner=(field_result)
-        if @owner
+        if @owner && @owner != field_result
           raise("Can't change owners of SelectionResult")
         else
           @owner = field_result
@@ -79,7 +79,7 @@ module GraphQL
           flattened
         when Array
           obj.map { |v| flatten(v) }
-        when FieldResult
+        when GraphQL::Query::Context::FieldResolutionContext
           flatten(obj.value)
         else
           obj

@@ -13,7 +13,10 @@ module GraphQL
       SKIP = Skip.new
 
       # @api private
-      PROPAGATE_NULL = Object.new
+      class PropagateNull
+      end
+      # @api private
+      PROPAGATE_NULL = PropagateNull.new
 
       def execute(ast_operation, root_type, query)
         result = resolve_selection(
@@ -35,15 +38,26 @@ module GraphQL
 
         def resolve_selection(object, current_type, selection, query_ctx, mutation: false )
           selection_result = SelectionResult.new
+          # HACK Assign this _before_ resolving the children
+          # so that when a child propagates null, the selection result is
+          # ready for it.
+          query_ctx.value = selection_result
 
           selection.typed_children[current_type].each do |name, subselection|
+            field_ctx = query_ctx.spawn(
+              parent_type: current_type,
+              field: subselection.definition,
+              key: name,
+              selection: subselection,
+            )
+
             field_result = resolve_field(
               selection_result,
               subselection,
               current_type,
               subselection.definition,
               object,
-              query_ctx
+              field_ctx
             )
 
             if field_result.is_a?(Skip)
@@ -51,10 +65,10 @@ module GraphQL
             end
 
             if mutation
-              GraphQL::Execution::Lazy.resolve(field_result)
+              GraphQL::Execution::Lazy.resolve(field_ctx)
             end
 
-            selection_result.set(name, field_result)
+            selection_result.set(name, field_ctx)
 
             # If the last subselection caused a null to propagate to _this_ selection,
             # then we may as well quit executing fields because they
@@ -67,18 +81,12 @@ module GraphQL
           selection_result
         end
 
-        def resolve_field(owner, selection, parent_type, field, object, query_ctx)
-          query = query_ctx.query
-          field_ctx = query_ctx.spawn(
-            parent_type: parent_type,
-            field: field,
-            key: selection.name,
-            selection: selection,
-          )
+        def resolve_field(owner, selection, parent_type, field, object, field_ctx)
+          query = field_ctx.query
 
           raw_value = begin
             arguments = query.arguments_for(selection, field)
-            query_ctx.schema.middleware.invoke([parent_type, object, field, arguments, field_ctx])
+            field_ctx.schema.middleware.invoke([parent_type, object, field, arguments, field_ctx])
           rescue GraphQL::ExecutionError => err
             err
           end
@@ -96,16 +104,10 @@ module GraphQL
             continue_resolve_field(owner, selection, parent_type, field, raw_value, field_ctx)
           end
 
-          case result
-          when PROPAGATE_NULL, GraphQL::Execution::Lazy, SelectionResult
-            FieldResult.new(
-              owner: owner,
-              type: field.type,
-              value: result,
-            )
-          else
-            result
+          if !result.is_a?(SelectionResult)
+            field_ctx.value = result
           end
+          result
         end
 
         def continue_resolve_field(owner, selection, parent_type, field, raw_value, field_ctx)
@@ -160,9 +162,7 @@ module GraphQL
             value
           else
             case field_type.kind
-            when GraphQL::TypeKinds::SCALAR
-              field_type.coerce_result(value, field_ctx)
-            when GraphQL::TypeKinds::ENUM
+            when GraphQL::TypeKinds::SCALAR, GraphQL::TypeKinds::ENUM
               field_type.coerce_result(value, field_ctx)
             when GraphQL::TypeKinds::LIST
               inner_type = field_type.of_type
@@ -186,7 +186,8 @@ module GraphQL
                   inner_ctx,
                 )
 
-                result << GraphQL::Execution::FieldResult.new(type: inner_type, owner: owner, value: inner_result)
+                inner_ctx.value = inner_result
+                result << inner_ctx
                 i += 1
               end
               result
