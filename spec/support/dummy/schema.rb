@@ -384,7 +384,7 @@ module Dummy
       description("Push a value onto a global array :D")
       argument :value, !types.Int, as: :val
       resolve ->(o, args, ctx) {
-        GLOBAL_VALUES << args[:val]
+        GLOBAL_VALUES << args.val
         GLOBAL_VALUES
       }
     end
@@ -394,7 +394,7 @@ module Dummy
       argument :input, !ReplaceValuesInputType
       resolve ->(o, args, ctx) {
         GLOBAL_VALUES.clear
-        GLOBAL_VALUES.push(*args[:input][:values])
+        GLOBAL_VALUES.push(args.input.values)
         GLOBAL_VALUES
       }
     end
