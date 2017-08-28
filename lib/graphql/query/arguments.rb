@@ -16,6 +16,15 @@ module GraphQL
           memo[string_key] = ArgumentValue.new(string_key, arg_value, arg_defn)
           memo
         end
+
+        argument_definitions.each do |key, _value|
+          expose_as = argument_definitions[key].expose_as
+          define_singleton_method expose_as do
+            self[expose_as]
+          end
+        end
+
+        @argument_values
       end
 
       # @param key [String, Symbol] name or index of value to access
