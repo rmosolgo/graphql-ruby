@@ -111,18 +111,39 @@ module GraphQL
       end
 
       def delete(child)
-        @value.delete(child)
+        @value.delete(child.key)
       end
 
-      def propagate_null
-        @value.propagate_null
+      def received_null_child
         @invalid_null = true
+        @value = nil
+      end
+
+      def self.flatten(obj)
+        case obj
+        when Hash
+          flattened = {}
+          obj.each do |key, val|
+            flattened[key] = flatten(val)
+          end
+          flattened
+        when Array
+          obj.map { |v| flatten(v) }
+        when GraphQL::Query::Context, GraphQL::Query::Context::FieldResolutionContext
+          if obj.invalid_null?
+            nil
+          else
+            flatten(obj.value)
+          end
+        else
+          obj
+        end
       end
 
       class FieldResolutionContext
         extend GraphQL::Delegate
 
-        attr_reader :selection, :field, :parent_type, :query, :schema
+        attr_reader :selection, :field, :parent_type, :query, :schema, :parent, :key
 
         def initialize(context:, key:, selection:, parent:, field:, parent_type:)
           @context = context
@@ -179,25 +200,16 @@ module GraphQL
         # Set a new value for this field in the response.
         # It may be updated after resolving a {Lazy}.
         # If it is {Execute::PROPAGATE_NULL}, tell the owner to propagate null.
-        # If the value is a {SelectionResult}, make a link with it, and if it's already null,
-        # propagate the null as needed.
         # If it's {Execute::Execution::SKIP}, remove this field result from its parent
         # @param new_value [Any] The GraphQL-ready value
         def value=(new_value)
-          if new_value.is_a?(GraphQL::Execution::SelectionResult)
-            if new_value.invalid_null?
-              new_value = GraphQL::Execution::Execute::PROPAGATE_NULL
-            else
-              new_value.owner = self
-            end
-          end
-
           case new_value
-          when GraphQL::Execution::Execute::PROPAGATE_NULL
-            if @type.kind.non_null?
-              @parent.propagate_null
-            end
+          when GraphQL::Execution::Execute::PROPAGATE_NULL, nil
+            @invalid_null = true
             @value = nil
+            if @type.kind.non_null?
+              @parent.received_null_child
+            end
           when GraphQL::Execution::Execute::SKIP
             @parent.delete(self)
           else
@@ -223,23 +235,24 @@ module GraphQL
 
         protected
 
-        def propagate_null
+        def received_null_child
           case @value
+          when Hash
+            self.value = GraphQL::Execution::Execute::PROPAGATE_NULL
           when Array
             if list_of_non_null_items?(@type)
-              @parent.propagate_null
-              @invalid_null = true
+              self.value = GraphQL::Execution::Execute::PROPAGATE_NULL
             end
-          when Execution::SelectionResult
-            @invalid_null = true
-            @value.propagate_null
+          when nil
+            # TODO This is a hack
+            # It was already nulled out but it's getting reassigned
           else
-            raise "Unexpected value for propagate_null (#{self.value.class}): #{value}"
+            raise "Unexpected value for received_null_child (#{self.value.class}): #{value}"
           end
         end
 
         def delete(child)
-          @value.delete(child)
+          @value.delete(child.key)
         end
 
         private

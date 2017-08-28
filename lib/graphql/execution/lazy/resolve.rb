@@ -57,7 +57,7 @@ module GraphQL
         # @return [void]
         def self.each_lazy(acc, value)
           case value
-          when SelectionResult
+          when Hash
             value.each do |key, field_result|
               acc = each_lazy(acc, field_result)
             end
@@ -65,12 +65,12 @@ module GraphQL
             value.each do |field_result|
               acc = each_lazy(acc, field_result)
             end
-          when GraphQL::Query::Context::FieldResolutionContext
+          when GraphQL::Query::Context, GraphQL::Query::Context::FieldResolutionContext
             field_value = value.value
             case field_value
             when Lazy
               acc = acc << value
-            when SelectionResult, Array
+            when Hash, Array
               acc = each_lazy(acc, field_value)
             end
           end
