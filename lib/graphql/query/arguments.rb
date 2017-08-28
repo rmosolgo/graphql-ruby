@@ -19,6 +19,10 @@ module GraphQL
 
         argument_definitions.each do |key, _value|
           expose_as = argument_definitions[key].expose_as
+
+          # Don't define a helper method if it would override something.
+          next if self.respond_to?(expose_as)
+
           define_singleton_method expose_as do
             self[expose_as]
           end
