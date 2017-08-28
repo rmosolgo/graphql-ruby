@@ -23,11 +23,9 @@ module GraphQL
               result = []
               i = 0
               value.each do |inner_value|
-                inner_ctx = query_ctx.spawn(
+                inner_ctx = query_ctx.spawn_child(
                   key: i,
-                  selection: selection,
-                  parent_type: wrapped_type,
-                  field: field_defn,
+                  irep_node: selection,
                 )
 
                 result << resolve(

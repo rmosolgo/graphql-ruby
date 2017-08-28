@@ -1,9 +1,56 @@
 # frozen_string_literal: true
+# test_via: ../execution/execute.rb
+# test_via: ../execution/lazy.rb
 module GraphQL
   class Query
     # Expose some query-specific info to field resolve functions.
     # It delegates `[]` to the hash that's passed to `GraphQL::Query#initialize`.
     class Context
+      module SharedMethods
+        # Return this value to tell the runtime
+        # to exclude this field from the response altogether
+        def skip
+          GraphQL::Execution::Execute::SKIP
+        end
+
+        # @return [Boolean] True if this selection has been nullified by a null child
+        def invalid_null?
+          @invalid_null
+        end
+
+        # Remove this child from the result value
+        # (used for null propagation and skip)
+        # @api private
+        def delete(child_ctx)
+          @value.delete(child_ctx.key)
+        end
+
+        # Create a child context to use for `key`
+        # @param key [String, Integer] The key in the response (name or index)
+        # @param irep_node [InternalRepresentation::Node] The node being evaluated
+        # @api private
+        def spawn_child(key:, irep_node:)
+          FieldResolutionContext.new(
+            context: @context,
+            parent: self,
+            key: key,
+            irep_node: irep_node,
+          )
+        end
+
+        # Add error at query-level.
+        # @param error [GraphQL::ExecutionError] an execution error
+        # @return [void]
+        def add_error(error)
+          if !error.is_a?(ExecutionError)
+            raise TypeError, "expected error to be a ExecutionError, but was #{error.class}"
+          end
+          errors << error
+          nil
+        end
+      end
+
+      include SharedMethods
       extend GraphQL::Delegate
       attr_reader :execution_strategy
       # `strategy` is required by GraphQL::Batch
@@ -17,7 +64,9 @@ module GraphQL
       end
 
       # @return [GraphQL::InternalRepresentation::Node] The internal representation for this query node
-      attr_accessor :irep_node
+      def irep_node
+        @irep_node ||= query.irep_selection
+      end
 
       # @return [GraphQL::Language::Nodes::Field] The AST node for the currently-executing field
       def ast_node
@@ -49,6 +98,7 @@ module GraphQL
         @errors = []
         @path = []
         @value = nil
+        @context = self # for SharedMethods
       end
 
       attr_accessor :value
@@ -73,45 +123,8 @@ module GraphQL
         @storage[ns]
       end
 
-      # Return this value to tell the runtime
-      # to exclude this field from the response altogether
-      def skip
-        GraphQL::Execution::Execute::SKIP
-      end
-
-      # Add error at query-level.
-      # @param error [GraphQL::ExecutionError] an execution error
-      # @return [void]
-      def add_error(error)
-        if !error.is_a?(ExecutionError)
-          raise TypeError, "expected error to be a ExecutionError, but was #{error.class}"
-        end
-        errors << error
-        nil
-      end
-
       def inspect
         "#<Query::Context ...>"
-      end
-
-      def spawn(key:, selection:, parent_type:, field:)
-        FieldResolutionContext.new(
-          context: self,
-          parent: self,
-          key: key,
-          selection: selection,
-          parent_type: parent_type,
-          field: field,
-        )
-      end
-
-      # @return [Boolean] True if this selection has been nullified by a null child
-      def invalid_null?
-        @invalid_null
-      end
-
-      def delete(child)
-        @value.delete(child.key)
       end
 
       def received_null_child
@@ -119,39 +132,20 @@ module GraphQL
         @value = nil
       end
 
-      def self.flatten(obj)
-        case obj
-        when Hash
-          flattened = {}
-          obj.each do |key, val|
-            flattened[key] = flatten(val)
-          end
-          flattened
-        when Array
-          obj.map { |v| flatten(v) }
-        when GraphQL::Query::Context, GraphQL::Query::Context::FieldResolutionContext
-          if obj.invalid_null?
-            nil
-          else
-            flatten(obj.value)
-          end
-        else
-          obj
-        end
-      end
-
       class FieldResolutionContext
+        include SharedMethods
         extend GraphQL::Delegate
 
-        attr_reader :selection, :field, :parent_type, :query, :schema, :parent, :key
+        attr_reader :irep_node, :field, :parent_type, :query, :schema, :parent, :key, :type
+        alias :selection :irep_node
 
-        def initialize(context:, key:, selection:, parent:, field:, parent_type:)
+        def initialize(context:, key:, irep_node:, parent:)
           @context = context
           @key = key
           @parent = parent
-          @selection = selection
-          @field = field
-          @parent_type = parent_type
+          @irep_node = irep_node
+          @field = irep_node.definition
+          @parent_type = irep_node.owner_type
           @type = field.type
           # This is needed constantly, so set it ahead of time:
           @query = context.query
@@ -165,29 +159,20 @@ module GraphQL
         def_delegators :@context,
           :[], :[]=, :key?, :fetch, :to_h, :namespace,
           :spawn, :schema, :warden, :errors,
-          :execution_strategy, :strategy, :skip
+          :execution_strategy, :strategy
 
         # @return [GraphQL::Language::Nodes::Field] The AST node for the currently-executing field
         def ast_node
-          @selection.ast_node
-        end
-
-        # @return [GraphQL::InternalRepresentation::Node]
-        def irep_node
-          @selection
+          @irep_node.ast_node
         end
 
         # Add error to current field resolution.
         # @param error [GraphQL::ExecutionError] an execution error
         # @return [void]
         def add_error(error)
-          if !error.is_a?(ExecutionError)
-            raise TypeError, "expected error to be a ExecutionError, but was #{error.class}"
-          end
-
+          super
           error.ast_node ||= irep_node.ast_node
           error.path ||= path
-          errors << error
           nil
         end
 
@@ -217,22 +202,6 @@ module GraphQL
           end
         end
 
-        def spawn(key:, selection:, parent_type:, field:)
-          FieldResolutionContext.new(
-            context: @context,
-            parent: self,
-            key: key,
-            selection: selection,
-            parent_type: parent_type,
-            field: field,
-          )
-        end
-
-        # @return [Boolean] True if this selection has been nullified by a null child
-        def invalid_null?
-          @invalid_null
-        end
-
         protected
 
         def received_null_child
@@ -249,10 +218,6 @@ module GraphQL
           else
             raise "Unexpected value for received_null_child (#{self.value.class}): #{value}"
           end
-        end
-
-        def delete(child)
-          @value.delete(child.key)
         end
 
         private

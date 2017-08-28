@@ -93,7 +93,6 @@ module GraphQL
               GraphQL::Execution::Execute::ExecutionFunctions.resolve_selection(
                 query.root_value,
                 root_type,
-                query.irep_selection,
                 query.context,
                 mutation: query.mutation?
               )
@@ -117,7 +116,9 @@ module GraphQL
             end
           else
             # Use `context.value` which was assigned during execution
-            result = { "data" => Query::Context.flatten(query.context.value) }
+            result = {
+              "data" => Execution::Flatten.call(query.context.value)
+            }
 
             if query.context.errors.any?
               error_result = query.context.errors.map(&:to_h)

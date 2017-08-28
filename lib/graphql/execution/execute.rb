@@ -22,38 +22,31 @@ module GraphQL
         result = resolve_selection(
           query.root_value,
           root_type,
-          query.irep_selection,
           query.context,
           mutation: query.mutation?
         )
 
         GraphQL::Execution::Lazy.resolve(result)
-
-        Query::Context.flatten(result)
+        GraphQL::Execution::Flatten.call(result)
       end
 
       # @api private
       module ExecutionFunctions
         module_function
 
-        def resolve_selection(object, current_type, selection, current_ctx, mutation: false )
+        def resolve_selection(object, current_type, current_ctx, mutation: false )
           # HACK Assign this _before_ resolving the children
           # so that when a child propagates null, the selection result is
           # ready for it.
           current_ctx.value = {}
 
-          selection.typed_children[current_type].each do |name, subselection|
-            field_ctx = current_ctx.spawn(
-              parent_type: current_type,
-              field: subselection.definition,
+          current_ctx.irep_node.typed_children[current_type].each do |name, subselection|
+            field_ctx = current_ctx.spawn_child(
               key: name,
-              selection: subselection,
+              irep_node: subselection,
             )
 
             field_result = resolve_field(
-              subselection,
-              current_type,
-              subselection.definition,
               object,
               field_ctx
             )
@@ -80,8 +73,11 @@ module GraphQL
           current_ctx.value
         end
 
-        def resolve_field(selection, parent_type, field, object, field_ctx)
+        def resolve_field(object, field_ctx)
           query = field_ctx.query
+          selection = field_ctx.irep_node
+          parent_type = selection.owner_type
+          field = field_ctx.field
 
           raw_value = begin
             arguments = query.arguments_for(selection, field)
@@ -92,15 +88,15 @@ module GraphQL
 
           result = if query.schema.lazy?(raw_value)
             field.prepare_lazy(raw_value, arguments, field_ctx).then { |inner_value|
-              continue_resolve_field(selection, parent_type, field, inner_value, field_ctx)
+              continue_resolve_field(inner_value, field_ctx)
             }
           elsif raw_value.is_a?(GraphQL::Execution::Lazy)
             # It came from a connection resolve, assume it was already instrumented
             raw_value.then { |inner_value|
-              continue_resolve_field(selection, parent_type, field, inner_value, field_ctx)
+              continue_resolve_field(inner_value, field_ctx)
             }
           else
-            continue_resolve_field(selection, parent_type, field, raw_value, field_ctx)
+            continue_resolve_field(raw_value, field_ctx)
           end
 
           case result
@@ -112,7 +108,7 @@ module GraphQL
           result
         end
 
-        def continue_resolve_field(selection, parent_type, field, raw_value, field_ctx)
+        def continue_resolve_field(raw_value, field_ctx)
           if field_ctx.parent.invalid_null?
             return
           end
@@ -135,18 +131,18 @@ module GraphQL
           end
 
           resolve_value(
-            parent_type,
-            field,
-            field.type,
             raw_value,
-            selection,
+            field_ctx.type,
             field_ctx,
           )
         end
 
-        def resolve_value(parent_type, field_defn, field_type, value, selection, field_ctx)
+        def resolve_value(value, field_type, field_ctx)
+          field_defn = field_ctx.field
+
           if value.nil?
             if field_type.kind.non_null?
+              parent_type = field_ctx.irep_node.owner_type
               type_error = GraphQL::InvalidNullError.new(parent_type, field_defn, value)
               field_ctx.schema.type_error(type_error, field_ctx)
               PROPAGATE_NULL
@@ -172,19 +168,14 @@ module GraphQL
               field_ctx.value = result
 
               value.each do |inner_value|
-                inner_ctx = field_ctx.spawn(
+                inner_ctx = field_ctx.spawn_child(
                   key: i,
-                  selection: selection,
-                  parent_type: parent_type,
-                  field: field_defn,
+                  irep_node: field_ctx.irep_node,
                 )
 
                 inner_result = resolve_value(
-                  parent_type,
-                  field_defn,
-                  inner_type,
                   inner_value,
-                  selection,
+                  inner_type,
                   inner_ctx,
                 )
 
@@ -194,20 +185,16 @@ module GraphQL
               end
               result
             when GraphQL::TypeKinds::NON_NULL
-              wrapped_type = field_type.of_type
+              inner_type = field_type.of_type
               resolve_value(
-                parent_type,
-                field_defn,
-                wrapped_type,
                 value,
-                selection,
+                inner_type,
                 field_ctx,
               )
             when GraphQL::TypeKinds::OBJECT
               resolve_selection(
                 value,
                 field_type,
-                selection,
                 field_ctx
               )
             when GraphQL::TypeKinds::UNION, GraphQL::TypeKinds::INTERFACE
@@ -216,16 +203,14 @@ module GraphQL
               possible_types = query.possible_types(field_type)
 
               if !possible_types.include?(resolved_type)
+                parent_type = field_ctx.irep_node.owner_type
                 type_error = GraphQL::UnresolvedTypeError.new(value, field_defn, parent_type, resolved_type, possible_types)
                 field_ctx.schema.type_error(type_error, field_ctx)
                 PROPAGATE_NULL
               else
                 resolve_value(
-                  parent_type,
-                  field_defn,
-                  resolved_type,
                   value,
-                  selection,
+                  resolved_type,
                   field_ctx,
                 )
               end
