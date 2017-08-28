@@ -170,6 +170,7 @@ describe GraphQL::Execution::Execute do
           "execute_field_lazy",
           "execute_field_lazy",
           "execute_query_lazy",
+          "execute_multiplex",
         ]
         assert_equal expected_traces, exec_traces.map { |t| t[:key] }
 
@@ -179,7 +180,8 @@ describe GraphQL::Execution::Execute do
           field_3_eager, field_1_lazy,
           field_4_eager, field_2_lazy,
           # field 3 didn't finish above, it's resolved in the next round
-          field_3_lazy, field_4_lazy, query_lazy = exec_traces
+          field_3_lazy, field_4_lazy,
+          query_lazy, multiplex = exec_traces
 
         assert_equal ["b1"], field_1_eager[:context].path
         assert_equal ["b2"], field_2_eager[:context].path
@@ -196,6 +198,8 @@ describe GraphQL::Execution::Execute do
         assert_equal ["b1", "name"], field_3_lazy[:context].path
         assert_equal ["b2", "name"], field_4_lazy[:context].path
         assert_instance_of GraphQL::Query, query_lazy[:query]
+
+        assert_instance_of GraphQL::Execution::Multiplex, multiplex[:multiplex]
       end
     end
   end
