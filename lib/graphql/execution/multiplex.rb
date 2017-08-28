@@ -46,18 +46,20 @@ module GraphQL
         # @param max_complexity [Integer, nil]
         # @return [Array<Hash>] One result per query
         def run_queries(schema, queries, context: {}, max_complexity: schema.max_complexity)
-
-          if has_custom_strategy?(schema)
-            if queries.length != 1
-              raise ArgumentError, "Multiplexing doesn't support custom execution strategies, run one query at a time instead"
-            else
-              with_instrumentation(schema, queries, context: context, max_complexity: max_complexity) do
-                [run_one_legacy(schema, queries.first)]
+          multiplex = self.new(schema: schema, queries: queries, context: context)
+          GraphQL::Tracing.trace("execute_multiplex", { multiplex: multiplex }) do
+            if has_custom_strategy?(schema)
+              if queries.length != 1
+                raise ArgumentError, "Multiplexing doesn't support custom execution strategies, run one query at a time instead"
+              else
+                with_instrumentation(multiplex, max_complexity: max_complexity) do
+                  [run_one_legacy(schema, queries.first)]
+                end
               end
-            end
-          else
-            with_instrumentation(schema, queries, context: context, max_complexity: max_complexity) do
-              run_as_multiplex(queries)
+            else
+              with_instrumentation(multiplex, max_complexity: max_complexity) do
+                run_as_multiplex(queries)
+              end
             end
           end
         end
@@ -144,10 +146,11 @@ module GraphQL
         # Apply multiplex & query instrumentation to `queries`.
         #
         # It yields when the queries should be executed, then runs teardown.
-        def with_instrumentation(schema, queries, context:, max_complexity:)
+        def with_instrumentation(multiplex, max_complexity:)
+          schema = multiplex.schema
+          queries = multiplex.queries
           query_instrumenters = schema.instrumenters[:query]
           multiplex_instrumenters = schema.instrumenters[:multiplex]
-          multiplex = self.new(schema: schema, queries: queries, context: context)
 
           # First, run multiplex instrumentation, then query instrumentation for each query
           multiplex_instrumenters.each { |i| i.before_multiplex(multiplex) }

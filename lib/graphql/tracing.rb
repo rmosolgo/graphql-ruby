@@ -22,6 +22,7 @@ module GraphQL
   # validate | `{ query: GraphQL::Query, validate: Boolean }`
   # analyze_multiplex |  `{ multiplex: GraphQL::Execution::Multiplex }`
   # analyze_query | `{ query: GraphQL::Query }`
+  # execute_multiplex | `{ query: GraphQL::Execution::Multiplex }`
   # execute_query | `{ query: GraphQL::Query }`
   # execute_query_lazy | `{ query: GraphQL::Query?, queries: Array<GraphQL::Query>? }`
   # execute_field | `{ context: GraphQL::Query::Context::FieldResolutionContext }`
