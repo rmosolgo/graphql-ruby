@@ -65,12 +65,12 @@ module GraphQL
             value.each do |field_result|
               acc = each_lazy(acc, field_result)
             end
-          when GraphQL::Query::Context, GraphQL::Query::Context::FieldResolutionContext
+          when Query::Context::SharedMethods
             field_value = value.value
             case field_value
             when Lazy
               acc = acc << value
-            when Hash, Array
+            when Enumerable # shortcut for Hash & Array
               acc = each_lazy(acc, field_value)
             end
           end

@@ -22,7 +22,7 @@ module GraphQL
             flattened
           when Array
             obj.map { |v| flatten(v) }
-          when GraphQL::Query::Context, GraphQL::Query::Context::FieldResolutionContext
+          when Query::Context::SharedMethods
             if obj.invalid_null?
               nil
             else
