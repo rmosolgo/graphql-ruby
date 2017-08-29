@@ -17,8 +17,8 @@ module GraphQL
           memo
         end
 
-        argument_definitions.each do |key, _value|
-          expose_as = argument_definitions[key].expose_as
+        argument_definitions.each do |_arg_name, arg_definition|
+          expose_as = arg_definition.expose_as.to_s
 
           # Don't define a helper method if it would override something.
           next if self.respond_to?(expose_as)
