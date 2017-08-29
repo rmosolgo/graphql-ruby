@@ -394,7 +394,7 @@ module Dummy
       argument :input, !ReplaceValuesInputType
       resolve ->(o, args, ctx) {
         GLOBAL_VALUES.clear
-        GLOBAL_VALUES.push(args.input.values)
+        GLOBAL_VALUES.push(*args.input.values)
         GLOBAL_VALUES
       }
     end
