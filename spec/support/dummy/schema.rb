@@ -109,7 +109,7 @@ module Dummy
     field :flavors, types[types.String], "Chocolate, Strawberry, etc" do
       argument :limit, types.Int
       resolve ->(milk, args, ctx) {
-        args[:limit] ? milk.flavors.first(args[:limit]) : milk.flavors
+        args[:limit] ? milk.flavors.first(args.limit) : milk.flavors
       }
     end
     field :executionError do
@@ -234,7 +234,7 @@ module Dummy
     name "DeepNonNull"
     field :nonNullInt, !types.Int do
       argument :returning, types.Int
-      resolve ->(obj, args, ctx) { args[:returning] }
+      resolve ->(obj, args, ctx) { args.returning }
     end
 
     field :deepNonNull, DeepNonNullType.to_non_null_type do
@@ -328,7 +328,7 @@ module Dummy
       argument :executionErrorAtIndex, types.Int
       resolve ->(obj, args, ctx) {
         result = CHEESES.values + MILKS.values
-        result[args[:executionErrorAtIndex]] = GraphQL::ExecutionError.new("missing dairy") if args[:executionErrorAtIndex]
+        result[args.executionErrorAtIndex] = GraphQL::ExecutionError.new("missing dairy") if args.executionErrorAtIndex
         result
       }
     end
