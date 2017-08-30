@@ -46,18 +46,20 @@ module GraphQL
         # @param max_complexity [Integer, nil]
         # @return [Array<Hash>] One result per query
         def run_queries(schema, queries, context: {}, max_complexity: schema.max_complexity)
-
-          if has_custom_strategy?(schema)
-            if queries.length != 1
-              raise ArgumentError, "Multiplexing doesn't support custom execution strategies, run one query at a time instead"
-            else
-              with_instrumentation(schema, queries, context: context, max_complexity: max_complexity) do
-                [run_one_legacy(schema, queries.first)]
+          multiplex = self.new(schema: schema, queries: queries, context: context)
+          GraphQL::Tracing.trace("execute_multiplex", { multiplex: multiplex }) do
+            if has_custom_strategy?(schema)
+              if queries.length != 1
+                raise ArgumentError, "Multiplexing doesn't support custom execution strategies, run one query at a time instead"
+              else
+                with_instrumentation(multiplex, max_complexity: max_complexity) do
+                  [run_one_legacy(schema, queries.first)]
+                end
               end
-            end
-          else
-            with_instrumentation(schema, queries, context: context, max_complexity: max_complexity) do
-              run_as_multiplex(queries)
+            else
+              with_instrumentation(multiplex, max_complexity: max_complexity) do
+                run_as_multiplex(queries)
+              end
             end
           end
         end
@@ -71,12 +73,14 @@ module GraphQL
           end
 
           # Then, work through lazy results in a breadth-first way
-          GraphQL::Execution::Lazy.resolve(results)
+          GraphQL::Execution::Execute::ExecutionFunctions.lazy_resolve_root_selection(results, { queries: queries })
 
           # Then, find all errors and assign the result to the query object
           results.each_with_index.map do |data_result, idx|
             query = queries[idx]
             finish_query(data_result, query)
+            # Get the Query::Result, not the Hash
+            query.result
           end
         end
 
@@ -88,14 +92,7 @@ module GraphQL
             NO_OPERATION
           else
             begin
-              op_type = operation.operation_type
-              root_type = query.root_type_for_operation(op_type)
-              GraphQL::Execution::Execute::ExecutionFunctions.resolve_selection(
-                query.root_value,
-                root_type,
-                query.context,
-                mutation: query.mutation?
-              )
+              GraphQL::Execution::Execute::ExecutionFunctions.resolve_root_selection(query)
             rescue GraphQL::ExecutionError => err
               query.context.errors << err
               NO_OPERATION
@@ -108,7 +105,7 @@ module GraphQL
         # @return [Hash] final result of this query, including all values and errors
         def finish_query(data_result, query)
           # Assign the result so that it can be accessed in instrumentation
-          query.result = if data_result.equal?(NO_OPERATION)
+          query.result_values = if data_result.equal?(NO_OPERATION)
             if !query.valid?
               { "errors" => query.static_errors.map(&:to_h) }
             else
@@ -131,7 +128,7 @@ module GraphQL
 
         # use the old `query_execution_strategy` etc to run this query
         def run_one_legacy(schema, query)
-          query.result = if !query.valid?
+          query.result_values = if !query.valid?
             all_errors = query.validation_errors + query.analysis_errors + query.context.errors
             if all_errors.any?
               { "errors" => all_errors.map(&:to_h) }
@@ -152,10 +149,11 @@ module GraphQL
         # Apply multiplex & query instrumentation to `queries`.
         #
         # It yields when the queries should be executed, then runs teardown.
-        def with_instrumentation(schema, queries, context:, max_complexity:)
+        def with_instrumentation(multiplex, max_complexity:)
+          schema = multiplex.schema
+          queries = multiplex.queries
           query_instrumenters = schema.instrumenters[:query]
           multiplex_instrumenters = schema.instrumenters[:multiplex]
-          multiplex = self.new(schema: schema, queries: queries, context: context)
 
           # First, run multiplex instrumentation, then query instrumentation for each query
           multiplex_instrumenters.each { |i| i.before_multiplex(multiplex) }

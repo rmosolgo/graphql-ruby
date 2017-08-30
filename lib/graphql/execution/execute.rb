@@ -19,20 +19,38 @@ module GraphQL
       PROPAGATE_NULL = PropagateNull.new
 
       def execute(ast_operation, root_type, query)
-        result = resolve_selection(
-          query.root_value,
-          root_type,
-          query.context,
-          mutation: query.mutation?
-        )
-
-        GraphQL::Execution::Lazy.resolve(result)
+        result = resolve_root_selection(query)
+        lazy_resolve_root_selection(result, {query: query})
         GraphQL::Execution::Flatten.call(result)
       end
 
       # @api private
       module ExecutionFunctions
         module_function
+
+        def resolve_root_selection(query)
+          GraphQL::Tracing.trace("execute_query", query: query) do
+            operation = query.selected_operation
+            op_type = operation.operation_type
+            root_type = query.root_type_for_operation(op_type)
+            resolve_selection(
+              query.root_value,
+              root_type,
+              query.context,
+              mutation: query.mutation?
+            )
+          end
+        end
+
+        def lazy_resolve_root_selection(result, query: nil, queries: nil)
+          if query.nil? && queries.length == 1
+            query = queries[0]
+          end
+
+          GraphQL::Tracing.trace("execute_query_lazy", {queries: queries, query: query}) do
+            GraphQL::Execution::Lazy.resolve(result)
+          end
+        end
 
         def resolve_selection(object, current_type, current_ctx, mutation: false )
           # HACK Assign this _before_ resolving the children
@@ -81,7 +99,9 @@ module GraphQL
 
           raw_value = begin
             arguments = query.arguments_for(selection, field)
-            field_ctx.schema.middleware.invoke([parent_type, object, field, arguments, field_ctx])
+            GraphQL::Tracing.trace("execute_field", { context: field_ctx }) do
+              field_ctx.schema.middleware.invoke([parent_type, object, field, arguments, field_ctx])
+            end
           rescue GraphQL::ExecutionError => err
             err
           end

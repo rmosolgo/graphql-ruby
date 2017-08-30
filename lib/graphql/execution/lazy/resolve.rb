@@ -37,7 +37,9 @@ module GraphQL
           else
             Lazy.new {
               acc.each_with_index { |field_result, idx|
-                inner_v = field_result.value.value
+                inner_v = GraphQL::Tracing.trace("execute_field_lazy", { context: field_result }) do
+                  field_result.value.value
+                end
                 # HACK: some-but-not-all types will
                 # assign themselves during continuation (ObjectTypes?)
                 # This hack makes sure you don't re-re-assign it.

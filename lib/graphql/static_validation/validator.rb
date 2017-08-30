@@ -22,29 +22,31 @@ module GraphQL
       # @param query [GraphQL::Query]
       # @return [Array<Hash>]
       def validate(query, validate: true)
-        context = GraphQL::StaticValidation::ValidationContext.new(query)
-        rewrite = GraphQL::InternalRepresentation::Rewrite.new
+        GraphQL::Tracing.trace("validate", { validate: validate, query: query }) do
+          context = GraphQL::StaticValidation::ValidationContext.new(query)
+          rewrite = GraphQL::InternalRepresentation::Rewrite.new
 
-        # Put this first so its enters and exits are always called
-        rewrite.validate(context)
+          # Put this first so its enters and exits are always called
+          rewrite.validate(context)
 
-        # If the caller opted out of validation, don't attach these
-        if validate
-          @rules.each do |rules|
-            rules.new.validate(context)
+          # If the caller opted out of validation, don't attach these
+          if validate
+            @rules.each do |rules|
+              rules.new.validate(context)
+            end
           end
+
+          context.visitor.visit
+          # Post-validation: allow validators to register handlers on rewritten query nodes
+          rewrite_result = rewrite.document
+          GraphQL::InternalRepresentation::Visit.visit_each_node(rewrite_result.operation_definitions, context.each_irep_node_handlers)
+
+          {
+            errors: context.errors,
+            # If there were errors, the irep is garbage
+            irep: context.errors.any? ? nil : rewrite_result,
+          }
         end
-
-        context.visitor.visit
-        # Post-validation: allow validators to register handlers on rewritten query nodes
-        rewrite_result = rewrite.document
-        GraphQL::InternalRepresentation::Visit.visit_each_node(rewrite_result.operation_definitions, context.each_irep_node_handlers)
-
-        {
-          errors: context.errors,
-          # If there were errors, the irep is garbage
-          irep: context.errors.any? ? nil : rewrite_result,
-        }
       end
     end
   end

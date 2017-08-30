@@ -2,6 +2,7 @@
 source "https://rubygems.org"
 gemspec
 
+gem 'rails'
 gem 'ruby-prof', :platform => :ruby
 gem 'sqlite3', :platform => :ruby
 gem 'pg', :platform => :ruby
