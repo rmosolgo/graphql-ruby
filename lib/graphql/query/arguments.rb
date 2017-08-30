@@ -21,7 +21,7 @@ module GraphQL
               expose_as = arg_definition.expose_as.to_s
 
               # Don't define a helper method if it would override something.
-              next if self.respond_to?(expose_as)
+              next if instance_methods.include?(expose_as)
 
               define_method(expose_as) do
                 self[expose_as]
