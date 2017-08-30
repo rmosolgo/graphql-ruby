@@ -56,6 +56,12 @@ module GraphQL
               type_defn.arguments.each do |name, arg|
                 visit(arg.type, "Input field #{type_defn.name}.#{name}")
               end
+
+              # Construct arguments class here, which is later used to generate GraphQL::Query::Arguments
+              # to be passed to a resolver proc
+              type_defn.arguments_class = GraphQL::Query::Arguments.construct_arguments_class(
+                argument_definitions: type_defn.arguments,
+              )
             end
           elsif !prev_type.equal?(type_defn)
             # If the previous entry in the map isn't the same object we just found, raise.
@@ -74,9 +80,16 @@ module GraphQL
           end
           @instrumented_field_map[type_defn.name][instrumented_field_defn.name] = instrumented_field_defn
           visit(instrumented_field_defn.type, "Field #{type_defn.name}.#{instrumented_field_defn.name}'s return type")
+
           instrumented_field_defn.arguments.each do |name, arg|
             visit(arg.type, "Argument #{name} on #{type_defn.name}.#{instrumented_field_defn.name}")
           end
+
+          # Construct arguments class here, which is later used to generate GraphQL::Query::Arguments
+          # to be passed to a resolver proc
+          instrumented_field_defn.arguments_class = GraphQL::Query::Arguments.construct_arguments_class(
+            argument_definitions: instrumented_field_defn.arguments,
+          )
         end
       end
 

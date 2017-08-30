@@ -86,7 +86,9 @@ module GraphQL
           end
         end
 
-        GraphQL::Query::Arguments.new(values_hash, argument_definitions: argument_defns)
+        GraphQL::Query::Arguments
+          .construct_arguments_class(argument_definitions: argument_defns)
+          .instantiate_arguments(values_hash)
       end
     end
   end

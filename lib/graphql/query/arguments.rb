@@ -1,11 +1,50 @@
 # frozen_string_literal: true
 module GraphQL
   class Query
+    class StaticArguments
+      attr_reader :argument_definitions
+
+      def initialize(argument_definitions:)
+        @argument_definitions = argument_definitions
+      end
+
+      def instantiate_arguments(values)
+        arg_class.new(values, argument_definitions: argument_definitions)
+      end
+
+      private
+
+      def arg_class
+        @arg_class ||= begin
+          klass = Class.new(GraphQL::Query::Arguments).instance_exec(self) do |static_arguments|
+            static_arguments.argument_definitions.each do |_arg_name, arg_definition|
+              expose_as = arg_definition.expose_as.to_s
+
+              # Don't define a helper method if it would override something.
+              next if self.respond_to?(expose_as)
+
+              define_method(expose_as) do
+                self[expose_as]
+              end
+            end
+
+            self
+          end
+
+          klass
+        end
+      end
+    end
+
     # Read-only access to values, normalizing all keys to strings
     #
     # {Arguments} recursively wraps the input in {Arguments} instances.
     class Arguments
       extend GraphQL::Delegate
+
+      def self.construct_arguments_class(argument_definitions:)
+        GraphQL::Query::StaticArguments.new(argument_definitions: argument_definitions)
+      end
 
       def initialize(values, argument_definitions:)
         @argument_values = values.inject({}) do |memo, (inner_key, inner_value)|
@@ -16,19 +55,6 @@ module GraphQL
           memo[string_key] = ArgumentValue.new(string_key, arg_value, arg_defn)
           memo
         end
-
-        argument_definitions.each do |_arg_name, arg_definition|
-          expose_as = arg_definition.expose_as.to_s
-
-          # Don't define a helper method if it would override something.
-          next if self.respond_to?(expose_as)
-
-          define_singleton_method expose_as do
-            self[expose_as]
-          end
-        end
-
-        @argument_values
       end
 
       # @param key [String, Symbol] name or index of value to access

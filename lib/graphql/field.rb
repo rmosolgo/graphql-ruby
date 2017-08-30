@@ -178,6 +178,8 @@ module GraphQL
     # @return [Object, GraphQL::Function] The function used to derive this field
     attr_accessor :function
 
+    attr_accessor :arguments_class
+
     attr_writer :connection
 
     # @return [Boolean]
