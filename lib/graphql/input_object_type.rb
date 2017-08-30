@@ -96,6 +96,7 @@ module GraphQL
         end
       end
 
+      arguments_class ||= GraphQL::Query::Arguments.construct_arguments_class(argument_definitions: arguments)
       arguments_class.instantiate_arguments(input_values)
     end
 
