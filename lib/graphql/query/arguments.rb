@@ -21,7 +21,13 @@ module GraphQL
               expose_as = arg_definition.expose_as.to_s
 
               # Don't define a helper method if it would override something.
-              next if instance_methods.include?(expose_as)
+              if instance_methods.include?(expose_as)
+                warn(
+                  "Unable to define a helper for argument with name '#{expose_as}' "\
+                  "as this is a reserved name."
+                )
+                next
+              end
 
               define_method(expose_as) do
                 self[expose_as]
