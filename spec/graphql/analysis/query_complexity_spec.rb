@@ -35,6 +35,16 @@ describe GraphQL::Analysis::QueryComplexity do
       assert_equal complexities, [query, 7]
     end
 
+    it "wont fail" do
+      query = 'query { connectionWithComplexity { edges { node { __typename } } } }'
+      with = Dummy::Schema.execute query, variables: {}
+
+      query = 'query { connectionWithoutComplexity { edges { node { __typename } } } }'
+      without = Dummy::Schema.execute query, variables: {}
+
+      binding.pry
+    end
+
     describe "when skipped by directives" do
       let(:variables) { { "isSkipped" => true } }
       it "doesn't include skipped fields" do
