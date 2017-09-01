@@ -8,6 +8,28 @@
 
 ### Bug Fix
 
+## 1.5.2 (4 Aug 2017)
+
+### Bug Fix
+
+- Bump `graphql` dependency to `1.6`
+
+## 1.5.1 (2 Aug 2017)
+
+### New Features
+
+- Routing extensions moved to `using GraphQL::Pro::Routes`
+
+### Deprecations
+
+- Deprecate `using GraphQL::Pro`, move extensions to `GraphQL::Pro::Routes`
+
+## 1.5.0 (31 Jul 2017)
+
+### New Features
+
+- Add `GraphQL::Pro::OperationStore` for persisted queries with Rails
+
 ## 1.4.8 (14 Jul 2017)
 
 ### Bug Fix

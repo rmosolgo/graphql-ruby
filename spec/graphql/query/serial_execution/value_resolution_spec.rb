@@ -35,7 +35,7 @@ describe GraphQL::Query::SerialExecution::ValueResolution do
         resolve ->(obj, args, ctx) { (args["today"] + 1) % 7 }
       end
       field :resolvesToNilInterface, interface do
-        resolve ->(obj, args, ctx) { Object.new }
+        resolve ->(obj, args, ctx) { 1337 }
       end
       field :resolvesToWrongTypeInterface, interface do
         resolve ->(obj, args, ctx) { :something }
@@ -86,7 +86,10 @@ describe GraphQL::Query::SerialExecution::ValueResolution do
 
       it "raises an error" do
         err = assert_raises(GraphQL::UnresolvedTypeError) { result }
-        expected_message = %|The value from "resolvesToNilInterface" on "Query" could not be resolved to "SomeInterface". (Received: nil, Expected: [SomeObject])|
+        expected_message = "The value from \"resolvesToNilInterface\" on \"Query\" could not be resolved to \"SomeInterface\". " \
+          "(Received: `nil`, Expected: [SomeObject]) " \
+          "Make sure you have defined a `type_from_object` proc on your schema and that value `1337` " \
+          "gets resolved to a valid type."
         assert_equal expected_message, err.message
       end
     end
@@ -100,7 +103,10 @@ describe GraphQL::Query::SerialExecution::ValueResolution do
 
       it "raises an error" do
         err = assert_raises(GraphQL::UnresolvedTypeError) { result }
-        expected_message = %|The value from "resolvesToWrongTypeInterface" on "Query" could not be resolved to "SomeInterface". (Received: OtherObject, Expected: [SomeObject])|
+        expected_message = "The value from \"resolvesToWrongTypeInterface\" on \"Query\" could not be resolved to \"SomeInterface\". " \
+          "(Received: `OtherObject`, Expected: [SomeObject]) " \
+          "Make sure you have defined a `type_from_object` proc on your schema and that value `:something` " \
+          "gets resolved to a valid type."
         assert_equal expected_message, err.message
       end
     end

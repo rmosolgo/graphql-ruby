@@ -41,7 +41,7 @@ connection :featured_comments, CommentType.connection_type do
     comments = post.comments.featured
 
     if args[:since]
-      comments = comments.where("created_at >= ", since)
+      comments = comments.where("created_at >= ", args[:since])
     end
 
     comments

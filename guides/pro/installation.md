@@ -41,7 +41,7 @@ Be sure to check the [changelog](https://github.com/rmosolgo/graphql-ruby/blob/m
 
 ## Dependencies
 
-`graphql-pro 1.0.0` requires `graphql ~>1.4`.
+`graphql-pro 1.0.0` requires `graphql ~>1.4`. The latest version requires `graphql ~>1.6`.
 
 ## Verifying Integrity
 
@@ -69,7 +69,7 @@ Validating graphql-pro v1.0.0
 ✔ graphql-pro 1.0.0 validated successfully!
 ```
 
-In case of a failure, please open an issue:
+In case of a failure, please {% open_an_issue "GraphQL Pro installation failure" %}:
 
 ```
 Validating graphql-pro v1.4.800

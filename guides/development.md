@@ -65,7 +65,7 @@ You can __watch files__ with `guard`:
 bundle exec guard
 ```
 
-When a file in `lib/` is modified, `guard` will run the corresponding file in `spec`.
+When a file in `lib/` is modified, `guard` will run the corresponding file in `spec`. Guard also respects `# test_via:` comments, so it will run that test when the file changes (if there is no corresponding file by name).
 
 ### Debugging with Pry
 

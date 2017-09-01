@@ -6,6 +6,8 @@
 $brand-color: #a5152a;
 $brand-color-light:  #ed8090;
 $brand-color-extralight:  #f9e8ee;
+$experimental-background: #fff7cf;
+$experimental-color: #655400;
 $faint-color: #f0f0f0;
 $code-border: #d6d6d6;
 $code-background: #fafafa;
@@ -20,6 +22,10 @@ $code-font: 'Monaco', monospace;
 body {
   font-family: $font;
   background: #fafafa;
+}
+
+strong, b {
+    font-weight: bold;
 }
 
 .header {
@@ -132,6 +138,24 @@ a:hover, a:hover code {
   display: none;
 }
 
+.guide-container {
+  a.img-link {
+    background: none;
+    &:hover {
+      background: none;
+    }
+    img {
+      box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+      transition: all 0.3s cubic-bezier(.25,.8,.25,1);
+      max-height: 300px;
+      max-width: 1000px;
+      &:hover {
+        box-shadow: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);
+      }
+    }
+  }
+}
+
 .cell {
   overflow-x: scroll;
 }
@@ -145,10 +169,6 @@ a:hover, a:hover code {
   align-items: center;
 }
 
-.monitoring-img-group img {
-  max-height: 200px;
-  max-width: 500px;
-}
 
 .guides-toc {
   ul {
@@ -174,6 +194,21 @@ a:hover, a:hover code {
   ul {
     margin-left: 10px;
     list-style: none;
+  }
+}
+
+.experimental-header {
+  background-color: $experimental-background;
+  color: $experimental-color;
+  border-radius: $code-border-radius;
+  padding: 10px 10px 0px 10px;
+  border: 1px solid $experimental-color;
+  a {
+    color: $experimental-color;
+    &:hover {
+      background-color: $experimental-color;
+      color: $experimental-background;
+    }
   }
 }
 
@@ -232,7 +267,7 @@ a:hover, a:hover code {
   }
 }
 
-h1, h2, h3, h4 {
+h1, h2, h3, h4, h5 {
   margin: 25px 0px 15px 0px;
   a {
     text-decoration: none;
@@ -247,6 +282,8 @@ h1 { font-size: 1.5rem; }
 h2 { font-size: 1.3rem; }
 h3 { font-size: 1.2rem; }
 h4 { font-size: 1.1rem; }
+h5 { font-size: 1.05rem; }
+em { font-style: italic; }
 
 table {
   width: 100%;

@@ -167,6 +167,10 @@ module StarWars
       resolve ->(object, args, context) { Base.all.to_a }
     end
 
+    connection :basesWithLargeMaxLimitRelation, BaseType.connection_type, max_page_size: 1000 do
+      resolve ->(object, args, context) { Base.all }
+    end
+
     connection :basesAsSequelDataset, BaseConnectionWithTotalCountType, max_page_size: 1000 do
       argument :nameIncludes, types.String
       resolve ->(obj, args, ctx) {

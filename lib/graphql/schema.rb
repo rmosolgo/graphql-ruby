@@ -356,7 +356,7 @@ module GraphQL
         type_proc.call(object, ctx)
       else
         if @resolve_type_proc.nil?
-          raise(NotImplementedError, "Can't determine GraphQL type for: #{object.inspect}, define `resolve_type (obj, ctx) -> { ... }` inside `Schema.define`.")
+          raise(NotImplementedError, "Can't determine GraphQL type for: #{object.inspect}, define `resolve_type (type, obj, ctx) -> { ... }` inside `Schema.define`.")
         end
         @resolve_type_proc.call(type, object, ctx)
       end
@@ -462,13 +462,19 @@ module GraphQL
       GraphQL::Schema::Loader.load(introspection_result)
     end
 
-    # Create schema from an IDL schema.
-    # @param definition_string [String] A schema definition string
+    # Create schema from an IDL schema or file containing an IDL definition.
+    # @param definition_or_path [String] A schema definition string, or a path to a file containing the definition
     # @param default_resolve [<#call(type, field, obj, args, ctx)>] A callable for handling field resolution
     # @param parser [Object] An object for handling definition string parsing (must respond to `parse`)
     # @return [GraphQL::Schema] the schema described by `document`
-    def self.from_definition(string, default_resolve: BuildFromDefinition::DefaultResolve, parser: BuildFromDefinition::DefaultParser)
-      GraphQL::Schema::BuildFromDefinition.from_definition(string, default_resolve: default_resolve, parser: parser)
+    def self.from_definition(definition_or_path, default_resolve: BuildFromDefinition::DefaultResolve, parser: BuildFromDefinition::DefaultParser)
+      # If the file ends in `.graphql`, treat it like a filepath
+      definition = if definition_or_path.end_with?(".graphql")
+        File.read(definition_or_path)
+      else
+        definition_or_path
+      end
+      GraphQL::Schema::BuildFromDefinition.from_definition(definition, default_resolve: default_resolve, parser: parser)
     end
 
     # Error that is raised when [#Schema#from_definition] is passed an invalid schema definition string.

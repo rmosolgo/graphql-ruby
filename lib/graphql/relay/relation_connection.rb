@@ -24,11 +24,11 @@ module GraphQL
       end
 
       def has_next_page
-        !!(first && sliced_nodes_count > first)
+        !!(first && paged_nodes_length >= first && sliced_nodes_count > first)
       end
 
       def has_previous_page
-        !!(last && sliced_nodes_count > last)
+        !!(last && paged_nodes_length >= last && sliced_nodes_count > last)
       end
 
       def first
@@ -68,7 +68,8 @@ module GraphQL
               items = items.offset(offset).limit(last)
             end
           else
-            offset = (relation_offset(items) || 0) + relation_count(items) - last
+            slice_count = relation_count(items)
+            offset = (relation_offset(items) || 0) + slice_count - [last, slice_count].min
             items = items.offset(offset).limit(last)
           end
         end
@@ -100,8 +101,7 @@ module GraphQL
 
       # If a relation contains a `.group` clause, a `.count` will return a Hash.
       def relation_count(relation)
-        count_or_hash = case relation
-        when ActiveRecord::Relation
+        count_or_hash = if(defined?(ActiveRecord::Relation) && relation.is_a?(ActiveRecord::Relation))
           relation.count(:all)
         else # eg, Sequel::Dataset, don't mess up others
           relation.count
@@ -122,15 +122,24 @@ module GraphQL
 
         if before && after
           if offset_from_cursor(after) < offset_from_cursor(before)
-            @sliced_nodes = @sliced_nodes.limit(offset_from_cursor(before) - offset_from_cursor(after) - 1)
+            @sliced_nodes = limit_nodes(@sliced_nodes,  offset_from_cursor(before) - offset_from_cursor(after) - 1)
           else
-            @sliced_nodes = @sliced_nodes.limit(0)
+            @sliced_nodes = limit_nodes(@sliced_nodes, 0)
           end
+
         elsif before
-          @sliced_nodes = @sliced_nodes.limit(offset_from_cursor(before) - 1)
+          @sliced_nodes = limit_nodes(@sliced_nodes, offset_from_cursor(before) - 1)
         end
 
         @sliced_nodes
+      end
+
+      def limit_nodes(sliced_nodes, limit)
+        if limit > 0 || defined?(ActiveRecord::Relation) && sliced_nodes.is_a?(ActiveRecord::Relation)
+          sliced_nodes.limit(limit)
+        else
+          sliced_nodes.where(false)
+        end
       end
 
       def sliced_nodes_count
@@ -147,6 +156,14 @@ module GraphQL
       def paged_nodes_array
         return @paged_nodes_array if defined?(@paged_nodes_array)
         @paged_nodes_array = paged_nodes.to_a
+      end
+
+      def paged_nodes_length
+        if paged_nodes.respond_to?(:length)
+          paged_nodes.length
+        else
+          paged_nodes_array.length
+        end
       end
     end
 

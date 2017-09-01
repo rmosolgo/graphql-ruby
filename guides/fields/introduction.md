@@ -39,7 +39,7 @@ The resolve function receives inputs:
 
 - `object`: The underlying object for this type (above, a `Post` instance)
 - `arguments`: The arguments for this field (see below, a {{ "GraphQL::Query::Arguments" | api_doc }} instance)
-- `context`: The context for this query (see ["Executing Queries"]({{ site.baseurl }}/queries/executing_queries), a {{ "GraphQL::Query::Context" | api_doc }} instance)
+- `context`: The context for this query (see {% internal_link "Executing Queries","/queries/executing_queries" %}, a {{ "GraphQL::Query::Context" | api_doc }} instance)
 
 In fact, the `field do ... end` block is passed to {{ "GraphQL::Field" | api_doc }}'s `.define` method, so you can define many things there:
 

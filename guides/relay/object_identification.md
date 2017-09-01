@@ -71,7 +71,7 @@ To tell GraphQL how to resolve members of the `"Node"` interface, you must also 
 MySchema = GraphQL::Schema.define do
   # You'll also need to define `resolve_type` for
   # telling the schema what type Relay `Node` objects are
-  resolve_type ->(obj, ctx) {
+  resolve_type ->(type, obj, ctx) {
     case obj
     when Post
       Types::PostType
@@ -134,7 +134,7 @@ Both of these fields may be customized using the usual definition block:
 QueryType = GraphQL::ObjectType.define do
   name "Query"
 
-  field :nodes, (GraphQL::Relay::Node.field do
+  field :node, (GraphQL::Relay::Node.field do
     resolve ->(_, args, _) { # your own custom logic here }
   end)
 

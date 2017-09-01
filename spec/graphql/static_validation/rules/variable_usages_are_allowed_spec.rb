@@ -92,6 +92,7 @@ describe GraphQL::StaticValidation::VariableUsagesAreAllowed do
 
       type Query {
         imageUrl(height: Int, width: Int, size: ImageSize, sizes: [ImageSize!]): String!
+        sizedImageUrl(sizes: [ImageSize!]!): String!
       }
       GRAPHQL
     }
@@ -124,7 +125,7 @@ describe GraphQL::StaticValidation::VariableUsagesAreAllowed do
 
       it "finds invalid inner definitions" do
         assert_equal 1, errors.size
-        expected_message = "List dimension mismatch on variable $sizes and argument sizes ([[ImageSize]] / [ImageSize!])"
+        expected_message = "List dimension mismatch on variable $sizes and argument sizes ([[ImageSize]]! / [ImageSize!])"
         assert_equal [expected_message], errors.map { |e| e["message"] }
       end
     end
@@ -210,6 +211,21 @@ describe GraphQL::StaticValidation::VariableUsagesAreAllowed do
 
       it "is a valid query" do
         assert_equal 0, errors.size
+      end
+    end
+
+    describe "variable in non-null list" do
+      let(:query_string) {
+        <<-GRAPHQL
+        # This should work
+        query ($size: ImageSize!) {
+          sizedImageUrl(sizes: [$size])
+        }
+        GRAPHQL
+      }
+
+      it "is allowed" do
+        assert_equal [], errors
       end
     end
   end
