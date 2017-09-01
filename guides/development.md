@@ -2,7 +2,7 @@
 layout: guide
 search: true
 title: Development
-other: true
+section: Other
 desc: Hacking on GraphQL Ruby
 ---
 

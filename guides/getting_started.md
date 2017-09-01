@@ -2,7 +2,7 @@
 layout: guide
 search: true
 title: Getting Started
-other: true
+section: Other
 desc: Start here!
 ---
 

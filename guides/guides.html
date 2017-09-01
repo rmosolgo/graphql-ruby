@@ -30,7 +30,7 @@ sections:
       <ul>
         {% assign sorted_pages = site.pages | sort: "index" %}
         {% for guide in sorted_pages %}
-          {% if guide.layout == "guide" and (guide.section == section.name or (guide.other and section.name == "Other")) %}
+          {% if guide.layout == "guide" and  guide.section == section.name %}
             <li>
               <p>
                 <a href="{% if guide.outbound_url %}{{ guide.outbound_url }}{% else %}{{ site.baseurl }}{{ guide.url }}{% endif %}">{{ guide.title }}</a>
