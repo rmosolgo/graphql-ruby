@@ -106,31 +106,30 @@ module GraphQL
             err
           end
 
-          result = if query.schema.lazy?(raw_value)
-            field.prepare_lazy(raw_value, arguments, field_ctx).then { |inner_value|
-              continue_resolve_field(inner_value, field_ctx)
+          # If the returned object is lazy (unfinished),
+          # assign the lazy object to `.value=` so we can resolve it later.
+          # When we resolve it later, reassign it to `.value=` so that
+          # the finished value replaces the unfinished one.
+          #
+          # If the returned object is finished, continue to coerce
+          # and resolve child fields
+          if query.schema.lazy?(raw_value)
+            field_ctx.value = field.prepare_lazy(raw_value, arguments, field_ctx).then { |inner_value|
+              field_ctx.value = continue_resolve_field(inner_value, field_ctx)
             }
           elsif raw_value.is_a?(GraphQL::Execution::Lazy)
             # It came from a connection resolve, assume it was already instrumented
-            raw_value.then { |inner_value|
-              continue_resolve_field(inner_value, field_ctx)
+            field_ctx.value = raw_value.then { |inner_value|
+              field_ctx.value = continue_resolve_field(inner_value, field_ctx)
             }
           else
-            continue_resolve_field(raw_value, field_ctx)
+            field_ctx.value = continue_resolve_field(raw_value, field_ctx)
           end
-
-          case result
-          when Hash, Array
-            # It was assigned ahead of time
-          else
-            field_ctx.value = result
-          end
-          result
         end
 
         def continue_resolve_field(raw_value, field_ctx)
           if field_ctx.parent.invalid_null?
-            return
+            return nil
           end
           query = field_ctx.query
 
