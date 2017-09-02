@@ -53,7 +53,7 @@ module GraphQL
         end
 
         def resolve_selection(object, current_type, current_ctx, mutation: false )
-          # HACK Assign this _before_ resolving the children
+          # Assign this _before_ resolving the children
           # so that when a child propagates null, the selection result is
           # ready for it.
           current_ctx.value = {}
@@ -77,14 +77,14 @@ module GraphQL
               GraphQL::Execution::Lazy.resolve(field_ctx)
             end
 
-            # TODO what the heck
-            current_ctx.value && (current_ctx.value[name] = field_ctx)
 
             # If the last subselection caused a null to propagate to _this_ selection,
             # then we may as well quit executing fields because they
             # won't be in the response
             if current_ctx.invalid_null?
               break
+            else
+              current_ctx.value[name] = field_ctx
             end
           end
 
