@@ -7,6 +7,12 @@ module GraphQL
     # It delegates `[]` to the hash that's passed to `GraphQL::Query#initialize`.
     class Context
       module SharedMethods
+        # @return [Object] The target for field resultion
+        attr_accessor :object
+
+        # @return [Hash, Array, String, Integer, Float, Boolean, nil] The resolved value for this field
+        attr_reader :value
+
         # Return this value to tell the runtime
         # to exclude this field from the response altogether
         def skip
@@ -29,10 +35,11 @@ module GraphQL
         # @param key [String, Integer] The key in the response (name or index)
         # @param irep_node [InternalRepresentation::Node] The node being evaluated
         # @api private
-        def spawn_child(key:, irep_node:)
+        def spawn_child(key:, irep_node:, object:)
           FieldResolutionContext.new(
             context: @context,
             parent: self,
+            object: object,
             key: key,
             irep_node: irep_node,
           )
@@ -88,10 +95,11 @@ module GraphQL
       # Make a new context which delegates key lookup to `values`
       # @param query [GraphQL::Query] the query who owns this context
       # @param values [Hash] A hash of arbitrary values which will be accessible at query-time
-      def initialize(query:, values:)
+      def initialize(query:, values: , object:)
         @query = query
         @schema = query.schema
         @provided_values = values || {}
+        @object = object
         # Namespaced storage, where user-provided values are in `nil` namespace:
         @storage = Hash.new { |h, k| h[k] = {} }
         @storage[nil] = @provided_values
@@ -101,7 +109,8 @@ module GraphQL
         @context = self # for SharedMethods
       end
 
-      attr_accessor :value
+      # @api private
+      attr_writer :value
 
       def_delegators :@provided_values, :[], :[]=, :to_h, :key?, :fetch
 
@@ -127,6 +136,7 @@ module GraphQL
         "#<Query::Context ...>"
       end
 
+      # @api private
       def received_null_child
         @invalid_null = true
         @value = nil
@@ -139,10 +149,11 @@ module GraphQL
         attr_reader :irep_node, :field, :parent_type, :query, :schema, :parent, :key, :type
         alias :selection :irep_node
 
-        def initialize(context:, key:, irep_node:, parent:)
+        def initialize(context:, key:, irep_node:, parent:, object:)
           @context = context
           @key = key
           @parent = parent
+          @object = object
           @irep_node = irep_node
           @field = irep_node.definition
           @parent_type = irep_node.owner_type
@@ -180,13 +191,12 @@ module GraphQL
           "#<GraphQL Context @ #{irep_node.owner_type.name}.#{field.name}>"
         end
 
-        attr_reader :value
-
         # Set a new value for this field in the response.
         # It may be updated after resolving a {Lazy}.
         # If it is {Execute::PROPAGATE_NULL}, tell the owner to propagate null.
         # If it's {Execute::Execution::SKIP}, remove this field result from its parent
         # @param new_value [Any] The GraphQL-ready value
+        # @api private
         def value=(new_value)
           case new_value
           when GraphQL::Execution::Execute::PROPAGATE_NULL, nil

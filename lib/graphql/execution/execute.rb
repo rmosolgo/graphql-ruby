@@ -63,6 +63,7 @@ module GraphQL
           selections_on_type.each do |name, child_irep_node|
             field_ctx = current_ctx.spawn_child(
               key: name,
+              object: object,
               irep_node: child_irep_node,
             )
 
@@ -191,6 +192,7 @@ module GraphQL
               value.each do |inner_value|
                 inner_ctx = field_ctx.spawn_child(
                   key: i,
+                  object: inner_value,
                   irep_node: field_ctx.irep_node,
                 )
 

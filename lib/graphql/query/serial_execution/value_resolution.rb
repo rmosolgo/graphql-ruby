@@ -25,6 +25,7 @@ module GraphQL
               value.each do |inner_value|
                 inner_ctx = query_ctx.spawn_child(
                   key: i,
+                  object: inner_value,
                   irep_node: selection,
                 )
 

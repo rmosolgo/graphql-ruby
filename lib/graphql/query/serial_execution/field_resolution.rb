@@ -14,6 +14,7 @@ module GraphQL
           @field = irep_node.definition
           @field_ctx = query_ctx.spawn_child(
             key: irep_node.name,
+            object: target,
             irep_node: irep_node,
           )
           @arguments = @query.arguments_for(irep_node, @field)
