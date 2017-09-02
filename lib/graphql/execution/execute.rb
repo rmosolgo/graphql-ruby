@@ -58,10 +58,12 @@ module GraphQL
           # ready for it.
           current_ctx.value = {}
 
-          current_ctx.irep_node.typed_children[current_type].each do |name, subselection|
+          selections_on_type = current_ctx.irep_node.typed_children[current_type]
+
+          selections_on_type.each do |name, child_irep_node|
             field_ctx = current_ctx.spawn_child(
               key: name,
-              irep_node: subselection,
+              irep_node: child_irep_node,
             )
 
             field_result = resolve_field(
@@ -93,12 +95,12 @@ module GraphQL
 
         def resolve_field(object, field_ctx)
           query = field_ctx.query
-          selection = field_ctx.irep_node
-          parent_type = selection.owner_type
+          irep_node = field_ctx.irep_node
+          parent_type = irep_node.owner_type
           field = field_ctx.field
 
           raw_value = begin
-            arguments = query.arguments_for(selection, field)
+            arguments = query.arguments_for(irep_node, field)
             GraphQL::Tracing.trace("execute_field", { context: field_ctx }) do
               field_ctx.schema.middleware.invoke([parent_type, object, field, arguments, field_ctx])
             end

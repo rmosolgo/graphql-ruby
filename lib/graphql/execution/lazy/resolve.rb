@@ -36,9 +36,9 @@ module GraphQL
             Lazy::NullResult
           else
             Lazy.new {
-              acc.each_with_index { |field_result, idx|
-                acc[idx] = GraphQL::Tracing.trace("execute_field_lazy", { context: field_result }) do
-                  field_result.value.value
+              acc.each_with_index { |ctx, idx|
+                acc[idx] = GraphQL::Tracing.trace("execute_field_lazy", { context: ctx }) do
+                  ctx.value.value
                 end
               }
               resolve_in_place(acc)
