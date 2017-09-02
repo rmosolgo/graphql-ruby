@@ -51,6 +51,7 @@ describe GraphQL::Tracing::ActiveSupportNotificationsTracing do
       "graphql.execute_field_lazy",
       "graphql.execute_field_lazy",
       "graphql.execute_query_lazy",
+      "graphql.execute_multiplex",
     ]
     assert_equal expected_traces, traces
   end

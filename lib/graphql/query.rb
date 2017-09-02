@@ -63,7 +63,7 @@ module GraphQL
     def initialize(schema, query_string = nil, query: nil, document: nil, context: nil, variables: {}, validate: true, operation_name: nil, root_value: nil, max_depth: nil, max_complexity: nil, except: nil, only: nil)
       @schema = schema
       @filter = schema.default_filter.merge(except: except, only: only)
-      @context = Context.new(query: self, values: context)
+      @context = Context.new(query: self, object: root_value, values: context)
       @root_value = root_value
       @fragments = nil
       @operations = nil

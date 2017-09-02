@@ -36,12 +36,10 @@ module GraphQL
             Lazy::NullResult
           else
             Lazy.new {
-              acc.each_with_index { |field_result, idx|
-                inner_v = GraphQL::Tracing.trace("execute_field_lazy", { context: field_result.context }) do
-                  field_result.value.value
+              acc.each_with_index { |ctx, idx|
+                acc[idx] = GraphQL::Tracing.trace("execute_field_lazy", { context: ctx }) do
+                  ctx.value.value
                 end
-                field_result.value = inner_v
-                acc[idx] = inner_v
               }
               resolve_in_place(acc)
             }
@@ -54,7 +52,7 @@ module GraphQL
         # @return [void]
         def self.each_lazy(acc, value)
           case value
-          when SelectionResult
+          when Hash
             value.each do |key, field_result|
               acc = each_lazy(acc, field_result)
             end
@@ -62,12 +60,12 @@ module GraphQL
             value.each do |field_result|
               acc = each_lazy(acc, field_result)
             end
-          when FieldResult
+          when Query::Context::SharedMethods
             field_value = value.value
             case field_value
             when Lazy
               acc = acc << value
-            when SelectionResult
+            when Enumerable # shortcut for Hash & Array
               acc = each_lazy(acc, field_value)
             end
           end

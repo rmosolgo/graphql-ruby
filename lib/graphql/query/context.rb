@@ -1,9 +1,63 @@
 # frozen_string_literal: true
+# test_via: ../execution/execute.rb
+# test_via: ../execution/lazy.rb
 module GraphQL
   class Query
     # Expose some query-specific info to field resolve functions.
     # It delegates `[]` to the hash that's passed to `GraphQL::Query#initialize`.
     class Context
+      module SharedMethods
+        # @return [Object] The target for field resultion
+        attr_accessor :object
+
+        # @return [Hash, Array, String, Integer, Float, Boolean, nil] The resolved value for this field
+        attr_reader :value
+
+        # Return this value to tell the runtime
+        # to exclude this field from the response altogether
+        def skip
+          GraphQL::Execution::Execute::SKIP
+        end
+
+        # @return [Boolean] True if this selection has been nullified by a null child
+        def invalid_null?
+          @invalid_null
+        end
+
+        # Remove this child from the result value
+        # (used for null propagation and skip)
+        # @api private
+        def delete(child_ctx)
+          @value.delete(child_ctx.key)
+        end
+
+        # Create a child context to use for `key`
+        # @param key [String, Integer] The key in the response (name or index)
+        # @param irep_node [InternalRepresentation::Node] The node being evaluated
+        # @api private
+        def spawn_child(key:, irep_node:, object:)
+          FieldResolutionContext.new(
+            context: @context,
+            parent: self,
+            object: object,
+            key: key,
+            irep_node: irep_node,
+          )
+        end
+
+        # Add error at query-level.
+        # @param error [GraphQL::ExecutionError] an execution error
+        # @return [void]
+        def add_error(error)
+          if !error.is_a?(ExecutionError)
+            raise TypeError, "expected error to be a ExecutionError, but was #{error.class}"
+          end
+          errors << error
+          nil
+        end
+      end
+
+      include SharedMethods
       extend GraphQL::Delegate
       attr_reader :execution_strategy
       # `strategy` is required by GraphQL::Batch
@@ -17,7 +71,9 @@ module GraphQL
       end
 
       # @return [GraphQL::InternalRepresentation::Node] The internal representation for this query node
-      attr_accessor :irep_node
+      def irep_node
+        @irep_node ||= query.irep_selection
+      end
 
       # @return [GraphQL::Language::Nodes::Field] The AST node for the currently-executing field
       def ast_node
@@ -39,16 +95,22 @@ module GraphQL
       # Make a new context which delegates key lookup to `values`
       # @param query [GraphQL::Query] the query who owns this context
       # @param values [Hash] A hash of arbitrary values which will be accessible at query-time
-      def initialize(query:, values:)
+      def initialize(query:, values: , object:)
         @query = query
         @schema = query.schema
         @provided_values = values || {}
+        @object = object
         # Namespaced storage, where user-provided values are in `nil` namespace:
         @storage = Hash.new { |h, k| h[k] = {} }
         @storage[nil] = @provided_values
         @errors = []
         @path = []
+        @value = nil
+        @context = self # for SharedMethods
       end
+
+      # @api private
+      attr_writer :value
 
       def_delegators :@provided_values, :[], :[]=, :to_h, :key?, :fetch
 
@@ -70,46 +132,32 @@ module GraphQL
         @storage[ns]
       end
 
-      def spawn(key:, selection:, parent_type:, field:)
-        FieldResolutionContext.new(
-          context: self,
-          parent: self,
-          key: key,
-          selection: selection,
-          parent_type: parent_type,
-          field: field,
-        )
+      def inspect
+        "#<Query::Context ...>"
       end
 
-      # Return this value to tell the runtime
-      # to exclude this field from the response altogether
-      def skip
-        GraphQL::Execution::Execute::SKIP
-      end
-
-      # Add error at query-level.
-      # @param error [GraphQL::ExecutionError] an execution error
-      # @return [void]
-      def add_error(error)
-        if !error.is_a?(ExecutionError)
-          raise TypeError, "expected error to be a ExecutionError, but was #{error.class}"
-        end
-        errors << error
-        nil
+      # @api private
+      def received_null_child
+        @invalid_null = true
+        @value = nil
       end
 
       class FieldResolutionContext
+        include SharedMethods
         extend GraphQL::Delegate
 
-        attr_reader :selection, :field, :parent_type, :query, :schema
+        attr_reader :irep_node, :field, :parent_type, :query, :schema, :parent, :key, :type
+        alias :selection :irep_node
 
-        def initialize(context:, key:, selection:, parent:, field:, parent_type:)
+        def initialize(context:, key:, irep_node:, parent:, object:)
           @context = context
           @key = key
           @parent = parent
-          @selection = selection
-          @field = field
-          @parent_type = parent_type
+          @object = object
+          @irep_node = irep_node
+          @field = irep_node.definition
+          @parent_type = irep_node.owner_type
+          @type = field.type
           # This is needed constantly, so set it ahead of time:
           @query = context.query
           @schema = context.schema
@@ -122,41 +170,78 @@ module GraphQL
         def_delegators :@context,
           :[], :[]=, :key?, :fetch, :to_h, :namespace,
           :spawn, :schema, :warden, :errors,
-          :execution_strategy, :strategy, :skip
+          :execution_strategy, :strategy
 
         # @return [GraphQL::Language::Nodes::Field] The AST node for the currently-executing field
         def ast_node
-          @selection.ast_node
-        end
-
-        # @return [GraphQL::InternalRepresentation::Node]
-        def irep_node
-          @selection
+          @irep_node.ast_node
         end
 
         # Add error to current field resolution.
         # @param error [GraphQL::ExecutionError] an execution error
         # @return [void]
         def add_error(error)
-          if !error.is_a?(ExecutionError)
-            raise TypeError, "expected error to be a ExecutionError, but was #{error.class}"
-          end
-
+          super
           error.ast_node ||= irep_node.ast_node
           error.path ||= path
-          errors << error
           nil
         end
 
-        def spawn(key:, selection:, parent_type:, field:)
-          FieldResolutionContext.new(
-            context: @context,
-            parent: self,
-            key: key,
-            selection: selection,
-            parent_type: parent_type,
-            field: field,
-          )
+        def inspect
+          "#<GraphQL Context @ #{irep_node.owner_type.name}.#{field.name}>"
+        end
+
+        # Set a new value for this field in the response.
+        # It may be updated after resolving a {Lazy}.
+        # If it is {Execute::PROPAGATE_NULL}, tell the owner to propagate null.
+        # If it's {Execute::Execution::SKIP}, remove this field result from its parent
+        # @param new_value [Any] The GraphQL-ready value
+        # @api private
+        def value=(new_value)
+          case new_value
+          when GraphQL::Execution::Execute::PROPAGATE_NULL, nil
+            @invalid_null = true
+            @value = nil
+            if @type.kind.non_null?
+              @parent.received_null_child
+            end
+          when GraphQL::Execution::Execute::SKIP
+            @parent.delete(self)
+          else
+            @value = new_value
+          end
+        end
+
+        protected
+
+        def received_null_child
+          case @value
+          when Hash
+            self.value = GraphQL::Execution::Execute::PROPAGATE_NULL
+          when Array
+            if list_of_non_null_items?(@type)
+              self.value = GraphQL::Execution::Execute::PROPAGATE_NULL
+            end
+          when nil
+            # TODO This is a hack
+            # It was already nulled out but it's getting reassigned
+          else
+            raise "Unexpected value for received_null_child (#{self.value.class}): #{value}"
+          end
+        end
+
+        private
+
+        def list_of_non_null_items?(type)
+          case type
+          when GraphQL::NonNullType
+            # Unwrap [T]!
+            list_of_non_null_items?(type.of_type)
+          when GraphQL::ListType
+            type.of_type.is_a?(GraphQL::NonNullType)
+          else
+            raise "Unexpected list_of_non_null_items check: #{type}"
+          end
         end
       end
     end

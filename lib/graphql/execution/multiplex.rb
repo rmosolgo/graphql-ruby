@@ -95,7 +95,7 @@ module GraphQL
               GraphQL::Execution::Execute::ExecutionFunctions.resolve_root_selection(query)
             rescue GraphQL::ExecutionError => err
               query.context.errors << err
-              {}
+              NO_OPERATION
             end
           end
         end
@@ -112,10 +112,13 @@ module GraphQL
               {}
             end
           else
-            result = { "data" => data_result.to_h }
-            error_result = query.context.errors.map(&:to_h)
+            # Use `context.value` which was assigned during execution
+            result = {
+              "data" => Execution::Flatten.call(query.context.value)
+            }
 
-            if error_result.any?
+            if query.context.errors.any?
+              error_result = query.context.errors.map(&:to_h)
               result["errors"] = error_result
             end
 
