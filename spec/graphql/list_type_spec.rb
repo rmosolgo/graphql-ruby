@@ -37,10 +37,16 @@ describe GraphQL::ListType do
 
   describe "list of input objects" do
     let(:input_object) do
-      GraphQL::InputObjectType.define do
+      input_object = GraphQL::InputObjectType.define do
         name "SomeInputObjectType"
         argument :float, !types.Float
       end
+
+      input_object.arguments_class = GraphQL::Query::Arguments.construct_arguments_class(
+        argument_definitions: input_object.arguments,
+      )
+
+      input_object
     end
 
     let(:input_object_list) { input_object.to_list_type }
