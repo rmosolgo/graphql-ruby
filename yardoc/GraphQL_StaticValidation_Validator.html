@@ -8,9 +8,9 @@
 Initialized with a GraphQL::Schema, then it can validate based on
 that schema. 
 By default, it’s used by {GraphQL::Query 
-Examples:
-# Validate a query
-validator = GraphQL::StaticValidation::Validator.new(schema: MySchema)
+Examples:</p>
+<h1 id="validate-a-query">Validate a query</h1>
+<p>validator = GraphQL::StaticValidation::Validator.new(schema: MySchema)
 document = GraphQL.parse(query_string)
 errors = validator.validate(document)
 Instance methods:

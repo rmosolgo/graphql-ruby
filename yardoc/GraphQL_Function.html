@@ -11,9 +11,9 @@ Class-level values defined with the DSL will be inherited, so
 {GraphQL::Function}s can extend one another. 
 It’s OK to override the instance methods here in order to customize
 behavior of instances. 
-Examples:
-# A reusable GraphQL::Function attached as a field
-class FindRecord &lt; GraphQL::Function
+Examples:</p>
+<h1 id="a-reusable-graphqlfunction-attached-as-a-field">A reusable GraphQL::Function attached as a field</h1>
+<p>class FindRecord &lt; GraphQL::Function
 attr_reader :type
 def initialize(model:, type:)
 @model = model

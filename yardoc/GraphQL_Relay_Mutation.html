@@ -5,17 +5,18 @@
   </head>
   <body>
     <p>Class: GraphQL::Relay::Mutation &lt; Object
-Define a Relay mutation:
-- give it a name (used for derived inputs &amp; outputs)
-- declare its inputs
-- declare its outputs
-- declare the mutation procedure
+Define a Relay mutation:</p>
+<ul>
+  <li>give it a name (used for derived inputs &amp; outputs)</li>
+  <li>declare its inputs</li>
+  <li>declare its outputs</li>
+  <li>declare the mutation procedure
 <code class="highlighter-rouge">resolve</code> should return a hash with a key for each of the
 <code class="highlighter-rouge">return_field</code>s 
 Inputs may also contain a <code class="highlighter-rouge">clientMutationId</code> 
 Examples:
-# Updating the name of an item
-UpdateNameMutation = GraphQL::Relay::Mutation.define do
+    <h1 id="updating-the-name-of-an-item">Updating the name of an item</h1>
+    <p>UpdateNameMutation = GraphQL::Relay::Mutation.define do
 name “UpdateName”
 input_field :name, !types.String
 input_field :itemId, !types.ID
@@ -26,26 +27,26 @@ item.update(name: inputs[:name])
 {item: item}
 }
 end
-MutationType = GraphQL::ObjectType.define do
-# The mutation object exposes a field:
-field :updateName, field: UpdateNameMutation.field
-end
-# Then query it:
-query_string = %|
+MutationType = GraphQL::ObjectType.define do</p>
+    <h1 id="the-mutation-object-exposes-a-field">The mutation object exposes a field:</h1>
+    <p>field :updateName, field: UpdateNameMutation.field
+end</p>
+    <h1 id="then-query-it">Then query it:</h1>
+    <p>query_string = %|
 mutation updateName {
 updateName(input: {itemId: 1, name: “new name”, clientMutationId: “1234”}) {
 item { name }
 clientMutationId
 }|
-GraphQL::Query.new(MySchema, query_string).result
-# {“data” =&gt; {
-#   “updateName” =&gt; {
-#     “item” =&gt; { “name” =&gt; “new name”},
-#     “clientMutationId” =&gt; “1234”
-#   }
-# }}
-# Using a GraphQL::Function
-class UpdateAttributes &lt; GraphQL::Function
+GraphQL::Query.new(MySchema, query_string).result</p>
+    <h1 id="data--">{“data” =&gt; {</h1>
+    <h1 id="updatename--">“updateName” =&gt; {</h1>
+    <h1 id="item---name--new-name">“item” =&gt; { “name” =&gt; “new name”},</h1>
+    <h1 id="clientmutationid--1234">“clientMutationId” =&gt; “1234”</h1>
+    <h1>}</h1>
+    <h1 id="-1">}}</h1>
+    <h1 id="using-a-graphqlfunction">Using a GraphQL::Function</h1>
+    <p>class UpdateAttributes &lt; GraphQL::Function
 attr_reader :model, :return_as, :arguments
 def initialize(model:, return_as:, attributes:)
 @model = model
@@ -83,6 +84,8 @@ GraphQL::Define::InstanceDefinable
 Instance methods:
 field, get_arity, has_generated_return_type?, initialize,
 input_type, resolve=, result_class</p>
+  </li>
+</ul>
 
 
   </body>
