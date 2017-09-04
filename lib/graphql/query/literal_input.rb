@@ -26,7 +26,7 @@ module GraphQL
               [LiteralInput.coerce(type.of_type, ast_node, variables)]
             end
           when GraphQL::InputObjectType
-            from_arguments(ast_node.arguments, type.arguments, variables)
+            from_arguments(ast_node, type.arguments, variables)
           end
         end
       end
@@ -39,11 +39,11 @@ module GraphQL
         end
       end
 
-      def self.from_arguments(ast_arguments, argument_defns, variables)
+      def self.from_arguments(ast_node, argument_defns, variables)
         # Variables is nil when making .defaults_for
         context = variables ? variables.context : nil
         values_hash = {}
-        indexed_arguments = ast_arguments.each_with_object({}) { |a, memo| memo[a.name] = a }
+        indexed_arguments = ast_node.arguments.each_with_object({}) { |a, memo| memo[a.name] = a }
 
         argument_defns.each do |arg_name, arg_defn|
           ast_arg = indexed_arguments[arg_name]
@@ -86,9 +86,11 @@ module GraphQL
           end
         end
 
-        GraphQL::Query::Arguments
-          .construct_arguments_class(argument_definitions: argument_defns)
-          .instantiate_arguments(values_hash)
+        # TODO: can we avoid some or all of the work above if arguments_class is present?
+        ast_node.arguments_class ||= GraphQL::Query::Arguments
+            .construct_arguments_class(argument_definitions: argument_defns)
+
+        ast_node.arguments_class.instantiate_arguments(values_hash)
       end
     end
   end
