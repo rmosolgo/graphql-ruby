@@ -118,6 +118,7 @@ module GraphQL
       @type_error_proc = DefaultTypeError
       @parse_error_proc = DefaultParseError
       @instrumenters = Hash.new { |h, k| h[k] = [] }
+      @union_memberships = {}
       @lazy_methods = GraphQL::Execution::Lazy::LazyMethodMap.new
       @lazy_methods.set(GraphQL::Relay::ConnectionResolve::LazyNodesWrapper, :never_called)
       @cursor_encoder = Base64Encoder
@@ -231,10 +232,10 @@ module GraphQL
 
     # Returns a list of Union types in which a type is a member
     # @param type [GraphQL::ObjectType]
-    # @return [Array<GraphQL::UnionType>] The field named `field_name` on `parent_type`    def union_memberships(type)
+    # @return [Array<GraphQL::UnionType>] list of union types of which the type is a member
     def union_memberships(type)
       rebuild_artifacts unless defined?(@unions)
-      @unions.select { |union| possible_types(union).include?(type) }
+      @union_memberships[type.name] ||= @unions.select { |union| possible_types(union).include?(type) }
     end
 
     # Execute a query on itself. Raises an error if the schema definition is invalid.
