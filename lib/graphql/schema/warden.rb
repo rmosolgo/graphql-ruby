@@ -155,12 +155,7 @@ module GraphQL
 
       def referenced_by_visible_members?(type_defn)
         members = @schema.references_to(type_defn.unwrap.name)
-        # Types should be visible if there are
-        # no member definitions with that type
-        return true unless members.any?
-        # Only hide the type when there are fields
-        # but none are visible.
-        members.any? { |member| visible?(member) }
+        members.empty? || members.any? { |m| visible?(m) } 
       end
 
       def member_or_implements?(type_defn)
