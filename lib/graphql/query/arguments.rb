@@ -24,7 +24,8 @@ module GraphQL
               if instance_methods.include?(expose_as)
                 warn(
                   "Unable to define a helper for argument with name '#{expose_as}' "\
-                  "as this is a reserved name."
+                  "as this is a reserved name. If you're using an argument such as "\
+                  "`argument #{expose_as}`, consider renaming this argument.`"
                 )
                 next
               end
