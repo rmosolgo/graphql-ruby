@@ -86,7 +86,6 @@ module GraphQL
           end
         end
 
-        # TODO: can we avoid some or all of the work above if arguments_class is present?
         ast_node.arguments_class ||= GraphQL::Query::Arguments
             .construct_arguments_class(argument_definitions: argument_defns)
 
