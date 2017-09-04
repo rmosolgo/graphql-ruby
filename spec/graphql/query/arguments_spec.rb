@@ -291,4 +291,22 @@ describe GraphQL::Query::Arguments do
       assert_equal 30, args['inputObject']['a']
     end
   end
+
+  describe "construct_arguments_class" do
+    let(:input_object) do
+      GraphQL::InputObjectType.define do
+        argument :foo, types.Int
+        argument :bar, types.Int
+      end
+    end
+
+    it "generates argument classes that responds to keys as functions" do
+      argument_class = GraphQL::Query::Arguments.construct_arguments_class(argument_definitions: input_object.arguments)
+
+      args = argument_class.instantiate_arguments({foo: 3, bar: -90})
+
+      assert_equal 3, args.foo
+      assert_equal -90, args.bar
+    end
+  end
 end
