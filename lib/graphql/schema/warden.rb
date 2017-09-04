@@ -164,7 +164,7 @@ module GraphQL
       end
 
       def member_or_implements?(type_defn)
-        interfaces(type_defn).any? || union_memberships(type_defn).select { |u| visible?(u) }.any?
+        interfaces(type_defn).any? || union_memberships(type_defn).any? { |u| visible?(u) }
       end
 
       def has_abstract_type?(type_defn)
