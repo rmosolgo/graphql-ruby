@@ -23,13 +23,13 @@ describe GraphQL::Schema do
     end
   end
 
-  describe "#get_members_of_type" do
+  describe "#references_to" do
     it "returns a list of Field and Arguments of that type" do
-      assert_equal [schema.types["Query"].fields["cow"]], schema.get_members_of_type("Cow")
+      assert_equal [schema.types["Query"].fields["cow"]], schema.references_to("Cow")
     end
 
     it "returns an empty list when type is not referenced by any field or argument" do
-      assert_equal [], schema.get_members_of_type("Goat")
+      assert_equal [], schema.references_to("Goat")
     end
   end
 

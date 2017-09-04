@@ -224,7 +224,7 @@ module GraphQL
     # Returns a list of Arguments and Fields referencing a certain type
     # @param type_name [String]
     # @return [Hash]
-    def get_members_of_type(type_name)
+    def references_to(type_name)
       rebuild_artifacts unless defined?(@type_reference_map)
       @type_reference_map.fetch(type_name, [])
     end
