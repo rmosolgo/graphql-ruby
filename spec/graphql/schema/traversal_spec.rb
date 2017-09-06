@@ -20,6 +20,7 @@ describe GraphQL::Schema::Traversal do
 
   it "finds types from a single type and its fields" do
     expected = {
+      "Boolean" => GraphQL::BOOLEAN_TYPE,
       "Cheese" => Dummy::CheeseType,
       "Float" => GraphQL::FLOAT_TYPE,
       "String" => GraphQL::STRING_TYPE,
@@ -67,9 +68,10 @@ describe GraphQL::Schema::Traversal do
 
     result = reduce_types([type_parent])
     expected = {
+      "Boolean" => GraphQL::BOOLEAN_TYPE,
+      "String" => GraphQL::STRING_TYPE,
       "InputTypeParent" => type_parent,
       "InputTypeChild" => type_child,
-      "String" => GraphQL::STRING_TYPE
     }
     assert_equal(expected, result.to_h)
   end
