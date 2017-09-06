@@ -280,6 +280,9 @@ module GraphQL
               resolve: ->(obj, args, ctx) { default_resolve.call(field, obj, args, ctx) },
               deprecation_reason: build_deprecation_reason(field_definition.directives),
             )
+
+            type_name = resolve_type_name(field_definition.type)
+            field.connection = type_name.end_with?("Connection")
             [field_definition.name, field]
           end
         end
@@ -293,6 +296,15 @@ module GraphQL
             raise InvalidDocumentError.new("Type \"#{ast_node.name}\" not found in document.")
           end
           type
+        end
+
+        def resolve_type_name(type)
+          case type
+          when GraphQL::Language::Nodes::TypeName
+            return type.name
+          else
+            resolve_type_name(type.of_type)
+          end
         end
       end
 
