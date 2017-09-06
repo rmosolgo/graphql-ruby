@@ -8,6 +8,16 @@ describe GraphQL::Schema::Traversal do
     traversal.type_map
   end
 
+  it "finds types from directives" do
+    expected = {
+      "Boolean" => GraphQL::BOOLEAN_TYPE, # `skip` argument
+      "String" => GraphQL::STRING_TYPE # `deprecated` argument
+    }
+    result = reduce_types([])
+    assert_equal(expected.keys.sort, result.keys.sort)
+    assert_equal(expected, result.to_h)
+  end
+
   it "finds types from a single type and its fields" do
     expected = {
       "Cheese" => Dummy::CheeseType,

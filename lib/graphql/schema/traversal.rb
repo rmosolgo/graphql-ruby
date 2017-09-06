@@ -29,6 +29,7 @@ module GraphQL
       def visit(member, context_description)
         case member
         when GraphQL::Schema
+          member.directives.each { |name, directive| visit(directive, name) }
           # Find the starting points, then visit them
           visit_roots = [member.query, member.mutation, member.subscription]
           if @introspection
@@ -37,6 +38,10 @@ module GraphQL
           visit_roots.concat(member.orphan_types)
           visit_roots.compact!
           visit_roots.each { |t| visit(t, t.name) }
+        when GraphQL::Directive
+          member.arguments.each do |name, argument|
+            visit(argument.type, "Directive argument #{member.name}.#{name}")
+          end
         when GraphQL::BaseType
           type_defn = member.unwrap
           prev_type = @type_map[type_defn.name]
