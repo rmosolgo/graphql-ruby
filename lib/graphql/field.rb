@@ -205,6 +205,7 @@ module GraphQL
       @relay_node_field = false
       @connection = false
       @connection_max_page_size = nil
+      @edge_class = nil
     end
 
     def initialize_copy(other)
