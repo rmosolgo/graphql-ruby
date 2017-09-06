@@ -161,9 +161,14 @@ describe GraphQL::Schema::Traversal do
       field :someField, b_type
     end
 
+    include_if_argument = GraphQL::Directive::IncludeDirective.arguments["if"]
+    skip_if_argument = GraphQL::Directive::SkipDirective.arguments["if"]
+    deprecated_reason_argument = GraphQL::Directive::DeprecatedDirective.arguments["reason"]
+
     expected = {
+      "Boolean" => [include_if_argument, skip_if_argument],
       "B" => [a_type.fields["someField"]],
-      "String" => [b_type.fields["anotherField"], c_type.input_fields["someField"]],
+      "String" => [deprecated_reason_argument, b_type.fields["anotherField"], c_type.input_fields["someField"]],
       "C" => [b_type.fields["anotherField"].arguments["anArgument"]]
     }
 
