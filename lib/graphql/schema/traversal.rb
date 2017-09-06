@@ -29,7 +29,7 @@ module GraphQL
       def visit(member, context_description)
         case member
         when GraphQL::Schema
-          member.directives.each { |name, directive| visit(directive, name) }
+          member.directives.each { |name, directive| visit(directive, "Directive #{name}") }
           # Find the starting points, then visit them
           visit_roots = [member.query, member.mutation, member.subscription]
           if @introspection
