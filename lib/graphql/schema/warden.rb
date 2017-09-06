@@ -127,7 +127,7 @@ module GraphQL
       private
 
       def union_memberships(obj_type)
-        @unions ||=  read_through { |obj_type| @schema.union_memberships(obj_type) }
+        @unions ||= read_through { |obj_type| @schema.union_memberships(obj_type).select { |u| visible?(u) } }
         @unions[obj_type]
       end
 
@@ -136,38 +136,34 @@ module GraphQL
       end
 
       def visible_type?(type_defn)
-        return false unless visible?(type_defn)
-
-        if type_defn.kind.object? && has_abstract_type?(type_defn)
-          visible_implementation?(type_defn)
-        else
-          referenced_by_visible_members?(type_defn)
-        end
+        visible?(type_defn) && (
+            root_type?(type_defn) ||
+            type_defn.introspection? ||
+            referenced?(type_defn) ||
+            visible_abstract_type?(type_defn) ||
+            possible_types?(type_defn)
+          )
       end
 
-      def visible_implementation?(type_defn)
-        if orphan?(type_defn)
-          member_or_implements?(type_defn)
-        else
-          referenced_by_visible_members?(type_defn) || member_or_implements?(type_defn)
-        end
+      def root_type?(type_defn)
+        [@schema.query, @schema.mutation, @schema.subscription].include?(type_defn)
       end
 
-      def referenced_by_visible_members?(type_defn)
+      def referenced?(type_defn)
         members = @schema.references_to(type_defn.unwrap.name)
-        members.empty? || members.any? { |m| visible?(m) } 
+        members.any? { |m| visible?(m) }
       end
 
-      def member_or_implements?(type_defn)
-        interfaces(type_defn).any? || union_memberships(type_defn).any? { |u| visible?(u) }
+      def visible_abstract_type?(type_defn)
+        type_defn.kind.object? && (
+            interfaces(type_defn).any? ||
+            union_memberships(type_defn).any?
+          )
       end
 
-      def has_abstract_type?(type_defn)
-        union_memberships(type_defn).any? || type_defn.interfaces.any?
-      end
-
-      def orphan?(type_defn)
-        @schema.orphan_types.include?(type_defn)
+      def possible_types?(type_defn)
+        (type_defn.kind.union? || type_defn.kind.interface?) &&
+          @schema.possible_types(type_defn).any? { |t| visible_type?(t) }
       end
 
       def visible?(member)
