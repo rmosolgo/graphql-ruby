@@ -86,7 +86,6 @@ describe GraphQL::Backtrace do
       assert_equal 0, GraphQL::Backtrace.execution_context.size
     end
 
-
     it "annotates NoMethodErrors" do
       schema
       err = assert_raises(NoMethodError) {
@@ -109,7 +108,6 @@ describe GraphQL::Backtrace do
       assert_backtrace_includes(b, file: "execute.rb", method: "resolve_field", annotation: "Thing.raiseField(message: \"Boom\") (as boomError)")
       assert_backtrace_includes(b, file: "execute.rb", method: "resolve_field", annotation: "Query.field1")
       assert_backtrace_includes(b, file: "execute.rb", method: "resolve_root_selection", annotation: "query <Anonymous>")
-
     end
 
     it "annotates errors inside lazy resolution" do

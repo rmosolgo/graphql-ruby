@@ -45,12 +45,12 @@ module GraphQL
       # @return [void]
       def install(tracer)
         if !tracers.include?(tracer)
-          tracers << tracer
+          @tracers << tracer
         end
       end
 
       def uninstall(tracer)
-        tracers.delete(tracer)
+        @tracers.delete(tracer)
       end
 
       def tracers
@@ -62,13 +62,15 @@ module GraphQL
       # Call each tracer in sequence, then
       # finally call the wrapped block
       def call_tracer(idx, key, metadata)
-        if idx == tracers.length
+        if idx == @tracers.length
           yield
         else
-          tracers[idx].trace(key, metadata) { call_tracer(idx + 1, key, metadata) { yield } }
+          @tracers[idx].trace(key, metadata) { call_tracer(idx + 1, key, metadata) { yield } }
         end
       end
     end
+    # Initialize the array
+    tracers
   end
 end
 
