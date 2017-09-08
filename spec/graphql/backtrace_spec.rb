@@ -32,7 +32,7 @@ describe GraphQL::Backtrace do
     }
   }
   let(:schema) {
-    defn = <<~GRAPHQL
+    defn = <<-GRAPHQL
     type Query {
       field1: Thing
       field2: OtherThing
