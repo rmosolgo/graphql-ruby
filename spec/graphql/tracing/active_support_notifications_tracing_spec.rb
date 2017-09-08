@@ -3,12 +3,11 @@ require "spec_helper"
 
 describe GraphQL::Tracing::ActiveSupportNotificationsTracing do
   before do
-    @prev_tracer = GraphQL::Tracing.tracer
     GraphQL::Tracing.install(GraphQL::Tracing::ActiveSupportNotificationsTracing)
   end
 
   after do
-    GraphQL::Tracing.install(@prev_tracer)
+    GraphQL::Tracing.uninstall(GraphQL::Tracing::ActiveSupportNotificationsTracing)
   end
 
   it "pushes through AS::N" do

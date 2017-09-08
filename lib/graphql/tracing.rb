@@ -6,7 +6,9 @@ module GraphQL
   # {ActiveSupportNotificationsTracing} is imported by default
   # when `ActiveSupport::Notifications` is found.
   #
-  # You can remove it with `GraphQL::Tracing.install(nil)`.
+  # You can remove it with `GraphQL::Tracing.uninstall(GraphQL::Tracing::ActiveSupportNotificationsTracing)`.
+  #
+  # __Warning:__ Installing/uninstalling tracers is not thread-safe. Do it during application boot only.
   #
   # @example Sending custom events
   #   GraphQL::Tracing.trace("my_custom_event", { ... }) do
@@ -35,22 +37,36 @@ module GraphQL
       # @param metadata [Hash] Event-related metadata (can be anything)
       # @return [Object] Must return the value of the block
       def trace(key, metadata)
-        if @tracer
-          @tracer.trace(key, metadata) { yield }
-        else
-          yield
-        end
+        call_tracer(0, key, metadata) { yield }
       end
 
       # Install a tracer to receive events.
       # @param tracer [<#trace(key, metadata)>]
       # @return [void]
       def install(tracer)
-        @tracer = tracer
+        if !tracers.include?(tracer)
+          tracers << tracer
+        end
       end
 
-      def tracer
-        @tracer
+      def uninstall(tracer)
+        tracers.delete(tracer)
+      end
+
+      def tracers
+        @tracers ||= []
+      end
+
+      private
+
+      # Call each tracer in sequence, then
+      # finally call the wrapped block
+      def call_tracer(idx, key, metadata)
+        if idx == tracers.length
+          yield
+        else
+          tracers[idx].trace(key, metadata) { call_tracer(idx + 1, key, metadata) { yield } }
+        end
       end
     end
   end
