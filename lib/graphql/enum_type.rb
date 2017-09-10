@@ -141,7 +141,7 @@ module GraphQL
 
       def name=(new_name)
         # Validate that the name is correct
-        unless new_name =~ /^[_a-zA-Z][_a-zA-Z0-9]*$/
+        unless GraphQL::NameValidator.valid?(new_name)
           raise(
             GraphQL::EnumType::InvalidEnumNameError,
             "Names must match /^[_a-zA-Z][_a-zA-Z0-9]*$/ but '#{new_name}' does not"

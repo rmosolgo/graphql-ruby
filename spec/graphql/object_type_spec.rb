@@ -17,6 +17,19 @@ describe GraphQL::ObjectType do
     }
   end
 
+  it "doesn't allow invalid name" do
+    assert_raises(GraphQL::InvalidNameError) {
+      InvalidNameObject = GraphQL::ObjectType.define do
+        name "Double Null"
+
+        field :id, !types.Int, "id field"
+      end
+
+      # Force evaluation
+      InvalidNameObject.name
+    }
+  end
+
   it "has a name" do
     assert_equal("Cheese", type.name)
     type.name = "Fromage"
