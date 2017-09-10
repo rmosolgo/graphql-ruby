@@ -18,9 +18,9 @@ describe GraphQL::ObjectType do
   end
 
   it "doesn't allow invalid name" do
-    assert_raises(GraphQL::InvalidNameError) {
+    exception = assert_raises(GraphQL::InvalidNameError) {
       InvalidNameObject = GraphQL::ObjectType.define do
-        name "Double Null"
+        name "Three Word Query"
 
         field :id, !types.Int, "id field"
       end
@@ -28,6 +28,7 @@ describe GraphQL::ObjectType do
       # Force evaluation
       InvalidNameObject.name
     }
+    assert_equal("Names must match (?-mix:^[_a-zA-Z][_a-zA-Z0-9]*$) but 'Three Word Query' does not", exception.message)
   end
 
   it "has a name" do
