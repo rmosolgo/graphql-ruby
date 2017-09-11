@@ -4,13 +4,10 @@ module GraphQL
     VALID_NAME_REGEX = /^[_a-zA-Z][_a-zA-Z0-9]*$/
 
     def self.validate!(name)
-      unless valid?(name)
-        raise(
-          GraphQL::InvalidNameError,
-          "Names must match #{VALID_NAME_REGEX} but '#{name}' does not"
-        )
-      end
+      raise GraphQL::InvalidNameError.new(name, VALID_NAME_REGEX) unless valid?(name)
     end
+
+    private
 
     def self.valid?(name)
       name =~ VALID_NAME_REGEX
