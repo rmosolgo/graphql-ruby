@@ -37,6 +37,18 @@ describe GraphQL::Define::AssignArgument do
     assert_equal "GraphQL::Argument can't define 'blah'", err.message
   end
 
+  it "accepts an existing argument" do
+    existing = GraphQL::Argument.define do
+      name "bar"
+      type GraphQL::STRING_TYPE
+    end
+
+    arg = define_argument(:foo, existing)
+
+    assert_equal "foo", arg.name
+    assert_equal GraphQL::STRING_TYPE, arg.type
+  end
+
   def define_argument(*args)
     type = GraphQL::ObjectType.define do
       field :a, types.String do
