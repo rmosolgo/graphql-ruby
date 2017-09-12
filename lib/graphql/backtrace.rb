@@ -46,30 +46,17 @@ module GraphQL
       end
 
       if push_data
-        p "Push #{key}"
         if key == "execute_multiplex"
           clear_context_state
-          begin
-            execution_context.push(push_data)
-            yield
-          rescue StandardError => err
-            p "Annotating #{err}"
-            annotate_error(err)
-            clear_context_state
-            # puts err.backtrace
-            raise
-          end
-        else
-          execution_context.push(push_data)
-          yield
         end
+        execution_context.push(push_data)
+        yield
       else
         yield
       end
 
     ensure
       if push_data
-        p "Pop #{key}"
         execution_context.pop
       end
     end
@@ -109,6 +96,9 @@ module GraphQL
         backtrace_context.push(execution_context.last)
       when :return, :b_return
         backtrace_context.pop
+      when :raise
+        annotate_error(tp.raised_exception)
+        clear_context_state
       end
     end
 
