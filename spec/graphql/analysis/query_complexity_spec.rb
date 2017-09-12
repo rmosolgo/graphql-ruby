@@ -35,14 +35,15 @@ describe GraphQL::Analysis::QueryComplexity do
       assert_equal complexities, [query, 7]
     end
 
-    it "wont fail" do
+    it "doesn't require complexity" do
       query = 'query { connectionWithComplexity { edges { node { __typename } } } }'
       with = Dummy::Schema.execute query, variables: {}
 
       query = 'query { connectionWithoutComplexity { edges { node { __typename } } } }'
       without = Dummy::Schema.execute query, variables: {}
 
-      binding.pry
+      assert_equal with, {"data"=>{"connectionWithComplexity"=>{"edges"=>[]}}}
+      assert_equal without, {"data"=>{"connectionWithoutComplexity"=>{"edges"=>[]}}}
     end
 
     describe "when skipped by directives" do
