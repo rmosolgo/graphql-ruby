@@ -18,16 +18,18 @@ module GraphQL
         base_field = if type_or_field.is_a?(GraphQL::Field)
           type_or_field.redefine(name: name_s)
         elsif function
-          GraphQL::Field.define(
+          kwargs = {
             arguments: function.arguments,
-            complexity: function.complexity,
             name: name_s,
             type: function.type,
             resolve: function,
             description: function.description,
             function: function,
             deprecation_reason: function.deprecation_reason,
-          )
+          }
+          kwargs[:complexity] = function.complexity if function.complexity
+
+          GraphQL::Field.define(**kwargs)
         elsif field.is_a?(GraphQL::Field)
           field.redefine(name: name_s)
         else
