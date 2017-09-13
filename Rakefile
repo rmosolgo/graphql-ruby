@@ -8,7 +8,24 @@ require_relative "lib/graphql/rake_task/validate"
 
 Rake::TestTask.new do |t|
   t.libs << "spec" << "lib"
-  t.pattern = "spec/**/*_spec.rb"
+
+  if defined?(Rails)
+    t.pattern = "spec/**/*_spec.rb"
+  else
+    t.test_files = Dir['spec/**/*_spec.rb'].reject do |f|
+
+      f.end_with?('_generator_spec.rb') ||
+        f.end_with?('input_object_type_spec.rb') ||
+        f.end_with?('variables_spec.rb') ||
+        f.end_with?('relation_connection_spec.rb') ||
+        f.end_with?('node_spec.rb') ||
+        f.end_with?('connection_instrumentation_spec.rb') ||
+        f.end_with?('graphql/schema_spec.rb') ||
+        f.end_with?('graphql/tracing/active_support_notifications_tracing_spec.rb') ||
+        f.start_with?('spec/graphql/relay/')
+    end
+  end
+
   t.warning = false
 end
 

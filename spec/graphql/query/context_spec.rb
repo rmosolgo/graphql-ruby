@@ -5,35 +5,85 @@ describe GraphQL::Query::Context do
   CTX = []
   before { CTX.clear }
 
-  let(:query_type) { GraphQL::ObjectType.define {
-    name "Query"
-    field :context, types.String do
-      argument :key, !types.String
-      resolve ->(target, args, ctx) { ctx[args[:key]] }
-    end
-    field :contextAstNodeName, types.String do
-      resolve ->(target, args, ctx) { ctx.ast_node.class.name }
-    end
-    field :contextIrepNodeName, types.String do
-      resolve ->(target, args, ctx) { ctx.irep_node.class.name }
-    end
-    field :queryName, types.String do
-      resolve ->(target, args, ctx) { ctx.query.class.name }
-    end
+  let(:parent_info_type) {
+    GraphQL::ObjectType.define {
+      name "ParentInfo"
+      field :object, types.String do
+        resolve ->(o, a, c) { c.parent.parent.object }
+      end
+      field :objectClassName, types.String do
+        resolve ->(o, a, c) { c.parent.parent.object.class.name }
+      end
+      field :valueClassName, types.String do
+        resolve ->(o, a, c) { c.parent.parent.value.class.name }
+      end
+      field :value, types.String do
+        resolve ->(o, a, c) { c.parent.parent.value.to_s }
+      end
+    }
+  }
+  let(:query_type) {
+    parent_info = parent_info_type
+    GraphQL::ObjectType.define {
+      name "Query"
+      field :context, types.String do
+        argument :key, !types.String
+        resolve ->(target, args, ctx) { ctx[args[:key]] }
+      end
+      field :contextAstNodeName, types.String do
+        resolve ->(target, args, ctx) { ctx.ast_node.class.name }
+      end
+      field :contextIrepNodeName, types.String do
+        resolve ->(target, args, ctx) { ctx.irep_node.class.name }
+      end
+      field :queryName, types.String do
+        resolve ->(target, args, ctx) { ctx.query.class.name }
+      end
 
-    field :pushContext, types.Int do
-      resolve ->(t,a,c) { CTX << c; 1 }
-    end
+      field :pushContext, types.Int do
+        resolve ->(t,a,c) { CTX << c; 1 }
+      end
 
-    field :pushQueryError, types.Int do
-      resolve ->(t,a,c) {
-        c.query.context.add_error(GraphQL::ExecutionError.new("Query-level error"))
-        1
-      }
-    end
-  }}
+      field :pushQueryError, types.Int do
+        resolve ->(t,a,c) {
+          c.query.context.add_error(GraphQL::ExecutionError.new("Query-level error"))
+          1
+        }
+      end
+
+      field :parentInfo, parent_info, resolve: ->(o,a,c) { :noop }
+    }
+  }
+
   let(:schema) { GraphQL::Schema.define(query: query_type, mutation: nil)}
-  let(:result) { schema.execute(query_string, context: {"some_key" => "some value"})}
+  let(:result) { schema.execute(query_string, root_value: "rootval", context: {"some_key" => "some value"})}
+
+  describe "access to parent context" do
+    let(:query_string) { %|
+      {
+        parentInfo {
+          value
+          valueClassName
+          object
+          objectClassName
+        }
+      }
+    |}
+
+    it "exposes the parent object" do
+      expected = {
+        "data" => {
+          "parentInfo" => {
+            "objectClassName" => "String",
+            "object" => "rootval",
+            "value" => "{}",
+            "valueClassName" => "Hash",
+          }
+        }
+      }
+      assert_equal(expected, result)
+    end
+  end
 
   describe "access to passed-in values" do
     let(:query_string) { %|
@@ -80,7 +130,7 @@ describe GraphQL::Query::Context do
   end
 
   describe "empty values" do
-    let(:context) { GraphQL::Query::Context.new(query: OpenStruct.new(schema: schema), values: nil) }
+    let(:context) { GraphQL::Query::Context.new(query: OpenStruct.new(schema: schema), values: nil, object: nil) }
 
     it "returns returns nil and reports key? => false" do
       assert_equal(nil, context[:some_key])
@@ -90,7 +140,7 @@ describe GraphQL::Query::Context do
   end
 
   describe "assigning values" do
-    let(:context) { GraphQL::Query::Context.new(query: OpenStruct.new(schema: schema), values: nil) }
+    let(:context) { GraphQL::Query::Context.new(query: OpenStruct.new(schema: schema), values: nil, object: nil) }
 
     it "allows you to assign new contexts" do
       assert_equal(nil, context[:some_key])
@@ -99,7 +149,7 @@ describe GraphQL::Query::Context do
     end
 
     describe "namespaces" do
-      let(:context) { GraphQL::Query::Context.new(query: OpenStruct.new(schema: schema), values: {a: 1}) }
+      let(:context) { GraphQL::Query::Context.new(query: OpenStruct.new(schema: schema), values: {a: 1}, object: nil) }
 
       it "doesn't conflict with base values" do
         ns = context.namespace(:stuff)

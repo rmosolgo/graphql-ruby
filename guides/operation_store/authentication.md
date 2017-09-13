@@ -22,4 +22,4 @@ The Authorization header takes the form:
 "GraphQL::Pro #{client_name} #{hmac}"
 ```
 
-[`graphql-pro-js`](http://github.com/rmosolgo/graphql-pro-js) adds this header to outgoing requests by using the provided `--client` and `--secret` values.
+[`graphql-ruby-client`](http://github.com/rmosolgo/graphql-ruby-client) adds this header to outgoing requests by using the provided `--client` and `--secret` values.

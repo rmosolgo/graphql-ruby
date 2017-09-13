@@ -39,7 +39,7 @@ module StarWars
 
   ActiveRecord::Schema.define do
     self.verbose = false
-    create_table :bases do |t|
+    create_table :bases, force: true do |t|
       t.column :name, :string
       t.column :planet, :string
       t.column :faction_id, :integer

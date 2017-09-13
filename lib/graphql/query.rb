@@ -45,6 +45,7 @@ module GraphQL
 
     # @return [String, nil] The name of the operation to run (may be inferred)
     def selected_operation_name
+      return nil unless selected_operation
       selected_operation.name
     end
 
@@ -68,8 +69,8 @@ module GraphQL
     def initialize(schema, query_string = nil, query: nil, document: nil, context: nil, variables: {}, validate: true, subscription_topic: nil, operation_name: nil, root_value: nil, max_depth: nil, max_complexity: nil, except: nil, only: nil)
       @schema = schema
       @filter = schema.default_filter.merge(except: except, only: only)
+      @context = Context.new(query: self, object: root_value, values: context)
       @subscription_topic = subscription_topic
-      @context = Context.new(query: self, values: context)
       @root_value = root_value
       @fragments = nil
       @operations = nil
@@ -172,7 +173,10 @@ module GraphQL
     end
 
     def irep_selection
-      @selection ||= internal_representation.operation_definitions[selected_operation.name]
+      @selection ||= begin
+        return nil unless selected_operation
+        internal_representation.operation_definitions[selected_operation.name]
+      end
     end
 
     # Node-level cache for calculating arguments. Used during execution and query analysis.

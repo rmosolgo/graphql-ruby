@@ -7,6 +7,22 @@ describe GraphQL::StaticValidation::Validator do
   let(:validate) { true }
   let(:errors) { validator.validate(query, validate: validate)[:errors].map(&:to_h) }
 
+  describe "tracing" do
+    let(:query_string) { "{ t: __typename }"}
+
+    it "emits a trace" do
+      traces = TestTracing.with_trace do
+        validator.validate(query)
+      end
+
+      assert_equal 3, traces.length
+      _lex_trace, _parse_trace, validate_trace = traces
+      assert_equal "validate", validate_trace[:key]
+      assert_equal true, validate_trace[:validate]
+      assert_instance_of GraphQL::Query, validate_trace[:query]
+      assert_instance_of Hash, validate_trace[:result]
+    end
+  end
 
   describe "validation order" do
     let(:document) { GraphQL.parse(query_string)}

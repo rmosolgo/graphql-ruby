@@ -13,6 +13,10 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
         toy: Toy
       }
 
+      type Mutation {
+        registerPet(params: PetParams): Pet
+      }
+
       enum PetCommand {
         SIT
         HEEL
@@ -23,6 +27,16 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
       enum ToySize {
         SMALL
         LARGE
+      }
+
+      enum PetSpecies {
+        DOG
+        CAT
+      }
+
+      input PetParams {
+        name: String!
+        species: PetSpecies!
       }
 
       interface Pet {
@@ -76,6 +90,23 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
         dog {
           name
           name
+        }
+      }
+    |}
+
+    it "passes rule" do
+      assert_equal [], errors
+    end
+  end
+
+  describe "identical fields with identical input objects" do
+    let(:query_string) {%|
+      mutation {
+        registerPet(params: { name: "Fido", species: DOG }) {
+          name
+        }
+        registerPet(params: { name: "Fido", species: DOG }) {
+          __typename
         }
       }
     |}

@@ -123,11 +123,18 @@ describe GraphQL::Relay::RelationConnection do
       assert_equal([], get_names(result))
     end
 
-    it 'handles cursors beyond the bounds of the array' do
+    it 'handles cursors above the bounds of the array' do
       overreaching_cursor = Base64.strict_encode64("100")
       result = star_wars_query(query_string, "after" => overreaching_cursor, "first" => 2)
       assert_equal([], get_names(result))
     end
+
+    it 'handles cursors below the bounds of the array' do
+      underreaching_cursor = Base64.strict_encode64("1")
+      result = star_wars_query(query_string, "before" => underreaching_cursor, "first" => 2)
+      assert_equal([], get_names(result))
+    end
+
 
     it 'handles grouped connections with only last argument' do
       grouped_conn_query = <<-GRAPHQL
@@ -286,6 +293,68 @@ describe GraphQL::Relay::RelationConnection do
     end
   end
 
+  describe "applying a max_page_size bigger than the results" do
+    let(:query_string) {%|
+      query getBases($first: Int, $after: String, $last: Int, $before: String){
+        empire {
+          bases: basesWithLargeMaxLimitRelation(first: $first, after: $after, last: $last, before: $before) {
+            ... basesConnection
+          }
+        }
+      }
+
+      fragment basesConnection on BaseConnection {
+        edges {
+          cursor
+          node {
+            name
+          }
+        },
+        pageInfo {
+          hasNextPage
+          hasPreviousPage
+          startCursor
+          endCursor
+        }
+      }
+      |}
+
+    it "applies to queries by `first`" do
+      result = star_wars_query(query_string, "first" => 100)
+      assert_equal(6, result["data"]["empire"]["bases"]["edges"].size)
+      assert_equal(false, result["data"]["empire"]["bases"]["pageInfo"]["hasNextPage"])
+
+      # Max page size is applied _without_ `first`, also
+      result = star_wars_query(query_string)
+      assert_equal(6, result["data"]["empire"]["bases"]["edges"].size)
+      assert_equal(false, result["data"]["empire"]["bases"]["pageInfo"]["hasNextPage"], "hasNextPage is false when first is not specified")
+    end
+
+    it "applies to queries by `last`" do
+      all_names = ["Yavin", "Echo Base", "Secret Hideout", "Death Star", "Shield Generator", "Headquarters"]
+
+      last_cursor = "Ng=="
+      result = star_wars_query(query_string, "last" => 100, "before" => last_cursor)
+      assert_equal(all_names[0..4], get_names(result))
+      assert_equal(false, result["data"]["empire"]["bases"]["pageInfo"]["hasPreviousPage"])
+
+      result = star_wars_query(query_string, "last" => 100)
+      assert_equal(all_names, get_names(result))
+      assert_equal(false, result["data"]["empire"]["bases"]["pageInfo"]["hasPreviousPage"])
+
+      result = star_wars_query(query_string, "before" => last_cursor)
+      assert_equal(all_names[0..4], get_names(result))
+      assert_equal(false, result["data"]["empire"]["bases"]["pageInfo"]["hasPreviousPage"], "hasPreviousPage is false when last is not specified")
+
+      fourth_cursor = "NA=="
+      result = star_wars_query(query_string, "last" => 100, "before" => fourth_cursor)
+      assert_equal(all_names[0..2], get_names(result))
+
+      result = star_wars_query(query_string, "before" => fourth_cursor)
+      assert_equal(all_names[0..2], get_names(result))
+    end
+  end
+
   describe "without a block" do
     let(:query_string) {%|
       {
@@ -439,6 +508,18 @@ describe GraphQL::Relay::RelationConnection do
         result = star_wars_query(query_string, "before" => last_cursor, "last" => 10)
         assert_equal(["Death Star", "Shield Generator"], get_names(result))
 
+      end
+
+      it 'handles cursors above the bounds of the array' do
+        overreaching_cursor = Base64.strict_encode64("100")
+        result = star_wars_query(query_string, "after" => overreaching_cursor, "first" => 2)
+        assert_equal([], get_names(result))
+      end
+
+      it 'handles cursors below the bounds of the array' do
+        underreaching_cursor = Base64.strict_encode64("1")
+        result = star_wars_query(query_string, "before" => underreaching_cursor, "first" => 2)
+        assert_equal([], get_names(result))
       end
 
       it "applies custom arguments" do
