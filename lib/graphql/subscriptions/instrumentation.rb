@@ -54,7 +54,7 @@ module GraphQL
               context: ctx,
             )
             ctx.skip
-          elsif ctx.irep_node.subscription_key == ctx.query.subscription_key
+          elsif ctx.irep_node.subscription_topic == ctx.query.subscription_topic
             # The root object is _already_ the subscription update:
             @inner_proc.call(obj, args, ctx)
           else

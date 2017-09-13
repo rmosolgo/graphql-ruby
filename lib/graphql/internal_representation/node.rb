@@ -145,8 +145,8 @@ module GraphQL
       # @return [GraphQL::Query]
       attr_reader :query
 
-      def subscription_key
-        @subscription_key ||= begin
+      def subscription_topic
+        @subscription_topic ||= begin
           scope = if definition.subscription_scope
             @query.context[definition.subscription_scope]
           else

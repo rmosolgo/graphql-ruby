@@ -71,7 +71,7 @@ module GraphQL
         {
           query: query_string,
           context: context,
-          subscription_key: event.key,
+          subscription_topic: event.topic,
           operation_name: operation_name,
           variables: variables,
           root_value: object,
@@ -91,7 +91,7 @@ module GraphQL
       end
     end
 
-    # Get each `subscription_id` subscribed to `event_key` and yield them
+    # Get each `subscription_id` subscribed to `event.topic` and yield them
     # @param event [GraphQL::Subscriptions::Event]
     # @yieldparam subscription_id [String]
     # @return [void]

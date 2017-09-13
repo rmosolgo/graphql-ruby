@@ -75,7 +75,7 @@ module GraphQL
       # Subscribers will re-evaluate locally.
       # TODO: this method name is a smell
       def execute_all(event, object)
-        ActionCable.server.broadcast(EVENT_PREFIX + event.key, object)
+        ActionCable.server.broadcast(EVENT_PREFIX + event.topic, object)
       end
 
       # This subscription was re-evaluated.
@@ -95,8 +95,7 @@ module GraphQL
         channel.stream_from(SUBSCRIPTION_PREFIX + subscription_id)
         @subscriptions[subscription_id] = query
         events.each do |event|
-          event_key = event.key
-          channel.stream_from(EVENT_PREFIX + event_key, coder: ActiveSupport::JSON) do |message|
+          channel.stream_from(EVENT_PREFIX + event.topic, coder: ActiveSupport::JSON) do |message|
             execute(subscription_id, event, message)
             nil
           end

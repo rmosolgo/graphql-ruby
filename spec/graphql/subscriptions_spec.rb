@@ -19,12 +19,12 @@ class InMemoryBackend
       events.each do |ev|
         # The `context` is functioning as subscription data.
         # IRL you'd have some other model that persisted the subscription
-        @subscriptions[ev.key] << ev.context
+        @subscriptions[ev.topic] << ev.context
       end
     end
 
     def each_subscription_id(event)
-      @subscriptions[event.key].each do |ctx|
+      @subscriptions[event.topic].each do |ctx|
         yield(ctx[:socket])
       end
     end

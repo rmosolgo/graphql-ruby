@@ -17,7 +17,7 @@ module GraphQL
       attr_reader :context
 
       # @return [String] An opaque string which identifies this event, derived from `name` and `arguments`
-      attr_reader :key
+      attr_reader :topic
 
       def initialize(name:, arguments:, field: nil, context: nil, scope: nil)
         @name = name
@@ -26,7 +26,7 @@ module GraphQL
         field ||= context.field
         scope_val = scope || (context && field.subscription_scope && context[field.subscription_scope])
 
-        @key = self.class.serialize(name, arguments, field, scope: scope_val)
+        @topic = self.class.serialize(name, arguments, field, scope: scope_val)
       end
 
       # @return [String] an identifier for this unit of subscription

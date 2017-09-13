@@ -12,4 +12,4 @@ experimental: true
 
 To get started, see examples in the API docs: {{ "GraphQL::Subscriptions::ActionCableSubscriptions" | api_doc }}.
 
-A client is available [nowhere](#) (TODO).
+A client is available [in graphql-ruby-client](https://github.com/rmosolgo/graphql-ruby-client).
