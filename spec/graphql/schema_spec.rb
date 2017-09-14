@@ -23,6 +23,19 @@ describe GraphQL::Schema do
     end
   end
 
+  describe "#root_types" do
+    it "returns a list of the schema's root types" do
+      assert_equal(
+        [
+          Dummy::DairyAppQueryType,
+          Dummy::DairyAppMutationType,
+          Dummy::SubscriptionType
+        ],
+        schema.root_types
+      )
+    end
+  end
+
   describe "#references_to" do
     it "returns a list of Field and Arguments of that type" do
       assert_equal [schema.types["Query"].fields["cow"]], schema.references_to("Cow")

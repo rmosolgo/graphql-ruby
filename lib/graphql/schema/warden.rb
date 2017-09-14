@@ -146,7 +146,7 @@ module GraphQL
       end
 
       def root_type?(type_defn)
-        [@schema.query, @schema.mutation, @schema.subscription].include?(type_defn)
+        @schema.root_types.include?(type_defn)
       end
 
       def referenced?(type_defn)
