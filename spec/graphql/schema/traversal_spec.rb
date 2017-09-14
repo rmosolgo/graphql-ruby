@@ -4,7 +4,7 @@ require "spec_helper"
 describe GraphQL::Schema::Traversal do
   def traversal(types)
     schema = GraphQL::Schema.define(orphan_types: types, resolve_type: :dummy)
-    traversal = GraphQL::Schema::Traversal.new(schema, introspection: false)
+    GraphQL::Schema::Traversal.new(schema, introspection: false)
   end
 
   it "finds types from directives" do
