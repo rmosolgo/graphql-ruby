@@ -37,7 +37,7 @@ module GraphQL
       # @param metadata [Hash] Event-related metadata (can be anything)
       # @return [Object] Must return the value of the block
       def trace(key, metadata)
-        call_tracer(0, key, metadata) { yield }
+        call_tracers(0, key, metadata) { yield }
       end
 
       # Install a tracer to receive events.
@@ -59,13 +59,18 @@ module GraphQL
 
       private
 
-      # Call each tracer in sequence, then
-      # finally call the wrapped block
-      def call_tracer(idx, key, metadata)
+      # If there's a tracer at `idx`, call it and then increment `idx`.
+      # Otherwise, yield.
+      #
+      # @param idx [Integer] Which tracer to call
+      # @param key [String] The current event name
+      # @param metadata [Object] The current event object
+      # @return Whatever the block returns
+      def call_tracers(idx, key, metadata)
         if idx == @tracers.length
           yield
         else
-          @tracers[idx].trace(key, metadata) { call_tracer(idx + 1, key, metadata) { yield } }
+          @tracers[idx].trace(key, metadata) { call_tracers(idx + 1, key, metadata) { yield } }
         end
       end
     end
