@@ -21,12 +21,14 @@ module GraphQL
       attr_reader :graphql_context
 
       MESSAGE_TEMPLATE = <<-MESSAGE
-Unhandled error during GraphQL execution: %{cause_message}.
+Unhandled error during GraphQL execution:
+
+  %{cause_message}
+
 Use #cause to access the original exception (including #cause.backtrace).
 
 GraphQL Backtrace:
-
-  %{graphql_backtrace}
+%{graphql_table}
 MESSAGE
 
       def initialize(err, graphql_context)
@@ -36,9 +38,92 @@ MESSAGE
         end
         message = MESSAGE_TEMPLATE % {
           cause_message: err.message,
-          graphql_backtrace: graphql_backtrace.map { |l| "  " + l }.join("\n"),
+          graphql_table: Table.render(@graphql_context)
         }
         super(message)
+      end
+    end
+
+    module Table
+      MAX_WIDTH = 50
+      HEADERS = [
+        "Event",
+        "Field",
+        "Object",
+        "Arguments",
+        "Result",
+      ]
+
+      def self.render(graphql_context)
+        max = [10, 10, 10, 10, 10]
+        rows = [HEADERS]
+        graphql_context.each do |key, value|
+          row = get_row(value)
+          row.unshift(key)
+          rows << row
+        end
+
+        rows.each do |row|
+          row.each_with_index do |col, idx|
+            col_len = col.length
+            max_len = max[idx]
+            if col_len > max_len
+              if col_len > MAX_WIDTH
+                max[idx] = MAX_WIDTH
+              else
+                max[idx] = col_len
+              end
+            end
+          end
+        end
+
+        table = "".dup
+        last_col_idx = max.length - 1
+        rows.each do |row|
+          table << row.map.each_with_index do |col, idx|
+            max_len = max[idx]
+            if idx < last_col_idx
+              col = col.ljust(max_len)
+            end
+            col[0, max_len]
+          end.join(" | ")
+          table << "\n"
+        end
+        table
+      end
+
+      private
+
+      # @return [Array] 4 items for a backtrace table (not `key`)
+      def self.get_row(context_entry)
+        case context_entry
+        when GraphQL::Query::Context::FieldResolutionContext
+          ctx = context_entry
+          [
+            Backtrace.serialize_context_entry(ctx),
+            ctx.object.inspect,
+            ctx.irep_node.arguments.to_h.inspect,
+            ctx.value.inspect,
+          ]
+        when GraphQL::Query
+          query = context_entry
+          [
+            Backtrace.serialize_context_entry(query),
+            query.root_value.inspect,
+            query.variables.to_h.inspect,
+            "",
+          ]
+        when Array
+          rows = context_entry.map { |v| get_row(v) }
+          first_row = rows.shift
+          if rows.any?
+            # Calling zip with an empty array adds nils
+            merged_rows = first_row.zip(rows)
+            merged_rows.map {|r| r.join(", ") }
+          else
+            first_row
+          end
+        end
       end
     end
     module_function
@@ -113,21 +198,21 @@ MESSAGE
       case context_entry
       when GraphQL::Query::Context::FieldResolutionContext
         ctx = context_entry
-        ctx_msg = "#{ctx.irep_node.owner_type.name}.#{ctx.field.name}"
-        if ctx.ast_node.arguments.any?
-          ctx_msg = "#{ctx_msg}(#{ctx.ast_node.arguments.map(&:to_query_string).join(", ")})"
-        end
-
+        field_name = "#{ctx.irep_node.owner_type.name}.#{ctx.field.name}"
+        position = " @ [#{ctx.ast_node.line}:#{ctx.ast_node.col}]"
         field_alias = ctx.ast_node.alias
-        if field_alias
-          ctx_msg = "#{ctx_msg} (as #{field_alias})"
-        end
-
-        ctx_msg
+        "#{field_name}#{position}#{field_alias ? " as #{field_alias}" : ""}"
       when GraphQL::Query
-        op_type = (context_entry.selected_operation && context_entry.selected_operation.operation_type) || "query"
-        op_name = context_entry.selected_operation_name || "<Anonymous>"
-        "#{op_type} #{op_name}"
+        op = context_entry.selected_operation
+        if op
+          op_type = op.operation_type
+          position = "#{op.line}:#{op.col}"
+        else
+          op_type = "query"
+          position = "?:?"
+        end
+        op_name = context_entry.selected_operation_name
+        "#{op_type}#{op_name ? " #{op_name}" : ""} @ [#{position}]"
       when Array
         context_entry.map { |i| serialize_context_entry(i) }.join(", ")
       else
