@@ -12,7 +12,7 @@ describe GraphQL::Backtrace do
 
   class LazyError
     def raise_err
-      raise "Boom"
+      raise "Lazy Boom"
     end
   end
 
@@ -84,7 +84,7 @@ describe GraphQL::Backtrace do
 
     it "annotates crashes from user code" do
       err = assert_raises(GraphQL::Backtrace::TracedError) {
-        schema.execute <<-GRAPHQL
+        schema.execute <<-GRAPHQL, root_value: "Root"
         query($msg: String = \"Boom\") {
           field1 {
             boomError: raiseField(message: $msg)
@@ -103,20 +103,18 @@ describe GraphQL::Backtrace do
 
       # GraphQL backtrace is present
       expected_graphql_backtrace = [
-        "execute_field:       Thing.raiseField @ [3:13] as boomError",
-        "execute_field:       Query.field1 @ [2:11]",
-        "execute_query:       query @ [1:9]",
-        "execute_multiplex:   query @ [1:9]",
+        "3:13: Thing.raiseField as boomError",
+        "2:11: Query.field1",
+        "1:9: query",
       ]
       assert_equal expected_graphql_backtrace, err.graphql_backtrace
 
       # The message includes the GraphQL context
       rendered_table = [
-        'Event             | Field                                  | Object     | Arguments           | Result',
-        'execute_field     | Thing.raiseField @ [3:13] as boomError | :something | {"message"=>"Boom"} | nil',
-        'execute_field     | Query.field1 @ [2:11]                  | nil        | {}                  | {}',
-        'execute_query     | query @ [1:9]                          | nil        | {"msg"=>"Boom"}     | ',
-        'execute_multiplex | query @ [1:9]                          | nil        | {"msg"=>"Boom"}     | ',
+        'Field                               | Object     | Arguments           | Result',
+        '3:13: Thing.raiseField as boomError | :something | {"message"=>"Boom"} | (error)',
+        '2:11: Query.field1                  | "Root"     | {}                  | {}',
+        '1:9: query                          | "Root"     | {"msg"=>"Boom"}     | ',
       ].join("\n")
 
       assert_includes err.message, rendered_table
@@ -126,7 +124,7 @@ describe GraphQL::Backtrace do
 
     it "annotates errors inside lazy resolution" do
       err = assert_raises(GraphQL::Backtrace::TracedError) {
-        schema.execute("query StrField { field2 { strField } }")
+        schema.execute("query StrField { field2 { strField } __typename }")
       }
       assert_instance_of RuntimeError, err.cause
       b = err.cause.backtrace
@@ -135,13 +133,20 @@ describe GraphQL::Backtrace do
       assert_backtrace_includes(b, file: "lazy/resolve.rb", method: "block")
 
       expected_graphql_backtrace = [
-        "execute_field_lazy:  OtherThing.strField @ [1:27]",
-        "execute_query_lazy:  query StrField @ [1:1]",
-        "execute_multiplex:   query StrField @ [1:1]",
+        "1:27: OtherThing.strField",
+        "1:18: Query.field2",
+        "1:1: query StrField",
       ]
 
-
       assert_equal(expected_graphql_backtrace, err.graphql_backtrace)
+
+      rendered_table = [
+        'Field                     | Object     | Arguments  | Result',
+        '1:27: OtherThing.strField | :something | {}         | (error)',
+        '1:18: Query.field2        | nil        | {}         | {strField: (unresolved)}',
+        '1:1: query StrField       | nil        | {}         | {field2: {...}, __typename: "Query"}',
+      ].join("\n")
+      assert_includes err.message, rendered_table
     end
   end
 
