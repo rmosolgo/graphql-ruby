@@ -2,22 +2,9 @@
 require "spec_helper"
 
 describe GraphQL::Schema::Traversal do
-  def reduce_types(types)
+  def traversal(types)
     schema = GraphQL::Schema.define(orphan_types: types, resolve_type: :dummy)
     traversal = GraphQL::Schema::Traversal.new(schema, introspection: false)
-    traversal.type_map
-  end
-
-  def type_references(types)
-    schema = GraphQL::Schema.define(orphan_types: types, resolve_type: :dummy)
-    traversal = GraphQL::Schema::Traversal.new(schema, introspection: false)
-    traversal.type_reference_map
-  end
-
-  def unions(types)
-    schema = GraphQL::Schema.define(orphan_types: types, resolve_type: :dummy)
-    traversal = GraphQL::Schema::Traversal.new(schema, introspection: false)
-    traversal.unions
   end
 
   it "finds types from directives" do
@@ -25,7 +12,7 @@ describe GraphQL::Schema::Traversal do
       "Boolean" => GraphQL::BOOLEAN_TYPE, # `skip` argument
       "String" => GraphQL::STRING_TYPE # `deprecated` argument
     }
-    result = reduce_types([])
+    result = traversal([]).type_map
     assert_equal(expected.keys.sort, result.keys.sort)
     assert_equal(expected, result.to_h)
   end
@@ -43,13 +30,13 @@ describe GraphQL::Schema::Traversal do
       "AnimalProduct" => Dummy::AnimalProductInterface,
       "LocalProduct" => Dummy::LocalProductInterface,
     }
-    result = reduce_types([Dummy::CheeseType])
+    result = traversal([Dummy::CheeseType]).type_map
     assert_equal(expected.keys.sort, result.keys.sort)
     assert_equal(expected, result.to_h)
   end
 
   it "finds type from arguments" do
-    result = reduce_types([Dummy::DairyAppQueryType])
+    result = traversal([Dummy::DairyAppQueryType]).type_map
     assert_equal(Dummy::DairyProductInputType, result["DairyProductInput"])
   end
 
@@ -59,7 +46,7 @@ describe GraphQL::Schema::Traversal do
       connection :t, type.connection_type
     end
 
-    result = reduce_types([type])
+    result = traversal([type]).type_map
     expected_types = [
       "ArgTypeTest", "ArgTypeTestConnection", "ArgTypeTestEdge",
       "Boolean", "Int", "PageInfo", "String"
@@ -78,7 +65,7 @@ describe GraphQL::Schema::Traversal do
       input_field :child, type_child
     end
 
-    result = reduce_types([type_parent])
+    result = traversal([type_parent]).type_map
     expected = {
       "Boolean" => GraphQL::BOOLEAN_TYPE,
       "String" => GraphQL::STRING_TYPE,
@@ -104,11 +91,11 @@ describe GraphQL::Schema::Traversal do
     }
 
     it "raises an InvalidTypeError when passed nil" do
-      assert_raises(GraphQL::Schema::InvalidTypeError) {  reduce_types([invalid_type]) }
+      assert_raises(GraphQL::Schema::InvalidTypeError) {  traversal([invalid_type]) }
     end
 
     it "raises an InvalidTypeError when passed an object that isnt a GraphQL::BaseType" do
-      assert_raises(GraphQL::Schema::InvalidTypeError) {  reduce_types([another_invalid_type]) }
+      assert_raises(GraphQL::Schema::InvalidTypeError) {  traversal([another_invalid_type]) }
     end
   end
 
@@ -125,14 +112,14 @@ describe GraphQL::Schema::Traversal do
     }
     it "raises an error" do
       assert_raises(RuntimeError) {
-        reduce_types([type_1, type_2])
+        traversal([type_1, type_2])
       }
     end
   end
 
   describe "when getting a type which doesnt exist" do
     it "raises an error" do
-      type_map = reduce_types([])
+      type_map = traversal([]).type_map
       assert_raises(KeyError) { type_map.fetch("SomeType") }
     end
   end
@@ -172,7 +159,7 @@ describe GraphQL::Schema::Traversal do
       "C" => [b_type.fields["anotherField"].arguments["anArgument"]]
     }
 
-    assert_equal expected, type_references([a_type, b_type, c_type])
+    assert_equal expected, traversal([a_type, b_type, c_type]).type_reference_map
   end
 
   it "finds all union types" do
@@ -194,6 +181,6 @@ describe GraphQL::Schema::Traversal do
       possible_types [b_type, c_type]
     end
 
-    assert_equal [union, another_union], unions([union, another_union, b_type, c_type])
+    assert_equal [union, another_union], traversal([union, another_union, b_type, c_type]).unions
   end
 end
