@@ -3,9 +3,10 @@
 module GraphQL
   module Backtrace
     class Table
-      MIN_COL_WIDTH = 10
+      MIN_COL_WIDTH = 4
       MAX_COL_WIDTH = 100
       HEADERS = [
+        "Loc",
         "Field",
         "Object",
         "Arguments",
@@ -16,7 +17,7 @@ module GraphQL
         rows = [HEADERS]
         build_rows(context, rows: rows, top: true)
         @to_s = render_table(rows)
-        @to_backtrace = rows.map { |r| r[0] }
+        @to_backtrace = rows.map { |r| "#{r[0]}: #{r[1]}" }
         # skip the header entry
         @to_backtrace.shift
       end
@@ -62,7 +63,7 @@ module GraphQL
         table
       end
 
-      # @return [Array] 4 items for a backtrace table (not `key`)
+      # @return [Array] 5 items for a backtrace table (not `key`)
       def build_rows(context_entry, rows:, top: false)
         case context_entry
         when GraphQL::Query::Context::FieldResolutionContext
@@ -71,7 +72,8 @@ module GraphQL
           position = "#{ctx.ast_node.line}:#{ctx.ast_node.col}"
           field_alias = ctx.ast_node.alias
           rows << [
-            "#{position}: #{field_name}#{field_alias ? " as #{field_alias}" : ""}"    ,
+            "#{position}",
+            "#{field_name}#{field_alias ? " as #{field_alias}" : ""}",
             ctx.object.inspect,
             ctx.irep_node.arguments.to_h.inspect,
             top ? "(error)" : Backtrace::InspectResult.inspect(ctx.value),
@@ -90,7 +92,8 @@ module GraphQL
           end
           op_name = query.selected_operation_name
           rows << [
-            "#{position}: #{op_type}#{op_name ? " #{op_name}" : ""}",
+            "#{position}",
+            "#{op_type}#{op_name ? " #{op_name}" : ""}",
             query.root_value.inspect,
             query.variables.to_h.inspect,
             Backtrace::InspectResult.inspect(query.context.value),

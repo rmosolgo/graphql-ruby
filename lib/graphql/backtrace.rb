@@ -18,14 +18,11 @@ module GraphQL
   #
   module Backtrace
     module_function
-    # Turn on annotation
     def enable
-      execution_context.clear
       GraphQL::Tracing.install(self)
       nil
     end
 
-    # Turn off annotation
     def disable
       GraphQL::Tracing.uninstall(self)
       nil
@@ -49,6 +46,7 @@ module GraphQL
       end
 
       if push_data
+        execution_context = Thread.current[:graphql_execution_context] ||= []
         if key == "execute_multiplex"
           execution_context.clear
           execution_context.push(push_data)
@@ -70,12 +68,6 @@ module GraphQL
       else
         yield
       end
-    end
-
-    # A stack of objects corresponding to the GraphQL context.
-    # @return [Array<GraphQL::Query::Context, GraphQL::Query>]
-    def execution_context
-      Thread.current[:graphql_execution_context] ||= []
     end
   end
 end

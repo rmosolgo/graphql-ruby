@@ -65,23 +65,6 @@ describe GraphQL::Backtrace do
       }
     end
 
-    it "cleans up its own stack" do
-      # Starts clean
-      assert_equal 0, GraphQL::Backtrace.execution_context.size
-
-      # Cleaned up after normal query
-      schema.execute("{__schema{types{name}}}")
-
-      assert_equal 0, GraphQL::Backtrace.execution_context.size
-
-      # Cleaned up after error
-      assert_raises(GraphQL::Backtrace::TracedError) {
-        schema.execute("query BrokenList { field1 { listField { strField } } }")
-      }
-
-      assert_equal 0, GraphQL::Backtrace.execution_context.size
-    end
-
     it "annotates crashes from user code" do
       err = assert_raises(GraphQL::Backtrace::TracedError) {
         schema.execute <<-GRAPHQL, root_value: "Root"
@@ -111,10 +94,10 @@ describe GraphQL::Backtrace do
 
       # The message includes the GraphQL context
       rendered_table = [
-        'Field                               | Object     | Arguments           | Result',
-        '3:13: Thing.raiseField as boomError | :something | {"message"=>"Boom"} | (error)',
-        '2:11: Query.field1                  | "Root"     | {}                  | {}',
-        '1:9: query                          | "Root"     | {"msg"=>"Boom"}     | ',
+        'Loc  | Field                         | Object     | Arguments           | Result',
+        '3:13 | Thing.raiseField as boomError | :something | {"message"=>"Boom"} | (error)',
+        '2:11 | Query.field1                  | "Root"     | {}                  | {}',
+        '1:9  | query                         | "Root"     | {"msg"=>"Boom"}     | ',
       ].join("\n")
 
       assert_includes err.message, rendered_table
@@ -141,10 +124,10 @@ describe GraphQL::Backtrace do
       assert_equal(expected_graphql_backtrace, err.graphql_backtrace)
 
       rendered_table = [
-        'Field                     | Object     | Arguments  | Result',
-        '1:27: OtherThing.strField | :something | {}         | (error)',
-        '1:18: Query.field2        | nil        | {}         | {strField: (unresolved)}',
-        '1:1: query StrField       | nil        | {}         | {field2: {...}, __typename: "Query"}',
+        'Loc  | Field               | Object     | Arguments | Result',
+        '1:27 | OtherThing.strField | :something | {}        | (error)',
+        '1:18 | Query.field2        | nil        | {}        | {strField: (unresolved)}',
+        '1:1  | query StrField      | nil        | {}        | {field2: {...}, __typename: "Query"}',
       ].join("\n")
       assert_includes err.message, rendered_table
     end
