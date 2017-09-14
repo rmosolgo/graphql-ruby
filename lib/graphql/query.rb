@@ -49,6 +49,12 @@ module GraphQL
       selected_operation.name
     end
 
+    # @return [String, nil] the triggered event, if this query is a subscription update
+    attr_reader :subscription_topic
+
+    # @return [String, nil]
+    attr_reader :operation_name
+
     # Prepare query `query_string` on `schema`
     # @param schema [GraphQL::Schema]
     # @param query_string [String]
@@ -60,10 +66,11 @@ module GraphQL
     # @param max_complexity [Numeric] the maximum field complexity for this query (falls back to schema-level value)
     # @param except [<#call(schema_member, context)>] If provided, objects will be hidden from the schema when `.call(schema_member, context)` returns truthy
     # @param only [<#call(schema_member, context)>] If provided, objects will be hidden from the schema when `.call(schema_member, context)` returns false
-    def initialize(schema, query_string = nil, query: nil, document: nil, context: nil, variables: {}, validate: true, operation_name: nil, root_value: nil, max_depth: nil, max_complexity: nil, except: nil, only: nil)
+    def initialize(schema, query_string = nil, query: nil, document: nil, context: nil, variables: {}, validate: true, subscription_topic: nil, operation_name: nil, root_value: nil, max_depth: nil, max_complexity: nil, except: nil, only: nil)
       @schema = schema
       @filter = schema.default_filter.merge(except: except, only: only)
       @context = Context.new(query: self, object: root_value, values: context)
+      @subscription_topic = subscription_topic
       @root_value = root_value
       @fragments = nil
       @operations = nil
@@ -95,13 +102,16 @@ module GraphQL
       @mutation = false
       @operation_name = operation_name
       @prepared_ast = false
-
       @validation_pipeline = nil
       @max_depth = max_depth || schema.max_depth
       @max_complexity = max_complexity || schema.max_complexity
 
       @result_values = nil
       @executed = false
+    end
+
+    def subscription_update?
+      @subscription_topic && subscription?
     end
 
     # @api private
@@ -229,6 +239,10 @@ module GraphQL
       nil
     end
 
+    def subscription?
+      with_prepared_ast { @subscription }
+    end
+
     private
 
     def find_operation(operations, operation_name)
@@ -278,6 +292,7 @@ module GraphQL
       # with no operations returns an empty hash
       @ast_variables = []
       @mutation = false
+      @subscription = false
       operation_name_error = nil
       if @operations.any?
         @selected_operation = find_operation(@operations, @operation_name)
@@ -290,6 +305,7 @@ module GraphQL
           @ast_variables = @selected_operation.variables
           @mutation = @selected_operation.operation_type == "mutation"
           @query = @selected_operation.operation_type == "query"
+          @subscription = @selected_operation.operation_type == "subscription"
         end
       end
 

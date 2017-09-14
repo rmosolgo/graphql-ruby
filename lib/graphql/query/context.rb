@@ -13,6 +13,13 @@ module GraphQL
         # @return [Hash, Array, String, Integer, Float, Boolean, nil] The resolved value for this field
         attr_reader :value
 
+        # @return [Boolean] were any fields of this selection skipped?
+        attr_reader :skipped
+        alias :skipped? :skipped
+
+        # @api private
+        attr_writer :skipped
+
         # Return this value to tell the runtime
         # to exclude this field from the response altogether
         def skip
@@ -59,6 +66,7 @@ module GraphQL
 
       include SharedMethods
       extend GraphQL::Delegate
+
       attr_reader :execution_strategy
       # `strategy` is required by GraphQL::Batch
       alias_method :strategy, :execution_strategy
@@ -119,6 +127,7 @@ module GraphQL
 
       # @!method []=(key, value)
       #   Reassign `key` to the hash passed to {Schema#execute} as `context:`
+
 
       # @return [GraphQL::Schema::Warden]
       def warden
@@ -206,6 +215,7 @@ module GraphQL
               @parent.received_null_child
             end
           when GraphQL::Execution::Execute::SKIP
+            @parent.skipped = true
             @parent.delete(self)
           else
             @value = new_value

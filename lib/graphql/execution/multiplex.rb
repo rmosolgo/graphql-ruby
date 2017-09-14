@@ -109,12 +109,12 @@ module GraphQL
             if !query.valid?
               { "errors" => query.static_errors.map(&:to_h) }
             else
-              {}
+              data_result
             end
           else
             # Use `context.value` which was assigned during execution
             result = {
-              "data" => Execution::Flatten.call(query.context.value)
+              "data" => Execution::Flatten.call(query.context)
             }
 
             if query.context.errors.any?

@@ -25,6 +25,8 @@ module GraphQL
           when Query::Context::SharedMethods
             if obj.invalid_null?
               nil
+            elsif obj.skipped? && obj.value.empty?
+              nil
             else
               flatten(obj.value)
             end
