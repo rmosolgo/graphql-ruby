@@ -10,11 +10,14 @@ module GraphQL
       # @return [Hash<String => Hash<String => GraphQL::Field>>]
       attr_reader :instrumented_field_map
 
-      # @return [Hash<String => [GraphQL::Field || GraphQL::Argument]]
+      # @return [Hash<String => Array<GraphQL::Field || GraphQL::Argument || GraphQL::Directive>]
       attr_reader :type_reference_map
 
-      # @return [[GraphQL::UnionType]]
+      # @return [Array<GraphQL::UnionType>]
       attr_reader :unions
+
+      # @return [Hash<String => Array<GraphQL::BaseType>]
+      attr_reader :union_memberships
 
       # @param schema [GraphQL::Schema]
       def initialize(schema, introspection: true)
@@ -29,6 +32,7 @@ module GraphQL
         @instrumented_field_map = Hash.new { |h, k| h[k] = {} }
         @type_reference_map = Hash.new { |h, k| h[k] = [] }
         @unions = []
+        @union_memberships = Hash.new { |h, k| h[k] = [] }
         visit(schema, nil)
       end
 
@@ -66,7 +70,10 @@ module GraphQL
               visit_fields(type_defn)
             when GraphQL::UnionType
               @unions << type_defn
-              type_defn.possible_types.each { |t| visit(t, "Possible type for #{type_defn.name}") }
+              type_defn.possible_types.each do |t|
+                @union_memberships[t.name] << type_defn
+                visit(t, "Possible type for #{type_defn.name}")
+              end
             when GraphQL::InputObjectType
               type_defn.arguments.each do |name, arg|
                 @type_reference_map[arg.type.unwrap.to_s] << arg
