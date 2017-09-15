@@ -79,8 +79,10 @@ module TestTracing
     end
 
     def with_trace
+      GraphQL::Tracing.install(self)
       clear
       yield
+      GraphQL::Tracing.uninstall(self)
       traces
     end
 
@@ -94,4 +96,6 @@ module TestTracing
   end
 end
 
-GraphQL::Tracing.install(TestTracing)
+if rails_should_be_installed?
+  GraphQL::Tracing.uninstall(GraphQL::Tracing::ActiveSupportNotificationsTracing)
+end

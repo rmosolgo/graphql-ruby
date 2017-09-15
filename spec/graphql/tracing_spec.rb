@@ -18,5 +18,30 @@ describe GraphQL::Tracing do
       # Any override of .trace must return the block's return value
       assert_equal "do stuff", returned_value
     end
+
+    module OtherRandomTracer
+      CALLS = []
+
+      def self.trace(key, metadata)
+        CALLS << key.upcase
+        yield
+      end
+    end
+
+    it "calls multiple tracers" do
+      OtherRandomTracer::CALLS.clear
+      GraphQL::Tracing.install(OtherRandomTracer)
+      # Duplicate install is a no-op
+      GraphQL::Tracing.install(OtherRandomTracer)
+
+      traces = TestTracing.with_trace do
+        GraphQL::Tracing.trace("stuff", { }) { :stuff }
+      end
+
+      assert_equal ["stuff"], traces.map { |t| t[:key] }
+      assert_equal ["STUFF"], OtherRandomTracer::CALLS
+
+      GraphQL::Tracing.uninstall(OtherRandomTracer)
+    end
   end
 end

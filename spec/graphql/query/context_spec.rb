@@ -22,8 +22,24 @@ describe GraphQL::Query::Context do
       end
     }
   }
+  let(:backtrace_type) {
+    GraphQL::ObjectType.define do
+      name "Backtrace"
+      field :backtraceEntry, types.String do
+        argument :idx, !types.Int
+        resolve ->(o, a, c) { c.backtrace[a[:idx]] }
+      end
+      field :backtraceArray, types[types.String] do
+        resolve ->(o, a, c) { c.backtrace.to_a }
+      end
+      field :backtraceTable, types.String do
+        resolve ->(o, a, c) { c.backtrace.inspect }
+      end
+    end
+  }
   let(:query_type) {
     parent_info = parent_info_type
+    backtrace = backtrace_type
     GraphQL::ObjectType.define {
       name "Query"
       field :context, types.String do
@@ -52,6 +68,7 @@ describe GraphQL::Query::Context do
       end
 
       field :parentInfo, parent_info, resolve: ->(o,a,c) { :noop }
+      field :backtrace, backtrace, resolve: Proc.new { :noop }
     }
   }
 
@@ -104,6 +121,46 @@ describe GraphQL::Query::Context do
     it "provides access to the AST node" do
       expected = {"data" => {"contextAstNodeName" => "GraphQL::Language::Nodes::Field"}}
       assert_equal(expected, result)
+    end
+  end
+
+  describe "#backtrace" do
+    let(:query_string) { %|
+      query {
+        backtrace {
+          b1: backtraceEntry(idx: 0)
+          b2: backtraceEntry(idx: 1)
+          b3: backtraceEntry(idx: 2)
+          backtraceArray
+          backtraceTable
+        }
+        pushContext
+      }
+    |}
+
+    it "exposes the GraphQL backtrace" do
+      backtrace_result = result.fetch("data").fetch("backtrace")
+      assert_equal "4:11: Backtrace.backtraceEntry as b1", backtrace_result.fetch("b1")
+      assert_equal "3:9: Query.backtrace", backtrace_result.fetch("b2")
+      assert_equal "2:7: query", backtrace_result.fetch("b3")
+      assert_equal ["7:11: Backtrace.backtraceArray", "3:9: Query.backtrace", "2:7: query"], backtrace_result.fetch("backtraceArray")
+      expected_table = [
+        'Loc  | Field                    | Object    | Arguments | Result',
+        '8:11 | Backtrace.backtraceTable | :noop     | {}        | nil',
+        '3:9  | Query.backtrace          | "rootval" | {}        | {b1: "4:11: Backtrace.backtraceEntry as b1", b2: "3:9: Query.backtrace", b3: "2:7: query", backtr...',
+        '2:7  | query                    | "rootval" | {}        | {}',
+        '',
+      ].join("\n")
+      assert_equal expected_table, backtrace_result.fetch("backtraceTable")
+
+      expected_table_2 = <<-TABLE
+Loc  | Field             | Object    | Arguments | Result
+10:9 | Query.pushContext | "rootval" | {}        | 1
+2:7  | query             | "rootval" | {}        | {backtrace: {...}, pushContext: 1}
+TABLE
+
+      ctx = CTX.last
+      assert_equal expected_table_2, ctx.backtrace.to_s
     end
   end
 
