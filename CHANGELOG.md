@@ -8,6 +8,27 @@
 
 ### Bug fixes
 
+## 1.6.8 (8 Sept 2017)
+
+### New features
+
+- Use stdlib `forwardable` when it's not Ruby 2.4.0 #926
+- Improve `UnresolvedTypeError` message #928
+- Add a default field to the Rails generated mutation type #922
+
+### Bug fixes
+
+- Find types via directive arguments when traversing the schema #944
+- Assign `#connection?` when building a schema from IDL #941
+- Initialize `@edge_class` to `nil` #942
+- Disallow invalid enum values #915
+- Disallow doubly-nested non-null types #916
+- Fix `Query#selected_operation_name` when no selections are present #899
+- Fix needless `COUNT` query for `hasNextPage` #906
+- Fix negative offset with `last` argument #907
+- Fix line/col for `ArgumentsAreDefined` validation #890
+- Fix Sequel error when limit is `0` #892
+
 ## 1.6.7 (11 Aug 2017)
 
 ### New features

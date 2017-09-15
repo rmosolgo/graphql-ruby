@@ -216,6 +216,14 @@ module GraphQL
       end
     end
 
+    # @return [Array<GraphQL::BaseType>] The root types of this schema
+    def root_types
+      @root_types ||= begin
+        rebuild_artifacts
+        @root_types
+      end
+    end
+
     # @see [GraphQL::Schema::Warden] Restricted access to members of a schema
     # @return [GraphQL::Schema::TypeMap] `{ name => type }` pairs of types in this schema
     def types
@@ -223,6 +231,22 @@ module GraphQL
         rebuild_artifacts
         @types
       end
+    end
+
+    # Returns a list of Arguments and Fields referencing a certain type
+    # @param type_name [String]
+    # @return [Hash]
+    def references_to(type_name)
+      rebuild_artifacts unless defined?(@type_reference_map)
+      @type_reference_map.fetch(type_name, [])
+    end
+
+    # Returns a list of Union types in which a type is a member
+    # @param type [GraphQL::ObjectType]
+    # @return [Array<GraphQL::UnionType>] list of union types of which the type is a member
+    def union_memberships(type)
+      rebuild_artifacts unless defined?(@union_memberships)
+      @union_memberships.fetch(type.name, [])
     end
 
     # Execute a query on itself. Raises an error if the schema definition is invalid.
@@ -548,7 +572,10 @@ module GraphQL
         @rebuilding_artifacts = true
         traversal = Traversal.new(self)
         @types = traversal.type_map
+        @root_types = [query, mutation, subscription]
         @instrumented_field_map = traversal.instrumented_field_map
+        @type_reference_map = traversal.type_reference_map
+        @union_memberships = traversal.union_memberships
       end
     ensure
       @rebuilding_artifacts = false

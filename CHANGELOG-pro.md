@@ -8,6 +8,17 @@
 
 ### Bug Fix
 
+## 1.5.3 (4 Sept 2017)
+
+### Bug Fix
+
+- Fix OperationStore views on PostgresQL
+- Fix stable cursors when joined tables have the same column names
+
+  __Note:__ This is implemented by adding extra fields to the `SELECT`
+  clause with aliases like `cursor_#{idx}`, so you'll notice this in your
+  SQL logs.
+
 ## 1.5.2 (4 Aug 2017)
 
 ### Bug Fix
