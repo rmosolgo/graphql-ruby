@@ -70,7 +70,7 @@ describe GraphQL::Execution::Lazy do
       assert_equal expected_data, res["data"]
     end
 
-    it "propagates nulls" do
+    it "propagates nulls to the root" do
       res = run_query %|
       {
         nestedSum(value: 1) {
@@ -85,14 +85,15 @@ describe GraphQL::Execution::Lazy do
 
       assert_equal(nil, res["data"])
       assert_equal 1, res["errors"].length
+    end
 
-
+    it "propagates partial nulls" do
       res = run_query %|
       {
         nullableNestedSum(value: 1) {
           value
           nullableNestedSum(value: 2) {
-            nestedSum(value: 13) {
+            ns: nestedSum(value: 13) {
               value
             }
           }

@@ -21,6 +21,7 @@ Rake::TestTask.new do |t|
         f.end_with?('node_spec.rb') ||
         f.end_with?('connection_instrumentation_spec.rb') ||
         f.end_with?('graphql/schema_spec.rb') ||
+        f.end_with?('graphql/tracing/active_support_notifications_tracing_spec.rb') ||
         f.start_with?('spec/graphql/relay/')
     end
   end

@@ -69,6 +69,8 @@ enum Color {
 
 # What a great type
 type Hello {
+  anEnum: Color
+
   # And a field to boot
   str: String
 }
@@ -204,6 +206,85 @@ type Hello {
       SCHEMA
 
       build_schema_and_compare_output(schema.chop)
+    end
+
+    it 'properly understands connections' do
+      schema = <<-SCHEMA
+schema {
+  query: Type
+}
+
+type Organization {
+  email: String
+}
+
+# The connection type for Organization.
+type OrganizationConnection {
+  # A list of edges.
+  edges: [OrganizationEdge]
+
+  # A list of nodes.
+  nodes: [Organization]
+
+  # Information to aid in pagination.
+  pageInfo: PageInfo!
+
+  # Identifies the total count of items in the connection.
+  totalCount: Int!
+}
+
+# An edge in a connection.
+type OrganizationEdge {
+  # A cursor for use in pagination.
+  cursor: String!
+
+  # The item at the end of the edge.
+  node: Organization
+}
+
+# Information about pagination in a connection.
+type PageInfo {
+  # When paginating forwards, the cursor to continue.
+  endCursor: String
+
+  # When paginating forwards, are there more items?
+  hasNextPage: Boolean!
+
+  # When paginating backwards, are there more items?
+  hasPreviousPage: Boolean!
+
+  # When paginating backwards, the cursor to continue.
+  startCursor: String
+}
+
+type Type {
+  name: String
+  organization(
+    # The login of the organization to find.
+    login: String!
+  ): Organization
+
+  # A list of organizations the user belongs to.
+  organizations(
+    # Returns the elements in the list that come after the specified global ID.
+    after: String
+
+    # Returns the elements in the list that come before the specified global ID.
+    before: String
+
+    # Returns the first _n_ elements from the list.
+    first: Int
+
+    # Returns the last _n_ elements from the list.
+    last: Int
+  ): OrganizationConnection!
+}
+      SCHEMA
+
+      built_schema = build_schema_and_compare_output(schema.chop)
+      obj = built_schema.types["Type"]
+      refute obj.fields["organization"].connection?
+      assert obj.fields["organizations"].connection?
     end
 
     it 'supports simple type with multiple arguments' do

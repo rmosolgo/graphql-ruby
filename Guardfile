@@ -20,17 +20,20 @@ guard :minitest do
       to_run << matching_spec
     end
 
-    # Find a `# test_via:` macro to automatically run another test
-    body = File.read(m[0])
-    test_via_match = body.match(/test_via: (.*)/)
-    if test_via_match
-      test_via_path = test_via_match[1]
-      companion_file = Pathname.new(m[0] + "/../" + test_via_path)
-        .cleanpath
-        .to_s
-        .sub(/.rb/, "_spec.rb")
-        .sub("lib/", "spec/")
-        to_run << companion_file
+    # If the file was deleted, it won't exist anymore
+    if File.exist?(m[0])
+      # Find a `# test_via:` macro to automatically run another test
+      body = File.read(m[0])
+      test_via_match = body.match(/test_via: (.*)/)
+      if test_via_match
+        test_via_path = test_via_match[1]
+        companion_file = Pathname.new(m[0] + "/../" + test_via_path)
+          .cleanpath
+          .to_s
+          .sub(/.rb/, "_spec.rb")
+          .sub("lib/", "spec/")
+          to_run << companion_file
+      end
     end
 
     # 0+ files

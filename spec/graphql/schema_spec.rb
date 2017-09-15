@@ -17,6 +17,35 @@ describe GraphQL::Schema do
     end
   end
 
+  describe "#union_memberships" do
+    it "returns a list of unions that include the type" do
+      assert_equal [schema.types["Animal"], schema.types["AnimalAsCow"]], schema.union_memberships(schema.types["Cow"])
+    end
+  end
+
+  describe "#root_types" do
+    it "returns a list of the schema's root types" do
+      assert_equal(
+        [
+          Dummy::DairyAppQueryType,
+          Dummy::DairyAppMutationType,
+          Dummy::SubscriptionType
+        ],
+        schema.root_types
+      )
+    end
+  end
+
+  describe "#references_to" do
+    it "returns a list of Field and Arguments of that type" do
+      assert_equal [schema.types["Query"].fields["cow"]], schema.references_to("Cow")
+    end
+
+    it "returns an empty list when type is not referenced by any field or argument" do
+      assert_equal [], schema.references_to("Goat")
+    end
+  end
+
   describe "#to_definition" do
     it "prints out the schema definition" do
       assert_equal schema.to_definition, GraphQL::Schema::Printer.print_schema(schema)

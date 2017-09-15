@@ -5,22 +5,28 @@ require "set"
 require "singleton"
 
 module GraphQL
-  # Ruby stdlib was pretty busted until this fix:
-  # https://github.com/ruby/ruby/commit/46c0e79bb5b96c45c166ef62f8e585f528862abb#diff-43adf0e587a50dbaf51764a262008d40
-  module Delegate
-    def def_delegators(accessor, *method_names)
-      method_names.each do |method_name|
-        class_eval <<-RUBY
-        def #{method_name}(*args)
-          if block_given?
-            #{accessor}.#{method_name}(*args, &Proc.new)
-          else
-            #{accessor}.#{method_name}(*args)
+  if RUBY_VERSION == "2.4.0"
+    # Ruby stdlib was pretty busted until this fix:
+    # https://bugs.ruby-lang.org/issues/13111
+    # https://github.com/ruby/ruby/commit/46c0e79bb5b96c45c166ef62f8e585f528862abb#diff-43adf0e587a50dbaf51764a262008d40
+    module Delegate
+      def def_delegators(accessor, *method_names)
+        method_names.each do |method_name|
+          class_eval <<-RUBY
+          def #{method_name}(*args)
+            if block_given?
+              #{accessor}.#{method_name}(*args, &Proc.new)
+            else
+              #{accessor}.#{method_name}(*args)
+            end
           end
+          RUBY
         end
-        RUBY
       end
     end
+  else
+    require "forwardable"
+    Delegate = Forwardable
   end
 
   class Error < StandardError
@@ -103,4 +109,7 @@ require "graphql/version"
 require "graphql/compatibility"
 require "graphql/function"
 require "graphql/filter"
+require "graphql/subscriptions"
 require "graphql/parse_error"
+require "graphql/tracing"
+require "graphql/backtrace"

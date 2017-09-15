@@ -10,6 +10,12 @@ module GraphQL
       # @return [Hash<String => Hash<String => GraphQL::Field>>]
       attr_reader :instrumented_field_map
 
+      # @return [Hash<String => Array<GraphQL::Field || GraphQL::Argument || GraphQL::Directive>]
+      attr_reader :type_reference_map
+
+      # @return [Hash<String => Array<GraphQL::BaseType>]
+      attr_reader :union_memberships
+
       # @param schema [GraphQL::Schema]
       def initialize(schema, introspection: true)
         @schema = schema
@@ -21,6 +27,8 @@ module GraphQL
 
         @type_map = {}
         @instrumented_field_map = Hash.new { |h, k| h[k] = {} }
+        @type_reference_map = Hash.new { |h, k| h[k] = [] }
+        @union_memberships = Hash.new { |h, k| h[k] = [] }
         visit(schema, nil)
       end
 
@@ -29,6 +37,7 @@ module GraphQL
       def visit(member, context_description)
         case member
         when GraphQL::Schema
+          member.directives.each { |name, directive| visit(directive, "Directive #{name}") }
           # Find the starting points, then visit them
           visit_roots = [member.query, member.mutation, member.subscription]
           if @introspection
@@ -37,6 +46,11 @@ module GraphQL
           visit_roots.concat(member.orphan_types)
           visit_roots.compact!
           visit_roots.each { |t| visit(t, t.name) }
+        when GraphQL::Directive
+          member.arguments.each do |name, argument|
+            @type_reference_map[argument.type.unwrap.to_s] << argument
+            visit(argument.type, "Directive argument #{member.name}.#{name}")
+          end
         when GraphQL::BaseType
           type_defn = member.unwrap
           prev_type = @type_map[type_defn.name]
@@ -51,9 +65,13 @@ module GraphQL
             when GraphQL::InterfaceType
               visit_fields(type_defn)
             when GraphQL::UnionType
-              type_defn.possible_types.each { |t| visit(t, "Possible type for #{type_defn.name}") }
+              type_defn.possible_types.each do |t|
+                @union_memberships[t.name] << type_defn
+                visit(t, "Possible type for #{type_defn.name}")
+              end
             when GraphQL::InputObjectType
               type_defn.arguments.each do |name, arg|
+                @type_reference_map[arg.type.unwrap.to_s] << arg
                 visit(arg.type, "Input field #{type_defn.name}.#{name}")
               end
 
@@ -79,9 +97,11 @@ module GraphQL
             inst.instrument(type_defn, defn)
           end
           @instrumented_field_map[type_defn.name][instrumented_field_defn.name] = instrumented_field_defn
+          @type_reference_map[instrumented_field_defn.type.unwrap.name] << instrumented_field_defn
           visit(instrumented_field_defn.type, "Field #{type_defn.name}.#{instrumented_field_defn.name}'s return type")
 
           instrumented_field_defn.arguments.each do |name, arg|
+            @type_reference_map[arg.type.unwrap.to_s] << arg
             visit(arg.type, "Argument #{name} on #{type_defn.name}.#{instrumented_field_defn.name}")
           end
 

@@ -3,6 +3,7 @@ layout: guide
 search: true
 title: Error Handling
 desc: Handle errors during execution
+section: Queries
 ---
 
 Sometimes errors happen! There are a few ways to express them in GraphQL:
@@ -54,7 +55,7 @@ mutation {
 
 If `errors` is present (and `id` is null), the client knows that the operation was unsuccessful, and they can discover why.
 
-This technique could be extended by creating dedicated error types, too.  
+This technique could be extended by creating dedicated error types, too.
 
 ## The "errors" Key
 
