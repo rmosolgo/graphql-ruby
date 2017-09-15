@@ -36,7 +36,7 @@ argument :category, !types.String
 Use `default_value: value` to provide a default value for the argument if not supplied in the query.
 
 ```ruby
-argument :category, !types.String, default_value: "Programming"
+argument :category, types.String, default_value: "Programming"
 ```
 
 Use `as: :alternateName` to use a different key from within your resolvers while
