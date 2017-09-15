@@ -1,6 +1,7 @@
 # frozen_string_literal: true
+# test_via: ../backtrace.rb
 module GraphQL
-  module Backtrace
+  class Backtrace
     # When {Backtrace} is enabled, raised errors are wrapped with {TracedError}.
     class TracedError < GraphQL::Error
       # @return [Array<String>] Printable backtrace of GraphQL error context
@@ -22,12 +23,12 @@ MESSAGE
 
       def initialize(err, current_ctx)
         @context = current_ctx
-        table = Backtrace::Table.new(current_ctx)
-        @graphql_backtrace = table.to_backtrace
+        backtrace = Backtrace.new(current_ctx, value: err)
+        @graphql_backtrace = backtrace.to_a
 
         message = MESSAGE_TEMPLATE % {
           cause_message: err.message,
-          graphql_table: table.to_s
+          graphql_table: backtrace.inspect,
         }
         super(message)
       end

@@ -95,7 +95,7 @@ describe GraphQL::Backtrace do
       # The message includes the GraphQL context
       rendered_table = [
         'Loc  | Field                         | Object     | Arguments           | Result',
-        '3:13 | Thing.raiseField as boomError | :something | {"message"=>"Boom"} | (error)',
+        '3:13 | Thing.raiseField as boomError | :something | {"message"=>"Boom"} | #<RuntimeError: This is broken: Boom>',
         '2:11 | Query.field1                  | "Root"     | {}                  | {}',
         '1:9  | query                         | "Root"     | {"msg"=>"Boom"}     | ',
       ].join("\n")
@@ -125,7 +125,7 @@ describe GraphQL::Backtrace do
 
       rendered_table = [
         'Loc  | Field               | Object     | Arguments | Result',
-        '1:27 | OtherThing.strField | :something | {}        | (error)',
+        '1:27 | OtherThing.strField | :something | {}        | #<RuntimeError: Lazy Boom>',
         '1:18 | Query.field2        | nil        | {}        | {strField: (unresolved)}',
         '1:1  | query StrField      | nil        | {}        | {field2: {...}, __typename: "Query"}',
       ].join("\n")

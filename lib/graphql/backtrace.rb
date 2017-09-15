@@ -2,6 +2,7 @@
 require "graphql/backtrace/inspect_result"
 require "graphql/backtrace/table"
 require "graphql/backtrace/traced_error"
+require "graphql/backtrace/tracer"
 module GraphQL
   # Wrap unhandled errors with {TracedError}.
   #
@@ -16,58 +17,34 @@ module GraphQL
   #   # later, to disable:
   #   GraphQL::Backtrace.disable
   #
-  module Backtrace
-    module_function
-    def enable
-      GraphQL::Tracing.install(self)
+  class Backtrace
+    include Enumerable
+    extend GraphQL::Delegate
+
+    def_delegators :to_a, :each, :[]
+
+    def self.enable
+      GraphQL::Tracing.install(Backtrace::Tracer)
       nil
     end
 
-    def disable
-      GraphQL::Tracing.uninstall(self)
+    def self.disable
+      GraphQL::Tracing.uninstall(Backtrace::Tracer)
       nil
     end
 
-    # Implement the {GraphQL::Tracing} API.
-    def trace(key, metadata)
-      push_data = case key
-      when "lex", "parse"
-        # No context here, don't have a query yet
-        nil
-      when "execute_multiplex", "analyze_multiplex"
-        metadata[:multiplex].queries
-      when "validate", "analyze_query", "execute_query", "execute_query_lazy"
-        metadata[:query] || metadata[:queries]
-      when "execute_field", "execute_field_lazy"
-        metadata[:context]
-      else
-        # Custom key, no backtrace data for this
-        nil
-      end
+    def initialize(context, value: nil)
+      @table = Table.new(context, value: value)
+    end
 
-      if push_data
-        execution_context = Thread.current[:graphql_execution_context] ||= []
-        if key == "execute_multiplex"
-          execution_context.clear
-          execution_context.push(push_data)
-          begin
-            yield
-          rescue StandardError => err
-            # This is an unhandled error from execution,
-            # Re-raise it with a GraphQL trace.
-            raise TracedError.new(err, execution_context.last)
-          ensure
-            execution_context.clear
-          end
-        else
-          execution_context.push(push_data)
-          res = yield
-          execution_context.pop
-          res
-        end
-      else
-        yield
-      end
+    def inspect
+      @table.to_table
+    end
+
+    alias :to_s :inspect
+
+    def to_a
+      @table.to_backtrace
     end
   end
 end

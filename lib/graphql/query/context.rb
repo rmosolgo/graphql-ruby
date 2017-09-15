@@ -55,6 +55,14 @@ module GraphQL
           errors << error
           nil
         end
+
+        # @example Print the GraphQL backtrace during field resolution
+        #   puts ctx.backtrace
+        #
+        # @return [GraphQL::Backtrace] The backtrace for this point in query execution
+        def backtrace
+          GraphQL::Backtrace.new(self)
+        end
       end
 
       include SharedMethods

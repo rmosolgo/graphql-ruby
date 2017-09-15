@@ -1,7 +1,8 @@
 # frozen_string_literal: true
 # test_via: ../backtrace.rb
 module GraphQL
-  module Backtrace
+  class Backtrace
+    # A class for turning a context into a human-readable table or array
     class Table
       MIN_COL_WIDTH = 4
       MAX_COL_WIDTH = 100
@@ -13,22 +14,31 @@ module GraphQL
         "Result",
       ]
 
-      def initialize(context)
-        rows = [HEADERS]
-        build_rows(context, rows: rows, top: true)
-        @to_s = render_table(rows)
-        @to_backtrace = rows.map { |r| "#{r[0]}: #{r[1]}" }
-        # skip the header entry
-        @to_backtrace.shift
+      def initialize(context, value:)
+        @context = context
+        @override_value = value
       end
 
       # @return [String] A table layout of backtrace with metadata
-      attr_reader :to_s
+      def to_table
+        @to_table ||= render_table(rows)
+      end
 
       # @return [Array<String>] An array of position + field name entries
-      attr_reader :to_backtrace
+      def to_backtrace
+        @to_backtrace ||= begin
+          backtrace = rows.map { |r| "#{r[0]}: #{r[1]}" }
+          # skip the header entry
+          backtrace.shift
+          backtrace
+        end
+      end
 
       private
+
+      def rows
+        @rows ||= build_rows(@context, rows: [HEADERS], top: true)
+      end
 
       # @return [String]
       def render_table(rows)
@@ -56,7 +66,10 @@ module GraphQL
             if idx < last_col_idx
               col = col.ljust(max_len)
             end
-            col[0, max_len]
+            if col.length > max_len
+              col = col[0, max_len - 3] + "..."
+            end
+            col
           end.join(" | ")
           table << "\n"
         end
@@ -76,7 +89,7 @@ module GraphQL
             "#{field_name}#{field_alias ? " as #{field_alias}" : ""}",
             ctx.object.inspect,
             ctx.irep_node.arguments.to_h.inspect,
-            top ? "(error)" : Backtrace::InspectResult.inspect(ctx.value),
+            Backtrace::InspectResult.inspect(top && @override_value ? @override_value : ctx.value),
           ]
 
           build_rows(ctx.parent, rows: rows)
