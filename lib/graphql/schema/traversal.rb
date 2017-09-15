@@ -42,6 +42,11 @@ module GraphQL
           visit_roots = [member.query, member.mutation, member.subscription]
           if @introspection
             visit_roots << GraphQL::Introspection::SchemaType
+            if member.query
+              # Visit this so that arguments class is preconstructed
+              # Skip validation since it begins with __
+              visit_field_on_type(member.query, GraphQL::Introspection::TypeByNameField, dynamic_field: true)
+            end
           end
           visit_roots.concat(member.orphan_types)
           visit_roots.compact!
@@ -51,6 +56,11 @@ module GraphQL
             @type_reference_map[argument.type.unwrap.to_s] << argument
             visit(argument.type, "Directive argument #{member.name}.#{name}")
           end
+          # Construct arguments class here, which is later used to generate GraphQL::Query::Arguments
+          # to be passed to a resolver proc
+          member.arguments_class = GraphQL::Query::Arguments.construct_arguments_class(
+            argument_definitions: member.arguments,
+          )
         when GraphQL::BaseType
           type_defn = member.unwrap
           prev_type = @type_map[type_defn.name]
@@ -93,24 +103,30 @@ module GraphQL
 
       def visit_fields(type_defn)
         type_defn.all_fields.each do |field_defn|
-          instrumented_field_defn = @field_instrumenters.reduce(field_defn) do |defn, inst|
-            inst.instrument(type_defn, defn)
-          end
-          @instrumented_field_map[type_defn.name][instrumented_field_defn.name] = instrumented_field_defn
-          @type_reference_map[instrumented_field_defn.type.unwrap.name] << instrumented_field_defn
-          visit(instrumented_field_defn.type, "Field #{type_defn.name}.#{instrumented_field_defn.name}'s return type")
-
-          instrumented_field_defn.arguments.each do |name, arg|
-            @type_reference_map[arg.type.unwrap.to_s] << arg
-            visit(arg.type, "Argument #{name} on #{type_defn.name}.#{instrumented_field_defn.name}")
-          end
-
-          # Construct arguments class here, which is later used to generate GraphQL::Query::Arguments
-          # to be passed to a resolver proc
-          instrumented_field_defn.arguments_class = GraphQL::Query::Arguments.construct_arguments_class(
-            argument_definitions: instrumented_field_defn.arguments,
-          )
+          visit_field_on_type(type_defn, field_defn)
         end
+      end
+
+      def visit_field_on_type(type_defn, field_defn, dynamic_field: false)
+        instrumented_field_defn = @field_instrumenters.reduce(field_defn) do |defn, inst|
+          inst.instrument(type_defn, defn)
+        end
+        if !dynamic_field
+          @instrumented_field_map[type_defn.name][instrumented_field_defn.name] = instrumented_field_defn
+        end
+        @type_reference_map[instrumented_field_defn.type.unwrap.name] << instrumented_field_defn
+        visit(instrumented_field_defn.type, "Field #{type_defn.name}.#{instrumented_field_defn.name}'s return type")
+
+        instrumented_field_defn.arguments.each do |name, arg|
+          @type_reference_map[arg.type.unwrap.to_s] << arg
+          visit(arg.type, "Argument #{name} on #{type_defn.name}.#{instrumented_field_defn.name}")
+        end
+
+        # Construct arguments class here, which is later used to generate GraphQL::Query::Arguments
+        # to be passed to a resolver proc
+        instrumented_field_defn.arguments_class = GraphQL::Query::Arguments.construct_arguments_class(
+          argument_definitions: instrumented_field_defn.arguments,
+        )
       end
 
       def validate_type(member, context_description)

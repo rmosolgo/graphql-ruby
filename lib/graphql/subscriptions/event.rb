@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# test_via: ../subscriptions.rb
 module GraphQL
   class Subscriptions
     # This thing can be:
@@ -37,7 +38,7 @@ module GraphQL
         when Hash
           GraphQL::Query::LiteralInput.from_arguments(
             arguments,
-            field.arguments,
+            field,
             nil,
           )
         else

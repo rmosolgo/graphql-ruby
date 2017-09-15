@@ -46,16 +46,7 @@ module GraphQL
         end
       end
 
-      def self.defaults_for(argument_defns)
-        if argument_defns.values.none?(&:default_value?)
-          GraphQL::Query::Arguments::NO_ARGS
-        else
-          from_arguments([], argument_defns, nil)
-        end
-      end
-
-      def self.from_arguments(ast_arguments, argument_defns, variables)
-        # Variables is nil when making .defaults_for
+      def self.from_arguments(ast_arguments, argument_owner, variables)
         context = variables ? variables.context : nil
         values_hash = {}
         indexed_arguments = case ast_arguments
@@ -67,6 +58,7 @@ module GraphQL
           raise ArgumentError, "Unexpected ast_arguments: #{ast_arguments}"
         end
 
+        argument_defns = argument_owner.arguments
         argument_defns.each do |arg_name, arg_defn|
           ast_arg = indexed_arguments[arg_name]
           # First, check the argument in the AST.
@@ -113,10 +105,7 @@ module GraphQL
           end
         end
 
-        ast_node.arguments_class ||= GraphQL::Query::Arguments
-            .construct_arguments_class(argument_definitions: argument_defns)
-
-        ast_node.arguments_class.instantiate_arguments(values_hash)
+        argument_owner.arguments_class.instantiate_arguments(values_hash)
       end
     end
   end

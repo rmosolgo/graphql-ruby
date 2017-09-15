@@ -132,7 +132,7 @@ module GraphQL
       end
 
       class Directive < AbstractNode
-        attr_accessor :name, :arguments, :arguments_class
+        attr_accessor :name, :arguments
         scalar_attributes :name
         child_attributes :arguments
 
@@ -187,7 +187,7 @@ module GraphQL
 
       # A single selection in a GraphQL query.
       class Field < AbstractNode
-        attr_accessor :name, :alias, :arguments, :directives, :selections, :arguments_class
+        attr_accessor :name, :alias, :arguments, :directives, :selections
         scalar_attributes :name, :alias
         child_attributes :arguments, :directives, :selections
 
@@ -256,7 +256,7 @@ module GraphQL
 
       # A collection of key-value inputs which may be a field argument
       class InputObject < AbstractNode
-        attr_accessor :arguments, :arguments_class
+        attr_accessor :arguments
         child_attributes :arguments
 
         # @!attribute arguments

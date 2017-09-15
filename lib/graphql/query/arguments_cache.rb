@@ -12,8 +12,8 @@ module GraphQL
               GraphQL::Query::Arguments::NO_ARGS
             else
               GraphQL::Query::LiteralInput.from_arguments(
-                ast_node,
-                definition.arguments,
+                ast_node.arguments,
+                definition,
                 query.variables,
               )
             end
