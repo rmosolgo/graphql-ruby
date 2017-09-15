@@ -13,9 +13,6 @@ module GraphQL
       # @return [Hash<String => Array<GraphQL::Field || GraphQL::Argument || GraphQL::Directive>]
       attr_reader :type_reference_map
 
-      # @return [Array<GraphQL::UnionType>]
-      attr_reader :unions
-
       # @return [Hash<String => Array<GraphQL::BaseType>]
       attr_reader :union_memberships
 
@@ -31,7 +28,6 @@ module GraphQL
         @type_map = {}
         @instrumented_field_map = Hash.new { |h, k| h[k] = {} }
         @type_reference_map = Hash.new { |h, k| h[k] = [] }
-        @unions = []
         @union_memberships = Hash.new { |h, k| h[k] = [] }
         visit(schema, nil)
       end
@@ -69,7 +65,6 @@ module GraphQL
             when GraphQL::InterfaceType
               visit_fields(type_defn)
             when GraphQL::UnionType
-              @unions << type_defn
               type_defn.possible_types.each do |t|
                 @union_memberships[t.name] << type_defn
                 visit(t, "Possible type for #{type_defn.name}")

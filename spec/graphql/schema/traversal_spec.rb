@@ -162,28 +162,6 @@ describe GraphQL::Schema::Traversal do
     assert_equal expected, traversal([a_type, b_type, c_type]).type_reference_map
   end
 
-  it "finds all union types" do
-    b_type = GraphQL::ObjectType.define do
-      name "B"
-    end
-
-    c_type = GraphQL::ObjectType.define do
-      name "C"
-    end
-
-    union = GraphQL::UnionType.define do
-      name "AUnion"
-      possible_types [b_type, c_type]
-    end
-
-    another_union = GraphQL::UnionType.define do
-      name "AnotherUnion"
-      possible_types [b_type, c_type]
-    end
-
-    assert_equal [union, another_union], traversal([union, another_union, b_type, c_type]).unions
-  end
-
   it "finds unions from which types are members" do
     b_type = GraphQL::ObjectType.define do
       name "B"

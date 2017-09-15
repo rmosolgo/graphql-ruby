@@ -571,7 +571,6 @@ module GraphQL
         @root_types = [query, mutation, subscription]
         @instrumented_field_map = traversal.instrumented_field_map
         @type_reference_map = traversal.type_reference_map
-        @unions = traversal.unions
         @union_memberships = traversal.union_memberships
       end
     ensure
