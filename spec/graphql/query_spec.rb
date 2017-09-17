@@ -44,6 +44,18 @@ describe GraphQL::Query do
   )}
   let(:result) { query.result }
 
+  describe "when passed both a query string and a document" do
+    it "returns an error to the client" do
+      assert_raises ArgumentError do
+        GraphQL::Query.new(
+          schema,
+          query: "{ fromSource(source: COW) { id } }",
+          document: document
+        )
+      end
+    end
+  end
+
   describe "when passed no query string or document" do
     it 'returns an error to the client' do
       res = GraphQL::Query.new(
