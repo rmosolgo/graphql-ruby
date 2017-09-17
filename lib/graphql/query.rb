@@ -78,6 +78,10 @@ module GraphQL
       @query_string = query_string || query
       @document = document
 
+      if @query_string && @document
+        raise ArgumentError, "Query should only be provided a query string or a document, not both."
+      end
+
       # A two-layer cache of type resolution:
       # { abstract_type => { value => resolved_type } }
       @resolved_types_cache = Hash.new do |h1, k1|
