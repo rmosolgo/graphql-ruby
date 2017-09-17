@@ -45,11 +45,21 @@ describe GraphQL::Query do
   let(:result) { query.result }
 
   describe "when passed both a query string and a document" do
-    it "returns an error to the client" do
+    it "returns an error to the client when query kwarg is used" do
       assert_raises ArgumentError do
         GraphQL::Query.new(
           schema,
           query: "{ fromSource(source: COW) { id } }",
+          document: document
+        )
+      end
+    end
+
+    it "returns an error to the client" do
+      assert_raises ArgumentError do
+        GraphQL::Query.new(
+          schema,
+          "{ fromSource(source: COW) { id } }",
           document: document
         )
       end
