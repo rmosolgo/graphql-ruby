@@ -67,16 +67,16 @@ end
 
 namespace :js do
 
-  desc "Run the tests for javascript-client"
+  desc "Run the tests for javascript_client"
   task :test do
-    Dir.chdir("./javascript-client") do
+    Dir.chdir("./javascript_client") do
       system("yarn run test")
     end
   end
 
   desc "Install JS dependencies"
   task :install do
-    Dir.chdir("./javascript-client") do
+    Dir.chdir("./javascript_client") do
       system("yarn install")
     end
   end
