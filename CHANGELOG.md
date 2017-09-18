@@ -8,6 +8,51 @@
 
 ### Bug fixes
 
+## 1.7.0 (18 Sept 2017)
+
+### Breaking changes
+
+- `GraphQL::Result` is the returned from GraphQL execution. #898 `Schema#execute` and `Query#result` both return a `GraphQL::Result`. It implements Hash-like methods to preserve compatibility.
+
+### New features
+
+- `puts ctx.backtrace` prints out a GraphQL backtrace table #946
+- `GraphQL::Backtrace.enable` wraps unhandled errors with GraphQL backtraces #946
+- `GraphQL::Relay::ConnectionType.bidrectional_pagination = true` turns on _true_ bi-directional pagination checks for `hasNextPage`/`hasPreviousPage` fields. This will become the default behavior in a future version. #960
+- Field arguments may be accessed as methods on the `args` object. This is an alternative to `#[]` syntax which provides did-you-mean behavior instead of returning `nil` on a typo. #924 For example:
+
+  ```ruby
+  # using hash syntax:
+  args[:limit]    # => 10
+  args[:limittt]  # => nil
+  # using method syntax:
+  args.limit      # => 10
+  args.limittt    # => NoMethodError
+  ```
+
+  The old syntax is _not_ deprecated.
+
+- Improvements to schema filters #919
+  - If a type is not referenced by anything, it's hidden
+  - If a type is an abstract type, but has no visible members, it's hidden
+
+- `GraphQL::Argument.define` builds re-usable arguments #948
+- `GraphQL::Subscriptions` provides hooks for subscription platforms #672
+- `GraphQL::Subscriptions::ActionCableSubscriptions` implements subscriptions over ActionCable #672
+- More runtime values are accessble from a `ctx` object #923 :
+  - `ctx.parent` returns the `ctx` from the parent field
+  - `ctx.object` returns the current `obj` for that field
+  - `ctx.value` returns the resolved GraphQL value for that field
+
+  These can be used together, for example, `ctx.parent.object` to get the parent object.
+- `GraphQL::Tracing` provides more hooks into gem internals for performance monitoring #917
+- `GraphQL::Result` provides access to the original `query` and `context` after executing a query #898
+
+### Bug fixes
+
+- Prevent passing _both_ query string and parsed document to `Schema#execute` #957
+- Prevent invalid names for types #947
+
 ## 1.6.8 (8 Sept 2017)
 
 ### New features
