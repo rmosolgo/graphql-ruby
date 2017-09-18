@@ -265,6 +265,37 @@ module StarWars
     function IntroduceShipFunction.new
   end
 
+  # GraphQL-Batch knockoff
+  class LazyLoader
+    def self.defer(ctx, model, id)
+      ids = ctx.namespace(:loading)[model] ||= []
+      ids << id
+      self.new(model: model, id: id, context: ctx)
+    end
+
+    def initialize(model:, id:, context:)
+      @model = model
+      @id = id
+      @context = context
+    end
+
+    def value
+      loaded = @context.namespace(:loaded)[@model] ||= {}
+      if loaded.empty?
+        ids = @context.namespace(:loading)[@model]
+        # Example custom tracing
+        GraphQL::Tracing.trace("lazy_loader", { ids: ids, model: @model}) do
+          records = @model.where(id: ids)
+          records.each do |record|
+            loaded[record.id.to_s] = record
+          end
+        end
+      end
+
+      loaded[@id]
+    end
+  end
+
   class LazyWrapper
     def initialize(value = nil, &block)
       if block_given?
@@ -332,6 +363,13 @@ module StarWars
     field :nodesWithCustomResolver, GraphQL::Relay::Node.plural_field(
       resolve: ->(_, _, _) { [StarWars::DATA["Faction"]["1"], StarWars::DATA["Faction"]["2"]] }
     )
+
+    field :batchedBase, BaseType do
+      argument :id, !types.ID
+      resolve ->(o, a, c) {
+        LazyLoader.defer(c, Base, a["id"])
+      }
+    end
   end
 
   MutationType = GraphQL::ObjectType.define do
@@ -390,6 +428,7 @@ module StarWars
     end
 
     lazy_resolve(LazyWrapper, :value)
+    lazy_resolve(LazyLoader, :value)
 
     instrument(:field, ClassNameRecorder.new(:before_built_ins))
     instrument(:field, ClassNameRecorder.new(:after_built_ins), after_built_ins: true)

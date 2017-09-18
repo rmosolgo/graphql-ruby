@@ -45,14 +45,14 @@ module GraphQL
 
       # @return [Array<GraphQL::BaseType>] Visible types in the schema
       def types
-        @types ||= @schema.types.each_value.select { |t| visible?(t) }
+        @types ||= @schema.types.each_value.select { |t| visible_type?(t) }
       end
 
       # @return [GraphQL::BaseType, nil] The type named `type_name`, if it exists (else `nil`)
       def get_type(type_name)
         @visible_types ||= read_through do |name|
           type_defn = @schema.types.fetch(name, nil)
-          if type_defn && visible?(type_defn)
+          if type_defn && visible_type?(type_defn)
             type_defn
           else
             nil
@@ -81,7 +81,7 @@ module GraphQL
 
       # @return [Array<GraphQL::BaseType>] The types which may be member of `type_defn`
       def possible_types(type_defn)
-        @visible_possible_types ||= read_through { |type_defn| @schema.possible_types(type_defn).select { |t| visible?(t) } }
+        @visible_possible_types ||= read_through { |type_defn| @schema.possible_types(type_defn).select { |t| visible_type?(t) } }
         @visible_possible_types[type_defn]
       end
 
@@ -126,8 +126,44 @@ module GraphQL
 
       private
 
+      def union_memberships(obj_type)
+        @unions ||= read_through { |obj_type| @schema.union_memberships(obj_type).select { |u| visible?(u) } }
+        @unions[obj_type]
+      end
+
       def visible_field?(field_defn)
-        visible?(field_defn) && visible?(field_defn.type.unwrap)
+        visible?(field_defn) && visible_type?(field_defn.type.unwrap)
+      end
+
+      def visible_type?(type_defn)
+        visible?(type_defn) && (
+            root_type?(type_defn) ||
+            type_defn.introspection? ||
+            referenced?(type_defn) ||
+            visible_abstract_type?(type_defn) ||
+            possible_types?(type_defn)
+          )
+      end
+
+      def root_type?(type_defn)
+        @schema.root_types.include?(type_defn)
+      end
+
+      def referenced?(type_defn)
+        members = @schema.references_to(type_defn.unwrap.name)
+        members.any? { |m| visible?(m) }
+      end
+
+      def visible_abstract_type?(type_defn)
+        type_defn.kind.object? && (
+            interfaces(type_defn).any? ||
+            union_memberships(type_defn).any?
+          )
+      end
+
+      def possible_types?(type_defn)
+        (type_defn.kind.union? || type_defn.kind.interface?) &&
+          @schema.possible_types(type_defn).any? { |t| visible_type?(t) }
       end
 
       def visible?(member)

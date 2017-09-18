@@ -67,3 +67,35 @@ end
 def star_wars_query(string, variables={}, context: {})
   GraphQL::Query.new(StarWars::Schema, string, variables: variables, context: context).result
 end
+
+module TestTracing
+  class << self
+    def clear
+      traces.clear
+    end
+
+    def traces
+      @traces ||= []
+    end
+
+    def with_trace
+      GraphQL::Tracing.install(self)
+      clear
+      yield
+      GraphQL::Tracing.uninstall(self)
+      traces
+    end
+
+    def trace(key, data)
+      data[:key] = key
+      result = yield
+      data[:result] = result
+      traces << data
+      result
+    end
+  end
+end
+
+if rails_should_be_installed?
+  GraphQL::Tracing.uninstall(GraphQL::Tracing::ActiveSupportNotificationsTracing)
+end

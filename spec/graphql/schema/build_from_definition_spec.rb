@@ -69,6 +69,8 @@ enum Color {
 
 # What a great type
 type Hello {
+  anEnum: Color
+
   # And a field to boot
   str: String
 }
