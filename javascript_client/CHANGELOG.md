@@ -1,5 +1,9 @@
 # graphql-ruby-client
 
+## 1.1.0 (18 Sept 2017)
+
+- Add subscription clients for Apollo and Relay Modern
+
 ## 1.0.2 (22 Aug 2017)
 
 - Remove debug output
