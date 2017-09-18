@@ -103,7 +103,7 @@ describe GraphQL::Backtrace do
       assert_includes err.message, rendered_table
       # The message includes the original error message
       assert_includes err.message, "This is broken: Boom"
-      assert_includes err.message, "spec/graphql/backtrace_spec.rb:27:in `block (3 levels) in <top (required)>'", "It includes the original backtrace"
+      assert_includes err.message, "spec/graphql/backtrace_spec.rb:27", "It includes the original backtrace"
       assert_includes err.message, "more lines"
     end
 
