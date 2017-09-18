@@ -145,6 +145,22 @@ module GraphQL
       # @return [GraphQL::Query]
       attr_reader :query
 
+      def subscription_topic
+        @subscription_topic ||= begin
+          scope = if definition.subscription_scope
+            @query.context[definition.subscription_scope]
+          else
+            nil
+          end
+          Subscriptions::Event.serialize(
+            definition_name,
+            @query.arguments_for(self, definition),
+            definition,
+            scope: scope
+          )
+        end
+      end
+
       protected
 
       attr_writer :owner_type, :parent

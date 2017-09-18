@@ -2,10 +2,9 @@
 require "spec_helper"
 
 describe GraphQL::Schema::Traversal do
-  def reduce_types(types)
+  def traversal(types)
     schema = GraphQL::Schema.define(orphan_types: types, resolve_type: :dummy)
-    traversal = GraphQL::Schema::Traversal.new(schema, introspection: false)
-    traversal.type_map
+    GraphQL::Schema::Traversal.new(schema, introspection: false)
   end
 
   it "finds types from directives" do
@@ -13,7 +12,7 @@ describe GraphQL::Schema::Traversal do
       "Boolean" => GraphQL::BOOLEAN_TYPE, # `skip` argument
       "String" => GraphQL::STRING_TYPE # `deprecated` argument
     }
-    result = reduce_types([])
+    result = traversal([]).type_map
     assert_equal(expected.keys.sort, result.keys.sort)
     assert_equal(expected, result.to_h)
   end
@@ -31,13 +30,13 @@ describe GraphQL::Schema::Traversal do
       "AnimalProduct" => Dummy::AnimalProductInterface,
       "LocalProduct" => Dummy::LocalProductInterface,
     }
-    result = reduce_types([Dummy::CheeseType])
+    result = traversal([Dummy::CheeseType]).type_map
     assert_equal(expected.keys.sort, result.keys.sort)
     assert_equal(expected, result.to_h)
   end
 
   it "finds type from arguments" do
-    result = reduce_types([Dummy::DairyAppQueryType])
+    result = traversal([Dummy::DairyAppQueryType]).type_map
     assert_equal(Dummy::DairyProductInputType, result["DairyProductInput"])
   end
 
@@ -47,7 +46,7 @@ describe GraphQL::Schema::Traversal do
       connection :t, type.connection_type
     end
 
-    result = reduce_types([type])
+    result = traversal([type]).type_map
     expected_types = [
       "ArgTypeTest", "ArgTypeTestConnection", "ArgTypeTestEdge",
       "Boolean", "Int", "PageInfo", "String"
@@ -66,7 +65,7 @@ describe GraphQL::Schema::Traversal do
       input_field :child, type_child
     end
 
-    result = reduce_types([type_parent])
+    result = traversal([type_parent]).type_map
     expected = {
       "Boolean" => GraphQL::BOOLEAN_TYPE,
       "String" => GraphQL::STRING_TYPE,
@@ -92,11 +91,11 @@ describe GraphQL::Schema::Traversal do
     }
 
     it "raises an InvalidTypeError when passed nil" do
-      assert_raises(GraphQL::Schema::InvalidTypeError) {  reduce_types([invalid_type]) }
+      assert_raises(GraphQL::Schema::InvalidTypeError) {  traversal([invalid_type]) }
     end
 
     it "raises an InvalidTypeError when passed an object that isnt a GraphQL::BaseType" do
-      assert_raises(GraphQL::Schema::InvalidTypeError) {  reduce_types([another_invalid_type]) }
+      assert_raises(GraphQL::Schema::InvalidTypeError) {  traversal([another_invalid_type]) }
     end
   end
 
@@ -113,14 +112,14 @@ describe GraphQL::Schema::Traversal do
     }
     it "raises an error" do
       assert_raises(RuntimeError) {
-        reduce_types([type_1, type_2])
+        traversal([type_1, type_2])
       }
     end
   end
 
   describe "when getting a type which doesnt exist" do
     it "raises an error" do
-      type_map = reduce_types([])
+      type_map = traversal([]).type_map
       assert_raises(KeyError) { type_map.fetch("SomeType") }
     end
   end
@@ -129,5 +128,64 @@ describe GraphQL::Schema::Traversal do
     it "is found through Schema.define(types:)" do
       assert_equal Dummy::HoneyType, Dummy::Schema.types["Honey"]
     end
+  end
+
+  it "finds all references to types from fields and arguments" do
+    c_type = GraphQL::InputObjectType.define do
+      name "C"
+      input_field :someField, GraphQL::STRING_TYPE
+    end
+
+    b_type = GraphQL::ObjectType.define do
+      name "B"
+      field :anotherField, !GraphQL::STRING_TYPE do |field|
+        field.argument :anArgument, c_type
+      end
+    end
+
+    a_type = GraphQL::ObjectType.define do
+      name "A"
+      field :someField, b_type
+    end
+
+    include_if_argument = GraphQL::Directive::IncludeDirective.arguments["if"]
+    skip_if_argument = GraphQL::Directive::SkipDirective.arguments["if"]
+    deprecated_reason_argument = GraphQL::Directive::DeprecatedDirective.arguments["reason"]
+
+    expected = {
+      "Boolean" => [include_if_argument, skip_if_argument],
+      "B" => [a_type.fields["someField"]],
+      "String" => [deprecated_reason_argument, b_type.fields["anotherField"], c_type.input_fields["someField"]],
+      "C" => [b_type.fields["anotherField"].arguments["anArgument"]]
+    }
+
+    assert_equal expected, traversal([a_type, b_type, c_type]).type_reference_map
+  end
+
+  it "finds unions from which types are members" do
+    b_type = GraphQL::ObjectType.define do
+      name "B"
+    end
+
+    c_type = GraphQL::ObjectType.define do
+      name "C"
+    end
+
+    union = GraphQL::UnionType.define do
+      name "AUnion"
+      possible_types [b_type]
+    end
+
+    another_union = GraphQL::UnionType.define do
+      name "AnotherUnion"
+      possible_types [b_type, c_type]
+    end
+
+    result = traversal([union, another_union, b_type, c_type]).union_memberships
+    expected = {
+      "B" => [union, another_union],
+      "C" => [another_union]
+    }
+    assert_equal expected, result
   end
 end

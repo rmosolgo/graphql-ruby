@@ -26,6 +26,19 @@ describe GraphQL::Query::Variables do
     provided_variables)
   }
 
+  describe "#to_h" do
+    let(:provided_variables) { { "animals" => "YAK" } }
+
+    it "returns a hash representation including default values" do
+      expected_hash = {
+        "animals" => ["YAK"],
+        "intDefaultNull" => nil,
+        "intWithDefault" => 10,
+      }
+      assert_equal expected_hash, variables.to_h
+    end
+  end
+
   describe "#initialize" do
     describe "coercing inputs" do
       let(:provided_variables) { { "animals" => "YAK" } }

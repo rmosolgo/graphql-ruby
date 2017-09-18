@@ -129,6 +129,7 @@ module GraphQL
       :edge_class,
       :relay_node_field,
       :relay_nodes_field,
+      :subscription_scope,
       argument: GraphQL::Define::AssignArgument
 
     ensure_defined(
@@ -136,7 +137,7 @@ module GraphQL
       :mutation, :arguments, :complexity, :function,
       :resolve, :resolve=, :lazy_resolve, :lazy_resolve=, :lazy_resolve_proc, :resolve_proc,
       :type, :type=, :name=, :property=, :hash_key=,
-      :relay_node_field, :relay_nodes_field, :edges?, :edge_class
+      :relay_node_field, :relay_nodes_field, :edges?, :edge_class, :subscription_scope
     )
 
     # @return [Boolean] True if this is the Relay find-by-id field
@@ -178,7 +179,12 @@ module GraphQL
     # @return [Object, GraphQL::Function] The function used to derive this field
     attr_accessor :function
 
+    attr_accessor :arguments_class
+
     attr_writer :connection
+
+    # @return [nil, String] Prefix for subscription names from this field
+    attr_accessor :subscription_scope
 
     # @return [Boolean]
     def connection?

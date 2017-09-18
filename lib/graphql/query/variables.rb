@@ -44,7 +44,7 @@ module GraphQL
         end
       end
 
-      def_delegators :@storage, :length, :key?, :[], :fetch
+      def_delegators :@storage, :length, :key?, :[], :fetch, :to_h
     end
   end
 end

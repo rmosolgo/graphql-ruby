@@ -71,4 +71,20 @@ describe GraphQL::Language::Parser do
 
     end
   end
+
+  it "serves traces" do
+    traces = TestTracing.with_trace do
+      GraphQL.parse("{ t: __typename }")
+    end
+    assert_equal 2, traces.length
+    lex_trace, parse_trace = traces
+
+    assert_equal "{ t: __typename }", lex_trace[:query_string]
+    assert_equal "lex", lex_trace[:key]
+    assert_instance_of Array, lex_trace[:result]
+
+    assert_equal "{ t: __typename }", parse_trace[:query_string]
+    assert_equal "parse", parse_trace[:key]
+    assert_instance_of GraphQL::Language::Nodes::Document, parse_trace[:result]
+  end
 end
