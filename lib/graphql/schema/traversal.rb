@@ -58,9 +58,7 @@ module GraphQL
           end
           # Construct arguments class here, which is later used to generate GraphQL::Query::Arguments
           # to be passed to a resolver proc
-          member.arguments_class = GraphQL::Query::Arguments.construct_arguments_class(
-            argument_definitions: member.arguments,
-          )
+          GraphQL::Query::Arguments.construct_arguments_class(member)
         when GraphQL::BaseType
           type_defn = member.unwrap
           prev_type = @type_map[type_defn.name]
@@ -87,9 +85,7 @@ module GraphQL
 
               # Construct arguments class here, which is later used to generate GraphQL::Query::Arguments
               # to be passed to a resolver proc
-              type_defn.arguments_class = GraphQL::Query::Arguments.construct_arguments_class(
-                argument_definitions: type_defn.arguments,
-              )
+              GraphQL::Query::Arguments.construct_arguments_class(type_defn)
             end
           elsif !prev_type.equal?(type_defn)
             # If the previous entry in the map isn't the same object we just found, raise.
@@ -124,9 +120,7 @@ module GraphQL
 
         # Construct arguments class here, which is later used to generate GraphQL::Query::Arguments
         # to be passed to a resolver proc
-        instrumented_field_defn.arguments_class = GraphQL::Query::Arguments.construct_arguments_class(
-          argument_definitions: instrumented_field_defn.arguments,
-        )
+        GraphQL::Query::Arguments.construct_arguments_class(instrumented_field_defn)
       end
 
       def validate_type(member, context_description)

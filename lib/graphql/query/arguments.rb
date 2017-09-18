@@ -49,8 +49,9 @@ module GraphQL
     class Arguments
       extend GraphQL::Delegate
 
-      def self.construct_arguments_class(argument_definitions:)
-        GraphQL::Query::StaticArguments.new(argument_definitions: argument_definitions)
+      def self.construct_arguments_class(argument_owner)
+        arguments_class = GraphQL::Query::StaticArguments.new(argument_definitions: argument_owner.arguments)
+        argument_owner.arguments_class = arguments_class
       end
 
       def initialize(values, argument_definitions:)

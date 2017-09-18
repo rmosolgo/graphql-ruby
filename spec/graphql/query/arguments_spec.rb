@@ -301,9 +301,10 @@ describe GraphQL::Query::Arguments do
     end
 
     it "generates argument classes that responds to keys as functions" do
-      argument_class = GraphQL::Query::Arguments.construct_arguments_class(argument_definitions: input_object.arguments)
+      assert_equal nil, input_object.arguments_class
 
-      args = argument_class.instantiate_arguments({foo: 3, bar: -90})
+      GraphQL::Query::Arguments.construct_arguments_class(input_object)
+      args = input_object.arguments_class.instantiate_arguments({foo: 3, bar: -90})
 
       assert_equal 3, args.foo
       assert_equal -90, args.bar

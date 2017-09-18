@@ -42,9 +42,7 @@ describe GraphQL::ListType do
         argument :float, !types.Float
       end
 
-      input_object.arguments_class = GraphQL::Query::Arguments.construct_arguments_class(
-        argument_definitions: input_object.arguments,
-      )
+      GraphQL::Query::Arguments.construct_arguments_class(input_object)
 
       input_object
     end
