@@ -31,7 +31,7 @@ end
 require 'rubocop/rake_task'
 RuboCop::RakeTask.new
 
-task(default: [:test, :rubocop])
+task(default: [:test, :rubocop, "js:all"])
 
 desc "Use Racc & Ragel to regenerate parser.rb & lexer.rb from configuration files"
 task :build_parser do
@@ -63,4 +63,23 @@ namespace :bench do
     prepare_benchmark
     GraphQLBenchmark.profile
   end
+end
+
+namespace :js do
+
+  desc "Run the tests for javascript-client"
+  task :test do
+    Dir.chdir("./javascript-client") do
+      system("yarn run test")
+    end
+  end
+
+  desc "Install JS dependencies"
+  task :install do
+    Dir.chdir("./javascript-client") do
+      system("yarn install")
+    end
+  end
+
+  task all: [:install, :test]
 end
