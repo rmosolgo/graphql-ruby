@@ -96,7 +96,11 @@ module GraphQL
 
     NO_DEFAULT_VALUE = Object.new
     # @api private
-    def self.from_dsl(name, type = nil, description = nil, default_value: NO_DEFAULT_VALUE, as: nil, prepare: DefaultPrepare, **kwargs, &block)
+    def self.from_dsl(name, type_or_argument = nil, description = nil, default_value: NO_DEFAULT_VALUE, as: nil, prepare: DefaultPrepare, **kwargs, &block)
+      if type_or_argument.is_a?(GraphQL::Argument)
+        return type_or_argument.redefine(name: name.to_s)
+      end
+
       argument = if block_given?
         GraphQL::Argument.define(&block)
       else
@@ -104,7 +108,7 @@ module GraphQL
       end
 
       argument.name = name.to_s
-      type && argument.type = type
+      type_or_argument && argument.type = type_or_argument
       description && argument.description = description
       if default_value != NO_DEFAULT_VALUE
         argument.default_value = default_value

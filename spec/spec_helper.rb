@@ -68,6 +68,14 @@ def star_wars_query(string, variables={}, context: {})
   GraphQL::Query.new(StarWars::Schema, string, variables: variables, context: context).result
 end
 
+def with_bidirectional_pagination
+  prev_value = GraphQL::Relay::ConnectionType.bidirectional_pagination
+  GraphQL::Relay::ConnectionType.bidirectional_pagination = true
+  yield
+ensure
+  GraphQL::Relay::ConnectionType.bidirectional_pagination = prev_value
+end 
+
 module TestTracing
   class << self
     def clear

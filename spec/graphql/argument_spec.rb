@@ -19,6 +19,34 @@ describe GraphQL::Argument do
     assert_includes err.message, expected_error
   end
 
+  describe ".from_dsl" do
+    it "accepts an existing argument" do
+      existing = GraphQL::Argument.define do
+        name "bar"
+        type GraphQL::STRING_TYPE
+      end
+
+      arg = GraphQL::Argument.from_dsl(:foo, existing)
+
+      assert_equal "foo", arg.name
+      assert_equal GraphQL::STRING_TYPE, arg.type
+    end
+
+    it "creates an argument from dsl arguments" do
+      arg = GraphQL::Argument.from_dsl(
+        :foo,
+        GraphQL::STRING_TYPE,
+        "A Description",
+        default_value: "Bar"
+      )
+
+      assert_equal "foo", arg.name
+      assert_equal GraphQL::STRING_TYPE, arg.type
+      assert_equal "A Description", arg.description
+      assert_equal "Bar", arg.default_value
+    end
+  end
+
   it "accepts custom keywords" do
     type = GraphQL::ObjectType.define do
       name "Something"
