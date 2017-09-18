@@ -8,6 +8,10 @@
 
 ### Bug Fix
 
+## 1.5.4 (18 Sept 2017)
+
+- Fix load issue when Rails is not present
+
 ## 1.5.3 (4 Sept 2017)
 
 ### Bug Fix
