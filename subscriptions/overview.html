@@ -1,0 +1,120 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+      <title>GraphQL - Overview</title>
+    
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="icon" href="/graphql-ruby-icon.png">
+  </head>
+  <body>
+    <div class="header">
+      <div class="header-container">
+        <div class="nav">
+          <a href="/" class="img-link">
+            <img src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+          </a>
+          <a href="/getting_started">Get Started</a>
+          <a href="/guides">Guides</a>
+          <a href="http://www.rubydoc.info/gems/graphql/1.7.0/">API</a>
+          <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
+          <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+          <input
+            class="search-input"
+            onkeyup="GraphQLRubySearch.run(this)"
+            type="text"
+            placeholder="Search the docs..."
+          />
+        </div>
+      </div>
+      <div class="search-results-container">
+        <div id="search-results"></div>
+      </div>
+    </div>
+    <div class="container">
+      <p class="breadcrumb">
+  <a href="/">GraphQL</a>
+  &raquo; <a href="/guides">Guides</a>
+   &raquo; Subscriptions
+  &raquo; Overview
+</p>
+
+  <div class="experimental-header">
+    <p>
+      <strong>⚠ Experimental ⚠</strong>
+    </p>
+    <p>
+      This feature may get big changes in future releases.
+      Check the <a href="https://github.com/rmosolgo/graphql-ruby/blob/master/CHANGELOG.md">changelog</a> for update notes.
+    </p>
+  </div>
+
+<h1 class="guide-header">Overview</h1>
+<div class="guide-container">
+  <p><em>Subscriptions</em> allow GraphQL clients to observe specific events and receive updates from the server when those events occur. This supports live updates, such as websocket pushes. Subscriptions introduce several new concepts:</p>
+
+<ul>
+  <li>The <strong>Subscription type</strong> is the entry point for subscription queries</li>
+  <li><strong>Triggers</strong> begin the update process</li>
+  <li>The <strong>Implementation</strong> provides application-specific methods for executing &amp; delivering updates.</li>
+</ul>
+
+<h3 id="subscription-type">Subscription Type</h3>
+
+<p><code class="highlighter-rouge">subscription</code> is an entry point to your GraphQL schema, like <code class="highlighter-rouge">query</code> or <code class="highlighter-rouge">mutation</code>. It is defined by your <code class="highlighter-rouge">SubscriptionType</code>, a root-level <code class="highlighter-rouge">ObjectType</code>.</p>
+
+<p>Read more in the <a href="/subscriptions/subscription_type">Subscription Type guide</a>
+.</p>
+
+<h3 id="triggers">Triggers</h3>
+
+<p>After an event occurs in our application, <em>triggers</em> begin the update process by sending a name and payload to GraphQL.</p>
+
+<p>Read more in the <a href="/subscriptions/triggers">Triggers guide</a>
+.</p>
+
+<h3 id="implementation">Implementation</h3>
+
+<p>Besides the GraphQL component, your application must provide some subscription-related plumbing, for example:</p>
+
+<ul>
+  <li><strong>state management</strong>: How does your application keep track of who is subscribed to what?</li>
+  <li><strong>transport</strong>: How does your application deliver payloads to clients?</li>
+  <li><strong>queueing</strong>: How does your application distribute the work of re-running subscription queries?</li>
+</ul>
+
+<p>Read more in the <a href="/subscriptions/implementation">Implementation guide</a>
+ or check out the <a href="/subscriptions/action_cable_implementation">ActionCable implementation</a>
+.</p>
+
+</div>
+<p class="guide-footer">
+  Suggestion, improvement, or correction?
+  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/subscriptions/overview.md">Edit this file</a> or
+  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: Overview">report an issue</a>.
+</p>
+<script>
+  // Find headers with IDs and wrap their text in `<a href=></a>`
+  // That way people can easily copy the link.
+  var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+  var header, idText, headerLink;
+  for (var i = 0; i < headers.length; i++) {
+    header = headers[i];
+    idText = header.id;
+    if (idText) {
+      headerLink = document.createElement("a");
+      headerLink.href = "#" + idText;
+      headerLink.textContent = header.textContent;
+      header.textContent = "";
+      header.appendChild(headerLink);
+    }
+  }
+</script>
+
+    </div>
+    <script src="/js/search.js"></script>
+  </body>
+</html>

@@ -1,0 +1,135 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+      <title>GraphQL - Subscription Type</title>
+    
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="icon" href="/graphql-ruby-icon.png">
+  </head>
+  <body>
+    <div class="header">
+      <div class="header-container">
+        <div class="nav">
+          <a href="/" class="img-link">
+            <img src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+          </a>
+          <a href="/getting_started">Get Started</a>
+          <a href="/guides">Guides</a>
+          <a href="http://www.rubydoc.info/gems/graphql/1.7.0/">API</a>
+          <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
+          <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+          <input
+            class="search-input"
+            onkeyup="GraphQLRubySearch.run(this)"
+            type="text"
+            placeholder="Search the docs..."
+          />
+        </div>
+      </div>
+      <div class="search-results-container">
+        <div id="search-results"></div>
+      </div>
+    </div>
+    <div class="container">
+      <p class="breadcrumb">
+  <a href="/">GraphQL</a>
+  &raquo; <a href="/guides">Guides</a>
+   &raquo; Subscriptions
+  &raquo; Subscription Type
+</p>
+
+  <div class="experimental-header">
+    <p>
+      <strong>⚠ Experimental ⚠</strong>
+    </p>
+    <p>
+      This feature may get big changes in future releases.
+      Check the <a href="https://github.com/rmosolgo/graphql-ruby/blob/master/CHANGELOG.md">changelog</a> for update notes.
+    </p>
+  </div>
+
+<h1 class="guide-header">Subscription Type</h1>
+<div class="guide-container">
+  <p><code class="highlighter-rouge">Subscription</code> is the entry point for all subscriptions in a GraphQL system. Each field corresponds to an event which may be subscribed to:</p>
+
+<pre><code class="language-graphql">type Subscription {
+  # Triggered whenever a post is added
+  postWasPublished: Post
+  # Triggered whenever a comment is added;
+  # to watch a certain post, provide a `postId`
+  commentWasPublished(postId: ID): Comment
+}
+</code></pre>
+
+<p>This type is the root for <code class="highlighter-rouge">subscription</code> operations, for example:</p>
+
+<pre><code class="language-graphql">subscription {
+  postWasPublished {
+    # This data will be delivered whenever `postWasPublished`
+    # is triggered by the server:
+    title
+    author {
+      name
+    }
+  }
+}
+</code></pre>
+
+<p>To add subscriptions to your system, define an <code class="highlighter-rouge">ObjectType</code> named <code class="highlighter-rouge">Subscription</code>:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># app/graphql/types/subscription_type.rb</span>
+<span class="no">Types</span><span class="o">::</span><span class="no">SubscriptionType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+  <span class="nb">name</span> <span class="s2">"Subscription"</span>
+  <span class="n">field</span> <span class="ss">:postWasPublished</span><span class="p">,</span> <span class="o">!</span><span class="no">Types</span><span class="o">::</span><span class="no">PostType</span><span class="p">,</span> <span class="s2">"A post was published to the blog"</span>
+  <span class="c1"># ...</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<p>Then, add it as the subscription root with <code class="highlighter-rouge">subscription(...)</code>:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># app/graphql/my_schema.rb</span>
+<span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+  <span class="n">query</span><span class="p">(</span><span class="no">Types</span><span class="o">::</span><span class="no">QueryType</span><span class="p">)</span>
+  <span class="c1"># ...</span>
+  <span class="c1"># Add Subscription to</span>
+  <span class="n">subscription</span><span class="p">(</span><span class="no">Types</span><span class="o">::</span><span class="no">SubscriptionType</span><span class="p">)</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<p>See <a href="/subscriptions/implementation">Implementing Subscriptions</a>
+ for more about actually delivering updates.</p>
+
+</div>
+<p class="guide-footer">
+  Suggestion, improvement, or correction?
+  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/subscriptions/subscription_type.md">Edit this file</a> or
+  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: Subscription Type">report an issue</a>.
+</p>
+<script>
+  // Find headers with IDs and wrap their text in `<a href=></a>`
+  // That way people can easily copy the link.
+  var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+  var header, idText, headerLink;
+  for (var i = 0; i < headers.length; i++) {
+    header = headers[i];
+    idText = header.id;
+    if (idText) {
+      headerLink = document.createElement("a");
+      headerLink.href = "#" + idText;
+      headerLink.textContent = header.textContent;
+      header.textContent = "";
+      header.appendChild(headerLink);
+    }
+  }
+</script>
+
+    </div>
+    <script src="/js/search.js"></script>
+  </body>
+</html>

@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="http://www.rubydoc.info/gems/graphql/1.6.7/">API</a>
+          <a href="http://www.rubydoc.info/gems/graphql/1.7.0/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <input
@@ -108,6 +108,28 @@ bundle exec rake test   # tests only
 </div>
 
 <p>When a file in <code class="highlighter-rouge">lib/</code> is modified, <code class="highlighter-rouge">guard</code> will run the corresponding file in <code class="highlighter-rouge">spec</code>. Guard also respects <code class="highlighter-rouge"># test_via:</code> comments, so it will run that test when the file changes (if there is no corresponding file by name).</p>
+
+<h3 id="gemfiles-gemfiles-gemfiles">Gemfiles, Gemfiles, Gemfiles</h3>
+
+<p><code class="highlighter-rouge">graphql-ruby</code> has several gemfiles to ensure support for various Rails versions.</p>
+
+<p>You can run all gemfiles with</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>appraisal rake
+</code></pre>
+</div>
+
+<p>You can specify a gemfile with <code class="highlighter-rouge">BUNDLE_GEMFILE</code>, eg:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>BUNDLE_GEMFILE=gemfiles/rails_5.gemfile bundle exec rake
+</code></pre>
+</div>
+
+<p>You can test without Rails using <code class="highlighter-rouge">WITHOUT_RAILS=yes</code>, eg:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>WITHOUT_RAILS=yes bundle exec rake
+</code></pre>
+</div>
 
 <h3 id="debugging-with-pry">Debugging with Pry</h3>
 

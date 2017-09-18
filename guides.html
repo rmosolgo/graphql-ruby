@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="http://www.rubydoc.info/gems/graphql/1.6.7/">API</a>
+          <a href="http://www.rubydoc.info/gems/graphql/1.7.0/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <input
@@ -60,11 +60,19 @@
       </li>
     
       <li>
+        <a href="#Subscriptions">Subscriptions</a>
+      </li>
+    
+      <li>
         <a href="#GraphQL Pro">GraphQL Pro</a>
       </li>
     
       <li>
         <a href="#GraphQL Pro - OperationStore">GraphQL Pro - OperationStore</a>
+      </li>
+    
+      <li>
+        <a href="#JavaScript Client">JavaScript Client</a>
       </li>
     
       <li>
@@ -773,6 +781,24 @@
           
         
           
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
             <li>
               <p>
                 <a href="/schema/extending_the_dsl.html">Extending the DSL</a>
@@ -792,6 +818,10 @@
                 </span>
               </p>
             </li>
+          
+        
+          
+        
           
         
           
@@ -1407,6 +1437,10 @@
           
         
           
+        
+          
+        
+          
             <li>
               <p>
                 <a href="/queries/executing_queries.html">Executing Queries</a>
@@ -1445,6 +1479,8 @@
           
         
           
+        
+          
             <li>
               <p>
                 <a href="/queries/phases_of_execution.html">Phases of Execution</a>
@@ -1453,6 +1489,8 @@
                 </span>
               </p>
             </li>
+          
+        
           
         
           
@@ -1485,6 +1523,16 @@
           
         
           
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
             <li>
               <p>
                 <a href="/queries/complexity_and_depth.html">Complexity & Depth</a>
@@ -1493,6 +1541,8 @@
                 </span>
               </p>
             </li>
+          
+        
           
         
           
@@ -1517,13 +1567,33 @@
           
         
           
-        
-          
             <li>
               <p>
                 <a href="/queries/multiplex.html">Multiplex</a>
                 <span class="guide-desc">
                   Run multiple queries concurrently
+                </span>
+              </p>
+            </li>
+          
+        
+          
+            <li>
+              <p>
+                <a href="/queries/tracing.html">Tracing</a>
+                <span class="guide-desc">
+                  Observation hooks for execution
+                </span>
+              </p>
+            </li>
+          
+        
+          
+            <li>
+              <p>
+                <a href="/queries/backtrace_annotations.html">Backtrace Annotations</a>
+                <span class="guide-desc">
+                  Use the GraphQL backtrace for debugging
                 </span>
               </p>
             </li>
@@ -1536,6 +1606,10 @@
       <h2 id="Types">Types</h2>
       <ul>
         
+        
+          
+        
+          
         
           
         
@@ -2159,6 +2233,16 @@
           
         
           
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
             <li>
               <p>
                 <a href="/types/abstract_types.html">Interface and Union Types</a>
@@ -2190,6 +2274,8 @@
           
         
           
+        
+          
             <li>
               <p>
                 <a href="/types/circular_references.html">Circular References, Lazy-Loading</a>
@@ -2198,6 +2284,12 @@
                 </span>
               </p>
             </li>
+          
+        
+          
+        
+          
+        
           
         
           
@@ -2828,14 +2920,13 @@
           
         
           
-            <li>
-              <p>
-                <a href="/fields/arguments.html">Arguments</a>
-                <span class="guide-desc">
-                  Fields may take arguments as inputs
-                </span>
-              </p>
-            </li>
+        
+          
+        
+          
+        
+          
+        
           
         
           
@@ -2856,6 +2947,27 @@
           
         
           
+            <li>
+              <p>
+                <a href="/fields/arguments.html">Arguments</a>
+                <span class="guide-desc">
+                  Fields may take arguments as inputs
+                </span>
+              </p>
+            </li>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
         
           
         
@@ -2868,10 +2980,6 @@
                 </span>
               </p>
             </li>
-          
-        
-          
-        
           
         
           
@@ -2894,6 +3002,10 @@
           
         
           
+        
+          
+        
+          
             <li>
               <p>
                 <a href="/fields/resolve_wrapper.html">Wrapping Resolve Functions</a>
@@ -2902,6 +3014,8 @@
                 </span>
               </p>
             </li>
+          
+        
           
         
           
@@ -3509,10 +3623,6 @@
           
         
           
-        
-          
-        
-          
             <li>
               <p>
                 <a href="/relay/object_identification.html">Object Identification</a>
@@ -3526,6 +3636,16 @@
           
         
           
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
             <li>
               <p>
                 <a href="/relay/connections.html">Connections</a>
@@ -3534,6 +3654,10 @@
                 </span>
               </p>
             </li>
+          
+        
+          
+        
           
         
           
@@ -3569,6 +3693,737 @@
         
           
         
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      </ul>
+    </div>
+  
+    <div class="guide-section">
+      <h2 id="Subscriptions">Subscriptions</h2>
+      <ul>
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+            <li>
+              <p>
+                <a href="/subscriptions/overview.html">Overview</a>
+                <span class="guide-desc">
+                  Introduction to Subscriptions in GraphQL-Ruby
+                </span>
+              </p>
+            </li>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+            <li>
+              <p>
+                <a href="/subscriptions/subscription_type.html">Subscription Type</a>
+                <span class="guide-desc">
+                  The root type for subscriptions
+                </span>
+              </p>
+            </li>
+          
+        
+          
+        
+          
+            <li>
+              <p>
+                <a href="/subscriptions/triggers.html">Triggers</a>
+                <span class="guide-desc">
+                  Sending updates from your application to GraphQL
+                </span>
+              </p>
+            </li>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+            <li>
+              <p>
+                <a href="/subscriptions/implementation.html">Implementation</a>
+                <span class="guide-desc">
+                  Subscription execution and delivery
+                </span>
+              </p>
+            </li>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+            <li>
+              <p>
+                <a href="/subscriptions/action_cable_implementation.html">Action Cable Implementation</a>
+                <span class="guide-desc">
+                  GraphQL subscriptions over ActionCable
+                </span>
+              </p>
+            </li>
           
         
           
@@ -4190,6 +5045,12 @@
           
         
           
+        
+          
+        
+          
+        
+          
             <li>
               <p>
                 <a href="http://graphql.pro">GraphQL::Pro Home</a>
@@ -4220,6 +5081,14 @@
           
         
           
+        
+          
+        
+          
+        
+          
+        
+          
             <li>
               <p>
                 <a href="/pro/authorization.html">Authorization Framework</a>
@@ -4228,6 +5097,8 @@
                 </span>
               </p>
             </li>
+          
+        
           
         
           
@@ -4283,6 +5154,8 @@
           
         
           
+        
+          
             <li>
               <p>
                 <a href="/pro/encoders.html">Encrypted, Versioned Cursors and IDs</a>
@@ -4299,6 +5172,10 @@
         
           
         
+          
+        
+          
+        
       </ul>
     </div>
   
@@ -4306,6 +5183,10 @@
       <h2 id="GraphQL Pro - OperationStore">GraphQL Pro - OperationStore</h2>
       <ul>
         
+        
+          
+        
+          
         
           
         
@@ -4911,10 +5792,6 @@
           
         
           
-        
-          
-        
-          
             <li>
               <p>
                 <a href="/operation_store/getting_started.html">Getting Started</a>
@@ -4923,6 +5800,10 @@
                 </span>
               </p>
             </li>
+          
+        
+          
+        
           
         
           
@@ -4949,6 +5830,20 @@
           
         
           
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
             <li>
               <p>
                 <a href="/operation_store/server_management.html">Server Management</a>
@@ -4964,8 +5859,6 @@
           
         
           
-        
-          
             <li>
               <p>
                 <a href="/operation_store/authentication.html">Authentication</a>
@@ -4974,6 +5867,722 @@
                 </span>
               </p>
             </li>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      </ul>
+    </div>
+  
+    <div class="guide-section">
+      <h2 id="JavaScript Client">JavaScript Client</h2>
+      <ul>
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+            <li>
+              <p>
+                <a href="/javascript_client/overview.html">Overview</a>
+                <span class="guide-desc">
+                  Getting Started with GraphQL-Ruby's Javascript client, graphql-ruby-client.
+                </span>
+              </p>
+            </li>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+            <li>
+              <p>
+                <a href="/javascript_client/sync.html">OperationStore Sync</a>
+                <span class="guide-desc">
+                  Javascript tooling for persisted queries with GraphQL-Ruby
+                </span>
+              </p>
+            </li>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+            <li>
+              <p>
+                <a href="/javascript_client/apollo_subscriptions.html">Apollo Subscriptions</a>
+                <span class="guide-desc">
+                  GraphQL subscriptions with GraphQL-Ruby and Apollo Client
+                </span>
+              </p>
+            </li>
+          
+        
+          
+            <li>
+              <p>
+                <a href="/javascript_client/relay_subscriptions.html">Relay Subscriptions</a>
+                <span class="guide-desc">
+                  GraphQL subscriptions with GraphQL-Ruby and Relay Modern
+                </span>
+              </p>
+            </li>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
           
         
           
@@ -5601,6 +7210,28 @@
                 </span>
               </p>
             </li>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
           
         
           

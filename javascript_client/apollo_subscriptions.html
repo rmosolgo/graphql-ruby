@@ -1,0 +1,111 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+      <title>GraphQL - Apollo Subscriptions</title>
+    
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="icon" href="/graphql-ruby-icon.png">
+  </head>
+  <body>
+    <div class="header">
+      <div class="header-container">
+        <div class="nav">
+          <a href="/" class="img-link">
+            <img src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+          </a>
+          <a href="/getting_started">Get Started</a>
+          <a href="/guides">Guides</a>
+          <a href="http://www.rubydoc.info/gems/graphql/1.7.0/">API</a>
+          <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
+          <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+          <input
+            class="search-input"
+            onkeyup="GraphQLRubySearch.run(this)"
+            type="text"
+            placeholder="Search the docs..."
+          />
+        </div>
+      </div>
+      <div class="search-results-container">
+        <div id="search-results"></div>
+      </div>
+    </div>
+    <div class="container">
+      <p class="breadcrumb">
+  <a href="/">GraphQL</a>
+  &raquo; <a href="/guides">Guides</a>
+   &raquo; JavaScript Client
+  &raquo; Apollo Subscriptions
+</p>
+
+<h1 class="guide-header">Apollo Subscriptions</h1>
+<div class="guide-container">
+  <p><code class="highlighter-rouge">graphql-ruby-client</code> includes support for subscriptions with ActionCable and Apollo client.</p>
+
+<p>To use it, require <code class="highlighter-rouge">subscriptions/addGraphQLSubscriptions</code> and call the function with your network interface and ActionCable consumer.</p>
+
+<p>With this configuration, <code class="highlighter-rouge">subscription</code> queries will be routed to ActionCable.</p>
+
+<p>For example:</p>
+
+<div class="language-js highlighter-rouge"><pre class="highlight"><code><span class="c1">// Load ActionCable and create a consumer</span>
+<span class="kd">var</span> <span class="nx">ActionCable</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">'actioncable'</span><span class="p">)</span>
+<span class="kd">var</span> <span class="nx">cable</span> <span class="o">=</span> <span class="nx">ActionCable</span><span class="p">.</span><span class="nx">createConsumer</span><span class="p">()</span>
+<span class="nb">window</span><span class="p">.</span><span class="nx">cable</span> <span class="o">=</span> <span class="nx">cable</span>
+
+<span class="c1">// Load ApolloClient and create a network interface</span>
+<span class="kd">var</span> <span class="nx">apollo</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">'apollo-client'</span><span class="p">)</span>
+<span class="kd">var</span> <span class="nx">RailsNetworkInterface</span> <span class="o">=</span> <span class="nx">apollo</span><span class="p">.</span><span class="nx">createNetworkInterface</span><span class="p">({</span>
+ <span class="na">uri</span><span class="p">:</span> <span class="s1">'/graphql'</span><span class="p">,</span>
+ <span class="na">opts</span><span class="p">:</span> <span class="p">{</span>
+   <span class="na">credentials</span><span class="p">:</span> <span class="s1">'include'</span><span class="p">,</span>
+ <span class="p">},</span>
+ <span class="na">headers</span><span class="p">:</span> <span class="p">{</span>
+   <span class="s1">'X-CSRF-Token'</span><span class="p">:</span> <span class="nx">$</span><span class="p">(</span><span class="s2">"meta[name=csrf-token]"</span><span class="p">).</span><span class="nx">attr</span><span class="p">(</span><span class="s2">"content"</span><span class="p">),</span>
+ <span class="p">}</span>
+<span class="p">});</span>
+
+<span class="c1">// Add subscriptions to the network interface</span>
+<span class="kd">var</span> <span class="nx">addGraphQLSubscriptions</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s2">"graphql-ruby-client/subscriptions/addGraphQLSubscriptions"</span><span class="p">)</span>
+<span class="nx">addGraphQLSubscriptions</span><span class="p">(</span><span class="nx">RailsNetworkInterface</span><span class="p">,</span> <span class="p">{</span><span class="na">cable</span><span class="p">:</span> <span class="nx">cable</span><span class="p">})</span>
+
+<span class="c1">// Optionally, add persisted query support:</span>
+<span class="kd">var</span> <span class="nx">OperationStoreClient</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s2">"./OperationStoreClient"</span><span class="p">)</span>
+<span class="nx">RailsNetworkInterface</span><span class="p">.</span><span class="nx">use</span><span class="p">([</span><span class="nx">OperationStoreClient</span><span class="p">.</span><span class="nx">apolloMiddleware</span><span class="p">])</span>
+</code></pre>
+</div>
+
+<p>See the Subscriptions guide for information about server-side setup.</p>
+
+</div>
+<p class="guide-footer">
+  Suggestion, improvement, or correction?
+  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/javascript_client/apollo_subscriptions.md">Edit this file</a> or
+  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: Apollo Subscriptions">report an issue</a>.
+</p>
+<script>
+  // Find headers with IDs and wrap their text in `<a href=></a>`
+  // That way people can easily copy the link.
+  var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+  var header, idText, headerLink;
+  for (var i = 0; i < headers.length; i++) {
+    header = headers[i];
+    idText = header.id;
+    if (idText) {
+      headerLink = document.createElement("a");
+      headerLink.href = "#" + idText;
+      headerLink.textContent = header.textContent;
+      header.textContent = "";
+      header.appendChild(headerLink);
+    }
+  }
+</script>
+
+    </div>
+    <script src="/js/search.js"></script>
+  </body>
+</html>

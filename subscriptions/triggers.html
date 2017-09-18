@@ -1,0 +1,102 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+      <title>GraphQL - Triggers</title>
+    
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="icon" href="/graphql-ruby-icon.png">
+  </head>
+  <body>
+    <div class="header">
+      <div class="header-container">
+        <div class="nav">
+          <a href="/" class="img-link">
+            <img src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+          </a>
+          <a href="/getting_started">Get Started</a>
+          <a href="/guides">Guides</a>
+          <a href="http://www.rubydoc.info/gems/graphql/1.7.0/">API</a>
+          <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
+          <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+          <input
+            class="search-input"
+            onkeyup="GraphQLRubySearch.run(this)"
+            type="text"
+            placeholder="Search the docs..."
+          />
+        </div>
+      </div>
+      <div class="search-results-container">
+        <div id="search-results"></div>
+      </div>
+    </div>
+    <div class="container">
+      <p class="breadcrumb">
+  <a href="/">GraphQL</a>
+  &raquo; <a href="/guides">Guides</a>
+   &raquo; Subscriptions
+  &raquo; Triggers
+</p>
+
+  <div class="experimental-header">
+    <p>
+      <strong>⚠ Experimental ⚠</strong>
+    </p>
+    <p>
+      This feature may get big changes in future releases.
+      Check the <a href="https://github.com/rmosolgo/graphql-ruby/blob/master/CHANGELOG.md">changelog</a> for update notes.
+    </p>
+  </div>
+
+<h1 class="guide-header">Triggers</h1>
+<div class="guide-container">
+  <p>From your application, you can push updates to GraphQL clients with <code class="highlighter-rouge">.trigger</code>.</p>
+
+<p>Events are triggered <em>by name</em>, and the name must match fields on your <a href="/subscriptions/subscription_type">Subscription Type</a></p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># Update the system with the new blog post:</span>
+<span class="no">MySchema</span><span class="p">.</span><span class="nf">subscriptions</span><span class="p">.</span><span class="nf">trigger</span><span class="p">(</span><span class="s2">"postAdded"</span><span class="p">,</span> <span class="p">{},</span> <span class="n">new_post</span><span class="p">)</span>
+</code></pre>
+</div>
+
+<p>The arguments are:</p>
+
+<ul>
+  <li><code class="highlighter-rouge">name</code>, which corresponds to the field on subscription type</li>
+  <li><code class="highlighter-rouge">arguments</code>, which corresponds to the arguments on subscription type (for example, if you subscribe to comments on a certain post, the arguments would be <code class="highlighter-rouge"><span class="p">{</span><span class="err">postId:</span><span class="w"> </span><span class="err">comment.post_id</span><span class="p">}</span></code>.)</li>
+  <li><code class="highlighter-rouge">object</code>, which will be the root object of the subscription update</li>
+  <li><code class="highlighter-rouge">scope:</code> (not shown) for implicitly scoping the clients who will receive updates.</li>
+</ul>
+
+</div>
+<p class="guide-footer">
+  Suggestion, improvement, or correction?
+  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/subscriptions/triggers.md">Edit this file</a> or
+  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: Triggers">report an issue</a>.
+</p>
+<script>
+  // Find headers with IDs and wrap their text in `<a href=></a>`
+  // That way people can easily copy the link.
+  var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+  var header, idText, headerLink;
+  for (var i = 0; i < headers.length; i++) {
+    header = headers[i];
+    idText = header.id;
+    if (idText) {
+      headerLink = document.createElement("a");
+      headerLink.href = "#" + idText;
+      headerLink.textContent = header.textContent;
+      header.textContent = "";
+      header.appendChild(headerLink);
+    }
+  }
+</script>
+
+    </div>
+    <script src="/js/search.js"></script>
+  </body>
+</html>

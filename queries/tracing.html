@@ -1,0 +1,128 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+      <title>GraphQL - Tracing</title>
+    
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="icon" href="/graphql-ruby-icon.png">
+  </head>
+  <body>
+    <div class="header">
+      <div class="header-container">
+        <div class="nav">
+          <a href="/" class="img-link">
+            <img src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+          </a>
+          <a href="/getting_started">Get Started</a>
+          <a href="/guides">Guides</a>
+          <a href="http://www.rubydoc.info/gems/graphql/1.7.0/">API</a>
+          <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
+          <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+          <input
+            class="search-input"
+            onkeyup="GraphQLRubySearch.run(this)"
+            type="text"
+            placeholder="Search the docs..."
+          />
+        </div>
+      </div>
+      <div class="search-results-container">
+        <div id="search-results"></div>
+      </div>
+    </div>
+    <div class="container">
+      <p class="breadcrumb">
+  <a href="/">GraphQL</a>
+  &raquo; <a href="/guides">Guides</a>
+   &raquo; Queries
+  &raquo; Tracing
+</p>
+
+  <div class="experimental-header">
+    <p>
+      <strong>⚠ Experimental ⚠</strong>
+    </p>
+    <p>
+      This feature may get big changes in future releases.
+      Check the <a href="https://github.com/rmosolgo/graphql-ruby/blob/master/CHANGELOG.md">changelog</a> for update notes.
+    </p>
+  </div>
+
+<h1 class="guide-header">Tracing</h1>
+<div class="guide-container">
+  <p><a href="http://www.rubydoc.info/gems/graphql/1.7.0/GraphQL/Tracing" target="_blank" title="API docs for GraphQL::Tracing"><code>GraphQL::Tracing</code></a> provides a <code class="highlighter-rouge">.trace</code> hook to observe events from the GraphQL runtime.</p>
+
+<p>A tracer must implement <code class="highlighter-rouge">.trace</code>, for example:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MyCustomTracer</span>
+  <span class="k">def</span> <span class="nf">trace</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+    <span class="c1"># do stuff with key &amp; data</span>
+    <span class="k">yield</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<p><code class="highlighter-rouge">.trace</code> is called with:</p>
+
+<ul>
+  <li><code class="highlighter-rouge">key</code>: the event happening in the runtime</li>
+  <li><code class="highlighter-rouge">data</code>: a hash of metadata about the event</li>
+  <li><code class="highlighter-rouge">&amp;block</code>: the event itself, it must be <code class="highlighter-rouge">yield</code>ed and the value must be returned</li>
+</ul>
+
+<p>To install a tracer, use <code class="highlighter-rouge">GraphQL::Tracing.install</code>:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">GraphQL</span><span class="o">::</span><span class="no">Tracing</span><span class="p">.</span><span class="nf">install</span><span class="p">(</span><span class="no">MyCustomTracer</span><span class="p">.</span><span class="nf">new</span><span class="p">)</span>
+</code></pre>
+</div>
+
+<p>To uninstall, use <code class="highlighter-rouge">GraphQL::Tracing.install(nil)</code>.</p>
+
+<p>For a full list of events, see the <a href="http://www.rubydoc.info/gems/graphql/1.7.0/GraphQL/Tracing" target="_blank" title="API docs for GraphQL::Tracing"><code>GraphQL::Tracing</code></a> API docs.</p>
+
+<h2 id="activesupportnotifications">ActiveSupport::Notifications</h2>
+
+<p>You can emit events to <code class="highlighter-rouge">ActiveSupport::Notifications</code> with an experimental tracer, <code class="highlighter-rouge">ActiveSupportNotificationsTracing</code>.</p>
+
+<p>To enable it, install the tracer:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># Send execution events to ActiveSupport::Notifications</span>
+<span class="no">GraphQL</span><span class="o">::</span><span class="no">Tracing</span><span class="p">.</span><span class="nf">install</span><span class="p">(</span>
+  <span class="no">GraphQL</span><span class="o">::</span><span class="no">Tracing</span><span class="o">::</span><span class="no">ActiveSupportNotificationsTracing</span>
+<span class="p">)</span>
+</code></pre>
+</div>
+
+</div>
+<p class="guide-footer">
+  Suggestion, improvement, or correction?
+  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/queries/tracing.md">Edit this file</a> or
+  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: Tracing">report an issue</a>.
+</p>
+<script>
+  // Find headers with IDs and wrap their text in `<a href=></a>`
+  // That way people can easily copy the link.
+  var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+  var header, idText, headerLink;
+  for (var i = 0; i < headers.length; i++) {
+    header = headers[i];
+    idText = header.id;
+    if (idText) {
+      headerLink = document.createElement("a");
+      headerLink.href = "#" + idText;
+      headerLink.textContent = header.textContent;
+      header.textContent = "";
+      header.appendChild(headerLink);
+    }
+  }
+</script>
+
+    </div>
+    <script src="/js/search.js"></script>
+  </body>
+</html>
