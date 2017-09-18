@@ -7,6 +7,30 @@ module GraphQL
         encode(idx.to_s)
       end
 
+      def has_next_page
+        if first
+          # There are more items after these items
+          sliced_nodes.count > first
+        elsif GraphQL::Relay::ConnectionType.bidirectional_pagination && before
+          # The original array is longer than the `before` index
+          index_from_cursor(before) < nodes.length
+        else
+          false
+        end
+      end
+
+      def has_previous_page
+        if last
+          # There are items preceding the ones in this result
+          sliced_nodes.count > last
+        elsif GraphQL::Relay::ConnectionType.bidirectional_pagination && after
+          # We've paginated into the Array a bit, there are some behind us
+          index_from_cursor(after) > 0
+        else
+          false
+        end
+      end
+
       private
 
       def first

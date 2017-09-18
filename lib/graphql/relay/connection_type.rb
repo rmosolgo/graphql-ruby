@@ -3,10 +3,14 @@ module GraphQL
   module Relay
     module ConnectionType
       class << self
+        # @return [Boolean] If true, connection types get a `nodes` shortcut field
         attr_accessor :default_nodes_field
+        # @return [Boolean] If true, connections check for reverse-direction `has*Page` values
+        attr_accessor :bidirectional_pagination
       end
 
       self.default_nodes_field = false
+      self.bidirectional_pagination = false
 
       # Create a connection which exposes edges of this type
       def self.create_type(wrapped_type, edge_type: wrapped_type.edge_type, edge_class: GraphQL::Relay::Edge, nodes_field: ConnectionType.default_nodes_field, &block)
