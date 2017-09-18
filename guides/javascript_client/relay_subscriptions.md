@@ -1,6 +1,13 @@
-# Subscriptions with GraphQL-Ruby and Relay Modern
+---
+layout: guide
+search: true
+section: JavaScript Client
+title: Relay Subscriptions
+desc: GraphQL subscriptions with GraphQL-Ruby and Relay Modern
+index: 3
+---
 
-`graphql-ruby-client` includes support for subscriptions with ActionCable  and Relay Modern.
+`graphql-ruby-client` includes support for subscriptions with ActionCable and Relay Modern.
 
 To use it, require `subscriptions/createHandler` and call the function with your ActionCable consumer and optionally, your OperationStoreClient.
 
@@ -24,4 +31,4 @@ var subscriptionHandler = createHandler({
 var network = Network.create(fetchQuery, subscriptionHandler)
 ```
 
-See http://graphql-ruby.org/guides/subscriptions/overview/ for information about server-side setup.
+See the Subscriptions guide for information about server-side setup.

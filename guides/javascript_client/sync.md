@@ -1,4 +1,11 @@
-# OperationStore Sync
+---
+layout: guide
+search: true
+section: JavaScript Client
+title: OperationStore Sync
+desc: Javascript tooling for persisted queries with GraphQL-Ruby
+index: 1
+---
 
 JavaScript support for GraphQL projects using [graphql-pro](http://graphql.pro)'s `OperationStore` for persisted queries.
 

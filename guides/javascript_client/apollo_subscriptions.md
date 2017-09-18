@@ -1,4 +1,12 @@
-# Subscriptions with GraphQL-Ruby and Apollo Client
+---
+layout: guide
+search: true
+section: JavaScript Client
+title: Apollo Subscriptions
+desc: GraphQL subscriptions with GraphQL-Ruby and Apollo Client
+index: 2
+---
+
 
 `graphql-ruby-client` includes support for subscriptions with ActionCable and Apollo client.
 
@@ -35,4 +43,4 @@ var OperationStoreClient = require("./OperationStoreClient")
 RailsNetworkInterface.use([OperationStoreClient.apolloMiddleware])
 ```
 
-See http://graphql-ruby.org/guides/subscriptions/overview/ for information about server-side setup.
+See the Subscriptions guide for information about server-side setup.
