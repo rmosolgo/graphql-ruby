@@ -16,4 +16,6 @@ _site
 .jekyll-metadata
 gh-pages/
 tmp/*
-__*
+__*.db
+node_modules/
+OperationStoreClient.js
