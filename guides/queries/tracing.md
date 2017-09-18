@@ -36,3 +36,16 @@ GraphQL::Tracing.install(MyCustomTracer.new)
 To uninstall, use `GraphQL::Tracing.install(nil)`.
 
 For a full list of events, see the {{ "GraphQL::Tracing" | api_doc }} API docs.
+
+## ActiveSupport::Notifications
+
+You can emit events to `ActiveSupport::Notifications` with an experimental tracer, `ActiveSupportNotificationsTracing`.
+
+To enable it, install the tracer:
+
+```ruby
+# Send execution events to ActiveSupport::Notifications
+GraphQL::Tracing.install(
+  GraphQL::Tracing::ActiveSupportNotificationsTracing
+)
+```

@@ -78,7 +78,3 @@ module GraphQL
     tracers
   end
 end
-
-if defined?(ActiveSupport::Notifications)
-  GraphQL::Tracing.install(GraphQL::Tracing::ActiveSupportNotificationsTracing)
-end
