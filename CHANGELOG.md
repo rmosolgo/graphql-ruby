@@ -8,6 +8,12 @@
 
 ### Bug fixes
 
+## 1.7.1 (18 Sept 2017)
+
+### Bug fixes
+
+- Properly release changes from 1.7.0
+
 ## 1.7.0 (18 Sept 2017)
 
 ### Breaking changes
