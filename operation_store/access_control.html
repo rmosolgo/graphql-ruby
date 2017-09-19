@@ -1,0 +1,143 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+      <title>GraphQL Pro - OperationStore - Access Control</title>
+    
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="icon" href="/graphql-ruby-icon.png">
+  </head>
+  <body>
+    <div class="header">
+      <div class="header-container">
+        <div class="nav">
+          <a href="/" class="img-link">
+            <img src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+          </a>
+          <a href="/getting_started">Get Started</a>
+          <a href="/guides">Guides</a>
+          <a href="http://www.rubydoc.info/gems/graphql/1.7.1/">API</a>
+          <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
+          <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+          <input
+            class="search-input"
+            onkeyup="GraphQLRubySearch.run(this)"
+            type="text"
+            placeholder="Search the docs..."
+          />
+        </div>
+      </div>
+      <div class="search-results-container">
+        <div id="search-results"></div>
+      </div>
+    </div>
+    <div class="container">
+      <p class="breadcrumb">
+  <a href="/">GraphQL</a>
+  &raquo; <a href="/guides">Guides</a>
+   &raquo; GraphQL Pro - OperationStore
+  &raquo; Access Control
+</p>
+
+<h1 class="guide-header">Access Control</h1>
+<div class="guide-container">
+  <p>There are two considerations for incoming <code class="highlighter-rouge">sync</code> requests:</p>
+
+<ul>
+  <li><strong>Authentication</strong>: is this request coming from a legitimate source?</li>
+  <li><strong>Authorization</strong>: does this source have permission to save these queries?</li>
+</ul>
+
+<h2 id="authentication">Authentication</h2>
+
+<p>When you <a href="/operation_store/client_workflow#add-a-client">add a client</a>, you also associate a <em>secret</em> with that client. You can use the default or provide your own and you can update a client secret at any time. By updating a secret, old secrets become invalid.</p>
+
+<p>This secret is used to add an authorization header, generated with HMAC-SHA256. With this header, the server can assert:</p>
+
+<ul>
+  <li>The request came from an authorized client</li>
+  <li>The request was not corrupted in transit</li>
+</ul>
+
+<p>For more info about HMAC, see <a href="https://en.wikipedia.org/wiki/Hash-based_message_authentication_code">Wikipedia</a> or Ruby’s <a href="https://ruby-doc.org/stdlib-2.4.0/libdoc/openssl/rdoc/OpenSSL/HMAC.html">OpenSSL::HMAC</a> support.</p>
+
+<p>The Authorization header takes the form:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="s2">"GraphQL::Pro </span><span class="si">#{</span><span class="n">client_name</span><span class="si">}</span><span class="s2"> </span><span class="si">#{</span><span class="n">hmac</span><span class="si">}</span><span class="s2">"</span>
+</code></pre>
+</div>
+
+<p><a href="http://github.com/rmosolgo/graphql-ruby-client"><code class="highlighter-rouge">graphql-ruby-client</code></a> adds this header to outgoing requests by using the provided <code class="highlighter-rouge">--client</code> and <code class="highlighter-rouge">--secret</code> values.</p>
+
+<h2 id="authorization">Authorization</h2>
+
+<p>Incoming operations are validated. If you’re using <code class="highlighter-rouge">GraphQL::Pro</code>’s <a href="/pro/authorization#visibility-authorization">visibility authorization</a>
+, you must determine whether the current client can <em>see</em> the types and fields which are used in the operation.</p>
+
+<p>You can implement authorization for incoming queries with the <code class="highlighter-rouge">authorize(..., operation_store:)</code> option, which accepts a <a href="/pro/authorization#custom-authorization-strategy">auth strategy class</a>
+, for example:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">authorize</span><span class="p">(</span><span class="ss">:pundit</span><span class="p">,</span> <span class="ss">operation_store: </span><span class="no">OperationStoreStrategy</span><span class="p">)</span>
+<span class="c1"># Or:</span>
+<span class="n">authorize</span><span class="p">(</span><span class="no">MyAuthStrategy</span><span class="p">,</span> <span class="ss">operation_store: </span><span class="no">OperationStoreStrategy</span><span class="p">)</span>
+</code></pre>
+</div>
+
+<p>This strategy class is used <em>only</em> for incoming persisted operations. The strategy class may use <code class="highlighter-rouge">ctx[:current_client_name]</code>, which is added by the OperationStore.</p>
+
+<p>Here’s an example strategy class which allows <code class="highlighter-rouge">"stafftools"</code> apps to use <code class="highlighter-rouge">view: :admin</code> fields, but hides those fields from everyone else:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="k">class</span> <span class="nc">OperationStoreStrategy</span>
+  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">ctx</span><span class="p">)</span>
+    <span class="vi">@client_name</span> <span class="o">=</span> <span class="n">ctx</span><span class="p">[</span><span class="ss">:current_client_name</span><span class="p">]</span>
+  <span class="k">end</span>
+
+  <span class="c1"># Only stafftools apps can save queries with `:admin` fields</span>
+  <span class="c1"># Anyone can save queries with `:public` fields.</span>
+  <span class="k">def</span> <span class="nf">allowed?</span><span class="p">(</span><span class="n">gate</span><span class="p">,</span> <span class="n">_obj</span><span class="p">)</span>
+    <span class="k">case</span> <span class="n">gate</span><span class="p">.</span><span class="nf">role</span>
+    <span class="k">when</span> <span class="ss">:admin</span>
+      <span class="vi">@client_name</span> <span class="o">==</span> <span class="s2">"stafftools"</span>
+    <span class="k">when</span> <span class="ss">:public</span>
+      <span class="kp">true</span>
+    <span class="k">else</span>
+      <span class="k">raise</span> <span class="s2">"Unexpected auth role: </span><span class="si">#{</span><span class="n">gate</span><span class="p">.</span><span class="nf">role</span><span class="si">}</span><span class="s2">"</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<p>If you don’t specify a strategy, the default is to fail all <code class="highlighter-rouge">view:</code> checks. This way, private fields are <em>not</em> disclosed via OperationStore requests.</p>
+
+</div>
+<p class="guide-footer">
+  Suggestion, improvement, or correction?
+  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/operation_store/access_control.md">Edit this file</a> or
+  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: Access Control">report an issue</a>.
+</p>
+<script>
+  // Find headers with IDs and wrap their text in `<a href=></a>`
+  // That way people can easily copy the link.
+  var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+  var header, idText, headerLink;
+  for (var i = 0; i < headers.length; i++) {
+    header = headers[i];
+    idText = header.id;
+    if (idText) {
+      headerLink = document.createElement("a");
+      headerLink.href = "#" + idText;
+      headerLink.textContent = header.textContent;
+      header.textContent = "";
+      header.appendChild(headerLink);
+    }
+  }
+</script>
+
+    </div>
+    <script src="/js/search.js"></script>
+  </body>
+</html>

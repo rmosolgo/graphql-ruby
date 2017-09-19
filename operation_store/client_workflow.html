@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="http://www.rubydoc.info/gems/graphql/1.7.0/">API</a>
+          <a href="http://www.rubydoc.info/gems/graphql/1.7.1/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <input
@@ -66,7 +66,7 @@
   <img src="/operation_store/add_a_client.png" title="Add a Client for Persisted Queries" alt="Add a Client for Persisted Queries" />
 </a></p>
 
-<p>A default <code class="highlighter-rouge">secret</code> is provided for you, but you can also enter your own. The <code class="highlighter-rouge">secret</code> is used for <a href="/operation_store/authentication">HMAC authentication</a>
+<p>A default <code class="highlighter-rouge">secret</code> is provided for you, but you can also enter your own. The <code class="highlighter-rouge">secret</code> is used for <a href="/operation_store/access_control">HMAC authentication</a>
 .</p>
 
 <p>(Are you interested in a Ruby API for this? Please <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=OperationStore Ruby API" target="_blank">open an issue</a>
@@ -83,7 +83,7 @@
 
 <ul>
   <li>Finds GraphQL queries from <code class="highlighter-rouge">.graphql</code> files or <code class="highlighter-rouge">relay-compiler</code> output in the provided <code class="highlighter-rouge">--path</code></li>
-  <li>Adds an <a href="/operation_store/authentication">Authentication header</a>
+  <li>Adds an <a href="/operation_store/access_control">Authentication header</a>
  based on the provided <code class="highlighter-rouge">--client</code> and <code class="highlighter-rouge">--secret</code></li>
   <li>Sends the operations to the provided <code class="highlighter-rouge">--url</code></li>
   <li>Generates a JavaScript module into the provided <code class="highlighter-rouge">--outfile</code></li>
@@ -118,7 +118,7 @@
 
 <h4 id="next-steps">Next Steps</h4>
 
-<p>Learn more about <code class="highlighter-rouge">OperationStore</code>’s <a href="/operation_store/authentication">authentication</a>
+<p>Learn more about <code class="highlighter-rouge">OperationStore</code>’s <a href="/operation_store/access_control">authentication</a>
  or read some tips for <a href="/operation_store/server_management">server management</a>
 .</p>
 

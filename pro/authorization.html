@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="http://www.rubydoc.info/gems/graphql/1.7.0/">API</a>
+          <a href="http://www.rubydoc.info/gems/graphql/1.7.1/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <input
@@ -261,11 +261,11 @@
 </code></pre>
 </div>
 
-<p>The hook should return a <a href="http://www.rubydoc.info/gems/graphql/1.7.0/GraphQL/AnalysisError" target="_blank" title="API docs for GraphQL::AnalysisError"><code>GraphQL::AnalysisError</code></a>. It is called with:</p>
+<p>The hook should return a <a href="http://www.rubydoc.info/gems/graphql/1.7.1/GraphQL/AnalysisError" target="_blank" title="API docs for GraphQL::AnalysisError"><code>GraphQL::AnalysisError</code></a>. It is called with:</p>
 
 <ul>
-  <li><code class="highlighter-rouge">irep_nodes</code>: an array of <a href="http://www.rubydoc.info/gems/graphql/1.7.0/GraphQL/InternalRepresentation/Node" target="_blank" title="API docs for GraphQL::InternalRepresentation::Node"><code>GraphQL::InternalRepresentation::Node</code></a>s which represent unpermitted fields in the incoming query.</li>
-  <li><code class="highlighter-rouge">ctx</code>: the <a href="http://www.rubydoc.info/gems/graphql/1.7.0/GraphQL/Query/Context" target="_blank" title="API docs for GraphQL::Query::Context"><code>GraphQL::Query::Context</code></a> (which includes <code class="highlighter-rouge">:current_user</code>).</li>
+  <li><code class="highlighter-rouge">irep_nodes</code>: an array of <a href="http://www.rubydoc.info/gems/graphql/1.7.1/GraphQL/InternalRepresentation/Node" target="_blank" title="API docs for GraphQL::InternalRepresentation::Node"><code>GraphQL::InternalRepresentation::Node</code></a>s which represent unpermitted fields in the incoming query.</li>
+  <li><code class="highlighter-rouge">ctx</code>: the <a href="http://www.rubydoc.info/gems/graphql/1.7.1/GraphQL/Query/Context" target="_blank" title="API docs for GraphQL::Query::Context"><code>GraphQL::Query::Context</code></a> (which includes <code class="highlighter-rouge">:current_user</code>).</li>
 </ul>
 
 <h2 id="visibility-authorization">Visibility Authorization</h2>
@@ -384,11 +384,7 @@
 <p>You can provide custom authorization logic by providing a class:</p>
 
 <div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
-  <span class="c1"># choose one:</span>
-  <span class="n">authorization</span><span class="p">(</span><span class="ss">:pundit</span><span class="p">)</span>
-  <span class="c1"># or:</span>
-  <span class="n">authorization</span><span class="p">(</span><span class="ss">:cancan</span><span class="p">)</span>
-  <span class="c1"># or:</span>
+  <span class="c1"># Custom authorization strategy class:</span>
   <span class="n">authorization</span><span class="p">(</span><span class="no">MyAuthStrategy</span><span class="p">)</span>
 <span class="k">end</span>
 </code></pre>
