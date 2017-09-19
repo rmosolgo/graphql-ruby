@@ -8,7 +8,21 @@
 
 ### Bug Fix
 
+## 1.5.6 (19 Sept 2017)
+
+### New Features
+
+- Add `authorization(..., operation_store:)` option for authorizing operation store requests
+
+## 1.5.5 (18 Sept 2017)
+
+### New Features
+
+- Support `ConnectionType.bidrectional_pagination?` in stable RelationConnection
+
 ## 1.5.4 (18 Sept 2017)
+
+### Bug Fix
 
 - Fix load issue when Rails is not present
 

@@ -43,4 +43,4 @@ var OperationStoreClient = require("./OperationStoreClient")
 RailsNetworkInterface.use([OperationStoreClient.apolloMiddleware])
 ```
 
-See the Subscriptions guide for information about server-side setup.
+See the {% internal_link "Subscriptions guide", "/subscriptions/overview" %} for information about server-side setup.

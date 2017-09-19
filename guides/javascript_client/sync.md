@@ -15,7 +15,7 @@ JavaScript support for GraphQL projects using [graphql-pro](http://graphql.pro)'
 - [Plain JS support](#use-with-plain-javascript)
 - [Authorization](#authorization)
 
-See the [server-side docs on http://graphql-ruby.org](http://graphql-ruby.org/operation_store/overview)
+See the {% internal_link "OperationStore guide", "/operation_store/overview" %} for server-side setup.
 
 ## `sync` utility
 
@@ -36,10 +36,10 @@ Generating client module in app/javascript/graphql/OperationStoreClient.js...
 
 option | description
 --------|----------
-`--url` | [Sync API](http://graphql-ruby.org/operation_store/getting_started.html#add-routes) url
+`--url` | {% internal_link "Sync API", "/operation_store/getting_started.html#add-routes" %} url
 `--path` | Local directory to search for `.graphql` / `.graphql.js` files
-`--client` | Client ID ([created on server](http://graphql-ruby.org/operation_store/client_workflow))
-`--secret` | Client Secret ([created on server](http://graphql-ruby.org/operation_store/client_workflow))
+`--client` | Client ID ({% internal_link "created on server", "/operation_store/client_workflow" %})
+`--secret` | Client Secret ({% internal_link "created on server", "/operation_store/client_workflow" %})
 `--outfile` | Destination for generated JS code
 
 You can see these and a few others with `graphql-ruby-client sync --help`.
@@ -140,7 +140,7 @@ $.post("/graphql", {
 
 ## Authorization
 
-`OperationStore` uses HMAC-SHA256 to [authenticate requests](http://graphql-ruby.org/operation_store/authentication).
+`OperationStore` uses HMAC-SHA256 to {% internal_link "authenticate requests" , "/operation_store/access_control" %}.
 
 Pass the key to `graphql-ruby-client sync` as `--secret` to authenticate it:
 
