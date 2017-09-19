@@ -182,7 +182,7 @@ describe GraphQL::InputObjectType do
 
         it "has problem with correct path" do
           paths = result.problems.map { |p| p["path"] }
-          assert_equal(paths, [["isDelicious"]])
+          assert_equal([["isDelicious"]], paths)
         end
 
         it "has correct problem explanation" do

@@ -30,7 +30,7 @@ module GraphQL
       argument: GraphQL::Define::AssignArgument
     )
 
-    attr_accessor :mutation, :arguments
+    attr_accessor :mutation, :arguments, :arguments_class
     ensure_defined(:mutation, :arguments, :input_fields)
     alias :input_fields :arguments
 
@@ -96,7 +96,7 @@ module GraphQL
         end
       end
 
-      GraphQL::Query::Arguments.new(input_values, argument_definitions: arguments)
+      arguments_class.instantiate_arguments(input_values)
     end
 
     # @api private

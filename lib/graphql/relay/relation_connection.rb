@@ -24,11 +24,25 @@ module GraphQL
       end
 
       def has_next_page
-        !!(first && paged_nodes_length >= first && sliced_nodes_count > first)
+        if first
+          paged_nodes_length >= first && sliced_nodes_count > first
+        elsif GraphQL::Relay::ConnectionType.bidirectional_pagination && last
+          sliced_nodes_count > last
+        else
+          false
+        end
       end
 
       def has_previous_page
-        !!(last && paged_nodes_length >= last && sliced_nodes_count > last)
+        if last
+          paged_nodes_length >= last && sliced_nodes_count > last
+        elsif GraphQL::Relay::ConnectionType.bidirectional_pagination && after
+          # We've already paginated through the collection a bit,
+          # there are nodes behind us
+          offset_from_cursor(after) > 0
+        else
+          false
+        end
       end
 
       def first

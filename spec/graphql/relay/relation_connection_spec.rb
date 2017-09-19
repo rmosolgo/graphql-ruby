@@ -74,6 +74,35 @@ describe GraphQL::Relay::RelationConnection do
       )
     end
 
+    it "provides bidirectional_pagination" do
+      result = star_wars_query(query_string, "first" => 1)
+      last_cursor = get_last_cursor(result)
+
+      result = star_wars_query(query_string, "first" => 1, "after" => last_cursor)
+      assert_equal true, get_page_info(result)["hasNextPage"]
+      assert_equal false, get_page_info(result)["hasPreviousPage"]
+
+      result = with_bidirectional_pagination {
+        star_wars_query(query_string, "first" => 1, "after" => last_cursor)
+      }
+      assert_equal true, get_page_info(result)["hasNextPage"]
+      assert_equal true, get_page_info(result)["hasPreviousPage"]
+
+      result = star_wars_query(query_string, "first" => 100)
+      last_cursor = get_last_cursor(result)
+
+      result = star_wars_query(query_string, "last" => 1, "before" => last_cursor)
+      assert_equal false, get_page_info(result)["hasNextPage"]
+      assert_equal true, get_page_info(result)["hasPreviousPage"]
+
+      result = with_bidirectional_pagination {
+        star_wars_query(query_string, "last" => 1, "before" => last_cursor)
+      }
+      assert_equal true, get_page_info(result)["hasNextPage"]
+      assert_equal true, get_page_info(result)["hasPreviousPage"]
+
+    end
+
     it 'slices the result' do
       result = star_wars_query(query_string, "first" => 2)
       assert_equal(["Death Star", "Shield Generator"], get_names(result))
