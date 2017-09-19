@@ -31,4 +31,4 @@ var subscriptionHandler = createHandler({
 var network = Network.create(fetchQuery, subscriptionHandler)
 ```
 
-See the Subscriptions guide for information about server-side setup.
+See the {% internal_link "Subscriptions guide", "/subscriptions/overview" %} for information about server-side setup.

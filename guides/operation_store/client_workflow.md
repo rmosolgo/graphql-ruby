@@ -22,7 +22,7 @@ Clients are registered via {% internal_link "the UI","/operation_store/getting_s
 
 {{ "/operation_store/add_a_client.png" | link_to_img:"Add a Client for Persisted Queries" }}
 
-A default `secret` is provided for you, but you can also enter your own. The `secret` is used for {% internal_link "HMAC authentication", "/operation_store/authentication" %}.
+A default `secret` is provided for you, but you can also enter your own. The `secret` is used for {% internal_link "HMAC authentication", "/operation_store/access_control" %}.
 
 (Are you interested in a Ruby API for this? Please {% open_an_issue "OperationStore Ruby API" %} or email `support@graphql.pro`.)
 
@@ -35,7 +35,7 @@ The easiest way to sync is with `graphql-ruby-client sync`, a command-line tool 
 In short, it:
 
 - Finds GraphQL queries from `.graphql` files or `relay-compiler` output in the provided `--path`
-- Adds an {% internal_link "Authentication header","/operation_store/authentication" %} based on the provided `--client` and `--secret`
+- Adds an {% internal_link "Authentication header","/operation_store/access_control" %} based on the provided `--client` and `--secret`
 - Sends the operations to the provided `--url`
 - Generates a JavaScript module into the provided `--outfile`
 
@@ -68,4 +68,4 @@ The server will use those values to fetch an operation from the database.
 
 #### Next Steps
 
-Learn more about `OperationStore`'s {% internal_link "authentication", "/operation_store/authentication" %} or read some tips for {% internal_link "server management","/operation_store/server_management" %}.
+Learn more about `OperationStore`'s {% internal_link "authentication", "/operation_store/access_control" %} or read some tips for {% internal_link "server management","/operation_store/server_management" %}.

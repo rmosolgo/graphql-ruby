@@ -335,11 +335,7 @@ You can provide custom authorization logic by providing a class:
 
 ```ruby
 MySchema = GraphQL::Schema.define do
-  # choose one:
-  authorization(:pundit)
-  # or:
-  authorization(:cancan)
-  # or:
+  # Custom authorization strategy class:
   authorization(MyAuthStrategy)
 end
 ```
