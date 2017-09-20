@@ -2,15 +2,6 @@
 require 'spec_helper'
 
 describe GraphQL::Relay::BaseConnection do
-  module Encoder
-    module_function
-    def encode(str, nonce: false); str; end
-    def decode(str, nonce: false); str; end
-  end
-
-  let(:schema) { OpenStruct.new(cursor_encoder: Encoder) }
-  let(:context) { OpenStruct.new(schema: schema) }
-
   describe ".connection_for_nodes" do
     it "resolves most specific connection type" do
       class SpecialArray < Array; end
@@ -30,51 +21,41 @@ describe GraphQL::Relay::BaseConnection do
         first: 1,
         last: -1,
       }
-      conn = GraphQL::Relay::BaseConnection.new([], args, context: context)
+      conn = GraphQL::Relay::BaseConnection.new([], args)
       assert_equal 1, conn.first
       assert_equal 0, conn.last
 
       args = {
         first: nil,
       }
-      conn = GraphQL::Relay::BaseConnection.new([], args, context: context)
+      conn = GraphQL::Relay::BaseConnection.new([], args)
       assert_equal nil, conn.first
     end
   end
 
-  describe "#context" do
-    it "Has public access to the field context" do
-      conn = GraphQL::Relay::BaseConnection.new([], {}, context: context)
-      assert_equal context, conn.context
-    end
-  end
-
   describe "#encode / #decode" do
-    module ReverseEncoder
+    module ReverseCoder
       module_function
       def encode(str, nonce: false); str.reverse; end
       def decode(str, nonce: false); str.reverse; end
     end
 
-    let(:schema) { OpenStruct.new(cursor_encoder: ReverseEncoder) }
-    let(:context) { OpenStruct.new(schema: schema) }
-
-    it "Uses the schema's encoder" do
-      conn = GraphQL::Relay::BaseConnection.new([], {}, context: context)
+    it "Uses the schema's coder" do
+      conn = GraphQL::Relay::BaseConnection.new([], {}, coder: ReverseCoder)
 
       assert_equal "1/nosreP", conn.encode("Person/1")
       assert_equal "Person/1", conn.decode("1/nosreP")
     end
 
     it "defaults to base64" do
-      conn = GraphQL::Relay::BaseConnection.new([], {}, context: nil)
+      conn = GraphQL::Relay::BaseConnection.new([], {})
 
       assert_equal "UGVyc29uLzE=", conn.encode("Person/1")
       assert_equal "Person/1", conn.decode("UGVyc29uLzE=")
     end
 
     it "handles trimmed base64" do
-      conn = GraphQL::Relay::BaseConnection.new([], {}, context: nil)
+      conn = GraphQL::Relay::BaseConnection.new([], {})
 
       assert_equal "Person/1", conn.decode("UGVyc29uLzE")
     end

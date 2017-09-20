@@ -42,7 +42,12 @@ module GraphQL
           nil
         else
           connection_class = GraphQL::Relay::BaseConnection.connection_for_nodes(nodes)
-          connection_class.new(nodes, args, field: @field, max_page_size: @max_page_size, parent: parent, context: ctx)
+          kwargs = {
+            field: @field,
+            max_page_size: (@max_page_size.nil? && ctx) ? ctx.schema.default_max_page_size : @max_page_size,
+            parent: parent
+          }
+          connection_class.new(nodes, args, **kwargs)
         end
       end
 

@@ -61,6 +61,23 @@ module GraphQL
         @last
       end
 
+      def start_cursor
+        if start_node = paged_nodes_array.first
+          cursor_from_node(start_node)
+        else
+          nil
+        end
+      end
+
+      def end_cursor
+        if start_node = paged_nodes_array.last
+          cursor_from_node(start_node)
+        else
+          nil
+        end
+      end
+
+
       private
 
       # apply first / last limit results

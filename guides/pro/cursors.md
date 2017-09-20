@@ -76,7 +76,7 @@ VersionedCursorEncoder = GraphQL::Pro::Encoder.versioned(
 
 MySchema = GraphQL::Schema.define do
   # Apply the versioned encoder:
-  cursor_encoder(VersionedCursorEncoder)
+  cursor_coder(VersionedCursorEncoder)
 end
 ```
 

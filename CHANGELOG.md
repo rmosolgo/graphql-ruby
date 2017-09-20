@@ -4,7 +4,12 @@
 
 ### Deprecations
 
+- GraphQL::Schema::Base64Encoder has been renamed to GraphQL::Schema::Coders::Base64Coder #783
+- GraphQL::Relay::BaseConnection no longer receives a `context` #783
+
 ### New features
+
+- GraphQL::Relay::BaseConnection now explicitly accepts a `coder` field for encoding/decoding cursors #783
 
 ### Bug fixes
 

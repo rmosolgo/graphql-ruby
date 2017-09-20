@@ -12,9 +12,6 @@ module GraphQL
     #   - {#max_page_size} (the specified maximum page size that can be returned from a connection)
     #
     class BaseConnection
-      # Just to encode data in the cursor, use something that won't conflict
-      CURSOR_SEPARATOR = "---"
-
       # Map of collection class names -> connection_classes
       # eg `{"Array" => ArrayConnection}`
       CONNECTION_IMPLEMENTATIONS = {}
@@ -45,7 +42,7 @@ module GraphQL
         end
       end
 
-      attr_reader :nodes, :arguments, :max_page_size, :parent, :field, :context
+      attr_reader :nodes, :arguments, :max_page_size, :parent, :field
 
       # Make a connection, wrapping `nodes`
       # @param nodes [Object] The collection of nodes
@@ -53,23 +50,29 @@ module GraphQL
       # @param field [GraphQL::Field] The underlying field
       # @param max_page_size [Int] The maximum number of results to return
       # @param parent [Object] The object which this collection belongs to
-      # @param context [GraphQL::Query::Context] The context from the field being resolved
-      def initialize(nodes, arguments, field: nil, max_page_size: nil, parent: nil, context: nil)
-        @context = context
+      # @param coder [Object] The object encodes and decodes a cursor
+      def initialize(nodes, arguments, field: nil, max_page_size: nil, parent: nil, coder: nil, context: nil)
         @nodes = nodes
         @arguments = arguments
         @field = field
         @parent = parent
-        @encoder = context ? @context.schema.cursor_encoder : GraphQL::Schema::Base64Encoder
-        @max_page_size = max_page_size.nil? && context ? @context.schema.default_max_page_size : max_page_size
+        @coder = coder.nil? ? GraphQL::Schema::Base64Encoder : coder
+        @max_page_size = max_page_size
+        @context = context
       end
 
       def encode(data)
-        @encoder.encode(data, nonce: true)
+        @coder.encode(data, nonce: true)
       end
 
       def decode(data)
-        @encoder.decode(data, nonce: true)
+        @coder.decode(data, nonce: true)
+      end
+
+      # @deprecated(reason: "Explicitly pass max_page_size and cursor")
+      def context
+        warn("Access to context is deprecated in BaseConection. Explicitly pass `max_page_size` and `cursor`")
+        @context
       end
 
       # The value passed as `first:`, if there was one. Negative numbers become `0`.
@@ -119,19 +122,19 @@ module GraphQL
 
       # Used by `pageInfo`
       def start_cursor
-        if start_node = (respond_to?(:paged_nodes_array, true) ? paged_nodes_array : paged_nodes).first
-          return cursor_from_node(start_node)
+        if start_node = paged_nodes.first
+          cursor_from_node(start_node)
         else
-          return nil
+          nil
         end
       end
 
       # Used by `pageInfo`
       def end_cursor
-        if end_node = (respond_to?(:paged_nodes_array, true) ? paged_nodes_array : paged_nodes).last
-          return cursor_from_node(end_node)
+        if end_node = paged_nodes.last
+          cursor_from_node(end_node)
         else
-          return nil
+          nil
         end
       end
 

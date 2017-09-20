@@ -70,7 +70,7 @@ describe GraphQL::Relay::RangeAdd do
       field :add_item, add_item.field
     end
 
-    GraphQL::Schema.define(query: query, mutation: mutation, cursor_encoder: PassThroughEncoder)
+    GraphQL::Schema.define(query: query, mutation: mutation, cursor_coder: PassThroughEncoder)
   }
 
 

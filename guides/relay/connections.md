@@ -285,12 +285,12 @@ connection_field = GraphQL::Relay::ConnectionField.create(field)
 
 ## Cursors
 
-By default, cursors are encoded in base64 to make them opaque to a human client. You can specify a custom encoder with `Schema#cursor_encoder`. The value should be an object which responds to `.encode(plain_text, nonce:)` and `.decode(encoded_text, nonce: false)`.
+By default, cursors are encoded in base64 to make them opaque to a human client. You can specify a custom encoder with `Schema#cursor_coder`. The value should be an object which responds to `.encode(plain_text, nonce:)` and `.decode(encoded_text, nonce: false)`.
 
 For example, to use URL-safe base-64 encoding:
 
 ```ruby
-module URLSafeBase64Encoder
+module URLSafeBase64Coder
   def self.encode(txt, nonce: false)
     Base64.urlsafe_encode64(txt)
   end
@@ -302,10 +302,10 @@ end
 
 MySchema = GraphQL::Schema.define do
   # ...
-  cursor_encoder(URLSafeBase64Encoder)
+  cursor_coder(URLSafeBase64Coder)
 end
 ```
 
 Now, all connections will use URL-safe base-64 encoding.
 
-From a connection instance, the `cursor_encoders` methods available via {{ "GraphQL::Relay::BaseConnection#encode" | api_doc }} and {{ "GraphQL::Relay::BaseConnection#decode" | api_doc }}
+From a connection instance, the `cursor_coders` methods available via {{ "GraphQL::Relay::BaseConnection#encode" | api_doc }} and {{ "GraphQL::Relay::BaseConnection#decode" | api_doc }}

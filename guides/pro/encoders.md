@@ -35,11 +35,11 @@ end
 
 ## Encrypting Cursors
 
-Encrypt cursors by attaching an encrypted encoder to `Schema#cursor_encoder`:
+Encrypt cursors by attaching an encrypted encoder to `Schema#cursor_coder`:
 
 ```ruby
 MySchema = GraphQL::Schema.define do
-  cursor_encoder(MyCursorEncoder)
+  cursor_coder(MyCursorEncoder)
 end
 ```
 
