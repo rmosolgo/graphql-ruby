@@ -13,6 +13,19 @@ describe("merging a project", () => {
     expect(ops).toMatchSnapshot()
   })
 
+  describe("with --add-typename", () => {
+    it("builds out operation with __typename fields", () => {
+      var filenames = [
+        "./__tests__/project/op_3.graphql",
+        "./__tests__/project/frag_2.graphql",
+        "./__tests__/project/frag_3.graphql",
+        "./__tests__/project/frag_4.graphql",
+      ]
+      var ops = prepareProject(filenames, true)
+      expect(ops).toMatchSnapshot()
+    })
+  })
+
   it("blows up on duplicate names", () => {
     var filenames = [
       "./__tests__/documents/doc1.graphql",

@@ -38,3 +38,36 @@ fragment Frag1 on Query {
   },
 ]
 `;
+
+exports[`merging a project with --add-typename builds out operation with __typename fields 1`] = `
+Array [
+  Object {
+    "alias": null,
+    "body": "query GetStuff3 {
+  stuff {
+    withStuffInside
+    __typename
+  }
+  ...Frag2
+  ...Frag4
+}
+
+fragment Frag2 on Query {
+  ...Frag3
+}
+
+fragment Frag3 on Query {
+  evenMoreStuff
+}
+
+fragment Frag4 on Query {
+  evenMoreStuff {
+    stuffInside
+    __typename
+  }
+}
+",
+    "name": "GetStuff3",
+  },
+]
+`;
