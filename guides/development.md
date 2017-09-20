@@ -15,6 +15,7 @@ So, you want to hack on GraphQL Ruby! Here are some tips for getting started.
 - [Coding guidelines](#coding-guidelines) for working on your contribution
 - Special tools for building the [lexer and parser](#lexer-and-parser)
 - Building and publishing the [GraphQL Ruby website](#website)
+- [Versioning](#versioning) describes how changes are managed and released
 
 ### Setup
 
@@ -169,3 +170,19 @@ To publish the website with GitHub pages, run the Rake task:
 ```
 bundle exec rake site:publish
 ```
+
+### Versioning
+
+GraphQL-Ruby does _not_ attempt to deliver "semantic versioning" for the reasons described in `jashkenas`'
+s post, ["Why Semantic Versioning Isn't"](https://gist.github.com/jashkenas/cbd2b088e20279ae2c8e). Instead, the following scheme is used as a guideline:
+
+- Version numbers consist of three parts, `MAJOR.MINOR.PATCH`
+- __`PATCH`__ version indicates bug fixes or small features for specific use cases. Ideally, you can upgrade patch versions with only a quick skim of the changelog.
+- __`MINOR`__ version indicates significant additions, internal refactors, or small breaking changes. When upgrading a minor version, check the changelog for any new features or breaking changes which apply to your system. The changelog will always include an upgrade path for any breaking changes. Minor versions may also include deprecation warnings to warn about upcoming breaking changes.
+- __`MAJOR`__ version indicates significant breaking changes. Do not expect code to run without some modification, especially if the code yielded deprecation warnings.
+
+This policy is inspired by the [Ruby 2.1.0+ version policy](https://www.ruby-lang.org/en/news/2013/12/21/ruby-version-policy-changes-with-2-1-0/).
+
+Pull requests and issues may be tagged with a [GitHub milestone](https://github.com/rmosolgo/graphql-ruby/milestones) to denote when they'll be released.
+
+The [changelog](https://github.com/rmosolgo/graphql-ruby/blob/master/CHANGELOG.md) should always contain accurate and thorough information so that users can upgrade. If you have trouble upgrading based on the changelog, please open an issue on GitHub.
