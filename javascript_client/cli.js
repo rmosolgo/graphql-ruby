@@ -10,7 +10,7 @@ if (argv.help || argv.h) {
 
 required arguments:
   --url=<endpoint-url>    URL where data should be POSTed
-  --client=<client-name>  Idetifier for this client application
+  --client=<client-name>  Identifier for this client application
 
 optional arguments:
   --path=<path>                   Path to .graphql files (default is "./**/*.graphql")
