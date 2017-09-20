@@ -24,6 +24,7 @@ optional arguments:
                                   By default, this flag is set to:
                                     - "relay" if "__generated__" in the path
                                     - otherwise, "project"
+  --add-typename                  Automatically adds the "__typename" field to your queries
   --quiet                         Suppress status logging
   --help                          Print this message
 `)
@@ -41,6 +42,7 @@ optional arguments:
       outfile: argv.outfile,
       secret: argv.secret,
       mode: argv.mode,
+      addTypename: argv["add-typename"],
       quiet: argv.hasOwnProperty("quiet"),
     })
 
