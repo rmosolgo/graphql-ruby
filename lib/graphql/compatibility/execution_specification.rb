@@ -418,6 +418,16 @@ module GraphQL
             assert_equal false, res.key?("errors")
             assert_equal [SpecificationSchema::BOGUS_NODE, SpecificationSchema::BOGUS_NODE], log
           end
+
+          def test_it_skips_connections
+            query_type = GraphQL::ObjectType.define do
+              name "Query"
+              connection :skipped, types[query_type], resolve: ->(o,a,c) { c.skip }
+            end
+            schema = GraphQL::Schema.define(query: query_type)
+            res = schema.execute("{ skipped { __typename } }")
+            assert_equal({"data" => nil}, res)
+          end
         end
       end
     end

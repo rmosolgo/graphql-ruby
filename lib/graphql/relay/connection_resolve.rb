@@ -27,6 +27,8 @@ module GraphQL
           else
             nodes
           end
+        elsif nodes.is_a?(GraphQL::Execution::Execute::Skip)
+          nodes
         else
           build_connection(nodes, args, parent, ctx)
         end
