@@ -8,6 +8,12 @@
 
 ### Bug fixes
 
+## 1.7.2 (20 Sept 2017)
+
+### Bug fixes
+
+- Correctly skip connections that return `ctx.skip` #972
+
 ## 1.7.1 (18 Sept 2017)
 
 ### Bug fixes
