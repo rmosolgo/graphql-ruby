@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+## 1.5.7 (20 Sept 2017)
+
+### Bug Fix
+
+- Properly return `nil` when a list of authorized objects returns `nil`
+
 ## 1.5.6 (19 Sept 2017)
 
 ### New Features
