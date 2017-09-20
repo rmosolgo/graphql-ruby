@@ -12,7 +12,7 @@ There is a JavaScript client for GraphQL-Ruby, `graphql-ruby-client`.
 You can install it from NPM or Yarn:
 
 ```
-yarn install graphql-ruby-client
+yarn add graphql-ruby-client
 npm install graphql-ruby-client
 ```
 
