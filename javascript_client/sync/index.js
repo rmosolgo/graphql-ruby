@@ -75,7 +75,7 @@ function sync(options) {
     payload.operations = prepareRelay(filenames)
   } else {
     if (filesMode === "file") {
-      payload.operations = prepareIsolatedFiles(filenames)
+      payload.operations = prepareIsolatedFiles(filenames, options.addTypename)
     } else if (filesMode === "project") {
       payload.operations = prepareProject(filenames, options.addTypename)
     } else {

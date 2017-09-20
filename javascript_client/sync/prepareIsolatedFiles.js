@@ -1,5 +1,6 @@
 var fs = require("fs")
 var graphql = require("graphql")
+var addTypenameToSelectionSet = require("./addTypenameToSelectionSet")
 
 /**
  * Read a bunch of GraphQL files and treat them as islands.
@@ -7,28 +8,38 @@ var graphql = require("graphql")
  * Don't make assertions about name uniqueness.
  *
  */
-function prepareIsolatedFiles(filenames) {
+function prepareIsolatedFiles(filenames, addTypename) {
   return filenames.map(function(filename) {
     var fileOperationBody = fs.readFileSync(filename, "utf8")
-    var fileOperationDocument = graphql.parse(fileOperationBody)
+    var fileOperationName = null;
 
-    // Find one and only one operation name in the file
-    var fileOperationName = null
-    fileOperationDocument.definitions.forEach(function(definition) {
-      if (definition.kind === "OperationDefinition") {
-        if (fileOperationName) {
-          throw new Error("Found multiple operations in " + filename + ": " + fileOperationName + ", " + definition.name  + ". Files must contain only one operation")
-        } else {
-          fileOperationName = definition.name.value
+    var ast = graphql.parse(fileOperationBody)
+    var visitor = {
+      OperationDefinition: {
+        enter: function(node) {
+          if (fileOperationName) {
+            throw new Error("Found multiple operations in " + filename + ": " + fileOperationName + ", " + node.name + ". Files must contain only one operation")
+          } else {
+            fileOperationName = node.name.value
+          }
+        },
+        leave: function(node) {
+          if (addTypename) { addTypenameToSelectionSet(node.selectionSet, true); }
+        }
+      },
+      FragmentDefinition: {
+        leave: function(node) {
+          if (addTypename) { addTypenameToSelectionSet(node.selectionSet, true); }
         }
       }
-    })
+    }
+    graphql.visit(ast, visitor)
 
     return {
       // populate alias later, when hashFunc is available
       alias: null,
       name: fileOperationName,
-      body: fileOperationBody,
+      body: graphql.print(ast),
     }
   })
 }
