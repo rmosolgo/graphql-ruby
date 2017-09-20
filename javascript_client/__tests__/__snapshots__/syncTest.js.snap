@@ -62,6 +62,33 @@ query GetStuff3 {
 ",
     "name": "GetStuff3",
   },
+  Object {
+    "alias": "919af8f80d8848a9b9b6176e457f8e45",
+    "body": "query GetStuffIsolated {
+  ...FragIsolated
+  things {
+    existHere
+  }
+}
+
+fragment FragIsolated on Query {
+  evenMoreStuff {
+    stuffInside
+  }
+}
+",
+    "name": "GetStuffIsolated",
+  },
+  Object {
+    "alias": "d5dfe825034aeda06e2639935d8b107d",
+    "body": "query GetStuffIsolated2 {
+  things {
+    existHere
+  }
+}
+",
+    "name": "GetStuffIsolated2",
+  },
 ]
 `;
 
@@ -131,6 +158,33 @@ Array [
 ",
     "name": "GetStuff3",
   },
+  Object {
+    "alias": "919af8f80d8848a9b9b6176e457f8e45",
+    "body": "query GetStuffIsolated {
+  ...FragIsolated
+  things {
+    existHere
+  }
+}
+
+fragment FragIsolated on Query {
+  evenMoreStuff {
+    stuffInside
+  }
+}
+",
+    "name": "GetStuffIsolated",
+  },
+  Object {
+    "alias": "d5dfe825034aeda06e2639935d8b107d",
+    "body": "query GetStuffIsolated2 {
+  things {
+    existHere
+  }
+}
+",
+    "name": "GetStuffIsolated2",
+  },
 ]
 `;
 
@@ -139,7 +193,7 @@ exports[`sync operations Logging Can be quieted with quiet: true 1`] = `Array []
 exports[`sync operations Logging Logs progress 1`] = `
 Array [
   Array [
-    "Syncing 3 operations to [1mbogus[0m...",
+    "Syncing 5 operations to [1mbogus[0m...",
   ],
   Array [
     "Generating client module in [1mOperationStoreClient.js[0m...",
@@ -153,7 +207,7 @@ Array [
 exports[`sync operations Printing the result prints failure 1`] = `
 Array [
   Array [
-    "Syncing 3 operations to [1mhttp://example.com/stored_operations/sync[0m...",
+    "Syncing 5 operations to [1mhttp://example.com/stored_operations/sync[0m...",
   ],
   Array [
     "  [2m0 added[0m",
@@ -184,7 +238,7 @@ Array [
 exports[`sync operations Printing the result prints success 1`] = `
 Array [
   Array [
-    "Syncing 3 operations to [1mhttp://example.com/stored_operations/sync[0m...",
+    "Syncing 5 operations to [1mhttp://example.com/stored_operations/sync[0m...",
   ],
 ]
 `;
