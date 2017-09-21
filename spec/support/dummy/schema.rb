@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # frozen_string_literal: true
 require "graphql"
 require_relative "./data"
@@ -289,6 +290,10 @@ module Dummy
     resolve ->(t, a, c) { MILKS[1] }
   end
 
+  class SomeConnectionFunction < GraphQL::Function
+    type -> { CheeseType.connection_type }
+  end
+
   DairyAppQueryType = GraphQL::ObjectType.define do
     name "Query"
     description "Query root of the system"
@@ -314,6 +319,15 @@ module Dummy
         end
         products.first
       }
+    end
+
+    connection :connectionWithoutComplexity, function: SomeConnectionFunction do
+      resolve ->(obj, args, ctx) { [] }
+    end
+
+    connection :connectionWithComplexity, function: SomeConnectionFunction do
+      complexity 10
+      resolve ->(obj, args, ctx) { [] }
     end
 
     field :allAnimal, !types[AnimalUnion] do
@@ -412,6 +426,8 @@ module Dummy
     mutation DairyAppMutationType
     subscription SubscriptionType
     max_depth 5
+    max_complexity 10000000
+
     orphan_types [HoneyType, BeverageUnion]
 
     rescue_from(NoSuchDairyError) { |err| err.message  }
