@@ -104,10 +104,13 @@ module GraphQL
       end
 
       def visit_field_on_type(type_defn, field_defn, dynamic_field: false)
-        instrumented_field_defn = @field_instrumenters.reduce(field_defn) do |defn, inst|
-          inst.instrument(type_defn, defn)
-        end
-        if !dynamic_field
+        if dynamic_field
+          # Don't apply instrumentation to dynamic fields since they're shared constants
+          instrumented_field_defn = field_defn
+        else
+          instrumented_field_defn = @field_instrumenters.reduce(field_defn) do |defn, inst|
+            inst.instrument(type_defn, defn)
+          end
           @instrumented_field_map[type_defn.name][instrumented_field_defn.name] = instrumented_field_defn
         end
         @type_reference_map[instrumented_field_defn.type.unwrap.name] << instrumented_field_defn
