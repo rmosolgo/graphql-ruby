@@ -16,6 +16,14 @@ describe GraphQL::Backtrace do
     end
   end
 
+  class ErrorAnalyzer
+    def call(_memo, visit_type, irep_node)
+      if irep_node.name == "raiseError"
+        raise GraphQL::AnalysisError, "this should not be wrapped by a backtrace, but instead, returned to the client"
+      end
+    end
+  end
+
   let(:resolvers) {
     {
       "Query" => {
@@ -49,6 +57,7 @@ describe GraphQL::Backtrace do
     GRAPHQL
     GraphQL::Schema.from_definition(defn, default_resolve: resolvers).redefine {
       lazy_resolve(LazyError, :raise_err)
+      query_analyzer(ErrorAnalyzer.new)
     }
   }
 
@@ -103,7 +112,7 @@ describe GraphQL::Backtrace do
       assert_includes err.message, rendered_table
       # The message includes the original error message
       assert_includes err.message, "This is broken: Boom"
-      assert_includes err.message, "spec/graphql/backtrace_spec.rb:27", "It includes the original backtrace"
+      assert_includes err.message, "spec/graphql/backtrace_spec.rb:35", "It includes the original backtrace"
       assert_includes err.message, "more lines"
     end
 
@@ -132,6 +141,11 @@ describe GraphQL::Backtrace do
         '1:1  | query StrField      | nil        | {}        | {field2: {...}, __typename: "Query"}',
       ].join("\n")
       assert_includes err.message, rendered_table
+    end
+
+    it "returns analysis errors to the client" do
+      res = schema.execute("query raiseError { __typename }")
+      assert_equal "this should not be wrapped by a backtrace, but instead, returned to the client", res["errors"].first["message"]
     end
   end
 
