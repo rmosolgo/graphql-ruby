@@ -41,6 +41,7 @@ option | description
 `--client` | Client ID ({% internal_link "created on server", "/operation_store/client_workflow" %})
 `--secret` | Client Secret ({% internal_link "created on server", "/operation_store/client_workflow" %})
 `--outfile` | Destination for generated JS code
+`--add-typename` | Add `__typename` to all selection sets (for use with Apollo Client)
 
 You can see these and a few others with `graphql-ruby-client sync --help`.
 
