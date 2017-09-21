@@ -1,5 +1,7 @@
 var fs = require("fs")
 var graphql = require("graphql")
+var addTypenameToSelectionSet = require("./addTypenameToSelectionSet")
+
 /**
  * Take a whole bunch of GraphQL in one big string
  * and validate it, especially:
@@ -11,7 +13,7 @@ var graphql = require("graphql")
  * so it has all the fragments it needs.
  */
 
-function prepareProject(filenames) {
+function prepareProject(filenames, addTypename) {
   var allGraphQL = ""
   filenames.forEach(function(filename) {
     allGraphQL += fs.readFileSync(filename)
@@ -29,7 +31,7 @@ function prepareProject(filenames) {
   var enterDefinition = function(node) {
     var definitionName = node.name.value
     if (definitionDependencyNames[definitionName]) {
-      throw new Error("Found duplicate definition name: " + definitionName +", fragment & operation names must be unique to sync")
+      throw new Error("Found duplicate definition name: " + definitionName + ", fragment & operation names must be unique to sync")
     } else {
       currentDependencyNames = definitionDependencyNames[definitionName] = []
     }
@@ -45,11 +47,17 @@ function prepareProject(filenames) {
         enterDefinition(node)
         allOperationNames.push(node.name.value)
       },
-      leave: leaveDefinition,
+      leave: function(node) {
+        if (addTypename) { addTypenameToSelectionSet(node.selectionSet, true) }
+        leaveDefinition
+      }
     },
     FragmentDefinition: {
       enter: enterDefinition,
-      leave: leaveDefinition,
+      leave: function(node) {
+        if (addTypename) { addTypenameToSelectionSet(node.selectionSet, true) }
+        leaveDefinition
+      }
     },
     // When entering a fragment spread, register it as a
     // dependency of its context
@@ -86,7 +94,6 @@ function prepareProject(filenames) {
       alias: null, // will be filled in later, when hashFunc is available
     }
   })
-
 
   return operations
 }

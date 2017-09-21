@@ -19,6 +19,7 @@ var fs = require("fs")
  * @param {String} options.secret - HMAC-SHA256 key which must match the server secret (default is no encryption)
  * @param {String} options.url - Target URL for sending prepared queries
  * @param {String} options.mode - If `"file"`, treat each file separately. If `"project"`, concatenate all files and extract each operation. If `"relay"`, treat it as relay-compiler output
+ * @param {Boolean} options.addTypename - Indicates if the "__typename" field are automatically added to your queries
  * @param {String} options.outfile - Where the generated code should be written
  * @param {String} options.client - the Client ID that these operations belong to
  * @param {Function} options.send - A function for sending the payload to the server, with the signature `options.send(payload)`. (Default is an HTTP `POST` request)
@@ -54,8 +55,6 @@ function sync(options) {
   }
 
   var clientName = options.client
-
-
   if (!clientName) {
     throw new Error("Client name must be provided for sync")
   }
@@ -76,9 +75,9 @@ function sync(options) {
     payload.operations = prepareRelay(filenames)
   } else {
     if (filesMode === "file") {
-      payload.operations = prepareIsolatedFiles(filenames)
+      payload.operations = prepareIsolatedFiles(filenames, options.addTypename)
     } else if (filesMode === "project") {
-      payload.operations = prepareProject(filenames)
+      payload.operations = prepareProject(filenames, options.addTypename)
     } else {
       throw new Error("Unexpected mode: " + filesMode)
     }

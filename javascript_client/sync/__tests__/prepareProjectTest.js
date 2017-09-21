@@ -9,21 +9,21 @@ describe("merging a project", () => {
       "./__tests__/project/frag_2.graphql",
       "./__tests__/project/frag_3.graphql",
     ]
-    var ops = prepareProject(filenames)
+    var ops = prepareProject(filenames, false)
+    expect(ops).toMatchSnapshot()
+  })
 
-    var expectedOps = [
-      {
-        body: 'query GetStuff2 {\n  stuff\n  ...Frag1\n  ...Frag2\n}\n\nfragment Frag1 on Query {\n  moreStuff\n}\n\nfragment Frag2 on Query {\n  ...Frag3\n}\n\nfragment Frag3 on Query {\n  evenMoreStuff\n}\n',
-        name: 'GetStuff2',
-        alias: null,
-      },
-      {
-        body: 'query GetStuff {\n  ...Frag1\n}\n\nfragment Frag1 on Query {\n  moreStuff\n}\n',
-        name: 'GetStuff',
-        alias: null,
-      }
-    ]
-    expect(ops).toEqual(expectedOps)
+  describe("with --add-typename", () => {
+    it("builds out operation with __typename fields", () => {
+      var filenames = [
+        "./__tests__/project/op_3.graphql",
+        "./__tests__/project/frag_2.graphql",
+        "./__tests__/project/frag_3.graphql",
+        "./__tests__/project/frag_4.graphql",
+      ]
+      var ops = prepareProject(filenames, true)
+      expect(ops).toMatchSnapshot()
+    })
   })
 
   it("blows up on duplicate names", () => {
