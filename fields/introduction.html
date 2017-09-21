@@ -77,8 +77,7 @@
 <ul>
   <li><code class="highlighter-rouge">object</code>: The underlying object for this type (above, a <code class="highlighter-rouge">Post</code> instance)</li>
   <li><code class="highlighter-rouge">arguments</code>: The arguments for this field (see below, a <a href="http://www.rubydoc.info/gems/graphql/1.7.2/GraphQL/Query/Arguments" target="_blank" title="API docs for GraphQL::Query::Arguments"><code>GraphQL::Query::Arguments</code></a> instance)</li>
-  <li><code class="highlighter-rouge">context</code>: The context for this query (see <a href="/queries/executing_queries">Executing Queries</a>
-, a <a href="http://www.rubydoc.info/gems/graphql/1.7.2/GraphQL/Query/Context" target="_blank" title="API docs for GraphQL::Query::Context"><code>GraphQL::Query::Context</code></a> instance)</li>
+  <li><code class="highlighter-rouge">context</code>: The context for this query (see <a href="/queries/executing_queries">Executing Queries</a>, a <a href="http://www.rubydoc.info/gems/graphql/1.7.2/GraphQL/Query/Context" target="_blank" title="API docs for GraphQL::Query::Context"><code>GraphQL::Query::Context</code></a> instance)</li>
 </ul>
 
 <p>In fact, the <code class="highlighter-rouge">field do ... end</code> block is passed to <a href="http://www.rubydoc.info/gems/graphql/1.7.2/GraphQL/Field" target="_blank" title="API docs for GraphQL::Field"><code>GraphQL::Field</code></a>’s <code class="highlighter-rouge">.define</code> method, so you can define many things there:</p>

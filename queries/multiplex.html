@@ -83,10 +83,42 @@
 
 <p><code class="highlighter-rouge">results</code> will contain the result for each query in <code class="highlighter-rouge">queries</code>.</p>
 
+<h2 id="apollo-query-batching">Apollo Query Batching</h2>
+
+<p>Apollo sends the batch variables in a <code class="highlighter-rouge">_json</code> param, you also need to ensure that your schema can handle both batched and non-batched queries, below is an example of the default GraphqlController rewritten to handle Apollo batches:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="k">def</span> <span class="nf">execute</span>
+  <span class="n">context</span> <span class="o">=</span> <span class="p">{}</span>
+
+  <span class="c1"># Apollo sends the params in a _json variable when batching is enabled</span>
+  <span class="c1"># see the Apollo Documentation about query batching: http://dev.apollodata.com/core/network.html#query-batching</span>
+  <span class="n">result</span> <span class="o">=</span> <span class="k">if</span> <span class="n">params</span><span class="p">[</span><span class="ss">:_json</span><span class="p">]</span>
+    <span class="n">queries</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="ss">:_json</span><span class="p">].</span><span class="nf">map</span> <span class="k">do</span> <span class="o">|</span><span class="n">param</span><span class="o">|</span>
+      <span class="p">{</span>
+        <span class="ss">query: </span><span class="n">param</span><span class="p">[</span><span class="ss">:query</span><span class="p">],</span>
+        <span class="ss">operation_name: </span><span class="n">param</span><span class="p">[</span><span class="ss">:operationName</span><span class="p">],</span>
+        <span class="ss">variables: </span><span class="n">ensure_hash</span><span class="p">(</span><span class="n">param</span><span class="p">[</span><span class="ss">:variables</span><span class="p">]),</span>
+        <span class="ss">context: </span><span class="n">context</span>
+      <span class="p">}</span>
+    <span class="k">end</span>
+    <span class="no">MySchema</span><span class="p">.</span><span class="nf">multiplex</span><span class="p">(</span><span class="n">queries</span><span class="p">)</span>
+  <span class="k">else</span>
+    <span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span>
+      <span class="n">params</span><span class="p">[</span><span class="ss">:query</span><span class="p">],</span>
+      <span class="ss">operation_name: </span><span class="n">params</span><span class="p">[</span><span class="ss">:operationName</span><span class="p">],</span>
+      <span class="ss">variables: </span><span class="n">ensure_hash</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="ss">:variables</span><span class="p">]),</span>
+      <span class="ss">context: </span><span class="n">context</span>
+    <span class="p">)</span>
+  <span class="k">end</span>
+
+  <span class="n">render</span> <span class="ss">json: </span><span class="n">result</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
 <h2 id="validation-and-error-handling">Validation and Error Handling</h2>
 
-<p>Each query is validated and <a href="/queries/analysis">analyzed</a>
- independently. The <code class="highlighter-rouge">results</code> array may include a mix of successful results and failed results</p>
+<p>Each query is validated and <a href="/queries/analysis">analyzed</a> independently. The <code class="highlighter-rouge">results</code> array may include a mix of successful results and failed results</p>
 
 <h2 id="multiplex-level-context">Multiplex-Level Context</h2>
 
@@ -109,8 +141,7 @@
 </code></pre>
 </div>
 
-<p>The API is the same as <a href="/queries/analysis">query analyzers</a>
-, with some considerations:</p>
+<p>The API is the same as <a href="/queries/analysis">query analyzers</a>, with some considerations:</p>
 
 <ul>
   <li><code class="highlighter-rouge">initial_value</code> is called at the start of the <em>multiplex</em> (not query)</li>
