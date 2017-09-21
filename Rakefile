@@ -66,18 +66,26 @@ namespace :bench do
 end
 
 namespace :js do
+  client_dir = "./javascript_client"
 
   desc "Run the tests for javascript_client"
   task :test do
-    Dir.chdir("./javascript_client") do
+    Dir.chdir(client_dir) do
       system("yarn run test")
     end
   end
 
   desc "Install JS dependencies"
   task :install do
-    Dir.chdir("./javascript_client") do
+    Dir.chdir(client_dir) do
       system("yarn install")
+    end
+  end
+
+  desc "Publish the package to NPM"
+  task :publish do
+    Dir.chdir(client_dir) do
+      system("npm publish")
     end
   end
 
