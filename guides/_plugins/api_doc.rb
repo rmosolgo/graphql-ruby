@@ -76,7 +76,7 @@ module GraphQLSite
     end
 
     def render(context)
-      <<~HTML
+      <<~HTML.chomp
       <a href="#{context["site"]["baseurl"]}/#{@path}">#{@text}</a>
       HTML
     end
