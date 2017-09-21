@@ -96,7 +96,7 @@ module GraphQL
         end
       end
 
-      arguments_class.instantiate_arguments(input_values)
+      arguments_class.new(input_values)
     end
 
     # @api private
