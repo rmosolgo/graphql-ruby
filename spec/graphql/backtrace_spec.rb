@@ -157,14 +157,14 @@ describe GraphQL::Backtrace do
 
     it "always stringifies the #inspect response" do
       err = assert_raises(GraphQL::Backtrace::TracedError) {
-        schema.execute("query { nilInspect { raiseField(message: \"💥\") } }")
+        schema.execute("query { nilInspect { raiseField(message: \"pop!\") } }")
       }
 
       rendered_table = [
-        'Loc  | Field            | Object | Arguments        | Result',
-        '1:22 | Thing.raiseField |        | {"message"=>"💥"} | #<RuntimeError: This is broken: 💥>',
-        '1:9  | Query.nilInspect | nil    | {}               | {}',
-        '1:1  | query            | nil    | {}               | {}',
+        'Loc  | Field            | Object | Arguments           | Result',
+        '1:22 | Thing.raiseField |        | {"message"=>"pop!"} | #<RuntimeError: This is broken: pop!>',
+        '1:9  | Query.nilInspect | nil    | {}                  | {}',
+        '1:1  | query            | nil    | {}                  | {}',
       ].join("\n")
 
       assert_includes(err.message, rendered_table)
