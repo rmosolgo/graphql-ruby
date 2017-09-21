@@ -90,13 +90,15 @@ describe GraphQL::Query::Arguments do
         argument :b, test_input_type
         argument :c, types.Int # will be a hash
       end
+      GraphQL::Query::Arguments.construct_arguments_class(test_input_type)
+      test_input_type
     }
     it "wraps input objects, but not other hashes" do
       args = GraphQL::Query::Arguments.new(
         {a: 1, b: {a: 2}, c: {a: 3}},
         argument_definitions: input_type.arguments
       )
-      assert_instance_of GraphQL::Query::Arguments, args["b"]
+      assert_kind_of GraphQL::Query::Arguments, args["b"]
       assert_instance_of Hash, args["c"]
     end
   end
@@ -304,7 +306,7 @@ describe GraphQL::Query::Arguments do
       assert_equal nil, input_object.arguments_class
 
       GraphQL::Query::Arguments.construct_arguments_class(input_object)
-      args = input_object.arguments_class.instantiate_arguments({foo: 3, bar: -90})
+      args = input_object.arguments_class.new({foo: 3, bar: -90})
 
       assert_equal 3, args.foo
       assert_equal -90, args.bar
