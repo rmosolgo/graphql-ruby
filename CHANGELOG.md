@@ -8,6 +8,13 @@
 
 ### Bug fixes
 
+## 1.7.3 (20 Sept 2017)
+
+### Bug fixes
+
+- Fix arguments on `Query.__type` field #978
+- Fix `Relay::Edge` objects in `Backtrace` tables #975
+
 ## 1.7.2 (20 Sept 2017)
 
 ### Bug fixes
