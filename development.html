@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="http://www.rubydoc.info/gems/graphql/1.7.1/">API</a>
+          <a href="http://www.rubydoc.info/gems/graphql/1.7.2/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <input
@@ -54,6 +54,7 @@
   <li><a href="#coding-guidelines">Coding guidelines</a> for working on your contribution</li>
   <li>Special tools for building the <a href="#lexer-and-parser">lexer and parser</a></li>
   <li>Building and publishing the <a href="#website">GraphQL Ruby website</a></li>
+  <li><a href="#versioning">Versioning</a> describes how changes are managed and released</li>
 </ul>
 
 <h3 id="setup">Setup</h3>
@@ -217,6 +218,24 @@ rake bench:validate        <span class="c"># Benchmark validation of several que
 <div class="highlighter-rouge"><pre class="highlight"><code>bundle exec rake site:publish
 </code></pre>
 </div>
+
+<h3 id="versioning">Versioning</h3>
+
+<p>GraphQL-Ruby does <em>not</em> attempt to deliver “semantic versioning” for the reasons described in <code class="highlighter-rouge">jashkenas</code>’
+s post, <a href="https://gist.github.com/jashkenas/cbd2b088e20279ae2c8e">“Why Semantic Versioning Isn’t”</a>. Instead, the following scheme is used as a guideline:</p>
+
+<ul>
+  <li>Version numbers consist of three parts, <code class="highlighter-rouge">MAJOR.MINOR.PATCH</code></li>
+  <li><strong><code class="highlighter-rouge">PATCH</code></strong> version indicates bug fixes or small features for specific use cases. Ideally, you can upgrade patch versions with only a quick skim of the changelog.</li>
+  <li><strong><code class="highlighter-rouge">MINOR</code></strong> version indicates significant additions, internal refactors, or small breaking changes. When upgrading a minor version, check the changelog for any new features or breaking changes which apply to your system. The changelog will always include an upgrade path for any breaking changes. Minor versions may also include deprecation warnings to warn about upcoming breaking changes.</li>
+  <li><strong><code class="highlighter-rouge">MAJOR</code></strong> version indicates significant breaking changes. Do not expect code to run without some modification, especially if the code yielded deprecation warnings.</li>
+</ul>
+
+<p>This policy is inspired by the <a href="https://www.ruby-lang.org/en/news/2013/12/21/ruby-version-policy-changes-with-2-1-0/">Ruby 2.1.0+ version policy</a>.</p>
+
+<p>Pull requests and issues may be tagged with a <a href="https://github.com/rmosolgo/graphql-ruby/milestones">GitHub milestone</a> to denote when they’ll be released.</p>
+
+<p>The <a href="https://github.com/rmosolgo/graphql-ruby/blob/master/CHANGELOG.md">changelog</a> should always contain accurate and thorough information so that users can upgrade. If you have trouble upgrading based on the changelog, please open an issue on GitHub.</p>
 
 </div>
 <p class="guide-footer">
