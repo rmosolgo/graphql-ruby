@@ -49,6 +49,17 @@ describe GraphQL::Relay::BaseConnection do
     end
   end
 
+  describe "#inspect" do
+    it "inspects nicely" do
+      args = {
+        first: 1,
+        last: -1,
+      }
+      conn = GraphQL::Relay::BaseConnection.new([], args, context: context)
+      assert_equal "#<GraphQL::Relay::Connection @parent=nil @arguments={:first=>1, :last=>-1}>", conn.inspect
+    end
+  end
+
   describe "#encode / #decode" do
     module ReverseEncoder
       module_function
