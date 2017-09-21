@@ -46,6 +46,39 @@ results = MySchema.multiplex(queries)
 
 `results` will contain the result for each query in `queries`.
 
+## Apollo Query Batching
+
+Apollo sends the batch variables in a `_json` param, you also need to ensure that your schema can handle both batched and non-batched queries, below is an example of the default GraphqlController rewritten to handle Apollo batches:
+
+```ruby
+def execute
+  context = {}
+
+  # Apollo sends the params in a _json variable when batching is enabled
+  # see the Apollo Documentation about query batching: http://dev.apollodata.com/core/network.html#query-batching
+  result = if params[:_json]
+    queries = params[:_json].map do |param|
+      {
+        query: param[:query],
+        operation_name: param[:operationName],
+        variables: ensure_hash(param[:variables]),
+        context: context
+      }
+    end
+    MySchema.multiplex(queries)
+  else
+    MySchema.execute(
+      params[:query],
+      operation_name: params[:operationName],
+      variables: ensure_hash(params[:variables]),
+      context: context
+    )
+  end
+
+  render json: result
+end
+```
+
 ## Validation and Error Handling
 
 Each query is validated and {% internal_link "analyzed","/queries/analysis" %} independently. The `results` array may include a mix of successful results and failed results
