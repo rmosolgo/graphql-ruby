@@ -87,7 +87,7 @@ module GraphQL
           rows << [
             "#{position}",
             "#{field_name}#{field_alias ? " as #{field_alias}" : ""}",
-            ctx.object.inspect,
+            "#{ctx.object.inspect}",
             ctx.irep_node.arguments.to_h.inspect,
             Backtrace::InspectResult.inspect(top && @override_value ? @override_value : ctx.value),
           ]
@@ -107,7 +107,7 @@ module GraphQL
           rows << [
             "#{position}",
             "#{op_type}#{op_name ? " #{op_name}" : ""}",
-            query.root_value.inspect,
+            "#{query.root_value.inspect}",
             query.variables.to_h.inspect,
             Backtrace::InspectResult.inspect(query.context.value),
           ]

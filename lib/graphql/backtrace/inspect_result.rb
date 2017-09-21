@@ -43,7 +43,7 @@ module GraphQL
         when GraphQL::Execution::Lazy
           "(unresolved)"
         else
-          obj.inspect
+          "#{obj.inspect}"
         end
       end
     end

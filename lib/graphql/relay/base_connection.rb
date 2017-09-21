@@ -140,6 +140,10 @@ module GraphQL
         raise NotImplementedError, "must return a cursor for this object/connection pair"
       end
 
+      def inspect
+        "#<GraphQL::Relay::Connection @parent=#{@parent.inspect} @arguments=#{@arguments.to_h.inspect}>"
+      end
+
       private
 
       # Return a sanitized `arguments[arg_name]` (don't allow negatives)
