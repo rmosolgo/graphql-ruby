@@ -24,11 +24,17 @@ describe GraphQL::Backtrace do
     end
   end
 
+  class NilInspectObject
+    # Oops, this is evil, but it happens and we should handle it.
+    def inspect; nil; end
+  end
+
   let(:resolvers) {
     {
       "Query" => {
         "field1" => Proc.new { :something },
         "field2" => Proc.new { :something },
+        "nilInspect" => Proc.new { NilInspectObject.new },
       },
       "Thing" => {
         "listField" => Proc.new { :not_a_list },
@@ -44,6 +50,7 @@ describe GraphQL::Backtrace do
     type Query {
       field1: Thing
       field2: OtherThing
+      nilInspect: Thing
     }
 
     type Thing {
@@ -112,7 +119,7 @@ describe GraphQL::Backtrace do
       assert_includes err.message, rendered_table
       # The message includes the original error message
       assert_includes err.message, "This is broken: Boom"
-      assert_includes err.message, "spec/graphql/backtrace_spec.rb:35", "It includes the original backtrace"
+      assert_includes err.message, "spec/graphql/backtrace_spec.rb:41", "It includes the original backtrace"
       assert_includes err.message, "more lines"
     end
 
@@ -146,6 +153,21 @@ describe GraphQL::Backtrace do
     it "returns analysis errors to the client" do
       res = schema.execute("query raiseError { __typename }")
       assert_equal "this should not be wrapped by a backtrace, but instead, returned to the client", res["errors"].first["message"]
+    end
+
+    it "always stringifies the #inspect response" do
+      err = assert_raises(GraphQL::Backtrace::TracedError) {
+        schema.execute("query { nilInspect { raiseField(message: \"💥\") } }")
+      }
+
+      rendered_table = [
+        'Loc  | Field            | Object | Arguments        | Result',
+        '1:22 | Thing.raiseField |        | {"message"=>"💥"} | #<RuntimeError: This is broken: 💥>',
+        '1:9  | Query.nilInspect | nil    | {}               | {}',
+        '1:1  | query            | nil    | {}               | {}',
+      ].join("\n")
+
+      assert_includes(err.message, rendered_table)
     end
   end
 
