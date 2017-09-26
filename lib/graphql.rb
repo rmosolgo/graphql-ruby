@@ -99,6 +99,7 @@ require "graphql/schema/loader"
 require "graphql/schema/printer"
 
 require "graphql/analysis_error"
+require "graphql/coercion_error"
 require "graphql/runtime_type_error"
 require "graphql/invalid_null_error"
 require "graphql/invalid_name_error"

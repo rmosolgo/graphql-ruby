@@ -34,6 +34,30 @@ module GraphQL
   #     coerce_result ->(value, ctx) { value.to_f }
   #   end
   #
+  #
+  # You can customize the error message for invalid input values by raising a `GraphQL::CoercionError` within `coerce_input`:
+  #
+  # @example raising a custom error message
+  #   TimeType = GraphQL::ScalarType.define do
+  #     name "Time"
+  #     description "Time since epoch in seconds"
+  #
+  #     coerce_input ->(value, ctx) do
+  #       begin
+  #         Time.at(Float(value))
+  #       rescue ArgumentError
+  #         raise GraphQL::CoercionError, "cannot coerce `#{value.inspect}` to Float"
+  #       end
+  #     end
+  #
+  #     coerce_result ->(value, ctx) { value.to_f }
+  #   end
+  #
+  # This will result in the message of the `GraphQL::CoercionError` being used in the error response:
+  #
+  # @example custom error response
+  # {"message"=>"cannot coerce `"2"` to Float", "locations"=>[{"line"=>3, "column"=>9}], "fields"=>["arg"]}
+  #
   class ScalarType < GraphQL::BaseType
     accepts_definitions :coerce, :coerce_input, :coerce_result
     ensure_defined :coerce_non_null_input, :coerce_result
