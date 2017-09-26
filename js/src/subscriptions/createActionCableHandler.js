@@ -7,51 +7,32 @@
  * OperationStore
  * @return {Function}
 */
-function createActionCableHandler(cable, operations) {
+
+import ActionCableChannelOperationsHandler from './ActionCableChannelOperationsHandler';
+
+const createActionCableHandler = (cable, storedOperations) => {
+  const handler = new ActionCableChannelOperationsHandler(storedOperations);
+
+  const subscription = cable.subscriptions.create({
+    channel: 'GraphqlChannel',
+  }, {
+    disconnected: () => {
+      handler.removeAllOperations();
+    },
+    received: (payload) => {
+      handler.processPayload(payload);
+    },
+  });
+
   return (operation, variables, cacheConfig, observer) => {
-    // Register the subscription by subscribing to the channel
-    const subscription = cable.subscriptions.create({
-      channel: 'GraphqlChannel',
-    }, {
-      connected() {
-        // Once connected, send the GraphQL data over the channel
-        const channelParams = {
-          variables,
-          operationName: operation.name,
-        };
+    const disposable = handler.addOperation(subscription, operation, variables, cacheConfig, observer);
 
-        // Use the stored operation alias if possible
-        if (operations) {
-          channelParams.operationId = operations.getOperationId(operation.name);
-        } else {
-          channelParams.query = operation.text;
-        }
-
-        this.perform('execute', channelParams);
-      },
-      received(payload) {
-        // When we get a response, send the update to `observer`
-        const { result } = payload;
-        if (result && result.errors) {
-          // What kind of error stuff belongs here?
-          observer.onError(result.errors);
-        } else if (result) {
-          observer.onNext({ data: result.data });
-        }
-        if (!payload.more) {
-          // Subscription is finished
-          observer.onCompleted();
-        }
-      },
-    });
-
-    // Return an object for Relay to unsubscribe with
     return {
       dispose() {
-        subscription.unsubscribe();
+        disposable.dispose();
       },
     };
   };
 }
 
-module.exports = createActionCableHandler;
+export default createActionCableHandler;

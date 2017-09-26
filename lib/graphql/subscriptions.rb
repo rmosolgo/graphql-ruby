@@ -58,9 +58,9 @@ module GraphQL
     # @param event [GraphQL::Subscriptions::Event] The event which was triggered
     # @param object [Object] The value for the subscription field
     # @return [void]
-    def execute(subscription_id, event, object)
+    def execute(subscription_id, channel_operation_id, event, object)
       # Lookup the saved data for this subscription
-      query_data = read_subscription(subscription_id)
+      query_data = read_subscription(subscription_id, channel_operation_id)
       # Fetch the required keys from the saved data
       query_string = query_data.fetch(:query_string)
       variables = query_data.fetch(:variables)
@@ -77,7 +77,7 @@ module GraphQL
           root_value: object,
         }
       )
-      deliver(subscription_id, result)
+      deliver(subscription_id, channel_operation_id, result)
     end
 
     # Event `event` occurred on `object`,
@@ -86,8 +86,8 @@ module GraphQL
     # @param object [Object]
     # @return [void]
     def execute_all(event, object)
-      each_subscription_id(event) do |subscription_id|
-        execute(subscription_id, event, object)
+      each_subscription_id(event) do |subscription_id, channel_operation_id|
+        execute(subscription_id, channel_operation_id, event, object)
       end
     end
 
@@ -103,7 +103,7 @@ module GraphQL
     # Read its data and return it.
     # @param subscription_id [String]
     # @return [Hash] Containing required keys
-    def read_subscription(subscription_id)
+    def read_subscription(subscription_id, channel_operation_id)
       raise NotImplementedError
     end
 
@@ -113,7 +113,7 @@ module GraphQL
     # @param result [Hash]
     # @param context [GraphQL::Query::Context]
     # @return [void]
-    def deliver(subscription_id, result, context)
+    def deliver(subscription_id, channel_operation_id, result, context)
       raise NotImplementedError
     end
 
