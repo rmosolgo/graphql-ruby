@@ -8,14 +8,20 @@ module GraphQL
         return unless arg_defn
 
         begin
-          if !context.valid_literal?(node.value, arg_defn.type)
-            kind_of_node = node_type(parent)
-            error_arg_name = parent_name(parent, defn)
-            context.errors << message("Argument '#{node.name}' on #{kind_of_node} '#{error_arg_name}' has an invalid value. Expected type '#{arg_defn.type}'.", parent, context: context)
-          end
+          valid = context.valid_literal?(node.value, arg_defn.type)
         rescue GraphQL::CoercionError => err
-          context.errors << message(err.message, parent, context: context)
+          error_message = err.message
         end
+
+        return if valid
+
+        error_message ||= begin
+          kind_of_node = node_type(parent)
+          error_arg_name = parent_name(parent, defn)
+          "Argument '#{node.name}' on #{kind_of_node} '#{error_arg_name}' has an invalid value. Expected type '#{arg_defn.type}'."
+        end
+
+        context.errors << message(error_message, parent, context: context)
       end
     end
   end
