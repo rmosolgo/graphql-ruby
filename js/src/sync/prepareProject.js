@@ -3,6 +3,23 @@ import { parse } from 'graphql';
 import { print, visit } from 'graphql/language';
 import addTypenameToSelectionSet from './addTypenameToSelectionSet';
 
+// Return a new AST which contains only `definitionNames`
+function extractDefinitions(ast, definitionNames) {
+  const removeDefinitionNode = (node) => {
+    if (definitionNames.indexOf(node.name.value) === -1) {
+      return null;
+    }
+    return node;
+  };
+  const visitor = {
+    OperationDefinition: removeDefinitionNode,
+    FragmentDefinition: removeDefinitionNode,
+  };
+
+  const newAST = visit(ast, visitor);
+  return newAST;
+}
+
 /**
  * Take a whole bunch of GraphQL in one big string
  * and validate it, especially:
@@ -29,16 +46,20 @@ function prepareProject(filenames, addTypename) {
 
   // When entering a fragment or operation,
   // start recording its dependencies
-  const enterDefinition = function (node) {
+  const enterDefinition = (node) => {
     const definitionName = node.name.value;
     if (definitionDependencyNames[definitionName]) {
+      /* eslint-disable max-len */
       throw new Error(`Found duplicate definition name: ${definitionName}, fragment & operation names must be unique to sync`);
+      /* eslint-enable max-len */
     } else {
+      /* eslint-disable no-multi-assign */
       currentDependencyNames = definitionDependencyNames[definitionName] = [];
+      /* eslint-enable no-multi-assign */
     }
   };
   // When leaving, clean up, just in case
-  const leaveDefinition = function (node) {
+  const leaveDefinition = () => {
     currentDependencyNames = null;
   };
 
@@ -50,14 +71,14 @@ function prepareProject(filenames, addTypename) {
       },
       leave(node) {
         if (addTypename) { addTypenameToSelectionSet(node.selectionSet, true); }
-        leaveDefinition;
+        return leaveDefinition;
       },
     },
     FragmentDefinition: {
       enter: enterDefinition,
       leave(node) {
         if (addTypename) { addTypenameToSelectionSet(node.selectionSet, true); }
-        leaveDefinition;
+        return leaveDefinition;
       },
     },
     // When entering a fragment spread, register it as a
@@ -100,21 +121,5 @@ function prepareProject(filenames, addTypename) {
   return operations;
 }
 
-
-// Return a new AST which contains only `definitionNames`
-function extractDefinitions(ast, definitionNames) {
-  const removeDefinitionNode = function (node) {
-    if (definitionNames.indexOf(node.name.value) === -1) {
-      return null;
-    }
-  };
-  const visitor = {
-    OperationDefinition: removeDefinitionNode,
-    FragmentDefinition: removeDefinitionNode,
-  };
-
-  const newAST = visit(ast, visitor);
-  return newAST;
-}
 
 module.exports = prepareProject;

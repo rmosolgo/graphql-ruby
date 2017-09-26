@@ -26,7 +26,8 @@ const ActionCableSubscriber = require('./ActionCableSubscriber');
  *   });
  *
  *   // Add subscriptions to the network interface
- *   var addGraphQLSubscriptions = require("graphql-ruby-client/subscriptions/addGraphQLSubscriptions")
+ *   var addGraphQLSubscriptions =
+ *     require("graphql-ruby-client/subscriptions/addGraphQLSubscriptions")
  *   addGraphQLSubscriptions(RailsNetworkInterface, {cable: cable})
  *
  *   // Optionally, add persisted query support:
@@ -37,15 +38,13 @@ const ActionCableSubscriber = require('./ActionCableSubscriber');
  * @param {ActionCable.Consumer} options.cable - A cable for subscribing with
  * @return {void}
 */
-function addGraphQLSubscriptions(networkInterface, options) {
-  if (!options) {
-    options = {};
-  }
-
+function addGraphQLSubscriptions(networkInterface, options = {}) {
   let subscriber;
   if (options.subscriber) {
     // Right now this is just for testing
+    /* eslint-disable prefer-destructuring */
     subscriber = options.subscriber;
+    /* eslint-enable prefer-destructuring */
   } else if (options.cable) {
     subscriber = new ActionCableSubscriber(options.cable, networkInterface);
   } else {

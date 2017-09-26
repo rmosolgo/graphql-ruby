@@ -18,21 +18,21 @@ const fs = require('fs');
  * @param {String} options.path - A glob to recursively search for `.graphql` files (Default is `./`)
  * @param {String} options.secret - HMAC-SHA256 key which must match the server secret (default is no encryption)
  * @param {String} options.url - Target URL for sending prepared queries
- * @param {String} options.mode - If `"file"`, treat each file separately. If `"project"`, concatenate all files and extract each operation. If `"relay"`, treat it as relay-compiler output
+ * @param {String} options.mode - If `"file"`, treat each file separately. If `"project"`, concatenate all files and
+ * extract each operation. If `"relay"`, treat it as relay-compiler output
  * @param {Boolean} options.addTypename - Indicates if the "__typename" field are automatically added to your queries
  * @param {String} options.outfile - Where the generated code should be written
  * @param {String} options.client - the Client ID that these operations belong to
- * @param {Function} options.send - A function for sending the payload to the server, with the signature `options.send(payload)`. (Default is an HTTP `POST` request)
- * @param {Function} options.hash - A custom hash function for query strings with the signature `options.hash(string) => digest` (Default is `md5(string) => digest`)
+ * @param {Function} options.send - A function for sending the payload to the server, with the signature
+ * `options.send(payload)`. (Default is an HTTP `POST` request)
+ * @param {Function} options.hash - A custom hash function for query strings with the signature `options.hash(string)
+ *  => digest` (Default is `md5(string) => digest`)
  * @return {void}
 */
-function sync(options) {
-  if (!options) {
-    options = {};
-  }
+function sync(options = {}) {
   const logger = new Logger(options.quiet);
 
-  const url = options.url;
+  const { url } = options;
   if (!url) {
     throw new Error('URL must be provided for sync');
   }
@@ -47,7 +47,9 @@ function sync(options) {
 
   let outfile;
   if (options.outfile) {
+    /* eslint-disable prefer-destructuring */
     outfile = options.outfile;
+    /* eslint-enable prefer-destructuring */
   } else if (fs.existsSync('src')) {
     outfile = 'src/OperationStoreClient.js';
   } else {
@@ -71,7 +73,7 @@ function sync(options) {
 
   const filenames = glob.sync(graphqlGlob, {});
 
-  if (filesMode == 'relay') {
+  if (filesMode === 'relay') {
     payload.operations = prepareRelay(filenames);
   } else {
     if (filesMode === 'file') {
@@ -83,7 +85,9 @@ function sync(options) {
     }
     // Update the operations with the hash of the body
     payload.operations.forEach((op) => {
+      /* eslint-disable no-param-reassign */
       op.alias = hashFunc(op.body);
+      /* eslint-enable no-param-reassign */
     });
   }
 
@@ -92,7 +96,7 @@ function sync(options) {
   } else {
     logger.log(`Syncing ${payload.operations.length} operations to ${logger.bright(url)}...`);
 
-    const writeArtifacts = function (response) {
+    const writeArtifacts = (response) => {
       const nameToAliasMap = {};
       const aliasToNameMap = {};
       payload.operations.forEach((op) => {
@@ -118,6 +122,8 @@ function sync(options) {
       logger.log(`Generating client module in ${logger.colorize('bright', outfile)}...`);
       fs.writeFileSync(outfile, generatedCode, 'utf8');
       logger.log(logger.green('✓ Done!'));
+
+      return null;
     };
 
     const sendOpts = {
@@ -136,6 +142,8 @@ function sync(options) {
     }
     return writeArtifacts();
   }
+
+  return null;
 }
 
 module.exports = sync;

@@ -18,7 +18,9 @@ function prepareIsolatedFiles(filenames, addTypename) {
       OperationDefinition: {
         enter(node) {
           if (fileOperationName) {
+            /* eslint-disable max-len */
             throw new Error(`Found multiple operations in ${filename}: ${fileOperationName}, ${node.name}. Files must contain only one operation`);
+            /* eslint-enable max-len */
           } else {
             fileOperationName = node.name.value;
           }

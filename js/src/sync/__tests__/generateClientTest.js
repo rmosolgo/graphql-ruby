@@ -1,3 +1,5 @@
+/* eslint-disable global-require, import/no-dynamic-require */
+
 const generateClient = require('../generateClient');
 const fs = require('fs');
 

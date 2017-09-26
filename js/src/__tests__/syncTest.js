@@ -1,3 +1,4 @@
+/* eslint-disable */
 import sync from '../sync';
 import fs from 'fs';
 import nock from 'nock';

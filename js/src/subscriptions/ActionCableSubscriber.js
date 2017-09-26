@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 const printer = require('graphql/language/printer');
 const registry = require('./registry');
 
@@ -37,8 +38,7 @@ ActionCableSubscriber.prototype.subscribe = function subscribeToActionCable(requ
         .applyMiddlewares({ request, options: opts })
         .then(() => {
           const queryString = request.query ? printer.print(request.query) : null;
-          const operationName = request.operationName;
-          const operationId = request.operationId;
+          const { operationName, operationId } = request;
           const variables = JSON.stringify(request.variables);
           const channelParams = Object.assign({}, request, {
             query: queryString,
@@ -57,7 +57,7 @@ ActionCableSubscriber.prototype.subscribe = function subscribeToActionCable(requ
       if (!payload.more) {
         registry.unsubscribe(this);
       }
-      const result = payload.result;
+      const { result } = payload;
       if (result) {
         handler(result.errors, result.data);
       }
@@ -72,7 +72,7 @@ ActionCableSubscriber.prototype.subscribe = function subscribeToActionCable(requ
  * @param {ID} id An ID from `.subscribe`
  * @return {void}
 */
-ActionCableSubscriber.prototype.unsubscribe = function (id) {
+ActionCableSubscriber.prototype.unsubscribe = (id) => {
   registry.unsubscribe(id);
 };
 

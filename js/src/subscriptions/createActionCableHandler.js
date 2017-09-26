@@ -3,13 +3,14 @@
  * TODO: how to test this??
  *
  * @param {ActionCable.Consumer} cable - An ActionCable consumer from `.createConsumer`
- * @param {OperationStoreClient} operations - A generated OperationStoreClient for graphql-pro's OperationStore
+ * @param {OperationStoreClient} operations - A generated OperationStoreClient for graphql-pro's
+ * OperationStore
  * @return {Function}
 */
 function createActionCableHandler(cable, operations) {
-  return function (operation, variables, cacheConfig, observer) {
+  return (operation, variables, cacheConfig, observer) => {
     // Register the subscription by subscribing to the channel
-    const subscriptions = cable.subscriptions.create({
+    const subscription = cable.subscriptions.create({
       channel: 'GraphqlChannel',
     }, {
       connected() {
@@ -30,7 +31,7 @@ function createActionCableHandler(cable, operations) {
       },
       received(payload) {
         // When we get a response, send the update to `observer`
-        const result = payload.result;
+        const { result } = payload;
         if (result && result.errors) {
           // What kind of error stuff belongs here?
           observer.onError(result.errors);

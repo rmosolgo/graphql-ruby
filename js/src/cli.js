@@ -1,5 +1,7 @@
 #!/usr/bin/env node
+/* eslint-disable max-len, no-console */
 const parseArgs = require('minimist');
+const sync = require('./sync');
 
 const argv = parseArgs(process.argv.slice(2));
 
@@ -35,7 +37,6 @@ optional arguments:
   if (commandName !== 'sync') {
     console.log('Only `graphql-ruby-client sync` is supported');
   } else {
-    const sync = require('./sync');
     const result = sync({
       path: argv.path,
       url: argv.url,
@@ -44,7 +45,9 @@ optional arguments:
       secret: argv.secret,
       mode: argv.mode,
       addTypename: argv['add-typename'],
+      /* eslint-disable no-prototype-builtins */
       quiet: argv.hasOwnProperty('quiet'),
+      /* eslint-enable no-prototype-builtins */
     });
 
     if (result instanceof Promise) {

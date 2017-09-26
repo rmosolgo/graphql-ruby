@@ -17,5 +17,3 @@ _site
 gh-pages/
 tmp/*
 __*.db
-node_modules/
-OperationStoreClient.js

@@ -1,3 +1,5 @@
+/* eslint-disable no-underscore-dangle */
+
 // State management for subscriptions.
 // Used to add subscriptions to an Apollo network intrface.
 const registry = {

@@ -5,5 +5,9 @@ module.exports = {
   ],
   "env": {
     "jest/globals": true
+  },
+  "rules": {
+    "no-plusplus": "off",
+    "max-len": ["error", 120]
   }
 };

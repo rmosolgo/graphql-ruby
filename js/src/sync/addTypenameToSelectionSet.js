@@ -1,4 +1,6 @@
+/* eslint-disable max-len */
 // This file/concept was borrowed from https://github.com/apollographql/apollo-client/blob/fec6457746b1cb63c759f128349e66499328ae43/src/queries/queryTransform.ts#L22-L56
+/* eslint-enable max-len */
 
 const TYPENAME_FIELD = {
   kind: 'Field',

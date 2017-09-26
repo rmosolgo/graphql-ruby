@@ -1,7 +1,7 @@
+/* eslint-disable no-redeclare, no-param-reassign, prefer-promise-reject-errors */
 const http = require('http');
 const url = require('url');
 const crypto = require('crypto');
-const printResponse = require('./printResponse');
 
 /**
  * Use HTTP POST to send this payload to the endpoint.
@@ -26,7 +26,7 @@ function sendPayload(payload, options) {
   // Get parts of URL for request options
   const parsedURL = url.parse(syncUrl);
   // Prep options for HTTP request
-  var options = {
+  options = {
     hostname: parsedURL.hostname,
     port: parsedURL.port || '80',
     path: parsedURL.path,
@@ -54,7 +54,7 @@ function sendPayload(payload, options) {
       const status = res.statusCode;
       // 422 gets special treatment because
       // the body has error messages
-      if (status > 299 && status != 422) {
+      if (status > 299 && status !== 422) {
         reject(`  Server responded with ${res.statusCode}`);
       }
       // Print the response from the server

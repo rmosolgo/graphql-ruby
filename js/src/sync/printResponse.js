@@ -23,17 +23,17 @@ function printResponse(response, aliasToNameMap, logger) {
 
   if (failed) {
     logger.error('Sync failed, errors:');
-    let failedOperationAlias,
-      failedOperationName,
-      errors;
-    for (failedOperationAlias in response.errors) {
-      failedOperationName = aliasToNameMap[failedOperationAlias];
-      logger.error(`  ${failedOperationName}:`);
-      errors = response.errors[failedOperationAlias];
-      errors.forEach((errMessage) => {
-        logger.error(`    ${logger.colorize('red', '✘')} ${errMessage}`);
-      });
-    }
+    let errors;
+    Object.keys(response.errors).forEach((failedOperationAlias) => {
+      if (failedOperationAlias) {
+        const failedOperationName = aliasToNameMap[failedOperationAlias];
+        logger.error(`  ${failedOperationName}:`);
+        errors = response.errors[failedOperationAlias];
+        errors.forEach((errMessage) => {
+          logger.error(`    ${logger.colorize('red', '✘')} ${errMessage}`);
+        });
+      }
+    });
   }
 }
 

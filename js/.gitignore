@@ -2,3 +2,4 @@
 npm-debug.log
 yarn-error.log
 /lib/
+src/OperationStoreClient.js

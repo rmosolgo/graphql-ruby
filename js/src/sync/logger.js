@@ -1,3 +1,4 @@
+/* eslint-disable */
 function Logger(isQuiet) {
   this.isQuiet = isQuiet;
 }

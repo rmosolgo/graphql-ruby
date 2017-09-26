@@ -12,11 +12,10 @@ function generateMap(clientName, nameToAlias) {
   }
   // Build up the map
   let keyValuePairs = '{';
-  let operationName;
-  for (operationName in nameToAlias) {
+  Object.keys(nameToAlias).forEach((operationName) => {
     const persistedAlias = nameToAlias[operationName];
     keyValuePairs += `\n  "${operationName}": "${persistedAlias}",`;
-  }
+  });
   keyValuePairs += '\n}';
 
   // Insert the map, plus a function to fetch values from it
