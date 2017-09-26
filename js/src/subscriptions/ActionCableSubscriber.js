@@ -1,5 +1,5 @@
-var printer = require("graphql/language/printer")
-var registry = require("./registry")
+const printer = require('graphql/language/printer');
+const registry = require('./registry');
 
 /**
  * Make a new subscriber for `addGraphQLSubscriptions`
@@ -9,8 +9,8 @@ var registry = require("./registry")
  * @param {ActionCable.Consumer} cable ActionCable client
 */
 function ActionCableSubscriber(cable, networkInterface) {
-  this._cable = cable
-  this._networkInterface = networkInterface
+  this._cable = cable;
+  this._networkInterface = networkInterface;
 }
 
 /**
@@ -23,58 +23,58 @@ function ActionCableSubscriber(cable, networkInterface) {
  * @return {ID} An ID for unsubscribing
 */
 ActionCableSubscriber.prototype.subscribe = function subscribeToActionCable(request, handler) {
-  var networkInterface = this._networkInterface
+  const networkInterface = this._networkInterface;
 
-  var channel = this._cable.subscriptions.create({
-    channel: "GraphqlChannel",
+  const channel = this._cable.subscriptions.create({
+    channel: 'GraphqlChannel',
   }, {
     // After connecting, send the data over ActionCable
-    connected: function() {
-      var _this = this
+    connected() {
+      const _this = this;
       // applyMiddlewares code is inspired by networkInterface internals
-      var opts = Object.assign({}, networkInterface._opts)
+      const opts = Object.assign({}, networkInterface._opts);
       networkInterface
-        .applyMiddlewares({request: request, options: opts})
-        .then(function() {
-          var queryString = request.query ? printer.print(request.query) : null
-          var operationName = request.operationName
-          var operationId = request.operationId
-          var variables = JSON.stringify(request.variables)
-          var channelParams = Object.assign({}, request, {
+        .applyMiddlewares({ request, options: opts })
+        .then(() => {
+          const queryString = request.query ? printer.print(request.query) : null;
+          const operationName = request.operationName;
+          const operationId = request.operationId;
+          const variables = JSON.stringify(request.variables);
+          const channelParams = Object.assign({}, request, {
             query: queryString,
-            variables: variables,
-            operationId: operationId,
-            operationName: operationName,
-          })
+            variables,
+            operationId,
+            operationName,
+          });
           // This goes to the #execute method of the channel
-          _this.perform("execute", channelParams)
-        })
+          _this.perform('execute', channelParams);
+        });
     },
     // Payload from ActionCable should have at least two keys:
     // - more: true if this channel should stay open
     // - result: the GraphQL response for this result
-    received: function(payload) {
+    received(payload) {
       if (!payload.more) {
-        registry.unsubscribe(this)
+        registry.unsubscribe(this);
       }
-      var result = payload.result
+      const result = payload.result;
       if (result) {
-        handler(result.errors, result.data)
+        handler(result.errors, result.data);
       }
     },
-  })
-  var id = registry.add(channel)
-  return id
-}
+  });
+  const id = registry.add(channel);
+  return id;
+};
 
 /**
  * End the subscription.
  * @param {ID} id An ID from `.subscribe`
  * @return {void}
 */
-ActionCableSubscriber.prototype.unsubscribe = function(id) {
-  registry.unsubscribe(id)
-}
+ActionCableSubscriber.prototype.unsubscribe = function (id) {
+  registry.unsubscribe(id);
+};
 
 
-module.exports = ActionCableSubscriber
+module.exports = ActionCableSubscriber;

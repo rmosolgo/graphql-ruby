@@ -1,14 +1,14 @@
-var md5 = require("./md5")
-var sendPayload = require("./sendPayload")
-var prepareRelay = require("./prepareRelay")
-var prepareIsolatedFiles = require("./prepareIsolatedFiles")
-var prepareProject = require("./prepareProject")
-var generateClient = require("./generateClient")
-var printResponse = require("./printResponse")
-var Logger = require("./logger")
+const md5 = require('./md5');
+const sendPayload = require('./sendPayload');
+const prepareRelay = require('./prepareRelay');
+const prepareIsolatedFiles = require('./prepareIsolatedFiles');
+const prepareProject = require('./prepareProject');
+const generateClient = require('./generateClient');
+const printResponse = require('./printResponse');
+const Logger = require('./logger');
 
-var glob = require("glob")
-var fs = require("fs")
+const glob = require('glob');
+const fs = require('fs');
 
 /**
  * Find `.graphql` files in `path`,
@@ -28,115 +28,114 @@ var fs = require("fs")
 */
 function sync(options) {
   if (!options) {
-    options = {}
+    options = {};
   }
-  var logger = new Logger(options.quiet)
+  const logger = new Logger(options.quiet);
 
-  var url = options.url
+  const url = options.url;
   if (!url) {
-    throw new Error("URL must be provided for sync")
+    throw new Error('URL must be provided for sync');
   }
-  var graphqlGlob = options.path || "./"
-  var hashFunc = options.hash || md5
-  var encryptionKey = options.secret
+  let graphqlGlob = options.path || './';
+  const hashFunc = options.hash || md5;
+  const encryptionKey = options.secret;
   if (encryptionKey) {
-    logger.log("Authenticating with HMAC")
+    logger.log('Authenticating with HMAC');
   }
-  var sendFunc = options.send || sendPayload
-  var filesMode = options.mode || (graphqlGlob.indexOf("__generated__") > -1 ? "relay" : "project")
+  const sendFunc = options.send || sendPayload;
+  const filesMode = options.mode || (graphqlGlob.indexOf('__generated__') > -1 ? 'relay' : 'project');
 
-  var outfile
+  let outfile;
   if (options.outfile) {
-    outfile = options.outfile
-  } else if (fs.existsSync("src")) {
-    outfile = "src/OperationStoreClient.js"
+    outfile = options.outfile;
+  } else if (fs.existsSync('src')) {
+    outfile = 'src/OperationStoreClient.js';
   } else {
-    outfile = "OperationStoreClient.js"
+    outfile = 'OperationStoreClient.js';
   }
 
-  var clientName = options.client
+  const clientName = options.client;
   if (!clientName) {
-    throw new Error("Client name must be provided for sync")
+    throw new Error('Client name must be provided for sync');
   }
 
   // Check for file ext already, add it if missing
-  var containsFileExt = graphqlGlob.indexOf(".graphql") > -1 || graphqlGlob.indexOf(".gql") > -1
+  const containsFileExt = graphqlGlob.indexOf('.graphql') > -1 || graphqlGlob.indexOf('.gql') > -1;
   if (!containsFileExt) {
-    graphqlGlob = graphqlGlob + "**/*.graphql*"
+    graphqlGlob += '**/*.graphql*';
   }
 
-  var payload = {
-    operations: []
-  }
+  const payload = {
+    operations: [],
+  };
 
-  var filenames = glob.sync(graphqlGlob, {})
+  const filenames = glob.sync(graphqlGlob, {});
 
-  if (filesMode == "relay") {
-    payload.operations = prepareRelay(filenames)
+  if (filesMode == 'relay') {
+    payload.operations = prepareRelay(filenames);
   } else {
-    if (filesMode === "file") {
-      payload.operations = prepareIsolatedFiles(filenames, options.addTypename)
-    } else if (filesMode === "project") {
-      payload.operations = prepareProject(filenames, options.addTypename)
+    if (filesMode === 'file') {
+      payload.operations = prepareIsolatedFiles(filenames, options.addTypename);
+    } else if (filesMode === 'project') {
+      payload.operations = prepareProject(filenames, options.addTypename);
     } else {
-      throw new Error("Unexpected mode: " + filesMode)
+      throw new Error(`Unexpected mode: ${filesMode}`);
     }
     // Update the operations with the hash of the body
-    payload.operations.forEach(function(op) {
-      op.alias = hashFunc(op.body)
-    })
+    payload.operations.forEach((op) => {
+      op.alias = hashFunc(op.body);
+    });
   }
 
   if (payload.operations.length === 0) {
-    logger.log("No operations found in " + graphqlGlob + ", not syncing anything")
+    logger.log(`No operations found in ${graphqlGlob}, not syncing anything`);
   } else {
-    logger.log("Syncing " + payload.operations.length + " operations to " + logger.bright(url) + "...")
+    logger.log(`Syncing ${payload.operations.length} operations to ${logger.bright(url)}...`);
 
-    var writeArtifacts = function(response) {
-      var nameToAliasMap = {}
-      var aliasToNameMap = {}
-      payload.operations.forEach(function(op) {
-        nameToAliasMap[op.name] = op.alias
-        aliasToNameMap[op.alias] = op.name
-      })
+    const writeArtifacts = function (response) {
+      const nameToAliasMap = {};
+      const aliasToNameMap = {};
+      payload.operations.forEach((op) => {
+        nameToAliasMap[op.name] = op.alias;
+        aliasToNameMap[op.alias] = op.name;
+      });
 
-      var responseData
+      let responseData;
 
       if (response) {
         try {
-          responseData = JSON.parse(response)
-          printResponse(responseData, aliasToNameMap, logger)
+          responseData = JSON.parse(response);
+          printResponse(responseData, aliasToNameMap, logger);
           if (responseData.failed.length) {
-            return false
+            return false;
           }
         } catch (err) {
-          logger.log("Failed to print sync result:", err)
+          logger.log('Failed to print sync result:', err);
         }
       }
 
-      var generatedCode = generateClient(clientName, nameToAliasMap)
-      logger.log("Generating client module in " + logger.colorize("bright", outfile) + "...")
-      fs.writeFileSync(outfile, generatedCode, "utf8")
-      logger.log(logger.green("✓ Done!"))
-    }
+      const generatedCode = generateClient(clientName, nameToAliasMap);
+      logger.log(`Generating client module in ${logger.colorize('bright', outfile)}...`);
+      fs.writeFileSync(outfile, generatedCode, 'utf8');
+      logger.log(logger.green('✓ Done!'));
+    };
 
-    var sendOpts = {
-      url: url,
+    const sendOpts = {
+      url,
       client: clientName,
       secret: encryptionKey,
-    }
-    var maybePromise = sendFunc(payload, sendOpts)
+    };
+    const maybePromise = sendFunc(payload, sendOpts);
 
     if (maybePromise instanceof Promise) {
-      return maybePromise.then(writeArtifacts).catch(function(err) {
-        logger.error(logger.colorize("red", "Sync failed:"))
-        logger.error(err)
-        return false
-      })
-    } else {
-      return writeArtifacts()
+      return maybePromise.then(writeArtifacts).catch((err) => {
+        logger.error(logger.colorize('red', 'Sync failed:'));
+        logger.error(err);
+        return false;
+      });
     }
+    return writeArtifacts();
   }
 }
 
-module.exports = sync
+module.exports = sync;

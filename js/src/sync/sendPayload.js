@@ -1,7 +1,7 @@
-var http = require("http")
-var url = require("url")
-var crypto = require('crypto')
-var printResponse = require("./printResponse")
+const http = require('http');
+const url = require('url');
+const crypto = require('crypto');
+const printResponse = require('./printResponse');
 
 /**
  * Use HTTP POST to send this payload to the endpoint.
@@ -17,63 +17,63 @@ var printResponse = require("./printResponse")
 */
 
 function sendPayload(payload, options) {
-  var syncUrl = options.url
-  var key = options.secret
-  var clientName = options.client
+  const syncUrl = options.url;
+  const key = options.secret;
+  const clientName = options.client;
   // Prepare JS object as form data
-  var postData = JSON.stringify(payload)
+  const postData = JSON.stringify(payload);
 
   // Get parts of URL for request options
-  var parsedURL = url.parse(syncUrl)
+  const parsedURL = url.parse(syncUrl);
   // Prep options for HTTP request
   var options = {
     hostname: parsedURL.hostname,
-    port: parsedURL.port || "80",
+    port: parsedURL.port || '80',
     path: parsedURL.path,
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
-      'Content-Length': Buffer.byteLength(postData)
-    }
+      'Content-Length': Buffer.byteLength(postData),
+    },
   };
 
   // If an auth key was provided, add a HMAC header
-  var authDigest = null
+  let authDigest = null;
   if (key) {
     authDigest = crypto.createHmac('sha256', key)
       .update(postData)
-      .digest('hex')
-    options.headers["Authorization"] = "GraphQL::Pro " + clientName + " " + authDigest
+      .digest('hex');
+    options.headers.Authorization = `GraphQL::Pro ${clientName} ${authDigest}`;
   }
 
-  var promise = new Promise(function(resolve, reject) {
+  const promise = new Promise(((resolve, reject) => {
     // Make the request,
     // hook up response handler
     const req = http.request(options, (res) => {
       res.setEncoding('utf8');
-      var status = res.statusCode
+      const status = res.statusCode;
       // 422 gets special treatment because
       // the body has error messages
       if (status > 299 && status != 422) {
-        reject("  Server responded with " + res.statusCode)
+        reject(`  Server responded with ${res.statusCode}`);
       }
       // Print the response from the server
       res.on('data', (chunk) => {
-        resolve(chunk)
+        resolve(chunk);
       });
     });
 
     req.on('error', (e) => {
-      reject(e)
+      reject(e);
     });
 
     // Send the data, fire the request
     req.write(postData);
     req.end();
-  })
+  }));
 
-  return promise
+  return promise;
 }
 
 
-module.exports = sendPayload
+module.exports = sendPayload;

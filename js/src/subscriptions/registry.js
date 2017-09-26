@@ -1,6 +1,6 @@
 // State management for subscriptions.
 // Used to add subscriptions to an Apollo network intrface.
-var registry = {
+const registry = {
   // Apollo expects unique ids to reference each subscription,
   // here's a simple incrementing ID generator which starts at 1
   // (so it's always truthy)
@@ -11,19 +11,19 @@ var registry = {
   _subscriptions: {},
 
   add(subscription) {
-    var id = this._id++
-    this._subscriptions[id] = subscription
-    return id
+    const id = this._id++;
+    this._subscriptions[id] = subscription;
+    return id;
   },
 
   unsubscribe(id) {
-    var subscription = this._subscriptions[id]
+    const subscription = this._subscriptions[id];
     if (!subscription) {
-      throw new Error("No subscription found for id: " + id)
+      throw new Error(`No subscription found for id: ${id}`);
     }
-    subscription.unsubscribe()
-    delete this._subscriptions[id]
+    subscription.unsubscribe();
+    delete this._subscriptions[id];
   },
-}
+};
 
-module.exports = registry
+module.exports = registry;

@@ -1,5 +1,5 @@
-var path = require("path")
-var fs = require("fs")
+const path = require('path');
+const fs = require('fs');
 
 /**
  * Read relay-compiler output
@@ -13,31 +13,31 @@ var fs = require("fs")
  * @return {Array} List of operations to persist & write to a map
  */
 function prepareRelay(filenames) {
-  var currentDirectory = process.cwd()
-  var operations = []
-  filenames.forEach(function(filename) {
+  const currentDirectory = process.cwd();
+  const operations = [];
+  filenames.forEach((filename) => {
     // Require the file to get values from the JavaScript code
-    var absoluteFilename = path.resolve(currentDirectory, filename)
-    var operation = require(absoluteFilename)
-    var operationBody = operation.text
-    var operationName = operation.name
+    const absoluteFilename = path.resolve(currentDirectory, filename);
+    const operation = require(absoluteFilename);
+    const operationBody = operation.text;
+    const operationName = operation.name;
 
     // Search the file for the relayHash
-    var textContent = fs.readFileSync(filename, "utf8")
-    var operationAlias = textContent.match(/@relayHash ([a-z0-9]+)/)
+    const textContent = fs.readFileSync(filename, 'utf8');
+    let operationAlias = textContent.match(/@relayHash ([a-z0-9]+)/);
     // Only operations get `relayHash`, so
     // skip over generated fragments
     if (operationAlias) {
-      operationAlias = operationAlias[1]
+      operationAlias = operationAlias[1];
       operations.push({
         alias: operationAlias,
         name: operationName,
         body: operationBody,
-      })
+      });
     }
-  })
+  });
 
-  return operations
+  return operations;
 }
 
-module.exports = prepareRelay
+module.exports = prepareRelay;

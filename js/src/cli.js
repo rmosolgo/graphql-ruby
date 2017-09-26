@@ -1,6 +1,7 @@
 #!/usr/bin/env node
-var parseArgs = require('minimist')
-var argv = parseArgs(process.argv.slice(2))
+const parseArgs = require('minimist');
+
+const argv = parseArgs(process.argv.slice(2));
 
 if (argv.help || argv.h) {
   console.log(`usage: graphql-ruby-client sync <options>
@@ -27,33 +28,33 @@ optional arguments:
   --add-typename                  Automatically adds the "__typename" field to your queries
   --quiet                         Suppress status logging
   --help                          Print this message
-`)
+`);
 } else {
-  var commandName = argv._[0]
+  const commandName = argv._[0];
 
-  if (commandName !== "sync") {
-    console.log("Only `graphql-ruby-client sync` is supported")
+  if (commandName !== 'sync') {
+    console.log('Only `graphql-ruby-client sync` is supported');
   } else {
-    var sync = require("./sync")
-    var result = sync({
+    const sync = require('./sync');
+    const result = sync({
       path: argv.path,
       url: argv.url,
       client: argv.client,
       outfile: argv.outfile,
       secret: argv.secret,
       mode: argv.mode,
-      addTypename: argv["add-typename"],
-      quiet: argv.hasOwnProperty("quiet"),
-    })
+      addTypename: argv['add-typename'],
+      quiet: argv.hasOwnProperty('quiet'),
+    });
 
-    if (result instanceof Promise){
-      result.then(function(res) {
+    if (result instanceof Promise) {
+      result.then((res) => {
         if (res === false) {
-          process.exit(1)
+          process.exit(1);
         }
-      })
+      });
     } else if (result === false) {
-      process.exit(1)
+      process.exit(1);
     }
   }
 }

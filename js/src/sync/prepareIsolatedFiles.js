@@ -1,6 +1,6 @@
-var fs = require("fs")
-var graphql = require("graphql")
-var addTypenameToSelectionSet = require("./addTypenameToSelectionSet")
+const fs = require('fs');
+const graphql = require('graphql');
+const addTypenameToSelectionSet = require('./addTypenameToSelectionSet');
 
 /**
  * Read a bunch of GraphQL files and treat them as islands.
@@ -9,39 +9,39 @@ var addTypenameToSelectionSet = require("./addTypenameToSelectionSet")
  *
  */
 function prepareIsolatedFiles(filenames, addTypename) {
-  return filenames.map(function(filename) {
-    var fileOperationBody = fs.readFileSync(filename, "utf8")
-    var fileOperationName = null;
+  return filenames.map((filename) => {
+    const fileOperationBody = fs.readFileSync(filename, 'utf8');
+    let fileOperationName = null;
 
-    var ast = graphql.parse(fileOperationBody)
-    var visitor = {
+    const ast = graphql.parse(fileOperationBody);
+    const visitor = {
       OperationDefinition: {
-        enter: function(node) {
+        enter(node) {
           if (fileOperationName) {
-            throw new Error("Found multiple operations in " + filename + ": " + fileOperationName + ", " + node.name + ". Files must contain only one operation")
+            throw new Error(`Found multiple operations in ${filename}: ${fileOperationName}, ${node.name}. Files must contain only one operation`);
           } else {
-            fileOperationName = node.name.value
+            fileOperationName = node.name.value;
           }
         },
-        leave: function(node) {
+        leave(node) {
           if (addTypename) { addTypenameToSelectionSet(node.selectionSet, true); }
-        }
+        },
       },
       FragmentDefinition: {
-        leave: function(node) {
+        leave(node) {
           if (addTypename) { addTypenameToSelectionSet(node.selectionSet, true); }
-        }
-      }
-    }
-    graphql.visit(ast, visitor)
+        },
+      },
+    };
+    graphql.visit(ast, visitor);
 
     return {
       // populate alias later, when hashFunc is available
       alias: null,
       name: fileOperationName,
       body: graphql.print(ast),
-    }
-  })
+    };
+  });
 }
 
-module.exports = prepareIsolatedFiles
+module.exports = prepareIsolatedFiles;

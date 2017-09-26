@@ -1,26 +1,26 @@
 import addGraphQLSubscriptions from '../addGraphQLSubscriptions';
 
-describe("addGraphQLSubscriptions", () => {
-  it("delegates to the subscriber", () => {
-    var state = {}
-    var subscriber = {
-      subscribe: function(req, handler) {
-        state[req] = handler
-        return req + "/" + handler
+describe('addGraphQLSubscriptions', () => {
+  it('delegates to the subscriber', () => {
+    const state = {};
+    const subscriber = {
+      subscribe(req, handler) {
+        state[req] = handler;
+        return `${req}/${handler}`;
       },
       unsubscribe(id) {
-        var key = id.split("/")[0]
-        delete state[key]
-      }
-    }
+        const key = id.split('/')[0];
+        delete state[key];
+      },
+    };
 
-    var dummyNetworkInterface = addGraphQLSubscriptions({}, {subscriber: subscriber})
+    const dummyNetworkInterface = addGraphQLSubscriptions({}, { subscriber });
 
-    var id = dummyNetworkInterface.subscribe("abc", "def")
-    expect(id).toEqual("abc/def")
-    expect(Object.keys(state).length).toEqual(1)
-    expect(state["abc"]).toEqual("def")
-    dummyNetworkInterface.unsubscribe(id)
-    expect(Object.keys(state).length).toEqual(0)
-  })
-})
+    const id = dummyNetworkInterface.subscribe('abc', 'def');
+    expect(id).toEqual('abc/def');
+    expect(Object.keys(state).length).toEqual(1);
+    expect(state.abc).toEqual('def');
+    dummyNetworkInterface.unsubscribe(id);
+    expect(Object.keys(state).length).toEqual(0);
+  });
+});

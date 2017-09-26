@@ -1,4 +1,4 @@
-var createActionCableHandler = require("./createActionCableHandler")
+const createActionCableHandler = require('./createActionCableHandler');
 /**
  * Transport-agnostic wrapper for Relay Modern subscription handlers.
  * @example Add ActionCable subscriptions
@@ -13,13 +13,13 @@ var createActionCableHandler = require("./createActionCableHandler")
 */
 function createHandler(options) {
   if (!options) {
-    options = {}
+    options = {};
   }
-  var handler
+  let handler;
   if (options.cable) {
-    handler = createActionCableHandler(options.cable, options.operations)
+    handler = createActionCableHandler(options.cable, options.operations);
   }
-  return handler
+  return handler;
 }
 
-module.exports = createHandler
+module.exports = createHandler;

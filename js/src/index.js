@@ -1,5 +1,5 @@
-var sync = require("./sync")
+const sync = require('./sync');
 
 module.exports = {
-  sync: sync,
-}
+  sync,
+};
