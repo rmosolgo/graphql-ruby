@@ -1,6 +1,7 @@
-var fs = require("fs")
-var graphql = require("graphql")
-var addTypenameToSelectionSet = require("./addTypenameToSelectionSet")
+import fs from 'fs';
+import { parse } from 'graphql';
+import { print, visit } from 'graphql/language';
+import addTypenameToSelectionSet from './addTypenameToSelectionSet';
 
 /**
  * Take a whole bunch of GraphQL in one big string
@@ -19,7 +20,7 @@ function prepareProject(filenames, addTypename) {
     allGraphQL += fs.readFileSync(filename)
   })
 
-  var ast = graphql.parse(allGraphQL)
+  var ast = parse(allGraphQL)
 
   // This will contain { name: [name, name] } pairs
   var definitionDependencyNames = {}
@@ -69,7 +70,7 @@ function prepareProject(filenames, addTypename) {
   }
 
   // Find the dependencies, build the accumulator
-  graphql.visit(ast, visitor)
+  visit(ast, visitor)
 
   // For each operation, build a separate document of that operation and its deps
   // then print the new document to a string
@@ -88,9 +89,10 @@ function prepareProject(filenames, addTypename) {
       })
     }
     var newAST = extractDefinitions(ast, visitedDepNames)
+
     return {
       name: operationName,
-      body: graphql.print(newAST),
+      body: print(newAST),
       alias: null, // will be filled in later, when hashFunc is available
     }
   })
@@ -111,7 +113,7 @@ function extractDefinitions(ast, definitionNames) {
     FragmentDefinition: removeDefinitionNode,
   }
 
-  var newAST = graphql.visit(ast, visitor)
+  var newAST = visit(ast, visitor)
   return newAST
 }
 
