@@ -5,7 +5,7 @@ function withExampleClient(mapName, callback) {
   // Generate some code and write it to a file
   var exampleMap = { a: "b", "c-d": "e-f" }
   var jsCode = generateClient("example-client", exampleMap)
-  var filename = "./" + mapName + ".js"
+  var filename = "src/" + mapName + ".js"
   fs.writeFileSync(filename, jsCode)
 
   // Load the module and use it

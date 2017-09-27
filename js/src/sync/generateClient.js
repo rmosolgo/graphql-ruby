@@ -12,9 +12,9 @@ function generateMap(clientName, nameToAlias) {
   }
   // Build up the map
   var keyValuePairs = "{"
-  var operationName
+  var operationName;
   for (operationName in nameToAlias) {
-    persistedAlias = nameToAlias[operationName]
+    var persistedAlias = nameToAlias[operationName]
     keyValuePairs += "\n  \"" + operationName + "\": \"" + persistedAlias + "\","
   }
   keyValuePairs += "\n}"
