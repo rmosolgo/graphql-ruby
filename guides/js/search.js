@@ -5,8 +5,6 @@ layout: null
 var client = algoliasearch('8VO8708WUV', '1f3e2b6f6a503fa82efdec331fd9c55e');
 var index = client.initIndex('prod_graphql_ruby');
 
-
-
 var GraphQLRubySearch = {
   // Respond to a change event on `el` by:
   // - Searching the index
@@ -18,12 +16,14 @@ var GraphQLRubySearch = {
       // If there's no search term, clear the results pane
       searchResults.innerHTML = ""
     } else {
-      index.search(searchTerm, function(err, content) {
+      index.search({
+        query: searchTerm,
+        hitsPerPage: 8,
+      }, function(err, content) {
         if (err) {
           console.error(err)
         }
         var results = content.hits
-        console.log(results)
         // Clear the previous results
         searchResults.innerHTML = ""
 
@@ -53,6 +53,14 @@ var GraphQLRubySearch = {
           }
           searchResults.appendChild(container)
         })
+
+        if (content.nbPages > 1) {
+          var seeAll = document.createElement("a")
+          seeAll.href = "/search?query=" + content.query
+          seeAll.className = "search-see-all"
+          seeAll.innerHTML = "See All Results (" + content.nbHits + ")"
+          searchResults.appendChild(seeAll)
+        }
       })
     }
   },
