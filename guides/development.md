@@ -171,6 +171,16 @@ To publish the website with GitHub pages, run the Rake task:
 bundle exec rake site:publish
 ```
 
+#### Search Index
+
+GraphQL-Ruby's search index is powered by Algolia. To update the index, you need the API key in an environment variable:
+
+```
+$ export ALGOLIA_API_KEY=...
+```
+
+Without this key, the search index will fall out-of-sync with the website. Contact @rmosolgo to gain access to this key.
+
 ### Versioning
 
 GraphQL-Ruby does _not_ attempt to deliver "semantic versioning" for the reasons described in `jashkenas`'
