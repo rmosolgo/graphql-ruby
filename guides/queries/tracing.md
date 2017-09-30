@@ -57,3 +57,27 @@ MySchema = GraphQL::Schema.define do
   tracer GraphQL::Tracing::ActiveSupportNotificationsTracing
 end
 ```
+
+## Appsignal
+
+[AppSignal](https://appsignal.com/)
+
+<div class="monitoring-img-group">
+  {{ "/queries/appsignal_example.png" | link_to_img:"appsignal monitoring" }}
+</div>
+
+## New Relic
+
+[New Relic](https://newrelic.com/)
+
+<div class="monitoring-img-group">
+  {{ "/queries/new_relic_example.png" | link_to_img:"new relic monitoring" }}
+</div>
+
+## Skylight
+
+[Skylight](http://skylight.io)
+
+<div class="monitoring-img-group">
+  {{ "/queries/skylight_example.png" | link_to_img:"skylight monitoring" }}
+</div>
