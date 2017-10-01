@@ -124,8 +124,10 @@ describe GraphQL::Backtrace do
     end
 
     it "annotates errors inside lazy resolution" do
+      # Test context-based flag
+      GraphQL::Backtrace.disable
       err = assert_raises(GraphQL::Backtrace::TracedError) {
-        schema.execute("query StrField { field2 { strField } __typename }")
+        schema.execute("query StrField { field2 { strField } __typename }", context: { backtrace: true })
       }
       assert_instance_of RuntimeError, err.cause
       b = err.cause.backtrace

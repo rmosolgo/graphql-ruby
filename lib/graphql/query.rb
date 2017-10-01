@@ -80,6 +80,11 @@ module GraphQL
       @validate = validate
       # TODO: remove support for global tracers
       @tracers = schema.tracers + GraphQL::Tracing.tracers + (context ? context.fetch(:tracers, []) : [])
+      # Support `ctx[:backtrace] = true` for wrapping backtraces
+      if context && context[:backtrace] && !@tracers.include?(GraphQL::Backtrace::Tracer)
+        @tracers << GraphQL::Backtrace::Tracer
+      end
+
       @analysis_errors = []
       if variables.is_a?(String)
         raise ArgumentError, "Query variables should be a Hash, not a String. Try JSON.parse to prepare variables."

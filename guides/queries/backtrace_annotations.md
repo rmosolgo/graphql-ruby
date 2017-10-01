@@ -28,12 +28,13 @@ The backtrace contains some execution data:
 
 ## Wrapping Errors
 
-You can wrap unhandled errors with a GraphQL error with `GraphQL::Backtrace`. To enable this feature, use `.enable`, for example:
+You can wrap unhandled errors with a GraphQL error with `GraphQL::Backtrace`.
+
+To enable this feature for a query, add `backtrace: true` to your `context`, for example:
 
 ```ruby
-# Start error wrapping,
-# NOTE: This is **NOT** threadsafe, so don't switch it off and on while the app is running.
-GraphQL::Backtrace.enable
+# Wrap this query with backtrace annotation
+MySchema.execute(query_string, context: { backtrace: true })
 ```
 
 Now, any unhandled errors will be wrapped by `GraphQL::Backtrace::TracedError`, which prints out the GraphQL backtrace, too. For example:
@@ -61,11 +62,4 @@ Loc  | Field                         | Object     | Arguments           | Result
 3:13 | Thing.raiseField as boomError | :something | {"message"=>"Boom"} | #<RuntimeError: This is broken: Boom>
 2:11 | Query.field1                  | "Root"     | {}                  | {}
 1:9  | query                         | "Root"     | {"msg"=>"Boom"}     | {}
-```
-
-Later, you can disable this with `.disable`:
-
-```ruby
-# End backtrace annotations
-GraphQL::Backtrace.disable
 ```

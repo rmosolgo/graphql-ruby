@@ -262,12 +262,16 @@ module GraphQL
       if query_str
         kwargs[:query] = query_str
       end
-      # Since we're running one query, don't run a multiplex-level complexity analyzer
-      multiplex_context = if (ctx = kwargs[:context]) && (tracers = ctx[:tracers])
-        {tracers: tracers}
+      # Some of the query context _should_ be passed to the multiplex, too
+      multiplex_context = if (ctx = kwargs[:context])
+        {
+          backtrace: ctx[:backtrace],
+          tracers: ctx[:tracers],
+        }
       else
         {}
       end
+      # Since we're running one query, don't run a multiplex-level complexity analyzer
       all_results = multiplex([kwargs], max_complexity: nil, context: multiplex_context)
       all_results[0]
     end
