@@ -219,4 +219,54 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
       })
     end
   end
+
+  describe "custom error messages" do
+    let(:schema) {
+      TimeType = GraphQL::ScalarType.define do
+        name "Time"
+        description "Time since epoch in seconds"
+
+        coerce_input ->(value, ctx) do
+          begin
+            Time.at(Float(value))
+          rescue ArgumentError
+            raise GraphQL::CoercionError, 'cannot coerce to Float'
+          end
+        end
+
+        coerce_result ->(value, ctx) { value.to_f }
+      end
+
+      QueryType = GraphQL::ObjectType.define do
+        name "Query"
+        description "The query root of this schema"
+
+        field :time do
+          type TimeType
+          argument :value, !TimeType
+          resolve ->(obj, args, ctx) { args[:value] }
+        end
+      end
+
+      GraphQL::Schema.define do
+        query QueryType
+      end
+    }
+
+    let(:query_string) {%|
+      query {
+        time(value: "a")
+      }
+    |}
+
+    it "sets error message from a CoercionError if raised" do
+      assert_equal 1, errors.length
+
+      assert_includes errors, {
+        "message"=> "cannot coerce to Float",
+        "locations"=>[{"line"=>3, "column"=>9}],
+        "fields"=>["query", "time", "value"]
+      }
+    end
+  end
 end
