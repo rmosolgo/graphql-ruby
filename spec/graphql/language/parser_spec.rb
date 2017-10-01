@@ -73,9 +73,9 @@ describe GraphQL::Language::Parser do
   end
 
   it "serves traces" do
-    traces = TestTracing.with_trace do
-      GraphQL.parse("{ t: __typename }")
-    end
+    TestTracing.clear
+    GraphQL.parse("{ t: __typename }", tracer: TestTracing)
+    traces = TestTracing.traces
     assert_equal 2, traces.length
     lex_trace, parse_trace = traces
 

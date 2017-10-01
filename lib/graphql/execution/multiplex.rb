@@ -27,11 +27,15 @@ module GraphQL
       # @api private
       NO_OPERATION = {}.freeze
 
+      include Tracing::Traceable
+
       attr_reader :context, :queries, :schema
       def initialize(schema:, queries:, context:)
         @schema = schema
         @queries = queries
         @context = context
+        # TODO remove support for global tracers
+        @tracers = schema.tracers + GraphQL::Tracing.tracers + context.fetch(:tracers, [])
       end
 
       class << self
@@ -47,7 +51,7 @@ module GraphQL
         # @return [Array<Hash>] One result per query
         def run_queries(schema, queries, context: {}, max_complexity: schema.max_complexity)
           multiplex = self.new(schema: schema, queries: queries, context: context)
-          GraphQL::Tracing.trace("execute_multiplex", { multiplex: multiplex }) do
+          multiplex.trace("execute_multiplex", { multiplex: multiplex }) do
             if has_custom_strategy?(schema)
               if queries.length != 1
                 raise ArgumentError, "Multiplexing doesn't support custom execution strategies, run one query at a time instead"
@@ -58,7 +62,7 @@ module GraphQL
               end
             else
               with_instrumentation(multiplex, max_complexity: max_complexity) do
-                run_as_multiplex(queries)
+                run_as_multiplex(multiplex)
               end
             end
           end
@@ -66,14 +70,15 @@ module GraphQL
 
         private
 
-        def run_as_multiplex(queries)
+        def run_as_multiplex(multiplex)
+          queries = multiplex.queries
           # Do as much eager evaluation of the query as possible
           results = queries.map do |query|
             begin_query(query)
           end
 
           # Then, work through lazy results in a breadth-first way
-          GraphQL::Execution::Execute::ExecutionFunctions.lazy_resolve_root_selection(results, { queries: queries })
+          GraphQL::Execution::Execute::ExecutionFunctions.lazy_resolve_root_selection(results, { multiplex: multiplex })
 
           # Then, find all errors and assign the result to the query object
           results.each_with_index.map do |data_result, idx|

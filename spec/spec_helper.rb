@@ -65,7 +65,7 @@ Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each do |f|
 end
 
 def star_wars_query(string, variables={}, context: {})
-  GraphQL::Query.new(StarWars::Schema, string, variables: variables, context: context).result
+  StarWars::Schema.execute(string, variables: variables, context: context)
 end
 
 def with_bidirectional_pagination
@@ -74,7 +74,7 @@ def with_bidirectional_pagination
   yield
 ensure
   GraphQL::Relay::ConnectionType.bidirectional_pagination = prev_value
-end 
+end
 
 module TestTracing
   class << self
@@ -82,16 +82,14 @@ module TestTracing
       traces.clear
     end
 
-    def traces
-      @traces ||= []
-    end
-
     def with_trace
-      GraphQL::Tracing.install(self)
       clear
       yield
-      GraphQL::Tracing.uninstall(self)
       traces
+    end
+
+    def traces
+      @traces ||= []
     end
 
     def trace(key, data)

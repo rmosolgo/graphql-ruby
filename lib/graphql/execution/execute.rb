@@ -29,7 +29,7 @@ module GraphQL
         module_function
 
         def resolve_root_selection(query)
-          GraphQL::Tracing.trace("execute_query", query: query) do
+          query.trace("execute_query", query: query) do
             operation = query.selected_operation
             op_type = operation.operation_type
             root_type = query.root_type_for_operation(op_type)
@@ -42,12 +42,13 @@ module GraphQL
           end
         end
 
-        def lazy_resolve_root_selection(result, query: nil, queries: nil)
-          if query.nil? && queries.length == 1
-            query = queries[0]
+        def lazy_resolve_root_selection(result, query: nil, multiplex: nil)
+          if query.nil? && multiplex.queries.length == 1
+            query = multiplex.queries[0]
           end
 
-          GraphQL::Tracing.trace("execute_query_lazy", {queries: queries, query: query}) do
+          tracer = (query || multiplex)
+          tracer.trace("execute_query_lazy", {multiplex: multiplex, query: query}) do
             GraphQL::Execution::Lazy.resolve(result)
           end
         end
@@ -67,7 +68,7 @@ module GraphQL
               irep_node: child_irep_node,
             )
 
-            field_result = GraphQL::Tracing.trace("execute_field", { context: field_ctx }) do
+            field_result = field_ctx.trace("execute_field", { context: field_ctx }) do
               resolve_field(
                 object,
                 field_ctx

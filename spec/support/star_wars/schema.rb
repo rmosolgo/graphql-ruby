@@ -284,7 +284,7 @@ module StarWars
       if loaded.empty?
         ids = @context.namespace(:loading)[@model]
         # Example custom tracing
-        GraphQL::Tracing.trace("lazy_loader", { ids: ids, model: @model}) do
+        @context.trace("lazy_loader", { ids: ids, model: @model}) do
           records = @model.where(id: ids)
           records.each do |record|
             loaded[record.id.to_s] = record

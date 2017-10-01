@@ -2,13 +2,11 @@
 require "spec_helper"
 
 describe GraphQL::Tracing::ActiveSupportNotificationsTracing do
-  before do
-    GraphQL::Tracing.install(GraphQL::Tracing::ActiveSupportNotificationsTracing)
-  end
-
-  after do
-    GraphQL::Tracing.uninstall(GraphQL::Tracing::ActiveSupportNotificationsTracing)
-  end
+  let(:schema) {
+    StarWars::Schema.redefine {
+      tracer GraphQL::Tracing::ActiveSupportNotificationsTracing
+    }
+  }
 
   it "pushes through AS::N" do
     traces = []
@@ -27,7 +25,7 @@ describe GraphQL::Tracing::ActiveSupportNotificationsTracing do
     last_id = StarWars::Base.last.id
 
     ActiveSupport::Notifications.subscribed(callback, /^graphql/) do
-      star_wars_query(query_string, {
+      schema.execute(query_string, variables: {
         "id1" => first_id,
         "id2" => last_id,
       })

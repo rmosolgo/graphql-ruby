@@ -161,6 +161,7 @@ module GraphQL
 
       class FieldResolutionContext
         include SharedMethods
+        include Tracing::Traceable
         extend GraphQL::Delegate
 
         attr_reader :irep_node, :field, :parent_type, :query, :schema, :parent, :key, :type
@@ -178,6 +179,7 @@ module GraphQL
           # This is needed constantly, so set it ahead of time:
           @query = context.query
           @schema = context.schema
+          @tracers = @query.tracers
         end
 
         def path

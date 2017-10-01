@@ -54,7 +54,8 @@ describe GraphQL::Analysis do
 
       it "emits traces" do
         traces = TestTracing.with_trace do
-          Dummy::Schema.execute(document: GraphQL.parse(query_string))
+          ctx = { tracers: [TestTracing] }
+          Dummy::Schema.execute(query_string, context: ctx)
         end
 
         # The query_trace is on the list _first_ because it finished first

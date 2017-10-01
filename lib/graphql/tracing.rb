@@ -24,15 +24,17 @@ module GraphQL
   # validate | `{ query: GraphQL::Query, validate: Boolean }`
   # analyze_multiplex |  `{ multiplex: GraphQL::Execution::Multiplex }`
   # analyze_query | `{ query: GraphQL::Query }`
-  # execute_multiplex | `{ query: GraphQL::Execution::Multiplex }`
+  # execute_multiplex | `{ multiplex: GraphQL::Execution::Multiplex }`
   # execute_query | `{ query: GraphQL::Query }`
-  # execute_query_lazy | `{ query: GraphQL::Query?, queries: Array<GraphQL::Query>? }`
+  # execute_query_lazy | `{ query: GraphQL::Query?, multiplex: GraphQL::Execution::Multiplex? }`
   # execute_field | `{ context: GraphQL::Query::Context::FieldResolutionContext }`
   # execute_field_lazy | `{ context: GraphQL::Query::Context::FieldResolutionContext }`
   #
   module Tracing
-    class << self
-      # Override this method to do stuff
+    # Objects may include traceable to gain a `.trace(...)` method.
+    # The object must have a `@tracers` ivar of type `Array<<#trace(k, d, &b)>>`.
+    # @api private
+    module Traceable
       # @param key [String] The name of the event in GraphQL internals
       # @param metadata [Hash] Event-related metadata (can be anything)
       # @return [Object] Must return the value of the block
@@ -40,19 +42,41 @@ module GraphQL
         call_tracers(0, key, metadata) { yield }
       end
 
+      private
+
+      # If there's a tracer at `idx`, call it and then increment `idx`.
+      # Otherwise, yield.
+      #
+      # @param idx [Integer] Which tracer to call
+      # @param key [String] The current event name
+      # @param metadata [Object] The current event object
+      # @return Whatever the block returns
+      def call_tracers(idx, key, metadata)
+        if idx == @tracers.length
+          yield
+        else
+          @tracers[idx].trace(key, metadata) { call_tracers(idx + 1, key, metadata) { yield } }
+        end
+      end
+    end
+
+    class << self
       # Install a tracer to receive events.
       # @param tracer [<#trace(key, metadata)>]
       # @return [void]
+      # @deprecated See {Schema#tracer} or use `context: { tracers: [...] }`
       def install(tracer)
         if !tracers.include?(tracer)
           @tracers << tracer
         end
       end
 
+      # @deprecated See {Schema#tracer} or use `context: { tracers: [...] }`
       def uninstall(tracer)
         @tracers.delete(tracer)
       end
 
+      # @deprecated See {Schema#tracer} or use `context: { tracers: [...] }`
       def tracers
         @tracers ||= []
       end
@@ -76,5 +100,12 @@ module GraphQL
     end
     # Initialize the array
     tracers
+
+    module NullTracer
+      module_function
+      def trace(k, v)
+        yield
+      end
+    end
   end
 end

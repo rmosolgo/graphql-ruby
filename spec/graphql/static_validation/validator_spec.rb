@@ -9,6 +9,7 @@ describe GraphQL::StaticValidation::Validator do
 
   describe "tracing" do
     let(:query_string) { "{ t: __typename }"}
+    let(:query) { GraphQL::Query.new(Dummy::Schema, query_string, context: {tracers: [TestTracing]}) }
 
     it "emits a trace" do
       traces = TestTracing.with_trace do

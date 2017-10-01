@@ -2,11 +2,20 @@
 require "spec_helper"
 
 describe GraphQL::Tracing do
-  describe ".trace" do
+  class DummyTraceable
+    def initialize(*tracers)
+      @tracers = tracers
+    end
+
+    include GraphQL::Tracing::Traceable
+  end
+
+  describe "#trace" do
     it "delivers the metadata to send_trace, with result and key" do
       returned_value = nil
+      traceable = DummyTraceable.new(TestTracing)
       traces = TestTracing.with_trace  do
-        returned_value = GraphQL::Tracing.trace("something", { some_stuff: true }) do
+        returned_value = traceable.trace("something", { some_stuff: true }) do
           "do stuff"
         end
       end
@@ -30,12 +39,10 @@ describe GraphQL::Tracing do
 
     it "calls multiple tracers" do
       OtherRandomTracer::CALLS.clear
-      GraphQL::Tracing.install(OtherRandomTracer)
-      # Duplicate install is a no-op
-      GraphQL::Tracing.install(OtherRandomTracer)
 
+      traceable = DummyTraceable.new(TestTracing, OtherRandomTracer)
       traces = TestTracing.with_trace do
-        GraphQL::Tracing.trace("stuff", { }) { :stuff }
+        traceable.trace("stuff", { }) { :stuff }
       end
 
       assert_equal ["stuff"], traces.map { |t| t[:key] }
