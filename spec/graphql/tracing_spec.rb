@@ -47,8 +47,6 @@ describe GraphQL::Tracing do
 
       assert_equal ["stuff"], traces.map { |t| t[:key] }
       assert_equal ["STUFF"], OtherRandomTracer::CALLS
-
-      GraphQL::Tracing.uninstall(OtherRandomTracer)
     end
   end
 end

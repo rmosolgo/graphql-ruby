@@ -101,7 +101,3 @@ module TestTracing
     end
   end
 end
-
-if rails_should_be_installed?
-  GraphQL::Tracing.uninstall(GraphQL::Tracing::ActiveSupportNotificationsTracing)
-end

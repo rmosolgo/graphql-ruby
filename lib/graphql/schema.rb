@@ -147,7 +147,7 @@ module GraphQL
       @middleware = other.middleware.dup
       @query_analyzers = other.query_analyzers.dup
       @multiplex_analyzers = other.multiplex_analyzers.dup
-
+      @tracers = other.tracers.dup
       @possible_types = GraphQL::Schema::PossibleTypes.new(self)
 
       @lazy_methods = other.lazy_methods.dup

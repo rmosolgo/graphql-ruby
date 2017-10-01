@@ -2,14 +2,6 @@
 require "spec_helper"
 
 describe GraphQL::Backtrace do
-  before {
-    GraphQL::Backtrace.enable
-  }
-
-  after {
-    GraphQL::Backtrace.disable
-  }
-
   class LazyError
     def raise_err
       raise "Lazy Boom"
@@ -68,13 +60,15 @@ describe GraphQL::Backtrace do
     }
   }
 
+  let(:backtrace_schema) {
+    schema.redefine(use: GraphQL::Backtrace)
+  }
+
   describe "GraphQL backtrace helpers" do
     it "raises a TracedError when enabled" do
       assert_raises(GraphQL::Backtrace::TracedError) {
-        schema.execute("query BrokenList { field1 { listField { strField } } }")
+        backtrace_schema.execute("query BrokenList { field1 { listField { strField } } }")
       }
-
-      GraphQL::Backtrace.disable
 
       assert_raises(NoMethodError) {
         schema.execute("query BrokenList { field1 { listField { strField } } }")
@@ -83,7 +77,7 @@ describe GraphQL::Backtrace do
 
     it "annotates crashes from user code" do
       err = assert_raises(GraphQL::Backtrace::TracedError) {
-        schema.execute <<-GRAPHQL, root_value: "Root"
+        backtrace_schema.execute <<-GRAPHQL, root_value: "Root"
         query($msg: String = \"Boom\") {
           field1 {
             boomError: raiseField(message: $msg)
@@ -119,13 +113,12 @@ describe GraphQL::Backtrace do
       assert_includes err.message, rendered_table
       # The message includes the original error message
       assert_includes err.message, "This is broken: Boom"
-      assert_includes err.message, "spec/graphql/backtrace_spec.rb:41", "It includes the original backtrace"
+      assert_includes err.message, "spec/graphql/backtrace_spec.rb:33", "It includes the original backtrace"
       assert_includes err.message, "more lines"
     end
 
     it "annotates errors inside lazy resolution" do
       # Test context-based flag
-      GraphQL::Backtrace.disable
       err = assert_raises(GraphQL::Backtrace::TracedError) {
         schema.execute("query StrField { field2 { strField } __typename }", context: { backtrace: true })
       }
@@ -153,16 +146,12 @@ describe GraphQL::Backtrace do
     end
 
     it "returns analysis errors to the client" do
-      res = schema.execute("query raiseError { __typename }")
+      res = backtrace_schema.execute("query raiseError { __typename }")
       assert_equal "this should not be wrapped by a backtrace, but instead, returned to the client", res["errors"].first["message"]
     end
 
     it "always stringifies the #inspect response" do
       # test the schema plugin
-      GraphQL::Backtrace.disable
-      backtrace_schema = schema.redefine {
-        use GraphQL::Backtrace
-      }
       err = assert_raises(GraphQL::Backtrace::TracedError) {
         backtrace_schema.execute("query { nilInspect { raiseField(message: \"pop!\") } }")
       }
