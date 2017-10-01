@@ -158,8 +158,13 @@ describe GraphQL::Backtrace do
     end
 
     it "always stringifies the #inspect response" do
+      # test the schema plugin
+      GraphQL::Backtrace.disable
+      backtrace_schema = schema.redefine {
+        use GraphQL::Backtrace
+      }
       err = assert_raises(GraphQL::Backtrace::TracedError) {
-        schema.execute("query { nilInspect { raiseField(message: \"pop!\") } }")
+        backtrace_schema.execute("query { nilInspect { raiseField(message: \"pop!\") } }")
       }
 
       rendered_table = [

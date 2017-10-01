@@ -33,6 +33,10 @@ module GraphQL
       nil
     end
 
+    def self.use(schema_defn)
+      schema_defn.tracer(self::Tracer)
+    end
+
     def initialize(context, value: nil)
       @table = Table.new(context, value: value)
     end

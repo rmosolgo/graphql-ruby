@@ -37,6 +37,15 @@ To enable this feature for a query, add `backtrace: true` to your `context`, for
 MySchema.execute(query_string, context: { backtrace: true })
 ```
 
+Or, to _always_ wrap backtraces, add it to your schema definition with `use`, for example:
+
+```ruby
+MySchema = GraphQL::Schema.define do
+  # Always wrap backtraces with GraphQL annotation
+  use GraphQL::Backtrace
+end
+```
+
 Now, any unhandled errors will be wrapped by `GraphQL::Backtrace::TracedError`, which prints out the GraphQL backtrace, too. For example:
 
 ```
