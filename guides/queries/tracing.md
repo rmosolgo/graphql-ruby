@@ -27,7 +27,7 @@ end
 - `data`: a hash of metadata about the event
 - `&block`: the event itself, it must be `yield`ed and the value must be returned
 
-To run a tracer for every query, add it to the schema with `tracer`:
+To run a tracer for __every query__, add it to the schema with `tracer`:
 
 ```ruby
 # Run `MyCustomTracer` for all queries
@@ -36,7 +36,7 @@ MySchema = GraphQL::Schema.define do
 end
 ```
 
-Or, to run a tracer for one query only, add it to `context:` as `tracers: [...]`, for example:
+Or, to run a tracer for __one query only__, add it to `context:` as `tracers: [...]`, for example:
 
 ```ruby
 # Run `MyCustomTracer` for this query

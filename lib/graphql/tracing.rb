@@ -15,6 +15,14 @@ module GraphQL
   #     # do stuff ...
   #   end
   #
+  # @example Adding a tracer to a schema
+  #  MySchema = GraphQL::Schema.define do
+  #    tracer MyTracer # <= responds to .trace(key, data, &block)
+  #  end
+  #
+  # @example Adding a tracer to a query
+  #   MySchema.execute(query_str, context: { backtrace: true })
+  #
   # Events:
   #
   # Key | Metadata
@@ -66,6 +74,7 @@ module GraphQL
       # @return [void]
       # @deprecated See {Schema#tracer} or use `context: { tracers: [...] }`
       def install(tracer)
+        warn("GraphQL::Tracing.install is deprecated, add it to the schema with `tracer(my_tracer)` instead.")
         if !tracers.include?(tracer)
           @tracers << tracer
         end
@@ -79,23 +88,6 @@ module GraphQL
       # @deprecated See {Schema#tracer} or use `context: { tracers: [...] }`
       def tracers
         @tracers ||= []
-      end
-
-      private
-
-      # If there's a tracer at `idx`, call it and then increment `idx`.
-      # Otherwise, yield.
-      #
-      # @param idx [Integer] Which tracer to call
-      # @param key [String] The current event name
-      # @param metadata [Object] The current event object
-      # @return Whatever the block returns
-      def call_tracers(idx, key, metadata)
-        if idx == @tracers.length
-          yield
-        else
-          @tracers[idx].trace(key, metadata) { call_tracers(idx + 1, key, metadata) { yield } }
-        end
       end
     end
     # Initialize the array
