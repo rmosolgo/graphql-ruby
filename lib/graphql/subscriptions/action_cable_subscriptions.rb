@@ -64,7 +64,6 @@ module GraphQL
     class ActionCableSubscriptions < GraphQL::Subscriptions
       SUBSCRIPTION_PREFIX = "graphql-subscription:"
       EVENT_PREFIX = "graphql-event:"
-      GLOBALID_KEY = "_graphql_globalid"
       def initialize(**rest)
         # A per-process map of subscriptions to deliver.
         # This is provided by Rails, so let's use it
@@ -76,7 +75,7 @@ module GraphQL
       # Subscribers will re-evaluate locally.
       # TODO: this method name is a smell
       def execute_all(event, object)
-        ActionCable.server.broadcast(EVENT_PREFIX + event.topic, serialize(object))
+        ActionCable.server.broadcast(EVENT_PREFIX + event.topic, Serialize.dump(object))
       end
 
       # This subscription was re-evaluated.
@@ -97,7 +96,7 @@ module GraphQL
         @subscriptions[subscription_id] = query
         events.each do |event|
           channel.stream_from(EVENT_PREFIX + event.topic, coder: ActiveSupport::JSON) do |message|
-            execute(subscription_id, event, deserialize(message))
+            execute(subscription_id, event, Serialize.load(message))
             nil
           end
         end
@@ -117,26 +116,6 @@ module GraphQL
       # The channel was closed, forget about it.
       def delete_subscription(subscription_id)
         @subscriptions.delete(subscription_id)
-      end
-
-      private
-
-      # Serialize GlobalID::Identification
-      def serialize(object)
-        if defined?(GlobalID::Identification) && object.is_a?(GlobalID::Identification)
-          {GLOBALID_KEY => object.to_global_id.to_s}
-        else
-          object
-        end
-      end
-
-      # Deserialize GlobalID::Identification
-      def deserialize(message)
-        if defined?(GlobalID::Identification) && message.is_a?(Hash) && message.size == 1 && message.has_key?(GLOBALID_KEY)
-          GlobalID::Locator.locate(message[GLOBALID_KEY])
-        else
-          message
-        end
       end
     end
   end
