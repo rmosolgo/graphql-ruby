@@ -24,6 +24,7 @@ module GraphQL
     def_delegators :to_a, :each, :[]
 
     def self.enable
+      warn("GraphQL::Backtrace.enable is deprecated, add `use GraphQL::Backtrace` to your schema definition instead.")
       GraphQL::Tracing.install(Backtrace::Tracer)
       nil
     end
@@ -31,6 +32,10 @@ module GraphQL
     def self.disable
       GraphQL::Tracing.uninstall(Backtrace::Tracer)
       nil
+    end
+
+    def self.use(schema_defn)
+      schema_defn.tracer(self::Tracer)
     end
 
     def initialize(context, value: nil)

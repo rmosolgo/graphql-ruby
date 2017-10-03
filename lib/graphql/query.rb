@@ -15,6 +15,7 @@ require "graphql/query/validation_pipeline"
 module GraphQL
   # A combination of query string and {Schema} instance which can be reduced to a {#result}.
   class Query
+    include Tracing::Traceable
     extend GraphQL::Delegate
 
     class OperationNameMissingError < GraphQL::ExecutionError
@@ -55,6 +56,8 @@ module GraphQL
     # @return [String, nil]
     attr_reader :operation_name
 
+    attr_reader :tracers
+
     # Prepare query `query_string` on `schema`
     # @param schema [GraphQL::Schema]
     # @param query_string [String]
@@ -75,6 +78,12 @@ module GraphQL
       @fragments = nil
       @operations = nil
       @validate = validate
+      # TODO: remove support for global tracers
+      @tracers = schema.tracers + GraphQL::Tracing.tracers + (context ? context.fetch(:tracers, []) : [])
+      # Support `ctx[:backtrace] = true` for wrapping backtraces
+      if context && context[:backtrace] && !@tracers.include?(GraphQL::Backtrace::Tracer)
+        @tracers << GraphQL::Backtrace::Tracer
+      end
 
       @analysis_errors = []
       if variables.is_a?(String)
@@ -266,7 +275,7 @@ module GraphQL
       parse_error = nil
       @document ||= begin
         if query_string
-          GraphQL.parse(query_string)
+          GraphQL.parse(query_string, tracer: self)
         end
       rescue GraphQL::ParseError => err
         parse_error = err

@@ -15,6 +15,14 @@ module GraphQL
   #     # do stuff ...
   #   end
   #
+  # @example Adding a tracer to a schema
+  #  MySchema = GraphQL::Schema.define do
+  #    tracer MyTracer # <= responds to .trace(key, data, &block)
+  #  end
+  #
+  # @example Adding a tracer to a query
+  #   MySchema.execute(query_str, context: { backtrace: true })
+  #
   # Events:
   #
   # Key | Metadata
@@ -24,37 +32,22 @@ module GraphQL
   # validate | `{ query: GraphQL::Query, validate: Boolean }`
   # analyze_multiplex |  `{ multiplex: GraphQL::Execution::Multiplex }`
   # analyze_query | `{ query: GraphQL::Query }`
-  # execute_multiplex | `{ query: GraphQL::Execution::Multiplex }`
+  # execute_multiplex | `{ multiplex: GraphQL::Execution::Multiplex }`
   # execute_query | `{ query: GraphQL::Query }`
-  # execute_query_lazy | `{ query: GraphQL::Query?, queries: Array<GraphQL::Query>? }`
+  # execute_query_lazy | `{ query: GraphQL::Query?, multiplex: GraphQL::Execution::Multiplex? }`
   # execute_field | `{ context: GraphQL::Query::Context::FieldResolutionContext }`
   # execute_field_lazy | `{ context: GraphQL::Query::Context::FieldResolutionContext }`
   #
   module Tracing
-    class << self
-      # Override this method to do stuff
+    # Objects may include traceable to gain a `.trace(...)` method.
+    # The object must have a `@tracers` ivar of type `Array<<#trace(k, d, &b)>>`.
+    # @api private
+    module Traceable
       # @param key [String] The name of the event in GraphQL internals
       # @param metadata [Hash] Event-related metadata (can be anything)
       # @return [Object] Must return the value of the block
       def trace(key, metadata)
         call_tracers(0, key, metadata) { yield }
-      end
-
-      # Install a tracer to receive events.
-      # @param tracer [<#trace(key, metadata)>]
-      # @return [void]
-      def install(tracer)
-        if !tracers.include?(tracer)
-          @tracers << tracer
-        end
-      end
-
-      def uninstall(tracer)
-        @tracers.delete(tracer)
-      end
-
-      def tracers
-        @tracers ||= []
       end
 
       private
@@ -74,7 +67,37 @@ module GraphQL
         end
       end
     end
+
+    class << self
+      # Install a tracer to receive events.
+      # @param tracer [<#trace(key, metadata)>]
+      # @return [void]
+      # @deprecated See {Schema#tracer} or use `context: { tracers: [...] }`
+      def install(tracer)
+        warn("GraphQL::Tracing.install is deprecated, add it to the schema with `tracer(my_tracer)` instead.")
+        if !tracers.include?(tracer)
+          @tracers << tracer
+        end
+      end
+
+      # @deprecated See {Schema#tracer} or use `context: { tracers: [...] }`
+      def uninstall(tracer)
+        @tracers.delete(tracer)
+      end
+
+      # @deprecated See {Schema#tracer} or use `context: { tracers: [...] }`
+      def tracers
+        @tracers ||= []
+      end
+    end
     # Initialize the array
     tracers
+
+    module NullTracer
+      module_function
+      def trace(k, v)
+        yield
+      end
+    end
   end
 end

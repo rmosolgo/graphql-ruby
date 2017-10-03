@@ -14,7 +14,7 @@ A tracer must implement `.trace`, for example:
 
 ```ruby
 class MyCustomTracer
-  def trace(key, data)
+  def self.trace(key, data)
     # do stuff with key & data
     yield
   end
@@ -27,13 +27,21 @@ end
 - `data`: a hash of metadata about the event
 - `&block`: the event itself, it must be `yield`ed and the value must be returned
 
-To install a tracer, use `GraphQL::Tracing.install`:
+To run a tracer for __every query__, add it to the schema with `tracer`:
 
 ```ruby
-GraphQL::Tracing.install(MyCustomTracer.new)
+# Run `MyCustomTracer` for all queries
+MySchema = GraphQL::Schema.define do
+  tracer(MyCustomTracer)
+end
 ```
 
-To uninstall, use `GraphQL::Tracing.install(nil)`.
+Or, to run a tracer for __one query only__, add it to `context:` as `tracers: [...]`, for example:
+
+```ruby
+# Run `MyCustomTracer` for this query
+MySchema.execute(..., context: { tracers: [MyCustomTracer]})
+```
 
 For a full list of events, see the {{ "GraphQL::Tracing" | api_doc }} API docs.
 
@@ -45,7 +53,7 @@ To enable it, install the tracer:
 
 ```ruby
 # Send execution events to ActiveSupport::Notifications
-GraphQL::Tracing.install(
-  GraphQL::Tracing::ActiveSupportNotificationsTracing
-)
+MySchema = GraphQL::Schema.define do
+  tracer GraphQL::Tracing::ActiveSupportNotificationsTracing
+end
 ```

@@ -35,8 +35,8 @@ module GraphQL
   # Turn a query string or schema definition into an AST
   # @param graphql_string [String] a GraphQL query string or schema definition
   # @return [GraphQL::Language::Nodes::Document]
-  def self.parse(graphql_string)
-    parse_with_racc(graphql_string)
+  def self.parse(graphql_string, tracer: GraphQL::Tracing::NullTracer)
+    parse_with_racc(graphql_string, tracer: tracer)
   end
 
   # Read the contents of `filename` and parse them as GraphQL
@@ -47,8 +47,8 @@ module GraphQL
     parse_with_racc(content, filename: filename)
   end
 
-  def self.parse_with_racc(string, filename: nil)
-    GraphQL::Language::Parser.parse(string, filename: filename)
+  def self.parse_with_racc(string, filename: nil, tracer: GraphQL::Tracing::NullTracer)
+    GraphQL::Language::Parser.parse(string, filename: filename, tracer: tracer)
   end
 
   # @return [Array<GraphQL::Language::Token>]
@@ -92,6 +92,7 @@ require "graphql/name_validator"
 require "graphql/introspection"
 require "graphql/language"
 require "graphql/analysis"
+require "graphql/tracing"
 require "graphql/execution"
 require "graphql/relay"
 require "graphql/schema"
@@ -114,5 +115,4 @@ require "graphql/function"
 require "graphql/filter"
 require "graphql/subscriptions"
 require "graphql/parse_error"
-require "graphql/tracing"
 require "graphql/backtrace"

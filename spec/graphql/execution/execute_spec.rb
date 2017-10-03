@@ -154,7 +154,7 @@ describe GraphQL::Execution::Execute do
           star_wars_query(query_string, {
             "id1" => first_id,
             "id2" => last_id,
-          })
+          }, context: {tracers: [TestTracing]})
         end
 
         exec_traces = traces[5..-1]

@@ -70,7 +70,8 @@ module GraphQL
       multiplex_analyzer: ->(schema, analyzer) { schema.multiplex_analyzers << analyzer },
       middleware: ->(schema, middleware) { schema.middleware << middleware },
       lazy_resolve: ->(schema, lazy_class, lazy_value_method) { schema.lazy_methods.set(lazy_class, lazy_value_method) },
-      rescue_from: ->(schema, err_class, &block) { schema.rescue_from(err_class, &block)}
+      rescue_from: ->(schema, err_class, &block) { schema.rescue_from(err_class, &block)},
+      tracer: ->(schema, tracer) { schema.tracers.push(tracer) }
 
     attr_accessor \
       :query, :mutation, :subscription,
@@ -100,6 +101,10 @@ module GraphQL
       GraphQL::Filter.new(except: default_mask)
     end
 
+    # @return [Array<#trace(key, data)>] Tracers applied to every query
+    # @see {Query#tracers} for query-specific tracers
+    attr_reader :tracers
+
     self.default_execution_strategy = GraphQL::Execution::Execute
 
     BUILT_IN_TYPES = Hash[[INT_TYPE, STRING_TYPE, FLOAT_TYPE, BOOLEAN_TYPE, ID_TYPE].map{ |type| [type.name, type] }]
@@ -109,6 +114,7 @@ module GraphQL
     attr_reader :static_validator, :object_from_id_proc, :id_from_object_proc, :resolve_type_proc
 
     def initialize
+      @tracers = []
       @definition_error = nil
       @orphan_types = []
       @directives = DIRECTIVES.reduce({}) { |m, d| m[d.name] = d; m }
@@ -141,7 +147,7 @@ module GraphQL
       @middleware = other.middleware.dup
       @query_analyzers = other.query_analyzers.dup
       @multiplex_analyzers = other.multiplex_analyzers.dup
-
+      @tracers = other.tracers.dup
       @possible_types = GraphQL::Schema::PossibleTypes.new(self)
 
       @lazy_methods = other.lazy_methods.dup
@@ -256,8 +262,17 @@ module GraphQL
       if query_str
         kwargs[:query] = query_str
       end
+      # Some of the query context _should_ be passed to the multiplex, too
+      multiplex_context = if (ctx = kwargs[:context])
+        {
+          backtrace: ctx[:backtrace],
+          tracers: ctx[:tracers],
+        }
+      else
+        {}
+      end
       # Since we're running one query, don't run a multiplex-level complexity analyzer
-      all_results = multiplex([kwargs], max_complexity: nil)
+      all_results = multiplex([kwargs], max_complexity: nil, context: multiplex_context)
       all_results[0]
     end
 

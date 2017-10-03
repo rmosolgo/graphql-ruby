@@ -354,19 +354,20 @@ end
 
 ---- inner ----
 
-def initialize(query_string, filename:)
+def initialize(query_string, filename:, tracer: Tracing::NullTracer)
   @query_string = query_string
   @filename = filename
+  @tracer = tracer
 end
 
 def parse_document
   @document ||= begin
     # Break the string into tokens
-    GraphQL::Tracing.trace("lex", {query_string: @query_string}) do
+    @tracer.trace("lex", {query_string: @query_string}) do
       @tokens ||= GraphQL.scan(@query_string)
     end
     # From the tokens, build an AST
-    GraphQL::Tracing.trace("parse", {query_string: @query_string}) do
+    @tracer.trace("parse", {query_string: @query_string}) do
       if @tokens.none?
         make_node(:Document, definitions: [], filename: @filename)
       else
@@ -376,8 +377,8 @@ def parse_document
   end
 end
 
-def self.parse(query_string, filename: nil)
-  self.new(query_string, filename: filename).parse_document
+def self.parse(query_string, filename: nil, tracer: GraphQL::Tracing::NullTracer)
+  self.new(query_string, filename: filename, tracer: tracer).parse_document
 end
 
 private
