@@ -281,6 +281,24 @@ view: :viewer
 # => will call the policy's `#viewer?` method
 ```
 
+### Policy Namespace
+
+If you put your policies in a namespace, provide that namespace as `authorize(..., namespace:)`, for example:
+
+```ruby
+authorize(:pundit, namespace: Policies)
+```
+
+Now, policies will be looked up by name inside `Policies::`, for example:
+
+```ruby
+AccountType = GraphQL::ObjectType.define do
+  name "Account"
+  access :admin # will use Policies::AccountPolicy#admin?
+  # ...
+end
+```
+
 ### Policy Scopes
 
 When a resolve function returns an `ActiveRecord::Relation`, the policy's [`Scope` class](https://github.com/elabs/pundit#scopes) will be used if it's available.

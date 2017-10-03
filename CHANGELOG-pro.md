@@ -8,6 +8,16 @@
 
 ### Bug Fix
 
+## 1.5.8 (2 Oct 2017)
+
+### New Features
+
+- Use `authorize(:pundit, namespace: )` to lookup policies in a namespace instead of the global namespace.
+
+### Bug Fix
+
+- Introspection data is allowed through `fallback:` `authorize:` and `access:` filters. (It can be hidden with a `view:` filter.)
+
 ## 1.5.7 (20 Sept 2017)
 
 ### Bug Fix
