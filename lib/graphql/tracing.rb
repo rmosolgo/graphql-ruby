@@ -1,5 +1,10 @@
 # frozen_string_literal: true
 require "graphql/tracing/active_support_notifications_tracing"
+require "graphql/tracing/platform_tracing"
+require "graphql/tracing/appsignal_tracing"
+require "graphql/tracing/skylight_tracing"
+require "graphql/tracing/new_relic_tracing"
+
 module GraphQL
   # Library entry point for performance metric reporting.
   #
