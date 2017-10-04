@@ -11,8 +11,12 @@ module GraphQL
     # response which corresponds to this error.
     attr_accessor :path
 
-    def initialize(message, ast_node: nil)
+    # @return [Hash] Optional data for error objects
+    attr_accessor :options
+
+    def initialize(message, ast_node: nil, options: nil)
       @ast_node = ast_node
+      @options = options
       super(message)
     end
 
@@ -31,6 +35,9 @@ module GraphQL
       end
       if path
         hash["path"] = path
+      end
+      if options
+        hash.merge!(options)
       end
       hash
     end
