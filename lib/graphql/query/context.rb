@@ -219,9 +219,6 @@ module GraphQL
           when GraphQL::Execution::Execute::PROPAGATE_NULL, nil
             @invalid_null = true
             @value = nil
-            if @type.kind.non_null?
-              @parent.received_null_child
-            end
           when GraphQL::Execution::Execute::SKIP
             @parent.skipped = true
             @parent.delete(self)
