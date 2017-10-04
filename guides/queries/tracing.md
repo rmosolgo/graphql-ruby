@@ -58,9 +58,23 @@ MySchema = GraphQL::Schema.define do
 end
 ```
 
+## Monitoring
+
+Several monitoring platforms are supported out-of-the box by GraphQL-Ruby (see platforms below).
+
+Leaf fields are _not_ monitored (to avoid high cardinality in the metrics service).
+
+Implementations are based on {{ "Tracing::PlatformTracing" | api_doc }}.
+
 ## Appsignal
 
-[AppSignal](https://appsignal.com/)
+To add [AppSignal](https://appsignal.com/) instrumentation:
+
+```ruby
+MySchema = GraphQL::Schema.define do
+  use(GraphQL::Tracing::AppsignalTracing)
+end
+```
 
 <div class="monitoring-img-group">
   {{ "/queries/appsignal_example.png" | link_to_img:"appsignal monitoring" }}
@@ -68,7 +82,14 @@ end
 
 ## New Relic
 
-[New Relic](https://newrelic.com/)
+To add [New Relic](https://newrelic.com/) instrumentation:
+
+```ruby
+MySchema = GraphQL::Schema.define do
+  use(GraphQL::Tracing::NewRelicTracing)
+end
+```
+
 
 <div class="monitoring-img-group">
   {{ "/queries/new_relic_example.png" | link_to_img:"new relic monitoring" }}
@@ -76,7 +97,14 @@ end
 
 ## Skylight
 
-[Skylight](http://skylight.io)
+To add [Skylight](http://skylight.io) instrumentation:
+
+```ruby
+MySchema = GraphQL::Schema.define do
+  use(GraphQL::Tracing::SkylightTracing)
+end
+```
+
 
 <div class="monitoring-img-group">
   {{ "/queries/skylight_example.png" | link_to_img:"skylight monitoring" }}
