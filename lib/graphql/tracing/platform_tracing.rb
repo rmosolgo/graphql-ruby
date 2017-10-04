@@ -52,7 +52,7 @@ module GraphQL
       def self.use(schema_defn)
         tracer = self.new
         schema_defn.instrument(:field, tracer)
-        GraphQL::Tracing.install(tracer)
+        schema_defn.tracer(tracer)
       end
     end
   end
