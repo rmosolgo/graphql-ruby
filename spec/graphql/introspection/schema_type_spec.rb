@@ -30,6 +30,7 @@ describe GraphQL::Introspection::SchemaType do
             {"name"=>"deepNonNull"},
             {"name"=>"error"},
             {"name"=>"executionError"},
+            {"name"=>"executionErrorWithOptions"},
             {"name"=>"favoriteEdible"},
             {"name"=>"fromSource"},
             {"name"=>"maybeNull"},
