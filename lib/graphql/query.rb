@@ -192,6 +192,10 @@ module GraphQL
       end
     end
 
+    def inspect
+      "#<GraphQL::Query #{selected_operation_name}(#{variables.to_h})...>"
+    end
+
     # Node-level cache for calculating arguments. Used during execution and query analysis.
     # @api private
     # @return [GraphQL::Query::Arguments] Arguments for this node, merging default values, literal values and query variables

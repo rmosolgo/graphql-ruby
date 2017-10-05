@@ -5,6 +5,13 @@ require "set"
 require "singleton"
 
 module GraphQL
+  if ENV["SKIP_RDL"]
+    def self.type(*); end
+  else
+    require "rdl"
+    extend RDL::Annotate
+  end
+
   if RUBY_VERSION == "2.4.0"
     # Ruby stdlib was pretty busted until this fix:
     # https://bugs.ruby-lang.org/issues/13111
@@ -35,6 +42,7 @@ module GraphQL
   # Turn a query string or schema definition into an AST
   # @param graphql_string [String] a GraphQL query string or schema definition
   # @return [GraphQL::Language::Nodes::Document]
+  type("(String, tracer: ?[trace: (String, Hash) -> %any]) -> GraphQL::Language::Nodes::Document")
   def self.parse(graphql_string, tracer: GraphQL::Tracing::NullTracer)
     parse_with_racc(graphql_string, tracer: tracer)
   end
@@ -42,6 +50,7 @@ module GraphQL
   # Read the contents of `filename` and parse them as GraphQL
   # @param filename [String] Path to a `.graphql` file containing IDL or query
   # @return [GraphQL::Language::Nodes::Document]
+  type("(String) -> GraphQL::Language::Nodes::Document")
   def self.parse_file(filename)
     content = File.read(filename)
     parse_with_racc(content, filename: filename)

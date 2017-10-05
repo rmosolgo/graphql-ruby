@@ -72,9 +72,17 @@ describe GraphQL::Language::Parser do
     end
   end
 
+  # This is a workaround for RDL, see:
+  # https://github.com/plum-umd/rdl/issues/60
+  class TestTracingDelegate
+    def trace(*args, &block)
+      TestTracing.trace(*args, &block)
+    end
+  end
+
   it "serves traces" do
     TestTracing.clear
-    GraphQL.parse("{ t: __typename }", tracer: TestTracing)
+    GraphQL.parse("{ t: __typename }", tracer: TestTracingDelegate.new)
     traces = TestTracing.traces
     assert_equal 2, traces.length
     lex_trace, parse_trace = traces
