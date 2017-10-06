@@ -41,6 +41,6 @@ Gem::Specification.new do |s|
   s.add_development_dependency "sequel"
 
   # website stuff
-  s.add_development_dependency "github-pages"
+  s.add_development_dependency "jekyll"
   s.add_development_dependency "yard"
 end

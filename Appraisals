@@ -27,7 +27,12 @@ appraise 'rails_5.0' do
 end
 
 appraise 'rails_5.1' do
-  gem 'rails', '~> 5.1.0.rc2'
+  gem 'rails', '~> 5.1.0'
+  # Required for testing action cable
+  gem 'puma'
+  # Required for system tests
+  gem 'capybara'
+  gem 'selenium-webdriver'
 end
 
 appraise 'without_rails' do

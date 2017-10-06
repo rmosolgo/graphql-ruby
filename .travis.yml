@@ -41,9 +41,17 @@ matrix:
   - env: WITHOUT_RAILS=yes
     gemfile: gemfiles/without_rails.gemfile
     rvm: 2.4.1
-  - env: SYSTEM_TESTS=yes
+  - env:
+      - SYSTEM_TESTS=yes
+      - DISPLAY=':99.0'
     gemfile: gemfiles/rails_5.1.gemfile
     rvm: 2.4.1
+    addons:
+      apt:
+        sources:
+          - google-chrome
+        packages:
+          - google-chrome-stable
 
   exclude:
   - rvm: 2.4.1
