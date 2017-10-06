@@ -66,7 +66,7 @@ namespace :bench do
 end
 
 namespace :js do
-  client_dir = "./javascript_client"
+  client_dir = "./js"
 
   desc "Run the tests for javascript_client"
   task :test do

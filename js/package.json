@@ -1,0 +1,34 @@
+{
+  "name": "graphql-ruby-client",
+  "version": "1.1.1",
+  "description": "JavaScript client for graphql-ruby",
+  "main": "index.js",
+  "repository": "https://github.com/rmosolgo/graphql-ruby-client",
+  "author": "Robert Mosolgo",
+  "license": "LGPL-3.0",
+  "bin": "./cli.js",
+  "scripts": {
+    "build": "babel src -d lib",
+    "lint": "eslint src",
+    "test": "jest"
+  },
+  "dependencies": {
+    "actioncable": "^5.1.4",
+    "glob": "^7.1.2",
+    "graphql": "^0.11.3",
+    "minimist": "^1.2.0"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-preset-es2015": "^6.24.1",
+    "eslint": "^4.7.2",
+    "eslint-config-airbnb-base": "^12.0.0",
+    "eslint-plugin-import": "^2.7.0",
+    "eslint-plugin-jest": "^21.1.0",
+    "jest": "^20.0.4",
+    "nock": "^9.0.14"
+  },
+  "jest": {
+    "rootDir": "src"
+  }
+}

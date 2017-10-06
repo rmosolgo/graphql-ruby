@@ -80,9 +80,9 @@ module GraphQL
 
       # This subscription was re-evaluated.
       # Send it to the specific stream where this client was waiting.
-      def deliver(subscription_id, result)
-        payload = { result: result.to_h, more: true }
-        ActionCable.server.broadcast(SUBSCRIPTION_PREFIX + subscription_id, payload)
+      def deliver(subscription_id, channel_operation_id, result)
+        payload = { result: result.to_h, more: true, id: channel_operation_id }
+        ActionCable.server.broadcast(SUBSCRIPTION_PREFIX + subscription_id + channel_operation_id, payload)
       end
 
       # A query was run where these events were subscribed to.
@@ -92,19 +92,20 @@ module GraphQL
       def write_subscription(query, events)
         channel = query.context[:channel]
         subscription_id = query.context[:subscription_id] ||= SecureRandom.uuid
-        channel.stream_from(SUBSCRIPTION_PREFIX + subscription_id)
-        @subscriptions[subscription_id] = query
+        channel_operation_id = query.context[:channel_operation_id]
+        channel.stream_from(SUBSCRIPTION_PREFIX + subscription_id + channel_operation_id)
+        @subscriptions[[subscription_id, channel_operation_id]] = query
         events.each do |event|
           channel.stream_from(EVENT_PREFIX + event.topic, coder: ActiveSupport::JSON) do |message|
-            execute(subscription_id, event, message)
+            execute(subscription_id, channel_operation_id, event, message)
             nil
           end
         end
       end
 
       # Return the query from "storage" (in memory)
-      def read_subscription(subscription_id)
-        query = @subscriptions[subscription_id]
+      def read_subscription(subscription_id, channel_operation_id)
+        query = @subscriptions[[subscription_id, channel_operation_id]]
         {
           query_string: query.query_string,
           variables: query.provided_variables,
@@ -114,8 +115,8 @@ module GraphQL
       end
 
       # The channel was closed, forget about it.
-      def delete_subscription(subscription_id)
-        @subscriptions.delete(subscription_id)
+      def delete_subscription(subscription_id, channel_operation_id)
+        @subscriptions.delete([subscription_id, channel_operation_id])
       end
     end
   end
