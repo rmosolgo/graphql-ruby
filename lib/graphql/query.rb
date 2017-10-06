@@ -17,6 +17,7 @@ module GraphQL
   class Query
     include Tracing::Traceable
     extend GraphQL::Delegate
+    extend RDL::Annotate
 
     class OperationNameMissingError < GraphQL::ExecutionError
       def initialize(name)
@@ -69,6 +70,22 @@ module GraphQL
     # @param max_complexity [Numeric] the maximum field complexity for this query (falls back to schema-level value)
     # @param except [<#call(schema_member, context)>] If provided, objects will be hidden from the schema when `.call(schema_member, context)` returns truthy
     # @param only [<#call(schema_member, context)>] If provided, objects will be hidden from the schema when `.call(schema_member, context)` returns false
+    type "(
+      GraphQL::Schema,
+      ?String,
+      query: ?String,
+      document: ?GraphQL::Language::Nodes::Document,
+      context: ?Hash,
+      variables: ?(Hash<String, %any> or String or ActionController::Parameters),
+      validate: ?%bool,
+      operation_name: ?String,
+      subscription_topic: ?String,
+      root_value: ?%any,
+      only: ?%any,
+      except: ?%any,
+      max_complexity: ?Integer,
+      max_depth: ?Integer
+    ) -> %any"
     def initialize(schema, query_string = nil, query: nil, document: nil, context: nil, variables: {}, validate: true, subscription_topic: nil, operation_name: nil, root_value: nil, max_depth: nil, max_complexity: nil, except: nil, only: nil)
       @schema = schema
       @filter = schema.default_filter.merge(except: except, only: only)

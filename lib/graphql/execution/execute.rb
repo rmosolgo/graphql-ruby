@@ -4,6 +4,7 @@ module GraphQL
     # A valid execution strategy
     # @api private
     class Execute
+      extend RDL::Annotate
 
       # @api private
       class Skip; end
@@ -18,6 +19,7 @@ module GraphQL
       # @api private
       PROPAGATE_NULL = PropagateNull.new
 
+      type("(GraphQL::Language::Nodes::OperationDefinition, GraphQL::ObjectType, GraphQL::Query) -> Hash<String, %any>")
       def execute(ast_operation, root_type, query)
         result = resolve_root_selection(query)
         lazy_resolve_root_selection(result, {query: query})
@@ -26,8 +28,10 @@ module GraphQL
 
       # @api private
       module ExecutionFunctions
+        extend RDL::Annotate
         module_function
 
+        type("(GraphQL::Query) -> Hash<String, %any>")
         def resolve_root_selection(query)
           query.trace("execute_query", query: query) do
             operation = query.selected_operation
@@ -53,6 +57,7 @@ module GraphQL
           end
         end
 
+        type("(%any, GraphQL::ObjectType, GraphQL::Query::Context or GraphQL::Query::Context::FieldResolutionContext, mutation: %bool) -> %any")
         def resolve_selection(object, current_type, current_ctx, mutation: false )
           # Assign this _before_ resolving the children
           # so that when a child propagates null, the selection result is
@@ -97,6 +102,7 @@ module GraphQL
           current_ctx.value
         end
 
+        type("(%any, GraphQL::Query::Context::FieldResolutionContext) -> %any")
         def resolve_field(object, field_ctx)
           query = field_ctx.query
           irep_node = field_ctx.irep_node
@@ -131,6 +137,7 @@ module GraphQL
           end
         end
 
+        type("(%any, GraphQL::Query::Context::FieldResolutionContext) -> %any")
         def continue_resolve_field(raw_value, field_ctx)
           if field_ctx.parent.invalid_null?
             return nil
@@ -160,6 +167,7 @@ module GraphQL
           )
         end
 
+        type("(%any, GraphQL::BaseType, GraphQL::Query::Context::FieldResolutionContext) -> %any")
         def resolve_value(value, field_type, field_ctx)
           field_defn = field_ctx.field
 

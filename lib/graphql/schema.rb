@@ -465,6 +465,10 @@ module GraphQL
       @type_error_proc = new_proc
     end
 
+    def inspect
+      "#<GraphQL::Schema ...>"
+    end
+
     # A function to call when {#execute} receives an invalid query string
     #
     # @see {DefaultParseError} is the default behavior.
