@@ -73,7 +73,7 @@ describe GraphQL::Query::Variables do
 
     describe "nullable variables" do
       module ObjectWithThingsCount
-        def self.thingsCount(args, ctx) # rubocop:disable Style/MethodName
+        def self.thingsCount(args, ctx) # rubocop:disable Naming/MethodName
           1
         end
       end

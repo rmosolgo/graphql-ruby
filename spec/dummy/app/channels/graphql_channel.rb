@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 class GraphqlChannel < ActionCable::Channel::Base
   QueryType = GraphQL::ObjectType.define do
     name "Query"
