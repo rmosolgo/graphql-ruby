@@ -1,4 +1,6 @@
 # frozen_string_literal: true
+# Print full backtrace for failiures:
+ENV["BACKTRACE"] = "1"
 
 def rails_should_be_installed?
   ENV['WITHOUT_RAILS'] != 'yes'
