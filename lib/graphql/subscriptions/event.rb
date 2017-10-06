@@ -46,7 +46,21 @@ module GraphQL
         end
 
         sorted_h = normalized_args.to_h.sort.to_h
-        JSON.dump([scope, name, sorted_h])
+        JSON.dump([serialize_scope(scope), name, sorted_h])
+      end
+
+      # @return [String] an identifier for the subscription scope.
+      def self.serialize_scope(scope)
+        case
+        when scope.is_a?(Array)
+          scope.map { |s| serialize_scope(s) }.join(':')
+        when scope.respond_to?(:to_gid_param)
+          scope.to_gid_param
+        when scope.respond_to?(:to_param)
+          scope.to_param
+        else
+          scope.to_s
+        end
       end
     end
   end
