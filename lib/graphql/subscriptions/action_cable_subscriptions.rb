@@ -75,7 +75,9 @@ module GraphQL
       # Subscribers will re-evaluate locally.
       # TODO: this method name is a smell
       def execute_all(event, object)
-        ActionCable.server.broadcast(EVENT_PREFIX + event.topic, Serialize.dump(object))
+        stream = EVENT_PREFIX + event.topic
+        message = Serialize.dump(object)
+        ActionCable.server.broadcast(stream, message)
       end
 
       # This subscription was re-evaluated.

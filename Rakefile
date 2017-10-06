@@ -65,6 +65,17 @@ namespace :bench do
   end
 end
 
+namespace :test do
+  desc "Run system tests for ActionCable subscriptions"
+  task :system do
+    Dir.chdir("spec/dummy") do
+      system("bin/rails test:system")
+    end
+  end
+
+  task js: "js:test"
+end
+
 namespace :js do
   client_dir = "./javascript_client"
 
