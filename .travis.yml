@@ -41,6 +41,9 @@ matrix:
   - env: WITHOUT_RAILS=yes
     gemfile: gemfiles/without_rails.gemfile
     rvm: 2.4.1
+  - env: SYSTEM_TESTS=yes
+    gemfile: gemfiles/rails_5.1.gemfile
+    rvm: 2.4.1
 
   exclude:
   - rvm: 2.4.1

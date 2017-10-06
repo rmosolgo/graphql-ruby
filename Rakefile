@@ -31,7 +31,12 @@ end
 require 'rubocop/rake_task'
 RuboCop::RakeTask.new
 
-task(default: [:test, :rubocop, "js:all"])
+default_tasks = [:test, :rubocop, "js:all"]
+if ENV["SYSTEM_TESTS"]
+  task(default: ["test:system"] + default_tasks)
+else
+  task(default: default_tasks)
+end
 
 desc "Use Racc & Ragel to regenerate parser.rb & lexer.rb from configuration files"
 task :build_parser do
