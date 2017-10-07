@@ -32,10 +32,12 @@
 
   App.subscribe = function(elementId) {
     var value = 1
+    // Unique-ish
+    var uuid = Math.round(Date.now() + Math.random() * 100000).toString(16)
     return {
       subscription: App.cable.subscriptions.create({
           channel: "GraphqlChannel",
-          id: Date.now(),
+          id: uuid,
         }, {
           connected: function() {
             this.perform("execute", {
