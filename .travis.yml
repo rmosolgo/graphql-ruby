@@ -50,6 +50,8 @@ matrix:
       - export CHROMEDRIVER_VERSION=`curl -s http://chromedriver.storage.googleapis.com/LATEST_RELEASE`
       - curl -L -O "http://chromedriver.storage.googleapis.com/${CHROMEDRIVER_VERSION}/chromedriver_linux64.zip"
       - unzip chromedriver_linux64.zip && chmod +x chromedriver && sudo mv chromedriver /usr/local/bin
+    before_script:
+      - sh -e /etc/init.d/xvfb start
   - env: DATABASE=POSTGRESQL
     gemfile: gemfiles/rails_5.1.gemfile
     rvm: 2.4.1
