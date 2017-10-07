@@ -35,12 +35,6 @@ gemfile:
 
 matrix:
   include:
-  - env: DATABASE=POSTGRESQL
-    gemfile: gemfiles/rails_5.1.gemfile
-    rvm: 2.4.1
-  - env: WITHOUT_RAILS=yes
-    gemfile: gemfiles/without_rails.gemfile
-    rvm: 2.4.1
   - env:
       - SYSTEM_TESTS=yes
       - DISPLAY=':99.0'
@@ -52,6 +46,16 @@ matrix:
           - google-chrome
         packages:
           - google-chrome-stable
+    before_install:
+      - export CHROMEDRIVER_VERSION=`curl -s http://chromedriver.storage.googleapis.com/LATEST_RELEASE`
+      - curl -L -O "http://chromedriver.storage.googleapis.com/${CHROMEDRIVER_VERSION}/chromedriver_linux64.zip"
+      - unzip chromedriver_linux64.zip && chmod +x chromedriver && sudo mv chromedriver /usr/local/bin
+  - env: DATABASE=POSTGRESQL
+    gemfile: gemfiles/rails_5.1.gemfile
+    rvm: 2.4.1
+  - env: WITHOUT_RAILS=yes
+    gemfile: gemfiles/without_rails.gemfile
+    rvm: 2.4.1
 
   exclude:
   - rvm: 2.4.1
