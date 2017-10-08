@@ -24,9 +24,12 @@ function ActionCableSubscriber(cable, networkInterface) {
 */
 ActionCableSubscriber.prototype.subscribe = function subscribeToActionCable(request, handler) {
   var networkInterface = this._networkInterface
+  // unique-ish
+  var channelId = Math.round(Date.now() + Math.random() * 100000).toString(16)
 
   var channel = this._cable.subscriptions.create({
     channel: "GraphqlChannel",
+    channelId: channelId,
   }, {
     // After connecting, send the data over ActionCable
     connected: function() {

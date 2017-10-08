@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 require "graphql/subscriptions/event"
 require "graphql/subscriptions/instrumentation"
+require "graphql/subscriptions/serialize"
 if defined?(ActionCable)
   require "graphql/subscriptions/action_cable_subscriptions"
 end

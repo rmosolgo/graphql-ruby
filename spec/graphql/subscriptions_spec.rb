@@ -133,6 +133,30 @@ class InMemoryBackend
   Schema.get_field("Subscription", "myEvent").subscription_scope = :me
 end
 
+if rails_should_be_installed? && defined?(GlobalID)
+  GlobalID.app = "graphql-ruby-test"
+
+  class GlobalIDUser
+    include GlobalID::Identification
+
+    attr_reader :id
+
+    def initialize(id)
+      @id = id
+    end
+  end
+
+  class ToParamUser
+    def initialize(id)
+      @id = id
+    end
+
+    def to_param
+      @id
+    end
+  end
+end
+
 describe GraphQL::Subscriptions do
   before do
     schema.subscriptions.reset
@@ -281,6 +305,37 @@ describe GraphQL::Subscriptions do
       assert_equal [2], deliveries["2"].map { |d| d["data"]["myEvent"]["int"] }
       # Delivered to user 2
       assert_equal [3], deliveries["3"].map { |d| d["data"]["myEvent"]["int"] }
+    end
+
+    if rails_should_be_installed? && defined?(GlobalID)
+      it "allows complex object subscription scopes" do
+        query_str = <<-GRAPHQL
+          subscription($type: PayloadType) {
+            myEvent(type: $type) { int }
+          }
+        GRAPHQL
+
+        # Global ID Backed User
+        schema.execute(query_str, context: { socket: "1", me: GlobalIDUser.new(1) }, variables: { "type" => "ONE" }, root_value: root_object)
+        schema.execute(query_str, context: { socket: "2", me: GlobalIDUser.new(1) }, variables: { "type" => "TWO" }, root_value: root_object)
+        # ToParam Backed User
+        schema.execute(query_str, context: { socket: "3", me: ToParamUser.new(2) }, variables: { "type" => "ONE" }, root_value: root_object)
+        # Array of Objects
+        schema.execute(query_str, context: { socket: "4", me: [GlobalIDUser.new(4), ToParamUser.new(5)] }, variables: { "type" => "ONE" }, root_value: root_object)
+
+        schema.subscriptions.trigger("myEvent", { "type" => "ONE" }, OpenStruct.new(str: "", int: 1), scope: GlobalIDUser.new(1))
+        schema.subscriptions.trigger("myEvent", { "type" => "TWO" }, OpenStruct.new(str: "", int: 2), scope: GlobalIDUser.new(1))
+        schema.subscriptions.trigger("myEvent", { "type" => "ONE" }, OpenStruct.new(str: "", int: 3), scope: ToParamUser.new(2))
+        schema.subscriptions.trigger("myEvent", { "type" => "ONE" }, OpenStruct.new(str: "", int: 4), scope: [GlobalIDUser.new(4), ToParamUser.new(5)])
+
+        # Delivered to GlobalIDUser
+        assert_equal [1], deliveries["1"].map { |d| d["data"]["myEvent"]["int"] }
+        assert_equal [2], deliveries["2"].map { |d| d["data"]["myEvent"]["int"] }
+        # Delivered to ToParamUser
+        assert_equal [3], deliveries["3"].map { |d| d["data"]["myEvent"]["int"] }
+        # Delivered to Array of GlobalIDUser and ToParamUser
+        assert_equal [4], deliveries["4"].map { |d| d["data"]["myEvent"]["int"] }
+      end
     end
 
     describe "errors" do

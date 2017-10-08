@@ -44,7 +44,7 @@ Style/LambdaCall:
 Layout/LeadingCommentSpace:
   Enabled: true
 
-Style/MethodName:
+Naming/MethodName:
   EnforcedStyle: snake_case
 
 Style/WordArray:

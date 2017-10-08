@@ -8,10 +8,13 @@
 */
 function createActionCableHandler(cable, operations) {
   return function (operation, variables, cacheConfig, observer) {
+    // unique-ish
+    var channelId = Math.round(Date.now() + Math.random() * 100000).toString(16)
 
     // Register the subscription by subscribing to the channel
     const subscriptions = cable.subscriptions.create({
       channel: "GraphqlChannel",
+      channelId: channelId,
     }, {
       connected: function() {
         // Once connected, send the GraphQL data over the channel

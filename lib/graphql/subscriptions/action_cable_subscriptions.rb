@@ -75,7 +75,9 @@ module GraphQL
       # Subscribers will re-evaluate locally.
       # TODO: this method name is a smell
       def execute_all(event, object)
-        ActionCable.server.broadcast(EVENT_PREFIX + event.topic, object)
+        stream = EVENT_PREFIX + event.topic
+        message = Serialize.dump(object)
+        ActionCable.server.broadcast(stream, message)
       end
 
       # This subscription was re-evaluated.
@@ -92,11 +94,12 @@ module GraphQL
       def write_subscription(query, events)
         channel = query.context[:channel]
         subscription_id = query.context[:subscription_id] ||= SecureRandom.uuid
-        channel.stream_from(SUBSCRIPTION_PREFIX + subscription_id)
+        stream = query.context[:action_cable_stream] ||= SUBSCRIPTION_PREFIX + subscription_id
+        channel.stream_from(stream)
         @subscriptions[subscription_id] = query
         events.each do |event|
           channel.stream_from(EVENT_PREFIX + event.topic, coder: ActiveSupport::JSON) do |message|
-            execute(subscription_id, event, message)
+            execute(subscription_id, event, Serialize.load(message))
             nil
           end
         end
