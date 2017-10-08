@@ -194,7 +194,8 @@ describe GraphQL::Subscriptions do
       # The application signals graphql via `subscriptions.trigger`:
       schema.subscriptions.trigger("payload", {"id" => "100"}, root_object.payload)
       schema.subscriptions.trigger("payload", {"id" => "200"}, root_object.payload)
-      schema.subscriptions.trigger("payload", {"id" => "100"}, root_object.payload)
+      # Symobls are OK too
+      schema.subscriptions.trigger("payload", {:id => "100"}, root_object.payload)
       schema.subscriptions.trigger("payload", {"id" => "300"}, nil)
 
       # Let's see what GraphQL sent over the wire:

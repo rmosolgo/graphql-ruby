@@ -25,7 +25,7 @@ module GraphQL
     # Fetch subscriptions matching this field + arguments pair
     # And pass them off to the queue.
     # @param event_name [String]
-    # @param args [Hash]
+    # @param args [Hash<String, Symbol => Object]
     # @param object [Object]
     # @param scope [Symbol, String]
     # @return [void]
@@ -33,6 +33,13 @@ module GraphQL
       field = @schema.get_field("Subscription", event_name)
       if !field
         raise "No subscription matching trigger: #{event_name}"
+      end
+
+      # Normalize symbol-keyed args to strings
+      if args.any?
+        stringified_args = {}
+        args.each { |k, v| stringified_args[k.to_s] = v }
+        args = stringified_args
       end
 
       event = Subscriptions::Event.new(
