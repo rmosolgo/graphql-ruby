@@ -95,6 +95,20 @@ end
   {{ "/queries/new_relic_example.png" | link_to_img:"new relic monitoring" }}
 </div>
 
+## Scout
+
+To add [Scout APM](https://scoutapp.com/) instrumentation:
+
+```ruby
+MySchema = GraphQL::Schema.define do
+  use(GraphQL::Tracing::ScoutTracing)
+end
+```
+
+<div class="monitoring-img-group">
+  {{ "/queries/scout_example.png" | link_to_img:"scout monitoring" }}
+</div>
+
 ## Skylight
 
 To add [Skylight](http://skylight.io) instrumentation:
