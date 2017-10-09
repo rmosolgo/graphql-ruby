@@ -1,6 +1,6 @@
 <h1>ActionCable Test Page</h1>
-<button onClick="sub1.trigger()" id="trigger-1">Trigger 1</button>
-<button onClick="sub2.trigger()" id="trigger-2">Trigger 2</button>
+<button onClick="sub1.trigger()">Trigger 1</button>
+<button onClick="sub2.trigger()">Trigger 2</button>
 <p>ActionCable updates:</p>
 <ul id="updates-1">
 </ul>
@@ -8,6 +8,8 @@
 <ul id="updates-2">
 </ul>
 
+<button onClick="sub1.unsubscribe()">Unsubscribe 1</button>
+<button onClick="sub2.unsubscribe()">Unsubscribe 2</button>
 <script>
 var sub1 = App.subscribe("updates-1")
 var sub2 = App.subscribe("updates-2")
