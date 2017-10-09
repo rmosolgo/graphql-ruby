@@ -25,6 +25,17 @@ class ActionCableSubscriptionsTest < ApplicationSystemTestCase
     click_on("Trigger 2")
     assert_selector "#updates-2-1", text: "1"
     assert_selector "#updates-2-2", text: "2"
+    refute_selector "#updates-2-3"
+    refute_selector "#updates-1-4"
+
+    # Now unsubscribe one, it should not receive updates but the other should
+    click_on("Unsubscribe 1")
+    click_on("Trigger 1")
+    # This should not have changed
+    refute_selector "#updates-1-4"
+
+    click_on("Trigger 2")
+    assert_selector "#updates-2-3", text: "3"
     refute_selector "#updates-1-4"
   end
 end
