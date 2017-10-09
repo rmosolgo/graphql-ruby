@@ -131,7 +131,7 @@ module GraphQL
 
         if after
           offset = (relation_offset(@sliced_nodes) || 0) + offset_from_cursor(after)
-          @sliced_nodes = @sliced_nodes.offset(offset) if after
+          @sliced_nodes = @sliced_nodes.offset(offset)
         end
 
         if before && after
