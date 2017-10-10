@@ -8,6 +8,24 @@
 
 ### Bug fixes
 
+## 1.7.4 (9 Oct 2017)
+
+### Deprecations
+
+- `GraphQL::Tracing.install` is deprecated, use schema-local or query-local tracers instead #996
+
+### New features
+
+- Add monitoring plugins for AppSignal, New Relic, Scout and Skylight #994, #1013
+- Custom coercion errors for custom scalars #988
+- Extra `options` for `GraphQL::ExecutionError` #1002
+- Use `GlobalID` for subscription serialization when available #1004
+- Schema- and query-local, threadsafe tracers #996
+
+### Bug fixes
+
+- Accept symbol-keyed arguments to `.trigger` #1009
+
 ## 1.7.3 (20 Sept 2017)
 
 ### Bug fixes
