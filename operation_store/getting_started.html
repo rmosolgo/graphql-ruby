@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="http://www.rubydoc.info/gems/graphql/1.7.3/">API</a>
+          <a href="http://www.rubydoc.info/gems/graphql/1.7.4/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <input
@@ -163,6 +163,8 @@
 
 <p>You should only allow admin users to see <code class="highlighter-rouge">/graphql/ui</code> because it allows viewers to delete stored operations.</p>
 
+<h5 id="rails-routing-constraints">Rails Routing Constraints</h5>
+
 <p>Use <a href="http://api.rubyonrails.org/v5.1/classes/ActionDispatch/Routing/Mapper/Scoping.html#method-i-constraints">Rails routing constraints</a> to restrict acccess to authorized users, for example:</p>
 
 <div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># Check the secure session for a staff flag:</span>
@@ -171,6 +173,21 @@
 <span class="n">constraints</span><span class="p">(</span><span class="no">STAFF_ONLY</span><span class="p">)</span> <span class="k">do</span>
   <span class="n">mount</span> <span class="no">MySchema</span><span class="p">.</span><span class="nf">ui</span><span class="p">,</span> <span class="ss">at: </span><span class="s2">"/graphql/ui"</span>
 <span class="k">end</span>
+</code></pre>
+</div>
+
+<h5 id="rack-basic-authentication">Rack Basic Authentication</h5>
+
+<p>Insert the <code class="highlighter-rouge">Rack::Auth::Basic</code> middleware, before the web view. This prompts for a username and password when visiting the UI.</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code>  <span class="n">graphql_ui</span> <span class="o">=</span> <span class="no">Rack</span><span class="o">::</span><span class="no">Builder</span><span class="p">.</span><span class="nf">new</span> <span class="k">do</span>
+    <span class="n">use</span><span class="p">(</span><span class="no">Rack</span><span class="o">::</span><span class="no">Auth</span><span class="o">::</span><span class="no">Basic</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">username</span><span class="p">,</span> <span class="n">password</span><span class="o">|</span>
+      <span class="n">username</span> <span class="o">==</span> <span class="no">ENV</span><span class="p">.</span><span class="nf">fetch</span><span class="p">(</span><span class="s2">"GRAPHQL_USERNAME"</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="n">password</span> <span class="o">==</span> <span class="no">ENV</span><span class="p">.</span><span class="nf">fetch</span><span class="p">(</span><span class="s2">"GRAPHQL_PASSWORD"</span><span class="p">)</span>
+    <span class="k">end</span>
+ 
+    <span class="n">run</span> <span class="no">MySchema</span><span class="p">.</span><span class="nf">ui</span>
+  <span class="k">end</span>
+  <span class="n">mount</span> <span class="n">graphql_ui</span><span class="p">,</span> <span class="ss">at: </span><span class="s2">"/graphql/ui"</span>
 </code></pre>
 </div>
 

@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="http://www.rubydoc.info/gems/graphql/1.7.3/">API</a>
+          <a href="http://www.rubydoc.info/gems/graphql/1.7.4/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <input
@@ -70,7 +70,9 @@
 
 <h3 id="running-the-tests">Running the Tests</h3>
 
-<p>You can run all the tests with</p>
+<h4 id="unit-tests">Unit tests</h4>
+
+<p>You can run the tests with</p>
 
 <div class="highlighter-rouge"><pre class="highlight"><code>bundle exec rake        # tests &amp; Rubocop
 bundle exec rake test   # tests only
@@ -109,6 +111,20 @@ bundle exec rake test   # tests only
 </div>
 
 <p>When a file in <code class="highlighter-rouge">lib/</code> is modified, <code class="highlighter-rouge">guard</code> will run the corresponding file in <code class="highlighter-rouge">spec</code>. Guard also respects <code class="highlighter-rouge"># test_via:</code> comments, so it will run that test when the file changes (if there is no corresponding file by name).</p>
+
+<h4 id="other-tests">Other tests</h4>
+
+<p>There are system tests for checking ActionCable behavior, use:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>bundle exec rake test:system
+</code></pre>
+</div>
+
+<p>And JavaScript tests:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>bundle exec rake test:js
+</code></pre>
+</div>
 
 <h3 id="gemfiles-gemfiles-gemfiles">Gemfiles, Gemfiles, Gemfiles</h3>
 
