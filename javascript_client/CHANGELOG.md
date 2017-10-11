@@ -1,5 +1,9 @@
 # graphql-ruby-client
 
+## 1.1.3 (11 Oct 2017)
+
+- Fix Apollo + ActionCable unsubscribe function #1019
+
 ## 1.1.2 (9 Oct 2017)
 
 - Add channel IDs to ActionCable subscriptions #1004
