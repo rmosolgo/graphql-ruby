@@ -12,7 +12,7 @@ function createActionCableHandler(cable, operations) {
     var channelId = Math.round(Date.now() + Math.random() * 100000).toString(16)
 
     // Register the subscription by subscribing to the channel
-    const subscriptions = cable.subscriptions.create({
+    const subscription = cable.subscriptions.create({
       channel: "GraphqlChannel",
       channelId: channelId,
     }, {
