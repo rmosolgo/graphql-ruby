@@ -89,7 +89,7 @@ module GraphQL
             "#{field_name}#{field_alias ? " as #{field_alias}" : ""}",
             "#{ctx.object.inspect}",
             ctx.irep_node.arguments.to_h.inspect,
-            Backtrace::InspectResult.inspect(top && @override_value ? @override_value : ctx.value),
+            Backtrace::InspectResult.inspect_result(top && @override_value ? @override_value : ctx.value),
           ]
 
           build_rows(ctx.parent, rows: rows)
@@ -109,7 +109,7 @@ module GraphQL
             "#{op_type}#{op_name ? " #{op_name}" : ""}",
             "#{query.root_value.inspect}",
             query.variables.to_h.inspect,
-            Backtrace::InspectResult.inspect(query.context.value),
+            Backtrace::InspectResult.inspect_result(query.context.value),
           ]
         else
           raise "Unexpected get_rows subject #{context_entry.inspect}"
