@@ -29,15 +29,15 @@ module GraphQL
         @instrumented_field_map = Hash.new { |h, k| h[k] = {} }
         @type_reference_map = Hash.new { |h, k| h[k] = [] }
         @union_memberships = Hash.new { |h, k| h[k] = [] }
-        visit(schema, nil)
+        visit(schema, schema, nil)
       end
 
       private
 
-      def visit(member, context_description)
+      def visit(schema, member, context_description)
         case member
         when GraphQL::Schema
-          member.directives.each { |name, directive| visit(directive, "Directive #{name}") }
+          member.directives.each { |name, directive| visit(schema, directive, "Directive #{name}") }
           # Find the starting points, then visit them
           visit_roots = [member.query, member.mutation, member.subscription]
           if @introspection
@@ -45,16 +45,16 @@ module GraphQL
             if member.query
               # Visit this so that arguments class is preconstructed
               # Skip validation since it begins with __
-              visit_field_on_type(member.query, GraphQL::Introspection::TypeByNameField, dynamic_field: true)
+              visit_field_on_type(schema, member.query, GraphQL::Introspection::TypeByNameField, dynamic_field: true)
             end
           end
           visit_roots.concat(member.orphan_types)
           visit_roots.compact!
-          visit_roots.each { |t| visit(t, t.name) }
+          visit_roots.each { |t| visit(schema, t, t.name) }
         when GraphQL::Directive
           member.arguments.each do |name, argument|
             @type_reference_map[argument.type.unwrap.to_s] << argument
-            visit(argument.type, "Directive argument #{member.name}.#{name}")
+            visit(schema, argument.type, "Directive argument #{member.name}.#{name}")
           end
           # Construct arguments class here, which is later used to generate GraphQL::Query::Arguments
           # to be passed to a resolver proc
@@ -68,19 +68,19 @@ module GraphQL
             @type_map[type_defn.name] = type_defn
             case type_defn
             when GraphQL::ObjectType
-              type_defn.interfaces.each { |i| visit(i, "Interface on #{type_defn.name}") }
-              visit_fields(type_defn)
+              type_defn.interfaces.each { |i| visit(schema, i, "Interface on #{type_defn.name}") }
+              visit_fields(schema, type_defn)
             when GraphQL::InterfaceType
-              visit_fields(type_defn)
+              visit_fields(schema, type_defn)
             when GraphQL::UnionType
               type_defn.possible_types.each do |t|
                 @union_memberships[t.name] << type_defn
-                visit(t, "Possible type for #{type_defn.name}")
+                visit(schema, t, "Possible type for #{type_defn.name}")
               end
             when GraphQL::InputObjectType
               type_defn.arguments.each do |name, arg|
                 @type_reference_map[arg.type.unwrap.to_s] << arg
-                visit(arg.type, "Input field #{type_defn.name}.#{name}")
+                visit(schema, arg.type, "Input field #{type_defn.name}.#{name}")
               end
 
               # Construct arguments class here, which is later used to generate GraphQL::Query::Arguments
@@ -91,19 +91,26 @@ module GraphQL
             # If the previous entry in the map isn't the same object we just found, raise.
             raise("Duplicate type definition found for name '#{type_defn.name}'")
           end
+        when Class
+          if member.respond_to?(:to_graphql)
+            graphql_member = member.to_graphql(schema: schema)
+            visit(schema, graphql_member, context_description)
+          else
+            raise GraphQL::Schema::InvalidTypeError.new("Unexpected traversal member: #{member} (#{member.class.name})")
+          end
         else
           message = "Unexpected schema traversal member: #{member} (#{member.class.name})"
           raise GraphQL::Schema::InvalidTypeError.new(message)
         end
       end
 
-      def visit_fields(type_defn)
+      def visit_fields(schema, type_defn)
         type_defn.all_fields.each do |field_defn|
-          visit_field_on_type(type_defn, field_defn)
+          visit_field_on_type(schema, type_defn, field_defn)
         end
       end
 
-      def visit_field_on_type(type_defn, field_defn, dynamic_field: false)
+      def visit_field_on_type(schema, type_defn, field_defn, dynamic_field: false)
         if dynamic_field
           # Don't apply instrumentation to dynamic fields since they're shared constants
           instrumented_field_defn = field_defn
@@ -114,11 +121,11 @@ module GraphQL
           @instrumented_field_map[type_defn.name][instrumented_field_defn.name] = instrumented_field_defn
         end
         @type_reference_map[instrumented_field_defn.type.unwrap.name] << instrumented_field_defn
-        visit(instrumented_field_defn.type, "Field #{type_defn.name}.#{instrumented_field_defn.name}'s return type")
+        visit(schema, instrumented_field_defn.type, "Field #{type_defn.name}.#{instrumented_field_defn.name}'s return type")
 
         instrumented_field_defn.arguments.each do |name, arg|
           @type_reference_map[arg.type.unwrap.to_s] << arg
-          visit(arg.type, "Argument #{name} on #{type_defn.name}.#{instrumented_field_defn.name}")
+          visit(schema, arg.type, "Argument #{name} on #{type_defn.name}.#{instrumented_field_defn.name}")
         end
 
         # Construct arguments class here, which is later used to generate GraphQL::Query::Arguments
