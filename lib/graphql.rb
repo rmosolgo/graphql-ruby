@@ -116,3 +116,5 @@ require "graphql/filter"
 require "graphql/subscriptions"
 require "graphql/parse_error"
 require "graphql/backtrace"
+
+require "graphql/object"
