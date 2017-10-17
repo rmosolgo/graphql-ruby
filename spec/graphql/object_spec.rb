@@ -29,7 +29,7 @@ describe GraphQL::Object do
     it "works" do
       query_str = " { ensembles { name } }"
       res = Jazz::Schema.execute(query_str)
-      assert_equal ["Bela Fleck and the Flecktones"], res["data"]["ensembles"]
+      assert_equal [{"name" => "Bela Fleck and the Flecktones"}], res["data"]["ensembles"]
     end
   end
 end
