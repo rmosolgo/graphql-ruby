@@ -49,8 +49,12 @@ module GraphQL
         end
       end
 
-      def self.use(schema_defn)
-        tracer = self.new
+      def self.use(schema_defn, **tracer_kwargs)
+        tracer = if tracer_kwargs == {}
+          self.new
+        else
+          self.new(**tracer_kwargs)
+        end
         schema_defn.instrument(:field, tracer)
         schema_defn.tracer(tracer)
       end

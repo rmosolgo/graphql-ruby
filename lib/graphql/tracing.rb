@@ -5,6 +5,7 @@ require "graphql/tracing/appsignal_tracing"
 require "graphql/tracing/new_relic_tracing"
 require "graphql/tracing/scout_tracing"
 require "graphql/tracing/skylight_tracing"
+require "graphql/tracing/statsd_tracing"
 
 module GraphQL
   # Library entry point for performance metric reporting.
