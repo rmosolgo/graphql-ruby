@@ -587,7 +587,11 @@ module GraphQL
       end
 
       def find_type(name)
-        @namespace.const_get(name).to_graphql(schema: self)
+        if @namespace.const_defined?("#{name}Type")
+          @namespace.const_get("#{name}Type")
+        else
+          @namespace.const_get(name).to_graphql(schema: self)
+        end
       end
 
       def namespace(new_namespace = nil)
