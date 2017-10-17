@@ -1,10 +1,13 @@
 # frozen_string_literal: true
 require "graphql/object/build_type"
 require "graphql/object/field"
+require "graphql/object/instrumentation"
 require "graphql/object/resolvers"
 
 module GraphQL
   class Object
+    attr_reader :object
+
     def initialize(object, context)
       @object = object
       @context = context
@@ -28,11 +31,11 @@ module GraphQL
         end
       end
 
-      def models(*model_classes)
-        if model_classes.any?
-          @models = model_classes
+      def model(model_class = nil)
+        if model_class
+          @model = model_class
         else
-          @models
+          @model
         end
       end
 
