@@ -184,6 +184,6 @@ Add [Statsd](https://github.com/etsy/statsd/wiki) instrumentation with `monitori
 ```ruby
 MySchema = GraphQL::Schema.define do
   # ...
-  monitoring(:skylight, statsd: Statds.new('localhost', 9125))
+  monitoring(:statsd, statsd: Statds.new('localhost', 9125))
 end
 ```
