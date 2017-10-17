@@ -28,7 +28,7 @@ module GraphQL
             public_send(field_defn_method, field_name, field: field_defn)
           end
 
-          obj_type.metadata[:implementation] = graphql_obj_class
+          obj_type.metadata[:object_class] = graphql_obj_class
         end
       end
 
@@ -51,10 +51,15 @@ module GraphQL
           GraphQL::BOOLEAN_TYPE
         when "ID"
           GraphQL::BOOLEAN_TYPE
+        when /\A\[.*\]\Z/
+          list_type = true
+          parse_type(schema, type_name[1..-2], null: true)
+        when /.*!\Z/
+          null = false
+          parse_type(schema, type_name[1..-2], null: true)
         else
           schema.find_type(type_name)
         end
-
 
         # TODO This isn't going to handle circular dependencies
         if return_type.is_a?(Class) && return_type < GraphQL::Object
