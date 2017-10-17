@@ -579,10 +579,14 @@ module GraphQL
       # This will probably get worse before it gets better :S
       extend GraphQL::Delegate
 
-      def_delegators :instance, :types, :execute, :find_type
+      def_delegators :instance, :types, :execute
 
       def instance
         @instance || raise("#{name} not booted; call #{name}.boot to prepare the schema")
+      end
+
+      def find_type(name)
+        @namespace.const_get(name).to_graphql(schema: self)
       end
 
       def namespace(new_namespace = nil)
@@ -596,20 +600,50 @@ module GraphQL
       # @return [void]
       def boot
         @instance = self.to_graphql
+        @instance.types.each do |type_name, type_defn|
+          object_class = type_defn.metadata[:object_class]
+          if !object_class
+            next # nothing to boot here
+          end
+          model_class = object_class.model
+          type_defn.all_fields.each do |prev_field_defn|
+            field_name = prev_field_defn.name
+            # Get the instrumented definition
+            field_defn = @instance.get_field(type_name, field_name)
+            # underscore-ize
+            method_name = field_defn.name
+              .gsub(/([A-Z]+)([A-Z][a-z])/,'\1_\2') # URLDecoder -> URL_Decoder
+              .gsub(/([a-z\d])([A-Z])/,'\1_\2')     # someThing -> some_Thing
+              .downcase
+
+            resolve_strategy_class = if object_class.method_defined?(method_name)
+              Object::Resolvers::MethodCall
+            elsif model_class && model_class.method_defined?(method_name)
+              Object::Resolvers::ModelMethod
+            elsif model_class && defined?(ActiveRecord) && model_class < ActiveRecord::Base && model_class.column_names.include?(method_name)
+              # TODO generalize stuff like this
+              Object::Resolvers::ModelReader
+            elsif type_defn.interfaces.find { |i| i.fields[field_name] }
+              Object::Resolvers::InterfaceField
+            else
+              raise "Can't find implementation"
+            end
+
+            field_defn.metadata[:resolve_strategy] = resolve_strategy_class.new(
+              type_name: type_name,
+              field_name: field_name,
+              method_name: method_name,
+              object_class: object_class,
+            )
+          end
+        end
       end
 
       def to_graphql
         query_type = @query_object.to_graphql(schema: self)
-        if @namespace
-          find_type_proc = ->(name) {
-            @namespace.const_get(name)
-          }
-        end
         self.define {
           query(query_type)
-          if find_type_proc
-            find_type(find_type_proc)
-          end
+          instrument(:field, GraphQL::Object::Instrumentation.new(schema: target))
         }
       end
 
@@ -618,6 +652,14 @@ module GraphQL
           @query_object = new_query_object
         else
           @query_object
+        end
+      end
+
+      def default_execution_strategy
+        if superclass <= GraphQL::Schema
+          superclass.default_execution_strategy
+        else
+          @default_execution_strategy
         end
       end
     end
