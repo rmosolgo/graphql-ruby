@@ -34,6 +34,7 @@ Supported platforms are:
 - [New Relic](#new-relic)
 - [Scout](#scout)
 - [Skylight](#skylight)
+- [Statsd](#statsd)
 
 ## Opting in, Opting out
 
@@ -175,3 +176,14 @@ end
   {{ "/pro/skylight_2.png" | link_to_img:"skylight monitoring" }}
   {{ "/pro/skylight_1.png" | link_to_img:"skylight monitoring" }}
 </div>
+
+## Statsd
+
+Add [Statsd](https://github.com/etsy/statsd/wiki) instrumentation with `monitoring(:statsd)`, for example:
+
+```ruby
+MySchema = GraphQL::Schema.define do
+  # ...
+  monitoring(:skylight, statsd: Statds.new('localhost', 9125))
+end
+```
