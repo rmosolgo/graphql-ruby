@@ -27,9 +27,10 @@ describe GraphQL::Object do
 
   describe "in queries" do
     it "works" do
-      query_str = " { ensembles { name } }"
+      query_str = " { ensembles { name } instruments { name } }"
       res = Jazz::Schema.execute(query_str)
       assert_equal [{"name" => "Bela Fleck and the Flecktones"}], res["data"]["ensembles"]
+      assert_equal [{"name" => "banjo"}], res["data"]["instruments"]
     end
   end
 end
