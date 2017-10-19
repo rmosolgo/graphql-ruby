@@ -399,12 +399,12 @@ module StarWars
     end
   end
 
-  Schema = GraphQL::Schema.define do
+  class Schema < GraphQL::Schema
     query(QueryType)
     mutation(MutationType)
     default_max_page_size 3
 
-    resolve_type ->(type, object, ctx) {
+    def self.resolve_type(type, object, ctx)
       if object == :test_error
         :not_a_type
       elsif object.is_a?(Base)
@@ -416,14 +416,14 @@ module StarWars
       else
         nil
       end
-    }
+    end
 
-    object_from_id ->(node_id, ctx) do
+    def self.object_from_id(node_id, ctx)
       type_name, id = GraphQL::Schema::UniqueWithinType.decode(node_id)
       StarWars::DATA[type_name][id]
     end
 
-    id_from_object ->(object, type, ctx) do
+    def self.id_from_object(object, type, ctx)
       GraphQL::Schema::UniqueWithinType.encode(type.name, object.id)
     end
 
