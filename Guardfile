@@ -5,7 +5,7 @@ guard :bundler do
   watch(/^.+\.gemspec/)
 end
 
-guard :minitest do
+guard :minitest, test_file_patterns: ["*_spec.rb"] do
   # with Minitest::Spec
   watch(%r{^spec/(.*)_spec\.rb})
   watch(%r{^lib/(.+)\.rb})          { |m|
