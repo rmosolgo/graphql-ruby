@@ -2,17 +2,11 @@
 
 # Here's the "application"
 module Jazz
-  # Here are some classes that the application deals with
-  module Models
-    Ensemble = Struct.new(:name)
-    Instrument = Struct.new(:name)
-  end
-
   # Here's a new-style GraphQL type definition
   class Ensemble < GraphQL::Object
-    model Models::Ensemble
     description "A group of musicians playing together"
     field :name, "String", null: false
+    field :musicians, "[Jazz::Musician]", null: false
   end
 
   # Lives side-by-side with an old-style definition
@@ -21,27 +15,28 @@ module Jazz
     field :name, !types.String
   end
 
+  class Musician < GraphQL::Object
+    description "Someone who plays an instrument"
+    field :name, String, null: false
+    field :instrument, InstrumentType, null: false
+  end
+
   # Another new-style definition, with method overrides
   class Query < GraphQL::Object
-    field :ensembles, "[Ensemble]"
-    field :instruments, "[Instrument]"
+    field :ensembles, [Ensemble]
+    field :instruments, [InstrumentType]
 
     def ensembles
-      [Models::Ensemble.new("Bela Fleck and the Flecktones")]
+      [OpenStruct.new(name: "Bela Fleck and the Flecktones")]
     end
 
     def instruments
-      [Models::Instrument.new("banjo")]
+      [OpenStruct.new(name: "banjo")]
     end
   end
 
   # New-style Schema definition
   class Schema < GraphQL::Schema
     query(Query)
-    namespace(Jazz)
   end
-
-  # Prep the schema, now a required step,
-  # but can be rebooted during Rails development
-  Schema.boot
 end
