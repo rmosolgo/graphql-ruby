@@ -5,10 +5,6 @@ module GraphQL
   class Object
     # TODO use objects, not proc literals
     class Instrumentation
-      def initialize(schema:)
-        @schema = schema
-      end
-
       def instrument(type, field)
         return_type = field.type.unwrap
         # TODO this is too grabby, we can skip some union types

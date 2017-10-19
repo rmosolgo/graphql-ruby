@@ -84,7 +84,7 @@ module GraphQL
         end
       end
 
-      def_delegators :to_h, :keys, :values, :each
+      def_delegators :to_h, :keys, :values, :each, :any?
 
       # Access each key, value and type for the arguments in this set.
       # @yield [argument_value] The {ArgumentValue} for each argument
