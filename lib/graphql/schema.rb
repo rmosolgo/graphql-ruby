@@ -580,25 +580,77 @@ module GraphQL
       # This will probably get worse before it gets better :S
       extend GraphQL::Delegate
 
-      def_delegators :instance, :types, :execute
+      def_delegators :instance, :types, :execute, :default_filter, :object_from_id_proc, :id_from_object_proc, :redefine, :tracers
 
       def instance
         @instance ||= to_graphql
       end
 
       def to_graphql
-        query_type = @query_object.to_graphql
+        # Read a bunch of values into local binding
+        # to cope with instance_eval in the `define` block
+        query_type = if query.is_a?(GraphQL::BaseType)
+          query
+        else
+          # GraphQL::Object class
+          query.to_graphql
+        end
+
+        mutation_type = if mutation.is_a?(GraphQL::BaseType)
+          mutation
+        elsif mutation
+          mutation.to_graphql
+        else
+          nil
+        end
+
+        default_max_page_size_val = default_max_page_size
+        resolve_type_func = method(:resolve_type)
+        object_from_id_func = method(:object_from_id)
+        id_from_object_func = method(:id_from_object)
+        lazy_classes_hash = lazy_classes
+        instrumenters_hash = instrumenters
+
         self.define {
-          query(query_type)
           instrument(:field, GraphQL::Object::Instrumentation.new)
+          query(query_type)
+          mutation(mutation_type)
+          default_max_page_size(default_max_page_size_val)
+          resolve_type(resolve_type_func)
+          object_from_id(object_from_id_func)
+          id_from_object(id_from_object_func)
+          instrumenters_hash.each do |step, instrumenters|
+            instrumenters.each do |(inst, options)|
+              instrument(step, inst, options)
+            end
+          end
+          lazy_classes_hash.each do |lazy_class, value_method|
+            lazy_resolve(lazy_class, value_method)
+          end
         }
       end
 
-      def query(new_query_object)
+      def query(new_query_object = nil)
         if new_query_object
           @query_object = new_query_object
         else
           @query_object
+        end
+      end
+
+      def mutation(new_mutation_object = nil)
+        if new_mutation_object
+          @mutation_object = new_mutation_object
+        else
+          @mutation_object
+        end
+      end
+
+      def default_max_page_size(new_default_max_page_size = nil)
+        if new_default_max_page_size
+          @default_max_page_size = new_default_max_page_size
+        else
+          @default_max_page_size
         end
       end
 
@@ -607,6 +659,58 @@ module GraphQL
           superclass.default_execution_strategy
         else
           @default_execution_strategy
+        end
+      end
+
+      def resolve_type(type, obj, ctx)
+        raise NotImplementedError, "#{self.name}.resolve_type(type, obj, ctx) must be implemented to use Union types or Interface types (tried to resolve: #{type.name})"
+      end
+
+      def object_from_id(node_id, ctx)
+        raise NotImplementedError, "#{self.name}.object_from_id(node_id, ctx) must be implemented to use the `node` field (tried to load from id `#{node_id}`)"
+      end
+
+      def id_from_object(object, type, ctx)
+        raise NotImplementedError, "#{self.name}.id_from_object(object, type, ctx) must be implemented to create global ids (tried to create an id for `#{object.inspect}`)"
+      end
+
+      def lazy_resolve(lazy_class, value_method)
+        lazy_classes[lazy_class] = value_method
+      end
+
+      def instrument(instrument_step, instrumenter, options = {})
+        instrumenters[instrument_step] << [instrumenter, options]
+      end
+
+      private
+
+      def lazy_classes
+        @lazy_classes ||= {}
+      end
+
+      def instrumenters
+        @instrumenters ||= Hash.new { |h,k| h[k] = [] }
+      end
+    end
+
+
+    def self.inherited(child_class)
+      child_class.singleton_class.class_eval do
+        prepend(MethodWrappers)
+      end
+    end
+
+    module MethodWrappers
+      # Wrap the user-provided resolve-type in a correctness check
+      def resolve_type(type, obj, ctx)
+        type_result = super(type, obj, ctx)
+        if type_result.nil?
+          nil
+        elsif !type_result.is_a?(GraphQL::BaseType)
+          type_str = "#{type_result} (#{type_result.class.name})"
+          raise "resolve_type(#{type}, #{obj}, ctx) returned #{type_str}, but it should return a GraphQL type"
+        else
+          type_result
         end
       end
     end
