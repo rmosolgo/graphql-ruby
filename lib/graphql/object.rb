@@ -68,8 +68,8 @@ module GraphQL
 
       # TODO this caching will not work with rebooting
       # @return [GraphQL::ObjectType]
-      def to_graphql(schema:)
-        @to_graphql ||= BuildType.build_object_type(schema, self)
+      def to_graphql
+        @to_graphql ||= BuildType.build_object_type(self)
       end
     end
   end

@@ -15,29 +15,28 @@ module GraphQL
       end
 
       # @return [GraphQL::Field]
-      def to_graphql(schema:)
+      def to_graphql
         # read ivars to cope with instance_eval in .define {...}
         field_name = @name
         return_type_expr = @return_type_expr
         return_type_null = @return_type_null
         desc = @description
         depr_reason = @deprecation_reason
-        connection = BuildType.to_type_name(return_type_expr).end_with?("Connection")
-        method_name = @method || @name.underscore
+        return_type_name = BuildType.to_type_name(return_type_expr)
+        connection = return_type_name.end_with?("Connection")
+        method_name = @method || BuildType.underscore(@name)
         args_block = @args_block
 
         field_defn = GraphQL::Field.define do
           name(field_name)
           type(-> {
-            Object::BuildType.parse_type(schema, return_type_expr, null: return_type_null)
+            Object::BuildType.parse_type(return_type_expr, null: return_type_null)
           })
           description(desc)
           deprecation_reason(depr_reason)
-          resolve(GraphQL::Object::Resolvers::Metadata.new)
-          # This no-op strategy raises an error if it's ever called
-          target.metadata[:resolve_strategy] = GraphQL::Object::Resolvers::Pending.new
-          # This is used during schema boot to check for a method
-          target.metadata[:implementation_method_name] = method_name
+          resolve(GraphQL::Object::Resolvers::Dynamic.new({
+            method_name: method_name,
+          }))
           # apply this first, so it can be overriden below
           if connection
             FieldProxy.new(self).instance_eval do
@@ -69,7 +68,7 @@ module GraphQL
           @defn.argument do
             name(arg_name.to_s)
             type(-> {
-              Object::BuildType.parse_type(schema, type_expr, null: null)
+              Object::BuildType.parse_type(type_expr, null: null)
             })
             description(desc)
             if default_value_was_provided
