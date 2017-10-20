@@ -69,12 +69,13 @@ module Jazz
   end
 
   # Lives side-by-side with an old-style definition
+  using GraphQL::DeprecatedDSL # for ! and types[]
   InstrumentType = GraphQL::ObjectType.define do
     name "Instrument"
-    implements GloballyIdentifiable::Interface.to_graphql
+    implements GloballyIdentifiable::Interface
     field :id, !types.ID, "A unique identifier for this object", resolve: ->(obj, args, ctx) { GloballyIdentifiable.to_id(obj) }
     field :name, !types.String
-    field :family, Family.to_graphql.to_non_null_type
+    field :family, !Family
   end
 
   class Musician < GraphQL::Object
