@@ -15,19 +15,12 @@ module GraphQL
 
     class << self
       def implements(*new_interfaces)
-        @own_interfaces = new_interfaces
+        interfaces.concat(new_interfaces)
       end
 
-      def own_interfaces
-        @own_interfaces = []
-      end
-
+      # TODO inheritance?
       def interfaces
-        if superclass.is_a?(GraphQL::Object)
-          superclass.interfaces + own_interfaces
-        else
-          own_interfaces
-        end
+        @interfaces ||= []
       end
 
       # Define a field on this object
