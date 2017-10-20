@@ -49,7 +49,7 @@ module GraphQL
           when "Boolean"
             GraphQL::BOOLEAN_TYPE
           when "ID"
-            GraphQL::BOOLEAN_TYPE
+            GraphQL::ID_TYPE
           when /\A\[.*\]\Z/
             list_type = true
             parse_type(type_expr[1..-2], null: true)
