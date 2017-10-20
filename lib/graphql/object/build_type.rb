@@ -52,10 +52,11 @@ module GraphQL
             GraphQL::ID_TYPE
           when /\A\[.*\]\Z/
             list_type = true
-            parse_type(type_expr[1..-2], null: true)
+            # List members are required by default
+            parse_type(type_expr[1..-2], null: false)
           when /.*!\Z/
             null = false
-            parse_type(type_expr[1..-2], null: true)
+            parse_type(type_expr[0..-2], null: true)
           else
             maybe_type = Object.const_get(type_expr)
             case maybe_type
@@ -76,7 +77,8 @@ module GraphQL
             raise "Use an array of length = 1 for list types; other arrays are not supported"
           end
           list_type = true
-          parse_type(type_expr.first, null: true)
+          # List members are required by default
+          parse_type(type_expr.first, null: false)
         when Class
           if Class < GraphQL::Object
             type_expr.to_graphql
