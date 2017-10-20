@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+require "securerandom"
 require "graphql/subscriptions/event"
 require "graphql/subscriptions/instrumentation"
 require "graphql/subscriptions/serialize"
@@ -132,6 +133,11 @@ module GraphQL
     # @return [void]
     def write_subscription(query, events)
       raise NotImplementedError
+    end
+
+    # @return [String] A new unique identifier for a subscription
+    def build_id
+      SecureRandom.uuid
     end
   end
 end

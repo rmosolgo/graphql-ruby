@@ -384,4 +384,11 @@ describe GraphQL::Subscriptions do
       assert_equal 123, schema.subscriptions.extra
     end
   end
+
+  describe "#build_id" do
+    it "returns a unique ID string" do
+      assert_instance_of String, schema.subscriptions.build_id
+      refute_equal schema.subscriptions.build_id, schema.subscriptions.build_id
+    end
+  end
 end

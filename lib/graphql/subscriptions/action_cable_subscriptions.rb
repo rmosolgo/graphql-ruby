@@ -1,6 +1,4 @@
 # frozen_string_literal: true
-require "securerandom"
-
 module GraphQL
   class Subscriptions
     # A subscriptions implementation that sends data
@@ -41,7 +39,7 @@ module GraphQL
     #       })
     #
     #       payload = {
-    #         result: result.to_h,
+    #         result: result.subscription? ? nil : result.to_h,
     #         more: result.subscription?,
     #       }
     #
@@ -93,7 +91,7 @@ module GraphQL
       # and re-evaluate the query locally.
       def write_subscription(query, events)
         channel = query.context[:channel]
-        subscription_id = query.context[:subscription_id] ||= SecureRandom.uuid
+        subscription_id = query.context[:subscription_id] ||= build_id
         stream = query.context[:action_cable_stream] ||= SUBSCRIPTION_PREFIX + subscription_id
         channel.stream_from(stream)
         @subscriptions[subscription_id] = query
