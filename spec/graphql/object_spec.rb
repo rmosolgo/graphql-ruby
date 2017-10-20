@@ -5,7 +5,7 @@ describe GraphQL::Object do
   describe "class attributes" do
     let(:object_class) { Jazz::Ensemble }
     it "tells type data" do
-      assert_equal "Ensemble", object_class.graphql_type_name
+      assert_equal "Ensemble", object_class.graphql_name
       assert_equal "A group of musicians playing together", object_class.description
       assert_equal 2, object_class.fields.size
     end
@@ -35,7 +35,7 @@ describe GraphQL::Object do
       GRAPHQL
       res = Jazz::Schema.execute(query_str)
       assert_equal [{"name" => "Bela Fleck and the Flecktones"}], res["data"]["ensembles"]
-      assert_equal [{"name" => "banjo"}], res["data"]["instruments"]
+      assert_equal({"name" => "Banjo"}, res["data"]["instruments"].first)
     end
   end
 end
