@@ -7,7 +7,7 @@ describe GraphQL::Object do
     it "tells type data" do
       assert_equal "Ensemble", object_class.graphql_name
       assert_equal "A group of musicians playing together", object_class.description
-      assert_equal 2, object_class.fields.size
+      assert_equal 3, object_class.fields.size
     end
   end
 
@@ -16,9 +16,9 @@ describe GraphQL::Object do
     it "returns a matching GraphQL::ObjectType" do
       assert_equal "Ensemble", obj_type.name
       assert_equal "A group of musicians playing together", obj_type.description
-      assert_equal 2, obj_type.all_fields.size
+      assert_equal 3, obj_type.all_fields.size
 
-      name_field = obj_type.all_fields.first
+      name_field = obj_type.all_fields[1]
       assert_equal "name", name_field.name
       assert_equal GraphQL::STRING_TYPE.to_non_null_type, name_field.type
       assert_equal nil, name_field.description
