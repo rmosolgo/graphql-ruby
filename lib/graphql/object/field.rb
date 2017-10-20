@@ -4,7 +4,7 @@
 module GraphQL
   class Object < GraphQL::SchemaMember
     class Field
-      def initialize(name, return_type_expr, desc = nil, null: false, deprecation_reason: nil, method: nil, &args_block)
+      def initialize(name, return_type_expr, desc = nil, null:, deprecation_reason: nil, method: nil, &args_block)
         @name = name.to_s
         @description = desc
         @deprecation_reason = deprecation_reason
@@ -60,7 +60,7 @@ module GraphQL
           @defn = defn
         end
 
-        def argument(arg_name, type_expr, desc = nil, null: true, default_value: :__no_default__)
+        def argument(arg_name, type_expr, desc = nil, null:, default_value: :__no_default__)
           default_value_was_provided = default_value != :__no_default__
           # Rename to avoid naming conflict below
           provided_default_value = default_value
