@@ -577,10 +577,13 @@ module GraphQL
     end
 
     class << self
-      # This will probably get worse before it gets better :S
-      extend GraphQL::Delegate
-
-      def_delegators :instance, :types, :execute, :default_filter, :object_from_id_proc, :id_from_object_proc, :redefine, :tracers
+      def method_missing(method_name, *args, &block)
+        if instance.respond_to?(method_name)
+          instance.public_send(method_name, *args, &block)
+        else
+          super
+        end
+      end
 
       def instance
         @instance ||= to_graphql
