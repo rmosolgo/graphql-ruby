@@ -44,9 +44,9 @@ module Jazz
 
   # Another new-style definition, with method overrides
   class Query < GraphQL::Object
-    field :ensembles, [Ensemble]
-    field :instruments, [InstrumentType] do
-      argument :family, Family
+    field :ensembles, [Ensemble], null: false
+    field :instruments, [InstrumentType], null: false do
+      argument :family, Family, null: true
     end
 
     def ensembles
