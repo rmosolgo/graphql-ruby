@@ -17,7 +17,14 @@ PostType = GraphQL::ObjectType.define do
 end
 ```
 
-By default, fields are resolved by sending the name to the underlying object (eg `post.title` in the example above).
+By default, fields are resolved by sending the name to the underlying object (eg `post.title` in the example above). 
+
+You can use the `hash_key` option instead to force a hash lookup instead of the default behaviour:
+
+```ruby
+field :title, types.String, hash_key: :title
+# resolved with `post[:title]` instead of `post.title`
+```
 
 You can define a different resolution by providing a `resolve` function:
 
