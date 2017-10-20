@@ -2,7 +2,7 @@
 # test_via: ../object.rb
 
 module GraphQL
-  class Object
+  class Object < GraphQL::SchemaMember
     module Resolvers
       class Dynamic
         def initialize(method_name:)
