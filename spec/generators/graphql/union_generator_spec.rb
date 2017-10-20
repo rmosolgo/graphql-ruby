@@ -47,4 +47,18 @@ RUBY
       assert_file "app/graphql/types/winged_creature_type.rb", expected_content
     end
   end
+
+  test "it accepts a user-specified directory" do
+    command = ["WingedCreature", "--directory", "app/mydirectory"]
+
+    expected_content = <<-RUBY
+Types::WingedCreatureType = GraphQL::UnionType.define do
+  name "WingedCreature"
+end
+RUBY
+
+    prepare_destination
+    run_generator(command)
+    assert_file "app/mydirectory/types/winged_creature_type.rb", expected_content
+  end
 end

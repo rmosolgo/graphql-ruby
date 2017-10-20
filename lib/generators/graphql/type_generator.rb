@@ -3,10 +3,13 @@ require 'rails/generators/base'
 require 'graphql'
 require 'active_support'
 require 'active_support/core_ext/string/inflections'
+require_relative 'core'
 
 module Graphql
   module Generators
     class TypeGeneratorBase < Rails::Generators::Base
+      include Core
+
       argument :type_name,
         type: :string,
         required: true,

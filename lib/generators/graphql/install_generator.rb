@@ -89,11 +89,11 @@ if Rails.env.development?
 RUBY
 
       def create_folder_structure
-        create_dir("app/graphql/types")
+        create_dir("#{options[:directory]}/types")
         template("schema.erb", schema_file_path)
 
         # Note: Yuo can't have a schema without the query type, otherwise introspection breaks
-        template("query_type.erb", "app/graphql/types/query_type.rb")
+        template("query_type.erb", "#{options[:directory]}/types/query_type.rb")
         insert_root_type('query', 'QueryType')
 
         create_mutation_root_type unless options.skip_mutation_root_type?
@@ -103,7 +103,7 @@ RUBY
 
         if options[:batch]
           gem("graphql-batch")
-          create_dir("app/graphql/loaders")
+          create_dir("#{options[:directory]}/loaders")
         end
 
         if options.api?
