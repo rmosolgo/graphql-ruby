@@ -40,10 +40,10 @@ module GraphQL
           # apply this first, so it can be overriden below
           if connection
             FieldProxy.new(self).instance_eval do
-              argument :after, "String", "Returns the elements in the list that come after the specified global ID."
-              argument :before, "String", "Returns the elements in the list that come before the specified global ID."
-              argument :first, "Int", "Returns the first _n_ elements from the list."
-              argument :last, "Int", "Returns the last _n_ elements from the list."
+              argument :after, "String", "Returns the elements in the list that come after the specified global ID.", null: true
+              argument :before, "String", "Returns the elements in the list that come before the specified global ID.", null: true
+              argument :first, "Int", "Returns the first _n_ elements from the list.", null: true
+              argument :last, "Int", "Returns the last _n_ elements from the list.", null: true
             end
           end
           if args_block
