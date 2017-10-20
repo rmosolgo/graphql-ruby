@@ -56,6 +56,13 @@
 
 <p>By default, fields are resolved by sending the name to the underlying object (eg <code class="highlighter-rouge">post.title</code> in the example above).</p>
 
+<p>You can use the <code class="highlighter-rouge">hash_key</code> option instead to force a hash lookup instead of the default behaviour:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:title</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">String</span><span class="p">,</span> <span class="ss">hash_key: :title</span>
+<span class="c1"># resolved with `post[:title]` instead of `post.title`</span>
+</code></pre>
+</div>
+
 <p>You can define a different resolution by providing a <code class="highlighter-rouge">resolve</code> function:</p>
 
 <div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">PostType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
