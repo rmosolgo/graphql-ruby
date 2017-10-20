@@ -2,6 +2,15 @@
 module GraphQL
   class SchemaMember
     class << self
+      # Make the class act like its corresponding type (eg `connection_type`)
+      def method_missing(method_name, *args, &block)
+        if to_graphql.respond_to?(method_name)
+          to_graphql.public_send(method_name, *args, &block)
+        else
+          super
+        end
+      end
+
       # @return [String]
       def graphql_name(new_name = nil)
         if new_name

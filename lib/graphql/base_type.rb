@@ -170,8 +170,8 @@ module GraphQL
     def self.resolve_related_type(type_arg)
       case type_arg
       when Proc
-        # lazy-eval it
-        type_arg.call
+        # lazy-eval it, then try again
+        resolve_related_type(type_arg.call)
       when String
         # Get a constant by this name
         Object.const_get(type_arg)
