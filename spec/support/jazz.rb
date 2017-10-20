@@ -2,17 +2,56 @@
 
 # Here's the "application"
 module Jazz
-  INSTRUMENTS = [
-    OpenStruct.new(name: "Banjo", family: :str),
-    OpenStruct.new(name: "Flute", family: "WOODWIND"),
-    OpenStruct.new(name: "Trumpet", family: "BRASS"),
-    OpenStruct.new(name: "Piano", family: "KEYS"),
-    OpenStruct.new(name: "Organ", family: "KEYS"),
-    OpenStruct.new(name: "Drum Kit", family: "PERCUSSION"),
-  ]
+  module Models
+    Instrument = Struct.new(:name, :family)
+    Ensemble = Struct.new(:name)
+  end
+  DATA = {
+    "Instrument" => [
+      Models::Instrument.new("Banjo", :str),
+      Models::Instrument.new("Flute", "WOODWIND"),
+      Models::Instrument.new("Trumpet", "BRASS"),
+      Models::Instrument.new("Piano", "KEYS"),
+      Models::Instrument.new("Organ", "KEYS"),
+      Models::Instrument.new("Drum Kit", "PERCUSSION"),
+    ],
+    "Ensemble" => [
+      Models::Ensemble.new("Bela Fleck and the Flecktones")
+    ],
+  }
+
+  # Some arbitrary global ID scheme
+  module GloballyIdentifiable
+    class Interface < GraphQL::Interface
+      graphql_name "GloballyIdentifiable"
+      description "A fetchable object in the system"
+      field :id, "ID", "A unique identifier for this object", null: false
+    end
+
+    def self.included(child)
+      child.class_eval do
+        implements GloballyIdentifiable::Interface
+        field :id, "ID", null: false
+      end
+    end
+
+    def id
+      GloballyIdentifiable.to_id(@object)
+    end
+
+    def self.to_id(object)
+      "#{object.class.name.split("::").last}/#{object.name}"
+    end
+
+    def self.find(id)
+      class_name, object_name = id.split("/")
+      DATA[class_name].find { |obj| obj.name == object_name }
+    end
+  end
 
   # Here's a new-style GraphQL type definition
   class Ensemble < GraphQL::Object
+    include GloballyIdentifiable
     description "A group of musicians playing together"
     field :name, "String", null: false
     field :musicians, "[Jazz::Musician]", null: false
@@ -32,11 +71,14 @@ module Jazz
   # Lives side-by-side with an old-style definition
   InstrumentType = GraphQL::ObjectType.define do
     name "Instrument"
+    implements GloballyIdentifiable::Interface.to_graphql
+    field :id, !types.ID, "A unique identifier for this object", resolve: ->(obj, args, ctx) { GloballyIdentifiable.to_id(obj) }
     field :name, !types.String
     field :family, Family.to_graphql.to_non_null_type
   end
 
   class Musician < GraphQL::Object
+    include GloballyIdentifiable
     description "Someone who plays an instrument"
     field :name, String, null: false
     field :instrument, InstrumentType, null: false
@@ -45,25 +87,37 @@ module Jazz
   # Another new-style definition, with method overrides
   class Query < GraphQL::Object
     field :ensembles, [Ensemble], null: false
+    field :find, GloballyIdentifiable::Interface, null: true do
+      argument :id, "ID", null: false
+    end
     field :instruments, [InstrumentType], null: false do
       argument :family, Family, null: true
     end
 
     def ensembles
-      [OpenStruct.new(name: "Bela Fleck and the Flecktones")]
+      DATA["Ensemble"]
+    end
+
+    def find(id:)
+      GloballyIdentifiable.find(id)
     end
 
     def instruments(family: nil)
+      objs = DATA["Instrument"]
       if family
-        INSTRUMENTS.select { |i| i.family == family }
-      else
-        INSTRUMENTS
+        objs = objs.select { |i| i.family == family }
       end
+      objs
     end
   end
 
   # New-style Schema definition
   class Schema < GraphQL::Schema
     query(Query)
+
+    def self.resolve_type(type, obj, ctx)
+      class_name = obj.class.name.split("::").last
+      ctx.schema.types[class_name]
+    end
   end
 end
