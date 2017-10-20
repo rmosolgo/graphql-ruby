@@ -5,7 +5,7 @@ require "graphql/object/instrumentation"
 require "graphql/object/resolvers"
 
 module GraphQL
-  class Object
+  class Object < GraphQL::SchemaMember
     attr_reader :object
 
     def initialize(object, context)
@@ -14,31 +14,6 @@ module GraphQL
     end
 
     class << self
-      # @return [String]
-      def graphql_type_name(new_name = nil)
-        if new_name
-          @graphql_type_name = new_name
-        else
-          @graphql_type_name || self.name.split("::").last
-        end
-      end
-
-      def description(new_description = nil)
-        if new_description
-          @description = new_description
-        else
-          @description
-        end
-      end
-
-      def model(model_class = nil)
-        if model_class
-          @model = model_class
-        else
-          @model
-        end
-      end
-
       def implements(*new_interfaces)
         @own_interfaces = new_interfaces
       end

@@ -2,7 +2,7 @@
 # test_via: ../object.rb
 
 module GraphQL
-  class Object
+  class Object < GraphQL::SchemaMember
     # @api private
     module BuildType
       module_function
@@ -12,7 +12,7 @@ module GraphQL
       # @return [GraphQL::ObjectType]
       def build_object_type(graphql_obj_class)
         obj_type = GraphQL::ObjectType.define do
-          name(graphql_obj_class.graphql_type_name)
+          name(graphql_obj_class.graphql_name)
           description(graphql_obj_class.description)
           interfaces(graphql_obj_class.interfaces)
           graphql_obj_class.fields.each do |field_inst|
@@ -62,7 +62,7 @@ module GraphQL
             when GraphQL::BaseType
               maybe_type
             when Class
-              if maybe_type < GraphQL::Object
+              if maybe_type < GraphQL::SchemaMember
                 maybe_type.to_graphql
               else
                 raise "Unexpected class found for GraphQL type: #{type_expr} (must be GraphQL::Object)"
@@ -104,7 +104,11 @@ module GraphQL
         when Array
           to_type_name(something.first)
         when Module
-          something.name.split("::").last
+          if something < GraphQL::SchemaMember
+            something.graphql_name
+          else
+            something.name.split("::").last
+          end
         when String
           something.gsub(/\]\[\!/, "").split("::").last
         else
