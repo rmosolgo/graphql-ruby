@@ -64,6 +64,13 @@ RUBY
     assert_file "app/controllers/graphql_controller.rb", EXPECTED_GRAPHQLS_CONTROLLER
   end
 
+  test "it allows for a user-specified install directory" do
+    run_generator(["--directory", "app/mydirectory"])
+
+    assert_file "app/mydirectory/types/.keep"
+    assert_file "app/mydirectory/mutations/.keep"
+  end
+
   test "it generates graphql-batch and relay boilerplate" do
     run_generator(["--batch", "--relay"])
     assert_file "app/graphql/loaders/.keep"
