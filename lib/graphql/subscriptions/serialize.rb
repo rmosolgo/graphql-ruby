@@ -12,20 +12,42 @@ module GraphQL
       # @return [Object] An object equivalent to the one passed to {.dump}
       def load(str)
         parsed_obj = JSON.parse(str)
-        if parsed_obj.is_a?(Hash) && parsed_obj.size == 1 && parsed_obj.key?(GLOBALID_KEY)
-          GlobalID::Locator.locate(parsed_obj[GLOBALID_KEY])
+        load_value(parsed_obj)
+      end
+
+      # @param value [Object] A parsed JSON object
+      # @return [Object] An object that load Golbal::Identification recursive
+      def load_value(value)
+        if value.is_a?(Array)
+          value.map{|item| load_value(item)}
+        elsif value.is_a?(Hash)
+          if value.size == 1 && value.key?(GLOBALID_KEY)
+            GlobalID::Locator.locate(value[GLOBALID_KEY])
+          else
+            Hash[value.map{|k, v| [k, load_value(v)]}]
+          end
         else
-          parsed_obj
+          value
         end
       end
 
       # @param obj [Object] Some subscription-related data to dump
       # @return [String] The stringified object
       def dump(obj)
-        if obj.respond_to?(:to_gid_param)
-          JSON.dump(GLOBALID_KEY => obj.to_gid_param)
+        JSON.generate(dump_value(obj), quirks_mode: true)
+      end
+
+      # @param obj [Object] Some subscription-related data to dump
+      # @return [Object] The object that converted Global::Identification
+      def dump_value(obj)
+        if obj.is_a?(Array)
+          obj.map{|item| dump_value(item)}
+        elsif obj.is_a?(Hash)
+          Hash[obj.map{|k, v| [k, dump_value(v)]}]
+        elsif obj.respond_to?(:to_gid_param)
+          {GLOBALID_KEY => obj.to_gid_param}
         else
-          JSON.generate(obj, quirks_mode: true)
+          obj
         end
       end
 
