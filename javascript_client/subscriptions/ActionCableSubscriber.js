@@ -3,9 +3,6 @@ var registry = require("./registry")
 
 /**
  * Make a new subscriber for `addGraphQLSubscriptions`
- *
- * TODO: How to test this?
- *
  * @param {ActionCable.Consumer} cable ActionCable client
 */
 function ActionCableSubscriber(cable, networkInterface) {

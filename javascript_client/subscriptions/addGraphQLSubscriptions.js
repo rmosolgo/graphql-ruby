@@ -1,4 +1,5 @@
 var ActionCableSubscriber = require("./ActionCableSubscriber")
+var PusherSubscriber = require("./PusherSubscriber")
 
 /**
  * Modify an Apollo network interface to
@@ -33,8 +34,13 @@ var ActionCableSubscriber = require("./ActionCableSubscriber")
  *   var OperationStoreClient = require("./OperationStoreClient")
  *   RailsNetworkInterface.use([OperationStoreClient.apolloMiddleware])
  *
+ * @example Subscriptions with Pusher & graphql-pro
+ *   var pusher = new Pusher(appId, options)
+ *   addGraphQLSubscriptions(RailsNetworkInterface, {pusher: pusher})
+ *
  * @param {Object} networkInterface - an HTTP NetworkInterface
  * @param {ActionCable.Consumer} options.cable - A cable for subscribing with
+ * @param {Pusher} options.pusher - A pusher client for subscribing with
  * @return {void}
 */
 function addGraphQLSubscriptions(networkInterface, options) {
@@ -48,8 +54,10 @@ function addGraphQLSubscriptions(networkInterface, options) {
     subscriber = options.subscriber
   } else if (options.cable) {
     subscriber = new ActionCableSubscriber(options.cable, networkInterface)
+  } else if (options.pusher) {
+    subscriber = new PusherSubscriber(options.pusher, networkInterface)
   } else {
-    throw new Error("Must provide cable: option")
+    throw new Error("Must provide cable: or pusher: option")
   }
 
   var networkInterfaceWithSubscriptions = Object.assign(networkInterface, {

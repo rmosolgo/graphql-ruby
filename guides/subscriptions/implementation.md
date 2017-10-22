@@ -5,14 +5,13 @@ section: Subscriptions
 title: Implementation
 desc: Subscription execution and delivery
 index: 3
-experimental: true
 ---
 
 The {{ "GraphQL::Subscriptions" | api_doc }} plugin is a base class for implementing subscriptions.
 
 Each method corresponds to a step in the subscription lifecycle. See the API docs for method-by-method documentation: {{ "GraphQL::Subscriptions" | api_doc }}.
 
-Also, see the {% internal_link "ActionCable implementation guide", "subscriptions/action_cable_implementation" %} or {{ "GraphQL::Subscriptions::ActionCableSubscriptions" | api_doc }} docs for an example implementation.
+Also, see the {% internal_link "Pusher implementation guide", "subscriptions/pusher_implementation" %}, the {% internal_link "ActionCable implementation guide", "subscriptions/action_cable_implementation" %} or {{ "GraphQL::Subscriptions::ActionCableSubscriptions" | api_doc }} docs for an example implementation.
 
 ## Considerations
 
