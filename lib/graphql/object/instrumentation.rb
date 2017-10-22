@@ -27,14 +27,26 @@ module GraphQL
 
       def apply_proxy(field)
         resolve_proc = field.resolve_proc
+        lazy_resolve_proc = field.resolve_proc
         inner_return_type = field.type.unwrap
         depth = list_depth(field.type)
         resolve_proc_w_proxy = ->(o, a, c) {
           result = resolve_proc.call(o, a, c)
-          # TODO lazy fields
-          proxy_to_depth(result, depth, inner_return_type, c)
+          if c.schema.lazy?(result)
+            # Wrap it later
+          else
+            proxy_to_depth(result, depth, inner_return_type, c)
+          end
         }
-        field.redefine(resolve: resolve_proc_w_proxy)
+        lazy_resolve_proc_w_proxy = ->(o, a, c) {
+          result = lazy_resolve_proc.call(o, a, c)
+          if c.schema.lazy?(result)
+            # Wrap it later
+          else
+            proxy_to_depth(result, depth, inner_return_type, c)
+          end
+        }
+        field.redefine(resolve: resolve_proc_w_proxy, lazy_resolve: lazy_resolve_proc_w_proxy)
       end
 
       def apply_pre_proxy(type, field)
