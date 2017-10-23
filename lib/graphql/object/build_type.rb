@@ -6,32 +6,6 @@ module GraphQL
     # @api private
     module BuildType
       module_function
-
-      # @param schema [GraphQL::Schema]
-      # @param graphql_obj_class [GraphQL::Object]
-      # @return [GraphQL::ObjectType]
-      def build_object_type(graphql_obj_class)
-        obj_type = GraphQL::ObjectType.define do
-          name(graphql_obj_class.graphql_name)
-          description(graphql_obj_class.description)
-          interfaces(graphql_obj_class.interfaces)
-          graphql_obj_class.fields.each do |field_inst|
-            field_defn = field_inst.to_graphql
-            # Based on the return type of the field, determine whether
-            # we should wrap it with connection helpers or not.
-            field_defn_method = if field_defn.type.unwrap.name =~ /Connection\Z/
-              :connection
-            else
-              :field
-            end
-            field_name = field_defn.name
-            public_send(field_defn_method, field_name, field: field_defn)
-          end
-
-          obj_type.metadata[:object_class] = graphql_obj_class
-        end
-      end
-
       # @param type_expr
       # @return [GraphQL::BaseType]
       def parse_type(type_expr, null:)
