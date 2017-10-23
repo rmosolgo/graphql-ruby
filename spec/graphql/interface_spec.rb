@@ -2,7 +2,7 @@
 require "spec_helper"
 
 describe GraphQL::Interface do
-  let(:interface) { Jazz::GloballyIdentifiable::Interface }
+  let(:interface) { Jazz::GloballyIdentifiable }
 
   describe "type info" do
     it "tells its type info" do
