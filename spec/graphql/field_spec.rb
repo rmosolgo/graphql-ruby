@@ -225,10 +225,22 @@ describe GraphQL::Field do
 
   describe "#resolve_proc" do
     it "ensures the definition was called" do
-      field = GraphQL::Field.define do
+      class SimpleResolver
+        def self.call(*args)
+          :whatever
+        end
+      end
+
+      field_with_proc = GraphQL::Field.define do
         resolve ->(o, a, c) { :whatever }
       end
-      assert_instance_of Proc, field.resolve_proc
+
+      field_with_class = GraphQL::Field.define do
+        resolve SimpleResolver
+      end
+
+      assert_respond_to field_with_proc.resolve_proc, :call
+      assert_respond_to field_with_class.resolve_proc, :call
     end
   end
 end

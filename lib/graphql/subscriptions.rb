@@ -1,6 +1,8 @@
 # frozen_string_literal: true
+require "securerandom"
 require "graphql/subscriptions/event"
 require "graphql/subscriptions/instrumentation"
+require "graphql/subscriptions/serialize"
 if defined?(ActionCable)
   require "graphql/subscriptions/action_cable_subscriptions"
 end
@@ -24,7 +26,7 @@ module GraphQL
     # Fetch subscriptions matching this field + arguments pair
     # And pass them off to the queue.
     # @param event_name [String]
-    # @param args [Hash]
+    # @param args [Hash<String, Symbol => Object]
     # @param object [Object]
     # @param scope [Symbol, String]
     # @return [void]
@@ -32,6 +34,13 @@ module GraphQL
       field = @schema.get_field("Subscription", event_name)
       if !field
         raise "No subscription matching trigger: #{event_name}"
+      end
+
+      # Normalize symbol-keyed args to strings
+      if args.any?
+        stringified_args = {}
+        args.each { |k, v| stringified_args[k.to_s] = v }
+        args = stringified_args
       end
 
       event = Subscriptions::Event.new(
@@ -124,6 +133,11 @@ module GraphQL
     # @return [void]
     def write_subscription(query, events)
       raise NotImplementedError
+    end
+
+    # @return [String] A new unique identifier for a subscription
+    def build_id
+      SecureRandom.uuid
     end
   end
 end

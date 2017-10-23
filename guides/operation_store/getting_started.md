@@ -119,6 +119,8 @@ The are both Rack apps, so you can mount them in Sinatra or any other Rack app.
 
 You should only allow admin users to see `/graphql/ui` because it allows viewers to delete stored operations.
 
+##### Rails Routing Constraints
+
 Use [Rails routing constraints](http://api.rubyonrails.org/v5.1/classes/ActionDispatch/Routing/Mapper/Scoping.html#method-i-constraints) to restrict acccess to authorized users, for example:
 
 ```ruby
@@ -128,6 +130,21 @@ STAFF_ONLY = ->(request) { request.session["staff"] == true }
 constraints(STAFF_ONLY) do
   mount MySchema.ui, at: "/graphql/ui"
 end
+```
+
+##### Rack Basic Authentication
+
+Insert the `Rack::Auth::Basic` middleware, before the web view. This prompts for a username and password when visiting the UI.
+
+```ruby
+  graphql_ui = Rack::Builder.new do
+    use(Rack::Auth::Basic) do |username, password|
+      username == ENV.fetch("GRAPHQL_USERNAME") && password == ENV.fetch("GRAPHQL_PASSWORD")
+    end
+ 
+    run MySchema.ui
+  end
+  mount graphql_ui, at: "/graphql/ui"
 ```
 
 #### Update the Controller

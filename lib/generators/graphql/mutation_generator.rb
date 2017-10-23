@@ -28,12 +28,12 @@ module Graphql
 
       def create_mutation_file
         create_mutation_root_type
-        template "mutation.erb", "app/graphql/mutations/#{file_name}.rb"
+        template "mutation.erb", "#{options[:directory]}/mutations/#{file_name}.rb"
 
         sentinel = /name "Mutation"\s*\n/m
         in_root do
-          gsub_file "app/graphql/types/mutation_type.rb", /  \# TODO\: Add Mutations as fields\s*\n/m, ""
-          inject_into_file "app/graphql/types/mutation_type.rb", "  field :#{field_name}, Mutations::#{mutation_name}.field\n", after: sentinel, verbose: false, force: false
+          gsub_file "#{options[:directory]}/types/mutation_type.rb", /  \# TODO\: Add Mutations as fields\s*\n/m, ""
+          inject_into_file "#{options[:directory]}/types/mutation_type.rb", "  field :#{field_name}, Mutations::#{mutation_name}.field\n", after: sentinel, verbose: false, force: false
         end
       end
 

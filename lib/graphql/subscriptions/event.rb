@@ -46,7 +46,7 @@ module GraphQL
         end
 
         sorted_h = normalized_args.to_h.sort.to_h
-        JSON.dump([scope, name, sorted_h])
+        Serialize.dump_recursive([scope, name, sorted_h])
       end
     end
   end

@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+## 1.5.9 (10 Oct 2017)
+
+### Bug Fix
+
+- Don't crash when scoping lists of abstract types with Pundit
+
 ## 1.5.8 (2 Oct 2017)
 
 ### New Features

@@ -28,7 +28,9 @@ Then, install the dependencies:
 
 ### Running the Tests
 
-You can run all the tests with
+#### Unit tests
+
+You can run the tests with
 
 ```
 bundle exec rake        # tests & Rubocop
@@ -67,6 +69,20 @@ bundle exec guard
 ```
 
 When a file in `lib/` is modified, `guard` will run the corresponding file in `spec`. Guard also respects `# test_via:` comments, so it will run that test when the file changes (if there is no corresponding file by name).
+
+#### Other tests
+
+There are system tests for checking ActionCable behavior, use:
+
+```
+bundle exec rake test:system
+```
+
+And JavaScript tests:
+
+```
+bundle exec rake test:js
+```
 
 ### Gemfiles, Gemfiles, Gemfiles
 

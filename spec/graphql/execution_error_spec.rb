@@ -252,4 +252,23 @@ describe GraphQL::ExecutionError do
       assert_equal(expected_result, result)
     end
   end
+
+  describe "options in ExecutionError" do
+    let(:query_string) {%|
+    {
+      executionErrorWithOptions
+    }
+    |}
+    it "the error is inserted into the errors key and the rest of the query is fulfilled" do
+      expected_result = {
+        "data"=>{"executionErrorWithOptions"=>nil},
+        "errors"=>
+            [{"message"=>"Permission Denied!",
+              "locations"=>[{"line"=>3, "column"=>7}],
+              "path"=>["executionErrorWithOptions"],
+              "code"=>"permission_denied"}]
+      }
+      assert_equal(expected_result, result)
+    end
+  end
 end

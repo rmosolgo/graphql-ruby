@@ -1,6 +1,4 @@
 # frozen_string_literal: true
-require "securerandom"
-
 module GraphQL
   class Subscriptions
     # A subscriptions implementation that sends data
@@ -41,7 +39,7 @@ module GraphQL
     #       })
     #
     #       payload = {
-    #         result: result.to_h,
+    #         result: result.subscription? ? nil : result.to_h,
     #         more: result.subscription?,
     #       }
     #
@@ -75,7 +73,9 @@ module GraphQL
       # Subscribers will re-evaluate locally.
       # TODO: this method name is a smell
       def execute_all(event, object)
-        ActionCable.server.broadcast(EVENT_PREFIX + event.topic, object)
+        stream = EVENT_PREFIX + event.topic
+        message = Serialize.dump(object)
+        ActionCable.server.broadcast(stream, message)
       end
 
       # This subscription was re-evaluated.
@@ -91,12 +91,13 @@ module GraphQL
       # and re-evaluate the query locally.
       def write_subscription(query, events)
         channel = query.context[:channel]
-        subscription_id = query.context[:subscription_id] ||= SecureRandom.uuid
-        channel.stream_from(SUBSCRIPTION_PREFIX + subscription_id)
+        subscription_id = query.context[:subscription_id] ||= build_id
+        stream = query.context[:action_cable_stream] ||= SUBSCRIPTION_PREFIX + subscription_id
+        channel.stream_from(stream)
         @subscriptions[subscription_id] = query
         events.each do |event|
           channel.stream_from(EVENT_PREFIX + event.topic, coder: ActiveSupport::JSON) do |message|
-            execute(subscription_id, event, message)
+            execute(subscription_id, event, Serialize.load(message))
             nil
           end
         end

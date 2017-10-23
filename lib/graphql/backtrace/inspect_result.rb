@@ -5,7 +5,7 @@ module GraphQL
     module InspectResult
       module_function
 
-      def inspect(obj)
+      def inspect_result(obj)
         case obj
         when Hash
           "{" +

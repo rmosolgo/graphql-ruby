@@ -1,0 +1,12 @@
+# frozen_string_literal: true
+source 'https://rubygems.org'
+
+gem 'rails'
+gem 'puma'
+gem 'capybara'
+gem 'selenium-webdriver'
+gem 'graphql', path: File.expand_path('../../', __dir__)
+
+group :development do
+  gem 'listen'
+end

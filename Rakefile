@@ -31,7 +31,12 @@ end
 require 'rubocop/rake_task'
 RuboCop::RakeTask.new
 
-task(default: [:test, :rubocop, "js:all"])
+default_tasks = [:test, :rubocop, "js:all"]
+if ENV["SYSTEM_TESTS"]
+  task(default: ["test:system"] + default_tasks)
+else
+  task(default: default_tasks)
+end
 
 desc "Use Racc & Ragel to regenerate parser.rb & lexer.rb from configuration files"
 task :build_parser do
@@ -65,14 +70,27 @@ namespace :bench do
   end
 end
 
+namespace :test do
+  desc "Run system tests for ActionCable subscriptions"
+  task :system do
+    success = Dir.chdir("spec/dummy") do
+      system("bin/rails test:system")
+    end
+    success || exit(0)
+  end
+
+  task js: "js:test"
+end
+
 namespace :js do
   client_dir = "./javascript_client"
 
   desc "Run the tests for javascript_client"
   task :test do
-    Dir.chdir(client_dir) do
+    success = Dir.chdir(client_dir) do
       system("yarn run test")
     end
+    success || exit(0)
   end
 
   desc "Install JS dependencies"
