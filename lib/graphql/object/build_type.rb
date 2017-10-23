@@ -88,13 +88,16 @@ module GraphQL
           end
         end
 
+        # Apply list_type first, that way the
+        # .to_non_null_type applies to the list type, not the inner type
+        if list_type
+          return_type = return_type.to_list_type
+        end
+
         if !null
           return_type = return_type.to_non_null_type
         end
 
-        if list_type
-          return_type = return_type.to_list_type
-        end
 
         return_type
       end
