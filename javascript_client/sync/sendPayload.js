@@ -25,7 +25,10 @@ function sendPayload(payload, options) {
 
   // Get parts of URL for request options
   var parsedURL = url.parse(syncUrl)
-  var parsedPort = parsedURL.protocol === "https:" ? "443" : "80"
+  var parsedPort = parsedURL.port
+  if (!parsedPort) { // Nothing was passed explicitly, guess from the protocol
+    parsedPort = parsedURL.protocol === "https" ? "443" : "80"
+  }
 
   // Prep options for HTTP request
   var options = {
