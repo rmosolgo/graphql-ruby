@@ -13,6 +13,15 @@ module GraphQL
         @fields ||= []
       end
 
+      # Inherited methods go here
+      def implemented(&block)
+        @implemented_hook = block
+      end
+
+      def apply_implemented(object_class)
+        @implemented_hook && @implemented_hook.class_eval(object_class)
+      end
+
       def to_graphql
         @to_graphql ||= begin
           interface_class = self

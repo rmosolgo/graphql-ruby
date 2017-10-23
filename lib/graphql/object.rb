@@ -15,6 +15,16 @@ module GraphQL
 
     class << self
       def implements(*new_interfaces)
+        new_interfaces.each do |int|
+          if int.is_a?(Class) && int < GraphQL::Interface
+            int.fields.each do |field|
+              if int.method_defined?(field.name)
+                method = int.instance_method(field.name)
+                define_method(field.name, method)
+              end
+            end
+          end
+        end
         interfaces.concat(new_interfaces)
       end
 
