@@ -17,6 +17,7 @@ module GraphQL
       def initialize(context, value:)
         @context = context
         @override_value = value
+        @cached_entries = {}
       end
 
       # @return [String] A table layout of backtrace with metadata
@@ -83,15 +84,21 @@ module GraphQL
           ctx = context_entry
           field_name = "#{ctx.irep_node.owner_type.name}.#{ctx.field.name}"
           position = "#{ctx.ast_node.line}:#{ctx.ast_node.col}"
-          field_alias = ctx.ast_node.alias
-          rows << [
-            "#{position}",
-            "#{field_name}#{field_alias ? " as #{field_alias}" : ""}",
-            "#{ctx.object.inspect}",
-            ctx.irep_node.arguments.to_h.inspect,
-            Backtrace::InspectResult.inspect(top && @override_value ? @override_value : ctx.value),
-          ]
-
+          id = "#{field_name}-#{position}"
+          if @cached_entries[id].present?
+            rows << @cached_entries[id]
+          else
+            field_alias = ctx.ast_node.alias
+            row = [
+              "#{position}",
+              "#{field_name}#{field_alias ? " as #{field_alias}" : ""}",
+              "#{ctx.object.inspect}",
+              ctx.irep_node.arguments.to_h.inspect,
+              Backtrace::InspectResult.inspect(top && @override_value ? @override_value : ctx.value),
+            ]
+            rows << row
+            @cached_entries[id] = row
+          end
           build_rows(ctx.parent, rows: rows)
         when GraphQL::Query::Context
           query = context_entry.query
