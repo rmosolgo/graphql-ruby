@@ -19,7 +19,7 @@ module GraphQL
       end
 
       def apply_implemented(object_class)
-        @implemented_hook && @implemented_hook.class_eval(object_class)
+        @implemented_hook && object_class.class_exec(&@implemented_hook)
       end
 
       def to_graphql
