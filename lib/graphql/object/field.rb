@@ -4,6 +4,8 @@
 module GraphQL
   class Object < GraphQL::SchemaMember
     class Field
+      attr_reader :name
+
       def initialize(name, return_type_expr, desc = nil, null:, deprecation_reason: nil, method: nil, &args_block)
         @name = name.to_s
         @description = desc
