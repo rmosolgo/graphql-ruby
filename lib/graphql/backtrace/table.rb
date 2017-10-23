@@ -85,7 +85,7 @@ module GraphQL
           field_name = "#{ctx.irep_node.owner_type.name}.#{ctx.field.name}"
           position = "#{ctx.ast_node.line}:#{ctx.ast_node.col}"
           id = "#{field_name}-#{position}"
-          if @cached_entries[id].present?
+          if @cached_entries.key?(id)
             rows << @cached_entries[id]
           else
             field_alias = ctx.ast_node.alias
