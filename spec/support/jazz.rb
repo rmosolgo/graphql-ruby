@@ -21,22 +21,14 @@ module Jazz
   }
 
   # Some arbitrary global ID scheme
-  module GloballyIdentifiable
-    class Interface < GraphQL::Interface
-      graphql_name "GloballyIdentifiable"
-      description "A fetchable object in the system"
-      field :id, "ID", "A unique identifier for this object", null: false
-    end
+  class GloballyIdentifiable < GraphQL::Interface
+    description "A fetchable object in the system"
+    field :id, "ID", "A unique identifier for this object", null: false
 
-    def self.included(child)
-      child.class_eval do
-        implements GloballyIdentifiable::Interface
-        field :id, "ID", null: false
+    implemented do
+      def id
+        GloballyIdentifiable.to_id(@object)
       end
-    end
-
-    def id
-      GloballyIdentifiable.to_id(@object)
     end
 
     def self.to_id(object)
@@ -51,7 +43,7 @@ module Jazz
 
   # Here's a new-style GraphQL type definition
   class Ensemble < GraphQL::Object
-    include GloballyIdentifiable
+    implements GloballyIdentifiable
     description "A group of musicians playing together"
     field :name, "String", null: false
     field :musicians, "[Jazz::Musician]", null: false
@@ -72,14 +64,14 @@ module Jazz
   using GraphQL::DeprecatedDSL # for ! and types[]
   InstrumentType = GraphQL::ObjectType.define do
     name "Instrument"
-    implements GloballyIdentifiable::Interface
+    implements GloballyIdentifiable
     field :id, !types.ID, "A unique identifier for this object", resolve: ->(obj, args, ctx) { GloballyIdentifiable.to_id(obj) }
     field :name, !types.String
     field :family, !Family
   end
 
   class Musician < GraphQL::Object
-    include GloballyIdentifiable
+    implements GloballyIdentifiable
     description "Someone who plays an instrument"
     field :name, String, null: false
     field :instrument, InstrumentType, null: false
@@ -88,7 +80,7 @@ module Jazz
   # Another new-style definition, with method overrides
   class Query < GraphQL::Object
     field :ensembles, [Ensemble], null: false
-    field :find, GloballyIdentifiable::Interface, null: true do
+    field :find, GloballyIdentifiable, null: true do
       argument :id, "ID", null: false
     end
     field :instruments, [InstrumentType], null: false do
