@@ -15,14 +15,18 @@ module GraphQL
 
       def to_graphql
         @to_graphql ||= begin
-          enum_class = self
-          GraphQL::EnumType.define do
-            name(enum_class.graphql_name)
-            description(enum_class.description)
-            enum_class.values.each do |(val_name, val_desc, val_value, val_depr_reason)|
-              value(val_name, val_desc, value: val_value, deprecation_reason: val_depr_reason)
-            end
+          enum_type = GraphQL::EnumType.new
+          enum_type.name = graphql_name
+          enum_type.description = description
+          values.each do |(val_name, val_des, val_value, val_depr_reason)|
+            enum_value = GraphQL::EnumType::EnumValue.new
+            enum_value.name = val_name
+            enum_value.description = val_des
+            enum_value.value = val_value
+            enum_value.deprecation_reason = val_depr_reason
+            enum_type.add_value(enum_value)
           end
+          enum_type
         end
       end
     end
