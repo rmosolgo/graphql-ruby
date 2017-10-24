@@ -53,26 +53,11 @@ module GraphQL
           @field = field
         end
 
-        def argument(arg_name, type_expr, desc = nil, null:, default_value: :__no_default__)
-          arg_name = arg_name.to_s
-          default_value_was_provided = default_value != :__no_default__
-          # Rename to avoid naming conflict below
-          provided_default_value = default_value
-
-          argument = GraphQL::Argument.new
-          argument.name = arg_name
-          argument.type = -> {
-            Object::BuildType.parse_type(type_expr, null: null)
-          }
-          argument.description = desc
-          if default_value_was_provided
-            argument.default_value = provided_default_value
-          end
-
-          @field.arguments[arg_name] = argument
+        def argument(*args)
+          arg = GraphQL::Object::Argument.new(*args)
+          @field.arguments[arg.name] = arg.to_graphql
         end
       end
-
     end
   end
 end
