@@ -30,7 +30,7 @@ module GraphQL
             description(interface_class.description)
             # TODO dedup with object
             interface_class.fields.each do |field_inst|
-              field_defn = field_inst.to_graphql
+              field_defn = field_inst.graphql_definition
               # Based on the return type of the field, determine whether
               # we should wrap it with connection helpers or not.
               field_defn_method = if field_defn.type.unwrap.name =~ /Connection\Z/
