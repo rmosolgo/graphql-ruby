@@ -5,20 +5,27 @@ module Jazz
   module Models
     Instrument = Struct.new(:name, :family)
     Ensemble = Struct.new(:name)
+
+    def self.reset
+      @data = {
+        "Instrument" => [
+          Models::Instrument.new("Banjo", :str),
+          Models::Instrument.new("Flute", "WOODWIND"),
+          Models::Instrument.new("Trumpet", "BRASS"),
+          Models::Instrument.new("Piano", "KEYS"),
+          Models::Instrument.new("Organ", "KEYS"),
+          Models::Instrument.new("Drum Kit", "PERCUSSION"),
+        ],
+        "Ensemble" => [
+          Models::Ensemble.new("Bela Fleck and the Flecktones")
+        ],
+      }
+    end
+
+    def self.data
+      @data || reset
+    end
   end
-  DATA = {
-    "Instrument" => [
-      Models::Instrument.new("Banjo", :str),
-      Models::Instrument.new("Flute", "WOODWIND"),
-      Models::Instrument.new("Trumpet", "BRASS"),
-      Models::Instrument.new("Piano", "KEYS"),
-      Models::Instrument.new("Organ", "KEYS"),
-      Models::Instrument.new("Drum Kit", "PERCUSSION"),
-    ],
-    "Ensemble" => [
-      Models::Ensemble.new("Bela Fleck and the Flecktones")
-    ],
-  }
 
   # Some arbitrary global ID scheme
   class GloballyIdentifiable < GraphQL::Interface
@@ -37,7 +44,7 @@ module Jazz
 
     def self.find(id)
       class_name, object_name = id.split("/")
-      DATA[class_name].find { |obj| obj.name == object_name }
+      Models.data[class_name].find { |obj| obj.name == object_name }
     end
   end
 
@@ -88,7 +95,7 @@ module Jazz
     end
 
     def ensembles
-      DATA["Ensemble"]
+      Models.data["Ensemble"]
     end
 
     def find(id:)
@@ -96,7 +103,7 @@ module Jazz
     end
 
     def instruments(family: nil)
-      objs = DATA["Instrument"]
+      objs = Models.data["Instrument"]
       if family
         objs = objs.select { |i| i.family == family }
       end
@@ -104,9 +111,22 @@ module Jazz
     end
   end
 
+  class Mutation < GraphQL::Object
+    field :addEnsemble, Ensemble, null: false do
+      argument :name, String, null: false
+    end
+
+    def add_ensemble(name:)
+      ens = Models::Ensemble.new(name)
+      Models.data["Ensemble"] << ens
+      ens
+    end
+  end
+
   # New-style Schema definition
   class Schema < GraphQL::Schema
     query(Query)
+    mutation(Mutation)
 
     def self.resolve_type(type, obj, ctx)
       class_name = obj.class.name.split("::").last
