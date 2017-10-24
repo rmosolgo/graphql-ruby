@@ -62,7 +62,7 @@ module GraphQL
       end
     end
 
-    def_delegators :@of_type, :coerce_input, :coerce_result
+    def_delegators :@of_type, :coerce_input, :coerce_result, :list?
 
     def kind
       GraphQL::TypeKinds::NON_NULL
@@ -72,5 +72,9 @@ module GraphQL
       "#{of_type.to_s}!"
     end
     alias_method :inspect, :to_s
+
+    def non_null?
+      true
+    end
   end
 end
