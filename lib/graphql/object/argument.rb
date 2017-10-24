@@ -2,6 +2,8 @@
 module GraphQL
   class Object < GraphQL::SchemaMember
     class Argument
+      include GraphQL::SchemaMember::CachedGraphQLDefinition
+
       NO_DEFAULT = :__no_default__
 
       attr_reader :name

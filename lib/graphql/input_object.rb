@@ -16,7 +16,7 @@ module GraphQL
         type_defn.name = graphql_name
         type_defn.description = description
         arguments.each do |arg|
-          type_defn.arguments[arg.name] = arg.to_graphql
+          type_defn.arguments[arg.name] = arg.graphql_definition
         end
         type_defn
       end
