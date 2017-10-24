@@ -111,13 +111,19 @@ module Jazz
     end
   end
 
+  class EnsembleInput < GraphQL::InputObject
+    argument :name, String, null: false
+  end
+
   class Mutation < GraphQL::Object
     field :addEnsemble, Ensemble, null: false do
-      argument :name, String, null: false
+      argument :input, EnsembleInput, null: false
     end
 
-    def add_ensemble(name:)
-      ens = Models::Ensemble.new(name)
+    def add_ensemble(input:)
+      # TODO, how should this object be presented here?
+      # Maybe an instance of the class above, whose methods may be called?
+      ens = Models::Ensemble.new(input["name"])
       Models.data["Ensemble"] << ens
       ens
     end
