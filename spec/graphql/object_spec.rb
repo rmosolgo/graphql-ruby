@@ -8,6 +8,8 @@ describe GraphQL::Object do
       assert_equal "Ensemble", object_class.graphql_name
       assert_equal "A group of musicians playing together", object_class.description
       assert_equal 3, object_class.fields.size
+      # Compatibility methods are delegated to the underlying BaseType
+      assert object_class.respond_to?(:connection_type)
     end
   end
 
@@ -23,7 +25,12 @@ describe GraphQL::Object do
       assert_equal GraphQL::STRING_TYPE.to_non_null_type, name_field.type
       assert_equal nil, name_field.description
     end
+
+    it "has a custom implementation" do
+      assert_equal obj_type.metadata[:config], :configged
+    end
   end
+
 
   describe "in queries" do
     after {
