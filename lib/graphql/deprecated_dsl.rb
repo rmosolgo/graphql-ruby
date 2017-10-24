@@ -15,22 +15,26 @@ module GraphQL
       end
 
       class ListTypeProxy
+        include GraphQL::SchemaMember::CachedGraphQLDefinition
+
         def initialize(member)
           @member = member
         end
 
         def to_graphql
-          @member.to_graphql.to_list_type
+          @member.graphql_definition.to_list_type
         end
       end
 
       class NonNullTypeProxy
+        include GraphQL::SchemaMember::CachedGraphQLDefinition
+
         def initialize(member)
           @member = member
         end
 
         def to_graphql
-          @member.to_graphql.to_non_null_type
+          @member.graphql_definition.to_non_null_type
         end
       end
     end
