@@ -45,7 +45,7 @@ describe GraphQL::Object do
     it "does mutations" do
       mutation_str = <<-GRAPHQL
       mutation AddEnsemble($name: String!) {
-        addEnsemble(name: $name) {
+        addEnsemble(input: { name: $name }) {
           id
         }
       }
