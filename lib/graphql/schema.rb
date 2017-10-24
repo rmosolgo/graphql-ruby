@@ -577,15 +577,15 @@ module GraphQL
 
     class << self
       def method_missing(method_name, *args, &block)
-        if instance.respond_to?(method_name)
-          instance.public_send(method_name, *args, &block)
+        if graphql_defintion.respond_to?(method_name)
+          graphql_defintion.public_send(method_name, *args, &block)
         else
           super
         end
       end
 
-      def instance
-        @instance ||= to_graphql
+      def graphql_defintion
+        @graphql_defintion ||= to_graphql
       end
 
       def to_graphql
