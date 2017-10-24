@@ -440,4 +440,15 @@ type Query {
       assert_equal field, field_2
     end
   end
+
+  describe "class-based schemas" do
+    it "delegates to the graphql definition" do
+      # Not delegated:
+      assert_equal Jazz::Query.graphql_definition, Jazz::Schema.query
+      assert Jazz::Schema.respond_to?(:query)
+      # Delegated
+      assert_equal [], Jazz::Schema.tracers
+      assert Jazz::Schema.respond_to?(:tracers)
+    end
+  end
 end

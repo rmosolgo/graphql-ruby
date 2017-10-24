@@ -577,66 +577,47 @@ module GraphQL
 
     class << self
       def method_missing(method_name, *args, &block)
-        if graphql_defintion.respond_to?(method_name)
-          graphql_defintion.public_send(method_name, *args, &block)
+        if graphql_definition.respond_to?(method_name)
+          graphql_definition.public_send(method_name, *args, &block)
         else
           super
         end
       end
 
-      def graphql_defintion
-        @graphql_defintion ||= to_graphql
+      def respond_to_missing?(method_name, incl_private = false)
+        graphql_definition.respond_to?(method_name, incl_private) || super
+      end
+
+      def graphql_definition
+        @graphql_definition ||= to_graphql
       end
 
       def to_graphql
-        # Read a bunch of values into local binding
-        # to cope with instance_eval in the `define` block
-        query_type = if query.is_a?(GraphQL::BaseType)
-          query
-        else
-          # GraphQL::Object class
-          query.to_graphql
+        schema_defn = self.new
+        schema_defn.query = query
+        schema_defn.mutation = mutation
+        schema_defn.default_max_page_size = default_max_page_size
+        schema_defn.resolve_type = method(:resolve_type)
+        schema_defn.object_from_id = method(:object_from_id)
+        schema_defn.id_from_object = method(:id_from_object)
+        schema_defn.instrumenters[:field] << GraphQL::Object::Instrumentation.new
+        instrumenters.each do |step, insts|
+          insts.each do |inst|
+            schema_defn.instrumenters[step] << instrumenter
+          end
+        end
+        lazy_classes.each do |lazy_class, value_method|
+          schema_defn.lazy_methods.set(lazy_class, value_method)
         end
 
-        mutation_type = if mutation.is_a?(GraphQL::BaseType)
-          mutation
-        elsif mutation
-          mutation.to_graphql
-        else
-          nil
-        end
-
-        default_max_page_size_val = default_max_page_size
-        resolve_type_func = method(:resolve_type)
-        object_from_id_func = method(:object_from_id)
-        id_from_object_func = method(:id_from_object)
-        lazy_classes_hash = lazy_classes
-        instrumenters_hash = instrumenters
-
-        self.define {
-          instrument(:field, GraphQL::Object::Instrumentation.new)
-          query(query_type)
-          mutation(mutation_type)
-          default_max_page_size(default_max_page_size_val)
-          resolve_type(resolve_type_func)
-          object_from_id(object_from_id_func)
-          id_from_object(id_from_object_func)
-          instrumenters_hash.each do |step, instrumenters|
-            instrumenters.each do |(inst, options)|
-              instrument(step, inst, options)
-            end
-          end
-          lazy_classes_hash.each do |lazy_class, value_method|
-            lazy_resolve(lazy_class, value_method)
-          end
-        }
+        schema_defn
       end
 
       def query(new_query_object = nil)
         if new_query_object
           @query_object = new_query_object
         else
-          @query_object
+          @query_object && @query_object.graphql_definition
         end
       end
 
@@ -644,7 +625,7 @@ module GraphQL
         if new_mutation_object
           @mutation_object = new_mutation_object
         else
-          @mutation_object
+          @mutation_object && @mutation_object.graphql_definition
         end
       end
 
@@ -681,7 +662,12 @@ module GraphQL
       end
 
       def instrument(instrument_step, instrumenter, options = {})
-        instrumenters[instrument_step] << [instrumenter, options]
+        step = if instrument_step == :field && options[:after_built_ins]
+          :field_after_built_ins
+        else
+          instrument_step
+        end
+        instrumenters[step] << instrumenter
       end
 
       private
