@@ -74,7 +74,12 @@ module Jazz
     implements GloballyIdentifiable
     field :id, !types.ID, "A unique identifier for this object", resolve: ->(obj, args, ctx) { GloballyIdentifiable.to_id(obj) }
     field :name, !types.String
-    field :family, !Family
+    if RUBY_ENGINE == "jruby"
+      # JRuby doesn't support refinements, so the `using` above won't work
+      field :family, Family.to_non_null_type
+    else
+      field :family, !Family
+    end
   end
 
   class Musician < GraphQL::Object
