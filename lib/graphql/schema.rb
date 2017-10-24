@@ -604,12 +604,13 @@ module GraphQL
         schema_defn.instrumenters[:field] << GraphQL::Object::Instrumentation.new
         instrumenters.each do |step, insts|
           insts.each do |inst|
-            schema_defn.instrumenters[step] << instrumenter
+            schema_defn.instrumenters[step] << inst
           end
         end
         lazy_classes.each do |lazy_class, value_method|
           schema_defn.lazy_methods.set(lazy_class, value_method)
         end
+        schema_defn.send(:rebuild_artifacts)
 
         schema_defn
       end
@@ -618,7 +619,7 @@ module GraphQL
         if new_query_object
           @query_object = new_query_object
         else
-          @query_object && @query_object.graphql_definition
+          @query_object.respond_to?(:graphql_definition) ? @query_object.graphql_definition : @query_object
         end
       end
 
@@ -626,7 +627,7 @@ module GraphQL
         if new_mutation_object
           @mutation_object = new_mutation_object
         else
-          @mutation_object && @mutation_object.graphql_definition
+          @mutation_object.respond_to?(:graphql_definition) ? @mutation_object.graphql_definition : @mutation_object
         end
       end
 
