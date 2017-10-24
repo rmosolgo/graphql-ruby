@@ -10,6 +10,24 @@ module GraphQL
       end
     end
 
+    # Shared code for Object and Interface
+    module HasFields
+      # Define a field on this object
+      def field(*args, &block)
+        fields << field_class.new(*args, &block)
+      end
+
+      # Fields defined on this class
+      # TODO should this inherit?
+      def fields
+        @fields ||= []
+      end
+
+      def field_class
+        self::Field
+      end
+    end
+
     class << self
       include CachedGraphQLDefinition
 

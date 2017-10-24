@@ -45,6 +45,25 @@ module Jazz
         type_defn
       end
     end
+
+    # A custom field class that supports the `upcase:` option
+    class Field < GraphQL::Object::Field
+      def initialize(*args, options, &block)
+        @upcase = options.delete(:upcase)
+        super(*args, options, &block)
+      end
+
+      def to_graphql
+        field_defn = super
+        if @upcase
+          inner_resolve = field_defn.resolve_proc
+          field_defn.resolve = ->(obj, args, ctx) {
+            inner_resolve.call(obj, args, ctx).upcase
+          }
+        end
+        field_defn
+      end
+    end
   end
 
   # Some arbitrary global ID scheme
@@ -75,6 +94,12 @@ module Jazz
     config :config, :configged
     field :name, "String", null: false
     field :musicians, "[Jazz::Musician]", null: false
+    # Test extra arguments:
+    field :upcaseName, String, null: false, upcase: true
+
+    def upcase_name
+      @object.name # upcase is applied by the superclass
+    end
   end
 
   class Family < GraphQL::Enum
