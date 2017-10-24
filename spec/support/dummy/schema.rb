@@ -403,26 +403,31 @@ module Dummy
     input_field :values, !types[!types.Int]
   end
 
-  DairyAppMutationType = GraphQL::ObjectType.define do
-    name "Mutation"
+  PushValueField = GraphQL::Field.define do
+    name :pushValue
+    type !types[!types.Int]
+    description("Push a value onto a global array :D")
+    argument :value, !types.Int, as: :val
+    resolve ->(o, args, ctx) {
+      GLOBAL_VALUES << args.val
+      GLOBAL_VALUES
+    }
+  end
+
+  class DairyAppMutationType < GraphQL::Object
+    graphql_name "Mutation"
     description "The root for mutations in this schema"
-    field :pushValue, !types[!types.Int] do
-      description("Push a value onto a global array :D")
-      argument :value, !types.Int, as: :val
-      resolve ->(o, args, ctx) {
-        GLOBAL_VALUES << args.val
-        GLOBAL_VALUES
-      }
+    # Test the `field:` compatibility option
+    field :pushValue, field: PushValueField
+
+    field :replaceValues, [Integer], "Replace the global array with new values", null: false do
+      argument :input, ReplaceValuesInputType, null: false
     end
 
-    field :replaceValues, !types[!types.Int] do
-      description("Replace the global array with new values")
-      argument :input, !ReplaceValuesInputType
-      resolve ->(o, args, ctx) {
-        GLOBAL_VALUES.clear
-        GLOBAL_VALUES.push(*args.input[:values])
-        GLOBAL_VALUES
-      }
+    def replace_values(input:)
+      GLOBAL_VALUES.clear
+      GLOBAL_VALUES.concat(input["values"])
+      GLOBAL_VALUES
     end
   end
 
@@ -435,7 +440,7 @@ module Dummy
 
   Schema = GraphQL::Schema.define do
     query DairyAppQueryType
-    mutation DairyAppMutationType
+    mutation DairyAppMutationType.graphql_definition
     subscription SubscriptionType
     max_depth 5
     orphan_types [HoneyType, BeverageUnion]
