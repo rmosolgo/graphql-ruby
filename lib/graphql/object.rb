@@ -15,6 +15,8 @@ module GraphQL
     end
 
     class << self
+      include GraphQL::SchemaMember::HasFields
+
       def implements(*new_interfaces)
         new_interfaces.each do |int|
           if int.is_a?(Class) && int < GraphQL::Interface
@@ -34,17 +36,6 @@ module GraphQL
         @interfaces ||= []
       end
 
-      # Define a field on this object
-      def field(*args, &block)
-        fields << GraphQL::Object::Field.new(*args, &block)
-      end
-
-      # Fields defined on this class
-      # TODO should this inherit?
-      def fields
-        @fields ||= []
-      end
-
       # @return [GraphQL::ObjectType]
       def to_graphql
         obj_type = GraphQL::ObjectType.new
@@ -54,16 +45,7 @@ module GraphQL
 
         fields.each do |field_inst|
           field_defn = field_inst.graphql_definition
-          # TODO don't use Define APIs here
-          # Based on the return type of the field, determine whether
-          # we should wrap it with connection helpers or not.
-          field_defn_fn = if field_defn.type.unwrap.name =~ /Connection\Z/
-            GraphQL::Define::AssignConnection
-          else
-            GraphQL::Define::AssignObjectField
-          end
-          field_name = field_defn.name
-          field_defn_fn.call(obj_type, field_name, field: field_defn)
+          obj_type.fields[field_defn.name] = field_defn
         end
 
         obj_type.metadata[:object_class] = self

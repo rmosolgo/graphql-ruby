@@ -8,7 +8,7 @@ module GraphQL
 
       attr_reader :name
 
-      def initialize(name, return_type_expr, desc = nil, null:, deprecation_reason: nil, method: nil, &args_block)
+      def initialize(name, return_type_expr, desc = nil, null:, deprecation_reason: nil, method: nil, connection: nil, max_page_size: nil, &args_block)
         @name = name.to_s
         @description = desc
         @deprecation_reason = deprecation_reason
@@ -16,12 +16,14 @@ module GraphQL
         @return_type_expr = return_type_expr
         @return_type_null = null
         @args_block = args_block
+        @connection = connection
+        @max_page_size = max_page_size
       end
 
       # @return [GraphQL::Field]
       def to_graphql
         return_type_name = BuildType.to_type_name(@return_type_expr)
-        connection = return_type_name.end_with?("Connection")
+        connection = @connection.nil? ? return_type_name.end_with?("Connection") : @connection
         method_name = @method || BuildType.underscore(@name)
 
         field_defn = GraphQL::Field.new
@@ -34,6 +36,8 @@ module GraphQL
         field_defn.resolve = GraphQL::Object::Resolvers::Dynamic.new({
           method_name: method_name,
         })
+        field_defn.connection = connection
+        field_defn.connection_max_page_size = @max_page_size
         # apply this first, so it can be overriden below
         if connection
           conn_args = FieldProxy.new(field_defn)
