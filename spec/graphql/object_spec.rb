@@ -26,7 +26,11 @@ describe GraphQL::Object do
   end
 
   describe "in queries" do
-    it "works" do
+    after {
+      Jazz::Models.reset
+    }
+
+    it "returns data" do
       query_str = <<-GRAPHQL
       {
         ensembles { name }
@@ -36,6 +40,32 @@ describe GraphQL::Object do
       res = Jazz::Schema.execute(query_str)
       assert_equal [{"name" => "Bela Fleck and the Flecktones"}], res["data"]["ensembles"]
       assert_equal({"name" => "Banjo"}, res["data"]["instruments"].first)
+    end
+
+    it "does mutations" do
+      mutation_str = <<-GRAPHQL
+      mutation AddEnsemble($name: String!) {
+        addEnsemble(name: $name) {
+          id
+        }
+      }
+      GRAPHQL
+
+      query_str = <<-GRAPHQL
+      query($id: ID!) {
+        find(id: $id) {
+          ... on Ensemble {
+            name
+          }
+        }
+      }
+      GRAPHQL
+
+      res = Jazz::Schema.execute(mutation_str, variables: { "name" => "Miles Davis Quartet" })
+      new_id = res["data"]["addEnsemble"]["id"]
+
+      res2 = Jazz::Schema.execute(query_str, variables: { "id" => new_id })
+      assert_equal "Miles Davis Quartet", res2["data"]["find"]["name"]
     end
   end
 end
