@@ -92,8 +92,8 @@ module GraphQL
             raise("Duplicate type definition found for name '#{type_defn.name}'")
           end
         when Class
-          if member.respond_to?(:to_graphql)
-            graphql_member = member.to_graphql(schema: schema)
+          if member.respond_to?(:graphql_definition)
+            graphql_member = member.graphql_definition
             visit(schema, graphql_member, context_description)
           else
             raise GraphQL::Schema::InvalidTypeError.new("Unexpected traversal member: #{member} (#{member.class.name})")

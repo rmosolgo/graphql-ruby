@@ -16,6 +16,10 @@ require "graphql/schema/validation"
 require "graphql/schema/warden"
 require "graphql/schema/build_from_definition"
 
+# Annoying, this is required at load-time
+require "graphql/schema_member"
+require "graphql/object/instrumentation"
+
 module GraphQL
   # A GraphQL schema which may be queried with {GraphQL::Query}.
   #
@@ -601,7 +605,6 @@ module GraphQL
         schema_defn.resolve_type = method(:resolve_type)
         schema_defn.object_from_id = method(:object_from_id)
         schema_defn.id_from_object = method(:id_from_object)
-        schema_defn.instrumenters[:field] << GraphQL::Object::Instrumentation.new
         instrumenters.each do |step, insts|
           insts.each do |inst|
             schema_defn.instrumenters[step] << inst
@@ -725,6 +728,7 @@ module GraphQL
       GraphQL::Relay::ConnectionInstrumentation,
       GraphQL::Relay::EdgesInstrumentation,
       GraphQL::Relay::Mutation::Instrumentation,
+      GraphQL::Object::Instrumentation,
     ]
 
     def rebuild_artifacts
