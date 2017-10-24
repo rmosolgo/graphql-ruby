@@ -16,7 +16,7 @@ module GraphQL
           case type_expr
           when "String"
             GraphQL::STRING_TYPE
-          when "Int"
+          when "Int", "Integer"
             GraphQL::INT_TYPE
           when "Float"
             GraphQL::FLOAT_TYPE

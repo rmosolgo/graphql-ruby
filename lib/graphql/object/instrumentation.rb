@@ -4,7 +4,8 @@
 module GraphQL
   class Object < GraphQL::SchemaMember
     # TODO use objects, not proc literals
-    class Instrumentation
+    module Instrumentation
+      module_function
       def instrument(type, field)
         return_type = field.type.unwrap
         # TODO this is too grabby, we can skip some union types
@@ -24,6 +25,8 @@ module GraphQL
 
 
       private
+
+      module_function
 
       def apply_proxy(field)
         resolve_proc = field.resolve_proc
@@ -90,8 +93,8 @@ module GraphQL
           else
             raise "unexpected proxying type #{type} for #{obj} at #{ctx.owner_type}.#{ctx.field.name}"
           end
-          object_class = concrete_type.metadata[:object_class]
-          if object_class
+
+          if concrete_type && (object_class = concrete_type.metadata[:object_class])
             object_class.new(obj, ctx)
           else
             obj
