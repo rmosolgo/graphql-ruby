@@ -4,6 +4,8 @@
 module GraphQL
   class Object < GraphQL::SchemaMember
     class Field
+      include GraphQL::SchemaMember::CachedGraphQLDefinition
+
       attr_reader :name
 
       def initialize(name, return_type_expr, desc = nil, null:, deprecation_reason: nil, method: nil, &args_block)
@@ -55,7 +57,7 @@ module GraphQL
 
         def argument(*args)
           arg = GraphQL::Object::Argument.new(*args)
-          @field.arguments[arg.name] = arg.to_graphql
+          @field.arguments[arg.name] = arg.graphql_definition
         end
       end
     end

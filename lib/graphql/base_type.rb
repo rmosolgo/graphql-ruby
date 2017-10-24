@@ -178,8 +178,8 @@ module GraphQL
         # Get a constant by this name
         Object.const_get(type_arg)
       else
-        if type_arg.respond_to?(:to_graphql)
-          type_arg.to_graphql
+        if type_arg.respond_to?(:graphql_definition)
+          type_arg.graphql_definition
         else
           type_arg
         end

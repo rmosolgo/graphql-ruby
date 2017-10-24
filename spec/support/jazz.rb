@@ -27,6 +27,26 @@ module Jazz
     end
   end
 
+  class BaseObject < GraphQL::Object
+    class << self
+      def config(key, value)
+        configs[key] = value
+      end
+
+      def configs
+        @configs ||= {}
+      end
+
+      def to_graphql
+        type_defn = super
+        configs.each do |k,v|
+          type_defn.metadata[k] = v
+        end
+        type_defn
+      end
+    end
+  end
+
   # Some arbitrary global ID scheme
   class GloballyIdentifiable < GraphQL::Interface
     description "A fetchable object in the system"
@@ -49,9 +69,10 @@ module Jazz
   end
 
   # Here's a new-style GraphQL type definition
-  class Ensemble < GraphQL::Object
+  class Ensemble < BaseObject
     implements GloballyIdentifiable
     description "A group of musicians playing together"
+    config :config, :configged
     field :name, "String", null: false
     field :musicians, "[Jazz::Musician]", null: false
   end
@@ -82,7 +103,7 @@ module Jazz
     end
   end
 
-  class Musician < GraphQL::Object
+  class Musician < BaseObject
     implements GloballyIdentifiable
     description "Someone who plays an instrument"
     field :name, String, null: false
@@ -90,7 +111,7 @@ module Jazz
   end
 
   # Another new-style definition, with method overrides
-  class Query < GraphQL::Object
+  class Query < BaseObject
     field :ensembles, [Ensemble], null: false
     field :find, GloballyIdentifiable, null: true do
       argument :id, "ID", null: false
@@ -120,7 +141,7 @@ module Jazz
     argument :name, String, null: false
   end
 
-  class Mutation < GraphQL::Object
+  class Mutation < BaseObject
     field :addEnsemble, Ensemble, null: false do
       argument :input, EnsembleInput, null: false
     end

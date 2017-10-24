@@ -38,7 +38,7 @@ module GraphQL
               maybe_type
             when Class
               if maybe_type < GraphQL::SchemaMember
-                maybe_type.to_graphql
+                maybe_type.graphql_definition
               else
                 raise "Unexpected class found for GraphQL type: #{type_expr} (must be GraphQL::Object)"
               end
@@ -55,7 +55,7 @@ module GraphQL
           parse_type(type_expr.first, null: false)
         when Class
           if Class < GraphQL::Object
-            type_expr.to_graphql
+            type_expr.graphql_definition
           else
             # Eg `String` => GraphQL::STRING_TYPE
             parse_type(type_expr.name, null: true)
