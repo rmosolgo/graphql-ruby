@@ -35,7 +35,7 @@ describe GraphQL::Schema do
       assert_equal(
         [
           Dummy::DairyAppQueryType,
-          Dummy::DairyAppMutationType,
+          Dummy::DairyAppMutationType.graphql_definition,
           Dummy::SubscriptionType
         ],
         schema.root_types
