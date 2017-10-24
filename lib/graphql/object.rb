@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+require "graphql/object/argument"
 require "graphql/object/build_type"
 require "graphql/object/field"
 require "graphql/object/instrumentation"
