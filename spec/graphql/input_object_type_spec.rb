@@ -329,6 +329,35 @@ describe GraphQL::InputObjectType do
     end
   end
 
+  describe "#get_argument" do
+    it "exposes argument" do
+      argument = input_object.get_argument("source")
+      assert_equal(GraphQL::TypeKinds::NON_NULL, argument.type.kind)
+      assert_equal(GraphQL::TypeKinds::ENUM, argument.type.of_type.kind)
+    end
+
+    it "alias get_input_field" do
+      assert_equal(input_object.method(:get_argument), input_object.method(:get_input_field))
+    end
+  end
+
+  describe "#all_arguments" do
+    it "exposes all arguments" do
+      input = GraphQL::InputObjectType.define do
+        name 'TwoArgsInputType'
+        description 'An input object type having two arguments.'
+
+        argument :field, types.String
+        argument :name, types.String
+      end
+      assert_equal([input.arguments['field'], input.arguments['name']], input.all_arguments.sort_by(&:name))
+    end
+
+    it "alias all_input_types" do
+      assert_equal(input_object.method(:all_arguments), input_object.method(:all_input_fields))
+    end
+  end
+
   describe "#dup" do
     it "shallow-copies internal state" do
       input_object_2 = input_object.dup

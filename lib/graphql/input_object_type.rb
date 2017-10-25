@@ -80,6 +80,18 @@ module GraphQL
       result
     end
 
+    # @return [GraphQL::Argument] The argument definition for `argument_name`
+    def get_argument(argument_name)
+      arguments[argument_name.to_s]
+    end
+    alias :get_input_field :get_argument
+
+    # @return [Array<GraphQL::Argument>] All arguments
+    def all_arguments
+      self.arguments.values
+    end
+    alias :all_input_fields :all_arguments
+
     private
 
     def coerce_non_null_input(value, ctx)
