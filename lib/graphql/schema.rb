@@ -695,7 +695,16 @@ module GraphQL
     module MethodWrappers
       # Wrap the user-provided resolve-type in a correctness check
       def resolve_type(type, obj, ctx)
+        if obj.is_a?(GraphQL::Object)
+          obj = obj.object
+        end
+
         type_result = super(type, obj, ctx)
+
+        if type_result.respond_to?(:graphql_definition)
+          type_result = type_result.graphql_definition
+        end
+
         if type_result.nil?
           nil
         elsif !type_result.is_a?(GraphQL::BaseType)

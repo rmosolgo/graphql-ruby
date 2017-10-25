@@ -90,103 +90,81 @@ module StarWars
     end
   end
 
-  Faction = GraphQL::ObjectType.define do
-    name "Faction"
-    interfaces [GraphQL::Relay::Node.interface]
+  class Faction < GraphQL::Object
+    implements GraphQL::Relay::Node.interface
 
-    field :id, !types.ID, resolve: GraphQL::Relay::GlobalIdResolve.new(type: Faction)
-    field :name, types.String
-    connection :ships, ShipConnectionWithParentType, max_page_size: 1000 do
-      resolve ->(obj, args, ctx) {
-        all_ships = obj.ships.map {|ship_id| StarWars::DATA["Ship"][ship_id] }
-        if args[:nameIncludes]
-          case args[:nameIncludes]
-          when "error"
-            all_ships = GraphQL::ExecutionError.new("error from within connection")
-          when "raisedError"
-            raise GraphQL::ExecutionError.new("error raised from within connection")
-          when "lazyError"
-            all_ships = LazyWrapper.new { GraphQL::ExecutionError.new("lazy error from within connection") }
-          when "lazyRaisedError"
-            all_ships = LazyWrapper.new { raise GraphQL::ExecutionError.new("lazy raised error from within connection") }
-          when "null"
-            all_ships = nil
-          when "lazyObject"
-            prev_all_ships = all_ships
-            all_ships = LazyWrapper.new { prev_all_ships }
-          else
-            all_ships = all_ships.select { |ship| ship.name.include?(args[:nameIncludes])}
-          end
-        end
-        all_ships
-      }
-      # You can define arguments here and use them in the connection
-      argument :nameIncludes, types.String
-    end
-
-    connection :shipsWithMaxPageSize, max_page_size: 2, function: ShipsWithMaxPageSize.new
-
-    connection :bases, BaseConnectionWithTotalCountType do
-      # Resolve field should return an Array, the Connection
-      # will do the rest!
-      resolve ->(obj, args, ctx) {
-        all_bases = Base.where(id: obj.bases)
-        if args[:nameIncludes]
-          all_bases = all_bases.where("name LIKE ?", "%#{args[:nameIncludes]}%")
-        end
-        all_bases
-      }
-      argument :nameIncludes, types.String
-    end
-
-    connection :basesClone, BaseType.connection_type
-    connection :basesByName, BaseType.connection_type, property: :bases do
-      argument :order, types.String, default_value: "name"
-      resolve ->(obj, args, ctx) {
-        if args[:order].present?
-          obj.bases.order(args[:order])
+    field :id, "ID", null: false, resolve: GraphQL::Relay::GlobalIdResolve.new(type: Faction)
+    field :name, String, null: true
+    field :ships, ShipConnectionWithParentType, connection: true, max_page_size: 1000, null: true, resolve: ->(obj, args, ctx) {
+      all_ships = obj.ships.map {|ship_id| StarWars::DATA["Ship"][ship_id] }
+      if args[:nameIncludes]
+        case args[:nameIncludes]
+        when "error"
+          all_ships = GraphQL::ExecutionError.new("error from within connection")
+        when "raisedError"
+          raise GraphQL::ExecutionError.new("error raised from within connection")
+        when "lazyError"
+          all_ships = LazyWrapper.new { GraphQL::ExecutionError.new("lazy error from within connection") }
+        when "lazyRaisedError"
+          all_ships = LazyWrapper.new { raise GraphQL::ExecutionError.new("lazy raised error from within connection") }
+        when "null"
+          all_ships = nil
+        when "lazyObject"
+          prev_all_ships = all_ships
+          all_ships = LazyWrapper.new { prev_all_ships }
         else
-          obj.bases
+          all_ships = all_ships.select { |ship| ship.name.include?(args[:nameIncludes])}
         end
-      }
+      end
+      all_ships
+    } do
+      # You can define arguments here and use them in the connection
+      argument :nameIncludes, String, null: true
     end
 
-    connection :basesWithMaxLimitRelation, BaseType.connection_type, max_page_size: 2 do
-      resolve ->(object, args, context) { Base.all }
+    field :shipsWithMaxPageSize, connection: true, max_page_size: 2, function: ShipsWithMaxPageSize.new
+
+    field :bases, BaseConnectionWithTotalCountType, null: true, connection: true, resolve: ->(obj, args, ctx) {
+      all_bases = Base.where(id: obj.bases)
+      if args[:nameIncludes]
+        all_bases = all_bases.where("name LIKE ?", "%#{args[:nameIncludes]}%")
+      end
+      all_bases
+    } do
+      argument :nameIncludes, String, null: true
     end
 
-    connection :basesWithMaxLimitArray, BaseType.connection_type, max_page_size: 2 do
-      resolve ->(object, args, context) { Base.all.to_a }
+    field :basesClone, BaseType.connection_type, null: true
+    field :basesByName, BaseType.connection_type, null: true do
+      argument :order, String, default_value: "name", null: true
+    end
+    def bases_by_name(order: nil)
+      if order.present?
+        @object.bases.order(order)
+      else
+        @object.bases
+      end
     end
 
-    connection :basesWithDefaultMaxLimitRelation, BaseType.connection_type do
-      resolve ->(object, args, context) { Base.all }
+    field :basesWithMaxLimitRelation, BaseType.connection_type, null: true, max_page_size: 2, resolve: Proc.new { Base.all}
+    field :basesWithMaxLimitArray, BaseType.connection_type, null: true, max_page_size: 2, resolve: Proc.new { Base.all.to_a }
+    field :basesWithDefaultMaxLimitRelation, BaseType.connection_type, null: true, resolve: Proc.new { Base.all }
+    field :basesWithDefaultMaxLimitArray, BaseType.connection_type, null: true, resolve: Proc.new { Base.all.to_a }
+    field :basesWithLargeMaxLimitRelation, BaseType.connection_type, null: true, max_page_size: 1000, resolve: Proc.new { Base.all }
+
+    field :basesAsSequelDataset, BaseConnectionWithTotalCountType, null: true, connection: true, max_page_size: 1000 do
+      argument :nameIncludes, String, null: true
     end
 
-    connection :basesWithDefaultMaxLimitArray, BaseType.connection_type do
-      resolve ->(object, args, context) { Base.all.to_a }
+    def bases_as_sequel_dataset(name_includes: nil)
+      all_bases = SequelBase.where(faction_id: @object.id)
+      if name_includes
+        all_bases = all_bases.where(Sequel.like(:name, "%#{name_includes}%"))
+      end
+      all_bases
     end
 
-    connection :basesWithLargeMaxLimitRelation, BaseType.connection_type, max_page_size: 1000 do
-      resolve ->(object, args, context) { Base.all }
-    end
-
-    connection :basesAsSequelDataset, BaseConnectionWithTotalCountType, max_page_size: 1000 do
-      argument :nameIncludes, types.String
-      resolve ->(obj, args, ctx) {
-        all_bases = SequelBase.where(faction_id: obj.id)
-        if args[:nameIncludes]
-          all_bases = all_bases.where(Sequel.like(:name, "%#{args[:nameIncludes]}%"))
-        end
-        all_bases
-      }
-    end
-
-    connection :basesWithCustomEdge, CustomEdgeBaseConnectionType do
-      resolve ->(o, a, c) {
-        LazyNodesWrapper.new(o.bases)
-      }
-    end
+    field :basesWithCustomEdge, CustomEdgeBaseConnectionType, null: true, connection: true, resolve: ->(o, a, c) { LazyNodesWrapper.new(o.bases) }
   end
 
   # Define a mutation. It will also:
