@@ -5,8 +5,9 @@ module GraphQL
   class Object < GraphQL::SchemaMember
     module Resolvers
       class Dynamic
-        def initialize(method_name:)
+        def initialize(method_name:, connection:)
           @method_name = method_name
+          @connection = connection
         end
 
         def call(obj, args, ctx)
@@ -33,11 +34,24 @@ ERR
 
         def public_send_field(obj, method_name, graphql_args)
           if graphql_args.any?
-            ruby_kwargs = {}
-            graphql_args.to_h.each { |k, v| ruby_kwargs[k.to_sym] = v }
             # Splat the GraphQL::Arguments to Ruby keyword arguments
             # TODO: underscore-ize and apply the transformation deeply.
-            obj.public_send(method_name, ruby_kwargs)
+            ruby_kwargs = {}
+            graphql_args.to_h.each { |k, v| ruby_kwargs[BuildType.underscore(k).to_sym] = v }
+            if @connection
+              # Remove pagination args before passing it to a user method
+              ruby_kwargs.delete(:first)
+              ruby_kwargs.delete(:last)
+              ruby_kwargs.delete(:before)
+              ruby_kwargs.delete(:after)
+              if ruby_kwargs.any?
+                obj.public_send(method_name, ruby_kwargs)
+              else
+                obj.public_send(method_name)
+              end
+            else
+              obj.public_send(method_name, ruby_kwargs)
+            end
           else
             obj.public_send(method_name)
           end
