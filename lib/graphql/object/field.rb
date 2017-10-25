@@ -8,8 +8,8 @@ module GraphQL
 
       attr_reader :name
 
-      def initialize(name, return_type_expr = nil, desc = nil, null: nil, field: nil, deprecation_reason: nil, method: nil, connection: nil, max_page_size: nil, &args_block)
-        if !field
+      def initialize(name, return_type_expr = nil, desc = nil, null: nil, field: nil, function: nil, deprecation_reason: nil, method: nil, connection: nil, max_page_size: nil, resolve: nil, &args_block)
+        if !(field || function)
           if return_type_expr.nil?
             raise ArgumentError "missing possitional argument `type`"
           end
@@ -20,6 +20,8 @@ module GraphQL
         @name = name.to_s
         @description = desc
         @field = field
+        @function = function
+        @resolve = resolve
         @deprecation_reason = deprecation_reason
         @method = method
         @return_type_expr = return_type_expr
@@ -33,7 +35,13 @@ module GraphQL
       def to_graphql
         method_name = @method || BuildType.underscore(@name)
 
-        field_defn = @field ? @field.dup : GraphQL::Field.new
+        field_defn = if @field
+          @field.dup
+        elsif @function
+          GraphQL::Function.build_field(@function)
+        else
+          GraphQL::Field.new
+        end
         field_defn.name = @name
 
         if @return_type_expr
@@ -55,9 +63,19 @@ module GraphQL
         end
 
         if !@field
-          field_defn.resolve = GraphQL::Object::Resolvers::Dynamic.new({
-            method_name: method_name,
-          })
+          field_defn.resolve = if @resolve
+            ->(obj, args, ctx) {
+              if obj.is_a?(GraphQL::Object)
+                obj = obj.object
+              end
+              @resolve.call(obj, args, ctx)
+            }
+          else
+            GraphQL::Object::Resolvers::Dynamic.new({
+              method_name: method_name,
+              connection: connection,
+            })
+          end
           field_defn.connection = connection
           field_defn.connection_max_page_size = @max_page_size
 
