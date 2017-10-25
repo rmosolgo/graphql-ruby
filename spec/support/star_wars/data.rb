@@ -59,13 +59,13 @@ module StarWars
   end
 
   class FactionRecord
-    attr_reader :id, :name, :ships, :bases, :basesClone
-    def initialize(id:, name:, ships:, bases:, basesClone:)
+    attr_reader :id, :name, :ships, :bases, :bases_clone
+    def initialize(id:, name:, ships:, bases:, bases_clone:)
       @id = id
       @name = name
       @ships = ships
       @bases = bases
-      @basesClone = basesClone
+      @bases_clone = bases_clone
     end
   end
 
@@ -74,7 +74,7 @@ module StarWars
     name: 'Alliance to Restore the Republic',
     ships:  ['1', '2', '3', '4', '5'],
     bases: Base.where(faction_id: 1),
-    basesClone: Base.where(faction_id: 1),
+    bases_clone: Base.where(faction_id: 1),
   })
 
 
@@ -83,7 +83,7 @@ module StarWars
     name: 'Galactic Empire',
     ships: ['6', '7', '8'],
     bases: Base.where(faction_id: 2),
-    basesClone: Base.where(faction_id: 2),
+    bases_clone: Base.where(faction_id: 2),
   })
 
   DATA = {
