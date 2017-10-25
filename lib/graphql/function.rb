@@ -97,6 +97,18 @@ module GraphQL
         end
       end
 
+      def build_field(function)
+        GraphQL::Field.define(
+          arguments: function.arguments,
+          complexity: function.complexity,
+          type: function.type,
+          resolve: function,
+          description: function.description,
+          function: function,
+          deprecation_reason: function.deprecation_reason,
+        )
+      end
+
       # Class-level reader/writer which is inherited
       # @api private
       def self.inherited_value(name)
