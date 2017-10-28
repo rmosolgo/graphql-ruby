@@ -66,6 +66,16 @@ Leaf fields are _not_ monitored (to avoid high cardinality in the metrics servic
 
 Implementations are based on {{ "Tracing::PlatformTracing" | api_doc }}.
 
+You may need to define the monitoring gem **before** the `graphql` gem in your Gemfile for this to work.
+ 
+For example:
+ 
+```ruby
+# Gemfile
+gem 'scout_apm'
+gem 'graphql'
+```
+
 ## Appsignal
 
 To add [AppSignal](https://appsignal.com/) instrumentation:
