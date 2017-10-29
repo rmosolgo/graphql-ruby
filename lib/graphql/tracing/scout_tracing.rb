@@ -3,9 +3,6 @@
 module GraphQL
   module Tracing
     class ScoutTracing < PlatformTracing
-      if defined?(ScoutApm)
-        include ScoutApm::Tracer
-      end
       INSTRUMENT_OPTS = { scope: true }
 
       self.platform_keys = {
@@ -18,6 +15,11 @@ module GraphQL
         "execute_query" => "execute.graphql",
         "execute_query_lazy" => "execute.graphql",
       }
+
+      def initialize
+        self.class.include ScoutApm::Tracer
+        super
+      end
 
       def platform_trace(platform_key, key, data)
         self.class.instrument("GraphQL", platform_key, INSTRUMENT_OPTS) do
