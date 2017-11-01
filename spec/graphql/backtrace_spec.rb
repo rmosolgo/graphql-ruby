@@ -21,6 +21,15 @@ describe GraphQL::Backtrace do
     def inspect; nil; end
   end
 
+  class ErrorInstrumentation
+    def self.before_query(_query)
+    end
+
+    def self.after_query(query)
+      raise "Instrumentation Boom"
+    end
+  end
+
   let(:resolvers) {
     {
       "Query" => {
@@ -113,7 +122,7 @@ describe GraphQL::Backtrace do
       assert_includes err.message, rendered_table
       # The message includes the original error message
       assert_includes err.message, "This is broken: Boom"
-      assert_includes err.message, "spec/graphql/backtrace_spec.rb:33", "It includes the original backtrace"
+      assert_includes err.message, "spec/graphql/backtrace_spec.rb:42", "It includes the original backtrace"
       assert_includes err.message, "more lines"
     end
 
@@ -143,6 +152,26 @@ describe GraphQL::Backtrace do
         '1:1  | query StrField      | nil        | {}        | {field2: {...}, __typename: "Query"}',
       ].join("\n")
       assert_includes err.message, rendered_table
+    end
+
+    it "annotates errors inside instrumentation during introspection" do
+      instrumentation_schema = schema.redefine do
+        instrument(:query, ErrorInstrumentation)
+      end
+
+      # Test context-based flag
+      err = assert_raises(GraphQL::Backtrace::TracedError) {
+        instrumentation_schema.execute(GraphQL::Introspection::INTROSPECTION_QUERY, context: { backtrace: true })
+      }
+      assert_instance_of RuntimeError, err.cause
+      b = err.cause.backtrace
+      assert_backtrace_includes(b, file: "backtrace_spec.rb", method: "after_query")
+
+      expected_graphql_backtrace = [
+        "2:1: query IntrospectionQuery",
+      ]
+
+      assert_equal(expected_graphql_backtrace, err.graphql_backtrace)
     end
 
     it "returns analysis errors to the client" do
