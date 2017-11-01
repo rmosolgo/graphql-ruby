@@ -87,7 +87,7 @@ Function attributes can be overridden by passing new values to the `field` helpe
 
 ```ruby
 # Override the description:
-field :post, "Find a Post by ID", function: FindRecord.new(model: Post) do
+field :post, description: "Find a Post by ID", function: FindRecord.new(model: Post) do
   # Add an argument:
   argument :authorId, types.ID
   # Provide custom configs:
