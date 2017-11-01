@@ -14,7 +14,7 @@ Gem::Specification.new do |s|
   s.authors     = ["Robert Mosolgo"]
   s.email       = ["rdmosolgo@gmail.com"]
   s.license     = "MIT"
-  s.required_ruby_version = ">= 2.1.0" # bc optional keyword args
+  s.required_ruby_version = ">= 2.2.0" # bc `.to_sym` used on user input
 
   s.files = Dir["{lib}/**/*", "MIT-LICENSE", "readme.md", ".yardopts"]
   s.test_files = Dir["spec/**/*"]
