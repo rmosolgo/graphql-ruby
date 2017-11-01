@@ -125,7 +125,7 @@
 <p>Function attributes can be overridden by passing new values to the <code class="highlighter-rouge">field</code> helper. For example, to override the description:</p>
 
 <div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># Override the description:</span>
-<span class="n">field</span> <span class="ss">:post</span><span class="p">,</span> <span class="s2">"Find a Post by ID"</span><span class="p">,</span> <span class="ss">function: </span><span class="no">FindRecord</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="ss">model: </span><span class="no">Post</span><span class="p">)</span> <span class="k">do</span>
+<span class="n">field</span> <span class="ss">:post</span><span class="p">,</span> <span class="ss">description: </span><span class="s2">"Find a Post by ID"</span><span class="p">,</span> <span class="ss">function: </span><span class="no">FindRecord</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="ss">model: </span><span class="no">Post</span><span class="p">)</span> <span class="k">do</span>
   <span class="c1"># Add an argument:</span>
   <span class="n">argument</span> <span class="ss">:authorId</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">ID</span>
   <span class="c1"># Provide custom configs:</span>
