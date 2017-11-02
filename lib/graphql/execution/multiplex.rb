@@ -91,6 +91,10 @@ module GraphQL
             # Get the Query::Result, not the Hash
             query.result
           end
+        rescue StandardError
+          # Assign values here so that the query's `@executed` becomes true
+          queries.map { |q| q.result_values ||= nil }
+          raise
         end
 
         # @param query [GraphQL::Query]
