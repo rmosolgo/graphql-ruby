@@ -132,4 +132,52 @@ describe GraphQL::Execution::Multiplex do
       ], checks
     end
   end
+
+  describe "after_query when errors are raised" do
+    class InspectQueryInstrumentation
+      class << self
+        attr_reader :last_json
+        def before_query(query)
+        end
+
+        def after_query(query)
+          @last_json = query.result.to_json
+        end
+      end
+    end
+
+    InspectQueryType = GraphQL::ObjectType.define do
+      name "Query"
+
+      field :raiseExecutionError, types.String do
+        resolve ->(object, args, ctx) {
+          raise GraphQL::ExecutionError, "Whoops"
+        }
+      end
+
+      field :raiseError, types.String do
+        resolve ->(object, args, ctx) {
+          raise GraphQL::Error, "Crash"
+        }
+      end
+    end
+
+    InspectSchema = GraphQL::Schema.define do
+      query InspectQueryType
+      instrument(:query, InspectQueryInstrumentation)
+    end
+
+    it "can access the query results" do
+      handled_err_result = InspectSchema.execute("{ raiseExecutionError }")
+      handled_err_json = '{"data":{"raiseExecutionError":null},"errors":[{"message":"Whoops","locations":[{"line":1,"column":3}],"path":["raiseExecutionError"]}]}'
+      assert_equal handled_err_json, InspectQueryInstrumentation.last_json
+
+
+      assert_raises(GraphQL::Error) do
+        InspectSchema.execute("{ raiseError }")
+      end
+      unhandled_err_json = 'null'
+      assert_equal unhandled_err_json, InspectQueryInstrumentation.last_json
+    end
+  end
 end

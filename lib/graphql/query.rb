@@ -137,6 +137,9 @@ module GraphQL
       end
     end
 
+    # @api private
+    attr_reader :result_values
+
     def fragments
       with_prepared_ast { @fragments }
     end
