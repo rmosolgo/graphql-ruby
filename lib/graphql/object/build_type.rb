@@ -79,7 +79,7 @@ module GraphQL
       def to_type_name(something)
         case something
         when GraphQL::BaseType
-          something.name
+          something.unwrap.name
         when Array
           to_type_name(something.first)
         when Module
