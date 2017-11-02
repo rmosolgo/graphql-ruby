@@ -36,5 +36,5 @@ appraise 'rails_5.1' do
 end
 
 appraise 'without_rails' do
-
+  gem "globalid"
 end
