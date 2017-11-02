@@ -87,9 +87,16 @@ module Jazz
     end
   end
 
+  # A legacy-style interface used by new-style types
+  NamedEntity = GraphQL::InterfaceType.define do
+    name "NamedEntity"
+    field :name, !types.String
+  end
+
+
   # Here's a new-style GraphQL type definition
   class Ensemble < BaseObject
-    implements GloballyIdentifiable
+    implements GloballyIdentifiable, NamedEntity
     description "A group of musicians playing together"
     config :config, :configged
     field :name, "String", null: false
@@ -117,9 +124,10 @@ module Jazz
   using GraphQL::DeprecatedDSL # for ! and types[]
   InstrumentType = GraphQL::ObjectType.define do
     name "Instrument"
+    interfaces [NamedEntity]
     implements GloballyIdentifiable
+
     field :id, !types.ID, "A unique identifier for this object", resolve: ->(obj, args, ctx) { GloballyIdentifiable.to_id(obj) }
-    field :name, !types.String
     if RUBY_ENGINE == "jruby"
       # JRuby doesn't support refinements, so the `using` above won't work
       field :family, Family.to_non_null_type
@@ -130,8 +138,8 @@ module Jazz
 
   class Musician < BaseObject
     implements GloballyIdentifiable
+    implements NamedEntity
     description "Someone who plays an instrument"
-    field :name, String, null: false
     field :instrument, InstrumentType, null: false
   end
 
