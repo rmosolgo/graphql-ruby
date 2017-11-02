@@ -101,6 +101,21 @@ module GraphQL
             assert_instance_of GraphQL::Language::Nodes::NullValue, values[1]
             assert_equal 'b', values[2]
           end
+
+          def test_it_doesnt_parse_nonsense_variables
+            query_string_1 = "query Vars($var1) { cheese(id: $var1) { flavor } }"
+            query_string_2 = "query Vars2($var1: Int = $var1) { cheese(id: $var1) { flavor } }"
+
+            err_1 = assert_raises(GraphQL::ParseError) do
+              parse(query_string_1)
+            end
+            assert_equal [1,17], [err_1.line, err_1.col]
+
+            err_2 = assert_raises(GraphQL::ParseError) do
+              parse(query_string_2)
+            end
+            assert_equal [1,26], [err_2.line, err_2.col]
+          end
         end
       end
 

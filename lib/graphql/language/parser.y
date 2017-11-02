@@ -78,8 +78,8 @@ rule
     | LBRACKET type RBRACKET { return make_node(:ListType, of_type: val[1]) }
 
   default_value_opt:
-      /* none */          { return nil }
-    | EQUALS input_value  { return val[1] }
+      /* none */            { return nil }
+    | EQUALS literal_value  { return val[1] }
 
   selection_set:
       LCURLY RCURLY                { return [] }
@@ -176,17 +176,21 @@ rule
   argument:
       name COLON input_value { return make_node(:Argument, name: val[0], value: val[2], position_source: val[0])}
 
-  input_value:
+  literal_value:
       FLOAT       { return val[0].to_f }
     | INT         { return val[0].to_i }
     | STRING      { return val[0].to_s }
     | TRUE        { return true }
     | FALSE       { return false }
     | null_value
-    | variable
-    | list_value
-    | object_value
     | enum_value
+    | list_value
+    | object_literal_value
+
+  input_value:
+    | literal_value
+    | variable
+    | object_value
 
   null_value: NULL { return make_node(:NullValue, name: val[0], position_source: val[0]) }
   variable: VAR_SIGN name { return make_node(:VariableIdentifier, name: val[1], position_source: val[0]) }
@@ -209,6 +213,18 @@ rule
 
   object_value_field:
       name COLON input_value { return make_node(:Argument, name: val[0], value: val[2], position_source: val[0])}
+
+  /* like the previous, but with literals only: */
+  object_literal_value:
+      LCURLY RCURLY                           { return make_node(:InputObject, arguments: [], position_source: val[0])}
+    | LCURLY object_literal_value_list RCURLY { return make_node(:InputObject, arguments: val[1], position_source: val[0])}
+
+  object_literal_value_list:
+      object_literal_value_field                            { return [val[0]] }
+    | object_literal_value_list object_literal_value_field  { val[0] << val[1] }
+
+  object_literal_value_field:
+      name COLON literal_value { return make_node(:Argument, name: val[0], value: val[2], position_source: val[0])}
 
   enum_value: enum_name { return make_node(:Enum, name: val[0], position_source: val[0]) }
 
