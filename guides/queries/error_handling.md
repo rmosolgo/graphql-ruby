@@ -120,10 +120,10 @@ class RescueFrom
     nil
   rescue ActiveRecord::RecordInvalid => err
     # return a GraphQL error with validation details
-    GraphQL::ExecutionError.new("Validation failed: " + e.record.errors.full_messages.join("\n"))
+    messages = e.record.errors.full_messages.join("\n")
+    GraphQL::ExecutionError.new("Validation failed: #{messages}")
   rescue StandardError => err
     # handle all other errors
-    Notify.about(err)
     GraphQL::ExecutionError.new("Unexpected error: #{err.message}")
   end
 end
