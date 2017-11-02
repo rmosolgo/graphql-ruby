@@ -94,7 +94,7 @@ module GraphQL
         rescue StandardError
           # Assign values here so that the query's `@executed` becomes true
           queries.map { |q| q.result_values ||= nil }
-          raise $!
+          raise
         end
 
         # @param query [GraphQL::Query]

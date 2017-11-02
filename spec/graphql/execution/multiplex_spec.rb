@@ -168,7 +168,7 @@ describe GraphQL::Execution::Multiplex do
     end
 
     it "can access the query results" do
-      handled_err_result = InspectSchema.execute("{ raiseExecutionError }")
+      InspectSchema.execute("{ raiseExecutionError }")
       handled_err_json = '{"data":{"raiseExecutionError":null},"errors":[{"message":"Whoops","locations":[{"line":1,"column":3}],"path":["raiseExecutionError"]}]}'
       assert_equal handled_err_json, InspectQueryInstrumentation.last_json
 
