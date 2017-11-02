@@ -26,6 +26,10 @@ module GraphQL
             end
             # And call the implemented hook
             int.apply_implemented(self)
+          else
+            int.all_fields.each do |f|
+              field(f.name, field: f)
+            end
           end
         end
         interfaces.concat(new_interfaces)
