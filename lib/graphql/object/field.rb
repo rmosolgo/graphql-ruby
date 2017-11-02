@@ -50,6 +50,10 @@ module GraphQL
           field_defn.type = -> {
             Object::BuildType.parse_type(@return_type_expr, null: @return_type_null)
           }
+        elsif @connection.nil? && (@field || @function)
+          # TODO: test connection type coming from function
+          return_type_name = BuildType.to_type_name(field_defn.type)
+          connection = return_type_name.end_with?("Connection")
         else
           connection = @connection
         end
@@ -62,32 +66,30 @@ module GraphQL
           field_defn.deprecation_reason = @deprecation_reason
         end
 
-        if !@field
-          field_defn.resolve = if @resolve
-            ->(obj, args, ctx) {
-              if obj.is_a?(GraphQL::Object)
-                obj = obj.object
-              end
-              @resolve.call(obj, args, ctx)
-            }
-          else
-            GraphQL::Object::Resolvers::Dynamic.new({
-              method_name: method_name,
-              connection: connection,
-            })
-          end
-          field_defn.connection = connection
-          field_defn.connection_max_page_size = @max_page_size
 
-          # apply this first, so it can be overriden below
-          if connection
-            conn_args = FieldProxy.new(field_defn)
-            conn_args.argument :after, "String", "Returns the elements in the list that come after the specified global ID.", null: true
-            conn_args.argument :before, "String", "Returns the elements in the list that come before the specified global ID.", null: true
-            conn_args.argument :first, "Int", "Returns the first _n_ elements from the list.", null: true
-            conn_args.argument :last, "Int", "Returns the last _n_ elements from the list.", null: true
-          end
+        field_defn.resolve = if @resolve || @function || @field
+          # TODO test legacy functions / fields get the _inner_ object, not the proxy
+          prev_resolve = @resolve || field_defn.resolve_proc
+           ->(o, a, c) { prev_resolve.call(o.object, a, c) }
+        else
+          GraphQL::Object::Resolvers::Dynamic.new({
+            method_name: method_name,
+            connection: connection,
+          })
         end
+
+        field_defn.connection = connection
+        field_defn.connection_max_page_size = @max_page_size
+
+        # apply this first, so it can be overriden below
+        if connection
+          conn_args = FieldProxy.new(field_defn)
+          conn_args.argument :after, "String", "Returns the elements in the list that come after the specified global ID.", null: true
+          conn_args.argument :before, "String", "Returns the elements in the list that come before the specified global ID.", null: true
+          conn_args.argument :first, "Int", "Returns the first _n_ elements from the list.", null: true
+          conn_args.argument :last, "Int", "Returns the last _n_ elements from the list.", null: true
+        end
+
         if @args_block
           FieldProxy.new(field_defn).instance_eval(&@args_block)
         end
