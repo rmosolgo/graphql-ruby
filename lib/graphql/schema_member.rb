@@ -14,7 +14,10 @@ module GraphQL
     module HasFields
       # Define a field on this object
       def field(*args, &block)
-        fields << field_class.new(*args, &block)
+        field_defn = field_class.new(*args, &block)
+        fields.reject! { |f| f.name == field_defn.name }
+        fields << field_defn
+        nil
       end
 
       # Fields defined on this class
