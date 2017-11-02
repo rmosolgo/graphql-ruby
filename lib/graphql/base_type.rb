@@ -206,6 +206,16 @@ module GraphQL
       printer.print_type(self)
     end
 
+    # Returns true if this is a non-nullable type. A nullable list of non-nullables is considered nullable.
+    def non_null?
+      false
+    end
+
+    # Returns true if this is a list type. A non-nullable list is considered a list.
+    def list?
+      false
+    end
+
     private
 
     def warn_deprecated_coerce(alt_method_name)

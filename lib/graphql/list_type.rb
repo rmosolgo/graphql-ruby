@@ -49,6 +49,10 @@ module GraphQL
       ensure_array(value).map { |item| item.nil? ? nil : of_type.coerce_result(item, ctx) }
     end
 
+    def list?
+      true
+    end
+
     private
 
     def coerce_non_null_input(value, ctx)

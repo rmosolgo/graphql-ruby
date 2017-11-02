@@ -82,4 +82,46 @@ TYPE
       assert_equal expected.chomp, post_type.to_definition(schema)
     end
   end
+
+  describe 'non_null?' do
+    let(:type) do
+      GraphQL::EnumType.define do
+        name "Hello"
+        value 'WORLD'
+      end
+    end
+
+    it "returns false for nullable types" do
+      assert_equal(type.non_null?, false)
+    end
+
+    it "returns true for non-nulls" do
+      assert_equal(type.to_non_null_type.non_null?, true)
+    end
+
+    it "returns false for a nullable list of non-nulls" do
+      assert_equal(type.to_non_null_type.to_list_type.non_null?, false)
+    end
+  end
+
+  describe 'list?' do
+    let(:type) do
+      GraphQL::EnumType.define do
+        name "Hello"
+        value 'WORLD'
+      end
+    end
+
+    it "returns false for non-list types" do
+      assert_equal(type.list?, false)
+    end
+
+    it "returns true for lists" do
+      assert_equal(type.to_list_type.list?, true)
+    end
+
+    it "returns true for a non-nullable list" do
+      assert_equal(type.to_list_type.to_non_null_type.list?, true)
+    end
+  end
 end
