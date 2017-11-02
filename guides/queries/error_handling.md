@@ -106,32 +106,39 @@ resolve ->(obj, args, ctx) {
 If you don't want to `begin ... rescue ... end` in every field, you can wrap `resolve` functions in error handling. For example, you could make an object that wraps another resolver:
 
 ```ruby
-# Wrap field resolver `resolve_func` with a handler for `error_superclass`.
+# Wrap field resolver `resolve_func` with an error handler.
 # `RescueFrom` instances are valid field resolvers too.
 class RescueFrom
-  def initialize(error_superclass, resolve_func)
-    @error_superclass = error_superclass
+  def initialize(resolve_func)
     @resolve_func = resolve_func
   end
 
   def call(obj, args, ctx)
     @resolve_func.call(obj, args, ctx)
-  rescue @error_superclass => err
-    # Your error handling logic here:
-    # - return an instance of `GraphQL::ExecutionError`
-    # - or, return nil:
+  rescue ActiveRecord::RecordNotFound => err
+    # return no results
     nil
+  rescue ActiveRecord::RecordInvalid => err
+    # return a GraphQL error with validation details
+    GraphQL::ExecutionError.new("Validation failed: " + e.record.errors.full_messages.join("\n"))
+  rescue StandardError => err
+    # handle all other errors
+    Notify.about(err)
+    GraphQL::ExecutionError.new("Unexpected error: #{err.message}")
   end
 end
 ```
 
-Then, apply it to fields on an opt-in basis:
+Apply it on an opt-in basis:
 
 ```ruby
 field :create_post, PostType do
-  # Wrap the resolve function with `RescueFrom.new(err_class, ...)`
-  resolve RescueFrom.new(ActiveRecord::RecordInvalid, ->(obj, args, ctx) { ... })
+  resolve Rescuable.new ->(obj, args, ctx) { ... }
 end
 ```
 
 This way, you get error handling with proper Ruby semantics and no overhead!
+
+## Error Handling for the Entire Schema
+
+Alternately, use the [graphql-errors gem](https://github.com/exAspArk/graphql-errors) to wrap all errors for your schema in a single handler.
