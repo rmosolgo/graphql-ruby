@@ -323,7 +323,8 @@ li p, li div {
     .search-result {
       text-decoration: none;
       color: $font-color;
-      padding: 6px 10px;
+      padding: 6px 10px 0px 6px;
+      line-height: 18px;
       border-bottom: 2px solid transparent;
       transition: border-bottom-color $fade-time;
 
