@@ -14,17 +14,17 @@ For input types, it says that the incoming value will be a list of
 the modified type. 
 Given a list type, you can always get the underlying type with
 #unwrap. 
-Examples:</p>
-<h1 id="a-field-which-returns-a-list-of-items">A field which returns a list of items</h1>
-<p>field :items, types[ItemType]</p>
-<h1 id="or">or</h1>
-<p>field :items, ItemType.to_list_type</p>
-<h1 id="a-field-which-accepts-a-list-of-strings">A field which accepts a list of strings</h1>
-<p>field :newNames do</p>
-<h1>…</h1>
-<p>argument :values, types[types.String]</p>
-<h1 id="or-1">or</h1>
-<p>argument :values, types.String.to_list_type
+Examples:
+# A field which returns a list of items
+field :items, types[ItemType]
+# or
+field :items, ItemType.to_list_type
+# A field which accepts a list of strings
+field :newNames do
+# …
+argument :values, types[types.String]
+# or
+argument :values, types.String.to_list_type
 end
 Includes:
 GraphQL::BaseType::ModifiesAnotherType

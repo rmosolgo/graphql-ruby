@@ -18,17 +18,17 @@ by the query.
 raised). 
 Given a non-null type, you can always get the underlying type with
 #unwrap. 
-Examples:</p>
-<h1 id="a-field-which-always-returns-an-error">A field which <em>always</em> returns an error</h1>
-<p>field :items, !ItemType</p>
-<h1 id="or">or</h1>
-<p>field :items, ItemType.to_non_null_type</p>
-<h1 id="a-field-which-requires-a-string-input">A field which <em>requires</em> a string input</h1>
-<p>field :newNames do</p>
-<h1>…</h1>
-<p>argument :values, !types.String</p>
-<h1 id="or-1">or</h1>
-<p>argument :values, types.String.to_non_null_type
+Examples:
+# A field which <em>always</em> returns an error
+field :items, !ItemType
+# or
+field :items, ItemType.to_non_null_type
+# A field which <em>requires</em> a string input
+field :newNames do
+# …
+argument :values, !types.String
+# or
+argument :values, types.String.to_non_null_type
 end
 Includes:
 GraphQL::BaseType::ModifiesAnotherType

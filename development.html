@@ -38,7 +38,7 @@
       <p class="breadcrumb">
   <a href="/">GraphQL</a>
   &raquo; <a href="/guides">Guides</a>
-  
+   &raquo; Other
   &raquo; Development
 </p>
 
@@ -235,6 +235,16 @@ rake bench:validate        <span class="c"># Benchmark validation of several que
 </code></pre>
 </div>
 
+<h4 id="search-index">Search Index</h4>
+
+<p>GraphQL-Ruby’s search index is powered by Algolia. To update the index, you need the API key in an environment variable:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>$ export ALGOLIA_API_KEY=...
+</code></pre>
+</div>
+
+<p>Without this key, the search index will fall out-of-sync with the website. Contact @rmosolgo to gain access to this key.</p>
+
 <h3 id="versioning">Versioning</h3>
 
 <p>GraphQL-Ruby does <em>not</em> attempt to deliver “semantic versioning” for the reasons described in <code class="highlighter-rouge">jashkenas</code>’
@@ -278,6 +288,7 @@ s post, <a href="https://gist.github.com/jashkenas/cbd2b088e20279ae2c8e">“Why 
 </script>
 
     </div>
+    <script src="https://cdn.jsdelivr.net/algoliasearch/3/algoliasearchLite.min.js"></script>
     <script src="/js/search.js"></script>
   </body>
 </html>

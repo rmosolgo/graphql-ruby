@@ -10,9 +10,9 @@ Given a list of items and a new item, it will provide a connection
 and an edge. 
 The connection doesn’t receive outside arguments, so the list of
 items should be ordered and paginated before providing it here. 
-Examples:</p>
-<h1 id="adding-a-comment-to-list-of-comments">Adding a comment to list of comments</h1>
-<p>post = Post.find(args[:postId])
+Examples:
+# Adding a comment to list of comments
+post = Post.find(args[:postId])
 comments = post.comments
 new_comment = comments.build(body: args[:body])
 new_comment.save!

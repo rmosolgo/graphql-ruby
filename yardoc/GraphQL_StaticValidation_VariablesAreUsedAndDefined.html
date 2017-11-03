@@ -5,22 +5,20 @@
   </head>
   <body>
     <p>Class: GraphQL::StaticValidation::VariablesAreUsedAndDefined &lt; Object
-The problem is</p>
-<ul>
-  <li>Variable usage must be determined at the OperationDefinition
-level</li>
-  <li>You can’t tell how fragments use variables until you visit
+The problem is
+- Variable usage must be determined at the OperationDefinition
+level
+- You can’t tell how fragments use variables until you visit
 FragmentDefinitions (which may be at the end of the document)
 So, this validator includes some crazy logic to follow fragment
 spreads recursively, while avoiding infinite loops.
-<code class="highlighter-rouge">graphql-js</code> solves this problem by:</li>
-  <li>re-visiting the AST for each validator</li>
-  <li>allowing validators to say <code class="highlighter-rouge">followSpreads: true</code>
+<code class="highlighter-rouge">graphql-js</code> solves this problem by:
+- re-visiting the AST for each validator
+- allowing validators to say <code class="highlighter-rouge">followSpreads: true</code>
 Includes:
 GraphQL::StaticValidation::Message::MessageHelper
 Instance methods:
-create_errors, follow_spreads, validate, variable_hash</li>
-</ul>
+create_errors, follow_spreads, validate, variable_hash</p>
 
 
   </body>

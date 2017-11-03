@@ -12,17 +12,17 @@ object type.
 Objects which implement this field <em>inherit</em> field definitions from
 the interface. An object type can override the inherited definition
 by redefining that field. 
-Examples:</p>
-<h1 id="an-interface-with-three-fields">An interface with three fields</h1>
-<p>DeviceInterface = GraphQL::InterfaceType.define do
+Examples:
+# An interface with three fields
+DeviceInterface = GraphQL::InterfaceType.define do
 name(“Device”)
 description(“Hardware devices for computing”)
 field :ram, types.String
 field :processor, ProcessorType
 field :release_year, types.Int
-end</p>
-<h1 id="implementing-an-interface-with-an-object-type">Implementing an interface with an object type</h1>
-<p>Laptoptype = GraphQL::ObjectType.define do
+end
+# Implementing an interface with an object type
+Laptoptype = GraphQL::ObjectType.define do
 interfaces [DeviceInterface]
 end
 Instance methods:

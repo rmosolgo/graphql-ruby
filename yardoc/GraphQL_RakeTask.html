@@ -11,15 +11,15 @@ By default, schemas are looked up by name as constants using
 your schema another way. 
 <code class="highlighter-rouge">load_context:</code>, <code class="highlighter-rouge">only:</code> and <code class="highlighter-rouge">except:</code> are supported so that you can
 keep an eye on how filters affect your schema. 
-Examples:</p>
-<h1 id="dump-a-schema-to-graphql--json-files">Dump a Schema to .graphql + .json files</h1>
-<p>require “graphql/rake_task”
-GraphQL::RakeTask.new(schema_name: “MySchema”)</p>
-<h1 id="-rake-graphqlschemadump">$ rake graphql:schema:dump</h1>
-<h1 id="schema-idl-dumped-to-schemagraphql">Schema IDL dumped to ./schema.graphql</h1>
-<h1 id="schema-json-dumped-to-schemajson">Schema JSON dumped to ./schema.json</h1>
-<h1 id="invoking-the-task-from-ruby">Invoking the task from Ruby</h1>
-<p>require “rake”
+Examples:
+# Dump a Schema to .graphql + .json files
+require “graphql/rake_task”
+GraphQL::RakeTask.new(schema_name: “MySchema”)
+# $ rake graphql:schema:dump
+# Schema IDL dumped to ./schema.graphql
+# Schema JSON dumped to ./schema.json
+# Invoking the task from Ruby
+require “rake”
 Rake::Task[“graphql:schema:dump”].invoke
 Includes:
 Rake::DSL

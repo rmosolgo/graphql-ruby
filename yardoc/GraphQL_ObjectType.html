@@ -6,9 +6,9 @@
   <body>
     <p>Class: GraphQL::ObjectType &lt; GraphQL::BaseType
 This type exposes fields on an object. 
-Examples:</p>
-<h1 id="defining-a-type-for-your-imdb-clone">defining a type for your IMDB clone</h1>
-<p>MovieType = GraphQL::ObjectType.define do
+Examples:
+# defining a type for your IMDB clone
+MovieType = GraphQL::ObjectType.define do
 name “Movie”
 description “A full-length film or a short film”
 interfaces [ProductionInterface, DurationInterface]

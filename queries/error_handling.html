@@ -144,36 +144,43 @@
 
 <p>If you don’t want to <code class="highlighter-rouge">begin ... rescue ... end</code> in every field, you can wrap <code class="highlighter-rouge">resolve</code> functions in error handling. For example, you could make an object that wraps another resolver:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># Wrap field resolver `resolve_func` with a handler for `error_superclass`.</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># Wrap field resolver `resolve_func` with an error handler.</span>
 <span class="c1"># `RescueFrom` instances are valid field resolvers too.</span>
 <span class="k">class</span> <span class="nc">RescueFrom</span>
-  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">error_superclass</span><span class="p">,</span> <span class="n">resolve_func</span><span class="p">)</span>
-    <span class="vi">@error_superclass</span> <span class="o">=</span> <span class="n">error_superclass</span>
+  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">resolve_func</span><span class="p">)</span>
     <span class="vi">@resolve_func</span> <span class="o">=</span> <span class="n">resolve_func</span>
   <span class="k">end</span>
 
   <span class="k">def</span> <span class="nf">call</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span>
     <span class="vi">@resolve_func</span><span class="p">.</span><span class="nf">call</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span>
-  <span class="k">rescue</span> <span class="vi">@error_superclass</span> <span class="o">=&gt;</span> <span class="n">err</span>
-    <span class="c1"># Your error handling logic here:</span>
-    <span class="c1"># - return an instance of `GraphQL::ExecutionError`</span>
-    <span class="c1"># - or, return nil:</span>
+  <span class="k">rescue</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">RecordNotFound</span> <span class="o">=&gt;</span> <span class="n">err</span>
+    <span class="c1"># return no results</span>
     <span class="kp">nil</span>
+  <span class="k">rescue</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">RecordInvalid</span> <span class="o">=&gt;</span> <span class="n">err</span>
+    <span class="c1"># return a GraphQL error with validation details</span>
+    <span class="no">GraphQL</span><span class="o">::</span><span class="no">ExecutionError</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"Validation failed: "</span> <span class="o">+</span> <span class="n">e</span><span class="p">.</span><span class="nf">record</span><span class="p">.</span><span class="nf">errors</span><span class="p">.</span><span class="nf">full_messages</span><span class="p">.</span><span class="nf">join</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">))</span>
+  <span class="k">rescue</span> <span class="no">StandardError</span> <span class="o">=&gt;</span> <span class="n">err</span>
+    <span class="c1"># handle all other errors</span>
+    <span class="no">Notify</span><span class="p">.</span><span class="nf">about</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+    <span class="no">GraphQL</span><span class="o">::</span><span class="no">ExecutionError</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"Unexpected error: </span><span class="si">#{</span><span class="n">err</span><span class="p">.</span><span class="nf">message</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
   <span class="k">end</span>
 <span class="k">end</span>
 </code></pre>
 </div>
 
-<p>Then, apply it to fields on an opt-in basis:</p>
+<p>Apply it on an opt-in basis:</p>
 
 <div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:create_post</span><span class="p">,</span> <span class="no">PostType</span> <span class="k">do</span>
-  <span class="c1"># Wrap the resolve function with `RescueFrom.new(err_class, ...)`</span>
-  <span class="n">resolve</span> <span class="no">RescueFrom</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="no">ActiveRecord</span><span class="o">::</span><span class="no">RecordInvalid</span><span class="p">,</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span> <span class="p">.</span><span class="nf">.</span><span class="o">.</span> <span class="p">})</span>
+  <span class="n">resolve</span> <span class="no">Rescuable</span><span class="p">.</span><span class="nf">new</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span> <span class="p">.</span><span class="nf">.</span><span class="o">.</span> <span class="p">}</span>
 <span class="k">end</span>
 </code></pre>
 </div>
 
 <p>This way, you get error handling with proper Ruby semantics and no overhead!</p>
+
+<h2 id="error-handling-for-the-entire-schema">Error Handling for the Entire Schema</h2>
+
+<p>Alternately, use the <a href="https://github.com/exAspArk/graphql-errors">graphql-errors gem</a> to wrap all errors for your schema in a single handler.</p>
 
 </div>
 <p class="guide-footer">
@@ -200,6 +207,7 @@
 </script>
 
     </div>
+    <script src="https://cdn.jsdelivr.net/algoliasearch/3/algoliasearchLite.min.js"></script>
     <script src="/js/search.js"></script>
   </body>
 </html>

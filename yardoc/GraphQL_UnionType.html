@@ -10,15 +10,15 @@ same place.
 The members of a union are declared with <code class="highlighter-rouge">possible_types</code>. 
 A union itself has no fields; only its members have fields. So, when
 you query, you must use fragment spreads to access fields. 
-Examples:</p>
-<h1 id="a-union-of-object-types">A union of object types</h1>
-<p>MediaUnion = GraphQL::UnionType.define do
+Examples:
+# A union of object types
+MediaUnion = GraphQL::UnionType.define do
 name “Media”
 description “Media objects which you can enjoy”
 possible_types [AudioType, ImageType, VideoType]
-end</p>
-<h1 id="querying-for-fields-on-union-members">Querying for fields on union members</h1>
-<p>{
+end
+# Querying for fields on union members
+{
 searchMedia(name: “Jens Lekman”) {
 … on Audio { name, duration }
 … on Image { name, height, width }

@@ -6,15 +6,15 @@
   <body>
     <p>Class: GraphQL::Schema::Printer &lt; Object
 Used to convert your GraphQL::Schema to a GraphQL schema string 
-Examples:</p>
-<h1 id="print-your-schema-to-standard-output-via-helper">print your schema to standard output (via helper)</h1>
-<p>MySchema = GraphQL::Schema.define(query: QueryType)
-puts GraphQL::Schema::Printer.print_schema(MySchema)</p>
-<h1 id="print-your-schema-to-standard-output">print your schema to standard output</h1>
-<p>MySchema = GraphQL::Schema.define(query: QueryType)
-puts GraphQL::Schema::Printer.new(MySchema).print_schema</p>
-<h1 id="print-a-single-type-to-standard-output">print a single type to standard output</h1>
-<p>query_root = GraphQL::ObjectType.define do
+Examples:
+# print your schema to standard output (via helper)
+MySchema = GraphQL::Schema.define(query: QueryType)
+puts GraphQL::Schema::Printer.print_schema(MySchema)
+# print your schema to standard output
+MySchema = GraphQL::Schema.define(query: QueryType)
+puts GraphQL::Schema::Printer.new(MySchema).print_schema
+# print a single type to standard output
+query_root = GraphQL::ObjectType.define do
 name “Query”
 description “The query root of this schema”
 field :post do
