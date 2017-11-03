@@ -9,6 +9,21 @@ describe GraphQL::Enum do
       assert_equal 29, enum.description.length
       assert_equal 6, enum.values.size
     end
+
+    it "inherits values and description" do
+      new_enum = Class.new(enum) do
+        value :Nonsense
+        value :PERCUSSION, "new description"
+      end
+
+      # Description was inherited
+      assert_equal 29, new_enum.description.length
+      # values were inherited without modifying the parent
+      assert_equal 6, enum.values.size
+      assert_equal 7, new_enum.values.size
+      perc_value = new_enum.values.find { |v| v.name == "PERCUSSION" }
+      assert_equal "new description", perc_value.description
+    end
   end
 
 
