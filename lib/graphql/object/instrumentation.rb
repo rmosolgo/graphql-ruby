@@ -23,7 +23,6 @@ module GraphQL
         field
       end
 
-
       private
 
       module_function
