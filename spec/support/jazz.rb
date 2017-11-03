@@ -103,20 +103,23 @@ module Jazz
     field :name, !types.String
   end
 
-
-  # Here's a new-style GraphQL type definition
-  class Ensemble < BaseObject
-    implements GloballyIdentifiable, NamedEntity
-    description "A group of musicians playing together"
-    config :config, :configged
-    field :name, "String", null: false
-    field :musicians, "[Jazz::Musician]", null: false
+  # test field inheritance
+  class ObjectWithUpcasedName < BaseObject
     # Test extra arguments:
     field :upcaseName, String, null: false, upcase: true
 
     def upcase_name
       @object.name # upcase is applied by the superclass
     end
+  end
+
+  # Here's a new-style GraphQL type definition
+  class Ensemble < ObjectWithUpcasedName
+    implements GloballyIdentifiable, NamedEntity
+    description "A group of musicians playing together"
+    config :config, :configged
+    field :name, "String", null: false
+    field :musicians, "[Jazz::Musician]", null: false
   end
 
   class Family < GraphQL::Enum
