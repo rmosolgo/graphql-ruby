@@ -162,9 +162,9 @@ module Jazz
     argument :intValue, !types.Int
   end
 
-  class InspectableInputType < GraphQL::InputObject
+  class InspectableInput < GraphQL::InputObject
     argument :stringValue, String, null: false
-    argument :nestedInput, InspectableInputType, null: true
+    argument :nestedInput, InspectableInput, null: true
     argument :legacyInput, LegacyInputType, null: true
     def helper_method
       [
@@ -180,6 +180,18 @@ module Jazz
     end
   end
 
+  class PerformingAct < GraphQL::Union
+    possible_types Musician, Ensemble
+
+    def resolve_type
+      if @object.is_a?(Models::Ensemble)
+        Ensemble
+      else
+        Musician
+      end
+    end
+  end
+
   # Another new-style definition, with method overrides
   class Query < BaseObject
     field :ensembles, [Ensemble], null: false
@@ -190,8 +202,9 @@ module Jazz
       argument :family, Family, null: true
     end
     field :inspectInput, [String], null: false do
-      argument :input, InspectableInputType, null: false
+      argument :input, InspectableInput, null: false
     end
+    field :nowPlaying, PerformingAct, null: false, resolve: ->(o, a, c) { Models.data["Ensemble"].first }
 
     def ensembles
       Models.data["Ensemble"]
