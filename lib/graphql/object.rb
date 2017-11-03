@@ -22,7 +22,7 @@ module GraphQL
           if int.is_a?(Class) && int < GraphQL::Interface
             # Add the graphql field defns
             int.fields.each do |field|
-              fields << field
+              add_field(field)
             end
             # And call the implemented hook
             int.apply_implemented(self)
@@ -32,12 +32,15 @@ module GraphQL
             end
           end
         end
-        interfaces.concat(new_interfaces)
+        own_interfaces.concat(new_interfaces)
       end
 
-      # TODO inheritance?
       def interfaces
-        @interfaces ||= []
+        own_interfaces + (superclass <= GraphQL::Object ? superclass.interfaces : [])
+      end
+
+      def own_interfaces
+        @own_interfaces ||= []
       end
 
       # @return [GraphQL::ObjectType]
