@@ -2,7 +2,7 @@
 
 namespace :site do
   desc "View the documentation site locally"
-  task serve: :build_doc do
+  task serve: [:build_doc, :update_search_index] do
     require "jekyll"
     options = {
       "source"      => File.expand_path("guides"),
@@ -17,7 +17,7 @@ namespace :site do
   end
 
   desc "Commit the local site to the gh-pages branch and publish to GitHub Pages"
-  task publish: :build_doc do
+  task publish: [:build_doc, :update_search_index] do
     # Ensure the gh-pages dir exists so we can generate into it.
     puts "Checking for gh-pages dir..."
     unless File.exist?("./gh-pages")
@@ -114,5 +114,13 @@ PAGE
       File.write(filepath, page_content)
     end
     puts "Wrote #{docs.size} YARD docs to #{files_target}."
+  end
+
+  task :update_search_index do
+    if !ENV["ALGOLIA_API_KEY"]
+      warn("Can't update search index without ALGOLIA_API_KEY; Search will be out-of-date.")
+    else
+      system("bundle exec jekyll algolia push --source=./guides")
+    end
   end
 end

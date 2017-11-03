@@ -329,16 +329,22 @@ li p, li div {
 
       .search-title {
         font-weight: bold;
-        margin-right: 10px;
+        margin-right: 8px;
         transition: color $fade-time;
-
       }
 
-      .search-prefix, .search-suffix {
+      .search-preview {
         color: $subtle-color;
       }
-      .search-match {
+      .search-category {
+        border: 1px solid $brand-color;
+        border-radius: 3px;
+        margin: 0 8px 0 0;
+        padding: 3px;
+        font-size: 0.7em;
         color: $brand-color;
+        position: relative;
+        top: -3px;
       }
 
       &:focus, &:hover {
