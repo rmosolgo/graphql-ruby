@@ -15,15 +15,30 @@ module GraphQL
       # Define a field on this object
       def field(*args, &block)
         field_defn = field_class.new(*args, &block)
-        fields.reject! { |f| f.name == field_defn.name }
-        fields << field_defn
+        add_field(field_defn)
         nil
       end
 
-      # Fields defined on this class
-      # TODO should this inherit?
       def fields
-        @fields ||= []
+        all_fields = own_fields
+        inherited_fields = (superclass.is_a?(HasFields) ? superclass.fields : [])
+        # Remove any inherited fields which were overridden on this class:
+        inherited_fields.each do |inherited_f|
+          if all_fields.none? {|f| f.name == inherited_f.name }
+            all_fields << inherited_f
+          end
+        end
+        all_fields
+      end
+
+      # Register this field with the class, overriding a previous one if needed
+      def add_field(field_defn)
+        fields.reject! { |f| f.name == field_defn.name }
+        own_fields << field_defn
+      end
+
+      def own_fields
+        @own_fields ||= []
       end
 
       def field_class
@@ -61,7 +76,7 @@ module GraphQL
         if new_description
           @description = new_description
         else
-          @description
+          @description || (superclass <= GraphQL::SchemaMember ? superclass.description : nil)
         end
       end
 
