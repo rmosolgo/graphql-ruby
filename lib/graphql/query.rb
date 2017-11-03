@@ -234,6 +234,9 @@ module GraphQL
         value = abstract_type
         abstract_type = nil
       end
+      if value.is_a?(GraphQL::Object)
+        value = value.object
+      end
       @resolved_types_cache[abstract_type][value]
     end
 
