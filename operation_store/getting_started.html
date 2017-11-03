@@ -42,6 +42,16 @@
   &raquo; Getting Started
 </p>
 
+
+  <div class="pro-header">
+    <p>
+      <strong>⚡️ Pro Feature ⚡️</strong>
+      <span style="font-style: italic;">
+        This feature is bundled with <a href="http://graphql.pro">GraphQL-Pro</a>.
+      </span>
+    </p>
+  </div>
+
 <h1 class="guide-header">Getting Started</h1>
 <div class="guide-container">
   <p>To use <code class="highlighter-rouge">GraphQL::Pro::OperationStore</code> with your app, follow these steps:</p>
@@ -184,7 +194,7 @@
     <span class="n">use</span><span class="p">(</span><span class="no">Rack</span><span class="o">::</span><span class="no">Auth</span><span class="o">::</span><span class="no">Basic</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">username</span><span class="p">,</span> <span class="n">password</span><span class="o">|</span>
       <span class="n">username</span> <span class="o">==</span> <span class="no">ENV</span><span class="p">.</span><span class="nf">fetch</span><span class="p">(</span><span class="s2">"GRAPHQL_USERNAME"</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="n">password</span> <span class="o">==</span> <span class="no">ENV</span><span class="p">.</span><span class="nf">fetch</span><span class="p">(</span><span class="s2">"GRAPHQL_PASSWORD"</span><span class="p">)</span>
     <span class="k">end</span>
- 
+
     <span class="n">run</span> <span class="no">MySchema</span><span class="p">.</span><span class="nf">ui</span>
   <span class="k">end</span>
   <span class="n">mount</span> <span class="n">graphql_ui</span><span class="p">,</span> <span class="ss">at: </span><span class="s2">"/graphql/ui"</span>
