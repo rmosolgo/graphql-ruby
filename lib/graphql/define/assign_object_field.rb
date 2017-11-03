@@ -18,16 +18,16 @@ module GraphQL
         base_field = if type_or_field.is_a?(GraphQL::Field)
           type_or_field.redefine(name: name_s)
         elsif function
-          field = GraphQL::Function.build_field(function)
-          field.name = name_s
-          field
+          func_field = GraphQL::Function.build_field(function)
+          func_field.name = name_s
+          func_field
         elsif field.is_a?(GraphQL::Field)
           field.redefine(name: name_s)
         else
           nil
         end
 
-        field = if base_field
+        obj_field = if base_field
           base_field.redefine(kwargs, &block)
         else
           GraphQL::Field.define(kwargs, &block)
@@ -35,7 +35,7 @@ module GraphQL
 
 
         # Attach the field to the type
-        owner_type.fields[name_s] = field
+        owner_type.fields[name_s] = obj_field
       end
     end
   end
