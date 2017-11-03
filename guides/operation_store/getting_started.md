@@ -5,6 +5,7 @@ section: GraphQL Pro - OperationStore
 title: Getting Started
 desc: Add GraphQL::Pro::OperationStore to your app
 index: 1
+pro: true
 ---
 
 To use `GraphQL::Pro::OperationStore` with your app, follow these steps:
@@ -141,7 +142,7 @@ Insert the `Rack::Auth::Basic` middleware, before the web view. This prompts for
     use(Rack::Auth::Basic) do |username, password|
       username == ENV.fetch("GRAPHQL_USERNAME") && password == ENV.fetch("GRAPHQL_PASSWORD")
     end
- 
+
     run MySchema.ui
   end
   mount graphql_ui, at: "/graphql/ui"

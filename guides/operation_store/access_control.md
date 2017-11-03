@@ -5,6 +5,7 @@ section: GraphQL Pro - OperationStore
 title: Access Control
 desc: Manage authentication & visibility for your OperationStore server.
 index: 4
+pro: true
 ---
 
 There are two considerations for incoming `sync` requests:

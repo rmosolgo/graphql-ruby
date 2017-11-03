@@ -5,13 +5,14 @@ section: GraphQL Pro
 title: Monitoring
 desc: GraphQL plugins for NewRelic, AppSignal, Scout, Skylight and Datadog
 index: 3
+pro: true
 ---
 
 `GraphQL::Pro` includes instrumentation for several platforms which add:
 
 - Tracking queries by name
 - Tracking field resolution
-- Observing database calls during resolution  
+- Observing database calls during resolution
 
 By default, all fields in the schema are monitored, but you can [opt in or opt out](#opting-in-opting-out) on a type-by-type or field-by-field basis.
 

@@ -5,6 +5,7 @@ section: GraphQL Pro
 title: Stable Cursors for ActiveRecord
 desc: Value-based cursors for stable pagination over ActiveRecord::Relations
 index: 5
+pro: true
 ---
 
 `GraphQL::Pro` includes a mechanism for serving _stable_ cursors for `ActiveRecord::Relation`s based on column values. If objects are created or destroyed during pagination, the list of items won't be disrupted.

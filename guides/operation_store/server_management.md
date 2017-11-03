@@ -5,6 +5,7 @@ section: GraphQL Pro - OperationStore
 title: Server Management
 desc: Tips for administering persisted queries with OperationStore
 index: 3
+pro: true
 ---
 
 After {% internal_link "getting started","/operation_store/getting_started" %}, here some things to keep in mind.

@@ -5,6 +5,7 @@ section: GraphQL Pro
 title: Encrypted, Versioned Cursors and IDs
 desc: Increased opacity and configurability for Relay identifiers
 index: 6
+pro: true
 ---
 
 `GraphQL::Pro` includes a mechanism for serving encrypted, versioned cursors and IDs.  This provides some benefits:

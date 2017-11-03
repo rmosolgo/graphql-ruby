@@ -5,6 +5,7 @@ section: GraphQL Pro - OperationStore
 title: Overview
 desc: Learn how persisted queries work and how OperationStore implements them.
 index: 0
+pro: true
 ---
 
 `GraphQL::Pro::OperationStore` uses `ActiveRecord` and `Rack` to maintain a normalized, deduplicated database of _persisted queries_ for your GraphQL system.
