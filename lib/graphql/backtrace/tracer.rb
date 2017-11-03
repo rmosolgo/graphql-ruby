@@ -31,7 +31,7 @@ module GraphQL
             rescue StandardError => err
               # This is an unhandled error from execution,
               # Re-raise it with a GraphQL trace.
-              raise TracedError.new(err, execution_context.last)
+              raise TracedError.new(err, get_context_from_execution(execution_context))
             ensure
               execution_context.clear
             end
@@ -44,6 +44,16 @@ module GraphQL
         else
           yield
         end
+      end
+
+      def get_context_from_execution(execution_context)
+        execution_context = execution_context.flatten
+
+        contexts = execution_context.map do |potential_context|
+          potential_context.respond_to?(:context) ? potential_context.context : potential_context
+        end
+
+        contexts.last
       end
     end
   end
