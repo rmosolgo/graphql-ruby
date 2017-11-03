@@ -85,7 +85,9 @@ module GraphQL
 
               # Construct arguments class here, which is later used to generate GraphQL::Query::Arguments
               # to be passed to a resolver proc
-              GraphQL::Query::Arguments.construct_arguments_class(type_defn)
+              if !type_defn.arguments_class
+                GraphQL::Query::Arguments.construct_arguments_class(type_defn)
+              end
             end
           elsif !prev_type.equal?(type_defn)
             # If the previous entry in the map isn't the same object we just found, raise.

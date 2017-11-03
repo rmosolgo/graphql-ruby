@@ -1,9 +1,29 @@
 # frozen_string_literal: true
 module GraphQL
   class InputObject < GraphQL::SchemaMember
+    extend GraphQL::Delegate
+
+    def initialize(values, context:, defaults_used:)
+      @arguments = self.class.arguments_class.new(values, context: context, defaults_used: defaults_used)
+      @context = context
+    end
+
+    # A lot of methods work just like GraphQL::Arguments
+    def_delegators :@arguments, :[], :key?, :to_h
+    def_delegators :to_h, :keys, :values, :each, :any?
+
     class << self
+      # @return [Class<GraphQL::Arguments>]
+      attr_accessor :arguments_class
+
       def argument(*args)
-        arguments << GraphQL::Object::Argument.new(*args)
+        argument = GraphQL::Object::Argument.new(*args)
+        arguments << argument
+        arg_name = argument.name
+        # Add a method access
+        define_method(GraphQL::Object::BuildType.underscore(arg_name)) do
+          @arguments.public_send(arg_name)
+        end
       end
 
       # TODO inheritance
@@ -18,6 +38,10 @@ module GraphQL
         arguments.each do |arg|
           type_defn.arguments[arg.name] = arg.graphql_definition
         end
+        # Make a reference to a classic-style Arguments class
+        self.arguments_class = GraphQL::Query::Arguments.construct_arguments_class(type_defn)
+        # But use this InputObject class at runtime
+        type_defn.arguments_class = self
         type_defn
       end
     end

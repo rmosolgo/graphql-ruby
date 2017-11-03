@@ -35,22 +35,24 @@ ERR
         def public_send_field(obj, method_name, graphql_args)
           if graphql_args.any?
             # Splat the GraphQL::Arguments to Ruby keyword arguments
-            # TODO: underscore-ize and apply the transformation deeply.
             ruby_kwargs = {}
-            graphql_args.to_h.each { |k, v| ruby_kwargs[BuildType.underscore(k).to_sym] = v }
+
+            graphql_args.keys.each do |key|
+              ruby_kwargs[BuildType.underscore(key).to_sym] = graphql_args[key]
+            end
+
             if @connection
               # Remove pagination args before passing it to a user method
               ruby_kwargs.delete(:first)
               ruby_kwargs.delete(:last)
               ruby_kwargs.delete(:before)
               ruby_kwargs.delete(:after)
-              if ruby_kwargs.any?
-                obj.public_send(method_name, ruby_kwargs)
-              else
-                obj.public_send(method_name)
-              end
-            else
+            end
+
+            if ruby_kwargs.any?
               obj.public_send(method_name, ruby_kwargs)
+            else
+              obj.public_send(method_name)
             end
           else
             obj.public_send(method_name)

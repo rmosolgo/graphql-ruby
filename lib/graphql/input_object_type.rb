@@ -98,7 +98,7 @@ module GraphQL
         end
       end
 
-      arguments_class.new(input_values, defaults_used)
+      arguments_class.new(input_values, context: ctx, defaults_used: defaults_used)
     end
 
     # @api private
