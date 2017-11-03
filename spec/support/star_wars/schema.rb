@@ -303,11 +303,14 @@ module StarWars
 
   QueryType = GraphQL::ObjectType.define do
     name "Query"
-    field :rebels, Faction do
+
+    # For some reason, these `nil`s are required for Ruby 2.2
+    # I can't figure it out! 😖
+    field :rebels, Faction, nil do
       resolve ->(obj, args, ctx) { StarWars::DATA["Faction"]["1"]}
     end
 
-    field :empire, Faction do
+    field :empire, Faction, nil do
       resolve ->(obj, args, ctx) { StarWars::DATA["Faction"]["2"]}
     end
 
