@@ -8,8 +8,26 @@ describe GraphQL::Object do
       assert_equal "Ensemble", object_class.graphql_name
       assert_equal "A group of musicians playing together", object_class.description
       assert_equal 5, object_class.fields.size
+      assert_equal 2, object_class.interfaces.size
       # Compatibility methods are delegated to the underlying BaseType
       assert object_class.respond_to?(:connection_type)
+    end
+
+    it "inherits fields and interfaces" do
+      new_object_class = Class.new(object_class) do
+        field :newField, String, null: true
+        field :name, String, "The new description", null: true
+      end
+
+      # one more than the parent class
+      assert_equal 6, new_object_class.fields.size
+      # inherited interfaces are present
+      assert_equal 2, new_object_class.interfaces.size
+      # The new field is present
+      assert new_object_class.fields.find { |f| f.name == "newField" }
+      # The overridden field is present:
+      name_field = new_object_class.fields.find { |f| f.name == "name" }
+      assert_equal "The new description", name_field.description
     end
   end
 
