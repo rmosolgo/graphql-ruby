@@ -9,6 +9,23 @@ describe GraphQL::Interface do
       assert_equal "GloballyIdentifiable", interface.graphql_name
       assert_equal 2, interface.fields.size
     end
+
+    it "inherits implemented hook" do
+      block_was_called = false
+      new_interface = Class.new(interface) do
+        implemented do
+          block_was_called = true
+        end
+      end
+
+      new_object = Class.new(GraphQL::Object) do
+        implements new_interface
+      end
+
+      assert_equal 2, new_object.fields.size
+      assert new_object.method_defined?(:id)
+      assert block_was_called
+    end
   end
 
   describe ".to_graphql" do
