@@ -62,7 +62,10 @@ title: Search
         writeToTemplate("No Results", "")
       } else {
         results.forEach(function(result) {
-          writeToTemplate(result.title, result.text)
+          console.log(result)
+          var resultPath = result.url + (result.css_selector_parent || "")
+          var header = "<a href='" + resultPath + "'>" + result.unique_hierarchy + '</a>'
+          writeToTemplate(header, result.raw_html)
         })
       }
     }
