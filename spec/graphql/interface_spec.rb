@@ -7,7 +7,7 @@ describe GraphQL::Interface do
   describe "type info" do
     it "tells its type info" do
       assert_equal "GloballyIdentifiable", interface.graphql_name
-      assert_equal 1, interface.fields.size
+      assert_equal 2, interface.fields.size
     end
   end
 
@@ -28,6 +28,7 @@ describe GraphQL::Interface do
       {
         piano: find(id: "Instrument/Piano") {
           id
+          upcasedId
           ... on Instrument {
             family
           }
@@ -36,7 +37,32 @@ describe GraphQL::Interface do
       GRAPHQL
 
       res = Jazz::Schema.execute(query_str)
-      assert_equal({"id" => "Instrument/Piano", "family" => "KEYS"}, res["data"]["piano"])
+      expected_piano = {
+        "id" => "Instrument/Piano",
+        "upcasedId" => "INSTRUMENT/PIANO",
+        "family" => "KEYS",
+      }
+      assert_equal(expected_piano, res["data"]["piano"])
+    end
+
+    it "applies custom field attributes" do
+      query_str = <<-GRAPHQL
+      {
+        find(id: "Ensemble/Bela Fleck and the Flecktones") {
+          upcasedId
+          ... on Ensemble {
+            name
+          }
+        }
+      }
+      GRAPHQL
+
+      res = Jazz::Schema.execute(query_str)
+      expected_data = {
+        "upcasedId" => "ENSEMBLE/BELA FLECK AND THE FLECKTONES",
+        "name" => "Bela Fleck and the Flecktones"
+      }
+      assert_equal(expected_data, res["data"]["find"])
     end
   end
 end

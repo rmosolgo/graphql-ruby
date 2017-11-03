@@ -27,7 +27,29 @@ module Jazz
     end
   end
 
+  # A custom field class that supports the `upcase:` option
+  class BaseField < GraphQL::Object::Field
+    def initialize(*args, options, &block)
+      @upcase = options.delete(:upcase)
+      super(*args, options, &block)
+    end
+
+    def to_graphql
+      field_defn = super
+      if @upcase
+        inner_resolve = field_defn.resolve_proc
+        field_defn.resolve = ->(obj, args, ctx) {
+          inner_resolve.call(obj, args, ctx).upcase
+        }
+      end
+      field_defn
+    end
+  end
+
   class BaseObject < GraphQL::Object
+    # Use this overridden field class
+    Field = BaseField
+
     class << self
       def config(key, value)
         configs[key] = value
@@ -45,31 +67,19 @@ module Jazz
         type_defn
       end
     end
-
-    # A custom field class that supports the `upcase:` option
-    class Field < GraphQL::Object::Field
-      def initialize(*args, options, &block)
-        @upcase = options.delete(:upcase)
-        super(*args, options, &block)
-      end
-
-      def to_graphql
-        field_defn = super
-        if @upcase
-          inner_resolve = field_defn.resolve_proc
-          field_defn.resolve = ->(obj, args, ctx) {
-            inner_resolve.call(obj, args, ctx).upcase
-          }
-        end
-        field_defn
-      end
-    end
   end
 
+  class BaseInterface < GraphQL::Interface
+    # Use this overridden field class
+    Field = BaseField
+  end
+
+
   # Some arbitrary global ID scheme
-  class GloballyIdentifiable < GraphQL::Interface
+  class GloballyIdentifiable < BaseInterface
     description "A fetchable object in the system"
     field :id, "ID", "A unique identifier for this object", null: false
+    field :upcasedId, "ID", null: false, upcase: true, method: :id
 
     implemented do
       def id
@@ -128,6 +138,7 @@ module Jazz
     implements GloballyIdentifiable
 
     field :id, !types.ID, "A unique identifier for this object", resolve: ->(obj, args, ctx) { GloballyIdentifiable.to_id(obj) }
+    field :upcasedId, !types.ID, resolve: ->(obj, args, ctx) { GloballyIdentifiable.to_id(obj).upcase }
     if RUBY_ENGINE == "jruby"
       # JRuby doesn't support refinements, so the `using` above won't work
       field :family, Family.to_non_null_type
