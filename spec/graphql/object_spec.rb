@@ -20,7 +20,7 @@ describe GraphQL::Object do
       assert_equal "A group of musicians playing together", obj_type.description
       assert_equal 5, obj_type.all_fields.size
 
-      name_field = obj_type.all_fields[1]
+      name_field = obj_type.all_fields[2]
       assert_equal "name", name_field.name
       assert_equal GraphQL::STRING_TYPE.to_non_null_type, name_field.type
       assert_equal nil, name_field.description
