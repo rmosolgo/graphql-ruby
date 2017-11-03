@@ -154,6 +154,29 @@ module Jazz
     field :instrument, InstrumentType, null: false
   end
 
+  LegacyInputType = GraphQL::InputObjectType.define do
+    name "LegacyInput"
+    argument :intValue, !types.Int
+  end
+
+  class InspectableInputType < GraphQL::InputObject
+    argument :stringValue, String, null: false
+    argument :nestedInput, InspectableInputType, null: true
+    argument :legacyInput, LegacyInputType, null: true
+    def helper_method
+      [
+        # Context is available in the InputObject
+        @context[:message],
+        # A GraphQL::Query::Arguments instance is available
+        @arguments[:stringValue],
+        # Legacy inputs have underscored method access too
+        legacy_input ? legacy_input.int_value : "-",
+        # Access by method call is available
+        "(#{nested_input ? nested_input.helper_method : "-"})",
+      ].join(", ")
+    end
+  end
+
   # Another new-style definition, with method overrides
   class Query < BaseObject
     field :ensembles, [Ensemble], null: false
@@ -162,6 +185,9 @@ module Jazz
     end
     field :instruments, [InstrumentType], null: false do
       argument :family, Family, null: true
+    end
+    field :inspectInput, [String], null: false do
+      argument :input, InspectableInputType, null: false
     end
 
     def ensembles
@@ -179,6 +205,19 @@ module Jazz
       end
       objs
     end
+
+    # This is for testing input object behavior
+    def inspect_input(input:)
+      [
+        input.class.name,
+        input.helper_method,
+        # Access by method
+        input.string_value,
+        # Access by key:
+        input["stringValue"],
+        input[:stringValue],
+      ]
+    end
   end
 
   class EnsembleInput < GraphQL::InputObject
@@ -193,7 +232,7 @@ module Jazz
     def add_ensemble(input:)
       # TODO, how should this object be presented here?
       # Maybe an instance of the class above, whose methods may be called?
-      ens = Models::Ensemble.new(input["name"])
+      ens = Models::Ensemble.new(input.name)
       Models.data["Ensemble"] << ens
       ens
     end
