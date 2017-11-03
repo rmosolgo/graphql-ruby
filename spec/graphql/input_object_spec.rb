@@ -31,7 +31,7 @@ describe GraphQL::InputObject do
 
       res = Jazz::Schema.execute(query_str, context: { message: "hi" })
       expected_info = [
-        "Jazz::InspectableInputType",
+        "Jazz::InspectableInput",
         "hi, ABC, 4, (hi, xyz, -, (-))",
         "ABC",
         "ABC",

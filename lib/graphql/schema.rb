@@ -410,6 +410,10 @@ module GraphQL
         @resolve_type_proc.call(type, object, ctx)
       end
 
+      if type_result.respond_to?(:graphql_definition)
+        type_result = type_result.graphql_definition
+      end
+
       if type_result.nil?
         nil
       elsif !type_result.is_a?(GraphQL::BaseType)
