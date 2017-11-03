@@ -54,13 +54,11 @@ var GraphQLRubySearch = {
           searchResults.appendChild(container)
         })
 
-        if (content.nbPages > 1) {
-          var seeAll = document.createElement("a")
-          seeAll.href = "/search?query=" + content.query
-          seeAll.className = "search-see-all"
-          seeAll.innerHTML = "See All Results (" + content.nbHits + ")"
-          searchResults.appendChild(seeAll)
-        }
+        var seeAll = document.createElement("a")
+        seeAll.href = "/search?query=" + content.query
+        seeAll.className = "search-see-all"
+        seeAll.innerHTML = "See All Results (" + content.nbHits + ")"
+        searchResults.appendChild(seeAll)
       })
     }
   },

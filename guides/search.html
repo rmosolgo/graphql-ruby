@@ -31,7 +31,7 @@ title: Search
 
     function renderResults(query, results) {
       var querySpan = document.getElementById('search-page-query')
-      querySpan.innerText = query
+      querySpan.innerText = '"' + decodeURIComponent(query) + '"'
 
       var resultsContainer = document.getElementById("search-page-results")
       var resultsTemplate = document.getElementById("search-page-result-template")
