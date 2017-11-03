@@ -7,7 +7,7 @@ describe GraphQL::Object do
     it "tells type data" do
       assert_equal "Ensemble", object_class.graphql_name
       assert_equal "A group of musicians playing together", object_class.description
-      assert_equal 4, object_class.fields.size
+      assert_equal 5, object_class.fields.size
       # Compatibility methods are delegated to the underlying BaseType
       assert object_class.respond_to?(:connection_type)
     end
@@ -18,7 +18,7 @@ describe GraphQL::Object do
     it "returns a matching GraphQL::ObjectType" do
       assert_equal "Ensemble", obj_type.name
       assert_equal "A group of musicians playing together", obj_type.description
-      assert_equal 4, obj_type.all_fields.size
+      assert_equal 5, obj_type.all_fields.size
 
       name_field = obj_type.all_fields[1]
       assert_equal "name", name_field.name
