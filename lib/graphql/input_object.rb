@@ -18,7 +18,7 @@ module GraphQL
 
       def argument(*args)
         argument = GraphQL::Object::Argument.new(*args)
-        arguments << argument
+        own_arguments << argument
         arg_name = argument.name
         # Add a method access
         define_method(GraphQL::Object::BuildType.underscore(arg_name)) do
@@ -26,9 +26,19 @@ module GraphQL
         end
       end
 
-      # TODO inheritance
       def arguments
-        @arguments ||= []
+        all_arguments = own_arguments
+        inherited_arguments = (superclass <= GraphQL::InputObject ? superclass.arguments : [])
+        inherited_arguments.each do |inherited_a|
+          if all_arguments.none? { |a| a.name == inherited_a.name }
+            all_arguments << inherited_a
+          end
+        end
+        all_arguments
+      end
+
+      def own_arguments
+        @own_arguments ||= []
       end
 
       def to_graphql

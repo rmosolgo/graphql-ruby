@@ -6,7 +6,11 @@ module GraphQL
     class Field
       include GraphQL::SchemaMember::CachedGraphQLDefinition
 
+      # @return [String]
       attr_reader :name
+
+      # @return [String]
+      attr_reader :description
 
       def initialize(name, return_type_expr = nil, desc = nil, null: nil, field: nil, function: nil, deprecation_reason: nil, method: nil, connection: nil, max_page_size: nil, resolve: nil, &args_block)
         if !(field || function)
