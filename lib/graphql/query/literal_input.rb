@@ -105,7 +105,7 @@ module GraphQL
           end
         end
 
-        argument_owner.arguments_class.new(values_hash)
+        argument_owner.arguments_class.new(values_hash, context: context)
       end
     end
   end

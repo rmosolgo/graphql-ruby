@@ -96,7 +96,7 @@ module GraphQL
         end
       end
 
-      arguments_class.new(input_values)
+      arguments_class.new(input_values, context: ctx)
     end
 
     # @api private
