@@ -41,10 +41,10 @@ describe GraphQL::Tracing::PlatformTracing do
       schema.execute(" { cheese(id: 1) { flavor } }")
       expected_trace = [
         "em",
-        "am",
         "l",
         "p",
         "v",
+        "am",
         "aq",
         "eq",
         "Q.c", # notice that the flavor is skipped
