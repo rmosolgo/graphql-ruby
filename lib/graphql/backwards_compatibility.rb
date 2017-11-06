@@ -12,11 +12,10 @@ module GraphQL
     # If `last`, then use the last arguments to call the function.
     def wrap_arity(callable, from:, to:, name:, last: false)
       arity = get_arity(callable)
-      case arity
-      when to
+      if arity == to || arity < 0
         # It already matches, return it as is
         callable
-      when from
+      elsif arity == from
         # It has the old arity, so wrap it with an arity converter
         message ="#{name} with #{from} arguments is deprecated, it now accepts #{to} arguments, see:"
         backtrace = caller(0, 20)

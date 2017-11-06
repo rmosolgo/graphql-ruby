@@ -3,31 +3,28 @@ module StarWars
   # Adapted from graphql-relay-js
   # https://github.com/graphql/graphql-relay-js/blob/master/src/__tests__/starWarsSchema.js
 
-  Ship = GraphQL::ObjectType.define do
-    name "Ship"
-    interfaces [GraphQL::Relay::Node.interface]
+  class Ship < GraphQL::Object
+    implements GraphQL::Relay::Node.interface
     global_id_field :id
-    field :name, types.String
+    field :name, String, null: true
     # Test cyclical connection types:
-    connection :ships, Ship.connection_type
+    field :ships, Ship.connection_type, null: false
   end
 
-  BaseType = GraphQL::ObjectType.define do
-    name "Base"
-    interfaces [GraphQL::Relay::Node.interface]
+  class BaseType < GraphQL::Object
+    graphql_name "Base"
+    implements GraphQL::Relay::Node.interface
     global_id_field :id
-    field :name, !types.String do
-      resolve ->(obj, args, ctx) {
-        LazyWrapper.new {
-          if obj.id.nil?
-            raise GraphQL::ExecutionError, "Boom!"
-          else
-            obj.name
-          end
-        }
+    field :name, String, null: false, resolve: ->(obj, args, ctx) {
+      LazyWrapper.new {
+        if obj.id.nil?
+          raise GraphQL::ExecutionError, "Boom!"
+        else
+          obj.name
+        end
       }
-    end
-    field :planet, types.String
+    }
+    field :planet, String, null: true
   end
 
   # Use an optional block to add fields to the connection type:
@@ -122,7 +119,7 @@ module StarWars
       argument :nameIncludes, String, null: true
     end
 
-    field :shipsWithMaxPageSize, connection: true, max_page_size: 2, function: ShipsWithMaxPageSize.new
+    field :shipsWithMaxPageSize, max_page_size: 2, function: ShipsWithMaxPageSize.new
 
     field :bases, BaseConnectionWithTotalCountType, null: true, connection: true, resolve: ->(obj, args, ctx) {
       all_bases = Base.where(id: obj.bases)
@@ -301,63 +298,52 @@ module StarWars
 
   GraphQL::Relay::BaseConnection.register_connection_implementation(LazyNodesWrapper, LazyNodesRelationConnection)
 
-  QueryType = GraphQL::ObjectType.define do
-    name "Query"
+  class QueryType < GraphQL::Object
+    graphql_name "Query"
 
-    # For some reason, these `nil`s are required for Ruby 2.2
-    # I can't figure it out! 😖
-    field :rebels, Faction, nil do
-      resolve ->(obj, args, ctx) { StarWars::DATA["Faction"]["1"]}
-    end
+    field :rebels, Faction, null: true, resolve: ->(obj, args, ctx) { StarWars::DATA["Faction"]["1"]}
 
-    field :empire, Faction, nil do
-      resolve ->(obj, args, ctx) { StarWars::DATA["Faction"]["2"]}
-    end
+    field :empire, Faction, null: true, resolve: ->(obj, args, ctx) { StarWars::DATA["Faction"]["2"]}
 
-    field :largestBase, BaseType do
-      resolve ->(obj, args, ctx) { Base.find(3) }
-    end
+    field :largestBase, BaseType, null: true, resolve: ->(obj, args, ctx) { Base.find(3) }
 
-    connection :newestBasesGroupedByFaction, BaseType.connection_type do
-      resolve ->(obj, args, ctx) {
-        Base
-          .having('id in (select max(id) from bases group by faction_id)')
-          .group(:id)
-          .order('faction_id desc')
-      }
-    end
+    field :newestBasesGroupedByFaction, BaseType.connection_type, null: true, resolve: ->(obj, args, ctx) {
+      Base
+        .having('id in (select max(id) from bases group by faction_id)')
+        .group(:id)
+        .order('faction_id desc')
+    }
 
-    connection :basesWithNullName, BaseType.connection_type do
-      resolve ->(obj, args, ctx) {
-        [OpenStruct.new(id: nil)]
-      }
-    end
+    field :basesWithNullName, BaseType.connection_type, null: false, resolve: ->(obj, args, ctx) {
+      [OpenStruct.new(id: nil)]
+    }
 
-    field :node, GraphQL::Relay::Node.field
+    field :node, field: GraphQL::Relay::Node.field
 
     custom_node_field = GraphQL::Relay::Node.field do
       resolve ->(_, _, _) { StarWars::DATA["Faction"]["1"] }
     end
-    field :nodeWithCustomResolver, custom_node_field
+    field :nodeWithCustomResolver, field: custom_node_field
 
-    field :nodes, GraphQL::Relay::Node.plural_field
-    field :nodesWithCustomResolver, GraphQL::Relay::Node.plural_field(
+    field :nodes, field: GraphQL::Relay::Node.plural_field
+    field :nodesWithCustomResolver, field: GraphQL::Relay::Node.plural_field(
       resolve: ->(_, _, _) { [StarWars::DATA["Faction"]["1"], StarWars::DATA["Faction"]["2"]] }
     )
 
-    field :batchedBase, BaseType do
-      argument :id, !types.ID
-      resolve ->(o, a, c) {
-        LazyLoader.defer(c, Base, a["id"])
-      }
+    field :batchedBase, BaseType, null: true do
+      argument :id, "ID", null: false
+    end
+
+    def batched_base(id:)
+      LazyLoader.defer(@context, Base, id)
     end
   end
 
-  MutationType = GraphQL::ObjectType.define do
-    name "Mutation"
+  class MutationType < GraphQL::Object
+    graphql_name "Mutation"
     # The mutation object exposes a field:
     field :introduceShip, field: IntroduceShipMutation.field
-    field :introduceShipFunction, IntroduceShipFunctionMutation.field
+    field :introduceShipFunction, field: IntroduceShipFunctionMutation.field
   end
 
   class ClassNameRecorder
