@@ -58,7 +58,7 @@ module GraphQL
       :query, :mutation, :subscription,
       :query_execution_strategy, :mutation_execution_strategy, :subscription_execution_strategy,
       :max_depth, :max_complexity, :default_max_page_size,
-      :orphan_types, :resolve_type, :type_error, :parse_error, :find_type,
+      :orphan_types, :resolve_type, :type_error, :parse_error,
       :raise_definition_error,
       :object_from_id, :id_from_object,
       :default_mask,
@@ -132,7 +132,6 @@ module GraphQL
       @id_from_object_proc = nil
       @type_error_proc = DefaultTypeError
       @parse_error_proc = DefaultParseError
-      @find_type_proc = ->(name) { raise NotImplementedError, "Define find_type to support name-based type lookup" }
       @instrumenters = Hash.new { |h, k| h[k] = [] }
       @lazy_methods = GraphQL::Execution::Lazy::LazyMethodMap.new
       @lazy_methods.set(GraphQL::Relay::ConnectionResolve::LazyNodesWrapper, :never_called)
@@ -572,16 +571,6 @@ module GraphQL
     # @return [String]
     def to_json(*args)
       JSON.pretty_generate(as_json(*args))
-    end
-
-    # @api private
-    def find_type(type_name)
-      @find_type_proc.call(type_name)
-    end
-
-    # @api private
-    def find_type=(new_find_type_proc)
-      @find_type_proc = new_find_type_proc
     end
 
     class << self
