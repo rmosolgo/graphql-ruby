@@ -438,17 +438,17 @@ module Dummy
     end
   end
 
-  Schema = GraphQL::Schema.define do
+  class Schema < GraphQL::Schema
     query DairyAppQueryType
-    mutation DairyAppMutationType.graphql_definition
+    mutation DairyAppMutationType
     subscription SubscriptionType
     max_depth 5
     orphan_types [HoneyType, BeverageUnion]
 
     rescue_from(NoSuchDairyError) { |err| err.message  }
 
-    resolve_type ->(type, obj, ctx) {
+    def self.resolve_type(type, obj, ctx)
       Schema.types[obj.class.name.split("::").last]
-    }
+    end
   end
 end
