@@ -287,8 +287,6 @@ module Jazz
     end
 
     def add_ensemble(input:)
-      # TODO, how should this object be presented here?
-      # Maybe an instance of the class above, whose methods may be called?
       ens = Models::Ensemble.new(input.name)
       Models.data["Ensemble"] << ens
       ens
