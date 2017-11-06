@@ -67,6 +67,11 @@ module LazyHelpers
   end
 
   using GraphQL::DeprecatedDSL
+  if RUBY_ENGINE == "jruby"
+    # JRuby doesn't support refinements, so the `using` above won't work
+    GraphQL::DeprecatedDSL.activate
+  end
+
   LazyQuery = GraphQL::ObjectType.define do
     name "Query"
     field :int, !types.Int do
