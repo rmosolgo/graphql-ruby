@@ -603,6 +603,7 @@ module GraphQL
             schema_defn.instrumenters[step] << inst
           end
         end
+        schema_defn.instrumenters[:query] << GraphQL::Object::Instrumentation
         lazy_classes.each do |lazy_class, value_method|
           schema_defn.lazy_methods.set(lazy_class, value_method)
         end
