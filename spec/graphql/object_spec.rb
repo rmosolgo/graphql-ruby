@@ -103,5 +103,11 @@ describe GraphQL::Object do
       res2 = Jazz::Schema.execute(query_str, variables: { "id" => new_id })
       assert_equal "Miles Davis Quartet", res2["data"]["find"]["name"]
     end
+
+    it "initializes root wrappers once" do
+      query_str = " { oid1: objectId oid2: objectId }"
+      res = Jazz::Schema.execute(query_str)
+      assert_equal res["data"]["oid1"], res["data"]["oid2"]
+    end
   end
 end
