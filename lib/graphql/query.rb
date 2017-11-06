@@ -197,8 +197,11 @@ module GraphQL
 
     def irep_selection
       @selection ||= begin
-        return nil unless selected_operation
-        internal_representation.operation_definitions[selected_operation.name]
+        if selected_operation && internal_representation
+          internal_representation.operation_definitions[selected_operation.name]
+        else
+          nil
+        end
       end
     end
 

@@ -3,7 +3,6 @@
 
 module GraphQL
   class Object < GraphQL::SchemaMember
-    # TODO use objects, not proc literals
     module Instrumentation
       module_function
       def instrument(type, field)
