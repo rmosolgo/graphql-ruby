@@ -5,6 +5,19 @@ module Jazz
   module Models
     Instrument = Struct.new(:name, :family)
     Ensemble = Struct.new(:name)
+    Musician = Struct.new(:name, :favorite_key)
+    Key = Struct.new(:root, :sharp, :flat) do
+      def self.from_notation(key_str)
+        key, sharp_or_flat = key_str.split("")
+        sharp = sharp_or_flat ==  "♯"
+        flat = sharp_or_flat == "♭"
+        Models::Key.new(key, sharp, flat)
+      end
+
+      def to_notation
+        "#{root}#{sharp ? "♯" : ""}#{flat ? "♭" : ""}"
+      end
+    end
 
     def self.reset
       @data = {
@@ -17,8 +30,11 @@ module Jazz
           Models::Instrument.new("Drum Kit", "PERCUSSION"),
         ],
         "Ensemble" => [
-          Models::Ensemble.new("Bela Fleck and the Flecktones")
+          Models::Ensemble.new("Bela Fleck and the Flecktones"),
         ],
+        "Musician" => [
+          Models::Musician.new("Herbie Hancock", Models::Key.from_notation("B♭")),
+        ]
       }
     end
 
@@ -150,11 +166,23 @@ module Jazz
     end
   end
 
+  class Key < GraphQL::Scalar
+    description "A musical key"
+    def self.coerce_input(val, ctx)
+      Models::Key.from_notation(val)
+    end
+
+    def self.coerce_result(val, ctx)
+      val.to_notation
+    end
+  end
+
   class Musician < BaseObject
     implements GloballyIdentifiable
     implements NamedEntity
     description "Someone who plays an instrument"
     field :instrument, InstrumentType, null: false
+    field :favoriteKey, Key, null: true
   end
 
   LegacyInputType = GraphQL::InputObjectType.define do
@@ -180,6 +208,12 @@ module Jazz
     end
   end
 
+  class InspectableKey < BaseObject
+    field :root, String, null: false
+    field :isSharp, "Boolean", null: false, method: :sharp
+    field :isFlat, "Boolean", null: false, method: :flat
+  end
+
   class PerformingAct < GraphQL::Union
     possible_types Musician, Ensemble
 
@@ -203,6 +237,9 @@ module Jazz
     end
     field :inspectInput, [String], null: false do
       argument :input, InspectableInput, null: false
+    end
+    field :inspectKey, InspectableKey, null: false do
+      argument :key, Key, null: false
     end
     field :nowPlaying, PerformingAct, null: false, resolve: ->(o, a, c) { Models.data["Ensemble"].first }
 
@@ -233,6 +270,10 @@ module Jazz
         input["stringValue"],
         input[:stringValue],
       ]
+    end
+
+    def inspect_key(key:)
+      key
     end
   end
 
