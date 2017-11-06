@@ -29,7 +29,10 @@ module GraphQL
       end
     end
 
-    attr_reader :schema, :context, :root_value, :warden, :provided_variables
+    attr_reader :schema, :context, :warden, :provided_variables
+
+    # The value for root types
+    attr_accessor :root_value
 
     # @return [nil, String] The operation name provided by client or the one inferred from the document. Used to determine which operation to run.
     attr_accessor :operation_name

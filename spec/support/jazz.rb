@@ -242,6 +242,8 @@ module Jazz
       argument :key, Key, null: false
     end
     field :nowPlaying, PerformingAct, null: false, resolve: ->(o, a, c) { Models.data["Ensemble"].first }
+    # For asserting that the object is initialized once:
+    field :objectId, Integer, null: false
 
     def ensembles
       Models.data["Ensemble"]
