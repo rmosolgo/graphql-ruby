@@ -390,6 +390,18 @@ module GraphQL
     # @param ctx [GraphQL::Query::Context] The context for the current query
     # @return [GraphQL::ObjectType] The type for exposing `object` in GraphQL
     def resolve_type(type, object, ctx = :__undefined__)
+      check_resolved_type(type, object, ctx) do |ok_type, ok_object, ok_ctx|
+        if @resolve_type_proc.nil?
+          raise(NotImplementedError, "Can't determine GraphQL type for: #{ok_object.inspect}, define `resolve_type (type, obj, ctx) -> { ... }` inside `Schema.define`.")
+        end
+        @resolve_type_proc.call(ok_type, ok_object, ok_ctx)
+      end
+    end
+
+    # This is a compatibility hack so that instance-level and class-level
+    # methods can get correctness checks without calling one another
+    # @api private
+    def check_resolved_type(type, object, ctx = :__undefined__)
       if ctx == :__undefined__
         # Old method signature
         ctx = object
@@ -397,15 +409,16 @@ module GraphQL
         type = nil
       end
 
+      if object.is_a?(GraphQL::Object)
+        object = object.object
+      end
+
       # Prefer a type-local function; fall back to the schema-level function
       type_proc = type && type.resolve_type_proc
       type_result = if type_proc
         type_proc.call(object, ctx)
       else
-        if @resolve_type_proc.nil?
-          raise(NotImplementedError, "Can't determine GraphQL type for: #{object.inspect}, define `resolve_type (type, obj, ctx) -> { ... }` inside `Schema.define`.")
-        end
-        @resolve_type_proc.call(type, object, ctx)
+        yield(type, object, ctx)
       end
 
       if type_result.respond_to?(:graphql_definition)
@@ -573,6 +586,9 @@ module GraphQL
     end
 
     class << self
+      extend GraphQL::Delegate
+      def_delegators :graphql_definition, :as_json, :to_json
+
       def method_missing(method_name, *args, &block)
         if graphql_definition.respond_to?(method_name)
           graphql_definition.public_send(method_name, *args, &block)
@@ -593,7 +609,10 @@ module GraphQL
         schema_defn = self.new
         schema_defn.query = query
         schema_defn.mutation = mutation
+        schema_defn.subscription = subscription
+        schema_defn.max_depth = max_depth
         schema_defn.default_max_page_size = default_max_page_size
+        schema_defn.orphan_types = orphan_types
         schema_defn.resolve_type = method(:resolve_type)
         schema_defn.object_from_id = method(:object_from_id)
         schema_defn.id_from_object = method(:id_from_object)
@@ -627,11 +646,35 @@ module GraphQL
         end
       end
 
+      def subscription(new_subscription_object = nil)
+        if new_subscription_object
+          @subscription_object = new_subscription_object
+        else
+          @subscription_object.respond_to?(:graphql_definition) ? @subscription_object.graphql_definition : @subscription_object
+        end
+      end
+
       def default_max_page_size(new_default_max_page_size = nil)
         if new_default_max_page_size
           @default_max_page_size = new_default_max_page_size
         else
           @default_max_page_size
+        end
+      end
+
+      def max_depth(new_max_depth = nil)
+        if new_max_depth
+          @max_depth = new_max_depth
+        else
+          @max_depth
+        end
+      end
+
+      def orphan_types(new_orphan_types = nil)
+        if new_orphan_types
+          @orphan_types = new_orphan_types
+        else
+          @orphan_types || []
         end
       end
 
@@ -688,24 +731,9 @@ module GraphQL
 
     module MethodWrappers
       # Wrap the user-provided resolve-type in a correctness check
-      def resolve_type(type, obj, ctx)
-        if obj.is_a?(GraphQL::Object)
-          obj = obj.object
-        end
-
-        type_result = super(type, obj, ctx)
-
-        if type_result.respond_to?(:graphql_definition)
-          type_result = type_result.graphql_definition
-        end
-
-        if type_result.nil?
-          nil
-        elsif !type_result.is_a?(GraphQL::BaseType)
-          type_str = "#{type_result} (#{type_result.class.name})"
-          raise "resolve_type(#{type}, #{obj}, ctx) returned #{type_str}, but it should return a GraphQL type"
-        else
-          type_result
+      def resolve_type(type, obj, ctx = :__undefined__)
+        graphql_definition.check_resolved_type(type, obj, ctx) do |ok_type, ok_obj, ok_ctx|
+          super(ok_type, ok_obj, ok_ctx)
         end
       end
     end

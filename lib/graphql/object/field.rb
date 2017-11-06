@@ -55,7 +55,6 @@ module GraphQL
             Object::BuildType.parse_type(@return_type_expr, null: @return_type_null)
           }
         elsif @connection.nil? && (@field || @function)
-          # TODO: test connection type coming from function
           return_type_name = BuildType.to_type_name(field_defn.type)
           connection = return_type_name.end_with?("Connection")
         else
@@ -70,11 +69,9 @@ module GraphQL
           field_defn.deprecation_reason = @deprecation_reason
         end
 
-
         field_defn.resolve = if @resolve || @function || @field
-          # TODO test legacy functions / fields get the _inner_ object, not the proxy
           prev_resolve = @resolve || field_defn.resolve_proc
-           ->(o, a, c) { prev_resolve.call(o.object, a, c) }
+          UnwrappedResolve.new(inner_resolve: prev_resolve)
         else
           GraphQL::Object::Resolvers::Dynamic.new({
             method_name: method_name,
@@ -110,6 +107,18 @@ module GraphQL
         def argument(*args)
           arg = GraphQL::Object::Argument.new(*args)
           @field.arguments[arg.name] = arg.graphql_definition
+        end
+      end
+
+      class UnwrappedResolve
+        def initialize(inner_resolve:)
+          @inner_resolve = inner_resolve
+        end
+
+        def call(obj, args, ctx)
+          # Might be nil, still want to call the func in that case
+          inner_obj = obj && obj.object
+          @inner_resolve.call(inner_obj, args, ctx)
         end
       end
     end

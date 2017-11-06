@@ -69,7 +69,7 @@ describe GraphQL::Schema do
   describe "#resolve_type" do
     describe "when the return value is nil" do
       it "returns nil" do
-        result = relay_schema.resolve_type("GraphQL type goes here", 123, nil)
+        result = relay_schema.resolve_type(123, nil)
         assert_equal(nil, result)
       end
     end
@@ -77,7 +77,7 @@ describe GraphQL::Schema do
     describe "when the return value is not a BaseType" do
       it "raises an error " do
         err = assert_raises(RuntimeError) {
-          relay_schema.resolve_type("GraphQL type goes here", :test_error, nil)
+          relay_schema.resolve_type(:test_error, nil)
         }
         assert_includes err.message, "not_a_type (Symbol)"
       end
@@ -386,17 +386,18 @@ type Query {
 
   describe "#dup" do
     it "copies internal state" do
-      schema_2 = schema.dup
-      refute schema_2.types.equal?(schema.types)
+      schema_1 = schema.graphql_definition
+      schema_2 = schema_1.dup
+      refute schema_2.types.equal?(schema_1.types)
 
-      refute schema_2.instrumenters.equal?(schema.instrumenters)
-      assert_equal schema_2.instrumenters, schema.instrumenters
+      refute schema_2.instrumenters.equal?(schema_1.instrumenters)
+      assert_equal schema_2.instrumenters, schema_1.instrumenters
 
-      refute schema_2.middleware.equal?(schema.middleware)
-      assert_equal schema_2.middleware, schema.middleware
+      refute schema_2.middleware.equal?(schema_1.middleware)
+      assert_equal schema_2.middleware, schema_1.middleware
 
       schema_2.middleware << ->(*args) { :noop }
-      refute_equal schema_2.middleware, schema.middleware
+      refute_equal schema_2.middleware, schema_1.middleware
     end
   end
 
