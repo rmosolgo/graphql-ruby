@@ -129,6 +129,7 @@ module GraphQL
       attr_writer :value
 
       def_delegators :@provided_values, :[], :[]=, :to_h, :key?, :fetch
+      def_delegators :@query, :trace
 
       # @!method [](key)
       #   Lookup `key` from the hash passed to {Schema#execute} as `context:`
