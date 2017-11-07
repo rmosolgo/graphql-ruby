@@ -28,6 +28,14 @@ describe GraphQL::BaseType do
     assert_equal ["Cheese"], Dummy::CheeseType.metadata[:class_names]
   end
 
+  describe "forwards-compat with new api" do
+    let(:type_defn) { Dummy::CheeseType }
+    it "responds to new methods" do
+      assert_equal "Cheese", type_defn.graphql_name
+      assert_equal type_defn, type_defn.graphql_definition
+    end
+  end
+
   describe "#dup" do
     let(:obj_type) {
       GraphQL::ObjectType.define do
