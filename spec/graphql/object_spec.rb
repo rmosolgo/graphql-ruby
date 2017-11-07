@@ -109,5 +109,11 @@ describe GraphQL::Object do
       res = Jazz::Schema.execute(query_str)
       assert_equal res["data"]["oid1"], res["data"]["oid2"]
     end
+
+    it "skips fields properly" do
+      query_str = "{ find(id: \"MagicalSkipId\") { __typename } }"
+      res = Jazz::Schema.execute(query_str)
+      assert_equal({"data" => nil }, res.to_h)
+    end
   end
 end
