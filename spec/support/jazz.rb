@@ -250,7 +250,11 @@ module Jazz
     end
 
     def find(id:)
-      GloballyIdentifiable.find(id)
+      if id == "MagicalSkipId"
+        @context.skip
+      else
+        GloballyIdentifiable.find(id)
+      end
     end
 
     def instruments(family: nil)
@@ -302,7 +306,7 @@ module Jazz
 
     def self.resolve_type(type, obj, ctx)
       class_name = obj.class.name.split("::").last
-      ctx.schema.types[class_name]
+      ctx.schema.types[class_name] || raise("No type for #{obj.inspect}")
     end
   end
 end
