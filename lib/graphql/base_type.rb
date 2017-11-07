@@ -30,6 +30,12 @@ module GraphQL
 
     # @return [String] the name of this type, must be unique within a Schema
     attr_accessor :name
+    # Future-compatible alias
+    # @see {GraphQL::SchemaMember}
+    alias :graphql_name :name
+    # Future-compatible alias
+    # @see {GraphQL::SchemaMember}
+    alias :graphql_definition :itself
 
     # @return [String, nil] a description for this type
     attr_accessor :description
