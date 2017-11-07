@@ -74,6 +74,8 @@ module GraphQL
           if ctx.schema.lazy?(result)
             # Wrap it later
             result
+          elsif result == ctx.skip
+            result
           else
             proxy_to_depth(result, @list_depth, @inner_return_type, ctx)
           end
