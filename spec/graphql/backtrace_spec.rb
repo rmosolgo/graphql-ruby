@@ -21,6 +21,15 @@ describe GraphQL::Backtrace do
     def inspect; nil; end
   end
 
+  class ErrorInstrumentation
+    def self.before_query(_query)
+    end
+
+    def self.after_query(query)
+      raise "Instrumentation Boom"
+    end
+  end
+
   let(:resolvers) {
     {
       "Query" => {
@@ -113,7 +122,7 @@ describe GraphQL::Backtrace do
       assert_includes err.message, rendered_table
       # The message includes the original error message
       assert_includes err.message, "This is broken: Boom"
-      assert_includes err.message, "spec/graphql/backtrace_spec.rb:33", "It includes the original backtrace"
+      assert_includes err.message, "spec/graphql/backtrace_spec.rb:42", "It includes the original backtrace"
       assert_includes err.message, "more lines"
     end
 
@@ -164,6 +173,17 @@ describe GraphQL::Backtrace do
       ].join("\n")
 
       assert_includes(err.message, rendered_table)
+    end
+
+
+    it "raises original exception instead of a TracedError when error does not occur during resolving" do
+      instrumentation_schema = schema.redefine do
+        instrument(:query, ErrorInstrumentation)
+      end
+
+      assert_raises(RuntimeError) {
+        instrumentation_schema.execute(GraphQL::Introspection::INTROSPECTION_QUERY, context: { backtrace: true })
+      }
     end
   end
 
