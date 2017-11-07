@@ -8,6 +8,27 @@
 
 ### Bug fixes
 
+## 1.7.5 (7 Nov 2017)
+
+### Breaking changes
+
+- Rename `Backtrace::InspectResult#inspect` to `#inspect_result` #1022
+
+### New features
+
+- Improved website search with Algolia #934
+- Support customized generator directory #1047
+- Recursively serialize `GlobalID`-compliant objects in Arrays and hashes #1030
+- Add `Subscriptions#build_id` helper #1046
+- Add `#non_null?` and `#list?` helper methods to type objects #1054
+
+### Bug fixes
+
+- Fix infinite loop in query instrumentation when error is raised #1074
+- Don't try to trace error when it's not raised during execution
+- Improve validation of query variable definitions #1073
+- Fix Scout tracing module load order #1064
+
 ## 1.7.4 (9 Oct 2017)
 
 ### Deprecations
