@@ -31,7 +31,13 @@ module GraphQL
             rescue StandardError => err
               # This is an unhandled error from execution,
               # Re-raise it with a GraphQL trace.
-              raise TracedError.new(err, execution_context.last)
+              potential_context = execution_context.last
+
+              if potential_context.is_a?(GraphQL::Query::Context) || potential_context.is_a?(GraphQL::Query::Context::FieldResolutionContext)
+                raise TracedError.new(err, potential_context)
+              else
+                raise
+              end
             ensure
               execution_context.clear
             end
