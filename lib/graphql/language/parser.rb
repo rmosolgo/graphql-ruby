@@ -72,7 +72,7 @@ def get_description(token)
 end
 
 def on_error(parser_token_id, lexer_token, vstack)
-  if lexer_token == "$"
+  if lexer_token == "$" || lexer_token == nil
     raise GraphQL::ParseError.new("Unexpected end of document", nil, nil, @query_string, filename: @filename)
   else
     parser_token_name = token_to_str(parser_token_id)
