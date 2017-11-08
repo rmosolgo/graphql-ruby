@@ -70,8 +70,8 @@ describe GraphQL::Relay::Mutation do
 
     schema = GraphQL::Schema.define { mutation(root) }
 
-    exception = assert_raises do
-      puts schema.execute('mutation { bad(input: { input: "graphql" }) { return } }')
+    exception = assert_raises(StandardError) do
+      schema.execute('mutation { bad(input: { input: "graphql" }) { return } }')
     end
 
     expected_message = "Expected `my_bad_return_value` to be a Hash."\

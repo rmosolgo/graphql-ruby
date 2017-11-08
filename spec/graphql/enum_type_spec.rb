@@ -130,7 +130,7 @@ describe GraphQL::EnumType do
     it "raises an exception when adding a duplicate enum value name" do
       expected_message = "Enum value names must be unique. Value `COW` already exists on Enum `DairyAnimal`."
 
-      exception = assert_raises do
+      exception = assert_raises(RuntimeError) do
         enum.add_value(GraphQL::EnumType::EnumValue.define(name: "COW"))
       end
 
