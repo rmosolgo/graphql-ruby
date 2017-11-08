@@ -76,7 +76,7 @@ module Dummy
         if sources.include?("YAK")
           raise NoSuchDairyError.new("No cheeses are made from Yak milk!")
         else
-          CHEESES.values.find { |c| sources.include?(c.source) }
+          CHEESES.values.find { |cheese| sources.include?(cheese.source) }
         end
       }
     end
