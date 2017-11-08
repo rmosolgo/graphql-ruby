@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 require "spec_helper"
 
-describe GraphQL::Enum do
+describe GraphQL::Schema::Enum do
   let(:enum) { Jazz::Family }
   describe "type info" do
     it "tells about the definition" do

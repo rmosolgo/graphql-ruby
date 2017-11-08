@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 require "spec_helper"
 
-describe GraphQL::InputObject do
+describe GraphQL::Schema::InputObject do
   let(:input_object) { Jazz::EnsembleInput }
   describe "type info" do
     it "has it" do
