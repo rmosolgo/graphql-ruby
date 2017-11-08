@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 require "spec_helper"
 
-describe GraphQL::Interface do
+describe GraphQL::Schema::Interface do
   let(:interface) { Jazz::GloballyIdentifiable }
 
   describe "type info" do
@@ -18,7 +18,7 @@ describe GraphQL::Interface do
         end
       end
 
-      new_object = Class.new(GraphQL::Object) do
+      new_object = Class.new(GraphQL::Schema::Object) do
         implements new_interface
       end
 
