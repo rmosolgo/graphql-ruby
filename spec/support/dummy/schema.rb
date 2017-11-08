@@ -414,7 +414,7 @@ module Dummy
     }
   end
 
-  class DairyAppMutationType < GraphQL::Object
+  class DairyAppMutationType < GraphQL::Schema::Object
     graphql_name "Mutation"
     description "The root for mutations in this schema"
     # Test the `field:` compatibility option
