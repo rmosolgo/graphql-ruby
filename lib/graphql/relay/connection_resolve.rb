@@ -41,7 +41,7 @@ module GraphQL
           ctx.add_error(nodes)
           nil
         else
-          if parent.is_a?(GraphQL::Object)
+          if parent.is_a?(GraphQL::Schema::Object)
             parent = parent.object
           end
           connection_class = GraphQL::Relay::BaseConnection.connection_for_nodes(nodes)
