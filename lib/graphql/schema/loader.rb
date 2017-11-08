@@ -97,7 +97,7 @@ module GraphQL
               }]
             )
           when "FIELD"
-            Field.define(
+            GraphQL::Field.define(
               name: type["name"],
               type: type_resolver.call(type["type"]),
               description: type["description"],
@@ -138,7 +138,7 @@ module GraphQL
               end
             end
 
-            Argument.define(
+            GraphQL::Argument.define(
               name: type["name"],
               type: type_resolver.call(type["type"]),
               description: type["description"],

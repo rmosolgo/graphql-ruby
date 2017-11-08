@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 module GraphQL
-  class Object < GraphQL::SchemaMember
+  class Schema
     class Argument
-      include GraphQL::SchemaMember::CachedGraphQLDefinition
+      include GraphQL::Schema::Member::CachedGraphQLDefinition
 
       NO_DEFAULT = :__no_default__
 
@@ -20,10 +20,10 @@ module GraphQL
         argument = GraphQL::Argument.new
         argument.name = @name
         argument.type = -> {
-          Object::BuildType.parse_type(@type_expr, null: @null)
+          Member::BuildType.parse_type(@type_expr, null: @null)
         }
         argument.description = @description
-        if @default_value != NO_DEFAULT
+        if NO_DEFAULT != @default_value
           argument.default_value = @default_value
         end
         argument
