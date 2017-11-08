@@ -16,9 +16,16 @@ require "graphql/schema/validation"
 require "graphql/schema/warden"
 require "graphql/schema/build_from_definition"
 
-# Annoying, this is required at load-time
-require "graphql/schema_member"
-require "graphql/object/instrumentation"
+
+require "graphql/schema/member"
+require "graphql/schema/argument"
+require "graphql/schema/enum"
+require "graphql/schema/field"
+require "graphql/schema/input_object"
+require "graphql/schema/interface"
+require "graphql/schema/object"
+require "graphql/schema/scalar"
+require "graphql/schema/union"
 
 module GraphQL
   # A GraphQL schema which may be queried with {GraphQL::Query}.
@@ -409,7 +416,7 @@ module GraphQL
         type = nil
       end
 
-      if object.is_a?(GraphQL::Object)
+      if object.is_a?(GraphQL::Schema::Object)
         object = object.object
       end
 
@@ -621,7 +628,7 @@ module GraphQL
             schema_defn.instrumenters[step] << inst
           end
         end
-        schema_defn.instrumenters[:query] << GraphQL::Object::Instrumentation
+        schema_defn.instrumenters[:query] << GraphQL::Schema::Member::Instrumentation
         lazy_classes.each do |lazy_class, value_method|
           schema_defn.lazy_methods.set(lazy_class, value_method)
         end
@@ -758,7 +765,7 @@ module GraphQL
       GraphQL::Relay::ConnectionInstrumentation,
       GraphQL::Relay::EdgesInstrumentation,
       GraphQL::Relay::Mutation::Instrumentation,
-      GraphQL::Object::Instrumentation,
+      GraphQL::Schema::Member::Instrumentation,
     ]
 
     def rebuild_artifacts

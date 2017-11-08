@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 require "spec_helper"
 
-describe GraphQL::Object do
+describe GraphQL::Schema::Object do
   describe "class attributes" do
     let(:object_class) { Jazz::Ensemble }
     it "tells type data" do
