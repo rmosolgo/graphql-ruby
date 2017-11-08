@@ -44,7 +44,7 @@ module Jazz
   end
 
   # A custom field class that supports the `upcase:` option
-  class BaseField < GraphQL::Object::Field
+  class BaseField < GraphQL::Schema::Object::Field
     def initialize(*args, options, &block)
       @upcase = options.delete(:upcase)
       super(*args, options, &block)
@@ -62,7 +62,7 @@ module Jazz
     end
   end
 
-  class BaseObject < GraphQL::Object
+  class BaseObject < GraphQL::Schema::Object
     # Use this overridden field class
     Field = BaseField
 
@@ -85,7 +85,7 @@ module Jazz
     end
   end
 
-  class BaseInterface < GraphQL::Interface
+  class BaseInterface < GraphQL::Schema::Interface
     # Use this overridden field class
     Field = BaseField
   end
@@ -138,7 +138,7 @@ module Jazz
     field :musicians, "[Jazz::Musician]", null: false
   end
 
-  class Family < GraphQL::Enum
+  class Family < GraphQL::Schema::Enum
     description "Groups of musical instruments"
     # support string and symbol
     value "STRING", "Makes a sound by vibrating strings", value: :str
@@ -166,7 +166,7 @@ module Jazz
     end
   end
 
-  class Key < GraphQL::Scalar
+  class Key < GraphQL::Schema::Scalar
     description "A musical key"
     def self.coerce_input(val, ctx)
       Models::Key.from_notation(val)
@@ -190,7 +190,7 @@ module Jazz
     argument :intValue, !types.Int
   end
 
-  class InspectableInput < GraphQL::InputObject
+  class InspectableInput < GraphQL::Schema::InputObject
     argument :stringValue, String, null: false
     argument :nestedInput, InspectableInput, null: true
     argument :legacyInput, LegacyInputType, null: true
@@ -214,7 +214,7 @@ module Jazz
     field :isFlat, "Boolean", null: false, method: :flat
   end
 
-  class PerformingAct < GraphQL::Union
+  class PerformingAct < GraphQL::Schema::Union
     possible_types Musician, Ensemble
 
     def resolve_type
@@ -283,7 +283,7 @@ module Jazz
     end
   end
 
-  class EnsembleInput < GraphQL::InputObject
+  class EnsembleInput < GraphQL::Schema::InputObject
     argument :name, String, null: false
   end
 

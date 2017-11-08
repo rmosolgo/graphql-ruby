@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 require "spec_helper"
-describe GraphQL::Scalar do
+
+describe GraphQL::Schema::Scalar do
   describe "in queries" do
     it "becomes output" do
       query_str = <<-GRAPHQL

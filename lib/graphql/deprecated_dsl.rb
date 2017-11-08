@@ -6,20 +6,22 @@ module GraphQL
   #
   #      using GraphQL::DeprecatedDSL
   #
+  #   (This is a "refinement", there are also other ways to scope it.)
+  #
   # 2. Global application, add before schema definition:
   #
   #      GraphQL::DeprecatedDSL.activate
   #
   module DeprecatedDSL
     def self.activate!
-      GraphQL::SchemaMember.extend(Methods)
+      GraphQL::Schema::Member.extend(Methods)
     end
     module Methods
       def !
         to_non_null_type
       end
     end
-    refine GraphQL::SchemaMember.singleton_class do
+    refine GraphQL::Schema::Member.singleton_class do
       include Methods
     end
   end

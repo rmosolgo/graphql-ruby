@@ -1,10 +1,11 @@
 # frozen_string_literal: true
 # test_via: ../object.rb
-
+require "graphql/schema/field/dynamic_resolve"
+require "graphql/schema/field/unwrapped_resolve"
 module GraphQL
-  class Object < GraphQL::SchemaMember
+  class Schema
     class Field
-      include GraphQL::SchemaMember::CachedGraphQLDefinition
+      include GraphQL::Schema::Member::CachedGraphQLDefinition
 
       # @return [String]
       attr_reader :name
@@ -37,7 +38,7 @@ module GraphQL
 
       # @return [GraphQL::Field]
       def to_graphql
-        method_name = @method || BuildType.underscore(@name)
+        method_name = @method || Member::BuildType.underscore(@name)
 
         field_defn = if @field
           @field.dup
@@ -49,13 +50,13 @@ module GraphQL
         field_defn.name = @name
 
         if @return_type_expr
-          return_type_name = BuildType.to_type_name(@return_type_expr)
+          return_type_name = Member::BuildType.to_type_name(@return_type_expr)
           connection = @connection.nil? ? return_type_name.end_with?("Connection") : @connection
           field_defn.type = -> {
-            Object::BuildType.parse_type(@return_type_expr, null: @return_type_null)
+            Member::BuildType.parse_type(@return_type_expr, null: @return_type_null)
           }
         elsif @connection.nil? && (@field || @function)
-          return_type_name = BuildType.to_type_name(field_defn.type)
+          return_type_name = Member::BuildType.to_type_name(field_defn.type)
           connection = return_type_name.end_with?("Connection")
         else
           connection = @connection
@@ -73,10 +74,7 @@ module GraphQL
           prev_resolve = @resolve || field_defn.resolve_proc
           UnwrappedResolve.new(inner_resolve: prev_resolve)
         else
-          GraphQL::Object::Resolvers::Dynamic.new({
-            method_name: method_name,
-            connection: connection,
-          })
+          DynamicResolve.new(method_name: method_name, connection: connection)
         end
 
         field_defn.connection = connection
@@ -105,20 +103,8 @@ module GraphQL
         end
 
         def argument(*args)
-          arg = GraphQL::Object::Argument.new(*args)
+          arg = GraphQL::Schema::Argument.new(*args)
           @field.arguments[arg.name] = arg.graphql_definition
-        end
-      end
-
-      class UnwrappedResolve
-        def initialize(inner_resolve:)
-          @inner_resolve = inner_resolve
-        end
-
-        def call(obj, args, ctx)
-          # Might be nil, still want to call the func in that case
-          inner_obj = obj && obj.object
-          @inner_resolve.call(inner_obj, args, ctx)
         end
       end
     end

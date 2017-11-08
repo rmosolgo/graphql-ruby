@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 require "spec_helper"
 
-describe GraphQL::Union do
+describe GraphQL::Schema::Union do
   let(:union) { Jazz::PerformingAct }
   describe "type info" do
     it "has some" do

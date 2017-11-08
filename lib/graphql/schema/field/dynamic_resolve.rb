@@ -1,10 +1,9 @@
 # frozen_string_literal: true
-# test_via: ../object.rb
 
 module GraphQL
-  class Object < GraphQL::SchemaMember
-    module Resolvers
-      class Dynamic
+  class Schema
+    class Field
+      class DynamicResolve
         def initialize(method_name:, connection:)
           @method_name = method_name
           @connection = connection
@@ -38,7 +37,7 @@ ERR
             ruby_kwargs = {}
 
             graphql_args.keys.each do |key|
-              ruby_kwargs[BuildType.underscore(key).to_sym] = graphql_args[key]
+              ruby_kwargs[Schema::Member::BuildType.underscore(key).to_sym] = graphql_args[key]
             end
 
             if @connection

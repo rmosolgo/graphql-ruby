@@ -3,7 +3,7 @@ module StarWars
   # Adapted from graphql-relay-js
   # https://github.com/graphql/graphql-relay-js/blob/master/src/__tests__/starWarsSchema.js
 
-  class Ship < GraphQL::Object
+  class Ship < GraphQL::Schema::Object
     implements GraphQL::Relay::Node.interface
     global_id_field :id
     field :name, String, null: true
@@ -11,7 +11,7 @@ module StarWars
     field :ships, Ship.connection_type, null: false
   end
 
-  class BaseType < GraphQL::Object
+  class BaseType < GraphQL::Schema::Object
     graphql_name "Base"
     implements GraphQL::Relay::Node.interface
     global_id_field :id
@@ -87,7 +87,7 @@ module StarWars
     end
   end
 
-  class Faction < GraphQL::Object
+  class Faction < GraphQL::Schema::Object
     implements GraphQL::Relay::Node.interface
 
     field :id, "ID", null: false, resolve: GraphQL::Relay::GlobalIdResolve.new(type: Faction)
@@ -298,7 +298,7 @@ module StarWars
 
   GraphQL::Relay::BaseConnection.register_connection_implementation(LazyNodesWrapper, LazyNodesRelationConnection)
 
-  class QueryType < GraphQL::Object
+  class QueryType < GraphQL::Schema::Object
     graphql_name "Query"
 
     field :rebels, Faction, null: true, resolve: ->(obj, args, ctx) { StarWars::DATA["Faction"]["1"]}
@@ -339,7 +339,7 @@ module StarWars
     end
   end
 
-  class MutationType < GraphQL::Object
+  class MutationType < GraphQL::Schema::Object
     graphql_name "Mutation"
     # The mutation object exposes a field:
     field :introduceShip, field: IntroduceShipMutation.field
