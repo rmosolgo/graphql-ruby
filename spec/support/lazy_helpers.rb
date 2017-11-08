@@ -46,7 +46,7 @@ module LazyHelpers
     end
   end
 
-  class LazySum < GraphQL::Object
+  class LazySum < GraphQL::Schema::Object
     field :value, Integer, null: true, resolve: ->(o, a, c) { o == 13 ? nil : o }
     field :nestedSum, LazySum, null: false do
       argument :value, Integer, null: false
