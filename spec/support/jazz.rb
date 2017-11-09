@@ -299,11 +299,17 @@ module Jazz
     end
   end
 
+  class MetadataPlugin
+    def self.use(schema_defn, value:)
+      schema_defn.target.metadata[:plugin_key] = value
+    end
+  end
+
   # New-style Schema definition
   class Schema < GraphQL::Schema
     query(Query)
     mutation(Mutation)
-
+    use MetadataPlugin, value: "xyz"
     def self.resolve_type(type, obj, ctx)
       class_name = obj.class.name.split("::").last
       ctx.schema.types[class_name] || raise("No type for #{obj.inspect}")
