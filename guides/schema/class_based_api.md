@@ -1,0 +1,353 @@
+---
+layout: guide
+search: true
+section: Schema
+title: Class-based API
+desc: Define your GraphQL schema with Ruby classes (1.8.x alpha releases)
+experimental: true
+index: 10
+---
+
+In GraphQL `1.8`+, you can use Ruby classes to build your schema. You can __mix__ class-style and `.define`-style type definitions in a schema.
+
+You can get an overview of this new feature:
+
+- [Rationale & Goals](#rationale--goals)
+- [Compatibility & Migration Overview](#compatibility--migration-overview)
+- [Roadmap](#roadmap)
+
+And learn about the APIs:
+
+- [Schema class](#schema-class)
+- [Common type configurations](#common-type-configurations) (shared by all the following types)
+- [Object classes](#object-classes)
+- [Interface classes](#interface-classes)
+- [Union classes](#union-classes)
+- [Enum classes](#enum-classes)
+- [Input Object classes](#input-object-classes)
+- [Scalar classes](#scalar-classes)
+- [Customizing definitions](#customizing-definitions)
+
+
+## Rationale & Goals
+
+This new API aims to improve the "getting started" experience and the schema customization experience by replacing GraphQL-Ruby-specific DSLs with familiar Ruby semantics (classes and methods).
+
+Additionally, this new API must be cross-compatible with the current schema definition API so that it can be adopted bit-by-bit.
+
+## Compatibility & Migration overview
+
+Parts of your schema can be converted one-by-one, so you can convert definitions gradually.
+
+### Classes
+
+In general, each `.define { ... }` block will be converted to a class.
+
+- Instead of a `GraphQL::{X}Type`, classes inherit from `GraphQL::Schema:{X}`. For example, instead of `GraphQL::ObjectType.define { ... }`, a definition is made by extending `GraphQL::Schema::Object`
+- Any class hierarchy is supported; It's recommended to create a base class for your application, then extend the base class for each of your types (like `ApplicationController` in Rails, see [Customizing Definitions](#customizing-defintions)).
+
+See sections below for specific information about each schema definition class.
+
+### Type Instances
+
+The previous `GraphQL::{X}Type` objects are still used under the hood. Each of the new `GraphQL::Schema::{X}` classes implements a few methods:
+
+- `.to_graphql`: creates a new instance of `GraphQL::{X}Type`
+- `.graphql_definition`: returns a cached instance of `GraphQL::{X}Type`
+
+If you have custom code which breaks on new-style definitions, try calling `.graphql_definition` to get the underlying type object.
+
+As described below, `.to_graphql` can be overridden to customize the type system.
+
+## Roadmap
+
+Here is a working plan for rolling out this feature:
+
+- ongoing:
+  - ☐ Receive feedback from GraphQL schema owners about the new API (usability & goals)
+- graphql 1.8:
+  - ☑ Build a schema definition API based on classes instead of singletons
+  - ☑ Migrate a few components of GitHub's GraphQL schema to this new API
+  - ☐ Build advanced class-based features:
+    - ☐ Custom `Context` classes
+    - ☐ Custom introspection types
+    - ☐ Custom directives
+    - ☐ Custom `Schema#execute` method
+  - ☐ Migrate all of GitHub's GraphQL schema to this new API
+- graphql 1.9:
+  - ☐ Update all GraphQL-Ruby docs to reflect this new API
+- graphql 1.10:
+  - ☐ Begin sunsetting `.define`: isolate it in its own module
+  - ☐ Remove `.define`
+
+## Schema class
+
+Your GraphQL schema is a class that extends {{ "GraphQL::Schema" | api_doc }}. Its configuration options are similar to `.define`-based options, but if you find something that doesn't work, please {% open_an_issue "Class-based schema issue","(Please share some example code and the error you found)" %}.
+
+```ruby
+class MyAppSchema < GraphQL::Schema
+  max_complexity 400
+  query Types::Query
+  use GraphQL::Batch
+
+  # Define hooks as class methods:
+  def self.resolve_type(type, obj, ctx)
+    # ...
+  end
+
+  def self.object_from_id(node_id, ctx)
+    # ...
+  end
+
+  def self.id_from_object(object, type, ctx)
+    # ...
+  end
+end
+```
+
+## Common Type Configurations
+
+Some configurations are used for _all_ types described below:
+
+- `graphql_name` overrides the type name. (The default value is the Ruby constant name, without any namespaces)
+- `description` provides a description for GraphQL introspection.
+
+For example:
+
+```ruby
+class Types::TodoList < GraphQL::Schema::Object # or Scalar, Enum, Union, whatever
+  graphql_name "List" # Overrides the default of "TodoList"
+  description "Things to do (may have already been done)"
+end
+```
+
+(Implemented in {{ "GraphQL::Schema::Member" | api_doc }}).
+
+## Object classes
+
+Classes extending {{ "GraphQL::Schema::Object" | api_doc }} describe [Object types](http://graphql.org/learn/schema/#object-types-and-fields) and customize their behavior.
+
+Object fields can be created with the `field(...)` class method, which accepts the similar arguments as the previous `field(...)` method.
+
+```ruby
+# first, somewhere, a base class:
+class Types::BaseObject < GraphQL::Schema::Object
+end
+
+# then...
+class Types::TodoList < BaseObject
+  field :name, String, "The unique name of this list", null: false
+  # Related Object:
+  field :owner, Types::User, "The creator of this list", null: false
+  # List field:
+  field
+  # Connection:
+  field :items, Types::TodoItem.connection_type, "Tasks on this list", null: false do
+    argument :status, TodoStatus, "Restrict items to this status", null: true
+  end
+end
+```
+
+### New return type & argument type specification
+
+The second argument to `field(...)` is the return type. This can be:
+
+- A GraphQL type object built with `.define { ... }`
+- A GraphQL type class which you defined
+- A Ruby built-in such as `Integer`, `Float` or `String`
+- A string which corresponds to a GraphQL built-in, such as `"ID"`, `"Boolean"`, or `"Int"`
+- An _array_ of any of the above, which denotes a list type. Inner list types are always made non-null.
+
+Nullability is expressed with the required `null:` keyword:
+
+- `null: true` means that the field _may_ return null
+- `null: false` means the field is non-nullable; it may not return null. If the implementation returns `nil`, GraphQL-Ruby will return an error to the client.
+
+Here are some examples:
+
+```ruby
+field :name, String, null: true # String
+field :id, "ID", null: false # ID!
+field :scores, [Integer], null: false, # [Int]!
+field :teammates, [Types::User], null: false, # [User]!
+```
+
+### Connection types
+
+There is no `connection(...)` method. Instead, connection fields are inferred from the type name.
+
+If the type name ends in `Connection`, the field is treated as a connection field.
+
+This default may be overridden by passing a `connection: true` or `connection: false` keyword.
+
+### Resolve function compatibility
+
+If you define a type with a class, you can use existing GraphQL-Ruby resolve functions with that class, for example:
+
+```ruby
+# Using a Proc literal or #call-able
+field :something, ... resolve: ->(obj, args, ctx) { ... }
+# Using a predefined field
+field :doSomething, field: Mutations::DoSomething.field
+# Using a GraphQL::Function
+field :something, function: Functions::Something.new
+```
+
+When using these resolution implementations, they will be called with the same `(obj, args, ctx)` parameters as before.
+
+### Resolution with methods
+
+If you implement a field by defining a method, you should expect some automatic transformations:
+
+- GraphQL arguments will be converted to Ruby keyword arguments.
+- If the field name is `camelCased`, the method name should be `underscore_cased`.
+- If any argument names are `camelCased`, they will be passed to the method as `underscore_cased` Ruby keyword args.
+
+Inside the method, you can access some instance variables:
+
+- `@context` is the query context (formerly `ctx` to resolve functions)
+- `@object` is the underlying application object (formerly `obj` to resolve functions)
+
+## Interface classes
+
+<!-- TODO -->
+
+## Union classes
+
+<!-- TODO -->
+
+## Enum classes
+
+<!-- TODO -->
+
+## Input object classes
+
+<!-- TODO -->
+
+## Scalar classes
+
+<!-- TODO -->
+
+## Customizing definitions
+
+The new API provides alternatives to `accepts_definitions`.
+
+### Customizing type definitions
+
+In your custom classes, you can override `.to_graphql` to customize the type that will be used at runtime. For example, to assign metadata values to an ObjectType:
+
+```ruby
+class BaseObject < GraphQL::Schema::Object
+  # Call this method in an Object class to set the permission level:
+  def self.required_permission(permission_level)
+    @required_permission = permission_level
+  end
+
+  # This method is overridden to customize object types:
+  def self.to_graphql
+    type_defn = super # returns a GraphQL::ObjectType
+    # Get a configured value and assign it to metadata
+    type_defn.metadata[:required_permission] = @required_permission
+    type_defn
+  end
+end
+
+# Then, in concrete classes
+class Dossier < BaseObject
+  # The Dossier object type will have `.metadata[:required_permission] # => :admin`
+  permission_level :admin
+end
+```
+
+Now, any runtime code which uses `.metadata[:required_permission]` will get the right value.
+
+### Customizing fields
+
+Fields are generated in a different way. Instead of using classes, they are generated with instances of `GraphQL::Schema::Field` (or a subclass). In short, the definition process works like this:
+
+```ruby
+# In an object class:
+field :name, String, null: false
+# Leads to:
+field_config = GraphQL::Schema::Field.new(:name, String, null: false)
+# Then, later:
+field_config.to_graphql # => returns a GraphQL::Field instance
+```
+
+So, you can customize this process by:
+
+- creating a custom class which extends `GraphQL::Schema::Field`
+- overriding `#initialize` and `#to_graphql` on that class (instance methods)
+- assigning that class to the `Field` constant on Objects and Interfaces which should use the customized field.
+
+For example, you can create a custom class which accepts a new parameter to `initialize`:
+
+```ruby
+class AuthorizedField < GraphQL::Schema::Field
+  # Override #initialize to take a new argument:
+  def initialize(*args, required_permission:, **kwargs, &block)
+    @required_permission = required_permission
+    # Pass on the default args:
+    super(*args, **kwargs, &block)
+  end
+
+  def to_graphql
+    field_defn = super # Returns a GraphQL::Field
+    field_defn.metadata[:required_permission] = @required_permission
+    field_defn
+  end
+end
+```
+
+Then, assign that class to the `Field` constant in your `BaseObject` class:
+
+```ruby
+class BaseObject < GraphQL::Schema::Object
+  # Use this class for defining fields
+  Field = AuthorizedField
+end
+
+# And/Or
+class BaseInterface < GraphQL::Schema::Interface
+  Field = AuthorizedField
+end
+```
+
+Now, `AuthorizedField.new(*args, &block).to_graphql` will be used to create `GraphQL::Field`s.
+
+### Customization compatibility
+
+Inevitably, this will result in some duplication while you migrate from one definition API to the other. Here are a couple of ways to re-use _old_ customizations with the new framework:
+
+__Invoke `.call` directly__. If you defined a module with a `.call` method, you can invoke that method during `.to_graphql`. For example:
+
+```ruby
+class BaseObject < GraphQL::Schema::Object
+  def self.to_graphql
+    type_defn = super
+    # Re-use the accepts_definition callback manually:
+    DefinePermission.call(type_defn, required_permission: @required_permission)
+    type_defn
+  end
+end
+```
+
+__Use `.redefine`__. You can re-open a `.define` block at any time with `.redefine`. It returns a new, updated instance based on the old one. For example:
+
+```ruby
+class BaseObject < GraphQL::Schema::Object
+  def self.to_graphql
+    type_defn = super
+    # Read the value from the instance variable, since ivars don't work in `.define {...}` blocks
+    configured_permission = @required_permission
+
+    updated_type_defn = type_defn.redefine do
+      # Use the accepts_definition method:
+      required_permission(configured_permission)
+    end
+
+    # return the updated definition
+    updated_type_defn
+  end
+end
+```
