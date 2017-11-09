@@ -97,7 +97,7 @@ module Jazz
     field :id, "ID", "A unique identifier for this object", null: false
     field :upcasedId, "ID", null: false, upcase: true, method: :id
 
-    implemented do
+    module Implementation
       def id
         GloballyIdentifiable.to_id(@object)
       end
