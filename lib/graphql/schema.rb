@@ -628,6 +628,10 @@ module GraphQL
         schema_defn.max_depth = max_depth
         schema_defn.default_max_page_size = default_max_page_size
         schema_defn.orphan_types = orphan_types
+        if !directives
+          directives(DIRECTIVES)
+        end
+        schema_defn.directives = directives
         schema_defn.resolve_type = method(:resolve_type)
         schema_defn.object_from_id = method(:object_from_id)
         schema_defn.id_from_object = method(:id_from_object)
@@ -737,6 +741,13 @@ module GraphQL
           instrument_step
         end
         instrumenters[step] << instrumenter
+      end
+
+      def directives(new_directives = nil)
+        if new_directives
+          @directives = new_directives.reduce({}) { |m, d| m[d.name] = d; m }
+        end
+        @directives
       end
 
       private
