@@ -13,7 +13,7 @@ module GraphQL
   #      GraphQL::DeprecatedDSL.activate
   #
   module DeprecatedDSL
-    def self.activate!
+    def self.activate
       GraphQL::Schema::Member.extend(Methods)
     end
     module Methods
