@@ -85,7 +85,7 @@ module GraphQL
 
               # Construct arguments class here, which is later used to generate GraphQL::Query::Arguments
               # to be passed to a resolver proc
-              if !type_defn.arguments_class
+              if type_defn.arguments_class.nil?
                 GraphQL::Query::Arguments.construct_arguments_class(type_defn)
               end
             end
