@@ -10,21 +10,34 @@ describe GraphQL::Schema::Interface do
       assert_equal 2, interface.fields.size
     end
 
-    it "inherits implemented hook" do
-      block_was_called = false
-      new_interface = Class.new(interface) do
-        implemented do
-          block_was_called = true
+    class NewInterface1 < Jazz::GloballyIdentifiable
+    end
+
+    class NewInterface2 < Jazz::GloballyIdentifiable
+      module Implementation
+        def new_method
         end
       end
+    end
 
-      new_object = Class.new(GraphQL::Schema::Object) do
-        implements new_interface
+    it "can override Implementation" do
+
+      new_object_1 = Class.new(GraphQL::Schema::Object) do
+        implements NewInterface1
       end
 
-      assert_equal 2, new_object.fields.size
-      assert new_object.method_defined?(:id)
-      assert block_was_called
+      assert_equal 2, new_object_1.fields.size
+      assert new_object_1.method_defined?(:id)
+
+      new_object_2 = Class.new(GraphQL::Schema::Object) do
+        implements NewInterface2
+      end
+
+      assert_equal 2, new_object_2.fields.size
+      # It got the new method
+      assert new_object_2.method_defined?(:new_method)
+      # But not the old method
+      refute new_object_2.method_defined?(:id)
     end
   end
 
