@@ -6,16 +6,13 @@ module GraphQL
       class << self
         include GraphQL::Schema::Member::HasFields
 
-        # Inherited methods go here
-        def implemented(&block)
-          @implemented_hook = block
-        end
-
+        # When this interface is added to a `GraphQL::Schema::Object`,
+        # it calls this method. We add methods to the object by convention,
+        # a nested module named `Implementation`
         def apply_implemented(object_class)
-          if superclass < GraphQL::Schema::Interface
-            superclass.apply_implemented(object_class)
+          if defined?(self::Implementation)
+            object_class.include(self::Implementation)
           end
-          @implemented_hook && object_class.class_exec(&@implemented_hook)
         end
 
         def to_graphql
