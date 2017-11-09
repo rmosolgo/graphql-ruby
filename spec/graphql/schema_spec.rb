@@ -451,5 +451,9 @@ type Query {
       assert_equal [], Jazz::Schema.tracers
       assert Jazz::Schema.respond_to?(:tracers)
     end
+
+    it "works with plugins" do
+      assert_equal "xyz", Jazz::Schema.metadata[:plugin_key]
+    end
   end
 end
