@@ -612,6 +612,14 @@ module GraphQL
         @graphql_definition ||= to_graphql
       end
 
+      def use(plugin, options = {})
+        plugins << [plugin, options]
+      end
+
+      def plugins
+        @plugins ||= []
+      end
+
       def to_graphql
         schema_defn = self.new
         schema_defn.query = query
@@ -631,6 +639,19 @@ module GraphQL
         schema_defn.instrumenters[:query] << GraphQL::Schema::Member::Instrumentation
         lazy_classes.each do |lazy_class, value_method|
           schema_defn.lazy_methods.set(lazy_class, value_method)
+        end
+        if plugins.any?
+          schema_plugins = plugins
+          # TODO don't depend on .define
+          schema_defn = schema_defn.redefine do
+            schema_plugins.each do |plugin, options|
+              if options.any?
+                use(plugin, **options)
+              else
+                use(plugin)
+              end
+            end
+          end
         end
         schema_defn.send(:rebuild_artifacts)
 
