@@ -2,9 +2,10 @@
 module GraphQL
   class Schema
     class Interface < GraphQL::Schema::Member
-      Field = GraphQL::Schema::Field
+      extend GraphQL::Schema::Member::HasFields
+      field_class GraphQL::Schema::Field
+
       class << self
-        include GraphQL::Schema::Member::HasFields
 
         # When this interface is added to a `GraphQL::Schema::Object`,
         # it calls this method. We add methods to the object by convention,

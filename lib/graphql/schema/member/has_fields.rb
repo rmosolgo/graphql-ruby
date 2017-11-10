@@ -35,16 +35,13 @@ module GraphQL
           nil
         end
 
-        # Override this method to customize fields in your schema.
-        #
-        # To customize fields on {GraphQL::Schema::Object} and {GraphQL::Schema::Interface},
-        # - extend each of those classes, making a custom base class for your app
-        # - extend {GraphQL::Schema::Field}, making a custom base class for your app
-        # - override {.field_class} on your Object and Interface classes to return your new field class
-        #
         # @return [Class] The class to initialize when adding fields to this kind of schema member
-        def field_class
-          self::Field
+        def field_class(new_field_class = nil)
+          if new_field_class
+            @field_class = new_field_class
+          else
+            @field_class || superclass.field_class
+          end
         end
 
         private
