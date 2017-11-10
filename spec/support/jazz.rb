@@ -44,7 +44,7 @@ module Jazz
   end
 
   # A custom field class that supports the `upcase:` option
-  class BaseField < GraphQL::Schema::Object::Field
+  class BaseField < GraphQL::Schema::Field
     def initialize(*args, options, &block)
       @upcase = options.delete(:upcase)
       super(*args, options, &block)
@@ -64,7 +64,7 @@ module Jazz
 
   class BaseObject < GraphQL::Schema::Object
     # Use this overridden field class
-    Field = BaseField
+    field_class BaseField
 
     class << self
       def config(key, value)
@@ -87,7 +87,7 @@ module Jazz
 
   class BaseInterface < GraphQL::Schema::Interface
     # Use this overridden field class
-    Field = BaseField
+    field_class BaseField
   end
 
 
