@@ -266,8 +266,10 @@ Now, any runtime code which uses `.metadata[:required_permission]` will get the 
 Fields are generated in a different way. Instead of using classes, they are generated with instances of `GraphQL::Schema::Field` (or a subclass). In short, the definition process works like this:
 
 ```ruby
+# This is what happens under the hood, roughly:
 # In an object class:
 field :name, String, null: false
+# ...
 # Leads to:
 field_config = GraphQL::Schema::Field.new(:name, String, null: false)
 # Then, later:
@@ -278,7 +280,7 @@ So, you can customize this process by:
 
 - creating a custom class which extends `GraphQL::Schema::Field`
 - overriding `#initialize` and `#to_graphql` on that class (instance methods)
-- assigning that class to the `Field` constant on Objects and Interfaces which should use the customized field.
+- registering that class as the `field_class` on Objects and Interfaces which should use the customized field.
 
 For example, you can create a custom class which accepts a new parameter to `initialize`:
 
@@ -299,17 +301,17 @@ class AuthorizedField < GraphQL::Schema::Field
 end
 ```
 
-Then, assign that class to the `Field` constant in your `BaseObject` class:
+Then, pass the field class as `field_class(...)` wherever it should be used:
 
 ```ruby
 class BaseObject < GraphQL::Schema::Object
   # Use this class for defining fields
-  Field = AuthorizedField
+  field_class AuthorizedField
 end
 
 # And/Or
 class BaseInterface < GraphQL::Schema::Interface
-  Field = AuthorizedField
+  field_class AuthorizedField
 end
 ```
 
