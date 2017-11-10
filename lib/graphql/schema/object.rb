@@ -9,11 +9,10 @@ module GraphQL
         @object = object
         @context = context
       end
+      extend GraphQL::Schema::Member::HasFields
+      field_class GraphQL::Schema::Field
 
-      Field = GraphQL::Schema::Field
       class << self
-        include GraphQL::Schema::Member::HasFields
-
         def implements(*new_interfaces)
           new_interfaces.each do |int|
             if int.is_a?(Class) && int < GraphQL::Schema::Interface
