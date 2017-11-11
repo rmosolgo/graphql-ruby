@@ -62,10 +62,11 @@ module GraphQL
     class ActionCableSubscriptions < GraphQL::Subscriptions
       SUBSCRIPTION_PREFIX = "graphql-subscription:"
       EVENT_PREFIX = "graphql-event:"
-      def initialize(**rest)
+      def initialize(serializer: Serialize, **rest)
         # A per-process map of subscriptions to deliver.
         # This is provided by Rails, so let's use it
         @subscriptions = Concurrent::Map.new
+        @serializer = serializer
         super
       end
 
@@ -74,7 +75,7 @@ module GraphQL
       # TODO: this method name is a smell
       def execute_all(event, object)
         stream = EVENT_PREFIX + event.topic
-        message = Serialize.dump(object)
+        message = @serializer.dump(object)
         ActionCable.server.broadcast(stream, message)
       end
 
@@ -97,7 +98,7 @@ module GraphQL
         @subscriptions[subscription_id] = query
         events.each do |event|
           channel.stream_from(EVENT_PREFIX + event.topic, coder: ActiveSupport::JSON) do |message|
-            execute(subscription_id, event, Serialize.load(message))
+            execute(subscription_id, event, @serializer.load(message))
             nil
           end
         end
