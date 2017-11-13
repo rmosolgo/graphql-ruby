@@ -140,7 +140,7 @@ class Types::TodoList < BaseObject
   # Related Object:
   field :owner, Types::User, "The creator of this list", null: false
   # List field:
-  field
+  field :viewers, [Types::User], "Users who can see this list", null: false
   # Connection:
   field :items, Types::TodoItem.connection_type, "Tasks on this list", null: false do
     argument :status, TodoStatus, "Restrict items to this status", null: true
@@ -168,8 +168,8 @@ Here are some examples:
 ```ruby
 field :name, String, null: true # String
 field :id, "ID", null: false # ID!
-field :scores, [Integer], null: false, # [Int]!
-field :teammates, [Types::User], null: false, # [User]!
+field :scores, [Integer], null: false, # [Int!]!
+field :teammates, [Types::User], null: false, # [User!]!
 ```
 
 ### Connection types
