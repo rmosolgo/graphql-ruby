@@ -230,10 +230,45 @@ class RetailItemType < BaseInterface
   def self.resolve_type(object, context)
     context.schema.types[object.class.name]
   end
+
+  module Implementation
+    # optional, see below
+  end
 end
 ```
 
 Interface classes are never instantiated. At runtime, only their `.resolve_type` methods are called (if they're defined).
+
+### Implementation modules
+
+An interface may contain a module named `Implementation`. If it does, that module will be included into any `Object` class which implements the interface. For example, this `Implementation` module contains the `#price` method:
+
+```ruby
+class RetailItemType < BaseInterface
+  field :price, PriceType, null: false
+
+  module Implementation
+    def price
+      Price.new(price_in_cents)
+    end
+  end
+end
+```
+
+When the interface is implemented by an `Object`:
+
+```ruby
+class CarType < BaseObject
+  implements RetailItemType
+end
+```
+
+Then the object gets a few things from the interface:
+
+- Any `field` definitions from the interface (which may be overridden by the `Object`)
+- The `Implementation` module is `include`-d into the object, so it gets any methods from that module (which may be overridden by the `Object`)
+
+Specifically, in the example above, `CarType` would get a field named `price` and a `#price` method which implements that field.
 
 ## Union classes
 
@@ -266,7 +301,27 @@ Union classes are never instantiated; At runtime, only their `.resolve_type` met
 
 ## Enum classes
 
-<!-- TODO -->
+Enums extend `GraphQL::Schema::Enum`. First, make a base class:
+
+```ruby
+class BaseEnum < GraphQL::Schema::Enum
+end
+```
+
+Then, extend that class to define enums:
+
+```ruby
+class CategoryType < BaseEnum
+  description "Things that a blog post can be about"
+  value "SPORTS", "Various sports ball things"
+  value "SOFTWARE", "Programming and stuff", value: "CODING"
+end
+```
+
+The `value(...)` API is identical to the previous API.
+
+Enum classes are never instantiated and their methods are never called.
+
 
 ## Input object classes
 
