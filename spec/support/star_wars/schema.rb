@@ -116,7 +116,7 @@ module StarWars
       all_ships
     } do
       # You can define arguments here and use them in the connection
-      argument :nameIncludes, String, null: true
+      argument :nameIncludes, String, required: false
     end
 
     field :shipsWithMaxPageSize, max_page_size: 2, function: ShipsWithMaxPageSize.new
@@ -128,12 +128,12 @@ module StarWars
       end
       all_bases
     } do
-      argument :nameIncludes, String, null: true
+      argument :nameIncludes, String, required: false
     end
 
     field :basesClone, BaseType.connection_type, null: true
     field :basesByName, BaseType.connection_type, null: true do
-      argument :order, String, default_value: "name", null: true
+      argument :order, String, default_value: "name", required: false
     end
     def bases_by_name(order: nil)
       if order.present?
@@ -150,7 +150,7 @@ module StarWars
     field :basesWithLargeMaxLimitRelation, BaseType.connection_type, null: true, max_page_size: 1000, resolve: Proc.new { Base.all }
 
     field :basesAsSequelDataset, BaseConnectionWithTotalCountType, null: true, connection: true, max_page_size: 1000 do
-      argument :nameIncludes, String, null: true
+      argument :nameIncludes, String, required: false
     end
 
     def bases_as_sequel_dataset(name_includes: nil)
@@ -331,7 +331,7 @@ module StarWars
     )
 
     field :batchedBase, BaseType, null: true do
-      argument :id, "ID", null: false
+      argument :id, "ID", required: true
     end
 
     def batched_base(id:)
