@@ -402,7 +402,7 @@ module Dummy
     field :pushValue, field: PushValueField
 
     field :replaceValues, [Integer], "Replace the global array with new values", null: false do
-      argument :input, ReplaceValuesInputType, null: false
+      argument :input, ReplaceValuesInputType, required: true
     end
 
     def replace_values(input:)

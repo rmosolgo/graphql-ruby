@@ -49,7 +49,7 @@ module LazyHelpers
   class LazySum < GraphQL::Schema::Object
     field :value, Integer, null: true, resolve: ->(o, a, c) { o == 13 ? nil : o }
     field :nestedSum, LazySum, null: false do
-      argument :value, Integer, null: false
+      argument :value, Integer, required: true
     end
 
     def nested_sum(value:)
@@ -61,7 +61,7 @@ module LazyHelpers
     end
 
     field :nullableNestedSum, LazySum, null: true do
-      argument :value, Integer, null: false
+      argument :value, Integer, required: true
     end
     alias :nullable_nested_sum :nested_sum
   end
