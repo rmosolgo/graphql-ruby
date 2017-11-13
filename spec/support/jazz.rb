@@ -92,14 +92,15 @@ module Jazz
 
 
   # Some arbitrary global ID scheme
-  class GloballyIdentifiable < BaseInterface
+  # *Type suffix is removed automatically
+  class GloballyIdentifiableType < BaseInterface
     description "A fetchable object in the system"
     field :id, "ID", "A unique identifier for this object", null: false
     field :upcasedId, "ID", null: false, upcase: true, method: :id
 
     module Implementation
       def id
-        GloballyIdentifiable.to_id(@object)
+        GloballyIdentifiableType.to_id(@object)
       end
     end
 
@@ -131,7 +132,7 @@ module Jazz
 
   # Here's a new-style GraphQL type definition
   class Ensemble < ObjectWithUpcasedName
-    implements GloballyIdentifiable, NamedEntity
+    implements GloballyIdentifiableType, NamedEntity
     description "A group of musicians playing together"
     config :config, :configged
     field :name, "String", null: false
@@ -154,10 +155,10 @@ module Jazz
   InstrumentType = GraphQL::ObjectType.define do
     name "Instrument"
     interfaces [NamedEntity]
-    implements GloballyIdentifiable
+    implements GloballyIdentifiableType
 
-    field :id, !types.ID, "A unique identifier for this object", resolve: ->(obj, args, ctx) { GloballyIdentifiable.to_id(obj) }
-    field :upcasedId, !types.ID, resolve: ->(obj, args, ctx) { GloballyIdentifiable.to_id(obj).upcase }
+    field :id, !types.ID, "A unique identifier for this object", resolve: ->(obj, args, ctx) { GloballyIdentifiableType.to_id(obj) }
+    field :upcasedId, !types.ID, resolve: ->(obj, args, ctx) { GloballyIdentifiableType.to_id(obj).upcase }
     if RUBY_ENGINE == "jruby"
       # JRuby doesn't support refinements, so the `using` above won't work
       field :family, Family.to_non_null_type
@@ -178,7 +179,7 @@ module Jazz
   end
 
   class Musician < BaseObject
-    implements GloballyIdentifiable
+    implements GloballyIdentifiableType
     implements NamedEntity
     description "Someone who plays an instrument"
     field :instrument, InstrumentType, null: false
@@ -229,7 +230,7 @@ module Jazz
   # Another new-style definition, with method overrides
   class Query < BaseObject
     field :ensembles, [Ensemble], null: false
-    field :find, GloballyIdentifiable, null: true do
+    field :find, GloballyIdentifiableType, null: true do
       argument :id, "ID", required: true
     end
     field :instruments, [InstrumentType], null: false do
@@ -253,7 +254,7 @@ module Jazz
       if id == "MagicalSkipId"
         @context.skip
       else
-        GloballyIdentifiable.find(id)
+        GloballyIdentifiableType.find(id)
       end
     end
 
