@@ -2,7 +2,7 @@
 require "spec_helper"
 
 describe GraphQL::Schema::Interface do
-  let(:interface) { Jazz::GloballyIdentifiable }
+  let(:interface) { Jazz::GloballyIdentifiableType }
 
   describe "type info" do
     it "tells its type info" do
@@ -10,10 +10,10 @@ describe GraphQL::Schema::Interface do
       assert_equal 2, interface.fields.size
     end
 
-    class NewInterface1 < Jazz::GloballyIdentifiable
+    class NewInterface1 < Jazz::GloballyIdentifiableType
     end
 
-    class NewInterface2 < Jazz::GloballyIdentifiable
+    class NewInterface2 < Jazz::GloballyIdentifiableType
       module Implementation
         def new_method
         end
