@@ -191,9 +191,9 @@ module Jazz
   end
 
   class InspectableInput < GraphQL::Schema::InputObject
-    argument :stringValue, String, null: false
-    argument :nestedInput, InspectableInput, null: true
-    argument :legacyInput, LegacyInputType, null: true
+    argument :stringValue, String, required: true
+    argument :nestedInput, InspectableInput, required: false
+    argument :legacyInput, LegacyInputType, required: false
     def helper_method
       [
         # Context is available in the InputObject
@@ -230,16 +230,16 @@ module Jazz
   class Query < BaseObject
     field :ensembles, [Ensemble], null: false
     field :find, GloballyIdentifiable, null: true do
-      argument :id, "ID", null: false
+      argument :id, "ID", required: true
     end
     field :instruments, [InstrumentType], null: false do
-      argument :family, Family, null: true
+      argument :family, Family, required: false
     end
     field :inspectInput, [String], null: false do
-      argument :input, InspectableInput, null: false
+      argument :input, InspectableInput, required: true
     end
     field :inspectKey, InspectableKey, null: false do
-      argument :key, Key, null: false
+      argument :key, Key, required: true
     end
     field :nowPlaying, PerformingAct, null: false, resolve: ->(o, a, c) { Models.data["Ensemble"].first }
     # For asserting that the object is initialized once:
@@ -284,12 +284,12 @@ module Jazz
   end
 
   class EnsembleInput < GraphQL::Schema::InputObject
-    argument :name, String, null: false
+    argument :name, String, required: true
   end
 
   class Mutation < BaseObject
     field :addEnsemble, Ensemble, null: false do
-      argument :input, EnsembleInput, null: false
+      argument :input, EnsembleInput, required: true
     end
 
     def add_ensemble(input:)
