@@ -38,13 +38,16 @@ module GraphQL
 
         # Call this with a new name to override the default name for this schema member; OR
         # call it without an argument to get the name of this schema member
+        #
+        # The default name is the Ruby constant name,
+        # without any namespaces and with any `-Type` suffix removed
         # @param new_name [String]
         # @return [String]
         def graphql_name(new_name = nil)
           if new_name
             @graphql_name = new_name
           else
-            @graphql_name || self.name.split("::").last
+            @graphql_name || self.name.split("::").last.sub(/Type\Z/, "")
           end
         end
 
