@@ -210,11 +210,59 @@ Inside the method, you can access some instance variables:
 
 ## Interface classes
 
-<!-- TODO -->
+Interfaces extend `GraphQL::Schema::Interface`. First, make a base class:
+
+```ruby
+class BaseInterface < GraphQL::Schema::Interface
+  # optional, see below for customizing field definitions
+  field_class MyCustomField
+end
+```
+
+Then, extend that for each interface:
+
+```ruby
+class RetailItemType < BaseInterface
+  description "Something that can be bought"
+  field :price, PriceType, "How much this item costs", null: false
+
+  # Optional: if this method is defined, it overrides `Schema.resolve_type`
+  def self.resolve_type(object, context)
+    context.schema.types[object.class.name]
+  end
+end
+```
+
+Interface classes are never instantiated. At runtime, only their `.resolve_type` methods are called (if they're defined).
 
 ## Union classes
 
-<!-- TODO -->
+Unions extend `GraphQL::Schema::Union`. First, make a base class:
+
+```ruby
+class BaseUnion < GraphQL::Schema::Union
+end
+```
+
+Then, extend that one for each union in your schema:
+
+```ruby
+class CommentSubjectType < BaseUnion
+  description "Objects which may be commented on"
+  possible_types PostType, ImageType
+
+  # Optional: if this method is defined, it will override `Schema.resolve_type`
+  def self.resolve_type(object, context)
+    if object.is_a?(BlogPost)
+      PostType
+    else
+      ImageType
+    end
+  end
+end
+```
+
+Union classes are never instantiated; At runtime, only their `.resolve_type` methods may be called (if defined).
 
 ## Enum classes
 
@@ -222,11 +270,117 @@ Inside the method, you can access some instance variables:
 
 ## Input object classes
 
-<!-- TODO -->
+Input objects extend `GraphQL::Schema::InputObject`. First, make a base class:
+
+```ruby
+class BaseInputObject < GraphQL::Schema::InputObject
+end
+```
+
+Then extend it for your input objects:
+
+```ruby
+class PostInputType < BaseInputObject
+  argument :title, String, required: true
+  argument :body, String, required: true
+  argument :isDraft, "Boolean", required: false, default_value: false
+end
+```
+
+`argument` defines input fields on the input object. The signature is:
+
+```ruby
+argument(name, type, description = nil, required:, default_value: nil)
+```
+
+### Using input objects
+
+For fields on class-based objects, inputs are provided as Ruby keyword arguments. The value is an instance of the `InputObject` class, for example:
+
+```ruby
+class MutationType < BaseObject
+  field :createPost, PostType, null: false do
+    argument :postInput, PostInputType, required: true
+  end
+
+  def create_post(post_input:)
+    post_input # => #<PostInputType ...>
+    # ...
+  end
+end
+```
+
+For legacy-style fields, a `GraphQL::Query::Arguments` instance is provided as `args` (just like the previous behavior).
+
+### Accessing argument values
+
+Given an instance of `GraphQL::Schema::InputObject`, you can access its values in a few ways:
+
+- __method calls__: each argument is accessible by an underscore-cased method, eg `argument :isDraft` becomes `#is_draft`
+- __key lookup__: as String or Symbol, in camel-case, for example, `argument :isDraft` is accessible as `input["isDraft"]` or `input[:isDraft]` (this matches previous behavior)
+
+### Initialization, methods and instance variables
+
+Input objects are initialized with the provided user input. They have two instance variables by default:
+
+- `@arguments`: A `GraphQL::Query::Arguments` instance (the value of `args` in `(obj, args, ctx)->{...}`)
+- `@context`: The current `GraphQL::Query::Context`
+
+Since input objects are passed into resolve methods, you can also define helper methods in them which can be called by resolve methods. For example, define a helper on the input object:
+
+```ruby
+class PostInputType < BaseInputObject
+  # ...
+  def total_length
+    title.length + body.length
+  end
+
+  def allowed_length
+    @context[:current_user]&.admin? ? Float::INFINITY : 5000
+  end
+end
+```
+
+Then, call the helper methods in your resolve method:
+
+```ruby
+def create_post(post_input:)
+  if post_input.total_length < post_input.allowed_length
+    # ... create new Post
+  else
+    # return validation errors
+  end
+end
+```
+
+This example is not very practical, but it shows how `prepare:` functions can be re-applied. (They can also be applied in `#initialize`).
 
 ## Scalar classes
 
-<!-- TODO -->
+Custom scalars extend `GraphQL::Schema::Scalar`. First, make a base class:
+
+```ruby
+class BaseScalar < GraphQL::Schema::Scalar
+end
+```
+
+Then extend it for your custom scalars:
+
+```ruby
+class HTMLType < BaseScalar
+  description "A string containing valid HTML"
+  def self.coerce_input(value, context)
+    HTMLValidator.validate!(value)
+    value
+  end
+
+  def self.coerce_result(value, context)
+    value # just return the String as-is
+  end
+end
+```
+
+Scalars are never initialized; only their `.coerce_*` methods are called at runtime.
 
 ## Customizing definitions
 
