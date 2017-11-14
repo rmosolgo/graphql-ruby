@@ -1,11 +1,15 @@
 # frozen_string_literal: true
 # test_via: ../subscriptions.rb
+require "set"
 module GraphQL
   class Subscriptions
     # Serialization helpers for passing subscription data around.
     # @api private
     module Serialize
       GLOBALID_KEY = "__gid__"
+      SYMBOL_KEY = "__sym__"
+      SYMBOL_KEYS_KEY = "__sym_keys__"
+
       module_function
 
       # @param str [String] A serialized object from {.dump}
@@ -51,8 +55,21 @@ module GraphQL
           elsif value.is_a?(Hash)
             if value.size == 1 && value.key?(GLOBALID_KEY)
               GlobalID::Locator.locate(value[GLOBALID_KEY])
+            elsif value.size == 1 && value.key?(SYMBOL_KEY)
+              value[SYMBOL_KEY].to_sym
             else
-              Hash[value.map{|k, v| [k, load_value(v)]}]
+              loaded_h = {}
+              sym_keys = value.fetch(SYMBOL_KEYS_KEY, [])
+              value.each do |k, v|
+                if k == SYMBOL_KEYS_KEY
+                  next
+                end
+                if sym_keys.include?(k)
+                  k = k.to_sym
+                end
+                loaded_h[k] = load_value(v)
+              end
+              loaded_h
             end
           else
             value
@@ -65,7 +82,21 @@ module GraphQL
           if obj.is_a?(Array)
             obj.map{|item| dump_value(item)}
           elsif obj.is_a?(Hash)
-            Hash[obj.map{|k, v| [k, dump_value(v)]}]
+            symbol_keys = nil
+            dumped_h = {}
+            obj.each do |k, v|
+              dumped_h[k.to_s] = dump_value(v)
+              if k.is_a?(Symbol)
+                symbol_keys ||= Set.new
+                symbol_keys << k.to_s
+              end
+            end
+            if symbol_keys
+              dumped_h[SYMBOL_KEYS_KEY] = symbol_keys.to_a
+            end
+            dumped_h
+          elsif obj.is_a?(Symbol)
+            { SYMBOL_KEY => obj.to_s }
           elsif obj.respond_to?(:to_gid_param)
             {GLOBALID_KEY => obj.to_gid_param}
           else
