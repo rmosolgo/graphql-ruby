@@ -8,6 +8,16 @@
 
 ### Bug fixes
 
+## 1.8.0.pre1 (14 Nov 2017)
+
+### Breaking changes
+
+- Stop official support for Ruby 2.1 #1070
+
+### New features
+
+- Add class-based schema definition API #1037
+
 ## 1.7.13 (28 Feb 2018)
 
 ### Bug fixes
