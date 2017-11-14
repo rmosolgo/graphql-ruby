@@ -54,7 +54,7 @@ MySchema.execute(
 
 ### Deleting Data
 
-Clients can only _add_ to the database, but as an administrator, you can also delete entries from the database. (Make sure you {% internal_link "authorize access to the UI","/operation_store/getting_started.html#authorizing-the-ui" %}.)This is a dangerous operation: by deleting something, any clients who depend on that data will crash.
+Clients can only _add_ to the database, but as an administrator, you can also delete entries from the database. (Make sure you {% internal_link "authorize access to the Dashboard","/pro/dashboard" %}.)This is a dangerous operation: by deleting something, any clients who depend on that data will crash.
 
 Some reasons to delete from the database are:
 
@@ -68,7 +68,7 @@ If this is true, you can use "Delete" buttons to remove individual operations or
 It's on the road map to add a Ruby API to `OperationStore` so that you can integrate it with your application. For example, you might:
 
 - Create clients that correspond to users in your system
-- Show client secrets via the UI so that users can save them
+- Show client secrets via the Dashboard so that users can save them
 - Render your own administration dashboards with `OperationStore` data
 
 If this interests you, please {% open_an_issue "OperationStore Ruby API" %} or email `support@graphql.pro`.

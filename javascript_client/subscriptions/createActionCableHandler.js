@@ -1,6 +1,5 @@
 /**
  * Create a Relay Modern-compatible subscription handler.
- * TODO: how to test this??
  *
  * @param {ActionCable.Consumer} cable - An ActionCable consumer from `.createConsumer`
  * @param {OperationStoreClient} operations - A generated OperationStoreClient for graphql-pro's OperationStore

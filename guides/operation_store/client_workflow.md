@@ -19,7 +19,7 @@ This documentation also touches on [`graphql-ruby-client`](https://github.com/rm
 
 ### Add a Client
 
-Clients are registered via {% internal_link "the UI","/operation_store/getting_started#add-routes" %}:
+Clients are registered via {% internal_link "the dashboard","/operation_store/getting_started#add-routes" %}:
 
 {{ "/operation_store/add_a_client.png" | link_to_img:"Add a Client for Persisted Queries" }}
 

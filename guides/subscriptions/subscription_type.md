@@ -5,7 +5,6 @@ section: Subscriptions
 title: Subscription Type
 desc: The root type for subscriptions
 index: 1
-experimental: true
 ---
 
 `Subscription` is the entry point for all subscriptions in a GraphQL system. Each field corresponds to an event which may be subscribed to:

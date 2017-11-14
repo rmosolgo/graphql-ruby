@@ -8,6 +8,21 @@
 
 ### Bug Fix
 
+## 1.6.0 (13 Nov 2017)
+
+### Breaking Changes
+
+- `GraphQL::Pro::UI` renamed to `GraphQL::Pro::Dashboard`
+
+### Deprecations
+
+- Routing method `.ui` was renamed to `.dashboard`
+
+### New Features
+
+- Added `GraphQL::Pro::Subscriptions`
+- Added subscriptions component to Dashboard
+
 ## 1.5.9 (10 Oct 2017)
 
 ### Bug Fix

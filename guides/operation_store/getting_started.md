@@ -13,7 +13,7 @@ To use `GraphQL::Pro::OperationStore` with your app, follow these steps:
 - [Check the dependencies](#dependencies) to make sure `OperationStore` is supported
 - [Prepare the database](#prepare-the-database) for `OperationStore`'s  data
 - [Add `OperationStore`](#add-operationstore) to your GraphQL schema
-- [Add routes](#add-routes) for the UI and sync API
+- [Add routes](#add-routes) for the Dashboard and sync API
 - [Update your controller](#update-the-controller) to support persisted queries
 - {% internal_link "Add a client","/operation_store/client_workflow" %} to start syncing queries
 
@@ -22,7 +22,7 @@ To use `GraphQL::Pro::OperationStore` with your app, follow these steps:
 `OperationStore` requires two gems in your application environment:
 
 - `ActiveRecord` to access tables in your database. (Using another ORM or backend? Please {% open_an_issue "Backend support request for OperationStore" %} to request support!)
-- `Rack`: to serve the UI and Sync API. (In Rails, this is provided by `config/routes.md`.)
+- `Rack`: to serve the Dashboard and Sync API. (In Rails, this is provided by `config/routes.md`.)
 
 These are bundled with Rails by default.
 
@@ -100,9 +100,9 @@ using GraphQL::Pro::Routes
 
 Rails.application.routes.draw do
   # ...
-  # Add the UI
-  # TODO: authorize, see below
-  mount MySchema.ui, at: "/graphql/ui"
+  # Add the Dashboard
+  # TODO: authorize, see the dashboard guide
+  mount MySchema.dashboard, at: "/graphql/dashboard"
   # Add the Sync API (authorization built-in)
   mount MySchema.operation_store_sync, at: "/graphql/sync"
 end
@@ -110,43 +110,11 @@ end
 
 `MySchema.operation_store_sync` receives pushes from clients. See {% internal_link "Client Workflow","/operation_store/client_workflow" %} for more info on how this endpoint is used.
 
-`MySchema.ui` is a web view to the `OperationStore`, visible at `/graphql/ui`:
+`MySchema.dashboard` includes a web view to the `OperationStore`, visible at `/graphql/dashboard`. See the {% internal_link "Dashboard guide", "/pro/dashboard" %} for more details, including authorization.
 
-{{ "/operation_store/graphql_ui.png" | link_to_img:"GraphQL UI" }}
+{{ "/operation_store/graphql_ui.png" | link_to_img:"GraphQL Persisted Operations Dashboard" }}
 
 The are both Rack apps, so you can mount them in Sinatra or any other Rack app.
-
-#### Authorizing the UI
-
-You should only allow admin users to see `/graphql/ui` because it allows viewers to delete stored operations.
-
-##### Rails Routing Constraints
-
-Use [Rails routing constraints](http://api.rubyonrails.org/v5.1/classes/ActionDispatch/Routing/Mapper/Scoping.html#method-i-constraints) to restrict acccess to authorized users, for example:
-
-```ruby
-# Check the secure session for a staff flag:
-STAFF_ONLY = ->(request) { request.session["staff"] == true }
-# Only serve the GraphQL UI to staff users:
-constraints(STAFF_ONLY) do
-  mount MySchema.ui, at: "/graphql/ui"
-end
-```
-
-##### Rack Basic Authentication
-
-Insert the `Rack::Auth::Basic` middleware, before the web view. This prompts for a username and password when visiting the UI.
-
-```ruby
-  graphql_ui = Rack::Builder.new do
-    use(Rack::Auth::Basic) do |username, password|
-      username == ENV.fetch("GRAPHQL_USERNAME") && password == ENV.fetch("GRAPHQL_PASSWORD")
-    end
-
-    run MySchema.ui
-  end
-  mount graphql_ui, at: "/graphql/ui"
-```
 
 #### Update the Controller
 

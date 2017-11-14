@@ -7,12 +7,33 @@ desc: GraphQL subscriptions with GraphQL-Ruby and Apollo Client
 index: 2
 ---
 
+`graphql-ruby-client` includes support for Apollo client subscriptions over {% internal_link "Pusher", "/subscriptions/pusher_implementation" %} or {% internal_link "ActionCable", "/subscriptions/action_cable_implementation" %}.
 
-`graphql-ruby-client` includes support for subscriptions with ActionCable and Apollo client.
+To use it, require `subscriptions/addGraphQLSubscriptions` and call the function with your network interface and transport client (example below).
 
-To use it, require `subscriptions/addGraphQLSubscriptions` and call the function with your network interface and ActionCable consumer.
+See the {% internal_link "Subscriptions guide", "/subscriptions/overview" %} for information about server-side setup.
 
-With this configuration, `subscription` queries will be routed to ActionCable.
+## Pusher
+
+Pass `{pusher: pusherClient}` to use Pusher:
+
+```js
+// Load Pusher and create a client
+var Pusher = require("pusher-js")
+var pusherClient = new Pusher(appKey, options)
+
+// Add subscriptions to the network interface with the `pusher:` options
+var addGraphQLSubscriptions = require("graphql-ruby-client/subscriptions/addGraphQLSubscriptions")
+addGraphQLSubscriptions(myNetworkInterface, {pusher: pusherClient})
+
+// Optionally, add persisted query support:
+var OperationStoreClient = require("./OperationStoreClient")
+RailsNetworkInterface.use([OperationStoreClient.apolloMiddleware])
+```
+
+## ActionCable
+
+By passing `{cable: cable}`, all `subscription` queries will be routed to ActionCable.
 
 For example:
 
@@ -42,5 +63,3 @@ addGraphQLSubscriptions(RailsNetworkInterface, {cable: cable})
 var OperationStoreClient = require("./OperationStoreClient")
 RailsNetworkInterface.use([OperationStoreClient.apolloMiddleware])
 ```
-
-See the {% internal_link "Subscriptions guide", "/subscriptions/overview" %} for information about server-side setup.
