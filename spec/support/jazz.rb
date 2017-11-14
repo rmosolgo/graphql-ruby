@@ -95,8 +95,8 @@ module Jazz
   # *Type suffix is removed automatically
   class GloballyIdentifiableType < BaseInterface
     description "A fetchable object in the system"
-    field :id, "ID", "A unique identifier for this object", null: false
-    field :upcasedId, "ID", null: false, upcase: true, method: :id
+    field :id, ID, "A unique identifier for this object", null: false
+    field :upcasedId, ID, null: false, upcase: true, method: :id
 
     module Implementation
       def id
@@ -135,6 +135,7 @@ module Jazz
     implements GloballyIdentifiableType, NamedEntity
     description "A group of musicians playing together"
     config :config, :configged
+    # Test string type names:
     field :name, "String", null: false
     field :musicians, "[Jazz::Musician]", null: false
   end
@@ -211,8 +212,8 @@ module Jazz
 
   class InspectableKey < BaseObject
     field :root, String, null: false
-    field :isSharp, "Boolean", null: false, method: :sharp
-    field :isFlat, "Boolean", null: false, method: :flat
+    field :isSharp, Boolean, null: false, method: :sharp
+    field :isFlat, Boolean, null: false, method: :flat
   end
 
   class PerformingAct < GraphQL::Schema::Union
@@ -231,7 +232,7 @@ module Jazz
   class Query < BaseObject
     field :ensembles, [Ensemble], null: false
     field :find, GloballyIdentifiableType, null: true do
-      argument :id, "ID", required: true
+      argument :id, ID, required: true
     end
     field :instruments, [InstrumentType], null: false do
       argument :family, Family, required: false
