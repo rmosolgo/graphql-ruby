@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="http://www.rubydoc.info/gems/graphql/1.7.4/">API</a>
+          <a href="http://www.rubydoc.info/gems/graphql/1.7.6/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <input
@@ -60,7 +60,7 @@
   <li><a href="#dependencies">Check the dependencies</a> to make sure <code class="highlighter-rouge">OperationStore</code> is supported</li>
   <li><a href="#prepare-the-database">Prepare the database</a> for <code class="highlighter-rouge">OperationStore</code>’s  data</li>
   <li><a href="#add-operationstore">Add <code class="highlighter-rouge">OperationStore</code></a> to your GraphQL schema</li>
-  <li><a href="#add-routes">Add routes</a> for the UI and sync API</li>
+  <li><a href="#add-routes">Add routes</a> for the Dashboard and sync API</li>
   <li><a href="#update-the-controller">Update your controller</a> to support persisted queries</li>
   <li><a href="/operation_store/client_workflow">Add a client</a> to start syncing queries</li>
 </ul>
@@ -72,7 +72,7 @@
 <ul>
   <li><code class="highlighter-rouge">ActiveRecord</code> to access tables in your database. (Using another ORM or backend? Please <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Backend support request for OperationStore" target="_blank">open an issue</a>
  to request support!)</li>
-  <li><code class="highlighter-rouge">Rack</code>: to serve the UI and Sync API. (In Rails, this is provided by <code class="highlighter-rouge">config/routes.md</code>.)</li>
+  <li><code class="highlighter-rouge">Rack</code>: to serve the Dashboard and Sync API. (In Rails, this is provided by <code class="highlighter-rouge">config/routes.md</code>.)</li>
 </ul>
 
 <p>These are bundled with Rails by default.</p>
@@ -150,9 +150,9 @@
 
 <span class="no">Rails</span><span class="p">.</span><span class="nf">application</span><span class="p">.</span><span class="nf">routes</span><span class="p">.</span><span class="nf">draw</span> <span class="k">do</span>
   <span class="c1"># ...</span>
-  <span class="c1"># Add the UI</span>
-  <span class="c1"># TODO: authorize, see below</span>
-  <span class="n">mount</span> <span class="no">MySchema</span><span class="p">.</span><span class="nf">ui</span><span class="p">,</span> <span class="ss">at: </span><span class="s2">"/graphql/ui"</span>
+  <span class="c1"># Add the Dashboard</span>
+  <span class="c1"># TODO: authorize, see the dashboard guide</span>
+  <span class="n">mount</span> <span class="no">MySchema</span><span class="p">.</span><span class="nf">dashboard</span><span class="p">,</span> <span class="ss">at: </span><span class="s2">"/graphql/dashboard"</span>
   <span class="c1"># Add the Sync API (authorization built-in)</span>
   <span class="n">mount</span> <span class="no">MySchema</span><span class="p">.</span><span class="nf">operation_store_sync</span><span class="p">,</span> <span class="ss">at: </span><span class="s2">"/graphql/sync"</span>
 <span class="k">end</span>
@@ -161,45 +161,13 @@
 
 <p><code class="highlighter-rouge">MySchema.operation_store_sync</code> receives pushes from clients. See <a href="/operation_store/client_workflow">Client Workflow</a> for more info on how this endpoint is used.</p>
 
-<p><code class="highlighter-rouge">MySchema.ui</code> is a web view to the <code class="highlighter-rouge">OperationStore</code>, visible at <code class="highlighter-rouge">/graphql/ui</code>:</p>
+<p><code class="highlighter-rouge">MySchema.dashboard</code> includes a web view to the <code class="highlighter-rouge">OperationStore</code>, visible at <code class="highlighter-rouge">/graphql/dashboard</code>. See the <a href="/pro/dashboard">Dashboard guide</a> for more details, including authorization.</p>
 
 <p><a href="/operation_store/graphql_ui.png" target="_blank" class="img-link">
-  <img src="/operation_store/graphql_ui.png" title="GraphQL UI" alt="GraphQL UI" />
+  <img src="/operation_store/graphql_ui.png" title="GraphQL Persisted Operations Dashboard" alt="GraphQL Persisted Operations Dashboard" />
 </a></p>
 
 <p>The are both Rack apps, so you can mount them in Sinatra or any other Rack app.</p>
-
-<h4 id="authorizing-the-ui">Authorizing the UI</h4>
-
-<p>You should only allow admin users to see <code class="highlighter-rouge">/graphql/ui</code> because it allows viewers to delete stored operations.</p>
-
-<h5 id="rails-routing-constraints">Rails Routing Constraints</h5>
-
-<p>Use <a href="http://api.rubyonrails.org/v5.1/classes/ActionDispatch/Routing/Mapper/Scoping.html#method-i-constraints">Rails routing constraints</a> to restrict acccess to authorized users, for example:</p>
-
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># Check the secure session for a staff flag:</span>
-<span class="no">STAFF_ONLY</span> <span class="o">=</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">request</span><span class="p">)</span> <span class="p">{</span> <span class="n">request</span><span class="p">.</span><span class="nf">session</span><span class="p">[</span><span class="s2">"staff"</span><span class="p">]</span> <span class="o">==</span> <span class="kp">true</span> <span class="p">}</span>
-<span class="c1"># Only serve the GraphQL UI to staff users:</span>
-<span class="n">constraints</span><span class="p">(</span><span class="no">STAFF_ONLY</span><span class="p">)</span> <span class="k">do</span>
-  <span class="n">mount</span> <span class="no">MySchema</span><span class="p">.</span><span class="nf">ui</span><span class="p">,</span> <span class="ss">at: </span><span class="s2">"/graphql/ui"</span>
-<span class="k">end</span>
-</code></pre>
-</div>
-
-<h5 id="rack-basic-authentication">Rack Basic Authentication</h5>
-
-<p>Insert the <code class="highlighter-rouge">Rack::Auth::Basic</code> middleware, before the web view. This prompts for a username and password when visiting the UI.</p>
-
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code>  <span class="n">graphql_ui</span> <span class="o">=</span> <span class="no">Rack</span><span class="o">::</span><span class="no">Builder</span><span class="p">.</span><span class="nf">new</span> <span class="k">do</span>
-    <span class="n">use</span><span class="p">(</span><span class="no">Rack</span><span class="o">::</span><span class="no">Auth</span><span class="o">::</span><span class="no">Basic</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">username</span><span class="p">,</span> <span class="n">password</span><span class="o">|</span>
-      <span class="n">username</span> <span class="o">==</span> <span class="no">ENV</span><span class="p">.</span><span class="nf">fetch</span><span class="p">(</span><span class="s2">"GRAPHQL_USERNAME"</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="n">password</span> <span class="o">==</span> <span class="no">ENV</span><span class="p">.</span><span class="nf">fetch</span><span class="p">(</span><span class="s2">"GRAPHQL_PASSWORD"</span><span class="p">)</span>
-    <span class="k">end</span>
-
-    <span class="n">run</span> <span class="no">MySchema</span><span class="p">.</span><span class="nf">ui</span>
-  <span class="k">end</span>
-  <span class="n">mount</span> <span class="n">graphql_ui</span><span class="p">,</span> <span class="ss">at: </span><span class="s2">"/graphql/ui"</span>
-</code></pre>
-</div>
 
 <h4 id="update-the-controller">Update the Controller</h4>
 

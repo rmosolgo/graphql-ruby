@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="http://www.rubydoc.info/gems/graphql/1.7.4/">API</a>
+          <a href="http://www.rubydoc.info/gems/graphql/1.7.6/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <input
@@ -45,9 +45,105 @@
 
 <h1 class="guide-header">Relay Subscriptions</h1>
 <div class="guide-container">
-  <p><code class="highlighter-rouge">graphql-ruby-client</code> includes support for subscriptions with ActionCable and Relay Modern.</p>
+  <p><code class="highlighter-rouge">graphql-ruby-client</code> includes support for subscriptions with Relay Modern over <a href="/subscriptions/pusher_implementation">Pusher</a> or <a href="/subscriptions/action_cable_implementation">ActionCable</a>.</p>
 
-<p>To use it, require <code class="highlighter-rouge">subscriptions/createHandler</code> and call the function with your ActionCable consumer and optionally, your OperationStoreClient.</p>
+<p>To use it, require <code class="highlighter-rouge">subscriptions/createHandler</code> and call the function with your client and optionally, your OperationStoreClient.</p>
+
+<p>See the <a href="/subscriptions/overview">Subscriptions guide</a> for information about server-side setup.</p>
+
+<h2 id="pusher">Pusher</h2>
+
+<p>Subscriptions with Pusher require two things:</p>
+
+<ul>
+  <li>A client from the <code class="highlighter-rouge">pusher-js</code> library</li>
+  <li>A <code class="highlighter-rouge">fetchOperation</code> function for sending the <code class="highlighter-rouge">subscription</code> operation to the server</li>
+</ul>
+
+<h3 id="pusher-client">Pusher client</h3>
+
+<p>Pass <code class="highlighter-rouge">pusher:</code> to get Subscription updates over Pusher:</p>
+
+<div class="language-js highlighter-rouge"><pre class="highlight"><code><span class="c1">// Require the helper function</span>
+<span class="kd">var</span> <span class="nx">createHandler</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s2">"graphql-ruby-client/subscriptions/createHandler"</span><span class="p">)</span>
+
+<span class="c1">// Prepare a Pusher client</span>
+<span class="kd">var</span> <span class="nx">Pusher</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s2">"pusher-js"</span><span class="p">)</span>
+<span class="kd">var</span> <span class="nx">pusherClient</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Pusher</span><span class="p">(</span><span class="nx">appKey</span><span class="p">,</span> <span class="nx">options</span><span class="p">)</span>
+
+<span class="c1">// Create a Relay Modern-compatible handler</span>
+<span class="kd">var</span> <span class="nx">subscriptionHandler</span> <span class="o">=</span> <span class="nx">createHandler</span><span class="p">({</span>
+  <span class="na">pusher</span><span class="p">:</span> <span class="nx">pusherClient</span><span class="p">,</span>
+  <span class="na">fetchOperation</span><span class="p">:</span> <span class="kc">null</span> <span class="c1">// TODO!</span>
+<span class="p">})</span>
+
+<span class="c1">// Create a Relay Modern network with the handler</span>
+<span class="kd">var</span> <span class="nx">network</span> <span class="o">=</span> <span class="nx">Network</span><span class="p">.</span><span class="nx">create</span><span class="p">(</span><span class="nx">fetchQuery</span><span class="p">,</span> <span class="nx">subscriptionHandler</span><span class="p">)</span>
+</code></pre>
+</div>
+
+<h3 id="fetchoperation-function">fetchOperation function</h3>
+
+<p>The <code class="highlighter-rouge">fetchOperation</code> function can be extracted from your <code class="highlighter-rouge">fetchQuery</code> function. Its signature is:</p>
+
+<div class="language-js highlighter-rouge"><pre class="highlight"><code><span class="c1">// Returns a promise from `fetch`</span>
+<span class="kd">function</span> <span class="nx">fetchOperation</span><span class="p">(</span><span class="nx">operation</span><span class="p">,</span> <span class="nx">variables</span><span class="p">,</span> <span class="nx">cacheConfig</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="nx">fetch</span><span class="p">(...)</span>
+<span class="p">}</span>
+</code></pre>
+</div>
+
+<ul>
+  <li><code class="highlighter-rouge">operation</code>, <code class="highlighter-rouge">variables</code>, and <code class="highlighter-rouge">cacheConfig</code> are the first three arguments to the <code class="highlighter-rouge">fetchQuery</code> function.</li>
+  <li>The function should call <code class="highlighter-rouge">fetch</code> and return the result (a Promise of a <code class="highlighter-rouge">Response</code>).</li>
+</ul>
+
+<p>For example, <code class="highlighter-rouge">Environment.js</code> may look like:</p>
+
+<div class="language-js highlighter-rouge"><pre class="highlight"><code><span class="c1">// This function sends a GraphQL query to the server</span>
+<span class="kr">const</span> <span class="nx">fetchOperation</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">operation</span><span class="p">,</span> <span class="nx">variables</span><span class="p">,</span> <span class="nx">cacheConfig</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kr">const</span> <span class="nx">bodyValues</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="nx">variables</span><span class="p">,</span>
+    <span class="na">operationName</span><span class="p">:</span> <span class="nx">operation</span><span class="p">.</span><span class="nx">name</span><span class="p">,</span>
+  <span class="p">}</span>
+  <span class="kr">const</span> <span class="nx">useStoredOperations</span> <span class="o">=</span> <span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">NODE_ENV</span> <span class="o">===</span> <span class="s2">"production"</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">useStoredOperations</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// In production, use the stored operation</span>
+    <span class="nx">bodyValues</span><span class="p">.</span><span class="nx">operationId</span> <span class="o">=</span> <span class="nx">OperationStoreClient</span><span class="p">.</span><span class="nx">getOperationId</span><span class="p">(</span><span class="nx">operation</span><span class="p">.</span><span class="nx">name</span><span class="p">)</span>
+  <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+    <span class="c1">// In development, use the query text</span>
+    <span class="nx">bodyValues</span><span class="p">.</span><span class="nx">query</span> <span class="o">=</span> <span class="nx">operation</span><span class="p">.</span><span class="nx">text</span>
+  <span class="p">}</span>
+  <span class="k">return</span> <span class="nx">fetch</span><span class="p">(</span><span class="s1">'http://localhost:3000/graphql'</span><span class="p">,</span> <span class="p">{</span>
+    <span class="na">method</span><span class="p">:</span> <span class="s1">'POST'</span><span class="p">,</span>
+    <span class="na">opts</span><span class="p">:</span> <span class="p">{</span>
+      <span class="na">credentials</span><span class="p">:</span> <span class="s1">'include'</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="na">headers</span><span class="p">:</span> <span class="p">{</span>
+      <span class="s1">'Accept'</span><span class="p">:</span> <span class="s1">'application/json'</span><span class="p">,</span>
+      <span class="s1">'Content-Type'</span><span class="p">:</span> <span class="s1">'application/json'</span>
+    <span class="p">},</span>
+    <span class="na">body</span><span class="p">:</span> <span class="nx">JSON</span><span class="p">.</span><span class="nx">stringify</span><span class="p">(</span><span class="nx">bodyValues</span><span class="p">),</span>
+  <span class="p">})</span>
+<span class="p">}</span>
+
+<span class="c1">// `fetchQuery` uses `fetchOperation`, but returns a Promise of JSON</span>
+<span class="kr">const</span> <span class="nx">fetchQuery</span> <span class="o">=</span> <span class="p">(</span><span class="nx">operation</span><span class="p">,</span> <span class="nx">variables</span><span class="p">,</span> <span class="nx">cacheConfig</span><span class="p">,</span> <span class="nx">uploadables</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="nx">fetchOperation</span><span class="p">(</span><span class="nx">operation</span><span class="p">,</span> <span class="nx">variables</span><span class="p">,</span> <span class="nx">cacheConfig</span><span class="p">).</span><span class="nx">then</span><span class="p">(</span><span class="nx">response</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">response</span><span class="p">.</span><span class="nx">json</span><span class="p">()</span>
+  <span class="p">})</span>
+<span class="p">}</span>
+
+<span class="c1">// Subscriptions uses the same `fetchOperation` function for initial subscription requests</span>
+<span class="kr">const</span> <span class="nx">subscriptionHandler</span> <span class="o">=</span> <span class="nx">createHandler</span><span class="p">({</span><span class="na">pusher</span><span class="p">:</span> <span class="nx">pusherClient</span><span class="p">,</span> <span class="na">fetchOperation</span><span class="p">:</span> <span class="nx">fetchOperation</span><span class="p">})</span>
+<span class="c1">// Combine them into a `Network`</span>
+<span class="kr">const</span> <span class="nx">network</span> <span class="o">=</span> <span class="nx">Network</span><span class="p">.</span><span class="nx">create</span><span class="p">(</span><span class="nx">fetchQuery</span><span class="p">,</span> <span class="nx">subscriptionHandler</span><span class="p">)</span>
+</code></pre>
+</div>
+
+<p>Since <code class="highlighter-rouge">OperationStoreClient</code> is in the <code class="highlighter-rouge">fetchOperation</code> function, it will apply to all GraphQL operations.</p>
+
+<h2 id="actioncable">ActionCable</h2>
 
 <p>With this configuration, <code class="highlighter-rouge">subscription</code> queries will be routed to ActionCable.</p>
 
@@ -68,8 +164,6 @@
 <span class="kd">var</span> <span class="nx">network</span> <span class="o">=</span> <span class="nx">Network</span><span class="p">.</span><span class="nx">create</span><span class="p">(</span><span class="nx">fetchQuery</span><span class="p">,</span> <span class="nx">subscriptionHandler</span><span class="p">)</span>
 </code></pre>
 </div>
-
-<p>See the <a href="/subscriptions/overview">Subscriptions guide</a> for information about server-side setup.</p>
 
 </div>
 <p class="guide-footer">

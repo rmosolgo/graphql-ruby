@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="http://www.rubydoc.info/gems/graphql/1.7.4/">API</a>
+          <a href="http://www.rubydoc.info/gems/graphql/1.7.6/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <input
@@ -42,16 +42,6 @@
   &raquo; Triggers
 </p>
 
-  <div class="experimental-header">
-    <p>
-      <strong>⚠ Experimental ⚠</strong>
-    </p>
-    <p>
-      This feature may get big changes in future releases.
-      Check the <a href="https://github.com/rmosolgo/graphql-ruby/blob/master/CHANGELOG.md">changelog</a> for update notes.
-    </p>
-  </div>
-
 
 <h1 class="guide-header">Triggers</h1>
 <div class="guide-container">
@@ -70,8 +60,43 @@
   <li><code class="highlighter-rouge">name</code>, which corresponds to the field on subscription type</li>
   <li><code class="highlighter-rouge">arguments</code>, which corresponds to the arguments on subscription type (for example, if you subscribe to comments on a certain post, the arguments would be <code class="highlighter-rouge"><span class="p">{</span><span class="err">postId:</span><span class="w"> </span><span class="err">comment.post_id</span><span class="p">}</span></code>.)</li>
   <li><code class="highlighter-rouge">object</code>, which will be the root object of the subscription update</li>
-  <li><code class="highlighter-rouge">scope:</code> (not shown) for implicitly scoping the clients who will receive updates.</li>
+  <li><code class="highlighter-rouge">scope:</code> (shown below) for implicitly scoping the clients who will receive updates.</li>
 </ul>
+
+<h2 id="scope">Scope</h2>
+
+<p>To send updates to <em>certain clients only</em>, you can use <code class="highlighter-rouge">scope:</code> to narrow the trigger’s reach.</p>
+
+<p>Scopes are based on query context: a value in <code class="highlighter-rouge">context:</code> is used as the scope; an equivalent value must be passed with <code class="highlighter-rouge">.trigger(... scope:)</code> to update that client. (The value is serialized with <a href="http://www.rubydoc.info/gems/graphql/1.7.6/GraphQL/Subscriptions/Serialize" target="_blank" title="API docs for GraphQL::Subscriptions::Serialize"><code>GraphQL::Subscriptions::Serialize</code></a>)</p>
+
+<p>To specify that a topic is scoped, edit the field definition on your root <code class="highlighter-rouge">Subscription</code> type. Use the <code class="highlighter-rouge">subscription_scope</code> helper to name a <code class="highlighter-rouge">context:</code> key, for example:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># For a given viewer, this will be triggered</span>
+<span class="c1"># whenever one of their posts gets a new comment</span>
+<span class="n">field</span> <span class="ss">:commentAdded</span><span class="p">,</span> <span class="no">CommentType</span><span class="p">,</span> <span class="s2">"A comment was added to one of the viewer's posts"</span> <span class="k">do</span>
+  <span class="n">subscription_scope</span> <span class="ss">:current_user_id</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<p>Then, subscription operations should have a <code class="highlighter-rouge">context: { current_user_id: ... }</code> value, for example:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># current_user_id will be the scope for some subscriptions:</span>
+<span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="n">query_string</span><span class="p">,</span> <span class="ss">context: </span><span class="p">{</span> <span class="ss">current_user_id: </span><span class="n">current_user</span><span class="p">.</span><span class="nf">id</span> <span class="p">})</span>
+</code></pre>
+</div>
+
+<p>Finally, when events happen in your app, you should provide the scoping value as <code class="highlighter-rouge">scope:</code>, for example:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># A new comment is added</span>
+<span class="n">comment</span> <span class="o">=</span> <span class="n">post</span><span class="p">.</span><span class="nf">comments</span><span class="p">.</span><span class="nf">create!</span><span class="p">(</span><span class="n">attrs</span><span class="p">)</span>
+<span class="c1"># notify the author</span>
+<span class="n">author_id</span> <span class="o">=</span> <span class="n">post</span><span class="p">.</span><span class="nf">author</span><span class="p">.</span><span class="nf">id</span>
+<span class="no">MySchema</span><span class="p">.</span><span class="nf">subscriptions</span><span class="p">.</span><span class="nf">trigger</span><span class="p">(</span><span class="s2">"commentAdded"</span><span class="p">,</span> <span class="p">{},</span> <span class="n">comment</span><span class="p">,</span> <span class="ss">scope: </span><span class="n">author_id</span><span class="p">)</span>
+</code></pre>
+</div>
+
+<p>Since this trigger has a <code class="highlighter-rouge">scope:</code>, only subscribers with a matching scope value will be updated.</p>
 
 </div>
 <p class="guide-footer">

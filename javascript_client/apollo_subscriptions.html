@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="http://www.rubydoc.info/gems/graphql/1.7.4/">API</a>
+          <a href="http://www.rubydoc.info/gems/graphql/1.7.6/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <input
@@ -45,11 +45,33 @@
 
 <h1 class="guide-header">Apollo Subscriptions</h1>
 <div class="guide-container">
-  <p><code class="highlighter-rouge">graphql-ruby-client</code> includes support for subscriptions with ActionCable and Apollo client.</p>
+  <p><code class="highlighter-rouge">graphql-ruby-client</code> includes support for Apollo client subscriptions over <a href="/subscriptions/pusher_implementation">Pusher</a> or <a href="/subscriptions/action_cable_implementation">ActionCable</a>.</p>
 
-<p>To use it, require <code class="highlighter-rouge">subscriptions/addGraphQLSubscriptions</code> and call the function with your network interface and ActionCable consumer.</p>
+<p>To use it, require <code class="highlighter-rouge">subscriptions/addGraphQLSubscriptions</code> and call the function with your network interface and transport client (example below).</p>
 
-<p>With this configuration, <code class="highlighter-rouge">subscription</code> queries will be routed to ActionCable.</p>
+<p>See the <a href="/subscriptions/overview">Subscriptions guide</a> for information about server-side setup.</p>
+
+<h2 id="pusher">Pusher</h2>
+
+<p>Pass <code class="highlighter-rouge"><span class="p">{</span><span class="err">pusher:</span><span class="w"> </span><span class="err">pusherClient</span><span class="p">}</span></code> to use Pusher:</p>
+
+<div class="language-js highlighter-rouge"><pre class="highlight"><code><span class="c1">// Load Pusher and create a client</span>
+<span class="kd">var</span> <span class="nx">Pusher</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s2">"pusher-js"</span><span class="p">)</span>
+<span class="kd">var</span> <span class="nx">pusherClient</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Pusher</span><span class="p">(</span><span class="nx">appKey</span><span class="p">,</span> <span class="nx">options</span><span class="p">)</span>
+
+<span class="c1">// Add subscriptions to the network interface with the `pusher:` options</span>
+<span class="kd">var</span> <span class="nx">addGraphQLSubscriptions</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s2">"graphql-ruby-client/subscriptions/addGraphQLSubscriptions"</span><span class="p">)</span>
+<span class="nx">addGraphQLSubscriptions</span><span class="p">(</span><span class="nx">myNetworkInterface</span><span class="p">,</span> <span class="p">{</span><span class="na">pusher</span><span class="p">:</span> <span class="nx">pusherClient</span><span class="p">})</span>
+
+<span class="c1">// Optionally, add persisted query support:</span>
+<span class="kd">var</span> <span class="nx">OperationStoreClient</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s2">"./OperationStoreClient"</span><span class="p">)</span>
+<span class="nx">RailsNetworkInterface</span><span class="p">.</span><span class="nx">use</span><span class="p">([</span><span class="nx">OperationStoreClient</span><span class="p">.</span><span class="nx">apolloMiddleware</span><span class="p">])</span>
+</code></pre>
+</div>
+
+<h2 id="actioncable">ActionCable</h2>
+
+<p>By passing <code class="highlighter-rouge"><span class="p">{</span><span class="err">cable:</span><span class="w"> </span><span class="err">cable</span><span class="p">}</span></code>, all <code class="highlighter-rouge">subscription</code> queries will be routed to ActionCable.</p>
 
 <p>For example:</p>
 
@@ -79,8 +101,6 @@
 <span class="nx">RailsNetworkInterface</span><span class="p">.</span><span class="nx">use</span><span class="p">([</span><span class="nx">OperationStoreClient</span><span class="p">.</span><span class="nx">apolloMiddleware</span><span class="p">])</span>
 </code></pre>
 </div>
-
-<p>See the <a href="/subscriptions/overview">Subscriptions guide</a> for information about server-side setup.</p>
 
 </div>
 <p class="guide-footer">

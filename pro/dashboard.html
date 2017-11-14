@@ -1,0 +1,143 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+      <title>GraphQL Pro - Dashboard</title>
+    
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="icon" href="/graphql-ruby-icon.png">
+  </head>
+  <body>
+    <div class="header">
+      <div class="header-container">
+        <div class="nav">
+          <a href="/" class="img-link">
+            <img src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+          </a>
+          <a href="/getting_started">Get Started</a>
+          <a href="/guides">Guides</a>
+          <a href="http://www.rubydoc.info/gems/graphql/1.7.6/">API</a>
+          <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
+          <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+          <input
+            class="search-input"
+            onkeyup="GraphQLRubySearch.run(this)"
+            type="text"
+            placeholder="Search the docs..."
+          />
+        </div>
+      </div>
+      <div class="search-results-container">
+        <div id="search-results"></div>
+      </div>
+    </div>
+    <div class="container">
+      <p class="breadcrumb">
+  <a href="/">GraphQL</a>
+  &raquo; <a href="/guides">Guides</a>
+   &raquo; GraphQL Pro
+  &raquo; Dashboard
+</p>
+
+
+  <div class="pro-header">
+    <p>
+      <strong>⚡️ Pro Feature ⚡️</strong>
+      <span style="font-style: italic;">
+        This feature is bundled with <a href="http://graphql.pro">GraphQL-Pro</a>.
+      </span>
+    </p>
+  </div>
+
+<h1 class="guide-header">Dashboard</h1>
+<div class="guide-container">
+  <p><a href="http://graphql-pro">GraphQL-Pro</a> includes a web dashboard for monitoring <a href="/operation_store/overview">Operation Store</a> and <a href="/subscriptions/pusher_implementation">subscriptions</a>.</p>
+
+<!-- TODO image -->
+
+<h2 id="installation">Installation</h2>
+
+<p>To hook up the Dashboard, add it to <code class="highlighter-rouge">routes.rb</code></p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># config/routes.rb</span>
+
+<span class="c1"># Include GraphQL::Pro's routing extensions:</span>
+<span class="n">using</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">Routes</span>
+
+<span class="no">Rails</span><span class="p">.</span><span class="nf">application</span><span class="p">.</span><span class="nf">routes</span><span class="p">.</span><span class="nf">draw</span> <span class="k">do</span>
+  <span class="c1"># ...</span>
+  <span class="c1"># Add the GraphQL::Pro Dashboard</span>
+  <span class="c1"># TODO: authorize, see below</span>
+  <span class="n">mount</span> <span class="no">MySchema</span><span class="p">.</span><span class="nf">dashboard</span><span class="p">,</span> <span class="ss">at: </span><span class="s2">"/graphql/dashboard"</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<p>With this configuration, it will be available at <code class="highlighter-rouge">/graphql/dashboard</code>.</p>
+
+<p>The dashboard is a Rack app, so you can mount it in Sinatra or any other Rack app.</p>
+
+<h2 id="authorizing-the-dashboard">Authorizing the Dashboard</h2>
+
+<p>You should only allow admin users to see <code class="highlighter-rouge">/graphql/dashboard</code> because it allows viewers to delete stored operations.</p>
+
+<h3 id="rails-routing-constraints">Rails Routing Constraints</h3>
+
+<p>Use <a href="http://api.rubyonrails.org/v5.1/classes/ActionDispatch/Routing/Mapper/Scoping.html#method-i-constraints">Rails routing constraints</a> to restrict access to authorized users, for example:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># Check the secure session for a staff flag:</span>
+<span class="no">STAFF_ONLY</span> <span class="o">=</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">request</span><span class="p">)</span> <span class="p">{</span> <span class="n">request</span><span class="p">.</span><span class="nf">session</span><span class="p">[</span><span class="s2">"staff"</span><span class="p">]</span> <span class="o">==</span> <span class="kp">true</span> <span class="p">}</span>
+<span class="c1"># Only serve the GraphQL Dashboard to staff users:</span>
+<span class="n">constraints</span><span class="p">(</span><span class="no">STAFF_ONLY</span><span class="p">)</span> <span class="k">do</span>
+  <span class="n">mount</span> <span class="no">MySchema</span><span class="p">.</span><span class="nf">dashboard</span><span class="p">,</span> <span class="ss">at: </span><span class="s2">"/graphql/dashboard"</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<h3 id="rack-basic-authentication">Rack Basic Authentication</h3>
+
+<p>Insert the <code class="highlighter-rouge">Rack::Auth::Basic</code> middleware, before the web view. This prompts for a username and password when visiting the dashboard.</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">graphql_dashboard</span> <span class="o">=</span> <span class="no">Rack</span><span class="o">::</span><span class="no">Builder</span><span class="p">.</span><span class="nf">new</span> <span class="k">do</span>
+  <span class="n">use</span><span class="p">(</span><span class="no">Rack</span><span class="o">::</span><span class="no">Auth</span><span class="o">::</span><span class="no">Basic</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">username</span><span class="p">,</span> <span class="n">password</span><span class="o">|</span>
+    <span class="n">username</span> <span class="o">==</span> <span class="no">ENV</span><span class="p">.</span><span class="nf">fetch</span><span class="p">(</span><span class="s2">"GRAPHQL_USERNAME"</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="n">password</span> <span class="o">==</span> <span class="no">ENV</span><span class="p">.</span><span class="nf">fetch</span><span class="p">(</span><span class="s2">"GRAPHQL_PASSWORD"</span><span class="p">)</span>
+  <span class="k">end</span>
+
+  <span class="n">run</span> <span class="no">MySchema</span><span class="p">.</span><span class="nf">dashboard</span>
+<span class="k">end</span>
+<span class="n">mount</span> <span class="n">graphql_dashboard</span><span class="p">,</span> <span class="ss">at: </span><span class="s2">"/graphql/dashboard"</span>
+</code></pre>
+</div>
+
+</div>
+<p class="guide-footer">
+  Suggestion, improvement, or correction?
+  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/pro/dashboard.md">Edit this file</a> or
+  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: Dashboard">report an issue</a>.
+</p>
+<script>
+  // Find headers with IDs and wrap their text in `<a href=></a>`
+  // That way people can easily copy the link.
+  var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+  var header, idText, headerLink;
+  for (var i = 0; i < headers.length; i++) {
+    header = headers[i];
+    idText = header.id;
+    if (idText) {
+      headerLink = document.createElement("a");
+      headerLink.href = "#" + idText;
+      headerLink.textContent = header.textContent;
+      header.textContent = "";
+      header.appendChild(headerLink);
+    }
+  }
+</script>
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/algoliasearch/3/algoliasearchLite.min.js"></script>
+    <script src="/js/search.js"></script>
+  </body>
+</html>
