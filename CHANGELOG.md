@@ -8,6 +8,12 @@
 
 ### Bug fixes
 
+## 1.7.6 (13 Nov 2017)
+
+### Bug fixes
+
+- Serialize symbols in with `GraphQL::Subscriptions::Serialize` #1084
+
 ## 1.7.5 (7 Nov 2017)
 
 ### Breaking changes
