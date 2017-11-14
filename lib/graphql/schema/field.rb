@@ -80,30 +80,45 @@ module GraphQL
         field_defn.connection = connection
         field_defn.connection_max_page_size = @max_page_size
 
+        field_proxy = FieldProxy.new(field_defn, argument_class: self.class.argument_class)
         # apply this first, so it can be overriden below
         if connection
-          conn_args = FieldProxy.new(field_defn)
-          conn_args.argument :after, "String", "Returns the elements in the list that come after the specified global ID.", required: false
-          conn_args.argument :before, "String", "Returns the elements in the list that come before the specified global ID.", required: false
-          conn_args.argument :first, "Int", "Returns the first _n_ elements from the list.", required: false
-          conn_args.argument :last, "Int", "Returns the last _n_ elements from the list.", required: false
+          field_proxy.argument :after, "String", "Returns the elements in the list that come after the specified global ID.", required: false
+          field_proxy.argument :before, "String", "Returns the elements in the list that come before the specified global ID.", required: false
+          field_proxy.argument :first, "Int", "Returns the first _n_ elements from the list.", required: false
+          field_proxy.argument :last, "Int", "Returns the last _n_ elements from the list.", required: false
         end
 
         if @args_block
-          FieldProxy.new(field_defn).instance_eval(&@args_block)
+          field_proxy.instance_eval(&@args_block)
         end
 
         field_defn
       end
 
+      class << self
+        def argument_class(new_arg_class = nil)
+          if new_arg_class
+            @argument_class = new_arg_class
+          else
+            @argument_class || GraphQL::Schema::Argument
+          end
+        end
+      end
 
+
+      # This object exists only to be `instance_eval`'d
+      # when the `field(...)` method is called with a block.
+      # This object receives that block.
       class FieldProxy
-        def initialize(field)
+        def initialize(field, argument_class:)
           @field = field
+          @argument_class = argument_class
         end
 
+        # This is the `argument(...)` DSL for class-based field definitons
         def argument(*args)
-          arg = GraphQL::Schema::Argument.new(*args)
+          arg = @argument_class.new(*args)
           @field.arguments[arg.name] = arg.graphql_definition
         end
       end
