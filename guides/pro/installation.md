@@ -42,7 +42,7 @@ Be sure to check the [changelog](https://github.com/rmosolgo/graphql-ruby/blob/m
 
 ## Dependencies
 
-`graphql-pro 1.0.0` requires `graphql ~>1.4`. The latest version requires `graphql ~>1.6`.
+`graphql-pro 1.0.0` requires `graphql ~>1.4`. The latest version requires `graphql =>1.7.6`.
 
 ## Verifying Integrity
 
