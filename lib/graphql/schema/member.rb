@@ -17,6 +17,17 @@ module GraphQL
         end
       end
 
+      # These constants are interpreted as GraphQL types
+      #
+      # @example
+      #   field :isDraft, Boolean, null: false
+      #   field :id, ID, null: false
+      module GraphQLTypeNames
+        Boolean = "Boolean"
+        ID = "ID"
+      end
+
+      include GraphQLTypeNames
       class << self
         include CachedGraphQLDefinition
 
