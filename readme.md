@@ -9,7 +9,7 @@
 A Ruby implementation of [GraphQL](http://graphql.org/).
 
 - [Website](https://rmosolgo.github.io/graphql-ruby)
-- [API Documentation](http://www.rubydoc.info/github/rmosolgo/graphql-ruby)
+- [API Documentation](http://www.rubydoc.info/gems/graphql)
 - [Newsletter](https://tinyletter.com/graphql-ruby)
 
 ## Installation
