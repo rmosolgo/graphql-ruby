@@ -154,8 +154,7 @@ The second argument to `field(...)` is the return type. This can be:
 
 - A GraphQL type object built with `.define { ... }`
 - A GraphQL type class which you defined
-- A Ruby built-in such as `Integer`, `Float` or `String`
-- A string which corresponds to a GraphQL built-in, such as `"ID"`, `"Boolean"`, or `"Int"`
+- A Ruby constant such as `Integer`, `Float`, `String`, `ID`, or `Boolean` (these correspond to GraphQL built-in scalars)
 - An _array_ of any of the above, which denotes a list type. Inner list types are always made non-null.
 
 Nullability is expressed with the required `null:` keyword:
@@ -167,7 +166,7 @@ Here are some examples:
 
 ```ruby
 field :name, String, null: true # String
-field :id, "ID", null: false # ID!
+field :id, ID, null: false # ID!
 field :scores, [Integer], null: false, # [Int!]!
 field :teammates, [Types::User], null: false, # [User!]!
 ```
@@ -338,7 +337,7 @@ Then extend it for your input objects:
 class PostInputType < BaseInputObject
   argument :title, String, required: true
   argument :body, String, required: true
-  argument :isDraft, "Boolean", required: false, default_value: false
+  argument :isDraft, Boolean, required: false, default_value: false
 end
 ```
 

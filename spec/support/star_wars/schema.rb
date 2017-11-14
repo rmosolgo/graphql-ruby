@@ -90,7 +90,7 @@ module StarWars
   class Faction < GraphQL::Schema::Object
     implements GraphQL::Relay::Node.interface
 
-    field :id, "ID", null: false, resolve: GraphQL::Relay::GlobalIdResolve.new(type: Faction)
+    field :id, ID, null: false, resolve: GraphQL::Relay::GlobalIdResolve.new(type: Faction)
     field :name, String, null: true
     field :ships, ShipConnectionWithParentType, connection: true, max_page_size: 1000, null: true, resolve: ->(obj, args, ctx) {
       all_ships = obj.ships.map {|ship_id| StarWars::DATA["Ship"][ship_id] }
@@ -331,7 +331,7 @@ module StarWars
     )
 
     field :batchedBase, BaseType, null: true do
-      argument :id, "ID", required: true
+      argument :id, ID, required: true
     end
 
     def batched_base(id:)
