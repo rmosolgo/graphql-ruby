@@ -43,8 +43,22 @@ module Jazz
     end
   end
 
+  class BaseArgument < GraphQL::Schema::Argument
+    def initialize(name, type, desc = nil, custom: nil, **kwargs)
+      @custom = custom
+      super(name, type, desc, **kwargs)
+    end
+
+    def to_graphql
+      arg_defn = super
+      arg_defn.metadata[:custom] = @custom
+      arg_defn
+    end
+  end
+
   # A custom field class that supports the `upcase:` option
   class BaseField < GraphQL::Schema::Field
+    argument_class BaseArgument
     def initialize(*args, options, &block)
       @upcase = options.delete(:upcase)
       super(*args, options, &block)
@@ -232,7 +246,7 @@ module Jazz
   class Query < BaseObject
     field :ensembles, [Ensemble], null: false
     field :find, GloballyIdentifiableType, null: true do
-      argument :id, ID, required: true
+      argument :id, ID, required: true, custom: :ok
     end
     field :instruments, [InstrumentType], null: false do
       argument :family, Family, required: false

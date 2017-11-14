@@ -525,6 +525,18 @@ end
 
 Now, `AuthorizedField.new(*args, &block).to_graphql` will be used to create `GraphQL::Field`s.
 
+### Customizing Arguments
+
+Arguments may be customized in a similar way to Fields.
+
+- Create a new class extending `GraphQL::Schema::Argument`
+- Assign it to your field class with `argument_class(MyArgClass)`
+
+Then, in your custom argument class, you can use:
+
+- `#initialize(name, type, desc = nil, **kwargs)` to take input from the DSL
+- `#to_graphql` to modify the conversion to a {{ "GraphQL::Argument" | api_doc }}
+
 ### Customization compatibility
 
 Inevitably, this will result in some duplication while you migrate from one definition API to the other. Here are a couple of ways to re-use _old_ customizations with the new framework:
