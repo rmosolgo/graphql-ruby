@@ -16,7 +16,7 @@ module GraphQL
       def initialize(name, return_type_expr = nil, desc = nil, null: nil, field: nil, function: nil, deprecation_reason: nil, method: nil, connection: nil, max_page_size: nil, resolve: nil, &args_block)
         if !(field || function)
           if return_type_expr.nil?
-            raise ArgumentError "missing possitional argument `type`"
+            raise ArgumentError, "missing possitional argument `type`"
           end
           if null.nil?
             raise ArgumentError, "missing keyword argument null:"
