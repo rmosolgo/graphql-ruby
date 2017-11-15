@@ -1,5 +1,9 @@
 # graphql-ruby-client
 
+## 1.2.0 (15 Nov 2017)
+
+- Support Apollo batching middleware #1092
+
 ## 1.1.3 (11 Oct 2017)
 
 - Fix Apollo + ActionCable unsubscribe function #1019
