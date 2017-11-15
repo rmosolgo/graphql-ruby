@@ -68,6 +68,18 @@ var OperationStoreClient = {
    * Replace the query with an operationId
   */
   apolloMiddleware: {
+    applyBatchMiddleware: function(options, next) {
+      options.requests = options.requests.map(function(req) {
+        // Fetch the persisted alias for this operation
+        req.operationId = OperationStoreClient.getOperationId(req.operationName)
+        // Remove the now-unused query string
+        delete req.query
+        return req
+      })
+      // Continue the request
+      next()
+    },
+
     applyMiddleware: function(options, next) {
       var req = options.request
       // Fetch the persisted alias for this operation
