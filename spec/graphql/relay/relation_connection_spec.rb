@@ -74,6 +74,35 @@ describe GraphQL::Relay::RelationConnection do
       )
     end
 
+    it "makes one sql query for items and another for count" do
+      query_str = <<-GRAPHQL
+      {
+        empire {
+          bases(first: 2) {
+            totalCount
+            edges {
+              cursor
+              node {
+                name
+              }
+            }
+          }
+        }
+      }
+      GRAPHQL
+      io = StringIO.new
+      begin
+        prev_logger = ActiveRecord::Base.logger
+        ActiveRecord::Base.logger = Logger.new(io)
+        result = star_wars_query(query_str, "first" => 2)
+      ensure
+        ActiveRecord::Base.logger = prev_logger
+      end
+      assert_equal 2, io.string.scan("\n").count, "Two log entries"
+      assert_equal 3, result["data"]["empire"]["bases"]["totalCount"]
+      assert_equal 2, result["data"]["empire"]["bases"]["edges"].size
+    end
+
     it "provides bidirectional_pagination" do
       result = star_wars_query(query_string, "first" => 1)
       last_cursor = get_last_cursor(result)
@@ -563,6 +592,35 @@ describe GraphQL::Relay::RelationConnection do
 
         result = star_wars_query(query_string, "last" => 1, "nameIncludes" => "ea", "before" => before)
         assert_equal(["Death Star"], get_names(result))
+      end
+
+      it "makes one sql query for items and another for count" do
+        query_str = <<-GRAPHQL
+        {
+          empire {
+            basesAsSequelDataset(first: 2) {
+              totalCount
+              edges {
+                cursor
+                node {
+                  name
+                }
+              }
+            }
+          }
+        }
+        GRAPHQL
+        result = nil
+        io = StringIO.new
+        begin
+          StarWars::DB.loggers << Logger.new(io)
+          result = star_wars_query(query_str, "first" => 2)
+        ensure
+          StarWars::DB.loggers.pop
+        end
+        assert_equal 2, io.string.scan("SELECT").count
+        assert_equal 3, result["data"]["empire"]["basesAsSequelDataset"]["totalCount"]
+        assert_equal 2, result["data"]["empire"]["basesAsSequelDataset"]["edges"].size
       end
     end
   end

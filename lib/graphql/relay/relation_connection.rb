@@ -7,11 +7,11 @@ module GraphQL
     # - `Sequel::Dataset`
     class RelationConnection < BaseConnection
       def cursor_from_node(item)
-        item_index = paged_nodes_array.index(item)
+        item_index = paged_nodes.index(item)
         if item_index.nil?
           raise("Can't generate cursor, item not found in connection: #{item}")
         else
-          offset = item_index + 1 + ((relation_offset(paged_nodes) || 0) - (relation_offset(sliced_nodes) || 0))
+          offset = item_index + 1 + ((paged_nodes_offset || 0) - (relation_offset(sliced_nodes) || 0))
 
           if after
             offset += offset_from_cursor(after)
@@ -25,7 +25,7 @@ module GraphQL
 
       def has_next_page
         if first
-          paged_nodes_length >= first && sliced_nodes_count > first
+          paged_nodes.length >= first && sliced_nodes_count > first
         elsif GraphQL::Relay::ConnectionType.bidirectional_pagination && last
           sliced_nodes_count > last
         else
@@ -35,7 +35,7 @@ module GraphQL
 
       def has_previous_page
         if last
-          paged_nodes_length >= last && sliced_nodes_count > last
+          paged_nodes.length >= last && sliced_nodes_count > last
         elsif GraphQL::Relay::ConnectionType.bidirectional_pagination && after
           # We've already paginated through the collection a bit,
           # there are nodes behind us
@@ -64,6 +64,7 @@ module GraphQL
       private
 
       # apply first / last limit results
+      # @return [Array]
       def paged_nodes
         return @paged_nodes if defined? @paged_nodes
 
@@ -94,7 +95,14 @@ module GraphQL
           end
         end
 
-        @paged_nodes = items
+        # Store this here so we can convert the relation to an Array
+        # (this avoids an extra DB call on Sequel)
+        @paged_nodes_offset = relation_offset(items)
+        @paged_nodes = items.to_a
+      end
+
+      def paged_nodes_offset
+        paged_nodes && @paged_nodes_offset
       end
 
       def relation_offset(relation)
@@ -165,19 +173,6 @@ module GraphQL
 
       def offset_from_cursor(cursor)
         decode(cursor).to_i
-      end
-
-      def paged_nodes_array
-        return @paged_nodes_array if defined?(@paged_nodes_array)
-        @paged_nodes_array = paged_nodes.to_a
-      end
-
-      def paged_nodes_length
-        if paged_nodes.respond_to?(:length)
-          paged_nodes.length
-        else
-          paged_nodes_array.length
-        end
       end
     end
 
