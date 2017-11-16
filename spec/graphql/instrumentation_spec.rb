@@ -6,7 +6,9 @@ describe GraphQL::Schema do
     class BadInstrumenter
       def before_query(unit_of_work)
         unit_of_work.context[:bad_instrumenter_did_begin] = true
-        self.bad_method # raises NoMethodError
+        if !unit_of_work.context[:skip_bad_method]
+          self.bad_method # raises NoMethodError
+        end
       end
 
       def after_query(unit_of_work)
@@ -60,7 +62,7 @@ describe GraphQL::Schema do
       end
     end
 
-    describe "multiplex instrumenters" do
+    describe "within a multiplex" do
       let(:multiplex_schema) {
         schema.redefine {
           instrument(:multiplex, GoodInstrumenter.new)
@@ -68,11 +70,11 @@ describe GraphQL::Schema do
         }
       }
 
-      it "only runs after_ if before_ finished" do
+      it "only runs after_multiplex if before_multiplex finished" do
         multiplex_ctx = {}
         query_1_ctx = {}
         query_2_ctx = {}
-        err = assert_raises NoMethodError do
+        assert_raises NoMethodError do
           multiplex_schema.multiplex(
             [
               {query: "{int(value: 1)}", context: query_1_ctx},
@@ -89,6 +91,39 @@ describe GraphQL::Schema do
         # No query instrumentation was run at all
         assert_equal 0, query_1_ctx.size
         assert_equal 0, query_2_ctx.size
+      end
+
+      it "does full and partial query runs" do
+        multiplex_ctx = {skip_bad_method: true}
+        query_1_ctx = {skip_bad_method: true}
+        query_2_ctx = {}
+        assert_raises NoMethodError do
+          multiplex_schema.multiplex(
+            [
+              { query: " { int(value: 2) } ", context: query_1_ctx },
+              { query: " { int(value: 2) } ", context: query_2_ctx },
+            ],
+            context: multiplex_ctx
+          )
+        end
+
+        # multiplex got a full run
+        assert multiplex_ctx[:good_instrumenter_did_begin]
+        assert multiplex_ctx[:good_instrumenter_did_end]
+        assert multiplex_ctx[:bad_instrumenter_did_begin]
+        assert multiplex_ctx[:bad_instrumenter_did_end]
+
+        # query 1 got a full run
+        assert query_1_ctx[:good_instrumenter_did_begin]
+        assert query_1_ctx[:good_instrumenter_did_end]
+        assert query_1_ctx[:bad_instrumenter_did_begin]
+        assert query_1_ctx[:bad_instrumenter_did_end]
+
+        # query 2 got a partial run
+        assert query_2_ctx[:good_instrumenter_did_begin]
+        assert query_2_ctx[:good_instrumenter_did_end]
+        assert query_2_ctx[:bad_instrumenter_did_begin]
+        refute query_2_ctx[:bad_instrumenter_did_end]
       end
     end
   end
