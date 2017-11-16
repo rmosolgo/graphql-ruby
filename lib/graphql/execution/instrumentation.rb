@@ -17,75 +17,63 @@ module GraphQL
       # - If a `before_multiplex` hook raises an error, no `before_query` hooks will run
       # - If a `before_query` hook raises an error, subsequent `before_query` hooks will not run (on any query)
       def self.apply_instrumenters(multiplex)
-        completely_instrumented_queries = 0
-        partial_instrumenters = 0
-        completed_multiplex_instrumenters = 0
-
         schema = multiplex.schema
         queries = multiplex.queries
         query_instrumenters = schema.instrumenters[:query]
         multiplex_instrumenters = schema.instrumenters[:multiplex]
 
+        result = nil
         # First, run multiplex instrumentation, then query instrumentation for each query
-        multiplex_instrumenters.each { |i|
-          i.before_multiplex(multiplex)
-          completed_multiplex_instrumenters += 1
-        }
-        queries.each do |query|
-          query_instrumenters.each { |i|
-            i.before_query(query)
-            partial_instrumenters += 1
-          }
-          partial_instrumenters = 0
-          completely_instrumented_queries += 1
+        call_multiplex_hooks(multiplex_instrumenters, multiplex) do
+          each_query_call_hooks(query_instrumenters, queries) do
+            # Let them be executed
+            result = yield
+          end
         end
 
-        # Let them be executed
-        yield
-      ensure
-        # Finally, run teardown instrumentation for each query + the multiplex
-        # Use `reverse_each` so instrumenters are treated like a stack
-        last_complete_query_idx = completely_instrumented_queries - 1
-        partial_query_idx = last_complete_query_idx + 1
-        # If we get an error in teardown, we hold the _first_ one here.
-        # (Later ones are ignored.)
-        # This one gets re-raised after calling all after_ hooks.
-        raised_teardown_error = nil
-        queries.each_with_index do |query, idx|
-          if idx <= last_complete_query_idx
-            query_instrumenters.reverse_each { |i|
-              begin
-                i.after_query(query)
-              rescue
-                # It raised an error, but we promised to call the next one.
-                raised_teardown_error ||= $!
-              end
+        result
+      end
+
+      def self.each_query_call_hooks(instrumenters, queries, i = 0)
+        if i >= queries.length
+          yield
+        else
+          query = queries[i]
+          call_query_hooks(instrumenters, query) {
+            each_query_call_hooks(instrumenters, queries, i + 1) {
+              yield
             }
-          elsif idx == partial_query_idx
-            finished_instrumenters = query_instrumenters.first(partial_instrumenters)
-            finished_instrumenters.reverse_each { |i|
-              begin
-                i.after_query(query)
-              rescue
-                raised_teardown_error ||= $!
-              end
+          }
+        end
+      end
+
+      def self.call_query_hooks(instrumenters, query, i = 0)
+        if i >= instrumenters.length
+          yield
+        else
+          instrumenters[i].before_query(query)
+          begin
+            call_query_hooks(instrumenters, query, i + 1) {
+              yield
             }
-          else
-            # No instrumenters were run on this query,
-            # an error occurred before we reached it.
-            next
+          ensure
+            instrumenters[i].after_query(query)
           end
         end
-        teardown_insts = multiplex_instrumenters.first(completed_multiplex_instrumenters)
-        teardown_insts.reverse_each { |i|
+      end
+
+      def self.call_multiplex_hooks(instrumenters, multiplex, i = 0)
+        if i >= instrumenters.length
+          yield
+        else
+          instrumenters[i].before_multiplex(multiplex)
           begin
-            i.after_multiplex(multiplex)
-          rescue
-            raised_teardown_error ||= $!
+            call_multiplex_hooks(instrumenters, multiplex, i + 1) {
+              yield
+            }
+          ensure
+            instrumenters[i].after_multiplex(multiplex)
           end
-        }
-        if raised_teardown_error
-          raise raised_teardown_error
         end
       end
     end
