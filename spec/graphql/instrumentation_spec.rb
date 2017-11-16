@@ -5,22 +5,22 @@ describe GraphQL::Schema do
   describe "instrumentation teardown bug" do
     class BadInstrumenter
       def before_query(query)
-        bad_method
+        query.context[:bad_instrumenter_did_begin] = true
+        self.bad_method # raises NoMethodError
       end
 
       def after_query(query)
+        query.context[:bad_instrumenter_did_end] = true
       end
     end
 
     class GoodInstrumenter
-      attr_reader :before_query_did_run
-
       def before_query(query)
-        @before_query_did_run = true
+        query.context[:good_instrumenter_did_begin] = true
       end
 
       def after_query(query)
-        raise 'bad teardown' unless before_query_did_run
+        query.context[:good_instrumenter_did_end] = true
       end
     end
 
@@ -38,14 +38,21 @@ describe GraphQL::Schema do
       spec = self
       GraphQL::Schema.define do
         query(spec.query_type)
-        instrument(:query, BadInstrumenter.new)
         instrument(:query, GoodInstrumenter.new)
+        instrument(:query, BadInstrumenter.new)
       end
     }
 
     it "before_query of the 2nd instrumenter does not run but after_query does" do
-      res = schema.execute(" { int(value: 2) } ")
-      assert_equal 2, res["data"]["int"]
+      context = {}
+      assert_raises NoMethodError do
+        schema.execute(" { int(value: 2) } ", context: context)
+      end
+
+      assert context[:good_instrumenter_did_begin]
+      assert context[:good_instrumenter_did_end]
+      assert context[:bad_instrumenter_did_begin]
+      refute context[:bad_instrumenter_did_end]
     end
   end
 end

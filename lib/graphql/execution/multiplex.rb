@@ -163,6 +163,12 @@ module GraphQL
         #
         # It yields when the queries should be executed, then runs teardown.
         def with_instrumentation(multiplex, max_complexity:)
+          # These implement our instrumentation policy.
+          # - If a before_ hook returned without an error, its corresponding after_ hook will run.
+          # - If the before_ hook did _not_ run, the after_ hook will not be called
+          completely_instrumented_queries = 0
+          partial_instrumenters = 0
+
           schema = multiplex.schema
           queries = multiplex.queries
           query_instrumenters = schema.instrumenters[:query]
@@ -171,7 +177,12 @@ module GraphQL
           # First, run multiplex instrumentation, then query instrumentation for each query
           multiplex_instrumenters.each { |i| i.before_multiplex(multiplex) }
           queries.each do |query|
-            query_instrumenters.each { |i| i.before_query(query) }
+            query_instrumenters.each { |i|
+              i.before_query(query)
+              partial_instrumenters += 1
+            }
+            partial_instrumenters = 0
+            completely_instrumented_queries += 1
           end
 
           multiplex_analyzers = schema.multiplex_analyzers
@@ -186,8 +197,19 @@ module GraphQL
         ensure
           # Finally, run teardown instrumentation for each query + the multiplex
           # Use `reverse_each` so instrumenters are treated like a stack
-          queries.each do |query|
-            query_instrumenters.reverse_each { |i| i.after_query(query) }
+          last_complete_query_idx = completely_instrumented_queries - 1
+          partial_query_idx = last_complete_query_idx + 1
+          queries.each_with_index do |query, idx|
+            if idx <= last_complete_query_idx
+              query_instrumenters.reverse_each { |i| i.after_query(query) }
+            elsif idx == partial_query_idx
+              finished_instrumenters = query_instrumenters.first(partial_instrumenters)
+              finished_instrumenters.reverse_each { |i| i.after_query(query) }
+            else
+              # No instrumenters were run on this query,
+              # an error occurred before we reached it.
+              next
+            end
           end
           multiplex_instrumenters.reverse_each { |i| i.after_multiplex(multiplex) }
         end
