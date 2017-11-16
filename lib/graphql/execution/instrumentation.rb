@@ -22,57 +22,58 @@ module GraphQL
         query_instrumenters = schema.instrumenters[:query]
         multiplex_instrumenters = schema.instrumenters[:multiplex]
 
-        result = nil
         # First, run multiplex instrumentation, then query instrumentation for each query
-        call_multiplex_hooks(multiplex_instrumenters, multiplex) do
+        call_hooks(multiplex_instrumenters, multiplex, :before_multiplex, :after_multiplex) do
           each_query_call_hooks(query_instrumenters, queries) do
             # Let them be executed
-            result = yield
-          end
-        end
-
-        result
-      end
-
-      def self.each_query_call_hooks(instrumenters, queries, i = 0)
-        if i >= queries.length
-          yield
-        else
-          query = queries[i]
-          call_query_hooks(instrumenters, query) {
-            each_query_call_hooks(instrumenters, queries, i + 1) {
-              yield
-            }
-          }
-        end
-      end
-
-      def self.call_query_hooks(instrumenters, query, i = 0)
-        if i >= instrumenters.length
-          yield
-        else
-          instrumenters[i].before_query(query)
-          begin
-            call_query_hooks(instrumenters, query, i + 1) {
-              yield
-            }
-          ensure
-            instrumenters[i].after_query(query)
+            yield
           end
         end
       end
 
-      def self.call_multiplex_hooks(instrumenters, multiplex, i = 0)
-        if i >= instrumenters.length
-          yield
-        else
-          instrumenters[i].before_multiplex(multiplex)
-          begin
-            call_multiplex_hooks(instrumenters, multiplex, i + 1) {
-              yield
+      class << self
+        private
+        # Call the before_ hooks of each query,
+        # Then yield if no errors.
+        # `call_hooks` takes care of appropriate cleanup.
+        def each_query_call_hooks(instrumenters, queries, i = 0)
+          if i >= queries.length
+            yield
+          else
+            query = queries[i]
+            call_hooks(instrumenters, query, :before_query, :after_query) {
+              each_query_call_hooks(instrumenters, queries, i + 1) {
+                yield
+              }
             }
-          ensure
-            instrumenters[i].after_multiplex(multiplex)
+          end
+        end
+
+        # Call each before hook, and if they all succeed, yield.
+        # If they don't all succeed, call after_ for each one that succeeded.
+        def call_hooks(instrumenters, object, before_hook_name, after_hook_name, i = 0)
+          if i >= instrumenters.length
+            # We've reached the end of the instrumenters, so start exiting the call stack.
+            # (This will eventually call the originally-passed block.)
+            yield
+          else
+            # Get the next instrumenter and call the before_hook.
+            instrumenter = instrumenters[i]
+            instrumenter.public_send(before_hook_name, object)
+            # At this point, the before_hook did _not_ raise an error.
+            # (If it did raise an error, we wouldn't reach this point.)
+            # So we should guarantee that we run the after_hook.
+            begin
+              # Call the next instrumenter on the list,
+              # basically passing along the original block
+              call_hooks(instrumenters, object, before_hook_name, after_hook_name, i + 1) {
+                yield
+              }
+            ensure
+              # Regardless of how the next instrumenter in the list behaves,
+              # call the after_hook of this instrumenter
+              instrumenter.public_send(after_hook_name, object)
+            end
           end
         end
       end
