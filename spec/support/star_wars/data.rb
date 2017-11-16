@@ -18,13 +18,12 @@ module StarWars
     'Executor',
   ]
 
-  # ActiveRecord::Base.logger = Logger.new(STDOUT)
   `rm -f ./_test_.db`
   # Set up "Bases" in ActiveRecord
 
   if jruby?
     ActiveRecord::Base.establish_connection(adapter: "jdbcsqlite3", database: "./_test_.db")
-    Sequel.connect('jdbc:sqlite:./_test_.db')
+    DB = Sequel.connect('jdbc:sqlite:./_test_.db')
   elsif ENV['DATABASE'] == 'POSTGRESQL'
     ActiveRecord::Base.establish_connection(
       adapter: "postgresql",
