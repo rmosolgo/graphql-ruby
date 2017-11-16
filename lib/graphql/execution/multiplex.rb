@@ -168,6 +168,7 @@ module GraphQL
           # - If the before_ hook did _not_ run, the after_ hook will not be called
           completely_instrumented_queries = 0
           partial_instrumenters = 0
+          completed_multiplex_instrumenters = 0
 
           schema = multiplex.schema
           queries = multiplex.queries
@@ -175,7 +176,10 @@ module GraphQL
           multiplex_instrumenters = schema.instrumenters[:multiplex]
 
           # First, run multiplex instrumentation, then query instrumentation for each query
-          multiplex_instrumenters.each { |i| i.before_multiplex(multiplex) }
+          multiplex_instrumenters.each { |i|
+            i.before_multiplex(multiplex)
+            completed_multiplex_instrumenters += 1
+          }
           queries.each do |query|
             query_instrumenters.each { |i|
               i.before_query(query)
@@ -211,7 +215,8 @@ module GraphQL
               next
             end
           end
-          multiplex_instrumenters.reverse_each { |i| i.after_multiplex(multiplex) }
+          teardown_insts = multiplex_instrumenters.first(completed_multiplex_instrumenters)
+          teardown_insts.reverse_each { |i| i.after_multiplex(multiplex) }
         end
       end
     end
