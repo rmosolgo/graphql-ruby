@@ -12,7 +12,7 @@ describe GraphQL::Schema do
       end
     end
 
-    class Instrumenter
+    class GoodInstrumenter
       attr_reader :before_query_did_run
 
       def before_query(query)
@@ -39,7 +39,7 @@ describe GraphQL::Schema do
       GraphQL::Schema.define do
         query(spec.query_type)
         instrument(:query, BadInstrumenter.new)
-        instrument(:query, Instrumenter.new)
+        instrument(:query, GoodInstrumenter.new)
       end
     }
 
