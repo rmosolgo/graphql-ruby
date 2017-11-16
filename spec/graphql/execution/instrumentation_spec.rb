@@ -6,26 +6,33 @@ describe GraphQL::Schema do
     # This instrumenter records that it ran,
     # or raises an error if instructed to do so
     class InstrumenterError < StandardError
+      attr_reader :key
+      def initialize(key)
+        @key = key
+        super()
+      end
     end
 
     class LogInstrumenter
       def before_query(unit_of_work)
-        unit_of_work.context[log_key("begin")] = true
-        if unit_of_work.context[raise_key("begin")]
-          raise InstrumenterError
-        end
+        run_hook(unit_of_work, "begin")
       end
 
       def after_query(unit_of_work)
-        unit_of_work.context[log_key("end")] = true
-        if unit_of_work.context[raise_key("end")]
-          raise InstrumenterError
-        end
+        run_hook(unit_of_work, "end")
       end
+
       alias :before_multiplex :before_query
       alias :after_multiplex :after_query
 
       private
+
+      def run_hook(unit_of_work, event_name)
+        unit_of_work.context[log_key(event_name)] = true
+        if unit_of_work.context[raise_key(event_name)]
+          raise InstrumenterError.new(log_key(event_name))
+        end
+      end
 
       def log_key(event_name)
         context_key("did_#{event_name}")
@@ -73,6 +80,20 @@ describe GraphQL::Schema do
         assert context[:first_instrumenter_did_end]
         assert context[:second_instrumenter_did_begin]
         refute context[:second_instrumenter_did_end]
+      end
+
+      it "runs after_query even if a previous after_query raised an error" do
+        context = {second_instrumenter_should_raise_end: true}
+        err = assert_raises InstrumenterError do
+          schema.execute(" { int(value: 2) } ", context: context)
+        end
+        # The error came from the second instrumenter:
+        assert_equal :second_instrumenter_did_end, err.key
+        # But the first instrumenter still got a chance to teardown
+        assert context[:first_instrumenter_did_begin]
+        assert context[:first_instrumenter_did_end]
+        assert context[:second_instrumenter_did_begin]
+        assert context[:second_instrumenter_did_end]
       end
     end
 
