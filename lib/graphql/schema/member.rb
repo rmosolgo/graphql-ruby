@@ -64,9 +64,10 @@ module GraphQL
 
         # Just a convenience method to point out that people should use graphql_name instead
         def name(new_name = nil)
+          new_name ||= "Your name here"
           fail(
             "The new name override method is `graphql_name`, not `name`. Usage: "\
-            "graphql_name #{new_name || \"Your name here\"}"
+            "graphql_name '#{new_name}"
           )
         end
 
