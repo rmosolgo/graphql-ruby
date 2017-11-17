@@ -130,6 +130,7 @@ module GraphQL
       :relay_node_field,
       :relay_nodes_field,
       :subscription_scope,
+      :trace,
       argument: GraphQL::Define::AssignArgument
 
     ensure_defined(

@@ -59,6 +59,7 @@ module GraphQL
       :object_from_id, :id_from_object,
       :default_mask,
       :cursor_encoder,
+      :trace_fields_by_default,
       directives: ->(schema, directives) { schema.directives = directives.reduce({}) { |m, d| m[d.name] = d; m  }},
       instrument: ->(schema, type, instrumenter, after_built_ins: false) {
         if type == :field && after_built_ins
@@ -80,6 +81,7 @@ module GraphQL
       :orphan_types, :directives,
       :query_analyzers, :multiplex_analyzers, :instrumenters, :lazy_methods,
       :cursor_encoder,
+      :trace_fields_by_default,
       :raise_definition_error
 
     # Single, long-lived instance of the provided subscriptions class, if there is one.

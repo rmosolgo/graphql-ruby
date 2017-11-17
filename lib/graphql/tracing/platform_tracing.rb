@@ -41,12 +41,21 @@ module GraphQL
         return_type = field.type.unwrap
         case return_type
         when GraphQL::ScalarType, GraphQL::EnumType
-          field
+          if field.metadata[:trace]
+            binding.pry
+            trace_field(field)
+          else
+            field
+          end
         else
-          new_f = field.redefine
-          new_f.metadata[:platform_key] = platform_field_key(type, field)
-          new_f
+          trace_field(field)
         end
+      end
+
+      def trace_field(field)
+        new_f = field.redefine
+        new_f.metadata[:platform_key] = platform_field_key(type, field)
+        new_f
       end
 
       def self.use(schema_defn)
