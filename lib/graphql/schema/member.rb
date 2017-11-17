@@ -62,6 +62,14 @@ module GraphQL
           end
         end
 
+        # Just a convenience method to point out that people should use graphql_name instead
+        def name(new_name = nil)
+          fail(
+            "The new name override method is `graphql_name`, not `name`. Usage: "\
+            "graphql_name #{new_name || \"Your name here\"}"
+          )
+        end
+
         # Call this method to provide a new description; OR
         # call it without an argument to get the description
         # @param new_description [String]
