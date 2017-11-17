@@ -54,12 +54,12 @@ describe GraphQL::BaseType do
   describe "name" do
     it "fails with a helpful message" do
       error = assert_raises RuntimeError do
-        GraphQL::ObjectType.define do
-          name "kerkshine"
+        class BaseType < GraphQL::Schema::Object
+          name "KerkShine"
         end
       end
 
-      assert_equal error.message, "The new name override method is `graphql_name`, not `name`. Usage: graphql_name 'kerkshine'"
+      assert_equal error.message, "The new name override method is `graphql_name`, not `name`. Usage: graphql_name \"KerkShine\""
     end
   end
 
