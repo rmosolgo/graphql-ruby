@@ -62,6 +62,8 @@ module GraphQL
     class ActionCableSubscriptions < GraphQL::Subscriptions
       SUBSCRIPTION_PREFIX = "graphql-subscription:"
       EVENT_PREFIX = "graphql-event:"
+
+      # @param serializer [<#dump(obj), #load(string)] Used for serializing messages before handing them to `.broadcast(msg)`
       def initialize(serializer: Serialize, **rest)
         # A per-process map of subscriptions to deliver.
         # This is provided by Rails, so let's use it
@@ -72,7 +74,6 @@ module GraphQL
 
       # An event was triggered; Push the data over ActionCable.
       # Subscribers will re-evaluate locally.
-      # TODO: this method name is a smell
       def execute_all(event, object)
         stream = EVENT_PREFIX + event.topic
         message = @serializer.dump(object)
