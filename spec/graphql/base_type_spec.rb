@@ -28,6 +28,7 @@ describe GraphQL::BaseType do
     assert_equal ["Cheese"], Dummy::CheeseType.metadata[:class_names]
   end
 
+<<<<<<< HEAD
   describe "#name" do
     describe "when containing spaces" do
       BaseNameSpaceTest = GraphQL::BaseType.define do
@@ -47,6 +48,18 @@ describe GraphQL::BaseType do
       it 'is invalid' do
         assert_raises(GraphQL::InvalidNameError) { BaseNameColonsTest.name }
       end
+    end
+  end
+
+  describe "name" do
+    it "fails with a helpful message" do
+      error = assert_raises RuntimeError do
+        GraphQL::ObjectType.define do
+          name "kerkshine"
+        end
+      end
+
+      assert_equal error.message, "The new name override method is `graphql_name`, not `name`. Usage: graphql_name 'kerkshine'"
     end
   end
 
