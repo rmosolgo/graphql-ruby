@@ -37,5 +37,9 @@ class ActionCableSubscriptionsTest < ApplicationSystemTestCase
     click_on("Trigger 2")
     assert_selector "#updates-2-3", text: "3"
     refute_selector "#updates-1-4"
+
+    # wacky behavior to make sure the custom serializer is used:
+    click_on("Trigger 2")
+    assert_selector "#updates-2-400", text: "400"
   end
 end

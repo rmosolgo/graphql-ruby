@@ -17,10 +17,31 @@ class GraphqlChannel < ActionCable::Channel::Base
     field :value, types.Int
   end
 
+  # Wacky behavior around the number 4
+  # so we can confirm it's used by the UI
+  module CustomSerializer
+    def self.load(value)
+      if value == "4x"
+        ExamplePayload.new(400)
+      else
+        GraphQL::Subscriptions::Serialize.load(value)
+      end
+    end
+
+    def self.dump(obj)
+      if obj.is_a?(ExamplePayload) && obj.value == 4
+        "4x"
+      else
+        GraphQL::Subscriptions::Serialize.dump(obj)
+      end
+    end
+  end
+
   GraphQLSchema = GraphQL::Schema.define do
     query(QueryType)
     subscription(SubscriptionType)
-    use GraphQL::Subscriptions::ActionCableSubscriptions
+    use GraphQL::Subscriptions::ActionCableSubscriptions,
+      serializer: CustomSerializer
   end
 
   def subscribed
