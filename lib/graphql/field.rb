@@ -187,6 +187,9 @@ module GraphQL
     # @return [nil, String] Prefix for subscription names from this field
     attr_accessor :subscription_scope
 
+    # @return [Boolean] True if this field should be traced. By default, fields are only traced if they are not a ScalarType or EnumType.
+    attr_accessor :trace
+
     # @return [Boolean]
     def connection?
       @connection
@@ -213,6 +216,7 @@ module GraphQL
       @connection = false
       @connection_max_page_size = nil
       @edge_class = nil
+      @trace = nil
     end
 
     def initialize_copy(other)

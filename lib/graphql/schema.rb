@@ -53,7 +53,7 @@ module GraphQL
     accepts_definitions \
       :query, :mutation, :subscription,
       :query_execution_strategy, :mutation_execution_strategy, :subscription_execution_strategy,
-      :max_depth, :max_complexity, :default_max_page_size,
+      :max_depth, :max_complexity, :default_max_page_size, :trace_scalar_fields_by_default,
       :orphan_types, :resolve_type, :type_error, :parse_error,
       :raise_definition_error,
       :object_from_id, :id_from_object,
@@ -77,7 +77,7 @@ module GraphQL
     attr_accessor \
       :query, :mutation, :subscription,
       :query_execution_strategy, :mutation_execution_strategy, :subscription_execution_strategy,
-      :max_depth, :max_complexity, :default_max_page_size,
+      :max_depth, :max_complexity, :default_max_page_size, :trace_scalar_fields_by_default,
       :orphan_types, :directives,
       :query_analyzers, :multiplex_analyzers, :instrumenters, :lazy_methods,
       :cursor_encoder,
@@ -139,6 +139,7 @@ module GraphQL
       @subscription_execution_strategy = self.class.default_execution_strategy
       @default_mask = GraphQL::Schema::NullMask
       @rebuilding_artifacts = false
+      @trace_scalar_fields_by_default = false
     end
 
     def initialize_copy(other)

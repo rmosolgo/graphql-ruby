@@ -37,22 +37,21 @@ module GraphQL
         end
       end
 
-      def instrument(type, field)
+      def instrument(type, field, trace_scalar_fields_by_default:)
         return_type = field.type.unwrap
         case return_type
         when GraphQL::ScalarType, GraphQL::EnumType
-          if field.metadata[:trace]
-            binding.pry
-            trace_field(field)
+          if field.trace || (field.trace.nil? && trace_scalar_fields_by_default)
+            trace_field(type, field)
           else
             field
           end
         else
-          trace_field(field)
+          trace_field(type, field)
         end
       end
 
-      def trace_field(field)
+      def trace_field(type, field)
         new_f = field.redefine
         new_f.metadata[:platform_key] = platform_field_key(type, field)
         new_f
