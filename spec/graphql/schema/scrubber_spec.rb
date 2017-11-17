@@ -47,9 +47,9 @@ describe GraphQL::Schema::Scrubber do
 
   let(:query_string) {
     <<-GRAPHQL
-    query($int: Int, $float: Float, $bool: Boolean, $id: ID, $string: String, $inputObj: Input){
+    query($intVar: Int, $float: Float, $bool: Boolean, $id: ID, $string: String, $inputObj: Input){
       field1(
-        int: $int
+        int: $intVar
         float: $float
         bool: $bool
         id: $id
@@ -61,7 +61,7 @@ describe GraphQL::Schema::Scrubber do
   }
   let(:variables) {
     {
-      "int" => 1,
+      "intVar" => 1,
       "float" => 2.2,
       "bool" => true,
       "id" => "1234",
@@ -107,7 +107,7 @@ describe GraphQL::Schema::Scrubber do
     }
     let(:expected_query_variables) {
       {
-        "int" => 1,
+        "intVar" => 1,
         "float" => 2.2,
         "bool" => true,
         "id" => "*****",
@@ -135,7 +135,7 @@ describe GraphQL::Schema::Scrubber do
 
       it "rejects _everything_ on a mutation" do
         expected_mutation_variables = {
-          "int" => "*****",
+          "intVar" => "*****",
           "float" => "*****",
           "bool" => "*****",
           "id" => "*****",
@@ -155,7 +155,7 @@ describe GraphQL::Schema::Scrubber do
     }
     let(:expected_query_variables) {
       {
-        "int" => "*****",
+        "intVar" => "*****",
         "float" => "*****",
         "bool" => "*****",
         "id" => "1234",
@@ -199,7 +199,7 @@ describe GraphQL::Schema::Scrubber do
       }
       it "returns nothing" do
         expected_mutation_variables = {
-          "int" => "*****",
+          "intVar" => "*****",
           "float" => "*****",
           "bool" => "*****",
           "id" => "*****",
