@@ -16,7 +16,7 @@ module GraphQL
       # This value is derived from {#scoped_children} after the rewrite is finished.
       # @return [Hash<GraphQL::ObjectType, Hash<String => Node>>]
       def typed_children
-        @typed_childen ||= begin
+        @typed_children ||= begin
           new_tc = Hash.new(&DEFAULT_TYPED_CHILDREN)
           if @scoped_children.any?
             all_object_types = Set.new
