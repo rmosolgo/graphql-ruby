@@ -64,7 +64,7 @@ module GraphQL
 
         # Just a convenience method to point out that people should use graphql_name instead
         def name(new_name = nil)
-          return method(:name).super_method.call if new_name.nil?
+          return super() if new_name.nil?
 
           fail(
             "The new name override method is `graphql_name`, not `name`. Usage: "\
