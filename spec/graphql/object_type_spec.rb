@@ -45,10 +45,10 @@ describe GraphQL::ObjectType do
   describe "interfaces" do
     it "may have interfaces" do
       assert_equal([
-        Dummy::EdibleInterface,
-        Dummy::EdibleAsMilkInterface,
-        Dummy::AnimalProductInterface,
-        Dummy::LocalProductInterface
+        Dummy::Types::EdibleInterface,
+        Dummy::Types::EdibleAsMilkInterface,
+        Dummy::Types::AnimalProductInterface,
+        Dummy::Types::LocalProductInterface
       ], type.interfaces)
     end
 
@@ -72,54 +72,54 @@ describe GraphQL::ObjectType do
     it "adds an interface" do
       type = GraphQL::ObjectType.define do
         name 'Hello'
-        implements Dummy::EdibleInterface
-        implements Dummy::AnimalProductInterface
+        implements Dummy::Types::EdibleInterface
+        implements Dummy::Types::AnimalProductInterface
 
         field :hello, types.String
       end
 
-      assert_equal([Dummy::EdibleInterface, Dummy::AnimalProductInterface], type.interfaces)
+      assert_equal([Dummy::Types::EdibleInterface, Dummy::Types::AnimalProductInterface], type.interfaces)
     end
 
     it "adds many interfaces" do
       type = GraphQL::ObjectType.define do
         name 'Hello'
-        implements Dummy::EdibleInterface, Dummy::AnimalProductInterface
+        implements Dummy::Types::EdibleInterface, Dummy::Types::AnimalProductInterface
 
         field :hello, types.String
       end
 
-      assert_equal([Dummy::EdibleInterface, Dummy::AnimalProductInterface], type.interfaces)
+      assert_equal([Dummy::Types::EdibleInterface, Dummy::Types::AnimalProductInterface], type.interfaces)
     end
 
     it "preserves existing interfaces and appends a new one" do
       type = GraphQL::ObjectType.define do
         name 'Hello'
-        interfaces [Dummy::EdibleInterface]
-        implements Dummy::AnimalProductInterface
+        interfaces [Dummy::Types::EdibleInterface]
+        implements Dummy::Types::AnimalProductInterface
 
         field :hello, types.String
       end
 
-      assert_equal([Dummy::EdibleInterface, Dummy::AnimalProductInterface], type.interfaces)
+      assert_equal([Dummy::Types::EdibleInterface, Dummy::Types::AnimalProductInterface], type.interfaces)
     end
 
     it "can be used to inherit fields from the interface" do
       type_1 = GraphQL::ObjectType.define do
         name 'Hello'
-        implements Dummy::EdibleInterface
-        implements Dummy::AnimalProductInterface
+        implements Dummy::Types::EdibleInterface
+        implements Dummy::Types::AnimalProductInterface
       end
 
       type_2 = GraphQL::ObjectType.define do
         name 'Hello'
-        implements Dummy::EdibleInterface
-        implements Dummy::AnimalProductInterface, inherit: true
+        implements Dummy::Types::EdibleInterface
+        implements Dummy::Types::AnimalProductInterface, inherit: true
       end
 
       type_3 = GraphQL::ObjectType.define do
         name 'Hello'
-        implements Dummy::EdibleInterface, Dummy::AnimalProductInterface, inherit: true
+        implements Dummy::Types::EdibleInterface, Dummy::Types::AnimalProductInterface, inherit: true
       end
 
       assert_equal [], type_1.all_fields.map(&:name)

@@ -23,12 +23,12 @@ describe GraphQL::Schema::Traversal do
       "Cheese" => Dummy::CheeseType,
       "Float" => GraphQL::FLOAT_TYPE,
       "String" => GraphQL::STRING_TYPE,
-      "Edible" => Dummy::EdibleInterface,
-      "EdibleAsMilk" => Dummy::EdibleAsMilkInterface,
-      "DairyAnimal" => Dummy::DairyAnimalEnum,
+      "Edible" => Dummy::Types::EdibleInterface,
+      "EdibleAsMilk" => Dummy::Types::EdibleAsMilkInterface,
+      "DairyAnimal" => Dummy::Types::DairyAnimalEnum,
       "Int" => GraphQL::INT_TYPE,
-      "AnimalProduct" => Dummy::AnimalProductInterface,
-      "LocalProduct" => Dummy::LocalProductInterface,
+      "AnimalProduct" => Dummy::Types::AnimalProductInterface,
+      "LocalProduct" => Dummy::Types::LocalProductInterface,
     }
     result = traversal([Dummy::CheeseType]).type_map
     assert_equal(expected.keys.sort, result.keys.sort)

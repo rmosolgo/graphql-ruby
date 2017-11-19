@@ -113,7 +113,7 @@ describe GraphQL::InputObjectType do
         end
 
         it "has correct problem explanation" do
-          expected = Dummy::DairyAnimalEnum.validate_isolated_input("KOALA").problems[0]["explanation"]
+          expected = Dummy::Types::DairyAnimalEnum.validate_isolated_input("KOALA").problems[0]["explanation"]
 
           source_problem = result.problems.detect { |p| p["path"] == ["source"] }
           actual = source_problem["explanation"]
@@ -213,7 +213,7 @@ describe GraphQL::InputObjectType do
         end
 
         it "has problem with correct explanation" do
-          expected = Dummy::DairyAnimalEnum.validate_isolated_input("KOALA").problems[0]["explanation"]
+          expected = Dummy::Types::DairyAnimalEnum.validate_isolated_input("KOALA").problems[0]["explanation"]
           actual = result.problems[0]["explanation"]
           assert_equal(expected, actual)
         end

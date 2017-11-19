@@ -2,7 +2,7 @@
 require "spec_helper"
 
 describe GraphQL::InterfaceType do
-  let(:interface) { Dummy::EdibleInterface }
+  let(:interface) { Dummy::Types::EdibleInterface }
   let(:dummy_query_context) { OpenStruct.new(schema: Dummy::Schema) }
 
   it "has possible types" do

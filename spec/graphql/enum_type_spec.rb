@@ -2,7 +2,7 @@
 require "spec_helper"
 
 describe GraphQL::EnumType do
-  let(:enum) { Dummy::DairyAnimalEnum }
+  let(:enum) { Dummy::Types::DairyAnimalEnum }
 
   it "coerces names to underlying values" do
     assert_equal("YAK", enum.coerce_isolated_input("YAK"))
