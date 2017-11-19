@@ -2,7 +2,7 @@
 require "spec_helper"
 
 describe GraphQL::ObjectType do
-  let(:type) { Dummy::CheeseType }
+  let(:type) { Dummy::Types::CheeseType }
 
   it "doesn't allow double non-null constraints" do
     assert_raises(GraphQL::DoubleNonNullTypeError) {
@@ -136,15 +136,15 @@ describe GraphQL::ObjectType do
     end
 
     it "exposes defined field property" do
-      field_without_prop = Dummy::CheeseType.get_field("flavor")
-      field_with_prop = Dummy::CheeseType.get_field("fatContent")
+      field_without_prop = Dummy::Types::CheeseType.get_field("flavor")
+      field_with_prop = Dummy::Types::CheeseType.get_field("fatContent")
       assert_equal(field_without_prop.property, nil)
       assert_equal(field_with_prop.property, :fat_content)
     end
 
     it "looks up from interfaces" do
-      field_from_self = Dummy::CheeseType.get_field("fatContent")
-      field_from_iface = Dummy::MilkType.get_field("fatContent")
+      field_from_self = Dummy::Types::CheeseType.get_field("fatContent")
+      field_from_iface = Dummy::Types::MilkType.get_field("fatContent")
       assert_equal(field_from_self.property, :fat_content)
       assert_equal(field_from_iface.property, nil)
     end

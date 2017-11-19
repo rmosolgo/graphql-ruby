@@ -8,84 +8,14 @@ require_relative "./types/edible_as_milk_interface"
 require_relative "./types/dairy_animal_enum"
 require_relative "./types/animal_product_interface"
 require_relative "./types/beverage_union"
+require_relative "./types/cheese_type"
+require_relative "./types/milk_type"
 
 module Dummy
   class NoSuchDairyError < StandardError; end
 
   GraphQL::Field.accepts_definitions(joins: GraphQL::Define.assign_metadata_key(:joins))
   GraphQL::BaseType.accepts_definitions(class_names: GraphQL::Define.assign_metadata_key(:class_names))
-
-  CheeseType = GraphQL::ObjectType.define do
-    name "Cheese"
-    class_names ["Cheese"]
-    description "Cultured dairy product"
-    interfaces [Types::EdibleInterface, Types::EdibleAsMilkInterface, Types::AnimalProductInterface, Types::LocalProductInterface]
-
-    # Can have (name, type, desc)
-    field :id, !types.Int, "Unique identifier"
-    field :flavor, !types.String, "Kind of Cheese"
-    field :origin, !types.String, "Place the cheese comes from"
-
-    field :source, !Types::DairyAnimalEnum,
-      "Animal which produced the milk for this cheese"
-
-    # Or can define by block, `resolve ->` should override `property:`
-    field :similarCheese, CheeseType, "Cheeses like this one", property: :this_should_be_overriden  do
-      # metadata test
-      joins [:cheeses, :milks]
-      argument :source, !types[!Types::DairyAnimalEnum]
-      argument :nullableSource, types[!Types::DairyAnimalEnum], default_value: [1]
-      resolve ->(t, a, c) {
-        # get the strings out:
-        sources = a["source"]
-        if sources.include?("YAK")
-          raise NoSuchDairyError.new("No cheeses are made from Yak milk!")
-        else
-          CHEESES.values.find { |cheese| sources.include?(cheese.source) }
-        end
-      }
-    end
-
-    field :nullableCheese, CheeseType, "Cheeses like this one" do
-      argument :source, types[!Types::DairyAnimalEnum]
-      resolve ->(t, a, c) { raise("NotImplemented") }
-    end
-
-    field :deeplyNullableCheese, CheeseType, "Cheeses like this one" do
-      argument :source, types[types[Types::DairyAnimalEnum]]
-      resolve ->(t, a, c) { raise("NotImplemented") }
-    end
-
-    # Keywords can be used for definition methods
-    field :fatContent,
-      property: :fat_content,
-      type: !GraphQL::FLOAT_TYPE,
-      description: "Percentage which is milkfat",
-      deprecation_reason: "Diet fashion has changed"
-  end
-
-  MilkType = GraphQL::ObjectType.define do
-    name "Milk"
-    description "Dairy beverage"
-    interfaces [Types::EdibleInterface, Types::EdibleAsMilkInterface, Types::AnimalProductInterface, Types::LocalProductInterface]
-    field :id, !types.ID
-    field :source, !Types::DairyAnimalEnum, "Animal which produced this milk", hash_key: :source
-    field :origin, !types.String, "Place the milk comes from"
-    field :flavors, types[types.String], "Chocolate, Strawberry, etc" do
-      argument :limit, types.Int
-      resolve ->(milk, args, ctx) {
-        args[:limit] ? milk.flavors.first(args.limit) : milk.flavors
-      }
-    end
-    field :executionError do
-      type GraphQL::STRING_TYPE
-      resolve ->(t, a, c) { raise(GraphQL::ExecutionError, "There was an execution error") }
-    end
-
-    field :allDairy, -> { types[DairyProductUnion] } do
-      resolve ->(obj, args, ctx) { CHEESES.values + MILKS.values }
-    end
-  end
 
   SweetenerInterface = GraphQL::InterfaceType.define do
     name "Sweetener"
@@ -104,21 +34,21 @@ module Dummy
     name "Dairy"
     description "A farm where milk is harvested and cheese is produced"
     field :id, !types.ID
-    field :cheese, CheeseType
-    field :milks, types[MilkType]
+    field :cheese, Types::CheeseType
+    field :milks, types[Types::MilkType]
   end
 
   MaybeNullType = GraphQL::ObjectType.define do
     name "MaybeNull"
     description "An object whose fields return nil"
-    field :cheese, CheeseType
+    field :cheese, Types::CheeseType
   end
 
   DairyProductUnion = GraphQL::UnionType.define do
     name "DairyProduct"
     description "Kinds of food made from milk"
     # Test that these forms of declaration still work:
-    possible_types ["Dummy::MilkType", -> { CheeseType }]
+    possible_types ["Dummy::Types::MilkType", -> { Types::CheeseType }]
   end
 
   CowType = GraphQL::ObjectType.define do
@@ -239,7 +169,7 @@ module Dummy
   end
 
   SourceFieldDefn = Proc.new {
-    type GraphQL::ListType.new(of_type: CheeseType)
+    type GraphQL::ListType.new(of_type: Types::CheeseType)
     description "Cheese from source"
     argument :source, Types::DairyAnimalEnum, default_value: 1
     resolve ->(target, arguments, context) {
@@ -260,8 +190,8 @@ module Dummy
     field :root, types.String do
       resolve ->(root_value, args, c) { root_value }
     end
-    field :cheese, function: FetchItem.new(type: CheeseType, data: CHEESES)
-    field :milk, function: FetchItem.new(type: MilkType, data: MILKS, id_type: !types.ID)
+    field :cheese, function: FetchItem.new(type: Types::CheeseType, data: CHEESES)
+    field :milk, function: FetchItem.new(type: Types::MilkType, data: MILKS, id_type: !types.ID)
     field :dairy, function: GetSingleton.new(type: DairyType, data: DAIRY)
     field :fromSource, &SourceFieldDefn
     field :favoriteEdible, FavoriteFieldDefn

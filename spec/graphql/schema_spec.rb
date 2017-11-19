@@ -423,7 +423,7 @@ type Query {
     it "returns fields by type or type name" do
       field = schema.get_field("Cheese", "id")
       assert_instance_of GraphQL::Field, field
-      field_2 = schema.get_field(Dummy::CheeseType, "id")
+      field_2 = schema.get_field(Dummy::Types::CheeseType, "id")
       assert_equal field, field_2
     end
   end
