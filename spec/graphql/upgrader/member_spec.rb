@@ -16,11 +16,23 @@ describe GraphQL::Upgrader::Member do
 
   # Tests not ported from gem to PR
   describe 'definition' do
-    # .define -> Class
-    # - Object classes
-    # - Interface classes
-    # - Union classes
-    # - Enum classes
+    it 'transforms the .define into class based definition' do
+      old = %{UserType = GraphQL::ObjectType.define do}
+      new = %{class UserType < BaseObject}
+      assert_equal transform(old), new
+
+      old = %{UserInterface = GraphQL::InterfaceType.define do}
+      new = %{class UserInterface < BaseInterface}
+      assert_equal transform(old), new
+
+      old = %{UserUnion = GraphQL::UnionType.define do}
+      new = %{class UserUnion < BaseUnion}
+      assert_equal transform(old), new
+
+      old = %{UserEnum = GraphQL::EnumType.define do}
+      new = %{class UserEnum < BaseEnum}
+      assert_equal transform(old), new
+    end
   end
 
   # Tests not ported from gem to PR
