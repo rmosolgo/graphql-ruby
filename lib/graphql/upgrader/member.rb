@@ -3,6 +3,20 @@
 module GraphQL
   module Upgrader
     class Member
+      class Finder
+        def initialize(base_path)
+          @base_path = base_path
+        end
+
+        def member_definition_files
+          []
+        end
+
+        private
+
+        attr_reader :base_path
+      end
+
       def initialize(member)
         @member = member
       end
