@@ -28,6 +28,18 @@ describe GraphQL::BaseType do
     assert_equal ["Cheese"], Dummy::CheeseType.metadata[:class_names]
   end
 
+  describe "name" do
+    it "fails with a helpful message" do
+      error = assert_raises RuntimeError do
+        class BaseType < GraphQL::Schema::Object
+          name "KerkShine"
+        end
+      end
+
+      assert_equal error.message, "The new name override method is `graphql_name`, not `name`. Usage: graphql_name \"KerkShine\""
+    end
+  end
+
   describe "forwards-compat with new api" do
     let(:type_defn) { Dummy::CheeseType }
     it "responds to new methods" do
