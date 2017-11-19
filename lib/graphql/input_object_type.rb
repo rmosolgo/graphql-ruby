@@ -80,6 +80,16 @@ module GraphQL
       result
     end
 
+    def to_ast_node
+      @ast_node ||= begin
+        GraphQL::Language::Nodes::InputObjectTypeDefinition.new(
+          name: name,
+          fields: arguments.values.map(&:to_ast_node),
+          description: description,
+        )
+      end
+    end
+
     private
 
     def coerce_non_null_input(value, ctx)

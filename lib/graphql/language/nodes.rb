@@ -483,6 +483,22 @@ module GraphQL
           @description = description
         end
       end
+
+      def self.from_schema(schema)
+        definitions = []
+
+        unless schema.root_types_respect_convention?
+          definitions << schema.to_ast_node
+        end
+
+        definitions += schema.types.values.map(&:to_ast_node)
+
+        definitions += schema.directives.values.map(&:to_ast_node)
+
+        GraphQL::Language::Nodes::Document.new(
+          definitions: definitions
+        )
+      end
     end
   end
 end

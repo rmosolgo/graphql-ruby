@@ -107,6 +107,17 @@ module GraphQL
       @name = name
     end
 
+    def to_ast_node
+      @ast_node ||= begin
+        GraphQL::Language::Nodes::ObjectTypeDefinition.new(
+          name: name,
+          interfaces: interfaces.map(&:to_ast_type_name_node),
+          fields: fields.values.map(&:to_ast_node),
+          description: description,
+        )
+      end
+    end
+
     protected
 
     attr_reader :dirty_interfaces, :dirty_inherited_interfaces

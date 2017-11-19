@@ -128,11 +128,7 @@ module GraphQL
       end
 
       def print_schema_definition
-        if (schema.query.nil? || schema.query.name == 'Query') &&
-           (schema.mutation.nil? || schema.mutation.name == 'Mutation') &&
-           (schema.subscription.nil? || schema.subscription.name == 'Subscription')
-          return
-        end
+        return if schema.root_types_respect_convention?
 
         operations = [:query, :mutation, :subscription].map do |operation_type|
           object_type = schema.public_send(operation_type)

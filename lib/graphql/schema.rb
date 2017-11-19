@@ -558,6 +558,24 @@ module GraphQL
       JSON.pretty_generate(as_json(*args))
     end
 
+    def to_ast_node
+      @ast_node ||= begin
+        definition = GraphQL::Language::Nodes::SchemaDefinition.new(
+          query: query.name,
+        )
+
+        definition.mutation = mutation.name if mutation
+        definition.subscription = subscription.name if subscription
+        definition
+      end
+    end
+
+    def root_types_respect_convention?
+      (query.nil? || query.name == 'Query') &&
+      (mutation.nil? || mutation.name == 'Mutation') &&
+      (subscription.nil? ||subscription.name == 'Subscription')
+    end
+
     protected
 
     def rescues?

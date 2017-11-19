@@ -83,6 +83,15 @@ module GraphQL
     def default_directive?
       @default_directive
     end
+
+    def to_ast_node
+      GraphQL::Language::Nodes::DirectiveDefinition.new(
+        name: name,
+        arguments: arguments.values.map(&:to_ast_node),
+        locations: locations,
+        description: description,
+      )
+    end
   end
 end
 

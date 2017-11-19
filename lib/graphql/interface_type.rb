@@ -62,5 +62,15 @@ module GraphQL
     def all_fields
       fields.values
     end
+
+    def to_ast_node
+      @ast_node ||= begin
+        GraphQL::Language::Nodes::InterfaceTypeDefinition.new(
+          name: name,
+          fields: fields.values.map(&:to_ast_node),
+          description: description,
+        )
+      end
+    end
   end
 end

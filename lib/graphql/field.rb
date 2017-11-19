@@ -274,6 +274,17 @@ module GraphQL
       "<Field name:#{name || "not-named"} desc:#{description} resolve:#{resolve_proc}>"
     end
 
+    def to_ast_node
+      @ast_node ||= begin
+        GraphQL::Language::Nodes::FieldDefinition.new(
+          name: name,
+          arguments: arguments.values.map(&:to_ast_node),
+          type: type.to_ast_type_name_node,
+          description: description
+        )
+      end
+    end
+
     # If {#resolve} returned and object which should be handled lazily,
     # this method will be called later force the object to return its value.
     # @param obj [Object] The {#resolve}-provided object, registered with {Schema#lazy_resolve}

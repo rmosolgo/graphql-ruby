@@ -102,6 +102,15 @@ module GraphQL
       GraphQL::TypeKinds::SCALAR
     end
 
+    def to_ast_node
+      @ast_node ||= begin
+        GraphQL::Language::Nodes::ScalarTypeDefinition.new(
+          name: name,
+          description: description,
+        )
+      end
+    end
+
     private
 
     def ensure_two_arg(callable, method_name)

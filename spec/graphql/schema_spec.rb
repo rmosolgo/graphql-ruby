@@ -6,6 +6,13 @@ describe GraphQL::Schema do
   let(:relay_schema)  { StarWars::Schema }
   let(:empty_schema) { GraphQL::Schema.define }
 
+  describe "#to_ast_node" do
+    it "does things" do
+      binding.pry
+      schema
+    end
+  end
+
   describe "#rescue_from" do
     let(:rescue_middleware) { schema.middleware.first }
 
