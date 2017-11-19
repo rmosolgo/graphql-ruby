@@ -14,7 +14,59 @@ describe GraphQL::Upgrader::Member do
     # new: argument :status, TodoStatus, "Restrict items to this status", null: true
   end
 
-  # Tests not ported from gem to PR
+  describe 'name' do
+    it 'removes the name field if it can be inferred from the class' do
+      old = %{|
+        UserType = GraphQL::ObjectType.define do
+          name "User"
+        end
+      |}
+      new = %{|
+        class UserType < BaseObject
+        end
+      |}
+      assert_equal transform(old), new
+    end
+
+    it 'transforms the name into graphql_name if it can\'t be inferred from the class' do
+      old = %{|
+        TeamType = GraphQL::ObjectType.define do
+          name "User"
+        end
+      |}
+      new = %{|
+        class TeamType < BaseObject
+          graphql_name "User"
+        end
+      |}
+      assert_equal transform(old), new
+
+      old = %{|
+        UserInterface = GraphQL::InterfaceType.define do
+          name "User"
+        end
+      |}
+      new = %{|
+        class UserInterface < BaseInterface
+          graphql_name "User"
+        end
+      |}
+      assert_equal transform(old), new
+
+      old = %{|
+        UserInterface = GraphQL::InterfaceType.define do
+          name "User"
+        end
+      |}
+      new = %{|
+        class UserInterface < BaseInterface
+          graphql_name "User"
+        end
+      |}
+      assert_equal transform(old), new
+    end
+  end
+
   describe 'definition' do
     it 'transforms the .define into class based definition' do
       old = %{UserType = GraphQL::ObjectType.define do}
@@ -33,11 +85,6 @@ describe GraphQL::Upgrader::Member do
       new = %{class UserEnum < BaseEnum}
       assert_equal transform(old), new
     end
-  end
-
-  # Tests not ported from gem to PR
-  describe 'name' do
-    # Removes name if it's not needed, otherwise it creates the graphql_name
   end
 
   describe 'fields' do
