@@ -1,9 +1,12 @@
+# frozen_string_literal: true
+
 module GraphQL
   module Upgrader
     class Member
       def initialize(member)
         @member = member
       end
+
       def transform
         return unless transformable?
         transformable = member.dup
@@ -104,4 +107,3 @@ module GraphQL
     end
   end
 end
-
