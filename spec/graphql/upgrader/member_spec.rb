@@ -8,6 +8,13 @@ describe GraphQL::Upgrader::Member do
     GraphQL::Upgrader::Member.new(old).transform
   end
 
+  describe GraphQL::Upgrader::Member::Finder do
+    describe 'find' do
+      # definition_files = GraphQL::Upgrader::Member::Finder.new('').definition_files
+      # binding.pry
+    end
+  end
+
   # Missing transformation
   describe 'field arguments' do
     # old: argument :status, !TodoStatus, "Restrict items to this status"
