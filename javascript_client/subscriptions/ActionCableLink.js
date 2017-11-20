@@ -3,12 +3,12 @@ var Observable = require("apollo-link").Observable
 var printer = require("graphql/language/printer")
 
 function ActionCableLink(options) {
-  var cable = options.cable;
-  var channelName = options.channelName || 'GraphqlChannel';
-  var actionName = options.actionName || 'execute';
+  var cable = options.cable
+  var channelName = options.channelName || "GraphqlChannel"
+  var actionName = options.actionName || "execute"
 
   return new ApolloLink(function(operation) {
-    return new Observable(observer => {
+    return new Observable(function(observer) {
       var subscription = cable.subscriptions.create(channelName, {
         connected: function() {
           this.perform(
