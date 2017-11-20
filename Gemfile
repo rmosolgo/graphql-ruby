@@ -8,6 +8,8 @@ gem 'sqlite3', :platform => :ruby
 gem 'pg', :platform => :ruby
 gem 'pry'
 gem 'pry-stack_explorer', :platform => :ruby
+
+# gem 'jdbc-sqlite3', :platform => :jruby
 gem 'activerecord-jdbcsqlite3-adapter', :platform => :jruby
 
 group :jekyll_plugins do
