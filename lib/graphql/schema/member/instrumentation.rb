@@ -85,10 +85,10 @@ module GraphQL
           private
 
           def proxy_to_depth(obj, depth, type, ctx)
-            if depth > 0
-              obj.map { |inner_obj| proxy_to_depth(inner_obj, depth - 1, type, ctx) }
-            elsif obj.nil?
+            if obj.nil?
               obj
+            elsif depth > 0
+              obj.map { |inner_obj| proxy_to_depth(inner_obj, depth - 1, type, ctx) }
             else
               concrete_type = case type
               when GraphQL::UnionType, GraphQL::InterfaceType
