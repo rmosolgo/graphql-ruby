@@ -77,8 +77,8 @@ module GraphQL
           [line, col]
         end
 
-        def to_query_string
-          Generation.generate(self)
+        def to_query_string(printer: GraphQL::Language::Printer)
+          printer.new(self).print
         end
       end
 

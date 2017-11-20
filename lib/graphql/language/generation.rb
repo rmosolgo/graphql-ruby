@@ -15,8 +15,8 @@ module GraphQL
       # @param node [GraphQL::Language::Nodes::AbstractNode] an AST node to recursively stringify
       # @param indent [String] Whitespace to add to each printed node
       # @return [String] Valid GraphQL for `node`
-      def generate(node, indent: "")
-        GraphQL::Language::Printer.new(node).print(indent: indent)
+      def generate(node, indent: "", printer: GraphQL::Language::Printer)
+        printer.new(node).print(indent: indent)
       end
     end
   end
