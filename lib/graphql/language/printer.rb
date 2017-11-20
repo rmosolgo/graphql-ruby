@@ -257,10 +257,6 @@ module GraphQL
         end
       end
 
-      private
-
-      attr_reader :node
-
       def print_node(node, indent: "")
         case node
         when Nodes::Document
@@ -329,6 +325,10 @@ module GraphQL
           raise TypeError
         end
       end
+
+      private
+
+      attr_reader :node
     end
   end
 end
