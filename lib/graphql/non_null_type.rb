@@ -73,6 +73,14 @@ module GraphQL
     end
     alias_method :inspect, :to_s
 
+    def to_ast_type_name_node
+      @ast_type_name_node ||= begin
+        GraphQL::Language::Nodes::NonNullType.new(
+          of_type: of_type.to_ast_type_name_node
+        )
+      end
+    end
+
     def non_null?
       true
     end

@@ -484,20 +484,11 @@ module GraphQL
         end
       end
 
-      def self.from_schema(schema)
-        definitions = []
-
-        unless schema.root_types_respect_convention?
-          definitions << schema.to_ast_node
-        end
-
-        definitions += schema.types.values.map(&:to_ast_node)
-
-        definitions += schema.directives.values.map(&:to_ast_node)
-
-        GraphQL::Language::Nodes::Document.new(
-          definitions: definitions
-        )
+      def self.from_schema(schema, **kwargs)
+        GraphQL::Language::Nodes::BuildFromSchemaDefinition.new(
+          schema,
+          kwargs
+        ).document
       end
     end
   end

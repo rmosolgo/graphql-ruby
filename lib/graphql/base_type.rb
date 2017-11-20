@@ -82,14 +82,6 @@ module GraphQL
       def unwrap
         self.of_type.unwrap
       end
-
-      def to_ast_type_name_node
-        @ast_type_name_node ||= begin
-          GraphQL::Language::Nodes::WrapperType.new(
-            of_type: of_type.to_ast_type_name_node
-          )
-        end
-      end
     end
 
     # Find out which possible type to use for `value`.
