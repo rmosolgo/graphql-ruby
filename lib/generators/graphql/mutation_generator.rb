@@ -27,7 +27,7 @@ module Graphql
       attr_reader :file_name, :mutation_name, :field_name
 
       def create_mutation_file
-        create_mutation_root_type
+        create_mutation_root_type unless @behavior == :revoke
         template "mutation.erb", "#{options[:directory]}/mutations/#{file_name}.rb"
 
         sentinel = /name "Mutation"\s*\n/m
