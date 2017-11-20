@@ -255,6 +255,14 @@ module GraphQL
       @union_memberships.fetch(type.name, [])
     end
 
+    # @return [GraphQL::Language::Nodes::DocumentDefinition] The IDL document representing this document
+    def idl_document
+      @idl_document ||= begin
+        rebuild_artifacts
+        @idl_document
+      end
+    end
+
     # Execute a query on itself. Raises an error if the schema definition is invalid.
     # @see {Query#initialize} for arguments.
     # @return [Hash] query result, ready to be serialized as JSON
@@ -609,6 +617,7 @@ module GraphQL
         @instrumented_field_map = traversal.instrumented_field_map
         @type_reference_map = traversal.type_reference_map
         @union_memberships = traversal.union_memberships
+        @idl_document = GraphQL::Language::Nodes.from_schema(self)
       end
     ensure
       @rebuilding_artifacts = false
