@@ -221,10 +221,6 @@ module GraphQL
         out << " on #{directive.locations.join(' | ')}"
       end
 
-      private
-
-      attr_reader :node
-
       def print_description(node, indent: "", first_in_block: true)
         return ''.dup unless node.description
 
@@ -260,6 +256,10 @@ module GraphQL
           ""
         end
       end
+
+      private
+
+      attr_reader :node
 
       def print_node(node, indent: "")
         case node
