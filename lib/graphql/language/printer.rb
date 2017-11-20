@@ -2,13 +2,27 @@
 module GraphQL
   module Language
     class Printer
+      # Turn an arbitrary AST node back into a string.
+      #
+      # @example Turning a document into a query string
+      #    document = GraphQL.parse(query_string)
+      #    GraphQL::Language::Printer.new(document).print
+      #    # => "{ ... }"
+      #
+      # @param node [GraphQL::Language::Nodes::AbstractNode] an AST node to recursively stringify
       def initialize(node)
         @node = node
       end
 
+      # Prints a query string from the provided node
+      #
+      # @param indent [String] Whitespace to add to the printed node
+      # @return [String] Valid GraphQL for `node`
       def print(indent: "")
         print_node(node, indent: indent)
       end
+
+      protected
 
       def print_document(document)
         node.definitions.map { |d| print_node(d) }.join("\n\n")
