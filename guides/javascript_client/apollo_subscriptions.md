@@ -16,27 +16,36 @@ To use it construct a split link that routes subsription queries to an ActionCab
 For example:
 
 ```js
-var ActionCable = require("actioncable")
-var ActionCableLink = require("graphql-ruby-client/subscriptions/ActionCableLink")
+import { ApolloLink } from 'apollo-link';
+import { ApolloClient } from 'apollo-client';
+import { HttpLink } from 'apollo-link-http';
+import Cache from 'apollo-cache-inmemory';
+import ActionCable from 'actioncable';
+import ActionCableLink from 'graphql-ruby-client/subscriptions/ActionCableLink';
 
-var cable = ActionCable.createConsumer()
+const cable = ActionCable.createConsumer()
 
-var httpLink = new HttpLink({
-  uri: "/graphql",
-  credentials: "include"
-})
+const httpLink = new HttpLink({
+  uri: '/graphql',
+  credentials: 'include'
+});
 
-var hasSubscriptionOperation = function(request) {
-  return request.query.definitions.some(
-    ({ kind, operation }) => kind === "OperationDefinition" && operation === "subscription"
+const hasSubscriptionOperation = ({ query: { definitions } }) => {
+  return definitions.some(
+    ({ kind, operation }) => kind === 'OperationDefinition' && operation === 'subscription'
   )
 }
 
-var link = ApolloLink.split(
+const link = ApolloLink.split(
   hasSubscriptionOperation,
   new ActionCableLink({cable}),
   httpLink
-)
+);
+
+const client = new ApolloClient({
+  link: link,
+  cache: new Cache()
+});
 ```
 
 ## Apollo 1
