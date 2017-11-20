@@ -15,6 +15,7 @@
     "test": "jest"
   },
   "dependencies": {
+    "apollo-link": "^1.0.3",
     "glob": "^7.1.2",
     "graphql": "^0.10.5"
   }
