@@ -53,6 +53,14 @@ module GraphQL
       true
     end
 
+    def to_ast_type_name_node
+      @ast_type_name_node ||= begin
+        GraphQL::Language::Nodes::ListType.new(
+          of_type: of_type.to_ast_type_name_node
+        )
+      end
+    end
+
     private
 
     def coerce_non_null_input(value, ctx)

@@ -483,6 +483,13 @@ module GraphQL
           @description = description
         end
       end
+
+      def self.from_schema(schema, **kwargs)
+        GraphQL::Language::Nodes::DocumentFromSchema.new(
+          schema,
+          kwargs
+        ).document
+      end
     end
   end
 end

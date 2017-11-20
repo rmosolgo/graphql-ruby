@@ -75,6 +75,16 @@ module GraphQL
       @resolve_type_proc = new_resolve_type_proc
     end
 
+    def to_ast_node
+      @ast_node ||= begin
+        GraphQL::Language::Nodes::UnionTypeDefinition.new(
+          name: name,
+          types: possible_types.map(&:to_ast_type_name_node),
+          description: description,
+        )
+      end
+    end
+
     protected
 
     attr_reader :dirty_possible_types

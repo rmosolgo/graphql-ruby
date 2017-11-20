@@ -216,6 +216,10 @@ module GraphQL
       false
     end
 
+    def to_ast_type_name_node
+      @ast_type_name_node ||= GraphQL::Language::Nodes::TypeName.new(name: name)
+    end
+
     private
 
     def warn_deprecated_coerce(alt_method_name)

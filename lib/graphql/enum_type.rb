@@ -129,6 +129,16 @@ module GraphQL
       name
     end
 
+    def to_ast_node
+      @ast_node ||= begin
+        GraphQL::Language::Nodes::EnumTypeDefinition.new(
+          name: name,
+          values: values.values.map(&:to_ast_node),
+          description: description,
+        )
+      end
+    end
+
     # A value within an {EnumType}
     #
     # Created with the `value` helper
@@ -143,6 +153,15 @@ module GraphQL
         # Validate that the name is correct
         GraphQL::NameValidator.validate!(new_name)
         @name = new_name
+      end
+
+      def to_ast_node
+        @ast_node ||= begin
+          GraphQL::Language::Nodes::EnumValueDefinition.new(
+            name: name,
+            description: description,
+          )
+        end
       end
     end
 
