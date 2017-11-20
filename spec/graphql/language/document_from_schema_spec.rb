@@ -134,8 +134,6 @@ describe GraphQL::Language::Nodes::DocumentFromSchema do
     let(:document) { subject.document }
 
     it "returns an AST from a GraphQL::Schema object" do
-      binding.pry
-
       expected = <<-IDL
 # The query root of this schema
 type Query {
