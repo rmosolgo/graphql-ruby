@@ -485,7 +485,7 @@ module GraphQL
       end
 
       def self.from_schema(schema, **kwargs)
-        GraphQL::Language::Nodes::BuildFromSchemaDefinition.new(
+        GraphQL::Language::Nodes::DocumentFromSchema.new(
           schema,
           kwargs
         ).document

@@ -2,7 +2,7 @@
 module GraphQL
   module Language
     module Nodes
-      class BuildFromSchemaDefinition
+      class DocumentFromSchema
         def initialize(schema, context: nil, only: nil, except: nil, include_builtins: false)
           @schema = schema
           @context = context
