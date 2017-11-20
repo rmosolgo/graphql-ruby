@@ -36,7 +36,7 @@ module GraphQL
         out = "@#{directive.name}".dup
 
         if directive.arguments.any?
-          out << "(#{directive.arguments.map { |a| print_node(a) }.join(", ")})"
+          out << "(#{directive.arguments.map { |a| print_argument(a) }.join(", ")})"
         end
 
         out
@@ -54,7 +54,7 @@ module GraphQL
         out = "#{indent}".dup
         out << "#{field.alias}: " if field.alias
         out << "#{field.name}"
-        out << "(#{field.arguments.map { |a| print_node(a) }.join(", ")})" if field.arguments.any?
+        out << "(#{field.arguments.map { |a| print_argument(a) }.join(", ")})" if field.arguments.any?
         out << print_directives(field.directives)
         out << print_selections(field.selections, indent: indent)
         out
@@ -103,7 +103,7 @@ module GraphQL
         out << " #{operation_definition.name}" if operation_definition.name
 
         if operation_definition.variables.any?
-          out << "(#{operation_definition.variables.map { |v| print_node(v) }.join(", ")})"
+          out << "(#{operation_definition.variables.map { |v| print_variable_definition(v) }.join(", ")})"
         end
 
         out << print_directives(operation_definition.directives)
@@ -162,7 +162,7 @@ module GraphQL
       def print_field_definition(field)
         out = field.name.dup
         unless field.arguments.empty?
-          out << "(" << field.arguments.map{ |arg| print_node(arg) }.join(", ") << ")"
+          out << "(" << field.arguments.map{ |arg| print_input_value_definition(arg) }.join(", ") << ")"
         end
         out << ": #{print_node(field.type)}"
         out << print_directives(field.directives)
@@ -187,7 +187,7 @@ module GraphQL
         out << "enum #{enum_type.name}#{print_directives(enum_type.directives)} {\n"
         enum_type.values.each.with_index do |value, i|
           out << print_description(value, indent: '  ', first_in_block: i == 0)
-          out << print_node(value)
+          out << print_enum_value_definition(value)
         end
         out << "}"
       end
@@ -205,7 +205,7 @@ module GraphQL
         out << " {\n"
         input_object_type.fields.each.with_index do |field, i|
           out << print_description(field, indent: '  ', first_in_block: i == 0)
-          out << "  #{print_node(field)}\n"
+          out << "  #{print_input_value_definition(field)}\n"
         end
         out << "}"
       end
@@ -215,7 +215,7 @@ module GraphQL
         out << "directive @#{directive.name}"
 
         if directive.arguments.any?
-          out << "(#{directive.arguments.map { |a| print_node(a) }.join(", ")})"
+          out << "(#{directive.arguments.map { |a| print_input_value_definition(a) }.join(", ")})"
         end
 
         out << " on #{directive.locations.join(' | ')}"
