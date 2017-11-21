@@ -3,6 +3,7 @@ require "delegate"
 require "json"
 require "set"
 require "singleton"
+require_relative "./graphql/railtie" if defined? Rails::Railtie
 
 module GraphQL
   if RUBY_VERSION == "2.4.0"
