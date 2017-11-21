@@ -10,8 +10,12 @@ describe GraphQL::Upgrader::Member do
 
   # Missing transformation
   describe 'field arguments' do
-    # old: argument :status, !TodoStatus, "Restrict items to this status"
-    # new: argument :status, TodoStatus, "Restrict items to this status", null: true
+    it 'transforms' do
+      old = %{argument :status, !TodoStatus, "Restrict items to this status"}
+      new = %{argument :status, TodoStatus, "Restrict items to this status", null: true}
+
+      assert_equal transform(old), new
+    end
   end
 
   describe 'name' do

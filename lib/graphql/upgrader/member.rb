@@ -14,15 +14,15 @@ module GraphQL
         transformable = put_the_field_name_and_return_type_and_description_on_one_line_for_easy_processing transformable
         transformable = move_the_type_from_the_block_to_the_field transformable
 
-        transformable.scan(/(?:field|connection) .*$/).each do |field|
-          field_regex = /(?<field_or_connection>field|connection) :(?<name>[a-zA-Z_0-9]*)?, (?<return_type>.*?)(?<thing>,|$|\})(?<remainder>.*)/
+        transformable.scan(/(?:field|connection|argument) .*$/).each do |field|
+          field_regex = /(?<field_type>field|connection|argument) :(?<name>[a-zA-Z_0-9]*)?, (?<return_type>.*?)(?<thing>,|$|\})(?<remainder>.*)/
 
           if (matches = field_regex.match(field))
             name = matches[:name]
             return_type = matches[:return_type]
             remainder = matches[:remainder]
             thing = matches[:thing]
-            field_or_connection = matches[:field_or_connection]
+            field_type = matches[:field_type]
 
             # Someone that knows regular expressions probably would do this in the regex, I don't
             doable = remainder.gsub!(/\ do$/, '') || return_type.gsub!(/\ do$/, '')
@@ -35,10 +35,11 @@ module GraphQL
             return_type.gsub! 'types[', '['
 
             nullable_as_keyword = nullable ? ', null: true' : ''
-            connection_as_keyword = field_or_connection == 'connection' ? ', connection: true' : ''
+            connection_as_keyword = field_type == 'connection' ? ', connection: true' : ''
+            field_type = field_type == 'argument' ? 'argument' : 'field'
 
             transformable.sub!(field) do
-              "field :#{name}, #{return_type}#{thing}#{remainder}#{nullable_as_keyword}#{connection_as_keyword}#{doable ? ' do' : ''}"
+              "#{field_type} :#{name}, #{return_type}#{thing}#{remainder}#{nullable_as_keyword}#{connection_as_keyword}#{doable ? ' do' : ''}"
             end
           end
         end
@@ -59,7 +60,7 @@ module GraphQL
 
       def move_the_type_from_the_block_to_the_field(transformable)
         transformable.gsub(
-          /(?<field>(?:field|connection) :(?:[a-zA-Z_0-9]*)) do(?<block_contents>.*?)[ ]*type (?<return_type>.*?)\n/m
+          /(?<field>(?:field|connection|argument) :(?:[a-zA-Z_0-9]*)) do(?<block_contents>.*?)[ ]*type (?<return_type>.*?)\n/m
         ) do
           field = $~[:field]
           block_contents = $~[:block_contents]
@@ -70,7 +71,7 @@ module GraphQL
       end
 
       def put_the_field_name_and_return_type_and_description_on_one_line_for_easy_processing(transformable)
-        transformable.gsub(/(?<field>(?:field|connection).*?),\n(\s*)(?<next_line>"(.*))/) do
+        transformable.gsub(/(?<field>(?:field|connection|argument).*?),\n(\s*)(?<next_line>"(.*))/) do
           field = $~[:field].chomp
           next_line = $~[:next_line]
 
