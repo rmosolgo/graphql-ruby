@@ -1,15 +1,25 @@
-# -*- coding: utf-8 -*-
 # frozen_string_literal: true
 require "graphql"
 require_relative "./data"
-require_relative "./interfaces/local_product_interface"
-require_relative "./interfaces/edible_interface"
-
 module Dummy
   class NoSuchDairyError < StandardError; end
 
   GraphQL::Field.accepts_definitions(joins: GraphQL::Define.assign_metadata_key(:joins))
   GraphQL::BaseType.accepts_definitions(class_names: GraphQL::Define.assign_metadata_key(:class_names))
+
+  LocalProductInterface = GraphQL::InterfaceType.define do
+    name "LocalProduct"
+    description "Something that comes from somewhere"
+    field :origin, !types.String, "Place the thing comes from"
+  end
+
+  EdibleInterface = GraphQL::InterfaceType.define do
+    name "Edible"
+    description "Something you can eat, yum"
+    field :fatContent, !types.Float, "Percentage which is fat"
+    field :origin, !types.String, "Place the edible comes from"
+    field :selfAsEdible, EdibleInterface, resolve: ->(o, a, c) { o }
+  end
 
   EdibleAsMilkInterface = EdibleInterface.redefine do
     name "EdibleAsMilk"
