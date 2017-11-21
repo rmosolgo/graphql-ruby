@@ -3,26 +3,11 @@
 module GraphQL
   module Upgrader
     class Member
-      class Finder
-        def initialize(base_path)
-          @base_path = base_path
-        end
-
-        def member_definition_files
-          []
-        end
-
-        private
-
-        attr_reader :base_path
-      end
-
       def initialize(member)
         @member = member
       end
 
       def transform
-        return unless transformable?
         transformable = member.dup
         transformable = transform_to_class transformable
         transformable = transform_or_remove_name transformable
@@ -59,6 +44,15 @@ module GraphQL
         end
 
         transformable
+      end
+
+      def transformable?
+        return false if member.include? '< GraphQL::Schema::'
+        return false if member.include? '< BaseObject'
+        return false if member.include? '< BaseInterface'
+        return false if member.include? '< BaseEnum'
+
+        true
       end
 
       private
@@ -107,17 +101,6 @@ module GraphQL
 
         transformable
       end
-
-      def transformable?
-        return false if member.include? '< GraphQL::Schema::'
-        return false if member.include? '< BaseObject'
-        return false if member.include? '< BaseInterface'
-        return false if member.include? '< BaseEnum'
-
-        true
-      end
-
-      private
 
       attr_reader :member
     end
