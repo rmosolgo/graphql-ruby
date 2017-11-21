@@ -13,8 +13,10 @@ module GraphQL
           Dir[dir].each do |file|
             # Members (types, interfaces, etc.)
             if file =~ /.*_(type|interface|enum|union|)\.rb$/
-              puts "- Transforming #{file}"
               transformer = GraphQL::Upgrader::Member.new File.read(file)
+              next unless transformer.transformable?
+
+              puts "- Transforming #{file}"
               File.open(file, 'w') { |f| f.write transformer.transform }
             end
           end
