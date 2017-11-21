@@ -59,7 +59,7 @@ module GraphQL
 
       def move_the_type_from_the_block_to_the_field(transformable)
         transformable.gsub(
-          /(?<field>(?:field|connection) :(?:[a-zA-Z_0-9]*)?) do(?<block_contents>.*?)([ ]*)type (?<return_type>.*?)\n/m
+          /(?<field>(?:field|connection) :(?:[a-zA-Z_0-9]*)) do(?<block_contents>.*?)[ ]*type (?<return_type>.*?)\n/m
         ) do
           field = $~[:field]
           block_contents = $~[:block_contents]
@@ -80,7 +80,7 @@ module GraphQL
 
       def transform_to_class(transformable)
         transformable.sub(
-          /([a-zA-Z_0-9]*) = GraphQL::(Object|Interface|Enum|Union)Type\.define do/, 'class \1 < Base\2'
+          /([a-zA-Z_0-9:]*) = GraphQL::(Object|Interface|Enum|Union)Type\.define do/, 'class \1 < Base\2'
         )
       end
 
