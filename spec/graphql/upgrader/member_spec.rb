@@ -8,13 +8,6 @@ describe GraphQL::Upgrader::Member do
     GraphQL::Upgrader::Member.new(old).transform
   end
 
-  describe GraphQL::Upgrader::Member::Finder do
-    describe 'find' do
-      # definition_files = GraphQL::Upgrader::Member::Finder.new('').definition_files
-      # binding.pry
-    end
-  end
-
   # Missing transformation
   describe 'field arguments' do
     # old: argument :status, !TodoStatus, "Restrict items to this status"
@@ -90,6 +83,12 @@ describe GraphQL::Upgrader::Member do
 
       old = %{UserEnum = GraphQL::EnumType.define do}
       new = %{class UserEnum < BaseEnum}
+      assert_equal transform(old), new
+    end
+
+    it 'transforms including the module' do
+      old = %{Module::UserType = GraphQL::ObjectType.define do}
+      new = %{class Module::UserType < BaseObject}
       assert_equal transform(old), new
     end
   end
