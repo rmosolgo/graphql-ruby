@@ -16,53 +16,53 @@ describe GraphQL::Upgrader::Member do
 
   describe 'name' do
     it 'removes the name field if it can be inferred from the class' do
-      old = %{|
+      old = %{
         UserType = GraphQL::ObjectType.define do
           name "User"
         end
-      |}
-      new = %{|
+      }
+      new = %{
         class UserType < BaseObject
         end
-      |}
+      }
       assert_equal transform(old), new
     end
 
     it 'transforms the name into graphql_name if it can\'t be inferred from the class' do
-      old = %{|
+      old = %{
         TeamType = GraphQL::ObjectType.define do
           name "User"
         end
-      |}
-      new = %{|
+      }
+      new = %{
         class TeamType < BaseObject
           graphql_name "User"
         end
-      |}
+      }
       assert_equal transform(old), new
 
-      old = %{|
+      old = %{
         UserInterface = GraphQL::InterfaceType.define do
           name "User"
         end
-      |}
-      new = %{|
+      }
+      new = %{
         class UserInterface < BaseInterface
           graphql_name "User"
         end
-      |}
+      }
       assert_equal transform(old), new
 
-      old = %{|
+      old = %{
         UserInterface = GraphQL::InterfaceType.define do
           name "User"
         end
-      |}
-      new = %{|
+      }
+      new = %{
         class UserInterface < BaseInterface
           graphql_name "User"
         end
-      |}
+      }
       assert_equal transform(old), new
     end
   end
@@ -123,92 +123,92 @@ describe GraphQL::Upgrader::Member do
       new = %{field :names, [String], null: true}
       assert_equal transform(old), new
 
-      old = %{|
+      old = %{
         field :name, types.String do
         end
-      |}
-      new = %{|
+      }
+      new = %{
         field :name, String do
         end
-      |}
+      }
       assert_equal transform(old), new
 
-      old = %{|
+      old = %{
         field :name, !types.String do
         end
-      |}
-      new = %{|
+      }
+      new = %{
         field :name, String, null: true do
         end
-      |}
+      }
       assert_equal transform(old), new
 
-      old = %{|
+      old = %{
         field :name, -> { !types.String } do
         end
-      |}
-      new = %{|
+      }
+      new = %{
         field :name, -> { String }, null: true do
         end
-      |}
+      }
       assert_equal transform(old), new
 
-      old = %{|
+      old = %{
         field :name do
           type -> { String }
         end
-      |}
-      new = %{|
+      }
+      new = %{
         field :name, -> { String } do
         end
-      |}
+      }
       assert_equal transform(old), new
 
-      old = %{|
+      old = %{
         field :name do
           type !String
         end
-      |}
-      new = %{|
+      }
+      new = %{
         field :name, String, null: true do
         end
-      |}
+      }
       assert_equal transform(old), new
 
-      old = %{|
+      old = %{
         field :name, -> { types.String },
           "newline description" do
         end
-      |}
-      new = %{|
+      }
+      new = %{
         field :name, -> { String }, "newline description" do
         end
-      |}
+      }
       assert_equal transform(old), new
 
-      old = %{|
+      old = %{
         field :name, -> { !types.String },
           "newline description" do
         end
-      |}
-      new = %{|
+      }
+      new = %{
         field :name, -> { String }, "newline description", null: true do
         end
-      |}
+      }
       assert_equal transform(old), new
     end
 
     it 'does not transform when its not needed' do
-      old = %{|
+      old = %{
        field :name, String,
          field: SomeField do
        end
-      |}
-      new = %{|
+      }
+      new = %{
        field :name, String,
          field: SomeField do
        end
-      |}
+      }
       assert_equal transform(old), new
     end
   end
