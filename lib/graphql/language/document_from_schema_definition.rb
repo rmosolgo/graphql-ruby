@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 module GraphQL
   module Language
-    class DocumentFromDefinition
-      def initialize(member)
-        @member = member
+    class DocumentFromSchemaDefinition
+      def initialize(schema)
+        @schema = schema
       end
 
       def document
@@ -152,7 +152,7 @@ module GraphQL
 
       private
 
-      attr_reader :member
+      attr_reader :schema
     end
   end
 end
