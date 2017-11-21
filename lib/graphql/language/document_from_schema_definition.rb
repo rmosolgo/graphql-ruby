@@ -4,11 +4,12 @@ module GraphQL
     class DocumentFromSchemaDefinition
       def initialize(schema)
         @schema = schema
+        @types = GraphQL::Schema::Traversal.new(schema, introspection: true).type_map.values
       end
 
       def document
         GraphQL::Language::Nodes::Document.new(
-          definitions: build_definitions(schema)
+          definitions: build_definition_nodes
         )
       end
 
@@ -34,8 +35,8 @@ module GraphQL
         GraphQL::Language::Nodes::ObjectTypeDefinition.new(
           name: object_type.name,
           interfaces: object_type.interfaces.map { |iface| build_type_name_node(iface) },
-          fields: build_fields(object_type.fields.values),
-          descriptions: object_type.description,
+          fields: build_field_nodes(object_type.fields.values),
+          description: object_type.description,
         )
       end
 
@@ -60,17 +61,17 @@ module GraphQL
         GraphQL::Language::Nodes::InterfaceTypeDefinition.new(
           name: interface_type.name,
           description: interface_type.description,
-          fields: build_field(interface_type.fields.values)
+          fields: build_field_nodes(interface_type.fields.values)
         )
       end
 
       def build_enum_type_node(enum_type)
         GraphQL::Language::Nodes::EnumTypeDefinition.new(
-          name: name,
+          name: enum_type.name,
           values: enum_type.values.values.map do |enum_value|
             build_enum_value_node(enum_value)
           end,
-          description: description,
+          description: enum_type.description,
         )
       end
 
@@ -78,6 +79,13 @@ module GraphQL
         GraphQL::Language::Nodes::EnumValueDefinition.new(
           name: enum_value.name,
           description: enum_value.description,
+        )
+      end
+
+      def build_scalar_type_node(scalar_type)
+        GraphQL::Language::Nodes::ScalarTypeDefinition.new(
+          name: scalar_type.name,
+          description: scalar_type.description,
         )
       end
 
@@ -98,15 +106,24 @@ module GraphQL
         )
       end
 
+      def build_directive_node(directive)
+        GraphQL::Language::Nodes::DirectiveDefinition.new(
+          name: directive.name,
+          arguments: build_argument_nodes(directive.arguments.values),
+          locations: directive.locations.map(&:to_s),
+          description: directive.description,
+        )
+      end
+
       def build_type_name_node(type)
         case type
         when GraphQL::ListType
           GraphQL::Language::Nodes::ListType.new(
-            of_type: build_type_name_node(type)
+            of_type: build_type_name_node(type.of_type)
           )
         when GraphQL::NonNullType
           GraphQL::Language::Nodes::NonNullType.new(
-            of_type: build_type_name_node(type)
+            of_type: build_type_name_node(type.of_type)
           )
         else
           GraphQL::Language::Nodes::TypeName.new(name: type.name)
@@ -121,38 +138,43 @@ module GraphQL
           build_union_type_node(type)
         when GraphQL::InterfaceType
           build_interface_type_node(type)
+        when GraphQL::ScalarType
+          build_scalar_type_node(type)
+        when GraphQL::EnumType
+          build_enum_type_node(type)
+        when GraphQL::InputObjectType
+          build_input_object_node(type)
+        else
+          raise TypeError
         end
       end
 
       def build_argument_nodes(arguments)
-        argument.map { |arg| build_argument_node(arg) }
+        arguments.map { |arg| build_argument_node(arg) }
       end
 
       def build_directive_nodes(directives)
         directives.map { |directive| build_directive_node(directive) }
       end
 
-      def build_definition_nodes(schema)
-        definitions = build_type_definition_nodes(schema.types)
-
-        if schema.respects_root_names_convention?
-          definitions << build_schema_node(schema)
-        end
-
+      def build_definition_nodes
+        definitions = build_type_definition_nodes(types)
+        definitions += build_directive_nodes(schema.directives.values)
+        definitions << build_schema_node(schema)
         definitions
       end
 
       def build_type_definition_nodes(types)
-        types.map { |type| build_type_definition_node }
+        types.map { |type| build_type_definition_node(type) }
       end
 
-      def build_fields(fields)
-        fields.map { |field| build_field(field) }
+      def build_field_nodes(fields)
+        fields.map { |field| build_field_node(field) }
       end
 
       private
 
-      attr_reader :schema
+      attr_reader :schema, :types
     end
   end
 end
