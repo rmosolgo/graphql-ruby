@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+## 1.6.1 (22 Nov 2017)
+
+### New Features
+
+- Support `composite_primary_keys` gem
+
 ## 1.6.0 (13 Nov 2017)
 
 ### Breaking Changes
