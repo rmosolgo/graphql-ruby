@@ -11,7 +11,7 @@ module GraphQL
         transformable = member.dup
         transformable = transform_to_class transformable
         transformable = transform_or_remove_name transformable
-        transformable = put_the_field_name_and_return_type_and_description_on_one_line_for_easy_processing transformable
+        transformable = simplify_field_definition_for_easier_processing transformable
         transformable = move_the_type_from_the_block_to_the_field transformable
 
         transformable.scan(/(?:field|connection|argument) .*$/).each do |field|
@@ -24,13 +24,10 @@ module GraphQL
             thing = matches[:thing]
             field_type = matches[:field_type]
 
-            # Someone that knows regular expressions probably would do this in the regex, I don't
-            doable = remainder.gsub!(/\ do$/, '') || return_type.gsub!(/\ do$/, '')
+            # This is a small bug in the regex. Ideally the `do` part would only be in the remainder.
+            with_block = remainder.gsub!(/\ do$/, '') || return_type.gsub!(/\ do$/, '')
 
-            # Remove the old null type indicator
             nullable = return_type.gsub! '!', ''
-
-            # Remove the types
             return_type.gsub! 'types.', ''
             return_type.gsub! 'types[', '['
 
@@ -39,7 +36,7 @@ module GraphQL
             field_type = field_type == 'argument' ? 'argument' : 'field'
 
             transformable.sub!(field) do
-              "#{field_type} :#{name}, #{return_type}#{thing}#{remainder}#{nullable_as_keyword}#{connection_as_keyword}#{doable ? ' do' : ''}"
+              "#{field_type} :#{name}, #{return_type}#{thing}#{remainder}#{nullable_as_keyword}#{connection_as_keyword}#{with_block ? ' do' : ''}"
             end
           end
         end
@@ -70,7 +67,7 @@ module GraphQL
         end
       end
 
-      def put_the_field_name_and_return_type_and_description_on_one_line_for_easy_processing(transformable)
+      def simplify_field_definition_for_easier_processing(transformable)
         transformable.gsub(/(?<field>(?:field|connection|argument).*?),\n(\s*)(?<next_line>"(.*))/) do
           field = $~[:field].chomp
           next_line = $~[:next_line]
