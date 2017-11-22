@@ -112,7 +112,7 @@ describe GraphQL::Upgrader::Member do
       assert_equal upgrade(old), new
 
       old = %{connection :name, Name.connection_type, "names"}
-      new = %{field :name, Name.connection_type, "names", connection: true}
+      new = %{field :name, Name.connection_type, "names", null: false, connection: true}
       assert_equal upgrade(old), new
 
       old = %{connection :name, !Name.connection_type, "names"}
@@ -120,7 +120,7 @@ describe GraphQL::Upgrader::Member do
       assert_equal upgrade(old), new
 
       old = %{field :names, types[types.String]}
-      new = %{field :names, [String]}
+      new = %{field :names, [String], null: false}
       assert_equal upgrade(old), new
 
       old = %{field :names, !types[types.String]}
@@ -132,7 +132,7 @@ describe GraphQL::Upgrader::Member do
         end
       }
       new = %{
-        field :name, String do
+        field :name, String, null: false do
         end
       }
       assert_equal upgrade(old), new
@@ -163,7 +163,7 @@ describe GraphQL::Upgrader::Member do
         end
       }
       new = %{
-        field :name, -> { String } do
+        field :name, -> { String }, null: false do
         end
       }
       assert_equal upgrade(old), new
@@ -185,7 +185,7 @@ describe GraphQL::Upgrader::Member do
         end
       }
       new = %{
-        field :name, -> { String }, "newline description" do
+        field :name, -> { String }, "newline description", null: false do
         end
       }
       assert_equal upgrade(old), new
@@ -200,17 +200,14 @@ describe GraphQL::Upgrader::Member do
         end
       }
       assert_equal upgrade(old), new
-    end
 
-    it 'does not upgrade when its not needed' do
       old = %{
        field :name, String,
          field: SomeField do
        end
       }
       new = %{
-       field :name, String,
-         field: SomeField do
+       field :name, String, field: SomeField, null: false do
        end
       }
       assert_equal upgrade(old), new
