@@ -13,27 +13,27 @@ should go through a warden. If you access the schema directly, you
 may show a client something that it shouldn’t be allowed to see. 
 Masks can be provided in Schema#execute (or Query#initialize) with
 the <code class="highlighter-rouge">mask:</code> keyword. 
-Examples:
-# Hidding private fields
-private_members = -&gt; (member, ctx) { member.metadata[:private] }
-result = Schema.execute(query_string, except: private_members)
-# Custom mask implementation
-# It must respond to <code class="highlighter-rouge">#call(member)</code>.
-class MissingRequiredFlags
+Examples:</p>
+<h1 id="hidding-private-fields">Hidding private fields</h1>
+<p>private_members = -&gt; (member, ctx) { member.metadata[:private] }
+result = Schema.execute(query_string, except: private_members)</p>
+<h1 id="custom-mask-implementation">Custom mask implementation</h1>
+<h1 id="it-must-respond-to-callmember">It must respond to <code class="highlighter-rouge">#call(member)</code>.</h1>
+<p>class MissingRequiredFlags
 def initialize(user)
 @user = user
-end
-# Return <code class="highlighter-rouge">false</code> if any required flags are missing
-def call(member, ctx)
+end</p>
+<h1 id="return-false-if-any-required-flags-are-missing">Return <code class="highlighter-rouge">false</code> if any required flags are missing</h1>
+<p>def call(member, ctx)
 member.metadata[:required_flags].any? do |flag|
 !@user.has_flag?(flag)
 end
 end
-end
-# Then, use the custom filter in query:
-missing_required_flags = MissingRequiredFlags.new(current_user)
-# This query can only access members which match the user’s flags
-result = Schema.execute(query_string, except: missing_required_flags)
+end</p>
+<h1 id="then-use-the-custom-filter-in-query">Then, use the custom filter in query:</h1>
+<p>missing_required_flags = MissingRequiredFlags.new(current_user)</p>
+<h1 id="this-query-can-only-access-members-which-match-the-users-flags">This query can only access members which match the user’s flags</h1>
+<p>result = Schema.execute(query_string, except: missing_required_flags)
 Instance methods:
 arguments, directives, enum_values, fields, get_field, get_type,
 initialize, interfaces, possible_types, read_through,

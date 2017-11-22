@@ -57,13 +57,12 @@
 <div class="guide-container">
   <p><code class="highlighter-rouge">context</code> objects have a <code class="highlighter-rouge">backtrace</code> which shows its GraphQL context. You can print the backtrace during query execution:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="nb">puts</span> <span class="n">context</span><span class="p">.</span><span class="nf">backtrace</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">puts</span> <span class="n">context</span><span class="p">.</span><span class="nf">backtrace</span>
 <span class="c1"># Loc  | Field                         | Object       | Arguments             | Result</span>
 <span class="c1"># 3:13 | User.login                    | #&lt;User id=1&gt; | {"message"=&gt;"Boom"}   | #&lt;RuntimeError: This is broken: Boom&gt;</span>
 <span class="c1"># 2:11 | Query.user                    | nil          | {"login"=&gt;"rmosolgo"} | {}</span>
 <span class="c1"># 1:9  | query                         | nil          | {"msg"=&gt;"Boom"}       |</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>The backtrace contains some execution data:</p>
 
@@ -81,23 +80,21 @@
 
 <p>To enable this feature for a query, add <code class="highlighter-rouge">backtrace: true</code> to your <code class="highlighter-rouge">context</code>, for example:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># Wrap this query with backtrace annotation</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Wrap this query with backtrace annotation</span>
 <span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="n">query_string</span><span class="p">,</span> <span class="ss">context: </span><span class="p">{</span> <span class="ss">backtrace: </span><span class="kp">true</span> <span class="p">})</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>Or, to <em>always</em> wrap backtraces, add it to your schema definition with <code class="highlighter-rouge">use</code>, for example:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="c1"># Always wrap backtraces with GraphQL annotation</span>
   <span class="n">use</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Backtrace</span>
 <span class="k">end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>Now, any unhandled errors will be wrapped by <code class="highlighter-rouge">GraphQL::Backtrace::TracedError</code>, which prints out the GraphQL backtrace, too. For example:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>Unhandled error during GraphQL execution:
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Unhandled error during GraphQL execution:
 
   This is broken: Boom
     /Users/rmosolgo/code/graphql-ruby/spec/graphql/backtrace_spec.rb:27:in `block (3 levels) in &lt;top (required)&gt;'
@@ -119,8 +116,7 @@ Loc  | Field                         | Object     | Arguments           | Result
 3:13 | Thing.raiseField as boomError | :something | {"message"=&gt;"Boom"} | #&lt;RuntimeError: This is broken: Boom&gt;
 2:11 | Query.field1                  | "Root"     | {}                  | {}
 1:9  | query                         | "Root"     | {"msg"=&gt;"Boom"}     | {}
-</code></pre>
-</div>
+</code></pre></div></div>
 
 </div>
 <p class="guide-footer">

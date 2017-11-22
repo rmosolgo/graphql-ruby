@@ -93,7 +93,7 @@
 
 <p>Here’s another look:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>1. Subscription is created in your app
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>1. Subscription is created in your app
 
           HTTP POST
         .----------&gt;   write to Redis
@@ -119,8 +119,7 @@
 
           webhook
       ⚙️ &lt;-------- ☁️  (disconnect) 📱
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>By using this configuration, you can use GraphQL subscriptions without hosting a push server yourself!</p>
 
@@ -128,11 +127,10 @@
 
 <p>Subscriptions require a <em>persistent</em> Redis database, configured with:</p>
 
-<div class="language-sh highlighter-rouge"><pre class="highlight"><code>maxmemory-policy noeviction
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>maxmemory-policy noeviction
 <span class="c"># optional, more durable persistence:</span>
 appendonly yes
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>Otherwise, Redis will drop data that doesn’t fit in memory (read more in <a href="https://redis.io/topics/persistence">“Redis persistence”</a>).</p>
 
@@ -142,24 +140,21 @@ appendonly yes
 
 <p>Add <code class="highlighter-rouge">redis</code> to your <code class="highlighter-rouge">Gemfile</code>:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">gem</span> <span class="s1">'redis'</span>
-</code></pre>
-</div>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">gem</span> <span class="s1">'redis'</span>
+</code></pre></div></div>
 
 <p>and <code class="highlighter-rouge">bundle install</code>. Then create a Redis instance:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># for example, in an initializer:</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># for example, in an initializer:</span>
 <span class="vg">$graphql_subscriptions_redis</span> <span class="o">=</span> <span class="no">Redis</span><span class="p">.</span><span class="nf">new</span> <span class="c1"># default connection</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>Then, that Redis client is passed to the Subscription configuration:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="n">use</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">Subscriptions</span><span class="p">,</span> <span class="ss">redis: </span><span class="vg">$graphql_subscriptions_redis</span>
 <span class="k">end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>That connection will be used for managing subscription state. All writes to Redis are prefixed with <code class="highlighter-rouge">graphql:sub:</code>.</p>
 
@@ -169,26 +164,24 @@ appendonly yes
 
 <p>Return <code class="highlighter-rouge">result.context[:subscription_id]</code> as the <code class="highlighter-rouge">X-Subscription-ID</code> header. For example:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">result</span> <span class="o">=</span> <span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(.</span><span class="nf">.</span><span class="o">.</span><span class="p">)</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">result</span> <span class="o">=</span> <span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
 <span class="c1"># For subscriptions, return the subscription_id as a header</span>
 <span class="k">if</span> <span class="n">result</span><span class="p">.</span><span class="nf">subscription?</span>
   <span class="n">response</span><span class="p">.</span><span class="nf">headers</span><span class="p">[</span><span class="s2">"X-Subscription-ID"</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span><span class="p">.</span><span class="nf">context</span><span class="p">[</span><span class="ss">:subscription_id</span><span class="p">]</span>
 <span class="k">end</span>
 <span class="n">render</span> <span class="ss">json: </span><span class="n">result</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>This way, the client can use that ID as a Pusher channel.</p>
 
 <p>For <strong>CORS requests</strong>, you need a special header so that clients can read the custom header:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="k">if</span> <span class="n">result</span><span class="p">.</span><span class="nf">subscription?</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">if</span> <span class="n">result</span><span class="p">.</span><span class="nf">subscription?</span>
   <span class="n">response</span><span class="p">.</span><span class="nf">headers</span><span class="p">[</span><span class="s2">"X-Subscription-ID"</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span><span class="p">.</span><span class="nf">context</span><span class="p">[</span><span class="ss">:subscription_id</span><span class="p">]</span>
   <span class="c1"># Required for CORS requests:</span>
   <span class="n">response</span><span class="p">.</span><span class="nf">headers</span><span class="p">[</span><span class="s2">"Access-Control-Expose-Headers"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"X-Subscription-ID"</span>
 <span class="k">end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>Read more here: <a href="https://www.html5rocks.com/en/tutorials/cors/">“Using CORS”</a>.</p>
 
@@ -204,7 +197,7 @@ appendonly yes
 
 <p>Then, mount the Rack app for handling webhooks from Pusher. For example, on Rails:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># config/routes.rb</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># config/routes.rb</span>
 
 <span class="c1"># Include GraphQL::Pro's routing extensions:</span>
 <span class="n">using</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">Routes</span>
@@ -214,8 +207,7 @@ appendonly yes
   <span class="c1"># Handle Pusher webhooks for subscriptions:</span>
   <span class="n">mount</span> <span class="no">MySchema</span><span class="p">.</span><span class="nf">pusher_webhooks_client</span><span class="p">,</span> <span class="ss">at: </span><span class="s2">"/pusher_webhooks"</span>
 <span class="k">end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>This way, we’ll be kept up-to-date with Pusher’s unsubscribe events.</p>
 
@@ -225,7 +217,7 @@ appendonly yes
 
 <p>To use a private channel, add a <code class="highlighter-rouge">channel_prefix:</code> key to your query context:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span>
   <span class="n">query_string</span><span class="p">,</span>
   <span class="ss">context: </span><span class="p">{</span>
     <span class="c1"># If this query is a subscription, use this prefix for the Pusher channel:</span>
@@ -234,20 +226,18 @@ appendonly yes
   <span class="p">},</span>
   <span class="c1"># ...</span>
 <span class="p">)</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>That prefix will be applied to GraphQL-related Pusher channel names. (The prefix should begin with <code class="highlighter-rouge">private-</code>, as required by Pusher.)</p>
 
 <p>Then, in your <a href="https://pusher.com/docs/authenticating_users#implementing_private_endpoints">auth endpoint</a>, you can assert that the logged-in user matches the channel name:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="k">if</span> <span class="n">params</span><span class="p">[</span><span class="ss">:channel_name</span><span class="p">].</span><span class="nf">start_with?</span><span class="p">(</span><span class="s2">"private-user-</span><span class="si">#{</span><span class="n">current_user</span><span class="p">.</span><span class="nf">id</span><span class="si">}</span><span class="s2">-"</span><span class="p">)</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">if</span> <span class="n">params</span><span class="p">[</span><span class="ss">:channel_name</span><span class="p">].</span><span class="nf">start_with?</span><span class="p">(</span><span class="s2">"private-user-</span><span class="si">#{</span><span class="n">current_user</span><span class="p">.</span><span class="nf">id</span><span class="si">}</span><span class="s2">-"</span><span class="p">)</span>
   <span class="c1"># success, render the auth token</span>
 <span class="k">else</span>
   <span class="c1"># failure, render unauthorized</span>
 <span class="k">end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <h2 id="serializing-context">Serializing Context</h2>
 
@@ -255,7 +245,7 @@ appendonly yes
 
 <p>By default, this is done with <a href="http://www.rubydoc.info/gems/graphql/1.7.6/GraphQL/Subscriptions/Serialize" target="_blank" title="API docs for GraphQL::Subscriptions::Serialize"><code>GraphQL::Subscriptions::Serialize</code></a>’s <code class="highlighter-rouge">dump</code> and <code class="highlighter-rouge">load</code> methods, but you can provide custom implementations as well. To customize the serialization logic, create a subclass of <code class="highlighter-rouge">GraphQL::Pro::Subscriptions</code> and override <code class="highlighter-rouge">#dump_context(ctx)</code> and <code class="highlighter-rouge">#load_context(ctx_string)</code>:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="k">class</span> <span class="nc">CustomSubscriptions</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">Subscriptions</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">CustomSubscriptions</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">Subscriptions</span>
   <span class="k">def</span> <span class="nf">dump_context</span><span class="p">(</span><span class="n">ctx</span><span class="p">)</span>
     <span class="n">context_hash</span> <span class="o">=</span> <span class="n">ctx</span><span class="p">.</span><span class="nf">to_h</span>
     <span class="c1"># somehow convert this hash to a string, return the string</span>
@@ -266,18 +256,16 @@ appendonly yes
     <span class="c1"># to use as `context:`</span>
   <span class="k">end</span>
 <span class="k">end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>Then, use your <em>custom</em> subscriptions class instead of the built-in one for your schema:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="c1"># Use custom subscriptions instead of GraphQL::Pro::Subscriptions</span>
   <span class="c1"># to get custom serialization logic</span>
   <span class="n">use</span> <span class="no">CustomSubscriptions</span><span class="p">,</span> <span class="ss">redis: </span><span class="vg">$redis</span>
 <span class="k">end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>That gives you fine-grained control of context reloading.</p>
 
@@ -299,10 +287,9 @@ appendonly yes
 
 <p>At any time, you can reset your subscription database with the <strong>“Reset”</strong> button in the <a href="/pro/dashboard">GraphQL-Pro Dashboard</a>, or in Ruby:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># Wipe all subscription data from the DB:</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Wipe all subscription data from the DB:</span>
 <span class="no">MySchema</span><span class="p">.</span><span class="nf">subscriptions</span><span class="p">.</span><span class="nf">clear</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <h4 id="developing-with-pusher-webhooks">Developing with Pusher webhooks</h4>
 

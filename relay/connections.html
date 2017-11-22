@@ -55,7 +55,7 @@
 
 <p>For example:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">PostType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">PostType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="c1"># `Post#comments` returns an ActiveRecord::Relation</span>
   <span class="c1"># The GraphQL field returns a Connection</span>
   <span class="n">connection</span> <span class="ss">:comments</span><span class="p">,</span> <span class="no">CommentType</span><span class="p">.</span><span class="nf">connection_type</span>
@@ -64,12 +64,11 @@
 
   <span class="c1"># ...</span>
 <span class="k">end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>You can also define custom arguments and a custom resolve function for connections, just like other fields:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">connection</span> <span class="ss">:featured_comments</span><span class="p">,</span> <span class="no">CommentType</span><span class="p">.</span><span class="nf">connection_type</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">connection</span> <span class="ss">:featured_comments</span><span class="p">,</span> <span class="no">CommentType</span><span class="p">.</span><span class="nf">connection_type</span> <span class="k">do</span>
   <span class="c1"># Add an argument:</span>
   <span class="n">argument</span> <span class="ss">:since</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">String</span>
 
@@ -84,30 +83,27 @@
     <span class="n">comments</span>
   <span class="p">}</span>
 <span class="k">end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <h3 id="maximum-page-size">Maximum Page Size</h3>
 
 <p>You can limit the number of results with <code class="highlighter-rouge">max_page_size:</code>:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">connection</span> <span class="ss">:featured_comments</span><span class="p">,</span> <span class="no">CommentType</span><span class="p">.</span><span class="nf">connection_type</span><span class="p">,</span> <span class="ss">max_page_size: </span><span class="mi">50</span>
-</code></pre>
-</div>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">connection</span> <span class="ss">:featured_comments</span><span class="p">,</span> <span class="no">CommentType</span><span class="p">.</span><span class="nf">connection_type</span><span class="p">,</span> <span class="ss">max_page_size: </span><span class="mi">50</span>
+</code></pre></div></div>
 
 <p>In addition, you can set a global default for all connection that do not specify a <code class="highlighter-rouge">max_page_size</code>:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="n">default_max_page_size</span> <span class="mi">100</span>
 <span class="k">end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <h2 id="connection-types">Connection types</h2>
 
 <p>You can customize a connection type with <code class="highlighter-rouge">.define_connection</code>:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># Make a customized connection type</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Make a customized connection type</span>
 <span class="no">PostConnectionWithTotalCountType</span> <span class="o">=</span> <span class="no">PostType</span><span class="p">.</span><span class="nf">define_connection</span> <span class="k">do</span>
   <span class="nb">name</span> <span class="s2">"PostConnectionWithTotalCount"</span>
   <span class="n">field</span> <span class="ss">:totalCount</span> <span class="k">do</span>
@@ -118,34 +114,32 @@
   <span class="k">end</span>
 <span class="k">end</span>
 
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>Now, you can use <code class="highlighter-rouge">PostConnectionWithTotalCountType</code> to define a connection with the “totalCount” field:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">AuthorType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">AuthorType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="c1"># Use the custom connection type:</span>
   <span class="n">connection</span> <span class="ss">:posts</span><span class="p">,</span> <span class="no">PostConnectionWithTotalCountType</span>
 <span class="k">end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>This way, you can query your custom fields, for example:</p>
 
-<pre><code class="language-graphql">{
-  author(id: 1) {
-    posts {
-      totalCount    # &lt;= Your custom field
-    }
-  }
-}
-</code></pre>
+<div class="language-graphql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="n">author</span><span class="p">(</span><span class="n">id</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="n">posts</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="n">totalCount</span><span class="w">    </span><span class="c"># &lt;= Your custom field</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
 
 <h3 id="custom-edge-types">Custom edge types</h3>
 
 <p>If you need custom fields on <code class="highlighter-rouge">edge</code>s, you can define an edge type and pass it to a connection:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># Person =&gt; Membership =&gt; Team</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Person =&gt; Membership =&gt; Team</span>
 <span class="no">MembershipSinceEdgeType</span> <span class="o">=</span> <span class="no">TeamType</span><span class="p">.</span><span class="nf">define_edge</span> <span class="k">do</span>
   <span class="nb">name</span> <span class="s2">"MembershipSinceEdge"</span>
   <span class="n">field</span> <span class="ss">:memberSince</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">Int</span><span class="p">,</span> <span class="s2">"The date that this person joined this team"</span> <span class="k">do</span>
@@ -158,39 +152,37 @@
     <span class="p">}</span>
   <span class="k">end</span>
 <span class="k">end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>Then, pass the edge type when defining the connection type:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">TeamMembershipsConnectionType</span> <span class="o">=</span> <span class="no">TeamType</span><span class="p">.</span><span class="nf">define_connection</span><span class="p">(</span><span class="ss">edge_type: </span><span class="no">MembershipSinceEdgeType</span><span class="p">)</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">TeamMembershipsConnectionType</span> <span class="o">=</span> <span class="no">TeamType</span><span class="p">.</span><span class="nf">define_connection</span><span class="p">(</span><span class="ss">edge_type: </span><span class="no">MembershipSinceEdgeType</span><span class="p">)</span> <span class="k">do</span>
   <span class="c1"># Use a name so it doesn't conflict with "TeamConnection"</span>
   <span class="nb">name</span> <span class="s2">"TeamMembershipsConnection"</span>
 <span class="k">end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>Now, you can query custom fields on the <code class="highlighter-rouge">edge</code>:</p>
 
-<pre><code class="language-graphql">{
-  me {
-    teams {
-      edge {
-        memberSince     # &lt;= Here's your custom field
-        node {
-          teamName: name
-        }
-      }
-    }
-  }
-}
-</code></pre>
+<div class="language-graphql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="n">me</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="n">teams</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="n">edge</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="n">memberSince</span><span class="w">     </span><span class="c"># &lt;= Here's your custom field</span><span class="w">
+        </span><span class="n">node</span><span class="w"> </span><span class="p">{</span><span class="w">
+          </span><span class="n">teamName</span><span class="p">:</span><span class="w"> </span><span class="n">name</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
 
 <h3 id="custom-edge-classes">Custom Edge classes</h3>
 
 <p>For more robust custom edges, you can define a custom edge class. It will be <code class="highlighter-rouge">obj</code> in the edge type’s resolve function. For example, to define a membership edge:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># Make sure to familiarize yourself with GraphQL::Relay::Edge --</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Make sure to familiarize yourself with GraphQL::Relay::Edge --</span>
 <span class="c1"># you have to avoid naming conflicts here!</span>
 <span class="k">class</span> <span class="nc">MembershipSinceEdge</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Relay</span><span class="o">::</span><span class="no">Edge</span>
   <span class="c1"># Cache `membership` to avoid multiple DB queries</span>
@@ -212,12 +204,11 @@
     <span class="n">membership</span><span class="p">.</span><span class="nf">leader?</span>
   <span class="k">end</span>
 <span class="k">end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>Then, hook it up with custom edge type and custom connection type:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># Person =&gt; Membership =&gt; Team</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Person =&gt; Membership =&gt; Team</span>
 <span class="no">MembershipSinceEdgeType</span> <span class="o">=</span> <span class="no">BaseType</span><span class="p">.</span><span class="nf">define_edge</span> <span class="k">do</span>
   <span class="nb">name</span> <span class="s2">"MembershipSinceEdge"</span>
   <span class="n">field</span> <span class="ss">:memberSince</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">Int</span><span class="p">,</span> <span class="s2">"The date that this person joined this team"</span><span class="p">,</span> <span class="ss">property: :member_since</span>
@@ -231,44 +222,40 @@
   <span class="c1"># Use a name so it doesn't conflict with "TeamConnection"</span>
   <span class="nb">name</span> <span class="s2">"TeamMembershipsConnection"</span>
 <span class="k">end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <h2 id="connection-objects">Connection objects</h2>
 
 <p>Maybe you need to make a connection object yourself (for example, to return a connection type from a mutation). You can create a connection object like this:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">items</span> <span class="o">=</span> <span class="p">[.</span><span class="nf">.</span><span class="o">.</span><span class="p">]</span>     <span class="c1"># your collection objects</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">items</span> <span class="o">=</span> <span class="p">[</span><span class="o">...</span><span class="p">]</span>     <span class="c1"># your collection objects</span>
 <span class="n">args</span> <span class="o">=</span> <span class="p">{}</span>         <span class="c1"># stub out arguments for this connection object</span>
 <span class="n">connection_class</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Relay</span><span class="o">::</span><span class="no">BaseConnection</span><span class="p">.</span><span class="nf">connection_for_nodes</span><span class="p">(</span><span class="n">items</span><span class="p">)</span>
 <span class="n">connection_class</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">items</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p><code class="highlighter-rouge">.connection_for_nodes</code> will return RelationConnection or ArrayConnection depending on <code class="highlighter-rouge">items</code>, then you can make a new connection</p>
 
 <p>For specifying a connection based on an <code class="highlighter-rouge">ActiveRecord::Relation</code> or <code class="highlighter-rouge">Sequel::Dataset</code>:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">object</span> <span class="o">=</span> <span class="p">{}</span>       <span class="c1"># your newly created object</span>
-<span class="n">items</span> <span class="o">=</span> <span class="p">[.</span><span class="nf">.</span><span class="o">.</span><span class="p">]</span>     <span class="c1"># your AR or Sequel collection</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">object</span> <span class="o">=</span> <span class="p">{}</span>       <span class="c1"># your newly created object</span>
+<span class="n">items</span> <span class="o">=</span> <span class="p">[</span><span class="o">...</span><span class="p">]</span>     <span class="c1"># your AR or Sequel collection</span>
 <span class="n">args</span> <span class="o">=</span> <span class="p">{}</span>         <span class="c1"># stub out arguments for this connection object</span>
 <span class="n">items_connection</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Relay</span><span class="o">::</span><span class="no">RelationConnection</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span>
   <span class="n">items</span><span class="p">,</span>
   <span class="n">args</span>
 <span class="p">)</span>
 <span class="n">edge</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Relay</span><span class="o">::</span><span class="no">Edge</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">object</span><span class="p">,</span> <span class="n">items_connection</span><span class="p">)</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>Additionally, connections may be provided with the <code class="highlighter-rouge">GraphQL::Field</code> that created them. This may be used for custom introspection or instrumentation. For example,</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code>  <span class="no">Schema</span><span class="p">.</span><span class="nf">get_field</span><span class="p">(</span><span class="no">TodoListType</span><span class="p">,</span> <span class="s2">"todos"</span><span class="p">)</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  <span class="no">Schema</span><span class="p">.</span><span class="nf">get_field</span><span class="p">(</span><span class="no">TodoListType</span><span class="p">,</span> <span class="s2">"todos"</span><span class="p">)</span>
   <span class="c1"># =&gt; #&lt;GraphQL::Field name="todos"&gt;</span>
   <span class="n">context</span><span class="p">.</span><span class="nf">irep_node</span><span class="p">.</span><span class="nf">definitions</span><span class="p">[</span><span class="no">TodoListType</span><span class="p">]</span>
   <span class="c1"># =&gt; #&lt;GraphQL::Field name="todos"&gt;</span>
   <span class="c1"># although this one may not work with fields on interfaces</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <h3 id="custom-connections">Custom connections</h3>
 
@@ -276,7 +263,7 @@
 
 <p>First, define the custom connection:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="nb">require</span> <span class="s2">"set"</span> <span class="c1"># From Ruby's standard library</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">require</span> <span class="s2">"set"</span> <span class="c1"># From Ruby's standard library</span>
 <span class="k">class</span> <span class="nc">SetConnection</span> <span class="o">&lt;</span> <span class="no">BaseConnection</span>
   <span class="c1"># derive a cursor from `item`</span>
   <span class="k">def</span> <span class="nf">cursor_from_node</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
@@ -295,15 +282,13 @@
     <span class="c1"># ...</span>
   <span class="k">end</span>
 <span class="k">end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>Then, register the new connection with <code class="highlighter-rouge">GraphQL::Relay::BaseConnection</code>:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># When exposing a `Set`, use `SetConnection`:</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># When exposing a `Set`, use `SetConnection`:</span>
 <span class="no">GraphQL</span><span class="o">::</span><span class="no">Relay</span><span class="o">::</span><span class="no">BaseConnection</span><span class="p">.</span><span class="nf">register_connection_implementation</span><span class="p">(</span><span class="no">Set</span><span class="p">,</span> <span class="no">SetConnection</span><span class="p">)</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>At runtime, <code class="highlighter-rouge">GraphQL::Relay</code> will use <code class="highlighter-rouge">SetConnection</code> to expose <code class="highlighter-rouge">Set</code>s.</p>
 
@@ -313,11 +298,10 @@
 
 <p>For example, to wrap a field with a connection field:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">field</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Field</span><span class="p">.</span><span class="nf">new</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Field</span><span class="p">.</span><span class="nf">new</span>
 <span class="c1"># ... define the field</span>
 <span class="n">connection_field</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Relay</span><span class="o">::</span><span class="no">ConnectionField</span><span class="p">.</span><span class="nf">create</span><span class="p">(</span><span class="n">field</span><span class="p">)</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <h2 id="cursors">Cursors</h2>
 
@@ -325,7 +309,7 @@
 
 <p>For example, to use URL-safe base-64 encoding:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="k">module</span> <span class="nn">URLSafeBase64Encoder</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">module</span> <span class="nn">URLSafeBase64Encoder</span>
   <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">encode</span><span class="p">(</span><span class="n">txt</span><span class="p">,</span> <span class="ss">nonce: </span><span class="kp">false</span><span class="p">)</span>
     <span class="no">Base64</span><span class="p">.</span><span class="nf">urlsafe_encode64</span><span class="p">(</span><span class="n">txt</span><span class="p">)</span>
   <span class="k">end</span>
@@ -339,8 +323,7 @@
   <span class="c1"># ...</span>
   <span class="n">cursor_encoder</span><span class="p">(</span><span class="no">URLSafeBase64Encoder</span><span class="p">)</span>
 <span class="k">end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>Now, all connections will use URL-safe base-64 encoding.</p>
 

@@ -54,13 +54,12 @@
 
 <p>You can specify behavior in these cases by defining a <a href="http://www.rubydoc.info/gems/graphql/1.7.6/GraphQL/Schema#type_error-instance_method" target="_blank" title="API docs for GraphQL::Schema#type_error"><code>Schema#type_error</code></a> hook:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="n">type_error</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">type_error</span><span class="p">,</span> <span class="n">query_ctx</span><span class="p">)</span> <span class="p">{</span>
     <span class="c1"># Handle a failed runtime type coercion</span>
   <span class="p">}</span>
 <span class="k">end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>It is called with an instance of <a href="http://www.rubydoc.info/gems/graphql/1.7.6/GraphQL/UnresolvedTypeError" target="_blank" title="API docs for GraphQL::UnresolvedTypeError"><code>GraphQL::UnresolvedTypeError</code></a> or <a href="http://www.rubydoc.info/gems/graphql/1.7.6/GraphQL/InvalidNullError" target="_blank" title="API docs for GraphQL::InvalidNullError"><code>GraphQL::InvalidNullError</code></a> and the query context (a <a href="http://www.rubydoc.info/gems/graphql/1.7.6/GraphQL/Query/Context" target="_blank" title="API docs for GraphQL::Query::Context"><code>GraphQL::Query::Context</code></a>).</p>
 

@@ -49,7 +49,7 @@
 <p>With graphql there is less of a need to include resource URLs to other REST resources, however sometimes you want to use Rails routing to include a URL as one of your fields. A common use case would be to build HTML format URLs to render a link in your React UI. In that case you can add the Rails route helpers to the execution context as shown below.</p>
 
 <h2 id="example">Example</h2>
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">Types</span><span class="o">::</span><span class="no">UserType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">Types</span><span class="o">::</span><span class="no">UserType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="n">field</span> <span class="ss">:profile_url</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">String</span> <span class="k">do</span>
       <span class="n">description</span> <span class="s1">'web show url'</span>
       <span class="n">resolve</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span> <span class="n">ctx</span><span class="p">[</span><span class="ss">:routes</span><span class="p">].</span><span class="nf">user_url</span><span class="p">(</span><span class="n">user</span><span class="p">)</span> <span class="p">}</span>
@@ -61,8 +61,7 @@
   <span class="ss">variables: </span><span class="n">params</span><span class="p">[</span><span class="ss">:variables</span><span class="p">],</span>
   <span class="ss">context: </span><span class="p">{</span> <span class="ss">routes: </span><span class="no">Rails</span><span class="p">.</span><span class="nf">application</span><span class="p">.</span><span class="nf">routes</span><span class="p">.</span><span class="nf">url_helpers</span> <span class="p">},</span>
 <span class="p">)</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 </div>
 <p class="guide-footer">

@@ -53,9 +53,9 @@
 
 <h2 id="pusher">Pusher</h2>
 
-<p>Pass <code class="highlighter-rouge"><span class="p">{</span><span class="err">pusher:</span><span class="w"> </span><span class="err">pusherClient</span><span class="p">}</span></code> to use Pusher:</p>
+<p>Pass <code class="highlighter-rouge">{pusher: pusherClient}</code> to use Pusher:</p>
 
-<div class="language-js highlighter-rouge"><pre class="highlight"><code><span class="c1">// Load Pusher and create a client</span>
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Load Pusher and create a client</span>
 <span class="kd">var</span> <span class="nx">Pusher</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s2">"pusher-js"</span><span class="p">)</span>
 <span class="kd">var</span> <span class="nx">pusherClient</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Pusher</span><span class="p">(</span><span class="nx">appKey</span><span class="p">,</span> <span class="nx">options</span><span class="p">)</span>
 
@@ -66,16 +66,15 @@
 <span class="c1">// Optionally, add persisted query support:</span>
 <span class="kd">var</span> <span class="nx">OperationStoreClient</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s2">"./OperationStoreClient"</span><span class="p">)</span>
 <span class="nx">RailsNetworkInterface</span><span class="p">.</span><span class="nx">use</span><span class="p">([</span><span class="nx">OperationStoreClient</span><span class="p">.</span><span class="nx">apolloMiddleware</span><span class="p">])</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <h2 id="actioncable">ActionCable</h2>
 
-<p>By passing <code class="highlighter-rouge"><span class="p">{</span><span class="err">cable:</span><span class="w"> </span><span class="err">cable</span><span class="p">}</span></code>, all <code class="highlighter-rouge">subscription</code> queries will be routed to ActionCable.</p>
+<p>By passing <code class="highlighter-rouge">{cable: cable}</code>, all <code class="highlighter-rouge">subscription</code> queries will be routed to ActionCable.</p>
 
 <p>For example:</p>
 
-<div class="language-js highlighter-rouge"><pre class="highlight"><code><span class="c1">// Load ActionCable and create a consumer</span>
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Load ActionCable and create a consumer</span>
 <span class="kd">var</span> <span class="nx">ActionCable</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">'actioncable'</span><span class="p">)</span>
 <span class="kd">var</span> <span class="nx">cable</span> <span class="o">=</span> <span class="nx">ActionCable</span><span class="p">.</span><span class="nx">createConsumer</span><span class="p">()</span>
 <span class="nb">window</span><span class="p">.</span><span class="nx">cable</span> <span class="o">=</span> <span class="nx">cable</span>
@@ -99,8 +98,7 @@
 <span class="c1">// Optionally, add persisted query support:</span>
 <span class="kd">var</span> <span class="nx">OperationStoreClient</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s2">"./OperationStoreClient"</span><span class="p">)</span>
 <span class="nx">RailsNetworkInterface</span><span class="p">.</span><span class="nx">use</span><span class="p">([</span><span class="nx">OperationStoreClient</span><span class="p">.</span><span class="nx">apolloMiddleware</span><span class="p">])</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 </div>
 <p class="guide-footer">

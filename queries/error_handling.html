@@ -60,7 +60,7 @@
 
 <p>For example, you could add <code class="highlighter-rouge">errors</code> to <code class="highlighter-rouge">PostType</code>:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">PostType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">PostType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="nb">name</span> <span class="s2">"Post"</span>
   <span class="n">field</span> <span class="ss">:title</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">String</span>
   <span class="c1"># ...</span>
@@ -68,30 +68,28 @@
     <span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span> <span class="n">obj</span><span class="p">.</span><span class="nf">errors</span><span class="p">.</span><span class="nf">full_messages</span> <span class="p">}</span>
   <span class="k">end</span>
 <span class="k">end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>Then, when creating a post, return the <code class="highlighter-rouge">Post</code>, even if the save failed:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
   <span class="n">post</span> <span class="o">=</span> <span class="no">Post</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="s2">"post"</span><span class="p">].</span><span class="nf">to_h</span><span class="p">)</span>
   <span class="c1"># Maybe this fails, no big deal:</span>
   <span class="n">post</span><span class="p">.</span><span class="nf">save</span>
   <span class="n">post</span>
 <span class="p">}</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>Then, when clients create a post, they should check the <code class="highlighter-rouge">errors</code> field to see if it was successful:</p>
 
-<pre><code class="language-graphql">mutation {
-  createPost(post: {title: "GraphQL is Nice"}) {
-    id
-    title
-    errors # in case the save failed
-  }
-}
-</code></pre>
+<div class="language-graphql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">mutation</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="n">createPost</span><span class="p">(</span><span class="n">post</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="n">title</span><span class="p">:</span><span class="w"> </span><span class="s2">"GraphQL is Nice"</span><span class="p">})</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="n">id</span><span class="w">
+    </span><span class="n">title</span><span class="w">
+    </span><span class="n">errors</span><span class="w"> </span><span class="c"># in case the save failed</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
 
 <p>If <code class="highlighter-rouge">errors</code> is present (and <code class="highlighter-rouge">id</code> is null), the client knows that the operation was unsuccessful, and they can discover why.</p>
 
@@ -101,18 +99,17 @@
 
 <p>A GraphQL response may have an <code class="highlighter-rouge">"errors"</code> key, for example:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">Schema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="n">query_string</span><span class="p">)</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">Schema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="n">query_string</span><span class="p">)</span>
 <span class="c1"># {</span>
 <span class="c1">#   "errors" =&gt; [</span>
 <span class="c1">#     { "message" =&gt; "Something went wrong" },</span>
 <span class="c1">#   ],</span>
 <span class="c1"># }</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>You can add an error to the <code class="highlighter-rouge">"errors"</code> key by returning a <a href="http://www.rubydoc.info/gems/graphql/1.7.6/GraphQL/ExecutionError" target="_blank" title="API docs for GraphQL::ExecutionError"><code>GraphQL::ExecutionError</code></a> from a <code class="highlighter-rouge">resolve</code> function. For example:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
   <span class="n">post_params</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="s2">"post"</span><span class="p">].</span><span class="nf">to_h</span>
   <span class="k">if</span> <span class="n">obj</span><span class="p">.</span><span class="nf">posts</span><span class="p">.</span><span class="nf">create</span><span class="p">(</span><span class="n">post_params</span><span class="p">)</span>
     <span class="c1"># on success, return the post:</span>
@@ -122,12 +119,11 @@
     <span class="no">GraphQL</span><span class="o">::</span><span class="no">ExecutionError</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"Invalid input for Post: </span><span class="si">#{</span><span class="n">post</span><span class="p">.</span><span class="nf">errors</span><span class="p">.</span><span class="nf">full_messages</span><span class="p">.</span><span class="nf">join</span><span class="p">(</span><span class="s2">", "</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
   <span class="k">end</span>
 <span class="p">}</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>If some part of your <code class="highlighter-rouge">resolve</code> function would raise an error, you can rescue it and return a <a href="http://www.rubydoc.info/gems/graphql/1.7.6/GraphQL/ExecutionError" target="_blank" title="API docs for GraphQL::ExecutionError"><code>GraphQL::ExecutionError</code></a> instead:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
   <span class="n">post_params</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="s2">"post"</span><span class="p">].</span><span class="nf">to_h</span>
   <span class="k">begin</span>
     <span class="n">post</span> <span class="o">=</span> <span class="n">obj</span><span class="p">.</span><span class="nf">posts</span><span class="p">.</span><span class="nf">create!</span><span class="p">(</span><span class="n">post_params</span><span class="p">)</span>
@@ -138,14 +134,13 @@
     <span class="no">GraphQL</span><span class="o">::</span><span class="no">ExecutionError</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"Invalid input for Post: </span><span class="si">#{</span><span class="n">post</span><span class="p">.</span><span class="nf">errors</span><span class="p">.</span><span class="nf">full_messages</span><span class="p">.</span><span class="nf">join</span><span class="p">(</span><span class="s2">", "</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
   <span class="k">end</span>
 <span class="p">}</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <h2 id="error-handling-with-wrappers">Error Handling with Wrappers</h2>
 
 <p>If you don’t want to <code class="highlighter-rouge">begin ... rescue ... end</code> in every field, you can wrap <code class="highlighter-rouge">resolve</code> functions in error handling. For example, you could make an object that wraps another resolver:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># Wrap field resolver `resolve_func` with an error handler.</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Wrap field resolver `resolve_func` with an error handler.</span>
 <span class="c1"># `RescueFrom` instances are valid field resolvers too.</span>
 <span class="k">class</span> <span class="nc">RescueFrom</span>
   <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">resolve_func</span><span class="p">)</span>
@@ -166,16 +161,14 @@
     <span class="no">GraphQL</span><span class="o">::</span><span class="no">ExecutionError</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"Unexpected error: </span><span class="si">#{</span><span class="n">err</span><span class="p">.</span><span class="nf">message</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
   <span class="k">end</span>
 <span class="k">end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>Apply it on an opt-in basis:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:create_post</span><span class="p">,</span> <span class="no">PostType</span> <span class="k">do</span>
-  <span class="n">resolve</span> <span class="no">Rescuable</span><span class="p">.</span><span class="nf">new</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span> <span class="p">.</span><span class="nf">.</span><span class="o">.</span> <span class="p">}</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:create_post</span><span class="p">,</span> <span class="no">PostType</span> <span class="k">do</span>
+  <span class="n">resolve</span> <span class="no">Rescuable</span><span class="p">.</span><span class="nf">new</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span> <span class="o">...</span> <span class="p">}</span>
 <span class="k">end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>This way, you get error handling with proper Ruby semantics and no overhead!</p>
 

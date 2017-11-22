@@ -73,13 +73,12 @@
 
 <p>Encoders can be created with <code class="highlighter-rouge">Encoder.define { ... }</code>:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">MyEncoder</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">Encoder</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">MyEncoder</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">Encoder</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="n">key</span><span class="p">(</span><span class="s2">"f411f30495fe688cb349d..."</span><span class="p">)</span>
   <span class="c1"># optional:</span>
   <span class="n">tag</span><span class="p">(</span><span class="s2">"81ce51c307"</span><span class="p">)</span>
 <span class="k">end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <ul>
   <li><code class="highlighter-rouge">key</code> is the encryption key for this encoder. You can generate one with: <code class="highlighter-rouge">require "securerandom"; SecureRandom.random_bytes(64)</code></li>
@@ -90,11 +89,10 @@
 
 <p>Encrypt cursors by attaching an encrypted encoder to <code class="highlighter-rouge">Schema#cursor_encoder</code>:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="n">cursor_encoder</span><span class="p">(</span><span class="no">MyCursorEncoder</span><span class="p">)</span>
 <span class="k">end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>Now, built-in connection implementations will use that encoder for cursors.</p>
 
@@ -104,7 +102,7 @@
 
 <p>Encrypt IDs by using encoders in <code class="highlighter-rouge">Schema#id_from_object</code> and <code class="highlighter-rouge">Schema#object_from_id</code>:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="n">id_from_object</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">object</span><span class="p">,</span> <span class="n">type</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
     <span class="n">id_data</span> <span class="o">=</span> <span class="s2">"</span><span class="si">#{</span><span class="n">object</span><span class="p">.</span><span class="nf">class</span><span class="p">.</span><span class="nf">name</span><span class="si">}</span><span class="s2">/</span><span class="si">#{</span><span class="n">object</span><span class="p">.</span><span class="nf">id</span><span class="si">}</span><span class="s2">"</span>
     <span class="no">MyIDEncoder</span><span class="p">.</span><span class="nf">encode</span><span class="p">(</span><span class="n">id_data</span><span class="p">)</span>
@@ -116,8 +114,7 @@
     <span class="n">class_name</span><span class="p">.</span><span class="nf">constantize</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span>
   <span class="p">}</span>
 <span class="k">end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>Note that IDs are <em>not</em> encrypted with nonces. This means that if someone can <em>guess</em> how IDs are constructed, they can determine the encryption key (a kind of <a href="https://en.wikipedia.org/wiki/Known-plaintext_attack">known-plaintext attack</a>). To reduce this risk, make your plaintext IDs unpredictable, for example, by appending a salt or obfuscating their content.</p>
 
@@ -125,10 +122,10 @@
 
 <p>You can combine several encoders into a single chain of versioned encoders. Pass them to <code class="highlighter-rouge">.versioned</code>, newest-to-oldest:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># Define some encoders ...</span>
-<span class="no">NewSecureEncoder</span>       <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">Encoder</span><span class="p">.</span><span class="nf">define</span> <span class="p">{</span> <span class="p">.</span><span class="nf">.</span><span class="o">.</span> <span class="p">}</span>
-<span class="no">OldSecureEncoder</span>       <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">Encoder</span><span class="p">.</span><span class="nf">define</span> <span class="p">{</span> <span class="p">.</span><span class="nf">.</span><span class="o">.</span> <span class="p">}</span>
-<span class="no">LegacyInsecureEncoder</span>  <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">Encoder</span><span class="p">.</span><span class="nf">define</span> <span class="p">{</span> <span class="p">.</span><span class="nf">.</span><span class="o">.</span> <span class="p">}</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Define some encoders ...</span>
+<span class="no">NewSecureEncoder</span>       <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">Encoder</span><span class="p">.</span><span class="nf">define</span> <span class="p">{</span> <span class="o">...</span> <span class="p">}</span>
+<span class="no">OldSecureEncoder</span>       <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">Encoder</span><span class="p">.</span><span class="nf">define</span> <span class="p">{</span> <span class="o">...</span> <span class="p">}</span>
+<span class="no">LegacyInsecureEncoder</span>  <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">Encoder</span><span class="p">.</span><span class="nf">define</span> <span class="p">{</span> <span class="o">...</span> <span class="p">}</span>
 
 <span class="c1"># Then order them by priority:</span>
 <span class="no">VersionedEncoder</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">Encoder</span><span class="p">.</span><span class="nf">versioned</span><span class="p">(</span>
@@ -138,14 +135,13 @@
   <span class="c1"># Oldest:</span>
   <span class="no">LegacyInsecureEncoder</span>
 <span class="p">)</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>When receiving an ID or cursor, a versioned encoders tries each encoder in sequence. When creating a new ID or cursor, the encoder always uses the first encoder. This way, clients will receiving <em>new</em> encoders, but the server will still accept <em>old</em> encoders (until the old one is removed from the list).</p>
 
 <p><code class="highlighter-rouge">VersionedEncoder#decode_versioned</code> returns two values: the decoded data <em>and</em> the encoder which successfully decoded it. You can use this to determine how to process decoded data. For example, you can switch on the encoder:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">data</span><span class="p">,</span> <span class="n">encoder</span> <span class="o">=</span> <span class="no">VersionedEncoder</span><span class="p">.</span><span class="nf">decode_versioned</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">data</span><span class="p">,</span> <span class="n">encoder</span> <span class="o">=</span> <span class="no">VersionedEncoder</span><span class="p">.</span><span class="nf">decode_versioned</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span>
 <span class="k">case</span> <span class="n">encoder</span>
 <span class="k">when</span> <span class="no">UUIDEncoder</span>
   <span class="n">find_by_uuid</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
@@ -155,14 +151,13 @@
   <span class="c1"># `id` could not be decoded</span>
   <span class="kp">nil</span>
 <span class="k">end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <h2 id="encoding">Encoding</h2>
 
 <p>By default, encrypted bytes is stringified as base-64. You can specific a custom encoder with the <code class="highlighter-rouge">Encoder#encoder</code> definition. For example, you could define an encode which uses URL-safe base-64 functions:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="k">module</span> <span class="nn">URLSafeEncoder</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">module</span> <span class="nn">URLSafeEncoder</span>
   <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">encode</span><span class="p">(</span><span class="n">str</span><span class="p">)</span>
     <span class="no">Base64</span><span class="p">.</span><span class="nf">urlsafe_encode64</span><span class="p">(</span><span class="n">str</span><span class="p">)</span>
   <span class="k">end</span>
@@ -171,16 +166,14 @@
     <span class="no">Base64</span><span class="p">.</span><span class="nf">urlsafe_decode64</span><span class="p">(</span><span class="n">str</span><span class="p">)</span>
   <span class="k">end</span>
 <span class="k">end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>Then attach it to your encoder:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">MyURLSafeEncoder</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">Encoder</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">MyURLSafeEncoder</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">Encoder</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="n">encoder</span> <span class="no">URLSafeEncoder</span>
 <span class="k">end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>Now, these node IDs and cursors will be URL-safe!</p>
 

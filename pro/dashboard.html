@@ -62,7 +62,7 @@
 
 <p>To hook up the Dashboard, add it to <code class="highlighter-rouge">routes.rb</code></p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># config/routes.rb</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># config/routes.rb</span>
 
 <span class="c1"># Include GraphQL::Pro's routing extensions:</span>
 <span class="n">using</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">Routes</span>
@@ -73,8 +73,7 @@
   <span class="c1"># TODO: authorize, see below</span>
   <span class="n">mount</span> <span class="no">MySchema</span><span class="p">.</span><span class="nf">dashboard</span><span class="p">,</span> <span class="ss">at: </span><span class="s2">"/graphql/dashboard"</span>
 <span class="k">end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>With this configuration, it will be available at <code class="highlighter-rouge">/graphql/dashboard</code>.</p>
 
@@ -88,20 +87,19 @@
 
 <p>Use <a href="http://api.rubyonrails.org/v5.1/classes/ActionDispatch/Routing/Mapper/Scoping.html#method-i-constraints">Rails routing constraints</a> to restrict access to authorized users, for example:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># Check the secure session for a staff flag:</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Check the secure session for a staff flag:</span>
 <span class="no">STAFF_ONLY</span> <span class="o">=</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">request</span><span class="p">)</span> <span class="p">{</span> <span class="n">request</span><span class="p">.</span><span class="nf">session</span><span class="p">[</span><span class="s2">"staff"</span><span class="p">]</span> <span class="o">==</span> <span class="kp">true</span> <span class="p">}</span>
 <span class="c1"># Only serve the GraphQL Dashboard to staff users:</span>
 <span class="n">constraints</span><span class="p">(</span><span class="no">STAFF_ONLY</span><span class="p">)</span> <span class="k">do</span>
   <span class="n">mount</span> <span class="no">MySchema</span><span class="p">.</span><span class="nf">dashboard</span><span class="p">,</span> <span class="ss">at: </span><span class="s2">"/graphql/dashboard"</span>
 <span class="k">end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <h3 id="rack-basic-authentication">Rack Basic Authentication</h3>
 
 <p>Insert the <code class="highlighter-rouge">Rack::Auth::Basic</code> middleware, before the web view. This prompts for a username and password when visiting the dashboard.</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">graphql_dashboard</span> <span class="o">=</span> <span class="no">Rack</span><span class="o">::</span><span class="no">Builder</span><span class="p">.</span><span class="nf">new</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">graphql_dashboard</span> <span class="o">=</span> <span class="no">Rack</span><span class="o">::</span><span class="no">Builder</span><span class="p">.</span><span class="nf">new</span> <span class="k">do</span>
   <span class="n">use</span><span class="p">(</span><span class="no">Rack</span><span class="o">::</span><span class="no">Auth</span><span class="o">::</span><span class="no">Basic</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">username</span><span class="p">,</span> <span class="n">password</span><span class="o">|</span>
     <span class="n">username</span> <span class="o">==</span> <span class="no">ENV</span><span class="p">.</span><span class="nf">fetch</span><span class="p">(</span><span class="s2">"GRAPHQL_USERNAME"</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="n">password</span> <span class="o">==</span> <span class="no">ENV</span><span class="p">.</span><span class="nf">fetch</span><span class="p">(</span><span class="s2">"GRAPHQL_PASSWORD"</span><span class="p">)</span>
   <span class="k">end</span>
@@ -109,8 +107,7 @@
   <span class="n">run</span> <span class="no">MySchema</span><span class="p">.</span><span class="nf">dashboard</span>
 <span class="k">end</span>
 <span class="n">mount</span> <span class="n">graphql_dashboard</span><span class="p">,</span> <span class="ss">at: </span><span class="s2">"/graphql/dashboard"</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 </div>
 <p class="guide-footer">

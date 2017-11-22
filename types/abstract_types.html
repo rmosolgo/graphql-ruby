@@ -51,15 +51,14 @@
 
 <p>Provide <code class="highlighter-rouge">resolve_type</code> as an object that responds to <code class="highlighter-rouge">#call</code>, for example, a <code class="highlighter-rouge">Proc</code> literal:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
-  <span class="n">resolve_type</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">type</span><span class="p">,</span> <span class="n">obj</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span> <span class="p">.</span><span class="nf">.</span><span class="o">.</span> <span class="p">}</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+  <span class="n">resolve_type</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">type</span><span class="p">,</span> <span class="n">obj</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span> <span class="o">...</span> <span class="p">}</span>
 <span class="k">end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>or, a module:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="k">module</span> <span class="nn">ResolveType</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">module</span> <span class="nn">ResolveType</span>
   <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">call</span><span class="p">(</span><span class="n">type</span><span class="p">,</span> <span class="n">obj</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span>
     <span class="c1"># ...</span>
   <span class="k">end</span>
@@ -69,14 +68,13 @@
 <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="n">resolve_type</span> <span class="no">ResolveType</span>
 <span class="k">end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <h2 id="type-level-resolution-hooks">Type-Level Resolution Hooks</h2>
 
 <p>Instead of a single, top-level <code class="highlighter-rouge">resolve_type</code> function, you can provide type-level functions:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">MyUnion</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">UnionType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">MyUnion</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">UnionType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="n">resolve_type</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
     <span class="c1"># resolve `obj` as a member of `MyUnion`</span>
   <span class="p">}</span>
@@ -87,8 +85,7 @@
     <span class="c1"># resolve `obj` as a member of `MyInterface`</span>
   <span class="p">}</span>
 <span class="k">end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>These functions take priority over the schema-level function.</p>
 
@@ -98,13 +95,12 @@
 
 <p>The clearest case of this is when a type implements an interface, but isn’t a return type of any other field. Since it’s not the return type of a field, it might not be found by traversal, so you can add it in <code class="highlighter-rouge">orphan_types</code>:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="c1"># ...</span>
   <span class="c1"># Make sure these types are present in the schema:</span>
   <span class="n">orphan_types</span> <span class="p">[</span><span class="no">AudioType</span><span class="p">,</span> <span class="no">VideoType</span><span class="p">,</span> <span class="no">ImageType</span><span class="p">]</span>
 <span class="k">end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>It’s OK to add a type to <code class="highlighter-rouge">orphan_types</code> even if it’s already in the schema.</p>
 

@@ -53,7 +53,7 @@
 
 <p>To run queries concurrently, build an array of query options, using <code class="highlighter-rouge">query:</code> for the query string. For example:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># Prepare the context for each query:</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Prepare the context for each query:</span>
 <span class="n">context</span> <span class="o">=</span> <span class="p">{</span>
   <span class="ss">current_user: </span><span class="n">current_user</span><span class="p">,</span>
 <span class="p">}</span>
@@ -73,14 +73,12 @@
    <span class="ss">context: </span><span class="n">context</span><span class="p">,</span>
  <span class="p">}</span>
 <span class="p">]</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>Then, pass them to <code class="highlighter-rouge">Schema#multiplex</code>:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">results</span> <span class="o">=</span> <span class="no">MySchema</span><span class="p">.</span><span class="nf">multiplex</span><span class="p">(</span><span class="n">queries</span><span class="p">)</span>
-</code></pre>
-</div>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">results</span> <span class="o">=</span> <span class="no">MySchema</span><span class="p">.</span><span class="nf">multiplex</span><span class="p">(</span><span class="n">queries</span><span class="p">)</span>
+</code></pre></div></div>
 
 <p><code class="highlighter-rouge">results</code> will contain the result for each query in <code class="highlighter-rouge">queries</code>.</p>
 
@@ -88,7 +86,7 @@
 
 <p>Apollo sends the batch variables in a <code class="highlighter-rouge">_json</code> param, you also need to ensure that your schema can handle both batched and non-batched queries, below is an example of the default GraphqlController rewritten to handle Apollo batches:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="k">def</span> <span class="nf">execute</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">execute</span>
   <span class="n">context</span> <span class="o">=</span> <span class="p">{}</span>
 
   <span class="c1"># Apollo sends the params in a _json variable when batching is enabled</span>
@@ -114,8 +112,7 @@
 
   <span class="n">render</span> <span class="ss">json: </span><span class="n">result</span>
 <span class="k">end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <h2 id="validation-and-error-handling">Validation and Error Handling</h2>
 
@@ -125,9 +122,8 @@
 
 <p>You can add values to <a href="http://www.rubydoc.info/gems/graphql/1.7.6/GraphQL/Execution/Multiplex#context-instance_method" target="_blank" title="API docs for GraphQL::Execution::Multiplex#context"><code>Execution::Multiplex#context</code></a> by providing a <code class="highlighter-rouge">context:</code> hash:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">MySchema</span><span class="p">.</span><span class="nf">multiplex</span><span class="p">(</span><span class="n">queries</span><span class="p">,</span> <span class="ss">context: </span><span class="p">{</span> <span class="ss">current_user: </span><span class="n">current_user</span> <span class="p">})</span>
-</code></pre>
-</div>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">MySchema</span><span class="p">.</span><span class="nf">multiplex</span><span class="p">(</span><span class="n">queries</span><span class="p">,</span> <span class="ss">context: </span><span class="p">{</span> <span class="ss">current_user: </span><span class="n">current_user</span> <span class="p">})</span>
+</code></pre></div></div>
 
 <p>This will be available to instrumentation as <code class="highlighter-rouge">multiplex.context[:current_user]</code> (see below).</p>
 
@@ -135,12 +131,11 @@
 
 <p>You can analyze <em>all</em> queries in a multiplex by adding a multiplex analyzer. For example:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="c1"># ...</span>
   <span class="n">multiplex_analyzer</span><span class="p">(</span><span class="no">MyAnalyzer</span><span class="p">)</span>
 <span class="k">end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>The API is the same as <a href="/queries/analysis">query analyzers</a>, with some considerations:</p>
 
@@ -160,7 +155,7 @@
 
 <p>For example:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># Count how many queries are in the multiplex run:</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Count how many queries are in the multiplex run:</span>
 <span class="k">module</span> <span class="nn">MultiplexCounter</span>
   <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">before_multiplex</span><span class="p">(</span><span class="n">multiplex</span><span class="p">)</span>
     <span class="no">Rails</span><span class="p">.</span><span class="nf">logger</span><span class="p">.</span><span class="nf">info</span><span class="p">(</span><span class="s2">"Multiplex size: </span><span class="si">#{</span><span class="n">multiplex</span><span class="p">.</span><span class="nf">queries</span><span class="p">.</span><span class="nf">length</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
@@ -176,8 +171,7 @@
   <span class="c1"># ...</span>
   <span class="n">instrument</span><span class="p">(</span><span class="ss">:multiplex</span><span class="p">,</span> <span class="no">MultiplexCounter</span><span class="p">)</span>
 <span class="k">end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>Now, <code class="highlighter-rouge">MultiplexCounter.before_multiplex</code> will be called before each multiplex and <code class="highlighter-rouge">.after_multiplex</code> will run after each multiplex.</p>
 

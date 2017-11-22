@@ -61,7 +61,7 @@
 
 <p>This package contains a command line utility, <code class="highlighter-rouge">graphql-ruby-client sync</code>:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>$ graphql-ruby-client sync # ...
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ graphql-ruby-client sync # ...
 Authorizing with HMAC
 Syncing 4 operations to http://myapp.com/graphql/operations...
   3 added
@@ -69,8 +69,7 @@ Syncing 4 operations to http://myapp.com/graphql/operations...
   0 failed
 Generating client module in app/javascript/graphql/OperationStoreClient.js...
 ✓ Done!
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p><code class="highlighter-rouge">sync</code> Takes several options:</p>
 
@@ -117,20 +116,19 @@ Generating client module in app/javascript/graphql/OperationStoreClient.js...
 
 <p>To sync your queries with the server, use the <code class="highlighter-rouge">--path</code> option to point to your <code class="highlighter-rouge">__generated__</code> directory, for example:</p>
 
-<div class="language-bash highlighter-rouge"><pre class="highlight"><code><span class="c"># sync a Relay project</span>
-<span class="gp">$ </span>graphql-ruby-client sync --path<span class="o">=</span>src/__generated__  --outfile<span class="o">=</span>src/OperationStoreClient.js --url<span class="o">=</span>...
-</code></pre>
-</div>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># sync a Relay project</span>
+<span class="nv">$ </span>graphql-ruby-client sync <span class="nt">--path</span><span class="o">=</span>src/__generated__  <span class="nt">--outfile</span><span class="o">=</span>src/OperationStoreClient.js <span class="nt">--url</span><span class="o">=</span>...
+</code></pre></div></div>
 
 <p>Then, the generated code may be integrated with Relay’s <a href="https://facebook.github.io/relay/docs/network-layer.html">Network Layer</a>:</p>
 
-<div class="language-js highlighter-rouge"><pre class="highlight"><code><span class="c1">// ...</span>
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// ...</span>
 <span class="c1">// require the generated module:</span>
-<span class="kr">const</span> <span class="nx">OperationStoreClient</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">'./OperationStoreClient'</span><span class="p">)</span>
+<span class="kd">const</span> <span class="nx">OperationStoreClient</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">'./OperationStoreClient'</span><span class="p">)</span>
 
 <span class="c1">// ...</span>
 <span class="kd">function</span> <span class="nx">fetchQuery</span><span class="p">(</span><span class="nx">operation</span><span class="p">,</span> <span class="nx">variables</span><span class="p">,</span> <span class="nx">cacheConfig</span><span class="p">,</span> <span class="nx">uploadables</span><span class="p">)</span> <span class="p">{</span>
-  <span class="kr">const</span> <span class="nx">requestParams</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="kd">const</span> <span class="nx">requestParams</span> <span class="o">=</span> <span class="p">{</span>
     <span class="nx">variables</span><span class="p">,</span>
     <span class="na">operationName</span><span class="p">:</span> <span class="nx">operation</span><span class="p">.</span><span class="nx">name</span><span class="p">,</span>
   <span class="p">}</span>
@@ -151,8 +149,7 @@ Generating client module in app/javascript/graphql/OperationStoreClient.js...
 <span class="p">}</span>
 
 <span class="c1">// ...</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>(Only Relay Modern is supported. Legacy Relay can’t generate static queries.)</p>
 
@@ -160,13 +157,12 @@ Generating client module in app/javascript/graphql/OperationStoreClient.js...
 
 <p>Use the <code class="highlighter-rouge">--path</code> option to point at your <code class="highlighter-rouge">.graphql</code> files:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>$ graphql-ruby-client sync --path=src/graphql/ --url=...
-</code></pre>
-</div>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ graphql-ruby-client sync --path=src/graphql/ --url=...
+</code></pre></div></div>
 
 <p>Then, load the generated module and add its <code class="highlighter-rouge">.apolloMiddleware</code> to your network interface with <code class="highlighter-rouge">.use([...])</code>:</p>
 
-<div class="language-js highlighter-rouge"><pre class="highlight"><code><span class="c1">// load the generated module</span>
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// load the generated module</span>
 <span class="kd">var</span> <span class="nx">OperationStoreClient</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s2">"./OperationStoreClient"</span><span class="p">)</span>
 
 <span class="c1">// attach it as middleware in production</span>
@@ -174,8 +170,7 @@ Generating client module in app/javascript/graphql/OperationStoreClient.js...
 <span class="k">if</span> <span class="p">(</span><span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">NODE_ENV</span> <span class="o">===</span> <span class="s2">"production"</span><span class="p">)</span> <span class="p">{</span>
   <span class="nx">MyNetworkInterface</span><span class="p">.</span><span class="nx">use</span><span class="p">([</span><span class="nx">OperationStoreClient</span><span class="p">.</span><span class="nx">apolloMiddleware</span><span class="p">])</span>
 <span class="p">}</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>Now, the middleware will replace query strings with <code class="highlighter-rouge">operationId</code>s.</p>
 
@@ -183,16 +178,15 @@ Generating client module in app/javascript/graphql/OperationStoreClient.js...
 
 <p><code class="highlighter-rouge">OperationStoreClient.getOperationId</code> takes an operation name as input and returns the server-side alias for that operation:</p>
 
-<div class="language-js highlighter-rouge"><pre class="highlight"><code><span class="kd">var</span> <span class="nx">OperationStoreClient</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s2">"./OperationStoreClient"</span><span class="p">)</span>
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">var</span> <span class="nx">OperationStoreClient</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s2">"./OperationStoreClient"</span><span class="p">)</span>
 
 <span class="nx">OperationStoreClient</span><span class="p">.</span><span class="nx">getOperationId</span><span class="p">(</span><span class="s2">"AppHomeQuery"</span><span class="p">)</span>       <span class="c1">// =&gt; "my-frontend-app/7a8078c7555e20744cb1ff5a62e44aa92c6e0f02554868a15b8a1cbf2e776b6f"</span>
 <span class="nx">OperationStoreClient</span><span class="p">.</span><span class="nx">getOperationId</span><span class="p">(</span><span class="s2">"ProductDetailQuery"</span><span class="p">)</span> <span class="c1">// =&gt; "my-frontend-app/6726a3b816e99b9971a1d25a1205ca81ecadc6eb1d5dd3a71028c4b01cc254c1"</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>Post the <code class="highlighter-rouge">operationId</code> in your GraphQL requests:</p>
 
-<div class="language-js highlighter-rouge"><pre class="highlight"><code><span class="c1">// Lookup the operation name:</span>
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Lookup the operation name:</span>
 <span class="kd">var</span> <span class="nx">operationId</span> <span class="o">=</span> <span class="nx">OperationStoreClient</span><span class="p">.</span><span class="nx">getOperationId</span><span class="p">(</span><span class="nx">operationName</span><span class="p">)</span>
 
 <span class="c1">// Include it in the params:</span>
@@ -202,8 +196,7 @@ Generating client module in app/javascript/graphql/OperationStoreClient.js...
 <span class="p">},</span> <span class="kd">function</span><span class="p">(</span><span class="nx">response</span><span class="p">)</span> <span class="p">{</span>
   <span class="c1">// ...</span>
 <span class="p">})</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <h2 id="authorization">Authorization</h2>
 
@@ -211,13 +204,12 @@ Generating client module in app/javascript/graphql/OperationStoreClient.js...
 
 <p>Pass the key to <code class="highlighter-rouge">graphql-ruby-client sync</code> as <code class="highlighter-rouge">--secret</code> to authenticate it:</p>
 
-<div class="language-bash highlighter-rouge"><pre class="highlight"><code><span class="gp">$ </span><span class="nb">export </span><span class="nv">MY_SECRET_KEY</span><span class="o">=</span> <span class="s2">"abcdefg..."</span>
-<span class="gp">$ </span>graphql-ruby-client sync ... --secret<span class="o">=</span><span class="nv">$MY_SECRET_KEY</span>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">export </span><span class="nv">MY_SECRET_KEY</span><span class="o">=</span> <span class="s2">"abcdefg..."</span>
+<span class="nv">$ </span>graphql-ruby-client sync ... <span class="nt">--secret</span><span class="o">=</span><span class="nv">$MY_SECRET_KEY</span>
 <span class="c"># ...</span>
 Authenticating with HMAC
 <span class="c"># ...</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 </div>
 <p class="guide-footer">

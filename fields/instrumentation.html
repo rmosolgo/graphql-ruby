@@ -47,17 +47,16 @@
 <div class="guide-container">
   <p>Field instrumentation can be attached during schema definition:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="n">instrument</span><span class="p">(</span><span class="ss">:field</span><span class="p">,</span> <span class="no">FieldTimerInstrumentation</span><span class="p">.</span><span class="nf">new</span><span class="p">)</span>
 <span class="k">end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>The instrumenter is an object which responds to <code class="highlighter-rouge">#instrument(type, field)</code>. <code class="highlighter-rouge">#instrument</code> should return a <code class="highlighter-rouge">GraphQL::Field</code> instance which will be used during query execution. <code class="highlighter-rouge">#instrument</code> is called with each type-field pair for <em>all</em> Object types and Interface types in your schema.</p>
 
 <p>Here’s an example field instrumenter:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="k">class</span> <span class="nc">FieldTimerInstrumentation</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">FieldTimerInstrumentation</span>
   <span class="c1"># If a field was flagged to be timed,</span>
   <span class="c1"># wrap its resolve proc with a timer.</span>
   <span class="k">def</span> <span class="nf">instrument</span><span class="p">(</span><span class="n">type</span><span class="p">,</span> <span class="n">field</span><span class="p">)</span>
@@ -79,8 +78,7 @@
     <span class="k">end</span>
   <span class="k">end</span>
 <span class="k">end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>It can be attached as shown above. You can use <code class="highlighter-rouge">redefine { ... }</code> to make a shallow copy of the  <a href="http://www.rubydoc.info/gems/graphql/1.7.6/GraphQL/Field" target="_blank" title="API docs for GraphQL::Field"><code>GraphQL::Field</code></a> and extend its definition.</p>
 

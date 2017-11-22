@@ -87,7 +87,7 @@
 
 <p>Without persisted queries, clients send the whole document:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># Before, without persisted queries</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Before, without persisted queries</span>
 <span class="n">query_string</span> <span class="o">=</span> <span class="s2">"query GetUserDetails($userId: ID!) { ... }"</span>
 
 <span class="no">MyGraphQLEndpoint</span><span class="p">.</span><span class="nf">post</span><span class="p">({</span>
@@ -95,19 +95,17 @@
   <span class="ss">operationName: </span><span class="s2">"GetUserDetails"</span><span class="p">,</span>
   <span class="ss">variables: </span><span class="p">{</span> <span class="ss">userId: </span><span class="s2">"100"</span> <span class="p">},</span>
 <span class="p">})</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>But with persisted queries, the full document isn’t sent because the server already has a copy of it:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># After, with persisted queries:</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># After, with persisted queries:</span>
 <span class="no">MyGraphQLEndpoint</span><span class="p">.</span><span class="nf">post</span><span class="p">({</span>
   <span class="ss">operationId: </span><span class="p">{</span> <span class="s2">"relay-app-v1/fc84dbba3623383fdc"</span><span class="p">,</span>
   <span class="c1">#               client name / query alias (eg, @relayHash)</span>
   <span class="ss">variables: </span><span class="p">{</span> <span class="ss">userId: </span><span class="s2">"100"</span> <span class="p">},</span>
 <span class="p">})</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <h3 id="why-persisted-queries">Why Persisted Queries?</h3>
 
@@ -119,15 +117,14 @@
 
 <p>For example, after all clients have migrated to persisted queries, you can reject arbitrary GraphQL in production:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># app/controllers/graphql_controller.rb</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># app/controllers/graphql_controller.rb</span>
 <span class="k">if</span> <span class="no">Rails</span><span class="p">.</span><span class="nf">env</span><span class="p">.</span><span class="nf">production?</span> <span class="o">&amp;&amp;</span> <span class="n">params</span><span class="p">[</span><span class="ss">:query</span><span class="p">].</span><span class="nf">present?</span>
   <span class="c1"># Reject arbitrary GraphQL in production:</span>
   <span class="n">render</span> <span class="ss">json: </span><span class="p">{</span> <span class="ss">errors: </span><span class="p">[{</span> <span class="ss">message: </span><span class="s2">"Raw GraphQL is not accepted"</span> <span class="p">}]}</span>
 <span class="k">else</span>
   <span class="c1"># ...</span>
 <span class="k">end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <h4 id="efficiency">Efficiency</h4>
 
@@ -161,9 +158,8 @@
 
 <p>Then, at runtime, clients send an <em>operation ID</em> to run a persisted query. It looks like this in <code class="highlighter-rouge">params</code>:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">params</span><span class="p">[</span><span class="ss">:operationId</span><span class="p">]</span> <span class="c1"># =&gt; "relay-app-v1/810c97f6631001..."</span>
-</code></pre>
-</div>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">params</span><span class="p">[</span><span class="ss">:operationId</span><span class="p">]</span> <span class="c1"># =&gt; "relay-app-v1/810c97f6631001..."</span>
+</code></pre></div></div>
 
 <p><code class="highlighter-rouge">OperationStore</code> uses this to fetch the matching operation from the database. From there, the query is evaluated normally.</p>
 

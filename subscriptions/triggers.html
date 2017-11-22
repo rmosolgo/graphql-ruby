@@ -49,16 +49,15 @@
 
 <p>Events are triggered <em>by name</em>, and the name must match fields on your <a href="/subscriptions/subscription_type">Subscription Type</a></p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># Update the system with the new blog post:</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Update the system with the new blog post:</span>
 <span class="no">MySchema</span><span class="p">.</span><span class="nf">subscriptions</span><span class="p">.</span><span class="nf">trigger</span><span class="p">(</span><span class="s2">"postAdded"</span><span class="p">,</span> <span class="p">{},</span> <span class="n">new_post</span><span class="p">)</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>The arguments are:</p>
 
 <ul>
   <li><code class="highlighter-rouge">name</code>, which corresponds to the field on subscription type</li>
-  <li><code class="highlighter-rouge">arguments</code>, which corresponds to the arguments on subscription type (for example, if you subscribe to comments on a certain post, the arguments would be <code class="highlighter-rouge"><span class="p">{</span><span class="err">postId:</span><span class="w"> </span><span class="err">comment.post_id</span><span class="p">}</span></code>.)</li>
+  <li><code class="highlighter-rouge">arguments</code>, which corresponds to the arguments on subscription type (for example, if you subscribe to comments on a certain post, the arguments would be <code class="highlighter-rouge">{postId: comment.post_id}</code>.)</li>
   <li><code class="highlighter-rouge">object</code>, which will be the root object of the subscription update</li>
   <li><code class="highlighter-rouge">scope:</code> (shown below) for implicitly scoping the clients who will receive updates.</li>
 </ul>
@@ -71,30 +70,27 @@
 
 <p>To specify that a topic is scoped, edit the field definition on your root <code class="highlighter-rouge">Subscription</code> type. Use the <code class="highlighter-rouge">subscription_scope</code> helper to name a <code class="highlighter-rouge">context:</code> key, for example:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># For a given viewer, this will be triggered</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># For a given viewer, this will be triggered</span>
 <span class="c1"># whenever one of their posts gets a new comment</span>
 <span class="n">field</span> <span class="ss">:commentAdded</span><span class="p">,</span> <span class="no">CommentType</span><span class="p">,</span> <span class="s2">"A comment was added to one of the viewer's posts"</span> <span class="k">do</span>
   <span class="n">subscription_scope</span> <span class="ss">:current_user_id</span>
 <span class="k">end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>Then, subscription operations should have a <code class="highlighter-rouge">context: { current_user_id: ... }</code> value, for example:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># current_user_id will be the scope for some subscriptions:</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># current_user_id will be the scope for some subscriptions:</span>
 <span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="n">query_string</span><span class="p">,</span> <span class="ss">context: </span><span class="p">{</span> <span class="ss">current_user_id: </span><span class="n">current_user</span><span class="p">.</span><span class="nf">id</span> <span class="p">})</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>Finally, when events happen in your app, you should provide the scoping value as <code class="highlighter-rouge">scope:</code>, for example:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># A new comment is added</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># A new comment is added</span>
 <span class="n">comment</span> <span class="o">=</span> <span class="n">post</span><span class="p">.</span><span class="nf">comments</span><span class="p">.</span><span class="nf">create!</span><span class="p">(</span><span class="n">attrs</span><span class="p">)</span>
 <span class="c1"># notify the author</span>
 <span class="n">author_id</span> <span class="o">=</span> <span class="n">post</span><span class="p">.</span><span class="nf">author</span><span class="p">.</span><span class="nf">id</span>
 <span class="no">MySchema</span><span class="p">.</span><span class="nf">subscriptions</span><span class="p">.</span><span class="nf">trigger</span><span class="p">(</span><span class="s2">"commentAdded"</span><span class="p">,</span> <span class="p">{},</span> <span class="n">comment</span><span class="p">,</span> <span class="ss">scope: </span><span class="n">author_id</span><span class="p">)</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>Since this trigger has a <code class="highlighter-rouge">scope:</code>, only subscribers with a matching scope value will be updated.</p>
 

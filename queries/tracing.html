@@ -59,14 +59,13 @@
 
 <p>A tracer must implement <code class="highlighter-rouge">.trace</code>, for example:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MyCustomTracer</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MyCustomTracer</span>
   <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">trace</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
     <span class="c1"># do stuff with key &amp; data</span>
     <span class="k">yield</span>
   <span class="k">end</span>
 <span class="k">end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p><code class="highlighter-rouge">.trace</code> is called with:</p>
 
@@ -78,19 +77,17 @@
 
 <p>To run a tracer for <strong>every query</strong>, add it to the schema with <code class="highlighter-rouge">tracer</code>:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># Run `MyCustomTracer` for all queries</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Run `MyCustomTracer` for all queries</span>
 <span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="n">tracer</span><span class="p">(</span><span class="no">MyCustomTracer</span><span class="p">)</span>
 <span class="k">end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>Or, to run a tracer for <strong>one query only</strong>, add it to <code class="highlighter-rouge">context:</code> as <code class="highlighter-rouge">tracers: [...]</code>, for example:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># Run `MyCustomTracer` for this query</span>
-<span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(.</span><span class="nf">.</span><span class="p">.</span><span class="nf">,</span> <span class="ss">context: </span><span class="p">{</span> <span class="ss">tracers: </span><span class="p">[</span><span class="no">MyCustomTracer</span><span class="p">]})</span>
-</code></pre>
-</div>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Run `MyCustomTracer` for this query</span>
+<span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="ss">context: </span><span class="p">{</span> <span class="ss">tracers: </span><span class="p">[</span><span class="no">MyCustomTracer</span><span class="p">]})</span>
+</code></pre></div></div>
 
 <p>For a full list of events, see the <a href="http://www.rubydoc.info/gems/graphql/1.7.6/GraphQL/Tracing" target="_blank" title="API docs for GraphQL::Tracing"><code>GraphQL::Tracing</code></a> API docs.</p>
 
@@ -100,12 +97,11 @@
 
 <p>To enable it, install the tracer:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># Send execution events to ActiveSupport::Notifications</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Send execution events to ActiveSupport::Notifications</span>
 <span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="n">tracer</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Tracing</span><span class="o">::</span><span class="no">ActiveSupportNotificationsTracing</span>
 <span class="k">end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <h2 id="monitoring">Monitoring</h2>
 
@@ -119,11 +115,10 @@
 
 <p>To add <a href="https://appsignal.com/">AppSignal</a> instrumentation:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="n">use</span><span class="p">(</span><span class="no">GraphQL</span><span class="o">::</span><span class="no">Tracing</span><span class="o">::</span><span class="no">AppsignalTracing</span><span class="p">)</span>
 <span class="k">end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <div class="monitoring-img-group">
   <a href="/queries/appsignal_example.png" target="_blank" class="img-link">
@@ -136,11 +131,10 @@
 
 <p>To add <a href="https://newrelic.com/">New Relic</a> instrumentation:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="n">use</span><span class="p">(</span><span class="no">GraphQL</span><span class="o">::</span><span class="no">Tracing</span><span class="o">::</span><span class="no">NewRelicTracing</span><span class="p">)</span>
 <span class="k">end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <div class="monitoring-img-group">
   <a href="/queries/new_relic_example.png" target="_blank" class="img-link">
@@ -153,11 +147,10 @@
 
 <p>To add <a href="https://scoutapp.com/">Scout APM</a> instrumentation:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="n">use</span><span class="p">(</span><span class="no">GraphQL</span><span class="o">::</span><span class="no">Tracing</span><span class="o">::</span><span class="no">ScoutTracing</span><span class="p">)</span>
 <span class="k">end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <div class="monitoring-img-group">
   <a href="/queries/scout_example.png" target="_blank" class="img-link">
@@ -170,11 +163,10 @@
 
 <p>To add <a href="http://skylight.io">Skylight</a> instrumentation:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="n">use</span><span class="p">(</span><span class="no">GraphQL</span><span class="o">::</span><span class="no">Tracing</span><span class="o">::</span><span class="no">SkylightTracing</span><span class="p">)</span>
 <span class="k">end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <div class="monitoring-img-group">
   <a href="/queries/skylight_example.png" target="_blank" class="img-link">

@@ -47,13 +47,12 @@
 <div class="guide-container">
   <p>Many examples show how to use <code class="highlighter-rouge">.define</code> and store the result in a Ruby constant:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">PostType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span> <span class="p">.</span><span class="nf">.</span><span class="p">.</span> <span class="nf">end</span>
-</code></pre>
-</div>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">PostType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span> <span class="o">...</span> <span class="k">end</span>
+</code></pre></div></div>
 
 <p>However, you can call <code class="highlighter-rouge">.define</code> anytime and store the result anywhere. For example, you can define a method which creates types:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># @return [GraphQL::ObjectType] a type derived from `model_class`</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># @return [GraphQL::ObjectType] a type derived from `model_class`</span>
 <span class="k">def</span> <span class="nf">create_type</span><span class="p">(</span><span class="n">model_class</span><span class="p">)</span>
   <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
     <span class="nb">name</span><span class="p">(</span><span class="n">model_class</span><span class="p">.</span><span class="nf">name</span><span class="p">)</span>
@@ -69,12 +68,11 @@
 <span class="k">def</span> <span class="nf">convert_type</span><span class="p">(</span><span class="n">database_type</span><span class="p">)</span>
   <span class="c1"># ...</span>
 <span class="k">end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>You can also define fields for associated objects. You’ll need a way to access them programmatically.</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># Hash&lt;Model =&gt; GraphQL::ObjectType&gt;</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Hash&lt;Model =&gt; GraphQL::ObjectType&gt;</span>
 <span class="no">MODEL_TO_TYPE</span> <span class="o">=</span> <span class="p">{}</span>
 
 <span class="k">def</span> <span class="nf">create_type</span><span class="p">(</span><span class="n">model_class</span><span class="p">)</span>
@@ -90,13 +88,12 @@
 <span class="k">end</span>
 
 <span class="n">all_models_in_application</span><span class="p">.</span><span class="nf">each</span> <span class="p">{</span> <span class="o">|</span><span class="n">model_class</span><span class="o">|</span> <span class="no">MODEL_TO_TYPE</span><span class="p">[</span><span class="n">model_class</span><span class="p">]</span> <span class="o">=</span> <span class="n">create_type</span><span class="p">(</span><span class="n">model_class</span><span class="p">)</span> <span class="p">}</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>There is one caveat to using <code class="highlighter-rouge">.define</code>. The block is called with <code class="highlighter-rouge">instance_eval</code>, so <code class="highlighter-rouge">self</code> is a definition proxy, not the outer <code class="highlighter-rouge">self</code>. For this reason, you may need to assign values to local variables, then use them in <code class="highlighter-rouge">.define</code>. (<code class="highlighter-rouge">.define</code> has access to the local scope, but not the outer <code class="highlighter-rouge">self</code>.)</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="k">class</span> <span class="nc">DynamicTypeDefinition</span>
-  <span class="kp">attr_reader</span> <span class="ss">:model</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">DynamicTypeDefinition</span>
+  <span class="nb">attr_reader</span> <span class="ss">:model</span>
   <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
     <span class="vi">@model</span> <span class="o">=</span> <span class="n">model</span>
   <span class="k">end</span>
@@ -115,8 +112,7 @@
     <span class="c1"># 👌</span>
   <span class="k">end</span>
 <span class="k">end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 </div>
 <p class="guide-footer">

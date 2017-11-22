@@ -47,26 +47,24 @@
 <div class="guide-container">
   <p><a href="http://www.rubydoc.info/gems/graphql/1.7.6/GraphQL/ObjectType" target="_blank" title="API docs for GraphQL::ObjectType"><code>GraphQL::ObjectType</code></a>s and <a href="http://www.rubydoc.info/gems/graphql/1.7.6/GraphQL/InterfaceType" target="_blank" title="API docs for GraphQL::InterfaceType"><code>GraphQL::InterfaceType</code></a>s may expose their values with <em>fields</em>. A field definition looks like this:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">PostType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">PostType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="c1"># ...</span>
   <span class="c1">#     name  , type        , description (optional)</span>
   <span class="n">field</span> <span class="ss">:title</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">String</span><span class="p">,</span> <span class="s2">"The title of the Post"</span>
 <span class="k">end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>By default, fields are resolved by sending the name to the underlying object (eg <code class="highlighter-rouge">post.title</code> in the example above).</p>
 
 <p>You can use the <code class="highlighter-rouge">hash_key</code> option instead to force a hash lookup instead of the default behaviour:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:title</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">String</span><span class="p">,</span> <span class="ss">hash_key: :title</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:title</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">String</span><span class="p">,</span> <span class="ss">hash_key: :title</span>
 <span class="c1"># resolved with `post[:title]` instead of `post.title`</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>You can define a different resolution by providing a <code class="highlighter-rouge">resolve</code> function:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">PostType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">PostType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="c1"># ...</span>
   <span class="c1">#     name   , type        , description (optional)</span>
   <span class="n">field</span> <span class="ss">:teaser</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">String</span><span class="p">,</span> <span class="s2">"The teaser of the Post"</span> <span class="k">do</span>
@@ -77,8 +75,7 @@
     <span class="p">}</span>
   <span class="k">end</span>
 <span class="k">end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>The resolve function receives inputs:</p>
 
@@ -90,16 +87,15 @@
 
 <p>In fact, the <code class="highlighter-rouge">field do ... end</code> block is passed to <a href="http://www.rubydoc.info/gems/graphql/1.7.6/GraphQL/Field" target="_blank" title="API docs for GraphQL::Field"><code>GraphQL::Field</code></a>’s <code class="highlighter-rouge">.define</code> method, so you can define many things there:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">field</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="k">do</span>
   <span class="nb">name</span> <span class="s2">"teaser"</span>
   <span class="n">type</span> <span class="n">types</span><span class="o">.</span><span class="no">String</span>
   <span class="n">description</span> <span class="s2">"..."</span>
-  <span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span> <span class="p">.</span><span class="nf">.</span><span class="o">.</span> <span class="p">}</span>
+  <span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span> <span class="o">...</span> <span class="p">}</span>
   <span class="n">deprecation_reason</span> <span class="s2">"Too long, use .title instead"</span>
   <span class="n">complexity</span> <span class="mi">2</span>
 <span class="k">end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 </div>
 <p class="guide-footer">

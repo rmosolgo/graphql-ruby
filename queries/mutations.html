@@ -47,16 +47,15 @@
 <div class="guide-container">
   <p>Mutations are queries with side effects. Mutations are used to mutate your data. In order to use mutations you need to define a mutation root type that allows for defining fields that can mutate your data.</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">Schema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">Schema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="n">query</span> <span class="no">QueryType</span>
   <span class="n">mutation</span> <span class="no">MutationType</span>
 <span class="k">end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>Then add your mutations here:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">MutationType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">MutationType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="nb">name</span> <span class="s2">"Mutation"</span>
 
   <span class="n">field</span> <span class="ss">:ratePost</span><span class="p">,</span> <span class="no">PostType</span> <span class="k">do</span>
@@ -71,21 +70,20 @@
     <span class="p">}</span>
   <span class="k">end</span>
 <span class="k">end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>The mutation query would look like:</p>
 
-<pre><code class="language-graphql">mutation {
-  ratePost(postId: 1, stars: 5) {
-    stars
-  }
-}
-</code></pre>
+<div class="language-graphql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">mutation</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="n">ratePost</span><span class="p">(</span><span class="n">postId</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">stars</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="n">stars</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
 
 <p>Instead of specifying a long list of arguments, you can also specify an input type. This allows you to have all input fields in an Input type.</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">MutationType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">MutationType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="nb">name</span> <span class="s2">"Mutation"</span>
 
   <span class="n">field</span> <span class="ss">:addPost</span><span class="p">,</span> <span class="no">PostType</span> <span class="k">do</span>
@@ -111,25 +109,23 @@
     <span class="n">description</span> <span class="s2">"Description of the post."</span>
   <span class="k">end</span>
 <span class="k">end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>The query would then look like:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>mutation {
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>mutation {
   addPost(post: {title: "Hello Graphql", description: "My graphql post"}) {
     id
     title
   }
 }
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <h2 id="nested-input-types">Nested input types</h2>
 
 <p>You can also nest input types. Let’s take this a todo list as an example:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">AddTodoList</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Relay</span><span class="o">::</span><span class="no">Mutation</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">AddTodoList</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Relay</span><span class="o">::</span><span class="no">Mutation</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="nb">name</span> <span class="s2">"AddTodoList"</span>
 
   <span class="c1"># Create an input type for each todo item</span>
@@ -151,12 +147,11 @@
     <span class="c1"># ... create each todo...</span>
   <span class="p">}</span>
 <span class="k">end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>The mutation would be like:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>mutation {
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>mutation {
   AddTodoList(todos: [
     {name: "Get Milk", starred: true},
     {name: "Vacuum", starred: false}
@@ -168,8 +163,7 @@
     }
   }
 }
-</code></pre>
-</div>
+</code></pre></div></div>
 
 </div>
 <p class="guide-footer">

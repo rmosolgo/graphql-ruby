@@ -62,7 +62,7 @@
 
 <p>In short, you can ignore arbitrary GraphQL by <em>skipping</em> the first argument of <code class="highlighter-rouge">MySchema.execute</code>:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># app/controllers/graphql.rb</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># app/controllers/graphql.rb</span>
 
 <span class="c1"># Don't pass a query string; ignore `params[:query]`</span>
 <span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span>
@@ -70,8 +70,7 @@
   <span class="ss">variables: </span><span class="n">params</span><span class="p">[</span><span class="ss">:variables</span><span class="p">],</span>
   <span class="ss">operation_name: </span><span class="n">params</span><span class="p">[</span><span class="ss">:operationName</span><span class="p">],</span>
 <span class="p">)</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>However, take these points into consideration:</p>
 
@@ -82,7 +81,7 @@
 
 <p>If those apply to you, you can apply some logic to <code class="highlighter-rouge">query_string</code>:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># Allow arbitrary GraphQL:</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Allow arbitrary GraphQL:</span>
 <span class="c1"># - from staff users</span>
 <span class="c1"># - in development</span>
 <span class="n">query_string</span> <span class="o">=</span> <span class="k">if</span> <span class="n">current_user</span><span class="p">.</span><span class="nf">staff?</span> <span class="o">||</span> <span class="no">Rails</span><span class="p">.</span><span class="nf">env</span><span class="p">.</span><span class="nf">development?</span>
@@ -97,8 +96,7 @@
   <span class="ss">variables: </span><span class="n">params</span><span class="p">[</span><span class="ss">:variables</span><span class="p">],</span>
   <span class="ss">operation_name: </span><span class="n">params</span><span class="p">[</span><span class="ss">:operationName</span><span class="p">],</span>
 <span class="p">)</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <h3 id="deleting-data">Deleting Data</h3>
 

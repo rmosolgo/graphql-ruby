@@ -51,7 +51,7 @@
 
 <p>First, make a custom definition:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">accepts_definitions</span> <span class="ss">resolves_to_class_names: </span><span class="no">GraphQL</span><span class="o">::</span><span class="no">Define</span><span class="p">.</span><span class="nf">assign_metadata_key</span><span class="p">(</span><span class="ss">:resolves_to_class_names</span><span class="p">)</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">accepts_definitions</span> <span class="ss">resolves_to_class_names: </span><span class="no">GraphQL</span><span class="o">::</span><span class="no">Define</span><span class="p">.</span><span class="nf">assign_metadata_key</span><span class="p">(</span><span class="ss">:resolves_to_class_names</span><span class="p">)</span>
 <span class="c1"># or:</span>
 <span class="c1"># GraphQL::Field.accepts_definitions(...)</span>
 <span class="c1"># GraphQL::Argument.accepts_definitions(...)</span>
@@ -59,21 +59,19 @@
 <span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="c1"># ...</span>
 <span class="k">end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>Then, use the custom definition:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">Post</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">Post</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="c1"># ...</span>
   <span class="n">resolves_to_class_names</span> <span class="p">[</span><span class="s2">"Post"</span><span class="p">,</span> <span class="s2">"StaffUpdate"</span><span class="p">]</span>
 <span class="k">end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>Access <code class="highlighter-rouge">type.metadata</code> later:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="c1"># ...</span>
   <span class="c1"># Use the type's declared `resolves_to_class_names`</span>
   <span class="c1"># to figure out if `obj` is a member of that type</span>
@@ -82,8 +80,7 @@
     <span class="no">MySchema</span><span class="p">.</span><span class="nf">types</span><span class="p">.</span><span class="nf">values</span><span class="p">.</span><span class="nf">find</span> <span class="p">{</span> <span class="o">|</span><span class="n">type</span><span class="o">|</span> <span class="n">type</span><span class="p">.</span><span class="nf">metadata</span><span class="p">[</span><span class="ss">:resolves_to_class_names</span><span class="p">].</span><span class="nf">include?</span><span class="p">(</span><span class="n">class_name</span><span class="p">)</span> <span class="p">}</span>
   <span class="p">}</span>
 <span class="k">end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>This behavior is provided by <a href="http://www.rubydoc.info/gems/graphql/1.7.6/GraphQL/Define/InstanceDefinable" target="_blank" title="API docs for GraphQL::Define::InstanceDefinable"><code>GraphQL::Define::InstanceDefinable</code></a>.</p>
 

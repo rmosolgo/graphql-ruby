@@ -49,7 +49,7 @@
 
 <p>Arguments are defined with the <code class="highlighter-rouge">argument</code> helper:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:search_posts</span><span class="p">,</span> <span class="n">types</span><span class="p">[</span><span class="no">PostType</span><span class="p">]</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:search_posts</span><span class="p">,</span> <span class="n">types</span><span class="p">[</span><span class="no">PostType</span><span class="p">]</span> <span class="k">do</span>
   <span class="n">argument</span> <span class="ss">:category</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">String</span>
   <span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
     <span class="n">args</span><span class="p">[</span><span class="ss">:category</span><span class="p">]</span>
@@ -61,37 +61,33 @@
     <span class="k">end</span>
   <span class="p">}</span>
 <span class="k">end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>Use <code class="highlighter-rouge">!</code> to mark an argument as <em>required</em>:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># This argument is a required string:</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># This argument is a required string:</span>
 <span class="n">argument</span> <span class="ss">:category</span><span class="p">,</span> <span class="o">!</span><span class="n">types</span><span class="o">.</span><span class="no">String</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>Use <code class="highlighter-rouge">default_value: value</code> to provide a default value for the argument if not supplied in the query.</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">argument</span> <span class="ss">:category</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">String</span><span class="p">,</span> <span class="ss">default_value: </span><span class="s2">"Programming"</span>
-</code></pre>
-</div>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">argument</span> <span class="ss">:category</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">String</span><span class="p">,</span> <span class="ss">default_value: </span><span class="s2">"Programming"</span>
+</code></pre></div></div>
 
 <p>Use <code class="highlighter-rouge">as: :alternateName</code> to use a different key from within your resolvers while
 exposing another key to clients.</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:post</span><span class="p">,</span> <span class="no">PostType</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:post</span><span class="p">,</span> <span class="no">PostType</span> <span class="k">do</span>
   <span class="n">argument</span> <span class="ss">:postId</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">Id</span><span class="p">,</span> <span class="ss">as: :id</span>
   <span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
     <span class="no">Post</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="s1">'id'</span><span class="p">])</span>
   <span class="p">}</span>
 <span class="k">end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>Provide a <code class="highlighter-rouge">prepare</code> function to modify or validate the value of an argument before the field’s <code class="highlighter-rouge">resolve</code> function is executed:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:posts</span><span class="p">,</span> <span class="n">types</span><span class="p">[</span><span class="no">PostType</span><span class="p">]</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:posts</span><span class="p">,</span> <span class="n">types</span><span class="p">[</span><span class="no">PostType</span><span class="p">]</span> <span class="k">do</span>
   <span class="n">argument</span> <span class="ss">:startDate</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">String</span><span class="p">,</span> <span class="ss">prepare: </span><span class="o">-&gt;</span><span class="p">(</span><span class="n">startDate</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
     <span class="c1"># return the prepared argument or GraphQL::ExecutionError.new("msg")</span>
     <span class="c1"># to halt the execution of the field and add "msg" to the `errors` key.</span>
@@ -100,8 +96,7 @@ exposing another key to clients.</p>
     <span class="c1"># use prepared args['startDate']</span>
   <span class="p">}</span>
 <span class="k">end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>Only certain types are valid for arguments:</p>
 
@@ -115,15 +110,14 @@ exposing another key to clients.</p>
 
 <p>The <code class="highlighter-rouge">args</code> parameter of a <code class="highlighter-rouge">resolve</code> function will always be a <a href="http://www.rubydoc.info/gems/graphql/1.7.6/GraphQL/Query/Arguments" target="_blank" title="API docs for GraphQL::Query::Arguments"><code>GraphQL::Query::Arguments</code></a>. You can access specific arguments with <code class="highlighter-rouge">["arg_name"]</code> or <code class="highlighter-rouge">[:arg_name]</code>. You recursively turn it into a Ruby Hash with <code class="highlighter-rouge">to_h</code>. Inside <code class="highlighter-rouge">args</code>, scalars will be parsed into Ruby values and enums will be converted to their <code class="highlighter-rouge">value:</code> (if one was provided).</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
   <span class="n">args</span><span class="p">[</span><span class="s2">"category"</span><span class="p">]</span> <span class="o">==</span> <span class="n">args</span><span class="p">[</span><span class="ss">:category</span><span class="p">]</span>
   <span class="c1"># =&gt; true</span>
   <span class="n">args</span><span class="p">.</span><span class="nf">to_h</span>
   <span class="c1"># =&gt; { "category" =&gt; "Programming" }</span>
   <span class="c1"># ...</span>
 <span class="p">}</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 </div>
 <p class="guide-footer">

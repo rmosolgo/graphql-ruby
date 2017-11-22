@@ -47,17 +47,16 @@
 <div class="guide-container">
   <p>You can execute queries with your <a href="http://www.rubydoc.info/gems/graphql/1.7.6/GraphQL/Schema" target="_blank" title="API docs for GraphQL::Schema"><code>GraphQL::Schema</code></a> and get a Ruby Hash as a result. For example, to execute a query from a string:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">query_string</span> <span class="o">=</span> <span class="s2">"{ ... }"</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">query_string</span> <span class="o">=</span> <span class="s2">"{ ... }"</span>
 <span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="n">query_string</span><span class="p">)</span>
 <span class="c1"># {</span>
 <span class="c1">#   "data" =&gt; { ... }</span>
 <span class="c1"># }</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>Or, you can execute multiple queries at once:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">MySchema</span><span class="p">.</span><span class="nf">multiplex</span><span class="p">([</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">MySchema</span><span class="p">.</span><span class="nf">multiplex</span><span class="p">([</span>
   <span class="p">{</span><span class="ss">query: </span><span class="n">query_string_1</span><span class="p">},</span>
   <span class="p">{</span><span class="ss">query: </span><span class="n">query_string_2</span><span class="p">},</span>
   <span class="p">{</span><span class="ss">query: </span><span class="n">query_string_3</span><span class="p">},</span>
@@ -67,8 +66,7 @@
 <span class="c1">#   { "data" =&gt; { ... } },</span>
 <span class="c1">#   { "data" =&gt; { ... } },</span>
 <span class="c1"># ]</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>There are also several options you can use:</p>
 
@@ -86,11 +84,11 @@
 
 <h2 id="variables">Variables</h2>
 
-<p>GraphQL provides <a href="http://graphql.org/learn/queries/#variables">query variables</a> as a way to parameterize query strings. If your query string contains variables, you can provide values in a hash of <code class="highlighter-rouge"><span class="p">{</span><span class="w"> </span><span class="err">String</span><span class="w"> </span><span class="err">=&gt;</span><span class="w"> </span><span class="err">value</span><span class="w"> </span><span class="p">}</span></code> pairs. The keys should <em>not</em> contain <code class="highlighter-rouge">"$"</code>.</p>
+<p>GraphQL provides <a href="http://graphql.org/learn/queries/#variables">query variables</a> as a way to parameterize query strings. If your query string contains variables, you can provide values in a hash of <code class="highlighter-rouge">{ String =&gt; value }</code> pairs. The keys should <em>not</em> contain <code class="highlighter-rouge">"$"</code>.</p>
 
 <p>For example, to provide variables to a query:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">query_string</span> <span class="o">=</span> <span class="s2">"
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">query_string</span> <span class="o">=</span> <span class="s2">"
   query getPost($postId: ID!) {
     post(id: $postId) {
       title
@@ -100,12 +98,11 @@
 <span class="n">variables</span> <span class="o">=</span> <span class="p">{</span> <span class="s2">"postId"</span> <span class="o">=&gt;</span> <span class="s2">"1"</span> <span class="p">}</span>
 
 <span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="n">query_string</span><span class="p">,</span> <span class="ss">variables: </span><span class="n">variables</span><span class="p">)</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>If the variable is a <a href="http://www.rubydoc.info/gems/graphql/1.7.6/GraphQL/InputObjectType" target="_blank" title="API docs for GraphQL::InputObjectType"><code>GraphQL::InputObjectType</code></a>, you can provide a nested hash, for example:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">query_string</span> <span class="o">=</span> <span class="s2">"
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">query_string</span> <span class="o">=</span> <span class="s2">"
 mutation createPost($postParams: PostInput!, $createdById: ID!){
   createPost(params: $postParams, createdById: $createdById) {
     id
@@ -124,8 +121,7 @@ mutation createPost($postParams: PostInput!, $createdById: ID!){
 <span class="p">}</span>
 
 <span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="n">query_string</span><span class="p">,</span> <span class="ss">variables: </span><span class="n">variables</span><span class="p">)</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <h2 id="context">Context</h2>
 
@@ -139,23 +135,21 @@ mutation createPost($postParams: PostInput!, $createdById: ID!){
 
 <p>Common uses for <code class="highlighter-rouge">context:</code> include the current user or auth token. To provide a <code class="highlighter-rouge">context:</code> value, pass a hash to <code class="highlighter-rouge">Schema#execute</code>:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">context</span> <span class="o">=</span> <span class="p">{</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">context</span> <span class="o">=</span> <span class="p">{</span>
   <span class="ss">current_user: </span><span class="n">session</span><span class="p">[</span><span class="ss">:current_user</span><span class="p">],</span>
   <span class="ss">current_organization: </span><span class="n">session</span><span class="p">[</span><span class="ss">:current_organization</span><span class="p">],</span>
 <span class="p">}</span>
 
 <span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="n">query_string</span><span class="p">,</span> <span class="ss">context: </span><span class="n">context</span><span class="p">)</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>Then, you can access those values during execution:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span>  <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span>  <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
   <span class="n">ctx</span><span class="p">[</span><span class="ss">:current_user</span><span class="p">]</span> <span class="c1"># =&gt; #&lt;User id=123 ... &gt;</span>
   <span class="c1"># ...</span>
 <span class="p">}</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>Note that <code class="highlighter-rouge">ctx</code> is <em>not</em> the hash that you passed it. It’s an instance of <a href="http://www.rubydoc.info/gems/graphql/1.7.6/GraphQL/Query/Context" target="_blank" title="API docs for GraphQL::Query::Context"><code>GraphQL::Query::Context</code></a>, but it delegates <code class="highlighter-rouge">#[](key)</code> to the hash you provide.</p>
 
@@ -163,14 +157,13 @@ mutation createPost($postParams: PostInput!, $createdById: ID!){
 
 <p>You can provide a root <code class="highlighter-rouge">obj</code> value with <code class="highlighter-rouge">root_value:</code>. For example, to base the query off of the current organization:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">current_org</span> <span class="o">=</span> <span class="n">session</span><span class="p">[</span><span class="ss">:current_organization</span><span class="p">]</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">current_org</span> <span class="o">=</span> <span class="n">session</span><span class="p">[</span><span class="ss">:current_organization</span><span class="p">]</span>
 <span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="n">query_string</span><span class="p">,</span> <span class="ss">root_value: </span><span class="n">current_org</span><span class="p">)</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>That value will be provided to root-level fields, such as mutation fields. For example:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">MutationType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">MutationType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="nb">name</span> <span class="s2">"Mutation"</span>
   <span class="n">field</span> <span class="ss">:createPost</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">Post</span> <span class="k">do</span>
     <span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
@@ -179,8 +172,7 @@ mutation createPost($postParams: PostInput!, $createdById: ID!){
     <span class="p">}</span>
   <span class="k">end</span>
 <span class="k">end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p><a href="http://www.rubydoc.info/gems/graphql/1.7.6/GraphQL/Relay/Mutation" target="_blank" title="API docs for GraphQL::Relay::Mutation"><code>GraphQL::Relay::Mutation</code></a> fields will also receive <code class="highlighter-rouge">root_value:</code> as <code class="highlighter-rouge">obj</code> (assuming they’re attached directly to your <code class="highlighter-rouge">MutationType</code>).</p>
 

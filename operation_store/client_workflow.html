@@ -110,13 +110,12 @@
 
 <p>To run stored operations from another client, send a param called <code class="highlighter-rouge">operationId</code> which is composed of:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code> <span class="p">{</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code> <span class="p">{</span>
    <span class="c1"># ...</span>
    <span class="ss">operationId: </span><span class="s2">"my-relay-app/ce79aa2784fc..."</span>
    <span class="c1">#            ^ client id  / ^ operation id</span>
  <span class="p">}</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>The server will use those values to fetch an operation from the database.</p>
 

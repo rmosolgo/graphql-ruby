@@ -49,8 +49,8 @@
 
 <p>To define a function, make a class that extends <a href="http://www.rubydoc.info/gems/graphql/1.7.6/GraphQL/Function" target="_blank" title="API docs for GraphQL::Function"><code>GraphQL::Function</code></a>:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="k">class</span> <span class="nc">FindRecord</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Function</span>
-  <span class="kp">attr_reader</span> <span class="ss">:type</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">FindRecord</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Function</span>
+  <span class="nb">attr_reader</span> <span class="ss">:type</span>
 
   <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">model_class</span><span class="p">:,</span> <span class="n">type</span><span class="p">:)</span>
     <span class="vi">@model_class</span> <span class="o">=</span> <span class="n">model_class</span>
@@ -63,15 +63,13 @@
     <span class="vi">@model_class</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="ss">:id</span><span class="p">])</span>
   <span class="k">end</span>
 <span class="k">end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>Then, connect the function to field definitions with the <code class="highlighter-rouge">function:</code> keyword:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:product</span><span class="p">,</span> <span class="ss">function: </span><span class="no">FindRecord</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="ss">model_class: </span><span class="no">Product</span><span class="p">,</span> <span class="ss">type: </span><span class="no">Types</span><span class="o">::</span><span class="no">ProductType</span><span class="p">)</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:product</span><span class="p">,</span> <span class="ss">function: </span><span class="no">FindRecord</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="ss">model_class: </span><span class="no">Product</span><span class="p">,</span> <span class="ss">type: </span><span class="no">Types</span><span class="o">::</span><span class="no">ProductType</span><span class="p">)</span>
 <span class="n">field</span> <span class="ss">:category</span><span class="p">,</span> <span class="ss">function: </span><span class="no">FindRecord</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="ss">model_class: </span><span class="no">Category</span><span class="p">,</span> <span class="ss">type: </span><span class="no">Types</span><span class="o">::</span><span class="no">CategoryType</span><span class="p">)</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>Objects passed with the <code class="highlighter-rouge">function:</code> keyword must implement some field-related methods:</p>
 
@@ -86,7 +84,7 @@
 
 <p><code class="highlighter-rouge">GraphQL::Function</code> provides some help in implementing these:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MyFunc</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Function</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MyFunc</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Function</span>
   <span class="c1"># Define a member of `#arguments`, just like the DSL:</span>
   <span class="n">argument</span> <span class="ss">:id</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">ID</span>
 
@@ -103,14 +101,13 @@
     <span class="n">field</span> <span class="ss">:count</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">Int</span>
   <span class="k">end</span>
 <span class="k">end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <h4 id="function-inheritance">Function Inheritance</h4>
 
 <p><code class="highlighter-rouge">GraphQL::Function</code>’s DSL-defined attributes are inherited, so you can subclass functions as much as you like!</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="k">class</span> <span class="nc">FindRecord</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Function</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">FindRecord</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Function</span>
   <span class="c1"># ...</span>
 <span class="k">end</span>
 
@@ -118,22 +115,20 @@
 <span class="k">class</span> <span class="nc">BatchedFindRecord</span> <span class="o">&lt;</span> <span class="no">FindRecord</span>
   <span class="c1"># ...</span>
 <span class="k">end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <h4 id="extending-functions">Extending Functions</h4>
 
 <p>Function attributes can be overridden by passing new values to the <code class="highlighter-rouge">field</code> helper. For example, to override the description:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># Override the description:</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Override the description:</span>
 <span class="n">field</span> <span class="ss">:post</span><span class="p">,</span> <span class="ss">description: </span><span class="s2">"Find a Post by ID"</span><span class="p">,</span> <span class="ss">function: </span><span class="no">FindRecord</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="ss">model: </span><span class="no">Post</span><span class="p">)</span> <span class="k">do</span>
   <span class="c1"># Add an argument:</span>
   <span class="n">argument</span> <span class="ss">:authorId</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">ID</span>
   <span class="c1"># Provide custom configs:</span>
   <span class="n">authorize</span> <span class="ss">:admin</span>
 <span class="k">end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 </div>
 <p class="guide-footer">

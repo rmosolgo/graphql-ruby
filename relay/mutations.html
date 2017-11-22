@@ -53,7 +53,7 @@
 
 <p>To add mutations to your GraphQL schema, define a mutation type and pass it to your schema:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># Define the mutation type</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Define the mutation type</span>
 <span class="no">MutationType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="nb">name</span> <span class="s2">"Mutation"</span>
   <span class="c1"># ...</span>
@@ -64,8 +64,7 @@
   <span class="n">query</span> <span class="no">QueryType</span>
   <span class="n">mutation</span> <span class="no">MutationType</span>
 <span class="k">end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>Like <code class="highlighter-rouge">QueryType</code>, <code class="highlighter-rouge">MutationType</code> is a root of the schema.</p>
 
@@ -77,14 +76,13 @@
 
 <p>After defining a mutation (see below), add it to your mutation type:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">MutationType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">MutationType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="nb">name</span> <span class="s2">"Mutation"</span>
   <span class="c1"># Add the mutation's derived field to the mutation type</span>
   <span class="n">field</span> <span class="ss">:addComment</span><span class="p">,</span> <span class="ss">field: </span><span class="no">AddCommentMutation</span><span class="p">.</span><span class="nf">field</span>
   <span class="c1"># ...</span>
 <span class="k">end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <h2 id="relay-mutations">Relay mutations</h2>
 
@@ -108,7 +106,7 @@
 
 <p>For example:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">AddCommentMutation</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Relay</span><span class="o">::</span><span class="no">Mutation</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">AddCommentMutation</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Relay</span><span class="o">::</span><span class="no">Mutation</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="c1"># Used to name derived types, eg `"AddCommentInput"`:</span>
   <span class="nb">name</span> <span class="s2">"AddComment"</span>
 
@@ -149,8 +147,7 @@
     <span class="p">}</span>
   <span class="p">}</span>
 <span class="k">end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <h2 id="derived-objects">Derived Objects</h2>
 
@@ -164,15 +161,14 @@
 
 <p>Each of these derived objects maintains a reference to the parent <code class="highlighter-rouge">Mutation</code> in the <code class="highlighter-rouge">mutation</code> attribute. So you can access it from the derived object:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># Define a mutation:</span>
-<span class="no">AddCommentMutation</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Relay</span><span class="o">::</span><span class="no">Mutation</span><span class="p">.</span><span class="nf">define</span> <span class="p">{</span> <span class="p">.</span><span class="nf">.</span><span class="o">.</span> <span class="p">}</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Define a mutation:</span>
+<span class="no">AddCommentMutation</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Relay</span><span class="o">::</span><span class="no">Mutation</span><span class="p">.</span><span class="nf">define</span> <span class="p">{</span> <span class="o">...</span> <span class="p">}</span>
 <span class="c1"># Get the derived input type:</span>
 <span class="no">AddCommentMutationInput</span> <span class="o">=</span> <span class="no">AddCommentMutation</span><span class="p">.</span><span class="nf">input_type</span>
 <span class="c1"># Reference the parent mutation:</span>
 <span class="no">AddCommentMutationInput</span><span class="p">.</span><span class="nf">mutation</span>
 <span class="c1"># =&gt; #&lt;GraphQL::Relay::Mutation @name="AddComment"&gt;</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <h2 id="mutation-resolution">Mutation Resolution</h2>
 
@@ -192,7 +188,7 @@
 
 <p>Instead of specifying <code class="highlighter-rouge">return_field</code>s, you can specify a <code class="highlighter-rouge">return_type</code> for a mutation. This type will be used to expose the object returned from <code class="highlighter-rouge">resolve</code>.</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">CreateUser</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Relay</span><span class="o">::</span><span class="no">Mutation</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">CreateUser</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Relay</span><span class="o">::</span><span class="no">Mutation</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="n">return_type</span> <span class="no">UserMutationResultType</span>
   <span class="c1"># ...</span>
   <span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">input</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
@@ -201,8 +197,7 @@
     <span class="no">UserMutationResult</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="ss">client_mutation_id: </span><span class="n">input</span><span class="p">[</span><span class="ss">:clientMutationId</span><span class="p">])</span>
   <span class="p">}</span>
 <span class="k">end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>If you provide your own return type, it’s up to you to support <code class="highlighter-rouge">clientMutationId</code></p>
 
@@ -212,7 +207,7 @@
 The result of the <code class="highlighter-rouge">resolve</code> block will be passed to the field definitions in the interfaces,
 and both interface-specific and mutation-specific fields will be available to clients.</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">MutationResult</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">InterfaceType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">MutationResult</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">InterfaceType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="nb">name</span> <span class="s2">"MutationResult"</span>
   <span class="n">field</span> <span class="ss">:success</span><span class="p">,</span> <span class="o">!</span><span class="n">types</span><span class="o">.</span><span class="no">Boolean</span>
   <span class="n">field</span> <span class="ss">:notice</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">String</span>
@@ -227,7 +222,7 @@ and both interface-specific and mutation-specific fields will be available to cl
 
   <span class="c1"># clientMutationId will also be available automatically</span>
   <span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">input</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
-    <span class="n">post</span><span class="p">,</span> <span class="n">notice</span> <span class="o">=</span> <span class="no">Post</span><span class="p">.</span><span class="nf">create_with_input</span><span class="p">(.</span><span class="nf">.</span><span class="o">.</span><span class="p">)</span>
+    <span class="n">post</span><span class="p">,</span> <span class="n">notice</span> <span class="o">=</span> <span class="no">Post</span><span class="p">.</span><span class="nf">create_with_input</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
     <span class="p">{</span>
       <span class="ss">success: </span><span class="n">post</span><span class="p">.</span><span class="nf">persisted?</span>
       <span class="ss">notice: </span><span class="n">notice</span>
@@ -236,8 +231,7 @@ and both interface-specific and mutation-specific fields will be available to cl
     <span class="p">}</span>
   <span class="p">}</span>
 <span class="k">end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 </div>
 <p class="guide-footer">

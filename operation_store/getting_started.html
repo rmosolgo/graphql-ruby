@@ -81,13 +81,12 @@
 
 <p><code class="highlighter-rouge">GraphQL::Pro::OperationStore</code> requires some database tables. You can add these with a migration:</p>
 
-<div class="language-bash highlighter-rouge"><pre class="highlight"><code><span class="gp">$ </span>rails generate migration SetupOperationStore
-</code></pre>
-</div>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>rails generate migration SetupOperationStore
+</code></pre></div></div>
 
 <p>Then open the migration file and add:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># ...</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># ...</span>
 <span class="c1"># implement the change method with:</span>
 <span class="k">def</span> <span class="nf">change</span>
   <span class="n">create_table</span> <span class="ss">:graphql_clients</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
@@ -125,25 +124,23 @@
   <span class="k">end</span>
   <span class="n">add_index</span> <span class="ss">:graphql_index_references</span><span class="p">,</span> <span class="p">[</span><span class="ss">:graphql_index_entry_id</span><span class="p">,</span> <span class="ss">:graphql_operation_id</span><span class="p">],</span> <span class="ss">unique: </span><span class="kp">true</span><span class="p">,</span> <span class="ss">name: </span><span class="s2">"graphql_index_reference_pairs"</span>
 <span class="k">end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <h4 id="add-operationstore">Add <code class="highlighter-rouge">OperationStore</code></h4>
 
 <p>To hook up the storage to your schema, add the plugin:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="c1"># ...</span>
   <span class="n">use</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">OperationStore</span>
 <span class="k">end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <h4 id="add-routes">Add Routes</h4>
 
 <p>To use <code class="highlighter-rouge">OperationStore</code>, add two routes to your app:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># config/routes.rb</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># config/routes.rb</span>
 
 <span class="c1"># Include GraphQL::Pro's routing extensions:</span>
 <span class="n">using</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">Routes</span>
@@ -156,8 +153,7 @@
   <span class="c1"># Add the Sync API (authorization built-in)</span>
   <span class="n">mount</span> <span class="no">MySchema</span><span class="p">.</span><span class="nf">operation_store_sync</span><span class="p">,</span> <span class="ss">at: </span><span class="s2">"/graphql/sync"</span>
 <span class="k">end</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p><code class="highlighter-rouge">MySchema.operation_store_sync</code> receives pushes from clients. See <a href="/operation_store/client_workflow">Client Workflow</a> for more info on how this endpoint is used.</p>
 
@@ -173,7 +169,7 @@
 
 <p>Add <code class="highlighter-rouge">operation_id:</code> to your GraphQL context:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># app/controllers/graphql_controller.rb</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># app/controllers/graphql_controller.rb</span>
 <span class="n">context</span> <span class="o">=</span> <span class="p">{</span>
   <span class="c1"># ...</span>
   <span class="ss">operation_id: </span><span class="n">params</span><span class="p">[</span><span class="ss">:operationId</span><span class="p">]</span>
@@ -183,8 +179,7 @@
   <span class="c1"># ...</span>
   <span class="ss">context: </span><span class="n">context</span><span class="p">,</span>
 <span class="p">)</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p><code class="highlighter-rouge">OperationStore</code> will use <code class="highlighter-rouge">stored_operation</code> to fetch the operation from the database.</p>
 
