@@ -7,7 +7,7 @@ module GraphQL
         @member = member
       end
 
-      def transform
+      def upgrade
         transformable = member.dup
         transformable = transform_to_class transformable
         transformable = transform_or_remove_name transformable
@@ -31,7 +31,7 @@ module GraphQL
             return_type.gsub! 'types.', ''
             return_type.gsub! 'types[', '['
 
-            nullable_as_keyword = nullable ? ', null: true' : ''
+            nullable_as_keyword = nullable ? ', null: false' : ''
             connection_as_keyword = field_type == 'connection' ? ', connection: true' : ''
             field_type = field_type == 'argument' ? 'argument' : 'field'
 
@@ -44,7 +44,7 @@ module GraphQL
         transformable
       end
 
-      def transformable?
+      def upgradeable?
         return false if member.include? '< GraphQL::Schema::'
         return false if member.include? '< BaseObject'
         return false if member.include? '< BaseInterface'
