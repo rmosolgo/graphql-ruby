@@ -27,11 +27,11 @@ module GraphQL
             # This is a small bug in the regex. Ideally the `do` part would only be in the remainder.
             with_block = remainder.gsub!(/\ do$/, '') || return_type.gsub!(/\ do$/, '')
 
-            nullable = return_type.gsub! '!', ''
+            nullable = !!(return_type.gsub! '!', '')
             return_type.gsub! 'types.', ''
             return_type.gsub! 'types[', '['
 
-            nullable_as_keyword = nullable ? ', null: false' : ''
+            nullable_as_keyword = ", null: #{!nullable.to_s}"
             connection_as_keyword = field_type == 'connection' ? ', connection: true' : ''
             field_type = field_type == 'argument' ? 'argument' : 'field'
 
@@ -68,7 +68,7 @@ module GraphQL
       end
 
       def simplify_field_definition_for_easier_processing(transformable)
-        transformable.gsub(/(?<field>(?:field|connection|argument).*?),\n(\s*)(?<next_line>"(.*))/) do
+        transformable.gsub(/(?<field>(?:field|connection|argument).*?),\n(\s*)(?<next_line>(:?"|field)(.*))/) do
           field = $~[:field].chomp
           next_line = $~[:next_line]
 
