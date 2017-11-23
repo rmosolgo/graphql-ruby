@@ -53,4 +53,63 @@ describe GraphQL::Tracing::PlatformTracing do
       assert_equal expected_trace, CustomPlatformTracer::TRACE
     end
   end
+
+  describe "by default, scalar fields are not traced" do
+    let(:schema) {
+      Dummy::Schema.redefine {
+        use(CustomPlatformTracer)
+      }
+    }
+
+    before do
+      CustomPlatformTracer::TRACE.clear
+    end
+
+    it "only traces traceTruek, not traceFalse or traceNil" do
+      schema.execute(" { tracingScalar { traceNil traceFalse traceTrue } }")
+      expected_trace = [
+        "em",
+        "am",
+        "l",
+        "p",
+        "v",
+        "aq",
+        "eq",
+        "Q.t",
+        "T.t",
+        "eql",
+      ]
+      assert_equal expected_trace, CustomPlatformTracer::TRACE
+    end
+  end
+
+  describe "when scalar fields are traced by default, they are unless specified" do
+    let(:schema) {
+      Dummy::Schema.redefine {
+        use(CustomPlatformTracer, trace_scalars: true)
+      }
+    }
+
+    before do
+      CustomPlatformTracer::TRACE.clear
+    end
+
+    it "traces traceTrue and traceNil but not traceFalse" do
+      schema.execute(" { tracingScalar { traceNil traceFalse traceTrue } }")
+      expected_trace = [
+        "em",
+        "am",
+        "l",
+        "p",
+        "v",
+        "aq",
+        "eq",
+        "Q.t",
+        "T.t",
+        "T.t",
+        "eql",
+      ]
+      assert_equal expected_trace, CustomPlatformTracer::TRACE
+    end
+  end
 end
