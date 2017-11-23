@@ -37,6 +37,7 @@ describe GraphQL::Introspection::SchemaType do
             {"name"=>"milk"},
             {"name"=>"root"},
             {"name"=>"searchDairy"},
+            {"name"=>"tracingScalar"},
             {"name"=>"valueWithExecutionError"},
           ]
         },
