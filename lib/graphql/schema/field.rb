@@ -47,7 +47,8 @@ module GraphQL
         else
           GraphQL::Field.new
         end
-        field_defn.name = @name
+
+        field_defn.name = camelize(name)
 
         if @return_type_expr
           return_type_name = Member::BuildType.to_type_name(@return_type_expr)
@@ -94,6 +95,16 @@ module GraphQL
         end
 
         field_defn
+      end
+
+      private
+
+      def camelize(string)
+        return string unless string.include?('_')
+
+        string.split('_').map(&:capitalize).join.tap do |camelized|
+          camelized[0] = camelized[0].downcase
+        end
       end
 
       class << self
