@@ -12,8 +12,9 @@ module GraphQL
         attr_accessor :platform_keys
       end
 
-      def initialize
+      def initialize(trace_scalars: false)
         @platform_keys = self.class.platform_keys
+        @trace_scalars = trace_scalars
       end
 
       def trace(key, data)
@@ -37,11 +38,11 @@ module GraphQL
         end
       end
 
-      def instrument(type, field, trace_scalar_fields_by_default:)
+      def instrument(type, field)
         return_type = field.type.unwrap
         case return_type
         when GraphQL::ScalarType, GraphQL::EnumType
-          if field.trace || (field.trace.nil? && trace_scalar_fields_by_default)
+          if field.trace || (field.trace.nil? && @trace_scalars)
             trace_field(type, field)
           else
             field
@@ -57,8 +58,8 @@ module GraphQL
         new_f
       end
 
-      def self.use(schema_defn)
-        tracer = self.new
+      def self.use(schema_defn, trace_scalars: false)
+        tracer = self.new(trace_scalars: trace_scalars)
         schema_defn.instrument(:field, tracer)
         schema_defn.tracer(tracer)
       end
