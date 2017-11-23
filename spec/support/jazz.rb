@@ -110,7 +110,7 @@ module Jazz
   class GloballyIdentifiableType < BaseInterface
     description "A fetchable object in the system"
     field :id, ID, "A unique identifier for this object", null: false
-    field :upcasedId, ID, null: false, upcase: true, method: :id
+    field :upcased_id, ID, null: false, upcase: true, method: :id
 
     module Implementation
       def id
@@ -137,7 +137,7 @@ module Jazz
   # test field inheritance
   class ObjectWithUpcasedName < BaseObject
     # Test extra arguments:
-    field :upcaseName, String, null: false, upcase: true
+    field :upcase_name, String, null: false, upcase: true
 
     def upcase_name
       @object.name # upcase is applied by the superclass
@@ -198,7 +198,7 @@ module Jazz
     implements NamedEntity
     description "Someone who plays an instrument"
     field :instrument, InstrumentType, null: false
-    field :favoriteKey, Key, null: true
+    field :favorite_key, Key, null: true
   end
 
   LegacyInputType = GraphQL::InputObjectType.define do
@@ -226,8 +226,8 @@ module Jazz
 
   class InspectableKey < BaseObject
     field :root, String, null: false
-    field :isSharp, Boolean, null: false, method: :sharp
-    field :isFlat, Boolean, null: false, method: :flat
+    field :is_sharp, Boolean, null: false, method: :sharp
+    field :is_flat, Boolean, null: false, method: :flat
   end
 
   class PerformingAct < GraphQL::Schema::Union
@@ -246,20 +246,20 @@ module Jazz
   class Query < BaseObject
     field :ensembles, [Ensemble], null: false
     field :find, GloballyIdentifiableType, null: true do
-      argument :id, ID, required: true, custom: :ok
+      argument :id, ID, required: true
     end
     field :instruments, [InstrumentType], null: false do
       argument :family, Family, required: false
     end
-    field :inspectInput, [String], null: false do
-      argument :input, InspectableInput, required: true
+    field :inspect_input, [String], null: false do
+      argument :input, InspectableInput, required: true, custom: :ok
     end
-    field :inspectKey, InspectableKey, null: false do
+    field :inspect_key, InspectableKey, null: false do
       argument :key, Key, required: true
     end
     field :nowPlaying, PerformingAct, null: false, resolve: ->(o, a, c) { Models.data["Ensemble"].first }
     # For asserting that the object is initialized once:
-    field :objectId, Integer, null: false
+    field :object_id, Integer, null: false
 
     def ensembles
       Models.data["Ensemble"]
@@ -304,7 +304,7 @@ module Jazz
   end
 
   class Mutation < BaseObject
-    field :addEnsemble, Ensemble, null: false do
+    field :add_ensemble, Ensemble, null: false do
       argument :input, EnsembleInput, required: true
     end
 
