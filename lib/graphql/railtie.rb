@@ -15,12 +15,22 @@ module GraphQL
           Dir[dir].each do |file|
             # Members (types, interfaces, etc.)
             if file =~ /.*_(type|interface|enum|union|)\.rb$/
-              upgrader = GraphQL::Upgrader::Member.new File.read(file)
-              next unless upgrader.upgradeable?
-
-              puts "- Transforming #{file}"
-              File.open(file, 'w') { |f| f.write upgrader.upgrade }
+              Rake::Task["graphql:upgrade:member"].execute(Struct.new(:member_file).new(file))
             end
+          end
+        end
+
+        namespace :upgrade do
+          task :schema, [:schema_file] do |t, args|; end
+
+          task :member, [:member_file] do |t, args|
+            member_file = args.member_file
+
+            upgrader = GraphQL::Upgrader::Member.new File.read(member_file)
+            next unless upgrader.upgradeable?
+
+            puts "- Transforming #{member_file}"
+            File.open(member_file, 'w') { |f| f.write upgrader.upgrade }
           end
         end
       end
