@@ -14,6 +14,9 @@ module GraphQL
         "execute_query_lazy" => "execute.graphql",
       }
 
+      # See https://github.com/etsy/statsd/blob/master/docs/metric_types.md
+      # for a reference on statsd terminology.
+
       def initialize(statsd:)
         @platform_keys = self.class.platform_keys
         @statsd = statsd
