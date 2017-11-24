@@ -22,6 +22,41 @@ module GraphQL
         end
 
         namespace :upgrade do
+          task :create_base_objects, [:base_dir] do |t, args|
+            base_dir = args.base_dir
+
+            destination_file = File.join(base_dir, "types", "base_enum.rb")
+            unless File.exists?(destination_file)
+              FileUtils.mkdir_p(File.dirname(destination_file))
+              File.open(destination_file, 'w') do |f|
+                f.write "class Types::BaseEnum < GraphQL::Schema::Enum; end"
+              end
+            end
+
+            destination_file = File.join(base_dir, "types", "base_union.rb")
+            unless File.exists?(destination_file)
+              FileUtils.mkdir_p(File.dirname(destination_file))
+              File.open(destination_file, 'w') do |f|
+                f.write "class Types::BaseUnion < GraphQL::Schema::Union; end"
+              end
+            end
+
+            destination_file = File.join(base_dir, "types", "base_interface.rb")
+            unless File.exists?(destination_file)
+              FileUtils.mkdir_p(File.dirname(destination_file))
+              File.open(destination_file, 'w') do |f|
+                f.write "class Types::BaseInterface < GraphQL::Schema::Interface; end"
+              end
+            end
+
+            destination_file = File.join(base_dir, "types", "base_object.rb")
+            unless File.exists?(destination_file)
+              File.open(destination_file, 'w') do |f|
+                f.write "class Types::BaseObject < GraphQL::Schema::Object; end"
+              end
+            end
+          end
+
           task :schema, [:schema_file] do |t, args|
             schema_file = args.schema_file
 
