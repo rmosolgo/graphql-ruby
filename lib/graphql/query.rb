@@ -185,11 +185,6 @@ module GraphQL
       end
     end
 
-    # @return [Hash] All variables for this query, with scrubbed values hidden.
-    def scrubbed_variables
-      @schema.scrubber.scrubbed_variables(self)
-    end
-
     def irep_selection
       @selection ||= begin
         return nil unless selected_operation

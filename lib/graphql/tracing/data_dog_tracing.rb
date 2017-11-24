@@ -32,7 +32,6 @@ module GraphQL
             span.set_tag(:selected_operation_name, data[:query].selected_operation_name)
             span.set_tag(:selected_operation_type, data[:query].selected_operation.operation_type)
             span.set_tag(:query_string, data[:query].query_string)
-            span.set_tag(:variables, data[:query].scrubbed_variables)
           end
           yield
         end

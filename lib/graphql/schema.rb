@@ -8,7 +8,6 @@ require "graphql/schema/middleware_chain"
 require "graphql/schema/null_mask"
 require "graphql/schema/possible_types"
 require "graphql/schema/rescue_middleware"
-require "graphql/schema/scrubber"
 require "graphql/schema/timeout_middleware"
 require "graphql/schema/traversal"
 require "graphql/schema/type_expression"
@@ -72,8 +71,7 @@ module GraphQL
       middleware: ->(schema, middleware) { schema.middleware << middleware },
       lazy_resolve: ->(schema, lazy_class, lazy_value_method) { schema.lazy_methods.set(lazy_class, lazy_value_method) },
       rescue_from: ->(schema, err_class, &block) { schema.rescue_from(err_class, &block)},
-      tracer: ->(schema, tracer) { schema.tracers.push(tracer) },
-      scrub: ->(schema, options) { schema.scrubber = Scrubber.new(options) }
+      tracer: ->(schema, tracer) { schema.tracers.push(tracer) }
 
     attr_accessor \
       :query, :mutation, :subscription,
@@ -116,7 +114,6 @@ module GraphQL
     attr_reader :static_validator, :object_from_id_proc, :id_from_object_proc, :resolve_type_proc
 
     def initialize
-      @scrubber = Scrubber.new
       @tracers = []
       @definition_error = nil
       @orphan_types = []
@@ -560,10 +557,6 @@ module GraphQL
     def to_json(*args)
       JSON.pretty_generate(as_json(*args))
     end
-
-    # @api private
-    # @see `.scrub` definition
-    attr_accessor :scrubber
 
     protected
 
