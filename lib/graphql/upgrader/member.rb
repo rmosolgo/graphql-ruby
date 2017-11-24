@@ -13,6 +13,7 @@ module GraphQL
         transformable = transform_or_remove_name transformable
         transformable = simplify_field_definition_for_easier_processing transformable
         transformable = move_the_type_from_the_block_to_the_field transformable
+        transformable = rename_property_to_method transformable
 
         transformable.scan(/(?:field|connection|argument) .*$/).each do |field|
           field_regex = /(?<field_type>field|connection|argument) :(?<name>[a-zA-Z_0-9]*)?, (?<return_type>.*?)(?<thing>,|$|\})(?<remainder>.*)/
@@ -98,6 +99,10 @@ module GraphQL
         end
 
         transformable
+      end
+
+      def rename_property_to_method(transformable)
+        transformable.gsub /property:/, 'method:'
       end
 
       attr_reader :member
