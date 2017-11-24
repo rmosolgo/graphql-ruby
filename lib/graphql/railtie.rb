@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative './upgrader/member'
+require_relative './upgrader/schema'
 
 module GraphQL
   class Railtie < Rails::Railtie
@@ -21,7 +22,14 @@ module GraphQL
         end
 
         namespace :upgrade do
-          task :schema, [:schema_file] do |t, args|; end
+          task :schema, [:schema_file] do |t, args|
+            schema_file = args.schema_file
+
+            upgrader = GraphQL::Upgrader::Schema.new File.read(schema_file)
+
+            puts "- Transforming #{schema_file}"
+            File.open(schema_file, 'w') { |f| f.write upgrader.upgrade }
+          end
 
           task :member, [:member_file] do |t, args|
             member_file = args.member_file
