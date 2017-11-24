@@ -8,7 +8,6 @@ describe GraphQL::Upgrader::Member do
     GraphQL::Upgrader::Member.new(old).upgrade
   end
 
-  # Missing transformation
   describe 'field arguments' do
     it 'upgrades' do
       old = %{argument :status, !TodoStatus, "Restrict items to this status"}
@@ -16,6 +15,13 @@ describe GraphQL::Upgrader::Member do
 
       assert_equal upgrade(old), new
     end
+  end
+
+  it 'upgrades the property definition to method' do
+    old = %{field :name, String, property: :name}
+    new = %{field :name, String, method: :name, null: false}
+
+    assert_equal upgrade(old), new
   end
 
   describe 'name' do
@@ -103,8 +109,8 @@ describe GraphQL::Upgrader::Member do
       new = %{field :name, String, null: false}
       assert_equal upgrade(old), new
 
-      old = %{field :name, !types.String, "description", property: :name}
-      new = %{field :name, String, "description", property: :name, null: false}
+      old = %{field :name, !types.String, "description", method: :name}
+      new = %{field :name, String, "description", method: :name, null: false}
       assert_equal upgrade(old), new
 
       old = %{field :name, -> { !types.String }}
