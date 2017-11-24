@@ -23,9 +23,18 @@ module GraphQL
       end
 
       def platform_trace(platform_key, key, data)
-        @statsd.time(platform_key) do
+        result = @statsd.time(platform_key) do
           yield
         end
+
+        if key == 'execute_query'
+          query_name = data[:query].selected_operation_name || '<anonymous query>'
+
+          # Count with 1 actually means increase count with 1
+          @statsd.count(query_name, 1)
+        end
+
+        result
       end
 
       def platform_field_key(type, field)
