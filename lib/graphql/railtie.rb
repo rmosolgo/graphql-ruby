@@ -27,7 +27,7 @@ module GraphQL
 
             upgrader = GraphQL::Upgrader::Schema.new File.read(schema_file)
 
-            puts "- Transforming #{schema_file}"
+            puts "- Transforming schema #{schema_file}"
             File.open(schema_file, 'w') { |f| f.write upgrader.upgrade }
           end
 
@@ -37,7 +37,7 @@ module GraphQL
             upgrader = GraphQL::Upgrader::Member.new File.read(member_file)
             next unless upgrader.upgradeable?
 
-            puts "- Transforming #{member_file}"
+            puts "- Transforming member #{member_file}"
             File.open(member_file, 'w') { |f| f.write upgrader.upgrade }
           end
         end
