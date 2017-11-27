@@ -30,6 +30,20 @@ type HelloScalars {
       build_schema_and_compare_output(schema.chop)
     end
 
+    it 'can build a schema with default input object values' do
+      schema = <<-SCHEMA
+input InputObject {
+  a: Int
+}
+
+type Query {
+  a(input: InputObject = {a: 1}): String
+}
+      SCHEMA
+
+      build_schema_and_compare_output(schema.chop)
+    end
+
     it 'can build a schema with directives' do
       schema = <<-SCHEMA
 schema {
