@@ -12,7 +12,8 @@ module GraphQL
         attr_accessor :platform_keys
       end
 
-      def initialize
+      def initialize(options = {})
+        @options = options
         @platform_keys = self.class.platform_keys
       end
 
@@ -49,11 +50,14 @@ module GraphQL
         end
       end
 
-      def self.use(schema_defn)
-        tracer = self.new
+      def self.use(schema_defn, options = {})
+        tracer = self.new(options)
         schema_defn.instrument(:field, tracer)
         schema_defn.tracer(tracer)
       end
+
+      private
+      attr_reader :options
     end
   end
 end
