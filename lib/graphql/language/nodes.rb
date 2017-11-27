@@ -34,10 +34,9 @@ module GraphQL
         # @return [Boolean] True if `self` is equivalent to `other`
         def eql?(other)
           return true if equal?(other)
-
           other.is_a?(self.class) &&
-            other.scalars.sort_by(&:name).eql?(self.scalars.sort_by(&:name)) &&
-            other.children.sort_by(&:name).eql?(self.children.sort_by(&:name))
+            other.scalars.eql?(self.scalars) &&
+            other.children.eql?(self.children)
         end
 
         # @return [Array<GraphQL::Language::Nodes::AbstractNode>] all nodes in the tree below this one
