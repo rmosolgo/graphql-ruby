@@ -149,7 +149,7 @@ module GraphQL
           out << "(#{node.arguments.map { |a| generate(a) }.join(", ")})" if node.arguments.any?
           out << " on #{node.locations.join(' | ')}"
         when Nodes::AbstractNode
-          node.to_query_string(indent: indent)
+          generate(node, indent: indent)
         when FalseClass, Float, Integer, NilClass, String, TrueClass
           GraphQL::Language.serialize(node)
         when Array
