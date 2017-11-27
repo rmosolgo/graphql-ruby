@@ -313,8 +313,6 @@ module GraphQL
           print_input_object_type_definition(node)
         when Nodes::DirectiveDefinition
           print_directive_definition(node)
-        when Nodes::AbstractNode
-          print_node(node, indent: indent)
         when FalseClass, Float, Integer, NilClass, String, TrueClass
           GraphQL::Language.serialize(node)
         when Array
