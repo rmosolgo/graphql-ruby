@@ -191,6 +191,8 @@ module GraphQL
             default_value.name
           when GraphQL::Language::Nodes::NullValue
             nil
+          when GraphQL::Language::Nodes::InputObject
+            default_value.to_h
           else
             default_value
           end
