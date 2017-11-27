@@ -20,17 +20,17 @@ describe GraphQL::Schema::Traversal do
   it "finds types from a single type and its fields" do
     expected = {
       "Boolean" => GraphQL::BOOLEAN_TYPE,
-      "Cheese" => Dummy::CheeseType,
+      "Cheese" => Dummy::Types::CheeseType,
       "Float" => GraphQL::FLOAT_TYPE,
       "String" => GraphQL::STRING_TYPE,
-      "Edible" => Dummy::EdibleInterface,
-      "EdibleAsMilk" => Dummy::EdibleAsMilkInterface,
-      "DairyAnimal" => Dummy::DairyAnimalEnum,
+      "Edible" => Dummy::Types::EdibleInterface,
+      "EdibleAsMilk" => Dummy::Types::EdibleAsMilkInterface,
+      "DairyAnimal" => Dummy::Types::DairyAnimalEnum,
       "Int" => GraphQL::INT_TYPE,
-      "AnimalProduct" => Dummy::AnimalProductInterface,
-      "LocalProduct" => Dummy::LocalProductInterface,
+      "AnimalProduct" => Dummy::Types::AnimalProductInterface,
+      "LocalProduct" => Dummy::Types::LocalProductInterface,
     }
-    result = traversal([Dummy::CheeseType]).type_map
+    result = traversal([Dummy::Types::CheeseType]).type_map
     assert_equal(expected.keys.sort, result.keys.sort)
     assert_equal(expected, result.to_h)
   end

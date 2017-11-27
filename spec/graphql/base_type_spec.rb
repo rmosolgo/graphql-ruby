@@ -11,7 +11,7 @@ describe GraphQL::BaseType do
   end
 
   it "can be compared" do
-    obj_type = Dummy::MilkType
+    obj_type = Dummy::Types::MilkType
     assert_equal(!GraphQL::INT_TYPE, !GraphQL::INT_TYPE)
     refute_equal(!GraphQL::FLOAT_TYPE, GraphQL::FLOAT_TYPE)
     assert_equal(
@@ -25,7 +25,7 @@ describe GraphQL::BaseType do
   end
 
   it "Accepts arbitrary metadata" do
-    assert_equal ["Cheese"], Dummy::CheeseType.metadata[:class_names]
+    assert_equal ["Cheese"], Dummy::Types::CheeseType.metadata[:class_names]
   end
 
   describe "name" do
@@ -41,7 +41,7 @@ describe GraphQL::BaseType do
   end
 
   describe "forwards-compat with new api" do
-    let(:type_defn) { Dummy::CheeseType }
+    let(:type_defn) { Dummy::Types::CheeseType }
     it "responds to new methods" do
       assert_equal "Cheese", type_defn.graphql_name
       assert_equal type_defn, type_defn.graphql_definition

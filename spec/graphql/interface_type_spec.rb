@@ -2,11 +2,11 @@
 require "spec_helper"
 
 describe GraphQL::InterfaceType do
-  let(:interface) { Dummy::EdibleInterface }
+  let(:interface) { Dummy::Types::EdibleInterface }
   let(:dummy_query_context) { OpenStruct.new(schema: Dummy::Schema) }
 
   it "has possible types" do
-    assert_equal([Dummy::CheeseType, Dummy::HoneyType, Dummy::MilkType], Dummy::Schema.possible_types(interface))
+    assert_equal([Dummy::Types::CheeseType, Dummy::HoneyType, Dummy::Types::MilkType], Dummy::Schema.possible_types(interface))
   end
 
   describe "query evaluation" do

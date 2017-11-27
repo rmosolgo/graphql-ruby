@@ -28,7 +28,7 @@ describe GraphQL::Schema::TypeExpression do
       let(:type_name) { "[DairyAnimal!]!" }
 
       it "makes list types" do
-        expected = Dummy::DairyAnimalEnum
+        expected = Dummy::Types::DairyAnimalEnum
           .to_non_null_type
           .to_list_type
           .to_non_null_type

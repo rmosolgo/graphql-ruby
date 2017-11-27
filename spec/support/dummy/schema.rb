@@ -1,126 +1,21 @@
+# -*- coding: utf-8 -*-
 # frozen_string_literal: true
 require "graphql"
 require_relative "./data"
+require_relative "./types/local_product_interface"
+require_relative "./types/edible_interface"
+require_relative "./types/edible_as_milk_interface"
+require_relative "./types/dairy_animal_enum"
+require_relative "./types/animal_product_interface"
+require_relative "./types/beverage_union"
+require_relative "./types/cheese_type"
+require_relative "./types/milk_type"
+
 module Dummy
   class NoSuchDairyError < StandardError; end
 
   GraphQL::Field.accepts_definitions(joins: GraphQL::Define.assign_metadata_key(:joins))
   GraphQL::BaseType.accepts_definitions(class_names: GraphQL::Define.assign_metadata_key(:class_names))
-
-  LocalProductInterface = GraphQL::InterfaceType.define do
-    name "LocalProduct"
-    description "Something that comes from somewhere"
-    field :origin, !types.String, "Place the thing comes from"
-  end
-
-  EdibleInterface = GraphQL::InterfaceType.define do
-    name "Edible"
-    description "Something you can eat, yum"
-    field :fatContent, !types.Float, "Percentage which is fat"
-    field :origin, !types.String, "Place the edible comes from"
-    field :selfAsEdible, EdibleInterface, resolve: ->(o, a, c) { o }
-  end
-
-  EdibleAsMilkInterface = EdibleInterface.redefine do
-    name "EdibleAsMilk"
-    description "Milk :+1:"
-    resolve_type ->(obj, ctx) { MilkType }
-  end
-
-  AnimalProductInterface = GraphQL::InterfaceType.define do
-    name "AnimalProduct"
-    description "Comes from an animal, no joke"
-    field :source, !DairyAnimalEnum, "Animal which produced this product"
-  end
-
-  BeverageUnion = GraphQL::UnionType.define do
-    name "Beverage"
-    description "Something you can drink"
-    possible_types [MilkType]
-  end
-
-  DairyAnimalEnum = GraphQL::EnumType.define do
-    name "DairyAnimal"
-    description "An animal which can yield milk"
-    value("COW",      "Animal with black and white spots", value: 1)
-    value("DONKEY",   "Animal with fur", value: :donkey)
-    value("GOAT",     "Animal with horns")
-    value("REINDEER", "Animal with horns", value: 'reindeer')
-    value("SHEEP",    "Animal with wool")
-    value("YAK",      "Animal with long hair", deprecation_reason: "Out of fashion")
-  end
-
-  CheeseType = GraphQL::ObjectType.define do
-    name "Cheese"
-    class_names ["Cheese"]
-    description "Cultured dairy product"
-    interfaces [EdibleInterface, EdibleAsMilkInterface, AnimalProductInterface, LocalProductInterface]
-
-    # Can have (name, type, desc)
-    field :id, !types.Int, "Unique identifier"
-    field :flavor, !types.String, "Kind of Cheese"
-    field :origin, !types.String, "Place the cheese comes from"
-
-    field :source, !DairyAnimalEnum,
-      "Animal which produced the milk for this cheese"
-
-    # Or can define by block, `resolve ->` should override `property:`
-    field :similarCheese, CheeseType, "Cheeses like this one", property: :this_should_be_overriden  do
-      # metadata test
-      joins [:cheeses, :milks]
-      argument :source, !types[!DairyAnimalEnum]
-      argument :nullableSource, types[!DairyAnimalEnum], default_value: [1]
-      resolve ->(t, a, c) {
-        # get the strings out:
-        sources = a["source"]
-        if sources.include?("YAK")
-          raise NoSuchDairyError.new("No cheeses are made from Yak milk!")
-        else
-          CHEESES.values.find { |cheese| sources.include?(cheese.source) }
-        end
-      }
-    end
-
-    field :nullableCheese, CheeseType, "Cheeses like this one" do
-      argument :source, types[!DairyAnimalEnum]
-      resolve ->(t, a, c) { raise("NotImplemented") }
-    end
-
-    field :deeplyNullableCheese, CheeseType, "Cheeses like this one" do
-      argument :source, types[types[DairyAnimalEnum]]
-      resolve ->(t, a, c) { raise("NotImplemented") }
-    end
-
-    # Keywords can be used for definition methods
-    field :fatContent,
-      property: :fat_content,
-      type: !GraphQL::FLOAT_TYPE,
-      description: "Percentage which is milkfat",
-      deprecation_reason: "Diet fashion has changed"
-  end
-
-  MilkType = GraphQL::ObjectType.define do
-    name "Milk"
-    description "Dairy beverage"
-    interfaces [EdibleInterface, EdibleAsMilkInterface, AnimalProductInterface, LocalProductInterface]
-    field :id, !types.ID
-    field :source, !DairyAnimalEnum, "Animal which produced this milk", hash_key: :source
-    field :origin, !types.String, "Place the milk comes from"
-    field :flavors, types[types.String], "Chocolate, Strawberry, etc" do
-      argument :limit, types.Int
-      resolve ->(milk, args, ctx) {
-        args[:limit] ? milk.flavors.first(args.limit) : milk.flavors
-      }
-    end
-    field :executionError do
-      type GraphQL::STRING_TYPE
-      resolve ->(t, a, c) { raise(GraphQL::ExecutionError, "There was an execution error") }
-    end
-
-    field :allDairy, -> { types[DairyProductUnion] } do
-      resolve ->(obj, args, ctx) { CHEESES.values + MILKS.values }
-    end
-  end
 
   SweetenerInterface = GraphQL::InterfaceType.define do
     name "Sweetener"
@@ -132,28 +27,28 @@ module Dummy
     name "Honey"
     description "Sweet, dehydrated bee barf"
     field :flowerType, types.String, "What flower this honey came from"
-    interfaces [EdibleInterface, AnimalProductInterface, SweetenerInterface]
+    interfaces [Types::EdibleInterface, Types::AnimalProductInterface, SweetenerInterface]
   end
 
   DairyType = GraphQL::ObjectType.define do
     name "Dairy"
     description "A farm where milk is harvested and cheese is produced"
     field :id, !types.ID
-    field :cheese, CheeseType
-    field :milks, types[MilkType]
+    field :cheese, Types::CheeseType
+    field :milks, types[Types::MilkType]
   end
 
   MaybeNullType = GraphQL::ObjectType.define do
     name "MaybeNull"
     description "An object whose fields return nil"
-    field :cheese, CheeseType
+    field :cheese, Types::CheeseType
   end
 
   DairyProductUnion = GraphQL::UnionType.define do
     name "DairyProduct"
     description "Kinds of food made from milk"
     # Test that these forms of declaration still work:
-    possible_types ["Dummy::MilkType", -> { CheeseType }]
+    possible_types ["Dummy::Types::MilkType", -> { Types::CheeseType }]
   end
 
   CowType = GraphQL::ObjectType.define do
@@ -209,7 +104,7 @@ module Dummy
   DairyProductInputType = GraphQL::InputObjectType.define {
     name "DairyProductInput"
     description "Properties for finding a dairy product"
-    input_field :source, !DairyAnimalEnum do
+    input_field :source, !Types::DairyAnimalEnum do
       # ensure we can define description in block
       description "Where it came from"
     end
@@ -274,9 +169,9 @@ module Dummy
   end
 
   SourceFieldDefn = Proc.new {
-    type GraphQL::ListType.new(of_type: CheeseType)
+    type GraphQL::ListType.new(of_type: Types::CheeseType)
     description "Cheese from source"
-    argument :source, DairyAnimalEnum, default_value: 1
+    argument :source, Types::DairyAnimalEnum, default_value: 1
     resolve ->(target, arguments, context) {
       CHEESES.values.select{ |c| c.source == arguments["source"] }
     }
@@ -285,7 +180,7 @@ module Dummy
   FavoriteFieldDefn = GraphQL::Field.define do
     name "favoriteEdible"
     description "My favorite food"
-    type EdibleInterface
+    type Types::EdibleInterface
     resolve ->(t, a, c) { MILKS[1] }
   end
 
@@ -295,8 +190,8 @@ module Dummy
     field :root, types.String do
       resolve ->(root_value, args, c) { root_value }
     end
-    field :cheese, function: FetchItem.new(type: CheeseType, data: CHEESES)
-    field :milk, function: FetchItem.new(type: MilkType, data: MILKS, id_type: !types.ID)
+    field :cheese, function: FetchItem.new(type: Types::CheeseType, data: CHEESES)
+    field :milk, function: FetchItem.new(type: Types::MilkType, data: MILKS, id_type: !types.ID)
     field :dairy, function: GetSingleton.new(type: DairyType, data: DAIRY)
     field :fromSource, &SourceFieldDefn
     field :favoriteEdible, FavoriteFieldDefn
@@ -333,11 +228,11 @@ module Dummy
       }
     end
 
-    field :allEdible, types[EdibleInterface] do
+    field :allEdible, types[Types::EdibleInterface] do
       resolve ->(obj, args, ctx) { CHEESES.values + MILKS.values }
     end
 
-    field :allEdibleAsMilk, types[EdibleAsMilkInterface] do
+    field :allEdibleAsMilk, types[Types::EdibleAsMilkInterface] do
       resolve ->(obj, args, ctx) { CHEESES.values + MILKS.values }
     end
 
@@ -424,7 +319,7 @@ module Dummy
     mutation DairyAppMutationType
     subscription SubscriptionType
     max_depth 5
-    orphan_types [HoneyType, BeverageUnion]
+    orphan_types [HoneyType, Types::BeverageUnion]
 
     rescue_from(NoSuchDairyError) { |err| err.message  }
 
