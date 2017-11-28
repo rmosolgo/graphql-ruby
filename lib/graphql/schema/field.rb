@@ -48,7 +48,7 @@ module GraphQL
           GraphQL::Field.new
         end
 
-        field_defn.name = camelize(name)
+        field_defn.name = Member::BuildType.camelize(name)
 
         if @return_type_expr
           return_type_name = Member::BuildType.to_type_name(@return_type_expr)
@@ -98,14 +98,6 @@ module GraphQL
       end
 
       private
-
-      def camelize(string)
-        return string unless string.include?('_')
-
-        string.split('_').map(&:capitalize).join.tap do |camelized|
-          camelized[0] = camelized[0].downcase
-        end
-      end
 
       class << self
         def argument_class(new_arg_class = nil)
