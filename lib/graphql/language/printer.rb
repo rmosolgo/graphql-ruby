@@ -21,24 +21,17 @@ module GraphQL
       #  MyPrinter.new(document).print
       #  # => "mutation { pay(creditCard: <HIDDEN>) { success } }"
       #
-      # @param node [GraphQL::Language::Nodes::AbstractNode] an AST node to recursively stringify.
-      # @return [String] The query string representing the GraphQL AST node.
-      def initialize(node)
-        @node = node
-      end
-
-      # Prints a query string from the provided node
       #
       # @param indent [String] Whitespace to add to the printed node
       # @return [String] Valid GraphQL for `node`
-      def print(indent: "")
+      def print(node, indent: "")
         print_node(node, indent: indent)
       end
 
       protected
 
       def print_document(document)
-        node.definitions.map { |d| print_node(d) }.join("\n\n")
+        document.definitions.map { |d| print_node(d) }.join("\n\n")
       end
 
       def print_argument(argument)

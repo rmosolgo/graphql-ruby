@@ -51,7 +51,7 @@ type Query {
   <Field Hidden>
 }
       SCHEMA
-      assert_equal expected.chomp, document.to_query_string(printer: CustomPrinter)
+      assert_equal expected.chomp, document.to_query_string(printer: CustomPrinter.new)
     end
   end
 end

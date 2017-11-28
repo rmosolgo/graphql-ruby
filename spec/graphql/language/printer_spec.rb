@@ -24,11 +24,11 @@ describe GraphQL::Language::Printer do
     }
   |}
 
-  let(:printer) { GraphQL::Language::Printer.new(document) }
+  let(:printer) { GraphQL::Language::Printer.new }
 
   describe "#print" do
     it "prints the query string" do
-      assert_equal query_string.gsub(/^    /, "").strip, printer.print
+      assert_equal query_string.gsub(/^    /, "").strip, printer.print(document)
     end
 
     describe "inputs" do
@@ -39,7 +39,7 @@ describe GraphQL::Language::Printer do
       |}
 
       it "prints the query string" do
-        assert_equal query_string.gsub(/^        /, "").strip, printer.print
+        assert_equal query_string.gsub(/^        /, "").strip, printer.print(document)
       end
     end
 
@@ -55,7 +55,7 @@ describe GraphQL::Language::Printer do
         }
 
         it 'omits schema definition' do
-          refute printer.print =~ /schema/
+          refute printer.print(document) =~ /schema/
         end
       end
 
@@ -70,7 +70,7 @@ describe GraphQL::Language::Printer do
         }
 
         it 'includes schema definition' do
-          assert_equal query_string.gsub(/^          /, "").strip, printer.print
+          assert_equal query_string.gsub(/^          /, "").strip, printer.print(document)
         end
       end
 
@@ -85,7 +85,7 @@ describe GraphQL::Language::Printer do
         }
 
         it 'includes schema definition' do
-          assert_equal query_string.gsub(/^          /, "").strip, printer.print
+          assert_equal query_string.gsub(/^          /, "").strip, printer.print(document)
         end
       end
 
@@ -100,7 +100,7 @@ describe GraphQL::Language::Printer do
         }
 
         it 'includes schema definition' do
-          assert_equal query_string.gsub(/^          /, "").strip, printer.print
+          assert_equal query_string.gsub(/^          /, "").strip, printer.print(document)
         end
       end
 
@@ -191,11 +191,11 @@ describe GraphQL::Language::Printer do
         }
 
         it "generate" do
-          assert_equal query_string.gsub(/^          /, "").strip, printer.print
+          assert_equal query_string.gsub(/^          /, "").strip, printer.print(document)
         end
 
         it "doesn't mutate the document" do
-          assert_equal printer.print, printer.print
+          assert_equal printer.print(document), printer.print(document)
         end
       end
     end
