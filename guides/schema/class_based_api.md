@@ -131,6 +131,8 @@ Classes extending {{ "GraphQL::Schema::Object" | api_doc }} describe [Object typ
 
 Object fields can be created with the `field(...)` class method, which accepts the similar arguments as the previous `field(...)` method.
 
+Field and argument names should be underscored as a convention. They will be converted to camelCase in the underlying GraphQL type and be camelCase in the schema itself.
+
 ```ruby
 # first, somewhere, a base class:
 class Types::BaseObject < GraphQL::Schema::Object
@@ -139,6 +141,7 @@ end
 # then...
 class Types::TodoList < BaseObject
   field :name, String, "The unique name of this list", null: false
+  field :is_completed, String, "Completed status depending on all tasks being done.", null: false
   # Related Object:
   field :owner, Types::User, "The creator of this list", null: false
   # List field:
@@ -189,7 +192,7 @@ If you define a type with a class, you can use existing GraphQL-Ruby resolve fun
 # Using a Proc literal or #call-able
 field :something, ... resolve: ->(obj, args, ctx) { ... }
 # Using a predefined field
-field :doSomething, field: Mutations::DoSomething.field
+field :do_something, field: Mutations::DoSomething.field
 # Using a GraphQL::Function
 field :something, function: Functions::Something.new
 ```
@@ -201,8 +204,8 @@ When using these resolution implementations, they will be called with the same `
 If you implement a field by defining a method, you should expect some automatic transformations:
 
 - GraphQL arguments will be converted to Ruby keyword arguments.
-- If the field name is `camelCased`, the method name should be `underscore_cased`.
-- If any argument names are `camelCased`, they will be passed to the method as `underscore_cased` Ruby keyword args.
+- method names should be `underscore_cased`.
+- argument names will be passed to the method as `underscore_cased` Ruby keyword args.
 
 Inside the method, you can access some instance variables:
 
@@ -339,7 +342,7 @@ Then extend it for your input objects:
 class PostInputType < BaseInputObject
   argument :title, String, required: true
   argument :body, String, required: true
-  argument :isDraft, Boolean, required: false, default_value: false
+  argument :is_draft, Boolean, required: false, default_value: false
 end
 ```
 
@@ -356,7 +359,7 @@ For fields on class-based objects, inputs are provided as Ruby keyword arguments
 ```ruby
 class MutationType < BaseObject
   field :createPost, PostType, null: false do
-    argument :postInput, PostInputType, required: true
+    argument :post_input, PostInputType, required: true
   end
 
   def create_post(post_input:)
