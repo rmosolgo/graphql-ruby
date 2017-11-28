@@ -1,6 +1,11 @@
 # frozen_string_literal: true
 module GraphQL
   module Language
+    # @api private
+    #
+    # {GraphQL::Language::DocumentFromSchemaDefinition} is used to convert a {GraphQL::Schema} object
+    # To a {GraphQL::Language::Document} AST node.
+    #
     class DocumentFromSchemaDefinition
       def initialize(schema)
         @schema = schema
