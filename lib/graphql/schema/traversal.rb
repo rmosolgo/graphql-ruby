@@ -109,18 +109,7 @@ module GraphQL
           instrumented_field_defn = field_defn
         else
           instrumented_field_defn = @field_instrumenters.reduce(field_defn) do |defn, inst|
-            if inst.is_a?(::GraphQL::Tracing::PlatformTracing)
-              inst.instrument(
-                type_defn,
-                defn,
-                trace_scalar_fields_by_default: @schema.trace_scalar_fields_by_default,
-              )
-            else
-              inst.instrument(
-                type_defn,
-                defn,
-              )
-            end
+            inst.instrument(type_defn, defn)
           end
           @instrumented_field_map[type_defn.name][instrumented_field_defn.name] = instrumented_field_defn
         end

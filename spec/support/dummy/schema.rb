@@ -149,6 +149,15 @@ module Dummy
     field :cheese, CheeseType
   end
 
+  TracingScalarType = GraphQL::ObjectType.define do
+    name "TracingScalar"
+    description "An object which has traced scalars"
+
+    field :traceNil, types.Int
+    field :traceFalse, types.Int, trace: false
+    field :traceTrue, types.Int, trace: true
+  end
+
   DairyProductUnion = GraphQL::UnionType.define do
     name "DairyProduct"
     description "Kinds of food made from milk"
@@ -370,6 +379,16 @@ module Dummy
     # To test possibly-null fields
     field :maybeNull, MaybeNullType do
       resolve ->(t, a, c) { OpenStruct.new(cheese: nil) }
+    end
+
+    field :tracingScalar, TracingScalarType do
+      resolve ->(o, a, c) do
+        OpenStruct.new(
+          traceNil: 2,
+          traceFalse: 3,
+          tracetrue: 5,
+        )
+      end
     end
 
     field :deepNonNull, !DeepNonNullType do
