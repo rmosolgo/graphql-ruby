@@ -72,7 +72,7 @@ module GraphQL
       end
 
       # @param key [String, Symbol] name of value to access
-      # @return [Boolean] true if the argument was present in this field
+      # @return [Boolean] true if the argument default was passed as the argument value to the resolver
       def default_used?(key)
         key_s = key.is_a?(String) ? key : key.to_s
         @argument_values.fetch(key_s, NULL_ARGUMENT_VALUE).default_used?
@@ -121,6 +121,7 @@ module GraphQL
           @default_used = false
         end
 
+        # @return [Boolean] true if the argument default was passed as the argument value to the resolver
         def default_used?
           @default_used
         end
