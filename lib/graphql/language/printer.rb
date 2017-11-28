@@ -9,7 +9,20 @@ module GraphQL
       #    GraphQL::Language::Printer.new(document).print
       #    # => "{ ... }"
       #
-      # @param node [GraphQL::Language::Nodes::AbstractNode] an AST node to recursively stringify
+      #
+      # @example Building a custom printer
+      #
+      #  class MyPrinter < GraphQL::Language::Printer
+      #    def print_argument(arg)
+      #      "#{arg.name}: <HIDDEN>"
+      #    end
+      #  end
+      #
+      #  MyPrinter.new(document).print
+      #  # => "mutation { pay(creditCard: <HIDDEN>) { success } }"
+      #
+      # @param node [GraphQL::Language::Nodes::AbstractNode] an AST node to recursively stringify.
+      # @return [String] The query string representing the GraphQL AST node.
       def initialize(node)
         @node = node
       end
