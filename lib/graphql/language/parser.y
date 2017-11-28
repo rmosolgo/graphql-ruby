@@ -328,7 +328,8 @@ rule
       }
 
   field_definition_list:
-      field_definition                       { return [val[0]] }
+    /* none */ { return [] }
+    | field_definition                       { return [val[0]] }
     | field_definition_list field_definition { val[0] << val[1] }
 
   interface_type_definition:
