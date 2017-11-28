@@ -203,8 +203,8 @@ describe GraphQL::Query::Arguments do
 
       last_args = arg_values.last
 
-      assert_equal false, arg_values.last.default_used?('a')
-      assert_equal true, arg_values.last.default_used?('b')
+      assert_equal false, last_args.default_used?('a')
+      assert_equal true, last_args.default_used?('b')
     end
 
     it "works from variables" do
