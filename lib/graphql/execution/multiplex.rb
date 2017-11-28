@@ -60,12 +60,12 @@ module GraphQL
               if queries.length != 1
                 raise ArgumentError, "Multiplexing doesn't support custom execution strategies, run one query at a time instead"
               else
-                with_instrumentation(multiplex, max_complexity: max_complexity) do
+                instrument_and_analyze(multiplex, max_complexity: max_complexity) do
                   [run_one_legacy(schema, queries.first)]
                 end
               end
             else
-              with_instrumentation(multiplex, max_complexity: max_complexity) do
+              instrument_and_analyze(multiplex, max_complexity: max_complexity) do
                 run_as_multiplex(multiplex)
               end
             end
@@ -162,34 +162,17 @@ module GraphQL
         # Apply multiplex & query instrumentation to `queries`.
         #
         # It yields when the queries should be executed, then runs teardown.
-        def with_instrumentation(multiplex, max_complexity:)
-          schema = multiplex.schema
-          queries = multiplex.queries
-          query_instrumenters = schema.instrumenters[:query]
-          multiplex_instrumenters = schema.instrumenters[:multiplex]
+        def instrument_and_analyze(multiplex, max_complexity:)
+          GraphQL::Execution::Instrumentation.apply_instrumenters(multiplex) do
+            schema = multiplex.schema
+            multiplex_analyzers = schema.multiplex_analyzers
+            if max_complexity
+              multiplex_analyzers += [GraphQL::Analysis::MaxQueryComplexity.new(max_complexity)]
+            end
 
-          # First, run multiplex instrumentation, then query instrumentation for each query
-          multiplex_instrumenters.each { |i| i.before_multiplex(multiplex) }
-          queries.each do |query|
-            query_instrumenters.each { |i| i.before_query(query) }
+            GraphQL::Analysis.analyze_multiplex(multiplex, multiplex_analyzers)
+            yield
           end
-
-          multiplex_analyzers = schema.multiplex_analyzers
-          if max_complexity
-            multiplex_analyzers += [GraphQL::Analysis::MaxQueryComplexity.new(max_complexity)]
-          end
-
-          GraphQL::Analysis.analyze_multiplex(multiplex, multiplex_analyzers)
-
-          # Let them be executed
-          yield
-        ensure
-          # Finally, run teardown instrumentation for each query + the multiplex
-          # Use `reverse_each` so instrumenters are treated like a stack
-          queries.each do |query|
-            query_instrumenters.reverse_each { |i| i.after_query(query) }
-          end
-          multiplex_instrumenters.reverse_each { |i| i.after_multiplex(multiplex) }
         end
       end
     end

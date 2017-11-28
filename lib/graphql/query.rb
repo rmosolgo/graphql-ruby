@@ -44,6 +44,10 @@ module GraphQL
       with_prepared_ast { @document }
     end
 
+    def inspect
+      "query ..."
+    end
+
     # @return [String, nil] The name of the operation to run (may be inferred)
     def selected_operation_name
       return nil unless selected_operation

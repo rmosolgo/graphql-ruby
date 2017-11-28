@@ -119,6 +119,10 @@
 
 ## 1.6.8 (8 Sept 2017)
 
+### Breaking changes
+
+- Validate against EnumType value names to match `/^[_a-zA-Z][_a-zA-Z0-9]*$/` #915
+
 ### New features
 
 - Use stdlib `forwardable` when it's not Ruby 2.4.0 #926

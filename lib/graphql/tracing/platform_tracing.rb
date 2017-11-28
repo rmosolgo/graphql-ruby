@@ -12,9 +12,10 @@ module GraphQL
         attr_accessor :platform_keys
       end
 
-      def initialize(trace_scalars: false)
+      def initialize(options = {})
+        @options = options
         @platform_keys = self.class.platform_keys
-        @trace_scalars = trace_scalars
+        @trace_scalars = options.fetch(:trace_scalars, false)
       end
 
       def trace(key, data)
@@ -58,11 +59,14 @@ module GraphQL
         new_f
       end
 
-      def self.use(schema_defn, trace_scalars: false)
-        tracer = self.new(trace_scalars: trace_scalars)
+      def self.use(schema_defn, options = {})
+        tracer = self.new(options)
         schema_defn.instrument(:field, tracer)
         schema_defn.tracer(tracer)
       end
+
+      private
+      attr_reader :options
     end
   end
 end

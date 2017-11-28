@@ -126,7 +126,7 @@ describe GraphQL::Execution::Multiplex do
         "before multiplex 1",
         "before multiplex 2",
         "before Q1", "before Q2", "before Q3",
-        "after Q1", "after Q2", "after Q3",
+        "after Q3", "after Q2", "after Q1",
         "after multiplex 2",
         "after multiplex 1",
       ], checks

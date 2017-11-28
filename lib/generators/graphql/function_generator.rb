@@ -11,7 +11,7 @@ module Graphql
       source_root File.expand_path('../templates', __FILE__)
 
       def create_function_file
-        template "function.erb", "#{options[:directory]}/functions/#{file_name}.rb"
+        template "function.erb", "#{options[:directory]}/functions/#{file_path}.rb"
       end
     end
   end

@@ -13,7 +13,7 @@ module Graphql
       source_root File.expand_path('../templates', __FILE__)
 
       def create_loader_file
-        template "loader.erb", "#{options[:directory]}/loaders/#{file_name}.rb"
+        template "loader.erb", "#{options[:directory]}/loaders/#{file_path}.rb"
       end
     end
   end
