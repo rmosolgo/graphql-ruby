@@ -139,7 +139,6 @@ module GraphQL
       @subscription_execution_strategy = self.class.default_execution_strategy
       @default_mask = GraphQL::Schema::NullMask
       @rebuilding_artifacts = false
-      @trace_scalar_fields_by_default = false
     end
 
     def initialize_copy(other)
