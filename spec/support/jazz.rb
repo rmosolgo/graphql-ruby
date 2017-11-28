@@ -207,9 +207,9 @@ module Jazz
   end
 
   class InspectableInput < GraphQL::Schema::InputObject
-    argument :stringValue, String, required: true
-    argument :nestedInput, InspectableInput, required: false
-    argument :legacyInput, LegacyInputType, required: false
+    argument :string_value, String, required: true
+    argument :nested_input, InspectableInput, required: false
+    argument :legacy_input, LegacyInputType, required: false
     def helper_method
       [
         # Context is available in the InputObject
