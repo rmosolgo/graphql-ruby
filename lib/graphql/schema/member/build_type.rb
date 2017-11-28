@@ -94,6 +94,14 @@ module GraphQL
           end
         end
 
+        def camelize(string)
+          return string unless string.include?('_')
+
+          string.split('_').map(&:capitalize).join.tap do |camelized|
+            camelized[0] = camelized[0].downcase
+          end
+        end
+
         def underscore(string)
           string
             .gsub(/([A-Z]+)([A-Z][a-z])/,'\1_\2') # URLDecoder -> URL_Decoder
