@@ -89,7 +89,6 @@ module GraphQL
             end
           elsif !prev_type.equal?(type_defn)
             # If the previous entry in the map isn't the same object we just found, raise.
-            binding.pry
             raise("Duplicate type definition found for name '#{type_defn.name}'")
           end
         else
