@@ -12,8 +12,10 @@ module GraphQL
         argument_owner.arguments_class = Class.new(self) do
           self.argument_definitions = argument_definitions
 
-          def initialize(values)
-            super(values, argument_definitions: self.class.argument_definitions)
+          def initialize(values, values_used_default = Hash.new(false))
+            super(values, argument_definitions: self.class.argument_definitions).tap do |arguments|
+              set_default_used(arguments, values_used_default)
+            end
           end
 
           argument_definitions.each do |_arg_name, arg_definition|
@@ -31,6 +33,14 @@ module GraphQL
 
             define_method(expose_as) do
               self[expose_as]
+            end
+          end
+
+          private
+
+          def set_default_used(arguments, values_used_default)
+            arguments.each_value do |arg_value|
+              arg_value.default_used = true if values_used_default[arg_value.definition.expose_as]
             end
           end
         end
@@ -59,6 +69,13 @@ module GraphQL
       def key?(key)
         key_s = key.is_a?(String) ? key : key.to_s
         @argument_values.key?(key_s)
+      end
+
+      # @param key [String, Symbol] name of value to access
+      # @return [Boolean] true if the argument was present in this field
+      def default_used?(key)
+        key_s = key.is_a?(String) ? key : key.to_s
+        @argument_values.fetch(key_s, NULL_ARGUMENT_VALUE).default_used?
       end
 
       # Get the hash of all values, with stringified keys
@@ -95,10 +112,17 @@ module GraphQL
 
       class ArgumentValue
         attr_reader :key, :value, :definition
+        attr_writer :default_used
+
         def initialize(key, value, definition)
           @key = key
           @value = value
           @definition = definition
+          @default_used = false
+        end
+
+        def default_used?
+          @default_used
         end
       end
 

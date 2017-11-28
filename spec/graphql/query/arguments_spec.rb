@@ -198,6 +198,15 @@ describe GraphQL::Query::Arguments do
       assert_equal({"a" => 1, "b" => 2}, last_args.to_h)
     end
 
+    it "indicates when default argument values were applied" do
+      schema.execute("{ argTest(a: 1) }")
+
+      last_args = arg_values.last
+
+      assert_equal false, arg_values.last.default_used?('a')
+      assert_equal true, arg_values.last.default_used?('b')
+    end
+
     it "works from variables" do
       variables = { "arg" => { "a" => 1, "d" => nil } }
       schema.execute("query ArgTest($arg: TestInput){ argTest(d: $arg) }", variables: variables)
