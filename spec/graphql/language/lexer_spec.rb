@@ -40,7 +40,7 @@ describe GraphQL::Language::Lexer do
 
     it "clears the previous_token between runs" do
       tok_2 = subject.tokenize(query_string)
-      assert_equal nil, tok_2[0].prev_token
+      assert_nil tok_2[0].prev_token
     end
   end
 end

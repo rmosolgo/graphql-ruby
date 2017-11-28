@@ -37,7 +37,7 @@ describe GraphQL::Analysis::MaxQueryComplexity do
       Dummy::Schema.max_complexity = nil
     end
     it "doesn't error" do
-      assert_equal nil, result["errors"]
+      assert_nil result["errors"]
     end
   end
 
@@ -46,7 +46,7 @@ describe GraphQL::Analysis::MaxQueryComplexity do
       Dummy::Schema.max_complexity = 99
     end
     it "doesn't error" do
-      assert_equal nil, result["errors"]
+      assert_nil result["errors"]
     end
   end
 
@@ -68,7 +68,7 @@ describe GraphQL::Analysis::MaxQueryComplexity do
     let(:result) { Dummy::Schema.execute(query_string, max_complexity: 10) }
 
     it "doesn't error" do
-      assert_equal nil, result["errors"]
+      assert_nil result["errors"]
     end
   end
 

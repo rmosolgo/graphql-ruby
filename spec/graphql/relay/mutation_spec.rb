@@ -193,17 +193,17 @@ describe GraphQL::Relay::Mutation do
     end
 
     it "doesn't get a mutation in the metadata" do
-      assert_equal nil, custom_return_type.mutation
+      assert_nil custom_return_type.mutation
     end
 
     it "supports input fields with nil default value" do
       assert input.arguments['nullDefault'].default_value?
-      assert_equal nil, input.arguments['nullDefault'].default_value
+      assert_nil input.arguments['nullDefault'].default_value
     end
 
     it "supports input fields with no default value" do
       assert !input.arguments['noDefault'].default_value?
-      assert_equal nil, input.arguments['noDefault'].default_value
+      assert_nil input.arguments['noDefault'].default_value
     end
 
     it "supports input fields with non-nil default value" do

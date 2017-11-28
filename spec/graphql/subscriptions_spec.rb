@@ -242,7 +242,7 @@ describe GraphQL::Subscriptions do
       schema.execute(query_str, context: { socket: "1" }, variables: { "id" => "8" }, root_value: root_object)
       schema.subscriptions.trigger("payload", { "id" => "8"}, OpenStruct.new(str: nil, int: nil))
       delivery = deliveries["1"].first
-      assert_equal nil, delivery.fetch("data")
+      assert_nil delivery.fetch("data")
       assert_equal 1, delivery["errors"].length
     end
 

@@ -26,7 +26,7 @@ describe GraphQL::ID_TYPE do
     let(:query_string) { %|query getMilk { cow: milk(id: 1.0) { id } }| }
 
     it "doesn't allow other types" do
-      assert_equal nil, result["data"]
+      assert_nil result["data"]
       assert_equal 1, result["errors"].length
     end
   end

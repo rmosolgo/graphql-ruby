@@ -111,7 +111,7 @@ describe GraphQL::Query::Variables do
         let(:provided_variables) { { "ids" => [nil] } }
         it "returns an error" do
           assert_equal 1, result["errors"].length
-          assert_equal nil, result["data"]
+          assert_nil result["data"]
         end
       end
     end

@@ -38,7 +38,7 @@ describe GraphQL::Relay::BaseConnection do
         first: nil,
       }
       conn = GraphQL::Relay::BaseConnection.new([], args, context: context)
-      assert_equal nil, conn.first
+      assert_nil conn.first
     end
   end
 

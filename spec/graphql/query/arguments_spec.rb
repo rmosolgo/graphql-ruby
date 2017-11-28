@@ -115,8 +115,8 @@ describe GraphQL::Query::Arguments do
     end
 
     it "returns nil for missing keys" do
-      assert_equal nil, arguments["z"]
-      assert_equal nil, arguments[7]
+      assert_nil arguments["z"]
+      assert_nil arguments[7]
     end
   end
 
@@ -303,7 +303,7 @@ describe GraphQL::Query::Arguments do
     end
 
     it "generates argument classes that responds to keys as functions" do
-      assert_equal nil, input_object.arguments_class
+      assert_nil input_object.arguments_class
 
       GraphQL::Query::Arguments.construct_arguments_class(input_object)
       args = input_object.arguments_class.new({foo: 3, bar: -90})

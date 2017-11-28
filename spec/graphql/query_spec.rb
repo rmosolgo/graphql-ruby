@@ -111,7 +111,7 @@ describe GraphQL::Query do
       }
 
       it "returns nil" do
-        assert_equal nil, query.operation_name
+        assert_nil query.operation_name
       end
     end
 
@@ -148,7 +148,7 @@ describe GraphQL::Query do
         }
 
         it "returns the inferred operation name" do
-          assert_equal nil, query.selected_operation_name
+          assert_nil query.selected_operation_name
         end
       end
     end
@@ -532,7 +532,7 @@ describe GraphQL::Query do
 
       it "overrides the schema's max_depth" do
         assert result["data"].key?("cheese")
-        assert_equal nil, result["errors"]
+        assert_nil result["errors"]
       end
     end
   end
@@ -699,7 +699,7 @@ describe GraphQL::Query do
 
     it "returns nil when there is no selected operation" do
       query = GraphQL::Query.new(schema, '# Only a comment')
-      assert_equal nil, query.irep_selection
+      assert_nil query.irep_selection
     end
   end
 

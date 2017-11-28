@@ -73,7 +73,7 @@ describe GraphQL::Relay::ConnectionType do
 
       it "nullifies the parent and adds an error" do
         result = star_wars_query(query_string)
-        assert_equal nil, result["data"]["basesWithNullName"]["edges"][0]["node"]
+        assert_nil result["data"]["basesWithNullName"]["edges"][0]["node"]
         assert_equal "Boom!", result["errors"][0]["message"]
       end
     end

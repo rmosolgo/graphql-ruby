@@ -372,7 +372,7 @@ type Query {
       assert_equal true, schema.lazy?(LazyObj.new)
       assert_equal :dup, schema.lazy_method_name(LazyObjChild.new)
       assert_equal true, schema.lazy?(LazyObjChild.new)
-      assert_equal nil, schema.lazy_method_name({})
+      assert_nil schema.lazy_method_name({})
       assert_equal false, schema.lazy?({})
     end
   end

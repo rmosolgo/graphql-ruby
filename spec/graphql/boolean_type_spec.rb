@@ -13,9 +13,9 @@ describe GraphQL::BOOLEAN_TYPE do
     end
 
     it "rejects other types" do
-      assert_equal nil, coerce_input("true")
-      assert_equal nil, coerce_input(5.5)
-      assert_equal nil, coerce_input(nil)
+      assert_nil coerce_input("true")
+      assert_nil coerce_input(5.5)
+      assert_nil coerce_input(nil)
     end
   end
 end

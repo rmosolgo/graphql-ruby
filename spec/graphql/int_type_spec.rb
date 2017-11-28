@@ -9,8 +9,8 @@ describe GraphQL::INT_TYPE do
     end
 
     it "rejects other types" do
-      assert_equal nil, GraphQL::INT_TYPE.coerce_isolated_input("55")
-      assert_equal nil, GraphQL::INT_TYPE.coerce_isolated_input(true)
+      assert_nil GraphQL::INT_TYPE.coerce_isolated_input("55")
+      assert_nil GraphQL::INT_TYPE.coerce_isolated_input(true)
     end
   end
 end

@@ -110,7 +110,7 @@ describe GraphQL::InternalRepresentation::Rewrite do
 
     it "groups selections by object types which they apply to" do
       doc = rewrite_result.operation_definitions["getPlant"]
-      assert_equal nil, doc.definition
+      assert_nil doc.definition
 
       plant_scoped_selection = doc.scoped_children[schema.types["Query"]]["plant"]
       assert_equal ["Fruit", "Nut", "Plant"], plant_scoped_selection.scoped_children.keys.map(&:name).sort
@@ -132,7 +132,7 @@ describe GraphQL::InternalRepresentation::Rewrite do
 
     it "tracks parent nodes" do
       doc = rewrite_result.operation_definitions["getPlant"]
-      assert_equal nil, doc.parent
+      assert_nil doc.parent
 
       plant_selection = doc.typed_children[schema.types["Query"]]["plant"]
       assert_equal doc, plant_selection.parent
