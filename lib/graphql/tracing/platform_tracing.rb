@@ -15,6 +15,7 @@ module GraphQL
       def initialize(options = {})
         @options = options
         @platform_keys = self.class.platform_keys
+        @trace_scalars = options.fetch(:trace_scalars, false)
       end
 
       def trace(key, data)
@@ -42,12 +43,20 @@ module GraphQL
         return_type = field.type.unwrap
         case return_type
         when GraphQL::ScalarType, GraphQL::EnumType
-          field
+          if field.trace || (field.trace.nil? && @trace_scalars)
+            trace_field(type, field)
+          else
+            field
+          end
         else
-          new_f = field.redefine
-          new_f.metadata[:platform_key] = platform_field_key(type, field)
-          new_f
+          trace_field(type, field)
         end
+      end
+
+      def trace_field(type, field)
+        new_f = field.redefine
+        new_f.metadata[:platform_key] = platform_field_key(type, field)
+        new_f
       end
 
       def self.use(schema_defn, options = {})
