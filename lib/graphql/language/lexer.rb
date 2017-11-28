@@ -387,7 +387,7 @@ def self.run_lexer(query_string)
 									begin
 										te = p+1;
 										begin
-											emit_string(ts + 1, te - 1, meta) 
+											emit_string(ts + 1, te, meta) 
 										end
 										
 									end
@@ -791,7 +791,7 @@ def self.run_lexer(query_string)
 										begin
 											p = ((te))-1;
 											begin
-												emit_string(ts + 1, te - 1, meta) 
+												emit_string(ts + 1, te, meta) 
 											end
 											
 										end
@@ -1304,7 +1304,7 @@ PACK_DIRECTIVE = "c*"
 UTF_8_ENCODING = "UTF-8"
 
 def self.emit_string(ts, te, meta)
-value = meta[:data][ts...te].pack(PACK_DIRECTIVE).force_encoding(UTF_8_ENCODING)
+value = meta[:data][ts...te - 1].pack(PACK_DIRECTIVE).force_encoding(UTF_8_ENCODING)
 if value !~ VALID_STRING
 meta[:tokens] << token = GraphQL::Language::Token.new(
 name: :BAD_UNICODE_ESCAPE,
