@@ -603,6 +603,16 @@ type Query {
 
       build_schema_and_compare_output(schema.chop)
     end
+
+    it 'supports empty types' do
+      schema = <<-SCHEMA
+type Query {
+
+}
+      SCHEMA
+
+      build_schema_and_compare_output(schema.chop)
+    end
   end
 
   describe 'Failures' do
