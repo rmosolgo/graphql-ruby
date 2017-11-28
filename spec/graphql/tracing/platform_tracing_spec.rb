@@ -65,7 +65,7 @@ describe GraphQL::Tracing::PlatformTracing do
       CustomPlatformTracer::TRACE.clear
     end
 
-    it "only traces traceTruek, not traceFalse or traceNil" do
+    it "only traces traceTrue, not traceFalse or traceNil" do
       schema.execute(" { tracingScalar { traceNil traceFalse traceTrue } }")
       expected_trace = [
         "em",
