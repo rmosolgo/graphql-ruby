@@ -9,7 +9,12 @@ function ActionCableLink(options) {
 
   return new ApolloLink(function(operation) {
     return new Observable(function(observer) {
-      var subscription = cable.subscriptions.create(channelName, {
+      var channelId = Math.round(Date.now() + Math.random() * 100000).toString(16)
+
+      var subscription = cable.subscriptions.create({
+        channel: channelName,
+        channelId: channelId
+      }, {
         connected: function() {
           this.perform(
             actionName,
