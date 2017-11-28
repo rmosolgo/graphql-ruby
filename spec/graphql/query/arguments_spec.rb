@@ -16,14 +16,22 @@ describe GraphQL::Query::Arguments do
       argument :c, !test_input_1, as: :inputObject
     end
 
-    GraphQL::Query::Arguments.new({
-      a: 1,
-      b: 2,
-      c: GraphQL::Query::Arguments.new({
-        d: 3,
-        e: 4,
-      }, argument_definitions: test_input_1.arguments),
-    }, argument_definitions: test_input_2.arguments)
+    GraphQL::Query::Arguments.new(
+      {
+        a: 1,
+        b: 2,
+        c: GraphQL::Query::Arguments.new(
+          {
+            d: 3,
+            e: 4,
+          },
+          argument_definitions: test_input_1.arguments,
+          defaults_used: {}
+        ),
+      },
+      argument_definitions: test_input_2.arguments,
+      defaults_used: {}
+    )
   }
 
   it "returns keys as strings, with aliases" do
@@ -73,7 +81,11 @@ describe GraphQL::Query::Arguments do
       )
     end
 
-    new_arguments = GraphQL::Query::Arguments.new(transformed_args, argument_definitions: types)
+    new_arguments = GraphQL::Query::Arguments.new(
+      transformed_args,
+      argument_definitions: types,
+      defaults_used: {}
+    )
     expected_hash = {
       "A" => 1,
       "B" => 2,
@@ -96,7 +108,8 @@ describe GraphQL::Query::Arguments do
     it "wraps input objects, but not other hashes" do
       args = GraphQL::Query::Arguments.new(
         {a: 1, b: {a: 2}, c: {a: 3}},
-        argument_definitions: input_type.arguments
+        argument_definitions: input_type.arguments,
+        defaults_used: {}
       )
       assert_kind_of GraphQL::Query::Arguments, args["b"]
       assert_instance_of Hash, args["c"]
@@ -196,6 +209,15 @@ describe GraphQL::Query::Arguments do
       assert_equal true, last_args.key?(:b)
       assert_equal false, last_args.key?(:c)
       assert_equal({"a" => 1, "b" => 2}, last_args.to_h)
+    end
+
+    it "indicates when default argument values were applied" do
+      schema.execute("{ argTest(a: 1) }")
+
+      last_args = arg_values.last
+
+      assert_equal false, last_args.default_used?('a')
+      assert_equal true, last_args.default_used?('b')
     end
 
     it "works from variables" do
@@ -306,7 +328,7 @@ describe GraphQL::Query::Arguments do
       assert_equal nil, input_object.arguments_class
 
       GraphQL::Query::Arguments.construct_arguments_class(input_object)
-      args = input_object.arguments_class.new({foo: 3, bar: -90})
+      args = input_object.arguments_class.new({foo: 3, bar: -90}, {})
 
       assert_equal 3, args.foo
       assert_equal -90, args.bar

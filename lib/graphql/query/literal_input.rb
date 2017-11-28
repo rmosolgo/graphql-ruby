@@ -49,6 +49,8 @@ module GraphQL
       def self.from_arguments(ast_arguments, argument_owner, variables)
         context = variables ? variables.context : nil
         values_hash = {}
+        defaults_used = Hash.new(false)
+
         indexed_arguments = case ast_arguments
         when Hash
           ast_arguments
@@ -93,6 +95,7 @@ module GraphQL
           # then add the default value.
           if arg_defn.default_value? && !values_hash.key?(arg_name)
             value = arg_defn.default_value
+            defaults_used[arg_name] = true
             # `context` isn't present when pre-calculating defaults
             if context
               value = arg_defn.prepare(value, context)
@@ -105,7 +108,7 @@ module GraphQL
           end
         end
 
-        argument_owner.arguments_class.new(values_hash)
+        argument_owner.arguments_class.new(values_hash, defaults_used)
       end
     end
   end
