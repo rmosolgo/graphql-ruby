@@ -76,7 +76,7 @@ module GraphQL
       def print_schema
         directive_definitions = warden.directives.map { |directive| print_directive(directive) }
 
-        printable_types = warden.types
+        printable_types = warden.types.reject(&:default_scalar?)
 
         type_definitions = printable_types
           .sort_by(&:name)
