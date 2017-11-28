@@ -18,7 +18,7 @@ module GraphQL
 
       def to_graphql
         argument = GraphQL::Argument.new
-        argument.name = @name
+        argument.name = Member::BuildType.camelize(@name)
         argument.type = -> {
           Member::BuildType.parse_type(@type_expr, null: @null)
         }

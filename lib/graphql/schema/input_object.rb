@@ -20,7 +20,7 @@ module GraphQL
         def argument(*args)
           argument = GraphQL::Schema::Argument.new(*args)
           own_arguments << argument
-          arg_name = argument.name
+          arg_name = argument.graphql_definition.name
           # Add a method access
           define_method(Member::BuildType.underscore(arg_name)) do
             @arguments.public_send(arg_name)
@@ -47,7 +47,7 @@ module GraphQL
           type_defn.name = graphql_name
           type_defn.description = description
           arguments.each do |arg|
-            type_defn.arguments[arg.name] = arg.graphql_definition
+            type_defn.arguments[arg.graphql_definition.name] = arg.graphql_definition
           end
           # Make a reference to a classic-style Arguments class
           self.arguments_class = GraphQL::Query::Arguments.construct_arguments_class(type_defn)
