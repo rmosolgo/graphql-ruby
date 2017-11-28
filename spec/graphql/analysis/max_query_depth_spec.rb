@@ -39,7 +39,7 @@ describe GraphQL::Analysis::MaxQueryDepth do
     let(:result) { Dummy::Schema.execute(query_string, max_depth: 100) }
 
     it "obeys that max_depth" do
-      assert_equal nil, result["errors"]
+      assert_nil result["errors"]
     end
   end
 
@@ -49,7 +49,7 @@ describe GraphQL::Analysis::MaxQueryDepth do
     end
 
     it "doesn't add an error" do
-      assert_equal nil, result["errors"]
+      assert_nil result["errors"]
     end
   end
 
@@ -59,7 +59,7 @@ describe GraphQL::Analysis::MaxQueryDepth do
     end
 
     it "doesn't add an error message" do
-      assert_equal nil, result["errors"]
+      assert_nil result["errors"]
     end
   end
 

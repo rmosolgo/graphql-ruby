@@ -120,7 +120,7 @@ describe GraphQL::Execution::Execute do
       }
       GRAPHQL
 
-      assert_equal nil, res["data"]
+      assert_nil res["data"]
       assert_equal "👻", res["errors"].first["message"]
     end
 

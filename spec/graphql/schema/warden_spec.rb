@@ -242,8 +242,8 @@ describe GraphQL::Schema::Warden do
       GRAPHQL
       res = MaskHelpers.query_with_mask(query_string, mask)
       assert_equal "Query", res["data"]["__schema"]["queryType"]["name"]
-      assert_equal nil, res["data"]["__schema"]["mutationType"]
-      assert_equal nil, res["data"]["__schema"]["subscriptionType"]
+      assert_nil res["data"]["__schema"]["mutationType"]
+      assert_nil res["data"]["__schema"]["subscriptionType"]
       type_names = res["data"]["__schema"]["types"].map { |t| t["name"] }
       refute type_names.include?("Mutation")
       refute type_names.include?("Subscription")
@@ -344,7 +344,7 @@ describe GraphQL::Schema::Warden do
       res = MaskHelpers.run_query(query_string, only: whitelist)
 
       # It's not visible by name
-      assert_equal nil, res["data"]["Phoneme"]
+      assert_nil res["data"]["Phoneme"]
 
       # It's not visible in `__schema`
       all_type_names = type_names(res)
@@ -423,7 +423,7 @@ describe GraphQL::Schema::Warden do
 
         res = MaskHelpers.query_with_mask(query_string, mask)
         type = res["data"]["__type"]
-        assert_equal nil, type
+        assert_nil type
       end
     end
   end
@@ -543,7 +543,7 @@ describe GraphQL::Schema::Warden do
 
       res = MaskHelpers.query_with_mask(query_string, mask)
 
-      assert_equal nil, res["data"]["WithinInput"], "The type isn't accessible by name"
+      assert_nil res["data"]["WithinInput"], "The type isn't accessible by name"
 
       languages_arg_names = res["data"]["Query"]["fields"].find { |f| f["name"] == "languages" }["args"].map { |a| a["name"] }
       refute_includes languages_arg_names, "within", "Arguments that point to it are gone"
@@ -666,7 +666,7 @@ describe GraphQL::Schema::Warden do
     it "is additive with query filters" do
       query_except = ->(member, ctx) { member.metadata[:hidden_input_object_type] }
       res = schema.execute(query_str, except: query_except)
-      assert_equal nil, res["data"]["input"]
+      assert_nil res["data"]["input"]
       enum_values = res["data"]["enum"]["enumValues"].map { |v| v["name"] }
       refute_includes enum_values, "TRILL"
     end
@@ -695,13 +695,13 @@ describe GraphQL::Schema::Warden do
           only: [visible_enum_value, visible_abstract_type],
           except: [hidden_input_object, hidden_type],
         )
-        assert_equal nil, res["data"]["input"]
+        assert_nil res["data"]["input"]
         enum_values = res["data"]["enum"]["enumValues"].map { |v| v["name"] }
         assert_equal 5, enum_values.length
         refute_includes enum_values, "TRILL"
         # These are also filtered out:
         assert_equal 0, res["data"]["abstractType"]["interfaces"].length
-        assert_equal nil, res["data"]["type"]
+        assert_nil res["data"]["type"]
       end
     end
 
@@ -712,7 +712,7 @@ describe GraphQL::Schema::Warden do
           except: hidden_input_object,
         }
         res = MaskHelpers.run_query(query_str, context: { filters: filters })
-        assert_equal nil, res["data"]["input"]
+        assert_nil res["data"]["input"]
         enum_values = res["data"]["enum"]["enumValues"].map { |v| v["name"] }
         assert_equal 5, enum_values.length
         refute_includes enum_values, "TRILL"
@@ -727,13 +727,13 @@ describe GraphQL::Schema::Warden do
           except: [hidden_input_object, hidden_type],
         }
         res = MaskHelpers.run_query(query_str, context: { filters: filters })
-        assert_equal nil, res["data"]["input"]
+        assert_nil res["data"]["input"]
         enum_values = res["data"]["enum"]["enumValues"].map { |v| v["name"] }
         assert_equal 5, enum_values.length
         refute_includes enum_values, "TRILL"
         # These are also filtered out:
         assert_equal 0, res["data"]["abstractType"]["interfaces"].length
-        assert_equal nil, res["data"]["type"]
+        assert_nil res["data"]["type"]
       end
     end
   end

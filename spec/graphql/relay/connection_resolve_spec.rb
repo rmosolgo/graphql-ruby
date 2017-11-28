@@ -57,7 +57,7 @@ describe GraphQL::Relay::ConnectionResolve do
     it "becomes null" do
       result = star_wars_query(query_string, { "name" => "null" })
       conn = result["data"]["rebels"]["ships"]
-      assert_equal nil, conn
+      assert_nil conn
     end
   end
 end

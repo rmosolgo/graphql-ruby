@@ -251,7 +251,7 @@ describe GraphQL::InputObjectType do
       assert_equal 'Test', result['a']
 
       assert result.key?('b')
-      assert_equal nil, result['b']
+      assert_nil result['b']
 
       assert_equal "Test", result['c']
     end
@@ -264,7 +264,7 @@ describe GraphQL::InputObjectType do
       assert_equal 1, result['b']
 
       assert result.key?('c')
-      assert_equal nil, result['c']
+      assert_nil result['c']
     end
 
     it "omitted arguments are not returned" do

@@ -16,7 +16,7 @@ describe GraphQL::Language::Parser do
 
     it "creates an anonymous fragment definition" do
       assert fragment.is_a?(GraphQL::Language::Nodes::FragmentDefinition)
-      assert_equal nil, fragment.name
+      assert_nil fragment.name
       assert_equal 1, fragment.selections.length
       assert_equal "NestedType", fragment.type.name
       assert_equal 1, fragment.directives.length

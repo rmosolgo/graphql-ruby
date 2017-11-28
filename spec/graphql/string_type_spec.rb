@@ -72,9 +72,9 @@ describe GraphQL::STRING_TYPE do
     end
 
     it "doesn't accept other types" do
-      assert_equal nil, string_type.coerce_isolated_input(100)
-      assert_equal nil, string_type.coerce_isolated_input(true)
-      assert_equal nil, string_type.coerce_isolated_input(0.999)
+      assert_nil string_type.coerce_isolated_input(100)
+      assert_nil string_type.coerce_isolated_input(true)
+      assert_nil string_type.coerce_isolated_input(0.999)
     end
   end
 end

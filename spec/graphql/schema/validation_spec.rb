@@ -333,7 +333,7 @@ describe GraphQL::Schema::Validation do
     end
 
     it "allows null default value for nullable argument" do
-      assert_equal nil, GraphQL::Schema::Validation.validate(null_default_value)
+      assert_nil GraphQL::Schema::Validation.validate(null_default_value)
     end
   end
 
