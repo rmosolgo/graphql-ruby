@@ -11,8 +11,12 @@ module GraphQL
     # @param include_introspection_types [Boolean] Wether or not to print introspection types
     # @param include_introspection_types [Boolean] Wether or not to print built in types and directives
     class DocumentFromSchemaDefinition
-      def initialize(schema, context: nil, only: [], except: [], include_introspection_types: false, include_built_ins: false)
+      def initialize(
+        schema, context: nil, only: nil, except: nil, include_introspection_types: false,
+        include_built_ins: false, always_include_schema: false
+      )
         @schema = schema
+        @always_include_schema = always_include_schema
 
         filter = GraphQL::Language::DocumentFromSchemaDefinition::Filter.new(
           only,
@@ -36,16 +40,18 @@ module GraphQL
 
       protected
 
-      def build_schema_node(schema)
-        schema_node = GraphQL::Language::Nodes::SchemaDefinition.new(
-          query: schema.query.name
-        )
+      def build_schema_node
+        schema_node = GraphQL::Language::Nodes::SchemaDefinition.new
 
-        if schema.mutation
+        if schema.query && warden.get_type(schema.query.name)
+          schema_node.query = schema.query.name
+        end
+
+        if schema.mutation && warden.get_type(schema.mutation.name)
           schema_node.mutation = schema.mutation.name
         end
 
-        if schema.subscription
+        if schema.subscription && warden.get_type(schema.subscription.name)
           schema_node.subscription = schema.subscription.name
         end
 
@@ -55,8 +61,8 @@ module GraphQL
       def build_object_type_node(object_type)
         GraphQL::Language::Nodes::ObjectTypeDefinition.new(
           name: object_type.name,
-          interfaces: object_type.interfaces.map { |iface| build_type_name_node(iface) },
-          fields: build_field_nodes(object_type.fields.values),
+          interfaces: warden.interfaces(object_type).map { |iface| build_type_name_node(iface) },
+          fields: build_field_nodes(warden.fields(object_type)),
           description: object_type.description,
         )
       end
@@ -64,7 +70,7 @@ module GraphQL
       def build_field_node(field)
         GraphQL::Language::Nodes::FieldDefinition.new(
           name: field.name,
-          arguments: build_argument_nodes(field.arguments.values),
+          arguments: build_argument_nodes(warden.arguments(field)),
           type: build_type_name_node(field.type),
           description: field.description,
         )
@@ -74,7 +80,7 @@ module GraphQL
         GraphQL::Language::Nodes::UnionTypeDefinition.new(
           name: union_type.name,
           description: union_type.description,
-          types: union_type.possible_types.map { |type| build_type_name_node(type) }
+          types: warden.possible_types(union_type).map { |type| build_type_name_node(type) }
         )
       end
 
@@ -82,14 +88,14 @@ module GraphQL
         GraphQL::Language::Nodes::InterfaceTypeDefinition.new(
           name: interface_type.name,
           description: interface_type.description,
-          fields: build_field_nodes(interface_type.fields.values)
+          fields: build_field_nodes(warden.fields(interface_type))
         )
       end
 
       def build_enum_type_node(enum_type)
         GraphQL::Language::Nodes::EnumTypeDefinition.new(
           name: enum_type.name,
-          values: enum_type.values.values.map do |enum_value|
+          values: warden.enum_values(enum_type).map do |enum_value|
             build_enum_value_node(enum_value)
           end,
           description: enum_type.description,
@@ -122,7 +128,7 @@ module GraphQL
       def build_input_object_node(input_object)
         GraphQL::Language::Nodes::InputObjectTypeDefinition.new(
           name: input_object.name,
-          fields: build_argument_nodes(input_object.arguments.values),
+          fields: build_argument_nodes(warden.arguments(input_object)),
           description: input_object.description,
         )
       end
@@ -130,7 +136,7 @@ module GraphQL
       def build_directive_node(directive)
         GraphQL::Language::Nodes::DirectiveDefinition.new(
           name: directive.name,
-          arguments: build_argument_nodes(directive.arguments.values),
+          arguments: build_argument_nodes(warden.arguments(directive)),
           locations: directive.locations.map(&:to_s),
           description: directive.description,
         )
@@ -180,8 +186,8 @@ module GraphQL
 
       def build_definition_nodes
         definitions = build_type_definition_nodes(warden.types)
-        definitions += build_directive_nodes(warden.directives.values)
-        definitions << build_schema_node(schema)
+        definitions += build_directive_nodes(warden.directives)
+        definitions << build_schema_node if include_schema_node?
         definitions
       end
 
@@ -221,7 +227,10 @@ module GraphQL
 
         private
 
-        def instrospection?(member)
+        attr_reader :include_introspection_types, :include_built_ins,
+          :only, :except
+
+        def introspection?(member)
           member.is_a?(BaseType) && member.introspection?
         end
 
@@ -233,7 +242,11 @@ module GraphQL
 
       private
 
-      attr_reader :schema, :types
+      def include_schema_node?
+        @always_include_schema || !schema.respects_root_name_conventions?
+      end
+
+      attr_reader :schema, :warden
     end
   end
 end
