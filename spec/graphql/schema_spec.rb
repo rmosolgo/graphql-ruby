@@ -23,6 +23,13 @@ describe GraphQL::Schema do
     end
   end
 
+  describe "#to_document" do
+    it "returns the AST for the schema IDL" do
+      expected = GraphQL::Language::DocumentFromSchemaDefinition.new(schema).document
+      assert expected.eql?(schema.to_document)
+    end
+  end
+
   describe "#root_types" do
     it "returns a list of the schema's root types" do
       assert_equal(

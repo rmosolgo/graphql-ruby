@@ -542,6 +542,12 @@ module GraphQL
       GraphQL::Schema::Printer.print_schema(self, only: only, except: except, context: context)
     end
 
+    # Return the GraphQL::Language::Document IDL AST for the schema
+    # @return [GraphQL::Language::Document]
+    def to_document
+      GraphQL::Language::DocumentFromSchemaDefinition.new(self).document
+    end
+
     # Return the Hash response of {Introspection::INTROSPECTION_QUERY}.
     # @param context [Hash]
     # @param only [<#call(member, ctx)>]
