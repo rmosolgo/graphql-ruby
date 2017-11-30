@@ -8,6 +8,19 @@
 
 ### Bug fixes
 
+## 1.8.0.pre2 (29 Nov 2017)
+
+### New Features
+
+- Add `rake graphql:upgrade[app/graphql]` for automatic upgrade #1110
+- Automatically camelize field names and argument names #1143, #1126
+- Improved error message when defining `name` instead of `graphql_name` #1104
+
+### Bug fixes
+
+- Fix list wrapping when value is `nil` #1117
+- Fix ArgumentError typo #1098
+
 ## 1.8.0.pre1 (14 Nov 2017)
 
 ### Breaking changes
