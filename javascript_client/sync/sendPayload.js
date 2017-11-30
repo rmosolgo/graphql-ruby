@@ -1,4 +1,5 @@
 var http = require("http")
+var https = require("https")
 var url = require("url")
 var crypto = require('crypto')
 var printResponse = require("./printResponse")
@@ -25,16 +26,14 @@ function sendPayload(payload, options) {
 
   // Get parts of URL for request options
   var parsedURL = url.parse(syncUrl)
-  var parsedPort = parsedURL.port
-  if (!parsedPort) { // Nothing was passed explicitly, guess from the protocol
-    parsedPort = parsedURL.protocol === "https" ? "443" : "80"
-  }
 
   // Prep options for HTTP request
   var options = {
+    protocol: parsedURL.protocol,
     hostname: parsedURL.hostname,
-    port: parsedPort,
+    port: parsedURL.port,
     path: parsedURL.path,
+    auth: parsedURL.auth,
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
@@ -51,10 +50,11 @@ function sendPayload(payload, options) {
     options.headers["Authorization"] = "GraphQL::Pro " + clientName + " " + authDigest
   }
 
+  var httpClient = parsedURL.protocol === "https:" ? https : http
   var promise = new Promise(function(resolve, reject) {
     // Make the request,
     // hook up response handler
-    const req = http.request(options, (res) => {
+    const req = httpClient.request(options, (res) => {
       res.setEncoding('utf8');
       var status = res.statusCode
       // 422 gets special treatment because

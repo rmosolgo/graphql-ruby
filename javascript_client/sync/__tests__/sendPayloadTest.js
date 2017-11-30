@@ -13,6 +13,27 @@ describe("Posting GraphQL to OperationStore Endpoint", () => {
     })
   })
 
+  it("Uses HTTPS when provided", () => {
+    var mock = nock("https://example2.com")
+      .post("/stored_operations/sync")
+      .reply(200, { "ok" : "ok" })
+
+    return sendPayload("payload", { url: "https://example2.com/stored_operations/sync" }).then(function() {
+      expect(mock.isDone()).toEqual(true)
+    })
+  })
+
+  it("Uses auth, port, and query", () => {
+    var mock = nock("https://example2.com:229")
+      .post("/stored_operations/sync?q=1")
+      .basicAuth({ user: "username", pass: "pass" })
+      .reply(200, { "ok" : "ok" })
+
+    return sendPayload("payload", { url: "https://username:pass@example2.com:229/stored_operations/sync?q=1" }).then(function() {
+      expect(mock.isDone()).toEqual(true)
+    })
+  })
+
   it("Returns the response JSON to the promise", () => {
     var mock = nock("http://example.com")
       .post("/stored_operations/sync")
