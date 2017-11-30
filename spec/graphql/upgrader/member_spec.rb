@@ -219,4 +219,36 @@ describe GraphQL::Upgrader::Member do
       assert_equal upgrade(old), new
     end
   end
+
+  describe 'complicated inline definition' do
+    it 'upgrades without breaking syntax' do
+      old = %{
+        connection :example_connection, -> { ExampleConnectionType } do
+          argument :order_by, (GraphQL::InputObjectType.define do
+            name 'ExampleConnectionOrder'
+            argument :direction, -> { !ExampleConnectionDirectionEnum }
+            argument :field, -> { !ExampleConnectionFieldEnum }
+          end), default_value: { direction: 'DESC', field: 'created_at' }
+
+          resolve ->(o, a, c) do
+            Resolvers::ExampleConnectionResolver.call o.example_connections, order_by: args.order_by
+          end
+        end
+      }
+      new = %{
+        field :example_connection, -> { ExampleConnectionType }, null: true, connection: true do
+          argument :order_by, (GraphQL::InputObjectType.define null: false do
+            name 'ExampleConnectionOrder'
+            argument :direction, -> { ExampleConnectionDirectionEnum }, null: false
+            argument :field, -> { ExampleConnectionFieldEnum }, null: false
+          end), default_value: { direction: 'DESC', field: 'created_at' }
+
+          resolve ->(o, a, c) do
+            Resolvers::ExampleConnectionResolver.call o.example_connections, order_by: args.order_by
+          end
+        end
+      }
+      assert_equal upgrade(old), new
+    end
+  end
 end
