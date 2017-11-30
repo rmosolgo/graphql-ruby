@@ -1,10 +1,10 @@
-var { generateClient, APOLLO_JS_TYPE } = require("../generateClient")
+var { generateClient, JS_TYPE } = require("../generateClient")
 var fs = require("fs")
 
 function withExampleClient(mapName, callback) {
   // Generate some code and write it to a file
   var exampleMap = { a: "b", "c-d": "e-f" }
-  var jsCode = generateClient("example-client", exampleMap, APOLLO_JS_TYPE)
+  var jsCode = generateClient("example-client", exampleMap, JS_TYPE)
   var filename = "./" + mapName + ".js"
   fs.writeFileSync(filename, jsCode)
 

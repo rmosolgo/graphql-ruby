@@ -15,7 +15,7 @@ required arguments:
 optional arguments:
   --path=<path>                   Path to .graphql files (default is "./**/*.graphql")
   --outfile=<generated-filename>  Target file for generated code
-  --outfile-type=<type>           Target type for generated code (default is "apollo-js")
+  --outfile-type=<type>           Target type for generated code (default is "js")
   --key=<key>                     HMAC authentication key
   --mode=<mode>                   Treat files like a certain kind of project:
                                     relay: treat files like relay-compiler output

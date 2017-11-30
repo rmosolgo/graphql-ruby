@@ -1,14 +1,14 @@
 var sendPayload = require("./sendPayload")
 var prepareRelay = require("./prepareRelay")
 
-var generateApolloJS = require("./outfileGenerators/apolloJS")
+var generateJs = require("./outfileGenerators/js")
 var generateJson = require("./outfileGenerators/json")
 
-var APOLLO_JS_TYPE = "apollo-js";
+var JS_TYPE = "js";
 var JSON_TYPE = "json";
 
 var generators = {
-  [APOLLO_JS_TYPE]: generateApolloJS,
+  [JS_TYPE]: generateJs,
   [JSON_TYPE]: generateJson,
 };
 
@@ -32,7 +32,7 @@ function generateClient(clientName, nameToAlias, type) {
   }).join(",")
   keyValuePairs += "\n}"
 
-  generateOutfile = generators[type || APOLLO_JS_TYPE];
+  generateOutfile = generators[type || JS_TYPE];
 
   if (!generateOutfile) {
     throw new Error("Unknown generator type " + type + " encountered for generating the outFile");
@@ -43,6 +43,6 @@ function generateClient(clientName, nameToAlias, type) {
 
 module.exports = {
   generateClient,
-  APOLLO_JS_TYPE,
+  JS_TYPE,
   JSON_TYPE,
 }

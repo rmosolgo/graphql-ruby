@@ -21,7 +21,7 @@ var fs = require("fs")
  * @param {String} options.mode - If `"file"`, treat each file separately. If `"project"`, concatenate all files and extract each operation. If `"relay"`, treat it as relay-compiler output
  * @param {Boolean} options.addTypename - Indicates if the "__typename" field are automatically added to your queries
  * @param {String} options.outfile - Where the generated code should be written
- * @param {String} options.outfileType - The type of the generated code (i.e., json, apollo-js)
+ * @param {String} options.outfileType - The type of the generated code (i.e., json, js)
  * @param {String} options.client - the Client ID that these operations belong to
  * @param {Function} options.send - A function for sending the payload to the server, with the signature `options.send(payload)`. (Default is an HTTP `POST` request)
  * @param {Function} options.hash - A custom hash function for query strings with the signature `options.hash(string) => digest` (Default is `md5(string) => digest`)
