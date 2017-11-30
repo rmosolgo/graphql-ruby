@@ -6,10 +6,26 @@ module GraphQL
     # {GraphQL::Language::DocumentFromSchemaDefinition} is used to convert a {GraphQL::Schema} object
     # To a {GraphQL::Language::Document} AST node.
     #
+    # @param context [GraphQL::Query::Context] the optional query context
+    # @param warden [GraphQL::Schema::Warden] An optional schema warden to hide certain nodes
+    # @param include_introspection_types [Boolean] Wether or not to print introspection types
+    # @param include_introspection_types [Boolean] Wether or not to print built in types and directives
     class DocumentFromSchemaDefinition
-      def initialize(schema)
+      def initialize(schema, context: nil, only: [], except: [], include_introspection_types: false, include_built_ins: false)
         @schema = schema
-        @types = GraphQL::Schema::Traversal.new(schema, introspection: true).type_map.values
+
+        filter = GraphQL::Language::DocumentFromSchemaDefinition::Filter.new(
+          only,
+          except,
+          include_introspection_types: include_introspection_types,
+          include_built_ins: include_built_ins,
+        )
+
+        @warden = GraphQL::Schema::Warden.new(
+          filter,
+          schema: @schema,
+          context: @context
+        )
       end
 
       def document
@@ -163,8 +179,8 @@ module GraphQL
       end
 
       def build_definition_nodes
-        definitions = build_type_definition_nodes(types)
-        definitions += build_directive_nodes(schema.directives.values)
+        definitions = build_type_definition_nodes(warden.types)
+        definitions += build_directive_nodes(warden.directives.values)
         definitions << build_schema_node(schema)
         definitions
       end
@@ -175,6 +191,44 @@ module GraphQL
 
       def build_field_nodes(fields)
         fields.map { |field| build_field_node(field) }
+      end
+
+      class Filter
+        def initialize(only, except, include_introspection_types:, include_built_ins:)
+          @only = only
+          @except = except
+          @include_introspection_types = include_introspection_types
+          @include_built_ins = include_built_ins
+        end
+
+        def call(member, context)
+          if !include_introspection_types && introspection?(member)
+            return false
+          end
+
+          if !include_built_ins && built_in?(member)
+            return false
+          end
+
+          if only
+            !only.call(member, context)
+          elsif except
+            except.call(member, context)
+          else
+            true
+          end
+        end
+
+        private
+
+        def instrospection?(member)
+          member.is_a?(BaseType) && member.introspection?
+        end
+
+        def built_in?(member)
+          (member.is_a?(GraphQL::ScalarType) && member.default_scalar?) ||
+          (member.is_a?(GraphQL::Directive) && member.default_directive?)
+        end
       end
 
       private
