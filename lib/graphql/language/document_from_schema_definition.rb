@@ -38,8 +38,6 @@ module GraphQL
         )
       end
 
-      protected
-
       def build_schema_node
         schema_node = GraphQL::Language::Nodes::SchemaDefinition.new
 

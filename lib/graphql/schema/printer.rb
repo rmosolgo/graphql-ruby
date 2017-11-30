@@ -45,12 +45,16 @@ module GraphQL
       # @param except [<#call(member, ctx)>]
       # @param introspection [Boolean] Should include the introspection types in the string?
       def initialize(schema, context: nil, only: nil, except: nil, introspection: false)
-        @schema = schema
-        @context = context
+        @document_generator = GraphQL::Language::DocumentFromSchemaDefinition.new(
+          schema,
+          context: context,
+          only: only,
+          except: except,
+          include_introspection_types: introspection,
+          include_built_ins: false,
+        )
 
-        blacklist = build_blacklist(only, except, introspection: introspection)
-        filter = GraphQL::Filter.new(except: blacklist)
-        @warden = GraphQL::Schema::Warden.new(filter, schema: @schema, context: @context)
+        @schema = schema
       end
 
       # Return the GraphQL schema string for the introspection type system
@@ -74,17 +78,8 @@ module GraphQL
 
       # Return a GraphQL schema string for the defined types in the schema
       def print_schema
-        directive_definitions = warden.directives.map { |directive| print_directive(directive) }
-
-        printable_types = warden.types.reject(&:default_scalar?)
-
-        type_definitions = printable_types
-          .sort_by(&:name)
-          .map { |type| print_type(type) }
-
-        [print_schema_definition].compact
-                                 .concat(directive_definitions)
-                                 .concat(type_definitions).join("\n\n")
+        document = @document_generator.document
+        document.to_query_string
       end
 
       def print_type(type)
