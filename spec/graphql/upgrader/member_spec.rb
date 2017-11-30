@@ -251,4 +251,18 @@ describe GraphQL::Upgrader::Member do
       assert_equal upgrade(old), new
     end
   end
+
+  describe 'multi-line field with property/method' do
+    it 'upgrades without breaking syntax' do
+      old = %{
+        field :is_example_field, types.Boolean,
+          property: :example_field?
+      }
+      new = %{
+        field :is_example_field, Boolean, null: false
+          method: :example_field?
+      }
+      assert_equal upgrade(old), new
+    end
+  end
 end
