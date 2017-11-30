@@ -265,4 +265,18 @@ describe GraphQL::Upgrader::Member do
       assert_equal upgrade(old), new
     end
   end
+
+  describe 'multi-line connection with property/method' do
+    it 'upgrades without breaking syntax' do
+      old = %{
+        connection :example_connection, -> { ExampleConnectionType },
+          property: :example_connections
+      }
+      new = %{
+        field :example_connection, -> { ExampleConnectionType }, null: false, connection: true
+          method: :example_connections
+      }
+      assert_equal upgrade(old), new
+    end
+  end
 end
