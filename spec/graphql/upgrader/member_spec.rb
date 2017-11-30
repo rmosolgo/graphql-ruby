@@ -288,7 +288,7 @@ describe GraphQL::Upgrader::Member do
         end
       }
       new = %{
-        field :_id, ID, method: :id, null: false, description: 'The primary key from the database'
+        field :_id, ID, 'The primary key from the database', method: :id, null: false
       }
       assert_equal upgrade(old), new
     end
