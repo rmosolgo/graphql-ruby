@@ -19,6 +19,10 @@ module GraphQL
               Rake::Task["graphql:upgrade:member"].execute(Struct.new(:member_file).new(file))
             end
           end
+
+          puts "Upgrade complete! Note that this is a best-effort approach, and may very well contain some bugs."
+          puts "Don't forget to create the base objects. For example, you could run:"
+          puts "\tbin/rake graphql:upgrade:create_base_objects[app/graphql]"
         end
 
         namespace :upgrade do
