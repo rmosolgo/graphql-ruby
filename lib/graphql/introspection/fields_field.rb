@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 GraphQL::Introspection::FieldsField = GraphQL::Field.define do
   type -> { types[!GraphQL::Introspection::FieldType] }
+  introspection true
   argument :includeDeprecated, GraphQL::BOOLEAN_TYPE, default_value: false
   resolve ->(object, arguments, context) {
     return nil if !object.kind.fields?
