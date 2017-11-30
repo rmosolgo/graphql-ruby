@@ -9,11 +9,12 @@ GraphQL::LanguageServer requires an additional dependency:
 
 Please add it to your project and try again.
 ERR
+  raise
 end
 
 require "logger"
 require "graphql"
-require "graphql/language_server/completion_provider"
+require "graphql/language_server/completion_suggestion"
 require "graphql/language_server/member"
 require "graphql/language_server/reloader"
 require "graphql/language_server/response"
@@ -32,46 +33,41 @@ module GraphQL
     end
 
     LSP = ::LanguageServer::Protocol
-    attr_reader :input_type_names
+    attr_reader :input_type_names, :logger
 
     def initialize
       # { String => String }, URI to content
       @file_content_cache = {}
       @logger = self.class.logger || Logger.new($stdout)
+      @schema = self.class.schema
       reload_globs = self.class.reload_globs || []
       if self.class.development_mode
         reload_globs << __FILE__.sub(".rb", "/**/*.rb")
       end
       @reloader = Reloader.new(globs: reload_globs, logger: @logger)
-      prepare
+      prepare(force: true)
     end
 
     # Reset project state
-    def prepare
+    def prepare(force: false)
       reloaded = @reloader.reload
-      if !reloaded
+      if !(reloaded || force)
         return
       end
       @logger.info("#prepare")
-      # File.truncate(LOG_PATH, 0)
-      schema_dump = JSON.parse(File.read(RAILS_ROOT + "/schema.json"))
-      schema_data = schema_dump["data"]["__schema"]
       @types = {}
       @input_type_names = []
-      schema_data["types"].each do |t|
-        type_name = t["name"]
-        @types[type_name] = Member.new(t)
-        type_kind = t["kind"]
-        if type_kind == "SCALAR" || type_kind == "ENUM" || type_kind == "INPUT_OBJECT"
-          @input_type_names << type_name
+      @schema.types.each do |name, t|
+        @types[name] = t
+        if t.kind.input?
+          @input_type_names << name
         end
       end
 
       # Roots by symbol:
       [:query, :mutation, :subscription].each do |root_sym|
-        if schema_data["#{root_sym}Type"]
-          name = schema_data["#{root_sym}Type"]["name"]
-          @types[root_sym] = @types[name]
+        if (root_type = @schema.public_send(root_sym))
+          @types[root_sym] = root_type
         end
       end
     end
@@ -141,7 +137,7 @@ module GraphQL
     end
 
     class << self
-      attr_accessor :logger, :reload_globs, :development_mode
+      attr_accessor :logger, :reload_globs, :development_mode, :schema
     end
   end
 end

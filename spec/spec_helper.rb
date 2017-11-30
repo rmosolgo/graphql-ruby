@@ -21,6 +21,8 @@ end
 
 require "graphql"
 require "graphql/rake_task"
+require "language_server-protocol"
+require "graphql/language_server"
 require "benchmark"
 require "pry"
 require "minitest/autorun"

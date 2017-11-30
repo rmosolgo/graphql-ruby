@@ -3,19 +3,20 @@
 module GraphQL
   class LanguageServer
     # This class responds with an array of `Item`s, based on
-    # the cursor's `line` and `column` in `text`.
+    # the cursor's `line` and `column` in `text` of `filename`.
     #
     # `server` has the system info, so it's provided here too.
-    class CompletionProvider
-      def initialize(text:, line:, column:, server:, logger:)
+    class CompletionSuggestion
+      def initialize(filename:, text:, line:, column:, server:)
         @text = text
         @line = line
+        @filename = filename
         @column = column
         @server = server
-        @logger = logger
+        @logger = server.logger
       end
 
-      def response
+      def items
         completion_items = []
         tokens = GraphQL.scan(@text)
         self_stack = SelfStack.new
@@ -27,7 +28,7 @@ module GraphQL
         # statefully work through the tokens, track self_state,
         # and record the cursor token
         tokens.each do |token|
-          # @logger.info("Token: #{token.inspect}")
+          @logger.info("Token: #{token.inspect}")
 
           case token.name
           when :QUERY, :MUTATION, :SUBSCRIPTION
@@ -50,8 +51,9 @@ module GraphQL
             var_def_state.identifier(value: token.value)
             self_type = self_stack.last
             input_type = input_stack.last
-            # @logger.debug("#{token.value} ?? (#{self_type&.name}, #{input_type&.name}(#{input_type&.accepts(token.value)}))")
-            if self_type && (return_type_name = self_type.returns(token.value))
+            @logger.debug("#{token.value} ?? (#{self_type&.name}, #{input_type&.name}(#{input_type&.accepts(token.value)}))")
+            if self_type && (field = self_type.get_field(token.value))
+              return_type_name = field.type.unwrap.name
               self_stack.stage(@server.type(return_type_name))
               field = self_type.fields[token.value]
               input_stack.stage(field)
@@ -74,11 +76,11 @@ module GraphQL
 
           # Check if this is the cursor_token
           if token.line == @line && ((token.col == @column) || ((token.col < @column) && (token.value.length > 0) && ((token.col + token.value.length) > @column)))
-            # @logger.info("Found cursor (#{@line},#{@line}): #{token.value}")
+            @logger.info("Found cursor (#{@line},#{@line}): #{token.value}")
             cursor_token = token
             break
           elsif token.line >= @line && token.col > @column
-            # @logger.info("NO CURSOR TOKEN")
+            @logger.info("NO CURSOR TOKEN")
             break
           end
         end
@@ -86,7 +88,7 @@ module GraphQL
         self_type = self_stack.last
         input_type = input_stack.last
         token_filter = TokenFilter.new(cursor_token)
-        # @logger.info("Lasts: #{self_type.inspect}, #{input_type.inspect}, #{var_def_state.state.inspect}")
+        @logger.info("Lasts: #{self_type.inspect}, #{input_type.inspect}, #{var_def_state.state.inspect}")
         if cursor_token && @@scalar_tokens.include?(cursor_token.name)
           # pass; don't autocomplete these
         elsif var_def_state.state == :type_name
@@ -122,7 +124,6 @@ module GraphQL
             completion_items << Item.from_fragment_token
           end
         elsif self_type
-          all_fields = (self_type.fields || {}).values
           self_type.fields.each do |name, f|
             if token_filter.match?(name)
               completion_items << Item.from_field(owner: self_type, field: f)
@@ -150,7 +151,7 @@ module GraphQL
           self.new(
             label: field.name,
             detail: "#{owner.name}.#{field.name}",
-            documentation: "#{field.description} (#{type_s(field.type)})",
+            documentation: "#{field.description} (#{field.type.to_s})",
             kind: LSP::Constant::CompletionItemKind::FIELD,
           )
         end
@@ -177,7 +178,7 @@ module GraphQL
           self.new(
             label: argument.name,
             insert_text: "#{argument.name}:",
-            detail: type_s(argument.type),
+            detail: argument.type.to_s,
             documentation: argument.description,
             kind: LSP::Constant::CompletionItemKind::FIELD,
           )
@@ -202,17 +203,6 @@ module GraphQL
             documentation: type.description,
             kind: LSP::Constant::CompletionItemKind::CLASS,
           )
-        end
-
-        def self.type_s(type)
-          case type["kind"]
-          when "LIST"
-            "[#{type_s(type["ofType"])}]"
-          when "NON_NULL"
-            "#{type_s(type["ofType"])}!"
-          else
-            type["name"]
-          end
         end
       end
 

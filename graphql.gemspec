@@ -27,6 +27,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency "guard-minitest", "~> 2.4"
   s.add_development_dependency "guard-rake"
   s.add_development_dependency "guard-rubocop"
+  s.add_development_dependency "language_server-protocol"
   s.add_development_dependency "listen", "~> 3.0.0"
   # Remove this limit when minitest-reports is compatible
   # https://github.com/kern/minitest-reporters/pull/220
