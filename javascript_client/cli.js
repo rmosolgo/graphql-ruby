@@ -14,7 +14,8 @@ required arguments:
 
 optional arguments:
   --path=<path>                   Path to .graphql files (default is "./**/*.graphql")
-  --outfile=<generated-js-file>   Target file for generated JS code
+  --outfile=<generated-filename>  Target file for generated code
+  --outfile-type=<type>           Target type for generated code (default is "js")
   --key=<key>                     HMAC authentication key
   --mode=<mode>                   Treat files like a certain kind of project:
                                     relay: treat files like relay-compiler output
@@ -40,6 +41,7 @@ optional arguments:
       url: argv.url,
       client: argv.client,
       outfile: argv.outfile,
+      outfileType: argv["outfile-type"],
       secret: argv.secret,
       mode: argv.mode,
       addTypename: argv["add-typename"],

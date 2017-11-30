@@ -3,7 +3,7 @@ var sendPayload = require("./sendPayload")
 var prepareRelay = require("./prepareRelay")
 var prepareIsolatedFiles = require("./prepareIsolatedFiles")
 var prepareProject = require("./prepareProject")
-var generateClient = require("./generateClient")
+var { generateClient } = require("./generateClient")
 var printResponse = require("./printResponse")
 var Logger = require("./logger")
 
@@ -21,6 +21,7 @@ var fs = require("fs")
  * @param {String} options.mode - If `"file"`, treat each file separately. If `"project"`, concatenate all files and extract each operation. If `"relay"`, treat it as relay-compiler output
  * @param {Boolean} options.addTypename - Indicates if the "__typename" field are automatically added to your queries
  * @param {String} options.outfile - Where the generated code should be written
+ * @param {String} options.outfileType - The type of the generated code (i.e., json, js)
  * @param {String} options.client - the Client ID that these operations belong to
  * @param {Function} options.send - A function for sending the payload to the server, with the signature `options.send(payload)`. (Default is an HTTP `POST` request)
  * @param {Function} options.hash - A custom hash function for query strings with the signature `options.hash(string) => digest` (Default is `md5(string) => digest`)
@@ -114,7 +115,7 @@ function sync(options) {
         }
       }
 
-      var generatedCode = generateClient(clientName, nameToAliasMap)
+      var generatedCode = generateClient(clientName, nameToAliasMap, options.outfileType)
       logger.log("Generating client module in " + logger.colorize("bright", outfile) + "...")
       fs.writeFileSync(outfile, generatedCode, "utf8")
       logger.log(logger.green("✓ Done!"))
