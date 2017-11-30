@@ -166,7 +166,7 @@ describe GraphQL::Language::DocumentFromSchemaDefinition do
       end
     end
 
-    describe "when printing with defaults" do
+    describe "with defaults" do
       let(:expected_idl) { <<-GRAPHQL
         type QueryType {
           foo: Foo
@@ -230,7 +230,116 @@ describe GraphQL::Language::DocumentFromSchemaDefinition do
       end
     end
 
-    describe "when printing excluding built ins and introspection types" do
+    describe "with an except filter" do
+      let(:expected_idl) { <<-GRAPHQL
+        type QueryType {
+          foo: Foo
+        }
+
+        type Foo implements Bar {
+          three(argument: InputType, other: String): Int
+          four(argument: String = "string"): String
+          five(argument: [String] = ["string", "string"]): String
+        }
+
+        interface Bar {
+          one: Type
+          four(argument: String = "string"): String
+        }
+
+        input InputType {
+          key: String!
+          answer: Int = 42
+        }
+
+        # Represents non-fractional signed whole numeric values. Int can represent values between -(2^31) and 2^31 - 1.
+        scalar Int
+
+        type MutationType {
+          a(input: InputType): String
+        }
+
+        # Scalar description
+        scalar CustomScalar
+
+        enum Site {
+          DESKTOP
+          MOBILE
+        }
+
+        schema {
+          query: QueryType
+          mutation: MutationType
+        }
+      GRAPHQL
+      }
+
+      let(:document) {
+        subject.new(
+          schema,
+          except: ->(m, _ctx) { m.is_a?(GraphQL::BaseType) && m.name == "Type" }
+        ).document
+      }
+
+      it "returns the IDL minus the filtered members" do
+        assert equivalent_node?(expected_document, document)
+      end
+    end
+
+    describe "with an only filter" do
+      let(:expected_idl) { <<-GRAPHQL
+        type QueryType {
+          foo: Foo
+        }
+
+        type Foo implements Bar {
+          three(argument: InputType, other: String): Int
+          four(argument: String = "string"): String
+          five(argument: [String] = ["string", "string"]): String
+        }
+
+        interface Bar {
+          one: Type
+          four(argument: String = "string"): String
+        }
+
+        input InputType {
+          key: String!
+          answer: Int = 42
+        }
+
+        # Represents non-fractional signed whole numeric values. Int can represent values between -(2^31) and 2^31 - 1.
+        scalar Int
+
+        type MutationType {
+          a(input: InputType): String
+        }
+
+        enum Site {
+          DESKTOP
+          MOBILE
+        }
+
+        schema {
+          query: QueryType
+          mutation: MutationType
+        }
+      GRAPHQL
+      }
+
+      let(:document) {
+        subject.new(
+          schema,
+          only: ->(m, _ctx) { !(m.is_a?(GraphQL::ScalarType) && m.name == "CustomScalar") }
+        ).document
+      }
+
+      it "returns the IDL minus the filtered members" do
+        assert equivalent_node?(expected_document, document)
+      end
+    end
+
+    describe "when excluding built ins and introspection types" do
       let(:expected_idl) { <<-GRAPHQL
         type QueryType {
           foo: Foo
