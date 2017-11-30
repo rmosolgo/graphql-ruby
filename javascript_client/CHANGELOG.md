@@ -1,5 +1,11 @@
 # graphql-ruby-client
 
+## 1.3.0 (30 Nov 2017)
+
+- Support HTTPS, basic auth, query string and port in `sync` #1053
+- Add Apollo 2 support for ActionCable subscriptions #1120
+- Add `--outfile-type=json` for stored operation manifest #1142
+
 ## 1.2.0 (15 Nov 2017)
 
 - Support Apollo batching middleware #1092
