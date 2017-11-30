@@ -17,13 +17,15 @@ module GraphQL
 
         transformable.scan(/(?:field|connection|argument) .*$/).each do |field|
           field_regex =
-            /(?<field_type>field|connection|argument) :(?<name>[a-zA-Z_0-9]*)?, (?<return_type>.*?(?:,|$|\}))(?<remainder>.*)/
+            /(?<field_type>field|connection|argument) :(?<name>[a-zA-Z_0-9_]*)?, (?<return_type>.*?(?:,|$|\}))(?<remainder>.*)/
 
           if (matches = field_regex.match(field))
             name = matches[:name]
             return_type = matches[:return_type]
             remainder = matches[:remainder]
             field_type = matches[:field_type]
+
+            binding.pry if name == '_id'
 
             # This is a small bug in the regex. Ideally the `do` part would only be in the remainder.
             with_block = remainder.gsub!(/\ do$/, '') || return_type.gsub!(/\ do$/, '')
@@ -41,7 +43,6 @@ module GraphQL
             transformable.sub!(field) do
               f = "#{field_type == 'argument' ? 'argument' : 'field'} :#{name}, #{return_type}"
 
-              binding.pry if remainder.starts_with?(',')
               unless remainder.empty?
                 f += ',' + remainder
               end
@@ -65,7 +66,6 @@ module GraphQL
           end
         end
 
-        # ,#{remainder}, #{nullable_as_keyword}#{connection_as_keyword}#{with_block ? ' do' : ''}"
         transformable
       end
 
