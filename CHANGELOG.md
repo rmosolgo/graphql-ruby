@@ -8,6 +8,24 @@
 
 ### Bug fixes
 
+## 1.7.7 (29 Nov 2017)
+
+### New features
+
+- `Schema#to_document` returns a `Language::Nodes::Document` #1134
+- Add `trace_scalars` and `trace: true|false` to monitoring #1103
+- Add `Tracing::DataDogPlatform` monitoring #1129
+- Support namespaces in `rails g graphql:function` and `:loader` #1127
+- Support `serializer:` option for `ActionCableSubscriptions` #1085
+
+### Bug fixes
+
+- Properly count the column after a closing quote #1136
+- Fix default value input objects in `Schema.from_definition` #1135
+- Fix `rails destroy graphql:mutation` #1119
+- Avoid unneeded query in RelationConnection with Sequel #1101
+- Improve & document instrumentation stack behavior #1101
+
 ## 1.7.6 (13 Nov 2017)
 
 ### Bug fixes
