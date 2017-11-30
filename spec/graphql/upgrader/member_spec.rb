@@ -283,17 +283,17 @@ describe GraphQL::Upgrader::Member do
     end
   end
 
-  describe 'field with description inside block' do
-    it 'moves the description as an argument' do
-      old = %{
-        field :_id, !types.ID, property: :id do
-          description 'The primary key from the database'
-        end
-      }
-      new = %{
-        field :_id, ID, 'The primary key from the database', method: :id, null: false
-      }
-      assert_equal upgrade(old), new
-    end
-  end
+  # describe 'field with description inside block' do
+  #   it 'moves the description as an argument' do
+  #     old = %{
+  #       field :_id, !types.ID, property: :id do
+  #         description 'The primary key from the database'
+  #       end
+  #     }
+  #     new = %{
+  #       field :_id, ID, 'The primary key from the database', method: :id, null: false
+  #     }
+  #     assert_equal upgrade(old), new
+  #   end
+  # end
 end
