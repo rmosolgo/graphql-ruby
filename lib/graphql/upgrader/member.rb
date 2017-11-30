@@ -16,28 +16,52 @@ module GraphQL
         transformable = rename_property_to_method transformable
 
         transformable.scan(/(?:field|connection|argument) .*$/).each do |field|
-          field_regex = /(?<field_type>field|connection|argument) :(?<name>[a-zA-Z_0-9]*)?, (?<return_type>.*?)(?<thing>,|$|\})(?<remainder>.*)/
+          field_regex =
+            /(?<field_type>field|connection|argument) :(?<name>[a-zA-Z_0-9_]*)?, (?<return_type>.*?(?:,|$|\}))(?<remainder>.*)/
 
           if (matches = field_regex.match(field))
             name = matches[:name]
             return_type = matches[:return_type]
             remainder = matches[:remainder]
-            thing = matches[:thing]
             field_type = matches[:field_type]
+
+            binding.pry if name == '_id'
 
             # This is a small bug in the regex. Ideally the `do` part would only be in the remainder.
             with_block = remainder.gsub!(/\ do$/, '') || return_type.gsub!(/\ do$/, '')
 
-            nullable = !!(return_type.gsub! '!', '')
+            remainder.gsub! /,$/, ''
+            remainder.gsub! /^,/, ''
+            remainder.chomp!
+
+            may_return_null = !(return_type.gsub! '!', '')
             return_type.gsub! 'types.', ''
             return_type.gsub! 'types[', '['
 
-            nullable_as_keyword = ", null: #{!nullable.to_s}"
-            connection_as_keyword = field_type == 'connection' ? ', connection: true' : ''
-            field_type = field_type == 'argument' ? 'argument' : 'field'
+            return_type.gsub! ',', ''
 
             transformable.sub!(field) do
-              "#{field_type} :#{name}, #{return_type}#{thing}#{remainder}#{nullable_as_keyword}#{connection_as_keyword}#{with_block ? ' do' : ''}"
+              f = "#{field_type == 'argument' ? 'argument' : 'field'} :#{name}, #{return_type}"
+
+              unless remainder.empty?
+                f += ',' + remainder
+              end
+
+              if may_return_null
+                f += ', null: true'
+              else
+                f += ', null: false'
+              end
+
+              if field_type == 'connection'
+                f += ', connection: true'
+              end
+
+              if with_block
+                f += ' do'
+              end
+
+              f
             end
           end
         end
@@ -69,11 +93,11 @@ module GraphQL
       end
 
       def simplify_field_definition_for_easier_processing(transformable)
-        transformable.gsub(/(?<field>(?:field|connection|argument).*?),\n(\s*)(?<next_line>(:?"|field)(.*))/) do
+        transformable.gsub(/(?<field>(?:field|connection|argument).*?,)\n(\s*)(?<next_line>(:?"|field)(.*))/) do
           field = $~[:field].chomp
           next_line = $~[:next_line]
 
-          "#{field}, #{next_line}"
+          "#{field} #{next_line}"
         end
       end
 
