@@ -19,7 +19,7 @@ describe GraphQL::Upgrader::Member do
 
   it 'upgrades the property definition to method' do
     old = %{field :name, String, property: :name}
-    new = %{field :name, String, method: :name, null: false}
+    new = %{field :name, String, method: :name, null: true}
 
     assert_equal upgrade(old), new
   end
@@ -118,7 +118,7 @@ describe GraphQL::Upgrader::Member do
       assert_equal upgrade(old), new
 
       old = %{connection :name, Name.connection_type, "names"}
-      new = %{field :name, Name.connection_type, "names", null: false, connection: true}
+      new = %{field :name, Name.connection_type, "names", null: true, connection: true}
       assert_equal upgrade(old), new
 
       old = %{connection :name, !Name.connection_type, "names"}
@@ -126,7 +126,7 @@ describe GraphQL::Upgrader::Member do
       assert_equal upgrade(old), new
 
       old = %{field :names, types[types.String]}
-      new = %{field :names, [String], null: false}
+      new = %{field :names, [String], null: true}
       assert_equal upgrade(old), new
 
       old = %{field :names, !types[types.String]}
@@ -138,7 +138,7 @@ describe GraphQL::Upgrader::Member do
         end
       }
       new = %{
-        field :name, String, null: false do
+        field :name, String, null: true do
         end
       }
       assert_equal upgrade(old), new
@@ -169,7 +169,7 @@ describe GraphQL::Upgrader::Member do
         end
       }
       new = %{
-        field :name, -> { String }, null: false do
+        field :name, -> { String }, null: true do
         end
       }
       assert_equal upgrade(old), new
@@ -191,7 +191,7 @@ describe GraphQL::Upgrader::Member do
         end
       }
       new = %{
-        field :name, -> { String }, "newline description", null: false do
+        field :name, -> { String }, "newline description", null: true do
         end
       }
       assert_equal upgrade(old), new
@@ -213,7 +213,7 @@ describe GraphQL::Upgrader::Member do
        end
       }
       new = %{
-       field :name, String, field: SomeField, null: false do
+       field :name, String, field: SomeField, null: true do
        end
       }
       assert_equal upgrade(old), new
@@ -221,35 +221,36 @@ describe GraphQL::Upgrader::Member do
   end
 
   describe 'complicated inline definition' do
-    it 'upgrades without breaking syntax' do
-      old = %{
-        connection :example_connection, -> { ExampleConnectionType } do
-          argument :order_by, (GraphQL::InputObjectType.define do
-            name 'ExampleConnectionOrder'
-            argument :direction, -> { !ExampleConnectionDirectionEnum }
-            argument :field, -> { !ExampleConnectionFieldEnum }
-          end), default_value: { direction: 'DESC', field: 'created_at' }
+    # it 'upgrades without breaking syntax' do
+    #   old = %{
+    #     connection :example_connection, -> { ExampleConnectionType } do
+    #       argument :order_by, (GraphQL::InputObjectType.define do
+    #         name 'ExampleConnectionOrder'
+    #         argument :direction, -> { !ExampleConnectionDirectionEnum }
+    #         argument :field, -> { !ExampleConnectionFieldEnum }
+    #       end), default_value: { direction: 'DESC', field: 'created_at' }
 
-          resolve ->(o, a, c) do
-            Resolvers::ExampleConnectionResolver.call o.example_connections, order_by: args.order_by
-          end
-        end
-      }
-      new = %{
-        field :example_connection, -> { ExampleConnectionType }, null: true, connection: true do
-          argument :order_by, (GraphQL::InputObjectType.define null: true do
-            name 'ExampleConnectionOrder'
-            argument :direction, -> { ExampleConnectionDirectionEnum }, null: false
-            argument :field, -> { ExampleConnectionFieldEnum }, null: false
-          end), default_value: { direction: 'DESC', field: 'created_at' }
+    #       resolve ->(o, a, c) do
+    #         Resolvers::ExampleConnectionResolver.call o.example_connections, order_by: args.order_by
+    #       end
+    #     end
+    #   }
+    #   new = %{
+    #     field :example_connection, -> { ExampleConnectionType }, null: true, connection: true do
+    #       argument :order_by, (GraphQL::InputObjectType.define do
+    #         name 'ExampleConnectionOrder'
+    #         argument :direction, -> { ExampleConnectionDirectionEnum }, null: false
+    #         argument :field, -> { ExampleConnectionFieldEnum }, null: false
+    #       end), default_value: { direction: 'DESC', field: 'created_at' }
 
-          resolve ->(o, a, c) do
-            Resolvers::ExampleConnectionResolver.call o.example_connections, order_by: args.order_by
-          end
-        end
-      }
-      assert_equal upgrade(old), new
-    end
+    #       resolve ->(o, a, c) do
+    #         Resolvers::ExampleConnectionResolver.call o.example_connections, order_by: args.order_by
+    #       end
+    #     end
+    #   }
+
+    #   assert_equal upgrade(old), new
+    # end
   end
 
   describe 'multi-line field with property/method' do
@@ -262,6 +263,7 @@ describe GraphQL::Upgrader::Member do
         field :is_example_field, Boolean, null: true
           method: :example_field?
       }
+
       assert_equal upgrade(old), new
     end
   end
@@ -276,6 +278,7 @@ describe GraphQL::Upgrader::Member do
         field :example_connection, -> { ExampleConnectionType }, null: true, connection: true
           method: :example_connections
       }
+
       assert_equal upgrade(old), new
     end
   end
