@@ -237,7 +237,7 @@ describe GraphQL::Upgrader::Member do
       }
       new = %{
         field :example_connection, -> { ExampleConnectionType }, null: true, connection: true do
-          argument :order_by, (GraphQL::InputObjectType.define null: false do
+          argument :order_by, (GraphQL::InputObjectType.define null: true do
             name 'ExampleConnectionOrder'
             argument :direction, -> { ExampleConnectionDirectionEnum }, null: false
             argument :field, -> { ExampleConnectionFieldEnum }, null: false
@@ -259,7 +259,7 @@ describe GraphQL::Upgrader::Member do
           property: :example_field?
       }
       new = %{
-        field :is_example_field, Boolean, null: false
+        field :is_example_field, Boolean, null: true
           method: :example_field?
       }
       assert_equal upgrade(old), new
@@ -273,7 +273,7 @@ describe GraphQL::Upgrader::Member do
           property: :example_connections
       }
       new = %{
-        field :example_connection, -> { ExampleConnectionType }, null: false, connection: true
+        field :example_connection, -> { ExampleConnectionType }, null: true, connection: true
           method: :example_connections
       }
       assert_equal upgrade(old), new
