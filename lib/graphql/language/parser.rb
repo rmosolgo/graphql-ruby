@@ -12,7 +12,7 @@ module GraphQL
   module Language
     class Parser < Racc::Parser
 
-module_eval(<<'...end parser.y/module_eval...', 'parser.y', 372)
+module_eval(<<'...end parser.y/module_eval...', 'parser.y', 373)
 
 def initialize(query_string, filename:, tracer: Tracing::NullTracer)
   @query_string = query_string
@@ -425,30 +425,30 @@ racc_action_pointer = [
    nil,   nil,   nil,   nil ]
 
 racc_action_default = [
-  -145,  -145,    -1,    -2,    -3,    -5,    -6,    -7,   -14,  -145,
-   -11,   -12,   -13,  -109,  -111,  -112,  -113,  -145,  -118,  -119,
-  -120,  -121,  -122,  -123,  -145,  -145,  -145,  -145,  -145,  -145,
-  -145,  -145,    -4,   -16,   -15,   -37,   -38,   -39,   -40,   -41,
+  -146,  -146,    -1,    -2,    -3,    -5,    -6,    -7,   -14,  -146,
+   -11,   -12,   -13,  -109,  -111,  -112,  -113,  -146,  -118,  -119,
+  -120,  -121,  -122,  -123,  -146,  -146,  -146,  -146,  -146,  -146,
+  -146,  -146,    -4,   -16,   -15,   -37,   -38,   -39,   -40,   -41,
    -42,   -43,   -44,   -45,   -46,   -47,   -48,   -49,   -50,   -51,
-   -52,   -53,  -145,   -10,   -30,   -32,   -33,   -34,   -64,  -100,
-  -145,  -110,  -145,  -100,  -126,  -100,  -100,  -100,  -100,  -145,
-   244,  -100,  -145,    -9,   -31,  -100,  -145,  -145,  -101,  -102,
-  -145,  -100,  -145,  -145,  -145,  -145,  -115,  -145,  -124,  -100,
-  -145,  -145,  -145,  -145,  -145,  -131,  -145,  -145,   -18,  -145,
-   -28,   -64,   -65,  -145,   -67,  -145,  -103,   -64,  -105,   -21,
-  -100,  -145,  -145,  -107,  -100,  -114,  -116,  -145,  -145,   -59,
-  -127,  -145,  -145,  -145,  -145,  -145,  -145,    -8,   -17,   -19,
-  -145,   -29,   -35,  -100,   -66,   -68,   -79,  -104,   -22,  -145,
-  -145,   -26,  -145,  -145,  -117,  -145,   -60,  -131,  -134,  -145,
-  -137,  -139,   -54,   -55,   -56,   -57,   -58,  -100,   -62,  -145,
-  -145,  -129,  -145,  -145,  -145,  -145,   -28,   -69,   -70,   -71,
+   -52,   -53,  -146,   -10,   -30,   -32,   -33,   -34,   -64,  -100,
+  -146,  -110,  -146,  -100,  -126,  -100,  -100,  -100,  -100,  -146,
+   244,  -100,  -146,    -9,   -31,  -100,  -146,  -146,  -101,  -102,
+  -146,  -100,  -146,  -146,  -146,  -146,  -115,  -146,  -124,  -100,
+  -146,  -146,  -146,  -146,  -146,  -131,  -146,  -146,   -18,  -146,
+   -28,   -64,   -65,  -146,   -67,  -146,  -103,   -64,  -105,   -21,
+  -100,  -146,  -146,  -107,  -100,  -114,  -116,  -146,  -146,   -59,
+  -127,  -134,  -146,  -146,  -146,  -146,  -146,    -8,   -17,   -19,
+  -146,   -29,   -35,  -100,   -66,   -68,   -79,  -104,   -22,  -146,
+  -146,   -26,  -146,  -146,  -117,  -134,   -60,  -131,  -135,  -146,
+  -138,  -140,   -54,   -55,   -56,   -57,   -58,  -100,   -62,  -146,
+  -146,  -129,  -146,  -146,  -146,  -146,   -28,   -69,   -70,   -71,
    -72,   -73,   -74,   -75,   -76,   -77,   -78,   -80,   -81,   -82,
-   -83,  -145,  -145,  -145,   -99,  -106,   -23,   -27,  -108,  -145,
-  -145,  -135,  -136,  -145,   -61,   -63,  -140,  -145,  -130,  -141,
-  -132,  -142,  -143,   -24,   -36,   -84,   -85,  -145,   -87,   -89,
-  -145,   -91,  -145,  -145,   -96,  -125,  -145,  -138,   -24,  -145,
-   -20,  -145,   -86,   -88,   -90,   -92,  -145,   -79,   -95,   -97,
-  -145,  -100,  -100,  -144,   -25,  -145,   -79,   -80,   -93,  -145,
+   -83,  -146,  -146,  -146,   -99,  -106,   -23,   -27,  -108,  -146,
+  -146,  -136,  -137,  -146,   -61,   -63,  -141,  -146,  -130,  -142,
+  -132,  -143,  -144,   -24,   -36,   -84,   -85,  -146,   -87,   -89,
+  -146,   -91,  -146,  -146,   -96,  -125,  -146,  -139,   -24,  -146,
+   -20,  -146,   -86,   -88,   -90,   -92,  -146,   -79,   -95,   -97,
+  -146,  -100,  -100,  -145,   -25,  -146,   -79,   -80,   -93,  -146,
   -133,  -128,   -94,   -98 ]
 
 racc_goto_table = [
@@ -656,19 +656,20 @@ racc_reduce_table = [
   0, 100, :_reduce_131,
   3, 100, :_reduce_132,
   5, 101, :_reduce_133,
-  1, 97, :_reduce_134,
-  2, 97, :_reduce_135,
-  6, 92, :_reduce_136,
-  1, 102, :_reduce_137,
-  3, 102, :_reduce_138,
-  5, 93, :_reduce_139,
-  6, 94, :_reduce_140,
-  6, 95, :_reduce_141,
-  6, 87, :_reduce_142,
-  1, 103, :_reduce_143,
-  3, 103, :_reduce_144 ]
+  0, 97, :_reduce_134,
+  1, 97, :_reduce_135,
+  2, 97, :_reduce_136,
+  6, 92, :_reduce_137,
+  1, 102, :_reduce_138,
+  3, 102, :_reduce_139,
+  5, 93, :_reduce_140,
+  6, 94, :_reduce_141,
+  6, 95, :_reduce_142,
+  6, 87, :_reduce_143,
+  1, 103, :_reduce_144,
+  3, 103, :_reduce_145 ]
 
-racc_reduce_n = 145
+racc_reduce_n = 146
 
 racc_shift_n = 244
 
@@ -1582,81 +1583,88 @@ module_eval(<<'.,.,', 'parser.y', 326)
 
 module_eval(<<'.,.,', 'parser.y', 330)
   def _reduce_134(val, _values, result)
-     return [val[0]] 
+     return [] 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 331)
   def _reduce_135(val, _values, result)
+     return [val[0]] 
+    result
+  end
+.,.,
+
+module_eval(<<'.,.,', 'parser.y', 332)
+  def _reduce_136(val, _values, result)
      val[0] << val[1] 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'parser.y', 335)
-  def _reduce_136(val, _values, result)
+module_eval(<<'.,.,', 'parser.y', 336)
+  def _reduce_137(val, _values, result)
             return make_node(:InterfaceTypeDefinition, name: val[1], directives: val[2], fields: val[4], description: get_description(val[0]), position_source: val[0])
       
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'parser.y', 339)
-  def _reduce_137(val, _values, result)
+module_eval(<<'.,.,', 'parser.y', 340)
+  def _reduce_138(val, _values, result)
      return [make_node(:TypeName, name: val[0])]
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'parser.y', 340)
-  def _reduce_138(val, _values, result)
+module_eval(<<'.,.,', 'parser.y', 341)
+  def _reduce_139(val, _values, result)
      val[0] << make_node(:TypeName, name: val[2]) 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'parser.y', 344)
-  def _reduce_139(val, _values, result)
+module_eval(<<'.,.,', 'parser.y', 345)
+  def _reduce_140(val, _values, result)
             return make_node(:UnionTypeDefinition, name: val[1], directives: val[2], types: val[4], description: get_description(val[0]), position_source: val[0])
       
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'parser.y', 349)
-  def _reduce_140(val, _values, result)
+module_eval(<<'.,.,', 'parser.y', 350)
+  def _reduce_141(val, _values, result)
              return make_node(:EnumTypeDefinition, name: val[1], directives: val[2], values: val[4], description: get_description(val[0]), position_source: val[0])
       
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'parser.y', 354)
-  def _reduce_141(val, _values, result)
+module_eval(<<'.,.,', 'parser.y', 355)
+  def _reduce_142(val, _values, result)
             return make_node(:InputObjectTypeDefinition, name: val[1], directives: val[2], fields: val[4], description: get_description(val[0]), position_source: val[0])
       
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'parser.y', 359)
-  def _reduce_142(val, _values, result)
+module_eval(<<'.,.,', 'parser.y', 360)
+  def _reduce_143(val, _values, result)
             return make_node(:DirectiveDefinition, name: val[2], arguments: val[3], locations: val[5], description: get_description(val[0]), position_source: val[0])
       
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'parser.y', 363)
-  def _reduce_143(val, _values, result)
+module_eval(<<'.,.,', 'parser.y', 364)
+  def _reduce_144(val, _values, result)
      return [val[0].to_s] 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'parser.y', 364)
-  def _reduce_144(val, _values, result)
+module_eval(<<'.,.,', 'parser.y', 365)
+  def _reduce_145(val, _values, result)
      val[0] << val[2].to_s 
     result
   end
