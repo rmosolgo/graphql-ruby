@@ -6,7 +6,7 @@ module GraphQL
       #
       # @example Turning a document into a query string
       #    document = GraphQL.parse(query_string)
-      #    GraphQL::Language::Printer.new(document).print
+      #    GraphQL::Language::Printer.new.print(document)
       #    # => "{ ... }"
       #
       #
@@ -18,7 +18,7 @@ module GraphQL
       #    end
       #  end
       #
-      #  MyPrinter.new(document).print
+      #  MyPrinter.new.print(document)
       #  # => "mutation { pay(creditCard: <HIDDEN>) { success } }"
       #
       #

@@ -8,7 +8,6 @@ module GraphQL
       # - `children` returns all AST nodes attached to this one. Used for tree traversal.
       # - `scalars` returns all scalar (Ruby) values attached to this one. Used for comparing nodes.
       # - `to_query_string` turns an AST node into a GraphQL string
-      DEFAULT_PRINTER = GraphQL::Language::Printer.new
 
       class AbstractNode
         attr_accessor :line, :col, :filename
@@ -79,7 +78,7 @@ module GraphQL
           [line, col]
         end
 
-        def to_query_string(printer: DEFAULT_PRINTER)
+        def to_query_string(printer: GraphQL::Language::Printer.new)
           printer.print(self)
         end
       end
@@ -173,7 +172,7 @@ module GraphQL
       #    end
       #  end
       #
-      #  document.to_query_string(printer: VariableSrubber)
+      #  document.to_query_string(printer: VariableSrubber.new)
       #
       class Document < AbstractNode
         attr_accessor :definitions
