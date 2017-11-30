@@ -42,5 +42,16 @@ describe GraphQL::Language::Lexer do
       tok_2 = subject.tokenize(query_string)
       assert_nil tok_2[0].prev_token
     end
+
+    it "counts string position properly" do
+      tokens = subject.tokenize('{ a(b: "c")}')
+      str_token = tokens[5]
+      assert_equal :STRING, str_token.name
+      assert_equal "c", str_token.value
+      assert_equal 8, str_token.col
+      assert_equal '(STRING "c" [1:8])', str_token.inspect
+      rparen_token = tokens[6]
+      assert_equal '(RPAREN ")" [1:10])', rparen_token.inspect
+    end
   end
 end
