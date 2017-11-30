@@ -23,7 +23,10 @@ module GraphQL
 
         namespace :upgrade do
           task :create_base_objects, [:base_dir] do |t, args|
-            base_dir = args.base_dir
+            unless (base_dir = args[:base_dir])
+              fail 'You have to give me a directory where your GraphQL types live. ' \
+                   'For example: `bin/rake graphql:upgrade:create_base_objects[app/graphql]`'
+            end
 
             destination_file = File.join(base_dir, "types", "base_enum.rb")
             unless File.exists?(destination_file)
