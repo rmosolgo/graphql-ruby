@@ -564,6 +564,12 @@ module GraphQL
       JSON.pretty_generate(as_json(*args))
     end
 
+    def respects_root_name_conventions?
+      (query.nil? || query.name == 'Query') &&
+      (mutation.nil? || mutation.name == 'Mutation') &&
+      (subscription.nil? || subscription.name == 'Subscription')
+    end
+
     protected
 
     def rescues?
