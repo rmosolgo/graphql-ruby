@@ -16,8 +16,8 @@ module GraphQL
       # @param indent [String] Whitespace to add to each printed node
       # @param printer [GraphQL::Language::Printer] An optional custom printer for printing AST nodes. Defaults to GraphQL::Language::Printer
       # @return [String] Valid GraphQL for `node`
-      def generate(node, indent: "", printer: GraphQL::Language::Printer)
-        printer.new(node).print(indent: indent)
+      def generate(node, indent: "", printer: GraphQL::Language::Printer.new)
+        printer.print(node, indent: indent)
       end
     end
   end
