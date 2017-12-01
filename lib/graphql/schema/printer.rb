@@ -45,7 +45,7 @@ module GraphQL
       # @param except [<#call(member, ctx)>]
       # @param introspection [Boolean] Should include the introspection types in the string?
       def initialize(schema, context: nil, only: nil, except: nil, introspection: false)
-        @document_generator = GraphQL::Language::DocumentFromSchemaDefinition.new(
+        @document_from_schema = GraphQL::Language::DocumentFromSchemaDefinition.new(
           schema,
           context: context,
           only: only,
@@ -53,6 +53,8 @@ module GraphQL
           include_introspection_types: introspection,
           include_built_ins: false,
         )
+
+        @document = @document_from_schema.document
 
         @schema = schema
       end
@@ -78,49 +80,16 @@ module GraphQL
 
       # Return a GraphQL schema string for the defined types in the schema
       def print_schema
-        document = @document_generator.document
-        document.to_query_string
+        @document.to_query_string
       end
 
       def print_type(type)
-        TypeKindPrinters::STRATEGIES.fetch(type.kind).print(warden, type)
+        binding.pry
+        node = @document_from_schema.build_object_type_node(type)
+        node.to_query_string
       end
 
       private
-
-      # By default, these are included in a schema printout
-      IS_USER_DEFINED_MEMBER = ->(member) {
-        case member
-        when GraphQL::BaseType
-          !member.introspection?
-        when GraphQL::Directive
-          !member.default_directive?
-        else
-          true
-        end
-      }
-
-      private_constant :IS_USER_DEFINED_MEMBER
-
-      def build_blacklist(only, except, introspection:)
-        if introspection
-          if only
-            ->(m, ctx) { !only.call(m, ctx) }
-          elsif except
-            except
-          else
-            ->(m, ctx) { false }
-          end
-        else
-          if only
-            ->(m, ctx) { !(IS_USER_DEFINED_MEMBER.call(m) && only.call(m, ctx)) }
-          elsif except
-            ->(m, ctx) { !IS_USER_DEFINED_MEMBER.call(m) || except.call(m, ctx) }
-          else
-            ->(m, ctx) { !IS_USER_DEFINED_MEMBER.call(m) }
-          end
-        end
-      end
 
       def print_schema_definition
         if (schema.query.nil? || schema.query.name == 'Query') &&

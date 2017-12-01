@@ -17,18 +17,13 @@ module GraphQL
       )
         @schema = schema
         @always_include_schema = always_include_schema
-
-        filter = GraphQL::Language::DocumentFromSchemaDefinition::Filter.new(
-          only,
-          except,
-          include_introspection_types: include_introspection_types,
-          include_built_ins: include_built_ins,
-        )
+        @include_introspection_types = include_introspection_types
+        @include_built_ins = include_built_ins
 
         @warden = GraphQL::Schema::Warden.new(
-          filter,
+          GraphQL::Filter.new(only: only, except: except),
           schema: @schema,
-          context: @context
+          context: context,
         )
       end
 
@@ -59,7 +54,7 @@ module GraphQL
       def build_object_type_node(object_type)
         GraphQL::Language::Nodes::ObjectTypeDefinition.new(
           name: object_type.name,
-          interfaces: warden.interfaces(object_type).map { |iface| build_type_name_node(iface) },
+          interfaces: warden.interfaces(object_type).sort_by(&:name).map { |iface| build_type_name_node(iface) },
           fields: build_field_nodes(warden.fields(object_type)),
           description: object_type.description,
         )
@@ -78,7 +73,7 @@ module GraphQL
         GraphQL::Language::Nodes::UnionTypeDefinition.new(
           name: union_type.name,
           description: union_type.description,
-          types: warden.possible_types(union_type).map { |type| build_type_name_node(type) }
+          types: warden.possible_types(union_type).sort_by(&:name).map { |type| build_type_name_node(type) }
         )
       end
 
@@ -93,7 +88,7 @@ module GraphQL
       def build_enum_type_node(enum_type)
         GraphQL::Language::Nodes::EnumTypeDefinition.new(
           name: enum_type.name,
-          values: warden.enum_values(enum_type).map do |enum_value|
+          values: warden.enum_values(enum_type).sort_by(&:name).map do |enum_value|
             build_enum_value_node(enum_value)
           end,
           description: enum_type.description,
@@ -175,11 +170,19 @@ module GraphQL
       end
 
       def build_argument_nodes(arguments)
-        arguments.map { |arg| build_argument_node(arg) }
+        arguments
+          .map { |arg| build_argument_node(arg) }
+          .sort_by(&:name)
       end
 
       def build_directive_nodes(directives)
-        directives.map { |directive| build_directive_node(directive) }
+        if !include_built_ins
+          directives = directives.reject { |directive| built_in?(directive) }
+        end
+
+        directives
+          .map { |directive| build_directive_node(directive) }
+          .sort_by(&:name)
       end
 
       def build_definition_nodes
@@ -190,61 +193,42 @@ module GraphQL
       end
 
       def build_type_definition_nodes(types)
-        types.map { |type| build_type_definition_node(type) }
+        if !include_introspection_types
+          types = types.reject { |type| introspection?(type) }
+        end
+
+        if !include_built_ins
+          types = types.reject { |type| built_in?(type) }
+        end
+
+        types
+          .map { |type| build_type_definition_node(type) }
+          .sort_by(&:name)
       end
 
       def build_field_nodes(fields)
-        fields.map { |field| build_field_node(field) }
-      end
-
-      class Filter
-        def initialize(only, except, include_introspection_types:, include_built_ins:)
-          @only = only
-          @except = except
-          @include_introspection_types = include_introspection_types
-          @include_built_ins = include_built_ins
-        end
-
-        def call(member, context)
-          if !include_introspection_types && introspection?(member)
-            return false
-          end
-
-          if !include_built_ins && built_in?(member)
-            return false
-          end
-
-          if only
-            !only.call(member, context)
-          elsif except
-            except.call(member, context)
-          else
-            true
-          end
-        end
-
-        private
-
-        attr_reader :include_introspection_types, :include_built_ins,
-          :only, :except
-
-        def introspection?(member)
-          member.is_a?(BaseType) && member.introspection?
-        end
-
-        def built_in?(member)
-          (member.is_a?(GraphQL::ScalarType) && member.default_scalar?) ||
-          (member.is_a?(GraphQL::Directive) && member.default_directive?)
-        end
+        fields
+          .map { |field| build_field_node(field) }
+          .sort_by(&:name)
       end
 
       private
 
-      def include_schema_node?
-        @always_include_schema || !schema.respects_root_name_conventions?
+      def introspection?(member)
+        member.is_a?(BaseType) && member.introspection?
       end
 
-      attr_reader :schema, :warden
+      def built_in?(member)
+        (member.is_a?(GraphQL::ScalarType) && member.default_scalar?) ||
+        (member.is_a?(GraphQL::Directive) && member.default_directive?)
+      end
+
+      def include_schema_node?
+        always_include_schema || !schema.respects_root_name_conventions?
+      end
+
+      attr_reader :schema, :warden, :always_include_schema,
+        :include_introspection_types, :include_built_ins
     end
   end
 end

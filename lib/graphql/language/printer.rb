@@ -319,7 +319,7 @@ module GraphQL
           print_input_object_type_definition(node)
         when Nodes::DirectiveDefinition
           print_directive_definition(node)
-        when FalseClass, Float, Integer, NilClass, String, TrueClass
+        when FalseClass, Float, Integer, NilClass, String, TrueClass, Symbol
           GraphQL::Language.serialize(node)
         when Array
           "[#{node.map { |v| print_node(v) }.join(", ")}]".dup
