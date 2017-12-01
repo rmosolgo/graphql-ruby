@@ -1,5 +1,7 @@
 # frozen_string_literal: true
+require "graphql/language_server/completion_suggestion/state_machine"
 require "graphql/language_server/completion_suggestion/fragment_def"
+require "graphql/language_server/completion_suggestion/variable_def"
 
 module GraphQL
   class LanguageServer
@@ -23,7 +25,7 @@ module GraphQL
         self_stack = SelfStack.new
         self_stack.stage(@server.type(:query))
         input_stack = InputStack.new
-        var_def_state = VarDefState.new
+        var_def_state = VariableDef.new
         fragment_def_state = FragmentDef.new
 
         cursor_token = nil
@@ -31,7 +33,9 @@ module GraphQL
         # and record the cursor token
         tokens.each do |token|
           @logger.info("Token: #{token.inspect}")
-
+          # Allow the state machines to consume this token:
+          fragment_def_state.consume(token)
+          var_def_state.consume(token)
           case token.name
           when :QUERY, :MUTATION, :SUBSCRIPTION
             key = token.name.to_s.downcase.to_sym
@@ -39,21 +43,16 @@ module GraphQL
           when :LCURLY
             self_stack.push_staged
             input_stack.push_staged
-            fragment_def_state.reset
           when :RCURLY
             self_stack.pop
             input_stack.pop
-            fragment_def_state.reset
           when :LPAREN
             self_stack.lock
             input_stack.push_staged
           when :RPAREN
-            var_def_state.end_defs
             self_stack.unlock
             input_stack.pop
           when :IDENTIFIER
-            var_def_state.identifier(value: token.value)
-            fragment_def_state.identifier(value: token.value)
             self_type = self_stack.last
             input_type = input_stack.last
             @logger.debug("#{token.value} ?? (#{self_type&.name}, #{input_type&.name})")
@@ -66,22 +65,6 @@ module GraphQL
               input_type_name = argument.type.unwrap.name
               input_stack.stage(@server.type(input_type_name))
             end
-          when :VAR_SIGN
-            var_def_state.var_sign
-          when :EQUALS
-            var_def_state.equals
-          when :COLON
-            var_def_state.colon
-          when :BANG
-            var_def_state.bang
-          when :RBRACKET
-            var_def_state.rbracket
-          when :ON
-            fragment_def_state.on
-          when :FRAGMENT
-            fragment_def_state.fragment
-          when *@@scalar_tokens
-            var_def_state.default_value
           end
 
           # Check if this is the cursor_token
@@ -235,76 +218,6 @@ module GraphQL
 
       # Use a class variable to avoid warnings when reloading
       @@scalar_tokens = [:STRING, :FLOAT, :INT, :TRUE, :FALSE, :NULL]
-
-      # A little state machine to track variable defs in the token stream
-      class VarDefState
-        attr_reader :state, :ended, :defined_variables, :defined_variable_types
-
-        def initialize
-          @state = nil
-          @ended = false
-          @defined_variables = []
-          @defined_variable_types = {}
-        end
-
-        def ended?
-          @ended
-        end
-
-        def end_defs
-          @ended = true
-          @state = nil
-        end
-
-        def var_sign
-          # Always reset the beginning state
-          @state = :var_sign
-        end
-
-        def identifier(value:)
-          if transition(:var_sign, :var_name) && !@ended
-            @defined_variables << value
-          elsif transition(:colon, :type_name) && !@ended
-            @defined_variable_types[@defined_variables.last] = value
-          end
-        end
-
-        def colon
-          transition(:var_name, :colon)
-        end
-
-        def equals
-          transition(:type_name, :equals)
-        end
-
-        def bang
-          if transition(:type_name, :type_name)
-            @defined_variable_types[@defined_variables.last] += "!"
-          end
-        end
-
-        def rbracket
-          if transition(:type_name, :type_name)
-            t = @defined_variable_types[@defined_variables.last]
-            @defined_variable_types[@defined_variables.last] = "[#{t}]"
-          end
-        end
-
-        def default_value
-          transition(:equals, :default_value)
-        end
-
-        private
-
-        # Returns falsy if no transition
-        def transition(from_state, to_state)
-          if @state == from_state
-            @state = to_state
-          else
-            nil
-          end
-        end
-      end
 
       class SelfStack
         def initialize

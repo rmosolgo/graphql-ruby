@@ -103,7 +103,7 @@ describe GraphQL::LanguageServer::CompletionSuggestion do
     end
 
     describe "suggesting fragment names" do
-      it "suggests them for usages"
+      it "suggests them for usages, according to current scope"
       it "suggests them for definitions"
     end
   end
