@@ -5,6 +5,7 @@ module GraphQL
       name("__type")
       description("A type in the GraphQL system")
       type(GraphQL::Introspection::TypeType)
+      introspection true
       argument :name, !types.String
       resolve ->(o, args, ctx) {
         ctx.warden.get_type(args["name"])

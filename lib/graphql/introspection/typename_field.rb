@@ -5,6 +5,7 @@ module GraphQL
       name "__typename"
       description "The name of this type"
       type -> { !GraphQL::STRING_TYPE }
+      introspection true
       resolve ->(obj, a, ctx) { ctx.irep_node.owner_type }
     end
   end

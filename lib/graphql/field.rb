@@ -131,6 +131,7 @@ module GraphQL
       :relay_nodes_field,
       :subscription_scope,
       :trace,
+      :introspection,
       argument: GraphQL::Define::AssignArgument
 
     ensure_defined(
@@ -138,7 +139,8 @@ module GraphQL
       :mutation, :arguments, :complexity, :function,
       :resolve, :resolve=, :lazy_resolve, :lazy_resolve=, :lazy_resolve_proc, :resolve_proc,
       :type, :type=, :name=, :property=, :hash_key=,
-      :relay_node_field, :relay_nodes_field, :edges?, :edge_class, :subscription_scope
+      :relay_node_field, :relay_nodes_field, :edges?, :edge_class, :subscription_scope,
+      :introspection?
     )
 
     # @return [Boolean] True if this is the Relay find-by-id field
@@ -183,6 +185,7 @@ module GraphQL
     attr_accessor :arguments_class
 
     attr_writer :connection
+    attr_writer :introspection
 
     # @return [nil, String] Prefix for subscription names from this field
     attr_accessor :subscription_scope
@@ -217,11 +220,17 @@ module GraphQL
       @connection_max_page_size = nil
       @edge_class = nil
       @trace = nil
+      @introspection = false
     end
 
     def initialize_copy(other)
       super
       @arguments = other.arguments.dup
+    end
+
+    # @return [Boolean] Is this field a predefined introspection field?
+    def introspection?
+      @introspection
     end
 
     # Get a value for this field
