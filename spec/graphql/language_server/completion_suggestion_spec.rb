@@ -81,15 +81,16 @@ describe GraphQL::LanguageServer::CompletionSuggestion do
     describe "suggesting variable names" do
       let(:text) {"
         query($cheeseId: ID! $) {     # test suggestion based on usage below
-          cheese(id: $)               # test suggestion based on defn above
+          cheese(id: $c)              # test suggestion based on defn above
           cheese(id: $otherCheeseId)
         }"
       }
 
-      focus
       it "suggests them for usages" do
         suggestions = suggestions_at.call(3, 23)
-        assert_equal ["cheeseId"], suggestions.map(&:label)
+        assert_equal ["$cheeseId"], suggestions.map(&:label)
+        # Since the "$" was already added, only the "c" should be updated
+        assert_equal ["cheeseId"], suggestions.map(&:insert_text)
       end
 
       it "suggests them for definitions"

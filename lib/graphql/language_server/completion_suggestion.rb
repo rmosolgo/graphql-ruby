@@ -91,8 +91,11 @@ module GraphQL
         token_filter = TokenFilter.new(cursor_token)
         @logger.info("Lasts: #{self_type.inspect}, #{input_type.inspect}, #{var_def_state.state.inspect}")
         if cursor_token && @@scalar_tokens.include?(cursor_token.name)
-          # pass; don't autocomplete these
+          # The cursor is in the middle of a String or other literal;
+          # don't provide autocompletes here because it's not GraphQL code
         elsif var_def_state.state == :type_name
+          # We're typing the type of a query variable;
+          # Suggest input types that match the current token
           @server.input_type_names.each do |input_type_name|
             if token_filter.match?(input_type_name)
               type = @server.type(input_type_name)
@@ -100,7 +103,9 @@ module GraphQL
             end
           end
         elsif var_def_state.ended? && (var_def_state.state == :var_sign || var_def_state.state == :var_name)
-          # TODO also filter var defs by type
+          # We're typing a variable usage in the query body,
+          # make recommendations based on variables defined above.
+          # TODO also filter var defs by type, only suggest vars that match the current field
           var_def_state.defined_variables.each do |var_name|
             if token_filter.value == "$" || token_filter.match?(var_name)
               type = var_def_state.defined_variable_types[var_name]
@@ -108,11 +113,14 @@ module GraphQL
             end
           end
         elsif input_type
+          # We're typing an argument, suggest argument names on this field/input obj
+          # TODO remove argument names that were already used
           all_args = input_type.arguments
           all_args.each do |name, arg|
             completion_items << Item.from_argument(argument: arg)
           end
         elsif self_type.nil? && !self_stack.locked?
+          # We're at the root level; make root suggestions
           [:query, :mutation, :subscription].each do |t|
             if (type = @server.type(t))
               label = t.to_s
@@ -125,6 +133,7 @@ module GraphQL
             completion_items << Item.from_fragment_token
           end
         elsif self_type
+          # We're writing fields; suggest fields on the current `self`
           self_type.fields.each do |name, f|
             if token_filter.match?(name)
               completion_items << Item.from_field(owner: self_type, field: f)
