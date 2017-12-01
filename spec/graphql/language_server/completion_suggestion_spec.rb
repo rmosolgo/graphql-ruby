@@ -101,13 +101,12 @@ describe GraphQL::LanguageServer::CompletionSuggestion do
         # Since the "$" was already added, only the "c" should be updated
         assert_equal ["cheeseId"], suggestions.map(&:insert_text)
       end
-
-      it "suggests them for definitions"
     end
 
     describe "suggesting fragment names" do
-      it "suggests them for usages, according to current scope"
-      it "suggests them for definitions"
+      it "suggests them for usages, according to current scope" do
+        skip "This requires scanning beyond the cursor; we're not gonna do it yet."
+      end
     end
   end
 
