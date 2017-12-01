@@ -56,7 +56,7 @@ module GraphQL
         def transition(from_state, to_state)
           if @state == from_state
             # Uncomment to debug in development
-            # @logger.info("#{self.class.name}: #{from_state} => #{to_state}")
+            # @logger.info("#{self.class.name.split("::").last}: #{from_state} => #{to_state}")
             @state = to_state
           else
             nil

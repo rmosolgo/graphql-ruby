@@ -148,7 +148,7 @@ module GraphQL
           all_args.each do |name, arg|
             completion_items << Item.from_argument(argument: arg)
           end
-        elsif self_type.nil? && !self_stack.locked?
+        elsif self_type.nil? && !self_stack.locked? && self_stack.empty?
           # We're at the root level; make root suggestions
           [:query, :mutation, :subscription].each do |t|
             if (type = @server.type(t))

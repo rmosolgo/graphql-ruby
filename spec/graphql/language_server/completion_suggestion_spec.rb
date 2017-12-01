@@ -4,9 +4,9 @@ require "spec_helper"
 describe GraphQL::LanguageServer::CompletionSuggestion do
   class CompletionSuggestionTestServer < GraphQL::LanguageServer
     # Silent logger:
-    # self.logger = Logger.new(StringIO.new)
+    self.logger = Logger.new(StringIO.new)
     # Debugging logger:
-    self.logger = Logger.new($stdout)
+    # self.logger = Logger.new($stdout)
     self.schema = Dummy::Schema
   end
 
@@ -63,6 +63,24 @@ describe GraphQL::LanguageServer::CompletionSuggestion do
       it "makes suggestions inside fragment definitions" do
         suggestions = suggestions_at.call(4, 10)
         assert_equal ["flavors"], suggestions.map(&:label)
+      end
+
+      describe "when self_type is invalid" do
+        let(:text) {
+          "{ ch { t } }
+
+          fragment MilkFields on Bogus {
+            fl
+          }
+          "
+        }
+
+        it "suggests nothing" do
+          # Bogus field
+          assert_equal [], suggestions_at.call(1, 8)
+          # Bogus type condition
+          assert_equal [], suggestions_at.call(4, 14)
+        end
       end
     end
 
