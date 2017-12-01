@@ -95,7 +95,7 @@ module GraphQL
         end
       end
 
-      NO_ARGS = self.new({}, argument_definitions: [], defaults_used: {})
+      NO_ARGS = self.new({}, argument_definitions: [], defaults_used: Set.new)
 
       class << self
         attr_accessor :argument_definitions

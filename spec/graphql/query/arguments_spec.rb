@@ -328,7 +328,7 @@ describe GraphQL::Query::Arguments do
       assert_equal nil, input_object.arguments_class
 
       GraphQL::Query::Arguments.construct_arguments_class(input_object)
-      args = input_object.arguments_class.new({foo: 3, bar: -90}, {})
+      args = input_object.arguments_class.new({foo: 3, bar: -90}, Set.new)
 
       assert_equal 3, args.foo
       assert_equal -90, args.bar
