@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+require "graphql/language_server/completion_suggestion/fragment_def"
 
 module GraphQL
   class LanguageServer
@@ -23,6 +24,7 @@ module GraphQL
         self_stack.stage(@server.type(:query))
         input_stack = InputStack.new
         var_def_state = VarDefState.new
+        fragment_def_state = FragmentDef.new
 
         cursor_token = nil
         # statefully work through the tokens, track self_state,
@@ -37,9 +39,11 @@ module GraphQL
           when :LCURLY
             self_stack.push_staged
             input_stack.push_staged
+            fragment_def_state.reset
           when :RCURLY
             self_stack.pop
             input_stack.pop
+            fragment_def_state.reset
           when :LPAREN
             self_stack.lock
             input_stack.push_staged
@@ -49,6 +53,7 @@ module GraphQL
             input_stack.pop
           when :IDENTIFIER
             var_def_state.identifier(value: token.value)
+            fragment_def_state.identifier(value: token.value)
             self_type = self_stack.last
             input_type = input_stack.last
             @logger.debug("#{token.value} ?? (#{self_type&.name}, #{input_type&.name})")
@@ -71,6 +76,10 @@ module GraphQL
             var_def_state.bang
           when :RBRACKET
             var_def_state.rbracket
+          when :ON
+            fragment_def_state.on
+          when :FRAGMENT
+            fragment_def_state.fragment
           when *@@scalar_tokens
             var_def_state.default_value
           end
@@ -99,7 +108,15 @@ module GraphQL
           @server.input_type_names.each do |input_type_name|
             if token_filter.match?(input_type_name)
               type = @server.type(input_type_name)
-              completion_items << Item.from_input_type(type: type)
+              completion_items << Item.from_type(type: type)
+            end
+          end
+        elsif fragment_def_state.state == :type_name || fragment_def_state.state == :on
+          # We're typing a fragment condition, suggestion valid fragment types
+          @server.fields_type_names.each do |fragment_type_name|
+            if fragment_def_state == :on || token_filter.match?(fragment_type_name)
+              type = @server.type(fragment_type_name)
+              completion_items << Item.from_type(type: type)
             end
           end
         elsif var_def_state.ended? && (var_def_state.state == :var_sign || var_def_state.state == :var_name)
@@ -206,7 +223,7 @@ module GraphQL
           )
         end
 
-        def self.from_input_type(type:)
+        def self.from_type(type:)
           self.new(
             label: type.name,
             detail: type.name,

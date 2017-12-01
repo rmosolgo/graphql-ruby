@@ -32,7 +32,7 @@ module GraphQL
     end
 
     LSP = ::LanguageServer::Protocol
-    attr_reader :input_type_names, :logger
+    attr_reader :input_type_names, :fields_type_names, :logger
 
     def initialize
       # { String => String }, URI to content
@@ -56,10 +56,14 @@ module GraphQL
       @logger.info("#prepare")
       @types = {}
       @input_type_names = []
+      @fields_type_names = []
       @schema.types.each do |name, t|
         @types[name] = t
         if t.kind.input?
           @input_type_names << name
+        end
+        if t.kind.fields?
+          @fields_type_names << name
         end
       end
 

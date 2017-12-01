@@ -68,7 +68,13 @@ describe GraphQL::LanguageServer::CompletionSuggestion do
         fragment SomeFrag on C      # test valid fragment types
         "
       }
-      it "suggests field types for fragment definitions"
+
+      it "suggests field types for fragment definitions" do
+        suggestions = suggestions_at.call(6, 30)
+        fragment_conditions_with_C = ["Cheese", "Cow"]
+        assert_equal fragment_conditions_with_C, suggestions.map(&:label)
+      end
+
       it "suggests in the current scope for inline fragments"
 
       it "suggests input types for variable definitions" do
