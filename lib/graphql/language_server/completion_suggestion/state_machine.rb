@@ -10,14 +10,13 @@ module GraphQL
       # Define methods corresponding to token types to respond to tokens and make transitions
       # @api private
       class StateMachine
-        # Add to this list as we need to respond to other token types
         TOKEN_NAMES = [
           # Keywords
           :QUERY, :MUTATION, :SUBSCRIPTION, :FRAGMENT, :ON,
           # Open-and-close punctuation
           :RCURLY, :LCURLY, :RPAREN, :LPAREN, :RBRACKET, :LBRACKET,
           # One-off punctuation
-          :VAR_SIGN, :EQUALS, :COLON, :BANG,
+          :VAR_SIGN, :EQUALS, :COLON, :BANG, :ELLIPSIS,
           # Values
           :IDENTIFIER, :STRING, :FLOAT, :INT, :TRUE, :FALSE, :NULL,
         ]
@@ -27,13 +26,14 @@ module GraphQL
         # @return [Symbol, nil]
         attr_reader :state
 
-        def initialize
+        def initialize(logger:)
+          @logger = logger
           @state = nil
         end
 
         def consume(token)
           method_name = METHOD_NAMES[token.name]
-          if method_name && respond_to?(method_name)
+          if respond_to?(method_name)
             public_send(method_name, token)
           end
         end
@@ -53,6 +53,8 @@ module GraphQL
         # Returns falsy if no transition
         def transition(from_state, to_state)
           if @state == from_state
+            # Uncomment to debug in development
+            # @logger.info("#{self.class.name}: #{from_state} => #{to_state}")
             @state = to_state
           else
             nil

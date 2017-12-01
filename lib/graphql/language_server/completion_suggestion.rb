@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 require "graphql/language_server/completion_suggestion/state_machine"
 require "graphql/language_server/completion_suggestion/fragment_def"
+require "graphql/language_server/completion_suggestion/fragment_spread"
 require "graphql/language_server/completion_suggestion/variable_def"
 
 module GraphQL
@@ -25,8 +26,9 @@ module GraphQL
         self_stack = SelfStack.new
         self_stack.stage(@server.type(:query))
         input_stack = InputStack.new
-        var_def_state = VariableDef.new
-        fragment_def_state = FragmentDef.new
+        var_def_state = VariableDef.new(logger: @logger)
+        fragment_def_state = FragmentDef.new(logger: @logger)
+        fragment_spread_state = FragmentSpread.new(logger: @logger)
 
         cursor_token = nil
         # statefully work through the tokens, track self_state,
@@ -35,6 +37,7 @@ module GraphQL
           @logger.info("Token: #{token.inspect}")
           # Allow the state machines to consume this token:
           fragment_def_state.consume(token)
+          fragment_spread_state.consume(token)
           var_def_state.consume(token)
           case token.name
           when :QUERY, :MUTATION, :SUBSCRIPTION
@@ -81,7 +84,8 @@ module GraphQL
         self_type = self_stack.last
         input_type = input_stack.last
         token_filter = TokenFilter.new(cursor_token)
-        @logger.info("Lasts: #{self_type.inspect}, #{input_type.inspect}, #{var_def_state.state.inspect}")
+        @logger.info("Lasts: #{self_type.inspect}, #{input_type.inspect}")
+        @logger.info("States: #{var_def_state.state.inspect}, #{fragment_def_state.state.inspect}, #{fragment_spread_state.state.inspect}")
         if cursor_token && @@scalar_tokens.include?(cursor_token.name)
           # The cursor is in the middle of a String or other literal;
           # don't provide autocompletes here because it's not GraphQL code
@@ -94,10 +98,21 @@ module GraphQL
               completion_items << Item.from_type(type: type)
             end
           end
+        elsif fragment_spread_state.state == :type_name || fragment_spread_state.state == :on
+          # We're typing an inline fragment condition, suggest valid fragment types
+          # which overlap with `self_type`
+          @server.fields_type_names.each do |fragment_type_name|
+            type = @server.type(fragment_type_name)
+            if self_type.nil? || GraphQL::Execution::Typecast.subtype?(self_type, type) || GraphQL::Execution::Typecast.subtype?(type, self_type)
+              if fragment_spread_state.state == :on || token_filter.match?(fragment_type_name)
+                completion_items << Item.from_type(type: type)
+              end
+            end
+          end
         elsif fragment_def_state.state == :type_name || fragment_def_state.state == :on
           # We're typing a fragment condition, suggestion valid fragment types
           @server.fields_type_names.each do |fragment_type_name|
-            if fragment_def_state == :on || token_filter.match?(fragment_type_name)
+            if fragment_def_state.state == :on || token_filter.match?(fragment_type_name)
               type = @server.type(fragment_type_name)
               completion_items << Item.from_type(type: type)
             end

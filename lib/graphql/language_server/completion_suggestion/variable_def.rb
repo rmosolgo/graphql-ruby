@@ -6,7 +6,7 @@ module GraphQL
       class VariableDef < CompletionSuggestion::StateMachine
         attr_reader :ended, :defined_variables, :defined_variable_types
 
-        def initialize
+        def initialize(logger:)
           super
           @ended = false
           @defined_variables = []
@@ -50,6 +50,7 @@ module GraphQL
         end
 
         def rbracket(_token)
+          # The type condition is a list type, update the type name with brackets
           if transition(:type_name, :type_name)
             t = @defined_variable_types[@defined_variables.last]
             @defined_variable_types[@defined_variables.last] = "[#{t}]"

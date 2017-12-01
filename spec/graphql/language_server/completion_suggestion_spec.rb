@@ -75,7 +75,11 @@ describe GraphQL::LanguageServer::CompletionSuggestion do
         assert_equal fragment_conditions_with_C, suggestions.map(&:label)
       end
 
-      it "suggests in the current scope for inline fragments"
+      it "suggests in the current scope for inline fragments" do
+        suggestions = suggestions_at.call(3, 18)
+        overlapping_types = ["Cheese", "Edible", "EdibleAsMilk", "AnimalProduct", "LocalProduct"]
+        assert_equal overlapping_types, suggestions.map(&:label)
+      end
 
       it "suggests input types for variable definitions" do
         suggestions = suggestions_at.call(1, 19)
@@ -86,9 +90,8 @@ describe GraphQL::LanguageServer::CompletionSuggestion do
 
     describe "suggesting variable names" do
       let(:text) {"
-        query($cheeseId: ID! $) {     # test suggestion based on usage below
-          cheese(id: $c)              # test suggestion based on defn above
-          cheese(id: $otherCheeseId)
+        query($cheeseId: ID!) {
+          cheese(id: $c)        # test suggestion based on defn above
         }"
       }
 
