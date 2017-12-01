@@ -25,8 +25,6 @@ module GraphQL
             remainder = matches[:remainder]
             field_type = matches[:field_type]
 
-            binding.pry if name == '_id'
-
             # This is a small bug in the regex. Ideally the `do` part would only be in the remainder.
             with_block = remainder.gsub!(/\ do$/, '') || return_type.gsub!(/\ do$/, '')
 
