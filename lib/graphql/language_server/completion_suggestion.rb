@@ -3,6 +3,7 @@ require "graphql/language_server/completion_suggestion/state_machine"
 require "graphql/language_server/completion_suggestion/fragment_def"
 require "graphql/language_server/completion_suggestion/fragment_spread"
 require "graphql/language_server/completion_suggestion/variable_def"
+require "graphql/language_server/completion_suggestion/language_scope"
 
 module GraphQL
   class LanguageServer
@@ -22,6 +23,17 @@ module GraphQL
 
       def items
         completion_items = []
+        language_scope = LanguageScope.new(
+          filename: @filename,
+          text: @text,
+          line: @line,
+          column: @column,
+          logger: @logger,
+        )
+        if !language_scope.graphql_code?
+          @logger.info("Out-of-scope cursor")
+          return completion_items
+        end
         tokens = GraphQL.scan(@text)
         self_stack = SelfStack.new
         self_stack.stage(@server.type(:query))
@@ -67,6 +79,8 @@ module GraphQL
             elsif input_type && (argument = input_type.arguments[token.value])
               input_type_name = argument.type.unwrap.name
               input_stack.stage(@server.type(input_type_name))
+            elsif fragment_def_state.state == :type_name && (frag_type = @server.type(token.value))
+              self_stack.stage(frag_type)
             end
           end
 

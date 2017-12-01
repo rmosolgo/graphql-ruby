@@ -19,6 +19,8 @@ module GraphQL
           :VAR_SIGN, :EQUALS, :COLON, :BANG, :ELLIPSIS,
           # Values
           :IDENTIFIER, :STRING, :FLOAT, :INT, :TRUE, :FALSE, :NULL,
+          # ??
+          :UNKNOWN_CHAR,
         ]
         # Convert each token into a downcased symbol
         METHOD_NAMES = TOKEN_NAMES.reduce({}) { |m, t| m[t] = t.to_s.downcase.to_sym; m }
@@ -32,7 +34,7 @@ module GraphQL
         end
 
         def consume(token)
-          method_name = METHOD_NAMES[token.name]
+          method_name = METHOD_NAMES[token.name] || raise("Missing method name for #{token.name}")
           if respond_to?(method_name)
             public_send(method_name, token)
           end

@@ -35,6 +35,9 @@ describe GraphQL::LanguageServer::CompletionSuggestion do
     let(:text) {
       "{ ch }
 
+      fragment MilkFields on Milk {
+        fl
+      }
       "
     }
 
@@ -55,6 +58,11 @@ describe GraphQL::LanguageServer::CompletionSuggestion do
         suggestions = suggestions_at.call(1, 2)
         expected_suggestions = Dummy::DairyAppQueryType.all_fields.map(&:name)
         assert_equal expected_suggestions, suggestions.map(&:label)
+      end
+
+      it "makes suggestions inside fragment definitions" do
+        suggestions = suggestions_at.call(4, 10)
+        assert_equal ["flavors"], suggestions.map(&:label)
       end
     end
 
@@ -111,8 +119,29 @@ describe GraphQL::LanguageServer::CompletionSuggestion do
   end
 
   describe "in .erb files" do
-    it "ignores non-graphql code"
-    it "makes suggestions in graphql code"
+    let(:filename) { "app/scratch.erb" }
+    let(:text) {
+      "<h1><%= heading %></h1>
+      <%graphql
+        fragment on Cheese {
+          id
+          fl
+        }
+      %>
+      <p>body</p>
+      "
+    }
+
+    it "ignores non-graphql code" do
+      assert_equal [], suggestions_at.call(1,5)
+      assert_equal [], suggestions_at.call(8,17)
+    end
+
+    it "makes suggestions in graphql code" do
+      suggestions = suggestions_at.call(5,12)
+      expected_suggestions = ["flavor"]
+      assert_equal expected_suggestions, suggestions.map(&:label)
+    end
   end
 
   describe "in .rb files" do

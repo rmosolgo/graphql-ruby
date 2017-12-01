@@ -20,12 +20,6 @@ module GraphQL
           return []
         end
 
-        if !is_graphql_code?(uri, content, cursor_line, cursor_col)
-          logger.debug("Outside graphql region")
-          return []
-        end
-
-
         suggestion = CompletionSuggestion.new(
           text: content,
           line: cursor_line,
@@ -42,60 +36,6 @@ module GraphQL
             documentation: item.documentation,
             kind: item.kind,
           )
-        end
-      end
-
-      private
-
-      def is_graphql_code?(filename, text, line, col)
-        if filename.end_with?(".graphql")
-          true
-        elsif filename.end_with?(".rb")
-          # figure out if `line` is inside `<<[-~]'?GRAPHQL'?` ... `GRAPHQL`
-          scanner = StringScanner.new(text)
-          scan_line = 1
-          graphql_begin = nil
-          while !scanner.eos?
-            if scanner.scan(/^.*<<[-~]'?GRAPHQL'?.*$/)
-              graphql_begin = scan_line
-            elsif scanner.scan(/^\s*GRAPHQL$/)
-              graphql_begin = nil
-            elsif scanner.scan_until(/\n/)
-              if scan_line >= line && graphql_begin && graphql_begin <= line
-                return true
-              end
-              scan_line += 1
-            else
-              scanner.scan(/./)
-            end
-          end
-          false
-        elsif filename.end_with?(".erb")
-          # figure out if `line` is inside `<%graphql ... %>`
-          scanner = StringScanner.new(text)
-          scan_line = 1
-          graphql_begin = nil
-          while !scanner.eos?
-            if scanner.scan(/^<%graphql$/)
-              logger.debug("Enter GraphQL @ #{scan_line}")
-              graphql_begin = scan_line
-            elsif scanner.scan(/%>/)
-              logger.debug("Exit GraphQL @ #{scan_line}")
-              graphql_begin = nil
-            elsif scanner.scan_until(/\n/)
-              if scan_line >= line && graphql_begin && graphql_begin <= line
-                logger.debug("Confirm GraphQL @ #{scan_line} (#{graphql_begin} <= #{line})")
-                return true
-              end
-              logger.debug("Line: #{scanner.pre_match} (#{scan_line})")
-              scan_line += 1
-            else
-              scanner.scan(/./)
-            end
-          end
-          false
-        else
-          false
         end
       end
     end
