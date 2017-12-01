@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+require "graphql/language/printer"
 require "graphql/language/definition_slice"
 require "graphql/language/document_from_schema_definition"
 require "graphql/language/generation"
