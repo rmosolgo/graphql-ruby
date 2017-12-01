@@ -165,10 +165,23 @@ module GraphQL
         out << print_directives(input_value.directives)
       end
 
+      def print_arguments(arguments, indent: "")
+        if arguments.all?{ |arg| !arg.description }
+          return "(#{arguments.map{ |arg| print_input_value_definition(arg) }.join(", ")})"
+        end
+
+        out = "(\n".dup
+        out << arguments.map.with_index{ |arg, i|
+          "#{print_description(arg, indent: "  " + indent, first_in_block: i == 0)}  #{indent}"\
+          "#{print_input_value_definition(arg)}"
+        }.join("\n")
+        out << "\n#{indent})"
+      end
+
       def print_field_definition(field)
         out = field.name.dup
         unless field.arguments.empty?
-          out << "(" << field.arguments.map{ |arg| print_input_value_definition(arg) }.join(", ") << ")"
+          out << print_arguments(field.arguments, indent: "  ")
         end
         out << ": #{print_node(field.type)}"
         out << print_directives(field.directives)

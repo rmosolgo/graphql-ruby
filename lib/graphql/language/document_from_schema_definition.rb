@@ -13,12 +13,13 @@ module GraphQL
     class DocumentFromSchemaDefinition
       def initialize(
         schema, context: nil, only: nil, except: nil, include_introspection_types: false,
-        include_built_ins: false, always_include_schema: false
+        include_built_in_directives: false, include_built_in_scalars: false, always_include_schema: false
       )
         @schema = schema
         @always_include_schema = always_include_schema
         @include_introspection_types = include_introspection_types
-        @include_built_ins = include_built_ins
+        @include_built_in_scalars = include_built_in_scalars
+        @include_built_in_directives = include_built_in_directives
 
         @warden = GraphQL::Schema::Warden.new(
           GraphQL::Filter.new(only: only, except: except),
@@ -61,12 +62,21 @@ module GraphQL
       end
 
       def build_field_node(field)
-        GraphQL::Language::Nodes::FieldDefinition.new(
+        field_node = GraphQL::Language::Nodes::FieldDefinition.new(
           name: field.name,
           arguments: build_argument_nodes(warden.arguments(field)),
           type: build_type_name_node(field.type),
           description: field.description,
         )
+
+        if field.deprecation_reason
+          field_node.directives << GraphQL::Language::Nodes::Directive.new(
+            name: GraphQL::Directive::DeprecatedDirective.name,
+            arguments: [GraphQL::Language::Nodes::Argument.new(name: "reason", value: field.deprecation_reason)]
+          )
+        end
+
+        field_node
       end
 
       def build_union_type_node(union_type)
@@ -96,10 +106,19 @@ module GraphQL
       end
 
       def build_enum_value_node(enum_value)
-        GraphQL::Language::Nodes::EnumValueDefinition.new(
+        enum_value_node = GraphQL::Language::Nodes::EnumValueDefinition.new(
           name: enum_value.name,
           description: enum_value.description,
         )
+
+        if enum_value.deprecation_reason
+          enum_value_node.directives << GraphQL::Language::Nodes::Directive.new(
+            name: GraphQL::Directive::DeprecatedDirective.name,
+            arguments: [GraphQL::Language::Nodes::Argument.new(name: "reason", value: enum_value.deprecation_reason)]
+          )
+        end
+
+        enum_value_node
       end
 
       def build_scalar_type_node(scalar_type)
@@ -110,12 +129,17 @@ module GraphQL
       end
 
       def build_argument_node(argument)
-        GraphQL::Language::Nodes::InputValueDefinition.new(
+        argument_node = GraphQL::Language::Nodes::InputValueDefinition.new(
           name: argument.name,
           description: argument.description,
           type: build_type_name_node(argument.type),
-          default_value: argument.default_value,
         )
+
+        if argument.default_value?
+          argument_node.default_value = build_default_value(argument.default_value, argument.type)
+        end
+
+        argument_node
       end
 
       def build_input_object_node(input_object)
@@ -150,6 +174,35 @@ module GraphQL
         end
       end
 
+      def build_default_value(default_value, type)
+        if default_value.nil?
+          return GraphQL::Language::Nodes::NullValue.new(name: "null")
+        end
+
+        case type
+        when GraphQL::ScalarType
+          default_value
+        when EnumType
+          GraphQL::Language::Nodes::Enum.new(name: type.coerce_isolated_result(default_value))
+        when InputObjectType
+          GraphQL::Language::Nodes::InputObject.new(
+            arguments: default_value.to_h.map do |arg_name, arg_value|
+              arg_type = type.input_fields.fetch(arg_name.to_s).type
+              GraphQL::Language::Nodes::Argument.new(
+                name: arg_name,
+                value: build_default_value(arg_value, arg_type)
+              )
+            end
+          )
+        when NonNullType
+          build_default_value(default_value, type.of_type)
+        when ListType
+          default_value.to_a.map { |v| build_default_value(v, type.of_type) }
+        else
+          raise NotImplementedError, "Unexpected default value type #{type.inspect}"
+        end
+      end
+
       def build_type_definition_node(type)
         case type
         when GraphQL::ObjectType
@@ -176,8 +229,8 @@ module GraphQL
       end
 
       def build_directive_nodes(directives)
-        if !include_built_ins
-          directives = directives.reject { |directive| built_in?(directive) }
+        if !include_built_in_directives
+          directives = directives.reject { |directive| directive.default_directive? }
         end
 
         directives
@@ -186,19 +239,20 @@ module GraphQL
       end
 
       def build_definition_nodes
-        definitions = build_type_definition_nodes(warden.types)
-        definitions += build_directive_nodes(warden.directives)
+        definitions = []
         definitions << build_schema_node if include_schema_node?
+        definitions += build_type_definition_nodes(warden.types)
+        definitions += build_directive_nodes(warden.directives)
         definitions
       end
 
       def build_type_definition_nodes(types)
         if !include_introspection_types
-          types = types.reject { |type| introspection?(type) }
+          types = types.reject { |type| type.introspection? }
         end
 
-        if !include_built_ins
-          types = types.reject { |type| built_in?(type) }
+        if !include_built_in_scalars
+          types = types.reject { |type| type.default_scalar? }
         end
 
         types
@@ -214,21 +268,12 @@ module GraphQL
 
       private
 
-      def introspection?(member)
-        member.is_a?(BaseType) && member.introspection?
-      end
-
-      def built_in?(member)
-        (member.is_a?(GraphQL::ScalarType) && member.default_scalar?) ||
-        (member.is_a?(GraphQL::Directive) && member.default_directive?)
-      end
-
       def include_schema_node?
         always_include_schema || !schema.respects_root_name_conventions?
       end
 
       attr_reader :schema, :warden, :always_include_schema,
-        :include_introspection_types, :include_built_ins
+        :include_introspection_types, :include_built_in_directives, :include_built_in_scalars
     end
   end
 end

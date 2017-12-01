@@ -395,8 +395,6 @@ describe GraphQL::Language::DocumentFromSchemaDefinition do
       let(:document) {
         subject.new(
           schema,
-          include_introspection_types: false,
-          include_built_ins: false,
           always_include_schema: true
         ).document
       }
@@ -487,9 +485,7 @@ describe GraphQL::Language::DocumentFromSchemaDefinition do
       let(:document) {
         subject.new(
           schema,
-          include_introspection_types: false,
-          include_built_ins: true,
-          always_include_schema: true
+          include_introspection_types: true,
         ).document
       }
 
@@ -754,8 +750,9 @@ describe GraphQL::Language::DocumentFromSchemaDefinition do
         subject.new(
           schema,
           include_introspection_types: true,
-          include_built_ins: true,
-          always_include_schema: true
+          include_built_in_directives: true,
+          include_built_in_scalars: true,
+          always_include_schema: true,
         ).document
       }
 
