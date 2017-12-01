@@ -51,13 +51,14 @@ module GraphQL
             var_def_state.identifier(value: token.value)
             self_type = self_stack.last
             input_type = input_stack.last
-            @logger.debug("#{token.value} ?? (#{self_type&.name}, #{input_type&.name}(#{input_type&.accepts(token.value)}))")
+            @logger.debug("#{token.value} ?? (#{self_type&.name}, #{input_type&.name})")
             if self_type && (field = self_type.get_field(token.value))
               return_type_name = field.type.unwrap.name
               self_stack.stage(@server.type(return_type_name))
               field = self_type.fields[token.value]
               input_stack.stage(field)
-            elsif input_type && (input_type_name = input_type.accepts(token.value))
+            elsif input_type && (argument = input_type.arguments[token.value])
+              input_type_name = argument.type.unwrap.name
               input_stack.stage(@server.type(input_type_name))
             end
           when :VAR_SIGN

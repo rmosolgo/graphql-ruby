@@ -4,9 +4,9 @@ require "spec_helper"
 describe GraphQL::LanguageServer::CompletionSuggestion do
   class CompletionSuggestionTestServer < GraphQL::LanguageServer
     # Silent logger:
-    self.logger = Logger.new(StringIO.new)
+    # self.logger = Logger.new(StringIO.new)
     # Debugging logger:
-    # self.logger = Logger.new($stdout)
+    self.logger = Logger.new($stdout)
     self.schema = Dummy::Schema
   end
 
@@ -23,6 +23,7 @@ describe GraphQL::LanguageServer::CompletionSuggestion do
     suggestion.items
   end
 
+  # TODO can you pass params into a let?
   let(:suggestions_at) {
     ->(line, col) {
       get_suggestions(filename: filename, text: text, line: line, column: col)
@@ -58,13 +59,39 @@ describe GraphQL::LanguageServer::CompletionSuggestion do
     end
 
     describe "suggesting types" do
+      let(:text) {
+        "query($someInput: I) {     # test input types
+          cheese(id: $someInput) {
+            ... on                  # test spread scope
+          }
+        }
+        fragment SomeFrag on C      # test valid fragment types
+        "
+      }
       it "suggests field types for fragment definitions"
       it "suggests in the current scope for inline fragments"
-      it "suggests input types for variable definitions"
+
+      it "suggests input types for variable definitions" do
+        suggestions = suggestions_at.call(1, 19)
+        all_input_type_names_with_I = ["Int", "ID", "DairyProductInput", "ReplaceValuesInput"]
+        assert_equal all_input_type_names_with_I, suggestions.map(&:label)
+      end
     end
 
     describe "suggesting variable names" do
-      it "suggests them for usages"
+      let(:text) {"
+        query($cheeseId: ID! $) {     # test suggestion based on usage below
+          cheese(id: $)               # test suggestion based on defn above
+          cheese(id: $otherCheeseId)
+        }"
+      }
+
+      focus
+      it "suggests them for usages" do
+        suggestions = suggestions_at.call(3, 23)
+        assert_equal ["cheeseId"], suggestions.map(&:label)
+      end
+
       it "suggests them for definitions"
     end
 
