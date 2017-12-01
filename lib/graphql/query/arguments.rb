@@ -41,7 +41,7 @@ module GraphQL
           arg_name = inner_key.to_s
 
           arg_defn = argument_definitions[arg_name]
-          arg_default_used = defaults_used[arg_name]
+          arg_default_used = defaults_used.include?(arg_name)
 
           arg_value = wrap_value(inner_value, arg_defn.type)
           string_key = arg_defn.expose_as
@@ -133,7 +133,7 @@ module GraphQL
             wrap_value(value, arg_defn_type.of_type)
           when GraphQL::InputObjectType
             if value.is_a?(Hash)
-              arg_defn_type.arguments_class.new(value, Hash.new(false))
+              arg_defn_type.arguments_class.new(value, Set.new)
             else
               value
             end

@@ -84,7 +84,7 @@ module GraphQL
 
     def coerce_non_null_input(value, ctx)
       input_values = {}
-      defaults_used = Hash.new(false)
+      defaults_used = Set.new
 
       arguments.each do |input_key, input_field_defn|
         field_value = value[input_key]
@@ -94,7 +94,7 @@ module GraphQL
           input_values[input_key] = input_field_defn.prepare(coerced_value, ctx)
         elsif input_field_defn.default_value?
           input_values[input_key] = input_field_defn.default_value
-          defaults_used[input_key] = true
+          defaults_used << input_key
         end
       end
 

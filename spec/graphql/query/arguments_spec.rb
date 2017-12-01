@@ -26,11 +26,11 @@ describe GraphQL::Query::Arguments do
             e: 4,
           },
           argument_definitions: test_input_1.arguments,
-          defaults_used: {}
+          defaults_used: Set.new
         ),
       },
       argument_definitions: test_input_2.arguments,
-      defaults_used: {}
+      defaults_used: Set.new
     )
   }
 
@@ -84,7 +84,7 @@ describe GraphQL::Query::Arguments do
     new_arguments = GraphQL::Query::Arguments.new(
       transformed_args,
       argument_definitions: types,
-      defaults_used: {}
+      defaults_used: Set.new
     )
     expected_hash = {
       "A" => 1,
@@ -109,7 +109,7 @@ describe GraphQL::Query::Arguments do
       args = GraphQL::Query::Arguments.new(
         {a: 1, b: {a: 2}, c: {a: 3}},
         argument_definitions: input_type.arguments,
-        defaults_used: {}
+        defaults_used: Set.new
       )
       assert_kind_of GraphQL::Query::Arguments, args["b"]
       assert_instance_of Hash, args["c"]
