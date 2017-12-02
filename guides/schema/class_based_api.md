@@ -180,7 +180,7 @@ class Types::TodoList < BaseObject
   field :viewers, [Types::User], "Users who can see this list", null: false
   # Connection:
   field :items, Types::TodoItem.connection_type, "Tasks on this list", null: false do
-    argument :status, TodoStatus, "Restrict items to this status", null: true
+    argument :status, TodoStatus, "Restrict items to this status", required: false
   end
 end
 ```
@@ -194,18 +194,25 @@ The second argument to `field(...)` is the return type. This can be:
 - A Ruby constant such as `Integer`, `Float`, `String`, `ID`, or `Boolean` (these correspond to GraphQL built-in scalars)
 - An _array_ of any of the above, which denotes a list type. Inner list types are always made non-null.
 
-Nullability is expressed with the required `null:` keyword:
+Nullability is expressed with the required `null:`/`required:` keywords:
 
-- `null: true` means that the field _may_ return null
-- `null: false` means the field is non-nullable; it may not return null. If the implementation returns `nil`, GraphQL-Ruby will return an error to the client.
+- Fields require the keyword `null:`
+  - `null: true` means that the field _may_ return null
+  - `null: false` means the field is non-nullable; it may not return null. If the implementation returns `nil`, GraphQL-Ruby will return an error to the client.
+- Arguments require the keyword `required:`
+  - `required: true` means the argument must be provided (the type is non-null)
+  - `required: false` means the argument is optional (the type is nullable)
 
 Here are some examples:
 
 ```ruby
 field :name, String, null: true # String
 field :id, ID, null: false # ID!
-field :scores, [Integer], null: false, # [Int!]!
-field :teammates, [Types::User], null: false, # [User!]!
+field :scores, [Integer], null: false # [Int!]!
+field :teammates, [Types::User], null: false  do # [User!]!
+  argument :teamName, String, required: true # String!
+  argument :name, String, required: false # String
+end
 ```
 
 ### Connection fields & types
