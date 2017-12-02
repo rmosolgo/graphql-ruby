@@ -61,6 +61,38 @@ If you have custom code which breaks on new-style definitions, try calling `.gra
 
 As described below, `.to_graphql` can be overridden to customize the type system.
 
+### List Types and Non-Null Types
+
+Previously, list types were expressed with `types[T]` and non-null types were expressed with `!T`. Now:
+
+- List types are expressed with Ruby Arrays, `[T]`, for example, `field :owners, [Types::UserType]`
+- Non-null types are expressed with keyword arguments `null:` or `required:`
+  - `field` takes a keyword `null:`. `null: true` means the field is nullable, `null: false` means the field is non-null (equivalent to `!`)
+  - `argument` takes a keyword `required:`. `required: true` means the argument is non-null (equivalent to `!`), `required: false` means that the argument is nullable
+
+In legacy-style classes, you may also use plain Ruby methods to create list and non-null types:
+
+- `#to_non_null_type` converts a type to a non-null variant (ie, `T.to_non_null_type` is equivalent to `!T`)
+- `#to_list_type` converts a type to a list variant (ie, `T.to_list_type` is equivalent to `types[T]`)
+
+The `!` method has been removed to avoid ambiguity with the built-in logical operator and related foot-gunning.
+
+For compatibility, you may wish to backport `!` to class-based type definitions. You have two options:
+
+__A refinement__, activated in [file scope or class/module scope](https://docs.ruby-lang.org/en/2.4.0/syntax/refinements_rdoc.html#label-Scope):
+
+```ruby
+# Enable `!` method in this scope
+using GraphQL::DeprecatedDSL
+```
+
+__A monkeypatch__, activated in global scope:
+
+```ruby
+# Enable `!` everywhere
+GraphQL::DeprecatedDSL.activate
+```
+
 ## Roadmap
 
 Here is a working plan for rolling out this feature:
