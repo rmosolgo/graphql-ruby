@@ -171,7 +171,7 @@ class Types::BaseObject < GraphQL::Schema::Object
 end
 
 # then...
-class Types::TodoList < BaseObject
+class Types::TodoList < Types::BaseObject
   field :name, String, "The unique name of this list", null: false
   field :is_completed, String, "Completed status depending on all tasks being done.", null: false
   # Related Object:
@@ -257,6 +257,34 @@ Inside the method, you can access some instance variables:
 
 - `@context` is the query context (formerly `ctx` to resolve functions)
 - `@object` is the underlying application object (formerly `obj` to resolve functions)
+
+For example:
+
+```ruby
+# type TodoList {
+#   items(isCompleted: Boolean): [TodoItem]!
+# }
+class Types::TodoList < Types::BaseObject
+  field :items, [Types::TodoItem], null: false do
+    argument :is_completed, Boolean, required: false
+  end
+
+  # GraphQL arg converted to Ruby kwarg:
+  def items(is_completed: nil)
+    # @context is the query context
+    current_user = @context[:current_user]
+    # @object is the underlying TodoList
+    if current_user != @object.owner
+      # not authorized:
+      []
+    elsif is_completed.nil?
+      @object.items
+    else
+      @object.items.where(completed: is_completed)
+    end
+  end
+end
+```
 
 ### Implementing interfaces
 
