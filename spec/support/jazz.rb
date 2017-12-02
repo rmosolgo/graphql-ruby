@@ -199,6 +199,15 @@ module Jazz
     description "Someone who plays an instrument"
     field :instrument, InstrumentType, null: false
     field :favorite_key, Key, null: true
+    field :inspect_context, [String], null: false
+
+    def inspect_context
+      [
+        @context.custom_method,
+        @context[:magic_key],
+        @context[:normal_key]
+      ]
+    end
   end
 
   LegacyInputType = GraphQL::InputObjectType.define do

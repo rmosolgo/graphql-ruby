@@ -246,10 +246,18 @@ TABLE
 
   describe "custom context class" do
     it "can be specified" do
-      query_str = "{ inspectContext }"
+      query_str = '{
+        inspectContext
+        find(id: "Musician/Herbie Hancock") {
+          ... on Musician {
+            inspectContext
+          }
+        }
+      }'
       res = Jazz::Schema.execute(query_str, context: { magic_key: :ignored, normal_key: "normal_value" })
       expected_values = ["custom_method", "magic_value", "normal_value"]
       assert_equal expected_values, res["data"]["inspectContext"]
+      assert_equal expected_values, res["data"]["find"]["inspectContext"]
     end
   end
 end
