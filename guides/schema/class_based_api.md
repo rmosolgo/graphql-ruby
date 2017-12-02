@@ -103,7 +103,7 @@ Here is a working plan for rolling out this feature:
   - ☑ Build a schema definition API based on classes instead of singletons
   - ☑ Migrate a few components of GitHub's GraphQL schema to this new API
   - ☐ Build advanced class-based features:
-    - ☐ Custom `Context` classes
+    - ☑ Custom `Context` classes
     - ☐ Custom introspection types
     - ☐ Custom directives
     - ☐ Custom `Schema#execute` method
@@ -529,6 +529,27 @@ Scalars are never initialized; only their `.coerce_*` methods are called at runt
 ## Customizing definitions
 
 The new API provides alternatives to `accepts_definitions`.
+
+### Customizing `@context`
+
+The `@context` object passed through each query may be customized by creating a subclass of {{ "GraphQL::Query::Context" | api_doc }} and passing it to `context_class` in your schema class:
+
+```ruby
+class MyContext < GraphQL::Query::Context
+  # short-hand access to a value:
+  def current_user
+    self[:current_user]
+  end
+end
+
+# then:
+class MySchema < GraphQL::Schema
+  # ...
+  context_class MyContext
+end
+```
+
+Then, during queries, `@context` will be an instance of `MyContext`.
 
 ### Customizing type definitions
 
