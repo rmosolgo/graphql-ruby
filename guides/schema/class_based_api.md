@@ -251,6 +251,17 @@ Inside the method, you can access some instance variables:
 - `@context` is the query context (formerly `ctx` to resolve functions)
 - `@object` is the underlying application object (formerly `obj` to resolve functions)
 
+### Implementing interfaces
+
+If an object implements any interfaces, they can be added with `implements`, for example:
+
+```ruby
+# This object implements some interfaces:
+implements GraphQL::Relay::Node.interface, Types::UserAssignableType
+```
+
+See below for how interfaces are "inherited" by object classes.
+
 ## Interface classes
 
 Interfaces extend `GraphQL::Schema::Interface`. First, make a base class:
