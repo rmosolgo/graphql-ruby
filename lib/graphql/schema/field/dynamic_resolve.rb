@@ -34,13 +34,9 @@ ERR
         def public_send_field(obj, method_name, graphql_args)
           if graphql_args.any?
             # Splat the GraphQL::Arguments to Ruby keyword arguments
-            ruby_kwargs = {}
-
-            graphql_args.keys.each do |key|
-              ruby_kwargs[Schema::Member::BuildType.underscore(key).to_sym] = graphql_args[key]
-            end
-
+            ruby_kwargs = graphql_args.to_kwargs
             if @connection
+              ruby_kwargs = ruby_kwargs.dup
               # Remove pagination args before passing it to a user method
               ruby_kwargs.delete(:first)
               ruby_kwargs.delete(:last)

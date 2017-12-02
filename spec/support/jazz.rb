@@ -79,6 +79,21 @@ module Jazz
   class BaseObject < GraphQL::Schema::Object
     # Use this overridden field class
     field_class BaseField
+    around_resolve :increment_counter
+    around_resolve :name, :increment_name_counter
+
+    def increment_counter(**args)
+      @context[:around_resolve_counter] ||= 0
+      @context[:around_resolve_counter] += 1
+      yield
+    end
+
+    def increment_name_counter
+      @context[:around_resolve_name_counter] ||= 0
+      value = yield
+      @context[:around_resolve_name_counter] += 1
+      value
+    end
 
     class << self
       def config(key, value)

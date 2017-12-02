@@ -84,6 +84,20 @@ module GraphQL
         end
       end
 
+      # Splat the GraphQL::Arguments to Ruby keyword arguments
+      # @return [Hash<Symbol => Object] A hash ready for `**kwargs`
+      def to_kwargs
+        @to_kwargs ||= begin
+          kwargs = {}
+
+          keys.each do |key|
+            kwargs[Schema::Member::BuildType.underscore(key).to_sym] = self[key]
+          end
+
+          kwargs
+        end
+      end
+
       class << self
         attr_accessor :argument_definitions
       end
