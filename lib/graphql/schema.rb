@@ -105,6 +105,10 @@ module GraphQL
     # @see {Query.new} for query-specific filters with `except:`
     attr_accessor :default_mask
 
+    # @see {GraphQL::Query::Context} The parent class of these classes
+    # @return [Class] Instantiated for each query
+    attr_accessor :context_class
+
     class << self
       attr_accessor :default_execution_strategy
     end
@@ -149,6 +153,7 @@ module GraphQL
       @subscription_execution_strategy = self.class.default_execution_strategy
       @default_mask = GraphQL::Schema::NullMask
       @rebuilding_artifacts = false
+      @context_class = GraphQL::Query::Context
     end
 
     def initialize_copy(other)
@@ -636,6 +641,7 @@ module GraphQL
         schema_defn.resolve_type = method(:resolve_type)
         schema_defn.object_from_id = method(:object_from_id)
         schema_defn.id_from_object = method(:id_from_object)
+        schema_defn.context_class = context_class
         instrumenters.each do |step, insts|
           insts.each do |inst|
             schema_defn.instrumenters[step] << inst
@@ -716,6 +722,14 @@ module GraphQL
           superclass.default_execution_strategy
         else
           @default_execution_strategy
+        end
+      end
+
+      def context_class(new_context_class = nil)
+        if new_context_class
+          @context_class = new_context_class
+        else
+          @context_class || GraphQL::Query::Context
         end
       end
 
