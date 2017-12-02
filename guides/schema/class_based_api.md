@@ -208,13 +208,20 @@ field :scores, [Integer], null: false, # [Int!]!
 field :teammates, [Types::User], null: false, # [User!]!
 ```
 
-### Connection types
+### Connection fields & types
 
 There is no `connection(...)` method. Instead, connection fields are inferred from the type name.
 
 If the type name ends in `Connection`, the field is treated as a connection field.
 
 This default may be overridden by passing a `connection: true` or `connection: false` keyword.
+
+For example:
+
+```ruby
+# This will be treated as a connection, since the type name ends in "Connection"
+field :projects, Types::ProjectType.connection_type
+```
 
 ### Resolve function compatibility
 
