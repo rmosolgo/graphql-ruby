@@ -12,8 +12,8 @@ module GraphQL
         argument_owner.arguments_class = Class.new(self) do
           self.argument_definitions = argument_definitions
 
-          def initialize(values)
-            super(values, argument_definitions: self.class.argument_definitions)
+          def initialize(values, defaults_used)
+            super(values, argument_definitions: self.class.argument_definitions, defaults_used: defaults_used)
           end
 
           argument_definitions.each do |_arg_name, arg_definition|
@@ -36,13 +36,16 @@ module GraphQL
         end
       end
 
-      def initialize(values, argument_definitions:)
+      def initialize(values, argument_definitions:, defaults_used:)
         @argument_values = values.inject({}) do |memo, (inner_key, inner_value)|
-          arg_defn = argument_definitions[inner_key.to_s]
+          arg_name = inner_key.to_s
+
+          arg_defn = argument_definitions[arg_name]
+          arg_default_used = defaults_used.include?(arg_name)
 
           arg_value = wrap_value(inner_value, arg_defn.type)
           string_key = arg_defn.expose_as
-          memo[string_key] = ArgumentValue.new(string_key, arg_value, arg_defn)
+          memo[string_key] = ArgumentValue.new(string_key, arg_value, arg_defn, arg_default_used)
           memo
         end
       end
@@ -59,6 +62,13 @@ module GraphQL
       def key?(key)
         key_s = key.is_a?(String) ? key : key.to_s
         @argument_values.key?(key_s)
+      end
+
+      # @param key [String, Symbol] name of value to access
+      # @return [Boolean] true if the argument default was passed as the argument value to the resolver
+      def default_used?(key)
+        key_s = key.is_a?(String) ? key : key.to_s
+        @argument_values.fetch(key_s, NULL_ARGUMENT_VALUE).default_used?
       end
 
       # Get the hash of all values, with stringified keys
@@ -85,7 +95,7 @@ module GraphQL
         end
       end
 
-      NO_ARGS = self.new({}, argument_definitions: [])
+      NO_ARGS = self.new({}, argument_definitions: [], defaults_used: Set.new)
 
       class << self
         attr_accessor :argument_definitions
@@ -95,14 +105,22 @@ module GraphQL
 
       class ArgumentValue
         attr_reader :key, :value, :definition
-        def initialize(key, value, definition)
+        attr_writer :default_used
+
+        def initialize(key, value, definition, default_used)
           @key = key
           @value = value
           @definition = definition
+          @default_used = default_used
+        end
+
+        # @return [Boolean] true if the argument default was passed as the argument value to the resolver
+        def default_used?
+          @default_used
         end
       end
 
-      NULL_ARGUMENT_VALUE = ArgumentValue.new(nil, nil, nil)
+      NULL_ARGUMENT_VALUE = ArgumentValue.new(nil, nil, nil, nil)
 
       def wrap_value(value, arg_defn_type)
         if value.nil?
@@ -115,7 +133,7 @@ module GraphQL
             wrap_value(value, arg_defn_type.of_type)
           when GraphQL::InputObjectType
             if value.is_a?(Hash)
-              arg_defn_type.arguments_class.new(value)
+              arg_defn_type.arguments_class.new(value, Set.new)
             else
               value
             end
