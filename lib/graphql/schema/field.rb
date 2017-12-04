@@ -13,7 +13,7 @@ module GraphQL
       # @return [String]
       attr_reader :description
 
-      def initialize(name, return_type_expr = nil, desc = nil, null: nil, field: nil, function: nil, deprecation_reason: nil, method: nil, connection: nil, max_page_size: nil, resolve: nil, &args_block)
+      def initialize(name, return_type_expr = nil, desc = nil, null: nil, field: nil, function: nil, deprecation_reason: nil, method: nil, connection: nil, max_page_size: nil, resolve: nil, introspection: false, &args_block)
         if !(field || function)
           if return_type_expr.nil?
             raise ArgumentError, "missing positional argument `type`"
@@ -34,6 +34,7 @@ module GraphQL
         @args_block = args_block
         @connection = connection
         @max_page_size = max_page_size
+        @introspection = introspection
       end
 
       # @return [GraphQL::Field]
@@ -80,6 +81,7 @@ module GraphQL
 
         field_defn.connection = connection
         field_defn.connection_max_page_size = @max_page_size
+        field_defn.introspection = @introspection
 
         field_proxy = FieldProxy.new(field_defn, argument_class: self.class.argument_class)
         # apply this first, so it can be overriden below
