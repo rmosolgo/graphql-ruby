@@ -122,7 +122,8 @@ module GraphQL
         # This is the `argument(...)` DSL for class-based field definitons
         def argument(*args)
           arg = @argument_class.new(*args)
-          @field.arguments[arg.name] = arg.graphql_definition
+          graphql_arg = arg.graphql_definition
+          @field.arguments[graphql_arg.name] = graphql_arg
         end
       end
     end
