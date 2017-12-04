@@ -69,10 +69,10 @@ describe GraphQL::Tracing::PlatformTracing do
       schema.execute(" { tracingScalar { traceNil traceFalse traceTrue } }")
       expected_trace = [
         "em",
-        "am",
         "l",
         "p",
         "v",
+        "am",
         "aq",
         "eq",
         "Q.t",
@@ -98,10 +98,10 @@ describe GraphQL::Tracing::PlatformTracing do
       schema.execute(" { tracingScalar { traceNil traceFalse traceTrue } }")
       expected_trace = [
         "em",
-        "am",
         "l",
         "p",
         "v",
+        "am",
         "aq",
         "eq",
         "Q.t",
