@@ -29,6 +29,8 @@ describe GraphQL::Schema::Object do
       name_field = new_object_class.fields.find { |f| f.name == "name" }
       assert_equal "The new description", name_field.description
     end
+
+    it "inherits name and description"
   end
 
   describe ".to_graphql_type" do

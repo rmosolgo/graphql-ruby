@@ -15,6 +15,11 @@ module GraphQL
         def graphql_definition
           @graphql_definition ||= to_graphql
         end
+
+        def initialize_copy(original)
+          super
+          @graphql_definition = nil
+        end
       end
 
       # These constants are interpreted as GraphQL types
@@ -58,7 +63,7 @@ module GraphQL
           if new_name
             @graphql_name = new_name
           else
-            @graphql_name || self.name.split("::").last.sub(/Type\Z/, "")
+            overridden_graphql_name || self.name.split("::").last.sub(/Type\Z/, "")
           end
         end
 
@@ -89,7 +94,7 @@ module GraphQL
           if !new_introspection.nil?
             @introspection = new_introspection
           else
-            @introspection
+            @introspection || (superclass <= Schema::Member ? superclass.introspection : false)
           end
         end
 
@@ -103,6 +108,12 @@ module GraphQL
 
         def to_non_null_type
           NonNullTypeProxy.new(self)
+        end
+
+        protected
+
+        def overridden_graphql_name
+          @graphql_name || (superclass <= GraphQL::Schema::Member ? superclass.overridden_graphql_name : nil)
         end
       end
     end
