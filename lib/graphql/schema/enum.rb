@@ -54,6 +54,7 @@ module GraphQL
           enum_type = GraphQL::EnumType.new
           enum_type.name = graphql_name
           enum_type.description = description
+          enum_type.introspection = introspection
           values.each do |val|
             enum_value = GraphQL::EnumType::EnumValue.new
             enum_value.name = val.name
