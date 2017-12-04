@@ -378,9 +378,9 @@ type Audio {
 
 enum Choice {
   BAR
-  BAZ @deprecated(reason: "Use \\\"BAR\\\".")
+  BAZ @deprecated(reason: "Use "BAR".")
   FOO
-  WOZ @deprecated(reason: "No longer supported")
+  WOZ @deprecated
 }
 
 # A blog comment
@@ -427,7 +427,7 @@ interface Node {
 type Post {
   body: String!
   comments: [Comment!]
-  comments_count: Int! @deprecated(reason: "Use \\\"comments\\\".")
+  comments_count: Int! @deprecated(reason: "Use "comments".")
   id: ID!
   title: String!
 }
@@ -496,7 +496,9 @@ SCHEMA
       when GraphQL::Argument
         member.name != "id"
       else
-        member.try(:deprecation_reason).nil?
+        if member.respond_to?(:deprecation_reason)
+          member.deprecation_reason.nil?
+        end
       end
     }
 
@@ -587,7 +589,7 @@ SCHEMA
 type Post {
   body: String!
   comments: [Comment!]
-  comments_count: Int! @deprecated(reason: \"Use \\\"comments\\\".\")
+  comments_count: Int! @deprecated(reason: "Use "comments".")
   id: ID!
   title: String!
 }
