@@ -136,6 +136,26 @@ schema {
   query: Root
 }
 
+# Marks an element of a GraphQL schema as no longer supported.
+directive @deprecated(
+  # Explains why this element was deprecated, usually also including a suggestion
+  # for how to access supported similar data. Formatted in
+  # [Markdown](https://daringfireball.net/projects/markdown/).
+  reason: String = "No longer supported"
+) on FIELD_DEFINITION | ENUM_VALUE
+
+# Directs the executor to include this field or fragment only when the `if` argument is true.
+directive @include(
+  # Included when true.
+  if: Boolean!
+) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
+
+# Directs the executor to skip this field or fragment when the `if` argument is true.
+directive @skip(
+  # Skipped when true.
+  if: Boolean!
+) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
+
 # A Directive provides a way to describe alternate runtime execution and type validation behavior in a GraphQL document.
 #
 # In some cases, you need to provide options to alter GraphQL's execution behavior
@@ -308,15 +328,6 @@ enum __TypeKind {
   # Indicates this type is a union. `possibleTypes` is a valid field.
   UNION
 }
-
-# Marks an element of a GraphQL schema as no longer supported.
-directive @deprecated(reason: String = "No longer supported") on FIELD_DEFINITION | ENUM_VALUE
-
-# Directs the executor to include this field or fragment only when the `if` argument is true.
-directive @include(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
-
-# Directs the executor to skip this field or fragment when the `if` argument is true.
-directive @skip(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
 SCHEMA
       assert_equal expected.chomp, GraphQL::Schema::Printer.print_introspection_schema
     end
