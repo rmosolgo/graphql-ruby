@@ -353,11 +353,29 @@ module Jazz
     end
   end
 
+  module Introspection
+    class TypeType < GraphQL::Introspection::TypeType
+      def name
+        @object.name.upcase
+      end
+    end
+
+    class SchemaType < GraphQL::Introspection::SchemaType
+      graphql_name "__Schema"
+
+      field :is_jazzy, Boolean, null: false
+      def is_jazzy
+        true
+      end
+    end
+  end
+
   # New-style Schema definition
   class Schema < GraphQL::Schema
     query(Query)
     mutation(Mutation)
     context_class CustomContext
+    introspection(Introspection)
     use MetadataPlugin, value: "xyz"
     def self.resolve_type(type, obj, ctx)
       class_name = obj.class.name.split("::").last
