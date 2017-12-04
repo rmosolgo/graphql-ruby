@@ -66,10 +66,11 @@ module GraphQL
           # If we visited each field and failed to resolve _any_,
           # then we're stuck.
           if @late_bound_fields == prev_late_bound_fields
+            type_names = prev_late_bound_fields.map { |f| f[1] }.map(&:type).map(&:unwrap).map(&:name).uniq
             raise <<-ERR
 Some late-bound types couldn't be resolved:
 
-- #{prev_late_bound_fields.map(&:type).map(&:unwrap).map(&:name)}
+- #{type_names}
 - Found __* types: #{@type_map.keys.select { |k| k.start_with?("__") }}
             ERR
           else
@@ -101,25 +102,10 @@ Some late-bound types couldn't be resolved:
           # Find the starting points, then visit them
           visit_roots = [member.query, member.mutation, member.subscription]
           if @introspection
-            introspection_types = [
-              GraphQL::Introspection::SchemaType,
-              GraphQL::Introspection::TypeType,
-              GraphQL::Introspection::FieldType,
-              GraphQL::Introspection::DirectiveType,
-              GraphQL::Introspection::EnumValueType,
-              GraphQL::Introspection::InputValueType,
-              GraphQL::Introspection::TypeKindEnum,
-              GraphQL::Introspection::DirectiveLocationEnum,
-            ]
+            introspection_types = schema.introspection_system.object_types
             visit_roots.concat(introspection_types)
             if member.query
-              # TODO: these will be modified, but they're shared by all schemas.
-              # Update introspection implementation to have schema-local fields.
-              introspection_entry_points = [
-                GraphQL::Introspection::SchemaField,
-                GraphQL::Introspection::TypeByNameField,
-              ]
-              introspection_entry_points.each do |introspection_field|
+              member.introspection_system.entry_points.each do |introspection_field|
                 # Visit this so that arguments class is preconstructed
                 # Skip validation since it begins with "__"
                 visit_field_on_type(schema, member.query, introspection_field, dynamic_field: true)
@@ -169,7 +155,7 @@ Some late-bound types couldn't be resolved:
             end
           elsif !prev_type.equal?(type_defn)
             # If the previous entry in the map isn't the same object we just found, raise.
-            raise("Duplicate type definition found for name '#{type_defn.name}'")
+            raise("Duplicate type definition found for name '#{type_defn.name}' (#{prev_type.metadata[:object_class]}, #{type_defn.metadata[:object_class]}})")
           end
         when Class
           if member.respond_to?(:graphql_definition)
