@@ -30,7 +30,7 @@ module GraphQL
         # @param field_defn [GraphQL::Schema::Field]
         # @return [void]
         def add_field(field_defn)
-          fields.reject! {|f| f.name == field_defn.name}
+          own_fields.reject! {|f| f.name == field_defn.name}
           own_fields << field_defn
           nil
         end
