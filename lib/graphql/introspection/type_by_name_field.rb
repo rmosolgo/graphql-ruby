@@ -8,7 +8,13 @@ module GraphQL
       introspection true
       argument :name, !types.String
       resolve ->(o, args, ctx) {
-        ctx.warden.get_type(args["name"])
+        type = ctx.warden.get_type(args["name"])
+        if type
+          # Apply wrapping manually since this field isn't wrapped by instrumentation
+          GraphQL::Introspection::TypeType.new(type, ctx)
+        else
+          nil
+        end
       }
     end
   end
