@@ -84,6 +84,15 @@ module GraphQL
           end
         end
 
+        # @return [Boolean] If true, this object is part of the introspection system
+        def introspection(new_introspection = nil)
+          if !new_introspection.nil?
+            @introspection = new_introspection
+          else
+            @introspection
+          end
+        end
+
         def to_graphql
           raise NotImplementedError
         end
