@@ -11,19 +11,19 @@ module GraphQL
                   "they describe. Abstract types, Union and Interface, provide the Object types "\
                   "possible at runtime. List and NonNull types compose other types."
 
-      field :kind, GraphQL::Introspection::TypeKindEnum, null: false
+      field :kind, GraphQL::Schema::LateBoundType.new("__TypeKind"), null: false
       field :name, String, null: true
       field :description, String, null: true
-      field :fields, "[GraphQL::Introspection::FieldType]", null: true do
+      field :fields, [GraphQL::Schema::LateBoundType.new("__Field")], null: true do
         argument :include_deprecated, Boolean, required: false, default_value: false
       end
-      field :interfaces, [GraphQL::Introspection::TypeType], null: true
-      field :possible_types, [GraphQL::Introspection::TypeType], null: true
-      field :enum_values, [GraphQL::Introspection::EnumValueType], null: true do
+      field :interfaces, [GraphQL::Schema::LateBoundType.new("__Type")], null: true
+      field :possible_types, [GraphQL::Schema::LateBoundType.new("__Type")], null: true
+      field :enum_values, [GraphQL::Schema::LateBoundType.new("__EnumValue")], null: true do
         argument :include_deprecated, Boolean, required: false, default_value: false
       end
-      field :input_fields, [GraphQL::Introspection::InputValueType], null: true
-      field :of_type, GraphQL::Introspection::TypeType, null: true
+      field :input_fields, [GraphQL::Schema::LateBoundType.new("__InputValue")], null: true
+      field :of_type, GraphQL::Schema::LateBoundType.new("__Type"), null: true
       introspection true
 
       def kind
