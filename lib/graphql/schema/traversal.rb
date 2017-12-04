@@ -25,14 +25,74 @@ module GraphQL
             Schema::BUILT_IN_INSTRUMENTERS +
             schema.instrumenters[:field_after_built_ins]
 
+        # These fields have types specified by _name_,
+        # So we need to inspect the schema and find those types,
+        # then update their references.
+        @late_bound_fields = []
         @type_map = {}
         @instrumented_field_map = Hash.new { |h, k| h[k] = {} }
         @type_reference_map = Hash.new { |h, k| h[k] = [] }
         @union_memberships = Hash.new { |h, k| h[k] = [] }
         visit(schema, schema, nil)
+        resolve_late_bound_fields
       end
 
       private
+
+      # A brute-force appraoch to late binding.
+      # Just keep trying the whole list, hoping that they
+      # eventually all resolve.
+      # This could be replaced with proper dependency tracking.
+      def resolve_late_bound_fields
+        # This is a bit tricky, with the writes going to internal state.
+        prev_late_bound_fields = @late_bound_fields
+        # Things might get added here during `visit...`
+        # or they might be added manually if we can't find them by hand
+        @late_bound_fields = []
+        prev_late_bound_fields.each do |(owner_type, field_defn, dynamic_field)|
+          if @type_map.key?(field_defn.type.unwrap.name)
+            late_bound_return_type = field_defn.type
+            resolved_type = @type_map.fetch(late_bound_return_type.unwrap.name)
+            wrapped_resolved_type = rewrap_resolved_type(late_bound_return_type, resolved_type)
+            # Update the field definition in place? :thinking_face:
+            field_defn.type = wrapped_resolved_type
+            visit_field_on_type(@schema, owner_type, field_defn, dynamic_field: dynamic_field)
+          else
+            @late_bound_fields << [owner_type, field_defn, dynamic_field]
+          end
+        end
+
+        if @late_bound_fields.any?
+          # If we visited each field and failed to resolve _any_,
+          # then we're stuck.
+          if @late_bound_fields == prev_late_bound_fields
+            raise <<-ERR
+Some late-bound types couldn't be resolved:
+
+- #{prev_late_bound_fields.map(&:type).map(&:unwrap).map(&:name)}
+- Found __* types: #{@type_map.keys.select { |k| k.start_with?("__") }}
+            ERR
+          else
+            resolve_late_bound_fields
+          end
+        end
+      end
+
+      # The late-bound type may be wrapped with list or non-null types.
+      # Apply the same wrapping to the resolve type and
+      # return the maybe-wrapped type
+      def rewrap_resolved_type(late_bound_type, resolved_inner_type)
+        case late_bound_type
+        when GraphQL::NonNullType
+          rewrap_resolved_type(late_bound_type.of_type, resolved_inner_type).to_non_null_type
+        when GraphQL::ListType
+          rewrap_resolved_type(late_bound_type.of_type, resolved_inner_type).to_list_type
+        when GraphQL::Schema::LateBoundType
+          resolved_inner_type
+        else
+          raise "Unexpected late_bound_type: #{late_bound_type.inspect} (#{late_bound_type.class})"
+        end
+      end
 
       def visit(schema, member, context_description)
         case member
@@ -41,11 +101,29 @@ module GraphQL
           # Find the starting points, then visit them
           visit_roots = [member.query, member.mutation, member.subscription]
           if @introspection
-            visit_roots << GraphQL::Introspection::SchemaType
+            introspection_types = [
+              GraphQL::Introspection::SchemaType,
+              GraphQL::Introspection::TypeType,
+              GraphQL::Introspection::FieldType,
+              GraphQL::Introspection::DirectiveType,
+              GraphQL::Introspection::EnumValueType,
+              GraphQL::Introspection::InputValueType,
+              GraphQL::Introspection::TypeKindEnum,
+              GraphQL::Introspection::DirectiveLocationEnum,
+            ]
+            visit_roots.concat(introspection_types)
             if member.query
-              # Visit this so that arguments class is preconstructed
-              # Skip validation since it begins with __
-              visit_field_on_type(schema, member.query, GraphQL::Introspection::TypeByNameField, dynamic_field: true)
+              # TODO: these will be modified, but they're shared by all schemas.
+              # Update introspection implementation to have schema-local fields.
+              introspection_entry_points = [
+                GraphQL::Introspection::SchemaField,
+                GraphQL::Introspection::TypeByNameField,
+              ]
+              introspection_entry_points.each do |introspection_field|
+                # Visit this so that arguments class is preconstructed
+                # Skip validation since it begins with "__"
+                visit_field_on_type(schema, member.query, introspection_field, dynamic_field: true)
+              end
             end
           end
           visit_roots.concat(member.orphan_types)
@@ -113,6 +191,11 @@ module GraphQL
       end
 
       def visit_field_on_type(schema, type_defn, field_defn, dynamic_field: false)
+        base_return_type = field_defn.type.unwrap
+        if base_return_type.is_a?(GraphQL::Schema::LateBoundType)
+          @late_bound_fields << [type_defn, field_defn, dynamic_field]
+          return
+        end
         if dynamic_field
           # Don't apply instrumentation to dynamic fields since they're shared constants
           instrumented_field_defn = field_defn
@@ -124,7 +207,6 @@ module GraphQL
         end
         @type_reference_map[instrumented_field_defn.type.unwrap.name] << instrumented_field_defn
         visit(schema, instrumented_field_defn.type, "Field #{type_defn.name}.#{instrumented_field_defn.name}'s return type")
-
         instrumented_field_defn.arguments.each do |name, arg|
           @type_reference_map[arg.type.unwrap.to_s] << arg
           visit(schema, arg.type, "Argument #{name} on #{type_defn.name}.#{instrumented_field_defn.name}")

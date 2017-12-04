@@ -4,7 +4,7 @@ module GraphQL
     TypeByNameField = GraphQL::Field.define do
       name("__type")
       description("A type in the GraphQL system")
-      type(GraphQL::Introspection::TypeType)
+      type(GraphQL::Schema::LateBoundType.new("__Type"))
       argument :name, !types.String
       resolve ->(o, args, ctx) {
         type = ctx.warden.get_type(args["name"])
