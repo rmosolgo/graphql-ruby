@@ -234,7 +234,7 @@ module GraphQL
         out << "directive @#{directive.name}"
 
         if directive.arguments.any?
-          out << "(#{directive.arguments.map { |a| print_input_value_definition(a) }.join(", ")})"
+          out << print_arguments(directive.arguments)
         end
 
         out << " on #{directive.locations.join(' | ')}"

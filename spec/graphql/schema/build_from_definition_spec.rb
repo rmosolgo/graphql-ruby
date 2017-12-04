@@ -308,7 +308,7 @@ schema {
 }
 
 type Hello {
-  str(int: Int, bool: Boolean): String
+  str(bool: Boolean, int: Int): String
 }
       SCHEMA
 
@@ -505,7 +505,7 @@ type HelloScalars {
 }
 
 type Mutation {
-  addHelloScalars(str: String, int: Int, bool: Boolean): HelloScalars
+  addHelloScalars(bool: Boolean, int: Int, str: String): HelloScalars
 }
       SCHEMA
 
@@ -520,7 +520,7 @@ enum Color {
 }
 
 type Mutation {
-  hello(str: String, int: Int, color: Color = RED, nullDefault: Int = null): String
+  hello(color: Color = RED, int: Int, nullDefault: Int = null, str: String): String
 }
 
 type Query {
@@ -545,7 +545,7 @@ type HelloScalars {
 }
 
 type Subscription {
-  subscribeHelloScalars(str: String, int: Int, bool: Boolean): HelloScalars
+  subscribeHelloScalars(bool: Boolean, int: Int, str: String): HelloScalars
 }
       SCHEMA
 
@@ -607,7 +607,6 @@ type Query {
     it 'supports empty types' do
       schema = <<-SCHEMA
 type Query {
-
 }
       SCHEMA
 
