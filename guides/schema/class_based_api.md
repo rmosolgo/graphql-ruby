@@ -61,6 +61,38 @@ If you have custom code which breaks on new-style definitions, try calling `.gra
 
 As described below, `.to_graphql` can be overridden to customize the type system.
 
+### List Types and Non-Null Types
+
+Previously, list types were expressed with `types[T]` and non-null types were expressed with `!T`. Now:
+
+- List types are expressed with Ruby Arrays, `[T]`, for example, `field :owners, [Types::UserType]`
+- Non-null types are expressed with keyword arguments `null:` or `required:`
+  - `field` takes a keyword `null:`. `null: true` means the field is nullable, `null: false` means the field is non-null (equivalent to `!`)
+  - `argument` takes a keyword `required:`. `required: true` means the argument is non-null (equivalent to `!`), `required: false` means that the argument is nullable
+
+In legacy-style classes, you may also use plain Ruby methods to create list and non-null types:
+
+- `#to_non_null_type` converts a type to a non-null variant (ie, `T.to_non_null_type` is equivalent to `!T`)
+- `#to_list_type` converts a type to a list variant (ie, `T.to_list_type` is equivalent to `types[T]`)
+
+The `!` method has been removed to avoid ambiguity with the built-in logical operator and related foot-gunning.
+
+For compatibility, you may wish to backport `!` to class-based type definitions. You have two options:
+
+__A refinement__, activated in [file scope or class/module scope](https://docs.ruby-lang.org/en/2.4.0/syntax/refinements_rdoc.html#label-Scope):
+
+```ruby
+# Enable `!` method in this scope
+using GraphQL::DeprecatedDSL
+```
+
+__A monkeypatch__, activated in global scope:
+
+```ruby
+# Enable `!` everywhere
+GraphQL::DeprecatedDSL.activate
+```
+
 ## Roadmap
 
 Here is a working plan for rolling out this feature:
@@ -139,7 +171,7 @@ class Types::BaseObject < GraphQL::Schema::Object
 end
 
 # then...
-class Types::TodoList < BaseObject
+class Types::TodoList < Types::BaseObject
   field :name, String, "The unique name of this list", null: false
   field :is_completed, String, "Completed status depending on all tasks being done.", null: false
   # Related Object:
@@ -148,7 +180,7 @@ class Types::TodoList < BaseObject
   field :viewers, [Types::User], "Users who can see this list", null: false
   # Connection:
   field :items, Types::TodoItem.connection_type, "Tasks on this list", null: false do
-    argument :status, TodoStatus, "Restrict items to this status", null: true
+    argument :status, TodoStatus, "Restrict items to this status", required: false
   end
 end
 ```
@@ -162,27 +194,41 @@ The second argument to `field(...)` is the return type. This can be:
 - A Ruby constant such as `Integer`, `Float`, `String`, `ID`, or `Boolean` (these correspond to GraphQL built-in scalars)
 - An _array_ of any of the above, which denotes a list type. Inner list types are always made non-null.
 
-Nullability is expressed with the required `null:` keyword:
+Nullability is expressed with the required `null:`/`required:` keywords:
 
-- `null: true` means that the field _may_ return null
-- `null: false` means the field is non-nullable; it may not return null. If the implementation returns `nil`, GraphQL-Ruby will return an error to the client.
+- Fields require the keyword `null:`
+  - `null: true` means that the field _may_ return null
+  - `null: false` means the field is non-nullable; it may not return null. If the implementation returns `nil`, GraphQL-Ruby will return an error to the client.
+- Arguments require the keyword `required:`
+  - `required: true` means the argument must be provided (the type is non-null)
+  - `required: false` means the argument is optional (the type is nullable)
 
 Here are some examples:
 
 ```ruby
 field :name, String, null: true # String
 field :id, ID, null: false # ID!
-field :scores, [Integer], null: false, # [Int!]!
-field :teammates, [Types::User], null: false, # [User!]!
+field :scores, [Integer], null: false # [Int!]!
+field :teammates, [Types::User], null: false  do # [User!]!
+  argument :teamName, String, required: true # String!
+  argument :name, String, required: false # String
+end
 ```
 
-### Connection types
+### Connection fields & types
 
 There is no `connection(...)` method. Instead, connection fields are inferred from the type name.
 
 If the type name ends in `Connection`, the field is treated as a connection field.
 
 This default may be overridden by passing a `connection: true` or `connection: false` keyword.
+
+For example:
+
+```ruby
+# This will be treated as a connection, since the type name ends in "Connection"
+field :projects, Types::ProjectType.connection_type
+```
 
 ### Resolve function compatibility
 
@@ -211,6 +257,45 @@ Inside the method, you can access some instance variables:
 
 - `@context` is the query context (formerly `ctx` to resolve functions)
 - `@object` is the underlying application object (formerly `obj` to resolve functions)
+
+For example:
+
+```ruby
+# type TodoList {
+#   items(isCompleted: Boolean): [TodoItem]!
+# }
+class Types::TodoList < Types::BaseObject
+  field :items, [Types::TodoItem], null: false do
+    argument :is_completed, Boolean, required: false
+  end
+
+  # GraphQL arg converted to Ruby kwarg:
+  def items(is_completed: nil)
+    # @context is the query context
+    current_user = @context[:current_user]
+    # @object is the underlying TodoList
+    if current_user != @object.owner
+      # not authorized:
+      []
+    elsif is_completed.nil?
+      @object.items
+    else
+      @object.items.where(completed: is_completed)
+    end
+  end
+end
+```
+
+### Implementing interfaces
+
+If an object implements any interfaces, they can be added with `implements`, for example:
+
+```ruby
+# This object implements some interfaces:
+implements GraphQL::Relay::Node.interface, Types::UserAssignableType
+```
+
+See below for how interfaces are "inherited" by object classes.
 
 ## Interface classes
 
