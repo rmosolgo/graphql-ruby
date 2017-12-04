@@ -7,11 +7,11 @@ module GraphQL
                   "available types and directives on the server, as well as the entry points for "\
                   "query, mutation, and subscription operations."
 
-      field :types, [GraphQL::Introspection::TypeType], "A list of all types supported by this server.", null: false
-      field :queryType, GraphQL::Introspection::TypeType, "The type that query operations will be rooted at.", null: false
-      field :mutationType, GraphQL::Introspection::TypeType, "If this server supports mutation, the type that mutation operations will be rooted at.", null: true
-      field :subscriptionType, GraphQL::Introspection::TypeType, "If this server support subscription, the type that subscription operations will be rooted at.", null: true
-      field :directives, [GraphQL::Introspection::DirectiveType], "A list of all directives supported by this server.", null: false
+      field :types, [GraphQL::Schema::LateBoundType.new("__Type")], "A list of all types supported by this server.", null: false
+      field :queryType, GraphQL::Schema::LateBoundType.new("__Type"), "The type that query operations will be rooted at.", null: false
+      field :mutationType, GraphQL::Schema::LateBoundType.new("__Type"), "If this server supports mutation, the type that mutation operations will be rooted at.", null: true
+      field :subscriptionType, GraphQL::Schema::LateBoundType.new("__Type"), "If this server support subscription, the type that subscription operations will be rooted at.", null: true
+      field :directives, [GraphQL::Schema::LateBoundType.new("__Directive")], "A list of all directives supported by this server.", null: false
 
       def types
         @context.warden.types

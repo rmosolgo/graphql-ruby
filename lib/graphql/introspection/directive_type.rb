@@ -11,8 +11,8 @@ module GraphQL
                     "to the executor."
       field :name, String, null: false
       field :description, String, null: true
-      field :locations, [GraphQL::Introspection::DirectiveLocationEnum], null: false
-      field :args, [GraphQL::Introspection::InputValueType], null: false
+      field :locations, [GraphQL::Schema::LateBoundType.new("__DirectiveLocation")], null: false
+      field :args, [GraphQL::Schema::LateBoundType.new("__InputValue")], null: false
       field :on_operation, Boolean, null: false, deprecation_reason: "Use `locations`.", method: :on_operation?
       field :on_fragment, Boolean, null: false, deprecation_reason: "Use `locations`.", method: :on_fragment?
       field :on_field, Boolean, null: false, deprecation_reason: "Use `locations`.", method: :on_field?
