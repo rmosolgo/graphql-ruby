@@ -50,7 +50,6 @@ module GraphQL
         end
 
         field_defn.name = Member::BuildType.camelize(name)
-
         if @return_type_expr
           return_type_name = Member::BuildType.to_type_name(@return_type_expr)
           connection = @connection.nil? ? return_type_name.end_with?("Connection") : @connection

@@ -29,6 +29,7 @@ And learn about the APIs:
 - [Input Object classes](#input-object-classes)
 - [Scalar classes](#scalar-classes)
 - [Customizing definitions](#customizing-definitions)
+- [Custom introspection](#custom-introspection)
 
 
 ## Rationale & Goals
@@ -684,3 +685,101 @@ class BaseObject < GraphQL::Schema::Object
   end
 end
 ```
+
+## Custom Introspection
+
+With a class-based schema, you can use custom introspection types.
+
+```ruby
+# create a module namespace for your custom types:
+module Introspection
+  # described below ...
+end
+
+class MySchema < GraphQL::Schema
+  # ...
+  # then pass the module as `introspection`
+  introspection Introspection
+end
+```
+
+Keep in mind that off-the-shelf tooling may not support your custom introspection fields. You may have to modify existing tooling or create your own tools to make use of your extensions.
+
+### Introspection Namespace
+
+The introspection namespace may contain a few different customizations:
+
+- Class-based type definitions which replace the built-in introspection types (such as `__Schema` and `__Type`)
+- `EntryPoints`, A class-based type definition containing introspection entry points (like `__schema` and `__type(name:)`).
+- `DynamicFields`, A class-based type definition containing dynamic, globally-available fields (like `__typename`.)
+
+### Custom Introspection Types
+
+The `module` passed as `introspection` may contain classes with the following names, which replace the built-in introspection types:
+
+Custom class name | GraphQL type | Built-in class name
+--|--|--
+`Schema` | `__Schema` | `GraphQL::Introspection::SchemaType`
+`Type` | `__Type` | `GraphQL::Introspection::TypeType`
+`Directive` | `__Directive` | `GraphQL::Introspection::DirectiveType`
+`DirectiveLocation` | `__DirectiveLocation` | `GraphQL::Introspection::DirectiveLocationEnum`
+`EnumValue` | `__EnumValue` | `GraphQL::Introspection::EnumValueType`
+`Field` | `__Field` | `GraphQL::Introspection::FieldType`
+`InputValue` | `__InputValue` | `GraphQL::Introspection::InputValueType`
+`TypeKind` | `__TypeKind` | `GraphQL::Introspection::TypeKindEnum`
+
+The class-based definitions' names _must_ match the names of the types they replace.
+
+#### Extending a Built-in Type
+
+The built-in classes listed above may be extended:
+
+```ruby
+module Introspection
+  class Schema < GraphQL::Introspection::SchemaType
+    # ...
+  end
+end
+```
+
+Inside the class definition, you may:
+
+- add new fields by calling `field(...)` and providing implementations
+- redefine field structure by calling `field(...)`
+- provide new field implementations by defining methods
+- provide new descriptions by calling `description(...)`
+
+### Introspection Entry Points
+
+The GraphQL spec describes two entry points to the introspection system:
+
+- `__schema` returns data about the schema (as type `__Schema`)
+- `__type(name:)` returns data about a type, if one is found by name (as type `__Type`)
+
+You can re-implement these fields or create new ones by creating a custom `EntryPoints` class in your introspection namespace:
+
+```ruby
+module Introspection
+  class EntryPoints < GraphQL::Introspection::EntryPoints
+    # ...
+  end
+end
+```
+
+This class an object type definition, so you can override fields or add new ones here. They'll be available on the root `query` object, but ignored in introspection (just like `__schema` and `__type`).
+
+### Dynamic Fields
+
+The GraphQL spec describes a field which may be added to _any_ selection: `__typename`. It returns the name of the current GraphQL type.
+
+You can add fields like this (or override `__typename`) by creating a custom `DynmaicFields` defintion:
+
+```ruby
+module Introspection
+  class EntryPoints < GraphQL::Introspection::DynamicFields
+    # ...
+  end
+end
+```
+
+Any fields defined there will be available in any selection, but ignored in introspection (just like `__typename`).

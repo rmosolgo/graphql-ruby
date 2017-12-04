@@ -48,7 +48,7 @@ module GraphQL
           obj_type.introspection = introspection
 
           fields.each do |field_inst|
-            field_defn = field_inst.graphql_definition
+            field_defn = field_inst.to_graphql
             obj_type.fields[field_defn.name] = field_defn
           end
 
