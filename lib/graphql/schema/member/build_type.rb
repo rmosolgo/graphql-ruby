@@ -43,7 +43,7 @@ module GraphQL
                 end
               end
             end
-          when GraphQL::BaseType
+          when GraphQL::BaseType, GraphQL::Schema::LateBoundType
             type_expr
           when Array
             if type_expr.length != 1
@@ -77,7 +77,7 @@ module GraphQL
 
         def to_type_name(something)
           case something
-          when GraphQL::BaseType
+          when GraphQL::BaseType, GraphQL::Schema::LateBoundType
             something.unwrap.name
           when Array
             to_type_name(something.first)

@@ -8,7 +8,7 @@ module GraphQL
                   "optionally a default value."
       field :name, String, null: false
       field :description, String, null: true
-      field :type, "GraphQL::Introspection::TypeType", null: false
+      field :type, GraphQL::Schema::LateBoundType.new("__Type"), null: false
       field :default_value, String, "A GraphQL-formatted string representing the default value for this input value.", null: true
 
       def default_value

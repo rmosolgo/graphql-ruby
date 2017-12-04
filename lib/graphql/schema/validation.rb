@@ -24,7 +24,8 @@ module GraphQL
         # @param allowed_classes [Class] Classes which the return value may be an instance of
         # @return [Proc] A proc which will validate the input by calling `property_name` and asserting it is an instance of one of `allowed_classes`
         def self.assert_property(property_name, *allowed_classes)
-          allowed_classes_message = allowed_classes.map(&:name).join(" or ")
+          # Hide LateBoundType from user-facing errors
+          allowed_classes_message = allowed_classes.map(&:name).reject {|n| n.include?("LateBoundType") }.join(" or ")
           ->(obj) {
             property_value = obj.public_send(property_name)
             is_valid_value = allowed_classes.any? { |allowed_class| property_value.is_a?(allowed_class) }
@@ -240,7 +241,7 @@ module GraphQL
           Rules::RESERVED_NAME,
           Rules::DESCRIPTION_IS_STRING_OR_NIL,
           Rules.assert_property(:deprecation_reason, String, NilClass),
-          Rules.assert_property(:type, GraphQL::BaseType),
+          Rules.assert_property(:type, GraphQL::BaseType, GraphQL::Schema::LateBoundType),
           Rules.assert_property(:property, Symbol, NilClass),
           Rules::ARGUMENTS_ARE_STRING_TO_ARGUMENT,
           Rules::ARGUMENTS_ARE_VALID,
