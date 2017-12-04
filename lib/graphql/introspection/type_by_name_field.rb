@@ -11,7 +11,8 @@ module GraphQL
         type = ctx.warden.get_type(args["name"])
         if type
           # Apply wrapping manually since this field isn't wrapped by instrumentation
-          GraphQL::Introspection::TypeType.new(type, ctx)
+          type_type = ctx.schema.introspection_system.type_type
+          type_type.metadata[:object_class].new(type, ctx)
         else
           nil
         end
