@@ -2,7 +2,7 @@
 module GraphQL
   class Schema
     class IntrospectionSystem
-      attr_reader :schema_type, :type_type, :schema_field, :type_by_name_field
+      attr_reader :schema_type, :type_type, :typename_field
 
       def initialize(schema)
         @schema = schema
@@ -19,9 +19,16 @@ module GraphQL
         @type_kind_enum = load_constant(:TypeKindEnum).to_graphql
         @directive_location_enum = load_constant(:DirectiveLocationEnum).to_graphql
 
+        entry_points_class = load_constant(:EntryPoints)
+        entry_points_type = entry_points_class.to_graphql
+        @entry_point_fields = {}
+        entry_points_type.all_fields.each do |field_defn|
+          inner_resolve = field_defn.resolve_proc
+          resolve_with_instantiate = EntryPointResolve.new(object_class: entry_points_class, inner_resolve: inner_resolve)
+          @entry_point_fields[field_defn.name] = field_defn.redefine(resolve: resolve_with_instantiate)
+        end
         # Make copies so their return types can be modified to local types
-        @schema_field = GraphQL::Introspection::SchemaField.dup
-        @type_by_name_field = GraphQL::Introspection::TypeByNameField.dup
+        @typename_field = GraphQL::Introspection::TypenameField.dup
       end
 
       def object_types
@@ -38,10 +45,11 @@ module GraphQL
       end
 
       def entry_points
-        [
-          @schema_field,
-          @type_by_name_field,
-        ]
+        @entry_point_fields.values
+      end
+
+      def entry_point(name:)
+        @entry_point_fields[name]
       end
 
       private
@@ -51,6 +59,23 @@ module GraphQL
       rescue NameError
         # Dup the built-in so that the cached fields aren't shared
         @built_in_namespace.const_get(class_name)
+      end
+
+      class EntryPointResolve
+        def initialize(object_class:, inner_resolve:)
+          @object_class = object_class
+          @inner_resolve = inner_resolve
+        end
+
+        def call(obj, args, ctx)
+          query_ctx = ctx.query.context
+          # Remove the QueryType wrapper
+          if obj.is_a?(GraphQL::Schema::Object)
+            obj = obj.object
+          end
+          wrapped_object = @object_class.new(obj, query_ctx)
+          @inner_resolve.call(wrapped_object, args, ctx)
+        end
       end
     end
   end
