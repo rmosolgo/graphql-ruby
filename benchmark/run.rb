@@ -16,8 +16,7 @@ module GraphQLBenchmark
     )
   )
 
-  # HACKERONE_QUERY = GraphQL.parse(File.read(File.join(BENCHMARK_PATH, "hackerone_query.graphql")))
-  HACKERONE_QUERY = '{ me { username }}'
+  HACKERONE_QUERY = GraphQL.parse(File.read(File.join(BENCHMARK_PATH, "hackerone_query.graphql")))
 
   ABSTRACT_FRAGMENTS = GraphQL.parse(File.read(File.join(BENCHMARK_PATH, "abstract_fragments.graphql")))
   ABSTRACT_FRAGMENTS_2 = GraphQL.parse(File.read(File.join(BENCHMARK_PATH, "abstract_fragments_2.graphql")))
