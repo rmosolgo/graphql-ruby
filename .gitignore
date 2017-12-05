@@ -5,6 +5,7 @@ guides/yardoc/
 pkg/
 Gemfile.lock
 gemfiles/*.lock
+coverage/
 # Test database
 *.db
 .bundle/
