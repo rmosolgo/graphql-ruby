@@ -6,10 +6,12 @@ module GraphQL
     # {GraphQL::Language::DocumentFromSchemaDefinition} is used to convert a {GraphQL::Schema} object
     # To a {GraphQL::Language::Document} AST node.
     #
-    # @param context [GraphQL::Query::Context] the optional query context
-    # @param warden [GraphQL::Schema::Warden] An optional schema warden to hide certain nodes
-    # @param include_introspection_types [Boolean] Wether or not to print introspection types
-    # @param include_introspection_types [Boolean] Wether or not to print built in types and directives
+    # @param context [Hash]
+    # @param only [<#call(member, ctx)>]
+    # @param except [<#call(member, ctx)>]
+    # @param include_introspection_types [Boolean] Wether or not to include introspection types in the AST
+    # @param include_built_in_scalars [Boolean] Wether or not to include built in scalars in the AST
+    # @param include_built_in_directives [Boolean] Wether or not to include built in diirectives in the AST
     class DocumentFromSchemaDefinition
       def initialize(
         schema, context: nil, only: nil, except: nil, include_introspection_types: false,
