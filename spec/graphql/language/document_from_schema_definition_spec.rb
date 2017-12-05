@@ -12,8 +12,8 @@ describe GraphQL::Language::DocumentFromSchemaDefinition do
 
       type Foo implements Bar {
         one: Type
-        two(argument: InputType!): Type
-        three(argument: InputType, other: String): Int
+        two(argument: InputType!): Site
+        three(argument: InputType, other: String): CustomScalar
         four(argument: String = "string"): String
         five(argument: [String] = ["string", "string"]): String
         six(argument: String): Type
@@ -66,8 +66,8 @@ describe GraphQL::Language::DocumentFromSchemaDefinition do
 
         type Foo implements Bar {
           one: Type
-          two(argument: InputType!): Type
-          three(argument: InputType, other: String): Int
+          two(argument: InputType!): Site
+          three(argument: InputType, other: String): CustomScalar
           four(argument: String = "string"): String
           five(argument: [String] = ["string", "string"]): String
           six(argument: String): Type
@@ -115,8 +115,8 @@ describe GraphQL::Language::DocumentFromSchemaDefinition do
 
         type Foo implements Bar {
           one: Type
-          two(argument: InputType!): Type
-          three(argument: InputType, other: String): Int
+          two(argument: InputType!): Site
+          three(argument: InputType, other: String): CustomScalar
           four(argument: String = "string"): String
           five(argument: [String] = ["string", "string"]): String
           six(argument: String): Type
@@ -135,9 +135,6 @@ describe GraphQL::Language::DocumentFromSchemaDefinition do
           key: String!
           answer: Int = 42
         }
-
-        # Represents non-fractional signed whole numeric values. Int can represent values between -(2^31) and 2^31 - 1.
-        scalar Int
 
         type MutationType {
           a(input: InputType): String
@@ -174,8 +171,8 @@ describe GraphQL::Language::DocumentFromSchemaDefinition do
 
         type Foo implements Bar {
           one: Type
-          two(argument: InputType!): Type
-          three(argument: InputType, other: String): Int
+          two(argument: InputType!): Site
+          three(argument: InputType, other: String): CustomScalar
           four(argument: String = "string"): String
           five(argument: [String] = ["string", "string"]): String
           six(argument: String): Type
@@ -194,9 +191,6 @@ describe GraphQL::Language::DocumentFromSchemaDefinition do
           key: String!
           answer: Int = 42
         }
-
-        # Represents non-fractional signed whole numeric values. Int can represent values between -(2^31) and 2^31 - 1.
-        scalar Int
 
         type MutationType {
           a(input: InputType): String
@@ -237,9 +231,9 @@ describe GraphQL::Language::DocumentFromSchemaDefinition do
         }
 
         type Foo implements Bar {
-          three(argument: InputType, other: String): Int
+          three(argument: InputType, other: String): CustomScalar
           four(argument: String = "string"): String
-          five(argument: [String] = ["string", "string"]): String
+          five(argument: [String] = ["string", "string"]): Site
         }
 
         interface Bar {
@@ -251,9 +245,6 @@ describe GraphQL::Language::DocumentFromSchemaDefinition do
           key: String!
           answer: Int = 42
         }
-
-        # Represents non-fractional signed whole numeric values. Int can represent values between -(2^31) and 2^31 - 1.
-        scalar Int
 
         type MutationType {
           a(input: InputType): String
@@ -293,9 +284,9 @@ describe GraphQL::Language::DocumentFromSchemaDefinition do
         }
 
         type Foo implements Bar {
-          three(argument: InputType, other: String): Int
+          three(argument: InputType, other: String): CustomScalar
           four(argument: String = "string"): String
-          five(argument: [String] = ["string", "string"]): String
+          five(argument: [String] = ["string", "string"]): Site
         }
 
         interface Bar {
@@ -307,9 +298,6 @@ describe GraphQL::Language::DocumentFromSchemaDefinition do
           key: String!
           answer: Int = 42
         }
-
-        # Represents non-fractional signed whole numeric values. Int can represent values between -(2^31) and 2^31 - 1.
-        scalar Int
 
         type MutationType {
           a(input: InputType): String
@@ -347,8 +335,8 @@ describe GraphQL::Language::DocumentFromSchemaDefinition do
 
         type Foo implements Bar {
           one: Type
-          two(argument: InputType!): Type
-          three(argument: InputType, other: String): Int
+          two(argument: InputType!): Site
+          three(argument: InputType, other: String): CustomScalar
           four(argument: String = "string"): String
           five(argument: [String] = ["string", "string"]): String
           six(argument: String): Type
@@ -367,9 +355,6 @@ describe GraphQL::Language::DocumentFromSchemaDefinition do
           key: String!
           answer: Int = 42
         }
-
-        # Represents non-fractional signed whole numeric values. Int can represent values between -(2^31) and 2^31 - 1.
-        scalar Int
 
         type MutationType {
           a(input: InputType): String
@@ -420,7 +405,7 @@ describe GraphQL::Language::DocumentFromSchemaDefinition do
         type Foo implements Bar {
           one: Type
           two(argument: InputType!): Type
-          three(argument: InputType, other: String): Int
+          three(argument: InputType, other: String): CustomScalar
           four(argument: String = "string"): String
           five(argument: [String] = ["string", "string"]): String
           six(argument: String): Type
@@ -485,7 +470,8 @@ describe GraphQL::Language::DocumentFromSchemaDefinition do
       let(:document) {
         subject.new(
           schema,
-          include_introspection_types: true,
+          include_built_in_scalars: true,
+          include_built_in_directives: true,
         ).document
       }
 
@@ -757,7 +743,6 @@ describe GraphQL::Language::DocumentFromSchemaDefinition do
       }
 
       it "returns the full document AST from the given schema including built ins and introspection" do
-        expected_document = GraphQL.parse(expected_idl)
         assert equivalent_node?(expected_document, document)
       end
     end
@@ -769,12 +754,12 @@ describe GraphQL::Language::DocumentFromSchemaDefinition do
     return false unless expected.is_a?(node.class)
 
     if expected.respond_to?(:children) && expected.respond_to?(:scalars)
-      children_equal = node.children.all? do |child|
-        expected.children.find { |expected_child| equivalent_node?(expected_child, child) }
+      children_equal = expected.children.all? do |expected_child|
+        node.children.find { |child| equivalent_node?(expected_child, child) }
       end
 
-      scalars_equal = node.children.all? do |child|
-        expected.children.find { |expected_child| equivalent_node?(expected_child, child) }
+      scalars_equal = expected.children.all? do |expected_child|
+        node.children.find { |child| equivalent_node?(expected_child, child) }
       end
 
       children_equal && scalars_equal
