@@ -33,7 +33,7 @@ module GraphQLBenchmark
         x.report("validate - introspection ") { CARD_SCHEMA.validate(DOCUMENT) }
         x.report("validate - abstract fragments") { CARD_SCHEMA.validate(ABSTRACT_FRAGMENTS) }
         x.report("validate - abstract fragments 2") { CARD_SCHEMA.validate(ABSTRACT_FRAGMENTS_2) }
-        x.report("validate - hackerone") { HACKERONE_SCHEMA.validate(HACKERONE_QUERY) }
+        x.report("validate - hackerone query") { HACKERONE_SCHEMA.validate(HACKERONE_QUERY) }
       else
         raise("Unexpected task #{task}")
       end
