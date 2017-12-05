@@ -95,11 +95,13 @@ module GraphQL
         end
 
         def camelize(string)
-          return string unless string.include?('_')
-
-          string.split('_').map(&:capitalize).join.tap do |camelized|
-            camelized[0] = camelized[0].downcase
+          return string unless string.include?("_")
+          camelized = string.split('_').map(&:capitalize).join
+          camelized[0] = camelized[0].downcase
+          if string.start_with?("__")
+            camelized = "__#{camelized}"
           end
+          camelized
         end
 
         def underscore(string)

@@ -776,7 +776,7 @@ You can add fields like this (or override `__typename`) by creating a custom `Dy
 
 ```ruby
 module Introspection
-  class EntryPoints < GraphQL::Introspection::DynamicFields
+  class DynamicFields < GraphQL::Introspection::DynamicFields
     # ...
   end
 end

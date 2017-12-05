@@ -368,6 +368,20 @@ module Jazz
         true
       end
     end
+
+    class DynamicFields < GraphQL::Introspection::DynamicFields
+      field :__typename_length, Integer, null: false
+      def __typename_length
+        100
+      end
+    end
+
+    class EntryPoints < GraphQL::Introspection::EntryPoints
+      field :__classname, String, "The Ruby class name of the root object", null: false
+      def __classname
+        @object.class.name
+      end
+    end
   end
 
   # New-style Schema definition
