@@ -13,10 +13,25 @@ describe GraphQL::Schema::IntrospectionSystem do
       assert_equal "ENSEMBLE", res["data"]["__type"]["name"]
     end
 
+    it "serves custom entry points"  do
+      res = Jazz::Schema.execute("{ __classname }", root_value: Set.new)
+      assert_equal "Set", res["data"]["__classname"]
+    end
+
+    it "serves custom dynamic fields" do
+      skip
+      res = Jazz::Schema.execute("{ nowPlaying { __typenameLength } }")
+      assert_equal 0, res["data"]["nowPlaying"]["__typenameLength"]
+    end
+
     it "doesn't affect other schemas" do
       res = Dummy::Schema.execute("{ __schema { isJazzy } }")
-      assert_nil res["data"]
-      # it's a validation error
+      assert_equal 1, res["errors"].length
+
+      res = Dummy::Schema.execute("{ __classname }", root_value: Set.new)
+      assert_equal 1, res["errors"].length
+
+      res = Dummy::Schema.execute("{ ensembles { __typenameLength } }")
       assert_equal 1, res["errors"].length
     end
   end

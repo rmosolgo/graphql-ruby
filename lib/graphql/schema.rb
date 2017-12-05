@@ -352,11 +352,9 @@ module GraphQL
         if defined_field
           defined_field
         elsif field_name == "__typename"
-          GraphQL::Introspection::TypenameField
-        elsif field_name == "__schema" && parent_type == query
-          introspection_system.schema_field
-        elsif field_name == "__type" && parent_type == query
-          introspection_system.type_by_name_field
+          introspection_system.typename_field
+        elsif parent_type == query && (entry_point_field = introspection_system.entry_point(name: field_name))
+          entry_point_field
         else
           nil
         end
