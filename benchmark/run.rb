@@ -60,6 +60,20 @@ module GraphQLBenchmark
       yield
     end
 
+    # Print a flat profile to text
+    File.open "h1-graph.html", 'w' do |file|
+      RubyProf::GraphHtmlPrinter.new(result).print(file)
+    end
+
+    File.open "h1-flat.txt", 'w' do |file|
+      # RubyProf::FlatPrinter.new(result).print(file)
+      RubyProf::FlatPrinterWithLineNumbers.new(result).print(file)
+    end
+
+    File.open "h1-stack.html", 'w' do |file|
+      RubyProf::CallStackPrinter.new(result).print(file)
+    end
+
     printer = RubyProf::FlatPrinter.new(result)
     html_printer = RubyProf::GraphHtmlPrinter.new(result)
     File.open("h1_profile.html", "wb") { |f| html_printer.print(f, {}) }
