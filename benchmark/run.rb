@@ -40,13 +40,23 @@ module GraphQLBenchmark
   end
 
   def self.profile
+    profile_block do
+      SCHEMA.execute(document: DOCUMENT)
+    end
+  end
+
+  def self.profile_validation
+    profile_block do
+      HACKERONE_SCHEMA.validate(HACKERONE_QUERY)
+    end
+  end
+
+  def self.profile_block
     # Warm up any caches:
-    SCHEMA.execute(document: DOCUMENT)
-    # CARD_SCHEMA.validate(ABSTRACT_FRAGMENTS)
+    yield
 
     result = RubyProf.profile do
-      # CARD_SCHEMA.validate(ABSTRACT_FRAGMENTS)
-      SCHEMA.execute(document: DOCUMENT)
+      yield
     end
 
     printer = RubyProf::FlatPrinter.new(result)

@@ -88,6 +88,12 @@ namespace :bench do
     prepare_benchmark
     GraphQLBenchmark.profile
   end
+
+  desc "Generate a profile of validating HackerOne Relay query"
+  task :profile_validation do
+    prepare_benchmark
+    GraphQLBenchmark.profile_validation
+  end
 end
 
 namespace :test do
