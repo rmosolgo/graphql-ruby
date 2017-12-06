@@ -12,7 +12,7 @@ module GraphQL
 
       def initialize(value:, name:, line:, col:, prev_token:)
         @name = name
-        @value = value
+        @value = value.freeze
         @line = line
         @col = col
         @prev_token = prev_token

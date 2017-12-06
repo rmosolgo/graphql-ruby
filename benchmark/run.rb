@@ -2,6 +2,7 @@
 require "dummy/schema"
 require "benchmark/ips"
 require 'ruby-prof'
+require 'memory_profiler'
 
 module GraphQLBenchmark
   QUERY_STRING = GraphQL::Introspection::INTROSPECTION_QUERY
@@ -60,9 +61,12 @@ module GraphQLBenchmark
     end
 
     printer = RubyProf::FlatPrinter.new(result)
-    # printer = RubyProf::GraphHtmlPrinter.new(result)
+    html_printer = RubyProf::GraphHtmlPrinter.new(result)
+    File.open("h1_profile.html", "wb") { |f| html_printer.print(f, {}) }
     # printer = RubyProf::FlatPrinterWithLineNumbers.new(result)
 
     printer.print(STDOUT, {})
+
+    MemoryProfiler.report { yield }.pretty_print
   end
 end

@@ -5,10 +5,9 @@ module GraphQL
     module Typecast
       # @return [Boolean]
       def self.subtype?(parent_type, child_type)
-        if parent_type == child_type
-          # Equivalent types are subtypes
-          true
-        elsif child_type.is_a?(GraphQL::NonNullType)
+        # NOTE: this avoids BaseType#== because it's kind of slow.
+        # TODO: make that faster?
+        if child_type.is_a?(GraphQL::NonNullType)
           # A non-null type is a subtype of a nullable type
           # if its inner type is a subtype of that type
           if parent_type.is_a?(GraphQL::NonNullType)
@@ -24,13 +23,22 @@ module GraphQL
             case child_type
             when GraphQL::ObjectType
               child_type.interfaces.include?(parent_type)
+            when GraphQL::InterfaceType
+              parent_type.name == child_type.name
             else
               false
             end
           when GraphQL::UnionType
-            # A type is a subtype of that union
-            # if the union includes that type
-            parent_type.possible_types.include?(child_type)
+            case child_type
+            when GraphQL::ObjectType
+              # A type is a subtype of that union
+              # if the union includes that type
+              parent_type.possible_types.include?(child_type)
+            when GraphQL::UnionType
+              parent_type.name == child_type.name
+            else
+              false
+            end
           when GraphQL::ListType
             # A list type is a subtype of another list type
             # if its inner type is a subtype of the other inner type
@@ -41,7 +49,7 @@ module GraphQL
               false
             end
           else
-            false
+            parent_type.name == child_type.name
           end
         end
       end

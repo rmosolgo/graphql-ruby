@@ -102,7 +102,17 @@ module GraphQL
       def follow_spreads(node, parent_variables, spreads_for_context, fragment_definitions, visited_fragments)
         spreads = spreads_for_context[node] - visited_fragments
         spreads.each do |spread_name|
-          def_node, variables = fragment_definitions.find { |def_node, vars| def_node.name == spread_name }
+          def_node = nil
+          variables = nil
+          # Implement `.find` by hand to avoid Ruby's internal allocations
+          fragment_definitions.each do |frag_def_node, vars|
+            if frag_def_node.name == spread_name
+              def_node = frag_def_node
+              variables = vars
+              break
+            end
+          end
+
           next if !def_node
           visited_fragments << spread_name
           variables.each do |name, child_usage|

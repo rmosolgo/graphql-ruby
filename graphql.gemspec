@@ -28,6 +28,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency "guard-rake"
   s.add_development_dependency "guard-rubocop"
   s.add_development_dependency "listen", "~> 3.0.0"
+  s.add_development_dependency "memory_profiler"
   # Remove this limit when minitest-reports is compatible
   # https://github.com/kern/minitest-reporters/pull/220
   s.add_development_dependency "minitest", "~> 5.9.0"

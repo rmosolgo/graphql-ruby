@@ -4,6 +4,8 @@ module GraphQL
     class Node
       # @api private
       DEFAULT_TYPED_CHILDREN = Proc.new { |h, k| h[k] = {} }
+      NO_TYPED_CHILDREN = {}.freeze
+
       # @return [String] the name this node has in the response
       attr_reader :name
 
@@ -17,8 +19,8 @@ module GraphQL
       # @return [Hash<GraphQL::ObjectType, Hash<String => Node>>]
       def typed_children
         @typed_children ||= begin
-          new_tc = Hash.new(&DEFAULT_TYPED_CHILDREN)
           if @scoped_children.any?
+            new_tc = Hash.new(&DEFAULT_TYPED_CHILDREN)
             all_object_types = Set.new
             scoped_children.each_key { |t| all_object_types.merge(@query.possible_types(t)) }
             # Remove any scoped children which don't follow this return type
@@ -27,8 +29,10 @@ module GraphQL
             all_object_types.each do |t|
               new_tc[t] = get_typed_children(t)
             end
+            new_tc
+          else
+            NO_TYPED_CHILDREN
           end
-          new_tc
         end
       end
 
@@ -63,7 +67,7 @@ module GraphQL
         @owner_type = owner_type
         @parent = parent
         @typed_children = nil
-        @scoped_children = Hash.new { |h1, k1| h1[k1] = {} }
+        @scoped_children = Hash.new(&DEFAULT_TYPED_CHILDREN)
         @ast_nodes = ast_nodes
         @definitions = definitions
         @return_type = return_type
@@ -77,7 +81,11 @@ module GraphQL
         @definition_name = nil
         @ast_node = nil
         # Shallow-copy some state:
-        @scoped_children = other_node.scoped_children.dup
+        @scoped_children = if other_node.scoped_children.any?
+          other_node.scoped_children.dup
+        else
+          NO_TYPED_CHILDREN
+        end
         @ast_nodes = other_node.ast_nodes.dup
         @definitions = other_node.definitions.dup
       end
