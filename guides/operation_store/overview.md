@@ -65,7 +65,7 @@ Using persisted queries improves the _security_, _efficiency_ and _visibility_ o
 
 #### Security
 
-Persisted queries improve security because you can reject arbitrary GraphQL queries, removing an attack vector from your system. The query database serves a whitelist, so you can be sure that no unexpected queries will not hit your system.
+Persisted queries improve security because you can reject arbitrary GraphQL queries, removing an attack vector from your system. The query database serves a whitelist, so you can be sure that no unexpected queries will hit your system.
 
 For example, after all clients have migrated to persisted queries, you can reject arbitrary GraphQL in production:
 
