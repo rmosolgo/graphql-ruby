@@ -19,14 +19,14 @@ module GraphQL
           logger.debug("No content for URI")
           return []
         end
-
-        suggestion = CompletionSuggestion.new(
+        document_position = DocumentPosition.new(
           text: content,
           line: cursor_line,
           column: cursor_col,
           server: server,
           filename: uri,
         )
+        suggestion = CompletionSuggestion.new(document_position: document_position)
         items = suggestion.items
         # Convert to LSP objects
         items.map do |item|

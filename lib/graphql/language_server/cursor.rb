@@ -63,8 +63,8 @@ module GraphQL
         @fragment_spread_state.state == :type_name || @fragment_spread_state.state == :on
       end
 
-      def self.fetch(filename:, text:, line:, column:, server:)
-        scanner = Scanner.new(filename: filename, text: text, line: line, column: column, server: server)
+      def self.fetch(document_position:)
+        scanner = Scanner.new(document_position: document_position)
         scanner.cursor
       end
 

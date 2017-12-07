@@ -13,12 +13,15 @@ describe GraphQL::LanguageServer::CompletionSuggestion do
   TEST_SERVER = CompletionSuggestionTestServer.new
 
   def get_suggestions(filename:, text:, line:, column:, server: TEST_SERVER)
-    suggestion = GraphQL::LanguageServer::CompletionSuggestion.new(
+    document_position = GraphQL::LanguageServer::DocumentPosition.new(
       filename: filename,
       text: text,
       line: line,
       column: column,
       server: server,
+    )
+    suggestion = GraphQL::LanguageServer::CompletionSuggestion.new(
+      document_position: document_position
     )
     suggestion.items
   end

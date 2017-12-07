@@ -8,24 +8,14 @@ module GraphQL
     #
     # `server` has the system info, so it's provided here too.
     class CompletionSuggestion
-      def initialize(filename:, text:, line:, column:, server:)
-        @text = text
-        @line = line
-        @filename = filename
-        @column = column
-        @server = server
-        @logger = server.logger
+      def initialize(document_position:)
+        @document_position = document_position
+        @server = document_position.server
       end
 
       def items
         completion_items = []
-        cursor = Cursor.fetch(
-          filename: @filename,
-          text: @text,
-          line: @line,
-          column: @column,
-          server: @server,
-        )
+        cursor = @document_position.cursor
         if !cursor.graphql?
           return completion_items
         end

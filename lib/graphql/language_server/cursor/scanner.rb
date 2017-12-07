@@ -5,13 +5,14 @@ module GraphQL
       # Process the given text; return a {Cursor} with as much
       # data as we can get for the position at `line,column`.
       class Scanner
-        def initialize(filename:, text:, line:, column:, server:)
-          @text = text
-          @line = line
-          @filename = filename
-          @column = column
-          @server = server
-          @logger = server.logger
+        def initialize(document_position: document_position)
+          @document_position = document_position
+          @text = document_position.text
+          @line = document_position.line
+          @filename = document_position.filename
+          @column = document_position.column
+          @server = document_position.server
+          @logger = document_position.server.logger
         end
 
         def cursor
@@ -21,13 +22,7 @@ module GraphQL
         private
 
         def find_cursor
-          language_scope = LanguageScope.new(
-            filename: @filename,
-            text: @text,
-            line: @line,
-            column: @column,
-            logger: @logger,
-          )
+          language_scope = LanguageScope.new(document_position: @document_position)
 
           if !language_scope.graphql_code?
             @logger.info("Out-of-scope cursor")

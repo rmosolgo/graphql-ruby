@@ -9,7 +9,12 @@ module GraphQL
       # Also, see if we can glean any other information from the file context.
       # @api private
       class LanguageScope
-        def initialize(filename:, text:, line:, column:, logger:)
+        def initialize(document_position:)
+          filename = document_position.filename
+          text = document_position.text
+          line = document_position.line
+          column = document_position.column
+          logger = document_position.server.logger
           @graphql_code = false # Maybe set `true` below
           if filename.end_with?(".graphql")
             @graphql_code = true
