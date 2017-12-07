@@ -25,6 +25,7 @@ module GraphQL
           line: cursor_line,
           column: cursor_col,
           server: server,
+          filename: uri,
         )
         items = suggestion.items
         # Convert to LSP objects

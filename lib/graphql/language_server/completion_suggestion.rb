@@ -47,6 +47,11 @@ module GraphQL
         # and record the cursor token
         tokens.each do |token|
           @logger.info("Token: #{token.inspect}")
+          # If we went _past_ the cursor, don't consume the next token.
+          if token.line > @line || (token.line == @line && token.col > @column)
+            @logger.info("NO CURSOR TOKEN")
+            break
+          end
           # Allow the state machines to consume this token:
           fragment_def_state.consume(token)
           fragment_spread_state.consume(token)
@@ -88,9 +93,6 @@ module GraphQL
           if token.line == @line && ((token.col == @column) || ((token.col < @column) && (token.value.length > 0) && ((token.col + token.value.length) > @column)))
             @logger.info("Found cursor (#{@line},#{@line}): #{token.value}")
             cursor_token = token
-            break
-          elsif token.line >= @line && token.col > @column
-            @logger.info("NO CURSOR TOKEN")
             break
           end
         end
@@ -144,9 +146,11 @@ module GraphQL
         elsif input_type
           # We're typing an argument, suggest argument names on this field/input obj
           # TODO remove argument names that were already used
-          all_args = input_type.arguments
-          all_args.each do |name, arg|
-            completion_items << Item.from_argument(argument: arg)
+          if input_type.respond_to?(:arguments)
+            all_args = input_type.arguments
+            all_args.each do |name, arg|
+              completion_items << Item.from_argument(argument: arg)
+            end
           end
         elsif self_type.nil? && !self_stack.locked? && self_stack.empty?
           # We're at the root level; make root suggestions
@@ -163,8 +167,8 @@ module GraphQL
           end
         elsif self_type
           # We're writing fields; suggest fields on the current `self`
-          self_type.fields.each do |name, f|
-            if token_filter.match?(name)
+          self_type.all_fields.each do |f|
+            if token_filter.match?(f.name)
               completion_items << Item.from_field(owner: self_type, field: f)
             end
           end
@@ -283,6 +287,7 @@ module GraphQL
 
         def pop
           if !@locked
+            @next_self = nil
             @stack.pop
           end
         end

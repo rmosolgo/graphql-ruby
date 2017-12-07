@@ -65,6 +65,36 @@ describe GraphQL::LanguageServer::CompletionSuggestion do
         assert_equal ["flavors"], suggestions.map(&:label)
       end
 
+      describe "when arguments were present" do
+        let(:text) {"
+          query{
+            cheese(id: 1) {
+              f
+            }
+          }
+        "}
+
+        it "makes proper suggestions" do
+          suggestions = suggestions_at.call(4, 15)
+          assert_equal ["fatContent", "selfAsEdible", "flavor"], suggestions.map(&:label)
+        end
+      end
+
+      describe "when no fields are present" do
+        let(:text) {"
+          query{
+            cheese(id: 1) {
+              \n            }
+          }
+        "}
+
+        it "makes proper suggestions" do
+          suggestions = suggestions_at.call(4, 14)
+          names = Dummy::Schema.types["Cheese"].all_fields.map(&:name)
+          assert_equal names.sort, suggestions.map(&:label).sort
+        end
+      end
+
       describe "when self_type is invalid" do
         let(:text) {
           "{ ch { t } }
