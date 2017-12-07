@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="http://www.rubydoc.info/gems/graphql/1.7.6/">API</a>
+          <a href="http://www.rubydoc.info/gems/graphql/1.7.7/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <input
@@ -45,13 +45,55 @@
 
 <h1 class="guide-header">Apollo Subscriptions</h1>
 <div class="guide-container">
-  <p><code class="highlighter-rouge">graphql-ruby-client</code> includes support for Apollo client subscriptions over <a href="/subscriptions/pusher_implementation">Pusher</a> or <a href="/subscriptions/action_cable_implementation">ActionCable</a>.</p>
+  <h2 id="apollo-2">Apollo 2</h2>
+
+<p><code class="highlighter-rouge">graphql-ruby-client</code> includes support for subscriptions with ActionCable and ApolloLink.</p>
+
+<p>To use it construct a split link that routes subsription queries to an ActionCableLink and other queries to an HttpLink.</p>
+
+<p>For example:</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="p">{</span> <span class="nx">ApolloLink</span> <span class="p">}</span> <span class="k">from</span> <span class="s1">'apollo-link'</span><span class="p">;</span>
+<span class="k">import</span> <span class="p">{</span> <span class="nx">ApolloClient</span> <span class="p">}</span> <span class="k">from</span> <span class="s1">'apollo-client'</span><span class="p">;</span>
+<span class="k">import</span> <span class="p">{</span> <span class="nx">HttpLink</span> <span class="p">}</span> <span class="k">from</span> <span class="s1">'apollo-link-http'</span><span class="p">;</span>
+<span class="k">import</span> <span class="nx">Cache</span> <span class="k">from</span> <span class="s1">'apollo-cache-inmemory'</span><span class="p">;</span>
+<span class="k">import</span> <span class="nx">ActionCable</span> <span class="k">from</span> <span class="s1">'actioncable'</span><span class="p">;</span>
+<span class="k">import</span> <span class="nx">ActionCableLink</span> <span class="k">from</span> <span class="s1">'graphql-ruby-client/subscriptions/ActionCableLink'</span><span class="p">;</span>
+
+<span class="kd">const</span> <span class="nx">cable</span> <span class="o">=</span> <span class="nx">ActionCable</span><span class="p">.</span><span class="nx">createConsumer</span><span class="p">()</span>
+
+<span class="kd">const</span> <span class="nx">httpLink</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">HttpLink</span><span class="p">({</span>
+  <span class="na">uri</span><span class="p">:</span> <span class="s1">'/graphql'</span><span class="p">,</span>
+  <span class="na">credentials</span><span class="p">:</span> <span class="s1">'include'</span>
+<span class="p">});</span>
+
+<span class="kd">const</span> <span class="nx">hasSubscriptionOperation</span> <span class="o">=</span> <span class="p">({</span> <span class="na">query</span><span class="p">:</span> <span class="p">{</span> <span class="nx">definitions</span> <span class="p">}</span> <span class="p">})</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="nx">definitions</span><span class="p">.</span><span class="nx">some</span><span class="p">(</span>
+    <span class="p">({</span> <span class="nx">kind</span><span class="p">,</span> <span class="nx">operation</span> <span class="p">})</span> <span class="o">=&gt;</span> <span class="nx">kind</span> <span class="o">===</span> <span class="s1">'OperationDefinition'</span> <span class="o">&amp;&amp;</span> <span class="nx">operation</span> <span class="o">===</span> <span class="s1">'subscription'</span>
+  <span class="p">)</span>
+<span class="p">}</span>
+
+<span class="kd">const</span> <span class="nx">link</span> <span class="o">=</span> <span class="nx">ApolloLink</span><span class="p">.</span><span class="nx">split</span><span class="p">(</span>
+  <span class="nx">hasSubscriptionOperation</span><span class="p">,</span>
+  <span class="k">new</span> <span class="nx">ActionCableLink</span><span class="p">({</span><span class="nx">cable</span><span class="p">}),</span>
+  <span class="nx">httpLink</span>
+<span class="p">);</span>
+
+<span class="kd">const</span> <span class="nx">client</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">ApolloClient</span><span class="p">({</span>
+  <span class="na">link</span><span class="p">:</span> <span class="nx">link</span><span class="p">,</span>
+  <span class="na">cache</span><span class="p">:</span> <span class="k">new</span> <span class="nx">Cache</span><span class="p">()</span>
+<span class="p">});</span>
+</code></pre></div></div>
+
+<h2 id="apollo-1">Apollo 1</h2>
+
+<p><code class="highlighter-rouge">graphql-ruby-client</code> includes support for Apollo 1 client subscriptions over <a href="/subscriptions/pusher_implementation">Pusher</a> or <a href="/subscriptions/action_cable_implementation">ActionCable</a>.</p>
 
 <p>To use it, require <code class="highlighter-rouge">subscriptions/addGraphQLSubscriptions</code> and call the function with your network interface and transport client (example below).</p>
 
 <p>See the <a href="/subscriptions/overview">Subscriptions guide</a> for information about server-side setup.</p>
 
-<h2 id="pusher">Pusher</h2>
+<h3 id="pusher">Pusher</h3>
 
 <p>Pass <code class="highlighter-rouge">{pusher: pusherClient}</code> to use Pusher:</p>
 
@@ -68,7 +110,7 @@
 <span class="nx">RailsNetworkInterface</span><span class="p">.</span><span class="nx">use</span><span class="p">([</span><span class="nx">OperationStoreClient</span><span class="p">.</span><span class="nx">apolloMiddleware</span><span class="p">])</span>
 </code></pre></div></div>
 
-<h2 id="actioncable">ActionCable</h2>
+<h3 id="actioncable">ActionCable</h3>
 
 <p>By passing <code class="highlighter-rouge">{cable: cable}</code>, all <code class="highlighter-rouge">subscription</code> queries will be routed to ActionCable.</p>
 
