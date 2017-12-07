@@ -124,6 +124,14 @@ module GraphQL
           arg = @argument_class.new(*args)
           @field.arguments[arg.name] = arg.graphql_definition
         end
+
+        def description(text)
+          if @field.description
+            fail "You're overriding the description of #{@field.name} in the provided block!"
+          else
+            @field.description = text
+          end
+        end
       end
     end
   end
