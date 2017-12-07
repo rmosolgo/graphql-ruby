@@ -59,9 +59,9 @@ module Jazz
   # A custom field class that supports the `upcase:` option
   class BaseField < GraphQL::Schema::Field
     argument_class BaseArgument
-    def initialize(*args, options, &block)
+    def initialize(*args, **options, &block)
       @upcase = options.delete(:upcase)
-      super(*args, options, &block)
+      super(*args, **options, &block)
     end
 
     def to_graphql
