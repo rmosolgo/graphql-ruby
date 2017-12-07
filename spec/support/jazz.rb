@@ -197,7 +197,9 @@ module Jazz
     implements GloballyIdentifiableType
     implements NamedEntity
     description "Someone who plays an instrument"
-    field :instrument, InstrumentType, null: false
+    field :instrument, InstrumentType, null: false do
+      description "An object played in order to produce music"
+    end
     field :favorite_key, Key, null: true
     field :inspect_context, [String], null: false
 
