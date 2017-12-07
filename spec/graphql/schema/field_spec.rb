@@ -14,5 +14,17 @@ describe GraphQL::Schema::Field do
     it "camelizes the field name" do
       assert_equal 'inspectInput', field.graphql_definition.name
     end
+
+    describe "description in block" do
+      it "will raise if description is defined both in the argument and in the block" do
+        assert_raises RuntimeError do
+          class DescriptionInBlock < Jazz::BaseObject
+            field :should_raise, Jazz::Key, "this should not raise" do
+              description "This should raise"
+            end
+          end
+        end
+      end
+    end
   end
 end
