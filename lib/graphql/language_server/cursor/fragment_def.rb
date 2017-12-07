@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 module GraphQL
   class LanguageServer
-    class CompletionSuggestion
+    class Cursor
       # A state machine for tracking fragment definitions
-      class FragmentDef < CompletionSuggestion::StateMachine
+      class FragmentDef < Cursor::StateMachine
         reset :lcurly, :rcurly, :lparen, :rparen
 
         def fragment(_token)

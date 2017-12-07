@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 module GraphQL
   class LanguageServer
-    class CompletionSuggestion
+    class Cursor
       # These state machines:
       # - "Consume" tokens by perhaps modifying `.state`, storing values
       # - May be left in _any_ state at any time, since the token stream might not be valid

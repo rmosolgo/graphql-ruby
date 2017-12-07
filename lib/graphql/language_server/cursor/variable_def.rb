@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 module GraphQL
   class LanguageServer
-    class CompletionSuggestion
+    class Cursor
       # A state machine for tracking variable definitions
-      class VariableDef < CompletionSuggestion::StateMachine
+      class VariableDef < Cursor::StateMachine
         attr_reader :ended, :defined_variables, :defined_variable_types
 
         def initialize(logger:)

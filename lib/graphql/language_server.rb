@@ -15,6 +15,7 @@ end
 require "logger"
 require "graphql"
 require "graphql/language_server/completion_suggestion"
+require "graphql/language_server/cursor"
 require "graphql/language_server/reloader"
 require "graphql/language_server/response"
 require "graphql/language_server/serve_initialize"

@@ -2,7 +2,7 @@
 require "strscan"
 module GraphQL
   class LanguageServer
-    class CompletionSuggestion
+    class Cursor
       # Given a cursor in a file, determine whether it's pointing to
       # GraphQL code or not.
       #

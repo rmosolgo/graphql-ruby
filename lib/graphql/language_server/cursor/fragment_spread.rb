@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 module GraphQL
   class LanguageServer
-    class CompletionSuggestion
+    class Cursor
       # A state machine for tracking fragment definitions
-      class FragmentSpread < CompletionSuggestion::StateMachine
+      class FragmentSpread < Cursor::StateMachine
         reset :lcurly, :rcurly
 
         def ellipsis(_token)
