@@ -23,6 +23,8 @@ require "graphql/language_server/serve_initialize"
 require "graphql/language_server/serve_shutdown"
 require "graphql/language_server/serve_text_document_completion"
 require "graphql/language_server/serve_text_document_did_change"
+require "graphql/language_server/serve_text_document_signature_help"
+require "graphql/language_server/signature_help"
 
 module GraphQL
   # One instance of this class is started in a long-running process.

@@ -16,6 +16,9 @@ module GraphQL
               resolve_provider: true,
               trigger_characters: ["(",")"," "],
             ),
+            signature_help_provider: LSP::Interface::SignatureHelpOptions.new(
+              trigger_characters: ["(", "{"],
+            ),
           )
         )
       end

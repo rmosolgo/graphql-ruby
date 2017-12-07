@@ -1,31 +1,15 @@
 # frozen_string_literal: true
-require "strscan"
-
 module GraphQL
   class LanguageServer
     # The client requests code completion.
     # Call out to the provider and send the response to the client.
     class ServeTextDocumentCompletion < Response
       def response
-        uri = request[:params][:textDocument][:uri]
-        # Add one to match GraphQL-Ruby's parser
-        cursor_line = request[:params][:position][:line] + 1
-        cursor_col = request[:params][:position][:character]
-
-        logger.debug("lookup: #{cursor_line}:#{cursor_col} of #{uri}")
-        content = server.cache_content(uri)
-
-        if !content
-          logger.debug("No content for URI")
+        document_position = DocumentPosition.from_params(request[:params], server: server)
+        if document_position.nil?
           return []
         end
-        document_position = DocumentPosition.new(
-          text: content,
-          line: cursor_line,
-          column: cursor_col,
-          server: server,
-          filename: uri,
-        )
+
         suggestion = CompletionSuggestion.new(document_position: document_position)
         items = suggestion.items
         # Convert to LSP objects
