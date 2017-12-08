@@ -107,6 +107,14 @@ describe GraphQL::Upgrader::Member do
       old = %{UserEnum = GraphQL::EnumType.define do}
       new = %{class UserEnum < Types::BaseEnum}
       assert_equal new, upgrade(old)
+
+      old = %{UserInput = GraphQL::InputObjectType.define do}
+      new = %{class UserInput < Types::BaseInputObject}
+      assert_equal new, upgrade(old)
+
+      old = %{UserScalar = GraphQL::ScalarType.define do}
+      new = %{class UserScalar < Types::BaseScalar}
+      assert_equal new, upgrade(old)
     end
 
     it 'upgrades including the module' do
