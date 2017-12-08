@@ -14,6 +14,7 @@ module GraphQL
         transformable = simplify_field_definition_for_easier_processing transformable
         transformable = move_the_type_from_the_block_to_the_field transformable
         transformable = rename_property_to_method transformable
+        transformable = transform_interfaces_to_implements transformable
 
         transformable.scan(/(?:input_field|field|connection|argument) .*$/).each do |field|
           field_regex =
@@ -132,6 +133,19 @@ module GraphQL
 
       def rename_property_to_method(transformable)
         transformable.gsub /property:/, 'method:'
+      end
+
+      def transform_interfaces_to_implements(transformable)
+        transformable.gsub(
+          /(?<indent>\s*)(?:interfaces) \[(?<interfaces>(?:[a-zA-Z_0-9:]+)(?:,\s*[a-zA-Z_0-9:]+)*)\]/
+        ) do
+          indent = $~[:indent]
+          interfaces = $~[:interfaces].split(',').map(&:strip)
+
+          interfaces.map do |interface|
+            "#{indent}implements #{interface}"
+          end.join
+        end
       end
 
       attr_reader :member
