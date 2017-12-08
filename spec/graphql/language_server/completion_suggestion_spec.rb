@@ -10,9 +10,7 @@ describe GraphQL::LanguageServer::CompletionSuggestion do
     self.schema = Dummy::Schema
   end
 
-  TEST_SERVER = CompletionSuggestionTestServer.new
-
-  def get_suggestions(filename:, text:, line:, column:, server: TEST_SERVER)
+  def get_suggestions(filename:, text:, line:, column:, server: CompletionSuggestionTestServer.new)
     document_position = GraphQL::LanguageServer::DocumentPosition.new(
       filename: filename,
       text: text,
@@ -95,6 +93,23 @@ describe GraphQL::LanguageServer::CompletionSuggestion do
           suggestions = suggestions_at.call(4, 14)
           names = Dummy::Schema.types["Cheese"].all_fields.map(&:name)
           assert_equal names.sort, suggestions.map(&:label).sort
+        end
+      end
+
+      describe "when self_type would be a list" do
+        let(:text) {"
+          {
+            allEdible {
+              origin
+              f
+            }
+          }
+        "}
+
+        it "suggests fields of the inner type" do
+          suggestions = suggestions_at.call(5, 15)
+          expected_suggestions = ["fatContent", "selfAsEdible"]
+          assert_equal expected_suggestions, suggestions.map(&:label)
         end
       end
 

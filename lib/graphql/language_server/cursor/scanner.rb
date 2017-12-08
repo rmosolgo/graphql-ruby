@@ -5,7 +5,7 @@ module GraphQL
       # Process the given text; return a {Cursor} with as much
       # data as we can get for the position at `line,column`.
       class Scanner
-        def initialize(document_position: document_position)
+        def initialize(document_position:)
           @document_position = document_position
           @text = document_position.text
           @line = document_position.line
@@ -57,7 +57,10 @@ module GraphQL
               self_stack.stage(@server.type(key))
             when :LCURLY
               self_stack.push_staged
-              input_stack.push_staged
+              # Only push an input value if we're inside parens
+              if input_stack.last
+                input_stack.push_staged
+              end
             when :RCURLY
               self_stack.pop
               input_stack.pop
