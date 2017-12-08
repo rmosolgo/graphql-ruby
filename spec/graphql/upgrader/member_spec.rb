@@ -77,12 +77,12 @@ describe GraphQL::Upgrader::Member do
       assert_equal new, upgrade(old)
 
       old = %{
-        UserInterface = GraphQL::InterfaceType.define do
+        UserEnum = GraphQL::EnumType.define do
           name "User"
         end
       }
       new = %{
-        class UserInterface < Types::BaseInterface
+        class UserEnum < Types::BaseEnum
           graphql_name "User"
         end
       }
@@ -115,12 +115,12 @@ describe GraphQL::Upgrader::Member do
       assert_equal new, upgrade(old)
 
       old = %{
-        Types::UserInterface = GraphQL::InterfaceType.define do
+        Types::UserEnum = GraphQL::EnumType.define do
           name "User"
         end
       }
       new = %{
-        class Types::UserInterface < Types::BaseInterface
+        class Types::UserEnum < Types::BaseEnum
           graphql_name "User"
         end
       }
