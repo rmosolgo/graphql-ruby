@@ -9,9 +9,9 @@ module GraphQL
     # @param context [Hash]
     # @param only [<#call(member, ctx)>]
     # @param except [<#call(member, ctx)>]
-    # @param include_introspection_types [Boolean] Wether or not to include introspection types in the AST
-    # @param include_built_in_scalars [Boolean] Wether or not to include built in scalars in the AST
-    # @param include_built_in_directives [Boolean] Wether or not to include built in diirectives in the AST
+    # @param include_introspection_types [Boolean] Whether or not to include introspection types in the AST
+    # @param include_built_in_scalars [Boolean] Whether or not to include built in scalars in the AST
+    # @param include_built_in_directives [Boolean] Whether or not to include built in diirectives in the AST
     class DocumentFromSchemaDefinition
       def initialize(
         schema, context: nil, only: nil, except: nil, include_introspection_types: false,
@@ -39,16 +39,12 @@ module GraphQL
       def build_schema_node
         schema_node = GraphQL::Language::Nodes::SchemaDefinition.new
 
-        if schema.query && warden.get_type(schema.query.name)
-          schema_node.query = schema.query.name
-        end
+        ["query", "mutation", "subscription"].each do |operation_name|
+          root_type = schema.root_type_for_operation(operation_name)
 
-        if schema.mutation && warden.get_type(schema.mutation.name)
-          schema_node.mutation = schema.mutation.name
-        end
-
-        if schema.subscription && warden.get_type(schema.subscription.name)
-          schema_node.subscription = schema.subscription.name
+          if root_type
+            schema_node.public_send("#{operation_name}=", warden.get_type(root_type.name))
+          end
         end
 
         schema_node
@@ -271,7 +267,13 @@ module GraphQL
       private
 
       def include_schema_node?
-        always_include_schema || !schema.respects_root_name_conventions?
+        always_include_schema || !schema_respects_root_name_conventions?(schema)
+      end
+
+      def schema_respects_root_name_conventions?(schema)
+        (schema.query.nil? || schema.query.name == 'Query') &&
+        (schema.mutation.nil? || schema.mutation.name == 'Mutation') &&
+        (schema.subscription.nil? || schema.subscription.name == 'Subscription')
       end
 
       attr_reader :schema, :warden, :always_include_schema,

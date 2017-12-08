@@ -17,28 +17,6 @@ describe GraphQL::Schema do
     end
   end
 
-  describe "#respects_root_name_conventions?" do
-    it "returns true when schema respects root name conventions" do
-      schema = GraphQL::Schema.define do
-        query GraphQL::ObjectType.define { name "Query" }
-        mutation GraphQL::ObjectType.define { name "Mutation" }
-        subscription GraphQL::ObjectType.define { name "Subscription" }
-      end
-
-      assert schema.respects_root_name_conventions?
-    end
-
-    it "returns false when schema respects root name conventions" do
-      schema = GraphQL::Schema.define do
-        query GraphQL::ObjectType.define { name "Query" }
-        mutation GraphQL::ObjectType.define { name "MutationType" }
-        subscription GraphQL::ObjectType.define { name "Subscription" }
-      end
-
-      assert_equal false, schema.respects_root_name_conventions?
-    end
-  end
-
   describe "#union_memberships" do
     it "returns a list of unions that include the type" do
       assert_equal [schema.types["Animal"], schema.types["AnimalAsCow"]], schema.union_memberships(schema.types["Cow"])
