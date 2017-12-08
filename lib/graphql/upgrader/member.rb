@@ -69,9 +69,7 @@ module GraphQL
 
       def upgradeable?
         return false if member.include? '< GraphQL::Schema::'
-        return false if member.include? '< BaseObject'
-        return false if member.include? '< BaseInterface'
-        return false if member.include? '< BaseEnum'
+        return false if member =~ /< Types::Base#{GRAPHQL_TYPES}/
 
         true
       end
@@ -101,12 +99,12 @@ module GraphQL
 
       def transform_to_class(transformable)
         transformable.sub(
-          /([a-zA-Z_0-9:]*) = GraphQL::(Object|Interface|Enum|Union)Type\.define do/, 'class \1 < Types::Base\2'
+          /([a-zA-Z_0-9:]*) = GraphQL::#{GRAPHQL_TYPES}Type\.define do/, 'class \1 < Types::Base\2'
         )
       end
 
       def transform_or_remove_name(transformable)
-        if (matches = transformable.match(/class (?<type_name>[a-zA-Z_0-9:]*) < Types::Base(Object|Interface|Enum|Union)/))
+        if (matches = transformable.match(/class (?<type_name>[a-zA-Z_0-9:]*) < Types::Base#{GRAPHQL_TYPES}/))
           type_name = matches[:type_name]
           type_name_without_the_type_part = type_name.split('::').last.gsub(/Type$/, '')
 
@@ -128,6 +126,9 @@ module GraphQL
       end
 
       attr_reader :member
+
+      private
+        GRAPHQL_TYPES = '(Object|InputObject|Interface|Enum|Scalar|Union)'
     end
   end
 end
