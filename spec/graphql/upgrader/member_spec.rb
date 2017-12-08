@@ -32,7 +32,7 @@ describe GraphQL::Upgrader::Member do
         end
       }
       new = %{
-        class UserType < BaseObject
+        class UserType < Types::BaseObject
         end
       }
       assert_equal upgrade(old), new
@@ -45,7 +45,7 @@ describe GraphQL::Upgrader::Member do
         end
       }
       new = %{
-        class TeamType < BaseObject
+        class TeamType < Types::BaseObject
           graphql_name "User"
         end
       }
@@ -57,7 +57,7 @@ describe GraphQL::Upgrader::Member do
         end
       }
       new = %{
-        class UserInterface < BaseInterface
+        class UserInterface < Types::BaseInterface
           graphql_name "User"
         end
       }
@@ -69,7 +69,7 @@ describe GraphQL::Upgrader::Member do
         end
       }
       new = %{
-        class UserInterface < BaseInterface
+        class UserInterface < Types::BaseInterface
           graphql_name "User"
         end
       }
@@ -80,25 +80,25 @@ describe GraphQL::Upgrader::Member do
   describe 'definition' do
     it 'upgrades the .define into class based definition' do
       old = %{UserType = GraphQL::ObjectType.define do}
-      new = %{class UserType < BaseObject}
+      new = %{class UserType < Types::BaseObject}
       assert_equal upgrade(old), new
 
       old = %{UserInterface = GraphQL::InterfaceType.define do}
-      new = %{class UserInterface < BaseInterface}
+      new = %{class UserInterface < Types::BaseInterface}
       assert_equal upgrade(old), new
 
       old = %{UserUnion = GraphQL::UnionType.define do}
-      new = %{class UserUnion < BaseUnion}
+      new = %{class UserUnion < Types::BaseUnion}
       assert_equal upgrade(old), new
 
       old = %{UserEnum = GraphQL::EnumType.define do}
-      new = %{class UserEnum < BaseEnum}
+      new = %{class UserEnum < Types::BaseEnum}
       assert_equal upgrade(old), new
     end
 
     it 'upgrades including the module' do
       old = %{Module::UserType = GraphQL::ObjectType.define do}
-      new = %{class Module::UserType < BaseObject}
+      new = %{class Module::UserType < Types::BaseObject}
       assert_equal upgrade(old), new
     end
   end
