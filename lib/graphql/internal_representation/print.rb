@@ -26,7 +26,9 @@ module GraphQL
             query_str << "#{padding}#{node.name}: #{node.definition_name}"
           end
 
-          args = node.ast_nodes.map { |n| n.arguments.map(&:to_query_string).join(",") }.uniq
+          args = node.ast_nodes.map { |n| n.arguments.map(&:to_query_string).join(",") }
+            .reject { |a| a == "" }
+            .uniq
           query_str << args.map { |a| "(#{a})"}.join("|")
         end
 
