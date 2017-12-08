@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 # test_via: ../object.rb
+require "graphql/schema/field/around_wrapped_resolve"
 require "graphql/schema/field/dynamic_resolve"
 require "graphql/schema/field/unwrapped_resolve"
 module GraphQL
@@ -12,6 +13,9 @@ module GraphQL
 
       # @return [String]
       attr_reader :description
+
+      # @return [Class]
+      attr_accessor :owner_class
 
       def initialize(name, return_type_expr = nil, desc = nil, null: nil, field: nil, function: nil, deprecation_reason: nil, method: nil, connection: nil, max_page_size: nil, resolve: nil, &args_block)
         if !(field || function)
@@ -71,12 +75,22 @@ module GraphQL
           field_defn.deprecation_reason = @deprecation_reason
         end
 
-        field_defn.resolve = if @resolve || @function || @field
+        resolve = if @resolve || @function || @field
           prev_resolve = @resolve || field_defn.resolve_proc
           UnwrappedResolve.new(inner_resolve: prev_resolve)
         else
           DynamicResolve.new(method_name: method_name, connection: connection)
         end
+
+        around_resolve_methods = @owner_class.around_resolves_for(@name)
+        if around_resolve_methods.any?
+          resolve = AroundWrappedResolve.new(
+            inner_resolve: resolve,
+            around_resolve_methods: around_resolve_methods,
+          )
+        end
+
+        field_defn.resolve = resolve
 
         field_defn.connection = connection
         field_defn.connection_max_page_size = @max_page_size

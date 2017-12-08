@@ -116,4 +116,24 @@ describe GraphQL::Schema::Object do
       assert_equal({"data" => nil }, res.to_h)
     end
   end
+
+  describe "around_resolve" do
+    it "calls for specified fields and all fields" do
+      query_str = <<-GRAPHQL
+      {
+        ensembles { name }
+        instruments { name }
+      }
+      GRAPHQL
+      context = {}
+      Jazz::Schema.execute(query_str, context: context)
+      # Instrument is old-style, not affected by around_resolve
+      # "ensembles" + number_of_ensembles + "instruments"
+      all_fields_count = 1 + 1 + 1
+      # number_of_ensembles
+      name_fields_count = 1
+      assert_equal all_fields_count, context[:around_resolve_counter]
+      assert_equal name_fields_count, context[:around_resolve_name_counter]
+    end
+  end
 end

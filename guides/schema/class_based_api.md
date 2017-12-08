@@ -106,7 +106,9 @@ Here is a working plan for rolling out this feature:
     - ☐ Custom `Context` classes
     - ☐ Custom introspection types
     - ☐ Custom directives
-    - ☐ Custom `Schema#execute` method
+    - ☑ Support something like field instrumentation
+    - ☐ Support something like query/multiplex instrumentation
+    - ☐ Provide optional access to `irep_node`, `ast_node`, `field_ctx` (?)
   - ☐ Migrate all of GitHub's GraphQL schema to this new API
 - graphql 1.9:
   - ☐ Update all GraphQL-Ruby docs to reflect this new API
@@ -282,6 +284,38 @@ class Types::TodoList < Types::BaseObject
     else
       @object.items.where(completed: is_completed)
     end
+  end
+end
+```
+
+### Around-resolve methods
+
+You can wrap field execution with `around_resolve`. It takes any number of field names, and a method name to call. If no field names are given, it wraps _all_ fields on the class (and subclasses).
+
+The method should `yield` to continue execution. The method's return value will be exposed as GraphQL.
+
+For example:
+
+```ruby
+class Types::TodoItem < Types::BaseObject
+  # Applies to all fields on this class:
+  around_resolve :measure_timing
+  # Applies to name only:
+  around_resolve :name, :upcase_value
+
+  def measure_timing(**args)
+    started_at = Time.now
+    # call the original field
+    value = yield
+    ended_at = Time.now
+    @context[:timings] << ended_at - started_at
+    # return the original value
+    value
+  end
+
+  def upcase_value
+    str_value = yield
+    str_value.upcase
   end
 end
 ```
