@@ -88,44 +88,6 @@ describe GraphQL::Upgrader::Member do
       }
       assert_equal new, upgrade(old)
     end
-
-    it 'upgrades the name into graphql_name if it can\'t be inferred from the class and under a module' do
-      old = %{
-        Types::TeamType = GraphQL::ObjectType.define do
-          name "User"
-        end
-      }
-      new = %{
-        class Types::TeamType < Types::BaseObject
-          graphql_name "User"
-        end
-      }
-      assert_equal new, upgrade(old)
-
-      old = %{
-        Types::UserInterface = GraphQL::InterfaceType.define do
-          name "User"
-        end
-      }
-      new = %{
-        class Types::UserInterface < Types::BaseInterface
-          graphql_name "User"
-        end
-      }
-      assert_equal new, upgrade(old)
-
-      old = %{
-        Types::UserEnum = GraphQL::EnumType.define do
-          name "User"
-        end
-      }
-      new = %{
-        class Types::UserEnum < Types::BaseEnum
-          graphql_name "User"
-        end
-      }
-      assert_equal new, upgrade(old)
-    end
   end
 
   describe 'definition' do
