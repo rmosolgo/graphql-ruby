@@ -108,7 +108,7 @@ module GraphQL
       def transform_or_remove_name(transformable)
         if (matches = transformable.match(/class (?<type_name>[a-zA-Z_0-9:]*) < Types::Base(Object|Interface|Enum|Union)/))
           type_name = matches[:type_name]
-          type_name_without_the_type_part = type_name.gsub(/Type$/, '')
+          type_name_without_the_type_part = type_name.split('::').last.gsub(/Type$/, '')
 
           if matches = transformable.match(/name ('|")(?<type_name>.*)('|")/)
             name = matches[:type_name]
