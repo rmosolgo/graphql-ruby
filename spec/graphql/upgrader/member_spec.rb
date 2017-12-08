@@ -38,6 +38,19 @@ describe GraphQL::Upgrader::Member do
       assert_equal new, upgrade(old)
     end
 
+    it 'removes the name field if it can be inferred from the class and under a module' do
+      old = %{
+        Types::UserType = GraphQL::ObjectType.define do
+          name "User"
+        end
+      }
+      new = %{
+        class Types::UserType < Types::BaseObject
+        end
+      }
+      assert_equal new, upgrade(old)
+    end
+
     it 'upgrades the name into graphql_name if it can\'t be inferred from the class' do
       old = %{
         TeamType = GraphQL::ObjectType.define do
@@ -70,6 +83,44 @@ describe GraphQL::Upgrader::Member do
       }
       new = %{
         class UserInterface < Types::BaseInterface
+          graphql_name "User"
+        end
+      }
+      assert_equal new, upgrade(old)
+    end
+
+    it 'upgrades the name into graphql_name if it can\'t be inferred from the class and under a module' do
+      old = %{
+        Types::TeamType = GraphQL::ObjectType.define do
+          name "User"
+        end
+      }
+      new = %{
+        class Types::TeamType < Types::BaseObject
+          graphql_name "User"
+        end
+      }
+      assert_equal new, upgrade(old)
+
+      old = %{
+        Types::UserInterface = GraphQL::InterfaceType.define do
+          name "User"
+        end
+      }
+      new = %{
+        class Types::UserInterface < Types::BaseInterface
+          graphql_name "User"
+        end
+      }
+      assert_equal new, upgrade(old)
+
+      old = %{
+        Types::UserInterface = GraphQL::InterfaceType.define do
+          name "User"
+        end
+      }
+      new = %{
+        class Types::UserInterface < Types::BaseInterface
           graphql_name "User"
         end
       }
