@@ -32,6 +32,22 @@ module GraphQL
                    'For example: `bin/rake graphql:upgrade:create_base_objects[app/graphql]`'
             end
 
+            destination_file = File.join(base_dir, "types", "base_scalar.rb")
+            unless File.exists?(destination_file)
+              FileUtils.mkdir_p(File.dirname(destination_file))
+              File.open(destination_file, 'w') do |f|
+                f.write "class Types::BaseScalar < GraphQL::Schema::Scalar; end"
+              end
+            end
+
+            destination_file = File.join(base_dir, "types", "base_input_object.rb")
+            unless File.exists?(destination_file)
+              FileUtils.mkdir_p(File.dirname(destination_file))
+              File.open(destination_file, 'w') do |f|
+                f.write "class Types::BaseInputObject < GraphQL::Schema::InputObject; end"
+              end
+            end
+
             destination_file = File.join(base_dir, "types", "base_enum.rb")
             unless File.exists?(destination_file)
               FileUtils.mkdir_p(File.dirname(destination_file))
