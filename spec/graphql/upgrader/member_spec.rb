@@ -278,4 +278,19 @@ describe GraphQL::Upgrader::Member do
       assert_equal new, upgrade(old)
     end
   end
+
+  describe 'implements' do
+    it 'upgrades interfaces to implements' do
+      old = %{
+        interfaces [Types::SearchableType, Types::CommentableType]
+        interfaces [Types::ShareableType]
+      }
+      new = %{
+        implements Types::SearchableType
+        implements Types::CommentableType
+        implements Types::ShareableType
+      }
+      assert_equal new, upgrade(old)
+    end
+  end
 end
