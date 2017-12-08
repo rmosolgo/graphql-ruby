@@ -15,9 +15,9 @@ module GraphQL
         transformable = move_the_type_from_the_block_to_the_field transformable
         transformable = rename_property_to_method transformable
 
-        transformable.scan(/(?:field|connection|argument) .*$/).each do |field|
+        transformable.scan(/(?:input_field|field|connection|argument) .*$/).each do |field|
           field_regex =
-            /(?<field_type>field|connection|argument) :(?<name>[a-zA-Z_0-9_]*)?, (?<return_type>.*?(?:,|$|\}))(?<remainder>.*)/
+            /(?<field_type>input_field|field|connection|argument) :(?<name>[a-zA-Z_0-9_]*)?, (?<return_type>.*?(?:,|$|\}))(?<remainder>.*)/
 
           if (matches = field_regex.match(field))
             name = matches[:name]
@@ -39,16 +39,25 @@ module GraphQL
             return_type.gsub! ',', ''
 
             transformable.sub!(field) do
-              f = "#{field_type == 'argument' ? 'argument' : 'field'} :#{name}, #{return_type}"
+              is_argument = ['argument', 'input_field'].include?(field_type)
+              f = "#{is_argument ? 'argument' : 'field'} :#{name}, #{return_type}"
 
               unless remainder.empty?
                 f += ',' + remainder
               end
 
-              if may_return_null
-                f += ', null: true'
+              if is_argument
+                if may_return_null
+                  f += ', required: false'
+                else
+                  f += ', required: true'
+                end
               else
-                f += ', null: false'
+                if may_return_null
+                  f += ', null: true'
+                else
+                  f += ', null: false'
+                end
               end
 
               if field_type == 'connection'

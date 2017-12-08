@@ -11,7 +11,7 @@ describe GraphQL::Upgrader::Member do
   describe 'field arguments' do
     it 'upgrades' do
       old = %{argument :status, !TodoStatus, "Restrict items to this status"}
-      new = %{argument :status, TodoStatus, "Restrict items to this status", null: false}
+      new = %{argument :status, TodoStatus, "Restrict items to this status", required: true}
 
       assert_equal new, upgrade(old)
     end
@@ -267,6 +267,14 @@ describe GraphQL::Upgrader::Member do
           method: :example_connections
       }
 
+      assert_equal new, upgrade(old)
+    end
+  end
+
+  describe 'input_field' do
+    it 'upgrades to argument' do
+      old = %{input_field :id, !types.ID}
+      new = %{argument :id, ID, required: true}
       assert_equal new, upgrade(old)
     end
   end
