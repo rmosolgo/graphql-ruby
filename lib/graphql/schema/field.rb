@@ -13,7 +13,7 @@ module GraphQL
       # @return [String]
       attr_reader :description
 
-      def initialize(name, return_type_expr = nil, desc = nil, null: nil, field: nil, function: nil, deprecation_reason: nil, method: nil, connection: nil, max_page_size: nil, resolve: nil, &args_block)
+      def initialize(name, return_type_expr = nil, desc = nil, null: nil, field: nil, function: nil, deprecation_reason: nil, method: nil, connection: nil, max_page_size: nil, resolve: nil, extras: [], &args_block)
         if !(field || function)
           if return_type_expr.nil?
             raise ArgumentError, "missing positional argument `type`"
@@ -21,6 +21,9 @@ module GraphQL
           if null.nil?
             raise ArgumentError, "missing keyword argument null:"
           end
+        end
+        if (field || function || resolve) && extras.any?
+          raise ArgumentError, "keyword `extras:` may only be used with method-based resolve, please remove `field:`, `function:`, or `resolve:`"
         end
         @name = name.to_s
         @description = desc
@@ -34,6 +37,7 @@ module GraphQL
         @args_block = args_block
         @connection = connection
         @max_page_size = max_page_size
+        @extras = extras
       end
 
       # @return [GraphQL::Field]
@@ -74,7 +78,11 @@ module GraphQL
           prev_resolve = @resolve || field_defn.resolve_proc
           UnwrappedResolve.new(inner_resolve: prev_resolve)
         else
-          DynamicResolve.new(method_name: method_name, connection: connection)
+          DynamicResolve.new(
+            method_name: method_name,
+            connection: connection,
+            extras: @extras
+          )
         end
 
         field_defn.connection = connection
