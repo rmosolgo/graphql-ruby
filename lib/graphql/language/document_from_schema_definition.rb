@@ -37,17 +37,11 @@ module GraphQL
       end
 
       def build_schema_node
-        schema_node = GraphQL::Language::Nodes::SchemaDefinition.new
-
-        ["query", "mutation", "subscription"].each do |operation_name|
-          root_type = schema.root_type_for_operation(operation_name)
-
-          if root_type
-            schema_node.public_send("#{operation_name}=", warden.get_type(root_type.name))
-          end
-        end
-
-        schema_node
+        GraphQL::Language::Nodes::SchemaDefinition.new(
+          query: warden.root_type_for_operation("query"),
+          mutation: warden.root_type_for_operation("mutation"),
+          subscription: warden.root_type_for_operation("subscription")
+        )
       end
 
       def build_object_type_node(object_type)
