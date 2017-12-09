@@ -351,10 +351,10 @@ module GraphQL
         defined_field = @instrumented_field_map[parent_type_name][field_name]
         if defined_field
           defined_field
-        elsif field_name == "__typename"
-          introspection_system.typename_field
         elsif parent_type == query && (entry_point_field = introspection_system.entry_point(name: field_name))
           entry_point_field
+        elsif (dynamic_field = introspection_system.dynamic_field(name: field_name))
+          dynamic_field
         else
           nil
         end
