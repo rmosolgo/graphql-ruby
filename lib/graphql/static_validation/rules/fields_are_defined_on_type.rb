@@ -16,14 +16,14 @@ module GraphQL
       private
 
       def validate_field(context, ast_field, parent_type, parent)
-        if parent_type.kind.union? && ast_field.name != '__typename'
-          context.errors << message("Selections can't be made directly on unions (see selections on #{parent_type.name})", parent, context: context)
-          return GraphQL::Language::Visitor::SKIP
-        end
-
         field = context.warden.get_field(parent_type, ast_field.name)
+
         if field.nil?
-          context.errors << message("Field '#{ast_field.name}' doesn't exist on type '#{parent_type.name}'", ast_field, context: context)
+          if  parent_type.kind.union?
+            context.errors << message("Selections can't be made directly on unions (see selections on #{parent_type.name})", parent, context: context)
+          else
+            context.errors << message("Field '#{ast_field.name}' doesn't exist on type '#{parent_type.name}'", ast_field, context: context)
+          end
           return GraphQL::Language::Visitor::SKIP
         end
       end
