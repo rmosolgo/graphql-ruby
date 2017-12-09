@@ -121,7 +121,7 @@ module GraphQL
       if enum_value
         enum_value.name
       else
-        raise(UnresolvedValueError, "Can't resolve enum #{name} for #{value}")
+        raise(UnresolvedValueError, "Can't resolve enum #{name} for #{value.inspect}")
       end
     end
 
