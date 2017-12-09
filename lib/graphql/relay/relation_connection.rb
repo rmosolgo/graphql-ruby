@@ -27,7 +27,7 @@ module GraphQL
         if first
           paged_nodes_length >= first && sliced_nodes_count > first
         elsif GraphQL::Relay::ConnectionType.bidirectional_pagination && last
-          sliced_nodes_count > last
+          false #sliced_nodes_count > last
         else
           false
         end
