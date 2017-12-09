@@ -19,9 +19,10 @@ describe GraphQL::Schema::IntrospectionSystem do
     end
 
     it "serves custom dynamic fields" do
-      skip
-      res = Jazz::Schema.execute("{ nowPlaying { __typenameLength } }")
-      assert_equal 0, res["data"]["nowPlaying"]["__typenameLength"]
+      res = Jazz::Schema.execute("{ nowPlaying { __typename __typenameLength __astNodeClass } }")
+      assert_equal "Ensemble", res["data"]["nowPlaying"]["__typename"]
+      assert_equal 8, res["data"]["nowPlaying"]["__typenameLength"]
+      assert_equal "GraphQL::Language::Nodes::Field", res["data"]["nowPlaying"]["__astNodeClass"]
     end
 
     it "doesn't affect other schemas" do

@@ -18,17 +18,8 @@ module GraphQL
         @input_value_type = load_constant(:InputValueType).to_graphql
         @type_kind_enum = load_constant(:TypeKindEnum).to_graphql
         @directive_location_enum = load_constant(:DirectiveLocationEnum).to_graphql
-
-        entry_points_class = load_constant(:EntryPoints)
-        entry_points_type = entry_points_class.to_graphql
-        @entry_point_fields = {}
-        entry_points_type.all_fields.each do |field_defn|
-          inner_resolve = field_defn.resolve_proc
-          resolve_with_instantiate = EntryPointResolve.new(object_class: entry_points_class, inner_resolve: inner_resolve)
-          @entry_point_fields[field_defn.name] = field_defn.redefine(resolve: resolve_with_instantiate)
-        end
-        # Make copies so their return types can be modified to local types
-        @typename_field = GraphQL::Introspection::TypenameField.dup
+        @entry_point_fields = get_fields_from_class(class_sym: :EntryPoints)
+        @dynamic_fields = get_fields_from_class(class_sym: :DynamicFields)
       end
 
       def object_types
@@ -52,6 +43,14 @@ module GraphQL
         @entry_point_fields[name]
       end
 
+      def dynamic_fields
+        @dynamic_fields.values
+      end
+
+      def dynamic_field(name:)
+        @dynamic_fields[name]
+      end
+
       private
 
       def load_constant(class_name)
@@ -61,7 +60,19 @@ module GraphQL
         @built_in_namespace.const_get(class_name)
       end
 
-      class EntryPointResolve
+      def get_fields_from_class(class_sym:)
+        object_class = load_constant(class_sym)
+        object_type_defn = object_class.to_graphql
+        extracted_field_defns = {}
+        object_type_defn.all_fields.each do |field_defn|
+          inner_resolve = field_defn.resolve_proc
+          resolve_with_instantiate = PerFieldProxyResolve.new(object_class: object_class, inner_resolve: inner_resolve)
+          extracted_field_defns[field_defn.name] = field_defn.redefine(resolve: resolve_with_instantiate)
+        end
+        extracted_field_defns
+      end
+
+      class PerFieldProxyResolve
         def initialize(object_class:, inner_resolve:)
           @object_class = object_class
           @inner_resolve = inner_resolve
