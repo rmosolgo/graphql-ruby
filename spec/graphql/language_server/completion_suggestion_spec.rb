@@ -3,6 +3,7 @@ require "spec_helper"
 
 describe GraphQL::LanguageServer::CompletionSuggestion do
   class CompletionSuggestionTestServer < GraphQL::LanguageServer
+    autorun false
     # Silent logger:
     self.logger = Logger.new(StringIO.new)
     # Debugging logger:

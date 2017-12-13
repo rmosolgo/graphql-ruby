@@ -3,6 +3,7 @@ require "spec_helper"
 
 describe GraphQL::LanguageServer::SignatureHelp do
   class SignatureHelpTestServer < GraphQL::LanguageServer
+    autorun false
     # Silent logger:
     self.logger = Logger.new(StringIO.new)
     # Debugging logger:

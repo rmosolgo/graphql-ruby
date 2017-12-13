@@ -145,6 +145,35 @@ module GraphQL
 
     class << self
       attr_accessor :logger, :reload_globs, :development_mode, :schema
+
+      def autorun?
+        @autorun != false
+      end
+
+      @@autorun_child = nil
+      def inherited(child_class)
+        @@autorun_child = child_class
+      end
+
+      def autorun(new_value = nil)
+        if !new_value.nil?
+          @autorun = new_value
+        elsif !@installed_at_exit
+          # Inspired by Minitest.autorun
+          at_exit {
+            # If the process is crashing, don't autorun
+            next if $! and not ($!.kind_of? SystemExit and $!.success?)
+
+            if @@autorun_child && @@autorun_child.autorun?
+              autorun_class = @@autorun_child
+              autorun_class.new.start
+            end
+          }
+          @@installed_at_exit = true
+        end
+      end
     end
+
+    autorun
   end
 end
