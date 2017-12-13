@@ -132,6 +132,11 @@ module GraphQL
             @field.description = text
           end
         end
+
+        def resolve(resolve_proc)
+          # Skip check if resolve_proc is provided for small change
+          @field.resolve = resolve_proc
+        end
       end
     end
   end

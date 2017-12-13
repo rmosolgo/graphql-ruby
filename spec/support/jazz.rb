@@ -201,6 +201,15 @@ module Jazz
       description "An object played in order to produce music"
     end
     field :favorite_key, Key, null: true
+    field :favoritesCount, Integer, null: false,
+      resolve:->(obj, args, ctx) {
+        obj.favoritesCount
+      }
+    field :likesCount, Integer, null: false do
+      resolve ->(obj, args, ctx) {
+        obj.likesCount
+      }
+    end
   end
 
   LegacyInputType = GraphQL::InputObjectType.define do
