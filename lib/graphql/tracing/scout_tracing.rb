@@ -16,9 +16,9 @@ module GraphQL
         "execute_query_lazy" => "execute.graphql",
       }
 
-      def initialize
+      def initialize(options = {})
         self.class.include ScoutApm::Tracer
-        super
+        super(options)
       end
 
       def platform_trace(platform_key, key, data)
