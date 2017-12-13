@@ -33,7 +33,7 @@ module GraphQL
             remainder.gsub! /^,/, ''
             remainder.chomp!
 
-            may_return_null = !(return_type.gsub! '!', '')
+            has_bang = !(return_type.gsub! '!', '')
             return_type.gsub! 'types.', ''
             return_type.gsub! 'types[', '['
 
@@ -48,13 +48,13 @@ module GraphQL
               end
 
               if is_argument
-                if may_return_null
+                if has_bang
                   f += ', required: false'
                 else
                   f += ', required: true'
                 end
               else
-                if may_return_null
+                if has_bang
                   f += ', null: true'
                 else
                   f += ', null: false'
