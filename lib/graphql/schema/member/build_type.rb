@@ -43,7 +43,7 @@ module GraphQL
                 end
               end
             end
-          when GraphQL::BaseType
+          when GraphQL::BaseType, GraphQL::Schema::LateBoundType
             type_expr
           when Array
             if type_expr.length != 1
@@ -77,7 +77,7 @@ module GraphQL
 
         def to_type_name(something)
           case something
-          when GraphQL::BaseType
+          when GraphQL::BaseType, GraphQL::Schema::LateBoundType
             something.unwrap.name
           when Array
             to_type_name(something.first)
@@ -95,11 +95,13 @@ module GraphQL
         end
 
         def camelize(string)
-          return string unless string.include?('_')
-
-          string.split('_').map(&:capitalize).join.tap do |camelized|
-            camelized[0] = camelized[0].downcase
+          return string unless string.include?("_")
+          camelized = string.split('_').map(&:capitalize).join
+          camelized[0] = camelized[0].downcase
+          if string.start_with?("__")
+            camelized = "__#{camelized}"
           end
+          camelized
         end
 
         def underscore(string)
