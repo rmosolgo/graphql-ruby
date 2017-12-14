@@ -4,6 +4,8 @@ require "graphql/schema/catchall_middleware"
 require "graphql/schema/default_parse_error"
 require "graphql/schema/default_type_error"
 require "graphql/schema/invalid_type_error"
+require "graphql/schema/introspection_system"
+require "graphql/schema/late_bound_type"
 require "graphql/schema/middleware_chain"
 require "graphql/schema/null_mask"
 require "graphql/schema/possible_types"
@@ -91,7 +93,7 @@ module GraphQL
       :orphan_types, :directives,
       :query_analyzers, :multiplex_analyzers, :instrumenters, :lazy_methods,
       :cursor_encoder,
-      :raise_definition_error
+      :raise_definition_error, :introspection_namespace
 
     # Single, long-lived instance of the provided subscriptions class, if there is one.
     # @return [GraphQL::Subscriptions]
@@ -103,6 +105,10 @@ module GraphQL
     # @return [<#call(member, ctx)>] A callable for filtering members of the schema
     # @see {Query.new} for query-specific filters with `except:`
     attr_accessor :default_mask
+
+    # @see {GraphQL::Query::Context} The parent class of these classes
+    # @return [Class] Instantiated for each query
+    attr_accessor :context_class
 
     class << self
       attr_accessor :default_execution_strategy
@@ -148,6 +154,9 @@ module GraphQL
       @subscription_execution_strategy = self.class.default_execution_strategy
       @default_mask = GraphQL::Schema::NullMask
       @rebuilding_artifacts = false
+      @introspection_namespace = nil
+      @introspection_system = nil
+      @context_class = GraphQL::Query::Context
     end
 
     def initialize_copy(other)
@@ -175,6 +184,7 @@ module GraphQL
       # This will be rebuilt when it's requested
       # or during a later `define` call
       @types = nil
+      @introspection_system = nil
     end
 
     def rescue_from(*args, &block)
@@ -247,6 +257,14 @@ module GraphQL
       @types ||= begin
         rebuild_artifacts
         @types
+      end
+    end
+
+    # @api private
+    def introspection_system
+      @introspection_system ||= begin
+        rebuild_artifacts
+        @introspection_system
       end
     end
 
@@ -331,12 +349,10 @@ module GraphQL
         defined_field = @instrumented_field_map[parent_type_name][field_name]
         if defined_field
           defined_field
-        elsif field_name == "__typename"
-          GraphQL::Introspection::TypenameField
-        elsif field_name == "__schema" && parent_type == query
-          GraphQL::Introspection::SchemaField
-        elsif field_name == "__type" && parent_type == query
-          GraphQL::Introspection::TypeByNameField
+        elsif parent_type == query && (entry_point_field = introspection_system.entry_point(name: field_name))
+          entry_point_field
+        elsif (dynamic_field = introspection_system.dynamic_field(name: field_name))
+          dynamic_field
         else
           nil
         end
@@ -632,9 +648,11 @@ module GraphQL
           directives(DIRECTIVES)
         end
         schema_defn.directives = directives
+        schema_defn.introspection_namespace = introspection
         schema_defn.resolve_type = method(:resolve_type)
         schema_defn.object_from_id = method(:object_from_id)
         schema_defn.id_from_object = method(:id_from_object)
+        schema_defn.context_class = context_class
         instrumenters.each do |step, insts|
           insts.each do |inst|
             schema_defn.instrumenters[step] << inst
@@ -686,6 +704,14 @@ module GraphQL
         end
       end
 
+      def introspection(new_introspection_namespace = nil)
+        if new_introspection_namespace
+          @introspection = new_introspection_namespace
+        else
+          @introspection
+        end
+      end
+
       def default_max_page_size(new_default_max_page_size = nil)
         if new_default_max_page_size
           @default_max_page_size = new_default_max_page_size
@@ -715,6 +741,14 @@ module GraphQL
           superclass.default_execution_strategy
         else
           @default_execution_strategy
+        end
+      end
+
+      def context_class(new_context_class = nil)
+        if new_context_class
+          @context_class = new_context_class
+        else
+          @context_class || GraphQL::Query::Context
         end
       end
 
@@ -805,6 +839,7 @@ module GraphQL
         raise CyclicalDefinitionError, "Part of the schema build process re-triggered the schema build process, causing an infinite loop. Avoid using Schema#types, Schema#possible_types, and Schema#get_field during schema build."
       else
         @rebuilding_artifacts = true
+        @introspection_system = Schema::IntrospectionSystem.new(self)
         traversal = Traversal.new(self)
         @types = traversal.type_map
         @root_types = [query, mutation, subscription]
