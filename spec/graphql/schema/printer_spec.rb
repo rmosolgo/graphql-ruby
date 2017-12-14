@@ -136,6 +136,14 @@ schema {
   query: Root
 }
 
+# Marks an element of a GraphQL schema as no longer supported.
+directive @deprecated(
+  # Explains why this element was deprecated, usually also including a suggestion
+  # for how to access supported similar data. Formatted in
+  # [Markdown](https://daringfireball.net/projects/markdown/).
+  reason: String = "No longer supported"
+) on FIELD_DEFINITION | ENUM_VALUE
+
 # Directs the executor to include this field or fragment only when the `if` argument is true.
 directive @include(
   # Included when true.
@@ -147,14 +155,6 @@ directive @skip(
   # Skipped when true.
   if: Boolean!
 ) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
-
-# Marks an element of a GraphQL schema as no longer supported.
-directive @deprecated(
-  # Explains why this element was deprecated, usually also including a suggestion
-  # for how to access supported similar data. Formatted in
-  # [Markdown](https://daringfireball.net/projects/markdown/).
-  reason: String = "No longer supported"
-) on FIELD_DEFINITION | ENUM_VALUE
 
 # A Directive provides a way to describe alternate runtime execution and type validation behavior in a GraphQL document.
 #
@@ -345,7 +345,6 @@ schema {
   subscription: Subscription
 }
 SCHEMA
-
       assert_match expected, GraphQL::Schema::Printer.print_schema(custom_schema)
     end
 
@@ -390,7 +389,7 @@ type Audio {
 
 enum Choice {
   BAR
-  BAZ @deprecated(reason: "Use \\\"BAR\\\".")
+  BAZ @deprecated(reason: "Use "BAR".")
   FOO
   WOZ @deprecated
 }
@@ -439,7 +438,7 @@ interface Node {
 type Post {
   body: String!
   comments: [Comment!]
-  comments_count: Int! @deprecated(reason: "Use \\\"comments\\\".")
+  comments_count: Int! @deprecated(reason: "Use "comments".")
   id: ID!
   title: String!
 }
@@ -489,7 +488,6 @@ enum Choice {
 }
 
 type Subscription {
-
 }
 
 input Varied {
@@ -509,7 +507,9 @@ SCHEMA
       when GraphQL::Argument
         member.name != "id"
       else
-        member.deprecation_reason.nil?
+        if member.respond_to?(:deprecation_reason)
+          member.deprecation_reason.nil?
+        end
       end
     }
 
@@ -600,7 +600,7 @@ SCHEMA
 type Post {
   body: String!
   comments: [Comment!]
-  comments_count: Int! @deprecated(reason: \"Use \\\"comments\\\".\")
+  comments_count: Int! @deprecated(reason: "Use "comments".")
   id: ID!
   title: String!
 }
