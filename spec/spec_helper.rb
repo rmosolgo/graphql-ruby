@@ -5,8 +5,8 @@ ENV["BACKTRACE"] = "1"
 def rails_should_be_installed?
   ENV['WITHOUT_RAILS'] != 'yes'
 end
-require "codeclimate-test-reporter"
-CodeClimate::TestReporter.start
+require 'simplecov'
+SimpleCov.start
 
 if rails_should_be_installed?
   require "rake"

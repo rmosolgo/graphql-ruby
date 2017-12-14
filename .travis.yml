@@ -8,12 +8,18 @@ node_js: "7"
 
 env:
   global:
+    - CC_TEST_REPORTER_ID=787a2f89b15c637323c7340d65ec17e898ac44480706b4b4122ea040c2a88f1d
     - CODECLIMATE_REPO_TOKEN=f5b27b2e25d3f4e199bb2566fb4fd4507144a004c71d4aa33a32c2df5f940333
     - JRUBY_OPTS="--debug" # Coverage may be inaccurate without debug flag
 before_install:
   - gem update --system --no-doc
   - gem install bundler
-
+before_script:
+  - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+  - chmod +x ./cc-test-reporter
+  - ./cc-test-reporter before-build
+after_script:
+  - if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT; fi
 rvm:
 - 2.1.10 # Lowest version officially supported by the gem is 2.1
 - 2.4.2
