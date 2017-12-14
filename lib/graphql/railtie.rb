@@ -19,11 +19,34 @@ module GraphQL
               Rake::Task["graphql:upgrade:member"].execute(Struct.new(:member_file).new(file))
             end
           end
+
+          puts "Upgrade complete! Note that this is a best-effort approach, and may very well contain some bugs."
+          puts "Don't forget to create the base objects. For example, you could run:"
+          puts "\tbin/rake graphql:upgrade:create_base_objects[app/graphql]"
         end
 
         namespace :upgrade do
           task :create_base_objects, [:base_dir] do |t, args|
-            base_dir = args.base_dir
+            unless (base_dir = args[:base_dir])
+              fail 'You have to give me a directory where your GraphQL types live. ' \
+                   'For example: `bin/rake graphql:upgrade:create_base_objects[app/graphql]`'
+            end
+
+            destination_file = File.join(base_dir, "types", "base_scalar.rb")
+            unless File.exists?(destination_file)
+              FileUtils.mkdir_p(File.dirname(destination_file))
+              File.open(destination_file, 'w') do |f|
+                f.write "class Types::BaseScalar < GraphQL::Schema::Scalar; end"
+              end
+            end
+
+            destination_file = File.join(base_dir, "types", "base_input_object.rb")
+            unless File.exists?(destination_file)
+              FileUtils.mkdir_p(File.dirname(destination_file))
+              File.open(destination_file, 'w') do |f|
+                f.write "class Types::BaseInputObject < GraphQL::Schema::InputObject; end"
+              end
+            end
 
             destination_file = File.join(base_dir, "types", "base_enum.rb")
             unless File.exists?(destination_file)

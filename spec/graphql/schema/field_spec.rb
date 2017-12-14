@@ -14,5 +14,19 @@ describe GraphQL::Schema::Field do
     it "camelizes the field name" do
       assert_equal 'inspectInput', field.graphql_definition.name
     end
+
+    describe "description in block" do
+      it "will raise if description is defined both in the argument and in the block" do
+        assert_raises RuntimeError, "You're overriding the description of shouldRaise in the provided block!" do
+          Class.new(Jazz::BaseObject) do
+            graphql_name "JustAName"
+
+            field :should_raise, Jazz::Key, "this should not raise", null: true do
+              description "This should raise"
+            end
+          end.to_graphql
+        end
+      end
+    end
   end
 end

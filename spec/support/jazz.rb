@@ -59,9 +59,9 @@ module Jazz
   # A custom field class that supports the `upcase:` option
   class BaseField < GraphQL::Schema::Field
     argument_class BaseArgument
-    def initialize(*args, options, &block)
+    def initialize(*args, **options, &block)
       @upcase = options.delete(:upcase)
-      super(*args, options, &block)
+      super(*args, **options, &block)
     end
 
     def to_graphql
@@ -197,8 +197,19 @@ module Jazz
     implements GloballyIdentifiableType
     implements NamedEntity
     description "Someone who plays an instrument"
-    field :instrument, InstrumentType, null: false
+    field :instrument, InstrumentType, null: false do
+      description "An object played in order to produce music"
+    end
     field :favorite_key, Key, null: true
+    field :inspect_context, [String], null: false
+
+    def inspect_context
+      [
+        @context.custom_method,
+        @context[:magic_key],
+        @context[:normal_key]
+      ]
+    end
   end
 
   LegacyInputType = GraphQL::InputObjectType.define do
@@ -260,6 +271,7 @@ module Jazz
     field :nowPlaying, PerformingAct, null: false, resolve: ->(o, a, c) { Models.data["Ensemble"].first }
     # For asserting that the object is initialized once:
     field :object_id, Integer, null: false
+    field :inspect_context, [String], null: false
 
     def ensembles
       Models.data["Ensemble"]
@@ -296,6 +308,14 @@ module Jazz
 
     def inspect_key(key:)
       key
+    end
+
+    def inspect_context
+      [
+        @context.custom_method,
+        @context[:magic_key],
+        @context[:normal_key]
+      ]
     end
   end
 
@@ -357,11 +377,26 @@ module Jazz
     end
   end
 
+  class CustomContext < GraphQL::Query::Context
+    def [](key)
+      if key == :magic_key
+        "magic_value"
+      else
+        super
+      end
+    end
+
+    def custom_method
+      "custom_method"
+    end
+  end
+
   # New-style Schema definition
   class Schema < GraphQL::Schema
     query(Query)
     mutation(Mutation)
     introspection(Introspection)
+    context_class(CustomContext)
     use MetadataPlugin, value: "xyz"
     def self.resolve_type(type, obj, ctx)
       class_name = obj.class.name.split("::").last
