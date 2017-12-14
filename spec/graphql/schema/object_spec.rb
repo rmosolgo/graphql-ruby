@@ -30,7 +30,16 @@ describe GraphQL::Schema::Object do
       assert_equal "The new description", name_field.description
     end
 
-    it "inherits name and description"
+    it "inherits name and description" do
+      # Manually assign a name since `.name` isn't populated for dynamic classes
+      new_subclass_1 = Class.new(object_class) do
+        graphql_name "NewSubclass"
+      end
+      new_subclass_2 = Class.new(new_subclass_1)
+      assert_equal "NewSubclass", new_subclass_1.graphql_name
+      assert_equal "NewSubclass", new_subclass_2.graphql_name
+      assert_equal object_class.description, new_subclass_2.description
+    end
   end
 
   describe ".to_graphql_type" do
