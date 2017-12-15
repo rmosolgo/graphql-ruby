@@ -16,7 +16,7 @@ before_install:
 
 rvm:
 - 2.1.10 # Lowest version officially supported by the gem is 2.1
-- 2.4.2
+- 2.4.3
 - jruby-9.1.14.0
 
 services:
@@ -39,7 +39,7 @@ matrix:
       - SYSTEM_TESTS=yes
       - DISPLAY=':99.0'
     gemfile: gemfiles/rails_5.1.gemfile
-    rvm: 2.4.2
+    rvm: 2.4.3
     addons:
       apt:
         sources:
@@ -54,17 +54,17 @@ matrix:
       - sh -e /etc/init.d/xvfb start
   - env: DATABASE=POSTGRESQL
     gemfile: gemfiles/rails_5.1.gemfile
-    rvm: 2.4.2
+    rvm: 2.4.3
   - env: WITHOUT_RAILS=yes
     gemfile: gemfiles/without_rails.gemfile
-    rvm: 2.4.2
+    rvm: 2.4.3
 
   exclude:
-  - rvm: 2.4.2
+  - rvm: 2.4.3
     gemfile: gemfiles/rails_3.2.gemfile
-  - rvm: 2.4.2
+  - rvm: 2.4.3
     gemfile: gemfiles/rails_4.1.gemfile
-  - rvm: 2.4.2
+  - rvm: 2.4.3
     gemfile: gemfiles/rails_4.2.gemfile
   - rvm: 2.1.10
     gemfile: gemfiles/rails_5.0.gemfile # Rails 5 requires Ruby 2.2.2+
