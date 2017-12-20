@@ -157,7 +157,7 @@ module GraphQL
     def result
       if !@executed
         with_prepared_ast {
-          Execution::Multiplex.run_queries(@schema, [self])
+          Execution::Multiplex.run_queries(@schema, [self], context: @context)
         }
       end
       @result ||= Query::Result.new(query: self, values: @result_values)
