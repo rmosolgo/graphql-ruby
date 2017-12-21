@@ -154,7 +154,7 @@
     <span class="kp">nil</span>
   <span class="k">rescue</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">RecordInvalid</span> <span class="o">=&gt;</span> <span class="n">err</span>
     <span class="c1"># return a GraphQL error with validation details</span>
-    <span class="n">messages</span> <span class="o">=</span> <span class="n">e</span><span class="p">.</span><span class="nf">record</span><span class="p">.</span><span class="nf">errors</span><span class="p">.</span><span class="nf">full_messages</span><span class="p">.</span><span class="nf">join</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
+    <span class="n">messages</span> <span class="o">=</span> <span class="n">err</span><span class="p">.</span><span class="nf">record</span><span class="p">.</span><span class="nf">errors</span><span class="p">.</span><span class="nf">full_messages</span><span class="p">.</span><span class="nf">join</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
     <span class="no">GraphQL</span><span class="o">::</span><span class="no">ExecutionError</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"Validation failed: </span><span class="si">#{</span><span class="n">messages</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
   <span class="k">rescue</span> <span class="no">StandardError</span> <span class="o">=&gt;</span> <span class="n">err</span>
     <span class="c1"># handle all other errors</span>
