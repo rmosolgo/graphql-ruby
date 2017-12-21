@@ -32,7 +32,7 @@ module GraphQL
     #   @return [Hash<String => GraphQL::Field>] Map String fieldnames to their {GraphQL::Field} implementations
 
     # @!attribute mutation
-    #   @return [GraphQL::Relay::Mutation, nil] The mutation this field was derived from, if it was derived from a mutation
+    #   @return [GraphQL::Relay::Mutation, nil] The mutation this object type was derived from, if it is an auto-generated payload type.
 
     def initialize
       super
