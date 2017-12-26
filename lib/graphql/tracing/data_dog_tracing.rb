@@ -19,13 +19,15 @@ module GraphQL
 
         pin = Datadog::Pin.get_from(self)
         unless pin
-          pin = Datadog::Pin.new(service)
+          pin = Datadog::Pin.new(service, app: 'ruby-graphql', app_type: Datadog::Ext::AppTypes::WEB)
           pin.onto(self)
         end
 
         pin.tracer.trace(platform_key, service: pin.service) do |span|
+          span.span_type = 'custom'
           if key == 'execute_multiplex'
-            span.resource = data[:multiplex].queries.map(&:selected_operation_name).join(', ')
+            operations = data[:multiplex].queries.map(&:selected_operation_name).join(', ')
+            span.resource = operations unless operations.empty?
           end
 
           if key == 'execute_query'
