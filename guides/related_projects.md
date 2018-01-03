@@ -20,7 +20,7 @@ Want to add something? Please open a pull request [on GitHub](https://github.com
   - [`graphql-rails-resolve`](https://github.com/colepatrickturner/graphql-rails-resolver)
   - [`graphql-query-resolver`](https://github.com/nettofarah/graphql-query-resolver), a graphql-ruby add-on to minimize N+1 queries.
   - [`graphql-rails_logger`](https://github.com/jetruby/graphql-rails_logger), a logger which allows you to inspect GraphQL queries in a more readable format.
-
+  - [`apollo_upload_server-ruby`](https://github.com/jetruby/apollo_upload_server-ruby), a middleware which allows you to upload files with GraphQL and multipart/form-data using [`apollo-upload-client`](https://github.com/jaydenseric/apollo-upload-client) library on front-end.
 - [optics-agent-ruby](https://github.com/apollostack/optics-agent-ruby), a graphql-ruby agent for use with the [Apollo Optics](http://www.apollodata.com/optics) GraphQL performance tool.
 - [`search_object_graphql`](https://github.com/rstankov/SearchObjectGraphQL), a DSL for defining search resolvers for GraphQL.
 
