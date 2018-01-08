@@ -34,6 +34,7 @@ describe GraphQL::Upgrader::Member do
     it 'removes the name field if it can be inferred from the class' do
       old = %{
         UserType = GraphQL::ObjectType.define do
+          # here is the name:
           name "User"
         end
       }
