@@ -24,6 +24,12 @@ describe GraphQL::Upgrader::Member do
     assert_equal new, upgrade(old)
   end
 
+  it 'upgrades the property definition in a block to method' do
+    old = %{field :name, String do\n  property :name\nend}
+    new = %{field :name, String, method: :name, null: true}
+    assert_equal new, upgrade(old)
+  end
+
   describe 'name' do
     it 'removes the name field if it can be inferred from the class' do
       old = %{
@@ -159,19 +165,16 @@ describe GraphQL::Upgrader::Member do
         end
       }
       new = %{
-        field :name, String, null: true do
-        end
-      }
+        field :name, String, null: true}
       assert_equal new, upgrade(old)
 
       old = %{
         field :name, !types.String do
+          description "abc"
         end
       }
       new = %{
-        field :name, String, null: false do
-        end
-      }
+        field :name, String, description: "abc", null: false}
       assert_equal new, upgrade(old)
 
       old = %{
@@ -179,9 +182,7 @@ describe GraphQL::Upgrader::Member do
         end
       }
       new = %{
-        field :name, -> { String }, null: false do
-        end
-      }
+        field :name, -> { String }, null: false}
       assert_equal new, upgrade(old)
 
       old = %{
@@ -190,9 +191,7 @@ describe GraphQL::Upgrader::Member do
         end
       }
       new = %{
-        field :name, -> { String }, null: true do
-        end
-      }
+        field :name, -> { String }, null: true}
       assert_equal new, upgrade(old)
 
       old = %{
@@ -201,9 +200,7 @@ describe GraphQL::Upgrader::Member do
         end
       }
       new = %{
-        field :name, String, null: false do
-        end
-      }
+        field :name, String, null: false}
       assert_equal new, upgrade(old)
 
       old = %{
@@ -212,9 +209,7 @@ describe GraphQL::Upgrader::Member do
         end
       }
       new = %{
-        field :name, -> { String }, "newline description", null: true do
-        end
-      }
+        field :name, -> { String }, "newline description", null: true}
       assert_equal new, upgrade(old)
 
       old = %{
@@ -223,9 +218,7 @@ describe GraphQL::Upgrader::Member do
         end
       }
       new = %{
-        field :name, -> { String }, "newline description", null: false do
-        end
-      }
+        field :name, -> { String }, "newline description", null: false}
       assert_equal new, upgrade(old)
 
       old = %{
@@ -234,9 +227,7 @@ describe GraphQL::Upgrader::Member do
        end
       }
       new = %{
-       field :name, String, field: SomeField, null: true do
-       end
-      }
+       field :name, String, field: SomeField, null: true}
       assert_equal new, upgrade(old)
     end
   end
