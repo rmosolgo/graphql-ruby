@@ -13,7 +13,7 @@ module GraphQL
       # @return [String]
       attr_reader :description
 
-      def initialize(name, return_type_expr = nil, desc = nil, null: nil, field: nil, function: nil, deprecation_reason: nil, method: nil, connection: nil, max_page_size: nil, resolve: nil, introspection: false, extras: [], &args_block)
+      def initialize(name, return_type_expr = nil, desc = nil, null: nil, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, connection: nil, max_page_size: nil, resolve: nil, introspection: false, extras: [], &args_block)
         if !(field || function)
           if return_type_expr.nil?
             raise ArgumentError, "missing positional argument `type`"
@@ -26,7 +26,10 @@ module GraphQL
           raise ArgumentError, "keyword `extras:` may only be used with method-based resolve, please remove `field:`, `function:`, or `resolve:`"
         end
         @name = name.to_s
-        @description = desc
+        if description && desc
+          raise ArgumentError, "Provide description as a positional argument or `description:` keyword, but not both (#{desc.inspect}, #{description.inspect})"
+        end
+        @description = description || desc
         @field = field
         @function = function
         @resolve = resolve
