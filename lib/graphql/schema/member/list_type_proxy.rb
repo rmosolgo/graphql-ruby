@@ -15,6 +15,10 @@ module GraphQL
         def to_graphql
           @member.graphql_definition.to_list_type
         end
+
+        def to_non_null_type
+          NonNullTypeProxy.new(self)
+        end
       end
     end
   end
