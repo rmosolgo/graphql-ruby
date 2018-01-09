@@ -40,6 +40,7 @@ describe GraphQL::Upgrader::Member do
       }
       new = %{
         class UserType < Types::BaseObject
+          # here is the name:
         end
       }
       assert_equal_ignore_spaces new, upgrade(old)
