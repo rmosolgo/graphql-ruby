@@ -11,7 +11,7 @@ module Platform
       field :viewerSubscription, -> { !Enums::SubscriptionState } do
         description "Identifies if the viewer is watching, not watching, or ignoring the subscribable entity."
 
-        resolve -> (subscribable, arguments, context) do
+        resolve ->(subscribable, arguments, context) do
           if context[:viewer].nil?
             return "unsubscribed"
           end
@@ -40,7 +40,7 @@ module Platform
       field :viewerCanSubscribe, !types.Boolean do
         description "Check if the viewer is able to change their subscription status for the repository."
 
-        resolve -> (subscribable, arguments, context) do
+        resolve ->(subscribable, arguments, context) do
           return false if context[:viewer].nil?
 
           subscribable.async_subscription_status(context[:viewer]).then(&:success?)
