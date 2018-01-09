@@ -7,16 +7,16 @@ module Platform
 
       scopeless_tokens_as_minimum
 
-      field :starting_line, Integer, description: "The starting line for the range", null: false do
-        resolve ->(range, args, context) {
-          range.lines.first[:lineno]
-        }
+      field :starting_line, Integer, description: "The starting line for the range", null: false
+
+      def starting_line
+        @object.lines.first[:lineno]
       end
 
-      field :ending_line, Integer, description: "The ending line for the range", null: false do
-        resolve ->(range, args, context) {
-          range.lines.first[:lineno] + (range.lines.length - 1)
-        }
+      field :ending_line, Integer, description: "The ending line for the range", null: false
+
+      def ending_line
+        @object.lines.first[:lineno] + (@object.lines.length - 1)
       end
 
       field :commit, -> { Objects::Commit }, description: "Identifies the line author", null: false
