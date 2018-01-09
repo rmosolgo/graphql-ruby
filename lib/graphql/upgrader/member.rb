@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+require 'parser/current'
 
 module GraphQL
   module Upgrader
@@ -170,7 +171,7 @@ module GraphQL
     class UpdateMethodSignatureTransform < Transform
       def apply(input_text)
         input_text.scan(/(?:input_field|field|connection|argument) .*$/).each do |field|
-          matches = /(?<field_type>input_field|field|connection|argument) :(?<name>[a-zA-Z_0-9_]*)?, (?<return_type>.*?(?:,|$|\}))(?<remainder>.*)/.match(field)
+          matches = /(?<field_type>input_field|field|connection|argument) :(?<name>[a-zA-Z_0-9_]*)?, (?<return_type>[^,]*)(?<remainder>.*)/.match(field)
           if matches
             name = matches[:name]
             return_type = matches[:return_type]
@@ -229,7 +230,7 @@ module GraphQL
 
     class RemoveEmptyBlocksTransform < Transform
       def apply(input_text)
-        input_text.gsub(/\s*do\s*end\s*/m, "")
+        input_text.gsub(/\s*do\s*end/m, "")
       end
     end
 
@@ -239,18 +240,26 @@ module GraphQL
       end
 
       def upgrade
-        transformable = @member.dup
-        transformable = TypeDefineToClassTransform.new.apply(transformable)
-        transformable = NameTransform.new.apply(transformable)
-        transformable = RemoveNewlinesTransform.new.apply(transformable)
-        transformable = PositionalTypeArgTransform.new.apply(transformable)
-        transformable = ConfigurationToKwargTransform.new(kwarg: "property").apply(transformable)
-        transformable = ConfigurationToKwargTransform.new(kwarg: "description").apply(transformable)
-        transformable = PropertyToMethodTransform.new.apply(transformable)
-        transformable = InterfacesToImplementsTransform.new.apply(transformable)
-        transformable = UpdateMethodSignatureTransform.new.apply(transformable)
-        transformable = RemoveEmptyBlocksTransform.new.apply(transformable)
-        transformable
+        type_source = @member.dup
+        # Transforms on type defn code:
+        type_source = TypeDefineToClassTransform.new.apply(type_source)
+        type_source = NameTransform.new.apply(type_source)
+        type_source = InterfacesToImplementsTransform.new.apply(type_source)
+        # Transforms on each field:
+        field_sources = find_fields(type_source)
+        field_sources.each do |field_source|
+          transformed_source = field_source.dup
+          transformed_source = RemoveNewlinesTransform.new.apply(transformed_source)
+          transformed_source = PositionalTypeArgTransform.new.apply(transformed_source)
+          transformed_source = ConfigurationToKwargTransform.new(kwarg: "property").apply(transformed_source)
+          transformed_source = ConfigurationToKwargTransform.new(kwarg: "description").apply(transformed_source)
+          transformed_source = PropertyToMethodTransform.new.apply(transformed_source)
+          transformed_source = UpdateMethodSignatureTransform.new.apply(transformed_source)
+          type_source = type_source.gsub(field_source, transformed_source)
+        end
+        # Clean-up:
+        type_source = RemoveEmptyBlocksTransform.new.apply(type_source)
+        type_source
       end
 
       def upgradeable?
@@ -258,6 +267,71 @@ module GraphQL
         return false if @member =~ /< Types::Base#{GRAPHQL_TYPES}/
 
         true
+      end
+
+      private
+
+      # Parse the type, find calls to `field` and `connection`
+      # Return strings containing those calls
+      def find_fields(type_source)
+        type_ast = Parser::CurrentRuby.parse(type_source)
+        finder = FieldFinder.new
+        finder.process(type_ast)
+        field_sources = []
+        # For each of the locations we found, extract the text for that definition.
+        # The text will be transformed independently,
+        # then the transformed text will replace the original text.
+        finder.locations.each do |name, (starting_idx, ending_idx)|
+          field_sources << type_source[starting_idx, ending_idx]
+        end
+        # Here's a crazy thing: the transformation is pure,
+        # so definitions like `argument :id, types.ID` can be transformed once
+        # then replaced everywhere. So:
+        # - make a unique array here
+        # - use `gsub` after performing the transformation.
+        field_sources.uniq!
+        field_sources
+      end
+
+      class FieldFinder < Parser::AST::Processor
+        # These methods are definition DSLs which may accept a block,
+        # each of these definitions is passed for transformation in its own right
+        DEFINITION_METHODS = [:field, :connection, :input_field, :argument]
+        attr_reader :locations
+
+        def initialize
+          # Pairs of `{ name => [start, end] }`,
+          # since we know fields are unique by name.
+          @locations = {}
+        end
+
+        # @param send_node [node] The node which might be a `field` call, etc
+        # @param source_node [node] The node whose source defines the bounds of the definition (eg, the surrounding block)
+        def add_location(send_node:,source_node:)
+          receiver_node, method_name, *arg_nodes = *send_node
+          # Implicit self and one of the recognized methods
+          if receiver_node.nil? && DEFINITION_METHODS.include?(method_name)
+            name = arg_nodes[0]
+            # This field may have already been added because
+            # we find `(block ...)` nodes _before_ we find `(send ...)` nodes.
+            if @locations[name].nil?
+              starting_idx = source_node.loc.expression.begin.begin_pos
+              ending_idx = source_node.loc.expression.end.end_pos
+              @locations[name] = [starting_idx, ending_idx]
+            end
+          end
+        end
+
+        def on_block(node)
+          send_node, args_node, body_node = *node
+          add_location(send_node: send_node, source_node: node)
+          super(node)
+        end
+
+        def on_send(node)
+          add_location(send_node: node, source_node: node)
+          super(node)
+        end
       end
     end
   end
