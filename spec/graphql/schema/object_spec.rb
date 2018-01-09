@@ -16,7 +16,7 @@ describe GraphQL::Schema::Object do
     it "inherits fields and interfaces" do
       new_object_class = Class.new(object_class) do
         field :newField, String, null: true
-        field :name, String, "The new description", null: true
+        field :name, String, description: "The new description", null: true
       end
 
       # one more than the parent class
