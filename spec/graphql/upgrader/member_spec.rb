@@ -156,6 +156,7 @@ describe GraphQL::Upgrader::Member do
         field :firstName, !types.String do
           resolve ->(obj, arg, ctx) {
             ctx.something
+
             obj[ctx] + obj
             obj.given_name
           }
@@ -166,6 +167,7 @@ describe GraphQL::Upgrader::Member do
 
         def first_name
           @context.something
+
           @object[@context] + @object
           @object.given_name
         end
