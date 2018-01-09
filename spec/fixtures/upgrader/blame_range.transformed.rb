@@ -7,13 +7,13 @@ module Platform
 
       scopeless_tokens_as_minimum
 
-      field :startingLine, Integer, description: "The starting line for the range", null: false do
+      field :starting_line, Integer, description: "The starting line for the range", null: false do
         resolve -> (range, args, context) {
           range.lines.first[:lineno]
         }
       end
 
-      field :endingLine, Integer, description: "The ending line for the range", null: false do
+      field :ending_line, Integer, description: "The ending line for the range", null: false do
         resolve -> (range, args, context) {
           range.lines.first[:lineno] + (range.lines.length - 1)
         }
