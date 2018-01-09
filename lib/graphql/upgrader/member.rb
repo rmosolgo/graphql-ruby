@@ -152,6 +152,26 @@ module GraphQL
       end
     end
 
+    # Take camelized field names and convert them to underscore case.
+    # (They'll be automatically camelized later.)
+    class UnderscoreizeFieldNameTransform < Transform
+      def apply(input_text)
+        input_text.sub /(?<field_type>input_field|field|connection|argument) :(?<name>[a-zA-Z_0-9_]*)/ do
+          field_type = $~[:field_type]
+          camelized_name = $~[:name]
+          underscored_name = underscorize(camelized_name)
+          "#{field_type} :#{underscored_name}"
+        end
+      end
+
+      def underscorize(str)
+        str
+          .gsub(/([A-Z]+)([A-Z][a-z])/,'\1_\2') # URLDecoder -> URL_Decoder
+          .gsub(/([a-z\d])([A-Z])/,'\1_\2')     # someThing -> some_Thing
+          .downcase
+      end
+    end
+
     # Transform `interfaces [A, B, C]` to `implements A\nimplements B\nimplements C\n`
     class InterfacesToImplementsTransform < Transform
       def apply(input_text)
@@ -264,6 +284,7 @@ module GraphQL
           transformed_field_source = ConfigurationToKwargTransform.new(kwarg: "property").apply(transformed_field_source)
           transformed_field_source = ConfigurationToKwargTransform.new(kwarg: "description").apply(transformed_field_source)
           transformed_field_source = PropertyToMethodTransform.new.apply(transformed_field_source)
+          transformed_field_source = UnderscoreizeFieldNameTransform.new.apply(transformed_field_source)
           transformed_field_source = UpdateMethodSignatureTransform.new.apply(transformed_field_source)
           type_source = type_source.gsub(field_source, transformed_field_source)
         end
