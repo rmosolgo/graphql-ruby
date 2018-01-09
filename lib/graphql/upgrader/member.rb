@@ -265,32 +265,48 @@ module GraphQL
     end
 
     class Member
-      def initialize(member)
+      def initialize(member, type_transforms: DEFAULT_TYPE_TRANSFORMS, field_transforms: DEFAULT_FIELD_TRANSFORMS, clean_up_transforms: DEFAULT_CLEAN_UP_TRANSFORMS)
         @member = member
+        @type_transforms = type_transforms
+        @field_transforms = field_transforms
+        @clean_up_transforms = clean_up_transforms
       end
 
+      DEFAULT_TYPE_TRANSFORMS = [
+        TypeDefineToClassTransform,
+        NameTransform,
+        InterfacesToImplementsTransform,
+      ]
+
+      DEFAULT_FIELD_TRANSFORMS = [
+        RemoveNewlinesTransform,
+        PositionalTypeArgTransform,
+        ConfigurationToKwargTransform.new(kwarg: "property"),
+        ConfigurationToKwargTransform.new(kwarg: "description"),
+        PropertyToMethodTransform,
+        UnderscoreizeFieldNameTransform,
+        UpdateMethodSignatureTransform,
+      ]
+
+      DEFAULT_CLEAN_UP_TRANSFORMS = [
+        RemoveExcessWhitespaceTransform,
+        RemoveEmptyBlocksTransform,
+      ]
+
       def upgrade
-        type_source = @member.dup
         # Transforms on type defn code:
-        type_source = TypeDefineToClassTransform.new.apply(type_source)
-        type_source = NameTransform.new.apply(type_source)
-        type_source = InterfacesToImplementsTransform.new.apply(type_source)
+        type_source = apply_transforms(@member.dup, @type_transforms)
         # Transforms on each field:
         field_sources = find_fields(type_source)
         field_sources.each do |field_source|
           transformed_field_source = field_source.dup
-          transformed_field_source = RemoveNewlinesTransform.new.apply(transformed_field_source)
-          transformed_field_source = PositionalTypeArgTransform.new.apply(transformed_field_source)
-          transformed_field_source = ConfigurationToKwargTransform.new(kwarg: "property").apply(transformed_field_source)
-          transformed_field_source = ConfigurationToKwargTransform.new(kwarg: "description").apply(transformed_field_source)
-          transformed_field_source = PropertyToMethodTransform.new.apply(transformed_field_source)
-          transformed_field_source = UnderscoreizeFieldNameTransform.new.apply(transformed_field_source)
-          transformed_field_source = UpdateMethodSignatureTransform.new.apply(transformed_field_source)
+          transformed_field_source = apply_transforms(field_source.dup, @field_transforms)
+          # Replace the original source code with the transformed source code:
           type_source = type_source.gsub(field_source, transformed_field_source)
         end
         # Clean-up:
-        type_source = RemoveEmptyBlocksTransform.new.apply(type_source)
-        type_source = RemoveExcessWhitespaceTransform.new.apply(type_source)
+        type_source = apply_transforms(type_source, @clean_up_transforms)
+        # Return the transformed source:
         type_source
       end
 
@@ -302,6 +318,23 @@ module GraphQL
       end
 
       private
+
+      def apply_transforms(source_code, transforms, idx: 0)
+        next_transform = transforms[idx]
+        case next_transform
+        when nil
+          # We got to the end of the list
+          source_code
+        when Class
+          # Apply a class
+          next_source_code = next_transform.new.apply(source_code)
+          apply_transforms(next_source_code, transforms, idx: idx + 1)
+        else
+          # Apply an already-initialized object which responds to `apply`
+          next_source_code = next_transform.apply(source_code)
+          apply_transforms(next_source_code, transforms, idx: idx + 1)
+        end
+      end
 
       # Parse the type, find calls to `field` and `connection`
       # Return strings containing those calls
