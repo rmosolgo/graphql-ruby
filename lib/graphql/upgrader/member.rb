@@ -208,7 +208,7 @@ module GraphQL
           # Turn the proc body into a method body
           lines = proc_body.split("\n").map do |line|
             line = line.sub(prev_body_indent, "")
-            "#{next_body_indent}#{line}"
+            "#{next_body_indent}#{line}".rstrip
           end
           # Add `def... end`
           method_def = if input_text.include?("argument ")
