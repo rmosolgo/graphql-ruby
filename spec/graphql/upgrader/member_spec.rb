@@ -318,4 +318,17 @@ describe GraphQL::Upgrader::Member do
       assert_equal new, upgrade(old)
     end
   end
+
+  describe "fixtures" do
+    original_files = Dir.glob("spec/fixtures/upgrader/*.original.rb")
+    original_files.each do |original_file|
+      transformed_file = original_file.sub(".original.", ".transformed.")
+      it "transforms #{original_file} -> #{transformed_file}" do
+        original_text = File.read(original_file)
+        expected_text = File.read(transformed_file)
+        transformed_text = upgrade(original_text)
+        assert_equal(expected_text, transformed_text)
+      end
+    end
+  end
 end
