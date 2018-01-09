@@ -11,7 +11,7 @@ module Platform
       field :startingLine, !types.Int do
         description "The starting line for the range"
 
-        resolve -> (range, args, context) {
+        resolve ->(range, args, context) {
           range.lines.first[:lineno]
         }
       end
@@ -19,7 +19,7 @@ module Platform
       field :endingLine, !types.Int do
         description "The ending line for the range"
 
-        resolve -> (range, args, context) {
+        resolve ->(range, args, context) {
           range.lines.first[:lineno] + (range.lines.length - 1)
         }
       end
