@@ -2,7 +2,7 @@
 
 module Platform
   module Objects
-    class BlameRange < Types::BaseObject
+    class BlameRange < Platform::Objects::Base
       description "Represents a range of information from a Git blame."
 
       scopeless_tokens_as_minimum
