@@ -98,34 +98,48 @@ describe GraphQL::Upgrader::Member do
 
   describe 'definition' do
     it 'upgrades the .define into class based definition' do
-      old = %{UserType = GraphQL::ObjectType.define do}
-      new = %{class UserType < Types::BaseObject}
+      old = %{UserType = GraphQL::ObjectType.define do
+      end}
+      new = %{class UserType < Types::BaseObject
+      end}
       assert_equal new, upgrade(old)
 
-      old = %{UserInterface = GraphQL::InterfaceType.define do}
-      new = %{class UserInterface < Types::BaseInterface}
+      old = %{UserInterface = GraphQL::InterfaceType.define do
+      end}
+      new = %{class UserInterface < Types::BaseInterface
+      end}
       assert_equal new, upgrade(old)
 
-      old = %{UserUnion = GraphQL::UnionType.define do}
-      new = %{class UserUnion < Types::BaseUnion}
+      old = %{UserUnion = GraphQL::UnionType.define do
+      end}
+      new = %{class UserUnion < Types::BaseUnion
+      end}
       assert_equal new, upgrade(old)
 
-      old = %{UserEnum = GraphQL::EnumType.define do}
-      new = %{class UserEnum < Types::BaseEnum}
+      old = %{UserEnum = GraphQL::EnumType.define do
+      end}
+      new = %{class UserEnum < Types::BaseEnum
+      end}
       assert_equal new, upgrade(old)
 
-      old = %{UserInput = GraphQL::InputObjectType.define do}
-      new = %{class UserInput < Types::BaseInputObject}
+      old = %{UserInput = GraphQL::InputObjectType.define do
+      end}
+      new = %{class UserInput < Types::BaseInputObject
+      end}
       assert_equal new, upgrade(old)
 
-      old = %{UserScalar = GraphQL::ScalarType.define do}
-      new = %{class UserScalar < Types::BaseScalar}
+      old = %{UserScalar = GraphQL::ScalarType.define do
+      end}
+      new = %{class UserScalar < Types::BaseScalar
+      end}
       assert_equal new, upgrade(old)
     end
 
     it 'upgrades including the module' do
-      old = %{Module::UserType = GraphQL::ObjectType.define do}
-      new = %{class Module::UserType < Types::BaseObject}
+      old = %{Module::UserType = GraphQL::ObjectType.define do
+      end}
+      new = %{class Module::UserType < Types::BaseObject
+      end}
       assert_equal new, upgrade(old)
     end
   end
@@ -165,16 +179,24 @@ describe GraphQL::Upgrader::Member do
         end
       }
       new = %{
-        field :name, String, null: true}
+        field :name, String, null: true
+      }
       assert_equal new, upgrade(old)
 
       old = %{
         field :name, !types.String do
           description "abc"
         end
+
+        field :name2, !types.Int do
+          description "def"
+        end
       }
       new = %{
-        field :name, String, description: "abc", null: false}
+        field :name, String, description: "abc", null: false
+
+        field :name2, Integer, description: "def", null: false
+      }
       assert_equal new, upgrade(old)
 
       old = %{
@@ -182,7 +204,8 @@ describe GraphQL::Upgrader::Member do
         end
       }
       new = %{
-        field :name, -> { String }, null: false}
+        field :name, -> { String }, null: false
+      }
       assert_equal new, upgrade(old)
 
       old = %{
@@ -191,16 +214,24 @@ describe GraphQL::Upgrader::Member do
         end
       }
       new = %{
-        field :name, -> { String }, null: true}
+        field :name, -> { String }, null: true
+      }
       assert_equal new, upgrade(old)
 
       old = %{
         field :name do
           type !String
         end
+
+        field :name2 do
+          type !String
+        end
       }
       new = %{
-        field :name, String, null: false}
+        field :name, String, null: false
+
+        field :name2, String, null: false
+      }
       assert_equal new, upgrade(old)
 
       old = %{
@@ -209,7 +240,8 @@ describe GraphQL::Upgrader::Member do
         end
       }
       new = %{
-        field :name, -> { String }, "newline description", null: true}
+        field :name, -> { String }, "newline description", null: true
+      }
       assert_equal new, upgrade(old)
 
       old = %{
@@ -218,7 +250,8 @@ describe GraphQL::Upgrader::Member do
         end
       }
       new = %{
-        field :name, -> { String }, "newline description", null: false}
+        field :name, -> { String }, "newline description", null: false
+      }
       assert_equal new, upgrade(old)
 
       old = %{
@@ -227,7 +260,8 @@ describe GraphQL::Upgrader::Member do
        end
       }
       new = %{
-       field :name, String, field: SomeField, null: true}
+       field :name, String, field: SomeField, null: true
+      }
       assert_equal new, upgrade(old)
     end
   end
