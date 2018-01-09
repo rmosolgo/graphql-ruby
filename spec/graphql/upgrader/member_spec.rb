@@ -349,13 +349,26 @@ describe GraphQL::Upgrader::Member do
   end
 
   describe "fixtures" do
+    def custom_upgrade(original_text)
+      # Replace the default one with a custom one:
+      type_transforms = GraphQL::Upgrader::Member::DEFAULT_TYPE_TRANSFORMS.map { |t|
+        if t == GraphQL::Upgrader::TypeDefineToClassTransform
+          GraphQL::Upgrader::TypeDefineToClassTransform.new(base_class_pattern: "Platform::\\2s::Base")
+        else
+          t
+        end
+      }
+      upgrader = GraphQL::Upgrader::Member.new(original_text, type_transforms: type_transforms)
+      upgrader.upgrade
+    end
+
     original_files = Dir.glob("spec/fixtures/upgrader/*.original.rb")
     original_files.each do |original_file|
       transformed_file = original_file.sub(".original.", ".transformed.")
       it "transforms #{original_file} -> #{transformed_file}" do
         original_text = File.read(original_file)
         expected_text = File.read(transformed_file)
-        transformed_text = upgrade(original_text)
+        transformed_text = custom_upgrade(original_text)
         assert_equal(expected_text, transformed_text)
       end
     end

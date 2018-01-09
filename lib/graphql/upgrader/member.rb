@@ -53,14 +53,12 @@ module GraphQL
     class TypeDefineToClassTransform < Transform
       # @param base_class_pattern [String] Replacement pattern for the base class name. Use this if your base classes have nonstandard names.
       def initialize(base_class_pattern: "Types::Base\\2")
+        @find_pattern = /([a-zA-Z_0-9:]*) = GraphQL::#{GRAPHQL_TYPES}Type\.define do/
         @replace_pattern = "class \\1 < #{base_class_pattern}"
       end
 
       def apply(input_text)
-        input_text.sub(
-          /([a-zA-Z_0-9:]*) = GraphQL::#{GRAPHQL_TYPES}Type\.define do/,
-          @replace_pattern
-        )
+        input_text.sub(@find_pattern, @replace_pattern)
       end
     end
 
@@ -68,7 +66,7 @@ module GraphQL
     # Or, if it is not redundant, move it to `graphql_name "Something"`.
     class NameTransform < Transform
       def apply(transformable)
-        if (matches = transformable.match(/class (?<type_name>[a-zA-Z_0-9:]*) < Types::Base#{GRAPHQL_TYPES}/))
+        if (matches = transformable.match(/class (?<type_name>[a-zA-Z_0-9:]*) </))
           type_name = matches[:type_name]
           # Get the name without any prefixes or suffixes
           type_name_without_the_type_part = type_name.split('::').last.gsub(/Type$/, '')
