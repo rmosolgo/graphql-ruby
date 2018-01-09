@@ -234,6 +234,16 @@ module GraphQL
       end
     end
 
+    # Remove redundant newlines, which may have trailing spaces
+    # Remove double newline after `do`
+    class RemoveExcessWhitespaceTransform < Transform
+      def apply(input_text)
+        input_text
+          .gsub(/\n{3,}/m, "\n")
+          .gsub(/do\n\n/m, "do\n")
+      end
+    end
+
     class Member
       def initialize(member)
         @member = member
@@ -248,17 +258,18 @@ module GraphQL
         # Transforms on each field:
         field_sources = find_fields(type_source)
         field_sources.each do |field_source|
-          transformed_source = field_source.dup
-          transformed_source = RemoveNewlinesTransform.new.apply(transformed_source)
-          transformed_source = PositionalTypeArgTransform.new.apply(transformed_source)
-          transformed_source = ConfigurationToKwargTransform.new(kwarg: "property").apply(transformed_source)
-          transformed_source = ConfigurationToKwargTransform.new(kwarg: "description").apply(transformed_source)
-          transformed_source = PropertyToMethodTransform.new.apply(transformed_source)
-          transformed_source = UpdateMethodSignatureTransform.new.apply(transformed_source)
-          type_source = type_source.gsub(field_source, transformed_source)
+          transformed_field_source = field_source.dup
+          transformed_field_source = RemoveNewlinesTransform.new.apply(transformed_field_source)
+          transformed_field_source = PositionalTypeArgTransform.new.apply(transformed_field_source)
+          transformed_field_source = ConfigurationToKwargTransform.new(kwarg: "property").apply(transformed_field_source)
+          transformed_field_source = ConfigurationToKwargTransform.new(kwarg: "description").apply(transformed_field_source)
+          transformed_field_source = PropertyToMethodTransform.new.apply(transformed_field_source)
+          transformed_field_source = UpdateMethodSignatureTransform.new.apply(transformed_field_source)
+          type_source = type_source.gsub(field_source, transformed_field_source)
         end
         # Clean-up:
         type_source = RemoveEmptyBlocksTransform.new.apply(type_source)
+        type_source = RemoveExcessWhitespaceTransform.new.apply(type_source)
         type_source
       end
 
@@ -282,7 +293,8 @@ module GraphQL
         # The text will be transformed independently,
         # then the transformed text will replace the original text.
         finder.locations.each do |name, (starting_idx, ending_idx)|
-          field_sources << type_source[starting_idx, ending_idx]
+          field_source = type_source[starting_idx..ending_idx]
+          field_sources << field_source
         end
         # Here's a crazy thing: the transformation is pure,
         # so definitions like `argument :id, types.ID` can be transformed once
