@@ -151,6 +151,29 @@ describe GraphQL::Upgrader::Member do
       assert_equal new, upgrade(old)
     end
 
+    it 'converts resolve proc to method' do
+      old = %{
+        field :firstName, !types.String do
+          resolve ->(obj, arg, ctx) {
+            ctx.something
+            obj[ctx] + obj
+            obj.given_name
+          }
+        end
+      }
+      new = %{
+        field :first_name, String, null: false
+
+        def first_name
+          @context.something
+          @object[@context] + @object
+          @object.given_name
+        end
+      }
+      assert_equal new, upgrade(old)
+    end
+
+
     it 'upgrades to the new definition' do
       old = %{field :name, !types.String}
       new = %{field :name, String, null: false}
