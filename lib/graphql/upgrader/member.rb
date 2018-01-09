@@ -172,6 +172,104 @@ module GraphQL
       end
     end
 
+    class ResolveProcToMethodTransform < Transform
+      def apply(input_text)
+        if input_text =~ /resolve ->/
+          # - Find the proc literal
+          # - Get the three argument names (obj, arg, ctx)
+          # - Get the proc body
+          # - Find and replace:
+          #  - The ctx argument becomes `@context`
+          #  - The obj argument becomes `@object`
+          # - Args is trickier:
+          #   - If it's not used, remove it
+          #   - If it's used, abandon ship and make it `**args`
+          #   - (It would be nice to correctly become Ruby kwargs, but that might be too hard)
+          #   - Add a `# TODO` comment to the method source?
+          # - Rebuild the method:
+          #   - use the field name as the method name
+          #   - handle args as described above
+          #   - put the modified proc body as the method body
+
+          input_text.match(/(?<field_type>input_field|field|connection|argument) :(?<name>[a-zA-Z_0-9_]*)/)
+          field_name = $~[:name]
+          field_ast = Parser::CurrentRuby.parse(input_text)
+          processor = ResolveProcProcessor.new
+          processor.process(field_ast)
+          proc_body = input_text[processor.proc_start..processor.proc_end]
+          obj_arg_name, args_arg_name, ctx_arg_name = processor.proc_arg_names
+          # This is not good, it will hit false positives
+          # Should use AST to make this substitution
+          proc_body.gsub!(/([^\w])?#{obj_arg_name}([^\w])?/, '\1@object\2')
+          proc_body.gsub!(/([^\w])?#{ctx_arg_name}([^\w])?/, '\1@context\2')
+
+          indent = " " * processor.resolve_indent
+          prev_body_indent = "#{indent}  "
+          next_body_indent = indent
+          method_def_indent = indent[2..-1]
+          # Turn the proc body into a method body
+          lines = proc_body.split("\n").map do |line|
+            line = line.sub(prev_body_indent, "")
+            "#{next_body_indent}#{line}"
+          end
+          # Add `def... end`
+          method_def = if input_text.include?("argument ")
+            # This field has arguments
+            "def #{field_name}(*#{args_arg_name})"
+          else
+            # No field arguments, so, no method arguments
+            "def #{field_name}"
+          end
+          lines.unshift("\n#{method_def_indent}#{method_def}")
+          lines << "#{method_def_indent}end\n"
+          method_body = lines.join("\n")
+          # Replace the resolve proc with the method
+          input_text[processor.resolve_start..processor.resolve_end] = ""
+          input_text += method_body
+          input_text
+        else
+          # No resolve proc
+          input_text
+        end
+      end
+
+
+      class ResolveProcProcessor < Parser::AST::Processor
+        attr_reader :proc_start, :proc_end, :proc_arg_names, :resolve_start, :resolve_end, :resolve_indent
+        def initialize
+          @proc_arg_names = nil
+          @resolve_start = nil
+          @resolve_end = nil
+          @resolve_indent = nil
+          @proc_start = nil
+          @proc_end = nil
+        end
+
+        def on_send(node)
+          receiver, method_name, _args = *node
+          if method_name == :resolve && receiver.nil?
+            source_exp = node.loc.expression
+            @resolve_start = source_exp.begin.begin_pos
+            @resolve_end = source_exp.end.end_pos
+            @resolve_indent = source_exp.column
+          end
+          super(node)
+        end
+
+        def on_block(node)
+          send_node, args_node, body_node = node.children
+          _receiver, method_name, _send_args_node = *send_node
+          if method_name == :lambda
+            source_exp = body_node.loc.expression
+            @proc_arg_names = args_node.children.map { |arg_node| arg_node.children[0].to_s }
+            @proc_start = source_exp.begin.begin_pos
+            @proc_end = source_exp.end.end_pos
+          end
+          super(node)
+        end
+      end
+    end
+
     # Transform `interfaces [A, B, C]` to `implements A\nimplements B\nimplements C\n`
     class InterfacesToImplementsTransform < Transform
       def apply(input_text)
@@ -285,6 +383,7 @@ module GraphQL
         ConfigurationToKwargTransform.new(kwarg: "description"),
         PropertyToMethodTransform,
         UnderscoreizeFieldNameTransform,
+        ResolveProcToMethodTransform,
         UpdateMethodSignatureTransform,
       ]
 
