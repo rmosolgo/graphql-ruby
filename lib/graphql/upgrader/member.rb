@@ -356,7 +356,7 @@ module GraphQL
         end
 
         def on_block(node)
-          send_node, args_node, body_node = *node
+          send_node, _args_node, _body_node = *node
           add_location(send_node: send_node, source_node: node)
           super(node)
         end
