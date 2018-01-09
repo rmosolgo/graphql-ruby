@@ -145,6 +145,12 @@ describe GraphQL::Upgrader::Member do
   end
 
   describe 'fields' do
+    it 'underscorizes field name' do
+      old = %{field :firstName, !types.String}
+      new = %{field :first_name, String, null: false}
+      assert_equal new, upgrade(old)
+    end
+
     it 'upgrades to the new definition' do
       old = %{field :name, !types.String}
       new = %{field :name, String, null: false}
