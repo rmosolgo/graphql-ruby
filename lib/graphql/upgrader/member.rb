@@ -396,7 +396,6 @@ module GraphQL
         # Transforms on each field:
         field_sources = find_fields(type_source)
         field_sources.each do |field_source|
-          transformed_field_source = field_source.dup
           transformed_field_source = apply_transforms(field_source.dup, @field_transforms)
           # Replace the original source code with the transformed source code:
           type_source = type_source.gsub(field_source, transformed_field_source)
