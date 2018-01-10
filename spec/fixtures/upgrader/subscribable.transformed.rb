@@ -7,7 +7,7 @@ module Platform
 
       field :id, GraphQL::ID_TYPE, method: :global_relay_id, null: false
 
-      field :viewer_subscription, -> { Enums::SubscriptionState }, description: "Identifies if the viewer is watching, not watching, or ignoring the subscribable entity.", null: false
+      field :viewer_subscription, Enums::SubscriptionState, description: "Identifies if the viewer is watching, not watching, or ignoring the subscribable entity.", null: false
 
       def viewer_subscription
         if @context[:viewer].nil?
