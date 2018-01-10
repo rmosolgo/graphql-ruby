@@ -214,7 +214,7 @@ module GraphQL
           # Add `def... end`
           method_def = if input_text.include?("argument ")
             # This field has arguments
-            "def #{field_name}(*#{args_arg_name})"
+            "def #{field_name}(**#{args_arg_name})"
           else
             # No field arguments, so, no method arguments
             "def #{field_name}"
@@ -273,11 +273,10 @@ module GraphQL
     class InterfacesToImplementsTransform < Transform
       def apply(input_text)
         input_text.gsub(
-          /(?<indent>\s*)(?:interfaces) \[(?<interfaces>(?:[a-zA-Z_0-9:\.]+)(?:,\s*[a-zA-Z_0-9:\.]+)*)\]/
+          /(?<indent>\s*)(?:interfaces) \[\s*(?<interfaces>(?:[a-zA-Z_0-9:\.,\s]+))\]/m
         ) do
           indent = $~[:indent]
-          interfaces = $~[:interfaces].split(',').map(&:strip)
-
+          interfaces = $~[:interfaces].split(',').map(&:strip).reject(&:empty?)
           interfaces.map do |interface|
             "#{indent}implements #{interface}"
           end.join

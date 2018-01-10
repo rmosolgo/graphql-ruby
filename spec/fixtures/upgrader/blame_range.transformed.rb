@@ -7,6 +7,10 @@ module Platform
 
       scopeless_tokens_as_minimum
 
+      # Test multiline interfaces
+      implements Interfaces::A
+      implements Interfaces::B
+
       field :starting_line, Integer, description: "The starting line for the range", null: false
 
       def starting_line
