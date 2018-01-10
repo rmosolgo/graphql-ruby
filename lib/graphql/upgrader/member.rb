@@ -35,12 +35,13 @@ module GraphQL
           # Remove the prefix
           normalize_type_expression(type_expr[6..-1], preserve_bang: preserve_bang)
         when /\A->/
-          # Remove the proc wrapper, then re-apply it
+          # Remove the proc wrapper, don't re-apply it
+          # because stabby is not supported in class-based definition
+          # (and shouldn't ever be necessary)
           unwrapped = type_expr
             .sub(/\A->\s?\{\s*/, "")
             .sub(/\s*\}/, "")
-          # TODO do we have to keep this?
-          "-> { #{normalize_type_expression(unwrapped, preserve_bang: preserve_bang)} }"
+          normalize_type_expression(unwrapped, preserve_bang: preserve_bang)
         when "Int"
           "Integer"
         else
