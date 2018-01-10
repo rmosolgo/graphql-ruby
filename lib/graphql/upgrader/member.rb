@@ -273,7 +273,7 @@ module GraphQL
     class InterfacesToImplementsTransform < Transform
       def apply(input_text)
         input_text.gsub(
-          /(?<indent>\s*)(?:interfaces) \[(?<interfaces>(?:[a-zA-Z_0-9:]+)(?:,\s*[a-zA-Z_0-9:]+)*)\]/
+          /(?<indent>\s*)(?:interfaces) \[(?<interfaces>(?:[a-zA-Z_0-9:\.]+)(?:,\s*[a-zA-Z_0-9:\.]+)*)\]/
         ) do
           indent = $~[:indent]
           interfaces = $~[:interfaces].split(',').map(&:strip)
