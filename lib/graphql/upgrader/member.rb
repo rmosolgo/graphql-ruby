@@ -72,14 +72,14 @@ module GraphQL
           # Get the name without any prefixes or suffixes
           type_name_without_the_type_part = type_name.split('::').last.gsub(/Type$/, '')
           # Find an overridden name value
-          if matches = transformable.match(/name ('|")(?<overridden_name>.*)('|")/)
+          if matches = transformable.match(/ name ('|")(?<overridden_name>.*)('|")/)
             name = matches[:overridden_name]
             if type_name_without_the_type_part != name
               # If the overridden name is still required, use `graphql_name` for it
-              transformable = transformable.sub(/name (.*)/, 'graphql_name \1')
+              transformable = transformable.sub(/ name (.*)/, ' graphql_name \1')
             else
               # Otherwise, remove it altogether
-              transformable = transformable.sub(/\s*name ('|").*('|")/, '')
+              transformable = transformable.sub(/\s+name ('|").*('|")/, '')
             end
           end
         end

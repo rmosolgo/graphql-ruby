@@ -351,6 +351,17 @@ describe GraphQL::Upgrader::Member do
   end
 
   describe "fixtures" do
+    class ActiveRecordTypeToClassTransform < GraphQL::Upgrader::Transform
+      def initialize
+        @find_pattern = /^( +)([a-zA-Z_0-9:]*) = define_active_record_type\(-> ?\{ ?:{0,2}([a-zA-Z_0-9:]*) ?\} ?\) do/
+        @replace_pattern = "\\1class \\2 < Platform::Objects::Base\n\\1  model_name \"\\3\""
+      end
+
+      def apply(input_text)
+        input_text.sub(@find_pattern, @replace_pattern)
+      end
+    end
+
     def custom_upgrade(original_text)
       # Replace the default one with a custom one:
       type_transforms = GraphQL::Upgrader::Member::DEFAULT_TYPE_TRANSFORMS.map { |t|
@@ -360,6 +371,8 @@ describe GraphQL::Upgrader::Member do
           t
         end
       }
+
+      type_transforms.unshift(ActiveRecordTypeToClassTransform)
       upgrader = GraphQL::Upgrader::Member.new(original_text, type_transforms: type_transforms)
       upgrader.upgrade
     end
