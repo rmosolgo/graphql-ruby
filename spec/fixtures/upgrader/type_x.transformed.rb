@@ -9,7 +9,7 @@ module Platform
       minimum_accepted_scopes ["z"]
 
       global_id_field :id
-      interfaces [GraphQL::Relay::Node.interface]
+      implements GraphQL::Relay::Node.interface
 
       field :f1, Objects::O1, "The x being y.", null: false
       field :f2, Enums::E1, "x for the y.", method: :field_2, null: false
