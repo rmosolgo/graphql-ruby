@@ -199,8 +199,8 @@ module GraphQL
           obj_arg_name, args_arg_name, ctx_arg_name = processor.proc_arg_names
           # This is not good, it will hit false positives
           # Should use AST to make this substitution
-          proc_body.gsub!(/([^\w])?#{obj_arg_name}([^\w])?/, '\1@object\2')
-          proc_body.gsub!(/([^\w])?#{ctx_arg_name}([^\w])?/, '\1@context\2')
+          proc_body.gsub!(/([^\w:]|^)#{obj_arg_name}([^\w]|$)/, '\1@object\2')
+          proc_body.gsub!(/([^\w:]|^)#{ctx_arg_name}([^\w]|$)/, '\1@context\2')
 
           indent = " " * processor.resolve_indent
           prev_body_indent = "#{indent}  "
@@ -224,6 +224,13 @@ module GraphQL
           method_body = lines.join("\n")
           # Replace the resolve proc with the method
           input_text[processor.resolve_start..processor.resolve_end] = ""
+          # The replacement above might have left some preceeding whitespace,
+          # so remove it by deleting all whitespace chars before `resolve`:
+          preceeding_whitespace = processor.resolve_start - 1
+          while input_text[preceeding_whitespace] == " " && preceeding_whitespace > 0
+            input_text[preceeding_whitespace] = ""
+            preceeding_whitespace -= 1
+          end
           input_text += method_body
           input_text
         else

@@ -151,28 +151,71 @@ describe GraphQL::Upgrader::Member do
       assert_equal new, upgrade(old)
     end
 
-    it 'converts resolve proc to method' do
-      old = %{
-        field :firstName, !types.String do
-          resolve ->(obj, arg, ctx) {
-            ctx.something
+    describe "resolve proc to method" do
+      it "converts @object and @context" do
+        old = %{
+          field :firstName, !types.String do
+            resolve ->(obj, arg, ctx) {
+              ctx.something
+              other_ctx # test combined identifiers
 
-            obj[ctx] + obj
-            obj.given_name
-          }
-        end
-      }
-      new = %{
-        field :first_name, String, null: false
+              obj[ctx] + obj
+              obj.given_name
+            }
+          end
+        }
+        new = %{
+          field :first_name, String, null: false
 
-        def first_name
-          @context.something
+          def first_name
+            @context.something
+            other_ctx # test combined identifiers
 
-          @object[@context] + @object
-          @object.given_name
-        end
-      }
-      assert_equal new, upgrade(old)
+            @object[@context] + @object
+            @object.given_name
+          end
+        }
+        assert_equal new, upgrade(old)
+      end
+
+      it "handles `_` var names" do
+        old = %{
+          field :firstName, !types.String do
+            resolve ->(obj, _, _) {
+              obj.given_name
+            }
+          end
+        }
+        new = %{
+          field :first_name, String, null: false
+
+          def first_name
+            @object.given_name
+          end
+        }
+        assert_equal new, upgrade(old)
+      end
+
+      it "creates **arguments if necessary" do
+        old = %{
+          field :firstName, !types.String do
+            argument :ctx, types.String, default_value: "abc"
+            resolve ->(obj, args, ctx) {
+              args[:ctx]
+            }
+          end
+        }
+        new = %{
+          field :first_name, String, null: false do
+            argument :ctx, String, default_value: "abc", required: false
+          end
+
+          def first_name(**args)
+            args[:ctx]
+          end
+        }
+        assert_equal new, upgrade(old)
+      end
     end
 
 
