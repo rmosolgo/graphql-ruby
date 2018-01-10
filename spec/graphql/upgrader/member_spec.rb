@@ -186,7 +186,7 @@ describe GraphQL::Upgrader::Member do
       assert_equal new, upgrade(old)
 
       old = %{field :name, -> { !types.String }}
-      new = %{field :name, -> { String }, null: false}
+      new = %{field :name, String, null: false}
       assert_equal new, upgrade(old)
 
       old = %{connection :name, Name.connection_type, "names"}
@@ -235,7 +235,7 @@ describe GraphQL::Upgrader::Member do
         end
       }
       new = %{
-        field :name, -> { String }, null: false
+        field :name, String, null: false
       }
       assert_equal new, upgrade(old)
 
@@ -245,7 +245,7 @@ describe GraphQL::Upgrader::Member do
         end
       }
       new = %{
-        field :name, -> { String }, null: true
+        field :name, String, null: true
       }
       assert_equal new, upgrade(old)
 
@@ -271,7 +271,7 @@ describe GraphQL::Upgrader::Member do
         end
       }
       new = %{
-        field :name, -> { String }, "newline description", null: true
+        field :name, String, "newline description", null: true
       }
       assert_equal new, upgrade(old)
 
@@ -281,7 +281,7 @@ describe GraphQL::Upgrader::Member do
         end
       }
       new = %{
-        field :name, -> { String }, "newline description", null: false
+        field :name, String, "newline description", null: false
       }
       assert_equal new, upgrade(old)
 
@@ -319,7 +319,7 @@ describe GraphQL::Upgrader::Member do
           property: :example_connections
       }
       new = %{
-        field :example_connection, -> { ExampleConnectionType }, null: true, connection: true
+        field :example_connection, ExampleConnectionType, null: true, connection: true
           method: :example_connections
       }
 
