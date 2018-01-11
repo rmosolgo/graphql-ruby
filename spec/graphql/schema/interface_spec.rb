@@ -41,6 +41,30 @@ describe GraphQL::Schema::Interface do
     end
   end
 
+  describe "With old-style objects" do
+    class NewStyleInterface < GraphQL::Schema::Interface
+      field :a, Integer, null: false
+      module Implementation
+        def a; 1; end
+      end
+    end
+
+    OldStyleQueryObject = GraphQL::ObjectType.define do
+      name "Query"
+      interfaces [NewStyleInterface]
+    end
+
+    class MixedStyleQuery < GraphQL::Schema
+      query OldStyleQueryObject
+    end
+
+    it "implements fields" do
+      res = MixedStyleQuery.execute("{ a }", root_value: :x)
+      pp res
+      assert_equal 1, res["data"]["a"]
+    end
+  end
+
   describe ".to_graphql" do
     it "creates an InterfaceType" do
       interface_type = interface.to_graphql
