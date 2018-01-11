@@ -852,14 +852,14 @@ The `module` passed as `introspection` may contain classes with the following na
 
 Custom class name | GraphQL type | Built-in class name
 --|--|--
-`Schema` | `__Schema` | `GraphQL::Introspection::SchemaType`
-`Type` | `__Type` | `GraphQL::Introspection::TypeType`
-`Directive` | `__Directive` | `GraphQL::Introspection::DirectiveType`
-`DirectiveLocation` | `__DirectiveLocation` | `GraphQL::Introspection::DirectiveLocationEnum`
-`EnumValue` | `__EnumValue` | `GraphQL::Introspection::EnumValueType`
-`Field` | `__Field` | `GraphQL::Introspection::FieldType`
-`InputValue` | `__InputValue` | `GraphQL::Introspection::InputValueType`
-`TypeKind` | `__TypeKind` | `GraphQL::Introspection::TypeKindEnum`
+`SchemaType` | `__Schema` | `GraphQL::Introspection::SchemaType`
+`TypeType` | `__Type` | `GraphQL::Introspection::TypeType`
+`DirectiveType` | `__Directive` | `GraphQL::Introspection::DirectiveType`
+`DirectiveLocationType` | `__DirectiveLocation` | `GraphQL::Introspection::DirectiveLocationEnum`
+`EnumValueType` | `__EnumValue` | `GraphQL::Introspection::EnumValueType`
+`FieldType` | `__Field` | `GraphQL::Introspection::FieldType`
+`InputValueType` | `__InputValue` | `GraphQL::Introspection::InputValueType`
+`TypeKindType` | `__TypeKind` | `GraphQL::Introspection::TypeKindEnum`
 
 The class-based definitions' names _must_ match the names of the types they replace.
 
@@ -869,7 +869,7 @@ The built-in classes listed above may be extended:
 
 ```ruby
 module Introspection
-  class Schema < GraphQL::Introspection::SchemaType
+  class SchemaType < GraphQL::Introspection::SchemaType
     # ...
   end
 end
