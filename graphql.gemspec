@@ -40,6 +40,8 @@ Gem::Specification.new do |s|
   # following are required for relay helpers
   s.add_development_dependency "appraisal"
   s.add_development_dependency "sequel"
+  # required for upgrader
+  s.add_development_dependency "parser"
 
   # website stuff
   s.add_development_dependency "jekyll"
