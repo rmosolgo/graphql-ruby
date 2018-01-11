@@ -341,6 +341,42 @@ module Jazz
     end
   end
 
+  module Introspection
+    class TypeType < GraphQL::Introspection::TypeType
+      def name
+        @object.name.upcase
+      end
+    end
+
+    class SchemaType < GraphQL::Introspection::SchemaType
+      graphql_name "__Schema"
+
+      field :is_jazzy, Boolean, null: false
+      def is_jazzy
+        true
+      end
+    end
+
+    class DynamicFields < GraphQL::Introspection::DynamicFields
+      field :__typename_length, Integer, null: false, extras: [:irep_node]
+      field :__ast_node_class, String, null: false, extras: [:ast_node]
+      def __typename_length(irep_node:)
+        __typename(irep_node: irep_node).length
+      end
+
+      def __ast_node_class(ast_node:)
+        ast_node.class.name
+      end
+    end
+
+    class EntryPoints < GraphQL::Introspection::EntryPoints
+      field :__classname, String, "The Ruby class name of the root object", null: false
+      def __classname
+        @object.class.name
+      end
+    end
+  end
+
   class CustomContext < GraphQL::Query::Context
     def [](key)
       if key == :magic_key
@@ -359,7 +395,8 @@ module Jazz
   class Schema < GraphQL::Schema
     query(Query)
     mutation(Mutation)
-    context_class CustomContext
+    introspection(Introspection)
+    context_class(CustomContext)
     use MetadataPlugin, value: "xyz"
     def self.resolve_type(type, obj, ctx)
       class_name = obj.class.name.split("::").last
