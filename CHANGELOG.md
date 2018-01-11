@@ -8,6 +8,19 @@
 
 ### Bug fixes
 
+## 1.7.8 (11 Jan 2018)
+
+### New features
+
+- Refactor `Schema::Printer` to use `Language::Printer` #1159
+- Add `ArgumentValue#default_used?` and `Arguments#default_used?` #1152
+
+### Bug fixes
+
+- Fix Scout Tracing #1187
+- Call `#inspect` for `EnumType::UnresolvedValueError` #1179
+- Parse empty field sets in IDL parser #1145
+
 ## 1.7.7 (29 Nov 2017)
 
 ### New features
