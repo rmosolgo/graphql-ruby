@@ -36,7 +36,7 @@ module GraphQL
             unless File.exists?(destination_file)
               FileUtils.mkdir_p(File.dirname(destination_file))
               File.open(destination_file, 'w') do |f|
-                f.write "class Types::BaseScalar < GraphQL::Schema::Scalar; end"
+                f.write "class Types::BaseScalar < GraphQL::Schema::Scalar\nend"
               end
             end
 
@@ -44,7 +44,7 @@ module GraphQL
             unless File.exists?(destination_file)
               FileUtils.mkdir_p(File.dirname(destination_file))
               File.open(destination_file, 'w') do |f|
-                f.write "class Types::BaseInputObject < GraphQL::Schema::InputObject; end"
+                f.write "class Types::BaseInputObject < GraphQL::Schema::InputObject\nend"
               end
             end
 
@@ -52,7 +52,7 @@ module GraphQL
             unless File.exists?(destination_file)
               FileUtils.mkdir_p(File.dirname(destination_file))
               File.open(destination_file, 'w') do |f|
-                f.write "class Types::BaseEnum < GraphQL::Schema::Enum; end"
+                f.write "class Types::BaseEnum < GraphQL::Schema::Enum\nend"
               end
             end
 
@@ -60,7 +60,7 @@ module GraphQL
             unless File.exists?(destination_file)
               FileUtils.mkdir_p(File.dirname(destination_file))
               File.open(destination_file, 'w') do |f|
-                f.write "class Types::BaseUnion < GraphQL::Schema::Union; end"
+                f.write "class Types::BaseUnion < GraphQL::Schema::Union\nend"
               end
             end
 
@@ -68,14 +68,14 @@ module GraphQL
             unless File.exists?(destination_file)
               FileUtils.mkdir_p(File.dirname(destination_file))
               File.open(destination_file, 'w') do |f|
-                f.write "class Types::BaseInterface < GraphQL::Schema::Interface; end"
+                f.write "class Types::BaseInterface < GraphQL::Schema::Interface\nend"
               end
             end
 
             destination_file = File.join(base_dir, "types", "base_object.rb")
             unless File.exists?(destination_file)
               File.open(destination_file, 'w') do |f|
-                f.write "class Types::BaseObject < GraphQL::Schema::Object; end"
+                f.write "class Types::BaseObject < GraphQL::Schema::Object\nend"
               end
             end
           end
@@ -103,4 +103,3 @@ module GraphQL
     end
   end
 end
-
