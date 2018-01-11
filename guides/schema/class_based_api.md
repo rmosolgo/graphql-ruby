@@ -16,6 +16,7 @@ You can get an overview of this new feature:
 
 - [Rationale & Goals](#rationale--goals)
 - [Compatibility & Migration Overview](#compatibility--migration-overview)
+- [Using the upgrader](#upgrader)
 - [Roadmap](#roadmap)
 
 And learn about the APIs:
@@ -93,6 +94,138 @@ __A monkeypatch__, activated in global scope:
 # Enable `!` everywhere
 GraphQL::DeprecatedDSL.activate
 ```
+
+## Upgrader
+
+`1.8` includes an _auto-upgrader_ for transforming Ruby files from the `.define`-based syntax to `class`-based syntax. The upgrader is a pipeline of sequential transform operations. It ships with default pipelines, but you may customize the upgrade process by replacing the built-in pipelines with a custom ones.
+
+The upgrader has an additional dependency, `parser`, which you must add to your project manually (for example, by adding to your `Gemfile`).
+
+Remember that your project may be transformed one file at a time because the two syntaxes are compatible. This way, you can convert a few files and run your tests to identify outstanding issues, and continue working incrementally.
+
+This transformation may not be perfect, but it should cover the most common cases. If you want to ask a question or report a bug, please {% open_an_issue "Upgrader question/bug report","Please share: the source code you're trying to transform, the output you got from the transformer, and the output you want to get from the transformer." %}.
+
+### Using the Default Upgrade Task
+
+The upgrader ships with rake tasks, included as a railtie ([source](https://github.com/rmosolgo/graphql-ruby/blob/1.8-dev/lib/graphql/railtie.rb)). The railtie will be automatically installed by your Rails app, and it provides the following tasks:
+
+- `graphql:upgrade:schema[path/to/schema.rb]`: upgrade the Schema file
+- `graphql:upgrade:member[path/to/some/type.rb]`: upgrade a type definition (object, interface, union, etc)
+- `graphql:upgrade[app/graphql/**/*]`: run the `member` upgrade on files which have a suffix of `_(type|interface|enum|union).rb`
+- `graphql:upgrade:create_base_objects[path/to/graphql/]`: add base classes to your project
+
+### Writing a Custom Upgrade Task
+
+You might write a custom task because:
+
+- You want to customize the transformation pipeline
+- You're not using Rails, so a railtie won't work
+
+To write a custom task, you can write a rake task (or Ruby script) which uses the upgrader's API directly.
+
+Here's the code to upgrade a type definition with the default transform pipeline:
+
+```ruby
+# Read the original source code into a string
+original_source = File.read("path/to/type.rb")
+# Initialize an upgrader with the default transforms
+upgrader = GraphQL::Upgrader::Member.new(original_source)
+# Perform the transformation, get the transformed source code
+transformed_source = upgrader.upgrade
+# Update the source file with the new code
+File.write("path/to/type.rb", transformed_source)
+```
+
+In this custom code, you can pass some keywords to {{ "GraphQL::Upgrader::Member.new" | api_doc }}:
+
+- `type_transforms:` Applied to the source code as a whole, applied first
+- `field_transforms:` Applied to each field/connection/argument definition (extracted from the source, transformed independently, then re-inserted)
+- `clean_up_transforms:` Applied to the source code as a whole, _after_ the type and field transforms
+
+Keep in mind that these transforms are performed in sequence, so the text changes over time. If you want to transform the source text, use `.unshift()` to add transforms to the _beginning_ of the pipeline instead of the end.
+
+For example, in `script/graphql-upgrade`:
+
+```ruby
+#!/usr/bin/env ruby
+
+# @example Upgrade app/graphql/types/user_type.rb:
+#  script/graphql-upgrade app/graphql/types/user_type.rb
+
+# Replace the default define-to-class transform with a custom one:
+type_transforms = GraphQL::Upgrader::Member::DEFAULT_TYPE_TRANSFORMS.map { |t|
+  if t == GraphQL::Upgrader::TypeDefineToClassTransform
+    GraphQL::Upgrader::TypeDefineToClassTransform.new(base_class_pattern: "Platform::\\2s::Base")
+  else
+    t
+  end
+}
+
+# Add this transformer at the beginning of the list:
+type_transforms.unshift(GraphQL::Upgrader::ConfigurationToKwargTransform.new(kwarg: "visibility"))
+
+# run the upgrader
+original_text = File.read(ARGV[0])
+upgrader = GraphQL::Upgrader::Member.new(original_text, type_transforms: type_transforms)
+transformed_text = upgrader.upgrade
+File.write(filename, transformed_text)
+```
+
+### Writing a custom transformer
+
+Objects in the transform pipeline may be:
+
+- A class which responds to `.new.apply(input_text)` and returns the transformed code
+- An object which responds to `.apply(input_text)` and returns the transformed code
+
+The library provides a {{ "GraphQL::Upgrader::Transform" | api_doc }} base class with a few convenience methods. You can also customize the built-in transformers listed below.
+
+For example, here's a transform which rewrites type definitions from a `model_type(model) do ... end` factory method to the class-based syntax:
+
+```ruby
+# Create a custom transform for our `model_type` factory:
+class ModelTypeToClassTransform < GraphQL::Upgrader::Transform
+  def initialize
+    # Find calls to the factory method, which have a type class inside
+    @find_pattern = /^( +)([a-zA-Z_0-9:]*) = model_type\(-> ?\{ ?:{0,2}([a-zA-Z_0-9:]*) ?\} ?\) do/
+    # Replace them with a class definition and a `model_name("...")` call:
+    @replace_pattern = "\\1class \\2 < Platform::Objects::Base\n\\1  model_name \"\\3\""
+  end
+
+  def apply(input_text)
+    # Run the substitution on the input text:
+    input_text.sub(@find_pattern, @replace_pattern)
+  end
+end
+# Add the class to the beginning of the pipeline
+type_transforms.unshift(ModelTypeToClassTransform)
+```
+
+### Built-in transformers
+
+Follow links to the API doc to read the source of each transform:
+
+Type transforms ({{ "GraphQL::Upgrader::Member::DEFAULT_TYPE_TRANSFORMS" | api_doc }}):
+
+- {{ "GraphQL::Upgrader::Transform" | api_doc }} base class, provides a `normalize_type_expression` helper
+- {{ "GraphQL::Upgrader::TypeDefineToClassTransform" | api_doc }} turns `.define` into `class ...` with a regexp substitution
+- {{ "GraphQL::Upgrader::NameTransform" | api_doc }} takes `name "..."` and removes it if it's redundant, or converts it to `graphql_name "..."`
+- {{ "GraphQL::Upgrader::InterfacesToImplementsTransform" | api_doc }} turns `interfaces [A, B...]` into `implements(A)\nimplements(B)...`
+
+Field transforms ({{ "GraphQL::Upgrader::Member::DEFAULT_FIELD_TRANSFORMS" | api_doc }}):
+
+- {{ "GraphQL::Upgrader::RemoveNewlinesTransform" | api_doc }} removes newlines from field definitions to normalize them
+- {{ "GraphQL::Upgrader::PositionalTypeArgTransform" | api_doc }} moves `type X` from the `do ... end` block into a positional argument, to normalize the definition
+- {{ "GraphQL::Upgrader::ConfigurationToKwargTransform" | api_doc }} moves a `do ... end` configuration to a keyword argument. By default, this is used for `property` and `description`. You can add new instances of this transform to convert your custom DSL.
+- {{ "GraphQL::Upgrader::PropertyToMethodTransform" | api_doc }} turns `property:` to `method:`
+- {{ "GraphQL::Upgrader::UnderscoreizeFieldNameTransform" | api_doc }} converts field names to underscore-case. __NOTE__ that this conversion may be _wrong_ in the case of `bodyHTML => body_html`. When you find it is wrong, manually revert it and preserve the camel-case field name.
+- {{ "GraphQL::Upgrader::ResolveProcToMethodTransform" | api_doc }} converts `resolve -> { ... }` to `def {field_name} ... ` method definitions
+- {{ "GraphQL::Upgrader::UpdateMethodSignatureTransform" | api_doc }} converts the type name to the new syntax, and adds `null:`/`required:` to the method signature
+
+Clean-up transforms ({{ "GraphQL::Upgrader::Member::DEFAULT_CLEAN_UP_TRANSFORMS" | api_doc }}):
+
+- {{ "GraphQL::Upgrader::RemoveExcessWhitespaceTransform" | api_doc }} removes redundant newlines
+- {{ "GraphQL::Upgrader::RemoveEmptyBlocksTransform" | api_doc }} removes `do end` with nothing inside them
 
 ## Roadmap
 

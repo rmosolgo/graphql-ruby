@@ -24,6 +24,12 @@ describe GraphQL::Upgrader::Member do
     assert_equal new, upgrade(old)
   end
 
+  it 'upgrades the property definition in a block to method' do
+    old = %{field :name, String do\n  property :name\nend}
+    new = %{field :name, String, method: :name, null: true}
+    assert_equal new, upgrade(old)
+  end
+
   describe 'name' do
     it 'removes the name field if it can be inferred from the class' do
       old = %{
@@ -92,39 +98,127 @@ describe GraphQL::Upgrader::Member do
 
   describe 'definition' do
     it 'upgrades the .define into class based definition' do
-      old = %{UserType = GraphQL::ObjectType.define do}
-      new = %{class UserType < Types::BaseObject}
+      old = %{UserType = GraphQL::ObjectType.define do
+      end}
+      new = %{class UserType < Types::BaseObject
+      end}
       assert_equal new, upgrade(old)
 
-      old = %{UserInterface = GraphQL::InterfaceType.define do}
-      new = %{class UserInterface < Types::BaseInterface}
+      old = %{UserInterface = GraphQL::InterfaceType.define do
+      end}
+      new = %{class UserInterface < Types::BaseInterface
+      end}
       assert_equal new, upgrade(old)
 
-      old = %{UserUnion = GraphQL::UnionType.define do}
-      new = %{class UserUnion < Types::BaseUnion}
+      old = %{UserUnion = GraphQL::UnionType.define do
+      end}
+      new = %{class UserUnion < Types::BaseUnion
+      end}
       assert_equal new, upgrade(old)
 
-      old = %{UserEnum = GraphQL::EnumType.define do}
-      new = %{class UserEnum < Types::BaseEnum}
+      old = %{UserEnum = GraphQL::EnumType.define do
+      end}
+      new = %{class UserEnum < Types::BaseEnum
+      end}
       assert_equal new, upgrade(old)
 
-      old = %{UserInput = GraphQL::InputObjectType.define do}
-      new = %{class UserInput < Types::BaseInputObject}
+      old = %{UserInput = GraphQL::InputObjectType.define do
+      end}
+      new = %{class UserInput < Types::BaseInputObject
+      end}
       assert_equal new, upgrade(old)
 
-      old = %{UserScalar = GraphQL::ScalarType.define do}
-      new = %{class UserScalar < Types::BaseScalar}
+      old = %{UserScalar = GraphQL::ScalarType.define do
+      end}
+      new = %{class UserScalar < Types::BaseScalar
+      end}
       assert_equal new, upgrade(old)
     end
 
     it 'upgrades including the module' do
-      old = %{Module::UserType = GraphQL::ObjectType.define do}
-      new = %{class Module::UserType < Types::BaseObject}
+      old = %{Module::UserType = GraphQL::ObjectType.define do
+      end}
+      new = %{class Module::UserType < Types::BaseObject
+      end}
       assert_equal new, upgrade(old)
     end
   end
 
   describe 'fields' do
+    it 'underscorizes field name' do
+      old = %{field :firstName, !types.String}
+      new = %{field :first_name, String, null: false}
+      assert_equal new, upgrade(old)
+    end
+
+    describe "resolve proc to method" do
+      it "converts @object and @context" do
+        old = %{
+          field :firstName, !types.String do
+            resolve ->(obj, arg, ctx) {
+              ctx.something
+              other_ctx # test combined identifiers
+
+              obj[ctx] + obj
+              obj.given_name
+            }
+          end
+        }
+        new = %{
+          field :first_name, String, null: false
+
+          def first_name
+            @context.something
+            other_ctx # test combined identifiers
+
+            @object[@context] + @object
+            @object.given_name
+          end
+        }
+        assert_equal new, upgrade(old)
+      end
+
+      it "handles `_` var names" do
+        old = %{
+          field :firstName, !types.String do
+            resolve ->(obj, _, _) {
+              obj.given_name
+            }
+          end
+        }
+        new = %{
+          field :first_name, String, null: false
+
+          def first_name
+            @object.given_name
+          end
+        }
+        assert_equal new, upgrade(old)
+      end
+
+      it "creates **arguments if necessary" do
+        old = %{
+          field :firstName, !types.String do
+            argument :ctx, types.String, default_value: "abc"
+            resolve ->(obj, args, ctx) {
+              args[:ctx]
+            }
+          end
+        }
+        new = %{
+          field :first_name, String, null: false do
+            argument :ctx, String, default_value: "abc", required: false
+          end
+
+          def first_name(**args)
+            args[:ctx]
+          end
+        }
+        assert_equal new, upgrade(old)
+      end
+    end
+
+
     it 'upgrades to the new definition' do
       old = %{field :name, !types.String}
       new = %{field :name, String, null: false}
@@ -135,7 +229,7 @@ describe GraphQL::Upgrader::Member do
       assert_equal new, upgrade(old)
 
       old = %{field :name, -> { !types.String }}
-      new = %{field :name, -> { String }, null: false}
+      new = %{field :name, String, null: false}
       assert_equal new, upgrade(old)
 
       old = %{connection :name, Name.connection_type, "names"}
@@ -159,18 +253,23 @@ describe GraphQL::Upgrader::Member do
         end
       }
       new = %{
-        field :name, String, null: true do
-        end
+        field :name, String, null: true
       }
       assert_equal new, upgrade(old)
 
       old = %{
         field :name, !types.String do
+          description "abc"
+        end
+
+        field :name2, !types.Int do
+          description "def"
         end
       }
       new = %{
-        field :name, String, null: false do
-        end
+        field :name, String, description: "abc", null: false
+
+        field :name2, Integer, description: "def", null: false
       }
       assert_equal new, upgrade(old)
 
@@ -179,8 +278,7 @@ describe GraphQL::Upgrader::Member do
         end
       }
       new = %{
-        field :name, -> { String }, null: false do
-        end
+        field :name, String, null: false
       }
       assert_equal new, upgrade(old)
 
@@ -190,8 +288,7 @@ describe GraphQL::Upgrader::Member do
         end
       }
       new = %{
-        field :name, -> { String }, null: true do
-        end
+        field :name, String, null: true
       }
       assert_equal new, upgrade(old)
 
@@ -199,10 +296,15 @@ describe GraphQL::Upgrader::Member do
         field :name do
           type !String
         end
+
+        field :name2 do
+          type !String
+        end
       }
       new = %{
-        field :name, String, null: false do
-        end
+        field :name, String, null: false
+
+        field :name2, String, null: false
       }
       assert_equal new, upgrade(old)
 
@@ -212,8 +314,7 @@ describe GraphQL::Upgrader::Member do
         end
       }
       new = %{
-        field :name, -> { String }, "newline description", null: true do
-        end
+        field :name, String, "newline description", null: true
       }
       assert_equal new, upgrade(old)
 
@@ -223,8 +324,7 @@ describe GraphQL::Upgrader::Member do
         end
       }
       new = %{
-        field :name, -> { String }, "newline description", null: false do
-        end
+        field :name, String, "newline description", null: false
       }
       assert_equal new, upgrade(old)
 
@@ -234,8 +334,7 @@ describe GraphQL::Upgrader::Member do
        end
       }
       new = %{
-       field :name, String, field: SomeField, null: true do
-       end
+       field :name, String, field: SomeField, null: true
       }
       assert_equal new, upgrade(old)
     end
@@ -263,7 +362,7 @@ describe GraphQL::Upgrader::Member do
           property: :example_connections
       }
       new = %{
-        field :example_connection, -> { ExampleConnectionType }, null: true, connection: true
+        field :example_connection, ExampleConnectionType, null: true, connection: true
           method: :example_connections
       }
 
@@ -291,6 +390,45 @@ describe GraphQL::Upgrader::Member do
         implements Types::ShareableType
       }
       assert_equal new, upgrade(old)
+    end
+  end
+
+  describe "fixtures" do
+    class ActiveRecordTypeToClassTransform < GraphQL::Upgrader::Transform
+      def initialize
+        @find_pattern = /^( +)([a-zA-Z_0-9:]*) = define_active_record_type\(-> ?\{ ?:{0,2}([a-zA-Z_0-9:]*) ?\} ?\) do/
+        @replace_pattern = "\\1class \\2 < Platform::Objects::Base\n\\1  model_name \"\\3\""
+      end
+
+      def apply(input_text)
+        input_text.sub(@find_pattern, @replace_pattern)
+      end
+    end
+
+    def custom_upgrade(original_text)
+      # Replace the default one with a custom one:
+      type_transforms = GraphQL::Upgrader::Member::DEFAULT_TYPE_TRANSFORMS.map { |t|
+        if t == GraphQL::Upgrader::TypeDefineToClassTransform
+          GraphQL::Upgrader::TypeDefineToClassTransform.new(base_class_pattern: "Platform::\\2s::Base")
+        else
+          t
+        end
+      }
+
+      type_transforms.unshift(ActiveRecordTypeToClassTransform)
+      upgrader = GraphQL::Upgrader::Member.new(original_text, type_transforms: type_transforms)
+      upgrader.upgrade
+    end
+
+    original_files = Dir.glob("spec/fixtures/upgrader/*.original.rb")
+    original_files.each do |original_file|
+      transformed_file = original_file.sub(".original.", ".transformed.")
+      it "transforms #{original_file} -> #{transformed_file}" do
+        original_text = File.read(original_file)
+        expected_text = File.read(transformed_file)
+        transformed_text = custom_upgrade(original_text)
+        assert_equal(expected_text, transformed_text)
+      end
     end
   end
 end
