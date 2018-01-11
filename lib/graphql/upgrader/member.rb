@@ -1,5 +1,9 @@
 # frozen_string_literal: true
-require 'parser/current'
+begin
+  require 'parser/current'
+rescue LoadError
+  raise LoadError, "GraphQL::Upgrader requires the 'parser' gem, please install it and/or add it to your Gemfile"
+end
 
 module GraphQL
   module Upgrader
