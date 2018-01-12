@@ -85,7 +85,7 @@ describe GraphQL::Query do
         operation_name: operation_name,
         max_depth: max_depth,
       )
-      query.query_string = '{ __type(name: "Cheese") { name } }'
+      query.query_string = '{ __type(name: """Cheese""") { name } }'
       assert_equal "Cheese", query.result["data"] ["__type"]["name"]
     end
   end

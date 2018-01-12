@@ -67,6 +67,10 @@ module GraphQL
                   nullValue: null
                   nullValueInObject: {a: null, b: "b"}
                   nullValueInArray: ["a", null, "b"]
+                  blockString: """
+                  Hello,
+                    World
+                  """
                 )
               }
             |
@@ -100,6 +104,9 @@ module GraphQL
             assert_equal 'a', values[0]
             assert_instance_of GraphQL::Language::Nodes::NullValue, values[1]
             assert_equal 'b', values[2]
+
+            block_str_value = inputs[12].value
+            assert_equal "Hello,\n  World", block_str_value
           end
 
           def test_it_doesnt_parse_nonsense_variables

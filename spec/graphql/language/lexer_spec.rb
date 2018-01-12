@@ -26,6 +26,15 @@ describe GraphQL::Language::Lexer do
       assert_equal tokens[0], tokens[1].prev_token
     end
 
+    describe "block strings" do
+      let(:query_string) { %|{ a(b: """\nc\n  d\n""")}|}
+
+      it "tokenizes them" do
+        str_token = tokens[5]
+        assert_equal "c\n  d", str_token.value
+      end
+    end
+
     it "unescapes escaped characters" do
       assert_equal "\" \\ / \b \f \n \r \t", subject.tokenize('"\\" \\\\ \\/ \\b \\f \\n \\r \\t"').first.to_s
     end

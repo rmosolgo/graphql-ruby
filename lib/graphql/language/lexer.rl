@@ -34,6 +34,9 @@
   RBRACKET =      ']';
   COLON =         ':';
   QUOTE =         '"';
+  BLOCK_QUOTE =   '"""';
+  ESCAPED_BLOCK_QUOTE = '\\"""';
+  BLOCK_STRING_CHAR = (ESCAPED_BLOCK_QUOTE | ^'"""');
   ESCAPED_QUOTE = '\\"';
   STRING_CHAR =   (ESCAPED_QUOTE | ^'"');
   VAR_SIGN =      '$';
@@ -44,7 +47,7 @@
   PIPE =          '|';
 
   QUOTED_STRING = QUOTE STRING_CHAR* QUOTE;
-
+  BLOCK_STRING = BLOCK_QUOTE BLOCK_STRING_CHAR* BLOCK_QUOTE;
   # catch-all for anything else. must be at the bottom for precedence.
   UNKNOWN_CHAR =         /./;
 
@@ -75,7 +78,8 @@
     RBRACKET      => { emit(:RBRACKET, ts, te, meta) };
     LBRACKET      => { emit(:LBRACKET, ts, te, meta) };
     COLON         => { emit(:COLON, ts, te, meta) };
-    QUOTED_STRING => { emit_string(ts + 1, te, meta) };
+    QUOTED_STRING => { emit_string(ts, te, meta, block: false) };
+    BLOCK_STRING  => { emit_string(ts, te, meta, block: true) };
     VAR_SIGN      => { emit(:VAR_SIGN, ts, te, meta) };
     DIR_SIGN      => { emit(:DIR_SIGN, ts, te, meta) };
     ELLIPSIS      => { emit(:ELLIPSIS, ts, te, meta) };
@@ -188,8 +192,13 @@ module GraphQL
       PACK_DIRECTIVE = "c*"
       UTF_8_ENCODING = "UTF-8"
 
-      def self.emit_string(ts, te, meta)
-        value = meta[:data][ts...te - 1].pack(PACK_DIRECTIVE).force_encoding(UTF_8_ENCODING)
+      def self.emit_string(ts, te, meta, block:)
+        quotes_length = block ? 3 : 1
+        ts += quotes_length
+        value = meta[:data][ts...te - quotes_length].pack(PACK_DIRECTIVE).force_encoding(UTF_8_ENCODING)
+        if block
+          value = trim_indent(value)
+        end
         if value !~ VALID_STRING
           meta[:tokens] << token = GraphQL::Language::Token.new(
             name: :BAD_UNICODE_ESCAPE,
@@ -212,6 +221,45 @@ module GraphQL
 
         meta[:previous_token] = token
         meta[:col] += te - ts
+      end
+
+      def self.trim_indent(str)
+        lines = str.split("\n")
+        common_indent = nil
+
+        # find the common whitespace
+        lines.each_with_index do |line, idx|
+          if idx == 0
+            next
+          end
+          line_length = line.size
+          line_indent = line[/\A */].size
+          if line_indent < line_length && common_indent.nil? || line_indent < common_indent
+            common_indent = line_indent
+          end
+        end
+
+        # Remove the common whitespace
+        if common_indent
+          lines.each_with_index do |line, idx|
+            if idx == 0
+              next
+            else
+              line[0, common_indent] = ""
+            end
+          end
+        end
+
+        # Remove leading & trailing blank lines
+        while lines.first.blank?
+          lines.shift
+        end
+        while lines.last.blank?
+          lines.pop
+        end
+
+        # Rebuild the string
+        lines.join("\n")
       end
     end
   end
