@@ -8,6 +8,15 @@
 
 ### Bug fixes
 
+## 1.8.0.pre3 (12 Jan 2018)
+
+### New Features
+
+- Custom `Context` classes for class-based schemas #1161
+- Custom introspection for class-based schemas #1170
+- Improvements to upgrader tasks and internals #1151, #1178, #1212
+- Allow description inside field blocks #1175
+
 ## 1.8.0.pre2 (29 Nov 2017)
 
 ### New Features
