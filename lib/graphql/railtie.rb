@@ -1,11 +1,15 @@
 # frozen_string_literal: true
 
-require_relative './upgrader/member'
-require_relative './upgrader/schema'
 
 module GraphQL
   class Railtie < Rails::Railtie
     rake_tasks do
+      # Defer this so that you only need the `parser` gem when you _run_ the upgrader
+      def load_upgraders
+        require_relative './upgrader/member'
+        require_relative './upgrader/schema'
+      end
+
       namespace :graphql do
         task :upgrade, [:dir] do |t, args|
           unless (dir = args[:dir])
@@ -82,7 +86,7 @@ module GraphQL
 
           task :schema, [:schema_file] do |t, args|
             schema_file = args.schema_file
-
+            load_upgraders
             upgrader = GraphQL::Upgrader::Schema.new File.read(schema_file)
 
             puts "- Transforming schema #{schema_file}"
@@ -91,7 +95,7 @@ module GraphQL
 
           task :member, [:member_file] do |t, args|
             member_file = args.member_file
-
+            load_upgraders
             upgrader = GraphQL::Upgrader::Member.new File.read(member_file)
             next unless upgrader.upgradeable?
 
