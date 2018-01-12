@@ -126,6 +126,16 @@ describe GraphQL::Backtrace do
       assert_includes err.message, "more lines"
     end
 
+    it "annotates errors from Query#result" do
+      query_str = "query StrField { field2 { strField } __typename }"
+      context = { backtrace: true }
+      query = GraphQL::Query.new(schema, query_str, context: context)
+      err = assert_raises(GraphQL::Backtrace::TracedError) {
+        query.result
+      }
+      assert_instance_of RuntimeError, err.cause
+    end
+
     it "annotates errors inside lazy resolution" do
       # Test context-based flag
       err = assert_raises(GraphQL::Backtrace::TracedError) {
