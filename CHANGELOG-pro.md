@@ -8,6 +8,15 @@
 
 ### Bug Fix
 
+## 1.6.2 (13 Jan 2018)
+
+### Bug Fix
+
+- Improve detection of `OperationStore` for the dashboard
+- Serve `Content-Type` and `Content-Length` headers with dashboard pages
+- Better `Dashboard#inspect` for Rails routes output
+- Use a string to apply order-by-primary-key for better Rails 3 support
+
 ## 1.6.1 (22 Nov 2017)
 
 ### New Features
