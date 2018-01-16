@@ -161,6 +161,21 @@ module GraphQL
       end
     end
 
+    class RedundantHashKeyTransform < Transform
+      def apply(input_text)
+        pattern = /(field|connection|argument) (?<name>:[a-zA-Z_0-9]*).*hash_key: (?<hash_key>:[a-zA-Z_0-9]+)/
+        if input_text =~ pattern
+          field_name = $~[:name]
+          hash_key = $~[:hash_key]
+          if field_name == hash_key
+            # It's redundant
+            input_text = input_text.sub(/, hash_key: #{hash_key}/, "")
+          end
+        end
+        input_text
+      end
+    end
+
     # Take camelized field names and convert them to underscore case.
     # (They'll be automatically camelized later.)
     class UnderscoreizeFieldNameTransform < Transform
@@ -411,7 +426,9 @@ module GraphQL
         ConfigurationToKwargTransform.new(kwarg: "property"),
         ConfigurationToKwargTransform.new(kwarg: "description"),
         ConfigurationToKwargTransform.new(kwarg: "deprecation_reason"),
+        ConfigurationToKwargTransform.new(kwarg: "hash_key"),
         PropertyToMethodTransform,
+        RedundantHashKeyTransform,
         UnderscoreizeFieldNameTransform,
         ResolveProcToMethodTransform,
         UpdateMethodSignatureTransform,
