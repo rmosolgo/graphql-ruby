@@ -30,6 +30,10 @@ module Platform
           )
         )
       end
+
+      field :f5, String, visibility: :custom_value, method: :custom_property, description: "The thing", null: false
+
+      field :f6, String, visibility: :custom_value, method: :custom_property, description: "The thing", null: false
     end
   end
 end
