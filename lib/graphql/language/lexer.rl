@@ -251,10 +251,10 @@ module GraphQL
         end
 
         # Remove leading & trailing blank lines
-        while lines.first.blank?
+        while lines.first.empty?
           lines.shift
         end
-        while lines.last.blank?
+        while lines.last.empty?
           lines.pop
         end
 
