@@ -12,7 +12,8 @@ module Platform
       interfaces [GraphQL::Relay::Node.interface]
 
       field :f1, !Objects::O1, "The x being y."
-      field :f2, !Enums::E1, "x for the y.", property: :field_2
+      field :f2, !Enums::E1, "x for the y.",
+        property: :field_2
       field :f3, Enums::E2, "x for y."
       field :details, types.String, "Details."
 
@@ -29,6 +30,18 @@ module Platform
             )
           )
         end
+      end
+
+      field :f5, -> { !types.String } do
+        description "The thing"
+        property :custom_property
+        visibility :custom_value
+      end
+
+      field :f6, -> { !types.String } do
+        description "The thing"
+        property :custom_property
+        visibility :custom_value
       end
     end
   end
