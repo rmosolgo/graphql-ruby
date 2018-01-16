@@ -17,7 +17,7 @@ module GraphQL
           new_interfaces.each do |int|
             if int.is_a?(Class) && int < GraphQL::Schema::Interface
               # Add the graphql field defns
-              int.fields.each do |field|
+              int.fields.each do |_name, field|
                 add_field(field)
               end
               # And call the implemented hook
@@ -47,7 +47,7 @@ module GraphQL
           obj_type.interfaces = interfaces
           obj_type.introspection = introspection
 
-          fields.each do |field_inst|
+          fields.each do |field_name, field_inst|
             field_defn = field_inst.to_graphql
             obj_type.fields[field_defn.name] = field_defn
           end

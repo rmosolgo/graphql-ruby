@@ -21,7 +21,7 @@ describe GraphQL::Schema::Enum do
       # values were inherited without modifying the parent
       assert_equal 6, enum.values.size
       assert_equal 7, new_enum.values.size
-      perc_value = new_enum.values.find { |v| v.name == "PERCUSSION" }
+      perc_value = new_enum.values["PERCUSSION"]
       assert_equal "new description", perc_value.description
     end
   end
