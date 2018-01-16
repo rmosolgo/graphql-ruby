@@ -272,6 +272,7 @@ module Jazz
     # For asserting that the object is initialized once:
     field :object_id, Integer, null: false
     field :inspect_context, [String], null: false
+    field :hashyEnsemble, Ensemble, null: false
 
     def ensembles
       Models.data["Ensemble"]
@@ -316,6 +317,17 @@ module Jazz
         @context[:magic_key],
         @context[:normal_key]
       ]
+    end
+
+    def hashy_ensemble
+      # Both string and symbol keys are supported:
+
+      {
+          name: "The Grateful Dead",
+          "musicians" => [
+            OpenStruct.new(name: "Jerry Garcia"),
+          ],
+      }
     end
   end
 
