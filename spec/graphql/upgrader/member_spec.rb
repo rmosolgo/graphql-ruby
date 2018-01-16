@@ -347,8 +347,7 @@ describe GraphQL::Upgrader::Member do
           property: :example_field?
       }
       new = %{
-        field :is_example_field, Boolean, null: true
-          method: :example_field?
+        field :is_example_field, Boolean, method: :example_field?, null: true
       }
 
       assert_equal new, upgrade(old)
@@ -362,8 +361,7 @@ describe GraphQL::Upgrader::Member do
           property: :example_connections
       }
       new = %{
-        field :example_connection, ExampleConnectionType, null: true, connection: true
-          method: :example_connections
+        field :example_connection, ExampleConnectionType, method: :example_connections, null: true, connection: true
       }
 
       assert_equal new, upgrade(old)
@@ -416,18 +414,25 @@ describe GraphQL::Upgrader::Member do
       }
 
       type_transforms.unshift(ActiveRecordTypeToClassTransform)
-      upgrader = GraphQL::Upgrader::Member.new(original_text, type_transforms: type_transforms)
+      field_transforms = GraphQL::Upgrader::Member::DEFAULT_FIELD_TRANSFORMS
+      field_transforms.unshift(GraphQL::Upgrader::ConfigurationToKwargTransform.new(kwarg: "visibility"))
+      upgrader = GraphQL::Upgrader::Member.new(original_text, type_transforms: type_transforms, field_transforms: field_transforms)
       upgrader.upgrade
     end
 
     original_files = Dir.glob("spec/fixtures/upgrader/*.original.rb")
     original_files.each do |original_file|
       transformed_file = original_file.sub(".original.", ".transformed.")
+      original_text = File.read(original_file)
+      expected_text = File.read(transformed_file)
       it "transforms #{original_file} -> #{transformed_file}" do
-        original_text = File.read(original_file)
-        expected_text = File.read(transformed_file)
         transformed_text = custom_upgrade(original_text)
         assert_equal(expected_text, transformed_text)
+      end
+
+      it "is idempotent on #{transformed_file}" do
+        retransformed_text = custom_upgrade(expected_text)
+        assert_equal(expected_text, retransformed_text)
       end
     end
   end
