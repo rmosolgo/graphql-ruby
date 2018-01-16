@@ -6,6 +6,7 @@ module GraphQL
       class DynamicResolve
         def initialize(method_name:, connection:, extras:)
           @method_name = method_name
+          @method_sym = method_name.to_sym
           @connection = connection
           @extras = extras
         end
@@ -15,8 +16,9 @@ module GraphQL
             public_send_field(obj, @method_name, args, ctx)
           elsif obj.object.respond_to?(@method_name)
             public_send_field(obj.object, @method_name, args, ctx)
-          elsif obj.is_a?(Hash)
-            obj[@method_name]
+          elsif obj.object.is_a?(Hash)
+            inner_object = obj.object
+            inner_object[@method_name] || inner_object[@method_sym]
           else
             raise <<-ERR
 Failed to implement #{ctx.irep_node.owner_type.name}.#{ctx.field.name}, tried:
