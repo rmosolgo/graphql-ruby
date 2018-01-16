@@ -30,6 +30,30 @@ describe GraphQL::Upgrader::Member do
     assert_equal new, upgrade(old)
   end
 
+  describe "hash_key" do
+    it "it moves configuration to kwarg"  do
+      old = %{field :name, String do\n  hash_key :full_name\nend}
+      new = %{field :name, String, hash_key: :full_name, null: true}
+      assert_equal new, upgrade(old)
+    end
+
+    it "removes it if it's redundant" do
+      old = %{field :name, String do\n  hash_key :name\nend}
+      new = %{field :name, String, null: true}
+      assert_equal new, upgrade(old)
+
+      old = %{field :name, String, hash_key: :name}
+      new = %{field :name, String, null: true}
+      assert_equal new, upgrade(old)
+    end
+
+    it "retains string hash keys" do
+      old = %{field :name, String do\n  hash_key "name"\nend}
+      new = %{field :name, String, hash_key: "name", null: true}
+      assert_equal new, upgrade(old)
+    end
+  end
+
   describe 'name' do
     it 'removes the name field if it can be inferred from the class' do
       old = %{
