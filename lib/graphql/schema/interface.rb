@@ -20,7 +20,7 @@ module GraphQL
           type_defn = GraphQL::InterfaceType.new
           type_defn.name = graphql_name
           type_defn.description = description
-          fields.each do |field_inst|
+          fields.each do |field_name, field_inst|
             field_defn = field_inst.graphql_definition
             type_defn.fields[field_defn.name] = field_defn
           end
