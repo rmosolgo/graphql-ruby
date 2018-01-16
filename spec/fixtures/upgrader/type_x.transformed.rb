@@ -34,6 +34,9 @@ module Platform
       field :f5, String, visibility: :custom_value, method: :custom_property, description: "The thing", null: false
 
       field :f6, String, visibility: :custom_value, method: :custom_property, description: "The thing", null: false
+
+      field :f7, field: SomeField
+      field :f8, function: SomeFunction
     end
   end
 end
