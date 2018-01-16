@@ -304,23 +304,27 @@ module GraphQL
     class UpdateMethodSignatureTransform < Transform
       def apply(input_text)
         input_text.scan(/(?:input_field|field|connection|argument) .*$/).each do |field|
-          matches = /(?<field_type>input_field|field|connection|argument) :(?<name>[a-zA-Z_0-9_]*)?, (?<return_type>[^,]*)(?<remainder>.*)/.match(field)
+          matches = /(?<field_type>input_field|field|connection|argument) :(?<name>[a-zA-Z_0-9_]*)?, (?<return_type>([A-Za-z\[\]\.\!_0-9]|::|-> ?\{ ?| ?\})+)(?<remainder>( |,|$).*)/.match(field)
           if matches
             name = matches[:name]
             return_type = matches[:return_type]
             remainder = matches[:remainder]
             field_type = matches[:field_type]
-
-            # This is a small bug in the regex. Ideally the `do` part would only be in the remainder.
-            with_block = remainder.gsub!(/\ do$/, '') || return_type.gsub!(/\ do$/, '')
+            with_block = remainder.gsub!(/\ do$/, '')
 
             remainder.gsub! /,$/, ''
             remainder.gsub! /^,/, ''
             remainder.chomp!
 
-            has_bang = !(return_type.gsub! '!', '')
-            return_type = normalize_type_expression(return_type)
-            return_type = return_type.gsub ',', ''
+            if return_type
+              non_nullable = return_type.gsub! '!', ''
+              nullable = !non_nullable
+              return_type = normalize_type_expression(return_type)
+              return_type = return_type.gsub ',', ''
+            else
+              non_nullable = nil
+              nullable = nil
+            end
 
             input_text.sub!(field) do
               is_argument = ['argument', 'input_field'].include?(field_type)
@@ -331,15 +335,15 @@ module GraphQL
               end
 
               if is_argument
-                if has_bang
+                if nullable
                   f += ', required: false'
-                else
+                elsif non_nullable
                   f += ', required: true'
                 end
               else
-                if has_bang
+                if nullable
                   f += ', null: true'
-                else
+                elsif non_nullable
                   f += ', null: false'
                 end
               end
