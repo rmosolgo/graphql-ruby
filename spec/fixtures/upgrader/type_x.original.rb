@@ -43,6 +43,9 @@ module Platform
         property :custom_property
         visibility :custom_value
       end
+
+      field :f7, field: SomeField
+      field :f8, function: SomeFunction
     end
   end
 end
