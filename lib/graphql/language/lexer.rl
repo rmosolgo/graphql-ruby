@@ -197,7 +197,7 @@ module GraphQL
         ts += quotes_length
         value = meta[:data][ts...te - quotes_length].pack(PACK_DIRECTIVE).force_encoding(UTF_8_ENCODING)
         if block
-          value = trim_indent(value)
+          value = GraphQL::Language::BlockString.trim_whitespace(value)
         end
         if value !~ VALID_STRING
           meta[:tokens] << token = GraphQL::Language::Token.new(
@@ -221,45 +221,6 @@ module GraphQL
 
         meta[:previous_token] = token
         meta[:col] += te - ts
-      end
-
-      def self.trim_indent(str)
-        lines = str.split("\n")
-        common_indent = nil
-
-        # find the common whitespace
-        lines.each_with_index do |line, idx|
-          if idx == 0
-            next
-          end
-          line_length = line.size
-          line_indent = line[/\A */].size
-          if line_indent < line_length && common_indent.nil? || line_indent < common_indent
-            common_indent = line_indent
-          end
-        end
-
-        # Remove the common whitespace
-        if common_indent
-          lines.each_with_index do |line, idx|
-            if idx == 0
-              next
-            else
-              line[0, common_indent] = ""
-            end
-          end
-        end
-
-        # Remove leading & trailing blank lines
-        while lines.first.empty?
-          lines.shift
-        end
-        while lines.last.empty?
-          lines.pop
-        end
-
-        # Rebuild the string
-        lines.join("\n")
       end
     end
   end
