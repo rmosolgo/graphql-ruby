@@ -24,9 +24,9 @@ describe GraphQL::Schema::Object do
       # inherited interfaces are present
       assert_equal 2, new_object_class.interfaces.size
       # The new field is present
-      assert new_object_class.fields.find { |f| f.name == "newField" }
+      assert new_object_class.fields.key?("newField")
       # The overridden field is present:
-      name_field = new_object_class.fields.find { |f| f.name == "name" }
+      name_field = new_object_class.fields["name"]
       assert_equal "The new description", name_field.description
     end
 
