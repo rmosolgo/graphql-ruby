@@ -33,20 +33,15 @@ module GraphQL
         def value(graphql_name, description = nil, value: nil, deprecation_reason: nil)
           graphql_name = graphql_name.to_s
           value ||= graphql_name
-          own_values << Value.new(graphql_name, description, value, deprecation_reason)
+          own_values[graphql_name] = Value.new(graphql_name, description, value, deprecation_reason)
           nil
         end
 
-        # @return [Array<GraphQL::Schema::Enum::Value>]
+        # @return [Hash<String => GraphQL::Schema::Enum::Value>] Possible values of this enum, keyed by name
         def values
-          all_values = own_values
-          inherited_values = superclass <= GraphQL::Schema::Enum ? superclass.values : []
-          inherited_values.each do |inherited_v|
-            if all_values.none? { |v| v.name == inherited_v.name }
-              all_values << inherited_v
-            end
-          end
-          all_values
+          inherited_values = superclass <= GraphQL::Schema::Enum ? superclass.values : {}
+          # Local values take precedence over inherited ones
+          inherited_values.merge(own_values)
         end
 
         # @return [GraphQL::EnumType]
@@ -55,7 +50,7 @@ module GraphQL
           enum_type.name = graphql_name
           enum_type.description = description
           enum_type.introspection = introspection
-          values.each do |val|
+          values.each do |name, val|
             enum_value = GraphQL::EnumType::EnumValue.new
             enum_value.name = val.name
             enum_value.description = val.description
@@ -69,7 +64,7 @@ module GraphQL
         private
 
         def own_values
-          @own_values ||= []
+          @own_values ||= {}
         end
       end
     end
