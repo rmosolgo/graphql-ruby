@@ -95,12 +95,18 @@ module GraphQL
     # Remove newlines -- normalize the text for processing
     class RemoveNewlinesTransform
       def apply(input_text)
-        input_text.gsub(/(?<field>(?:field|connection|argument).*?,)\n(\s*)(?<next_line>(:?"|field)(.*))/) do
-          field = $~[:field].chomp
-          next_line = $~[:next_line]
+        keep_looking = true
+        while keep_looking do
+          keep_looking = false
+          input_text = input_text.gsub(/(?<field>(?:field|connection|argument).*?,)\n(\s*)(?<next_line>.*)/) do
+            keep_looking = true
+            field = $~[:field].chomp
+            next_line = $~[:next_line]
 
-          "#{field} #{next_line}"
+            "#{field} #{next_line}"
+          end
         end
+        input_text
       end
     end
 
@@ -371,9 +377,19 @@ module GraphQL
       end
     end
 
+    # Skip this file if you see any `field`
+    # helpers with `null: true` or `null: false` keywords,
+    # because it's already been transformed
+    class SkipOnNullKeyword
+      def skip?(input_text)
+        input_text =~ /field.*null: (true|false)/
+      end
+    end
+
     class Member
-      def initialize(member, type_transforms: DEFAULT_TYPE_TRANSFORMS, field_transforms: DEFAULT_FIELD_TRANSFORMS, clean_up_transforms: DEFAULT_CLEAN_UP_TRANSFORMS)
+      def initialize(member, skip: SkipOnNullKeyword, type_transforms: DEFAULT_TYPE_TRANSFORMS, field_transforms: DEFAULT_FIELD_TRANSFORMS, clean_up_transforms: DEFAULT_CLEAN_UP_TRANSFORMS)
         @member = member
+        @skip = skip
         @type_transforms = type_transforms
         @field_transforms = field_transforms
         @clean_up_transforms = clean_up_transforms
@@ -390,6 +406,7 @@ module GraphQL
         PositionalTypeArgTransform,
         ConfigurationToKwargTransform.new(kwarg: "property"),
         ConfigurationToKwargTransform.new(kwarg: "description"),
+        ConfigurationToKwargTransform.new(kwarg: "deprecation_reason"),
         PropertyToMethodTransform,
         UnderscoreizeFieldNameTransform,
         ResolveProcToMethodTransform,
@@ -402,8 +419,14 @@ module GraphQL
       ]
 
       def upgrade
+        type_source = @member.dup
+        should_skip = @skip.new.skip?(type_source)
+        # return the unmodified code
+        if should_skip
+          return type_source
+        end
         # Transforms on type defn code:
-        type_source = apply_transforms(@member.dup, @type_transforms)
+        type_source = apply_transforms(type_source, @type_transforms)
         # Transforms on each field:
         field_sources = find_fields(type_source)
         field_sources.each do |field_source|
