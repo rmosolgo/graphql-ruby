@@ -19,34 +19,30 @@ module GraphQL
 
         def argument(*args)
           argument = GraphQL::Schema::Argument.new(*args)
-          own_arguments << argument
           arg_name = argument.graphql_definition.name
+          own_arguments[arg_name] = argument
           # Add a method access
           define_method(Member::BuildType.underscore(arg_name)) do
             @arguments.public_send(arg_name)
           end
         end
 
+        # @return [Hash<String => GraphQL::Schema::Argument] Input fields on this input object, keyed by name.
         def arguments
-          all_arguments = own_arguments
-          inherited_arguments = (superclass <= GraphQL::Schema::InputObject ? superclass.arguments : [])
-          inherited_arguments.each do |inherited_a|
-            if all_arguments.none? { |a| a.name == inherited_a.name }
-              all_arguments << inherited_a
-            end
-          end
-          all_arguments
+          inherited_arguments = (superclass <= GraphQL::Schema::InputObject ? superclass.arguments : {})
+          # Local definitions override inherited ones
+          inherited_arguments.merge(own_arguments)
         end
 
         def own_arguments
-          @own_arguments ||= []
+          @own_arguments ||= {}
         end
 
         def to_graphql
           type_defn = GraphQL::InputObjectType.new
           type_defn.name = graphql_name
           type_defn.description = description
-          arguments.each do |arg|
+          arguments.each do |name, arg|
             type_defn.arguments[arg.graphql_definition.name] = arg.graphql_definition
           end
           # Make a reference to a classic-style Arguments class
