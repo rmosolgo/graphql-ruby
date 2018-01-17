@@ -11,7 +11,10 @@ module GraphQL
       attr_reader :name
 
       # @return [String]
-      attr_reader :description
+      attr_accessor :description
+
+      # @return [Hash{String => GraphQL::Schema::Argument}]
+      attr_reader :arguments
 
       def initialize(name, return_type_expr = nil, desc = nil, null: nil, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, connection: nil, max_page_size: nil, resolve: nil, introspection: false, extras: [], &args_block)
         if !(field || function)
@@ -37,11 +40,15 @@ module GraphQL
         @method = method
         @return_type_expr = return_type_expr
         @return_type_null = null
-        @args_block = args_block
         @connection = connection
         @max_page_size = max_page_size
         @introspection = introspection
         @extras = extras
+        @arguments = {}
+
+        if args_block
+          with_proxy_dsl(&args_block)
+        end
       end
 
       # @return [GraphQL::Field]
@@ -93,17 +100,22 @@ module GraphQL
         field_defn.connection_max_page_size = @max_page_size
         field_defn.introspection = @introspection
 
-        field_proxy = FieldProxy.new(field_defn, argument_class: self.class.argument_class)
         # apply this first, so it can be overriden below
         if connection
-          field_proxy.argument :after, "String", "Returns the elements in the list that come after the specified global ID.", required: false
-          field_proxy.argument :before, "String", "Returns the elements in the list that come before the specified global ID.", required: false
-          field_proxy.argument :first, "Int", "Returns the first _n_ elements from the list.", required: false
-          field_proxy.argument :last, "Int", "Returns the last _n_ elements from the list.", required: false
+          # TODO: this could be a bit weird, because these fields won't be present
+          # after initialization, only in the `to_graphql` response.
+          # This calculation _could_ be moved up if need be.
+          with_proxy_dsl do
+            argument :after, "String", "Returns the elements in the list that come after the specified global ID.", required: false
+            argument :before, "String", "Returns the elements in the list that come before the specified global ID.", required: false
+            argument :first, "Int", "Returns the first _n_ elements from the list.", required: false
+            argument :last, "Int", "Returns the last _n_ elements from the list.", required: false
+          end
         end
 
-        if @args_block
-          field_proxy.instance_eval(&@args_block)
+        @arguments.each do |name, defn|
+          arg_graphql = defn.to_graphql
+          field_defn.arguments[arg_graphql.name] = arg_graphql
         end
 
         field_defn
@@ -121,6 +133,11 @@ module GraphQL
         end
       end
 
+      # Call the given block with the field ... do end DSL
+      def with_proxy_dsl(&block)
+        field_proxy = FieldProxy.new(self, argument_class: self.class.argument_class)
+        field_proxy.instance_eval(&block)
+      end
 
       # This object exists only to be `instance_eval`'d
       # when the `field(...)` method is called with a block.
@@ -133,14 +150,13 @@ module GraphQL
 
         # This is the `argument(...)` DSL for class-based field definitons
         def argument(*args)
-          arg = @argument_class.new(*args)
-          graphql_arg = arg.graphql_definition
-          @field.arguments[graphql_arg.name] = graphql_arg
+          arg_defn = @argument_class.new(*args)
+          @field.arguments[arg_defn.name] = arg_defn
         end
 
         def description(text)
           if @field.description
-            fail "You're overriding the description of #{@field.name} in the provided block!"
+            fail "`description` was already assigned to this field (#{@field.name}). Assign it as a keyword argument or in the block, but not both."
           else
             @field.description = text
           end
