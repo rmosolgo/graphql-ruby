@@ -7,7 +7,6 @@ module Platform
 
       scopeless_tokens_as_minimum
 
-      # Test multiline interfaces
       implements Interfaces::A
       implements Interfaces::B
 
