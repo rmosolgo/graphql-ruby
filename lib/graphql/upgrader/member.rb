@@ -161,6 +161,9 @@ module GraphQL
       end
     end
 
+    # Parse the `hash_key:` option, and if it's found,
+    # check if it matches the field name.
+    # Remove it if it's redundant with the field name.
     class RedundantHashKeyTransform < Transform
       def apply(input_text)
         pattern = /(field|connection|argument) (?<name>:[a-zA-Z_0-9]*).*hash_key: (?<hash_key>:[a-zA-Z_0-9]+)/
@@ -309,9 +312,14 @@ module GraphQL
         ) do
           indent = $~[:indent]
           interfaces = $~[:interfaces].split(',').map(&:strip).reject(&:empty?)
-          interfaces.map do |interface|
-            "#{indent}implements #{interface}"
-          end.join
+          # Preserve leading newlines before the `interfaces ...`
+          # call, but don't re-insert them between `implements` calls.
+          extra_leading_newlines = "\n" * (indent[/^\n*/].length - 1)
+          indent = indent.sub(/^\n*/m, "")
+          interfaces_calls = interfaces
+            .map { |interface| "\n#{indent}implements #{interface}" }
+            .join
+          extra_leading_newlines + interfaces_calls
         end
       end
     end
@@ -388,11 +396,13 @@ module GraphQL
 
     # Remove redundant newlines, which may have trailing spaces
     # Remove double newline after `do`
+    # Remove double newline before `end`
     class RemoveExcessWhitespaceTransform < Transform
       def apply(input_text)
         input_text
-          .gsub(/\n{3,}/m, "\n")
-          .gsub(/do\n\n/m, "do\n")
+          .gsub(/\n{3,}/m, "\n\n")
+          .gsub(/do\n{2,}/m, "do\n")
+          .gsub(/\n{2,}(\s*)end/m, "\n\\1end")
       end
     end
 
@@ -508,6 +518,10 @@ module GraphQL
         # - use `gsub` after performing the transformation.
         field_sources.uniq!
         field_sources
+      rescue Parser::SyntaxError
+        puts "Error Source:"
+        puts type_source
+        raise
       end
 
       class FieldFinder < Parser::AST::Processor
