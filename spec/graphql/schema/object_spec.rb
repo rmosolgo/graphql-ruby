@@ -42,6 +42,23 @@ describe GraphQL::Schema::Object do
     end
   end
 
+  describe "wrapping a Hash" do
+    it "automatically looks up symbol and string keys" do
+      query_str = <<-GRAPHQL
+      {
+        hashyEnsemble {
+          name
+          musicians { name }
+        }
+      }
+      GRAPHQL
+      res = Jazz::Schema.execute(query_str)
+      ensemble = res["data"]["hashyEnsemble"]
+      assert_equal "The Grateful Dead", ensemble["name"]
+      assert_equal ["Jerry Garcia"], ensemble["musicians"].map { |m| m["name"] }
+    end
+  end
+
   describe ".to_graphql_type" do
     let(:obj_type) { Jazz::Ensemble.to_graphql }
     it "returns a matching GraphQL::ObjectType" do
