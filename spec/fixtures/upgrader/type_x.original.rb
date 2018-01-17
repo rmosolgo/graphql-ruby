@@ -18,6 +18,8 @@ module Platform
       field :details, types.String, "Details."
 
       field :f4, !Objects::O2, "x as a y inside the z." do
+        argument :a1, !Inputs::I1
+
         resolve ->(obj_x, arguments, context) do
           Class1.new(
             a: Class2.new(

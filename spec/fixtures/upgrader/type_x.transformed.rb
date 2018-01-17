@@ -16,9 +16,11 @@ module Platform
       field :f3, Enums::E2, "x for y.", null: true
       field :details, String, "Details.", null: true
 
-      field :f4, Objects::O2, "x as a y inside the z.", null: false
+      field :f4, Objects::O2, "x as a y inside the z.", null: false do
+        argument :a1, Inputs::I1, required: true
+      end
 
-      def f4
+      def f4(**arguments)
         Class1.new(
           a: Class2.new(
             b: @object.b_1,
