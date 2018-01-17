@@ -3,6 +3,7 @@ require "delegate"
 require "json"
 require "set"
 require "singleton"
+require_relative "./graphql/railtie" if defined? Rails::Railtie
 
 module GraphQL
   if RUBY_VERSION == "2.4.0"
@@ -89,7 +90,6 @@ require "graphql/string_type"
 require "graphql/directive"
 require "graphql/name_validator"
 
-require "graphql/introspection"
 require "graphql/language"
 require "graphql/analysis"
 require "graphql/tracing"
@@ -98,6 +98,7 @@ require "graphql/relay"
 require "graphql/schema"
 require "graphql/schema/loader"
 require "graphql/schema/printer"
+require "graphql/introspection"
 
 require "graphql/analysis_error"
 require "graphql/coercion_error"
@@ -116,3 +117,5 @@ require "graphql/filter"
 require "graphql/subscriptions"
 require "graphql/parse_error"
 require "graphql/backtrace"
+
+require "graphql/deprecated_dsl"

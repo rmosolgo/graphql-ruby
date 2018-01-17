@@ -30,6 +30,12 @@ module GraphQL
 
     # @return [String] the name of this type, must be unique within a Schema
     attr_accessor :name
+    # Future-compatible alias
+    # @see {GraphQL::SchemaMember}
+    alias :graphql_name :name
+    # Future-compatible alias
+    # @see {GraphQL::SchemaMember}
+    alias :graphql_definition :itself
 
     # @return [String, nil] a description for this type
     attr_accessor :description
@@ -164,13 +170,17 @@ module GraphQL
     def self.resolve_related_type(type_arg)
       case type_arg
       when Proc
-        # lazy-eval it
-        type_arg.call
+        # lazy-eval it, then try again
+        resolve_related_type(type_arg.call)
       when String
         # Get a constant by this name
         Object.const_get(type_arg)
       else
-        type_arg
+        if type_arg.respond_to?(:graphql_definition)
+          type_arg.graphql_definition
+        else
+          type_arg
+        end
       end
     end
 

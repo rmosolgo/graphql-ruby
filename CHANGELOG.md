@@ -8,6 +8,38 @@
 
 ### Bug fixes
 
+## 1.8.0.pre3 (12 Jan 2018)
+
+### New Features
+
+- Custom `Context` classes for class-based schemas #1161
+- Custom introspection for class-based schemas #1170
+- Improvements to upgrader tasks and internals #1151, #1178, #1212
+- Allow description inside field blocks #1175
+
+## 1.8.0.pre2 (29 Nov 2017)
+
+### New Features
+
+- Add `rake graphql:upgrade[app/graphql]` for automatic upgrade #1110
+- Automatically camelize field names and argument names #1143, #1126
+- Improved error message when defining `name` instead of `graphql_name` #1104
+
+### Bug fixes
+
+- Fix list wrapping when value is `nil` #1117
+- Fix ArgumentError typo #1098
+
+## 1.8.0.pre1 (14 Nov 2017)
+
+### Breaking changes
+
+- Stop official support for Ruby 2.1 #1070
+
+### New features
+
+- Add class-based schema definition API #1037
+
 ## 1.7.8 (11 Jan 2018)
 
 ### New features

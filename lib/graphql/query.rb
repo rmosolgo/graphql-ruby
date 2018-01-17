@@ -29,7 +29,10 @@ module GraphQL
       end
     end
 
-    attr_reader :schema, :context, :root_value, :warden, :provided_variables
+    attr_reader :schema, :context, :warden, :provided_variables
+
+    # The value for root types
+    attr_accessor :root_value
 
     # @return [nil, String] The operation name provided by client or the one inferred from the document. Used to determine which operation to run.
     attr_accessor :operation_name
@@ -76,7 +79,7 @@ module GraphQL
     def initialize(schema, query_string = nil, query: nil, document: nil, context: nil, variables: {}, validate: true, subscription_topic: nil, operation_name: nil, root_value: nil, max_depth: nil, max_complexity: nil, except: nil, only: nil)
       @schema = schema
       @filter = schema.default_filter.merge(except: except, only: only)
-      @context = Context.new(query: self, object: root_value, values: context)
+      @context = schema.context_class.new(query: self, object: root_value, values: context)
       @subscription_topic = subscription_topic
       @root_value = root_value
       @fragments = nil
@@ -194,8 +197,11 @@ module GraphQL
 
     def irep_selection
       @selection ||= begin
-        return nil unless selected_operation
-        internal_representation.operation_definitions[selected_operation.name]
+        if selected_operation && internal_representation
+          internal_representation.operation_definitions[selected_operation.name]
+        else
+          nil
+        end
       end
     end
 
@@ -237,6 +243,9 @@ module GraphQL
         # Old method signature
         value = abstract_type
         abstract_type = nil
+      end
+      if value.is_a?(GraphQL::Schema::Object)
+        value = value.object
       end
       @resolved_types_cache[abstract_type][value]
     end
