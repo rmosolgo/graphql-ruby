@@ -147,7 +147,7 @@ module GraphQL
         ) do
           field = $~[:field]
           block_contents = $~[:block_contents]
-          kwarg_value = $~[:kwarg_value]
+          kwarg_value = $~[:kwarg_value].strip
 
           "#{field}, #{@kwarg}: #{kwarg_value} do#{block_contents}"
         end
@@ -161,18 +161,22 @@ module GraphQL
       end
     end
 
-    # Parse the `hash_key:` option, and if it's found,
-    # check if it matches the field name.
-    # Remove it if it's redundant with the field name.
-    class RedundantHashKeyTransform < Transform
+    # Find a keyword whose value is a string or symbol,
+    # and if the value is equivalent to the field name,
+    # remove the keyword altogether.
+    class RemoveRedundantKwargTransform < Transform
+      def initialize(kwarg:)
+        @kwarg = kwarg
+        @finder_pattern = /(field|connection|argument) :(?<name>[a-zA-Z_0-9]*).*#{@kwarg}: ['":](?<kwarg_value>[a-zA-Z_0-9]+)['"]?/
+      end
+
       def apply(input_text)
-        pattern = /(field|connection|argument) (?<name>:[a-zA-Z_0-9]*).*hash_key: (?<hash_key>:[a-zA-Z_0-9]+)/
-        if input_text =~ pattern
+        if input_text =~ @finder_pattern
           field_name = $~[:name]
-          hash_key = $~[:hash_key]
-          if field_name == hash_key
-            # It's redundant
-            input_text = input_text.sub(/, hash_key: #{hash_key}/, "")
+          kwarg_value = $~[:kwarg_value]
+          if field_name == kwarg_value
+            # It's redundant, remove it
+            input_text = input_text.sub(/, #{@kwarg}: ['":]#{kwarg_value}['"]?/, "")
           end
         end
         input_text
@@ -220,7 +224,13 @@ module GraphQL
 
           input_text.match(/(?<field_type>input_field|field|connection|argument) :(?<name>[a-zA-Z_0-9_]*)/)
           field_name = $~[:name]
-          field_ast = Parser::CurrentRuby.parse(input_text)
+          begin
+            field_ast = Parser::CurrentRuby.parse(input_text)
+          rescue Parser::SyntaxError
+            puts "Error text:"
+            puts input_text
+            raise
+          end
           processor = ResolveProcProcessor.new
           processor.process(field_ast)
           proc_body = input_text[processor.proc_start..processor.proc_end]
@@ -438,7 +448,8 @@ module GraphQL
         ConfigurationToKwargTransform.new(kwarg: "deprecation_reason"),
         ConfigurationToKwargTransform.new(kwarg: "hash_key"),
         PropertyToMethodTransform,
-        RedundantHashKeyTransform,
+        RemoveRedundantKwargTransform.new(kwarg: "hash_key"),
+        RemoveRedundantKwargTransform.new(kwarg: "method"),
         UnderscoreizeFieldNameTransform,
         ResolveProcToMethodTransform,
         UpdateMethodSignatureTransform,
