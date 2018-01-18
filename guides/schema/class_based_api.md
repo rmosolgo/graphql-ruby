@@ -69,7 +69,7 @@ Previously, list types were expressed with `types[T]` and non-null types were ex
 
 - List types are expressed with Ruby Arrays, `[T]`, for example, `field :owners, [Types::UserType]`
   - By default, list members are _non-null_, for example, `[Types::UserType]` becomes `[User!]`
-  - If your list members may be null, add `,nil` to the array: `[Types::UserType, nil]` becomes `[User]` (the list may include `nil`)
+  - If your list members may be null, add `, null: true` to the array: `[Types::UserType, null: true]` becomes `[User]` (the list may include `nil`)
 - Non-null types are expressed with keyword arguments `null:` or `required:`
   - `field` takes a keyword `null:`. `null: true` means the field is nullable, `null: false` means the field is non-null (equivalent to `!`)
   - `argument` takes a keyword `required:`. `required: true` means the argument is non-null (equivalent to `!`), `required: false` means that the argument is nullable
