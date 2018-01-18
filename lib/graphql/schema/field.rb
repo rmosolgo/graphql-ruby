@@ -16,7 +16,7 @@ module GraphQL
       # @return [Hash{String => GraphQL::Schema::Argument}]
       attr_reader :arguments
 
-      def initialize(name, return_type_expr = nil, desc = nil, null: nil, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, connection: nil, max_page_size: nil, resolve: nil, introspection: false, extras: [], &args_block)
+      def initialize(name, return_type_expr = nil, desc = nil, null: nil, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, connection: nil, max_page_size: nil, resolve: nil, introspection: false, extras: [], &definition_block)
         if !(field || function)
           if return_type_expr.nil?
             raise ArgumentError, "missing positional argument `type`"
@@ -46,8 +46,22 @@ module GraphQL
         @extras = extras
         @arguments = {}
 
-        if args_block
-          with_proxy_dsl(&args_block)
+        if definition_block
+          instance_eval(&definition_block)
+        end
+      end
+
+      # This is the `argument(...)` DSL for class-based field definitons
+      def argument(*args)
+        arg_defn = self.class.argument_class.new(*args)
+        arguments[arg_defn.name] = arg_defn
+      end
+
+      def description(text = nil)
+        if text
+          @description = text
+        else
+          @description
         end
       end
 
@@ -105,12 +119,10 @@ module GraphQL
           # TODO: this could be a bit weird, because these fields won't be present
           # after initialization, only in the `to_graphql` response.
           # This calculation _could_ be moved up if need be.
-          with_proxy_dsl do
-            argument :after, "String", "Returns the elements in the list that come after the specified global ID.", required: false
-            argument :before, "String", "Returns the elements in the list that come before the specified global ID.", required: false
-            argument :first, "Int", "Returns the first _n_ elements from the list.", required: false
-            argument :last, "Int", "Returns the last _n_ elements from the list.", required: false
-          end
+          argument :after, "String", "Returns the elements in the list that come after the specified global ID.", required: false
+          argument :before, "String", "Returns the elements in the list that come before the specified global ID.", required: false
+          argument :first, "Int", "Returns the first _n_ elements from the list.", required: false
+          argument :last, "Int", "Returns the last _n_ elements from the list.", required: false
         end
 
         @arguments.each do |name, defn|
@@ -129,36 +141,6 @@ module GraphQL
             @argument_class = new_arg_class
           else
             @argument_class || GraphQL::Schema::Argument
-          end
-        end
-      end
-
-      # Call the given block with the field ... do end DSL
-      def with_proxy_dsl(&block)
-        field_proxy = FieldProxy.new(self, argument_class: self.class.argument_class)
-        field_proxy.instance_eval(&block)
-      end
-
-      # This object exists only to be `instance_eval`'d
-      # when the `field(...)` method is called with a block.
-      # This object receives that block.
-      class FieldProxy
-        def initialize(field, argument_class:)
-          @field = field
-          @argument_class = argument_class
-        end
-
-        # This is the `argument(...)` DSL for class-based field definitons
-        def argument(*args)
-          arg_defn = @argument_class.new(*args)
-          @field.arguments[arg_defn.name] = arg_defn
-        end
-
-        def description(text)
-          if @field.description
-            fail "`description` was already assigned to this field (#{@field.name}). Assign it as a keyword argument or in the block, but not both."
-          else
-            @field.description = text
           end
         end
       end

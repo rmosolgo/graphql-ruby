@@ -15,18 +15,18 @@ describe GraphQL::Schema::Field do
       assert_equal 'inspectInput', field.graphql_definition.name
     end
 
-    describe "description in block" do
-      it "will raise if description is defined both in the argument and in the block" do
-        assert_raises RuntimeError, "You're overriding the description of shouldRaise in the provided block!" do
-          Class.new(Jazz::BaseObject) do
-            graphql_name "JustAName"
+    it "accepts a block for definition" do
+      object = Class.new(Jazz::BaseObject) do
+        graphql_name "JustAName"
 
-            field :should_raise, Jazz::Key, "this should not raise", null: true do
-              description "This should raise"
-            end
-          end.to_graphql
+        field :test, String, null: true do
+          argument :test, String, required: true
+          description "A Description."
         end
-      end
+      end.to_graphql
+
+      assert_equal "test", object.fields["test"].arguments["test"].name
+      assert_equal "A Description.", object.fields["test"].description
     end
   end
 end
