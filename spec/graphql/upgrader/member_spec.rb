@@ -17,17 +17,52 @@ describe GraphQL::Upgrader::Member do
     end
   end
 
-  it 'upgrades the property definition to method' do
-    old = %{field :name, String, property: :name}
-    new = %{field :name, String, method: :name, null: true}
+  describe "property / method upgrade" do
+    it 'upgrades the property definition to method' do
+      old = %{field :name, String, property: :full_name}
+      new = %{field :name, String, method: :full_name, null: true}
 
-    assert_equal new, upgrade(old)
+      assert_equal new, upgrade(old)
+    end
+
+    it 'upgrades the property definition in a block to method' do
+      old = %{field :name, String do\n  property :full_name\nend}
+      new = %{field :name, String, method: :full_name, null: true}
+      assert_equal new, upgrade(old)
+    end
+
+    it "removes property when redundant" do
+      old = %{field :name, String do\n  property "name" \nend}
+      new = %{field :name, String, null: true}
+      assert_equal new, upgrade(old)
+
+      old = %{field :name, String, property: :name}
+      new = %{field :name, String, null: true}
+      assert_equal new, upgrade(old)
+
+    end
   end
 
-  it 'upgrades the property definition in a block to method' do
-    old = %{field :name, String do\n  property :name\nend}
-    new = %{field :name, String, method: :name, null: true}
-    assert_equal new, upgrade(old)
+  describe "hash_key" do
+    it "it moves configuration to kwarg"  do
+      old = %{field :name, String do\n  hash_key :full_name\nend}
+      new = %{field :name, String, hash_key: :full_name, null: true}
+      assert_equal new, upgrade(old)
+    end
+
+    it "removes it if it's redundant" do
+      old = %{field :name, String do\n  hash_key :name\nend}
+      new = %{field :name, String, null: true}
+      assert_equal new, upgrade(old)
+
+      old = %{field :name, String, hash_key: :name}
+      new = %{field :name, String, null: true}
+      assert_equal new, upgrade(old)
+
+      old = %{field :name, String do\n  hash_key "name"\nend}
+      new = %{field :name, String, null: true}
+      assert_equal new, upgrade(old)
+    end
   end
 
   describe 'name' do
@@ -224,8 +259,8 @@ describe GraphQL::Upgrader::Member do
       new = %{field :name, String, null: false}
       assert_equal new, upgrade(old)
 
-      old = %{field :name, !types.String, "description", method: :name}
-      new = %{field :name, String, "description", method: :name, null: false}
+      old = %{field :name, !types.String, "description", method: :name_full}
+      new = %{field :name, String, "description", method: :name_full, null: false}
       assert_equal new, upgrade(old)
 
       old = %{field :name, -> { !types.String }}
@@ -347,8 +382,7 @@ describe GraphQL::Upgrader::Member do
           property: :example_field?
       }
       new = %{
-        field :is_example_field, Boolean, null: true
-          method: :example_field?
+        field :is_example_field, Boolean, method: :example_field?, null: true
       }
 
       assert_equal new, upgrade(old)
@@ -362,8 +396,7 @@ describe GraphQL::Upgrader::Member do
           property: :example_connections
       }
       new = %{
-        field :example_connection, ExampleConnectionType, null: true, connection: true
-          method: :example_connections
+        field :example_connection, ExampleConnectionType, method: :example_connections, null: true, connection: true
       }
 
       assert_equal new, upgrade(old)
@@ -416,18 +449,25 @@ describe GraphQL::Upgrader::Member do
       }
 
       type_transforms.unshift(ActiveRecordTypeToClassTransform)
-      upgrader = GraphQL::Upgrader::Member.new(original_text, type_transforms: type_transforms)
+      field_transforms = GraphQL::Upgrader::Member::DEFAULT_FIELD_TRANSFORMS
+      field_transforms.unshift(GraphQL::Upgrader::ConfigurationToKwargTransform.new(kwarg: "visibility"))
+      upgrader = GraphQL::Upgrader::Member.new(original_text, type_transforms: type_transforms, field_transforms: field_transforms)
       upgrader.upgrade
     end
 
     original_files = Dir.glob("spec/fixtures/upgrader/*.original.rb")
     original_files.each do |original_file|
       transformed_file = original_file.sub(".original.", ".transformed.")
+      original_text = File.read(original_file)
+      expected_text = File.read(transformed_file)
       it "transforms #{original_file} -> #{transformed_file}" do
-        original_text = File.read(original_file)
-        expected_text = File.read(transformed_file)
         transformed_text = custom_upgrade(original_text)
         assert_equal(expected_text, transformed_text)
+      end
+
+      it "is idempotent on #{transformed_file}" do
+        retransformed_text = custom_upgrade(expected_text)
+        assert_equal(expected_text, retransformed_text)
       end
     end
   end

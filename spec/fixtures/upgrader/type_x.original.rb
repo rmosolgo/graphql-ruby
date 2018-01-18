@@ -12,11 +12,14 @@ module Platform
       interfaces [GraphQL::Relay::Node.interface]
 
       field :f1, !Objects::O1, "The x being y."
-      field :f2, !Enums::E1, "x for the y.", property: :field_2
+      field :f2, !Enums::E1, "x for the y.",
+        property: :field_2
       field :f3, Enums::E2, "x for y."
       field :details, types.String, "Details."
 
       field :f4, !Objects::O2, "x as a y inside the z." do
+        argument :a1, !Inputs::I1
+
         resolve ->(obj_x, arguments, context) do
           Class1.new(
             a: Class2.new(
@@ -30,6 +33,21 @@ module Platform
           )
         end
       end
+
+      field :f5, -> { !types.String } do
+        description "The thing"
+        property :custom_property
+        visibility :custom_value
+      end
+
+      field :f6, -> { !types.String } do
+        description "The thing"
+        property :custom_property
+        visibility :custom_value
+      end
+
+      field :f7, field: SomeField
+      field :f8, function: SomeFunction
     end
   end
 end

@@ -95,12 +95,18 @@ module GraphQL
     # Remove newlines -- normalize the text for processing
     class RemoveNewlinesTransform
       def apply(input_text)
-        input_text.gsub(/(?<field>(?:field|connection|argument).*?,)\n(\s*)(?<next_line>(:?"|field)(.*))/) do
-          field = $~[:field].chomp
-          next_line = $~[:next_line]
+        keep_looking = true
+        while keep_looking do
+          keep_looking = false
+          input_text = input_text.gsub(/(?<field>(?:field|connection|argument).*?,)\n(\s*)(?<next_line>.*)/) do
+            keep_looking = true
+            field = $~[:field].chomp
+            next_line = $~[:next_line]
 
-          "#{field} #{next_line}"
+            "#{field} #{next_line}"
+          end
         end
+        input_text
       end
     end
 
@@ -141,7 +147,7 @@ module GraphQL
         ) do
           field = $~[:field]
           block_contents = $~[:block_contents]
-          kwarg_value = $~[:kwarg_value]
+          kwarg_value = $~[:kwarg_value].strip
 
           "#{field}, #{@kwarg}: #{kwarg_value} do#{block_contents}"
         end
@@ -152,6 +158,28 @@ module GraphQL
     class PropertyToMethodTransform < Transform
       def apply(input_text)
         input_text.gsub /property:/, 'method:'
+      end
+    end
+
+    # Find a keyword whose value is a string or symbol,
+    # and if the value is equivalent to the field name,
+    # remove the keyword altogether.
+    class RemoveRedundantKwargTransform < Transform
+      def initialize(kwarg:)
+        @kwarg = kwarg
+        @finder_pattern = /(field|connection|argument) :(?<name>[a-zA-Z_0-9]*).*#{@kwarg}: ['":](?<kwarg_value>[a-zA-Z_0-9]+)['"]?/
+      end
+
+      def apply(input_text)
+        if input_text =~ @finder_pattern
+          field_name = $~[:name]
+          kwarg_value = $~[:kwarg_value]
+          if field_name == kwarg_value
+            # It's redundant, remove it
+            input_text = input_text.sub(/, #{@kwarg}: ['":]#{kwarg_value}['"]?/, "")
+          end
+        end
+        input_text
       end
     end
 
@@ -196,7 +224,13 @@ module GraphQL
 
           input_text.match(/(?<field_type>input_field|field|connection|argument) :(?<name>[a-zA-Z_0-9_]*)/)
           field_name = $~[:name]
-          field_ast = Parser::CurrentRuby.parse(input_text)
+          begin
+            field_ast = Parser::CurrentRuby.parse(input_text)
+          rescue Parser::SyntaxError
+            puts "Error text:"
+            puts input_text
+            raise
+          end
           processor = ResolveProcProcessor.new
           processor.process(field_ast)
           proc_body = input_text[processor.proc_start..processor.proc_end]
@@ -288,9 +322,14 @@ module GraphQL
         ) do
           indent = $~[:indent]
           interfaces = $~[:interfaces].split(',').map(&:strip).reject(&:empty?)
-          interfaces.map do |interface|
-            "#{indent}implements #{interface}"
-          end.join
+          # Preserve leading newlines before the `interfaces ...`
+          # call, but don't re-insert them between `implements` calls.
+          extra_leading_newlines = "\n" * (indent[/^\n*/].length - 1)
+          indent = indent.sub(/^\n*/m, "")
+          interfaces_calls = interfaces
+            .map { |interface| "\n#{indent}implements #{interface}" }
+            .join
+          extra_leading_newlines + interfaces_calls
         end
       end
     end
@@ -298,23 +337,27 @@ module GraphQL
     class UpdateMethodSignatureTransform < Transform
       def apply(input_text)
         input_text.scan(/(?:input_field|field|connection|argument) .*$/).each do |field|
-          matches = /(?<field_type>input_field|field|connection|argument) :(?<name>[a-zA-Z_0-9_]*)?, (?<return_type>[^,]*)(?<remainder>.*)/.match(field)
+          matches = /(?<field_type>input_field|field|connection|argument) :(?<name>[a-zA-Z_0-9_]*)?, (?<return_type>([A-Za-z\[\]\.\!_0-9]|::|-> ?\{ ?| ?\})+)(?<remainder>( |,|$).*)/.match(field)
           if matches
             name = matches[:name]
             return_type = matches[:return_type]
             remainder = matches[:remainder]
             field_type = matches[:field_type]
-
-            # This is a small bug in the regex. Ideally the `do` part would only be in the remainder.
-            with_block = remainder.gsub!(/\ do$/, '') || return_type.gsub!(/\ do$/, '')
+            with_block = remainder.gsub!(/\ do$/, '')
 
             remainder.gsub! /,$/, ''
             remainder.gsub! /^,/, ''
             remainder.chomp!
 
-            has_bang = !(return_type.gsub! '!', '')
-            return_type = normalize_type_expression(return_type)
-            return_type = return_type.gsub ',', ''
+            if return_type
+              non_nullable = return_type.gsub! '!', ''
+              nullable = !non_nullable
+              return_type = normalize_type_expression(return_type)
+              return_type = return_type.gsub ',', ''
+            else
+              non_nullable = nil
+              nullable = nil
+            end
 
             input_text.sub!(field) do
               is_argument = ['argument', 'input_field'].include?(field_type)
@@ -325,15 +368,15 @@ module GraphQL
               end
 
               if is_argument
-                if has_bang
+                if nullable
                   f += ', required: false'
-                else
+                elsif non_nullable
                   f += ', required: true'
                 end
               else
-                if has_bang
+                if nullable
                   f += ', null: true'
-                else
+                elsif non_nullable
                   f += ', null: false'
                 end
               end
@@ -363,17 +406,29 @@ module GraphQL
 
     # Remove redundant newlines, which may have trailing spaces
     # Remove double newline after `do`
+    # Remove double newline before `end`
     class RemoveExcessWhitespaceTransform < Transform
       def apply(input_text)
         input_text
-          .gsub(/\n{3,}/m, "\n")
-          .gsub(/do\n\n/m, "do\n")
+          .gsub(/\n{3,}/m, "\n\n")
+          .gsub(/do\n{2,}/m, "do\n")
+          .gsub(/\n{2,}(\s*)end/m, "\n\\1end")
+      end
+    end
+
+    # Skip this file if you see any `field`
+    # helpers with `null: true` or `null: false` keywords,
+    # because it's already been transformed
+    class SkipOnNullKeyword
+      def skip?(input_text)
+        input_text =~ /field.*null: (true|false)/
       end
     end
 
     class Member
-      def initialize(member, type_transforms: DEFAULT_TYPE_TRANSFORMS, field_transforms: DEFAULT_FIELD_TRANSFORMS, clean_up_transforms: DEFAULT_CLEAN_UP_TRANSFORMS)
+      def initialize(member, skip: SkipOnNullKeyword, type_transforms: DEFAULT_TYPE_TRANSFORMS, field_transforms: DEFAULT_FIELD_TRANSFORMS, clean_up_transforms: DEFAULT_CLEAN_UP_TRANSFORMS)
         @member = member
+        @skip = skip
         @type_transforms = type_transforms
         @field_transforms = field_transforms
         @clean_up_transforms = clean_up_transforms
@@ -390,7 +445,11 @@ module GraphQL
         PositionalTypeArgTransform,
         ConfigurationToKwargTransform.new(kwarg: "property"),
         ConfigurationToKwargTransform.new(kwarg: "description"),
+        ConfigurationToKwargTransform.new(kwarg: "deprecation_reason"),
+        ConfigurationToKwargTransform.new(kwarg: "hash_key"),
         PropertyToMethodTransform,
+        RemoveRedundantKwargTransform.new(kwarg: "hash_key"),
+        RemoveRedundantKwargTransform.new(kwarg: "method"),
         UnderscoreizeFieldNameTransform,
         ResolveProcToMethodTransform,
         UpdateMethodSignatureTransform,
@@ -402,8 +461,14 @@ module GraphQL
       ]
 
       def upgrade
+        type_source = @member.dup
+        should_skip = @skip.new.skip?(type_source)
+        # return the unmodified code
+        if should_skip
+          return type_source
+        end
         # Transforms on type defn code:
-        type_source = apply_transforms(@member.dup, @type_transforms)
+        type_source = apply_transforms(type_source, @type_transforms)
         # Transforms on each field:
         field_sources = find_fields(type_source)
         field_sources.each do |field_source|
@@ -464,6 +529,10 @@ module GraphQL
         # - use `gsub` after performing the transformation.
         field_sources.uniq!
         field_sources
+      rescue Parser::SyntaxError
+        puts "Error Source:"
+        puts type_source
+        raise
       end
 
       class FieldFinder < Parser::AST::Processor
