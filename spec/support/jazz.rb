@@ -201,13 +201,15 @@ module Jazz
       description "An object played in order to produce music"
     end
     field :favorite_key, Key, null: true
-    field :inspect_context, [String], null: false
+    # Test lists with nullable members:
+    field :inspect_context, [String, nil], null: false
 
     def inspect_context
       [
         @context.custom_method,
         @context[:magic_key],
-        @context[:normal_key]
+        @context[:normal_key],
+        nil,
       ]
     end
   end
