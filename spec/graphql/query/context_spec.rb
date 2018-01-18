@@ -256,8 +256,9 @@ TABLE
       }'
       res = Jazz::Schema.execute(query_str, context: { magic_key: :ignored, normal_key: "normal_value" })
       expected_values = ["custom_method", "magic_value", "normal_value"]
+      expected_values_with_nil = expected_values + [nil]
       assert_equal expected_values, res["data"]["inspectContext"]
-      assert_equal expected_values, res["data"]["find"]["inspectContext"]
+      assert_equal expected_values_with_nil, res["data"]["find"]["inspectContext"]
     end
   end
 end
