@@ -46,12 +46,21 @@ module GraphQL
           when GraphQL::BaseType, GraphQL::Schema::LateBoundType
             type_expr
           when Array
-            if type_expr.length != 1
-              raise "Use an array of length = 1 for list types; other arrays are not supported"
+            case type_expr.length
+            when 1
+              list_type = true
+              # List members are required by default
+              parse_type(type_expr.first, null: false)
+            when 2
+              inner_type, nullable_nil = type_expr
+              if !nullable_nil.nil?
+                raise "Use an array of [T] or [T, nil] for list types; other arrays are not supported"
+              end
+              list_type = true
+              parse_type(type_expr.first, null: true)
+            else
+              raise "Use an array of [T] or [T, nil] for list types; other arrays are not supported"
             end
-            list_type = true
-            # List members are required by default
-            parse_type(type_expr.first, null: false)
           when Class
             if Class < GraphQL::Schema::Member
               type_expr.graphql_definition

@@ -68,6 +68,8 @@ As described below, `.to_graphql` can be overridden to customize the type system
 Previously, list types were expressed with `types[T]` and non-null types were expressed with `!T`. Now:
 
 - List types are expressed with Ruby Arrays, `[T]`, for example, `field :owners, [Types::UserType]`
+  - By default, list members are _non-null_, for example, `[Types::UserType]` becomes `[User!]`
+  - If your list members may be null, add `,nil` to the array: `[Types::UserType, nil]` becomes `[User]` (the list may include `nil`)
 - Non-null types are expressed with keyword arguments `null:` or `required:`
   - `field` takes a keyword `null:`. `null: true` means the field is nullable, `null: false` means the field is non-null (equivalent to `!`)
   - `argument` takes a keyword `required:`. `required: true` means the argument is non-null (equivalent to `!`), `required: false` means that the argument is nullable
