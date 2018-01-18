@@ -202,7 +202,7 @@ module Jazz
     end
     field :favorite_key, Key, null: true
     # Test lists with nullable members:
-    field :inspect_context, [String, nil], null: false
+    field :inspect_context, [String, null: true], null: false
 
     def inspect_context
       [
