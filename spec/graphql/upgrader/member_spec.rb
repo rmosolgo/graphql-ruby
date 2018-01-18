@@ -17,17 +17,30 @@ describe GraphQL::Upgrader::Member do
     end
   end
 
-  it 'upgrades the property definition to method' do
-    old = %{field :name, String, property: :name}
-    new = %{field :name, String, method: :name, null: true}
+  describe "property / method upgrade" do
+    it 'upgrades the property definition to method' do
+      old = %{field :name, String, property: :full_name}
+      new = %{field :name, String, method: :full_name, null: true}
 
-    assert_equal new, upgrade(old)
-  end
+      assert_equal new, upgrade(old)
+    end
 
-  it 'upgrades the property definition in a block to method' do
-    old = %{field :name, String do\n  property :name\nend}
-    new = %{field :name, String, method: :name, null: true}
-    assert_equal new, upgrade(old)
+    it 'upgrades the property definition in a block to method' do
+      old = %{field :name, String do\n  property :full_name\nend}
+      new = %{field :name, String, method: :full_name, null: true}
+      assert_equal new, upgrade(old)
+    end
+
+    it "removes property when redundant" do
+      old = %{field :name, String do\n  property "name" \nend}
+      new = %{field :name, String, null: true}
+      assert_equal new, upgrade(old)
+
+      old = %{field :name, String, property: :name}
+      new = %{field :name, String, null: true}
+      assert_equal new, upgrade(old)
+
+    end
   end
 
   describe "hash_key" do
@@ -45,11 +58,9 @@ describe GraphQL::Upgrader::Member do
       old = %{field :name, String, hash_key: :name}
       new = %{field :name, String, null: true}
       assert_equal new, upgrade(old)
-    end
 
-    it "retains string hash keys" do
       old = %{field :name, String do\n  hash_key "name"\nend}
-      new = %{field :name, String, hash_key: "name", null: true}
+      new = %{field :name, String, null: true}
       assert_equal new, upgrade(old)
     end
   end
@@ -248,8 +259,8 @@ describe GraphQL::Upgrader::Member do
       new = %{field :name, String, null: false}
       assert_equal new, upgrade(old)
 
-      old = %{field :name, !types.String, "description", method: :name}
-      new = %{field :name, String, "description", method: :name, null: false}
+      old = %{field :name, !types.String, "description", method: :name_full}
+      new = %{field :name, String, "description", method: :name_full, null: false}
       assert_equal new, upgrade(old)
 
       old = %{field :name, -> { !types.String }}
