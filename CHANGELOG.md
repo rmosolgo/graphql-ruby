@@ -8,6 +8,25 @@
 
 ### Bug fixes
 
+## 1.8.0.pre4 (18 Jan 2018)
+
+### Breaking changes
+
+- `Type.fields`, `Field.arguments`, `Enum.values` and `InputObject.arguments` return a Hash instead of an Array #1222
+
+### Deprecations
+
+### New features
+
+- By default, fields try hash keys which match their name, as either a symbol or a string #1225
+- `field do ... end` instance_evals on the Field instance, not a FieldProxy #1227
+- `[T, null: true]` creates lists with nullable items #1229
+- Upgrader improvements #1223
+
+### Bug fixes
+
+- Don't require `parser` unless the upgrader is run #1218
+
 ## 1.8.0.pre3 (12 Jan 2018)
 
 ### New Features
