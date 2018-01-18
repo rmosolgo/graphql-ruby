@@ -59,7 +59,7 @@ module GraphQL
                 raise ArgumentError, LIST_TYPE_ERROR
               end
               list_type = true
-              parse_type(type_expr.first, null: true)
+              parse_type(inner_type, null: true)
             else
               raise ArgumentError, LIST_TYPE_ERROR
             end
