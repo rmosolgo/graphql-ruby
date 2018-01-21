@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module GraphQL
   class Schema
     # Find schema members using string paths
