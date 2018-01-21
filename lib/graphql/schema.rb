@@ -332,6 +332,18 @@ module GraphQL
       }
     end
 
+    # Search for a schema member using a string path
+    # @example Finding a Field
+    # Schema.find("Ensemble.musicians")
+    #
+    # @see {GraphQL::Schema::Finder}
+    # @param path [String] The path to the member
+    # @return [GraphQL::BaseType, GraphQL::Field, GraphQL::Argument, GraphQL::Directive] A GraphQL Schema Member
+    def find(path)
+      rebuild_artifacts unless defined?(@finder)
+      @find_cache[path] ||= @finder.find(path)
+    end
+
     # Resolve field named `field_name` for type `parent_type`.
     # Handles dynamic fields `__typename`, `__type` and `__schema`, too
     # @param parent_type [String, GraphQL::BaseType]
@@ -849,6 +861,8 @@ module GraphQL
         @instrumented_field_map = traversal.instrumented_field_map
         @type_reference_map = traversal.type_reference_map
         @union_memberships = traversal.union_memberships
+        @find_cache = {}
+        @finder = Finder.new(self)
       end
     ensure
       @rebuilding_artifacts = false
