@@ -1,5 +1,19 @@
 module GraphQL
   class Schema
+    # Find schema members using string paths
+    #
+    # @example Finding object types
+    # MySchema.find("SomeObjectType")
+    #
+    # @example Finding fields
+    # MySchema.find("SomeObjectType.myField")
+    #
+    # @example Finding arguments
+    # MySchema.find("SomeObjectType.myField.anArgument")
+    #
+    # @example Finding directives
+    # MySchema.find("@include")
+    #
     class Finder
       class MemberNotFoundError < ArgumentError; end
 
