@@ -17,6 +17,13 @@ describe GraphQL::Schema do
     end
   end
 
+  describe "#find" do
+    it "finds a member using a string path" do
+      field = schema.find("Edible.fatContent")
+      assert_equal "fatContent", field.name
+    end
+  end
+
   describe "#union_memberships" do
     it "returns a list of unions that include the type" do
       assert_equal [schema.types["Animal"], schema.types["AnimalAsCow"]], schema.union_memberships(schema.types["Cow"])
