@@ -31,7 +31,7 @@ MySchema.execute(query_string, only: filter)
 
 During that query, some elements will be hidden. This means that fields, types, arguments or enum values will be treated as if they were not defined at all.
 
-A filter must respond to `#call(schema_member, ctx)`. When that methods returns truthy, the schema member will be blacklisted or whitelisted.
+A filter must respond to `#call(schema_member, ctx)`. When that method returns truthy, the schema member will be blacklisted or whitelisted.
 
 For example, here's an implementation of `PermissionWhitelist` above:
 
