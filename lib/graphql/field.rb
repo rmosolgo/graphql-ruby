@@ -102,7 +102,7 @@ module GraphQL
   # @example Calculating the complexity of a list field
   #   field :items, types[ItemType] do
   #     argument :limit, !types.Int
-  #     # Mulitply the child complexity by the possible items on the list
+  #     # Multiply the child complexity by the possible items on the list
   #     complexity ->(ctx, args, child_complexity) { child_complexity * args[:limit] }
   #   end
   #
@@ -288,8 +288,8 @@ module GraphQL
       "<Field name:#{name || "not-named"} desc:#{description} resolve:#{resolve_proc}>"
     end
 
-    # If {#resolve} returned and object which should be handled lazily,
-    # this method will be called later force the object to return its value.
+    # If {#resolve} returned an object which should be handled lazily,
+    # this method will be called later to force the object to return its value.
     # @param obj [Object] The {#resolve}-provided object, registered with {Schema#lazy_resolve}
     # @param args [GraphQL::Query::Arguments] Arguments to this field
     # @param ctx [GraphQL::Query::Context] Context for this field
