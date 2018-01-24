@@ -7,7 +7,7 @@ desc: Customize the DSL for your application
 index: 6
 ---
 
-You can extend GraphQL's domain-specific language (DSL) for you own usage.
+You can extend GraphQL's domain-specific language (DSL) for your own usage.
 
 Types, fields, and arguments have a `metadata` hash which accepts values during definition.
 
