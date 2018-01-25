@@ -15,17 +15,12 @@ module GraphQL
       }
 
       def platform_trace(platform_key, key, data)
-        service = options.fetch(:service, 'ruby-graphql')
+        tracer.trace(platform_key, service: service_name) do |span|
+          span.span_type = 'custom'
 
-        pin = Datadog::Pin.get_from(self)
-        unless pin
-          pin = Datadog::Pin.new(service)
-          pin.onto(self)
-        end
-
-        pin.tracer.trace(platform_key, service: pin.service) do |span|
           if key == 'execute_multiplex'
-            span.resource = data[:multiplex].queries.map(&:selected_operation_name).join(', ')
+            operations = data[:multiplex].queries.map(&:selected_operation_name).join(', ')
+            span.resource = operations unless operations.empty?
           end
 
           if key == 'execute_query'
@@ -33,8 +28,17 @@ module GraphQL
             span.set_tag(:selected_operation_type, data[:query].selected_operation.operation_type)
             span.set_tag(:query_string, data[:query].query_string)
           end
+
           yield
         end
+      end
+
+      def service_name
+        options.fetch(:service, 'ruby-graphql')
+      end
+
+      def tracer
+        options.fetch(:tracer, Datadog.tracer)
       end
 
       def platform_field_key(type, field)
