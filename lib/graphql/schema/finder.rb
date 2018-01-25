@@ -87,7 +87,7 @@ module GraphQL
 
       def find_in_fields_type(type, kind:, path:)
         field_name = path.shift
-        field = type.fields[field_name]
+        field = schema.get_field(type, field_name)
 
         if field.nil?
           raise MemberNotFoundError, "Could not find field `#{field_name}` on #{kind} type `#{type}`."
