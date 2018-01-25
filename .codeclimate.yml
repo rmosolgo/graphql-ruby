@@ -2,3 +2,4 @@ version: "2"
 exclude_patterns:
   - "lib/graphql/language/lexer.rb"
   - "lib/graphql/language/parser.rb"
+  - "spec/graphql/language/printer_spec.rb"
