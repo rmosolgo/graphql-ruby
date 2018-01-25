@@ -36,6 +36,11 @@ describe GraphQL::Schema::Finder do
       assert_equal "musicians", field.name
     end
 
+    it "finds a meta field" do
+      field = finder.find("Ensemble.__typename")
+      assert_equal "__typename", field.name
+    end
+
     it "raises when finding an in valid field" do
       exception = assert_raises GraphQL::Schema::Finder::MemberNotFoundError do
         finder.find("Ensemble.nope")
