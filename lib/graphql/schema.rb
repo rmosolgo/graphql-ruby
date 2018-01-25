@@ -334,8 +334,9 @@ module GraphQL
     # @example Finding a Field
     # Schema.find("Ensemble.musicians")
     #
-    # @see {GraphQL::Schema::Finder}
-    # @param path [String] The path to the member
+    # @see {GraphQL::Schema::Finder} for more examples
+    # @param path [String] A dot-separated path to the member
+    # @raise [Schema::Finder::MemberNotFoundError] if path could not be found
     # @return [GraphQL::BaseType, GraphQL::Field, GraphQL::Argument, GraphQL::Directive] A GraphQL Schema Member
     def find(path)
       rebuild_artifacts unless defined?(@finder)
