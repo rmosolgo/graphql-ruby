@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+## 1.6.3 (26 Jan 2018)
+
+### Bug Fix
+
+- Support `FIELD(...)` in stable cursors
+
 ## 1.6.2 (13 Jan 2018)
 
 ### Bug Fix
