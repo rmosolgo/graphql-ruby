@@ -54,12 +54,9 @@ module GraphQL
 
     # @param other [GraphQL::BaseType] compare to this object
     # @return [Boolean] are these types equivalent? (incl. non-null, list)
+    # @see {ModifiesAnotherType#==} for override on List & NonNull types
     def ==(other)
-      if other.is_a?(GraphQL::BaseType)
-        self.to_s == other.to_s
-      else
-        super
-      end
+      other.is_a?(GraphQL::BaseType) && self.name == other.name
     end
 
     # If this type is modifying an underlying type,
@@ -81,6 +78,10 @@ module GraphQL
     module ModifiesAnotherType
       def unwrap
         self.of_type.unwrap
+      end
+
+      def ==(other)
+        other.is_a?(ModifiesAnotherType) && other.of_type == of_type
       end
     end
 
