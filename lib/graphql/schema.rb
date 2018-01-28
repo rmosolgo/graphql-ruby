@@ -657,6 +657,7 @@ module GraphQL
         schema_defn.query = query
         schema_defn.mutation = mutation
         schema_defn.subscription = subscription
+        schema_defn.max_complexity = max_complexity
         schema_defn.max_depth = max_depth
         schema_defn.default_max_page_size = default_max_page_size
         schema_defn.orphan_types = orphan_types
@@ -733,6 +734,14 @@ module GraphQL
           @default_max_page_size = new_default_max_page_size
         else
           @default_max_page_size
+        end
+      end
+
+      def max_complexity(max_complexity = nil)
+        if max_complexity
+          @max_complexity = max_complexity
+        else
+          @max_complexity
         end
       end
 
