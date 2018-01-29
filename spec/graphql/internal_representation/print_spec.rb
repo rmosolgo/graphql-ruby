@@ -26,9 +26,9 @@ query {
   ... on Query {
     cheese(id: 1) {
       ... on Cheese {
-        flavor()
-        o2: origin()
-        o: origin()
+        flavor
+        o2: origin
+        o: origin
       }
     }
   }

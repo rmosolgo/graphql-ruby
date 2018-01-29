@@ -4,16 +4,15 @@ module GraphQL
     class Node
       # @api private
       DEFAULT_TYPED_CHILDREN = Proc.new { |h, k| h[k] = {} }
-      NO_TYPED_CHILDREN = {}
-      def NO_TYPED_CHILDREN.dup
-        NO_TYPED_CHILDREN
+      class NoTypedChildren
+        CHILDREN = [].freeze
+        def dup; self; end
+        def any?; false; end
+        def [](key); CHILDREN; end
+        def each; end
       end
 
-      def NO_TYPED_CHILDREN.any?
-        false
-      end
-
-      NO_TYPED_CHILDREN.freeze
+      NO_TYPED_CHILDREN = NoTypedChildren.new
 
       # @return [String] the name this node has in the response
       attr_reader :name
