@@ -1,9 +1,13 @@
 # frozen_string_literal: true
+require "graphql/relay/type_extensions"
+
 module GraphQL
   # The parent for all type classes.
   class BaseType
     include GraphQL::Define::NonNullWithBang
     include GraphQL::Define::InstanceDefinable
+    include GraphQL::Relay::TypeExtensions
+
     accepts_definitions :name, :description,
         :introspection,
         :default_scalar,
@@ -190,28 +194,6 @@ module GraphQL
           type_arg
         end
       end
-    end
-
-    # @return [GraphQL::ObjectType] The default connection type for this object type
-    def connection_type
-      @connection_type ||= define_connection
-    end
-
-    # Define a custom connection type for this object type
-    # @return [GraphQL::ObjectType]
-    def define_connection(**kwargs, &block)
-      GraphQL::Relay::ConnectionType.create_type(self, **kwargs, &block)
-    end
-
-    # @return [GraphQL::ObjectType] The default edge type for this object type
-    def edge_type
-      @edge_type ||= define_edge
-    end
-
-    # Define a custom edge type for this object type
-    # @return [GraphQL::ObjectType]
-    def define_edge(**kwargs, &block)
-      GraphQL::Relay::EdgeType.create_type(self, **kwargs, &block)
     end
 
     # Return a GraphQL string for the type definition
