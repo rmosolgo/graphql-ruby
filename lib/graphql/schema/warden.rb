@@ -137,11 +137,11 @@ module GraphQL
 
       def visible_type?(type_defn)
         visible?(type_defn) && (
-            root_type?(type_defn) ||
             type_defn.introspection? ||
             referenced?(type_defn) ||
             visible_abstract_type?(type_defn) ||
-            possible_types?(type_defn)
+            possible_types?(type_defn) ||
+            root_type?(type_defn)
           )
       end
 

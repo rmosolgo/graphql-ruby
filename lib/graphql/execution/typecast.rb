@@ -17,6 +17,9 @@ module GraphQL
           end
         else
           case parent_type
+          when GraphQL::ObjectType
+            # This is a common case so let's move it up
+            parent_type.name == child_type.name
           when GraphQL::InterfaceType
             # A type is a subtype of an interface
             # if it implements that interface

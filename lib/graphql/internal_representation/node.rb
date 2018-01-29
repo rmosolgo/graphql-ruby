@@ -4,7 +4,16 @@ module GraphQL
     class Node
       # @api private
       DEFAULT_TYPED_CHILDREN = Proc.new { |h, k| h[k] = {} }
-      NO_TYPED_CHILDREN = {}.freeze
+      NO_TYPED_CHILDREN = {}
+      def NO_TYPED_CHILDREN.dup
+        NO_TYPED_CHILDREN
+      end
+
+      def NO_TYPED_CHILDREN.any?
+        false
+      end
+
+      NO_TYPED_CHILDREN.freeze
 
       # @return [String] the name this node has in the response
       attr_reader :name
@@ -60,7 +69,7 @@ module GraphQL
       def initialize(
           name:, owner_type:, query:, return_type:, parent:,
           ast_nodes: [],
-          definitions: []
+          definition_name: []
         )
         @name = name
         @query = query
@@ -68,9 +77,9 @@ module GraphQL
         @parent = parent
         @typed_children = nil
         @scoped_children = Hash.new(&DEFAULT_TYPED_CHILDREN)
-        @ast_nodes = ast_nodes
-        @definitions = definitions
+        @definition_name = definition_name
         @return_type = return_type
+        @ast_nodes = ast_nodes
       end
 
       def initialize_copy(other_node)
@@ -78,16 +87,9 @@ module GraphQL
         # Bust some caches:
         @typed_children = nil
         @definition = nil
-        @definition_name = nil
-        @ast_node = nil
         # Shallow-copy some state:
-        @scoped_children = if other_node.scoped_children.any?
-          other_node.scoped_children.dup
-        else
-          NO_TYPED_CHILDREN
-        end
-        @ast_nodes = other_node.ast_nodes.dup
-        @definitions = other_node.definitions.dup
+        @scoped_children = other_node.scoped_children.dup
+        @ast_nodes = ast_nodes.dup
       end
 
       def ==(other)
@@ -96,13 +98,7 @@ module GraphQL
           other.parent == parent &&
           other.return_type == return_type &&
           other.owner_type == owner_type &&
-          other.scoped_children == scoped_children &&
-          other.definitions == definitions &&
-          other.ast_nodes == ast_nodes
-      end
-
-      def definition_name
-        definition && definition.name
+          other.scoped_children == scoped_children
       end
 
       def arguments
@@ -111,14 +107,14 @@ module GraphQL
 
       def definition
         @definition ||= begin
-          first_def = @definitions.first
-          first_def && @query.get_field(@owner_type, first_def.name)
+          @definition_name && @query.get_field(@owner_type, @definition_name)
         end
       end
 
       def ast_node
-        @ast_node ||= ast_nodes.first
+        @ast_nodes.first
       end
+      attr_reader :definition_name
 
       def inspect
         all_children_names = scoped_children.values.map(&:keys).flatten.uniq.join(", ")
@@ -131,19 +127,20 @@ module GraphQL
       def deep_merge_node(new_parent, scope: nil, merge_self: true)
         if merge_self
           @ast_nodes |= new_parent.ast_nodes
-          @definitions |= new_parent.definitions
         end
-        scope ||= Scope.new(@query, @return_type.unwrap)
-        new_parent.scoped_children.each do |obj_type, new_fields|
-          inner_scope = scope.enter(obj_type)
-          inner_scope.each do |scoped_type|
-            prev_fields = @scoped_children[scoped_type]
-            new_fields.each do |name, new_node|
-              prev_node = prev_fields[name]
-              if prev_node
-                prev_node.deep_merge_node(new_node)
-              else
-                prev_fields[name] = new_node
+        if new_parent.scoped_children.any?
+          scope ||= Scope.new(@query, @return_type.unwrap)
+          new_parent.scoped_children.each do |obj_type, new_fields|
+            inner_scope = scope.enter(obj_type)
+            inner_scope.each do |scoped_type|
+              prev_fields = @scoped_children[scoped_type]
+              new_fields.each do |name, new_node|
+                prev_node = prev_fields[name]
+                if prev_node
+                  prev_node.deep_merge_node(new_node)
+                else
+                  prev_fields[name] = new_node
+                end
               end
             end
           end

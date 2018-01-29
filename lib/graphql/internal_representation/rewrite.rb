@@ -102,9 +102,9 @@ module GraphQL
                     owner_type: scope_type,
                     query: query,
                     return_type: field_return_type,
+                    definition_name: field_defn.name,
                   )
                   node.ast_nodes << ast_node
-                  node.definitions << field_defn
                   next_nodes << node
                 end
               end
@@ -182,6 +182,7 @@ module GraphQL
             query: @query,
             ast_nodes: [ast_node],
             return_type: @context.type_definition,
+            definition_name: nil,
           )
 
           @definitions[defn_name] = node
