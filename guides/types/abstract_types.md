@@ -36,7 +36,7 @@ end
 
 ## Type-Level Resolution Hooks
 
-Instead of a single, top-level `resolve_type` function, you can provide type-level functions:
+In addition to a single, top-level `resolve_type` function, you can provide type-level functions:
 
 ```ruby
 MyUnion = GraphQL::UnionType.define do
@@ -52,7 +52,7 @@ MyInterface = GraphQL::InterfaceType.define do
 end
 ```
 
-These functions take priority over the schema-level function.
+Keep the schema-level `resolve_type` function: these type-level functions take priority over the schema-level function.
 
 ## Orphan Types
 
