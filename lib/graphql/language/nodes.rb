@@ -296,8 +296,6 @@ module GraphQL
               serialize_value_for_hash v
             end
           when Enum
-            # TODO: this is required for _loading_ default values for input objects,
-            # but it breaks printing those values!
             value.name
           when NullValue
             nil
