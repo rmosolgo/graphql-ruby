@@ -72,7 +72,7 @@
 
 <h2 id="type-level-resolution-hooks">Type-Level Resolution Hooks</h2>
 
-<p>Instead of a single, top-level <code class="highlighter-rouge">resolve_type</code> function, you can provide type-level functions:</p>
+<p>In addition to a single, top-level <code class="highlighter-rouge">resolve_type</code> function, you can provide type-level functions:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">MyUnion</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">UnionType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="n">resolve_type</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
@@ -87,7 +87,7 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>These functions take priority over the schema-level function.</p>
+<p>Keep the schema-level <code class="highlighter-rouge">resolve_type</code> function: these type-level functions take priority over the schema-level function.</p>
 
 <h2 id="orphan-types">Orphan Types</h2>
 
