@@ -1,4 +1,6 @@
 # frozen_string_literal: true
+require "graphql/relay/type_extensions"
+
 module GraphQL
   # The base class for things that make up the schema,
   # eg objects, enums, scalars.
@@ -35,7 +37,7 @@ module GraphQL
       include GraphQLTypeNames
       class << self
         include CachedGraphQLDefinition
-
+        include GraphQL::Relay::TypeExtensions
         # Delegate to the derived type definition if possible.
         # This is tricky because missing methods cause the definition to be built & cached.
         def method_missing(method_name, *args, &block)
