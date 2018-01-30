@@ -4,6 +4,19 @@ module GraphQL
     class Node
       # @api private
       DEFAULT_TYPED_CHILDREN = Proc.new { |h, k| h[k] = {} }
+
+      # A specialized, reusable object for leaf nodes.
+      # Behaves like a Hash, but doesn't copy itself.
+      # @api private
+      class NoTypedChildren
+        CHILDREN = [].freeze
+        def dup; self; end
+        def any?; false; end
+        def [](key); CHILDREN; end
+        def each; end
+      end
+      NO_TYPED_CHILDREN = NoTypedChildren.new
+
       # @return [String] the name this node has in the response
       attr_reader :name
 
@@ -17,8 +30,8 @@ module GraphQL
       # @return [Hash<GraphQL::ObjectType, Hash<String => Node>>]
       def typed_children
         @typed_children ||= begin
-          new_tc = Hash.new(&DEFAULT_TYPED_CHILDREN)
           if @scoped_children.any?
+            new_tc = Hash.new(&DEFAULT_TYPED_CHILDREN)
             all_object_types = Set.new
             scoped_children.each_key { |t| all_object_types.merge(@query.possible_types(t)) }
             # Remove any scoped children which don't follow this return type
@@ -27,8 +40,11 @@ module GraphQL
             all_object_types.each do |t|
               new_tc[t] = get_typed_children(t)
             end
+            new_tc
+          else
+            NO_TYPED_CHILDREN
           end
-          new_tc
+
         end
       end
 
@@ -125,17 +141,20 @@ module GraphQL
           @ast_nodes |= new_parent.ast_nodes
           @definitions |= new_parent.definitions
         end
-        scope ||= Scope.new(@query, @return_type.unwrap)
-        new_parent.scoped_children.each do |obj_type, new_fields|
-          inner_scope = scope.enter(obj_type)
-          inner_scope.each do |scoped_type|
-            prev_fields = @scoped_children[scoped_type]
-            new_fields.each do |name, new_node|
-              prev_node = prev_fields[name]
-              if prev_node
-                prev_node.deep_merge_node(new_node)
-              else
-                prev_fields[name] = new_node
+        new_sc = new_parent.scoped_children
+        if new_sc.any?
+          scope ||= Scope.new(@query, @return_type.unwrap)
+          new_sc.each do |obj_type, new_fields|
+            inner_scope = scope.enter(obj_type)
+            inner_scope.each do |scoped_type|
+              prev_fields = @scoped_children[scoped_type]
+              new_fields.each do |name, new_node|
+                prev_node = prev_fields[name]
+                if prev_node
+                  prev_node.deep_merge_node(new_node)
+                else
+                  prev_fields[name] = new_node
+                end
               end
             end
           end
