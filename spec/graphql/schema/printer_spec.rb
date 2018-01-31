@@ -14,7 +14,11 @@ describe GraphQL::Schema::Printer do
 
       value "FOO", value: :foo
       value "BAR", value: :bar
-      value "BAZ", deprecation_reason: 'Use "BAR".'
+      value "BAZ", deprecation_reason: <<-REASON
+Use "BAR" instead.
+
+It's the replacement for this value.
+REASON
       value "WOZ", deprecation_reason: GraphQL::Directive::DEFAULT_DEPRECATION_REASON
     end
 
@@ -352,7 +356,6 @@ SCHEMA
       custom_mutation = schema.mutation.redefine(name: "MyMutationRoot")
       custom_schema = schema.redefine(mutation: custom_mutation)
 
-
       expected = <<SCHEMA
 schema {
   query: Query
@@ -389,7 +392,7 @@ type Audio {
 
 enum Choice {
   BAR
-  BAZ @deprecated(reason: "Use "BAR".")
+  BAZ @deprecated(reason: "Use \\\"BAR\\\" instead.\\n\\nIt's the replacement for this value.\\n")
   FOO
   WOZ @deprecated
 }
@@ -438,7 +441,7 @@ interface Node {
 type Post {
   body: String!
   comments: [Comment!]
-  comments_count: Int! @deprecated(reason: "Use "comments".")
+  comments_count: Int! @deprecated(reason: "Use \\\"comments\\\".")
   id: ID!
   title: String!
 }
@@ -600,12 +603,52 @@ SCHEMA
 type Post {
   body: String!
   comments: [Comment!]
-  comments_count: Int! @deprecated(reason: "Use "comments".")
+  comments_count: Int! @deprecated(reason: "Use \\\"comments\\\".")
   id: ID!
   title: String!
 }
 SCHEMA
       assert_equal expected.chomp, GraphQL::Schema::Printer.new(schema).print_type(schema.types['Post'])
+    end
+  end
+
+  describe "#print_directive" do
+    it "prints the deprecation reason in a single line escaped string including line breaks" do
+      expected = <<SCHEMA
+enum Choice {
+  BAR
+  BAZ @deprecated(reason: "Use \\\"BAR\\\" instead.\\n\\nIt's the replacement for this value.\\n")
+  FOO
+  WOZ @deprecated
+}
+
+type Subscription {
+}
+
+input Varied {
+  bool: Boolean
+  enum: Choice = FOO
+  float: Float
+  int: Int
+}
+SCHEMA
+
+      only_filter = ->(member, ctx) {
+        case member
+        when GraphQL::ScalarType
+          true
+        when GraphQL::BaseType
+          ctx[:names].include?(member.name)
+        when GraphQL::Argument
+          member.name != "id"
+        else
+          true
+        end
+      }
+
+      context = { names: ["Varied", "Choice", "Subscription"] }
+
+      assert_equal expected.chomp, GraphQL::Schema::Printer.new(schema, context: context, only: only_filter).print_schema
     end
   end
 end

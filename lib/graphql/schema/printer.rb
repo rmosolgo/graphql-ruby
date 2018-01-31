@@ -100,7 +100,7 @@ module GraphQL
           if reason.value == GraphQL::Directive::DEFAULT_DEPRECATION_REASON
             "@deprecated"
           else
-            "@deprecated(reason: \"#{reason.value}\")"
+            "@deprecated(reason: #{reason.value.to_s.inspect})"
           end
         else
           super
