@@ -251,6 +251,31 @@ describe GraphQL::Upgrader::Member do
         }
         assert_equal new, upgrade(old)
       end
+
+      it "fixes argument access: string -> sym, camel -> underscore" do
+        old = %{
+          field :firstName, !types.String do
+            argument :someArg, types.String, default_value: "abc"
+            argument :someArg2, types.String, default_value: "abc"
+            resolve ->(obj, args, ctx) {
+              args["someArg"] if args.key?("someArg")
+              args[:someArg2]
+            }
+          end
+        }
+        new = %{
+          field :first_name, String, null: false do
+            argument :some_arg, String, default_value: "abc", required: false
+            argument :some_arg2, String, default_value: "abc", required: false
+          end
+
+          def first_name(**args)
+            args[:some_arg] if args.key?(:some_arg)
+            args[:some_arg2]
+          end
+        }
+        assert_equal new, upgrade(old)
+      end
     end
 
 

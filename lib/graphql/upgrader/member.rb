@@ -52,6 +52,13 @@ module GraphQL
           type_expr
         end
       end
+
+      def underscorize(str)
+        str
+          .gsub(/([A-Z]+)([A-Z][a-z])/,'\1_\2') # URLDecoder -> URL_Decoder
+          .gsub(/([a-z\d])([A-Z])/,'\1_\2')     # someThing -> some_Thing
+          .downcase
+      end
     end
 
     # Turns `{X} = GraphQL::{Y}Type.define do` into `class {X} < Types::Base{Y}`.
@@ -187,19 +194,12 @@ module GraphQL
     # (They'll be automatically camelized later.)
     class UnderscoreizeFieldNameTransform < Transform
       def apply(input_text)
-        input_text.sub /(?<field_type>input_field|field|connection|argument) :(?<name>[a-zA-Z_0-9_]*)/ do
+        input_text.gsub /(?<field_type>input_field|field|connection|argument) :(?<name>[a-zA-Z_0-9_]*)/ do
           field_type = $~[:field_type]
           camelized_name = $~[:name]
           underscored_name = underscorize(camelized_name)
           "#{field_type} :#{underscored_name}"
         end
-      end
-
-      def underscorize(str)
-        str
-          .gsub(/([A-Z]+)([A-Z][a-z])/,'\1_\2') # URLDecoder -> URL_Decoder
-          .gsub(/([a-z\d])([A-Z])/,'\1_\2')     # someThing -> some_Thing
-          .downcase
       end
     end
 
@@ -215,6 +215,8 @@ module GraphQL
           # - Args is trickier:
           #   - If it's not used, remove it
           #   - If it's used, abandon ship and make it `**args`
+          #   - Convert string args access to symbol access, since it's a Ruby **splat
+          #   - Convert camelized arg names to underscored arg names
           #   - (It would be nice to correctly become Ruby kwargs, but that might be too hard)
           #   - Add a `# TODO` comment to the method source?
           # - Rebuild the method:
@@ -260,6 +262,15 @@ module GraphQL
           lines.unshift("\n#{method_def_indent}#{method_def}")
           lines << "#{method_def_indent}end\n"
           method_body = lines.join("\n")
+          # Update Argument access to be underscore and symbols
+          # Update `args[...]` and `args.key?`
+          method_body = method_body.gsub(/#{args_arg_name}(?<method_begin>\.key\?\(?|\[)["':](?<arg_name>[a-zA-Z0-9_]+)["']?(?<method_end>\]|\))?/) do
+            method_begin = $~[:method_begin]
+            arg_name = underscorize($~[:arg_name])
+            method_end = $~[:method_end]
+            "#{args_arg_name}#{method_begin}:#{arg_name}#{method_end}"
+          end
+
           # Replace the resolve proc with the method
           input_text[processor.resolve_start..processor.resolve_end] = ""
           # The replacement above might have left some preceeding whitespace,
