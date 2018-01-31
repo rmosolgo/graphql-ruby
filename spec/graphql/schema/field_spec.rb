@@ -15,6 +15,14 @@ describe GraphQL::Schema::Field do
       assert_equal 'inspectInput', field.graphql_definition.name
     end
 
+    it "exposes the method override" do
+      assert_nil field.method
+      object = Class.new(Jazz::BaseObject) do
+        field :t, String, method: :tt, null: true
+      end
+      assert_equal :tt, object.fields["t"].method
+    end
+
     it "accepts a block for definition" do
       object = Class.new(Jazz::BaseObject) do
         graphql_name "JustAName"
