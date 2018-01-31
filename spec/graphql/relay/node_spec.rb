@@ -6,6 +6,19 @@ describe GraphQL::Relay::Node do
     it "is a default relay type" do
       assert_equal true, GraphQL::Relay::Node.interface.default_relay?
     end
+
+    it "has a matching description to global_id_field" do
+      node_desc = GraphQL::Relay::Node.interface.fields["id"].description
+      # class API
+      class_global_id_desc = StarWars::Ship.fields["id"].description
+      assert_equal node_desc, class_global_id_desc
+      # .define API
+      defined_global_id_desc = GraphQL::ObjectType.define {
+        name "T"
+        global_id_field :id
+      }.fields["id"].description
+      assert_equal node_desc, defined_global_id_desc
+    end
   end
 
   describe ".field" do
