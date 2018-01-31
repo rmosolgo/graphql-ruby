@@ -16,6 +16,9 @@ module GraphQL
       # @return [Hash{String => GraphQL::Schema::Argument}]
       attr_reader :arguments
 
+      # @return [Symbol]
+      attr_reader :method
+
       def initialize(name, return_type_expr = nil, desc = nil, null: nil, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, connection: nil, max_page_size: nil, resolve: nil, introspection: false, extras: [], &definition_block)
         if !(field || function)
           if return_type_expr.nil?
