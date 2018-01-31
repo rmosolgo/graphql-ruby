@@ -44,10 +44,12 @@ module GraphQL
         @interface ||= GraphQL::InterfaceType.define do
           name("Node")
           description("An object with an ID.")
-          field(:id, !types.ID, "ID of the object.")
+          field(:id, !types.ID, ID_FIELD_DESCRIPTION)
           default_relay(true)
         end
       end
+
+      ID_FIELD_DESCRIPTION = "ID of the object."
 
       # A field resolve for finding objects by IDs
       module FindNodes
