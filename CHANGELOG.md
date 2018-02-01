@@ -8,13 +8,27 @@
 
 ### Bug fixes
 
+## 1.8.0.pre5 (1 Feb 2018)
+
+### Breaking changes
+
+### Deprecations
+
+### New features
+
+- Upgrade argument access with the upgrader #1251
+- Add `Schema#find(str)` for finding schema members by name #1232
+
+### Bug fixes
+
+- Fix `Schema.max_complexity` #1246
+- Support cyclical connections/edges #1253
+
 ## 1.8.0.pre4 (18 Jan 2018)
 
 ### Breaking changes
 
 - `Type.fields`, `Field.arguments`, `Enum.values` and `InputObject.arguments` return a Hash instead of an Array #1222
-
-### Deprecations
 
 ### New features
 
