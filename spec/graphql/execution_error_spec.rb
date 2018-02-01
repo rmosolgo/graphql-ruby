@@ -271,4 +271,22 @@ describe GraphQL::ExecutionError do
       assert_equal(expected_result, result)
     end
   end
+  
+  describe "more than one ExecutionError" do
+    let(:query_string) { %|{ multipleErrorsOnNonNullableField} |}
+    it "the errors are inserted into the errors key and the data is nil even for a NonNullable field " do
+      expected_result = {
+          "data"=>nil,
+          "errors"=>
+              [{"message"=>"This is an error message for some error.",
+                "locations"=>[{"line"=>1, "column"=>3}],
+                "path"=>["multipleErrorsOnNonNullableField", 0]},
+               {"message"=>"This is another error message for a different error.",
+                "locations"=>[{"line"=>1, "column"=>3}],
+                "path"=>["multipleErrorsOnNonNullableField", 1]}]
+      }
+      assert_equal(expected_result, result)
+    end
+  end
+
 end
