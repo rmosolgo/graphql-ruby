@@ -288,13 +288,16 @@ module GraphQL
         private
 
         def serialize_value_for_hash(value)
-          if value.is_a? InputObject
+          case value
+          when InputObject
             value.to_h
-          elsif value.is_a? Array
+          when Array
             value.map do |v|
               serialize_value_for_hash v
             end
-          elsif value.is_a? NullValue
+          when Enum
+            value.name
+          when NullValue
             nil
           else
             value

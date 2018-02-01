@@ -24,12 +24,9 @@ module GraphQL
       # visiting the node itself and each of its typed children.
       def each_node(node)
         yield(node)
-        if node.typed_children.any?
-          visit_block = Proc.new
-          node.typed_children.each do |obj_type, children|
-            children.each do |name, node|
-              each_node(node, &visit_block)
-            end
+        node.typed_children.each do |obj_type, children|
+          children.each do |name, node|
+            each_node(node) { |n| yield(n) }
           end
         end
       end

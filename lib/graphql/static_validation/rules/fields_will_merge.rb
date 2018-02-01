@@ -2,6 +2,9 @@
 module GraphQL
   module StaticValidation
     class FieldsWillMerge
+      # Special handling for fields without arguments
+      NO_ARGS = {}.freeze
+
       def validate(context)
         context.each_irep_node do |node|
           if node.ast_nodes.size > 1
@@ -16,15 +19,19 @@ module GraphQL
 
             # Check for incompatible / non-identical arguments on this node:
             args = node.ast_nodes.map do |n|
-              n.arguments.reduce({}) do |memo, a|
-                arg_value = a.value
-                memo[a.name] = case arg_value
-                when GraphQL::Language::Nodes::AbstractNode
-                  arg_value.to_query_string
-                else
-                  GraphQL::Language.serialize(arg_value)
+              if n.arguments.any?
+                n.arguments.reduce({}) do |memo, a|
+                  arg_value = a.value
+                  memo[a.name] = case arg_value
+                  when GraphQL::Language::Nodes::AbstractNode
+                    arg_value.to_query_string
+                  else
+                    GraphQL::Language.serialize(arg_value)
+                  end
+                  memo
                 end
-                memo
+              else
+                NO_ARGS
               end
             end
             args.uniq!

@@ -193,6 +193,8 @@ module GraphQL
             nil
           when GraphQL::Language::Nodes::InputObject
             default_value.to_h
+          when Array
+            default_value.map { |v| build_default_value(v) }
           else
             default_value
           end
