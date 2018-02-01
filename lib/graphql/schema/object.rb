@@ -58,7 +58,7 @@ module GraphQL
         end
 
         def global_id_field(field_name)
-          field field_name, "ID", GraphQL::Relay::Node::ID_FIELD_DESCRIPTION, null: false, resolve: GraphQL::Relay::GlobalIdResolve.new(type: self)
+          field field_name, "ID", null: false, resolve: GraphQL::Relay::GlobalIdResolve.new(type: self)
         end
       end
     end
