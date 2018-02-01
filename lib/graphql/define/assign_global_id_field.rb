@@ -4,7 +4,11 @@ module GraphQL
     module AssignGlobalIdField
       def self.call(type_defn, field_name)
         resolve = GraphQL::Relay::GlobalIdResolve.new(type: type_defn)
-        GraphQL::Define::AssignObjectField.call(type_defn, field_name, type: GraphQL::ID_TYPE.to_non_null_type, resolve: resolve)
+        GraphQL::Define::AssignObjectField.call(type_defn, field_name,
+          description: GraphQL::Relay::Node::ID_FIELD_DESCRIPTION,
+          type: GraphQL::ID_TYPE.to_non_null_type,
+          resolve: resolve
+        )
       end
     end
   end
