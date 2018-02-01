@@ -8,6 +8,18 @@
 
 ### Bug fixes
 
+## 1.7.9 (1 Feb 2018)
+
+## New Features
+
+- Support block string inputs #1219
+
+## Bug fixes
+
+- Fix deprecation regression in schema printer #1250
+- Fix resource names in DataDog tracing #1208
+- Fix passing `context` to multiplex in `Query#result` #1200
+
 ## 1.7.8 (11 Jan 2018)
 
 ### New features
