@@ -105,7 +105,7 @@ describe GraphQL::Language::Printer do
       end
 
       describe "full featured schema" do
-        # From: https://github.com/graphql/graphql-js/blob/bc96406ab44453a120da25a0bd6e2b0237119ddf/src/language/__tests__/schema-kitchen-sink.graphql
+        # Based on: https://github.com/graphql/graphql-js/blob/bc96406ab44453a120da25a0bd6e2b0237119ddf/src/language/__tests__/schema-kitchen-sink.graphql
         let(:query_string) {<<-schema
           schema {
             query: QueryType
@@ -128,7 +128,7 @@ describe GraphQL::Language::Printer do
           # Scalar description
           scalar CustomScalar
 
-          type AnnotatedObject @onObject(arg: "value") {
+          type AnnotatedObject implements Bar @onObject(arg: "value") {
             annotatedField(arg: Type = "default" @onArg): Type @onField
           }
 
