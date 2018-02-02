@@ -455,7 +455,7 @@ module GraphQL
             remainder.chomp!
 
             if return_type
-              non_nullable = return_type.gsub! '!', ''
+              non_nullable = return_type.sub! /(^|[^\[])!/, '\1'
               nullable = !non_nullable
               return_type = normalize_type_expression(return_type)
               return_type = return_type.gsub ',', ''
@@ -522,11 +522,12 @@ module GraphQL
     end
 
     # Skip this file if you see any `field`
-    # helpers with `null: true` or `null: false` keywords,
+    # helpers with `null: true` or `null: false` keywords
+    # or `argument` helpers with `required:` keywords,
     # because it's already been transformed
     class SkipOnNullKeyword
       def skip?(input_text)
-        input_text =~ /field.*null: (true|false)/
+        input_text =~ /field.*null: (true|false)/ || input_text =~ /argument.*required: (true|false)/
       end
     end
 
