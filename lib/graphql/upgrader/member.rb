@@ -80,6 +80,11 @@ module GraphQL
         end
         lines.join("\n")
       end
+
+      # Remove trailing whitespace
+      def trim_lines(input_text)
+        input_text.gsub(/ +$/, "")
+      end
     end
 
     # Turns `{X} = GraphQL::{Y}Type.define do` into `class {X} < Types::Base{Y}`.
@@ -238,6 +243,7 @@ module GraphQL
           proc_body = input_text[processor.proc_body_start..processor.proc_body_end]
           method_defn_indent = " " * processor.proc_defn_indent
           method_defn = "def self.#{@proc_name}(#{processor.proc_arg_names.join(", ")})\n#{method_defn_indent}  #{proc_body}\n#{method_defn_indent}end\n"
+          method_defn = trim_lines(method_defn)
           # replace the proc with the new method
           input_text[processor.proc_defn_start..processor.proc_defn_end] = method_defn
         end
@@ -400,10 +406,9 @@ module GraphQL
 
     # Transform `interfaces [A, B, C]` to `implements A\nimplements B\nimplements C\n`
     class InterfacesToImplementsTransform < Transform
+      PATTERN = /(?<indent>\s*)(?:interfaces) \[\s*(?<interfaces>(?:[a-zA-Z_0-9:\.,\s]+))\]/m
       def apply(input_text)
-        input_text.gsub(
-          /(?<indent>\s*)(?:interfaces) \[\s*(?<interfaces>(?:[a-zA-Z_0-9:\.,\s]+))\]/m
-        ) do
+        input_text.gsub(PATTERN) do
           indent = $~[:indent]
           interfaces = $~[:interfaces].split(',').map(&:strip).reject(&:empty?)
           # Preserve leading newlines before the `interfaces ...`
@@ -414,6 +419,22 @@ module GraphQL
             .map { |interface| "\n#{indent}implements #{interface}" }
             .join
           extra_leading_newlines + interfaces_calls
+        end
+      end
+    end
+
+    # Transform `possible_types [A, B, C]` to `possible_types(A, B, C)`
+    class PossibleTypesTransform < Transform
+      PATTERN = /(?<indent>\s*)(?:possible_types) \[\s*(?<possible_types>(?:[a-zA-Z_0-9:\.,\s]+))\]/m
+      def apply(input_text)
+        input_text.gsub(PATTERN) do
+          indent = $~[:indent]
+          possible_types = $~[:possible_types].split(',').map(&:strip).reject(&:empty?)
+          extra_leading_newlines = indent[/^\n*/]
+          method_indent = indent.sub(/^\n*/m, "")
+          type_indent = "  " + method_indent
+          possible_types_call = "#{method_indent}possible_types(\n#{possible_types.map { |t| "#{type_indent}#{t},"}.join("\n")}\n#{method_indent})"
+          extra_leading_newlines + trim_lines(possible_types_call)
         end
       end
     end
@@ -522,8 +543,10 @@ module GraphQL
         TypeDefineToClassTransform,
         NameTransform,
         InterfacesToImplementsTransform,
+        PossibleTypesTransform,
         ProcToClassMethodTransform.new("coerce_input"),
         ProcToClassMethodTransform.new("coerce_result"),
+        ProcToClassMethodTransform.new("resolve_type"),
       ]
 
       DEFAULT_FIELD_TRANSFORMS = [
