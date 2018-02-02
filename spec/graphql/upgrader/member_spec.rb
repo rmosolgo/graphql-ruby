@@ -463,6 +463,13 @@ describe GraphQL::Upgrader::Member do
       end
     end
 
+    # Modify the default output to match the custom structure
+    class InputObjectsToInputsTransform < GraphQL::Upgrader::Transform
+      def apply(input_text)
+        input_text.gsub("Platform::InputObjects::", "Platform::Inputs::")
+      end
+    end
+
     def custom_upgrade(original_text)
       # Replace the default one with a custom one:
       type_transforms = GraphQL::Upgrader::Member::DEFAULT_TYPE_TRANSFORMS.map { |t|
@@ -474,7 +481,8 @@ describe GraphQL::Upgrader::Member do
       }
 
       type_transforms.unshift(ActiveRecordTypeToClassTransform)
-      field_transforms = GraphQL::Upgrader::Member::DEFAULT_FIELD_TRANSFORMS
+      type_transforms.push(InputObjectsToInputsTransform)
+      field_transforms = GraphQL::Upgrader::Member::DEFAULT_FIELD_TRANSFORMS.dup
       field_transforms.unshift(GraphQL::Upgrader::ConfigurationToKwargTransform.new(kwarg: "visibility"))
       upgrader = GraphQL::Upgrader::Member.new(original_text, type_transforms: type_transforms, field_transforms: field_transforms)
       upgrader.upgrade
@@ -485,6 +493,7 @@ describe GraphQL::Upgrader::Member do
       transformed_file = original_file.sub(".original.", ".transformed.")
       original_text = File.read(original_file)
       expected_text = File.read(transformed_file)
+
       it "transforms #{original_file} -> #{transformed_file}" do
         transformed_text = custom_upgrade(original_text)
         assert_equal(expected_text, transformed_text)
