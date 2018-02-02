@@ -22,6 +22,7 @@ require "graphql/schema/build_from_definition"
 
 require "graphql/schema/member"
 require "graphql/schema/argument"
+require "graphql/schema/enum_value"
 require "graphql/schema/enum"
 require "graphql/schema/field"
 require "graphql/schema/input_object"
