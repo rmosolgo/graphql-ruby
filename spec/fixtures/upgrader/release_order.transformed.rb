@@ -5,7 +5,7 @@ module Platform
     class ReleaseOrder < Platform::Inputs::Base
       description "Ways in which lists of releases can be ordered upon return."
 
-      argument :field, [Enums::ReleaseOrderField], <<~MD, required: false
+      argument :field, [Enums::ReleaseOrderField], <<-MD, required: false
         The field in which to order releases by.
       MD
       argument :direction, Enums::OrderDirection, "The direction in which to order releases by the specified field.", required: true
