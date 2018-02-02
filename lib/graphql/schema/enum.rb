@@ -20,9 +20,6 @@ module GraphQL
   #   end
   class Schema
     class Enum < GraphQL::Schema::Member
-      # @api private
-      Value = Struct.new(:name, :description, :value, :deprecation_reason)
-
       class << self
         # Define a value for this enum
         # @param graphql_name [String, Symbol] the GraphQL value for this, usually `SCREAMING_CASE`
@@ -30,10 +27,10 @@ module GraphQL
         # @param value [Object], the translated Ruby value for this object (defaults to `graphql_name`)
         # @param deprecation_reason [String] if this object is deprecated, include a message here
         # @return [void]
-        def value(graphql_name, description = nil, value: nil, deprecation_reason: nil)
-          graphql_name = graphql_name.to_s
-          value ||= graphql_name
-          own_values[graphql_name] = Value.new(graphql_name, description, value, deprecation_reason)
+        # @see {Schema::EnumValue} which handles these inputs by default
+        def value(*args, &block)
+          value = enum_value_class.new(*args, &block)
+          own_values[value.graphql_name] = value
           nil
         end
 
@@ -51,14 +48,17 @@ module GraphQL
           enum_type.description = description
           enum_type.introspection = introspection
           values.each do |name, val|
-            enum_value = GraphQL::EnumType::EnumValue.new
-            enum_value.name = val.name
-            enum_value.description = val.description
-            enum_value.value = val.value
-            enum_value.deprecation_reason = val.deprecation_reason
-            enum_type.add_value(enum_value)
+            enum_type.add_value(val.to_graphql)
           end
           enum_type
+        end
+
+        # @return [Class] for handling `value(...)` inputs and building `GraphQL::Enum::EnumValue`s out of them
+        def enum_value_class(new_enum_value_class = nil)
+          if new_enum_value_class
+            @enum_value_class = new_enum_value_class
+          end
+          @enum_value_class || (superclass <= GraphQL::Schema::Enum ? superclass.enum_value_class : nil)
         end
 
         private
@@ -67,6 +67,8 @@ module GraphQL
           @own_values ||= {}
         end
       end
+
+      enum_value_class(GraphQL::Schema::EnumValue)
     end
   end
 end
