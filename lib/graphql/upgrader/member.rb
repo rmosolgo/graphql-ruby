@@ -59,6 +59,27 @@ module GraphQL
           .gsub(/([a-z\d])([A-Z])/,'\1_\2')     # someThing -> some_Thing
           .downcase
       end
+
+      def apply_processor(input_text, processor)
+        ruby_ast = Parser::CurrentRuby.parse(input_text)
+        processor.process(ruby_ast)
+        processor
+      rescue Parser::SyntaxError
+        puts "Error text:"
+        puts input_text
+        raise
+      end
+
+      def reindent_lines(input_text, from_indent:, to_indent:)
+        prev_indent = " " * from_indent
+        next_indent = " " * to_indent
+        # For each line, remove the previous indent, then add the new indent
+        lines = input_text.split("\n").map do |line|
+          line = line.sub(prev_indent, "")
+          "#{next_indent}#{line}".rstrip
+        end
+        lines.join("\n")
+      end
     end
 
     # Turns `{X} = GraphQL::{Y}Type.define do` into `class {X} < Types::Base{Y}`.
@@ -203,6 +224,74 @@ module GraphQL
       end
     end
 
+    class ProcToClassMethodTransform < Transform
+      # @param proc_name [String] The name of the proc to be moved to `def self.#{proc_name}`
+      def initialize(proc_name)
+        @proc_name = proc_name
+        # This will tell us whether to operate on the input or not
+        @proc_check_pattern = /#{proc_name}\s?->/
+      end
+
+      def apply(input_text)
+        if input_text =~ @proc_check_pattern
+          processor = apply_processor(input_text, NamedProcProcessor.new(@proc_name))
+          proc_body = input_text[processor.proc_body_start..processor.proc_body_end]
+          method_defn_indent = " " * processor.proc_defn_indent
+          method_defn = "def self.#{@proc_name}(#{processor.proc_arg_names.join(", ")})\n#{method_defn_indent}  #{proc_body}\n#{method_defn_indent}end\n"
+          # replace the proc with the new method
+          input_text[processor.proc_defn_start..processor.proc_defn_end] = method_defn
+        end
+        input_text
+      end
+
+      class NamedProcProcessor < Parser::AST::Processor
+        attr_reader :proc_arg_names, :proc_defn_start, :proc_defn_end, :proc_defn_indent, :proc_body_start, :proc_body_end
+        def initialize(proc_name)
+          @proc_name_sym = proc_name.to_sym
+          @proc_arg_names = nil
+          # Beginning of the `#{proc_name} -> {...}` call
+          @proc_defn_start = nil
+          # End of the last `end/}`
+          @proc_defn_end = nil
+          # Amount of whitespace to insert to the rewritten body
+          @proc_defn_indent = nil
+          # First statement of the proc
+          @proc_body_start = nil
+          # End of last statement in the proc
+          @proc_body_end = nil
+          # Used for identifying the proper block
+          @inside_proc = false
+        end
+
+        def on_send(node)
+          receiver, method_name, _args = *node
+          if method_name == @proc_name_sym && receiver.nil?
+            source_exp = node.loc.expression
+            @proc_defn_start = source_exp.begin.begin_pos
+            @proc_defn_end = source_exp.end.end_pos
+            @proc_defn_indent = source_exp.column
+            @inside_proc = true
+          end
+          res = super(node)
+          @inside_proc = false
+          res
+        end
+
+        def on_block(node)
+          send_node, args_node, body_node = node.children
+          _receiver, method_name, _send_args_node = *send_node
+          if method_name == :lambda && @inside_proc
+            source_exp = body_node.loc.expression
+            @proc_arg_names = args_node.children.map { |arg_node| arg_node.children[0].to_s }
+            @proc_body_start = source_exp.begin.begin_pos
+            @proc_body_end = source_exp.end.end_pos
+          end
+          super(node)
+        end
+      end
+    end
+
+
     class ResolveProcToMethodTransform < Transform
       def apply(input_text)
         if input_text =~ /resolve ->/
@@ -226,15 +315,7 @@ module GraphQL
 
           input_text.match(/(?<field_type>input_field|field|connection|argument) :(?<name>[a-zA-Z_0-9_]*)/)
           field_name = $~[:name]
-          begin
-            field_ast = Parser::CurrentRuby.parse(input_text)
-          rescue Parser::SyntaxError
-            puts "Error text:"
-            puts input_text
-            raise
-          end
-          processor = ResolveProcProcessor.new
-          processor.process(field_ast)
+          processor = apply_processor(input_text, ResolveProcProcessor.new)
           proc_body = input_text[processor.proc_start..processor.proc_end]
           obj_arg_name, args_arg_name, ctx_arg_name = processor.proc_arg_names
           # This is not good, it will hit false positives
@@ -242,15 +323,9 @@ module GraphQL
           proc_body.gsub!(/([^\w:]|^)#{obj_arg_name}([^\w]|$)/, '\1@object\2')
           proc_body.gsub!(/([^\w:]|^)#{ctx_arg_name}([^\w]|$)/, '\1@context\2')
 
-          indent = " " * processor.resolve_indent
-          prev_body_indent = "#{indent}  "
-          next_body_indent = indent
-          method_def_indent = indent[2..-1]
+          method_def_indent = " " * (processor.resolve_indent - 2)
           # Turn the proc body into a method body
-          lines = proc_body.split("\n").map do |line|
-            line = line.sub(prev_body_indent, "")
-            "#{next_body_indent}#{line}".rstrip
-          end
+          method_body = reindent_lines(proc_body, from_indent: processor.resolve_indent + 2, to_indent: processor.resolve_indent)
           # Add `def... end`
           method_def = if input_text.include?("argument ")
             # This field has arguments
@@ -259,9 +334,8 @@ module GraphQL
             # No field arguments, so, no method arguments
             "def #{field_name}"
           end
-          lines.unshift("\n#{method_def_indent}#{method_def}")
-          lines << "#{method_def_indent}end\n"
-          method_body = lines.join("\n")
+          # Wrap the body in def ... end
+          method_body = "\n#{method_def_indent}#{method_def}\n#{method_body}\n#{method_def_indent}end\n"
           # Update Argument access to be underscore and symbols
           # Update `args[...]` and `args.key?`
           method_body = method_body.gsub(/#{args_arg_name}(?<method_begin>\.key\?\(?|\[)["':](?<arg_name>[a-zA-Z0-9_]+)["']?(?<method_end>\]|\))?/) do
@@ -287,7 +361,6 @@ module GraphQL
           input_text
         end
       end
-
 
       class ResolveProcProcessor < Parser::AST::Processor
         attr_reader :proc_start, :proc_end, :proc_arg_names, :resolve_start, :resolve_end, :resolve_indent
@@ -449,6 +522,8 @@ module GraphQL
         TypeDefineToClassTransform,
         NameTransform,
         InterfacesToImplementsTransform,
+        ProcToClassMethodTransform.new("coerce_input"),
+        ProcToClassMethodTransform.new("coerce_result"),
       ]
 
       DEFAULT_FIELD_TRANSFORMS = [
