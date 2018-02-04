@@ -7,7 +7,7 @@ desc: Build and customize Relay-style connection types
 index: 1
 ---
 
-Relay expresses [one-to-many relationships with _connections_](https://facebook.github.io/relay/docs/graphql-connections.html). Connections support pagination, filtering and metadata in a robust way.
+Relay expresses [one-to-many relationships with _connections_](https://facebook.github.io/relay/graphql/connections.htm). Connections support pagination, filtering and metadata in a robust way.
 
 `graphql-ruby` includes built-in connection support for `Array`, `ActiveRecord::Relation`s, and `Sequel::Dataset`s. You can define custom connection classes to expose other collections with GraphQL.
 
