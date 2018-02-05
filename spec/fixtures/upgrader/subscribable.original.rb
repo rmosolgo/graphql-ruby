@@ -48,6 +48,7 @@ module Platform
       end
 
       connection :issues, function: Platform::Functions::Issues.new, description: "A list of issues associated with the milestone."
+      connection :files, -> { !Connections.define(PackageFile) }, description: "List of files associated with this registry package version"
     end
   end
 end
