@@ -24,6 +24,10 @@ describe GraphQL::Schema::Enum do
       perc_value = new_enum.values["PERCUSSION"]
       assert_equal "new description", perc_value.description
     end
+
+    it "accepts a block" do
+      assert_equal "Neither here nor there, really", enum.values["KEYS"].description
+    end
   end
 
   it "uses a custom enum value class" do
