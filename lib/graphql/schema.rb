@@ -624,19 +624,32 @@ module GraphQL
 
     class << self
       extend GraphQL::Delegate
-      def_delegators :graphql_definition, :as_json, :to_json
-
-      def method_missing(method_name, *args, &block)
-        if graphql_definition.respond_to?(method_name)
-          graphql_definition.public_send(method_name, *args, &block)
-        else
-          super
-        end
-      end
-
-      def respond_to_missing?(method_name, incl_private = false)
-        graphql_definition.respond_to?(method_name, incl_private) || super
-      end
+      # For compatibility, these methods all:
+      # - Cause the Schema instance to be created, if it hasn't been created yet
+      # - Delegate to that instance
+      # Eventually, the methods will be moved into this class, removing the need for the singleton.
+      def_delegators :graphql_definition,
+        # Schema structure
+        :as_json, :to_json, :to_document, :to_definition,
+        # Execution
+        :execute, :multiplex,
+        :static_validator, :introspection_system,
+        :query_analyzers, :middleware, :tracers, :instrumenters,
+        :query_execution_strategy, :mutation_execution_strategy, :subscription_execution_strategy,
+        :validate, :multiplex_analyzers, :lazy?,
+        # Configuration
+        :max_complexity=, :max_depth=,
+        :metadata,
+        :default_filter, :redefine,
+        :id_from_object_proc, :object_from_id_proc,
+        :id_from_object=, :object_from_id=, :type_error,
+        :remove_handler,
+        # Members
+        :types, :get_fields, :find,
+        :root_type_for_operation,
+        :union_memberships,
+        :get_field, :root_types, :references_to, :type_from_ast,
+        :possible_types, :get_field
 
       def graphql_definition
         @graphql_definition ||= to_graphql
@@ -668,7 +681,7 @@ module GraphQL
         schema_defn.object_from_id = method(:object_from_id)
         schema_defn.id_from_object = method(:id_from_object)
         schema_defn.context_class = context_class
-        instrumenters.each do |step, insts|
+        defined_instrumenters.each do |step, insts|
           insts.each do |inst|
             schema_defn.instrumenters[step] << inst
           end
@@ -677,6 +690,12 @@ module GraphQL
         lazy_classes.each do |lazy_class, value_method|
           schema_defn.lazy_methods.set(lazy_class, value_method)
         end
+        if @rescues
+          @rescues.each do |err_class, handler|
+            schema_defn.rescue_from(err_class, &handler)
+          end
+        end
+
         if plugins.any?
           schema_plugins = plugins
           # TODO don't depend on .define
@@ -775,6 +794,11 @@ module GraphQL
         end
       end
 
+      def rescue_from(err_class, &handler_block)
+        @rescues ||= {}
+        @rescues[err_class] = handler_block
+      end
+
       def resolve_type(type, obj, ctx)
         raise NotImplementedError, "#{self.name}.resolve_type(type, obj, ctx) must be implemented to use Union types or Interface types (tried to resolve: #{type.name})"
       end
@@ -797,7 +821,7 @@ module GraphQL
         else
           instrument_step
         end
-        instrumenters[step] << instrumenter
+        defined_instrumenters[step] << instrumenter
       end
 
       def directives(new_directives = nil)
@@ -813,8 +837,8 @@ module GraphQL
         @lazy_classes ||= {}
       end
 
-      def instrumenters
-        @instrumenters ||= Hash.new { |h,k| h[k] = [] }
+      def defined_instrumenters
+        @defined_instrumenters ||= Hash.new { |h,k| h[k] = [] }
       end
     end
 
