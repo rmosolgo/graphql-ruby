@@ -104,6 +104,22 @@ module Jazz
     field_class BaseField
   end
 
+  class BaseEnumValue < GraphQL::Schema::EnumValue
+    def initialize(*args, custom_setting: nil, **kwargs, &block)
+      @custom_setting = custom_setting
+      super(*args, **kwargs, &block)
+    end
+
+    def to_graphql
+      enum_value_defn = super
+      enum_value_defn.metadata[:custom_setting] = @custom_setting
+      enum_value_defn
+    end
+  end
+
+  class BaseEnum < GraphQL::Schema::Enum
+    enum_value_class BaseEnumValue
+  end
 
   # Some arbitrary global ID scheme
   # *Type suffix is removed automatically
@@ -154,10 +170,10 @@ module Jazz
     field :musicians, "[Jazz::Musician]", null: false
   end
 
-  class Family < GraphQL::Schema::Enum
+  class Family < BaseEnum
     description "Groups of musical instruments"
     # support string and symbol
-    value "STRING", "Makes a sound by vibrating strings", value: :str
+    value "STRING", "Makes a sound by vibrating strings", value: :str, custom_setting: 1
     value :WOODWIND, "Makes a sound by vibrating air in a pipe"
     value :BRASS, "Makes a sound by amplifying the sound of buzzing lips"
     value "PERCUSSION", "Makes a sound by hitting something that vibrates"
