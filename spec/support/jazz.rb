@@ -177,8 +177,10 @@ module Jazz
     value :WOODWIND, "Makes a sound by vibrating air in a pipe"
     value :BRASS, "Makes a sound by amplifying the sound of buzzing lips"
     value "PERCUSSION", "Makes a sound by hitting something that vibrates"
-    value "KEYS", "Neither here nor there, really"
     value "DIDGERIDOO", "Makes a sound by amplifying the sound of buzzing lips", deprecation_reason: "Merged into BRASS"
+    value "KEYS" do
+      description "Neither here nor there, really"
+    end
   end
 
   # Lives side-by-side with an old-style definition
