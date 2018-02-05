@@ -28,11 +28,14 @@ module GraphQL
     class EnumValue < GraphQL::Schema::Member
       attr_reader :graphql_name
 
-      def initialize(graphql_name, desc = nil, description: nil, value: nil, deprecation_reason: nil)
+      def initialize(graphql_name, desc = nil, description: nil, value: nil, deprecation_reason: nil, &block)
         @graphql_name = graphql_name.to_s
         @description = desc || description
         @value = value || @graphql_name
         @deprecation_reason = deprecation_reason
+        if block_given?
+          instance_eval(&block)
+        end
       end
 
       def description(new_desc = nil)
