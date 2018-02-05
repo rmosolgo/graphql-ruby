@@ -442,7 +442,7 @@ module GraphQL
     class UpdateMethodSignatureTransform < Transform
       def apply(input_text)
         input_text.scan(/(?:input_field|field|connection|argument) .*$/).each do |field|
-          matches = /(?<field_type>input_field|field|connection|argument) :(?<name>[a-zA-Z_0-9_]*)?, (?<return_type>([A-Za-z\[\]\.\!_0-9]|::|-> ?\{ ?| ?\})+)(?<remainder>( |,|$).*)/.match(field)
+          matches = /(?<field_type>input_field|field|connection|argument) :(?<name>[a-zA-Z_0-9_]*)?(:?, (?<return_type>([A-Za-z\[\]\.\!_0-9]|::|-> ?\{ ?| ?\})+))?(?<remainder>( |,|$).*)/.match(field)
           if matches
             name = matches[:name]
             return_type = matches[:return_type]
@@ -466,7 +466,11 @@ module GraphQL
 
             input_text.sub!(field) do
               is_argument = ['argument', 'input_field'].include?(field_type)
-              f = "#{is_argument ? 'argument' : 'field'} :#{name}, #{return_type}"
+              f = "#{is_argument ? 'argument' : 'field'} :#{name}"
+
+              if return_type
+                f += ", #{return_type}"
+              end
 
               unless remainder.empty?
                 f += ',' + remainder
