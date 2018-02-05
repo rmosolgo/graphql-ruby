@@ -46,6 +46,8 @@ module Platform
           subscribable.async_subscription_status(context[:viewer]).then(&:success?)
         end
       end
+
+      connection :issues, function: Platform::Functions::Issues.new, description: "A list of issues associated with the milestone."
     end
   end
 end
