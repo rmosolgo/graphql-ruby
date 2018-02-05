@@ -10,9 +10,15 @@
 
 ## 1.8.0.pre5 (1 Feb 2018)
 
-### Breaking changes
+### New features
 
-### Deprecations
+- Custom enum value classes #1264
+
+### Bug fixes
+
+- Properly print SDL type directives #1255
+
+## 1.8.0.pre5 (1 Feb 2018)
 
 ### New features
 
