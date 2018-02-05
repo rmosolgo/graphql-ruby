@@ -200,7 +200,7 @@ module GraphQL
     class RemoveRedundantKwargTransform < Transform
       def initialize(kwarg:)
         @kwarg = kwarg
-        @finder_pattern = /(field|connection|argument) :(?<name>[a-zA-Z_0-9]*).*#{@kwarg}: ['":](?<kwarg_value>[a-zA-Z_0-9]+)['"]?/
+        @finder_pattern = /(field|connection|argument) :(?<name>[a-zA-Z_0-9]*).*#{@kwarg}: ['":](?<kwarg_value>[a-zA-Z_0-9?!]+)['"]?/
       end
 
       def apply(input_text)
