@@ -15,6 +15,7 @@ module GraphQL
         def none?; true; end
         def [](key); CHILDREN; end
         def each; end
+
         # Compatibility for when this was an Array:
         def method_missing(method_name, *args, &block)
           if CHILDREN.respond_to?(method_name)
