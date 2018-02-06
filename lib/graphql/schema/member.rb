@@ -38,22 +38,6 @@ module GraphQL
       class << self
         include CachedGraphQLDefinition
         include GraphQL::Relay::TypeExtensions
-        # Delegate to the derived type definition if possible.
-        # This is tricky because missing methods cause the definition to be built & cached.
-        def method_missing(method_name, *args, &block)
-          if graphql_definition.respond_to?(method_name)
-            graphql_definition.public_send(method_name, *args, &block)
-          else
-            super
-          end
-        end
-
-        # Check if the derived type definition responds to the method
-        # @return [Boolean]
-        def respond_to_missing?(method_name, incl_private = false)
-          graphql_definition.respond_to?(method_name, incl_private) || super
-        end
-
         # Call this with a new name to override the default name for this schema member; OR
         # call it without an argument to get the name of this schema member
         #
