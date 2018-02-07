@@ -59,9 +59,9 @@ module GraphQL
         def test_it_rejects_empty_inline_fragments
           assert_raises_parse_error("
             query {
-              viewer{
-                login{
-                  ... on String{
+              viewer {
+                login {
+                  ... on String {
 
                   }
                 }

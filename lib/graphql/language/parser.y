@@ -82,8 +82,7 @@ rule
     | EQUALS literal_value  { return val[1] }
 
   selection_set:
-      LCURLY RCURLY                { return [] }
-    | LCURLY selection_list RCURLY { return val[1] }
+      LCURLY selection_list RCURLY { return val[1] }
 
   selection_set_opt:
       /* none */    { return [] }
