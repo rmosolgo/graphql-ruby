@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+## 1.6.4 (7 Feb 2018)
+
+### Bug Fix
+
+- Support `CASE ... END` in stable cursors
+
 ## 1.6.3 (26 Jan 2018)
 
 ### Bug Fix
