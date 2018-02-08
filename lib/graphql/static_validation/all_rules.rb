@@ -33,5 +33,9 @@ module GraphQL
       GraphQL::StaticValidation::SubscriptionRootExists,
       GraphQL::StaticValidation::OperationNamesAreValid,
     ]
+
+    OPTIONAL_RULES = [
+      GraphQL::StaticValidation::NoDeprecatedFields
+    ]
   end
 end
