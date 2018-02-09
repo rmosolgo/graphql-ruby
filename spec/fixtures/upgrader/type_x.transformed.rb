@@ -39,6 +39,7 @@ module Platform
 
       field :f7, field: SomeField
       field :f8, function: SomeFunction
+      field :f9, [Objects::O2, null: true], null: true
     end
   end
 end

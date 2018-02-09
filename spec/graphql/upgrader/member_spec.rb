@@ -300,12 +300,12 @@ describe GraphQL::Upgrader::Member do
       new = %{field :name, Name.connection_type, "names", null: false, connection: true}
       assert_equal new, upgrade(old)
 
-      old = %{field :names, types[types.String]}
+      old = %{field :names, types[!types.String]}
       new = %{field :names, [String], null: true}
       assert_equal new, upgrade(old)
 
       old = %{field :names, !types[types.String]}
-      new = %{field :names, [String], null: false}
+      new = %{field :names, [String, null: true], null: false}
       assert_equal new, upgrade(old)
 
       old = %{
