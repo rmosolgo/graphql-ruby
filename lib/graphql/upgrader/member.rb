@@ -19,11 +19,11 @@ module GraphQL
 
       # Recursively transform a `.define`-DSL-based type expression into a class-ready expression, for example:
       #
-      # - `types[X]` -> `[X]`
+      # - `types[X]` -> `[X, null: true]`
       # - `Int` -> `Integer`
       # - `X!` -> `X`
       #
-      # Notice that `!` is removed entirely, because it doesn't exist in the class API.
+      # Notice that `!` is removed sometimes, because it doesn't exist in the class API.
       #
       # @param type_expr [String] A `.define`-ready expression of a return type or input type
       # @return [String] A class-ready expression of the same type`
@@ -34,7 +34,15 @@ module GraphQL
           "#{preserve_bang ? "!" : ""}#{normalize_type_expression(type_expr[1..-1], preserve_bang: preserve_bang)}"
         when /\Atypes\[.*\]\Z/
           # Unwrap the brackets, normalize, then re-wrap
-          "[#{normalize_type_expression(type_expr[6..-2], preserve_bang: preserve_bang)}]"
+          inner_type = type_expr[6..-2]
+          if inner_type.start_with?("!")
+            nullable = false
+            inner_type = inner_type[1..-1]
+          else
+            nullable = true
+          end
+
+          "[#{normalize_type_expression(inner_type, preserve_bang: preserve_bang)}#{nullable ? ", null: true" : ""}]"
         when /\Atypes\./
           # Remove the prefix
           normalize_type_expression(type_expr[6..-1], preserve_bang: preserve_bang)
@@ -458,7 +466,6 @@ module GraphQL
               non_nullable = return_type.sub! /(^|[^\[])!/, '\1'
               nullable = !non_nullable
               return_type = normalize_type_expression(return_type)
-              return_type = return_type.gsub ',', ''
             else
               non_nullable = nil
               nullable = nil
