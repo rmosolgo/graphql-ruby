@@ -12,11 +12,6 @@ describe GraphQL::StaticValidation::FragmentsAreOnCompositeTypes do
           ... on Boolean {
             something
           }
-          flavor {
-            ... on String {
-              __typename
-            }
-          }
         }
         ... intFields
         ... on DairyProduct {
