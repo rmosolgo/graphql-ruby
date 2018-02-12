@@ -49,6 +49,8 @@ module Platform
       field :f7, field: SomeField
       field :f8, function: SomeFunction
       field :f9, types[Objects::O2]
+      field :fieldField, types.String, hash_key: "fieldField"
+      field :fieldField2, types.String, property: :field_field2
     end
   end
 end

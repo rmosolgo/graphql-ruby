@@ -11,7 +11,6 @@ module GraphQL
 
     class Transform
       # @param input_text [String] Untransformed GraphQL-Ruby code
-      # @param rewrite_options [Hash] Used during rewrite
       # @return [String] The input text, with a transformation applied if necessary
       def apply(input_text)
         raise NotImplementedError, "Return transformed text here"
@@ -569,11 +568,11 @@ module GraphQL
         ConfigurationToKwargTransform.new(kwarg: "deprecation_reason"),
         ConfigurationToKwargTransform.new(kwarg: "hash_key"),
         PropertyToMethodTransform,
-        RemoveRedundantKwargTransform.new(kwarg: "hash_key"),
-        RemoveRedundantKwargTransform.new(kwarg: "method"),
         UnderscoreizeFieldNameTransform,
         ResolveProcToMethodTransform,
         UpdateMethodSignatureTransform,
+        RemoveRedundantKwargTransform.new(kwarg: "hash_key"),
+        RemoveRedundantKwargTransform.new(kwarg: "method"),
       ]
 
       DEFAULT_CLEAN_UP_TRANSFORMS = [
