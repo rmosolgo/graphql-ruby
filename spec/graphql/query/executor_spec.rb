@@ -188,7 +188,8 @@ describe GraphQL::Query::Executor do
 
     describe "if the schema has a rescue handler" do
       before do
-        schema.rescue_from(RuntimeError) { "Error was handled!" }
+        # HACK: reach to the underlying instance to perform a side-effect
+        schema.graphql_definition.rescue_from(RuntimeError) { "Error was handled!" }
       end
 
       after do
