@@ -19,7 +19,7 @@ module GraphQL
       # @return [Symbol]
       attr_reader :method
 
-      def initialize(name, return_type_expr = nil, desc = nil, null: nil, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, connection: nil, max_page_size: nil, resolve: nil, introspection: false, extras: [], &definition_block)
+      def initialize(name, return_type_expr = nil, desc = nil, null: nil, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, connection: nil, max_page_size: nil, resolve: nil, introspection: false, hash_key: nil, extras: [], &definition_block)
         if !(field || function)
           if return_type_expr.nil?
             raise ArgumentError, "missing positional argument `type`"
@@ -40,7 +40,11 @@ module GraphQL
         @function = function
         @resolve = resolve
         @deprecation_reason = deprecation_reason
+        if method && hash_key
+          raise ArgumentError, "Provide `method:` _or_ `hash_key:`, not both. (called with: `method: #{method.inspect}, hash_key: #{hash_key.inspect}`)"
+        end
         @method = method
+        @hash_key = hash_key
         @return_type_expr = return_type_expr
         @return_type_null = null
         @connection = connection
@@ -70,7 +74,7 @@ module GraphQL
 
       # @return [GraphQL::Field]
       def to_graphql
-        method_name = @method || Member::BuildType.underscore(@name)
+        method_name = @method || @hash_key || Member::BuildType.underscore(@name)
 
         field_defn = if @field
           @field.dup
