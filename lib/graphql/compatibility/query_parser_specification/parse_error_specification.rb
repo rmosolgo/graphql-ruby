@@ -56,6 +56,20 @@ module GraphQL
           assert_raises_parse_error(%|{ field(arg:"\\uXXXF") }|)
         end
 
+        def test_it_rejects_empty_inline_fragments
+          assert_raises_parse_error("
+            query {
+              viewer {
+                login {
+                  ... on String {
+
+                  }
+                }
+              }
+            }
+          ")
+        end
+
         def assert_empty_document(query_string)
           doc = parse(query_string)
           assert_equal 0, doc.definitions.length

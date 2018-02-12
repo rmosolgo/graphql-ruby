@@ -24,7 +24,11 @@ module GraphQL
         msg = if resolved_type.nil?
           nil
         elsif resolved_type.kind.scalar? && ast_node.selections.any?
-          "Selections can't be made on scalars (%{node_name} returns #{resolved_type.name} but has selections [#{ast_node.selections.map(&:name).join(", ")}])"
+          if ast_node.selections.first.is_a?(GraphQL::Language::Nodes::InlineFragment)
+            "Selections can't be made on scalars (%{node_name} returns #{resolved_type.name} but has inline fragments [#{ast_node.selections.map(&:type).map(&:name).join(", ")}])"
+          else
+            "Selections can't be made on scalars (%{node_name} returns #{resolved_type.name} but has selections [#{ast_node.selections.map(&:name).join(", ")}])"
+          end
         elsif resolved_type.kind.object? && ast_node.selections.none?
           "Objects must have selections (%{node_name} returns #{resolved_type.name} but has no selections)"
         else
