@@ -168,6 +168,7 @@ module Jazz
     # Test string type names:
     field :name, "String", null: false
     field :musicians, "[Jazz::Musician]", null: false
+    field :formed_at, String, null: true, hash_key: "formedAtDate"
   end
 
   class Family < BaseEnum
@@ -347,6 +348,7 @@ module Jazz
           "musicians" => [
             OpenStruct.new(name: "Jerry Garcia"),
           ],
+          "formedAtDate" => "May 5, 1965",
       }
     end
   end

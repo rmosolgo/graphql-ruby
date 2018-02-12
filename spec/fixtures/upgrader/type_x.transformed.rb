@@ -39,6 +39,9 @@ module Platform
 
       field :f7, field: SomeField
       field :f8, function: SomeFunction
+      field :f9, [Objects::O2, null: true], null: true
+      field :field_field, String, hash_key: "fieldField", null: true
+      field :field_field2, String, null: true
     end
   end
 end
