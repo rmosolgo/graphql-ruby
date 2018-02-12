@@ -7,7 +7,7 @@ describe GraphQL::Schema::Object do
     it "tells type data" do
       assert_equal "Ensemble", object_class.graphql_name
       assert_equal "A group of musicians playing together", object_class.description
-      assert_equal 5, object_class.fields.size
+      assert_equal 6, object_class.fields.size
       assert_equal 2, object_class.interfaces.size
       # Compatibility methods are delegated to the underlying BaseType
       assert object_class.respond_to?(:connection_type)
@@ -20,7 +20,7 @@ describe GraphQL::Schema::Object do
       end
 
       # one more than the parent class
-      assert_equal 6, new_object_class.fields.size
+      assert_equal 7, new_object_class.fields.size
       # inherited interfaces are present
       assert_equal 2, new_object_class.interfaces.size
       # The new field is present
@@ -49,6 +49,7 @@ describe GraphQL::Schema::Object do
         hashyEnsemble {
           name
           musicians { name }
+          formedAt
         }
       }
       GRAPHQL
@@ -56,6 +57,7 @@ describe GraphQL::Schema::Object do
       ensemble = res["data"]["hashyEnsemble"]
       assert_equal "The Grateful Dead", ensemble["name"]
       assert_equal ["Jerry Garcia"], ensemble["musicians"].map { |m| m["name"] }
+      assert_equal "May 5, 1965", ensemble["formedAt"]
     end
   end
 
@@ -64,7 +66,7 @@ describe GraphQL::Schema::Object do
     it "returns a matching GraphQL::ObjectType" do
       assert_equal "Ensemble", obj_type.name
       assert_equal "A group of musicians playing together", obj_type.description
-      assert_equal 5, obj_type.all_fields.size
+      assert_equal 6, obj_type.all_fields.size
 
       name_field = obj_type.all_fields[2]
       assert_equal "name", name_field.name
