@@ -4,7 +4,7 @@ search: true
 section: Type Definitions
 title: Enums
 desc: Enums are sets of discrete values
-index: 1
+index: 2
 experimental: true
 ---
 
