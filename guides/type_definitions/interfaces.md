@@ -55,7 +55,7 @@ customers(first: 5) {
 
 This means, "if the customer is an `Individual`, also get the customer's company name".
 
-Interfaces are a good choice whenever a set of objects are used interchangeably, and they share several significant fields in common. When they don't have fields in common, use a {% internal_link "Union", "/type_definitions/unions.md" %} instead.
+Interfaces are a good choice whenever a set of objects are used interchangeably, and they share several significant fields in common. When they don't have fields in common, use a {% internal_link "Union", "/type_definitions/unions" %} instead.
 
 ## Defining Interface Types
 
