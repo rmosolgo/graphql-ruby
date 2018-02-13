@@ -29,9 +29,11 @@ module GraphQL
       # @example
       #   field :isDraft, Boolean, null: false
       #   field :id, ID, null: false
+      #   field :score, Int, null: false
       module GraphQLTypeNames
         Boolean = "Boolean"
         ID = "ID"
+        Int = "Int"
       end
 
       include GraphQLTypeNames
