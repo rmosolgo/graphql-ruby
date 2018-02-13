@@ -8,7 +8,17 @@
 
 ### Bug fixes
 
-## 1.7.10 (1 Feb 2018)
+## 1.7.11 (13 Feb 2018)
+
+### Bug fixes
+
+- Fix compatibility of `irep_node.typed_children` on leaf nodes #1277
+
+## 1.7.10 (13 Feb 2018)
+
+### Breaking Changes
+
+- Empty selections (`{ }`) are invalid in the GraphQL spec, but were previously allowed by graphql-ruby. They now return a parse error. #1268
 
 ### Bug fixes
 
