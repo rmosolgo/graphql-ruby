@@ -6,8 +6,9 @@ module GraphQL
       DEFAULT_TYPED_CHILDREN = Proc.new { |h, k| h[k] = {} }
 
       # A specialized, reusable object for leaf nodes.
-      NO_TYPED_CHILDREN = Hash.new([].freeze).freeze
+      NO_TYPED_CHILDREN = Hash.new([].freeze)
       def NO_TYPED_CHILDREN.dup; self; end;
+      NO_TYPED_CHILDREN.freeze
 
       # @return [String] the name this node has in the response
       attr_reader :name
