@@ -5,7 +5,7 @@ section: Type Definitions
 title: Unions
 desc: Unions are sets of types which may appear in the same place (but don't share fields).
 index: 5
-experimental: true
+class_based_api: true
 ---
 
 A union type is a set of object types which may appear in the same spot. Here's a union, expressed in GraphQL Schema Definition Language (SDL):
