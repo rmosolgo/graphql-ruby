@@ -8,6 +8,13 @@
 
 ### Bug fixes
 
+## 1.7.10 (1 Feb 2018)
+
+### Bug fixes
+
+- Fix error when inline fragments are spread on scalars #1268
+- Fix printing SDL when types have interfaces and directives #1255
+
 ## 1.7.9 (1 Feb 2018)
 
 ## New Features
