@@ -4,7 +4,7 @@ search: true
 section: Type Definitions
 title: Scalars
 desc: Scalars are "simple" data types like integers and strings
-index: 0
+index: 1
 experimental: true
 ---
 
@@ -70,4 +70,7 @@ Your class must define two class methods:
 - `self.coerce_input` takes a GraphQL input and converts it into a Ruby value
 - `self.coerce_result` takes the return value of a field and prepares it for the GraphQL response JSON
 
-When incoming data is incorrect, the method may raise `GraphQL::CoercionError`, which will be returned to the client in the `"errors"` key.
+When incoming data is incorrect, the method may raise {{ "GraphQL::CoercionError" | api_doc }}, which will be returned to the client in the `"errors"` key.
+
+
+Scalar classes are never initialized; only their `.coerce_*` methods are called at runtime.
