@@ -3,7 +3,7 @@ layout: guide
 search: true
 section: Type Definitions
 title: Interfaces
-desc: Interfaces are a list of fields which objects may implement
+desc: Interfaces are lists of fields which objects may implement
 index: 4
 experimental: true
 ---
