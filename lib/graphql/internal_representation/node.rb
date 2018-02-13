@@ -6,26 +6,9 @@ module GraphQL
       DEFAULT_TYPED_CHILDREN = Proc.new { |h, k| h[k] = {} }
 
       # A specialized, reusable object for leaf nodes.
-      # Behaves like a Hash, but doesn't copy itself.
-      # @api private
-      class NoTypedChildren
-        CHILDREN = {}.freeze
-        def dup; self; end
-        def any?; false; end
-        def none?; true; end
-        def [](key); CHILDREN; end
-        def each; end
-
-        # Compatibility for when this was an Array:
-        def method_missing(method_name, *args, &block)
-          if CHILDREN.respond_to?(method_name)
-            CHILDREN.send(method_name, *args, &block)
-          else
-            raise NotImplementedError
-          end
-        end
-      end
-      NO_TYPED_CHILDREN = NoTypedChildren.new
+      NO_TYPED_CHILDREN = Hash.new([].freeze)
+      def NO_TYPED_CHILDREN.dup; self; end;
+      NO_TYPED_CHILDREN.freeze
 
       # @return [String] the name this node has in the response
       attr_reader :name
