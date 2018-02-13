@@ -56,7 +56,6 @@ end
 
 The rest of this guide will describe how to define GraphQL object types in Ruby. To learn more about GraphQL object types in general, see the [GraphQL docs](http://graphql.org/learn/schema/#object-types-and-fields).
 
-
 ## Object classes
 
 Classes extending {{ "GraphQL::Schema::Object" | api_doc }} describe [Object types](http://graphql.org/learn/schema/#object-types-and-fields) and customize their behavior.
@@ -110,7 +109,7 @@ The second argument to `field(...)` is the return type. This can be:
 - A GraphQL type from your application
 - An _array_ of any of the above, which denotes a list type.
 
-Nullability is expressed with the required `null:`/ keywords:
+Nullability is expressed with the required `null:` keyword:
 
 - `null: true` means that the field _may_ return `nil`
 - `null: false` means the field is non-nullable; it may not return `nil`. If the implementation returns `nil`, GraphQL-Ruby will return an error to the client.
