@@ -5,7 +5,7 @@ section: Type Definitions
 title: Interfaces
 desc: Interfaces are lists of fields which objects may implement
 index: 4
-experimental: true
+class_based_api: true
 ---
 
 An interface has fields, but it's never actually instantiated. Instead, objects may _implement_ interfaces, which makes them a _member_ of that interface. Also, fields may _return_ interface types. When this happens, the returned object may be any member of that interface.
