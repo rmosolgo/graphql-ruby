@@ -9,7 +9,7 @@ module GraphQL
       # Behaves like a Hash, but doesn't copy itself.
       # @api private
       class NoTypedChildren
-        CHILDREN = [].freeze
+        CHILDREN = {}.freeze
         def dup; self; end
         def any?; false; end
         def none?; true; end
