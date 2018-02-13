@@ -278,4 +278,4 @@ When an object `implements` interfaces, it:
 - inherits the resolve behavior from those fields
 - `include`s the Ruby module named `Implementation` from that interface, if it has one
 
-Read more about interfaces in the {% internal_link "Interfaces guide", "/type_definitions/intefaces" %}
+Read more about interfaces in the {% internal_link "Interfaces guide", "/type_definitions/interfaces" %}
