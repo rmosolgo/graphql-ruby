@@ -72,4 +72,4 @@ The `possible_types(*types)` method accepts one or more types which belong to th
 
 Union classes are never instantiated; At runtime, only their `.resolve_type` methods may be called (if defined).
 
-For information about `.resolve_type`, see the {% internal_link "Interfaces guide", "/type_definitions/interfaces#resolve-type"}.
+For information about `.resolve_type`, see the {% internal_link "Interfaces guide", "/type_definitions/interfaces#resolve-type" %}.
