@@ -5,7 +5,7 @@ section: Type Definitions
 title: Objects
 desc: Objects expose data and link to other objects
 index: 0
-experimental: true
+class_based_api: true
 ---
 
 GraphQL object types are the bread and butter of GraphQL APIs. Each object has _fields_ which expose data and may be queried by name. For example, we can query a `User` like this:

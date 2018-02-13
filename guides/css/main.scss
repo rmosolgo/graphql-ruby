@@ -8,6 +8,8 @@ $brand-color-light:  #ed8090;
 $brand-color-extralight:  #f9e8ee;
 $experimental-background: #fff7cf;
 $experimental-color: #655400;
+$class-based-background: #c1f6ff;
+$class-based-color: #003a58;
 $pro-color: #406db5;
 $pro-background: #f1f4f9;
 $faint-color: #f0f0f0;
@@ -220,6 +222,11 @@ a:hover, a:hover code {
 
 .experimental-header {
   @include doc-header($experimental-color, $experimental-background);
+}
+
+
+.class-based-header {
+  @include doc-header($class-based-color, $class-based-background);
 }
 
 .pro-header {
