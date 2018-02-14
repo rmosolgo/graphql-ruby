@@ -229,6 +229,8 @@ Arguments are _typed_, so each argument takes a certain kind of data. Only a few
 - __Input objects__, defined by your application
 - __Lists__ of any of the above type
 
+(Objects, interfaces, and unions are _not_ valid input types.)
+
 To add arguments to fields, use the `argument(...)` method, inside a block:
 
 ```ruby
@@ -243,7 +245,7 @@ Arguments can also accept a description and a `default_value:`, for example:
 
 ```ruby
 field :transactions, [Types::Transaction], null: false do
-  # Description is added after the type name
+  # Description is added after the type name or the `description:` keyword argument
   # By default, `isCompleted: true` will be used
   argument :is_completed, Boolean, "Filter by completed/incompleted status", required: false, default: true
 end
