@@ -8,10 +8,10 @@ module GraphQL
 
       attr_reader :name
 
-      def initialize(arg_name, type_expr, desc = nil, required:, default_value: NO_DEFAULT)
+      def initialize(arg_name, type_expr, desc = nil, required:, description: nil, default_value: NO_DEFAULT)
         @name = arg_name.to_s
         @type_expr = type_expr
-        @description = desc
+        @description = desc || description
         @null = !required
         @default_value = default_value
       end
