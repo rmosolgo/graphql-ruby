@@ -119,7 +119,7 @@ module StarWars
       argument :nameIncludes, String, required: false
     end
 
-    field :shipsWithMaxPageSize, max_page_size: 2, function: ShipsWithMaxPageSize.new
+    field :shipsWithMaxPageSize, "Ships with max page size", max_page_size: 2, function: ShipsWithMaxPageSize.new
 
     field :bases, BaseConnectionWithTotalCountType, null: true, connection: true, resolve: ->(obj, args, ctx) {
       all_bases = Base.where(id: obj.bases)

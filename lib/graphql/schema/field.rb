@@ -19,7 +19,26 @@ module GraphQL
       # @return [Symbol]
       attr_reader :method
 
+      # @param name [Symbol] The underscore-cased version of this field name (will be camelized for the GraphQL API)
+      # @param return_type_expr [Class, GraphQL::BaseType, Array] The return type of this field
+      # @param desc [String] Field description
+      # @param null [Boolean] `true` if this field may return `null`, `false` if it is never `null`
+      # @param description [String] Field description
+      # @param deprecation_reason [String] If present, the field is marked "deprecated" with this message
+      # @param method [Symbol] The method to call to resolve this field (defaults to `name`)
+      # @param hash_key [Object] The hash key to lookup to resolve this field (defaults to `name` or `name.to_s`)
+      # @param connection [Boolean] `true` if this field should get automagic connection behavior; default is to infer by `*Connection` in the return type name
+      # @param max_page_size [Integer] For connections, the maximum number of items to return from this field
+      # @param introspection [Boolean] If true, this field will be marked as `#introspection?` and the name may begin with `__`
+      # @param resolve [<#call(obj, args, ctx)>] **deprecated** for compatibility with <1.8.0
+      # @param field [GraphQL::Field] **deprecated** for compatibility with <1.8.0
+      # @param function [GraphQL::Function] **deprecated** for compatibility with <1.8.0
       def initialize(name, return_type_expr = nil, desc = nil, null: nil, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, connection: nil, max_page_size: nil, resolve: nil, introspection: false, hash_key: nil, extras: [], &definition_block)
+        if (field || function) && desc.nil? && return_type_expr.is_a?(String)
+          # The return type should be copied from `field` or `function`, and the second positional argument is the description
+          desc = return_type_expr
+          return_type_expr = nil
+        end
         if !(field || function)
           if return_type_expr.nil?
             raise ArgumentError, "missing positional argument `type`"
