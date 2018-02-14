@@ -15,6 +15,12 @@ describe GraphQL::Schema::InputObject do
     it "assigns itself as the arguments_class" do
       assert_equal input_object, input_object.to_graphql.arguments_class
     end
+
+    it "accepts description: kwarg" do
+      input_obj_class = Jazz::InspectableInput
+      input_obj_type = input_obj_class.to_graphql
+      assert_equal "Test description kwarg", input_obj_type.arguments["stringValue"].description
+    end
   end
 
   describe "in queries" do
