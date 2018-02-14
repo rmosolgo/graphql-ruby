@@ -8,6 +8,12 @@
 
 ### Bug fixes
 
+## 1.7.12 (13 Feb 2018)
+
+### Bug fixes
+
+- `typed_children` should always return a Hash #1278
+
 ## 1.7.11 (13 Feb 2018)
 
 ### Bug fixes
