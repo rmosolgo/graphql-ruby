@@ -239,7 +239,7 @@ module Jazz
   end
 
   class InspectableInput < GraphQL::Schema::InputObject
-    argument :string_value, String, required: true
+    argument :string_value, String, required: true, description: "Test description kwarg"
     argument :nested_input, InspectableInput, required: false
     argument :legacy_input, LegacyInputType, required: false
     def helper_method
