@@ -140,3 +140,31 @@ Then the object gets a few things from the interface:
 - The `Implementation` module is `include`-d into the object, so it gets any methods from that module (which may be overridden by the `Object`)
 
 Specifically, in the example above, `CarType` would get a field named `price` and a `#price` method which implements that field.
+
+## Orphan Types
+
+If you add an object type which implements an interface, but that object type doesn't properly appear in your schema, then you need to add that object to the schema's `orphan_types`, for example:
+
+```ruby
+class MySchema < GraphQL::Schema
+  orphan_types [Types::Comment, ...]
+end
+```
+
+This is required because a schema finds it types by traversing its fields, starting with `query`, `mutation` and `subscription`. If an object is _never_ the return type of a field, but only connected via an interface, then it must be explicitly connected to the schema via `orphan_types`. For example, given this schema:
+
+```graphql
+type Query {
+  node(id: ID!): Node
+}
+
+interface Node {
+  id: ID!
+}
+
+type Comment implements Node {
+  id: ID!
+}
+```
+
+`Comment` must be added via `orphan_types` since it's never used as the return type of a field. (Only `Node` and `ID` are used as return types.)
