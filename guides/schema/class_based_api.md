@@ -267,42 +267,17 @@ Here is a working plan for rolling out this feature:
 - graphql 1.8:
   - ☑ Build a schema definition API based on classes instead of singletons
   - ☑ Migrate a few components of GitHub's GraphQL schema to this new API
-  - ☐ Build advanced class-based features:
+  - ☑ Build advanced class-based features:
     - ☑ Custom `Context` classes
-    - ☐ Custom introspection types
-    - ☐ Custom directives
-    - ☐ Custom `Schema#execute` method
+    - ☑ Custom introspection types
+    - ☐ ~~Custom directives~~ Probably will mess with execution soon, not worth the investment now
+    - ☐ ~~Custom `Schema#execute` method~~ not necessary
   - ☐ Migrate all of GitHub's GraphQL schema to this new API
 - graphql 1.9:
   - ☐ Update all GraphQL-Ruby docs to reflect this new API
 - graphql 1.10:
   - ☐ Begin sunsetting `.define`: isolate it in its own module
   - ☐ Remove `.define`
-
-## Schema class
-
-Your GraphQL schema is a class that extends {{ "GraphQL::Schema" | api_doc }}. Its configuration options are similar to `.define`-based options, but if you find something that doesn't work, please {% open_an_issue "Class-based schema issue","(Please share some example code and the error you found)" %}.
-
-```ruby
-class MyAppSchema < GraphQL::Schema
-  max_complexity 400
-  query Types::Query
-  use GraphQL::Batch
-
-  # Define hooks as class methods:
-  def self.resolve_type(type, obj, ctx)
-    # ...
-  end
-
-  def self.object_from_id(node_id, ctx)
-    # ...
-  end
-
-  def self.id_from_object(object, type, ctx)
-    # ...
-  end
-end
-```
 
 ## Common Type Configurations
 
@@ -321,24 +296,3 @@ end
 ```
 
 (Implemented in {{ "GraphQL::Schema::Member" | api_doc }}).
-
-## Customizing `@context`
-
-The `@context` object passed through each query may be customized by creating a subclass of {{ "GraphQL::Query::Context" | api_doc }} and passing it to `context_class` in your schema class:
-
-```ruby
-class MyContext < GraphQL::Query::Context
-  # short-hand access to a value:
-  def current_user
-    self[:current_user]
-  end
-end
-
-# then:
-class MySchema < GraphQL::Schema
-  # ...
-  context_class MyContext
-end
-```
-
-Then, during queries, `@context` will be an instance of `MyContext`.
