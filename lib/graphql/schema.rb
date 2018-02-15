@@ -666,6 +666,7 @@ module GraphQL
 
       def to_graphql
         schema_defn = self.new
+        schema_defn.raise_definition_error = true
         schema_defn.query = query
         schema_defn.mutation = mutation
         schema_defn.subscription = subscription
@@ -681,7 +682,11 @@ module GraphQL
         schema_defn.resolve_type = method(:resolve_type)
         schema_defn.object_from_id = method(:object_from_id)
         schema_defn.id_from_object = method(:id_from_object)
+        schema_defn.type_error = method(:type_error)
         schema_defn.context_class = context_class
+        schema_defn.tracers.concat(defined_tracers)
+        schema_defn.query_analyzers.concat(defined_query_analyzers)
+        schema_defn.multiplex_analyzers.concat(defined_multiplex_analyzers)
         defined_instrumenters.each do |step, insts|
           insts.each do |inst|
             schema_defn.instrumenters[step] << inst
@@ -812,6 +817,10 @@ module GraphQL
         raise NotImplementedError, "#{self.name}.id_from_object(object, type, ctx) must be implemented to create global ids (tried to create an id for `#{object.inspect}`)"
       end
 
+      def type_error(type_err, ctx)
+        DefaultTypeError.call(type_err, ctx)
+      end
+
       def lazy_resolve(lazy_class, value_method)
         lazy_classes[lazy_class] = value_method
       end
@@ -832,6 +841,18 @@ module GraphQL
         @directives
       end
 
+      def tracer(new_tracer)
+        defined_tracers << new_tracer
+      end
+
+      def query_analyzer(new_analyzer)
+        defined_query_analyzers << new_analyzer
+      end
+
+      def multiplex_analyzer(new_analyzer)
+        defined_multiplex_analyzers << new_analyzer
+      end
+
       private
 
       def lazy_classes
@@ -840,6 +861,18 @@ module GraphQL
 
       def defined_instrumenters
         @defined_instrumenters ||= Hash.new { |h,k| h[k] = [] }
+      end
+
+      def defined_tracers
+        @defined_tracers ||= []
+      end
+
+      def defined_query_analyzers
+        @defined_query_analyzers ||= []
+      end
+
+      def defined_multiplex_analyzers
+        @defined_multiplex_analyzers ||= []
       end
     end
 
