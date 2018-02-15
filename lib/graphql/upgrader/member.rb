@@ -522,15 +522,91 @@ module GraphQL
     # Remove redundant newlines, which may have trailing spaces
     # Remove double newline after `do`
     # Remove double newline before `end`
+    # Remove lines with whitespace only
     class RemoveExcessWhitespaceTransform < Transform
       def apply(input_text)
         input_text
           .gsub(/\n{3,}/m, "\n\n")
           .gsub(/do\n{2,}/m, "do\n")
           .gsub(/\n{2,}(\s*)end/m, "\n\\1end")
+          .gsub(/\n +\n/m, "\n\n")
       end
     end
 
+    class MoveInterfaceMethodsToImplementationTransform < Transform
+      def initialize(interface_file_pattern: /<.*Interface/)
+        @interface_file_pattern = interface_file_pattern
+      end
+
+      def apply(input_text)
+        if input_text =~ @interface_file_pattern && input_text =~ /\n *def /
+          # Extract the method bodies and figure out where the module should be inserted
+          method_bodies = []
+          processor = apply_processor(input_text, InterfaceMethodProcessor.new)
+          processor.methods.each do |(begin_pos, end_pos)|
+            # go all the way back to the newline so we get whitespace too
+            while input_text[begin_pos] != "\n" && begin_pos >= 0
+              begin_pos -= 1
+            end
+            # Tuck away the method body, and remove it from here
+            method_body = input_text[begin_pos..end_pos]
+            method_bodies << method_body
+          end
+          # How far are these method bodies indented? The module will be this indented
+          leading_indent = method_bodies.first[/\n +/][1..-1]
+          # Increase the indent since it will be in a nested module
+          indented_method_bodies = method_bodies.map {|m| m.gsub("\n", "\n  ").rstrip }
+          # Build the ruby module definition
+          module_body = "\n\n#{leading_indent}module Implementation#{indented_method_bodies.join("\n")}\n#{leading_indent}end"
+
+          # find the `end` of the class definition, and put the module before it
+          class_start, class_end = processor.class_definition
+          # This might target the newline _after_ `end`, but we don't want that one
+          if input_text[class_end] == "\n"
+            class_end -= 1
+          end
+
+          while input_text[class_end] != "\n" && class_end > 0
+            class_end -= 1
+          end
+
+          input_text.insert(class_end, module_body)
+
+          # Do the replacement _after_ identifying the bodies,
+          # otherwise the offsets get messed up
+          method_bodies.each do |method_body|
+            input_text.sub!(method_body, "")
+          end
+        end
+        input_text
+      end
+
+      # Find the beginning and end of each method def,
+      # so that we can move it wholesale
+      class InterfaceMethodProcessor < Parser::AST::Processor
+        attr_reader :methods, :class_definition
+        def initialize
+          @class_definition = nil
+          @methods = []
+          super
+        end
+
+        def on_def(node)
+          start = node.loc.expression.begin_pos
+          finish = node.loc.expression.end_pos
+          @methods << [start, finish]
+          super(node)
+        end
+
+        def on_class(node)
+          @class_definition = [
+            node.loc.expression.begin_pos,
+            node.loc.expression.end_pos
+          ]
+          super(node)
+        end
+      end
+    end
     # Skip this file if you see any `field`
     # helpers with `null: true` or `null: false` keywords
     # or `argument` helpers with `required:` keywords,
@@ -576,6 +652,7 @@ module GraphQL
       ]
 
       DEFAULT_CLEAN_UP_TRANSFORMS = [
+        MoveInterfaceMethodsToImplementationTransform,
         RemoveExcessWhitespaceTransform,
         RemoveEmptyBlocksTransform,
       ]
