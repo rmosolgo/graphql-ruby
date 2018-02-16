@@ -33,6 +33,12 @@ field :is_top_ranked, Boolean, null: false
 field :id, ID, null: false
 ```
 
+In the [Schema Definition Language](http://graphql.org/learn/schema/#type-language) (SDL), scalars are simply named:
+
+```graphql
+scalar DateTime
+```
+
 ## Custom Scalars
 
 You can implement your own scalars by extending {{ "GraphQL::Schema::Scalar" | api_doc }}. For example:

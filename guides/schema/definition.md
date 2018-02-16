@@ -77,7 +77,7 @@ end
 
 A GraphQL schema needs a handful of hooks for finding and disambiguating objects while queries are executed.
 
-__`resolve_type`__ is used when a specific object's corresponding GraphQL type must be determined. This happens for fields that return interface or union types. The class method `def self.resolve_type` is used:
+__`resolve_type`__ is used when a specific object's corresponding GraphQL type must be determined. This happens for fields that return {% internal_link "interface", "/type_definitions/interfaces" %} or {% internal_link "union", "/type_definitions/unions" %} types. The class method `def self.resolve_type` is used:
 
 ```ruby
 class MySchema < GraphQL::Schema
@@ -182,7 +182,7 @@ Then, during execution, `context` will be an instance `CustomContext`.
 
 ## Default Limits
 
-`max_depth` and `max_complexity` apply some limits to incoming queries. See {% "Complexity and Depth", "/queries/complexity_and_depth" %} for more.
+`max_depth` and `max_complexity` apply some limits to incoming queries. See {% internal_link "Complexity and Depth", "/queries/complexity_and_depth" %} for more.
 
 `default_max_page_size` applies limits to `Connection` fields.
 

@@ -7,7 +7,7 @@ desc: Values which must be present
 index: 7
 ---
 
-GraphQL's concept of _non-null_ is expressed in the Schema Definition Language (SDL) with `!`, for example:
+GraphQL's concept of _non-null_ is expressed in the [Schema Definition Language](http://graphql.org/learn/schema/#type-language) (SDL) with `!`, for example:
 
 ```graphql
 type User {

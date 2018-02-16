@@ -10,7 +10,7 @@ class_based_api: true
 
 An interface has fields, but it's never actually instantiated. Instead, objects may _implement_ interfaces, which makes them a _member_ of that interface. Also, fields may _return_ interface types. When this happens, the returned object may be any member of that interface.
 
-For example, let's say a `Customer` may be either an `Individual` or a `Company`. Here's the structure in the GraphQL Schema Definition Language (SDL):
+For example, let's say a `Customer` may be either an `Individual` or a `Company`. Here's the structure in the [GraphQL Schema Definition Language](http://graphql.org/learn/schema/#type-language) (SDL):
 
 ```ruby
 interface Customer {
