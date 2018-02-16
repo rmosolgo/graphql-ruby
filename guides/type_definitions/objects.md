@@ -28,13 +28,13 @@ And get back values like this:
 }
 ```
 
-Generally speaking, GraphQL object types correspond to models in your application, like `User`, `Product`, or `Comment`.  Sometimes, object types are described using the [GraphQL Schema Definition Language](#) (SDL):
+Generally speaking, GraphQL object types correspond to models in your application, like `User`, `Product`, or `Comment`.  Sometimes, object types are described using the [GraphQL Schema Definition Language](http://graphql.org/learn/schema/#type-language) (SDL):
 
 ```ruby
 type User {
   email: String
   handle: String!
-  friends: [User!]
+  friends: [User!]!
 }
 ```
 
@@ -50,7 +50,7 @@ The same object can be defined using Ruby:
 class User < GraphQL::Schema::Object
   field :email, String, null: true
   field :handle, String, null: false
-  field :friends, [User]
+  field :friends, [User], null: false
 end
 ```
 
@@ -100,6 +100,7 @@ The different elements of field definition are addressed below:
 - [Documentation](#field-documentation) includes description and deprecation notes
 - [Resolution behavior](#field-resolution) hooks up Ruby code to the GraphQL field
 - [Arguments](#field-arguments) allow fields to take input when they're queried
+- [Extra field metadata](#extra-field-metadata) for low-level access to the GraphQL-Ruby runtime
 
 ### Field Return Type
 
@@ -107,14 +108,14 @@ The second argument to `field(...)` is the return type. This can be:
 
 - A built-in GraphQL type (`Integer`, `Float`, `String`, `ID`, or `Boolean`)
 - A GraphQL type from your application
-- An _array_ of any of the above, which denotes a list type.
+- An _array_ of any of the above, which denotes a {% internal_link "list type", "/type_definitions/lists" %}.
 
-Nullability is expressed with the required `null:` keyword:
+{% internal_link "Nullability", "/type_definitions/non_nulls" %} is expressed with the required `null:` keyword:
 
 - `null: true` means that the field _may_ return `nil`
 - `null: false` means the field is non-nullable; it may not return `nil`. If the implementation returns `nil`, GraphQL-Ruby will return an error to the client.
 
-Additionally, list types maybe non-nullable by adding `[..., null: true]` to the definition.
+Additionally, list types maybe nullable by adding `[..., null: true]` to the definition.
 
 Here are some examples:
 
@@ -127,7 +128,7 @@ field :scores, [Integer, null: true], null: true # `[Int]`, may return a list or
 
 ### Field Documentation
 
-Fields maybe documented with a __description__ or may be __deprecated__.
+Fields maybe documented with a __description__ and may be __deprecated__.
 
 __Descriptions__ can be added with the `field(...)` method as a positional argument, a keyword argument, or inside the block:
 
@@ -165,7 +166,7 @@ The method name or hash key corresponds to the field name, so in this example:
 field :top_score, Integer, null: false
 ```
 
-The default behavior is to look for a `#top_score` method, or lookup a hash key, `:top_score`.
+The default behavior is to look for a `#top_score` method, or lookup a `Hash` key, `:top_score` (symbol) or `"top_score"` (string).
 
 You can override the method name with the `method:` keyword, or override the hash key with the `hash_key:` keyword, for example:
 
@@ -224,10 +225,10 @@ type User {
 
 Arguments are _typed_, so each argument takes a certain kind of data. Only a few types are valid inputs:
 
-- __Scalars__, such as `String`, `Integer`, `Float`, `Boolean`, `ID`, or custom scalar types
-- __Enums__, defined by your application
-- __Input objects__, defined by your application
-- __Lists__ of any of the above type
+- {% internal_link "Scalars", "/type_definitions/scalars" %}, such as `String`, `Integer`, `Float`, `Boolean`, `ID`, or custom scalar types
+- {% internal_link "Enums", "/type_definitions/enums" %}, defined by your application
+- {% internal_link "Input objects", "/type_definitions/input_objects" %}, defined by your application
+- {% internal_link "Lists", "/type_definitions/lists" %} of any of the above type
 
 (Objects, interfaces, and unions are _not_ valid input types.)
 
@@ -239,7 +240,7 @@ field :transactions, [Types::Transaction], null: false do
 end
 ```
 
-If an argument has `required: true`, then all queries to the field _must_ provide a value for that argument. `required: false` means that the argument is optional.
+If an argument has `required: true`, then all queries to the field _must_ provide a value for that argument. `required: false` means that the argument is optional. (This is called {% internal_link "nullability", "/type_definitions/non_nulls" %} in GraphQL.)
 
 Arguments can also accept a description and a `default_value:`, for example:
 
@@ -264,7 +265,33 @@ end
 
 So, each argument corresponds to a keyword in the method. Inside the method, you can use those values to search, filter and perform business logic for your field.
 
-### Implementing interfaces
+### Extra Field Metadata
+
+Inside a field method, you can access some low-level objects from the GraphQL-Ruby runtime. Be warned, these APIs are subject to change, so check the changelog when updating.
+
+A few `extras` are available:
+
+- `irep_node`
+- `ast_node`
+- `parent`, the parent field context
+
+To inject them into your field method, first, add the `extras:` option to the field definition:
+
+```ruby
+field :my_field, String, null: false, extras: [:irep_node]
+```
+
+Then add `irep_node:` keyword to the method signature:
+
+```ruby
+def my_field(irep_node:)
+  # ...
+end
+```
+
+At runtime, the requested runtime object will be passed to the field.
+
+## Implementing interfaces
 
 If an object implements any interfaces, they can be added with `implements`, for example:
 
