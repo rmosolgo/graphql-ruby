@@ -63,7 +63,7 @@ argument :categories, [Types::PostCategory], required: false
 
 For input, GraphQL lists are converted to Ruby arrays.
 
-For fields that return list types, any Ruby `Enumerable` may be returned. It will be enumerated as a GraphQL list.
+For fields that return list types, any object responding to `#each` may be returned. It will be enumerated as a GraphQL list.
 
 To define lists where `nil` may be a member of the list, use `null: true` in the definition array, for example:
 
