@@ -8,11 +8,13 @@ index: 4
 class_based_api: true
 ---
 
+Interfaces are lists of fields which may be implemented by object types.
+
 An interface has fields, but it's never actually instantiated. Instead, objects may _implement_ interfaces, which makes them a _member_ of that interface. Also, fields may _return_ interface types. When this happens, the returned object may be any member of that interface.
 
-For example, let's say a `Customer` may be either an `Individual` or a `Company`. Here's the structure in the [GraphQL Schema Definition Language](http://graphql.org/learn/schema/#type-language) (SDL):
+For example, let's say a `Customer` (interface) may be either an `Individual` (object) or a `Company` (object). Here's the structure in the [GraphQL Schema Definition Language](http://graphql.org/learn/schema/#type-language) (SDL):
 
-```ruby
+```graphql
 interface Customer {
   name: String!
   outstandingBalance: Int!
@@ -35,27 +37,31 @@ Notice that the `Customer` interface requires two fields, `name: String!` and `o
 
 When querying, you can get the fields on an interface:
 
-```ruby
-customers(first: 5) {
-  name
-  outstandingBalance
+```graphql
+{
+  customers(first: 5) {
+    name
+    outstandingBalance
+  }
 }
 ```
 
 Whether the objects are `Company` or `Individual`, it doesn't matter -- you still get their `name` and `outstandingBalance`. If you want some object-specific fields, you can query them with an _inline fragment_, for example:
 
-```ruby
-customers(first: 5) {
-  name
-  ... on Individual {
-    company { name }
+```graphql
+{
+  customers(first: 5) {
+    name
+    ... on Individual {
+      company { name }
+    }
   }
 }
 ```
 
 This means, "if the customer is an `Individual`, also get the customer's company name".
 
-Interfaces are a good choice whenever a set of objects are used interchangeably, and they share several significant fields in common. When they don't have fields in common, use a {% internal_link "Union", "/type_definitions/unions" %} instead.
+Interfaces are a good choice whenever a set of objects are used interchangeably, and they have several significant fields in common. When they don't have fields in common, use a {% internal_link "Union", "/type_definitions/unions" %} instead.
 
 ## Defining Interface Types
 
