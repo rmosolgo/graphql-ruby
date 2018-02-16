@@ -3,6 +3,7 @@ module GraphQL
   class Schema
     class Scalar
       include GraphQL::Schema::Member
+      extend GraphQL::Schema::Member::DSLMethods
 
       class << self
         def coerce_input(val, ctx)

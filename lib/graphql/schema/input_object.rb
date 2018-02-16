@@ -4,6 +4,7 @@ module GraphQL
     class InputObject
       include GraphQL::Schema::Member
       extend GraphQL::Delegate
+      extend GraphQL::Schema::Member::DSLMethods
 
       def initialize(values, context:, defaults_used:)
         @arguments = self.class.arguments_class.new(values, context: context, defaults_used: defaults_used)

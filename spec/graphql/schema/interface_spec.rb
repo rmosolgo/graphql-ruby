@@ -10,14 +10,17 @@ describe GraphQL::Schema::Interface do
       assert_equal 2, interface.fields.size
     end
 
-    class NewInterface1 < Jazz::GloballyIdentifiableType
+    module NewInterface1
+      include Jazz::GloballyIdentifiableType
     end
 
-    class NewInterface2 < Jazz::GloballyIdentifiableType
-      module Implementation
-        def new_method
-        end
+    module NewInterface2
+      include Jazz::GloballyIdentifiableType
+
+      def new_method
       end
+
+      undef id
     end
 
     it "can override Implementation" do

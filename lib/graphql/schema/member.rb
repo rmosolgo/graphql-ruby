@@ -8,6 +8,7 @@ module GraphQL
   # @api private
   class Schema
     module Member
+      extend ActiveSupport::Concern
       # Adds a layer of caching over user-supplied `.to_graphql` methods.
       # Users override `.to_graphql`, but all runtime code should use `.graphql_definition`.
       module CachedGraphQLDefinition
@@ -34,76 +35,82 @@ module GraphQL
         ID = "ID"
       end
 
-      def self.included(child_class)
-        child_class.extend(ClassMethods)
+      module DSLMethods
       end
 
-      include GraphQLTypeNames
-      module ClassMethods
-        include CachedGraphQLDefinition
-        include GraphQL::Relay::TypeExtensions
-        # Call this with a new name to override the default name for this schema member; OR
-        # call it without an argument to get the name of this schema member
-        #
-        # The default name is the Ruby constant name,
-        # without any namespaces and with any `-Type` suffix removed
-        # @param new_name [String]
-        # @return [String]
-        def graphql_name(new_name = nil)
-          if new_name
-            @graphql_name = new_name
-          else
-            overridden_graphql_name || self.name.split("::").last.sub(/Type\Z/, "")
+      included do
+        include GraphQLTypeNames
+
+        class << self
+          include CachedGraphQLDefinition
+          include GraphQL::Relay::TypeExtensions
+          # Call this with a new name to override the default name for this schema member; OR
+          # call it without an argument to get the name of this schema member
+          #
+          # The default name is the Ruby constant name,
+          # without any namespaces and with any `-Type` suffix removed
+          # @param new_name [String]
+          # @return [String]
+          def graphql_name(new_name = nil)
+            if new_name
+              @graphql_name = new_name
+            else
+              overridden_graphql_name || self.name.split("::").last.sub(/Type\Z/, "")
+            end
           end
-        end
 
-        # Just a convenience method to point out that people should use graphql_name instead
-        def name(new_name = nil)
-          return super() if new_name.nil?
+          # Just a convenience method to point out that people should use graphql_name instead
+          def name(new_name = nil)
+            return super() if new_name.nil?
 
-          fail(
-            "The new name override method is `graphql_name`, not `name`. Usage: "\
-            "graphql_name \"#{new_name}\""
-          )
-        end
-
-        # Call this method to provide a new description; OR
-        # call it without an argument to get the description
-        # @param new_description [String]
-        # @return [String]
-        def description(new_description = nil)
-          if new_description
-            @description = new_description
-          else
-            @description || (superclass <= GraphQL::Schema::Member ? superclass.description : nil)
+            fail(
+              "The new name override method is `graphql_name`, not `name`. Usage: "\
+              "graphql_name \"#{new_name}\""
+            )
           end
-        end
 
-        # @return [Boolean] If true, this object is part of the introspection system
-        def introspection(new_introspection = nil)
-          if !new_introspection.nil?
-            @introspection = new_introspection
-          else
-            @introspection || (superclass <= Schema::Member ? superclass.introspection : false)
+          # Call this method to provide a new description; OR
+          # call it without an argument to get the description
+          # @param new_description [String]
+          # @return [String]
+          def description(new_description = nil)
+            if new_description
+              @description = new_description
+            else
+              @description || (superclass_or_module <= GraphQL::Schema::Member ? superclass_or_module.description : nil)
+            end
           end
-        end
 
-        def to_graphql
-          raise NotImplementedError
-        end
+          # @return [Boolean] If true, this object is part of the introspection system
+          def introspection(new_introspection = nil)
+            if !new_introspection.nil?
+              @introspection = new_introspection
+            else
+              @introspection || (superclass_or_module <= Schema::Member ? superclass_or_module.introspection : false)
+            end
+          end
 
-        def to_list_type
-          ListTypeProxy.new(self)
-        end
+          def to_graphql
+            raise NotImplementedError
+          end
 
-        def to_non_null_type
-          NonNullTypeProxy.new(self)
-        end
+          def to_list_type
+            ListTypeProxy.new(self)
+          end
 
-        protected
+          def to_non_null_type
+            NonNullTypeProxy.new(self)
+          end
 
-        def overridden_graphql_name
-          @graphql_name || (superclass <= GraphQL::Schema::Member ? superclass.overridden_graphql_name : nil)
+          def overridden_graphql_name
+            @graphql_name || (superclass_or_module <= GraphQL::Schema::Member ? superclass_or_module.overridden_graphql_name : nil)
+          end
+
+          protected
+
+          def superclass_or_module
+            ancestors[1]
+          end
         end
       end
     end

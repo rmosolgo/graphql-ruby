@@ -21,6 +21,7 @@ module GraphQL
   class Schema
     class Enum
       include GraphQL::Schema::Member
+      extend GraphQL::Schema::Member::DSLMethods
 
       class << self
         # Define a value for this enum

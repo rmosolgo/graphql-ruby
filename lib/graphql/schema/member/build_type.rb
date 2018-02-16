@@ -63,8 +63,8 @@ module GraphQL
             else
               raise ArgumentError, LIST_TYPE_ERROR
             end
-          when Class
-            if Class < GraphQL::Schema::Member
+          when Module
+            if type_expr.respond_to?(:graphql_definition)
               type_expr.graphql_definition
             else
               # Eg `String` => GraphQL::STRING_TYPE
