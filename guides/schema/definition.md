@@ -103,7 +103,7 @@ __`id_from_object`__ is used to implement Relay's `Node.id` field. It should ret
 
 ```ruby
 class MySchema < GraphQL::Schema
-  def self.object_from_id(object, type, context)
+  def self.id_from_object(object, type, context)
     # Return a unique ID for `object`, whose GraphQL type is `type`
   end
 end
