@@ -27,7 +27,7 @@ In a GraphQL query, enums are written as identifiers (not strings), for example:
 search(term: "puppies", mediaType: IMAGE) { ... }
 ```
 
-(Notice that the enum value `IMAGE` doesn't have quotes.)
+(Notice that `IMAGE` doesn't have quotes.)
 
 But, when GraphQL responses or variables are transported using JSON, enum values are expressed as strings, for example:
 

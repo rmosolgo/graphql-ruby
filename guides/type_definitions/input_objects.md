@@ -32,7 +32,7 @@ This input object has three possible keys:
 
 - `title` is required (denoted by `!`), and must be a `String`
 - `fullText` is also a required String
-- `categories` is optional (it doesn't have `!`), and if present, it should be a list of `PostCategory` values.
+- `categories` is optional (it doesn't have `!`), and if present, it must be a list of `PostCategory` values.
 
 ## Defining Input Object Types
 
