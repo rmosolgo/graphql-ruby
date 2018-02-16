@@ -99,7 +99,8 @@ module Jazz
     end
   end
 
-  class BaseInterface < GraphQL::Schema::Interface
+  module BaseInterface
+    extend GraphQL::Schema::Interface
     # Use this overridden field class
     field_class BaseField
   end
@@ -123,17 +124,17 @@ module Jazz
 
   # Some arbitrary global ID scheme
   # *Type suffix is removed automatically
-  class GloballyIdentifiableType < BaseInterface
+  module GloballyIdentifiableType
+    extend BaseInterface
     description "A fetchable object in the system"
     field :id, ID, "A unique identifier for this object", null: false
     field :upcased_id, ID, null: false, upcase: true, method: :id
 
-    module Implementation
-      def id
-        GloballyIdentifiableType.to_id(@object)
-      end
+    def id
+      GloballyIdentifiableType.to_id(@object)
     end
 
+    # These helpers aren't inherited:
     def self.to_id(object)
       "#{object.class.name.split("::").last}/#{object.name}"
     end
@@ -262,9 +263,11 @@ module Jazz
     field :is_flat, Boolean, null: false, method: :flat
   end
 
-  class PerformingAct < GraphQL::Schema::Union
+  class PerformingAct
+    extend GraphQL::Schema::Union
     possible_types Musician, Ensemble
 
+    # TODO: shouldn't this be `self.`?
     def resolve_type
       if @object.is_a?(Models::Ensemble)
         Ensemble

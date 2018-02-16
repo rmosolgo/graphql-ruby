@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 module GraphQL
   class Schema
-    class Member
+    module Member
       # Wraps a {Schema::Member} when it is required.
       # @see {Schema::Member#to_non_null_type}
       # @api private

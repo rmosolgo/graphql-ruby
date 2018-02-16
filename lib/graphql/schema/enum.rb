@@ -19,7 +19,9 @@ module GraphQL
   #     value :PEPPERS
   #   end
   class Schema
-    class Enum < GraphQL::Schema::Member
+    class Enum
+      include GraphQL::Schema::Member
+
       class << self
         # Define a value for this enum
         # @param graphql_name [String, Symbol] the GraphQL value for this, usually `SCREAMING_CASE`

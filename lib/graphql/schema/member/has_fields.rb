@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 module GraphQL
   class Schema
-    class Member
+    module Member
       # Shared code for Object and Interface
       module HasFields
         # Add a field to this object or interface with the given definition

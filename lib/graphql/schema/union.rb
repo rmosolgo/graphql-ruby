@@ -1,7 +1,9 @@
 # frozen_string_literal: true
 module GraphQL
   class Schema
-    class Union < GraphQL::Schema::Member
+    module Union
+      include GraphQL::Schema::Member
+
       def initialize(obj, ctx)
         @object = obj
         @context = ctx
@@ -13,7 +15,7 @@ module GraphQL
             @own_possible_types = types
           else
             all_possible_types = own_possible_types
-            inherited_possible_types = (superclass < GraphQL::Schema::Union ? superclass.possible_types : [])
+            inherited_possible_types = (singleton_class < GraphQL::Schema::Union ? singleton_class.possible_types : [])
             all_possible_types += inherited_possible_types
             all_possible_types.uniq
           end
@@ -23,6 +25,7 @@ module GraphQL
           @own_possible_types ||= []
         end
 
+        # TODO wtf
         # The class resolves type by:
         # - make an instance
         # - call the instance method

@@ -7,7 +7,7 @@ module GraphQL
   #
   # @api private
   class Schema
-    class Member
+    module Member
       # Adds a layer of caching over user-supplied `.to_graphql` methods.
       # Users override `.to_graphql`, but all runtime code should use `.graphql_definition`.
       module CachedGraphQLDefinition
@@ -34,8 +34,12 @@ module GraphQL
         ID = "ID"
       end
 
+      def self.included(child_class)
+        child_class.extend(ClassMethods)
+      end
+
       include GraphQLTypeNames
-      class << self
+      module ClassMethods
         include CachedGraphQLDefinition
         include GraphQL::Relay::TypeExtensions
         # Call this with a new name to override the default name for this schema member; OR

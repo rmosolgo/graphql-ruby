@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 module GraphQL
   class Schema
-    class Member
+    module Member
       # @api private
       module BuildType
         LIST_TYPE_ERROR = "Use an array of [T] or [T, null: true] for list types; other arrays are not supported"

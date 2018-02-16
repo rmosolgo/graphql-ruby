@@ -1,7 +1,8 @@
 # frozen_string_literal: true
 module GraphQL
   class Schema
-    class InputObject < GraphQL::Schema::Member
+    class InputObject
+      include GraphQL::Schema::Member
       extend GraphQL::Delegate
 
       def initialize(values, context:, defaults_used:)

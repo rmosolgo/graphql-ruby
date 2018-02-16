@@ -1,7 +1,9 @@
 # frozen_string_literal: true
 module GraphQL
   class Schema
-    class Scalar < GraphQL::Schema::Member
+    class Scalar
+      include GraphQL::Schema::Member
+
       class << self
         def coerce_input(val, ctx)
           raise NotImplementedError, "#{self.name}.coerce_input(val, ctx) must prepare GraphQL input (#{val.inspect}) for Ruby processing"

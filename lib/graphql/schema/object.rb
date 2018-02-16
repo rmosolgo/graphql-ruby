@@ -2,7 +2,9 @@
 
 module GraphQL
   class Schema
-    class Object < GraphQL::Schema::Member
+    class Object
+      include GraphQL::Schema::Member
+
       attr_reader :object
 
       def initialize(object, context)
@@ -15,7 +17,7 @@ module GraphQL
       class << self
         def implements(*new_interfaces)
           new_interfaces.each do |int|
-            if int.is_a?(Class) && int < GraphQL::Schema::Interface
+            if int.is_a?(Module)
               # Add the graphql field defns
               int.fields.each do |_name, field|
                 add_field(field)
