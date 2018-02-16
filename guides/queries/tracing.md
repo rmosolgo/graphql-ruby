@@ -123,3 +123,13 @@ end
 <div class="monitoring-img-group">
   {{ "/queries/skylight_example.png" | link_to_img:"skylight monitoring" }}
 </div>
+
+## Datadog
+
+To add [Datadog](https://www.datadoghq.com) instrumentation:
+
+```ruby
+MySchema = GraphQL::Schema.define do
+  use(GraphQL::Tracing::DataDogTracing)
+end
+```
