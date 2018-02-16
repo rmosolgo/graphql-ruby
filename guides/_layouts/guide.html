@@ -4,7 +4,7 @@ layout: default
 <p class="breadcrumb">
   <a href="{{ site.baseurl }}/">GraphQL</a>
   &raquo; <a href="{{ site.baseurl }}/guides">Guides</a>
-  {% if page.section %} &raquo; {{ page.section }}{% endif %}
+  {% if page.section %} &raquo; <a href="{{ site.baseurl }}/guides#{{ page.section | slugify }}-guides">{{ page.section }}</a>{% endif %}
   &raquo; {{ page.title }}
 </p>
 {% if page.experimental %}

@@ -8,7 +8,7 @@ index: 1
 class_based_api: true
 ---
 
-Scalars are "leaf" values in GraphQL. There are several built-in scalars, and you can define custom scalars, too. (Enums are also leaf values.) The built-in scalars are:
+Scalars are "leaf" values in GraphQL. There are several built-in scalars, and you can define custom scalars, too. ({% internal_link "Enums", "/type_definitions/enums" %} are also leaf values.) The built-in scalars are:
 
 - `String`, like a JSON or Ruby string
 - `Int`, like a JSON or Ruby integer
@@ -33,9 +33,16 @@ field :is_top_ranked, Boolean, null: false
 field :id, ID, null: false
 ```
 
+Custom scalars (see below) can also be used by name:
+
+```ruby
+# `homepage: Url`
+field :homepage, Types::Url, null: true
+```
+
 In the [Schema Definition Language](http://graphql.org/learn/schema/#type-language) (SDL), scalars are simply named:
 
-```graphql
+```ruby
 scalar DateTime
 ```
 
