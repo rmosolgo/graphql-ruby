@@ -425,6 +425,13 @@ type Query {
     end
   end
 
+  describe "#as_json" do
+    it "returns a hash" do
+      result = schema.execute(GraphQL::Introspection::INTROSPECTION_QUERY)
+      assert_equal result.as_json.class, Hash
+    end
+  end
+
   describe "#get_field" do
     it "returns fields by type or type name" do
       field = schema.get_field("Cheese", "id")

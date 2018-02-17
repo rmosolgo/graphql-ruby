@@ -554,7 +554,7 @@ module GraphQL
     # @param except [<#call(member, ctx)>]
     # @return [Hash] GraphQL result
     def as_json(only: nil, except: nil, context: {})
-      execute(Introspection::INTROSPECTION_QUERY, only: only, except: except, context: context)
+      execute(Introspection::INTROSPECTION_QUERY, only: only, except: except, context: context).to_h
     end
 
     # Returns the JSON response of {Introspection::INTROSPECTION_QUERY}.
