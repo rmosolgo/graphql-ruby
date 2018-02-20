@@ -34,7 +34,9 @@ describe GraphQL::RakeTask do
       end
       dumped_json = File.read("./schema.json")
       expected_json = JSON.pretty_generate(RakeTaskSchema.execute(GraphQL::Introspection::INTROSPECTION_QUERY))
-      assert_equal(expected_json, dumped_json)
+
+      # Test that that JSON is logically equivalent, not serialized the same
+      assert_equal(JSON.parse(expected_json), JSON.parse(dumped_json))
 
       dumped_idl = File.read("./schema.graphql")
       expected_idl = rake_task_schema_defn.chomp
