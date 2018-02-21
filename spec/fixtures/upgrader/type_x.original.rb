@@ -51,6 +51,15 @@ module Platform
       field :f9, types[Objects::O2]
       field :fieldField, types.String, hash_key: "fieldField"
       field :fieldField2, types.String, property: :field_field2
+
+      field :f10, types.String do
+        resolve ->(obj, _, _) do
+          obj.something do |_|
+            xyz_obj.obj
+            obj.f10
+          end
+        end
+      end
     end
   end
 end
