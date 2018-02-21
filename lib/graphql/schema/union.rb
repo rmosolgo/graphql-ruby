@@ -2,11 +2,6 @@
 module GraphQL
   class Schema
     class Union < GraphQL::Schema::Member
-      def initialize(obj, ctx)
-        @object = obj
-        @context = ctx
-      end
-
       class << self
         def possible_types(*types)
           if types.any?
@@ -21,13 +16,6 @@ module GraphQL
 
         def own_possible_types
           @own_possible_types ||= []
-        end
-
-        # The class resolves type by:
-        # - make an instance
-        # - call the instance method
-        def resolve_type(value, ctx)
-          self.new(value, ctx).resolve_type
         end
 
         def to_graphql
