@@ -48,7 +48,31 @@ describe GraphQL::Schema::Field do
         assert_equal 25, object.fields["complexityTest"].complexity
       end
 
-      it "accepts a proc in the definition block"
+      it "accepts a proc in the definition block" do
+        object = Class.new(Jazz::BaseObject) do
+          graphql_name "complexityKeyword"
+
+          field :complexityTest, String, null: true do
+            complexity ->(_ctx, _args, _child_complexity) { 52 }
+          end
+        end.to_graphql
+
+        assert_equal 52, object.fields["complexityTest"].complexity.call(nil, nil, nil)
+      end
+
+      it 'fails if the proc does not accept 3 parameters' do
+        err = assert_raises(RuntimeError) do
+          Class.new(Jazz::BaseObject) do
+            graphql_name "complexityKeyword"
+
+            field :complexityTest, String, null: true do
+              complexity ->(one, two) { 52 }
+            end
+          end.to_graphql
+        end
+
+        assert_equal true, err.message.starts_with?("A complexity proc should always accept 3 parameters")
+      end
     end
   end
 end
