@@ -92,15 +92,23 @@ module GraphQL
         end
       end
 
-      def complexity(new_complexity_proc)
-        if new_complexity_proc.parameters.size != 3
-          fail(
-            "A complexity proc should always accept 3 parameters: ctx, args, child_complexity. "\
-            "E.g.: complexity ->(ctx, args, child_complexity) { child_complexity * args[:limit] }"
-          )
+      def complexity(new_complexity)
+        case new_complexity
+        when Proc
+          if new_complexity.parameters.size != 3
+            fail(
+              "A complexity proc should always accept 3 parameters: ctx, args, child_complexity. "\
+              "E.g.: complexity ->(ctx, args, child_complexity) { child_complexity * args[:limit] }"
+            )
+          else
+            @complexity = new_complexity
+          end
+        when Numeric
+          @complexity = new_complexity
         else
-          @complexity = new_complexity_proc
+          raise("Invalid complexity: #{new_complexity.inspect} on #{@name}")
         end
+
       end
 
       # @return [GraphQL::Field]
