@@ -184,14 +184,14 @@ If you don't want to delegate to the underlying object, you can define a method 
 field :total_games_played, Integer, null: false
 
 def total_games_played
-  @object.games.count
+  object.games.count
 end
 ```
 
-Inside the method, you can access some instance variables:
+Inside the method, you can access some helper methods:
 
-- `@context` is the query context (formerly `ctx` to resolve functions)
-- `@object` is the underlying application object (formerly `obj` to resolve functions)
+- `object` is the underlying application object (formerly `obj` to resolve functions)
+- `context` is the query context (passed as `context:` when executing queries, formerly `ctx` to resolve functions)
 
 Additionally, when you define arguments (see below), they're passed to the method definition, for example:
 

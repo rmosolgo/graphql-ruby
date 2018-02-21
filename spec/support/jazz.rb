@@ -156,7 +156,7 @@ module Jazz
     field :upcase_name, String, null: false, upcase: true
 
     def upcase_name
-      @object.name # upcase is applied by the superclass
+      object.name # upcase is applied by the superclass
     end
   end
 
@@ -245,9 +245,9 @@ module Jazz
     def helper_method
       [
         # Context is available in the InputObject
-        @context[:message],
+        context[:message],
         # A GraphQL::Query::Arguments instance is available
-        @arguments[:stringValue],
+        arguments[:stringValue],
         # Legacy inputs have underscored method access too
         legacy_input ? legacy_input.int_value : "-",
         # Access by method call is available
@@ -265,8 +265,8 @@ module Jazz
   class PerformingAct < GraphQL::Schema::Union
     possible_types Musician, Ensemble
 
-    def resolve_type
-      if @object.is_a?(Models::Ensemble)
+    def self.resolve_type(object, context)
+      if object.is_a?(Models::Ensemble)
         Ensemble
       else
         Musician
@@ -301,7 +301,7 @@ module Jazz
 
     def find(id:)
       if id == "MagicalSkipId"
-        @context.skip
+        context.skip
       else
         GloballyIdentifiableType.find(id)
       end
@@ -334,9 +334,9 @@ module Jazz
 
     def inspect_context
       [
-        @context.custom_method,
-        @context[:magic_key],
-        @context[:normal_key]
+        context.custom_method,
+        context[:magic_key],
+        context[:normal_key]
       ]
     end
 
@@ -392,7 +392,7 @@ module Jazz
   module Introspection
     class TypeType < GraphQL::Introspection::TypeType
       def name
-        @object.name.upcase
+        object.name.upcase
       end
     end
 
@@ -420,7 +420,7 @@ module Jazz
     class EntryPoints < GraphQL::Introspection::EntryPoints
       field :__classname, String, "The Ruby class name of the root object", null: false
       def __classname
-        @object.class.name
+        object.class.name
       end
     end
   end
