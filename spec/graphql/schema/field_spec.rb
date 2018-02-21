@@ -71,7 +71,7 @@ describe GraphQL::Schema::Field do
           end.to_graphql
         end
 
-        assert_equal true, !!err.message.match(/^A complexity proc should always accept 3 parameters/)
+        assert_match /^A complexity proc should always accept 3 parameters/, err.message
       end
     end
   end
