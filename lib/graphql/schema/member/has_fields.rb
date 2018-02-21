@@ -37,6 +37,10 @@ module GraphQL
           end
         end
 
+        def global_id_field(field_name)
+          field field_name, "ID", null: false, resolve: GraphQL::Relay::GlobalIdResolve.new(type: self)
+        end
+
         private
 
         # @return [Array<GraphQL::Schema::Field>] Fields defined on this class _specifically_, not parent classes
