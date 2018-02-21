@@ -92,6 +92,17 @@ module GraphQL
         end
       end
 
+      def complexity(new_complexity_proc)
+        if new_complexity_proc.parameters.size != 3
+          fail(
+            "A complexity proc should always accept 3 parameters: ctx, args, child_complexity. "\
+            "E.g.: complexity ->(ctx, args, child_complexity) { child_complexity * args[:limit] }"
+          )
+        else
+          @complexity = new_complexity_proc
+        end
+      end
+
       # @return [GraphQL::Field]
       def to_graphql
         method_name = @method || @hash_key || Member::BuildType.underscore(@name)
