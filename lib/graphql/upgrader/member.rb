@@ -333,8 +333,12 @@ module GraphQL
           obj_arg_name, args_arg_name, ctx_arg_name = processor.proc_arg_names
           # This is not good, it will hit false positives
           # Should use AST to make this substitution
-          proc_body.gsub!(/([^\w:]|^)#{obj_arg_name}([^\w]|$)/, '\1@object\2')
-          proc_body.gsub!(/([^\w:]|^)#{ctx_arg_name}([^\w]|$)/, '\1@context\2')
+          if obj_arg_name != "_"
+            proc_body.gsub!(/([^\w:.]|^)#{obj_arg_name}([^\w]|$)/, '\1@object\2')
+          end
+          if ctx_arg_name != "_"
+            proc_body.gsub!(/([^\w:.]|^)#{ctx_arg_name}([^\w]|$)/, '\1@context\2')
+          end
 
           method_def_indent = " " * (processor.resolve_indent - 2)
           # Turn the proc body into a method body
