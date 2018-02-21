@@ -11,8 +11,17 @@ describe GraphQL::Schema::Field do
       assert_equal :ok, arg_defn.metadata[:custom]
     end
 
-    it "camelizes the field name" do
+    it "camelizes the field name, unless camelize: false" do
       assert_equal 'inspectInput', field.graphql_definition.name
+
+      underscored_field = GraphQL::Schema::Field.new(:underscored_field, String, null: false, camelize: false) do
+        argument :underscored_arg, String, required: true, camelize: false
+      end
+
+      assert_equal 'underscored_field', underscored_field.to_graphql.name
+      arg_name, arg_defn = underscored_field.to_graphql.arguments.first
+      assert_equal 'underscored_arg', arg_name
+      assert_equal 'underscored_arg', arg_defn.name
     end
 
     it "exposes the method override" do
