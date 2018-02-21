@@ -45,6 +45,7 @@
   EQUALS =        '=';
   BANG =          '!';
   PIPE =          '|';
+  AMP =           '&';
 
   QUOTED_STRING = QUOTE STRING_CHAR* QUOTE;
   BLOCK_STRING = BLOCK_QUOTE BLOCK_STRING_CHAR* BLOCK_QUOTE;
@@ -86,6 +87,7 @@
     EQUALS        => { emit(:EQUALS, ts, te, meta) };
     BANG          => { emit(:BANG, ts, te, meta) };
     PIPE          => { emit(:PIPE, ts, te, meta) };
+    AMP           => { emit(:AMP, ts, te, meta) };
     IDENTIFIER    => { emit(:IDENTIFIER, ts, te, meta) };
     COMMENT       => { record_comment(ts, te, meta) };
 

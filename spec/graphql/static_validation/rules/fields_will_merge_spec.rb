@@ -515,7 +515,7 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
           scalar: String!
         }
 
-        type NonNullStringBox1Impl implements SomeBox, NonNullStringBox1 {
+        type NonNullStringBox1Impl implements SomeBox & NonNullStringBox1 {
           scalar: String!
           unrelatedField: String
           deepBox: SomeBox
@@ -525,7 +525,7 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
           scalar: String!
         }
 
-        type NonNullStringBox2Impl implements SomeBox, NonNullStringBox2 {
+        type NonNullStringBox2Impl implements SomeBox & NonNullStringBox2 {
           scalar: String!
           unrelatedField: String
           deepBox: SomeBox

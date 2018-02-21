@@ -115,7 +115,7 @@ describe GraphQL::Language::Printer do
           # Union description
           union AnnotatedUnion @onUnion = A | B
 
-          type Foo implements Bar {
+          type Foo implements Bar & AnnotatedInterface {
             one: Type
             two(argument: InputType!): Type
             three(argument: InputType, other: String): Int
