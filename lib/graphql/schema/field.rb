@@ -33,7 +33,7 @@ module GraphQL
       # @param resolve [<#call(obj, args, ctx)>] **deprecated** for compatibility with <1.8.0
       # @param field [GraphQL::Field] **deprecated** for compatibility with <1.8.0
       # @param function [GraphQL::Function] **deprecated** for compatibility with <1.8.0
-      def initialize(name, return_type_expr = nil, desc = nil, null: nil, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, connection: nil, max_page_size: nil, resolve: nil, introspection: false, hash_key: nil, extras: [], &definition_block)
+      def initialize(name, return_type_expr = nil, desc = nil, null: nil, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, connection: nil, max_page_size: nil, resolve: nil, introspection: false, hash_key: nil, complexity: 1, extras: [], &definition_block)
         if (field || function) && desc.nil? && return_type_expr.is_a?(String)
           # The return type should be copied from `field` or `function`, and the second positional argument is the description
           desc = return_type_expr
@@ -64,6 +64,7 @@ module GraphQL
         end
         @method = method
         @hash_key = hash_key
+        @complexity = complexity
         @return_type_expr = return_type_expr
         @return_type_null = null
         @connection = connection
@@ -139,6 +140,7 @@ module GraphQL
         field_defn.connection = connection
         field_defn.connection_max_page_size = @max_page_size
         field_defn.introspection = @introspection
+        field_defn.complexity = @complexity
 
         # apply this first, so it can be overriden below
         if connection

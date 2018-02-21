@@ -36,5 +36,19 @@ describe GraphQL::Schema::Field do
       assert_equal "test", object.fields["test"].arguments["test"].name
       assert_equal "A Description.", object.fields["test"].description
     end
+
+    describe "complexity" do
+      it "accepts a keyword argument" do
+        object = Class.new(Jazz::BaseObject) do
+          graphql_name "complexityKeyword"
+
+          field :complexityTest, String, null: true, complexity: 25
+        end.to_graphql
+
+        assert_equal 25, object.fields["complexityTest"].complexity
+      end
+
+      it "accepts a proc in the definition block"
+    end
   end
 end
