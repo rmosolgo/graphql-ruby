@@ -9,6 +9,12 @@ module GraphQL
         @context = context
       end
 
+      # @return [GraphQL::Query::Context] The context for this query
+      attr_reader :context
+
+      # @return [GraphQL::Query::Arguments] The underlying arguments instance
+      attr_reader :arguments
+
       # A lot of methods work just like GraphQL::Arguments
       def_delegators :@arguments, :[], :key?, :to_h
       def_delegators :to_h, :keys, :values, :each, :any?

@@ -6,7 +6,6 @@ module GraphQL
       field_class GraphQL::Schema::Field
 
       class << self
-
         # When this interface is added to a `GraphQL::Schema::Object`,
         # it calls this method. We add methods to the object by convention,
         # a nested module named `Implementation`
