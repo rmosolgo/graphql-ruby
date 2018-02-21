@@ -11,8 +11,8 @@ module Platform
       global_id_field :id
       interfaces [GraphQL::Relay::Node.interface]
 
-      field :f1, !Objects::O1, "The x being y."
-      field :f2, !Enums::E1, "x for the y.",
+      field :f1,    !Objects::O1, "The x being y."
+      field :f2,    !Enums::E1, "x for the y.",
         property: :field_2
       field :f3, Enums::E2, "x for y."
       field :details, types.String, "Details."
