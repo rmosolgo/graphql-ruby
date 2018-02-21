@@ -42,6 +42,15 @@ module Platform
       field :f9, [Objects::O2, null: true], null: true
       field :field_field, String, hash_key: "fieldField", null: true
       field :field_field2, String, null: true
+
+      field :f10, String, null: true
+
+      def f10
+        @object.something do |_|
+          xyz_obj.obj
+          @object.f10
+        end
+      end
     end
   end
 end
