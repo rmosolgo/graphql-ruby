@@ -25,7 +25,8 @@ module GraphQL
     #     # use it for these enums:
     #     enum_value_class CustomEnumValue
     #   end
-    class EnumValue < GraphQL::Schema::Member
+    class EnumValue
+      include GraphQL::Schema::Member
       attr_reader :graphql_name
 
       def initialize(graphql_name, desc = nil, description: nil, value: nil, deprecation_reason: nil, &block)

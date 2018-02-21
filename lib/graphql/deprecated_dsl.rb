@@ -14,7 +14,7 @@ module GraphQL
   #
   module DeprecatedDSL
     def self.activate
-      GraphQL::Schema::Member.extend(Methods)
+      GraphQL::Schema::Member::DSLMethods.extend(Methods)
       GraphQL::Schema::Member::ListTypeProxy.include(Methods)
       GraphQL::Schema::Member::NonNullTypeProxy.include(Methods)
     end
@@ -24,6 +24,9 @@ module GraphQL
       end
     end
     refine GraphQL::Schema::Member.singleton_class do
+      include Methods
+    end
+    refine GraphQL::Schema::Member::DSLMethods do
       include Methods
     end
   end

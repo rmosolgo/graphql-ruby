@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 module GraphQL
   class Schema
-    class Member
+    module Member
       # Wraps a {Schema::Member} as a list type.
       # @see {Schema::Member#to_list_type}
       # @api private

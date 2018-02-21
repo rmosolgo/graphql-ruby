@@ -3,7 +3,7 @@
 
 module GraphQL
   class Schema
-    class Member
+    module Member
       module Instrumentation
         module_function
         def instrument(type, field)
