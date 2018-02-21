@@ -52,6 +52,21 @@ describe GraphQL::Schema::Interface do
     end
   end
 
+  it 'supports global_id_field' do
+    object = Class.new(GraphQL::Schema::Interface) do
+      graphql_name 'GlobalIdFieldTest'
+      global_id_field :uuid
+    end.to_graphql
+    uuid_field = object.fields["uuid"]
+
+    assert_equal GraphQL::NonNullType, uuid_field.type.class
+    assert_equal GraphQL::ScalarType, uuid_field.type.unwrap.class
+    assert_equal(
+      GraphQL::Schema::Member::GraphQLTypeNames::ID,
+      uuid_field.type.unwrap.name
+    )
+  end
+
   describe "in queries" do
     it "works" do
       query_str = <<-GRAPHQL
