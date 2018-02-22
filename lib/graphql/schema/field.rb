@@ -34,7 +34,8 @@ module GraphQL
       # @param field [GraphQL::Field] **deprecated** for compatibility with <1.8.0
       # @param function [GraphQL::Function] **deprecated** for compatibility with <1.8.0
       # @param camelize [Boolean] If true, the field name will be camelized when building the schema
-      def initialize(name, return_type_expr = nil, desc = nil, null: nil, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, connection: nil, max_page_size: nil, resolve: nil, introspection: false, hash_key: nil, camelize: true, extras: [], &definition_block)
+      # @param complexity [Numeric] When provided, set the complexity for this field. Default 1.
+      def initialize(name, return_type_expr = nil, desc = nil, null: nil, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, connection: nil, max_page_size: nil, resolve: nil, introspection: false, hash_key: nil, camelize:true, complexity: 1, extras: [], &definition_block)
         if (field || function) && desc.nil? && return_type_expr.is_a?(String)
           # The return type should be copied from `field` or `function`, and the second positional argument is the description
           desc = return_type_expr
@@ -65,6 +66,7 @@ module GraphQL
         end
         @method = method
         @hash_key = hash_key
+        @complexity = complexity
         @return_type_expr = return_type_expr
         @return_type_null = null
         @connection = connection
@@ -91,6 +93,25 @@ module GraphQL
         else
           @description
         end
+      end
+
+      def complexity(new_complexity)
+        case new_complexity
+        when Proc
+          if new_complexity.parameters.size != 3
+            fail(
+              "A complexity proc should always accept 3 parameters: ctx, args, child_complexity. "\
+              "E.g.: complexity ->(ctx, args, child_complexity) { child_complexity * args[:limit] }"
+            )
+          else
+            @complexity = new_complexity
+          end
+        when Numeric
+          @complexity = new_complexity
+        else
+          raise("Invalid complexity: #{new_complexity.inspect} on #{@name}")
+        end
+
       end
 
       # @return [GraphQL::Field]
@@ -141,6 +162,7 @@ module GraphQL
         field_defn.connection = connection
         field_defn.connection_max_page_size = @max_page_size
         field_defn.introspection = @introspection
+        field_defn.complexity = @complexity
 
         # apply this first, so it can be overriden below
         if connection

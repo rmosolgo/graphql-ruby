@@ -45,5 +45,69 @@ describe GraphQL::Schema::Field do
       assert_equal "test", object.fields["test"].arguments["test"].name
       assert_equal "A Description.", object.fields["test"].description
     end
+
+    describe "complexity" do
+      it "accepts a keyword argument" do
+        object = Class.new(Jazz::BaseObject) do
+          graphql_name "complexityKeyword"
+
+          field :complexityTest, String, null: true, complexity: 25
+        end.to_graphql
+
+        assert_equal 25, object.fields["complexityTest"].complexity
+      end
+
+      it "accepts a proc in the definition block" do
+        object = Class.new(Jazz::BaseObject) do
+          graphql_name "complexityKeyword"
+
+          field :complexityTest, String, null: true do
+            complexity ->(_ctx, _args, _child_complexity) { 52 }
+          end
+        end.to_graphql
+
+        assert_equal 52, object.fields["complexityTest"].complexity.call(nil, nil, nil)
+      end
+
+      it "accepts an integer in the definition block" do
+        object = Class.new(Jazz::BaseObject) do
+          graphql_name "complexityKeyword"
+
+          field :complexityTest, String, null: true do
+            complexity 38
+          end
+        end.to_graphql
+
+        assert_equal 38, object.fields["complexityTest"].complexity
+      end
+
+      it 'fails if the complexity is not numeric and not a proc' do
+        err = assert_raises(RuntimeError) do
+          Class.new(Jazz::BaseObject) do
+            graphql_name "complexityKeyword"
+
+            field :complexityTest, String, null: true do
+              complexity 'One hundred and eighty'
+            end
+          end.to_graphql
+        end
+
+        assert_match /^Invalid complexity:/, err.message
+      end
+
+      it 'fails if the proc does not accept 3 parameters' do
+        err = assert_raises(RuntimeError) do
+          Class.new(Jazz::BaseObject) do
+            graphql_name "complexityKeyword"
+
+            field :complexityTest, String, null: true do
+              complexity ->(one, two) { 52 }
+            end
+          end.to_graphql
+        end
+
+        assert_match /^A complexity proc should always accept 3 parameters/, err.message
+      end
+    end
   end
 end
