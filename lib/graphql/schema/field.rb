@@ -33,7 +33,13 @@ module GraphQL
       # @param resolve [<#call(obj, args, ctx)>] **deprecated** for compatibility with <1.8.0
       # @param field [GraphQL::Field] **deprecated** for compatibility with <1.8.0
       # @param function [GraphQL::Function] **deprecated** for compatibility with <1.8.0
+<<<<<<< HEAD
       def initialize(name, return_type_expr = nil, desc = nil, null: nil, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, connection: nil, max_page_size: nil, resolve: nil, introspection: false, hash_key: nil, complexity: 1, camelize: true, extras: [], &definition_block)
+=======
+      # @param camelize [Boolean] If true, the field name will be camelized when building the schema
+      # @param complexity [Numeric] When provided, set the complexity for this field. Default 1.
+      def initialize(name, return_type_expr = nil, desc = nil, null: nil, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, connection: nil, max_page_size: nil, resolve: nil, introspection: false, hash_key: nil, camelize:true, complexity: 1, extras: [], &definition_block)
+>>>>>>> fix: remove merge marker
         if (field || function) && desc.nil? && return_type_expr.is_a?(String)
           # The return type should be copied from `field` or `function`, and the second positional argument is the description
           desc = return_type_expr
