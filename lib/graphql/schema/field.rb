@@ -7,15 +7,13 @@ module GraphQL
     class Field
       include GraphQL::Schema::Member::CachedGraphQLDefinition
       include GraphQL::Schema::Member::AcceptsDefinition
+      include GraphQL::Schema::Member::HasArguments
 
       # @return [String]
       attr_reader :name
 
       # @return [String]
       attr_accessor :description
-
-      # @return [Hash{String => GraphQL::Schema::Argument}]
-      attr_reader :arguments
 
       # @return [Symbol]
       attr_reader :method
@@ -78,7 +76,6 @@ module GraphQL
         @max_page_size = max_page_size
         @introspection = introspection
         @extras = extras
-        @arguments = {}
         @camelize = camelize
         @owner = owner
 
@@ -87,6 +84,7 @@ module GraphQL
         end
       end
 
+<<<<<<< HEAD
       # This is the `argument(...)` DSL for class-based field definitons
       def argument(*args, **kwargs, &block)
         kwargs[:owner] = self
@@ -94,6 +92,8 @@ module GraphQL
         arguments[arg_defn.name] = arg_defn
       end
 
+=======
+>>>>>>> 8c57717c... Extract HasArguments
       def description(text = nil)
         if text
           @description = text
@@ -182,24 +182,12 @@ module GraphQL
           argument :last, "Int", "Returns the last _n_ elements from the list.", required: false
         end
 
-        @arguments.each do |name, defn|
+        arguments.each do |name, defn|
           arg_graphql = defn.to_graphql
           field_defn.arguments[arg_graphql.name] = arg_graphql
         end
 
         field_defn
-      end
-
-      private
-
-      class << self
-        def argument_class(new_arg_class = nil)
-          if new_arg_class
-            @argument_class = new_arg_class
-          else
-            @argument_class || GraphQL::Schema::Argument
-          end
-        end
       end
     end
   end
