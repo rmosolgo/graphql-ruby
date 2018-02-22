@@ -110,6 +110,7 @@ end
 
 require 'graphql/schema/member/list_type_proxy'
 require 'graphql/schema/member/non_null_type_proxy'
+require 'graphql/schema/member/has_arguments'
 require 'graphql/schema/member/has_fields'
 require 'graphql/schema/member/instrumentation'
 require 'graphql/schema/member/build_type'
