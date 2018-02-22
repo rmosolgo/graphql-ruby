@@ -33,7 +33,10 @@ module GraphQL
       # @param resolve [<#call(obj, args, ctx)>] **deprecated** for compatibility with <1.8.0
       # @param field [GraphQL::Field] **deprecated** for compatibility with <1.8.0
       # @param function [GraphQL::Function] **deprecated** for compatibility with <1.8.0
-      def initialize(name, return_type_expr = nil, desc = nil, null: nil, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, connection: nil, max_page_size: nil, resolve: nil, introspection: false, hash_key: nil, complexity: 1, extras: [], &definition_block)
+      # @param camelize [Boolean] If true, the field name will be camelized when building the schema
+      # @param complexity [Numeric] When provided, set the complexity for this field. Default 1.
+      def initialize(name, return_type_expr = nil, desc = nil, null: nil, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, connection: nil, max_page_size: nil, resolve: nil, introspection: false, hash_key: nil, camelize:true, complexity: 1, extras: [], &definition_block)
+>>>>>>> upstream/1.8-dev
         if (field || function) && desc.nil? && return_type_expr.is_a?(String)
           # The return type should be copied from `field` or `function`, and the second positional argument is the description
           desc = return_type_expr
@@ -72,6 +75,7 @@ module GraphQL
         @introspection = introspection
         @extras = extras
         @arguments = {}
+        @camelize = camelize
 
         if definition_block
           instance_eval(&definition_block)
@@ -123,7 +127,7 @@ module GraphQL
           GraphQL::Field.new
         end
 
-        field_defn.name = Member::BuildType.camelize(name)
+        field_defn.name = @camelize ? Member::BuildType.camelize(name) : name
         if @return_type_expr
           return_type_name = Member::BuildType.to_type_name(@return_type_expr)
           connection = @connection.nil? ? return_type_name.end_with?("Connection") : @connection

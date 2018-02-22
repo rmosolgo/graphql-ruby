@@ -61,10 +61,6 @@ module GraphQL
 
           obj_type
         end
-
-        def global_id_field(field_name)
-          field field_name, "ID", null: false, resolve: GraphQL::Relay::GlobalIdResolve.new(type: self)
-        end
       end
     end
   end
