@@ -4,6 +4,7 @@ module GraphQL
     class InputObject < GraphQL::Schema::Member
       extend GraphQL::Schema::Member::AcceptsDefinition
       extend GraphQL::Delegate
+      extend GraphQL::Schema::Member::HasArguments
 
       def initialize(values, context:, defaults_used:)
         @arguments = self.class.arguments_class.new(values, context: context, defaults_used: defaults_used)
@@ -24,26 +25,13 @@ module GraphQL
         # @return [Class<GraphQL::Arguments>]
         attr_accessor :arguments_class
 
-        def argument(*args, **kwargs)
-          kwargs[:owner] = self
-          argument = GraphQL::Schema::Argument.new(*args, **kwargs)
-          arg_name = argument.graphql_definition.name
-          own_arguments[arg_name] = argument
+        def argument(*args)
+          argument_defn = super
           # Add a method access
+          arg_name = argument_defn.graphql_definition.name
           define_method(Member::BuildType.underscore(arg_name)) do
             @arguments.public_send(arg_name)
           end
-        end
-
-        # @return [Hash<String => GraphQL::Schema::Argument] Input fields on this input object, keyed by name.
-        def arguments
-          inherited_arguments = (superclass <= GraphQL::Schema::InputObject ? superclass.arguments : {})
-          # Local definitions override inherited ones
-          inherited_arguments.merge(own_arguments)
-        end
-
-        def own_arguments
-          @own_arguments ||= {}
         end
 
         def to_graphql
