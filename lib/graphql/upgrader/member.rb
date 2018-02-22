@@ -564,7 +564,7 @@ module GraphQL
           module_body = "\n\n#{leading_indent}module Implementation#{indented_method_bodies.join("\n")}\n#{leading_indent}end"
 
           # find the `end` of the class definition, and put the module before it
-          class_start, class_end = processor.class_definition
+          _class_start, class_end = processor.class_definition
           # This might target the newline _after_ `end`, but we don't want that one
           if input_text[class_end] == "\n"
             class_end -= 1
