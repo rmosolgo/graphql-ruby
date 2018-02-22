@@ -11,7 +11,7 @@ module Platform
       field :viewerHasStarred, !types.Boolean do
         description "Returns a boolean indicating whether the viewing user has starred this starrable."
 
-        resolve -> (object, arguments, context) do
+        resolve ->(object, arguments, context) do
           if context[:viewer]
             context[:viewer].starred?(object)
           else
@@ -25,7 +25,7 @@ module Platform
 
         argument :orderBy, Inputs::StarOrder, "Order for connection"
 
-        resolve -> (object, arguments, context) do
+        resolve ->(object, arguments, context) do
           scope = case object
           when Repository
             object.stars
