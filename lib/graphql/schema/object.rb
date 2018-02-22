@@ -3,12 +3,17 @@
 module GraphQL
   class Schema
     class Object < GraphQL::Schema::Member
+      # @return [Object] the application object this type is wrapping
       attr_reader :object
+
+      # @return [GraphQL::Query::Context] the context instance for this query
+      attr_reader :context
 
       def initialize(object, context)
         @object = object
         @context = context
       end
+
       extend GraphQL::Schema::Member::HasFields
       field_class GraphQL::Schema::Field
 
