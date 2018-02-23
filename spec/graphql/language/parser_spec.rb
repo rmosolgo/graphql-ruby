@@ -104,6 +104,18 @@ describe GraphQL::Language::Parser do
 
       assert_equal ["B", "C"], document.definitions[0].interfaces.map(&:name)
     end
+
+    it "supports the old way of parsing multiple interfaces for backwards compatibility" do
+      schema = "
+        type A implements B, C {
+          a: String
+        }
+      "
+
+      document = subject.parse(schema)
+
+      assert_equal ["B", "C"], document.definitions[0].interfaces.map(&:name)
+    end
   end
 
   describe ".parse_file" do
