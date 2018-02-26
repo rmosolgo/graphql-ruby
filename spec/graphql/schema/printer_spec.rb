@@ -481,6 +481,25 @@ SCHEMA
 
       assert_equal expected.chomp, GraphQL::Schema::Printer.print_schema(schema)
     end
+
+    it 'prints a schema without directives' do
+      query_type = Class.new(GraphQL::Schema::Object) do
+        graphql_name 'Query'
+
+        field :foobar, Integer, null: false
+
+        def foobar
+          152
+        end
+      end
+
+      schema = Class.new(GraphQL::Schema) do
+        query query_type
+      end
+
+      # I expected this to fail, but it doesn't!
+      GraphQL::Schema::Printer.new(schema).print_schema
+    end
   end
 
   it "applies an `only` filter" do
