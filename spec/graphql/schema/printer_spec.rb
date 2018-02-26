@@ -497,7 +497,6 @@ SCHEMA
         query query_type
       end
 
-      # I expected this to fail, but it doesn't!
       GraphQL::Schema::Printer.new(schema).print_schema
     end
   end
