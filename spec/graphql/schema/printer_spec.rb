@@ -497,7 +497,8 @@ SCHEMA
         query query_type
       end
 
-      GraphQL::Schema::Printer.new(schema).print_schema
+      expected = "type Query {\n  foobar: Int!\n}"
+      assert_equal expected, GraphQL::Schema::Printer.new(schema).print_schema
     end
   end
 
