@@ -676,9 +676,6 @@ module GraphQL
         schema_defn.max_depth = max_depth
         schema_defn.default_max_page_size = default_max_page_size
         schema_defn.orphan_types = orphan_types
-        if !directives
-          directives(DIRECTIVES)
-        end
         schema_defn.directives = directives
         schema_defn.introspection_namespace = introspection
         schema_defn.resolve_type = method(:resolve_type)
