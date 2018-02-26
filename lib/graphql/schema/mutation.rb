@@ -46,7 +46,6 @@ module GraphQL
           @graphql_name ||= self.name.split("::").last
         end
 
-
         # An object class to use for deriving payload types
         # @param new_class [Class] Defaults to {GraphQL::Schema::Object}
         # @return [Class]
