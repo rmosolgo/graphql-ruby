@@ -840,7 +840,8 @@ module GraphQL
         if new_directives
           @directives = new_directives.reduce({}) { |m, d| m[d.name] = d; m }
         end
-        @directives
+
+        @directives ||= directives(DIRECTIVES)
       end
 
       def tracer(new_tracer)
