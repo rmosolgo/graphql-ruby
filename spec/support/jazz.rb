@@ -362,10 +362,27 @@ module Jazz
     argument :name, String, required: true
   end
 
+  class AddInstrument < GraphQL::Schema::Mutation
+    description "Register a new musical instrument in the database"
+
+    argument :name, String, required: true
+    argument :family, Family, required: true
+
+    field :instrument, InstrumentType, null: false
+
+    def perform(name:, family:)
+      instrument = Jazz::Models::Instrument.new(name, family)
+      Jazz::Models.data["Instrument"] << instrument
+      { instrument: instrument }
+    end
+  end
+
   class Mutation < BaseObject
     field :add_ensemble, Ensemble, null: false do
       argument :input, EnsembleInput, required: true
     end
+
+    field :add_instrument, mutation: AddInstrument
 
     def add_ensemble(input:)
       ens = Models::Ensemble.new(input.name)
