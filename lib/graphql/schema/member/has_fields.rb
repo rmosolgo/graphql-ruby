@@ -34,7 +34,7 @@ module GraphQL
           if new_field_class
             @field_class = new_field_class
           else
-            @field_class || superclass.field_class
+            @field_class || (superclass.respond_to?(:field_class) ? superclass.field_class : GraphQL::Schema::Field)
           end
         end
 

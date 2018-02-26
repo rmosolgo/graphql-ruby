@@ -64,12 +64,14 @@ module GraphQL
               raise ArgumentError, LIST_TYPE_ERROR
             end
           when Class
-            if Class < GraphQL::Schema::Member
+            if type_expr < GraphQL::Schema::Member
               type_expr.graphql_definition
             else
               # Eg `String` => GraphQL::STRING_TYPE
               parse_type(type_expr.name, null: true)
             end
+          else
+            raise "Unexpected type_expr input: #{type_expr} (#{type_expr.class})"
           end
 
           # Apply list_type first, that way the
