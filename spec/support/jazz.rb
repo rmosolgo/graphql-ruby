@@ -222,7 +222,7 @@ module Jazz
     field :favorite_key, Key, null: true
     # Test lists with nullable members:
     field :inspect_context, [String, null: true], null: false
-
+    field :add_error, String, null: false, extras: [:execution_errors]
     def inspect_context
       [
         @context.custom_method,
@@ -230,6 +230,11 @@ module Jazz
         @context[:normal_key],
         nil,
       ]
+    end
+
+    def add_error(execution_errors:)
+      execution_errors.add("this has a path")
+      "done"
     end
   end
 
