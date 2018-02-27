@@ -46,6 +46,26 @@ describe GraphQL::Schema::Field do
       assert_equal "A Description.", object.fields["test"].description
     end
 
+    describe "extras" do
+      it "can get errors, which adds path" do
+        query_str = <<-GRAPHQL
+        query {
+          find(id: "Musician/Herbie Hancock") {
+            ... on Musician {
+              addError
+            }
+          }
+        }
+        GRAPHQL
+
+        res = Jazz::Schema.execute(query_str)
+        err = res["errors"].first
+        assert_equal "this has a path", err["message"]
+        assert_equal ["find", "addError"], err["path"]
+        assert_equal [{"line"=>4, "column"=>15}], err["locations"]
+      end
+    end
+
     describe "complexity" do
       it "accepts a keyword argument" do
         object = Class.new(Jazz::BaseObject) do
