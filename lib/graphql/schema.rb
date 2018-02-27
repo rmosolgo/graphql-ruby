@@ -639,7 +639,7 @@ module GraphQL
         :static_validator, :introspection_system,
         :query_analyzers, :middleware, :tracers, :instrumenters,
         :query_execution_strategy, :mutation_execution_strategy, :subscription_execution_strategy,
-        :validate, :multiplex_analyzers, :lazy?,
+        :validate, :multiplex_analyzers, :lazy?, :lazy_method_name,
         # Configuration
         :max_complexity=, :max_depth=,
         :metadata,
