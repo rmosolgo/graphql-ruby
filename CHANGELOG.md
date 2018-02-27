@@ -8,7 +8,17 @@
 
 ### Bug fixes
 
-## 1.8.0.pre5 (1 Feb 2018)
+## 1.8.0.pre7 (27 Feb 2018)
+
+### New features
+
+- Upgrader improvemnts #1305
+- Support `global_id_field` for interfaces #1299
+- Add `camelize: false` #1300
+- Add readers for `context`, `object` and `arguments` #1283
+- Replace `Schema.method_missing` with explicit whitelist #1265
+
+## 1.8.0.pre6 (1 Feb 2018)
 
 ### New features
 
