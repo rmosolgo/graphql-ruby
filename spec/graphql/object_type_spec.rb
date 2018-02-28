@@ -74,6 +74,8 @@ describe GraphQL::ObjectType do
         implements interface
         global_id_field :id
 
+        # When the validation for `id` is run for `_id`, it will fail because
+        # GraphQL::STRING_TYPE cannot be transformed into a GraphQL::ID_TYPE
         field :_id, String, description: 'database id', null: true
       end
 
