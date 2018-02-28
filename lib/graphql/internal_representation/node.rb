@@ -131,7 +131,7 @@ module GraphQL
       # Selections are merged in place, not copied.
       def deep_merge_node(new_parent, scope: nil, merge_self: true)
         if merge_self
-          @ast_nodes |= new_parent.ast_nodes
+          @ast_nodes.concat(new_parent.ast_nodes).uniq!
           @definitions |= new_parent.definitions
         end
         new_sc = new_parent.scoped_children
