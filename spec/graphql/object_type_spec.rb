@@ -60,6 +60,26 @@ describe GraphQL::ObjectType do
 
       assert_raises(ArgumentError) { type.name }
     end
+
+    focus
+    it "doesnt convolute field names that differ with underscore" do
+      interface = Class.new(GraphQL::Schema::Interface) do
+        graphql_name 'TestInterface'
+        description 'Requires an id'
+
+        field :id, GraphQL::ID_TYPE, null: false
+      end
+
+      object = Class.new(GraphQL::Schema::Object) do
+        graphql_name 'TestObject'
+        implements interface
+        global_id_field :id
+
+        field :_id, String, description: 'database id', null: true
+      end
+
+      assert_equal nil, GraphQL::Schema::Validation.validate(object.to_graphql)
+    end
   end
 
   it "accepts fields definition" do
