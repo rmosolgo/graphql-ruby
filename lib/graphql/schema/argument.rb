@@ -8,6 +8,9 @@ module GraphQL
 
       attr_reader :name
 
+      # @return [GraphQL::Schema::Field, Class] The field or input object this argument belongs to
+      attr_reader :owner
+
       # @param arg_name [Symbol]
       # @param type_expr
       # @param desc [String]
@@ -15,13 +18,14 @@ module GraphQL
       # @param description [String]
       # @param default_value [Object]
       # @param camelize [Boolean] if true, the name will be camelized when building the schema
-      def initialize(arg_name, type_expr, desc = nil, required:, description: nil, default_value: NO_DEFAULT, camelize: true)
+      def initialize(arg_name, type_expr, desc = nil, required:, description: nil, default_value: NO_DEFAULT, camelize: true, owner:)
         @name = arg_name.to_s
         @type_expr = type_expr
         @description = desc || description
         @null = !required
         @default_value = default_value
         @camelize = camelize
+        @owner = owner
       end
 
       def to_graphql

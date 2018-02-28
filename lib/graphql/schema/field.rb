@@ -19,9 +19,13 @@ module GraphQL
       # @return [Symbol]
       attr_reader :method
 
+      # @return [Class] The type that this field belongs to
+      attr_reader :owner
+
       # @param name [Symbol] The underscore-cased version of this field name (will be camelized for the GraphQL API)
       # @param return_type_expr [Class, GraphQL::BaseType, Array] The return type of this field
       # @param desc [String] Field description
+      # @param owner [Class] The type that this field belongs to
       # @param null [Boolean] `true` if this field may return `null`, `false` if it is never `null`
       # @param description [String] Field description
       # @param deprecation_reason [String] If present, the field is marked "deprecated" with this message
@@ -35,7 +39,7 @@ module GraphQL
       # @param function [GraphQL::Function] **deprecated** for compatibility with <1.8.0
       # @param camelize [Boolean] If true, the field name will be camelized when building the schema
       # @param complexity [Numeric] When provided, set the complexity for this field
-      def initialize(name, return_type_expr = nil, desc = nil, null: nil, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, connection: nil, max_page_size: nil, resolve: nil, introspection: false, hash_key: nil, camelize: true, complexity: 1, extras: [], &definition_block)
+      def initialize(name, return_type_expr = nil, desc = nil, owner:, null: nil, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, connection: nil, max_page_size: nil, resolve: nil, introspection: false, hash_key: nil, camelize: true, complexity: 1, extras: [], &definition_block)
         if (field || function) && desc.nil? && return_type_expr.is_a?(String)
           # The return type should be copied from `field` or `function`, and the second positional argument is the description
           desc = return_type_expr
@@ -75,6 +79,7 @@ module GraphQL
         @extras = extras
         @arguments = {}
         @camelize = camelize
+        @owner = owner
 
         if definition_block
           instance_eval(&definition_block)
@@ -82,8 +87,9 @@ module GraphQL
       end
 
       # This is the `argument(...)` DSL for class-based field definitons
-      def argument(*args)
-        arg_defn = self.class.argument_class.new(*args)
+      def argument(*args, **kwargs)
+        kwargs[:owner] = self
+        arg_defn = self.class.argument_class.new(*args, **kwargs)
         arguments[arg_defn.name] = arg_defn
       end
 

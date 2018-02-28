@@ -23,8 +23,9 @@ module GraphQL
         # @return [Class<GraphQL::Arguments>]
         attr_accessor :arguments_class
 
-        def argument(*args)
-          argument = GraphQL::Schema::Argument.new(*args)
+        def argument(*args, **kwargs)
+          kwargs[:owner] = self
+          argument = GraphQL::Schema::Argument.new(*args, **kwargs)
           arg_name = argument.graphql_definition.name
           own_arguments[arg_name] = argument
           # Add a method access

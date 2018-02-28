@@ -14,7 +14,7 @@ describe GraphQL::Schema::Field do
     it "camelizes the field name, unless camelize: false" do
       assert_equal 'inspectInput', field.graphql_definition.name
 
-      underscored_field = GraphQL::Schema::Field.new(:underscored_field, String, null: false, camelize: false) do
+      underscored_field = GraphQL::Schema::Field.new(:underscored_field, String, null: false, camelize: false, owner: nil) do
         argument :underscored_arg, String, required: true, camelize: false
       end
 
@@ -64,6 +64,16 @@ describe GraphQL::Schema::Field do
         assert_equal ["find", "addError"], err["path"]
         assert_equal [{"line"=>4, "column"=>15}], err["locations"]
       end
+    end
+
+    it "is the #owner of its arguments" do
+      field = Jazz::Query.fields["find"]
+      argument = field.arguments["id"]
+      assert_equal field, argument.owner
+    end
+
+    it "has a reference to the object that owns it with #owner" do
+      assert_equal Jazz::Query, field.owner
     end
 
     describe "complexity" do

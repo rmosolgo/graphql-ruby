@@ -7,8 +7,9 @@ module GraphQL
         # Add a field to this object or interface with the given definition
         # @see {GraphQL::Schema::Field#initialize} for method signature
         # @return [void]
-        def field(*args, &block)
-          field_defn = field_class.new(*args, &block)
+        def field(*args, **kwargs, &block)
+          kwargs[:owner] = self
+          field_defn = field_class.new(*args, **kwargs, &block)
           add_field(field_defn)
           nil
         end
