@@ -8,6 +8,12 @@
 
 ### Bug fixes
 
+## 1.7.13 (28 Feb 2018)
+
+### Bug fixes
+
+- `Schema#as_json` returns a hash, not a `GraphQL::Query::Result` #1288
+
 ## 1.7.12 (13 Feb 2018)
 
 ### Bug fixes
