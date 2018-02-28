@@ -28,8 +28,9 @@ module GraphQL
         # @param deprecation_reason [String] if this object is deprecated, include a message here
         # @return [void]
         # @see {Schema::EnumValue} which handles these inputs by default
-        def value(*args, &block)
-          value = enum_value_class.new(*args, &block)
+        def value(*args, **kwargs, &block)
+          kwargs[:owner] = self
+          value = enum_value_class.new(*args, **kwargs, &block)
           own_values[value.graphql_name] = value
           nil
         end
