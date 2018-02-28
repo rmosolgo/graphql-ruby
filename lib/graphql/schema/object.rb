@@ -22,8 +22,8 @@ module GraphQL
           new_interfaces.each do |int|
             if int.is_a?(Class) && int < GraphQL::Schema::Interface
               # Add the graphql field defns
-              int.fields.each do |_name, field|
-                add_field(field)
+              int.fields.each do |name, field|
+                own_fields[name] = field
               end
               # And call the implemented hook
               int.apply_implemented(self)

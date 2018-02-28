@@ -9,6 +9,11 @@ describe GraphQL::Schema::InputObject do
       assert_equal nil, input_object.description
       assert_equal 1, input_object.arguments.size
     end
+
+    it "is the #owner of its arguments" do
+      argument = input_object.arguments["name"]
+      assert_equal input_object, argument.owner
+    end
   end
 
   describe ".to_graphql" do
