@@ -28,6 +28,11 @@ describe GraphQL::Schema::Enum do
     it "accepts a block" do
       assert_equal "Neither here nor there, really", enum.values["KEYS"].description
     end
+
+    it "is the #owner of its values" do
+      value = enum.values["STRING"]
+      assert_equal enum, value.owner
+    end
   end
 
   it "uses a custom enum value class" do
