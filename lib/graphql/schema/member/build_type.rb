@@ -109,8 +109,8 @@ module GraphQL
           return string unless string.include?("_")
           camelized = string.split('_').map(&:capitalize).join
           camelized[0] = camelized[0].downcase
-          if string.start_with?("__")
-            camelized = "__#{camelized}"
+          if (match_data = string.match(/\A(_+)/))
+            camelized = "#{match_data[0]}#{camelized}"
           end
           camelized
         end
