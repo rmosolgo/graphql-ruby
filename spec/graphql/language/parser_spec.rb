@@ -44,6 +44,80 @@ describe GraphQL::Language::Parser do
     assert_equal schema_string, document.to_query_string
   end
 
+  describe "implements" do
+    it "parses when there are no interfaces" do
+      schema = "
+        type A {
+          a: String
+        }
+      "
+
+      document = subject.parse(schema)
+
+      assert_equal [], document.definitions[0].interfaces.map(&:name)
+    end
+
+    it "parses with leading ampersand" do
+      schema = "
+        type A implements & B {
+          a: String
+        }
+      "
+
+      document = subject.parse(schema)
+
+      assert_equal ["B"], document.definitions[0].interfaces.map(&:name)
+    end
+
+    it "parses with leading ampersand and multiple interfaces" do
+      schema = "
+        type A implements & B & C {
+          a: String
+        }
+      "
+
+      document = subject.parse(schema)
+
+      assert_equal ["B", "C"], document.definitions[0].interfaces.map(&:name)
+    end
+
+    it "parses without leading ampersand" do
+      schema = "
+        type A implements B {
+          a: String
+        }
+      "
+
+      document = subject.parse(schema)
+
+      assert_equal ["B"], document.definitions[0].interfaces.map(&:name)
+    end
+
+    it "parses without leading ampersand and multiple interfaces" do
+      schema = "
+        type A implements B & C {
+          a: String
+        }
+      "
+
+      document = subject.parse(schema)
+
+      assert_equal ["B", "C"], document.definitions[0].interfaces.map(&:name)
+    end
+
+    it "supports the old way of parsing multiple interfaces for backwards compatibility" do
+      schema = "
+        type A implements B, C {
+          a: String
+        }
+      "
+
+      document = subject.parse(schema)
+
+      assert_equal ["B", "C"], document.definitions[0].interfaces.map(&:name)
+    end
+  end
+
   describe ".parse_file" do
     it "assigns filename to all nodes" do
       example_filename = "spec/support/parser/filename_example.graphql"

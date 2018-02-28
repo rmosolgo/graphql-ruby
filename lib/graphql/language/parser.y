@@ -152,10 +152,6 @@ rule
     | operation_type
     | schema_keyword
 
-  name_list:
-      name             { return [make_node(:TypeName, name: val[0])] }
-    | name_list name   { val[0] << make_node(:TypeName, name: val[1]) }
-
   enum_value_definition:
     enum_name directives_list_opt { return make_node(:EnumValueDefinition, name: val[0], directives: val[1], description: get_description(val[0])) }
 
@@ -306,7 +302,17 @@ rule
 
   implements_opt:
       /* none */ { return [] }
-    | IMPLEMENTS name_list { return val[1] }
+    | IMPLEMENTS AMP interfaces_list { return val[2] }
+    | IMPLEMENTS interfaces_list { return val[1] }
+    | IMPLEMENTS legacy_interfaces_list { return val[1] }
+
+  interfaces_list:
+      name                     { return [make_node(:TypeName, name: val[0])] }
+    | interfaces_list AMP name { val[0] << make_node(:TypeName, name: val[2]) }
+
+  legacy_interfaces_list:
+      name                        { return [make_node(:TypeName, name: val[0])] }
+    | legacy_interfaces_list name { val[0] << make_node(:TypeName, name: val[1]) }
 
   input_value_definition:
       name COLON type default_value_opt directives_list_opt {
