@@ -61,7 +61,6 @@ describe GraphQL::ObjectType do
       assert_raises(ArgumentError) { type.name }
     end
 
-    focus
     it "doesnt convolute field names that differ with underscore" do
       interface = Class.new(GraphQL::Schema::Interface) do
         graphql_name 'TestInterface'
