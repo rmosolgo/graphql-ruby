@@ -163,10 +163,10 @@ describe GraphQL::Execution::Execute do
           "execute_field",
           "execute_query",
           "lazy_loader",
-          "execute_field",
           "execute_field_lazy",
           "execute_field",
           "execute_field_lazy",
+          "execute_field",
           "execute_field_lazy",
           "execute_field_lazy",
           "execute_query_lazy",
@@ -177,8 +177,8 @@ describe GraphQL::Execution::Execute do
         field_1_eager, field_2_eager,
           query_eager, lazy_loader,
           # field 3 is eager-resolved _during_ field 1's lazy resolve
-          field_3_eager, field_1_lazy,
-          field_4_eager, field_2_lazy,
+          field_1_lazy, field_3_eager,
+          field_2_lazy, field_4_eager,
           # field 3 didn't finish above, it's resolved in the next round
           field_3_lazy, field_4_lazy,
           query_lazy, multiplex = exec_traces
