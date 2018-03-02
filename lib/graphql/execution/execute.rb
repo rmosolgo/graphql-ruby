@@ -68,12 +68,10 @@ module GraphQL
               irep_node: child_irep_node,
             )
 
-            field_result = field_ctx.trace("execute_field", { context: field_ctx }) do
-              resolve_field(
-                object,
-                field_ctx
-              )
-            end
+            field_result = resolve_field(
+              object,
+              field_ctx
+            )
 
             if field_result.is_a?(Skip)
               next
@@ -105,7 +103,9 @@ module GraphQL
 
           raw_value = begin
             arguments = query.arguments_for(irep_node, field)
-            field_ctx.schema.middleware.invoke([parent_type, object, field, arguments, field_ctx])
+            field_ctx.trace("execute_field", { context: field_ctx }) do
+              field_ctx.schema.middleware.invoke([parent_type, object, field, arguments, field_ctx])
+            end
           rescue GraphQL::ExecutionError => err
             err
           end
