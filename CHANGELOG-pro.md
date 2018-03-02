@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+## 1.6.5 (7 Feb 2018)
+
+### Bug Fix
+
+- Support `LEAST(...)` in stable cursors
+
 ## 1.6.4 (7 Feb 2018)
 
 ### Bug Fix
