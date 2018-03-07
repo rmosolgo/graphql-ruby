@@ -610,6 +610,47 @@ type Post {
 SCHEMA
       assert_equal expected.chomp, GraphQL::Schema::Printer.new(schema).print_type(schema.types['Post'])
     end
+
+    it "can print arguments that use non-standard Ruby objects as default values" do
+      backing_object = Struct.new(:value) do
+        # Before #1159: The Schema::Printer called `to_s.inspect` on your type to generate
+        # the public value for the `default_value`. Following that same pattern here:
+        
+        def to_s
+          value
+        end
+      end
+
+      scalar_type = GraphQL::ScalarType.define do
+        name "SomeType"
+        coerce_input ->(value, ctx) { backing_object.new(value) }
+        coerce_result ->(obj, ctx) { obj.value }
+      end
+
+      query_root = GraphQL::ObjectType.define do
+        name "Query"
+        description "The query root of this schema"
+
+        field :example do
+          type scalar_type
+          argument :input, scalar_type, default_value: backing_object.new("Howdy")
+          resolve ->(obj, args, ctx) { args[:input] }
+        end
+      end
+
+      schema = GraphQL::Schema.define do
+        query query_root
+      end
+
+      expected = <<SCHEMA
+# The query root of this schema
+type Query {
+  example(input: SomeType = "Howdy"): SomeType
+}
+SCHEMA
+
+      assert_equal expected.chomp, GraphQL::Schema::Printer.new(schema).print_type(query_root)
+    end
   end
 
   describe "#print_directive" do
