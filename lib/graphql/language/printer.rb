@@ -339,8 +339,6 @@ module GraphQL
         when Hash
           "{#{node.map { |k, v| "#{k}: #{print_node(v)}" }.join(", ")}}".dup
         else
-          # This case is used if there is some custom object that is used as a default value for an
-          # argument of input field.
           GraphQL::Language.serialize(node.to_s)
         end
       end

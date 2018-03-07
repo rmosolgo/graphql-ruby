@@ -612,14 +612,7 @@ SCHEMA
     end
 
     it "can print arguments that use non-standard Ruby objects as default values" do
-      backing_object = Struct.new(:value) do
-        # Before #1159: The Schema::Printer called `to_s.inspect` on your type to generate
-        # the public value for the `default_value`. Following that same pattern here:
-        
-        def to_s
-          value
-        end
-      end
+      backing_object = Struct.new(:value)
 
       scalar_type = GraphQL::ScalarType.define do
         name "SomeType"
