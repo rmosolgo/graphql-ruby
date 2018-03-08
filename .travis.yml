@@ -18,6 +18,7 @@ rvm:
 - 2.1.10 # Lowest version officially supported by the gem is 2.1
 - 2.4.3
 - jruby-9.1.15.0
+- 2.5
 
 services:
   - postgresql
