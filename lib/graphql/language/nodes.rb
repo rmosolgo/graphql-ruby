@@ -40,6 +40,10 @@ module GraphQL
             other.children.eql?(self.children)
         end
 
+        def hash
+          line.hash ^ col.hash ^ filename.hash
+        end
+
         # @return [Array<GraphQL::Language::Nodes::AbstractNode>] all nodes in the tree below this one
         def children
           self.class.child_attributes
@@ -211,6 +215,14 @@ module GraphQL
           @arguments = arguments
           @directives = directives
           @selections = selections
+        end
+
+        def eql?(other)
+          hash == other.hash
+        end
+
+        def hash
+          super.hash ^ @name.hash ^ @arguments.hash ^ @alias.hash ^ @directives.hash ^ @selections.hash
         end
       end
 
