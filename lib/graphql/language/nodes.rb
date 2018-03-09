@@ -10,7 +10,7 @@ module GraphQL
       # - `to_query_string` turns an AST node into a GraphQL string
 
       class AbstractNode
-        attr_accessor :line, :col, :filename
+        attr_reader :line, :col, :filename
 
         # Initialize a node by extracting its position,
         # then calling the class's `initialize_node` method.
@@ -85,7 +85,7 @@ module GraphQL
 
       # Base class for non-null type names and list type names
       class WrapperType < AbstractNode
-        attr_accessor :of_type
+        attr_reader :of_type
         scalar_attributes :of_type
 
         def initialize_node(of_type: nil)
@@ -99,7 +99,7 @@ module GraphQL
 
       # Base class for nodes whose only value is a name (no child nodes or other scalars)
       class NameOnlyNode < AbstractNode
-        attr_accessor :name
+        attr_reader :name
         scalar_attributes :name
 
         def initialize_node(name: nil)
@@ -113,7 +113,7 @@ module GraphQL
 
       # A key-value pair for a field's inputs
       class Argument < AbstractNode
-        attr_accessor :name, :value
+        attr_reader :name, :value
         scalar_attributes :name, :value
 
         # @!attribute name
@@ -133,7 +133,7 @@ module GraphQL
       end
 
       class Directive < AbstractNode
-        attr_accessor :name, :arguments
+        attr_reader :name, :arguments
         scalar_attributes :name
         child_attributes :arguments
 
@@ -144,7 +144,7 @@ module GraphQL
       end
 
       class DirectiveDefinition < AbstractNode
-        attr_accessor :name, :arguments, :locations, :description
+        attr_reader :name, :arguments, :locations, :description
         scalar_attributes :name
         child_attributes :arguments, :locations
 
@@ -175,7 +175,7 @@ module GraphQL
       #  document.to_query_string(printer: VariableSrubber.new)
       #
       class Document < AbstractNode
-        attr_accessor :definitions
+        attr_reader :definitions
         child_attributes :definitions
 
         # @!attribute definitions
@@ -197,7 +197,7 @@ module GraphQL
 
       # A single selection in a GraphQL query.
       class Field < AbstractNode
-        attr_accessor :name, :alias, :arguments, :directives, :selections
+        attr_reader :name, :alias, :arguments, :directives, :selections
         scalar_attributes :name, :alias
         child_attributes :arguments, :directives, :selections
 
@@ -216,7 +216,7 @@ module GraphQL
 
       # A reusable fragment, defined at document-level.
       class FragmentDefinition < AbstractNode
-        attr_accessor :name, :type, :directives, :selections
+        attr_reader :name, :type, :directives, :selections
         scalar_attributes :name, :type
         child_attributes :directives, :selections
 
@@ -235,7 +235,7 @@ module GraphQL
 
       # Application of a named fragment in a selection
       class FragmentSpread < AbstractNode
-        attr_accessor :name, :directives
+        attr_reader :name, :directives
         scalar_attributes :name
         child_attributes :directives
 
@@ -250,7 +250,7 @@ module GraphQL
 
       # An unnamed fragment, defined directly in the query with `... {  }`
       class InlineFragment < AbstractNode
-        attr_accessor :type, :directives, :selections
+        attr_reader :type, :directives, :selections
         scalar_attributes :type
         child_attributes :directives, :selections
 
@@ -266,7 +266,7 @@ module GraphQL
 
       # A collection of key-value inputs which may be a field argument
       class InputObject < AbstractNode
-        attr_accessor :arguments
+        attr_reader :arguments
         child_attributes :arguments
 
         # @!attribute arguments
@@ -316,7 +316,7 @@ module GraphQL
       # May be anonymous or named.
       # May be explicitly typed (eg `mutation { ... }`) or implicitly a query (eg `{ ... }`).
       class OperationDefinition < AbstractNode
-        attr_accessor :operation_type, :name, :variables, :directives, :selections
+        attr_reader :operation_type, :name, :variables, :directives, :selections
         scalar_attributes :operation_type, :name
         child_attributes :variables, :directives, :selections
 
@@ -346,7 +346,7 @@ module GraphQL
 
       # An operation-level query variable
       class VariableDefinition < AbstractNode
-        attr_accessor :name, :type, :default_value
+        attr_reader :name, :type, :default_value
         scalar_attributes :name, :type, :default_value
 
         # @!attribute default_value
@@ -369,7 +369,7 @@ module GraphQL
       class VariableIdentifier < NameOnlyNode; end
 
       class SchemaDefinition < AbstractNode
-        attr_accessor :query, :mutation, :subscription
+        attr_reader :query, :mutation, :subscription
         scalar_attributes :query, :mutation, :subscription
 
         def initialize_node(query: nil, mutation: nil, subscription: nil)
@@ -380,7 +380,7 @@ module GraphQL
       end
 
       class ScalarTypeDefinition < AbstractNode
-        attr_accessor :name, :directives, :description
+        attr_reader :name, :directives, :description
         scalar_attributes :name
         child_attributes :directives
 
@@ -392,7 +392,7 @@ module GraphQL
       end
 
       class ObjectTypeDefinition < AbstractNode
-        attr_accessor :name, :interfaces, :fields, :directives, :description
+        attr_reader :name, :interfaces, :fields, :directives, :description
         scalar_attributes :name
         child_attributes :interfaces, :fields, :directives
 
@@ -406,7 +406,7 @@ module GraphQL
       end
 
       class InputValueDefinition < AbstractNode
-        attr_accessor :name, :type, :default_value, :directives,:description
+        attr_reader :name, :type, :default_value, :directives,:description
         scalar_attributes :name, :type, :default_value
         child_attributes :directives
 
@@ -420,7 +420,7 @@ module GraphQL
       end
 
       class FieldDefinition < AbstractNode
-        attr_accessor :name, :arguments, :type, :directives, :description
+        attr_reader :name, :arguments, :type, :directives, :description
         scalar_attributes :name, :type
         child_attributes :arguments, :directives
 
@@ -434,7 +434,7 @@ module GraphQL
       end
 
       class InterfaceTypeDefinition < AbstractNode
-        attr_accessor :name, :fields, :directives, :description
+        attr_reader :name, :fields, :directives, :description
         scalar_attributes :name
         child_attributes :fields, :directives
 
@@ -447,7 +447,7 @@ module GraphQL
       end
 
       class UnionTypeDefinition < AbstractNode
-        attr_accessor :name, :types, :directives, :description
+        attr_reader :name, :types, :directives, :description
         scalar_attributes :name
         child_attributes :types, :directives
 
@@ -460,7 +460,7 @@ module GraphQL
       end
 
       class EnumTypeDefinition < AbstractNode
-        attr_accessor :name, :values, :directives, :description
+        attr_reader :name, :values, :directives, :description
         scalar_attributes :name
         child_attributes :values, :directives
 
@@ -473,7 +473,7 @@ module GraphQL
       end
 
       class EnumValueDefinition < AbstractNode
-        attr_accessor :name, :directives, :description
+        attr_reader :name, :directives, :description
         scalar_attributes :name
         child_attributes :directives
 
@@ -485,7 +485,7 @@ module GraphQL
       end
 
       class InputObjectTypeDefinition < AbstractNode
-        attr_accessor :name, :fields, :directives, :description
+        attr_reader :name, :fields, :directives, :description
         scalar_attributes :name
         child_attributes :fields
 
