@@ -121,15 +121,18 @@ module GraphQL
       end
 
       def build_argument_node(argument)
+        if argument.default_value?
+          default_value = build_default_value(argument.default_value, argument.type)
+        else
+          default_value = nil
+        end
+
         argument_node = GraphQL::Language::Nodes::InputValueDefinition.new(
           name: argument.name,
           description: argument.description,
           type: build_type_name_node(argument.type),
+          default_value: default_value,
         )
-
-        if argument.default_value?
-          argument_node.default_value = build_default_value(argument.default_value, argument.type)
-        end
 
         argument_node
       end
