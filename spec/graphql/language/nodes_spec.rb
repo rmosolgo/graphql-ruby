@@ -4,13 +4,24 @@ require "spec_helper"
 describe GraphQL::Language::Nodes::AbstractNode do
   describe "child and scalar attributes" do
     it "are inherited by node subclasses" do
-      subclassed_directive = Class.new(GraphQL::Language::Nodes::Directive)
+      subclassed_directive = Class.new(GraphQL::Language::Nodes::AbstractNode) do
+        scalar_attributes :foo
+        child_attributes :bar
 
-      assert_equal GraphQL::Language::Nodes::Directive.scalar_attributes,
-        subclassed_directive.scalar_attributes
+        def initialize
+        end
 
-      assert_equal GraphQL::Language::Nodes::Directive.child_attributes,
-        subclassed_directive.child_attributes
+        def foo; __method__; end
+        def bar; __method__; end
+      end
+
+      sub_subclass = Class.new(subclassed_directive)
+
+      bob = subclassed_directive.new
+      alice = sub_subclass.new
+
+      assert_equal bob.children, alice.children
+      assert_equal bob.scalars, alice.scalars
     end
   end
 

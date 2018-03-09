@@ -42,35 +42,27 @@ module GraphQL
 
         # @return [Array<GraphQL::Language::Nodes::AbstractNode>] all nodes in the tree below this one
         def children
-          self.class.child_attributes
-            .map { |attr_name| public_send(attr_name) }
-            .flatten
+          []
         end
 
         # @return [Array<Integer, Float, String, Boolean, Array>] Scalar values attached to this node
         def scalars
-          self.class.scalar_attributes
-            .map { |attr_name| public_send(attr_name) }
+          []
         end
 
         class << self
-          # A node subclass inherits `scalar_attributes`
-          # and `child_attributes` from its parent
-          def inherited(subclass)
-            subclass.scalar_attributes(*@scalar_attributes)
-            subclass.child_attributes(*@child_attributes)
-          end
-
           # define `attr_names` as places where scalars may be attached to this node
           def scalar_attributes(*attr_names)
-            @scalar_attributes ||= []
-            @scalar_attributes += attr_names
+            define_method :scalars do
+              super() + attr_names.map { |attr_name| public_send(attr_name) }
+            end
           end
 
           # define `attr_names` as places where child nodes may be attached to this node
           def child_attributes(*attr_names)
-            @child_attributes ||= []
-            @child_attributes += attr_names
+            define_method :children do
+              super() + attr_names.map { |attr_name| public_send(attr_name) }.flatten
+            end
           end
         end
 
