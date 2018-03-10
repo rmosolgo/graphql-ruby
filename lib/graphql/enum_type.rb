@@ -85,6 +85,11 @@ module GraphQL
       self.values = other.values.values
     end
 
+    def name=(name)
+      GraphQL::NameValidator.validate!(name)
+      @name = name
+    end
+
     # @param new_values [Array<EnumValue>] The set of values contained in this type
     def values=(new_values)
       @values_by_name = {}
