@@ -49,6 +49,21 @@ describe GraphQL::Schema::Interface do
       assert_equal "id", field.name
       assert_equal GraphQL::ID_TYPE.to_non_null_type, field.type
       assert_equal "A unique identifier for this object", field.description
+      assert_nil interface_type.resolve_type_proc
+    end
+
+    it "can specify a resolve_type method" do
+      interface = Class.new(GraphQL::Schema::Interface) do
+        def self.resolve_type(_object, _context)
+          "MyType"
+        end
+
+        def self.name
+          "MyInterface"
+        end
+      end
+      interface_type = interface.to_graphql
+      assert_equal "MyType", interface_type.resolve_type_proc.call(nil, nil)
     end
   end
 
