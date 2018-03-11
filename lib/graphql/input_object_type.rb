@@ -51,11 +51,6 @@ module GraphQL
       @arguments = other.arguments.dup
     end
 
-    def name=(name)
-      GraphQL::NameValidator.validate!(name)
-      @name = name
-    end
-
     def kind
       GraphQL::TypeKinds::INPUT_OBJECT
     end

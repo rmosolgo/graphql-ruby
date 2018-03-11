@@ -102,11 +102,6 @@ module GraphQL
       dirty_ifaces.concat(interfaces)
     end
 
-    def name=(name)
-      GraphQL::NameValidator.validate!(name)
-      @name = name
-    end
-
     protected
 
     attr_reader :dirty_interfaces, :dirty_inherited_interfaces

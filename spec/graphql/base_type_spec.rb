@@ -28,6 +28,28 @@ describe GraphQL::BaseType do
     assert_equal ["Cheese"], Dummy::CheeseType.metadata[:class_names]
   end
 
+  describe "#name" do
+    describe "when containing spaces" do
+      BaseNameSpaceTest = GraphQL::BaseType.define do
+        name "Some Invalid Name"
+      end
+
+      it "is invalid" do
+        assert_raises(GraphQL::InvalidNameError) { BaseNameSpaceTest.name }
+      end
+    end
+
+    describe "when containing colons" do
+      BaseNameColonsTest = GraphQL::BaseType.define do
+        name "Some::Invalid::Name"
+      end
+
+      it 'is invalid' do
+        assert_raises(GraphQL::InvalidNameError) { BaseNameColonsTest.name }
+      end
+    end
+  end
+
   describe "#dup" do
     let(:obj_type) {
       GraphQL::ObjectType.define do

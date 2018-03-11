@@ -31,6 +31,11 @@ module GraphQL
     # @return [String] the name of this type, must be unique within a Schema
     attr_accessor :name
 
+    def name=(name)
+      GraphQL::NameValidator.validate!(name)
+      @name = name
+    end
+
     # @return [String, nil] a description for this type
     attr_accessor :description
 
