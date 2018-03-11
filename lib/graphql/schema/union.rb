@@ -23,9 +23,7 @@ module GraphQL
           type_defn.name = graphql_name
           type_defn.description = description
           type_defn.possible_types = possible_types
-          # If an instance method is defined, use it as a
-          # resolve type hook, via the class method
-          if method_defined?(:resolve_type)
+          if respond_to?(:resolve_type)
             type_defn.resolve_type = method(:resolve_type)
           end
           type_defn
