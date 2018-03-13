@@ -136,6 +136,9 @@ Some late-bound types couldn't be resolved:
               visit_fields(schema, type_defn)
             when GraphQL::InterfaceType
               visit_fields(schema, type_defn)
+              type_defn.orphan_types.each do |t|
+                visit(schema, t, "Orphan type for #{type_defn.name}")
+              end
             when GraphQL::UnionType
               type_defn.possible_types.each do |t|
                 @union_memberships[t.name] << type_defn

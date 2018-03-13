@@ -5,17 +5,12 @@ module GraphQL
       class << self
         def possible_types(*types)
           if types.any?
-            @own_possible_types = types
+            @possible_types = types
           else
-            all_possible_types = own_possible_types
-            inherited_possible_types = (superclass < GraphQL::Schema::Union ? superclass.possible_types : [])
-            all_possible_types += inherited_possible_types
+            all_possible_types = @possible_types || []
+            all_possible_types += super if defined?(super)
             all_possible_types.uniq
           end
-        end
-
-        def own_possible_types
-          @own_possible_types ||= []
         end
 
         def to_graphql
