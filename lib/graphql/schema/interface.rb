@@ -15,10 +15,21 @@ module GraphQL
           end
         end
 
+        def orphan_types(*types)
+          if types.any?
+            @orphan_types = types
+          else
+            all_orphan_types = @orphan_types || []
+            all_orphan_types += super if defined?(super)
+            all_orphan_types.uniq
+          end
+        end
+
         def to_graphql
           type_defn = GraphQL::InterfaceType.new
           type_defn.name = graphql_name
           type_defn.description = description
+          type_defn.orphan_types = orphan_types
           fields.each do |field_name, field_inst|
             field_defn = field_inst.graphql_definition
             type_defn.fields[field_defn.name] = field_defn

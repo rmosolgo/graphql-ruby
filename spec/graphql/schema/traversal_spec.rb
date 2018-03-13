@@ -188,4 +188,35 @@ describe GraphQL::Schema::Traversal do
     }
     assert_equal expected, result
   end
+
+  it "finds orphan types from interfaces" do
+    b_type = GraphQL::ObjectType.define do
+      name "B"
+    end
+
+    c_type = GraphQL::ObjectType.define do
+      name "C"
+    end
+
+    interface = GraphQL::InterfaceType.define do
+      name "AInterface"
+      orphan_types [b_type]
+    end
+
+    another_interface = GraphQL::InterfaceType.define do
+      name "AnotherIterface"
+      orphan_types [b_type, c_type]
+    end
+
+    result = traversal([interface, another_interface]).type_map
+    expected = {
+      "Boolean" => GraphQL::BOOLEAN_TYPE,
+      "String" => GraphQL::STRING_TYPE,
+      "AInterface" => interface,
+      "AnotherIterface" => another_interface,
+      "B" => b_type,
+      "C" => c_type
+    }
+    assert_equal expected, result
+  end
 end
