@@ -339,7 +339,7 @@ module GraphQL
         when Hash
           "{#{node.map { |k, v| "#{k}: #{print_node(v)}" }.join(", ")}}".dup
         else
-          raise TypeError
+          GraphQL::Language.serialize(node.to_s)
         end
       end
 
