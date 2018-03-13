@@ -218,6 +218,19 @@ describe GraphQL::InputObjectType do
           assert_equal(expected, actual)
         end
       end
+
+      describe 'with invalid name' do
+        it 'raises the correct error' do
+          assert_raises(GraphQL::InvalidNameError) do
+            InvalidInputTest = GraphQL::InputObjectType.define do
+              name "Some::Invalid Name"
+            end
+
+            # Force evaluation
+            InvalidInputTest.name
+          end
+        end
+      end
     end
   end
 
