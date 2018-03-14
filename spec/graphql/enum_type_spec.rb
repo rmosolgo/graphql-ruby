@@ -37,18 +37,31 @@ describe GraphQL::EnumType do
     end
   end
 
-  describe "invalid names" do
-    it "rejects names with a space" do
+  describe "invalid values" do
+    it "rejects value names with a space" do
       assert_raises(GraphQL::InvalidNameError) {
-        InvalidEnumTest = GraphQL::EnumType.define do
-          name "InvalidEnumTest"
+        InvalidEnumValueTest = GraphQL::EnumType.define do
+          name "InvalidEnumValueTest"
 
           value("SPACE IN VALUE", "Invalid enum because it contains spaces", value: 1)
         end
 
         # Force evaluation
-        InvalidEnumTest.name
+        InvalidEnumValueTest.name
       }
+    end
+  end
+
+  describe "invalid name" do
+    it "reject names with invalid format" do
+      assert_raises(GraphQL::InvalidNameError) do
+        InvalidEnumNameTest = GraphQL::EnumType.define do
+          name "Some::Invalid::Name"
+        end
+
+        # Force evaluation
+        InvalidEnumNameTest.name
+      end
     end
   end
 

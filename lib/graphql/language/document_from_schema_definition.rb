@@ -176,7 +176,7 @@ module GraphQL
 
         case type
         when GraphQL::ScalarType
-          default_value
+          type.coerce_isolated_result(default_value)
         when EnumType
           GraphQL::Language::Nodes::Enum.new(name: type.coerce_isolated_result(default_value))
         when InputObjectType
