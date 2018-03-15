@@ -223,10 +223,7 @@ module Dummy
       description "Where it came from"
     end
 
-    input_field :originDairy, types.String, "Dairy which produced it", default_value: "Sugar Hollow Dairy" do
-      description   "Ignored because arg takes precedence"
-      default_value "Ignored because keyword arg takes precedence"
-    end
+    input_field :originDairy, types.String, "Dairy which produced it", default_value: "Sugar Hollow Dairy"
 
     input_field :fatContent, types.Float, "How much fat it has" do
       # ensure we can define default in block
