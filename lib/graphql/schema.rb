@@ -773,9 +773,9 @@ module GraphQL
         end
       end
 
-      def orphan_types(new_orphan_types = nil)
-        if new_orphan_types
-          @orphan_types = new_orphan_types
+      def orphan_types(*new_orphan_types)
+        if new_orphan_types.any?
+          @orphan_types = new_orphan_types.flatten
         else
           @orphan_types || []
         end

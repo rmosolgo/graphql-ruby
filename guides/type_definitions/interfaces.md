@@ -149,11 +149,20 @@ Specifically, in the example above, `CarType` would get a field named `price` an
 
 ## Orphan Types
 
-If you add an object type which implements an interface, but that object type doesn't properly appear in your schema, then you need to add that object to the schema's `orphan_types`, for example:
+If you add an object type which implements an interface, but that object type doesn't properly appear in your schema, then you need to add that object to the interfaces's `orphan_types`, for example:
+
+```ruby
+class Types::RetailItem < Types::BaseInterface
+  # ...
+  orphan_types Types::Comment
+end
+```
+
+Alternatively you can add the object types to the schema's `orphan_types`:
 
 ```ruby
 class MySchema < GraphQL::Schema
-  orphan_types [Types::Comment, ...]
+  orphan_types Types::Comment
 end
 ```
 

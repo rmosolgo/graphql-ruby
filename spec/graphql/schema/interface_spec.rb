@@ -50,6 +50,7 @@ describe GraphQL::Schema::Interface do
       assert_equal GraphQL::ID_TYPE.to_non_null_type, field.type
       assert_equal "A unique identifier for this object", field.description
       assert_nil interface_type.resolve_type_proc
+      assert_empty interface_type.orphan_types
     end
 
     it "can specify a resolve_type method" do
@@ -64,6 +65,19 @@ describe GraphQL::Schema::Interface do
       end
       interface_type = interface.to_graphql
       assert_equal "MyType", interface_type.resolve_type_proc.call(nil, nil)
+    end
+
+    it "can specify orphan types" do
+      interface = Class.new(GraphQL::Schema::Interface) do
+        def self.name
+          "MyInterface"
+        end
+
+        orphan_types Dummy::CheeseType, Dummy::HoneyType
+      end
+
+      interface_type = interface.to_graphql
+      assert_equal [Dummy::CheeseType, Dummy::HoneyType], interface_type.orphan_types
     end
   end
 
