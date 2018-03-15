@@ -101,7 +101,7 @@ module GraphQL
       name_s = name.to_s
 
       # Move some positional args into keywords if they're present
-      desc && kwargs[:description] ||= description
+      description && kwargs[:description] ||= description
       name && kwargs[:name] ||= name_s
 
       if !type_or_argument.nil? && !type_or_argument.is_a?(GraphQL::Argument)
@@ -109,12 +109,23 @@ module GraphQL
         kwargs[:type] = type_or_argument
       end
 
-
-      if type_or_argument.is_a?(GraphQL::Argument)
+      argument = if type_or_argument.is_a?(GraphQL::Argument)
         type_or_argument.redefine(kwargs, &block)
       else
         GraphQL::Argument.define(kwargs, &block)
       end
+
+      if default_value != NO_DEFAULT_VALUE
+        argument.default_value = default_value
+      end
+
+      as && argument.as = as
+
+      if prepare != DefaultPrepare
+        argument.prepare = prepare
+      end
+
+      argument
     end
   end
 end
