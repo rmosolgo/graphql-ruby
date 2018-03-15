@@ -28,7 +28,6 @@ describe GraphQL::BaseType do
     assert_equal ["Cheese"], Dummy::CheeseType.metadata[:class_names]
   end
 
-<<<<<<< HEAD
   describe "#name" do
     describe "when containing spaces" do
       BaseNameSpaceTest = GraphQL::BaseType.define do
