@@ -58,8 +58,13 @@ module GraphQL
     end
 
     def default_value=(new_default_value)
-      @has_default_value = true
-      @default_value = new_default_value
+      if new_default_value == NO_DEFAULT_VALUE
+        @has_default_value = false
+        @default_value = nil
+      else
+        @has_default_value = true
+        @default_value = new_default_value
+      end
     end
 
     # @!attribute name
@@ -102,29 +107,23 @@ module GraphQL
       # Move some positional args into keywords if they're present
       description && kwargs[:description] ||= description
       name && kwargs[:name] ||= name_s
+      default_value && kwargs[:default_value] ||= default_value
+      as && kwargs[:as] ||= as
+
+      unless prepare == DefaultPrepare
+        prepare && kwargs[:prepare] ||= prepare
+      end
 
       if !type_or_argument.nil? && !type_or_argument.is_a?(GraphQL::Argument)
         # Maybe a string, proc or BaseType
         kwargs[:type] = type_or_argument
       end
 
-      argument = if type_or_argument.is_a?(GraphQL::Argument)
+      if type_or_argument.is_a?(GraphQL::Argument)
         type_or_argument.redefine(kwargs, &block)
       else
         GraphQL::Argument.define(kwargs, &block)
       end
-
-      if default_value != NO_DEFAULT_VALUE
-        argument.default_value = default_value
-      end
-
-      as && argument.as = as
-
-      if prepare != DefaultPrepare
-        argument.prepare = prepare
-      end
-
-      argument
     end
   end
 end
