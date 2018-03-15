@@ -50,7 +50,6 @@ describe GraphQL::Argument do
         description "Description for an existing field."
       end
 
-
       assert_equal "Description for an existing field.", arg.description
     end
 
