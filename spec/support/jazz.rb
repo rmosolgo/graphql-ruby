@@ -377,12 +377,33 @@ module Jazz
     end
   end
 
+  class RenameInstrument < GraphQL::Schema::FancyMutation
+    description "Rename an instrument"
+    argument :id, ID, required: true, inject: :instrument
+    argument :new_name, String, required: true
+
+    field :instrument, InstrumentType, null: false
+
+    def instrument(id)
+      # We're turning the id into an index
+      instrument = Jazz::Models.data["Instrument"][id.to_i]
+      # Make like a promise:
+      Box.new(instrument)
+    end
+
+    def perform_really(instrument:, new_name:)
+      instrument.name = new_name
+      { instrument: instrument }
+    end
+  end
+
   class Mutation < BaseObject
     field :add_ensemble, Ensemble, null: false do
       argument :input, EnsembleInput, required: true
     end
 
     field :add_instrument, mutation: AddInstrument
+    field :rename_instrument, mutation: RenameInstrument
 
     def add_ensemble(input:)
       ens = Models::Ensemble.new(input.name)
@@ -447,12 +468,22 @@ module Jazz
     end
   end
 
+  # Like a Promise, but even more boring,
+  # because the value was actually already calculated.
+  class Box
+    attr_reader :content
+    def initialize(content)
+      @content = content
+    end
+  end
+
   # New-style Schema definition
   class Schema < GraphQL::Schema
     query(Query)
     mutation(Mutation)
     context_class CustomContext
     introspection(Introspection)
+    lazy_resolve(Box, :content)
     use MetadataPlugin, value: "xyz"
     def self.resolve_type(type, obj, ctx)
       class_name = obj.class.name.split("::").last
