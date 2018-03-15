@@ -17,7 +17,7 @@ module GraphQL
           global_id_field: GraphQL::Define::AssignGlobalIdField,
         }
 
-    ensure_defined(:name, :description, :introspection?, :default_scalar?)
+    ensure_defined(:graphql_name, :name, :description, :introspection?, :default_scalar?)
 
     def initialize
       @introspection = false
