@@ -54,7 +54,6 @@ describe GraphQL::Argument do
       assert_equal "Description for an existing field.", arg.description
     end
 
-
     it "creates an argument from dsl arguments" do
       arg = GraphQL::Argument.from_dsl(
         :foo,
