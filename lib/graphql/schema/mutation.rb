@@ -9,9 +9,11 @@ module GraphQL
 
       # @param object [Object] the initialize object, pass to {Query.initialize} as `root_value`
       # @param context [GraphQL::Query::Context]
-      def initialize(object:, context:, arguments:)
+      def initialize(object:, context:, arguments:, path:)
         @object = object
         @context = context
+        @arguments = arguments
+        @path = path
       end
 
       # @return [Object] the root value of the operation
@@ -87,7 +89,7 @@ module GraphQL
         end
 
         def resolve_field(obj, args, ctx)
-          mutation = self.new(object: obj, arguments: args, context: ctx.query.context)
+          mutation = self.new(object: obj, arguments: args, context: ctx.query.context, path: ctx.path)
           mutation.perform(**args.to_kwargs)
         end
       end

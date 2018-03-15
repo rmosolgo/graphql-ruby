@@ -382,16 +382,30 @@ module Jazz
     argument :id, ID, required: true, inject: :instrument
     argument :new_name, String, required: true
 
-    field :instrument, InstrumentType, null: false
+    # It gets `field :user_errors` automatically, should we
+    # require `null: true` here?
+    field :instrument, InstrumentType, null: true
 
     def instrument(id)
       # We're turning the id into an index
       instrument = Jazz::Models.data["Instrument"][id.to_i]
+      if instrument.nil?
+        raise GraphQL::UserError, "Instrument not found for #{id.inspect}"
+      end
       # Make like a promise:
       Box.new(instrument)
     end
 
-    def perform_really(instrument:, new_name:)
+    def before_mutate(instrument:, new_name:)
+      if instrument.name == new_name
+        raise GraphQL::UserError, "Can't rename an instrument to the same name"
+      end
+    end
+
+    def mutate(instrument:, new_name:)
+      if instrument.name == "Piano"
+        raise GraphQL::UserError, "Can't rename Piano"
+      end
       instrument.name = new_name
       { instrument: instrument }
     end
