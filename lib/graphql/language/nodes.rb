@@ -41,7 +41,7 @@ module GraphQL
 
         # Value equality
         # @return [Boolean] True if `self` is equivalent to `other`
-        def eql?(other)
+        def ===(other)
           return true if equal?(other)
           other.is_a?(self.class) &&
             other.scalars.eql?(self.scalars) &&
