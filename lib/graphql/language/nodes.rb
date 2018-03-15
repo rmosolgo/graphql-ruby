@@ -39,13 +39,16 @@ module GraphQL
           raise NotImplementedError
         end
 
+        def hash
+          scalars.hash ^ children.hash
+        end
+
         # Value equality
         # @return [Boolean] True if `self` is equivalent to `other`
         def eql?(other)
-          return true if equal?(other)
-          other.is_a?(self.class) &&
+          super(other) || (other.is_a?(self.class) &&
             other.scalars.eql?(self.scalars) &&
-            other.children.eql?(self.children)
+            other.children.eql?(self.children))
         end
 
         # @return [Array<GraphQL::Language::Nodes::AbstractNode>] all nodes in the tree below this one

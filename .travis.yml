@@ -17,6 +17,7 @@ before_install:
 rvm:
 - 2.1.10 # Lowest version officially supported by the gem is 2.1
 - 2.4.3
+- 2.5
 - jruby-9.1.15.0
 
 services:
@@ -66,6 +67,10 @@ matrix:
     gemfile: gemfiles/rails_4.1.gemfile
   - rvm: 2.4.3
     gemfile: gemfiles/rails_4.2.gemfile
+  - rvm: 2.5
+    gemfile: gemfiles/rails_3.2.gemfile
+  - rvm: 2.5
+    gemfile: gemfiles/rails_4.1.gemfile
   - rvm: 2.1.10
     gemfile: gemfiles/rails_5.0.gemfile # Rails 5 requires Ruby 2.2.2+
   - rvm: 2.1.10
