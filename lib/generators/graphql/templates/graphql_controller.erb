@@ -11,6 +11,11 @@ class GraphqlController < ApplicationController
     render json: result
   end
 
+  def schema
+    result = <%= schema_name %>.execute(GraphQL::Introspection::INTROSPECTION_QUERY)
+    render json: result
+  end
+
   private
 
   # Handle form data, JSON body, or a blank value

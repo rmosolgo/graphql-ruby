@@ -100,6 +100,7 @@ RUBY
 
         template("graphql_controller.erb", "app/controllers/graphql_controller.rb")
         route('post "/graphql", to: "graphql#execute"')
+        route('get "/graphql/schema.json", to: "graphql#schema"')
 
         if options[:batch]
           gem("graphql-batch")
