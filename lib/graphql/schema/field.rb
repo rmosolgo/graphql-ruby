@@ -6,15 +6,12 @@ module GraphQL
   class Schema
     class Field
       include GraphQL::Schema::Member::CachedGraphQLDefinition
-
+      include GraphQL::Schema::Member::HasArguments
       # @return [String]
       attr_reader :name
 
       # @return [String]
       attr_accessor :description
-
-      # @return [Hash{String => GraphQL::Schema::Argument}]
-      attr_reader :arguments
 
       # @return [Symbol]
       attr_reader :method
@@ -35,17 +32,19 @@ module GraphQL
       # @param max_page_size [Integer] For connections, the maximum number of items to return from this field
       # @param introspection [Boolean] If true, this field will be marked as `#introspection?` and the name may begin with `__`
       # @param resolve [<#call(obj, args, ctx)>] **deprecated** for compatibility with <1.8.0
-      # @param field [GraphQL::Field] **deprecated** for compatibility with <1.8.0
+      # @param field [GraphQL::Field, GraphQL::Schema::Field] **deprecated** for compatibility with <1.8.0
       # @param function [GraphQL::Function] **deprecated** for compatibility with <1.8.0
+      # @param mutation [Class] A {Schema::Mutation} class for serving this field
+      # @param arguments [{String=>GraphQL::Schema::Arguments}] Arguments for this field (may be added in the block, also)
       # @param camelize [Boolean] If true, the field name will be camelized when building the schema
       # @param complexity [Numeric] When provided, set the complexity for this field
-      def initialize(name, return_type_expr = nil, desc = nil, owner:, null: nil, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, connection: nil, max_page_size: nil, resolve: nil, introspection: false, hash_key: nil, camelize: true, complexity: 1, extras: [], &definition_block)
+      def initialize(name, return_type_expr = nil, desc = nil, owner: nil, null: nil, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, connection: nil, max_page_size: nil, resolve: nil, introspection: false, hash_key: nil, camelize: true, complexity: 1, extras: [], mutation: nil, arguments: {}, &definition_block)
         if (field || function) && desc.nil? && return_type_expr.is_a?(String)
           # The return type should be copied from `field` or `function`, and the second positional argument is the description
           desc = return_type_expr
           return_type_expr = nil
         end
-        if !(field || function)
+        if !(field || function || mutation)
           if return_type_expr.nil?
             raise ArgumentError, "missing positional argument `type`"
           end
@@ -53,7 +52,7 @@ module GraphQL
             raise ArgumentError, "missing keyword argument null:"
           end
         end
-        if (field || function || resolve) && extras.any?
+        if (field || function || resolve || mutation) && extras.any?
           raise ArgumentError, "keyword `extras:` may only be used with method-based resolve, please remove `field:`, `function:`, or `resolve:`"
         end
         @name = name.to_s
@@ -61,7 +60,11 @@ module GraphQL
           raise ArgumentError, "Provide description as a positional argument or `description:` keyword, but not both (#{desc.inspect}, #{description.inspect})"
         end
         @description = description || desc
-        @field = field
+        if field.is_a?(GraphQL::Schema::Field)
+          @field_instance = field
+        else
+          @field = field
+        end
         @function = function
         @resolve = resolve
         @deprecation_reason = deprecation_reason
@@ -77,20 +80,15 @@ module GraphQL
         @max_page_size = max_page_size
         @introspection = introspection
         @extras = extras
-        @arguments = {}
         @camelize = camelize
+        @mutation = mutation
+        # Override the default from HasArguments
+        @own_arguments = arguments
         @owner = owner
 
         if definition_block
           instance_eval(&definition_block)
         end
-      end
-
-      # This is the `argument(...)` DSL for class-based field definitons
-      def argument(*args, **kwargs)
-        kwargs[:owner] = self
-        arg_defn = self.class.argument_class.new(*args, **kwargs)
-        arguments[arg_defn.name] = arg_defn
       end
 
       def description(text = nil)
@@ -122,6 +120,13 @@ module GraphQL
 
       # @return [GraphQL::Field]
       def to_graphql
+        # this field was previously defined and passed here, so delegate to it
+        if @field_instance
+          return @field_instance.to_graphql
+        elsif @mutation
+          return @mutation.graphql_field.to_graphql
+        end
+
         method_name = @method || @hash_key || Member::BuildType.underscore(@name)
 
         field_defn = if @field
@@ -137,7 +142,12 @@ module GraphQL
           return_type_name = Member::BuildType.to_type_name(@return_type_expr)
           connection = @connection.nil? ? return_type_name.end_with?("Connection") : @connection
           field_defn.type = -> {
-            Member::BuildType.parse_type(@return_type_expr, null: @return_type_null)
+            begin
+              Member::BuildType.parse_type(@return_type_expr, null: @return_type_null)
+            rescue
+              # TODO: add owner type here
+              raise ArgumentError, "Failed to build return type for ??.#{name}: #{$!.message}", $!.backtrace
+            end
           }
         elsif @connection.nil? && (@field || @function)
           return_type_name = Member::BuildType.to_type_name(field_defn.type)
@@ -181,24 +191,12 @@ module GraphQL
           argument :last, "Int", "Returns the last _n_ elements from the list.", required: false
         end
 
-        @arguments.each do |name, defn|
+        arguments.each do |name, defn|
           arg_graphql = defn.to_graphql
           field_defn.arguments[arg_graphql.name] = arg_graphql
         end
 
         field_defn
-      end
-
-      private
-
-      class << self
-        def argument_class(new_arg_class = nil)
-          if new_arg_class
-            @argument_class = new_arg_class
-          else
-            @argument_class || GraphQL::Schema::Argument
-          end
-        end
       end
     end
   end

@@ -102,6 +102,18 @@ module GraphQL
 
       NO_ARGS = NoArguments.new({}, context: nil, defaults_used: Set.new)
 
+      # Convert this instance into valid Ruby keyword arguments
+      # @return [{Symbol=>Object}]
+      def to_kwargs
+        ruby_kwargs = {}
+
+        keys.each do |key|
+          ruby_kwargs[Schema::Member::BuildType.underscore(key).to_sym] = self[key]
+        end
+
+        ruby_kwargs
+      end
+
       private
 
       class ArgumentValue

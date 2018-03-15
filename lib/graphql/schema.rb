@@ -27,9 +27,12 @@ require "graphql/schema/enum"
 require "graphql/schema/field"
 require "graphql/schema/input_object"
 require "graphql/schema/interface"
+require "graphql/schema/mutation"
 require "graphql/schema/object"
 require "graphql/schema/scalar"
 require "graphql/schema/union"
+
+require "graphql/schema/fancy_mutation"
 
 module GraphQL
   # A GraphQL schema which may be queried with {GraphQL::Query}.

@@ -362,10 +362,62 @@ module Jazz
     argument :name, String, required: true
   end
 
+  class AddInstrument < GraphQL::Schema::Mutation
+    description "Register a new musical instrument in the database"
+
+    argument :name, String, required: true
+    argument :family, Family, required: true
+
+    field :instrument, InstrumentType, null: false
+
+    def perform(name:, family:)
+      instrument = Jazz::Models::Instrument.new(name, family)
+      Jazz::Models.data["Instrument"] << instrument
+      { instrument: instrument }
+    end
+  end
+
+  class RenameInstrument < GraphQL::Schema::FancyMutation
+    description "Rename an instrument"
+    argument :id, ID, required: true, inject: :instrument
+    argument :new_name, String, required: true
+
+    # It gets `field :user_errors` automatically, should we
+    # require `null: true` here?
+    field :instrument, InstrumentType, null: true
+
+    def instrument(id)
+      # We're turning the id into an index
+      instrument = Jazz::Models.data["Instrument"][id.to_i]
+      if instrument.nil?
+        raise GraphQL::UserError, "Instrument not found for #{id.inspect}"
+      end
+      # Make like a promise:
+      Box.new(instrument)
+    end
+
+    def before_mutate(instrument:, new_name:)
+      if instrument.name == new_name
+        raise GraphQL::UserError, "Can't rename an instrument to the same name"
+      end
+    end
+
+    def mutate(instrument:, new_name:)
+      if instrument.name == "Piano"
+        raise GraphQL::UserError, "Can't rename Piano"
+      end
+      instrument.name = new_name
+      { instrument: instrument }
+    end
+  end
+
   class Mutation < BaseObject
     field :add_ensemble, Ensemble, null: false do
       argument :input, EnsembleInput, required: true
     end
+
+    field :add_instrument, mutation: AddInstrument
+    field :rename_instrument, mutation: RenameInstrument
 
     def add_ensemble(input:)
       ens = Models::Ensemble.new(input.name)
@@ -430,12 +482,22 @@ module Jazz
     end
   end
 
+  # Like a Promise, but even more boring,
+  # because the value was actually already calculated.
+  class Box
+    attr_reader :content
+    def initialize(content)
+      @content = content
+    end
+  end
+
   # New-style Schema definition
   class Schema < GraphQL::Schema
     query(Query)
     mutation(Mutation)
     context_class CustomContext
     introspection(Introspection)
+    lazy_resolve(Box, :content)
     use MetadataPlugin, value: "xyz"
     def self.resolve_type(type, obj, ctx)
       class_name = obj.class.name.split("::").last
