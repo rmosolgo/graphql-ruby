@@ -107,12 +107,12 @@ module GraphQL
 
       # Move some positional args into keywords if they're present
       description && kwargs[:description] ||= description
-      name && kwargs[:name] ||= name_s
-      default_value && kwargs[:default_value] ||= default_value
-      as && kwargs[:as] ||= as
+      kwargs[:name] ||= name_s
+      kwargs[:default_value] ||= default_value
+      kwargs[:as] ||= as
 
       unless prepare == DefaultPrepare
-        prepare && kwargs[:prepare] ||= prepare
+        kwargs[:prepare] ||= prepare
       end
 
       if !type_or_argument.nil? && !type_or_argument.is_a?(GraphQL::Argument)
