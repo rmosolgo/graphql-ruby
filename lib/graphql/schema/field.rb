@@ -87,9 +87,9 @@ module GraphQL
       end
 
       # This is the `argument(...)` DSL for class-based field definitons
-      def argument(*args, **kwargs)
+      def argument(*args, **kwargs, &block)
         kwargs[:owner] = self
-        arg_defn = self.class.argument_class.new(*args, **kwargs)
+        arg_defn = self.class.argument_class.new(*args, **kwargs, &block)
         arguments[arg_defn.name] = arg_defn
       end
 
