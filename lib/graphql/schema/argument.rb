@@ -18,7 +18,7 @@ module GraphQL
       # @param description [String]
       # @param default_value [Object]
       # @param camelize [Boolean] if true, the name will be camelized when building the schema
-      def initialize(arg_name, type_expr, desc = nil, required:, description: nil, default_value: NO_DEFAULT, camelize: true, owner:)
+      def initialize(arg_name, type_expr, desc = nil, required:, description: nil, default_value: NO_DEFAULT, camelize: true, owner:, &definition_block)
         @name = arg_name.to_s
         @type_expr = type_expr
         @description = desc || description
@@ -26,6 +26,18 @@ module GraphQL
         @default_value = default_value
         @camelize = camelize
         @owner = owner
+
+        if definition_block
+          instance_eval(&definition_block)
+        end
+      end
+
+      def description(text = nil)
+        if text
+          @description = text
+        else
+          @description
+        end
       end
 
       def to_graphql
