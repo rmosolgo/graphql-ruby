@@ -32,6 +32,27 @@ describe GraphQL::Argument do
       assert_equal GraphQL::STRING_TYPE, arg.type
     end
 
+    it "accepts a definition block after defining kwargs" do
+      arg = GraphQL::Argument.from_dsl(:foo, GraphQL::STRING_TYPE) do
+        description "my type is #{target.type}"
+      end
+
+      assert_equal "my type is String", arg.description
+    end
+
+    it "accepts a definition block with existing arg" do
+      existing = GraphQL::Argument.define do
+        name "bar"
+        type GraphQL::STRING_TYPE
+      end
+
+      arg = GraphQL::Argument.from_dsl(:foo, existing) do
+        description "Description for an existing field."
+      end
+
+      assert_equal "Description for an existing field.", arg.description
+    end
+
     it "creates an argument from dsl arguments" do
       arg = GraphQL::Argument.from_dsl(
         :foo,
