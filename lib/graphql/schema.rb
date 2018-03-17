@@ -199,6 +199,9 @@ module GraphQL
       rescue_middleware.remove_handler(*args, &block)
     end
 
+    # For forwards-compatibility with Schema classes
+    alias :graphql_definition :itself
+
     # Validate a query string according to this schema.
     # @param string_or_document [String, GraphQL::Language::Nodes::Document]
     # @return [Array<GraphQL::StaticValidation::Message>]
