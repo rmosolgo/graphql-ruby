@@ -146,6 +146,29 @@ Then, in your custom argument class, you can use:
 
 Inevitably, this will result in some duplication while you migrate from one definition API to the other. Here are a couple of ways to re-use _old_ customizations with the new framework:
 
+__Pass-through with `accepts_definition`__. New schema classes have an `accepts_definition` method. They set up a configuration method which will pass the provided value to the existing (legacy-style) configuration function, for example:
+
+```ruby
+# Given a legacy-style configuration function:
+GraphQL::ObjectType.accepts_definitions({ permission_level: ->(...) { ... } })
+
+# Prepare the config method in the base class:
+class BaseObject < GraphQL::Schema::Object
+  accepts_definition :permission_level
+end
+
+# Call the config method in the object class:
+class Account < BaseObject
+  permission_level 1
+end
+
+# Then, the runtime object will have the configured value, for example:
+MySchema.find("Account").metadata[:permission_level]
+# => 1
+```
+
+See {{ "GraphQL::Schema::Member::AcceptsDefinition" | api_doc }} for the implementation.
+
 __Invoke `.call` directly__. If you defined a module with a `.call` method, you can invoke that method during `.to_graphql`. For example:
 
 ```ruby
