@@ -3,6 +3,8 @@
 module GraphQL
   class Schema
     class Object < GraphQL::Schema::Member
+      extend GraphQL::Schema::Member::AcceptsDefinition
+
       # @return [Object] the application object this type is wrapping
       attr_reader :object
 

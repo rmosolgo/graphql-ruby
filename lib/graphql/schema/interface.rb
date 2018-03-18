@@ -3,6 +3,7 @@ module GraphQL
   class Schema
     class Interface < GraphQL::Schema::Member
       extend GraphQL::Schema::Member::HasFields
+      extend GraphQL::Schema::Member::AcceptsDefinition
       field_class GraphQL::Schema::Field
 
       class << self
