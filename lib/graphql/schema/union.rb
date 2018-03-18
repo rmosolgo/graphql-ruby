@@ -2,6 +2,8 @@
 module GraphQL
   class Schema
     class Union < GraphQL::Schema::Member
+      extend GraphQL::Schema::Member::AcceptsDefinition
+
       class << self
         def possible_types(*types)
           if types.any?

@@ -64,6 +64,7 @@ module GraphQL
   #   end
   #
   class Schema
+    extend GraphQL::Schema::Member::AcceptsDefinition
     include GraphQL::Define::InstanceDefinable
     accepts_definitions \
       :query, :mutation, :subscription,

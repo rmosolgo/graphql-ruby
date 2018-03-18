@@ -2,6 +2,7 @@
 module GraphQL
   class Schema
     class InputObject < GraphQL::Schema::Member
+      extend GraphQL::Schema::Member::AcceptsDefinition
       extend GraphQL::Delegate
 
       def initialize(values, context:, defaults_used:)
