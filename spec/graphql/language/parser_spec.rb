@@ -24,6 +24,20 @@ describe GraphQL::Language::Parser do
     end
   end
 
+  it "parses strings as type descriptions" do
+    defn_string = <<-GRAPHQL
+    """
+    Here's a description
+    """
+    type Thing { field: Stuff }
+    GRAPHQL
+
+    document = subject.parse(defn_string)
+    type_defn = document.definitions.first
+    assert_equal "Thing", type_defn.name
+    assert_equal "Here's a description", type_defn.description
+  end
+
   it "parses empty arguments" do
     strings = [
       "{ field { inner } }",

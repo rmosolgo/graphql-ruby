@@ -340,9 +340,13 @@ rule
 
   scalar_type_definition: SCALAR name directives_list_opt { return make_node(:ScalarTypeDefinition, name: val[1], directives: val[2], description: get_description(val[0]), position_source: val[0]) }
 
+  type_definition_opt:
+      /* none */
+    | STRING
+
   object_type_definition:
-      TYPE name implements_opt directives_list_opt LCURLY field_definition_list RCURLY {
-        return make_node(:ObjectTypeDefinition, name: val[1], interfaces: val[2], directives: val[3], fields: val[5], description: get_description(val[0]), position_source: val[0])
+      type_definition_opt TYPE name implements_opt directives_list_opt LCURLY field_definition_list RCURLY {
+        return make_node(:ObjectTypeDefinition, name: val[2], interfaces: val[3], directives: val[4], fields: val[6], description: val[0] || get_description(val[1]), position_source: val[0] || val[1])
       }
 
   implements_opt:
