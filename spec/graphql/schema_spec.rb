@@ -6,6 +6,12 @@ describe GraphQL::Schema do
   let(:relay_schema)  { StarWars::Schema }
   let(:empty_schema) { GraphQL::Schema.define }
 
+  describe "#graphql_definition" do
+    it "returns itself" do
+      assert_equal empty_schema, empty_schema.graphql_definition
+    end
+  end
+
   describe "#rescue_from" do
     it "adds handlers to the rescue middleware" do
       schema_defn = schema.graphql_definition

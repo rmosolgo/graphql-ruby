@@ -6,6 +6,7 @@ module GraphQL
   class Schema
     class Field
       include GraphQL::Schema::Member::CachedGraphQLDefinition
+      include GraphQL::Schema::Member::AcceptsDefinition
 
       # @return [String]
       attr_reader :name

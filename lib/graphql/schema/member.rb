@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+require 'graphql/schema/member/accepts_definition'
 require "graphql/relay/type_extensions"
 
 module GraphQL
@@ -27,7 +28,7 @@ module GraphQL
       # These constants are interpreted as GraphQL types
       #
       # @example
-      #   field :isDraft, Boolean, null: false
+      #   field :is_draft, Boolean, null: false
       #   field :id, ID, null: false
       #   field :score, Int, null: false
       module GraphQLTypeNames

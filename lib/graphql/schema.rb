@@ -64,6 +64,7 @@ module GraphQL
   #   end
   #
   class Schema
+    extend GraphQL::Schema::Member::AcceptsDefinition
     include GraphQL::Define::InstanceDefinable
     accepts_definitions \
       :query, :mutation, :subscription,
@@ -196,6 +197,9 @@ module GraphQL
     def remove_handler(*args, &block)
       rescue_middleware.remove_handler(*args, &block)
     end
+
+    # For forwards-compatibility with Schema classes
+    alias :graphql_definition :itself
 
     # Validate a query string according to this schema.
     # @param string_or_document [String, GraphQL::Language::Nodes::Document]
@@ -681,6 +685,7 @@ module GraphQL
         schema_defn.id_from_object = method(:id_from_object)
         schema_defn.type_error = method(:type_error)
         schema_defn.context_class = context_class
+        schema_defn.cursor_encoder = cursor_encoder
         schema_defn.tracers.concat(defined_tracers)
         schema_defn.query_analyzers.concat(defined_query_analyzers)
         schema_defn.multiplex_analyzers.concat(defined_multiplex_analyzers)
@@ -747,6 +752,13 @@ module GraphQL
         else
           @introspection
         end
+      end
+
+      def cursor_encoder(new_encoder = nil)
+        if new_encoder
+          @cursor_encoder = new_encoder
+        end
+        @cursor_encoder || Base64Encoder
       end
 
       def default_max_page_size(new_default_max_page_size = nil)
