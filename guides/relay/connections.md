@@ -77,7 +77,7 @@ PostConnectionWithTotalCountType = PostType.define_connection do
     type types.Int
     # - `obj` is the Connection
     # - `obj.nodes` is the collection of Posts
-    resolve ->(obj, args, ctx) { obj.nodes.count }
+    resolve ->(obj, args, ctx) { obj.nodes.size }
   end
 end
 
