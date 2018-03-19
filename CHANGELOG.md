@@ -8,6 +8,10 @@
 
 ### Bug fixes
 
+## 1.8.0.pre9 (19 Mar 2018)
+
+- New version number. (I needed this because I messed up build tooling for 1.8.0.pre8).
+
 ## 1.8.0.pre8 (19 Mar 2018)
 
 ### New Features
