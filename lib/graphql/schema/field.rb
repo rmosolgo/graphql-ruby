@@ -93,16 +93,6 @@ module GraphQL
         end
       end
 
-<<<<<<< HEAD
-      # This is the `argument(...)` DSL for class-based field definitons
-      def argument(*args, **kwargs, &block)
-        kwargs[:owner] = self
-        arg_defn = self.class.argument_class.new(*args, **kwargs, &block)
-        arguments[arg_defn.name] = arg_defn
-      end
-
-=======
->>>>>>> 8c57717c... Extract HasArguments
       def description(text = nil)
         if text
           @description = text
