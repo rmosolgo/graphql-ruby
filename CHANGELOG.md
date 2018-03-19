@@ -8,11 +8,29 @@
 
 ### Bug fixes
 
+## 1.8.0.pre8 (19 Mar 2018)
+
+### New Features
+
+- Backport `accepts_definition` for configurations #1357
+- Add `#owner` method to Schema objects
+- Add `Interface.orphan_types` config for orphan types #1346
+- Add `extras: :execution_errors` for `add_error` #1313
+- Accept a block to `Schema::Argument#initialize` #1356
+
+### Bug Fixes
+
+- Support `cursor_encoder` #1357
+- Don't double-count lazy/eager field time in Tracing #1321
+- Fix camelization to support single leading underscore #1315
+- Fix `.resolve_type` for Union and Interface classes #1342
+- Apply kwargs before block in `Argument.from_dsl` #1350
+
 ## 1.8.0.pre7 (27 Feb 2018)
 
 ### New features
 
-- Upgrader improvemnts #1305
+- Upgrader improvements #1305
 - Support `global_id_field` for interfaces #1299
 - Add `camelize: false` #1300
 - Add readers for `context`, `object` and `arguments` #1283
