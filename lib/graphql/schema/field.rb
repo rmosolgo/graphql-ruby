@@ -21,6 +21,9 @@ module GraphQL
       # @return [Class] The type that this field belongs to
       attr_reader :owner
 
+      # @return [Class, nil] The mutation this field was derived from, if there is one
+      attr_reader :mutation
+
       # @param name [Symbol] The underscore-cased version of this field name (will be camelized for the GraphQL API)
       # @param return_type_expr [Class, GraphQL::BaseType, Array] The return type of this field
       # @param desc [String] Field description
@@ -46,7 +49,7 @@ module GraphQL
           desc = return_type_expr
           return_type_expr = nil
         end
-        if !(field || function || mutation)
+        if !(field || function)
           if return_type_expr.nil?
             raise ArgumentError, "missing positional argument `type`"
           end
@@ -54,7 +57,7 @@ module GraphQL
             raise ArgumentError, "missing keyword argument null:"
           end
         end
-        if (field || function || resolve || mutation) && extras.any?
+        if (field || function || resolve) && extras.any?
           raise ArgumentError, "keyword `extras:` may only be used with method-based resolve, please remove `field:`, `function:`, or `resolve:`"
         end
         @name = name.to_s
@@ -125,8 +128,6 @@ module GraphQL
         # this field was previously defined and passed here, so delegate to it
         if @field_instance
           return @field_instance.to_graphql
-        elsif @mutation
-          return @mutation.graphql_field.to_graphql
         end
 
         method_name = @method || @hash_key || Member::BuildType.underscore(@name)
@@ -164,6 +165,10 @@ module GraphQL
 
         if @deprecation_reason
           field_defn.deprecation_reason = @deprecation_reason
+        end
+
+        if @mutation
+          field_defn.mutation = @mutation
         end
 
         field_defn.resolve = if @resolve || @function || @field

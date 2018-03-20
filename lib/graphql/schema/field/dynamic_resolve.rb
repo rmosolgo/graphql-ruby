@@ -25,7 +25,7 @@ Failed to implement #{ctx.irep_node.owner_type.name}.#{ctx.field.name}, tried:
 
 - `#{obj.class}##{@method_name}`, which did not exist
 - `#{obj.object.class}##{@method_name}`, which did not exist
-- Looking up hash key `#{@method_name.inspect}` on `#{obj}`, but it wasn't a Hash
+- Looking up hash key `#{@method_name.inspect}` on `#{obj.object}`, but it wasn't a Hash
 
 To implement this field, define one of the methods above (and check for typos)
 ERR

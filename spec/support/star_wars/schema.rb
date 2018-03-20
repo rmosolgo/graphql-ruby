@@ -164,34 +164,21 @@ module StarWars
     field :basesWithCustomEdge, CustomEdgeBaseConnectionType, null: true, connection: true, resolve: ->(o, a, c) { LazyNodesWrapper.new(o.bases) }
   end
 
-  # Define a mutation. It will also:
-  #   - define a derived InputObjectType
-  #   - define a derived ObjectType (for return)
-  #   - define a field, accessible from {Mutation#field}
-  #
-  # The resolve proc takes `inputs, ctx`, where:
-  #   - `inputs` has the keys defined with `input_field`
-  #   - `ctx` is the Query context (like normal fields)
-  #
-  # Notice that you leave out clientMutationId.
-  IntroduceShipMutation = GraphQL::Relay::Mutation.define do
-    # Used as the root for derived types:
-    name "IntroduceShip"
+  class IntroduceShipMutation < GraphQL::Schema::RelayClassicMutation
     description "Add a ship to this faction"
 
     # Nested under `input` in the query:
-    input_field :shipName, types.String
-    input_field :factionId, !types.ID
+    argument :ship_name, String, required: false
+    argument :faction_id, ID, required: true
 
     # Result may have access to these fields:
-    return_field :shipEdge, Ship.edge_type
-    return_field :faction, Faction
-    return_field :aliasedFaction, Faction, property: :aliased_faction
+    field :ship_edge, Ship.edge_type, null: true
+    field :faction, Faction, null: true
+    field :aliased_faction, Faction, hash_key: :aliased_faction, null: true
 
-    # Here's the mutation operation:
-    resolve ->(root_obj, inputs, ctx) {
-      IntroduceShipFunction.new.call(root_obj, inputs, ctx)
-    }
+    def resolve(**inputs)
+      IntroduceShipFunction.new.call(object, inputs, context)
+    end
   end
 
   class IntroduceShipFunction < GraphQL::Function
@@ -207,21 +194,24 @@ module StarWars
     end)
 
     def call(obj, args, ctx)
-      faction_id = args["factionId"]
-      if args["shipName"] == 'Millennium Falcon'
+      # support old and new args
+      ship_name = args["shipName"] || args[:ship_name]
+      faction_id = args["factionId"] || args[:faction_id]
+      if ship_name == 'Millennium Falcon'
         GraphQL::ExecutionError.new("Sorry, Millennium Falcon ship is reserved")
-      elsif args["shipName"] == 'Leviathan'
+      elsif ship_name == 'Leviathan'
         raise GraphQL::ExecutionError.new("🔥")
-      elsif args["shipName"] == "Ebon Hawk"
+      elsif ship_name == "Ebon Hawk"
         LazyWrapper.new { raise GraphQL::ExecutionError.new("💥")}
       else
-        ship = DATA.create_ship(args["shipName"], faction_id)
+        ship = DATA.create_ship(ship_name, faction_id)
         faction = DATA["Faction"][faction_id]
         connection_class = GraphQL::Relay::BaseConnection.connection_for_nodes(faction.ships)
         ships_connection = connection_class.new(faction.ships, args)
         ship_edge = GraphQL::Relay::Edge.new(ship, ships_connection)
         result = {
           shipEdge: ship_edge,
+          ship_edge: ship_edge, # support new-style, too
           faction: faction,
           aliased_faction: faction,
         }
