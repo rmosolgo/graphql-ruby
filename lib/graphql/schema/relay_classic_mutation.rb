@@ -48,6 +48,14 @@ module GraphQL
             argument :client_mutation_id, String, "A unique identifier for the client performing the mutation.", required: false
           end
         end
+
+        def resolve_field(obj, args, ctx)
+          mutation = self.new(object: obj, arguments: args, context: ctx.query.context)
+          kwargs = args.to_kwargs
+          # This is handled by Relay::Mutation::Resolve, a bit hacky, but here we are.
+          kwargs.delete(:client_mutation_id)
+          mutation.resolve(**kwargs)
+        end
       end
     end
   end

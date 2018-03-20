@@ -176,8 +176,8 @@ module StarWars
     field :faction, Faction, null: true
     field :aliased_faction, Faction, hash_key: :aliased_faction, null: true
 
-    def resolve(**inputs)
-      IntroduceShipFunction.new.call(object, inputs, context)
+    def resolve(ship_name: nil, faction_id:)
+      IntroduceShipFunction.new.call(object, {ship_name: ship_name, faction_id: faction_id}, context)
     end
   end
 
