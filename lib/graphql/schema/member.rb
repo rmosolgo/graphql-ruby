@@ -87,6 +87,15 @@ module GraphQL
           end
         end
 
+        # The mutation this type was derived from, if it was derived from a mutation
+        # @return [Class]
+        def mutation(mutation_class = nil)
+          if mutation_class
+            @mutation = mutation_class
+          end
+          @mutation
+        end
+
         def to_graphql
           raise NotImplementedError
         end

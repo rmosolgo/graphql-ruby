@@ -18,7 +18,7 @@ module GraphQL
       attr_reader :arguments
 
       # A lot of methods work just like GraphQL::Arguments
-      def_delegators :@arguments, :[], :key?, :to_h
+      def_delegators :@arguments, :[], :key?, :to_h, :to_kwargs
       def_delegators :to_h, :keys, :values, :each, :any?
 
       class << self

@@ -370,7 +370,7 @@ module Jazz
 
     field :instrument, InstrumentType, null: false
 
-    def perform(name:, family:)
+    def resolve(name:, family:)
       instrument = Jazz::Models::Instrument.new(name, family)
       Jazz::Models.data["Instrument"] << instrument
       { instrument: instrument }
@@ -382,7 +382,8 @@ module Jazz
       argument :input, EnsembleInput, required: true
     end
 
-    field :add_instrument, mutation: AddInstrument
+    # TODO don't require `field` somehow
+    field :add_instrument, field: AddInstrument.field
 
     def add_ensemble(input:)
       ens = Models::Ensemble.new(input.name)

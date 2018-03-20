@@ -13,9 +13,9 @@ module GraphQL
 
         # @see {GraphQL::Schema::Argument#initialize} for parameters
         # @return [GraphQL::Schema::Argument] An instance of {arguments_class}, created from `*args`
-        def argument(*args, **kwargs)
+        def argument(*args, **kwargs, &block)
           kwargs[:owner] = self
-          arg_defn = self.argument_class.new(*args, **kwargs)
+          arg_defn = self.argument_class.new(*args, **kwargs, &block)
           own_arguments[arg_defn.name] = arg_defn
         end
 
@@ -40,8 +40,6 @@ module GraphQL
             end
           end
         end
-
-        private
 
         def own_arguments
           @own_arguments ||= {}

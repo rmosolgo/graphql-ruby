@@ -10,7 +10,8 @@ module GraphQL
         def initialize(mutation, resolve)
           @mutation = mutation
           @resolve = resolve
-          @wrap_result = mutation.has_generated_return_type?
+          @wrap_result = mutation.is_a?(GraphQL::Relay::Mutation) && mutation.has_generated_return_type?
+          @result_hash = mutation.is_a?(Class)
         end
 
         def call(obj, args, ctx)
@@ -44,6 +45,9 @@ module GraphQL
             end
 
             @mutation.result_class.new(client_mutation_id: args[:input][:clientMutationId], result: mutation_result)
+          elsif @result_hash
+            mutation_result[:client_mutation_id] = args[:input][:clientMutationId]
+            mutation_result
           else
             mutation_result
           end

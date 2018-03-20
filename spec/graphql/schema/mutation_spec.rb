@@ -20,6 +20,15 @@ describe GraphQL::Schema::Mutation do
       assert_instance_of GraphQL::Field, field
       assert_equal "addInstrument", field.name
     end
+
+    it "has a reference to the mutation" do
+      f = mutation.field
+      assert_equal mutation, f.mutation
+
+      # Make sure it's also present in the schema
+      f2 = Jazz::Schema.find("Mutation.addInstrument")
+      assert_equal mutation, f2.mutation
+    end
   end
 
   describe "evaluation" do
