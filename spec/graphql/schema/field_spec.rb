@@ -46,6 +46,14 @@ describe GraphQL::Schema::Field do
       assert_equal "A Description.", object.fields["test"].description
     end
 
+    it "accepts anonymous classes as type" do
+      type = Class.new(GraphQL::Schema::Object) do
+        graphql_name 'MyType'
+      end
+      field = GraphQL::Schema::Field.new(:my_field, type, owner: nil, null: true)
+      assert_equal type.to_graphql, field.to_graphql.type
+    end
+
     describe "extras" do
       it "can get errors, which adds path" do
         query_str = <<-GRAPHQL
