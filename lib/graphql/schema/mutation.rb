@@ -28,6 +28,15 @@ module GraphQL
       end
 
       class << self
+        # Override the method from HasFields to support `field: Mutation.field`, for backwards compat.
+        def field(*args, &block)
+          if args.none? && !block_given?
+            graphql_field.graphql_definition
+          else
+            super(*args, &block)
+          end
+        end
+
         def payload_type(new_payload_type = nil)
           if new_payload_type
             @payload_type = new_payload_type
