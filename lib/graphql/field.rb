@@ -193,6 +193,8 @@ module GraphQL
     # @return [Boolean] True if this field should be traced. By default, fields are only traced if they are not a ScalarType or EnumType.
     attr_accessor :trace
 
+    attr_accessor :ast_node
+
     # @return [Boolean]
     def connection?
       @connection

@@ -11,6 +11,7 @@ module GraphQL
     accepts_definitions :locations, :name, :description, :arguments, :default_directive, argument: GraphQL::Define::AssignArgument
 
     attr_accessor :locations, :arguments, :name, :description, :arguments_class
+    attr_accessor :ast_node
     # @api private
     attr_writer :default_directive
     ensure_defined(:locations, :arguments, :name, :description, :default_directive?)
