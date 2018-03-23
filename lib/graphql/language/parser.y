@@ -329,7 +329,7 @@ rule
 
   field_definition:
       name arguments_definitions_opt COLON type directives_list_opt {
-        return make_node(:FieldDefinition, name: val[0], arguments: val[1], type: val[3], directives: val[4], description: get_description(val[0]))
+        return make_node(:FieldDefinition, name: val[0], arguments: val[1], type: val[3], directives: val[4], description: get_description(val[0]), position_source: val[0])
       }
 
   field_definition_list:

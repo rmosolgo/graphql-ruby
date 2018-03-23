@@ -133,6 +133,16 @@ module GraphQL
 
             assert_equal [3, 17], document.definitions[0].values[0].position
           end
+
+          def test_field_definitions_have_a_position
+            document = parse("""
+              type A {
+                field: String
+              }
+            """)
+
+            assert_equal [3, 17], document.definitions[0].fields[0].position
+          end
         end
       end
 
