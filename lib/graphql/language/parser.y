@@ -316,7 +316,7 @@ rule
 
   input_value_definition:
       name COLON type default_value_opt directives_list_opt {
-        return make_node(:InputValueDefinition, name: val[0], type: val[2], default_value: val[3], directives: val[4], description: get_description(val[0]))
+        return make_node(:InputValueDefinition, name: val[0], type: val[2], default_value: val[3], directives: val[4], description: get_description(val[0]), position_source: val[0])
       }
 
   input_value_definition_list:
