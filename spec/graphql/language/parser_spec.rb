@@ -67,6 +67,7 @@ describe GraphQL::Language::Parser do
       document = subject.parse(schema)
 
       assert_equal ["B"], document.definitions[0].interfaces.map(&:name)
+      assert_equal [2, 29], document.definitions[0].interfaces[0].position
     end
 
     it "parses with leading ampersand and multiple interfaces" do
@@ -79,6 +80,8 @@ describe GraphQL::Language::Parser do
       document = subject.parse(schema)
 
       assert_equal ["B", "C"], document.definitions[0].interfaces.map(&:name)
+      assert_equal [2, 29], document.definitions[0].interfaces[0].position
+      assert_equal [2, 33], document.definitions[0].interfaces[1].position
     end
 
     it "parses without leading ampersand" do
@@ -91,6 +94,7 @@ describe GraphQL::Language::Parser do
       document = subject.parse(schema)
 
       assert_equal ["B"], document.definitions[0].interfaces.map(&:name)
+      assert_equal [2, 27], document.definitions[0].interfaces[0].position
     end
 
     it "parses without leading ampersand and multiple interfaces" do
@@ -103,6 +107,8 @@ describe GraphQL::Language::Parser do
       document = subject.parse(schema)
 
       assert_equal ["B", "C"], document.definitions[0].interfaces.map(&:name)
+      assert_equal [2, 27], document.definitions[0].interfaces[0].position
+      assert_equal [2, 31], document.definitions[0].interfaces[1].position
     end
 
     it "supports the old way of parsing multiple interfaces for backwards compatibility" do
@@ -115,6 +121,8 @@ describe GraphQL::Language::Parser do
       document = subject.parse(schema)
 
       assert_equal ["B", "C"], document.definitions[0].interfaces.map(&:name)
+      assert_equal [2, 27], document.definitions[0].interfaces[0].position
+      assert_equal [2, 30], document.definitions[0].interfaces[1].position
     end
   end
 

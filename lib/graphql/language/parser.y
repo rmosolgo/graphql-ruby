@@ -307,12 +307,12 @@ rule
     | IMPLEMENTS legacy_interfaces_list { return val[1] }
 
   interfaces_list:
-      name                     { return [make_node(:TypeName, name: val[0])] }
-    | interfaces_list AMP name { val[0] << make_node(:TypeName, name: val[2]) }
+      name                     { return [make_node(:TypeName, name: val[0], position_source: val[0])] }
+    | interfaces_list AMP name { val[0] << make_node(:TypeName, name: val[2], position_source: val[2]) }
 
   legacy_interfaces_list:
-      name                        { return [make_node(:TypeName, name: val[0])] }
-    | legacy_interfaces_list name { val[0] << make_node(:TypeName, name: val[1]) }
+      name                        { return [make_node(:TypeName, name: val[0], position_source: val[0])] }
+    | legacy_interfaces_list name { val[0] << make_node(:TypeName, name: val[1], position_source: val[1]) }
 
   input_value_definition:
       name COLON type default_value_opt directives_list_opt {
