@@ -123,6 +123,16 @@ module GraphQL
             end
             assert_equal [1,26], [err_2.line, err_2.col]
           end
+
+          def test_enum_value_definitions_have_a_position
+            document = parse("""
+              enum Enum {
+                VALUE
+              }
+            """)
+
+            assert_equal [3, 17], document.definitions[0].values[0].position
+          end
         end
       end
 

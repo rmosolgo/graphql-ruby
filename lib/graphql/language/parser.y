@@ -153,7 +153,7 @@ rule
     | schema_keyword
 
   enum_value_definition:
-    enum_name directives_list_opt { return make_node(:EnumValueDefinition, name: val[0], directives: val[1], description: get_description(val[0])) }
+    enum_name directives_list_opt { return make_node(:EnumValueDefinition, name: val[0], directives: val[1], description: get_description(val[0]), position_source: val[0]) }
 
   enum_value_definitions:
       enum_value_definition                        { return [val[0]] }
