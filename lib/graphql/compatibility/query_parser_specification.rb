@@ -153,6 +153,86 @@ module GraphQL
 
             assert_equal [3, 17], document.definitions[0].fields[0].position
           end
+
+          def test_parses_when_there_are_no_interfaces
+            schema = "
+              type A {
+                a: String
+              }
+            "
+
+            document = parse(schema)
+
+            assert_equal [], document.definitions[0].interfaces.map(&:name)
+          end
+
+          def test_parses_implements_with_leading_ampersand
+            schema = "
+              type A implements & B {
+                a: String
+              }
+            "
+
+            document = parse(schema)
+
+            assert_equal ["B"], document.definitions[0].interfaces.map(&:name)
+            assert_equal [2, 35], document.definitions[0].interfaces[0].position
+          end
+
+          def test_parses_implements_with_leading_ampersand_and_multiple_interfaces
+            schema = "
+              type A implements & B & C {
+                a: String
+              }
+            "
+
+            document = parse(schema)
+
+            assert_equal ["B", "C"], document.definitions[0].interfaces.map(&:name)
+            assert_equal [2, 35], document.definitions[0].interfaces[0].position
+            assert_equal [2, 39], document.definitions[0].interfaces[1].position
+          end
+
+          def test_parses_implements_without_leading_ampersand
+            schema = "
+              type A implements B {
+                a: String
+              }
+            "
+
+            document = parse(schema)
+
+            assert_equal ["B"], document.definitions[0].interfaces.map(&:name)
+            assert_equal [2, 33], document.definitions[0].interfaces[0].position
+          end
+
+          def test_parses_implements_without_leading_ampersand_and_multiple_interfaces
+            schema = "
+              type A implements B & C {
+                a: String
+              }
+            "
+
+            document = parse(schema)
+
+            assert_equal ["B", "C"], document.definitions[0].interfaces.map(&:name)
+            assert_equal [2, 33], document.definitions[0].interfaces[0].position
+            assert_equal [2, 37], document.definitions[0].interfaces[1].position
+          end
+
+          def test_supports_old_syntax_for_parsing_multiple_interfaces
+            schema = "
+              type A implements B, C {
+                a: String
+              }
+            "
+
+            document = parse(schema)
+
+            assert_equal ["B", "C"], document.definitions[0].interfaces.map(&:name)
+            assert_equal [2, 33], document.definitions[0].interfaces[0].position
+            assert_equal [2, 36], document.definitions[0].interfaces[1].position
+          end
         end
       end
 
