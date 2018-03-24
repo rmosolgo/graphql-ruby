@@ -15,6 +15,8 @@ module GraphQL
 
     ensure_defined(:name, :description, :introspection?, :default_scalar?)
 
+    attr_accessor :ast_node
+
     def initialize
       @introspection = false
       @default_scalar = false

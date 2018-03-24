@@ -74,6 +74,7 @@ module GraphQL
   class EnumType < GraphQL::BaseType
     accepts_definitions :values, value: GraphQL::Define::AssignEnumValue
     ensure_defined(:values, :validate_non_null_input, :coerce_non_null_input, :coerce_result)
+    attr_accessor :ast_node
 
     def initialize
       super
@@ -137,6 +138,7 @@ module GraphQL
       ATTRIBUTES = [:name, :description, :deprecation_reason, :value]
       accepts_definitions(*ATTRIBUTES)
       attr_accessor(*ATTRIBUTES)
+      attr_accessor :ast_node
       ensure_defined(*ATTRIBUTES)
 
       def name=(new_name)
