@@ -107,8 +107,8 @@ If you don't want to `begin ... rescue ... end` in every field, you can wrap `re
 
 ```ruby
 # Wrap field resolver `resolve_func` with an error handler.
-# `RescueFrom` instances are valid field resolvers too.
-class RescueFrom
+# `Rescuable` instances are valid field resolvers too.
+class Rescuable
   def initialize(resolve_func)
     @resolve_func = resolve_func
   end
