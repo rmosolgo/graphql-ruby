@@ -11,6 +11,10 @@ describe GraphQL::Schema::Interface do
     end
 
     class NewInterface1 < Jazz::GloballyIdentifiableType
+      # TODO not great
+      module Implementation
+        include Jazz::GloballyIdentifiableType::Implementation
+      end
     end
 
     class NewInterface2 < Jazz::GloballyIdentifiableType
