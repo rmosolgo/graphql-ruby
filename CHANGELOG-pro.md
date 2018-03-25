@@ -8,6 +8,16 @@
 
 ### Bug Fix
 
+## 1.7.0 (25 Mar 2018)
+
+### New Features
+
+- Support `1.8-pre` versions of GraphQL-Ruby
+
+### Bug Fix
+
+- Fix OperationStore when other query instrumenters need `.query_string`
+
 ## 1.6.5 (7 Feb 2018)
 
 ### Bug Fix
