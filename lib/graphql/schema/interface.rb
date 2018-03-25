@@ -6,13 +6,20 @@ module GraphQL
       extend GraphQL::Schema::Member::AcceptsDefinition
 
       class << self
+        # Always set up a `self::Implementation` module,
+        # which may or may not be added to.
+        def inherited(child_cls)
+          # This module will be mixed in to each object class,
+          # so it can contain methods to implement fields.
+          # It's always added to interfaces, but sometimes it's left empty.
+          child_cls.const_set(:Implementation, Module.new)
+        end
+
         # When this interface is added to a `GraphQL::Schema::Object`,
         # it calls this method. We add methods to the object by convention,
         # a nested module named `Implementation`
-        def apply_implemented(object_class)
-          if defined?(self::Implementation)
-            object_class.include(self::Implementation)
-          end
+        def implemented(object_class)
+          object_class.include(self::Implementation)
         end
 
         def orphan_types(*types)
