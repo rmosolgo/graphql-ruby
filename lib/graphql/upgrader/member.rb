@@ -334,10 +334,10 @@ module GraphQL
           # This is not good, it will hit false positives
           # Should use AST to make this substitution
           if obj_arg_name != "_"
-            proc_body.gsub!(/([^\w:.]|^)#{obj_arg_name}([^\w]|$)/, '\1@object\2')
+            proc_body.gsub!(/([^\w:.]|^)#{obj_arg_name}([^\w:]|$)/, '\1@object\2')
           end
           if ctx_arg_name != "_"
-            proc_body.gsub!(/([^\w:.]|^)#{ctx_arg_name}([^\w]|$)/, '\1@context\2')
+            proc_body.gsub!(/([^\w:.]|^)#{ctx_arg_name}([^\w:]|$)/, '\1@context\2')
           end
 
           method_def_indent = " " * (processor.resolve_indent - 2)
@@ -543,7 +543,8 @@ module GraphQL
       end
 
       def apply(input_text)
-        if input_text =~ @interface_file_pattern && input_text =~ /\n *def /
+        # See if it its an interface file with any instance methods
+        if input_text =~ @interface_file_pattern && input_text =~ /\n *def (?!(self|[A-Z]))/
           # Extract the method bodies and figure out where the module should be inserted
           method_bodies = []
           processor = apply_processor(input_text, InterfaceMethodProcessor.new)

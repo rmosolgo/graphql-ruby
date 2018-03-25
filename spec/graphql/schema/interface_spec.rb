@@ -21,7 +21,6 @@ describe GraphQL::Schema::Interface do
     end
 
     it "can override Implementation" do
-
       new_object_1 = Class.new(GraphQL::Schema::Object) do
         implements NewInterface1
       end
