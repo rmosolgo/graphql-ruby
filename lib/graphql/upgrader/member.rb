@@ -151,7 +151,7 @@ module GraphQL
         keep_looking = true
         while keep_looking do
           keep_looking = false
-          input_text = input_text.gsub(/(?<field>(?:field|input_field|return_field|connection|argument).*?,)\n(\s*)(?<next_line>.*)/) do
+          input_text = input_text.gsub(/(?<field>(?:field|input_field|return_field|connection|argument)(?:\(.*|.*,))\n\s*(?<next_line>.+)/) do
             keep_looking = true
             field = $~[:field].chomp
             next_line = $~[:next_line]
@@ -160,6 +160,16 @@ module GraphQL
           end
         end
         input_text
+      end
+    end
+
+    # Remove parens from method call - normalize for processing
+    class RemoveMethodParensTransform < Transform
+      def apply(input_text)
+        input_text.sub(
+          /(field|input_field|return_field|connection|argument)\( *(.*?) *\) */,
+          '\1 \2'
+        )
       end
     end
 
@@ -697,6 +707,7 @@ module GraphQL
 
       DEFAULT_FIELD_TRANSFORMS = [
         RemoveNewlinesTransform,
+        RemoveMethodParensTransform,
         PositionalTypeArgTransform,
         ConfigurationToKwargTransform.new(kwarg: "property"),
         ConfigurationToKwargTransform.new(kwarg: "description"),
@@ -774,9 +785,11 @@ module GraphQL
         # For each of the locations we found, extract the text for that definition.
         # The text will be transformed independently,
         # then the transformed text will replace the original text.
-        finder.locations.each do |name, (starting_idx, ending_idx)|
-          field_source = type_source[starting_idx..ending_idx]
-          field_sources << field_source
+        finder.locations.each do |category, locs|
+          locs.each do |name, (starting_idx, ending_idx)|
+            field_source = type_source[starting_idx..ending_idx]
+            field_sources << field_source
+          end
         end
         # Here's a crazy thing: the transformation is pure,
         # so definitions like `argument :id, types.ID` can be transformed once
@@ -798,9 +811,9 @@ module GraphQL
         attr_reader :locations
 
         def initialize
-          # Pairs of `{ name => [start, end] }`,
-          # since we know fields are unique by name.
-          @locations = {}
+          # Pairs of `{ { method_name => { name => [start, end] } }`,
+          # since fields/arguments are unique by name, within their category
+          @locations = Hash.new { |h,k| h[k] = {} }
         end
 
         # @param send_node [node] The node which might be a `field` call, etc
@@ -812,10 +825,10 @@ module GraphQL
             name = arg_nodes[0]
             # This field may have already been added because
             # we find `(block ...)` nodes _before_ we find `(send ...)` nodes.
-            if @locations[name].nil?
+            if @locations[method_name][name].nil?
               starting_idx = source_node.loc.expression.begin.begin_pos
               ending_idx = source_node.loc.expression.end.end_pos
-              @locations[name] = [starting_idx, ending_idx]
+              @locations[method_name][name] = [starting_idx, ending_idx]
             end
           end
         end
