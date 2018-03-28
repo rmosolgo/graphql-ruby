@@ -36,8 +36,7 @@ module GraphQL
             if new_arg_class
               @argument_class = new_arg_class
             else
-              # TODO this isn't inherited properly
-              @argument_class || GraphQL::Schema::Argument
+              @argument_class || (superclass.respond_to?(:argument_class) ? superclass.argument_class : GraphQL::Schema::Argument)
             end
           end
         end
