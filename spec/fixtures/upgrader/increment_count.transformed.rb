@@ -12,6 +12,13 @@ module Platform
       field :thing_id, ID, "Thing ID to log.", null: false
 
       def resolve(**inputs)
+        if some_early_check
+          return { thing_id: "000" }
+        end
+
+        # This sholdn't be modified:
+        { abcDef: 1 }
+
         thing = Platform::Helpers::NodeIdentification.typed_object_from_id(Objects::Thing, inputs[:thing_id], @context)
         raise Errors::Validation.new("Thing not found.") unless thing
 
@@ -19,8 +26,10 @@ module Platform
 
         if random_condition
           { thing_id: thing.global_relay_id }
+        elsif other_random_thing
+          { :thing_id => "abc" }
         else
-          {
+          return {
             thing_id: "xyz"
           }
         end

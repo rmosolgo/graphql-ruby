@@ -367,6 +367,9 @@ module GraphQL
       end
     end
 
+    # Find hash literals which are returned from mutation resolves,
+    # and convert their keys to underscores. This catches a lot of cases but misses
+    # hashes which are initialized anywhere except in the return expression.
     class UnderscorizeMutationHashTransform < Transform
       def apply(input_text)
         if input_text =~ /def resolve\(\*\*/
@@ -374,12 +377,15 @@ module GraphQL
           # Use reverse_each to avoid messing up positions
           processor.keys_to_upgrade.reverse_each do |key_data|
             underscored_key = underscorize(key_data[:key].to_s)
-            input_text[key_data[:start]...key_data[:end]] = underscored_key
+            if key_data[:operator] == ":"
+              input_text[key_data[:start]...key_data[:end]] = underscored_key
+            else
+              input_text[key_data[:start]...key_data[:end]] = ":#{underscored_key}"
+            end
           end
         end
         input_text
       end
-
 
       class ReturnedHashLiteralProcessor < Parser::AST::Processor
         attr_reader :keys_to_upgrade
@@ -390,7 +396,7 @@ module GraphQL
         def on_def(node)
           method_name, args, body = *node
           if method_name == :resolve
-            possible_returned_hashes = find_returned_hashes(body)
+            possible_returned_hashes = find_returned_hashes(body, returning: false)
             possible_returned_hashes.each do |hash_node|
               pairs = *hash_node
               pairs.each do |pair_node|
@@ -402,31 +408,46 @@ module GraphQL
                       start: source_exp.begin.begin_pos,
                       end: source_exp.end.end_pos,
                       key: pair_k.children[0],
+                      operator: pair_node.loc.operator.source,
                     }
                   end
                 end
               end
             end
           end
+
         end
 
         private
 
-        def find_returned_hashes(node)
+        # Look for hash nodes, starting from `node`.
+        # Return hash nodes that are valid candiates for returning from this method.
+        def find_returned_hashes(node, returning:)
           case node.type
           when :hash
-            [node]
+            if returning
+              [node]
+            else
+              # This is some random hash literal
+              []
+            end
           when :begin
-            # Check the last expression of a method body
-            find_returned_hashes(node.children.last)
+            # Check for return expressions
+            *possible_returns, last_expression = *node
+            possible_returns.map { |c| find_returned_hashes(c, returning: false) }.flatten +
+              # Check the last expression of a method body
+              find_returned_hashes(last_expression, returning: true)
           when :if
             # Check each branch of a conditional
             condition, *branches = *node
-            branches.compact.map { |b| find_returned_hashes(b) }.flatten
+            branches.compact.map { |b| find_returned_hashes(b.is_a?(Array) ? b.last : b, returning: returning) }.flatten
+          when :return
+            find_returned_hashes(node.children.first, returning: true)
           else
             []
           end
         rescue
+          p "--- UnderscorizeMutationHashTransform crashed on node: ---"
           p node
           raise
         end
