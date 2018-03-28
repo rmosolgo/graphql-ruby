@@ -367,6 +367,73 @@ module GraphQL
       end
     end
 
+    class UnderscorizeMutationHashTransform < Transform
+      def apply(input_text)
+        if input_text =~ /def resolve\(\*\*/
+          processor = apply_processor(input_text, ReturnedHashLiteralProcessor.new)
+          # Use reverse_each to avoid messing up positions
+          processor.keys_to_upgrade.reverse_each do |key_data|
+            underscored_key = underscorize(key_data[:key].to_s)
+            input_text[key_data[:start]...key_data[:end]] = underscored_key
+          end
+        end
+        input_text
+      end
+
+
+      class ReturnedHashLiteralProcessor < Parser::AST::Processor
+        attr_reader :keys_to_upgrade
+        def initialize
+          @keys_to_upgrade = []
+        end
+
+        def on_def(node)
+          method_name, args, body = *node
+          if method_name == :resolve
+            possible_returned_hashes = find_returned_hashes(body)
+            possible_returned_hashes.each do |hash_node|
+              pairs = *hash_node
+              pairs.each do |pair_node|
+                if pair_node.type == :pair # Skip over :kwsplat
+                  pair_k, pair_v = *pair_node
+                  if pair_k.type == :sym && pair_k.children[0].to_s =~ /[a-z][A-Z]/ # Does it have any camelcase boundaries?
+                    source_exp = pair_k.loc.expression
+                    @keys_to_upgrade << {
+                      start: source_exp.begin.begin_pos,
+                      end: source_exp.end.end_pos,
+                      key: pair_k.children[0],
+                    }
+                  end
+                end
+              end
+            end
+          end
+        end
+
+        private
+
+        def find_returned_hashes(node)
+          case node.type
+          when :hash
+            [node]
+          when :begin
+            # Check the last expression of a method body
+            find_returned_hashes(node.children.last)
+          when :if
+            # Check each branch of a conditional
+            condition, *branches = *node
+            branches.compact.map { |b| find_returned_hashes(b) }.flatten
+          else
+            []
+          end
+        rescue
+          p node
+          raise
+        end
+
+      end
+    end
+
     class ResolveProcToMethodTransform < Transform
       def apply(input_text)
         if input_text =~ /resolve ->/
@@ -696,6 +763,7 @@ module GraphQL
       DEFAULT_TYPE_TRANSFORMS = [
         TypeDefineToClassTransform,
         MutationResolveProcToMethodTransform, # Do this before switching to class, so we can detect that its a mutation
+        UnderscorizeMutationHashTransform,
         MutationDefineToClassTransform,
         NameTransform,
         InterfacesToImplementsTransform,

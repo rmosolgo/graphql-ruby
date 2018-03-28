@@ -25,8 +25,14 @@ module Platform
 
         ThingActivity.track(thing.id, Time.now.change(min: 0, sec: 0))
 
-        { thingId: thing.global_relay_id }
-      end
+        if random_condition
+          { thingId: thing.global_relay_id }
+        else
+          {
+            thingId: "xyz"
+          }
+        end
+       end
     end
   end
 end
