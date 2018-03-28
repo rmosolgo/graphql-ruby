@@ -444,7 +444,7 @@ type Query {
       field = schema.get_field("Query", "__schema")
       assert_equal GraphQL::Introspection::SchemaField, field
       field_2 = schema.get_field(Dummy::DairyAppQueryType, "__schema")
-      assert_equal GraphQL::Introspection::SchemaField, field
+      assert_equal field2, field
     end
   end
 end
