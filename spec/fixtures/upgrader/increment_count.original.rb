@@ -20,6 +20,13 @@ module Platform
       )
 
       resolve ->(root_obj, inputs, context) do
+        if some_early_check
+          return { thingId: "000" }
+        end
+
+        # This sholdn't be modified:
+        { abcDef: 1 }
+
         thing = Platform::Helpers::NodeIdentification.typed_object_from_id(Objects::Thing, inputs[:thingId], context)
         raise Errors::Validation.new("Thing not found.") unless thing
 
@@ -27,8 +34,10 @@ module Platform
 
         if random_condition
           { thingId: thing.global_relay_id }
+        elsif other_random_thing
+          { :thingId => "abc" }
         else
-          {
+          return {
             thingId: "xyz"
           }
         end
