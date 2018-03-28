@@ -19,7 +19,7 @@ module Platform
         "Thing ID to log."
       )
 
-      resolve -> (root_obj, inputs, context) do
+      resolve ->(root_obj, inputs, context) do
         thing = Platform::Helpers::NodeIdentification.typed_object_from_id(Objects::Thing, inputs[:thingId], context)
         raise Errors::Validation.new("Thing not found.") unless thing
 
