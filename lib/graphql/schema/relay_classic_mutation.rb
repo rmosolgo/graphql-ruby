@@ -3,6 +3,9 @@
 module GraphQL
   class Schema
     class RelayClassicMutation < GraphQL::Schema::Mutation
+      # The payload should always include this field
+      field(:client_mutation_id, String, "A unique identifier for the client performing the mutation.", null: true)
+
       class << self
         # The base class for generated input object types
         def input_object_class(new_class = nil)
@@ -20,13 +23,6 @@ module GraphQL
         end
 
         private
-
-        # Modify the payload type to include a `clientMutationId` field
-        def generate_payload_type
-          type_class = super
-          type_class.field(:client_mutation_id, String, "A unique identifier for the client performing the mutation.", null: true)
-          type_class
-        end
 
         def generate_field
           field_instance = super
