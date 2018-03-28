@@ -107,6 +107,19 @@ module GraphQL
       end
     end
 
+    # Turns `{X} = GraphQL::Relay::Mutation.define do` into `class {X} < Mutations::BaseMutation`
+    class MutationDefineToClassTransform < Transform
+      # @param base_class_name [String] Replacement pattern for the base class name. Use this if your Mutation base class has a nonstandard name.
+      def initialize(base_class_name: "Mutations::BaseMutation")
+        @find_pattern = /([a-zA-Z_0-9:]*) = GraphQL::Relay::Mutation.define do/
+        @replace_pattern = "class \\1 < #{base_class_name}"
+      end
+
+      def apply(input_text)
+        input_text.sub(@find_pattern, @replace_pattern)
+      end
+    end
+
     # Remove `name "Something"` if it is redundant with the class name.
     # Or, if it is not redundant, move it to `graphql_name "Something"`.
     class NameTransform < Transform
@@ -138,7 +151,7 @@ module GraphQL
         keep_looking = true
         while keep_looking do
           keep_looking = false
-          input_text = input_text.gsub(/(?<field>(?:field|connection|argument).*?,)\n(\s*)(?<next_line>.*)/) do
+          input_text = input_text.gsub(/(?<field>(?:field|input_field|return_field|connection|argument).*?,)\n(\s*)(?<next_line>.*)/) do
             keep_looking = true
             field = $~[:field].chomp
             next_line = $~[:next_line]
@@ -154,7 +167,7 @@ module GraphQL
     class PositionalTypeArgTransform < Transform
       def apply(input_text)
         input_text.gsub(
-          /(?<field>(?:field|connection|argument) :(?:[a-zA-Z_0-9]*)) do(?<block_contents>.*?)[ ]*type (?<return_type>.*?)\n/m
+          /(?<field>(?:field|input_field|return_field|connection|argument) :(?:[a-zA-Z_0-9]*)) do(?<block_contents>.*?)[ ]*type (?<return_type>.*?)\n/m
         ) do
           field = $~[:field]
           block_contents = $~[:block_contents]
@@ -183,7 +196,7 @@ module GraphQL
 
       def apply(input_text)
         input_text.gsub(
-          /(?<field>(?:field|connection|argument).*) do(?<block_contents>.*?)[ ]*#{@kwarg} (?<kwarg_value>.*?)\n/m
+          /(?<field>(?:field|return_field|input_field|connection|argument).*) do(?<block_contents>.*?)[ ]*#{@kwarg} (?<kwarg_value>.*?)\n/m
         ) do
           field = $~[:field]
           block_contents = $~[:block_contents]
@@ -207,7 +220,7 @@ module GraphQL
     class RemoveRedundantKwargTransform < Transform
       def initialize(kwarg:)
         @kwarg = kwarg
-        @finder_pattern = /(field|connection|argument) :(?<name>[a-zA-Z_0-9]*).*#{@kwarg}: ['":](?<kwarg_value>[a-zA-Z_0-9?!]+)['"]?/
+        @finder_pattern = /(field|return_field|input_field|connection|argument) :(?<name>[a-zA-Z_0-9]*).*#{@kwarg}: ['":](?<kwarg_value>[a-zA-Z_0-9?!]+)['"]?/
       end
 
       def apply(input_text)
@@ -227,7 +240,7 @@ module GraphQL
     # (They'll be automatically camelized later.)
     class UnderscoreizeFieldNameTransform < Transform
       def apply(input_text)
-        input_text.gsub /(?<field_type>input_field|field|connection|argument) :(?<name>[a-zA-Z_0-9_]*)/ do
+        input_text.gsub /(?<field_type>input_field|return_field|field|connection|argument) :(?<name>[a-zA-Z_0-9_]*)/ do
           field_type = $~[:field_type]
           camelized_name = $~[:name]
           underscored_name = underscorize(camelized_name)
@@ -304,6 +317,45 @@ module GraphQL
       end
     end
 
+    class MutationResolveProcToMethodTransform < Transform
+      # @param proc_name [String] The name of the proc to be moved to `def self.#{proc_name}`
+      def initialize(proc_name: "resolve")
+        @proc_name = proc_name
+      end
+
+      # TODO dedup with ResolveProcToMethodTransform
+      def apply(input_text)
+        if input_text =~ /GraphQL::Relay::Mutation\.define/
+          named_proc_processor = apply_processor(input_text, ProcToClassMethodTransform::NamedProcProcessor.new(@proc_name))
+          resolve_proc_processor = apply_processor(input_text, ResolveProcToMethodTransform::ResolveProcProcessor.new)
+          proc_body = input_text[named_proc_processor.proc_body_start..named_proc_processor.proc_body_end]
+          method_defn_indent = " " * named_proc_processor.proc_defn_indent
+
+          obj_arg_name, args_arg_name, ctx_arg_name = resolve_proc_processor.proc_arg_names
+          # This is not good, it will hit false positives
+          # Should use AST to make this substitution
+          if obj_arg_name != "_"
+            proc_body.gsub!(/([^\w:.]|^)#{obj_arg_name}([^\w]|$)/, '\1@object\2')
+          end
+          if ctx_arg_name != "_"
+            proc_body.gsub!(/([^\w:.]|^)#{ctx_arg_name}([^\w]|$)/, '\1@context\2')
+          end
+
+          method_defn = "def #{@proc_name}(**#{args_arg_name})\n#{method_defn_indent}  #{proc_body}\n#{method_defn_indent}end\n"
+          method_defn = trim_lines(method_defn)
+          # Update usage of args keys
+          method_defn = method_defn.gsub(/#{args_arg_name}(?<method_begin>\.key\?\(?|\[)["':](?<arg_name>[a-zA-Z0-9_]+)["']?(?<method_end>\]|\))?/) do
+            method_begin = $~[:method_begin]
+            arg_name = underscorize($~[:arg_name])
+            method_end = $~[:method_end]
+            "#{args_arg_name}#{method_begin}:#{arg_name}#{method_end}"
+          end
+          # replace the proc with the new method
+          input_text[named_proc_processor.proc_defn_start..named_proc_processor.proc_defn_end] = method_defn
+        end
+        input_text
+      end
+    end
 
     class ResolveProcToMethodTransform < Transform
       def apply(input_text)
@@ -452,8 +504,8 @@ module GraphQL
 
     class UpdateMethodSignatureTransform < Transform
       def apply(input_text)
-        input_text.scan(/(?:input_field|field|connection|argument) .*$/).each do |field|
-          matches = /(?<field_type>input_field|field|connection|argument) :(?<name>[a-zA-Z_0-9_]*)?(:?, +(?<return_type>([A-Za-z\[\]\.\!_0-9\(\)]|::|-> ?\{ ?| ?\})+))?(?<remainder>( |,|$).*)/.match(field)
+        input_text.scan(/(?:input_field|field|return_field|connection|argument) .*$/).each do |field|
+          matches = /(?<field_type>input_field|return_field|field|connection|argument) :(?<name>[a-zA-Z_0-9_]*)?(:?, +(?<return_type>([A-Za-z\[\]\.\!_0-9\(\)]|::|-> ?\{ ?| ?\})+))?(?<remainder>( |,|$).*)/.match(field)
           if matches
             name = matches[:name]
             return_type = matches[:return_type]
@@ -633,6 +685,8 @@ module GraphQL
 
       DEFAULT_TYPE_TRANSFORMS = [
         TypeDefineToClassTransform,
+        MutationResolveProcToMethodTransform, # Do this before switching to class, so we can detect that its a mutation
+        MutationDefineToClassTransform,
         NameTransform,
         InterfacesToImplementsTransform,
         PossibleTypesTransform,
@@ -740,7 +794,7 @@ module GraphQL
       class FieldFinder < Parser::AST::Processor
         # These methods are definition DSLs which may accept a block,
         # each of these definitions is passed for transformation in its own right
-        DEFINITION_METHODS = [:field, :connection, :input_field, :argument]
+        DEFINITION_METHODS = [:field, :connection, :input_field, :return_field, :argument]
         attr_reader :locations
 
         def initialize
