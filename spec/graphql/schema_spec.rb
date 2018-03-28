@@ -439,5 +439,12 @@ type Query {
       field_2 = schema.get_field(Dummy::CheeseType, "id")
       assert_equal field, field_2
     end
+
+    it "returns introspection fields by type or type name" do
+      field = schema.get_field("Query", "__schema")
+      assert_equal GraphQL::Introspection::SchemaField, field
+      field_2 = schema.get_field(Dummy::DairyAppQueryType, "__schema")
+      assert_equal field2, field
+    end
   end
 end

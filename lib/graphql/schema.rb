@@ -323,9 +323,9 @@ module GraphQL
           defined_field
         elsif field_name == "__typename"
           GraphQL::Introspection::TypenameField
-        elsif field_name == "__schema" && parent_type == query
+        elsif field_name == "__schema" && parent_type_name == query.name
           GraphQL::Introspection::SchemaField
-        elsif field_name == "__type" && parent_type == query
+        elsif field_name == "__type" && parent_type_name == query.name
           GraphQL::Introspection::TypeByNameField
         else
           nil
