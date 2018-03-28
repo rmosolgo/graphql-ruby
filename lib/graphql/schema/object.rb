@@ -28,7 +28,7 @@ module GraphQL
                 own_fields[name] = field
               end
               # And call the implemented hook
-              int.apply_implemented(self)
+              int.implemented(self)
             else
               int.all_fields.each do |f|
                 field(f.name, field: f)
