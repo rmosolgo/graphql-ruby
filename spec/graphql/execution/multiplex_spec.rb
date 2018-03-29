@@ -176,7 +176,7 @@ describe GraphQL::Execution::Multiplex do
       assert_raises(GraphQL::Error) do
         InspectSchema.execute("{ raiseError }")
       end
-      unhandled_err_json = 'null'
+      unhandled_err_json = '{}'
       assert_equal unhandled_err_json, InspectQueryInstrumentation.last_json
     end
   end
