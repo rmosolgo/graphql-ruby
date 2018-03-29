@@ -24,18 +24,24 @@ module Platform
           return { thingId: "000" }
         end
 
-        # This sholdn't be modified:
+        # These shouldn't be modified:
         { abcDef: 1 }
+        some_method do { xyzAbc: 1 } end
 
         thing = Platform::Helpers::NodeIdentification.typed_object_from_id(Objects::Thing, inputs[:thingId], context)
         raise Errors::Validation.new("Thing not found.") unless thing
 
         ThingActivity.track(thing.id, Time.now.change(min: 0, sec: 0))
 
+
         if random_condition
           { thingId: thing.global_relay_id }
         elsif other_random_thing
           { :thingId => "abc" }
+        elsif something_else
+          method_with_block {
+            { thingId: "pqr" }
+          }
         else
           return {
             thingId: "xyz"

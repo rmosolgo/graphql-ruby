@@ -16,8 +16,9 @@ module Platform
           return { thing_id: "000" }
         end
 
-        # This sholdn't be modified:
+        # These shouldn't be modified:
         { abcDef: 1 }
+        some_method do { xyzAbc: 1 } end
 
         thing = Platform::Helpers::NodeIdentification.typed_object_from_id(Objects::Thing, inputs[:thing_id], @context)
         raise Errors::Validation.new("Thing not found.") unless thing
@@ -28,6 +29,10 @@ module Platform
           { thing_id: thing.global_relay_id }
         elsif other_random_thing
           { :thing_id => "abc" }
+        elsif something_else
+          method_with_block {
+            { thing_id: "pqr" }
+          }
         else
           return {
             thing_id: "xyz"
