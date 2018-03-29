@@ -31,6 +31,12 @@ describe GraphQL::Schema::Mutation do
     end
   end
 
+  describe ".payload_type" do
+    it "has a reference to the mutation" do
+      assert_equal mutation, mutation.payload_type.mutation
+    end
+  end
+
   describe ".argument_class" do
     it "can override & inherit the parent class" do
       arg_class = Class.new(GraphQL::Schema::Argument)
