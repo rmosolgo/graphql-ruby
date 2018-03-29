@@ -258,6 +258,7 @@ describe GraphQL::Query do
       module ExtensionsInstrumenter
         LOG = []
         def self.before_query(q); end;
+
         def self.after_query(q)
           q.result["extensions"] = { "a" => 1 }
           LOG << :ok
