@@ -14,11 +14,11 @@ module GraphQL
         def call(obj, args, ctx)
           if obj.respond_to?(@method_name)
             public_send_field(obj, @method_name, args, ctx)
-          elsif obj.object.respond_to?(@method_name)
-            public_send_field(obj.object, @method_name, args, ctx)
           elsif obj.object.is_a?(Hash)
             inner_object = obj.object
             inner_object[@method_name] || inner_object[@method_sym]
+          elsif obj.object.respond_to?(@method_name)
+            public_send_field(obj.object, @method_name, args, ctx)
           else
             raise <<-ERR
 Failed to implement #{ctx.irep_node.owner_type.name}.#{ctx.field.name}, tried:

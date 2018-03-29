@@ -369,11 +369,13 @@ module Jazz
     argument :family, Family, required: true
 
     field :instrument, InstrumentType, null: false
+    # This is meaningless, but it's to test the conflict with `Hash#entries`
+    field :entries, [InstrumentType], null: false
 
     def resolve(name:, family:)
       instrument = Jazz::Models::Instrument.new(name, family)
       Jazz::Models.data["Instrument"] << instrument
-      { instrument: instrument }
+      { instrument: instrument, entries: Jazz::Models.data["Instrument"] }
     end
   end
 
