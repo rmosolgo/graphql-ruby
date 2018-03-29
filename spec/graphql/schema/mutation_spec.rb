@@ -55,6 +55,9 @@ describe GraphQL::Schema::Mutation do
             name
             family
           }
+          entries {
+            name
+          }
         }
       }
       GRAPHQL
@@ -62,6 +65,7 @@ describe GraphQL::Schema::Mutation do
       response = Jazz::Schema.execute(query_str)
       assert_equal "Trombone", response["data"]["addInstrument"]["instrument"]["name"]
       assert_equal "BRASS", response["data"]["addInstrument"]["instrument"]["family"]
+      assert_equal 7, response["data"]["addInstrument"]["entries"].size
     end
   end
 end
