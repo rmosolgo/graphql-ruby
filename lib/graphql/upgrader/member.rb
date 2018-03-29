@@ -437,6 +437,15 @@ module GraphQL
             possible_returns.map { |c| find_returned_hashes(c, returning: false) }.flatten +
               # Check the last expression of a method body
               find_returned_hashes(last_expression, returning: true)
+          when :block
+            # Check methods with blocks for possible returns
+            method_call, _args, *body = *node
+            if method_call.type == :send
+              *possible_returns, last_expression = *body
+              possible_returns.map { |c| find_returned_hashes(c, returning: false) }.flatten +
+                # Check the last expression of a method body
+                find_returned_hashes(last_expression, returning: returning)
+            end
           when :if
             # Check each branch of a conditional
             condition, *branches = *node
