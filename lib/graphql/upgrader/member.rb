@@ -423,6 +423,13 @@ module GraphQL
         # Look for hash nodes, starting from `node`.
         # Return hash nodes that are valid candiates for returning from this method.
         def find_returned_hashes(node, returning:)
+          if node.is_a?(Array)
+            *possible_returns, last_expression = *node
+            return possible_returns.map { |c| find_returned_hashes(c, returning: false) }.flatten +
+              # Check the last expression of a method body
+              find_returned_hashes(last_expression, returning: returning)
+          end
+
           case node.type
           when :hash
             if returning
@@ -432,24 +439,26 @@ module GraphQL
               []
             end
           when :begin
-            # Check for return expressions
-            *possible_returns, last_expression = *node
-            possible_returns.map { |c| find_returned_hashes(c, returning: false) }.flatten +
-              # Check the last expression of a method body
-              find_returned_hashes(last_expression, returning: true)
+            # Check the last expression of a method body
+            find_returned_hashes(node.children, returning: true)
+          when :resbody
+            _condition, _assign, body = *node
+            find_returned_hashes(body, returning: returning)
+          when :kwbegin
+            find_returned_hashes(node.children, returning: returning)
+          when :rescue
+            try_body, rescue_body, _ensure_body = *node
+            find_returned_hashes(try_body, returning: returning) + find_returned_hashes(rescue_body, returning: returning)
           when :block
             # Check methods with blocks for possible returns
             method_call, _args, *body = *node
             if method_call.type == :send
-              *possible_returns, last_expression = *body
-              possible_returns.map { |c| find_returned_hashes(c, returning: false) }.flatten +
-                # Check the last expression of a method body
-                find_returned_hashes(last_expression, returning: returning)
+              find_returned_hashes(body, returning: returning)
             end
           when :if
             # Check each branch of a conditional
             condition, *branches = *node
-            branches.compact.map { |b| find_returned_hashes(b.is_a?(Array) ? b.last : b, returning: returning) }.flatten
+            branches.compact.map { |b| find_returned_hashes(b, returning: returning) }.flatten
           when :return
             find_returned_hashes(node.children.first, returning: true)
           else

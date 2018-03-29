@@ -42,6 +42,12 @@ module Platform
           method_with_block {
             { thingId: "pqr" }
           }
+        elsif yet_another_thing
+          begin
+            { thingId: "987" }
+          rescue
+            { thingId: "789" }
+          end
         else
           return {
             thingId: "xyz"
