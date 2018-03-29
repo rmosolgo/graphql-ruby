@@ -12,7 +12,7 @@ module GraphQL
           if new_class
             @input_object_class = new_class
           end
-          @input_object_class || (defined?(super) ? super : GraphQL::Schema::InputObject)
+          @input_object_class || (superclass.respond_to?(:input_object_class) ? superclass.input_object_class : GraphQL::Schema::InputObject)
         end
 
         def input_type(new_input_type = nil)
