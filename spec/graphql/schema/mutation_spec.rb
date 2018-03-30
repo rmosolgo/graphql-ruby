@@ -1,10 +1,17 @@
 # frozen_string_literal: true
 require "spec_helper"
 
+# Make sure that `!` has no effect
+using GraphQL::DeprecatedDSL
+
 describe GraphQL::Schema::Mutation do
   let(:mutation) { Jazz::AddInstrument }
   after do
     Jazz::Models.reset
+  end
+
+  it "Doesn't override !" do
+    assert_equal false, !mutation
   end
 
   describe "definition" do
