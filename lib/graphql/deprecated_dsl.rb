@@ -13,8 +13,17 @@ module GraphQL
   #      GraphQL::DeprecatedDSL.activate
   #
   module DeprecatedDSL
+    TYPE_CLASSES = [
+      GraphQL::Schema::Scalar,
+      GraphQL::Schema::Enum,
+      GraphQL::Schema::InputObject,
+      GraphQL::Schema::Union,
+      GraphQL::Schema::Interface,
+      GraphQL::Schema::Object,
+    ]
+
     def self.activate
-      GraphQL::Schema::Member.extend(Methods)
+      TYPE_CLASSES.each { |c| c.extend(Methods) }
       GraphQL::Schema::Member::ListTypeProxy.include(Methods)
       GraphQL::Schema::Member::NonNullTypeProxy.include(Methods)
     end
@@ -23,8 +32,11 @@ module GraphQL
         to_non_null_type
       end
     end
-    refine GraphQL::Schema::Member.singleton_class do
-      include Methods
+
+    TYPE_CLASSES.each do |type_class|
+      refine type_class.singleton_class do
+        include Methods
+      end
     end
   end
 end
