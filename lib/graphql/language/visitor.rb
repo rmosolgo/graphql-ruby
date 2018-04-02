@@ -55,7 +55,6 @@ module GraphQL
       # Visit `document` and all children, applying hooks as you go
       # @return [void]
       def visit
-        # visit_node(@document, nil)
         on_document(@document, nil)
       end
 

@@ -1,11 +1,13 @@
 # frozen_string_literal: true
 module GraphQL
   module StaticValidation
-    class FieldsWillMerge
+    module FieldsWillMerge
       # Special handling for fields without arguments
       NO_ARGS = {}.freeze
 
-      def validate(context)
+      def initialize(*)
+        super
+
         context.each_irep_node do |node|
           if node.ast_nodes.size > 1
             defn_names = Set.new(node.ast_nodes.map(&:name))

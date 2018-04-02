@@ -1,31 +1,32 @@
 # frozen_string_literal: true
 module GraphQL
   module StaticValidation
-    class NoDefinitionsArePresent
+    module NoDefinitionsArePresent
       include GraphQL::StaticValidation::Message::MessageHelper
 
-      def validate(context)
-        schema_definition_nodes = []
-        register_node = ->(node, _p) {
-          schema_definition_nodes << node
-          GraphQL::Language::Visitor::SKIP
-        }
+      def initialize(*)
+        super
+        @schema_definition_nodes = []
+      end
 
-        visitor = context.visitor
-        visitor[GraphQL::Language::Nodes::DirectiveDefinition] << register_node
-        visitor[GraphQL::Language::Nodes::SchemaDefinition] << register_node
-        visitor[GraphQL::Language::Nodes::ScalarTypeDefinition] << register_node
-        visitor[GraphQL::Language::Nodes::ObjectTypeDefinition] << register_node
-        visitor[GraphQL::Language::Nodes::InputObjectTypeDefinition] << register_node
-        visitor[GraphQL::Language::Nodes::InterfaceTypeDefinition] << register_node
-        visitor[GraphQL::Language::Nodes::UnionTypeDefinition] << register_node
-        visitor[GraphQL::Language::Nodes::EnumTypeDefinition] << register_node
+      def on_invalid_node(node, parent)
+        @schema_definition_nodes << node
+      end
 
-        visitor[GraphQL::Language::Nodes::Document].leave << ->(node, _p) {
-          if schema_definition_nodes.any?
-            context.errors << message(%|Query cannot contain schema definitions|, schema_definition_nodes, context: context)
-          end
-        }
+      alias :on_directive_definition :on_invalid_node
+      alias :on_schema_definition :on_invalid_node
+      alias :on_scalar_type_definition :on_invalid_node
+      alias :on_object_type_definition :on_invalid_node
+      alias :on_input_object_type_definition :on_invalid_node
+      alias :on_interface_type_definition :on_invalid_node
+      alias :on_union_type_definition :on_invalid_node
+      alias :on_enum_type_definition :on_invalid_node
+
+      def on_document(node, parent)
+        super
+        if @schema_definition_nodes.any?
+          add_error(%|Query cannot contain schema definitions|, @schema_definition_nodes)
+        end
       end
     end
   end

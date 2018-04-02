@@ -138,4 +138,50 @@ describe GraphQL::StaticValidation::Validator do
       end
     end
   end
+
+  describe "Custom ruleset" do
+    let(:query_string) { "
+        fragment Thing on Cheese {
+          __typename
+          similarCheese(source: COW)
+        }
+      "
+    }
+
+    let(:rules) {
+      # This is from graphql-client, eg
+      # https://github.com/github/graphql-client/blob/c86fc05d7eba2370452592bb93572caced4123af/lib/graphql/client.rb#L168
+      GraphQL::StaticValidation::ALL_RULES - [
+        GraphQL::StaticValidation::FragmentsAreUsed,
+        GraphQL::StaticValidation::FieldsHaveAppropriateSelections
+      ]
+    }
+    let(:validator) { GraphQL::StaticValidation::Validator.new(schema: Dummy::Schema, rules: rules) }
+
+    it "runs the specified rules" do
+      assert_equal 0, errors.size
+    end
+
+    describe "With a legacy-style rule" do
+      # GraphQL-Pro's operation store uses this
+      class ValidatorSpecLegacyRule
+        include GraphQL::StaticValidation::Message::MessageHelper
+        def validate(ctx)
+          ctx.visitor[GraphQL::Language::Nodes::OperationDefinition] << ->(n, _p) {
+            ctx.errors << message("Busted!", n, context: ctx)
+          }
+        end
+      end
+
+      let(:rules) {
+        GraphQL::StaticValidation::ALL_RULES + [ValidatorSpecLegacyRule]
+      }
+
+      let(:query_string) { "{ __typename }"}
+
+      it "runs the rule" do
+        assert_equal ["Busted!"], errors.map { |e| e["message"] }
+      end
+    end
+  end
 end

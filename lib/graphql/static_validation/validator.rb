@@ -23,7 +23,20 @@ module GraphQL
       # @return [Array<Hash>]
       def validate(query, validate: true)
         query.trace("validate", { validate: validate, query: query }) do
-          context = GraphQL::StaticValidation::ValidationContext.new(query)
+
+          # TODO make a default class to use when all rules are chosen
+          visitor_class = Class.new(StaticValidation::Visitor)
+          if validate
+            @rules.reverse_each do |r|
+              if !r.is_a?(Class)
+                visitor_class.include(r)
+              end
+            end
+          end
+
+          visitor_class.prepend(StaticValidation::Visitor::ContextMethods)
+
+          context = GraphQL::StaticValidation::ValidationContext.new(query, visitor_class)
           rewrite = GraphQL::InternalRepresentation::Rewrite.new
 
           # Put this first so its enters and exits are always called
@@ -31,9 +44,9 @@ module GraphQL
 
           # If the caller opted out of validation, don't attach these
           if validate
-            @rules.each do |rule_class|
-              if rule_class.method_defined?(:validate)
-                rule_class.new.validate(context)
+            @rules.each do |rule_class_or_module|
+              if rule_class_or_module.method_defined?(:validate)
+                rule_class_or_module.new.validate(context)
               end
             end
           end
