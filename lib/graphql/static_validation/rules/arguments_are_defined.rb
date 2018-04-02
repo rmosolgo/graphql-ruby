@@ -24,7 +24,7 @@ module GraphQL
           raise "Unexpected argument parent: #{parent.class} (##{parent})"
         end
 
-        if parent_defn && (argument_defn = context.warden.arguments(parent_defn).find { |arg| arg.name == node.name })
+        if parent_defn && context.warden.arguments(parent_defn).any? { |arg| arg.name == node.name }
           super
         elsif parent_defn
           kind_of_node = node_type(parent)

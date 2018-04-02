@@ -24,6 +24,33 @@ module GraphQL
         @path.dup
       end
 
+      # Build a class to visit the AST and perform validation,
+      # or use a pre-built class if rules is `ALL_RULES` or empty.
+      # @param rules [Array<Module, Class>]
+      # @return [Class] A class for validating `rules` during visitation
+      def self.including_rules(rules)
+        if rules.none?
+          NoValidateVisitor
+        elsif rules == ALL_RULES
+          DefaultVisitor
+        else
+          visitor_class = Class.new(self) do
+            include(GraphQL::StaticValidation::DefinitionDependencies)
+          end
+
+          rules.reverse_each do |r|
+            # If it's a class, it gets attached later.
+            if !r.is_a?(Class)
+              visitor_class.include(r)
+            end
+          end
+
+          visitor_class.include(GraphQL::InternalRepresentation::Rewrite)
+          visitor_class.include(ContextMethods)
+          visitor_class
+        end
+      end
+
       module ContextMethods
         def on_operation_definition(node, parent)
           object_type = @schema.root_type_for_operation(node.operation_type)

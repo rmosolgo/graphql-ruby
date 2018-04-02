@@ -4,7 +4,7 @@ module GraphQL
     class NoValidateVisitor < StaticValidation::BaseVisitor
       include(GraphQL::InternalRepresentation::Rewrite)
       include(GraphQL::StaticValidation::DefinitionDependencies)
-      prepend(ContextMethods)
+      include(ContextMethods)
     end
   end
 end

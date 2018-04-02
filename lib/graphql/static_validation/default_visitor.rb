@@ -9,7 +9,7 @@ module GraphQL
       end
 
       include(GraphQL::InternalRepresentation::Rewrite)
-      prepend(ContextMethods)
+      include(ContextMethods)
     end
   end
 end

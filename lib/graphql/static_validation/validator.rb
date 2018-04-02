@@ -24,38 +24,15 @@ module GraphQL
       def validate(query, validate: true)
         query.trace("validate", { validate: validate, query: query }) do
 
-          visitor_class = if validate == false
-            # This visitor tracks context info, but doesn't apply any rules
-            StaticValidation::NoValidateVisitor
-          elsif @rules == ALL_RULES
-            # This visitor applies the default rules
-            StaticValidation::DefaultVisitor
-          else
-            # Create a visitor on the fly
-            custom_class = Class.new(StaticValidation::BaseVisitor) do
-              include DefinitionDependencies
-            end
-
-            @rules.reverse_each do |r|
-              if !r.is_a?(Class)
-                custom_class.include(r)
-              end
-            end
-            custom_class.include(GraphQL::InternalRepresentation::Rewrite)
-            custom_class.prepend(StaticValidation::BaseVisitor::ContextMethods)
-            custom_class
-          end
+          rules_to_use = validate ? @rules : []
+          visitor_class = BaseVisitor.including_rules(rules_to_use)
 
           context = GraphQL::StaticValidation::ValidationContext.new(query, visitor_class)
-          visitor = context.visitor
 
-          # If the caller opted out of validation, don't attach these
-          if validate
-            # Attach legacy-style rules
-            @rules.each do |rule_class_or_module|
-              if rule_class_or_module.method_defined?(:validate)
-                rule_class_or_module.new.validate(context)
-              end
+          # Attach legacy-style rules
+          rules_to_use.each do |rule_class_or_module|
+            if rule_class_or_module.method_defined?(:validate)
+              rule_class_or_module.new.validate(context)
             end
           end
 
