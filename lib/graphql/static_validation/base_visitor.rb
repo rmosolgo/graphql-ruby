@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 module GraphQL
   module StaticValidation
-    class Visitor < GraphQL::Language::Visitor
+    class BaseVisitor < GraphQL::Language::Visitor
       def initialize(document, context)
         @path = []
         @object_types = []
