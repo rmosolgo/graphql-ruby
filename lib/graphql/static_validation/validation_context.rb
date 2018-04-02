@@ -16,7 +16,7 @@ module GraphQL
 
       attr_reader :query, :schema,
         :document, :errors, :visitor,
-        :warden, :dependencies, :each_irep_node_handlers
+        :warden, :on_dependency_resolve_handlers, :each_irep_node_handlers
 
       def_delegators :@query, :schema, :document, :fragments, :operations, :warden
 
@@ -29,17 +29,11 @@ module GraphQL
         @each_irep_node_handlers = []
         @on_dependency_resolve_handlers = []
         @visitor = visitor_class.new(document, self)
-        definition_dependencies = DefinitionDependencies.mount(self)
-        visitor[GraphQL::Language::Nodes::Document].leave << ->(_n, _p) {
-          @dependencies = definition_dependencies.dependency_map { |defn, spreads, frag|
-            @on_dependency_resolve_handlers.each { |h| h.call(defn, spreads, frag) }
-          }
-        }
       end
 
       def_delegators :@visitor,
         :path, :type_definition, :field_definition, :argument_definition,
-        :parent_type_definition, :directive_definition, :object_types
+        :parent_type_definition, :directive_definition, :object_types, :dependencies
 
       def on_dependency_resolve(&handler)
         @on_dependency_resolve_handlers << handler

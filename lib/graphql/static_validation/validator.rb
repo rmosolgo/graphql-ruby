@@ -32,21 +32,22 @@ module GraphQL
             StaticValidation::DefaultVisitor
           else
             # Create a visitor on the fly
-            custom_class = Class.new(StaticValidation::BaseVisitor)
+            custom_class = Class.new(StaticValidation::BaseVisitor) do
+              include DefinitionDependencies
+            end
+
             @rules.reverse_each do |r|
               if !r.is_a?(Class)
                 custom_class.include(r)
               end
             end
+            custom_class.include(GraphQL::InternalRepresentation::Rewrite)
             custom_class.prepend(StaticValidation::BaseVisitor::ContextMethods)
             custom_class
           end
 
           context = GraphQL::StaticValidation::ValidationContext.new(query, visitor_class)
-          rewrite = GraphQL::InternalRepresentation::Rewrite.new
-
-          # Put this first so its enters and exits are always called
-          rewrite.validate(context)
+          visitor = context.visitor
 
           # If the caller opted out of validation, don't attach these
           if validate
@@ -60,7 +61,7 @@ module GraphQL
 
           context.visitor.visit
           # Post-validation: allow validators to register handlers on rewritten query nodes
-          rewrite_result = rewrite.document
+          rewrite_result = context.visitor.rewrite_document
           GraphQL::InternalRepresentation::Visit.visit_each_node(rewrite_result.operation_definitions, context.each_irep_node_handlers)
 
           {

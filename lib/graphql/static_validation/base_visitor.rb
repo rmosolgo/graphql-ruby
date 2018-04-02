@@ -49,11 +49,11 @@ module GraphQL
         end
 
         def on_field(node, parent)
-          parent_type = @object_types.last.unwrap
+          parent_type = @object_types.last
           field_definition = @schema.get_field(parent_type, node.name)
           @field_definitions.push(field_definition)
           if !field_definition.nil?
-            next_object_type = field_definition.type
+            next_object_type = field_definition.type.unwrap
             @object_types.push(next_object_type)
           else
             @object_types.push(nil)
@@ -135,9 +135,6 @@ module GraphQL
             @schema.types.fetch(node.type.name, nil)
           else
             @object_types.last
-          end
-          if !object_type.nil?
-            object_type = object_type.unwrap
           end
           @object_types.push(object_type)
           yield(node)

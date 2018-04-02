@@ -3,7 +3,7 @@ module GraphQL
   module StaticValidation
     module FieldsAreDefinedOnType
       def on_field(node, parent)
-        parent_type = @object_types[-2].unwrap
+        parent_type = @object_types[-2]
         field = context.warden.get_field(parent_type, node.name)
 
         if field.nil?
