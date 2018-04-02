@@ -27,7 +27,7 @@ module GraphQL
         def generate_field
           field_instance = super
           field_instance.own_arguments.clear
-          field_instance.argument(:input, generate_input_type, required: true)
+          field_instance.argument(:input, input_type, required: true)
           field_instance
         end
 
