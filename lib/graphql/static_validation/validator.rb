@@ -31,8 +31,10 @@ module GraphQL
 
           # If the caller opted out of validation, don't attach these
           if validate
-            @rules.each do |rules|
-              rules.new.validate(context)
+            @rules.each do |rule_class|
+              if rule_class.method_defined?(:validate)
+                rule_class.new.validate(context)
+              end
             end
           end
 

@@ -7,10 +7,10 @@ require "graphql/static_validation/validator"
 require "graphql/static_validation/validation_context"
 require "graphql/static_validation/literal_validator"
 
-
 rules_glob = File.expand_path("../static_validation/rules/*.rb", __FILE__)
 Dir.glob(rules_glob).each do |file|
   require(file)
 end
 
+require "graphql/static_validation/visitor"
 require "graphql/static_validation/all_rules"

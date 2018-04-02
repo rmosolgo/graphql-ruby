@@ -6,7 +6,7 @@ module GraphQL
     # @example Create a visitor counting certain field names
     #   class NameCounter < GraphQL::Language::Visitor
     #     def initialize(document, field_name)
-    #       super
+    #       super(document)
     #       @field_name
     #       @count = 0
     #     end

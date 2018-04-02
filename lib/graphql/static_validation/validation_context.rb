@@ -24,7 +24,9 @@ module GraphQL
         @query = query
         @literal_validator = LiteralValidator.new(context: query.context)
         @errors = []
-        @visitor = GraphQL::Language::Visitor.new(document)
+        # TODO it will take some finegalling but I think all this state could
+        # be moved to `Visitor`
+        @visitor = StaticValidation::Visitor.new(document, self)
         @type_stack = GraphQL::StaticValidation::TypeStack.new(schema, visitor)
         definition_dependencies = DefinitionDependencies.mount(self)
         @on_dependency_resolve_handlers = []
