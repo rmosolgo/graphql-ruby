@@ -20,7 +20,22 @@ module GraphQL
       attr_reader :arguments
 
       # Ruby-like hash behaviors, read-only
-      def_delegators :@ruby_style_hash, :[], :key?, :to_h, :keys, :values, :each, :any?
+      def_delegators :@ruby_style_hash, :to_h, :keys, :values, :each, :any?
+
+      # Lookup a key on this object, it accepts new-style underscored symbols
+      # Or old-style camelized identifiers.
+      # @param key [Symbol, String]
+      def [](key)
+        if @ruby_style_hash.key?(key)
+          @ruby_style_hash[key]
+        else
+          @arguments[key]
+        end
+      end
+
+      def key?(key)
+        @ruby_style_hash.key?(key) || @arguments.key?(key)
+      end
 
       # A copy of the Ruby-style hash
       def to_kwargs

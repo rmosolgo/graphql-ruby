@@ -47,6 +47,7 @@ describe GraphQL::Schema::InputObject do
         "ABC",
         "ABC",
         "true",
+        "ABC",
       ]
       assert_equal expected_info, res["data"]["inspectInput"]
     end
