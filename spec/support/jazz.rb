@@ -330,6 +330,8 @@ module Jazz
         # Access by key:
         input[:string_value],
         input.key?(:string_value).to_s,
+        # Access by legacy key
+        input[:stringValue],
       ]
     end
 
