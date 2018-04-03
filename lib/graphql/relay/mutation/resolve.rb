@@ -46,7 +46,7 @@ module GraphQL
 
             @mutation.result_class.new(client_mutation_id: args[:input][:clientMutationId], result: mutation_result)
           elsif @class_based
-            mutation_result[:client_mutation_id] = args[:input][:clientMutationId]
+            mutation_result[:client_mutation_id] = args[:input][:client_mutation_id]
             mutation_result
           else
             mutation_result
