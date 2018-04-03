@@ -158,7 +158,7 @@ Some late-bound types couldn't be resolved:
             end
           elsif !prev_type.equal?(type_defn)
             # If the previous entry in the map isn't the same object we just found, raise.
-            raise("Duplicate type definition found for name '#{type_defn.name}' (#{prev_type.metadata[:object_class]}, #{type_defn.metadata[:object_class]}})")
+            raise("Duplicate type definition found for name '#{type_defn.name}' (#{prev_type.metadata[:type_class]}, #{type_defn.metadata[:type_class]}})")
           end
         when Class
           if member.respond_to?(:graphql_definition)

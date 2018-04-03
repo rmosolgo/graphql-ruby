@@ -8,9 +8,9 @@ module GraphQL
         module_function
         def instrument(type, field)
           return_type = field.type.unwrap
-          if return_type.metadata[:object_class] ||
+          if return_type.metadata[:type_class] ||
               return_type.is_a?(GraphQL::InterfaceType) ||
-              (return_type.is_a?(GraphQL::UnionType) && return_type.possible_types.any? { |t| t.metadata[:object_class] })
+              (return_type.is_a?(GraphQL::UnionType) && return_type.possible_types.any? { |t| t.metadata[:type_class] })
             field = apply_proxy(field)
           end
 
@@ -25,7 +25,7 @@ module GraphQL
           else
             root_type = query.irep_selection.return_type
             # If it has a wrapper, apply it
-            wrapper_class = root_type.metadata[:object_class]
+            wrapper_class = root_type.metadata[:type_class]
             if wrapper_class
               new_root_value = wrapper_class.new(query.root_value, query.context)
               query.root_value = new_root_value
@@ -99,7 +99,7 @@ module GraphQL
                 raise "unexpected proxying type #{type} for #{obj} at #{ctx.owner_type}.#{ctx.field.name}"
               end
 
-              if concrete_type && (object_class = concrete_type.metadata[:object_class])
+              if concrete_type && (object_class = concrete_type.metadata[:type_class])
                 # use the query-level context here, since it won't be field-specific anyways
                 query_ctx = ctx.query.context
                 object_class.new(obj, query_ctx)

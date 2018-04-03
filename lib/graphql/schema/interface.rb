@@ -41,6 +41,7 @@ module GraphQL
             field_defn = field_inst.graphql_definition
             type_defn.fields[field_defn.name] = field_defn
           end
+          type_defn.metadata[:type_class] = self
           if respond_to?(:resolve_type)
             type_defn.resolve_type = method(:resolve_type)
           end

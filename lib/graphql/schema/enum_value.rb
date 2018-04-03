@@ -66,6 +66,7 @@ module GraphQL
         enum_value.description = @description
         enum_value.value = @value
         enum_value.deprecation_reason = @deprecation_reason
+        enum_value.metadata[:type_class] = self
         enum_value
       end
     end

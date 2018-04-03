@@ -23,6 +23,7 @@ module GraphQL
           if respond_to?(:resolve_type)
             type_defn.resolve_type = method(:resolve_type)
           end
+          type_defn.metadata[:type_class] = self
           type_defn
         end
       end

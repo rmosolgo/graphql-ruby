@@ -48,6 +48,7 @@ module GraphQL
           Member::BuildType.parse_type(@type_expr, null: @null)
         }
         argument.description = @description
+        argument.metadata[:type_class] = self
         if NO_DEFAULT != @default_value
           argument.default_value = @default_value
         end
