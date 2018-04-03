@@ -71,6 +71,7 @@ describe GraphQL::Schema::Mutation do
           entries {
             name
           }
+          ee
         }
       }
       GRAPHQL
@@ -78,6 +79,7 @@ describe GraphQL::Schema::Mutation do
       response = Jazz::Schema.execute(query_str)
       assert_equal "Trombone", response["data"]["addInstrument"]["instrument"]["name"]
       assert_equal "BRASS", response["data"]["addInstrument"]["instrument"]["family"]
+      assert_equal "GraphQL::Query::Context::ExecutionErrors", response["data"]["addInstrument"]["ee"]
       assert_equal 7, response["data"]["addInstrument"]["entries"].size
     end
   end

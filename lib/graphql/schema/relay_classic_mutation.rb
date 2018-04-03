@@ -50,6 +50,7 @@ module GraphQL
           kwargs = args.to_kwargs
           # This is handled by Relay::Mutation::Resolve, a bit hacky, but here we are.
           kwargs.delete(:client_mutation_id)
+          extras.each { |e| kwargs[e] = ctx.public_send(e) }
           mutation.resolve(**kwargs)
         end
       end
