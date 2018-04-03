@@ -387,8 +387,7 @@ module Jazz
       argument :input, EnsembleInput, required: true
     end
 
-    # TODO don't require `field` somehow
-    field :add_instrument, field: AddInstrument.field
+    field :add_instrument, mutation: AddInstrument
 
     def add_ensemble(input:)
       ens = Models::Ensemble.new(input.name)

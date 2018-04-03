@@ -22,7 +22,9 @@ module GraphQL
       attr_reader :owner
 
       # @return [Class, nil] The mutation this field was derived from, if there is one
-      attr_reader :mutation
+      def mutation
+        @mutation || @mutation_class
+      end
 
       # @param name [Symbol] The underscore-cased version of this field name (will be camelized for the GraphQL API)
       # @param return_type_expr [Class, GraphQL::BaseType, Array] The return type of this field
@@ -40,16 +42,20 @@ module GraphQL
       # @param field [GraphQL::Field, GraphQL::Schema::Field] **deprecated** for compatibility with <1.8.0
       # @param function [GraphQL::Function] **deprecated** for compatibility with <1.8.0
       # @param mutation [Class] A {Schema::Mutation} class for serving this field
+      # @param mutation_class [Class] (Private) A {Schema::Mutation} which this field was derived from.
       # @param arguments [{String=>GraphQL::Schema::Arguments}] Arguments for this field (may be added in the block, also)
       # @param camelize [Boolean] If true, the field name will be camelized when building the schema
       # @param complexity [Numeric] When provided, set the complexity for this field
-      def initialize(name, return_type_expr = nil, desc = nil, owner: nil, null: nil, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, connection: nil, max_page_size: nil, resolve: nil, introspection: false, hash_key: nil, camelize: true, complexity: 1, extras: [], mutation: nil, arguments: {}, &definition_block)
+      def initialize(name, return_type_expr = nil, desc = nil, owner: nil, null: nil, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, connection: nil, max_page_size: nil, resolve: nil, introspection: false, hash_key: nil, camelize: true, complexity: 1, extras: [], mutation: nil, mutation_class: nil, arguments: {}, &definition_block)
         if (field || function) && desc.nil? && return_type_expr.is_a?(String)
           # The return type should be copied from `field` or `function`, and the second positional argument is the description
           desc = return_type_expr
           return_type_expr = nil
         end
-        if !(field || function)
+        if mutation && (return_type_expr || desc || description || function || field || null || deprecation_reason || method || resolve || introspection || hash_key)
+          raise ArgumentError, "when keyword `mutation:` is present, all arguments are ignored, please remove them"
+        end
+        if !(field || function || mutation)
           if return_type_expr.nil?
             raise ArgumentError, "missing positional argument `type`"
           end
@@ -57,8 +63,8 @@ module GraphQL
             raise ArgumentError, "missing keyword argument null:"
           end
         end
-        if (field || function || resolve) && extras.any?
-          raise ArgumentError, "keyword `extras:` may only be used with method-based resolve, please remove `field:`, `function:`, or `resolve:`"
+        if (field || function || resolve || resolve) && extras.any?
+          raise ArgumentError, "keyword `extras:` may only be used with method-based resolve, please remove `field:`, `function:`, `resolve:`, or `mutation:`"
         end
         @name = name.to_s
         if description && desc
@@ -87,6 +93,7 @@ module GraphQL
         @extras = extras
         @camelize = camelize
         @mutation = mutation
+        @mutation_class = mutation_class
         # Override the default from HasArguments
         @own_arguments = arguments
         @owner = owner
@@ -128,6 +135,9 @@ module GraphQL
         # this field was previously defined and passed here, so delegate to it
         if @field_instance
           return @field_instance.to_graphql
+        elsif @mutation
+          field_inst = @mutation.graphql_field
+          return field_inst.to_graphql
         end
 
         method_name = @method || @hash_key || Member::BuildType.underscore(@name)
@@ -167,8 +177,8 @@ module GraphQL
           field_defn.deprecation_reason = @deprecation_reason
         end
 
-        if @mutation
-          field_defn.mutation = @mutation
+        if @mutation_class
+          field_defn.mutation = @mutation_class
         end
 
         field_defn.resolve = if @resolve || @function || @field

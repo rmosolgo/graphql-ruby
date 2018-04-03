@@ -94,14 +94,15 @@ module GraphQL
           graphql_name.sub(/^[A-Z]/, &:downcase)
         end
 
+        # TODO support deprecation_reason
         def generate_field
           self.field_class.new(
             field_name,
             payload_type,
             description,
-            resolve: self.method(:resolve_field),
+            resolve: self.method(:resolve_field),\
+            mutation_class: self,
             arguments: arguments,
-            mutation: self,
             null: true,
           )
         end
