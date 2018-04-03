@@ -19,6 +19,7 @@ module GraphQL
           type_defn.description = description
           type_defn.coerce_result = method(:coerce_result)
           type_defn.coerce_input = method(:coerce_input)
+          type_defn.metadata[:type_class] = self
           type_defn
         end
       end

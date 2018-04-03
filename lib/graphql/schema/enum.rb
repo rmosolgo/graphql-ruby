@@ -53,6 +53,7 @@ module GraphQL
           values.each do |name, val|
             enum_type.add_value(val.to_graphql)
           end
+          enum_type.metadata[:type_class] = self
           enum_type
         end
 

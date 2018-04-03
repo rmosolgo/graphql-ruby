@@ -58,7 +58,6 @@ module GraphQL
             obj_type.fields[field_defn.name] = field_defn
           end
 
-          obj_type.metadata[:object_class] = self
           obj_type.metadata[:type_class] = self
 
           obj_type

@@ -12,7 +12,7 @@ module GraphQL
         if type
           # Apply wrapping manually since this field isn't wrapped by instrumentation
           type_type = ctx.schema.introspection_system.type_type
-          type_type.metadata[:object_class].new(type, ctx)
+          type_type.metadata[:type_class].new(type, ctx)
         else
           nil
         end
