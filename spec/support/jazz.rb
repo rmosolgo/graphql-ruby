@@ -371,11 +371,14 @@ module Jazz
     field :instrument, InstrumentType, null: false
     # This is meaningless, but it's to test the conflict with `Hash#entries`
     field :entries, [InstrumentType], null: false
+    # Test `extras` injection
 
-    def resolve(name:, family:)
+    field :ee, String, null: false
+    extras [:execution_errors]
+    def resolve(name:, family:, execution_errors:)
       instrument = Jazz::Models::Instrument.new(name, family)
       Jazz::Models.data["Instrument"] << instrument
-      { instrument: instrument, entries: Jazz::Models.data["Instrument"] }
+      { instrument: instrument, entries: Jazz::Models.data["Instrument"], ee: execution_errors.class.name}
     end
   end
 

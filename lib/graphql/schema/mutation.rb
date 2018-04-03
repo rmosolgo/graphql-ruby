@@ -65,6 +65,15 @@ module GraphQL
           @object_class || (superclass.respond_to?(:object_class) ? superclass.object_class : GraphQL::Schema::Object)
         end
 
+        # Additional info injected into {#resolve}
+        # @see {GraphQL::Schema::Field#extras}
+        def extras(new_extras = nil)
+          if new_extras
+            @extras = new_extras
+          end
+          @extras || []
+        end
+
         private
 
         def generate_payload_type
@@ -99,7 +108,9 @@ module GraphQL
 
         def resolve_field(obj, args, ctx)
           mutation = self.new(object: obj, arguments: args, context: ctx.query.context)
-          mutation.resolve(**args.to_kwargs)
+          ruby_kwargs = args.to_kwargs
+          extras.each { |e| ruby_kwargs[e] = ctx.public_send(e) }
+          mutation.resolve(**ruby_kwargs)
         end
       end
     end
