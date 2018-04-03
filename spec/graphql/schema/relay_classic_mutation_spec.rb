@@ -15,4 +15,14 @@ describe GraphQL::Schema::RelayClassicMutation do
       assert_equal custom_input, mutation_subclass.input_object_class
     end
   end
+
+  describe ".input_type" do
+    it "has a reference to the mutation" do
+      mutation = Class.new(GraphQL::Schema::RelayClassicMutation) do
+        graphql_name "Test"
+      end
+      assert_equal mutation, mutation.input_type.mutation
+      assert_equal mutation, mutation.input_type.graphql_definition.mutation
+    end
+  end
 end
