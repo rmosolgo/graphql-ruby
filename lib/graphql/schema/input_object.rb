@@ -8,6 +8,8 @@ module GraphQL
 
       def initialize(values, context:, defaults_used:)
         @arguments = self.class.arguments_class.new(values, context: context, defaults_used: defaults_used)
+        # Symbolized, underscored hash:
+        @ruby_style_hash = @arguments.to_kwargs
         @context = context
       end
 
@@ -17,9 +19,13 @@ module GraphQL
       # @return [GraphQL::Query::Arguments] The underlying arguments instance
       attr_reader :arguments
 
-      # A lot of methods work just like GraphQL::Arguments
-      def_delegators :@arguments, :[], :key?, :to_h, :to_kwargs
-      def_delegators :to_h, :keys, :values, :each, :any?
+      # Ruby-like hash behaviors, read-only
+      def_delegators :@ruby_style_hash, :[], :key?, :to_h, :keys, :values, :each, :any?
+
+      # A copy of the Ruby-style hash
+      def to_kwargs
+        @ruby_style_hash.dup
+      end
 
       class << self
         # @return [Class<GraphQL::Arguments>]

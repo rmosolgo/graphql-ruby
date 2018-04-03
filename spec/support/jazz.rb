@@ -328,8 +328,8 @@ module Jazz
         # Access by method
         input.string_value,
         # Access by key:
-        input["stringValue"],
-        input[:stringValue],
+        input[:string_value],
+        input.key?(:string_value).to_s,
       ]
     end
 
