@@ -59,6 +59,7 @@ module GraphQL
           end
 
           obj_type.metadata[:object_class] = self
+          obj_type.metadata[:type_class] = self
 
           obj_type
         end
