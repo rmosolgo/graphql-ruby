@@ -98,8 +98,9 @@ pre {
   border: 1px solid $code-border;
   border-radius: $code-border-radius;
   background-color: $code-background;
-  margin: 10px 0px;
+  margin: 20px 0px;
   overflow-x: scroll;
+  line-height: 1.4rem;
 }
 
 p, li {
@@ -108,10 +109,6 @@ p, li {
 
 li {
   margin-left: 15px;
-}
-
-pre {
-  line-height: 1.4rem;
 }
 
 p, ul {
@@ -182,9 +179,11 @@ a:hover, a:hover code {
   ul {
     list-style: none;
     display: flex;
+    flex-wrap: wrap;
   }
 
   li {
+    padding-bottom: 10px;
     padding-right: 10px;
   }
 }
