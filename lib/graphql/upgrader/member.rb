@@ -394,14 +394,14 @@ module GraphQL
         end
 
         def on_def(node)
-          method_name, args, body = *node
+          method_name, _args, body = *node
           if method_name == :resolve
             possible_returned_hashes = find_returned_hashes(body, returning: false)
             possible_returned_hashes.each do |hash_node|
               pairs = *hash_node
               pairs.each do |pair_node|
                 if pair_node.type == :pair # Skip over :kwsplat
-                  pair_k, pair_v = *pair_node
+                  pair_k, _pair_v = *pair_node
                   if pair_k.type == :sym && pair_k.children[0].to_s =~ /[a-z][A-Z]/ # Does it have any camelcase boundaries?
                     source_exp = pair_k.loc.expression
                     @keys_to_upgrade << {
@@ -457,7 +457,7 @@ module GraphQL
             end
           when :if
             # Check each branch of a conditional
-            condition, *branches = *node
+            _condition, *branches = *node
             branches.compact.map { |b| find_returned_hashes(b, returning: returning) }.flatten
           when :return
             find_returned_hashes(node.children.first, returning: true)

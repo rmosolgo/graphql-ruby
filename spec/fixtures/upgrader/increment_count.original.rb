@@ -53,7 +53,7 @@ module Platform
             thingId: "xyz"
           }
         end
-       end
+      end
     end
   end
 end
