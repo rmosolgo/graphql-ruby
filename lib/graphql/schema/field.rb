@@ -158,8 +158,7 @@ module GraphQL
             begin
               Member::BuildType.parse_type(@return_type_expr, null: @return_type_null)
             rescue
-              # TODO: add owner type here
-              raise ArgumentError, "Failed to build return type for ??.#{name}: #{$!.message}", $!.backtrace
+              raise ArgumentError, "Failed to build return type for #{@owner.graphql_name}.#{name} from #{@return_type_expr.inspect}: #{$!.message}", $!.backtrace
             end
           }
         elsif @connection.nil? && (@field || @function)

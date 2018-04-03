@@ -148,4 +148,20 @@ describe GraphQL::Schema::Field do
       end
     end
   end
+
+  describe "build type errors" do
+    it "includes the full name" do
+      thing = Class.new(GraphQL::Schema::Object) do
+        graphql_name "Thing"
+        # `Set` is a class but not a GraphQL type
+        field :stuff, Set, null: false
+      end
+
+      err = assert_raises ArgumentError do
+        thing.fields["stuff"].to_graphql.type
+      end
+
+      assert_includes err.message, "Thing.stuff"
+    end
+  end
 end
