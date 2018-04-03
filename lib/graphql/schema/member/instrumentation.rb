@@ -8,7 +8,7 @@ module GraphQL
         module_function
         def instrument(type, field)
           return_type = field.type.unwrap
-          if return_type.metadata[:type_class] ||
+          if (return_type.is_a?(GraphQL::ObjectType) && return_type.metadata[:type_class]) ||
               return_type.is_a?(GraphQL::InterfaceType) ||
               (return_type.is_a?(GraphQL::UnionType) && return_type.possible_types.any? { |t| t.metadata[:type_class] })
             field = apply_proxy(field)
