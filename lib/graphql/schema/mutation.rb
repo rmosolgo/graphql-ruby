@@ -61,7 +61,7 @@ module GraphQL
           if new_class
             @object_class = new_class
           end
-          @object_class || (superclass.respond_to?(:type_class) ? superclass.object_class : GraphQL::Schema::Object)
+          @object_class || (superclass.respond_to?(:object_class) ? superclass.object_class : GraphQL::Schema::Object)
         end
 
         # Additional info injected into {#resolve}

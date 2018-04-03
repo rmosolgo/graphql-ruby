@@ -44,6 +44,19 @@ describe GraphQL::Schema::Mutation do
     end
   end
 
+  describe ".object_class" do
+    it "can override & inherit the parent class" do
+      obj_class = Class.new(GraphQL::Schema::Object)
+      mutation_class = Class.new(GraphQL::Schema::Mutation) do
+        object_class(obj_class)
+      end
+      mutation_subclass = Class.new(mutation_class)
+
+      assert_equal(GraphQL::Schema::Object, GraphQL::Schema::Mutation.object_class)
+      assert_equal(obj_class, mutation_class.object_class)
+      assert_equal(obj_class, mutation_subclass.object_class)    end
+  end
+
   describe ".argument_class" do
     it "can override & inherit the parent class" do
       arg_class = Class.new(GraphQL::Schema::Argument)
