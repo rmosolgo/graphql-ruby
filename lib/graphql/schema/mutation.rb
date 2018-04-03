@@ -4,7 +4,6 @@ module GraphQL
   class Schema
     class Mutation < GraphQL::Schema::Member
       extend GraphQL::Schema::Member::HasFields
-      # TODO: also allow overrides for object base class
       extend GraphQL::Schema::Member::HasArguments
 
       # @param object [Object] the initialize object, pass to {Query.initialize} as `root_value`
@@ -24,7 +23,7 @@ module GraphQL
       # @return [Hash] A key for each field in the return type
       # @return [Object] An object corresponding to the return type
       def resolve(**args)
-        raise NotImplementedError, "#{self.class.name}#resolve should execute side effects"
+        raise NotImplementedError, "#{self.class.name}#resolve should execute side effects and return a Symbol-keyed hash"
       end
 
       class << self
