@@ -8,6 +8,16 @@
 
 ### Bug fixes
 
+## 1.8.0.pre10 (4 Apr 2018)
+
+### New features
+
+- Add `Schema::Mutation` and `Schema::RelayClassicMutation` base classes #1360
+
+### Bug fixes
+
+- Fix using anonymous classes for field types #1358
+
 ## 1.8.0.pre9 (19 Mar 2018)
 
 - New version number. (I needed this because I messed up build tooling for 1.8.0.pre8).
