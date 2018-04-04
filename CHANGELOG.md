@@ -8,6 +8,19 @@
 
 ### Bug fixes
 
+## 1.7.14 (4 Apr 2018)
+
+### New features
+
+- Support new IDL spec for `&` for interfaces #1304
+- Schema members built from IDL have an `#ast_node` #1367
+
+### Bug fixes
+
+- Fix paging backwards with `hasNextPage` #1319
+- Add hint for `orphan_types` in error message #1380
+- Use an empty hash for `result` when a query has unhandled errors #1382
+
 ## 1.7.13 (28 Feb 2018)
 
 ### Bug fixes
