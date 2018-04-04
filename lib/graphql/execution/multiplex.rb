@@ -93,7 +93,7 @@ module GraphQL
           end
         rescue StandardError
           # Assign values here so that the query's `@executed` becomes true
-          queries.map { |q| q.result_values ||= nil }
+          queries.map { |q| q.result_values ||= {} }
           raise
         end
 

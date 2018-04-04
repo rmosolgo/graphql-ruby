@@ -253,6 +253,32 @@ describe GraphQL::Query do
         assert_equal [nil], Instrumenter::ERROR_LOG
       end
     end
+
+    describe "when an error propagated through execution" do
+      module ExtensionsInstrumenter
+        LOG = []
+        def self.before_query(q); end;
+
+        def self.after_query(q)
+          q.result["extensions"] = { "a" => 1 }
+          LOG << :ok
+        end
+      end
+
+      let(:schema) {
+        Dummy::Schema.redefine {
+          instrument(:query, ExtensionsInstrumenter)
+        }
+      }
+
+      it "can add to extensions" do
+        ExtensionsInstrumenter::LOG.clear
+        assert_raises(RuntimeError) do
+          schema.execute "{ error }"
+        end
+        assert_equal [:ok], ExtensionsInstrumenter::LOG
+      end
+    end
   end
 
   it "uses root_value as the object for the root type" do
