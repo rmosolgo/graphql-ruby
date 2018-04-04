@@ -80,6 +80,7 @@ module GraphQL
       :orphan_types, :directives,
       :query_analyzers, :multiplex_analyzers, :instrumenters, :lazy_methods,
       :cursor_encoder,
+      :ast_node,
       :raise_definition_error
 
     # Single, long-lived instance of the provided subscriptions class, if there is one.

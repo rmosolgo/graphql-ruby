@@ -612,6 +612,65 @@ type Query {
 
       build_schema_and_compare_output(schema.chop)
     end
+
+    it "tracks original AST node" do
+      schema_definition = <<-GRAPHQL
+schema {
+  query: Query
+}
+
+enum Enum {
+  VALUE
+}
+
+type Query {
+  field(argument: String): String
+  deprecatedField(argument: String): String @deprecated(reason: "Test")
+}
+
+interface Interface {
+  field(argument: String): String
+}
+
+union Union = Query
+
+scalar Scalar
+
+input Input {
+  argument: String
+}
+
+directive @Directive (
+  # Argument
+  argument: String
+) on SCHEMA
+
+type Type implements Interface {
+  field(argument: String): String
+}
+      GRAPHQL
+
+      schema = GraphQL::Schema.from_definition(schema_definition)
+
+      assert_equal [1, 1], schema.ast_node.position
+      assert_equal [5, 1], schema.types["Enum"].ast_node.position
+      assert_equal [6, 3], schema.types["Enum"].values["VALUE"].ast_node.position
+      assert_equal [9, 1], schema.types["Query"].ast_node.position
+      assert_equal [10, 3], schema.types["Query"].fields["field"].ast_node.position
+      assert_equal [10, 9], schema.types["Query"].fields["field"].arguments["argument"].ast_node.position
+      assert_equal [11, 45], schema.types["Query"].fields["deprecatedField"].ast_node.directives[0].position
+      assert_equal [11, 57], schema.types["Query"].fields["deprecatedField"].ast_node.directives[0].arguments[0].position
+      assert_equal [14, 1], schema.types["Interface"].ast_node.position
+      assert_equal [15, 3], schema.types["Interface"].fields["field"].ast_node.position
+      assert_equal [15, 9], schema.types["Interface"].fields["field"].arguments["argument"].ast_node.position
+      assert_equal [18, 1], schema.types["Union"].ast_node.position
+      assert_equal [20, 1], schema.types["Scalar"].ast_node.position
+      assert_equal [22, 1], schema.types["Input"].ast_node.position
+      assert_equal [22, 1], schema.types["Input"].arguments["argument"].ast_node.position
+      assert_equal [26, 1], schema.directives["Directive"].ast_node.position
+      assert_equal [28, 3], schema.directives["Directive"].arguments["argument"].ast_node.position
+      assert_equal [31, 22], schema.types["Type"].ast_node.interfaces[0].position
+    end
   end
 
   describe 'Failures' do
