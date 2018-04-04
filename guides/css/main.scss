@@ -8,6 +8,8 @@ $brand-color-light:  #ed8090;
 $brand-color-extralight:  #f9e8ee;
 $experimental-background: #fff7cf;
 $experimental-color: #655400;
+$class-based-background: #c1f6ff;
+$class-based-color: #003a58;
 $pro-color: #406db5;
 $pro-background: #f1f4f9;
 $faint-color: #f0f0f0;
@@ -96,16 +98,17 @@ pre {
   border: 1px solid $code-border;
   border-radius: $code-border-radius;
   background-color: $code-background;
-  margin: 10px 0px;
+  margin: 20px 0px;
   overflow-x: scroll;
+  line-height: 1.4rem;
 }
 
 p, li {
   line-height: 1.3rem;
 }
 
-pre {
-  line-height: 1.4rem;
+li {
+  margin-left: 15px;
 }
 
 p, ul {
@@ -176,9 +179,11 @@ a:hover, a:hover code {
   ul {
     list-style: none;
     display: flex;
+    flex-wrap: wrap;
   }
 
   li {
+    padding-bottom: 10px;
     padding-right: 10px;
   }
 }
@@ -216,6 +221,11 @@ a:hover, a:hover code {
 
 .experimental-header {
   @include doc-header($experimental-color, $experimental-background);
+}
+
+
+.class-based-header {
+  @include doc-header($class-based-color, $class-based-background);
 }
 
 .pro-header {

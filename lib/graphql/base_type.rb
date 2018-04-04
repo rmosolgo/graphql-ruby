@@ -1,9 +1,13 @@
 # frozen_string_literal: true
+require "graphql/relay/type_extensions"
+
 module GraphQL
   # The parent for all type classes.
   class BaseType
     include GraphQL::Define::NonNullWithBang
     include GraphQL::Define::InstanceDefinable
+    include GraphQL::Relay::TypeExtensions
+
     accepts_definitions :name, :description,
         :introspection,
         :default_scalar,
@@ -13,7 +17,7 @@ module GraphQL
           global_id_field: GraphQL::Define::AssignGlobalIdField,
         }
 
-    ensure_defined(:name, :description, :introspection?, :default_scalar?)
+    ensure_defined(:graphql_name, :name, :description, :introspection?, :default_scalar?)
 
     attr_accessor :ast_node
 
@@ -32,6 +36,12 @@ module GraphQL
 
     # @return [String] the name of this type, must be unique within a Schema
     attr_accessor :name
+    # Future-compatible alias
+    # @see {GraphQL::SchemaMember}
+    alias :graphql_name :name
+    # Future-compatible alias
+    # @see {GraphQL::SchemaMember}
+    alias :graphql_definition :itself
 
     def name=(name)
       GraphQL::NameValidator.validate!(name)
@@ -172,36 +182,18 @@ module GraphQL
     def self.resolve_related_type(type_arg)
       case type_arg
       when Proc
-        # lazy-eval it
-        type_arg.call
+        # lazy-eval it, then try again
+        resolve_related_type(type_arg.call)
       when String
         # Get a constant by this name
         Object.const_get(type_arg)
       else
-        type_arg
+        if type_arg.respond_to?(:graphql_definition)
+          type_arg.graphql_definition
+        else
+          type_arg
+        end
       end
-    end
-
-    # @return [GraphQL::ObjectType] The default connection type for this object type
-    def connection_type
-      @connection_type ||= define_connection
-    end
-
-    # Define a custom connection type for this object type
-    # @return [GraphQL::ObjectType]
-    def define_connection(**kwargs, &block)
-      GraphQL::Relay::ConnectionType.create_type(self, **kwargs, &block)
-    end
-
-    # @return [GraphQL::ObjectType] The default edge type for this object type
-    def edge_type
-      @edge_type ||= define_edge
-    end
-
-    # Define a custom edge type for this object type
-    # @return [GraphQL::ObjectType]
-    def define_edge(**kwargs, &block)
-      GraphQL::Relay::EdgeType.create_type(self, **kwargs, &block)
     end
 
     # Return a GraphQL string for the type definition

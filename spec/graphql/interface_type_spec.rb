@@ -92,6 +92,18 @@ describe GraphQL::InterfaceType do
       assert_equal 3, interface.fields.size
       assert_equal 4, interface_2.fields.size
     end
+
+    it "copies orphan types without affecting the original" do
+      interface = GraphQL::InterfaceType.define do
+        name "AInterface"
+        orphan_types [Dummy::HoneyType]
+      end
+
+      interface_2 = interface.dup
+      interface_2.orphan_types << Dummy::CheeseType
+      assert_equal 1, interface.orphan_types.size
+      assert_equal 2, interface_2.orphan_types.size
+    end
   end
 
   describe "#resolve_type" do

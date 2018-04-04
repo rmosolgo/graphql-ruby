@@ -108,9 +108,9 @@ describe GraphQL::Relay::Mutation do
 
   it "inserts itself into the derived objects' metadata" do
     assert_equal StarWars::IntroduceShipMutation, StarWars::IntroduceShipMutation.field.mutation
-    assert_equal StarWars::IntroduceShipMutation, StarWars::IntroduceShipMutation.return_type.mutation
+    assert_equal StarWars::IntroduceShipMutation, StarWars::IntroduceShipMutation.graphql_field.mutation
+    assert_equal StarWars::IntroduceShipMutation, StarWars::IntroduceShipMutation.payload_type.mutation
     assert_equal StarWars::IntroduceShipMutation, StarWars::IntroduceShipMutation.input_type.mutation
-    assert_equal StarWars::IntroduceShipMutation, StarWars::IntroduceShipMutation.result_class.mutation
   end
 
   describe "return_field ... property:" do

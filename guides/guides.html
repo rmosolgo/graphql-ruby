@@ -4,7 +4,9 @@ sections:
   - name: Schema
   - name: Queries
   - name: Types
+  - name: Type Definitions
   - name: Fields
+  - name: Mutations
   - name: Relay
   - name: Subscriptions
   - name: GraphQL Pro
@@ -18,7 +20,7 @@ sections:
   <ul>
     {% for section in page.sections %}
       <li>
-        <a href="#{{ section.name }}">{{ section.name }}</a>
+        <a href="#{{ section.name | slugify }}-guides">{{ section.name }}</a>
       </li>
     {% endfor %}
   </ul>
@@ -26,7 +28,7 @@ sections:
 <div class="guides">
   {% for section in page.sections %}
     <div class="guide-section">
-      <h2 id="{{ section.name }}">{{ section.name }}</h2>
+      <h2 id="{{ section.name | slugify }}-guides">{{ section.name }}</h2>
       <ul>
         {% assign sorted_pages = site.pages | sort: "index" %}
         {% for guide in sorted_pages %}

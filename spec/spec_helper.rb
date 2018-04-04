@@ -38,6 +38,7 @@ Minitest.backtrace_filter = Minitest::BacktraceFilter.new
 # This is for convenient access to metadata in test definitions
 assign_metadata_key = ->(target, key, value) { target.metadata[key] = value }
 assign_metadata_flag = ->(target, flag) { target.metadata[flag] = true }
+GraphQL::Schema.accepts_definitions(set_metadata: assign_metadata_key)
 GraphQL::BaseType.accepts_definitions(metadata: assign_metadata_key)
 GraphQL::Field.accepts_definitions(metadata: assign_metadata_key)
 GraphQL::Argument.accepts_definitions(metadata: assign_metadata_key)

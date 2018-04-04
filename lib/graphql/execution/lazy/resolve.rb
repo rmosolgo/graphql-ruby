@@ -37,9 +37,7 @@ module GraphQL
           else
             Lazy.new {
               acc.each_with_index { |ctx, idx|
-                acc[idx] = ctx.trace("execute_field_lazy", { context: ctx }) do
-                  ctx.value.value
-                end
+                acc[idx] = ctx.value.value
               }
               resolve_in_place(acc)
             }

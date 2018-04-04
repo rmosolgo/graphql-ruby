@@ -23,20 +23,22 @@ module GraphQL
   #   end
   #
   class InterfaceType < GraphQL::BaseType
-    accepts_definitions :fields, :resolve_type, field: GraphQL::Define::AssignObjectField
+    accepts_definitions :fields, :orphan_types, :resolve_type, field: GraphQL::Define::AssignObjectField
 
-    attr_accessor :fields, :resolve_type_proc
-    ensure_defined :fields, :resolve_type_proc, :resolve_type
+    attr_accessor :fields, :orphan_types, :resolve_type_proc
+    ensure_defined :fields, :orphan_types, :resolve_type_proc, :resolve_type
 
     def initialize
       super
       @fields = {}
+      @orphan_types = []
       @resolve_type_proc = nil
     end
 
     def initialize_copy(other)
       super
       @fields = other.fields.dup
+      @orphan_types = other.orphan_types.dup
     end
 
     def kind

@@ -68,12 +68,10 @@ module GraphQL
               irep_node: child_irep_node,
             )
 
-            field_result = field_ctx.trace("execute_field", { context: field_ctx }) do
-              resolve_field(
-                object,
-                field_ctx
-              )
-            end
+            field_result = resolve_field(
+              object,
+              field_ctx
+            )
 
             if field_result.is_a?(Skip)
               next
@@ -105,7 +103,9 @@ module GraphQL
 
           raw_value = begin
             arguments = query.arguments_for(irep_node, field)
-            field_ctx.schema.middleware.invoke([parent_type, object, field, arguments, field_ctx])
+            field_ctx.trace("execute_field", { context: field_ctx }) do
+              field_ctx.schema.middleware.invoke([parent_type, object, field, arguments, field_ctx])
+            end
           rescue GraphQL::ExecutionError => err
             err
           end
@@ -118,12 +118,14 @@ module GraphQL
           # If the returned object is finished, continue to coerce
           # and resolve child fields
           if query.schema.lazy?(raw_value)
-            field_ctx.value = field.prepare_lazy(raw_value, arguments, field_ctx).then { |inner_value|
-              field_ctx.value = continue_resolve_field(inner_value, field_ctx)
-            }
-          elsif raw_value.is_a?(GraphQL::Execution::Lazy)
-            # It came from a connection resolve, assume it was already instrumented
-            field_ctx.value = raw_value.then { |inner_value|
+            field_ctx.value = Execution::Lazy.new {
+              inner_value = field_ctx.trace("execute_field_lazy", {context: field_ctx}) {
+                begin
+                  field.lazy_resolve(raw_value, arguments, field_ctx)
+                rescue GraphQL::ExecutionError => err
+                  err
+                end
+              }
               field_ctx.value = continue_resolve_field(inner_value, field_ctx)
             }
           else

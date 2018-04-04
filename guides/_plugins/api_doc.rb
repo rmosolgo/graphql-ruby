@@ -45,9 +45,7 @@ module GraphQLSite
     end
 
     def render(context)
-      <<~HTML
-      <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=#{@title}#{@body ? "&body=#{@body}" : ""}" target="_blank">open an issue</a>
-      HTML
+      %|<a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=#{@title}#{@body ? "&body=#{@body}" : ""}" target="_blank">open an issue</a>|
     end
 
     private

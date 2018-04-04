@@ -8,6 +8,119 @@
 
 ### Bug fixes
 
+## 1.8.0.pre10 (4 Apr 2018)
+
+### New features
+
+- Add `Schema::Mutation` and `Schema::RelayClassicMutation` base classes #1360
+
+### Bug fixes
+
+- Fix using anonymous classes for field types #1358
+
+## 1.8.0.pre9 (19 Mar 2018)
+
+- New version number. (I needed this because I messed up build tooling for 1.8.0.pre8).
+
+## 1.8.0.pre8 (19 Mar 2018)
+
+### New Features
+
+- Backport `accepts_definition` for configurations #1357
+- Add `#owner` method to Schema objects
+- Add `Interface.orphan_types` config for orphan types #1346
+- Add `extras: :execution_errors` for `add_error` #1313
+- Accept a block to `Schema::Argument#initialize` #1356
+
+### Bug Fixes
+
+- Support `cursor_encoder` #1357
+- Don't double-count lazy/eager field time in Tracing #1321
+- Fix camelization to support single leading underscore #1315
+- Fix `.resolve_type` for Union and Interface classes #1342
+- Apply kwargs before block in `Argument.from_dsl` #1350
+
+## 1.8.0.pre7 (27 Feb 2018)
+
+### New features
+
+- Upgrader improvements #1305
+- Support `global_id_field` for interfaces #1299
+- Add `camelize: false` #1300
+- Add readers for `context`, `object` and `arguments` #1283
+- Replace `Schema.method_missing` with explicit whitelist #1265
+
+## 1.8.0.pre6 (1 Feb 2018)
+
+### New features
+
+- Custom enum value classes #1264
+
+### Bug fixes
+
+- Properly print SDL type directives #1255
+
+## 1.8.0.pre5 (1 Feb 2018)
+
+### New features
+
+- Upgrade argument access with the upgrader #1251
+- Add `Schema#find(str)` for finding schema members by name #1232
+
+### Bug fixes
+
+- Fix `Schema.max_complexity` #1246
+- Support cyclical connections/edges #1253
+
+## 1.8.0.pre4 (18 Jan 2018)
+
+### Breaking changes
+
+- `Type.fields`, `Field.arguments`, `Enum.values` and `InputObject.arguments` return a Hash instead of an Array #1222
+
+### New features
+
+- By default, fields try hash keys which match their name, as either a symbol or a string #1225
+- `field do ... end` instance_evals on the Field instance, not a FieldProxy #1227
+- `[T, null: true]` creates lists with nullable items #1229
+- Upgrader improvements #1223
+
+### Bug fixes
+
+- Don't require `parser` unless the upgrader is run #1218
+
+## 1.8.0.pre3 (12 Jan 2018)
+
+### New Features
+
+- Custom `Context` classes for class-based schemas #1161
+- Custom introspection for class-based schemas #1170
+- Improvements to upgrader tasks and internals #1151, #1178, #1212
+- Allow description inside field blocks #1175
+
+## 1.8.0.pre2 (29 Nov 2017)
+
+### New Features
+
+- Add `rake graphql:upgrade[app/graphql]` for automatic upgrade #1110
+- Automatically camelize field names and argument names #1143, #1126
+- Improved error message when defining `name` instead of `graphql_name` #1104
+
+### Bug fixes
+
+- Fix list wrapping when value is `nil` #1117
+- Fix ArgumentError typo #1098
+
+## 1.8.0.pre1 (14 Nov 2017)
+
+### Breaking changes
+
+- Stop official support for Ruby 2.1 #1070
+
+### New features
+
+- Add class-based schema definition API #1037
+
 ## 1.7.14 (4 Apr 2018)
 
 ### New features

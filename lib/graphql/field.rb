@@ -226,6 +226,7 @@ module GraphQL
     end
 
     def initialize_copy(other)
+      ensure_defined
       super
       @arguments = other.arguments.dup
     end
