@@ -1,0 +1,148 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+      <title>GraphQL - Unions</title>
+    
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="icon" href="/graphql-ruby-icon.png">
+  </head>
+  <body>
+    <div class="header">
+      <div class="header-container">
+        <div class="nav">
+          <a href="/" class="img-link">
+            <img src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+          </a>
+          <a href="/getting_started">Get Started</a>
+          <a href="/guides">Guides</a>
+          <a href="http://www.rubydoc.info/gems/graphql/1.8.0.pre10/">API</a>
+          <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
+          <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+          <input
+            class="search-input"
+            onkeyup="GraphQLRubySearch.run(this)"
+            type="text"
+            placeholder="Search the docs..."
+          />
+        </div>
+      </div>
+      <div class="search-results-container">
+        <div id="search-results"></div>
+      </div>
+    </div>
+    <div class="container">
+      <p class="breadcrumb">
+  <a href="/">GraphQL</a>
+  &raquo; <a href="/guides">Guides</a>
+   &raquo; <a href="/guides#type-definitions-guides">Type Definitions</a>
+  &raquo; Unions
+</p>
+
+
+  <div class="class-based-header">
+    <p>
+      <strong>⚠ New Class-Based API ⚠</strong>
+    </p>
+    <p>
+      This describes a new API in <code>v1.8.0</code>.
+      Check the <a href="/schema/class_based_api">upgrade notes</a> for more info.
+    </p>
+  </div>
+
+
+<h1 class="guide-header">Unions</h1>
+<div class="guide-container">
+  <p>A union type is a set of object types which may appear in the same spot. Here’s a union, expressed in <a href="http://graphql.org/learn/schema/#type-language">GraphQL Schema Definition Language</a> (SDL):</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">union</span> <span class="no">MediaItem</span> <span class="o">=</span> <span class="no">AudioClip</span> <span class="o">|</span> <span class="no">VideoClip</span> <span class="o">|</span> <span class="no">Image</span> <span class="o">|</span> <span class="no">TextSnippet</span>
+</code></pre></div></div>
+
+<p>This might be used on a search field, for example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">searchMedia</span><span class="p">(</span><span class="ss">term: </span><span class="s2">"puppies"</span><span class="p">)</span> <span class="p">{</span>
+  <span class="o">...</span> <span class="n">on</span> <span class="no">AudioClip</span> <span class="p">{</span>
+    <span class="n">duration</span>
+  <span class="p">}</span>
+  <span class="o">...</span> <span class="n">on</span> <span class="no">VideoClip</span> <span class="p">{</span>
+    <span class="n">previewURL</span>
+    <span class="n">resolution</span>
+  <span class="p">}</span>
+  <span class="o">...</span> <span class="n">on</span> <span class="no">Image</span> <span class="p">{</span>
+    <span class="n">thumbnailURL</span>
+  <span class="p">}</span>
+  <span class="o">...</span> <span class="n">on</span> <span class="no">TextSnippet</span> <span class="p">{</span>
+    <span class="n">teaserText</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Here, the <code class="highlighter-rouge">searchMedia</code> field returns <code class="highlighter-rouge">[MediaItem!]</code>, a list where each member is part of the <code class="highlighter-rouge">MediaItem</code> union. So, for each member, we want to select different fields depending on which kind of object that member is.</p>
+
+<p><a href="/type_definitions/interfaces">Interfaces</a> are a similar concept, but in an interface, all types must share some common fields. Unions are a good choice when the object types don’t have any significant fields in common.</p>
+
+<p>Since union members share <em>no</em> fields, selections are <em>always</em> made with typed fragments (<code class="highlighter-rouge">... on SomeType</code>, as seen above).</p>
+
+<h2 id="defining-union-types">Defining Union Types</h2>
+
+<p>Unions extend <code class="highlighter-rouge">GraphQL::Schema::Union</code>. First, make a base class:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">BaseUnion</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Union</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>Then, extend that one for each union in your schema:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">CommentSubject</span> <span class="o">&lt;</span> <span class="no">BaseUnion</span>
+  <span class="n">description</span> <span class="s2">"Objects which may be commented on"</span>
+  <span class="n">possible_types</span> <span class="no">Types</span><span class="o">::</span><span class="no">Post</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">Image</span>
+
+  <span class="c1"># Optional: if this method is defined, it will override `Schema.resolve_type`</span>
+  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">resolve_type</span><span class="p">(</span><span class="n">object</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">object</span><span class="p">.</span><span class="nf">is_a?</span><span class="p">(</span><span class="no">BlogPost</span><span class="p">)</span>
+      <span class="no">Types</span><span class="o">::</span><span class="no">Post</span>
+    <span class="k">else</span>
+      <span class="no">Types</span><span class="o">::</span><span class="no">Image</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>The <code class="highlighter-rouge">possible_types(*types)</code> method accepts one or more types which belong to this union.</p>
+
+<p>Union classes are never instantiated; At runtime, only their <code class="highlighter-rouge">.resolve_type</code> methods may be called (if defined).</p>
+
+<p>For information about <code class="highlighter-rouge">.resolve_type</code>, see the <a href="/type_definitions/interfaces#resolve-type">Interfaces guide</a>.</p>
+
+</div>
+<p class="guide-footer">
+  Suggestion, improvement, or correction?
+  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/type_definitions/unions.md">Edit this file</a> or
+  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: Unions">report an issue</a>.
+</p>
+<script>
+  // Find headers with IDs and wrap their text in `<a href=></a>`
+  // That way people can easily copy the link.
+  var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+  var header, idText, headerLink;
+  for (var i = 0; i < headers.length; i++) {
+    header = headers[i];
+    idText = header.id;
+    if (idText) {
+      headerLink = document.createElement("a");
+      headerLink.href = "#" + idText;
+      headerLink.textContent = header.textContent;
+      header.textContent = "";
+      header.appendChild(headerLink);
+    }
+  }
+</script>
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/algoliasearch/3/algoliasearchLite.min.js"></script>
+    <script src="/js/search.js"></script>
+  </body>
+</html>

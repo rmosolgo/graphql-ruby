@@ -1,0 +1,163 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+      <title>GraphQL - Mutation Classes</title>
+    
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="icon" href="/graphql-ruby-icon.png">
+  </head>
+  <body>
+    <div class="header">
+      <div class="header-container">
+        <div class="nav">
+          <a href="/" class="img-link">
+            <img src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+          </a>
+          <a href="/getting_started">Get Started</a>
+          <a href="/guides">Guides</a>
+          <a href="http://www.rubydoc.info/gems/graphql/1.8.0.pre10/">API</a>
+          <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
+          <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+          <input
+            class="search-input"
+            onkeyup="GraphQLRubySearch.run(this)"
+            type="text"
+            placeholder="Search the docs..."
+          />
+        </div>
+      </div>
+      <div class="search-results-container">
+        <div id="search-results"></div>
+      </div>
+    </div>
+    <div class="container">
+      <p class="breadcrumb">
+  <a href="/">GraphQL</a>
+  &raquo; <a href="/guides">Guides</a>
+   &raquo; <a href="/guides#mutations-guides">Mutations</a>
+  &raquo; Mutation Classes
+</p>
+
+
+  <div class="class-based-header">
+    <p>
+      <strong>⚠ New Class-Based API ⚠</strong>
+    </p>
+    <p>
+      This describes a new API in <code>v1.8.0</code>.
+      Check the <a href="/schema/class_based_api">upgrade notes</a> for more info.
+    </p>
+  </div>
+
+
+<h1 class="guide-header">Mutation Classes</h1>
+<div class="guide-container">
+  <p>GraphQL <em>mutations</em> are special fields: instead of reading data or performing calculations, they may <em>modify</em> the application state. For example, mutation fields may:</p>
+
+<ul>
+  <li>Create, update or destroy records in the database</li>
+  <li>Establish associations between already-existing records in the database</li>
+  <li>Increment counters</li>
+  <li>Create, modify or delete files</li>
+  <li>Clear caches</li>
+</ul>
+
+<p>These actions are called <em>side effects</em>.</p>
+
+<p>Like all GraphQL fields, mutation fields:</p>
+
+<ul>
+  <li>Accept inputs, called <em>arguments</em></li>
+  <li>Return values via <em>fields</em></li>
+</ul>
+
+<p>GraphQL-Ruby includes two classes to help you write mutations:</p>
+
+<ul>
+  <li><a href="http://www.rubydoc.info/gems/graphql/1.8.0.pre10/GraphQL/Schema/Mutation" target="_blank" title="API docs for GraphQL::Schema::Mutation"><code>GraphQL::Schema::Mutation</code></a>, a bare-bones base class</li>
+  <li><a href="http://www.rubydoc.info/gems/graphql/1.8.0.pre10/GraphQL/Schema/RelayClassicMutation" target="_blank" title="API docs for GraphQL::Schema::RelayClassicMutation"><code>GraphQL::Schema::RelayClassicMutation</code></a>, a base class with a set of nice conventions that also supports the Relay Classic mutation specification.</li>
+</ul>
+
+<p>Besides those, you can also use the plain <a href="/type_definitions/objects#fields">field API</a> to write mutation fields.</p>
+
+<h2 id="example-mutation-class">Example mutation class</h2>
+
+<p>You should add a base class to your application, for example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Mutations</span><span class="o">::</span><span class="no">BaseMutation</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">RelayClassicMutation</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>Then extend it for your mutations:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Mutations</span><span class="o">::</span><span class="no">CreateComment</span> <span class="o">&lt;</span> <span class="no">Mutations</span><span class="o">::</span><span class="no">BaseMutation</span>
+  <span class="n">argument</span> <span class="ss">:body</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">true</span>
+  <span class="n">argument</span> <span class="ss">:post_id</span><span class="p">,</span> <span class="no">ID</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">true</span>
+
+  <span class="n">field</span> <span class="ss">:comment</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">Comment</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">true</span>
+  <span class="n">field</span> <span class="ss">:error_messages</span><span class="p">,</span> <span class="p">[</span><span class="no">String</span><span class="p">],</span> <span class="ss">null: </span><span class="kp">false</span>
+
+  <span class="k">def</span> <span class="nf">resolve</span><span class="p">(</span><span class="n">body</span><span class="p">:,</span> <span class="n">post_id</span><span class="p">:)</span>
+    <span class="n">post</span> <span class="o">=</span> <span class="no">Post</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="n">post_id</span><span class="p">)</span>
+    <span class="n">comment</span> <span class="o">=</span> <span class="n">post</span><span class="p">.</span><span class="nf">comments</span><span class="p">.</span><span class="nf">build</span><span class="p">(</span><span class="ss">body: </span><span class="n">body</span><span class="p">,</span> <span class="ss">author: </span><span class="n">context</span><span class="p">[</span><span class="ss">:current_user</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">comment</span><span class="p">.</span><span class="nf">save</span>
+      <span class="c1"># Successful creation, return the created object with no errors</span>
+      <span class="p">{</span>
+        <span class="ss">comment: </span><span class="n">comment</span><span class="p">,</span>
+        <span class="ss">errors: </span><span class="p">[],</span>
+      <span class="p">}</span>
+    <span class="k">else</span>
+      <span class="c1"># Failed save, return the errors to the client</span>
+      <span class="p">{</span>
+        <span class="ss">comment: </span><span class="kp">nil</span><span class="p">,</span>
+        <span class="ss">errors: </span><span class="n">comment</span><span class="p">.</span><span class="nf">errors</span><span class="p">.</span><span class="nf">full_messages</span>
+      <span class="p">}</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>The <code class="highlighter-rouge">#resolve</code> method should return a hash whose symbols match the <code class="highlighter-rouge">field</code> names.</p>
+
+<h2 id="hooking-up-mutations">Hooking up mutations</h2>
+
+<p>Mutations must be attached to the mutation root using the <code class="highlighter-rouge">mutation:</code> keyword, for example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">Mutation</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
+  <span class="n">field</span> <span class="ss">:create_comment</span><span class="p">,</span> <span class="ss">mutation: </span><span class="no">Mutations</span><span class="o">::</span><span class="no">CreateComment</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+</div>
+<p class="guide-footer">
+  Suggestion, improvement, or correction?
+  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/mutations/mutation_classes.md">Edit this file</a> or
+  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: Mutation Classes">report an issue</a>.
+</p>
+<script>
+  // Find headers with IDs and wrap their text in `<a href=></a>`
+  // That way people can easily copy the link.
+  var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+  var header, idText, headerLink;
+  for (var i = 0; i < headers.length; i++) {
+    header = headers[i];
+    idText = header.id;
+    if (idText) {
+      headerLink = document.createElement("a");
+      headerLink.href = "#" + idText;
+      headerLink.textContent = header.textContent;
+      header.textContent = "";
+      header.appendChild(headerLink);
+    }
+  }
+</script>
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/algoliasearch/3/algoliasearchLite.min.js"></script>
+    <script src="/js/search.js"></script>
+  </body>
+</html>

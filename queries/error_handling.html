@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="http://www.rubydoc.info/gems/graphql/1.7.13/">API</a>
+          <a href="http://www.rubydoc.info/gems/graphql/1.8.0.pre10/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <input
@@ -38,9 +38,10 @@
       <p class="breadcrumb">
   <a href="/">GraphQL</a>
   &raquo; <a href="/guides">Guides</a>
-   &raquo; Queries
+   &raquo; <a href="/guides#queries-guides">Queries</a>
   &raquo; Error Handling
 </p>
+
 
 
 <h1 class="guide-header">Error Handling</h1>
@@ -107,7 +108,7 @@
 <span class="c1"># }</span>
 </code></pre></div></div>
 
-<p>You can add an error to the <code class="highlighter-rouge">"errors"</code> key by returning a <a href="http://www.rubydoc.info/gems/graphql/1.7.13/GraphQL/ExecutionError" target="_blank" title="API docs for GraphQL::ExecutionError"><code>GraphQL::ExecutionError</code></a> from a <code class="highlighter-rouge">resolve</code> function. For example:</p>
+<p>You can add an error to the <code class="highlighter-rouge">"errors"</code> key by returning a <a href="http://www.rubydoc.info/gems/graphql/1.8.0.pre10/GraphQL/ExecutionError" target="_blank" title="API docs for GraphQL::ExecutionError"><code>GraphQL::ExecutionError</code></a> from a <code class="highlighter-rouge">resolve</code> function. For example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
   <span class="n">post_params</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="s2">"post"</span><span class="p">].</span><span class="nf">to_h</span>
@@ -121,7 +122,7 @@
 <span class="p">}</span>
 </code></pre></div></div>
 
-<p>If some part of your <code class="highlighter-rouge">resolve</code> function would raise an error, you can rescue it and return a <a href="http://www.rubydoc.info/gems/graphql/1.7.13/GraphQL/ExecutionError" target="_blank" title="API docs for GraphQL::ExecutionError"><code>GraphQL::ExecutionError</code></a> instead:</p>
+<p>If some part of your <code class="highlighter-rouge">resolve</code> function would raise an error, you can rescue it and return a <a href="http://www.rubydoc.info/gems/graphql/1.8.0.pre10/GraphQL/ExecutionError" target="_blank" title="API docs for GraphQL::ExecutionError"><code>GraphQL::ExecutionError</code></a> instead:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
   <span class="n">post_params</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="s2">"post"</span><span class="p">].</span><span class="nf">to_h</span>
@@ -141,8 +142,8 @@
 <p>If you don’t want to <code class="highlighter-rouge">begin ... rescue ... end</code> in every field, you can wrap <code class="highlighter-rouge">resolve</code> functions in error handling. For example, you could make an object that wraps another resolver:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Wrap field resolver `resolve_func` with an error handler.</span>
-<span class="c1"># `RescueFrom` instances are valid field resolvers too.</span>
-<span class="k">class</span> <span class="nc">RescueFrom</span>
+<span class="c1"># `Rescuable` instances are valid field resolvers too.</span>
+<span class="k">class</span> <span class="nc">Rescuable</span>
   <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">resolve_func</span><span class="p">)</span>
     <span class="vi">@resolve_func</span> <span class="o">=</span> <span class="n">resolve_func</span>
   <span class="k">end</span>

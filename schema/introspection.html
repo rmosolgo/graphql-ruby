@@ -1,0 +1,299 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+      <title>GraphQL - Introspection</title>
+    
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="icon" href="/graphql-ruby-icon.png">
+  </head>
+  <body>
+    <div class="header">
+      <div class="header-container">
+        <div class="nav">
+          <a href="/" class="img-link">
+            <img src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+          </a>
+          <a href="/getting_started">Get Started</a>
+          <a href="/guides">Guides</a>
+          <a href="http://www.rubydoc.info/gems/graphql/1.8.0.pre10/">API</a>
+          <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
+          <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+          <input
+            class="search-input"
+            onkeyup="GraphQLRubySearch.run(this)"
+            type="text"
+            placeholder="Search the docs..."
+          />
+        </div>
+      </div>
+      <div class="search-results-container">
+        <div id="search-results"></div>
+      </div>
+    </div>
+    <div class="container">
+      <p class="breadcrumb">
+  <a href="/">GraphQL</a>
+  &raquo; <a href="/guides">Guides</a>
+   &raquo; <a href="/guides#schema-guides">Schema</a>
+  &raquo; Introspection
+</p>
+
+
+
+<h1 class="guide-header">Introspection</h1>
+<div class="guide-container">
+  <p>A GraphQL schema has a <a href="http://graphql.org/learn/introspection/">built-in introspection system</a> that publishes the schema’s structure. In fact, the introspection system can be queried using GraphQL, for example:</p>
+
+<div class="language-graphql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="n">__schema</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="n">queryType</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="n">name</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span><span class="c"># Returns:</span><span class="w">
+</span><span class="c"># {</span><span class="w">
+</span><span class="c">#   "data": {</span><span class="w">
+</span><span class="c">#     "__schema": {</span><span class="w">
+</span><span class="c">#       "queryType": {</span><span class="w">
+</span><span class="c">#         "name": "Query"</span><span class="w">
+</span><span class="c">#       }</span><span class="w">
+</span><span class="c">#     }</span><span class="w">
+</span><span class="c">#   }</span><span class="w">
+</span><span class="c"># }</span><span class="w">
+</span></code></pre></div></div>
+
+<p>This system is used for GraphQL tooling like the <a href="https://github.com/graphql/graphiql">GraphiQL editor</a>.</p>
+
+<p>Here are the default parts of the introspection system:</p>
+
+<ul>
+  <li><code class="highlighter-rouge">__schema</code> is a root-level field that contains data about the schema: its entry points, types, and directives.</li>
+  <li><code class="highlighter-rouge">__type(name: String!)</code> is a root-level field that returns data about a type with the given <code class="highlighter-rouge">name</code>, if there is a type with that name.</li>
+  <li><code class="highlighter-rouge">__typename</code> works a bit differently: it can be added to <em>any</em> selection, and it will return the type of object being queried.</li>
+</ul>
+
+<p>Here are some <code class="highlighter-rouge">__typename</code> examples:</p>
+
+<div class="language-graphql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="n">user</span><span class="p">(</span><span class="n">id</span><span class="p">:</span><span class="w"> </span><span class="s2">"1"</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="n">handle</span><span class="w">
+    </span><span class="n">__typename</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span><span class="c"># Returns:</span><span class="w">
+</span><span class="c"># {</span><span class="w">
+</span><span class="c">#   "data": {</span><span class="w">
+</span><span class="c">#     "user": {</span><span class="w">
+</span><span class="c">#       "handle": "rmosolgo",</span><span class="w">
+</span><span class="c">#       "__typename": "User"</span><span class="w">
+</span><span class="c">#     }</span><span class="w">
+</span><span class="c">#   }</span><span class="w">
+</span><span class="c"># }</span><span class="w">
+</span></code></pre></div></div>
+
+<p>For unions and interfaces, <code class="highlighter-rouge">__typename</code> returns the <em>object</em> type for the current object, for example:</p>
+
+<div class="language-graphql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="n">search</span><span class="p">(</span><span class="n">term</span><span class="p">:</span><span class="w"> </span><span class="s2">"puppies"</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="n">title</span><span class="w">
+    </span><span class="n">__typename</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span><span class="c"># Returns:</span><span class="w">
+</span><span class="c"># {</span><span class="w">
+</span><span class="c">#   "data": {</span><span class="w">
+</span><span class="c">#     "search": [</span><span class="w">
+</span><span class="c">#       {</span><span class="w">
+</span><span class="c">#         "title": "Sound of Dogs Barking",</span><span class="w">
+</span><span class="c">#         "__typename": "AudioClip",</span><span class="w">
+</span><span class="c">#       },</span><span class="w">
+</span><span class="c">#       {</span><span class="w">
+</span><span class="c">#         "title": "Cute puppies playing with a stick",</span><span class="w">
+</span><span class="c">#         "__typename": "VideoClip",</span><span class="w">
+</span><span class="c">#       },</span><span class="w">
+</span><span class="c">#       {</span><span class="w">
+</span><span class="c">#         "title": "The names of my favorite pets",</span><span class="w">
+</span><span class="c">#         "__typename": "TextSnippet"</span><span class="w">
+</span><span class="c">#       },</span><span class="w">
+</span><span class="c">#     ]</span><span class="w">
+</span><span class="c">#   }</span><span class="w">
+</span><span class="c"># }</span><span class="w">
+</span></code></pre></div></div>
+
+<h2 id="customizing-introspection">Customizing Introspection</h2>
+
+<p>This is an <strong>experimental feature</strong>, only supported in class-based schemas.</p>
+
+<p>With a class-based schema, you can use custom introspection types.</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># create a module namespace for your custom types:</span>
+<span class="k">module</span> <span class="nn">Introspection</span>
+  <span class="c1"># described below ...</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
+  <span class="c1"># ...</span>
+  <span class="c1"># then pass the module as `introspection`</span>
+  <span class="n">introspection</span> <span class="no">Introspection</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>Keep in mind that off-the-shelf tooling may not support your custom introspection fields. You may have to modify existing tooling or create your own tools to make use of your extensions.</p>
+
+<h3 id="introspection-namespace">Introspection Namespace</h3>
+
+<p>The introspection namespace may contain a few different customizations:</p>
+
+<ul>
+  <li>Class-based <a href="/type_definitions/objects">object definitions</a> which replace the built-in introspection types (such as <code class="highlighter-rouge">__Schema</code> and <code class="highlighter-rouge">__Type</code>)</li>
+  <li><code class="highlighter-rouge">EntryPoints</code>, A class-based <a href="/type_definitions/objects">object definition</a> containing introspection entry points (like <code class="highlighter-rouge">__schema</code> and <code class="highlighter-rouge">__type(name:)</code>).</li>
+  <li><code class="highlighter-rouge">DynamicFields</code>, A class-based <a href="/type_definitions/objects">object definition</a> containing dynamic, globally-available fields (like <code class="highlighter-rouge">__typename</code>.)</li>
+</ul>
+
+<h3 id="custom-introspection-types">Custom Introspection Types</h3>
+
+<p>The <code class="highlighter-rouge">module</code> passed as <code class="highlighter-rouge">introspection</code> may contain classes with the following names, which replace the built-in introspection types:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Custom class name</th>
+      <th>GraphQL type</th>
+      <th>Built-in class name</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="highlighter-rouge">SchemaType</code></td>
+      <td><code class="highlighter-rouge">__Schema</code></td>
+      <td><a href="http://www.rubydoc.info/gems/graphql/1.8.0.pre10/GraphQL/Introspection/SchemaType" target="_blank" title="API docs for GraphQL::Introspection::SchemaType"><code>GraphQL::Introspection::SchemaType</code></a></td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">TypeType</code></td>
+      <td><code class="highlighter-rouge">__Type</code></td>
+      <td><a href="http://www.rubydoc.info/gems/graphql/1.8.0.pre10/GraphQL/Introspection/TypeType" target="_blank" title="API docs for GraphQL::Introspection::TypeType"><code>GraphQL::Introspection::TypeType</code></a></td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">DirectiveType</code></td>
+      <td><code class="highlighter-rouge">__Directive</code></td>
+      <td><a href="http://www.rubydoc.info/gems/graphql/1.8.0.pre10/GraphQL/Introspection/DirectiveType" target="_blank" title="API docs for GraphQL::Introspection::DirectiveType"><code>GraphQL::Introspection::DirectiveType</code></a></td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">DirectiveLocationType</code></td>
+      <td><code class="highlighter-rouge">__DirectiveLocation</code></td>
+      <td><a href="http://www.rubydoc.info/gems/graphql/1.8.0.pre10/GraphQL/Introspection/DirectiveLocationEnum" target="_blank" title="API docs for GraphQL::Introspection::DirectiveLocationEnum"><code>GraphQL::Introspection::DirectiveLocationEnum</code></a></td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">EnumValueType</code></td>
+      <td><code class="highlighter-rouge">__EnumValue</code></td>
+      <td><a href="http://www.rubydoc.info/gems/graphql/1.8.0.pre10/GraphQL/Introspection/EnumValueType" target="_blank" title="API docs for GraphQL::Introspection::EnumValueType"><code>GraphQL::Introspection::EnumValueType</code></a></td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">FieldType</code></td>
+      <td><code class="highlighter-rouge">__Field</code></td>
+      <td><a href="http://www.rubydoc.info/gems/graphql/1.8.0.pre10/GraphQL/Introspection/FieldType" target="_blank" title="API docs for GraphQL::Introspection::FieldType"><code>GraphQL::Introspection::FieldType</code></a></td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">InputValueType</code></td>
+      <td><code class="highlighter-rouge">__InputValue</code></td>
+      <td><a href="http://www.rubydoc.info/gems/graphql/1.8.0.pre10/GraphQL/Introspection/InputValueType" target="_blank" title="API docs for GraphQL::Introspection::InputValueType"><code>GraphQL::Introspection::InputValueType</code></a></td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">TypeKindType</code></td>
+      <td><code class="highlighter-rouge">__TypeKind</code></td>
+      <td><a href="http://www.rubydoc.info/gems/graphql/1.8.0.pre10/GraphQL/Introspection/TypeKindEnum" target="_blank" title="API docs for GraphQL::Introspection::TypeKindEnum"><code>GraphQL::Introspection::TypeKindEnum</code></a></td>
+    </tr>
+  </tbody>
+</table>
+
+<p>The class-based definitions’ names <em>must</em> match the names of the types they replace.</p>
+
+<h4 id="extending-a-built-in-type">Extending a Built-in Type</h4>
+
+<p>The built-in classes listed above may be extended:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">module</span> <span class="nn">Introspection</span>
+  <span class="k">class</span> <span class="nc">SchemaType</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Introspection</span><span class="o">::</span><span class="no">SchemaType</span>
+    <span class="c1"># ...</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>Inside the class definition, you may:</p>
+
+<ul>
+  <li>add new fields by calling <code class="highlighter-rouge">field(...)</code> and providing implementations</li>
+  <li>redefine field structure by calling <code class="highlighter-rouge">field(...)</code></li>
+  <li>provide new field implementations by defining methods</li>
+  <li>provide new descriptions by calling <code class="highlighter-rouge">description(...)</code></li>
+</ul>
+
+<h3 id="introspection-entry-points">Introspection Entry Points</h3>
+
+<p>The GraphQL spec describes two entry points to the introspection system:</p>
+
+<ul>
+  <li><code class="highlighter-rouge">__schema</code> returns data about the schema (as type <code class="highlighter-rouge">__Schema</code>)</li>
+  <li><code class="highlighter-rouge">__type(name:)</code> returns data about a type, if one is found by name (as type <code class="highlighter-rouge">__Type</code>)</li>
+</ul>
+
+<p>You can re-implement these fields or create new ones by creating a custom <code class="highlighter-rouge">EntryPoints</code> class in your introspection namespace:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">module</span> <span class="nn">Introspection</span>
+  <span class="k">class</span> <span class="nc">EntryPoints</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Introspection</span><span class="o">::</span><span class="no">EntryPoints</span>
+    <span class="c1"># ...</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>This class an object type definition, so you can override fields or add new ones here. They’ll be available on the root <code class="highlighter-rouge">query</code> object, but ignored in introspection (just like <code class="highlighter-rouge">__schema</code> and <code class="highlighter-rouge">__type</code>).</p>
+
+<h3 id="dynamic-fields">Dynamic Fields</h3>
+
+<p>The GraphQL spec describes a field which may be added to <em>any</em> selection: <code class="highlighter-rouge">__typename</code>. It returns the name of the current GraphQL type.</p>
+
+<p>You can add fields like this (or override <code class="highlighter-rouge">__typename</code>) by creating a custom <code class="highlighter-rouge">DynmaicFields</code> defintion:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">module</span> <span class="nn">Introspection</span>
+  <span class="k">class</span> <span class="nc">DynamicFields</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Introspection</span><span class="o">::</span><span class="no">DynamicFields</span>
+    <span class="c1"># ...</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>Any fields defined there will be available in any selection, but ignored in introspection (just like <code class="highlighter-rouge">__typename</code>).</p>
+
+</div>
+<p class="guide-footer">
+  Suggestion, improvement, or correction?
+  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/schema/introspection.md">Edit this file</a> or
+  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: Introspection">report an issue</a>.
+</p>
+<script>
+  // Find headers with IDs and wrap their text in `<a href=></a>`
+  // That way people can easily copy the link.
+  var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+  var header, idText, headerLink;
+  for (var i = 0; i < headers.length; i++) {
+    header = headers[i];
+    idText = header.id;
+    if (idText) {
+      headerLink = document.createElement("a");
+      headerLink.href = "#" + idText;
+      headerLink.textContent = header.textContent;
+      header.textContent = "";
+      header.appendChild(headerLink);
+    }
+  }
+</script>
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/algoliasearch/3/algoliasearchLite.min.js"></script>
+    <script src="/js/search.js"></script>
+  </body>
+</html>

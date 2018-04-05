@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="http://www.rubydoc.info/gems/graphql/1.7.13/">API</a>
+          <a href="http://www.rubydoc.info/gems/graphql/1.8.0.pre10/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <input
@@ -38,9 +38,10 @@
       <p class="breadcrumb">
   <a href="/">GraphQL</a>
   &raquo; <a href="/guides">Guides</a>
-   &raquo; JavaScript Client
+   &raquo; <a href="/guides#javascript-client-guides">JavaScript Client</a>
   &raquo; OperationStore Sync
 </p>
+
 
 
 <h1 class="guide-header">OperationStore Sync</h1>
@@ -117,7 +118,7 @@ Generating client module in app/javascript/graphql/OperationStoreClient.js...
 <p>To sync your queries with the server, use the <code class="highlighter-rouge">--path</code> option to point to your <code class="highlighter-rouge">__generated__</code> directory, for example:</p>
 
 <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># sync a Relay project</span>
-<span class="nv">$ </span>graphql-ruby-client sync <span class="nt">--path</span><span class="o">=</span>src/__generated__  <span class="nt">--outfile</span><span class="o">=</span>src/OperationStoreClient.js <span class="nt">--url</span><span class="o">=</span>...
+<span class="nv">$ </span>graphql-ruby-client <span class="nb">sync</span> <span class="nt">--path</span><span class="o">=</span>src/__generated__  <span class="nt">--outfile</span><span class="o">=</span>src/OperationStoreClient.js <span class="nt">--url</span><span class="o">=</span>...
 </code></pre></div></div>
 
 <p>Then, the generated code may be integrated with Relay’s <a href="https://facebook.github.io/relay/docs/network-layer.html">Network Layer</a>:</p>
@@ -205,7 +206,7 @@ Generating client module in app/javascript/graphql/OperationStoreClient.js...
 <p>Pass the key to <code class="highlighter-rouge">graphql-ruby-client sync</code> as <code class="highlighter-rouge">--secret</code> to authenticate it:</p>
 
 <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">export </span><span class="nv">MY_SECRET_KEY</span><span class="o">=</span> <span class="s2">"abcdefg..."</span>
-<span class="nv">$ </span>graphql-ruby-client sync ... <span class="nt">--secret</span><span class="o">=</span><span class="nv">$MY_SECRET_KEY</span>
+<span class="nv">$ </span>graphql-ruby-client <span class="nb">sync</span> ... <span class="nt">--secret</span><span class="o">=</span><span class="nv">$MY_SECRET_KEY</span>
 <span class="c"># ...</span>
 Authenticating with HMAC
 <span class="c"># ...</span>

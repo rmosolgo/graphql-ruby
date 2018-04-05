@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="http://www.rubydoc.info/gems/graphql/1.7.13/">API</a>
+          <a href="http://www.rubydoc.info/gems/graphql/1.8.0.pre10/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <input
@@ -38,14 +38,15 @@
       <p class="breadcrumb">
   <a href="/">GraphQL</a>
   &raquo; <a href="/guides">Guides</a>
-   &raquo; Fields
+   &raquo; <a href="/guides#fields-guides">Fields</a>
   &raquo; Introduction
 </p>
 
 
+
 <h1 class="guide-header">Introduction</h1>
 <div class="guide-container">
-  <p><a href="http://www.rubydoc.info/gems/graphql/1.7.13/GraphQL/ObjectType" target="_blank" title="API docs for GraphQL::ObjectType"><code>GraphQL::ObjectType</code></a>s and <a href="http://www.rubydoc.info/gems/graphql/1.7.13/GraphQL/InterfaceType" target="_blank" title="API docs for GraphQL::InterfaceType"><code>GraphQL::InterfaceType</code></a>s may expose their values with <em>fields</em>. A field definition looks like this:</p>
+  <p><a href="http://www.rubydoc.info/gems/graphql/1.8.0.pre10/GraphQL/ObjectType" target="_blank" title="API docs for GraphQL::ObjectType"><code>GraphQL::ObjectType</code></a>s and <a href="http://www.rubydoc.info/gems/graphql/1.8.0.pre10/GraphQL/InterfaceType" target="_blank" title="API docs for GraphQL::InterfaceType"><code>GraphQL::InterfaceType</code></a>s may expose their values with <em>fields</em>. A field definition looks like this:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">PostType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
   <span class="c1"># ...</span>
@@ -81,11 +82,11 @@
 
 <ul>
   <li><code class="highlighter-rouge">object</code>: The underlying object for this type (above, a <code class="highlighter-rouge">Post</code> instance)</li>
-  <li><code class="highlighter-rouge">arguments</code>: The arguments for this field (see below, a <a href="http://www.rubydoc.info/gems/graphql/1.7.13/GraphQL/Query/Arguments" target="_blank" title="API docs for GraphQL::Query::Arguments"><code>GraphQL::Query::Arguments</code></a> instance)</li>
-  <li><code class="highlighter-rouge">context</code>: The context for this query (see <a href="/queries/executing_queries">Executing Queries</a>, a <a href="http://www.rubydoc.info/gems/graphql/1.7.13/GraphQL/Query/Context" target="_blank" title="API docs for GraphQL::Query::Context"><code>GraphQL::Query::Context</code></a> instance)</li>
+  <li><code class="highlighter-rouge">arguments</code>: The arguments for this field (see below, a <a href="http://www.rubydoc.info/gems/graphql/1.8.0.pre10/GraphQL/Query/Arguments" target="_blank" title="API docs for GraphQL::Query::Arguments"><code>GraphQL::Query::Arguments</code></a> instance)</li>
+  <li><code class="highlighter-rouge">context</code>: The context for this query (see <a href="/queries/executing_queries">Executing Queries</a>, a <a href="http://www.rubydoc.info/gems/graphql/1.8.0.pre10/GraphQL/Query/Context" target="_blank" title="API docs for GraphQL::Query::Context"><code>GraphQL::Query::Context</code></a> instance)</li>
 </ul>
 
-<p>In fact, the <code class="highlighter-rouge">field do ... end</code> block is passed to <a href="http://www.rubydoc.info/gems/graphql/1.7.13/GraphQL/Field" target="_blank" title="API docs for GraphQL::Field"><code>GraphQL::Field</code></a>’s <code class="highlighter-rouge">.define</code> method, so you can define many things there:</p>
+<p>In fact, the <code class="highlighter-rouge">field do ... end</code> block is passed to <a href="http://www.rubydoc.info/gems/graphql/1.8.0.pre10/GraphQL/Field" target="_blank" title="API docs for GraphQL::Field"><code>GraphQL::Field</code></a>’s <code class="highlighter-rouge">.define</code> method, so you can define many things there:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="k">do</span>
   <span class="nb">name</span> <span class="s2">"teaser"</span>

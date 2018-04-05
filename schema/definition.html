@@ -1,0 +1,270 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+      <title>GraphQL - Definition</title>
+    
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="icon" href="/graphql-ruby-icon.png">
+  </head>
+  <body>
+    <div class="header">
+      <div class="header-container">
+        <div class="nav">
+          <a href="/" class="img-link">
+            <img src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+          </a>
+          <a href="/getting_started">Get Started</a>
+          <a href="/guides">Guides</a>
+          <a href="http://www.rubydoc.info/gems/graphql/1.8.0.pre10/">API</a>
+          <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
+          <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+          <input
+            class="search-input"
+            onkeyup="GraphQLRubySearch.run(this)"
+            type="text"
+            placeholder="Search the docs..."
+          />
+        </div>
+      </div>
+      <div class="search-results-container">
+        <div id="search-results"></div>
+      </div>
+    </div>
+    <div class="container">
+      <p class="breadcrumb">
+  <a href="/">GraphQL</a>
+  &raquo; <a href="/guides">Guides</a>
+   &raquo; <a href="/guides#schema-guides">Schema</a>
+  &raquo; Definition
+</p>
+
+
+  <div class="class-based-header">
+    <p>
+      <strong>⚠ New Class-Based API ⚠</strong>
+    </p>
+    <p>
+      This describes a new API in <code>v1.8.0</code>.
+      Check the <a href="/schema/class_based_api">upgrade notes</a> for more info.
+    </p>
+  </div>
+
+
+<h1 class="guide-header">Definition</h1>
+<div class="guide-container">
+  <p>A GraphQL system is called a <em>schema</em>. The schema contains all the types and fields in the system. The schema executes queries and publishes an <a href="/schema/introspection">introspection system</a>.</p>
+
+<p>Your GraphQL schema is a class that extends <a href="http://www.rubydoc.info/gems/graphql/1.8.0.pre10/GraphQL/Schema" target="_blank" title="API docs for GraphQL::Schema"><code>GraphQL::Schema</code></a>, for example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MyAppSchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
+  <span class="n">max_complexity</span> <span class="mi">400</span>
+  <span class="n">query</span> <span class="no">Types</span><span class="o">::</span><span class="no">Query</span>
+  <span class="n">use</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Batch</span>
+
+  <span class="c1"># Define hooks as class methods:</span>
+  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">resolve_type</span><span class="p">(</span><span class="n">type</span><span class="p">,</span> <span class="n">obj</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span>
+    <span class="c1"># ...</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">object_from_id</span><span class="p">(</span><span class="n">node_id</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span>
+    <span class="c1"># ...</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">id_from_object</span><span class="p">(</span><span class="n">object</span><span class="p">,</span> <span class="n">type</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span>
+    <span class="c1"># ...</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>There are lots of schema configuration options:</p>
+
+<ul>
+  <li><a href="#root-objects-introspection-and-orphan-types">root objects, introspection and orphan types</a></li>
+  <li><a href="#object-identification-hooks">object identification hooks</a></li>
+  <li><a href="#execution-configuration">execution configuration</a></li>
+  <li><a href="#context-class">context class</a></li>
+  <li><a href="#default-limits">default limits</a></li>
+  <li><a href="#plugins">plugins</a></li>
+</ul>
+
+<h2 id="root-objects-introspection-and-orphan-types">Root Objects, Introspection and Orphan Types</h2>
+
+<p>A GraphQL schema is a web of interconnected types, and it has a few starting points for discovering the elements of that web:</p>
+
+<p><strong>Root types</strong> (<code class="highlighter-rouge">query</code>, <code class="highlighter-rouge">mutation</code>, and <code class="highlighter-rouge">subscription</code>) are the <a href="http://graphql.org/learn/schema/#the-query-and-mutation-types">entry points for queries to the system</a>. Each one is an object type which can be connected to the schema by a method with the same name:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
+  <span class="c1"># Required:</span>
+  <span class="n">query</span> <span class="no">Types</span><span class="o">::</span><span class="no">Query</span>
+  <span class="c1"># Optional:</span>
+  <span class="n">mutation</span> <span class="no">Types</span><span class="o">::</span><span class="no">Mutation</span>
+  <span class="n">subscription</span> <span class="no">Types</span><span class="o">::</span><span class="no">Subscription</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p><strong>Introspection</strong> is a built-in part of the schema. Every schema has a default introspection system, but you can <a href="/schema/introspection">customize it</a> and hook it up with <code class="highlighter-rouge">introspection</code>:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
+  <span class="n">introspection</span> <span class="no">CustomIntrospection</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p><strong>Orphan Types</strong> are types which should be in the schema, but can’t be discovered by traversing the types and fields from <code class="highlighter-rouge">query</code>, <code class="highlighter-rouge">mutation</code> or <code class="highlighter-rouge">subscription</code>. This has one very specific use case, see <a href="/type_definitions/interfaces#orphan-types">Orphan Types</a>.</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
+  <span class="n">orphan_types</span> <span class="p">[</span><span class="no">Types</span><span class="o">::</span><span class="no">Comment</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<h2 id="object-identification-hooks">Object Identification Hooks</h2>
+
+<p>A GraphQL schema needs a handful of hooks for finding and disambiguating objects while queries are executed.</p>
+
+<p><strong><code class="highlighter-rouge">resolve_type</code></strong> is used when a specific object’s corresponding GraphQL type must be determined. This happens for fields that return <a href="/type_definitions/interfaces">interface</a> or <a href="/type_definitions/unions">union</a> types. The class method <code class="highlighter-rouge">def self.resolve_type</code> is used:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
+  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">resolve_type</span><span class="p">(</span><span class="n">abstract_type</span><span class="p">,</span> <span class="n">object</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
+    <span class="c1"># Disambiguate `object`, from among `abstract_type`'s members</span>
+    <span class="c1"># (`abstract_type` is an interface or union type.)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p><strong><code class="highlighter-rouge">object_from_id</code></strong> is used by Relay’s <code class="highlighter-rouge">node(id: ID!): Node</code> field. It receives a unique ID and must return the object for that ID, or <code class="highlighter-rouge">nil</code> if the object isn’t found (or if the should be hidden from the current user).</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
+  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">object_from_id</span><span class="p">(</span><span class="n">unique_id</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
+    <span class="c1"># Find and return the object for `unique_id`</span>
+    <span class="c1"># or `nil`</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p><strong><code class="highlighter-rouge">id_from_object</code></strong> is used to implement Relay’s <code class="highlighter-rouge">Node.id</code> field. It should return a unique ID for the given object. This ID will later be sent to <code class="highlighter-rouge">object_from_id</code> to refetch the object.</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
+  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">id_from_object</span><span class="p">(</span><span class="n">object</span><span class="p">,</span> <span class="n">type</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
+    <span class="c1"># Return a unique ID for `object`, whose GraphQL type is `type`</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<h2 id="execution-configuration">Execution Configuration</h2>
+
+<p><strong><code class="highlighter-rouge">instrument</code></strong> attaches instrumenters to the schema, see <a href="/queries/instrumentation">Instrumentation</a> for more information.</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
+  <span class="n">instrument</span> <span class="ss">:field</span><span class="p">,</span> <span class="no">ResolveTimerInstrumentation</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p><strong><code class="highlighter-rouge">tracer</code></strong> is another way to hook into execution, see <a href="/queries/tracing">Tracing</a> for more.</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
+  <span class="n">tracer</span> <span class="no">MetricTracer</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p><strong><code class="highlighter-rouge">query_analyzer</code></strong> and <strong><code class="highlighter-rouge">multiplex_analyzer</code></strong> accept processors for ahead-of-type query analysis, see <a href="/queries/analysis">Analysis</a> for more.</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
+  <span class="n">query_analyzer</span> <span class="no">MyQueryAnalyzer</span><span class="p">.</span><span class="nf">new</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p><strong><code class="highlighter-rouge">lazy_resolve</code></strong> registers classes with <a href="/schema/lazy_execution">lazy execution</a>:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
+  <span class="n">lazy_resolve</span> <span class="no">Promise</span><span class="p">,</span> <span class="ss">:sync</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p><strong><code class="highlighter-rouge">type_error</code></strong> handles type errors at runtime, read more in the <a href="/schema/type_errors">Type Errors guide</a>.</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
+  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">type_error</span><span class="p">(</span><span class="n">type_err</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
+    <span class="c1"># Handle `type_err` in some way</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p><strong><code class="highlighter-rouge">rescue_from</code></strong> accepts error handlers for application errors, for example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
+  <span class="n">rescue_from</span><span class="p">(</span><span class="no">ActiveRecord</span><span class="o">::</span><span class="no">RecordNotFound</span><span class="p">)</span> <span class="p">{</span> <span class="s2">"Not found"</span> <span class="p">}</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<h2 id="context-class">Context Class</h2>
+
+<p>Usually, <code class="highlighter-rouge">context</code> is an instance of <a href="http://www.rubydoc.info/gems/graphql/1.8.0.pre10/GraphQL/Query/Context" target="_blank" title="API docs for GraphQL::Query::Context"><code>GraphQL::Query::Context</code></a>, but you can create a custom subclass and attach it with <code class="highlighter-rouge">.context_class</code>, for example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">CustomContext</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Query</span><span class="o">::</span><span class="no">Context</span>
+  <span class="c1"># Shorthand to get the current user</span>
+  <span class="k">def</span> <span class="nf">viewer</span>
+    <span class="nb">self</span><span class="p">[</span><span class="ss">:viewer</span><span class="p">]</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
+  <span class="n">context_class</span> <span class="no">CustomContext</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>Then, during execution, <code class="highlighter-rouge">context</code> will be an instance <code class="highlighter-rouge">CustomContext</code>.</p>
+
+<h2 id="default-limits">Default Limits</h2>
+
+<p><code class="highlighter-rouge">max_depth</code> and <code class="highlighter-rouge">max_complexity</code> apply some limits to incoming queries. See <a href="/queries/complexity_and_depth">Complexity and Depth</a> for more.</p>
+
+<p><code class="highlighter-rouge">default_max_page_size</code> applies limits to <code class="highlighter-rouge">Connection</code> fields.</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
+  <span class="n">max_depth</span> <span class="mi">10</span>
+  <span class="n">max_complexity</span> <span class="mi">300</span>
+  <span class="n">default_max_page_size</span> <span class="mi">20</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<h2 id="plugins">Plugins</h2>
+
+<p>A plugin is an object that responds to <code class="highlighter-rouge">#use</code>. Plugins are used to attach new behavior to a schema without a lot of API overhead. For example, the gem’s <a href="/queries/tracing#monitoring">monitoring tools</a> are plugins:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
+  <span class="n">use</span><span class="p">(</span><span class="no">GraphQL</span><span class="o">::</span><span class="no">Tracing</span><span class="o">::</span><span class="no">NewRelicTracing</span><span class="p">)</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+</div>
+<p class="guide-footer">
+  Suggestion, improvement, or correction?
+  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/schema/definition.md">Edit this file</a> or
+  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: Definition">report an issue</a>.
+</p>
+<script>
+  // Find headers with IDs and wrap their text in `<a href=></a>`
+  // That way people can easily copy the link.
+  var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+  var header, idText, headerLink;
+  for (var i = 0; i < headers.length; i++) {
+    header = headers[i];
+    idText = header.id;
+    if (idText) {
+      headerLink = document.createElement("a");
+      headerLink.href = "#" + idText;
+      headerLink.textContent = header.textContent;
+      header.textContent = "";
+      header.appendChild(headerLink);
+    }
+  }
+</script>
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/algoliasearch/3/algoliasearchLite.min.js"></script>
+    <script src="/js/search.js"></script>
+  </body>
+</html>

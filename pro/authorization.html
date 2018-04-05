@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="http://www.rubydoc.info/gems/graphql/1.7.13/">API</a>
+          <a href="http://www.rubydoc.info/gems/graphql/1.8.0.pre10/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <input
@@ -38,9 +38,10 @@
       <p class="breadcrumb">
   <a href="/">GraphQL</a>
   &raquo; <a href="/guides">Guides</a>
-   &raquo; GraphQL Pro
+   &raquo; <a href="/guides#graphql-pro-guides">GraphQL Pro</a>
   &raquo; Authorization Framework
 </p>
+
 
 
   <div class="pro-header">
@@ -258,11 +259,11 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>The hook should return a <a href="http://www.rubydoc.info/gems/graphql/1.7.13/GraphQL/AnalysisError" target="_blank" title="API docs for GraphQL::AnalysisError"><code>GraphQL::AnalysisError</code></a>. It is called with:</p>
+<p>The hook should return a <a href="http://www.rubydoc.info/gems/graphql/1.8.0.pre10/GraphQL/AnalysisError" target="_blank" title="API docs for GraphQL::AnalysisError"><code>GraphQL::AnalysisError</code></a>. It is called with:</p>
 
 <ul>
-  <li><code class="highlighter-rouge">irep_nodes</code>: an array of <a href="http://www.rubydoc.info/gems/graphql/1.7.13/GraphQL/InternalRepresentation/Node" target="_blank" title="API docs for GraphQL::InternalRepresentation::Node"><code>GraphQL::InternalRepresentation::Node</code></a>s which represent unpermitted fields in the incoming query.</li>
-  <li><code class="highlighter-rouge">ctx</code>: the <a href="http://www.rubydoc.info/gems/graphql/1.7.13/GraphQL/Query/Context" target="_blank" title="API docs for GraphQL::Query::Context"><code>GraphQL::Query::Context</code></a> (which includes <code class="highlighter-rouge">:current_user</code>).</li>
+  <li><code class="highlighter-rouge">irep_nodes</code>: an array of <a href="http://www.rubydoc.info/gems/graphql/1.8.0.pre10/GraphQL/InternalRepresentation/Node" target="_blank" title="API docs for GraphQL::InternalRepresentation::Node"><code>GraphQL::InternalRepresentation::Node</code></a>s which represent unpermitted fields in the incoming query.</li>
+  <li><code class="highlighter-rouge">ctx</code>: the <a href="http://www.rubydoc.info/gems/graphql/1.8.0.pre10/GraphQL/Query/Context" target="_blank" title="API docs for GraphQL::Query::Context"><code>GraphQL::Query::Context</code></a> (which includes <code class="highlighter-rouge">:current_user</code>).</li>
 </ul>
 
 <h2 id="visibility-authorization">Visibility Authorization</h2>

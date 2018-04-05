@@ -1,0 +1,170 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+      <title>GraphQL - Input Objects</title>
+    
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="icon" href="/graphql-ruby-icon.png">
+  </head>
+  <body>
+    <div class="header">
+      <div class="header-container">
+        <div class="nav">
+          <a href="/" class="img-link">
+            <img src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+          </a>
+          <a href="/getting_started">Get Started</a>
+          <a href="/guides">Guides</a>
+          <a href="http://www.rubydoc.info/gems/graphql/1.8.0.pre10/">API</a>
+          <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
+          <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+          <input
+            class="search-input"
+            onkeyup="GraphQLRubySearch.run(this)"
+            type="text"
+            placeholder="Search the docs..."
+          />
+        </div>
+      </div>
+      <div class="search-results-container">
+        <div id="search-results"></div>
+      </div>
+    </div>
+    <div class="container">
+      <p class="breadcrumb">
+  <a href="/">GraphQL</a>
+  &raquo; <a href="/guides">Guides</a>
+   &raquo; <a href="/guides#type-definitions-guides">Type Definitions</a>
+  &raquo; Input Objects
+</p>
+
+
+  <div class="class-based-header">
+    <p>
+      <strong>⚠ New Class-Based API ⚠</strong>
+    </p>
+    <p>
+      This describes a new API in <code>v1.8.0</code>.
+      Check the <a href="/schema/class_based_api">upgrade notes</a> for more info.
+    </p>
+  </div>
+
+
+<h1 class="guide-header">Input Objects</h1>
+<div class="guide-container">
+  <p>Input object types are complex inputs for GraphQL operations. They’re great for fields that need a lot of structured input, like mutations or search fields. In a GraphQL request, it might look like this:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">mutation</span> <span class="p">{</span>
+  <span class="n">createPost</span><span class="p">(</span><span class="ss">attributes: </span><span class="p">{</span> <span class="ss">title: </span><span class="s2">"Hello World"</span><span class="p">,</span> <span class="ss">fullText: </span><span class="s2">"This is my first post"</span><span class="p">,</span> <span class="ss">categories: </span><span class="p">[</span><span class="no">GENERAL</span><span class="p">]</span> <span class="p">})</span> <span class="p">{</span>
+    <span class="c1">#                    ^ Here is the input object ..................................................... ^</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Like a Ruby <code class="highlighter-rouge">Hash</code>, an input object consists of keys and values. Unlike a Hash, its keys and value types must be defined statically, as part of the GraphQL system. For example, here’s an input object, expressed in the <a href="http://graphql.org/learn/schema/#type-language">GraphQL Schema Definition Language</a> (SDL):</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">input</span> <span class="no">PostAttributes</span> <span class="p">{</span>
+  <span class="ss">title: </span><span class="no">String</span><span class="o">!</span>
+  <span class="ss">fullText: </span><span class="no">String</span><span class="o">!</span>
+  <span class="ss">categories: </span><span class="p">[</span><span class="no">PostCategory</span><span class="o">!</span><span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>This input object has three possible keys:</p>
+
+<ul>
+  <li><code class="highlighter-rouge">title</code> is required (denoted by <code class="highlighter-rouge">!</code>), and must be a <code class="highlighter-rouge">String</code></li>
+  <li><code class="highlighter-rouge">fullText</code> is also a required String</li>
+  <li><code class="highlighter-rouge">categories</code> is optional (it doesn’t have <code class="highlighter-rouge">!</code>), and if present, it must be a list of <code class="highlighter-rouge">PostCategory</code> values.</li>
+</ul>
+
+<h2 id="defining-input-object-types">Defining Input Object Types</h2>
+
+<p>Input object types extend <a href="http://www.rubydoc.info/gems/graphql/1.8.0.pre10/GraphQL/Schema/InputObject" target="_blank" title="API docs for GraphQL::Schema::InputObject"><code>GraphQL::Schema::InputObject</code></a> and define key-value pairs with the <code class="highlighter-rouge">argument(...)</code> method. For example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># app/graphql/types/base_input_object.rb</span>
+<span class="c1"># Add a base class</span>
+<span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">BaseInputObject</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">InputObject</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">PostAttributes</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseInputObject</span>
+  <span class="n">description</span> <span class="s2">"Attributes for creating or updating a blog post"</span>
+  <span class="n">argument</span> <span class="ss">:title</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="s2">"Header for the post"</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">true</span>
+  <span class="n">argument</span> <span class="ss">:full_text</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="s2">"Full body of the post"</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">true</span>
+  <span class="n">argument</span> <span class="ss">:categories</span><span class="p">,</span> <span class="p">[</span><span class="no">Types</span><span class="o">::</span><span class="no">PostCategory</span><span class="p">],</span> <span class="ss">required: </span><span class="kp">false</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>For a full description of the <code class="highlighter-rouge">argument(...)</code> method, see the <a href="/type_definitions/objects#field-arguments">argument section of the Objects guide</a>.</p>
+
+<h2 id="using-input-objects">Using Input Objects</h2>
+
+<p>Input objects are passed to field methods as an instance of their definition class. So, inside the field method, you can access any key of the object by:</p>
+
+<ul>
+  <li>calling its method, corresponding to the name (underscore-cased)</li>
+  <li>calling <code class="highlighter-rouge">#[]</code> with the <em>camel-cased</em> name of the argument (this is for compatibility with previous GraphQL-Ruby versions)</li>
+</ul>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># This field takes an argument called `attributes`</span>
+<span class="c1"># which will be an instance of `PostAttributes`</span>
+<span class="n">field</span> <span class="ss">:create_post</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">Post</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span> <span class="k">do</span>
+  <span class="n">argument</span> <span class="ss">:attributes</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">PostAttributes</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">true</span>
+<span class="k">end</span>
+
+<span class="k">def</span> <span class="nf">create_post</span><span class="p">(</span><span class="n">attributes</span><span class="p">:)</span>
+  <span class="nb">puts</span> <span class="n">attributes</span><span class="p">.</span><span class="nf">class</span><span class="p">.</span><span class="nf">name</span>
+  <span class="c1"># =&gt; "Types::PostAttributes"</span>
+  <span class="c1"># Access a value by method (underscore-cased):</span>
+  <span class="nb">puts</span> <span class="n">attributes</span><span class="p">.</span><span class="nf">full_text</span>
+  <span class="c1"># =&gt; "..."</span>
+  <span class="c1"># Or by hash-style lookup (camel-cased, for compatibility):</span>
+  <span class="nb">puts</span> <span class="n">attributes</span><span class="p">[</span><span class="ss">:fullText</span><span class="p">]</span>
+  <span class="c1"># =&gt; "..."</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<h2 id="customizing-input-objects">Customizing Input Objects</h2>
+
+<p>You can add or override methods on input object classes to customize them.  They have two instance variables by default:</p>
+
+<ul>
+  <li><code class="highlighter-rouge">@arguments</code>: A <a href="http://www.rubydoc.info/gems/graphql/1.8.0.pre10/GraphQL/Query/Arguments" target="_blank" title="API docs for GraphQL::Query::Arguments"><code>GraphQL::Query::Arguments</code></a> instance</li>
+  <li><code class="highlighter-rouge">@context</code>: The current <a href="http://www.rubydoc.info/gems/graphql/1.8.0.pre10/GraphQL/Query/Context" target="_blank" title="API docs for GraphQL::Query::Context"><code>GraphQL::Query::Context</code></a></li>
+</ul>
+
+<p>Any extra methods you define on the class can be used for field resolution, as demonstrated above.</p>
+
+</div>
+<p class="guide-footer">
+  Suggestion, improvement, or correction?
+  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/type_definitions/input_objects.md">Edit this file</a> or
+  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: Input Objects">report an issue</a>.
+</p>
+<script>
+  // Find headers with IDs and wrap their text in `<a href=></a>`
+  // That way people can easily copy the link.
+  var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+  var header, idText, headerLink;
+  for (var i = 0; i < headers.length; i++) {
+    header = headers[i];
+    idText = header.id;
+    if (idText) {
+      headerLink = document.createElement("a");
+      headerLink.href = "#" + idText;
+      headerLink.textContent = header.textContent;
+      header.textContent = "";
+      header.appendChild(headerLink);
+    }
+  }
+</script>
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/algoliasearch/3/algoliasearchLite.min.js"></script>
+    <script src="/js/search.js"></script>
+  </body>
+</html>

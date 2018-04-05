@@ -1,0 +1,389 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+      <title>GraphQL - Objects</title>
+    
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="icon" href="/graphql-ruby-icon.png">
+  </head>
+  <body>
+    <div class="header">
+      <div class="header-container">
+        <div class="nav">
+          <a href="/" class="img-link">
+            <img src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+          </a>
+          <a href="/getting_started">Get Started</a>
+          <a href="/guides">Guides</a>
+          <a href="http://www.rubydoc.info/gems/graphql/1.8.0.pre10/">API</a>
+          <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
+          <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+          <input
+            class="search-input"
+            onkeyup="GraphQLRubySearch.run(this)"
+            type="text"
+            placeholder="Search the docs..."
+          />
+        </div>
+      </div>
+      <div class="search-results-container">
+        <div id="search-results"></div>
+      </div>
+    </div>
+    <div class="container">
+      <p class="breadcrumb">
+  <a href="/">GraphQL</a>
+  &raquo; <a href="/guides">Guides</a>
+   &raquo; <a href="/guides#type-definitions-guides">Type Definitions</a>
+  &raquo; Objects
+</p>
+
+
+  <div class="class-based-header">
+    <p>
+      <strong>⚠ New Class-Based API ⚠</strong>
+    </p>
+    <p>
+      This describes a new API in <code>v1.8.0</code>.
+      Check the <a href="/schema/class_based_api">upgrade notes</a> for more info.
+    </p>
+  </div>
+
+
+<h1 class="guide-header">Objects</h1>
+<div class="guide-container">
+  <p>GraphQL object types are the bread and butter of GraphQL APIs. Each object has <em>fields</em> which expose data and may be queried by name. For example, we can query a <code class="highlighter-rouge">User</code> like this:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">user</span> <span class="p">{</span>
+  <span class="n">handle</span>
+  <span class="n">email</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>And get back values like this:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span>
+  <span class="s2">"user"</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="s2">"handle"</span> <span class="o">=&gt;</span> <span class="s2">"rmosolgo"</span><span class="p">,</span>
+    <span class="s2">"email"</span> <span class="o">=&gt;</span> <span class="kp">nil</span><span class="p">,</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Generally speaking, GraphQL object types correspond to models in your application, like <code class="highlighter-rouge">User</code>, <code class="highlighter-rouge">Product</code>, or <code class="highlighter-rouge">Comment</code>.  Sometimes, object types are described using the <a href="http://graphql.org/learn/schema/#type-language">GraphQL Schema Definition Language</a> (SDL):</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">type</span> <span class="no">User</span> <span class="p">{</span>
+  <span class="ss">email: </span><span class="no">String</span>
+  <span class="ss">handle: </span><span class="no">String</span><span class="o">!</span>
+  <span class="ss">friends: </span><span class="p">[</span><span class="no">User</span><span class="o">!</span><span class="p">]</span><span class="o">!</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>This means that <code class="highlighter-rouge">User</code> objects have three fields:</p>
+
+<ul>
+  <li><code class="highlighter-rouge">email</code>, which may return a <code class="highlighter-rouge">String</code> <em>or</em> <code class="highlighter-rouge">nil</code>.</li>
+  <li><code class="highlighter-rouge">handle</code>, which returns a <code class="highlighter-rouge">String</code> but <em>never</em> <code class="highlighter-rouge">nil</code> (<code class="highlighter-rouge">!</code> means the field never returns <code class="highlighter-rouge">nil</code>)</li>
+  <li><code class="highlighter-rouge">friends</code>, which returns a list of other <code class="highlighter-rouge">User</code>s (<code class="highlighter-rouge">[...]</code> means the field returns a list of values; <code class="highlighter-rouge">User!</code> means the list contains <code class="highlighter-rouge">User</code> objects, and never contains <code class="highlighter-rouge">nil</code>.)</li>
+</ul>
+
+<p>The same object can be defined using Ruby:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">User</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
+  <span class="n">field</span> <span class="ss">:email</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">true</span>
+  <span class="n">field</span> <span class="ss">:handle</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
+  <span class="n">field</span> <span class="ss">:friends</span><span class="p">,</span> <span class="p">[</span><span class="no">User</span><span class="p">],</span> <span class="ss">null: </span><span class="kp">false</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>The rest of this guide will describe how to define GraphQL object types in Ruby. To learn more about GraphQL object types in general, see the <a href="http://graphql.org/learn/schema/#object-types-and-fields">GraphQL docs</a>.</p>
+
+<h2 id="object-classes">Object classes</h2>
+
+<p>Classes extending <a href="http://www.rubydoc.info/gems/graphql/1.8.0.pre10/GraphQL/Schema/Object" target="_blank" title="API docs for GraphQL::Schema::Object"><code>GraphQL::Schema::Object</code></a> describe <a href="http://graphql.org/learn/schema/#object-types-and-fields">Object types</a> and customize their behavior.</p>
+
+<p>Object fields can be created with the <code class="highlighter-rouge">field(...)</code> class method, <a href="#fields">described in detail below</a></p>
+
+<p>Field and argument names should be underscored as a convention. They will be converted to camelCase in the underlying GraphQL type and be camelCase in the schema itself.</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># first, somewhere, a base class:</span>
+<span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">BaseObject</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
+<span class="k">end</span>
+
+<span class="c1"># then...</span>
+<span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">TodoList</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
+  <span class="n">description</span> <span class="s2">"A list of items which may be completed"</span>
+
+  <span class="n">field</span> <span class="ss">:name</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="s2">"The unique name of this list"</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
+  <span class="n">field</span> <span class="ss">:is_completed</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="s2">"Completed status depending on all tasks being done."</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
+  <span class="c1"># Related Object:</span>
+  <span class="n">field</span> <span class="ss">:owner</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">User</span><span class="p">,</span> <span class="s2">"The creator of this list"</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
+  <span class="c1"># List field:</span>
+  <span class="n">field</span> <span class="ss">:viewers</span><span class="p">,</span> <span class="p">[</span><span class="no">Types</span><span class="o">::</span><span class="no">User</span><span class="p">],</span> <span class="s2">"Users who can see this list"</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
+  <span class="c1"># Connection:</span>
+  <span class="n">field</span> <span class="ss">:items</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">TodoItem</span><span class="p">.</span><span class="nf">connection_type</span><span class="p">,</span> <span class="s2">"Tasks on this list"</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span> <span class="k">do</span>
+    <span class="n">argument</span> <span class="ss">:status</span><span class="p">,</span> <span class="no">TodoStatus</span><span class="p">,</span> <span class="s2">"Restrict items to this status"</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">false</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<h2 id="fields">Fields</h2>
+
+<p>Object fields expose data about that object or connect the object to other objects. You can add fields to your object types with the <code class="highlighter-rouge">field(...)</code> class method, for example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:name</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="s2">"The unique name of this list"</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
+</code></pre></div></div>
+
+<p>The different elements of field definition are addressed below:</p>
+
+<ul>
+  <li><a href="#field-return-type">Return types</a> say what kind of data this field returns</li>
+  <li><a href="#field-documentation">Documentation</a> includes description and deprecation notes</li>
+  <li><a href="#field-resolution">Resolution behavior</a> hooks up Ruby code to the GraphQL field</li>
+  <li><a href="#field-arguments">Arguments</a> allow fields to take input when they’re queried</li>
+  <li><a href="#extra-field-metadata">Extra field metadata</a> for low-level access to the GraphQL-Ruby runtime</li>
+</ul>
+
+<h3 id="field-return-type">Field Return Type</h3>
+
+<p>The second argument to <code class="highlighter-rouge">field(...)</code> is the return type. This can be:</p>
+
+<ul>
+  <li>A built-in GraphQL type (<code class="highlighter-rouge">Integer</code>, <code class="highlighter-rouge">Float</code>, <code class="highlighter-rouge">String</code>, <code class="highlighter-rouge">ID</code>, or <code class="highlighter-rouge">Boolean</code>)</li>
+  <li>A GraphQL type from your application</li>
+  <li>An <em>array</em> of any of the above, which denotes a <a href="/type_definitions/lists">list type</a>.</li>
+</ul>
+
+<p><a href="/type_definitions/non_nulls">Nullability</a> is expressed with the required <code class="highlighter-rouge">null:</code> keyword:</p>
+
+<ul>
+  <li><code class="highlighter-rouge">null: true</code> means that the field <em>may</em> return <code class="highlighter-rouge">nil</code></li>
+  <li><code class="highlighter-rouge">null: false</code> means the field is non-nullable; it may not return <code class="highlighter-rouge">nil</code>. If the implementation returns <code class="highlighter-rouge">nil</code>, GraphQL-Ruby will return an error to the client.</li>
+</ul>
+
+<p>Additionally, list types maybe nullable by adding <code class="highlighter-rouge">[..., null: true]</code> to the definition.</p>
+
+<p>Here are some examples:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:name</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">true</span> <span class="c1"># `String`, may return a `String` or `nil`</span>
+<span class="n">field</span> <span class="ss">:id</span><span class="p">,</span> <span class="no">ID</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span> <span class="c1"># `ID!`, always returns an `ID`, never `nil`</span>
+<span class="n">field</span> <span class="ss">:teammates</span><span class="p">,</span> <span class="p">[</span><span class="no">Types</span><span class="o">::</span><span class="no">User</span><span class="p">],</span> <span class="ss">null: </span><span class="kp">false</span> <span class="c1"># `[User!]!`, always returns a list containing `User`s</span>
+<span class="n">field</span> <span class="ss">:scores</span><span class="p">,</span> <span class="p">[</span><span class="no">Integer</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">true</span><span class="p">],</span> <span class="ss">null: </span><span class="kp">true</span> <span class="c1"># `[Int]`, may return a list or `nil`, the list may contain a mix of `Integer`s and `nil`s</span>
+</code></pre></div></div>
+
+<h3 id="field-documentation">Field Documentation</h3>
+
+<p>Fields maybe documented with a <strong>description</strong> and may be <strong>deprecated</strong>.</p>
+
+<p><strong>Descriptions</strong> can be added with the <code class="highlighter-rouge">field(...)</code> method as a positional argument, a keyword argument, or inside the block:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># 3rd positional argument</span>
+<span class="n">field</span> <span class="ss">:name</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="s2">"The name of this thing"</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
+<span class="c1"># `description:` keyword</span>
+<span class="n">field</span> <span class="ss">:name</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span><span class="p">,</span> <span class="ss">description: </span><span class="s2">"The name of this thing"</span>
+<span class="c1"># inside the block</span>
+<span class="n">field</span> <span class="ss">:name</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span> <span class="k">do</span>
+  <span class="n">description</span> <span class="s2">"The name of this thing"</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p><strong>Deprecated</strong> fields can be marked by adding a <code class="highlighter-rouge">deprecation_reason:</code> keyword argument:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:email</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">true</span><span class="p">,</span> <span class="ss">deprecation_reason: </span><span class="s2">"Users may have multiple emails, use `User.emails` instead."</span>
+</code></pre></div></div>
+
+<p>Fields with a <code class="highlighter-rouge">deprecation_reason:</code> will appear as “deprecated” in GraphiQL.</p>
+
+<h3 id="field-resolution">Field Resolution</h3>
+
+<p>In general, fields return Ruby values corresponding to their GraphQL return types. For example, a field with the return type <code class="highlighter-rouge">String</code> should return a Ruby string, and a field with the return type <code class="highlighter-rouge">[User!]!</code> should return a Ruby array with zero or more <code class="highlighter-rouge">User</code> objects in it.</p>
+
+<p>By default, fields return values by:</p>
+
+<ul>
+  <li>Trying to call a method on the underlying object; <em>OR</em></li>
+  <li>If the underlying object is a <code class="highlighter-rouge">Hash</code>, lookup a key in that hash.</li>
+</ul>
+
+<p>The method name or hash key corresponds to the field name, so in this example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:top_score</span><span class="p">,</span> <span class="no">Integer</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
+</code></pre></div></div>
+
+<p>The default behavior is to look for a <code class="highlighter-rouge">#top_score</code> method, or lookup a <code class="highlighter-rouge">Hash</code> key, <code class="highlighter-rouge">:top_score</code> (symbol) or <code class="highlighter-rouge">"top_score"</code> (string).</p>
+
+<p>You can override the method name with the <code class="highlighter-rouge">method:</code> keyword, or override the hash key with the <code class="highlighter-rouge">hash_key:</code> keyword, for example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Use the `#best_score` method to resolve this field</span>
+<span class="n">field</span> <span class="ss">:top_score</span><span class="p">,</span> <span class="no">Integer</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span><span class="p">,</span> <span class="ss">method: :best_score</span>
+<span class="c1"># Lookup `hash["allPlayers"]` to resolve this field</span>
+<span class="n">field</span> <span class="ss">:players</span><span class="p">,</span> <span class="p">[</span><span class="no">User</span><span class="p">],</span> <span class="ss">null: </span><span class="kp">false</span><span class="p">,</span> <span class="ss">hash_key: </span><span class="s2">"allPlayers"</span>
+</code></pre></div></div>
+
+<p>If you don’t want to delegate to the underlying object, you can define a method for each field:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Use the custom method below to resolve this field</span>
+<span class="n">field</span> <span class="ss">:total_games_played</span><span class="p">,</span> <span class="no">Integer</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
+
+<span class="k">def</span> <span class="nf">total_games_played</span>
+  <span class="n">object</span><span class="p">.</span><span class="nf">games</span><span class="p">.</span><span class="nf">count</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>Inside the method, you can access some helper methods:</p>
+
+<ul>
+  <li><code class="highlighter-rouge">object</code> is the underlying application object (formerly <code class="highlighter-rouge">obj</code> to resolve functions)</li>
+  <li><code class="highlighter-rouge">context</code> is the query context (passed as <code class="highlighter-rouge">context:</code> when executing queries, formerly <code class="highlighter-rouge">ctx</code> to resolve functions)</li>
+</ul>
+
+<p>Additionally, when you define arguments (see below), they’re passed to the method definition, for example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Call the custom method with incoming arguments</span>
+<span class="n">field</span> <span class="ss">:current_winning_streak</span><span class="p">,</span> <span class="no">Integer</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span> <span class="k">do</span>
+  <span class="n">argument</span> <span class="ss">:include_ties</span><span class="p">,</span> <span class="no">Boolean</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">false</span><span class="p">,</span> <span class="ss">default_value: </span><span class="kp">false</span>
+<span class="k">end</span>
+
+<span class="k">def</span> <span class="nf">current_winning_streak</span><span class="p">(</span><span class="n">include_ties</span><span class="p">:)</span>
+  <span class="c1"># Business logic goes here</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<h3 id="field-arguments">Field Arguments</h3>
+
+<p><em>Arguments</em> allow fields to take input to their resolution. For example:</p>
+
+<ul>
+  <li>A <code class="highlighter-rouge">search()</code> field may take a <code class="highlighter-rouge">term:</code> argument, which is the query to use for searching, eg <code class="highlighter-rouge">search(term: "GraphQL")</code></li>
+  <li>A <code class="highlighter-rouge">user()</code> field may take an <code class="highlighter-rouge">id:</code> argument, which specifies which user to find, eg <code class="highlighter-rouge">user(id: 1)</code></li>
+  <li>An <code class="highlighter-rouge">attachments()</code> field may take a <code class="highlighter-rouge">type:</code> argument, which filters the result by file type, eg <code class="highlighter-rouge">attachments(type: PHOTO)</code></li>
+</ul>
+
+<p>Arguments can be expressed in the SDL:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">type</span> <span class="no">User</span> <span class="p">{</span>
+  <span class="c1"># This user's transaction history, after `since` if present.</span>
+  <span class="n">transactions</span><span class="p">(</span><span class="ss">since: </span><span class="no">DateTime</span><span class="p">):</span> <span class="p">[</span><span class="no">Transaction</span><span class="o">!</span><span class="p">]</span><span class="o">!</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Arguments are <em>typed</em>, so each argument takes a certain kind of data. Only a few types are valid inputs:</p>
+
+<ul>
+  <li><a href="/type_definitions/scalars">Scalars</a>, such as <code class="highlighter-rouge">String</code>, <code class="highlighter-rouge">Integer</code>, <code class="highlighter-rouge">Float</code>, <code class="highlighter-rouge">Boolean</code>, <code class="highlighter-rouge">ID</code>, or custom scalar types</li>
+  <li><a href="/type_definitions/enums">Enums</a>, defined by your application</li>
+  <li><a href="/type_definitions/input_objects">Input objects</a>, defined by your application</li>
+  <li><a href="/type_definitions/lists">Lists</a> of any of the above type</li>
+</ul>
+
+<p>(Objects, interfaces, and unions are <em>not</em> valid input types.)</p>
+
+<p>To add arguments to fields, use the <code class="highlighter-rouge">argument(...)</code> method, inside a block:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:transactions</span><span class="p">,</span> <span class="p">[</span><span class="no">Types</span><span class="o">::</span><span class="no">Transaction</span><span class="p">],</span> <span class="ss">null: </span><span class="kp">false</span> <span class="k">do</span>
+  <span class="n">argument</span> <span class="ss">:since</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">DateTime</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">false</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>If an argument has <code class="highlighter-rouge">required: true</code>, then all queries to the field <em>must</em> provide a value for that argument. <code class="highlighter-rouge">required: false</code> means that the argument is optional. (This is called <a href="/type_definitions/non_nulls">nullability</a> in GraphQL.)</p>
+
+<p>Arguments can also accept a description and a <code class="highlighter-rouge">default_value:</code>, for example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:transactions</span><span class="p">,</span> <span class="p">[</span><span class="no">Types</span><span class="o">::</span><span class="no">Transaction</span><span class="p">],</span> <span class="ss">null: </span><span class="kp">false</span> <span class="k">do</span>
+  <span class="c1"># Description is added after the type name or the `description:` keyword argument</span>
+  <span class="c1"># By default, `isCompleted: true` will be used</span>
+  <span class="n">argument</span> <span class="ss">:is_completed</span><span class="p">,</span> <span class="no">Boolean</span><span class="p">,</span> <span class="s2">"Filter by completed/incompleted status"</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">false</span><span class="p">,</span> <span class="ss">default: </span><span class="kp">true</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>During field resolution, arguments are passed to the object’s method. So, for <code class="highlighter-rouge">transactions</code> above:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># In GraphQL, `transactions(isCompleted: true)` will become:</span>
+<span class="k">def</span> <span class="nf">transactions</span><span class="p">(</span><span class="n">is_completed</span><span class="p">:)</span>
+  <span class="nb">p</span> <span class="n">is_completed</span>
+  <span class="c1"># =&gt; true</span>
+  <span class="c1"># ...</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>So, each argument corresponds to a keyword in the method. Inside the method, you can use those values to search, filter and perform business logic for your field.</p>
+
+<h3 id="extra-field-metadata">Extra Field Metadata</h3>
+
+<p>Inside a field method, you can access some low-level objects from the GraphQL-Ruby runtime. Be warned, these APIs are subject to change, so check the changelog when updating.</p>
+
+<p>A few <code class="highlighter-rouge">extras</code> are available:</p>
+
+<ul>
+  <li><code class="highlighter-rouge">irep_node</code></li>
+  <li><code class="highlighter-rouge">ast_node</code></li>
+  <li><code class="highlighter-rouge">parent</code>, the parent field context</li>
+  <li><code class="highlighter-rouge">execution_errors</code>, whose <code class="highlighter-rouge">#add(err_or_msg)</code> method should be used for adding errors</li>
+</ul>
+
+<p>To inject them into your field method, first, add the <code class="highlighter-rouge">extras:</code> option to the field definition:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:my_field</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span><span class="p">,</span> <span class="ss">extras: </span><span class="p">[</span><span class="ss">:irep_node</span><span class="p">]</span>
+</code></pre></div></div>
+
+<p>Then add <code class="highlighter-rouge">irep_node:</code> keyword to the method signature:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">my_field</span><span class="p">(</span><span class="n">irep_node</span><span class="p">:)</span>
+  <span class="c1"># ...</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>At runtime, the requested runtime object will be passed to the field.</p>
+
+<h2 id="implementing-interfaces">Implementing interfaces</h2>
+
+<p>If an object implements any interfaces, they can be added with <code class="highlighter-rouge">implements</code>, for example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># This object implements some interfaces:</span>
+<span class="n">implements</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Relay</span><span class="o">::</span><span class="no">Node</span><span class="p">.</span><span class="nf">interface</span>
+<span class="n">implements</span> <span class="no">Types</span><span class="o">::</span><span class="no">UserAssignableType</span>
+</code></pre></div></div>
+
+<p>When an object <code class="highlighter-rouge">implements</code> interfaces, it:</p>
+
+<ul>
+  <li>inherits the GraphQL field definitions from that object</li>
+  <li>inherits the resolve behavior from those fields</li>
+  <li><code class="highlighter-rouge">include</code>s the Ruby module named <code class="highlighter-rouge">Implementation</code> from that interface, if it has one</li>
+</ul>
+
+<p>Read more about interfaces in the <a href="/type_definitions/interfaces">Interfaces guide</a></p>
+
+</div>
+<p class="guide-footer">
+  Suggestion, improvement, or correction?
+  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/type_definitions/objects.md">Edit this file</a> or
+  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: Objects">report an issue</a>.
+</p>
+<script>
+  // Find headers with IDs and wrap their text in `<a href=></a>`
+  // That way people can easily copy the link.
+  var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+  var header, idText, headerLink;
+  for (var i = 0; i < headers.length; i++) {
+    header = headers[i];
+    idText = header.id;
+    if (idText) {
+      headerLink = document.createElement("a");
+      headerLink.href = "#" + idText;
+      headerLink.textContent = header.textContent;
+      header.textContent = "";
+      header.appendChild(headerLink);
+    }
+  }
+</script>
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/algoliasearch/3/algoliasearchLite.min.js"></script>
+    <script src="/js/search.js"></script>
+  </body>
+</html>

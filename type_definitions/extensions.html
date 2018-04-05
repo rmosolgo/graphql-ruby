@@ -1,0 +1,294 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+      <title>GraphQL - Extending the GraphQL-Ruby Type Definition System</title>
+    
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="icon" href="/graphql-ruby-icon.png">
+  </head>
+  <body>
+    <div class="header">
+      <div class="header-container">
+        <div class="nav">
+          <a href="/" class="img-link">
+            <img src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+          </a>
+          <a href="/getting_started">Get Started</a>
+          <a href="/guides">Guides</a>
+          <a href="http://www.rubydoc.info/gems/graphql/1.8.0.pre10/">API</a>
+          <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
+          <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+          <input
+            class="search-input"
+            onkeyup="GraphQLRubySearch.run(this)"
+            type="text"
+            placeholder="Search the docs..."
+          />
+        </div>
+      </div>
+      <div class="search-results-container">
+        <div id="search-results"></div>
+      </div>
+    </div>
+    <div class="container">
+      <p class="breadcrumb">
+  <a href="/">GraphQL</a>
+  &raquo; <a href="/guides">Guides</a>
+   &raquo; <a href="/guides#type-definitions-guides">Type Definitions</a>
+  &raquo; Extending the GraphQL-Ruby Type Definition System
+</p>
+
+
+  <div class="class-based-header">
+    <p>
+      <strong>⚠ New Class-Based API ⚠</strong>
+    </p>
+    <p>
+      This describes a new API in <code>v1.8.0</code>.
+      Check the <a href="/schema/class_based_api">upgrade notes</a> for more info.
+    </p>
+  </div>
+
+
+<h1 class="guide-header">Extending the GraphQL-Ruby Type Definition System</h1>
+<div class="guide-container">
+  <p>While integrating GraphQL into your app, you can customize the definition DSL. For example, you might:</p>
+
+<ul>
+  <li>Assign “area of responsibility” to different types and fields</li>
+  <li>DRY up shared logic between types and fields</li>
+  <li>Attach metadata for use during authorization</li>
+</ul>
+
+<p>This guide describes various options for extending the class-based definition API. Keep in mind that these approaches may change as the API matures. If you’re having trouble, consider opening an issue on GitHub to get help.</p>
+
+<h2 id="customization-overview">Customization Overview</h2>
+
+<p>In general, the schema definition process goes like this:</p>
+
+<ul>
+  <li>The application defines lots of classes for the GraphQL types</li>
+  <li>The first time the schema is used, it “boots”…</li>
+  <li>Which involves calling <code class="highlighter-rouge">.to_graphql</code> on all the application-defined classes
+    <ul>
+      <li><code class="highlighter-rouge">.to_graphql</code> returns a “legacy” GraphQL object (eg, <code class="highlighter-rouge">GraphQL::ObjectType</code>, <code class="highlighter-rouge">GraphQL::ScalarType</code>)</li>
+    </ul>
+  </li>
+  <li>Non-type objects (fields, arguments, enum values) have a slightly different process:
+    <ul>
+      <li>During a type’s <code class="highlighter-rouge">.to_graphql</code> method, definition objects are initialized (eg <code class="highlighter-rouge">GraphQL::Schema::Field.new(...)</code>)</li>
+      <li>Then, the initialized object receives <code class="highlighter-rouge">.to_graphql</code> (eg <a href="http://www.rubydoc.info/gems/graphql/1.8.0.pre10/GraphQL/Schema/Field#to_graphql-instance_method" target="_blank" title="API docs for GraphQL::Schema::Field#to_graphql"><code>GraphQL::Schema::Field#to_graphql</code></a>)</li>
+      <li><code class="highlighter-rouge">.to_graphql</code> a “legacy” GraphQL object (eg <code class="highlighter-rouge">GraphQL::Field</code>)</li>
+    </ul>
+  </li>
+</ul>
+
+<p>This process will certainly change over time. The goal to entirely remove “legacy” GraphQL objects from the system. So, at that time, <code class="highlighter-rouge">.to_graphql</code> will no longer be used.</p>
+
+<p>Another important note: after GraphQL-Ruby converts a class to a “legacy” object, the “legacy” object may be accessed using <code class="highlighter-rouge">.graphql_definition</code>. This cached instance is the “one true instance” used by GraphQL-Ruby.</p>
+
+<h2 id="customizing-type-definitions">Customizing type definitions</h2>
+
+<p>In your custom classes, you can override <code class="highlighter-rouge">.to_graphql</code> to customize the type that will be used at runtime. For example, to assign metadata values to an ObjectType:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">BaseObject</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
+  <span class="c1"># Call this method in an Object class to set the permission level:</span>
+  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">required_permission</span><span class="p">(</span><span class="n">permission_level</span><span class="p">)</span>
+    <span class="vi">@required_permission</span> <span class="o">=</span> <span class="n">permission_level</span>
+  <span class="k">end</span>
+
+  <span class="c1"># This method is overridden to customize object types:</span>
+  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">to_graphql</span>
+    <span class="n">type_defn</span> <span class="o">=</span> <span class="k">super</span> <span class="c1"># returns a GraphQL::ObjectType</span>
+    <span class="c1"># Get a configured value and assign it to metadata</span>
+    <span class="n">type_defn</span><span class="p">.</span><span class="nf">metadata</span><span class="p">[</span><span class="ss">:required_permission</span><span class="p">]</span> <span class="o">=</span> <span class="vi">@required_permission</span>
+    <span class="n">type_defn</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="c1"># Then, in concrete classes</span>
+<span class="k">class</span> <span class="nc">Dossier</span> <span class="o">&lt;</span> <span class="no">BaseObject</span>
+  <span class="c1"># The Dossier object type will have `.metadata[:required_permission] # =&gt; :admin`</span>
+  <span class="n">permission_level</span> <span class="ss">:admin</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>Now, any runtime code which uses <code class="highlighter-rouge">.metadata[:required_permission]</code> will get the right value.</p>
+
+<h3 id="customizing-fields">Customizing fields</h3>
+
+<p>Fields are generated in a different way. Instead of using classes, they are generated with instances of <code class="highlighter-rouge">GraphQL::Schema::Field</code> (or a subclass). In short, the definition process works like this:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># This is what happens under the hood, roughly:</span>
+<span class="c1"># In an object class:</span>
+<span class="n">field</span> <span class="ss">:name</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
+<span class="c1"># ...</span>
+<span class="c1"># Leads to:</span>
+<span class="n">field_config</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Field</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="ss">:name</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span><span class="p">)</span>
+<span class="c1"># Then, later:</span>
+<span class="n">field_config</span><span class="p">.</span><span class="nf">to_graphql</span> <span class="c1"># =&gt; returns a GraphQL::Field instance</span>
+</code></pre></div></div>
+
+<p>So, you can customize this process by:</p>
+
+<ul>
+  <li>creating a custom class which extends <code class="highlighter-rouge">GraphQL::Schema::Field</code></li>
+  <li>overriding <code class="highlighter-rouge">#initialize</code> and <code class="highlighter-rouge">#to_graphql</code> on that class (instance methods)</li>
+  <li>registering that class as the <code class="highlighter-rouge">field_class</code> on Objects and Interfaces which should use the customized field.</li>
+</ul>
+
+<p>For example, you can create a custom class which accepts a new parameter to <code class="highlighter-rouge">initialize</code>:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">AuthorizedField</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Field</span>
+  <span class="c1"># Override #initialize to take a new argument:</span>
+  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">required_permission</span><span class="p">:,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">block</span><span class="p">)</span>
+    <span class="vi">@required_permission</span> <span class="o">=</span> <span class="n">required_permission</span>
+    <span class="c1"># Pass on the default args:</span>
+    <span class="k">super</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">block</span><span class="p">)</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">to_graphql</span>
+    <span class="n">field_defn</span> <span class="o">=</span> <span class="k">super</span> <span class="c1"># Returns a GraphQL::Field</span>
+    <span class="n">field_defn</span><span class="p">.</span><span class="nf">metadata</span><span class="p">[</span><span class="ss">:required_permission</span><span class="p">]</span> <span class="o">=</span> <span class="vi">@required_permission</span>
+    <span class="n">field_defn</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>Then, pass the field class as <code class="highlighter-rouge">field_class(...)</code> wherever it should be used:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">BaseObject</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
+  <span class="c1"># Use this class for defining fields</span>
+  <span class="n">field_class</span> <span class="no">AuthorizedField</span>
+<span class="k">end</span>
+
+<span class="c1"># And/Or</span>
+<span class="k">class</span> <span class="nc">BaseInterface</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Interface</span>
+  <span class="n">field_class</span> <span class="no">AuthorizedField</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>Now, <code class="highlighter-rouge">AuthorizedField.new(*args, &amp;block).to_graphql</code> will be used to create <code class="highlighter-rouge">GraphQL::Field</code>s.</p>
+
+<h3 id="customizing-arguments">Customizing Arguments</h3>
+
+<p>Arguments may be customized in a similar way to Fields.</p>
+
+<ul>
+  <li>Create a new class extending <code class="highlighter-rouge">GraphQL::Schema::Argument</code></li>
+  <li>Assign it to your field class with <code class="highlighter-rouge">argument_class(MyArgClass)</code></li>
+</ul>
+
+<p>Then, in your custom argument class, you can use:</p>
+
+<ul>
+  <li><code class="highlighter-rouge">#initialize(name, type, desc = nil, **kwargs)</code> to take input from the DSL</li>
+  <li><code class="highlighter-rouge">#to_graphql</code> to modify the conversion to a <a href="http://www.rubydoc.info/gems/graphql/1.8.0.pre10/GraphQL/Argument" target="_blank" title="API docs for GraphQL::Argument"><code>GraphQL::Argument</code></a></li>
+</ul>
+
+<h3 id="customizing-enum-values">Customizing Enum Values</h3>
+
+<p>Enum values may be customized in a similar way to Fields.</p>
+
+<ul>
+  <li>Create a new class extending <code class="highlighter-rouge">GraphQL::Schema::EnumValue</code></li>
+  <li>Assign it to your base <code class="highlighter-rouge">Enum</code> class with <code class="highlighter-rouge">enum_value_class(MyEnumValueClass)</code></li>
+</ul>
+
+<p>Then, in your custom argument class, you can use:</p>
+
+<ul>
+  <li><code class="highlighter-rouge">#initialize(name, desc = nil, **kwargs)</code> to take input from the DSL</li>
+  <li><code class="highlighter-rouge">#to_graphql</code> to modify the conversion to a <a href="http://www.rubydoc.info/gems/graphql/1.8.0.pre10/GraphQL/EnumType/EnumValue" target="_blank" title="API docs for GraphQL::EnumType::EnumValue"><code>GraphQL::EnumType::EnumValue</code></a></li>
+</ul>
+
+<h3 id="customization-compatibility">Customization compatibility</h3>
+
+<p>Inevitably, this will result in some duplication while you migrate from one definition API to the other. Here are a couple of ways to re-use <em>old</em> customizations with the new framework:</p>
+
+<p><strong>Pass-through with <code class="highlighter-rouge">accepts_definition</code></strong>. New schema classes have an <code class="highlighter-rouge">accepts_definition</code> method. They set up a configuration method which will pass the provided value to the existing (legacy-style) configuration function, for example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Given a legacy-style configuration function:</span>
+<span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">accepts_definitions</span><span class="p">({</span> <span class="ss">permission_level: </span><span class="o">-&gt;</span><span class="p">(</span><span class="o">...</span><span class="p">)</span> <span class="p">{</span> <span class="o">...</span> <span class="p">}</span> <span class="p">})</span>
+
+<span class="c1"># Prepare the config method in the base class:</span>
+<span class="k">class</span> <span class="nc">BaseObject</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
+  <span class="n">accepts_definition</span> <span class="ss">:permission_level</span>
+<span class="k">end</span>
+
+<span class="c1"># Call the config method in the object class:</span>
+<span class="k">class</span> <span class="nc">Account</span> <span class="o">&lt;</span> <span class="no">BaseObject</span>
+  <span class="n">permission_level</span> <span class="mi">1</span>
+<span class="k">end</span>
+
+<span class="c1"># Then, the runtime object will have the configured value, for example:</span>
+<span class="no">MySchema</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="s2">"Account"</span><span class="p">).</span><span class="nf">metadata</span><span class="p">[</span><span class="ss">:permission_level</span><span class="p">]</span>
+<span class="c1"># =&gt; 1</span>
+</code></pre></div></div>
+
+<p>See <a href="http://www.rubydoc.info/gems/graphql/1.8.0.pre10/GraphQL/Schema/Member/AcceptsDefinition" target="_blank" title="API docs for GraphQL::Schema::Member::AcceptsDefinition"><code>GraphQL::Schema::Member::AcceptsDefinition</code></a> for the implementation.</p>
+
+<p><strong>Invoke <code class="highlighter-rouge">.call</code> directly</strong>. If you defined a module with a <code class="highlighter-rouge">.call</code> method, you can invoke that method during <code class="highlighter-rouge">.to_graphql</code>. For example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">BaseObject</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
+  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">to_graphql</span>
+    <span class="n">type_defn</span> <span class="o">=</span> <span class="k">super</span>
+    <span class="c1"># Re-use the accepts_definition callback manually:</span>
+    <span class="no">DefinePermission</span><span class="p">.</span><span class="nf">call</span><span class="p">(</span><span class="n">type_defn</span><span class="p">,</span> <span class="ss">required_permission: </span><span class="vi">@required_permission</span><span class="p">)</span>
+    <span class="n">type_defn</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p><strong>Use <code class="highlighter-rouge">.redefine</code></strong>. You can re-open a <code class="highlighter-rouge">.define</code> block at any time with <code class="highlighter-rouge">.redefine</code>. It returns a new, updated instance based on the old one. For example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">BaseObject</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
+  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">to_graphql</span>
+    <span class="n">type_defn</span> <span class="o">=</span> <span class="k">super</span>
+    <span class="c1"># Read the value from the instance variable, since ivars don't work in `.define {...}` blocks</span>
+    <span class="n">configured_permission</span> <span class="o">=</span> <span class="vi">@required_permission</span>
+
+    <span class="n">updated_type_defn</span> <span class="o">=</span> <span class="n">type_defn</span><span class="p">.</span><span class="nf">redefine</span> <span class="k">do</span>
+      <span class="c1"># Use the accepts_definition method:</span>
+      <span class="n">required_permission</span><span class="p">(</span><span class="n">configured_permission</span><span class="p">)</span>
+    <span class="k">end</span>
+
+    <span class="c1"># return the updated definition</span>
+    <span class="n">updated_type_defn</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+</div>
+<p class="guide-footer">
+  Suggestion, improvement, or correction?
+  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/type_definitions/extensions.md">Edit this file</a> or
+  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: Extending the GraphQL-Ruby Type Definition System">report an issue</a>.
+</p>
+<script>
+  // Find headers with IDs and wrap their text in `<a href=></a>`
+  // That way people can easily copy the link.
+  var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+  var header, idText, headerLink;
+  for (var i = 0; i < headers.length; i++) {
+    header = headers[i];
+    idText = header.id;
+    if (idText) {
+      headerLink = document.createElement("a");
+      headerLink.href = "#" + idText;
+      headerLink.textContent = header.textContent;
+      header.textContent = "";
+      header.appendChild(headerLink);
+    }
+  }
+</script>
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/algoliasearch/3/algoliasearchLite.min.js"></script>
+    <script src="/js/search.js"></script>
+  </body>
+</html>

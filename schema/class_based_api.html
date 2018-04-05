@@ -1,0 +1,419 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+      <title>GraphQL - Class-based API</title>
+    
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="icon" href="/graphql-ruby-icon.png">
+  </head>
+  <body>
+    <div class="header">
+      <div class="header-container">
+        <div class="nav">
+          <a href="/" class="img-link">
+            <img src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+          </a>
+          <a href="/getting_started">Get Started</a>
+          <a href="/guides">Guides</a>
+          <a href="http://www.rubydoc.info/gems/graphql/1.8.0.pre10/">API</a>
+          <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
+          <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+          <input
+            class="search-input"
+            onkeyup="GraphQLRubySearch.run(this)"
+            type="text"
+            placeholder="Search the docs..."
+          />
+        </div>
+      </div>
+      <div class="search-results-container">
+        <div id="search-results"></div>
+      </div>
+    </div>
+    <div class="container">
+      <p class="breadcrumb">
+  <a href="/">GraphQL</a>
+  &raquo; <a href="/guides">Guides</a>
+   &raquo; <a href="/guides#schema-guides">Schema</a>
+  &raquo; Class-based API
+</p>
+
+  <div class="experimental-header">
+    <p>
+      <strong>⚠ Experimental ⚠</strong>
+    </p>
+    <p>
+      This feature may get big changes in future releases.
+      Check the <a href="https://github.com/rmosolgo/graphql-ruby/blob/master/CHANGELOG.md">changelog</a> for update notes.
+    </p>
+  </div>
+
+
+
+<h1 class="guide-header">Class-based API</h1>
+<div class="guide-container">
+  <p>In GraphQL <code class="highlighter-rouge">1.8</code>+, you can use Ruby classes to build your schema. You can <strong>mix</strong> class-style and <code class="highlighter-rouge">.define</code>-style type definitions in a schema.</p>
+
+<p>(<code class="highlighter-rouge">1.8</code> is currently in prerelease, check <a href="https://rubygems.org/gems/graphql">RubyGems</a> for the latest version.)</p>
+
+<p>You can get an overview of this new feature:</p>
+
+<ul>
+  <li><a href="#rationale--goals">Rationale &amp; Goals</a></li>
+  <li><a href="#compatibility--migration-overview">Compatibility &amp; Migration Overview</a></li>
+  <li><a href="#upgrader">Using the upgrader</a></li>
+  <li><a href="#roadmap">Roadmap</a></li>
+</ul>
+
+<p>And learn about the APIs:</p>
+
+<ul>
+  <li><a href="#schema-class">Schema class</a></li>
+  <li><a href="#common-type-configurations">Common type configurations</a> (shared by all the following types)</li>
+  <li><a href="/type_definitions/objects">Object classes</a></li>
+  <li><a href="/type_definitions/interfaces">Interface classes</a></li>
+  <li><a href="/type_definitions/unions">Union classes</a></li>
+  <li><a href="/type_definitions/enums">Enum classes</a></li>
+  <li><a href="/type_definitions/input_objects">Input Object classes</a></li>
+  <li><a href="/type_definitions/scalars">Scalar classes</a></li>
+  <li><a href="/type_definitions/extensions">Customizing definitoins</a></li>
+  <li><a href="/schema/introspection">Custom introspection</a></li>
+</ul>
+
+<h2 id="rationale--goals">Rationale &amp; Goals</h2>
+
+<p>This new API aims to improve the “getting started” experience and the schema customization experience by replacing GraphQL-Ruby-specific DSLs with familiar Ruby semantics (classes and methods).</p>
+
+<p>Additionally, this new API must be cross-compatible with the current schema definition API so that it can be adopted bit-by-bit.</p>
+
+<h2 id="compatibility--migration-overview">Compatibility &amp; Migration overview</h2>
+
+<p>Parts of your schema can be converted one-by-one, so you can convert definitions gradually.</p>
+
+<h3 id="classes">Classes</h3>
+
+<p>In general, each <code class="highlighter-rouge">.define { ... }</code> block will be converted to a class.</p>
+
+<ul>
+  <li>Instead of a <code class="highlighter-rouge">GraphQL::{X}Type</code>, classes inherit from <code class="highlighter-rouge">GraphQL::Schema::{X}</code>. For example, instead of <code class="highlighter-rouge">GraphQL::ObjectType.define { ... }</code>, a definition is made by extending <code class="highlighter-rouge">GraphQL::Schema::Object</code></li>
+  <li>Any class hierarchy is supported; It’s recommended to create a base class for your application, then extend the base class for each of your types (like <code class="highlighter-rouge">ApplicationController</code> in Rails, see <a href="#customizing-defintions">Customizing Definitions</a>).</li>
+</ul>
+
+<p>See sections below for specific information about each schema definition class.</p>
+
+<h3 id="type-instances">Type Instances</h3>
+
+<p>The previous <code class="highlighter-rouge">GraphQL::{X}Type</code> objects are still used under the hood. Each of the new <code class="highlighter-rouge">GraphQL::Schema::{X}</code> classes implements a few methods:</p>
+
+<ul>
+  <li><code class="highlighter-rouge">.to_graphql</code>: creates a new instance of <code class="highlighter-rouge">GraphQL::{X}Type</code></li>
+  <li><code class="highlighter-rouge">.graphql_definition</code>: returns a cached instance of <code class="highlighter-rouge">GraphQL::{X}Type</code></li>
+</ul>
+
+<p>If you have custom code which breaks on new-style definitions, try calling <code class="highlighter-rouge">.graphql_definition</code> to get the underlying type object.</p>
+
+<p>As described below, <code class="highlighter-rouge">.to_graphql</code> can be overridden to customize the type system.</p>
+
+<h3 id="list-types-and-non-null-types">List Types and Non-Null Types</h3>
+
+<p>Previously, list types were expressed with <code class="highlighter-rouge">types[T]</code> and non-null types were expressed with <code class="highlighter-rouge">!T</code>. Now:</p>
+
+<ul>
+  <li>List types are expressed with Ruby Arrays, <code class="highlighter-rouge">[T]</code>, for example, <code class="highlighter-rouge">field :owners, [Types::UserType]</code>
+    <ul>
+      <li>By default, list members are <em>non-null</em>, for example, <code class="highlighter-rouge">[Types::UserType]</code> becomes <code class="highlighter-rouge">[User!]</code></li>
+      <li>If your list members may be null, add <code class="highlighter-rouge">, null: true</code> to the array: <code class="highlighter-rouge">[Types::UserType, null: true]</code> becomes <code class="highlighter-rouge">[User]</code> (the list may include <code class="highlighter-rouge">nil</code>)</li>
+    </ul>
+  </li>
+  <li>Non-null types are expressed with keyword arguments <code class="highlighter-rouge">null:</code> or <code class="highlighter-rouge">required:</code>
+    <ul>
+      <li><code class="highlighter-rouge">field</code> takes a keyword <code class="highlighter-rouge">null:</code>. <code class="highlighter-rouge">null: true</code> means the field is nullable, <code class="highlighter-rouge">null: false</code> means the field is non-null (equivalent to <code class="highlighter-rouge">!</code>)</li>
+      <li><code class="highlighter-rouge">argument</code> takes a keyword <code class="highlighter-rouge">required:</code>. <code class="highlighter-rouge">required: true</code> means the argument is non-null (equivalent to <code class="highlighter-rouge">!</code>), <code class="highlighter-rouge">required: false</code> means that the argument is nullable</li>
+    </ul>
+  </li>
+</ul>
+
+<p>In legacy-style classes, you may also use plain Ruby methods to create list and non-null types:</p>
+
+<ul>
+  <li><code class="highlighter-rouge">#to_non_null_type</code> converts a type to a non-null variant (ie, <code class="highlighter-rouge">T.to_non_null_type</code> is equivalent to <code class="highlighter-rouge">!T</code>)</li>
+  <li><code class="highlighter-rouge">#to_list_type</code> converts a type to a list variant (ie, <code class="highlighter-rouge">T.to_list_type</code> is equivalent to <code class="highlighter-rouge">types[T]</code>)</li>
+</ul>
+
+<p>The <code class="highlighter-rouge">!</code> method has been removed to avoid ambiguity with the built-in logical operator and related foot-gunning.</p>
+
+<p>For compatibility, you may wish to backport <code class="highlighter-rouge">!</code> to class-based type definitions. You have two options:</p>
+
+<p><strong>A refinement</strong>, activated in <a href="https://docs.ruby-lang.org/en/2.4.0/syntax/refinements_rdoc.html#label-Scope">file scope or class/module scope</a>:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Enable `!` method in this scope</span>
+<span class="n">using</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">DeprecatedDSL</span>
+</code></pre></div></div>
+
+<p><strong>A monkeypatch</strong>, activated in global scope:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Enable `!` everywhere</span>
+<span class="no">GraphQL</span><span class="o">::</span><span class="no">DeprecatedDSL</span><span class="p">.</span><span class="nf">activate</span>
+</code></pre></div></div>
+
+<h3 id="connection-fields--types">Connection fields &amp; types</h3>
+
+<p>There is no <code class="highlighter-rouge">connection(...)</code> method. Instead, connection fields are inferred from the type name.</p>
+
+<p>If the type name ends in <code class="highlighter-rouge">Connection</code>, the field is treated as a connection field.</p>
+
+<p>This default may be overridden by passing a <code class="highlighter-rouge">connection: true</code> or <code class="highlighter-rouge">connection: false</code> keyword.</p>
+
+<p>For example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># This will be treated as a connection, since the type name ends in "Connection"</span>
+<span class="n">field</span> <span class="ss">:projects</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">ProjectType</span><span class="p">.</span><span class="nf">connection_type</span>
+</code></pre></div></div>
+
+<h3 id="resolve-function-compatibility">Resolve function compatibility</h3>
+
+<p>If you define a type with a class, you can use existing GraphQL-Ruby resolve functions with that class, for example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Using a Proc literal or #call-able</span>
+<span class="n">field</span> <span class="ss">:something</span><span class="p">,</span> <span class="o">...</span> <span class="ss">resolve: </span><span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span> <span class="o">...</span> <span class="p">}</span>
+<span class="c1"># Using a predefined field</span>
+<span class="n">field</span> <span class="ss">:do_something</span><span class="p">,</span> <span class="ss">field: </span><span class="no">Mutations</span><span class="o">::</span><span class="no">DoSomething</span><span class="p">.</span><span class="nf">field</span>
+<span class="c1"># Using a GraphQL::Function</span>
+<span class="n">field</span> <span class="ss">:something</span><span class="p">,</span> <span class="ss">function: </span><span class="no">Functions</span><span class="o">::</span><span class="no">Something</span><span class="p">.</span><span class="nf">new</span>
+</code></pre></div></div>
+
+<p>When using these resolution implementations, they will be called with the same <code class="highlighter-rouge">(obj, args, ctx)</code> parameters as before.</p>
+
+<h2 id="upgrader">Upgrader</h2>
+
+<p><code class="highlighter-rouge">1.8</code> includes an <em>auto-upgrader</em> for transforming Ruby files from the <code class="highlighter-rouge">.define</code>-based syntax to <code class="highlighter-rouge">class</code>-based syntax. The upgrader is a pipeline of sequential transform operations. It ships with default pipelines, but you may customize the upgrade process by replacing the built-in pipelines with a custom ones.</p>
+
+<p>The upgrader has an additional dependency, <code class="highlighter-rouge">parser</code>, which you must add to your project manually (for example, by adding to your <code class="highlighter-rouge">Gemfile</code>).</p>
+
+<p>Remember that your project may be transformed one file at a time because the two syntaxes are compatible. This way, you can convert a few files and run your tests to identify outstanding issues, and continue working incrementally.</p>
+
+<p>This transformation may not be perfect, but it should cover the most common cases. If you want to ask a question or report a bug, please <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Upgrader question/bug report&amp;body=Please share: the source code you're trying to transfor" target="_blank">open an issue</a>.</p>
+
+<h3 id="using-the-default-upgrade-task">Using the Default Upgrade Task</h3>
+
+<p>The upgrader ships with rake tasks, included as a railtie (<a href="https://github.com/rmosolgo/graphql-ruby/blob/1.8-dev/lib/graphql/railtie.rb">source</a>). The railtie will be automatically installed by your Rails app, and it provides the following tasks:</p>
+
+<ul>
+  <li><code class="highlighter-rouge">graphql:upgrade:schema[path/to/schema.rb]</code>: upgrade the Schema file</li>
+  <li><code class="highlighter-rouge">graphql:upgrade:member[path/to/some/type.rb]</code>: upgrade a type definition (object, interface, union, etc)</li>
+  <li><code class="highlighter-rouge">graphql:upgrade[app/graphql/**/*]</code>: run the <code class="highlighter-rouge">member</code> upgrade on files which have a suffix of <code class="highlighter-rouge">_(type|interface|enum|union).rb</code></li>
+  <li><code class="highlighter-rouge">graphql:upgrade:create_base_objects[path/to/graphql/]</code>: add base classes to your project</li>
+</ul>
+
+<h3 id="writing-a-custom-upgrade-task">Writing a Custom Upgrade Task</h3>
+
+<p>You might write a custom task because:</p>
+
+<ul>
+  <li>You want to customize the transformation pipeline</li>
+  <li>You’re not using Rails, so a railtie won’t work</li>
+</ul>
+
+<p>To write a custom task, you can write a rake task (or Ruby script) which uses the upgrader’s API directly.</p>
+
+<p>Here’s the code to upgrade a type definition with the default transform pipeline:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Read the original source code into a string</span>
+<span class="n">original_source</span> <span class="o">=</span> <span class="no">File</span><span class="p">.</span><span class="nf">read</span><span class="p">(</span><span class="s2">"path/to/type.rb"</span><span class="p">)</span>
+<span class="c1"># Initialize an upgrader with the default transforms</span>
+<span class="n">upgrader</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Upgrader</span><span class="o">::</span><span class="no">Member</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">original_source</span><span class="p">)</span>
+<span class="c1"># Perform the transformation, get the transformed source code</span>
+<span class="n">transformed_source</span> <span class="o">=</span> <span class="n">upgrader</span><span class="p">.</span><span class="nf">upgrade</span>
+<span class="c1"># Update the source file with the new code</span>
+<span class="no">File</span><span class="p">.</span><span class="nf">write</span><span class="p">(</span><span class="s2">"path/to/type.rb"</span><span class="p">,</span> <span class="n">transformed_source</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>In this custom code, you can pass some keywords to <a href="http://www.rubydoc.info/gems/graphql/1.8.0.pre10/GraphQL/Upgrader/Member#new-class_method" target="_blank" title="API docs for GraphQL::Upgrader::Member.new"><code>GraphQL::Upgrader::Member.new</code></a>:</p>
+
+<ul>
+  <li><code class="highlighter-rouge">type_transforms:</code> Applied to the source code as a whole, applied first</li>
+  <li><code class="highlighter-rouge">field_transforms:</code> Applied to each field/connection/argument definition (extracted from the source, transformed independently, then re-inserted)</li>
+  <li><code class="highlighter-rouge">clean_up_transforms:</code> Applied to the source code as a whole, <em>after</em> the type and field transforms</li>
+</ul>
+
+<p>Keep in mind that these transforms are performed in sequence, so the text changes over time. If you want to transform the source text, use <code class="highlighter-rouge">.unshift()</code> to add transforms to the <em>beginning</em> of the pipeline instead of the end.</p>
+
+<p>For example, in <code class="highlighter-rouge">script/graphql-upgrade</code>:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">#!/usr/bin/env ruby</span>
+
+<span class="c1"># @example Upgrade app/graphql/types/user_type.rb:</span>
+<span class="c1">#  script/graphql-upgrade app/graphql/types/user_type.rb</span>
+
+<span class="c1"># Replace the default define-to-class transform with a custom one:</span>
+<span class="n">type_transforms</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Upgrader</span><span class="o">::</span><span class="no">Member</span><span class="o">::</span><span class="no">DEFAULT_TYPE_TRANSFORMS</span><span class="p">.</span><span class="nf">map</span> <span class="p">{</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+  <span class="k">if</span> <span class="n">t</span> <span class="o">==</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Upgrader</span><span class="o">::</span><span class="no">TypeDefineToClassTransform</span>
+    <span class="no">GraphQL</span><span class="o">::</span><span class="no">Upgrader</span><span class="o">::</span><span class="no">TypeDefineToClassTransform</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="ss">base_class_pattern: </span><span class="s2">"Platform::</span><span class="se">\\</span><span class="s2">2s::Base"</span><span class="p">)</span>
+  <span class="k">else</span>
+    <span class="n">t</span>
+  <span class="k">end</span>
+<span class="p">}</span>
+
+<span class="c1"># Add this transformer at the beginning of the list:</span>
+<span class="n">type_transforms</span><span class="p">.</span><span class="nf">unshift</span><span class="p">(</span><span class="no">GraphQL</span><span class="o">::</span><span class="no">Upgrader</span><span class="o">::</span><span class="no">ConfigurationToKwargTransform</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="ss">kwarg: </span><span class="s2">"visibility"</span><span class="p">))</span>
+
+<span class="c1"># run the upgrader</span>
+<span class="n">original_text</span> <span class="o">=</span> <span class="no">File</span><span class="p">.</span><span class="nf">read</span><span class="p">(</span><span class="no">ARGV</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">upgrader</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Upgrader</span><span class="o">::</span><span class="no">Member</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">original_text</span><span class="p">,</span> <span class="ss">type_transforms: </span><span class="n">type_transforms</span><span class="p">)</span>
+<span class="n">transformed_text</span> <span class="o">=</span> <span class="n">upgrader</span><span class="p">.</span><span class="nf">upgrade</span>
+<span class="no">File</span><span class="p">.</span><span class="nf">write</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">transformed_text</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="writing-a-custom-transformer">Writing a custom transformer</h3>
+
+<p>Objects in the transform pipeline may be:</p>
+
+<ul>
+  <li>A class which responds to <code class="highlighter-rouge">.new.apply(input_text)</code> and returns the transformed code</li>
+  <li>An object which responds to <code class="highlighter-rouge">.apply(input_text)</code> and returns the transformed code</li>
+</ul>
+
+<p>The library provides a <a href="http://www.rubydoc.info/gems/graphql/1.8.0.pre10/GraphQL/Upgrader/Transform" target="_blank" title="API docs for GraphQL::Upgrader::Transform"><code>GraphQL::Upgrader::Transform</code></a> base class with a few convenience methods. You can also customize the built-in transformers listed below.</p>
+
+<p>For example, here’s a transform which rewrites type definitions from a <code class="highlighter-rouge">model_type(model) do ... end</code> factory method to the class-based syntax:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Create a custom transform for our `model_type` factory:</span>
+<span class="k">class</span> <span class="nc">ModelTypeToClassTransform</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Upgrader</span><span class="o">::</span><span class="no">Transform</span>
+  <span class="k">def</span> <span class="nf">initialize</span>
+    <span class="c1"># Find calls to the factory method, which have a type class inside</span>
+    <span class="vi">@find_pattern</span> <span class="o">=</span> <span class="sr">/^( +)([a-zA-Z_0-9:]*) = model_type\(-&gt; ?\{ ?:{0,2}([a-zA-Z_0-9:]*) ?\} ?\) do/</span>
+    <span class="c1"># Replace them with a class definition and a `model_name("...")` call:</span>
+    <span class="vi">@replace_pattern</span> <span class="o">=</span> <span class="s2">"</span><span class="se">\\</span><span class="s2">1class </span><span class="se">\\</span><span class="s2">2 &lt; Platform::Objects::Base</span><span class="se">\n\\</span><span class="s2">1  model_name </span><span class="se">\"\\</span><span class="s2">3</span><span class="se">\"</span><span class="s2">"</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">apply</span><span class="p">(</span><span class="n">input_text</span><span class="p">)</span>
+    <span class="c1"># Run the substitution on the input text:</span>
+    <span class="n">input_text</span><span class="p">.</span><span class="nf">sub</span><span class="p">(</span><span class="vi">@find_pattern</span><span class="p">,</span> <span class="vi">@replace_pattern</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+<span class="c1"># Add the class to the beginning of the pipeline</span>
+<span class="n">type_transforms</span><span class="p">.</span><span class="nf">unshift</span><span class="p">(</span><span class="no">ModelTypeToClassTransform</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="built-in-transformers">Built-in transformers</h3>
+
+<p>Follow links to the API doc to read the source of each transform:</p>
+
+<p>Type transforms (<a href="http://www.rubydoc.info/gems/graphql/1.8.0.pre10/GraphQL/Upgrader/Member/DEFAULT_TYPE_TRANSFORMS" target="_blank" title="API docs for GraphQL::Upgrader::Member::DEFAULT_TYPE_TRANSFORMS"><code>GraphQL::Upgrader::Member::DEFAULT_TYPE_TRANSFORMS</code></a>):</p>
+
+<ul>
+  <li><a href="http://www.rubydoc.info/gems/graphql/1.8.0.pre10/GraphQL/Upgrader/Transform" target="_blank" title="API docs for GraphQL::Upgrader::Transform"><code>GraphQL::Upgrader::Transform</code></a> base class, provides a <code class="highlighter-rouge">normalize_type_expression</code> helper</li>
+  <li><a href="http://www.rubydoc.info/gems/graphql/1.8.0.pre10/GraphQL/Upgrader/TypeDefineToClassTransform" target="_blank" title="API docs for GraphQL::Upgrader::TypeDefineToClassTransform"><code>GraphQL::Upgrader::TypeDefineToClassTransform</code></a> turns <code class="highlighter-rouge">.define</code> into <code class="highlighter-rouge">class ...</code> with a regexp substitution</li>
+  <li><a href="http://www.rubydoc.info/gems/graphql/1.8.0.pre10/GraphQL/Upgrader/NameTransform" target="_blank" title="API docs for GraphQL::Upgrader::NameTransform"><code>GraphQL::Upgrader::NameTransform</code></a> takes <code class="highlighter-rouge">name "..."</code> and removes it if it’s redundant, or converts it to <code class="highlighter-rouge">graphql_name "..."</code></li>
+  <li><a href="http://www.rubydoc.info/gems/graphql/1.8.0.pre10/GraphQL/Upgrader/InterfacesToImplementsTransform" target="_blank" title="API docs for GraphQL::Upgrader::InterfacesToImplementsTransform"><code>GraphQL::Upgrader::InterfacesToImplementsTransform</code></a> turns <code class="highlighter-rouge">interfaces [A, B...]</code> into <code class="highlighter-rouge">implements(A)\nimplements(B)...</code></li>
+</ul>
+
+<p>Field transforms (<a href="http://www.rubydoc.info/gems/graphql/1.8.0.pre10/GraphQL/Upgrader/Member/DEFAULT_FIELD_TRANSFORMS" target="_blank" title="API docs for GraphQL::Upgrader::Member::DEFAULT_FIELD_TRANSFORMS"><code>GraphQL::Upgrader::Member::DEFAULT_FIELD_TRANSFORMS</code></a>):</p>
+
+<ul>
+  <li><a href="http://www.rubydoc.info/gems/graphql/1.8.0.pre10/GraphQL/Upgrader/RemoveNewlinesTransform" target="_blank" title="API docs for GraphQL::Upgrader::RemoveNewlinesTransform"><code>GraphQL::Upgrader::RemoveNewlinesTransform</code></a> removes newlines from field definitions to normalize them</li>
+  <li><a href="http://www.rubydoc.info/gems/graphql/1.8.0.pre10/GraphQL/Upgrader/PositionalTypeArgTransform" target="_blank" title="API docs for GraphQL::Upgrader::PositionalTypeArgTransform"><code>GraphQL::Upgrader::PositionalTypeArgTransform</code></a> moves <code class="highlighter-rouge">type X</code> from the <code class="highlighter-rouge">do ... end</code> block into a positional argument, to normalize the definition</li>
+  <li><a href="http://www.rubydoc.info/gems/graphql/1.8.0.pre10/GraphQL/Upgrader/ConfigurationToKwargTransform" target="_blank" title="API docs for GraphQL::Upgrader::ConfigurationToKwargTransform"><code>GraphQL::Upgrader::ConfigurationToKwargTransform</code></a> moves a <code class="highlighter-rouge">do ... end</code> configuration to a keyword argument. By default, this is used for <code class="highlighter-rouge">property</code> and <code class="highlighter-rouge">description</code>. You can add new instances of this transform to convert your custom DSL.</li>
+  <li><a href="http://www.rubydoc.info/gems/graphql/1.8.0.pre10/GraphQL/Upgrader/PropertyToMethodTransform" target="_blank" title="API docs for GraphQL::Upgrader::PropertyToMethodTransform"><code>GraphQL::Upgrader::PropertyToMethodTransform</code></a> turns <code class="highlighter-rouge">property:</code> to <code class="highlighter-rouge">method:</code></li>
+  <li><a href="http://www.rubydoc.info/gems/graphql/1.8.0.pre10/GraphQL/Upgrader/UnderscoreizeFieldNameTransform" target="_blank" title="API docs for GraphQL::Upgrader::UnderscoreizeFieldNameTransform"><code>GraphQL::Upgrader::UnderscoreizeFieldNameTransform</code></a> converts field names to underscore-case. <strong>NOTE</strong> that this conversion may be <em>wrong</em> in the case of <code class="highlighter-rouge">bodyHTML =&gt; body_html</code>. When you find it is wrong, manually revert it and preserve the camel-case field name.</li>
+  <li><a href="http://www.rubydoc.info/gems/graphql/1.8.0.pre10/GraphQL/Upgrader/ResolveProcToMethodTransform" target="_blank" title="API docs for GraphQL::Upgrader::ResolveProcToMethodTransform"><code>GraphQL::Upgrader::ResolveProcToMethodTransform</code></a> converts <code class="highlighter-rouge">resolve -&gt; { ... }</code> to <code class="highlighter-rouge">def {field_name} ... </code> method definitions</li>
+  <li><a href="http://www.rubydoc.info/gems/graphql/1.8.0.pre10/GraphQL/Upgrader/UpdateMethodSignatureTransform" target="_blank" title="API docs for GraphQL::Upgrader::UpdateMethodSignatureTransform"><code>GraphQL::Upgrader::UpdateMethodSignatureTransform</code></a> converts the type name to the new syntax, and adds <code class="highlighter-rouge">null:</code>/<code class="highlighter-rouge">required:</code> to the method signature</li>
+</ul>
+
+<p>Clean-up transforms (<a href="http://www.rubydoc.info/gems/graphql/1.8.0.pre10/GraphQL/Upgrader/Member/DEFAULT_CLEAN_UP_TRANSFORMS" target="_blank" title="API docs for GraphQL::Upgrader::Member::DEFAULT_CLEAN_UP_TRANSFORMS"><code>GraphQL::Upgrader::Member::DEFAULT_CLEAN_UP_TRANSFORMS</code></a>):</p>
+
+<ul>
+  <li><a href="http://www.rubydoc.info/gems/graphql/1.8.0.pre10/GraphQL/Upgrader/RemoveExcessWhitespaceTransform" target="_blank" title="API docs for GraphQL::Upgrader::RemoveExcessWhitespaceTransform"><code>GraphQL::Upgrader::RemoveExcessWhitespaceTransform</code></a> removes redundant newlines</li>
+  <li><a href="http://www.rubydoc.info/gems/graphql/1.8.0.pre10/GraphQL/Upgrader/RemoveEmptyBlocksTransform" target="_blank" title="API docs for GraphQL::Upgrader::RemoveEmptyBlocksTransform"><code>GraphQL::Upgrader::RemoveEmptyBlocksTransform</code></a> removes <code class="highlighter-rouge">do end</code> with nothing inside them</li>
+</ul>
+
+<h2 id="roadmap">Roadmap</h2>
+
+<p>Here is a working plan for rolling out this feature:</p>
+
+<ul>
+  <li>ongoing:
+    <ul>
+      <li>☐ Receive feedback from GraphQL schema owners about the new API (usability &amp; goals)</li>
+    </ul>
+  </li>
+  <li>graphql 1.8:
+    <ul>
+      <li>☑ Build a schema definition API based on classes instead of singletons</li>
+      <li>☑ Migrate a few components of GitHub’s GraphQL schema to this new API</li>
+      <li>☑ Build advanced class-based features:
+        <ul>
+          <li>☑ Custom <code class="highlighter-rouge">Context</code> classes</li>
+          <li>☑ Custom introspection types</li>
+          <li>☐ <del>Custom directives</del> Probably will mess with execution soon, not worth the investment now</li>
+          <li>☐ <del>Custom <code class="highlighter-rouge">Schema#execute</code> method</del> not necessary</li>
+        </ul>
+      </li>
+      <li>☐ Migrate all of GitHub’s GraphQL schema to this new API</li>
+    </ul>
+  </li>
+  <li>graphql 1.9:
+    <ul>
+      <li>☐ Update all GraphQL-Ruby docs to reflect this new API</li>
+    </ul>
+  </li>
+  <li>graphql 1.10:
+    <ul>
+      <li>☐ Begin sunsetting <code class="highlighter-rouge">.define</code>: isolate it in its own module</li>
+      <li>☐ Remove <code class="highlighter-rouge">.define</code></li>
+    </ul>
+  </li>
+</ul>
+
+<h2 id="common-type-configurations">Common Type Configurations</h2>
+
+<p>Some configurations are used for <em>all</em> types described below:</p>
+
+<ul>
+  <li><code class="highlighter-rouge">graphql_name</code> overrides the type name. (The default value is the Ruby constant name, without any namespaces)</li>
+  <li><code class="highlighter-rouge">description</code> provides a description for GraphQL introspection.</li>
+</ul>
+
+<p>For example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">TodoList</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span> <span class="c1"># or Scalar, Enum, Union, whatever</span>
+  <span class="n">graphql_name</span> <span class="s2">"List"</span> <span class="c1"># Overrides the default of "TodoList"</span>
+  <span class="n">description</span> <span class="s2">"Things to do (may have already been done)"</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>(Implemented in <a href="http://www.rubydoc.info/gems/graphql/1.8.0.pre10/GraphQL/Schema/Member" target="_blank" title="API docs for GraphQL::Schema::Member"><code>GraphQL::Schema::Member</code></a>).</p>
+
+</div>
+<p class="guide-footer">
+  Suggestion, improvement, or correction?
+  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/schema/class_based_api.md">Edit this file</a> or
+  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: Class-based API">report an issue</a>.
+</p>
+<script>
+  // Find headers with IDs and wrap their text in `<a href=></a>`
+  // That way people can easily copy the link.
+  var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+  var header, idText, headerLink;
+  for (var i = 0; i < headers.length; i++) {
+    header = headers[i];
+    idText = header.id;
+    if (idText) {
+      headerLink = document.createElement("a");
+      headerLink.href = "#" + idText;
+      headerLink.textContent = header.textContent;
+      header.textContent = "";
+      header.appendChild(headerLink);
+    }
+  }
+</script>
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/algoliasearch/3/algoliasearchLite.min.js"></script>
+    <script src="/js/search.js"></script>
+  </body>
+</html>
