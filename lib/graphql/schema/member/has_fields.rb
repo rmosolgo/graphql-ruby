@@ -16,9 +16,14 @@ module GraphQL
 
         # @return [Hash<String => GraphQL::Schema::Field>] Fields on this object, keyed by name, including inherited fields
         def fields
-          inherited_fields = (superclass.is_a?(HasFields) ? superclass.fields : {})
           # Local overrides take precedence over inherited fields
-          inherited_fields.merge(own_fields)
+          all_fields = {}
+          ancestors.reverse_each do |ancestor|
+            if ancestor.respond_to?(:own_fields)
+              all_fields.merge!(ancestor.own_fields)
+            end
+          end
+          all_fields
         end
 
         # Register this field with the class, overriding a previous one if needed
@@ -33,16 +38,19 @@ module GraphQL
         def field_class(new_field_class = nil)
           if new_field_class
             @field_class = new_field_class
+          elsif @field_class
+            @field_class
+          elsif self.is_a?(Class)
+            superclass.respond_to?(:field_class) ? superclass.field_class : GraphQL::Schema::Field
           else
-            @field_class || (superclass.respond_to?(:field_class) ? superclass.field_class : GraphQL::Schema::Field)
+            ancestor = ancestors[1..-1].find { |a| a.respond_to?(:field_class) && a.field_class }
+            ancestor ? ancestor.field_class : GraphQL::Schema::Field
           end
         end
 
         def global_id_field(field_name)
           field field_name, "ID", null: false, resolve: GraphQL::Relay::GlobalIdResolve.new(type: self)
         end
-
-        private
 
         # @return [Array<GraphQL::Schema::Field>] Fields defined on this class _specifically_, not parent classes
         def own_fields

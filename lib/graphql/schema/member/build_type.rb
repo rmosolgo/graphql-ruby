@@ -37,11 +37,11 @@ module GraphQL
               case maybe_type
               when GraphQL::BaseType
                 maybe_type
-              when Class
-                if maybe_type < GraphQL::Schema::Member
+              when Module
+                if maybe_type.respond_to?(:graphql_definition)
                   maybe_type.graphql_definition
                 else
-                  raise "Unexpected class found for GraphQL type: #{type_expr} (must be GraphQL::Object)"
+                  raise "Unexpected class/module found for GraphQL type: #{type_expr} (must be type definition class/module)"
                 end
               end
             end
@@ -63,15 +63,17 @@ module GraphQL
             else
               raise ArgumentError, LIST_TYPE_ERROR
             end
-          when Class
-            if type_expr < GraphQL::Schema::Member
+          when Module
+            if type_expr.respond_to?(:graphql_definition)
               type_expr.graphql_definition
             else
               # Eg `String` => GraphQL::STRING_TYPE
               parse_type(type_expr.name, null: true)
             end
-          else
-            raise "Unexpected type_expr input: #{type_expr} (#{type_expr.class})"
+          end
+
+          if return_type.nil?
+            raise "Unexpected type input: #{type_expr} (#{type_expr.class})"
           end
 
           # Apply list_type first, that way the

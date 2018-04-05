@@ -20,8 +20,6 @@ module GraphQL
           else
             overridden_graphql_name || name.split("::").last.sub(/Type\Z/, "")
           end
-        rescue
-          binding.pry
         end
 
         # Just a convenience method to point out that people should use graphql_name instead
@@ -42,7 +40,7 @@ module GraphQL
           if new_description
             @description = new_description
           else
-            @description || (superclass.respond_to?(:description) ? superclass.description : nil)
+            @description || find_inherited_method(:description, nil)
           end
         end
 
@@ -51,7 +49,7 @@ module GraphQL
           if !new_introspection.nil?
             @introspection = new_introspection
           else
-            @introspection || (superclass.respond_to?(:introspection) ? superclass.introspection : false)
+            @introspection || find_inherited_method(:introspection, false)
           end
         end
 
@@ -79,11 +77,23 @@ module GraphQL
           NonNullTypeProxy.new(self)
         end
 
-        protected
-
         def overridden_graphql_name
-          # Use respond_to?(method, true) so that it will find this protected method
-          @graphql_name || (superclass.respond_to?(:overridden_graphql_name, true) ? superclass.overridden_graphql_name : nil)
+          @graphql_name || find_inherited_method(:overridden_graphql_name, nil)
+        end
+
+        private
+
+        def find_inherited_method(method_name, default_value)
+          if self.is_a?(Class)
+            superclass.respond_to?(method_name) ? superclass.public_send(method_name) : default_value
+          else
+            ancestors[1..-1].each do |ancestor|
+              if ancestor.respond_to?(method_name)
+                return ancestor.public_send(method_name)
+              end
+            end
+            default_value
+          end
         end
       end
     end

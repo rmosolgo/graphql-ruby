@@ -6,6 +6,25 @@ describe GraphQL::Schema::Member::AcceptsDefinition do
     accepts_definition :set_metadata
     set_metadata :a, 999
 
+    class BaseField < GraphQL::Schema::Field
+      class BaseField < GraphQL::Schema::Argument
+        accepts_definition :metadata
+      end
+      argument_class BaseField
+      accepts_definition :metadata
+    end
+
+    class BaseObject < GraphQL::Schema::Object
+      field_class BaseField
+      accepts_definition :metadata
+    end
+
+    module BaseInterface
+      include GraphQL::Schema::Interface
+      field_class BaseField
+      accepts_definition :metadata
+    end
+
     class Option < GraphQL::Schema::Enum
       class EnumValue < GraphQL::Schema::EnumValue
         accepts_definition :metadata
@@ -17,22 +36,20 @@ describe GraphQL::Schema::Member::AcceptsDefinition do
       value "B"
     end
 
-    class Query < GraphQL::Schema::Object
-      class Field < GraphQL::Schema::Field
-        class Argument < GraphQL::Schema::Argument
-          accepts_definition :metadata
-        end
-        argument_class Argument
-        accepts_definition :metadata
-      end
-      field_class Field
-      accepts_definition :metadata
+    module Thing
+      include BaseInterface
+      metadata :z, 888
+    end
+
+    class Query < BaseObject
       metadata :a, :abc
 
       field :option, Option, null: false do
         metadata :a, :def
         argument :value, Integer, required: true, metadata: [:a, :ghi]
       end
+
+      field :thing, Thing, null: false
     end
 
     query(Query)
@@ -44,6 +61,9 @@ describe GraphQL::Schema::Member::AcceptsDefinition do
     assert_equal 123, AcceptsDefinitionSchema::Option.graphql_definition.metadata[:a]
     assert_equal [:a, :abc], AcceptsDefinitionSchema::Query.metadata
     assert_equal :abc, AcceptsDefinitionSchema::Query.graphql_definition.metadata[:a]
+
+    assert_equal [:z, 888], AcceptsDefinitionSchema::Thing.metadata
+    assert_equal 888, AcceptsDefinitionSchema::Thing.graphql_definition.metadata[:z]
   end
 
   it "passes along configs for fields and arguments" do
