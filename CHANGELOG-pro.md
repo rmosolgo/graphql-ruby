@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+## 1.7.1 (4 Apr 2018)
+
+### Bug Fix
+
+- Fix route helpers to support class-based schemas
+
 ## 1.7.0 (25 Mar 2018)
 
 ### New Features
