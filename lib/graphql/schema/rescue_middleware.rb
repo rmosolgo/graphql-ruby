@@ -41,13 +41,14 @@ module GraphQL
       private
 
       def attempt_rescue(err)
-        handler = rescue_table[err.class]
-        if handler
-          message = handler.call(err)
-          GraphQL::ExecutionError.new(message)
-        else
-          raise(err)
-        end
+        rescue_table.each { |klass, handler|
+          if klass.is_a?(Class) && err.is_a?(klass) && handler
+            message = handler.call(err)
+            return GraphQL::ExecutionError.new(message)
+          end
+        }
+
+        raise(err)
       end
     end
   end
