@@ -180,6 +180,12 @@ module GraphQL
             else
               nil
             end
+          elsif value.is_a?(Array) && value.any? && value.all? {|v| v.is_a?(GraphQL::ExecutionError)}
+            if field_type.kind.non_null?
+              PROPAGATE_NULL
+            else
+              nil
+            end
           elsif value.is_a?(Skip)
             field_ctx.value = value
           else

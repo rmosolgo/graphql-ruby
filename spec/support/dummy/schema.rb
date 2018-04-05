@@ -366,6 +366,14 @@ module Dummy
       }
     end
 
+    field :multipleErrorsOnNonNullableField do
+      type !GraphQL::STRING_TYPE
+      resolve ->(t, a, c) {
+        [GraphQL::ExecutionError.new("This is an error message for some error."),
+         GraphQL::ExecutionError.new("This is another error message for a different error.")]
+      }
+    end
+
     field :executionErrorWithOptions do
       type GraphQL::INT_TYPE
       resolve ->(t, a, c) {
