@@ -12,6 +12,7 @@ gem "activerecord-jdbcsqlite3-adapter", :platform => :jruby
 gem "puma"
 gem "capybara"
 gem "selenium-webdriver"
+gem 'chromedriver-helper'
 
 group :jekyll_plugins do
   gem "algoliasearch-jekyll"

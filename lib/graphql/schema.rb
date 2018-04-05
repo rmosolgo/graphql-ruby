@@ -656,6 +656,7 @@ module GraphQL
         # Members
         :types, :get_fields, :find,
         :root_type_for_operation,
+        :subscriptions,
         :union_memberships,
         :get_field, :root_types, :references_to, :type_from_ast,
         :possible_types, :get_field
