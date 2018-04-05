@@ -3,7 +3,7 @@ module GraphQL
   class Schema
     module Interface
       include GraphQL::Schema::Member::GraphQLTypeNames
-      module ClassMethods
+      module DefinitionMethods
         include GraphQL::Schema::Member::CachedGraphQLDefinition
         include GraphQL::Relay::TypeExtensions
         include GraphQL::Schema::Member::BaseDSLMethods
@@ -14,13 +14,13 @@ module GraphQL
           if !child_class.is_a?(Class)
             # In this case, it's been included into another interface.
             # This is how interface inheritance is implemented
-            child_class.const_set(:ClassMethods, Module.new)
-            child_class.extend(child_class::ClassMethods)
+            child_class.const_set(:DefinitionMethods, Module.new)
+            child_class.extend(child_class::DefinitionMethods)
             # We need this before we can call `own_interfaces`
-            child_class.extend(Schema::Interface::ClassMethods)
+            child_class.extend(Schema::Interface::DefinitionMethods)
             child_class.own_interfaces << self
             child_class.own_interfaces.each do |interface_defn|
-              child_class.extend(interface_defn::ClassMethods)
+              child_class.extend(interface_defn::DefinitionMethods)
             end
           elsif child_class < GraphQL::Schema::Object
             # This is being included into an object type, make sure it's using `implements(...)`
@@ -66,8 +66,8 @@ module GraphQL
         end
       end
 
-      extend ClassMethods
-      # Extend this _after_ `ClassMethods` is defined, so it will be used
+      extend DefinitionMethods
+      # Extend this _after_ `DefinitionMethods` is defined, so it will be used
       extend GraphQL::Schema::Member::AcceptsDefinition
     end
   end

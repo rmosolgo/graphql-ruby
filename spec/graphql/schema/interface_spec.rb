@@ -20,7 +20,7 @@ describe GraphQL::Schema::Interface do
       end
     end
 
-    it "can override Implementation" do
+    it "can override methods" do
       new_object_1 = Class.new(GraphQL::Schema::Object) do
         implements NewInterface1
       end
@@ -57,7 +57,7 @@ describe GraphQL::Schema::Interface do
         include GraphQL::Schema::Interface
         graphql_name "MyInterface"
 
-        module self::ClassMethods # rubocop:disable Style/ClassAndModuleChildren
+        module self::DefinitionMethods # rubocop:disable Style/ClassAndModuleChildren
           def resolve_type(_object, _context)
             "MyType"
           end

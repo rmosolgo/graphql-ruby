@@ -37,17 +37,17 @@ module GraphQL
       #   Account.graphql_definition.metadata[:permission_level] # => 1
       module AcceptsDefinition
         def self.included(child)
-          child.extend(AcceptsDefinitionClassMethods)
+          child.extend(AcceptsDefinitionDefinitionMethods)
           child.prepend(ToGraphQLExtension)
           child.prepend(InitializeExtension)
         end
 
         def self.extended(child)
-          if defined?(child::ClassMethods)
-            child::ClassMethods.include(AcceptsDefinitionClassMethods)
-            child::ClassMethods.prepend(ToGraphQLExtension)
+          if defined?(child::DefinitionMethods)
+            child::DefinitionMethods.include(AcceptsDefinitionDefinitionMethods)
+            child::DefinitionMethods.prepend(ToGraphQLExtension)
           else
-            child.extend(AcceptsDefinitionClassMethods)
+            child.extend(AcceptsDefinitionDefinitionMethods)
             # I tried to use `super`, but super isn't quite right
             # since the method is defined in the same class itself,
             # not the superclass
@@ -59,7 +59,7 @@ module GraphQL
           end
         end
 
-        module AcceptsDefinitionClassMethods
+        module AcceptsDefinitionDefinitionMethods
           def accepts_definition(name)
             own_accepts_definition_methods << name
 
@@ -81,7 +81,7 @@ module GraphQL
             else
               # Special handling for interfaces, define it here
               # so it's appropriately passed down
-              self::ClassMethods.module_eval do
+              self::DefinitionMethods.module_eval do
                 define_method(name) do |*args|
                   if args.any?
                     instance_variable_set(ivar_name, args)
