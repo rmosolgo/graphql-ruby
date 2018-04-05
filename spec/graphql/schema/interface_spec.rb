@@ -29,7 +29,9 @@ describe GraphQL::Schema::Interface do
       assert new_object_1.method_defined?(:id)
 
       new_object_2 = Class.new(GraphQL::Schema::Object) do
+        graphql_name "XYZ"
         implements NewInterface2
+        field :id, "ID", null: false, description: "The ID !!!!!"
       end
 
       assert_equal 2, new_object_2.fields.size
@@ -37,6 +39,9 @@ describe GraphQL::Schema::Interface do
       assert new_object_2.method_defined?(:new_method)
       # And the inherited method
       assert new_object_2.method_defined?(:id)
+
+      # It gets an overridden description:
+      assert_equal "The ID !!!!!", new_object_2.graphql_definition.fields["id"].description
     end
   end
 
