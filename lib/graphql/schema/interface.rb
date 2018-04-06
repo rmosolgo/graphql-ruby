@@ -9,6 +9,13 @@ module GraphQL
         include GraphQL::Schema::Member::BaseDSLMethods
         include GraphQL::Schema::Member::HasFields
 
+        # Methods defined in this block will be:
+        # - Added as class methods to this interface
+        # - Added as class methods to all child interfaces
+        def definition_methods(&block)
+          self::DefinitionMethods.module_eval(&block)
+        end
+
         # Here's the tricky part. Make sure behavior keeps making its way down the inheritance chain.
         def included(child_class)
           if !child_class.is_a?(Class)

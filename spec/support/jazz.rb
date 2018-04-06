@@ -103,6 +103,13 @@ module Jazz
     include GraphQL::Schema::Interface
     # Use this overridden field class
     field_class BaseField
+
+    # These methods are available to child interfaces
+    definition_methods do
+      def upcased_field(*args, **kwargs, &block)
+        field(*args, upcase: true, **kwargs, &block)
+      end
+    end
   end
 
   class BaseEnumValue < GraphQL::Schema::EnumValue
@@ -128,7 +135,7 @@ module Jazz
     include BaseInterface
     description "A fetchable object in the system"
     field :id, ID, "A unique identifier for this object", null: false
-    field :upcased_id, ID, null: false, upcase: true, method: :id
+    upcased_field :upcased_id, ID, null: false, method: :id #, upcase: true added by helper
 
     def id
       GloballyIdentifiableType.to_id(@object)

@@ -87,7 +87,7 @@ module Types::RetailItem
 
 
   # Optional, see below
-  module DefinitionMethods
+  definition_methods do
     # Optional: if this method is defined, it overrides `Schema.resolve_type`
     def resolve_type(object, context)
       # ...
@@ -114,23 +114,23 @@ end
 This method will be called by objects who implement the interface. To override this implementation,
 object classes can override the `#price` method.
 
-### DefinitionMethods
+### Definition Methods
 
-Every interface module has a nested `DefinitionMethods` for special class methods. By adding methods to `DefinitionMethods`:
+You can use `definition_methods do ... end` to add helper methods to interface modules. By adding methods to `definition_methods`:
 
 - Those methods will be available as class methods in the interface itself
 - These class methods will _also_ be added to interfaces that `include` this interface.
 
-This way, class methods are inherited when interfaces `include` other interfaces. (`DefinitionMethods` is like `ActiveSupport::Concern`'s `ClassMethods` in this regard, but it has a different name to avoid naming conflicts).
+This way, class methods are inherited when interfaces `include` other interfaces. (`definition_methods` is like `ActiveSupport::Concern`'s `class_methods` in this regard, but it has a different name to avoid naming conflicts).
 
 For example, you can add definition helpers to your base interface, then use them in concrete interfaces later:
 
 ```ruby
-# First, add a helper method to `BaseInterface::DefinitionMethods`
+# First, add a helper method to `BaseInterface`'s definition methods
 module Types::BaseInterface
   include GraphQL::Schema::Interface
 
-  module DefinitionMethods
+  definition_methods do
     # Use this to add a price field + default implementation
     def price_field
       field(:price, ::Types::Price, null: false)
@@ -144,7 +144,7 @@ end
 # Then call it later
 module Types::ForSale
   include Types::BaseInterface
-  # This calls `DefinitionMethods#price_field`
+  # This calls `price_field` from definition methods
   price_field
 end
 ```
@@ -156,14 +156,14 @@ The type definition DSL uses this mechanism, too, so you can override those meth
 When a field's return type is an interface, GraphQL has to figure out what _specific_ object type to use for the return value. In the example above, each `customer` must be categorized as an `Individual` or `Company`. You can do this by:
 
 - Providing a top-level `Schema.resolve_type` method; _OR_
-- Providing an interface-level `DefinitionMethods#resolve_type` method.
+- Providing an interface-level `.resolve_type` method in `definition_methods`.
 
 This method will be called whenever an object must be disambiguated. For example:
 
 ```ruby
 module Types::RetailItem
   include Types::BaseInterface
-  module DefinitionMethods
+  definition_methods do
     # Determine what object type to use for `object`
     def resolve_type(object, context)
       if object.is_a?(::Car) || object.is_a?(::Truck)
