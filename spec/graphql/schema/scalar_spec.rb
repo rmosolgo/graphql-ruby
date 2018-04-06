@@ -69,5 +69,27 @@ describe GraphQL::Schema::Scalar do
       res = Jazz::Schema.execute(query_str)
       assert_equal([{"foo" => "bar"}], res["data"]["echoJson"])
     end
+
+    it "can be JSON with a nested enum" do
+      query_str = <<-GRAPHQL
+      {
+        echoJson(input: [{foo: WOODWIND}])
+      }
+      GRAPHQL
+
+      res = Jazz::Schema.execute(query_str)
+      assert_equal([{"foo" => "WOODWIND"}], res["data"]["echoJson"])
+    end
+
+    it "cannot be JSON with a nested variable" do
+      query_str = <<-GRAPHQL
+      {
+        echoJson(input: [{foo: $var}])
+      }
+      GRAPHQL
+
+      res = Jazz::Schema.execute(query_str)
+      assert_includes(res["errors"][0]["message"], "Argument 'input' on Field 'echoJson' has an invalid value")
+    end
   end
 end

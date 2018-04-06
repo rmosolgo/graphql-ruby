@@ -117,6 +117,8 @@ module GraphQL
         value.to_h
       elsif value.is_a?(Array)
         value.map { |element| raw_coercion_input(element) }
+      elsif value.is_a?(GraphQL::Language::Nodes::Enum)
+        value.name
       else
         value
       end
