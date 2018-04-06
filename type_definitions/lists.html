@@ -106,6 +106,197 @@
 <span class="n">field</span> <span class="ss">:previous_employers</span><span class="p">,</span> <span class="p">[</span><span class="no">Types</span><span class="o">::</span><span class="no">Employer</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">true</span><span class="p">],</span> <span class="s2">"Previous employers; `null` represents a period of self-employment or unemployment"</span> <span class="ss">null: </span><span class="kp">false</span>
 </code></pre></div></div>
 
+<h2 id="lists-nullable-lists-and-lists-of-nulls">Lists, Nullable Lists, and Lists of Nulls</h2>
+
+<p>Combining list types and non-null types can be a bit tricky. There are four possible combinations, based on two parameters:</p>
+
+<ul>
+  <li>Nullability of the field: can this field return <code class="highlighter-rouge">null</code>, or does it always return a list?</li>
+  <li>Nullability of the list items: when a list is present, may it include <code class="highlighter-rouge">null</code>?</li>
+</ul>
+
+<p>Here’s how those combinations play out:</p>
+
+<table>
+  <tbody>
+    <tr>
+      <td> </td>
+      <td>nullable field</td>
+      <td>non-null field</td>
+    </tr>
+    <tr>
+      <td>nullable items</td>
+      <td><code>[Integer, null: true], null: true</code><br /><code># =&gt; [Int]</code></td>
+      <td><code>[Integer, null: true], null: false</code><br /><code># =&gt; [Int]!</code></td>
+    </tr>
+    <tr>
+      <td>non-null items</td>
+      <td><code>[Integer], null: true</code><br /><code># =&gt; [Int!]</code></td>
+      <td><code>[Integer], null: false</code><br /><code># =&gt; [Int!]!</code></td>
+    </tr>
+  </tbody>
+</table>
+
+<p>(The first line is GraphQL-Ruby code. The second line, beginning with <code class="highlighter-rouge"># =&gt;</code>, is the corresponding GraphQL SDL code.)</p>
+
+<p>Let’s look at some examples.</p>
+
+<h4 id="non-null-lists-with-non-null-items">Non-null lists with non-null items</h4>
+
+<p>Here’s an example field:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:scores</span><span class="p">,</span> <span class="p">[</span><span class="no">Integer</span><span class="p">],</span> <span class="ss">null: </span><span class="kp">false</span>
+<span class="c1"># In GraphQL,</span>
+<span class="c1">#   scores: [Int!]!</span>
+</code></pre></div></div>
+
+<p>In this example, <code class="highlighter-rouge">scores</code> may not return <code class="highlighter-rouge">null</code>. It must <em>always</em> return a list. Additionally, the list may <em>never</em> contain <code class="highlighter-rouge">null</code> – it may only contain <code class="highlighter-rouge">Int</code>s. (It may be empty, but it cannot have <code class="highlighter-rouge">null</code> in it.)</p>
+
+<p>Here are values the field may return:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Valid</th>
+      <th>Invalid</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="highlighter-rouge">[]</code></td>
+      <td><code class="highlighter-rouge">null</code></td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">[1, 2, ...]</code></td>
+      <td><code class="highlighter-rouge">[null]</code></td>
+    </tr>
+    <tr>
+      <td> </td>
+      <td><code class="highlighter-rouge">[1, null, 2, ...]</code></td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="non-null-lists-with-nullable-items">Non-null lists with nullable items</h3>
+
+<p>Here’s an example field:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:scores</span><span class="p">,</span> <span class="p">[</span><span class="no">Integer</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">true</span><span class="p">],</span> <span class="ss">null: </span><span class="kp">false</span>
+<span class="c1"># In GraphQL,</span>
+<span class="c1">#   scores: [Int]!</span>
+</code></pre></div></div>
+
+<p>In this example, <code class="highlighter-rouge">scores</code> may not return <code class="highlighter-rouge">null</code>. It must <em>always</em> return a list. However, the list <em>may</em> contain <code class="highlighter-rouge">null</code>s and/or <code class="highlighter-rouge">Int</code>s.</p>
+
+<p>Here are values the field may return:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Valid</th>
+      <th>Invalid</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="highlighter-rouge">[]</code></td>
+      <td><code class="highlighter-rouge">null</code></td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">[1, 2, ...]</code></td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">[null]</code></td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">[1, null, 2, ...]</code></td>
+      <td> </td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="nullable-lists-with-nullable-items">Nullable lists with nullable items</h3>
+
+<p>Here’s an example field:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:scores</span><span class="p">,</span> <span class="p">[</span><span class="no">Integer</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">true</span><span class="p">],</span> <span class="ss">null: </span><span class="kp">true</span>
+<span class="c1"># In GraphQL,</span>
+<span class="c1">#   scores: [Int]</span>
+</code></pre></div></div>
+
+<p>In this example, <code class="highlighter-rouge">scores</code> return <code class="highlighter-rouge">null</code> <em>or</em> a list. Additionally, the list <em>may</em> contain <code class="highlighter-rouge">null</code>s and/or <code class="highlighter-rouge">Int</code>s.</p>
+
+<p>Here are values the field may return:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Valid</th>
+      <th>Invalid</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="highlighter-rouge">null</code></td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">[]</code></td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">[1, 2, ...]</code></td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">[null]</code></td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">[1, null, 2, ...]</code></td>
+      <td> </td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="nullable-lists-with-non-null-items">Nullable lists with non-null items</h3>
+
+<p>Here’s an example field:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:scores</span><span class="p">,</span> <span class="p">[</span><span class="no">Integer</span><span class="p">],</span> <span class="ss">null: </span><span class="kp">true</span>
+<span class="c1"># In GraphQL,</span>
+<span class="c1">#   scores: [Int!]</span>
+</code></pre></div></div>
+
+<p>In this example, <code class="highlighter-rouge">scores</code> return <code class="highlighter-rouge">null</code> <em>or</em> a list. However, if a list is present, it may <em>not</em> contain <code class="highlighter-rouge">null</code> – only <code class="highlighter-rouge">Int</code>s.</p>
+
+<p>Here are values the field may return:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Valid</th>
+      <th>Invalid</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="highlighter-rouge">null</code></td>
+      <td><code class="highlighter-rouge">[null]</code></td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">[]</code></td>
+      <td><code class="highlighter-rouge">[1, null, 2, ...]</code></td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">[1, 2, ...]</code></td>
+      <td> </td>
+    </tr>
+  </tbody>
+</table>
+
 </div>
 <p class="guide-footer">
   Suggestion, improvement, or correction?
