@@ -9,6 +9,13 @@ end
 
 module GraphQL
   class Subscriptions
+    # Raised when either:
+    # - the triggered `event_name` doesn't match a field in the schema; or
+    # - one or more arguments don't match the field arguments
+    class InvalidTriggerError < GraphQL::Error
+    end
+
+    # @see {Subscriptions#initialize} for options, concrete implementations may add options.
     def self.use(defn, options = {})
       schema = defn.target
       options[:schema] = schema
@@ -19,8 +26,9 @@ module GraphQL
       nil
     end
 
-    def initialize(kwargs)
-      @schema = kwargs[:schema]
+    # @param schema [Class] the GraphQL schema this manager belongs to
+    def initialize(schema:, **rest)
+      @schema = schema
     end
 
     # Fetch subscriptions matching this field + arguments pair
@@ -31,29 +39,33 @@ module GraphQL
     # @param scope [Symbol, String]
     # @return [void]
     def trigger(event_name, args, object, scope: nil)
+      event_name = event_name.to_s
+
+      # Try with the verbatim input first:
       field = @schema.get_field("Subscription", event_name)
-      if !field
-        raise "No subscription matching trigger: #{event_name}"
+
+      if field.nil?
+        # And if it wasn't found, normalize it:
+        normalized_event_name = normalize_name(event_name)
+        field = @schema.get_field("Subscription", normalized_event_name)
+        if field.nil?
+          raise InvalidTriggerError, "No subscription matching trigger: #{event_name} (looked for #{@schema.subscription.graphql_name}.#{normalized_event_name})"
+        end
+      else
+        # Since we found a field, the original input was already normalized
+        normalized_event_name = event_name
       end
 
-      # Normalize symbol-keyed args to strings
-      if args.any?
-        stringified_args = {}
-        args.each { |k, v| stringified_args[k.to_s] = v }
-        args = stringified_args
-      end
+      # Normalize symbol-keyed args to strings, try camelizing them
+      normalized_args = normalize_arguments(normalized_event_name, field, args)
 
       event = Subscriptions::Event.new(
-        name: event_name,
-        arguments: args,
+        name: normalized_event_name,
+        arguments: normalized_args,
         field: field,
         scope: scope,
       )
       execute_all(event, object)
-    end
-
-    def initialize(schema:, **rest)
-      @schema = schema
     end
 
     # `event` was triggered on `object`, and `subscription_id` was subscribed,
@@ -138,6 +150,68 @@ module GraphQL
     # @return [String] A new unique identifier for a subscription
     def build_id
       SecureRandom.uuid
+    end
+
+    # Convert a user-provided event name or argument
+    # to the equivalent in GraphQL.
+    #
+    # By default, it converts the identifier to camelcase.
+    # Override this in a subclass to change the transformation.
+    #
+    # @param event_or_arg_name [String, Symbol]
+    # @return [String]
+    def normalize_name(event_or_arg_name)
+      Schema::Member::BuildType.camelize(event_or_arg_name.to_s)
+    end
+
+    private
+
+    # Recursively normalize `args` as belonging to `arg_owner`:
+    # - convert symbols to strings,
+    # - if needed, camelize the string (using {#normalize_name})
+    # @param arg_owner [GraphQL::Field, GraphQL::BaseType]
+    # @param args [Hash, Array, Any] some GraphQL input value to coerce as `arg_owner`
+    # @return [Any] normalized arguments value
+    def normalize_arguments(event_name, arg_owner, args)
+      case arg_owner
+      when GraphQL::Field, GraphQL::InputObjectType
+        normalized_args = {}
+        missing_arg_names = []
+        args.each do |k, v|
+          arg_name = k.to_s
+          arg_defn = arg_owner.arguments[arg_name]
+          if arg_defn
+            normalized_arg_name = arg_name
+          else
+            normalized_arg_name = normalize_name(arg_name)
+            arg_defn = arg_owner.arguments[normalized_arg_name]
+          end
+
+          if arg_defn
+            normalized_args[normalized_arg_name] = normalize_arguments(event_name, arg_defn.type, v)
+          else
+            # Couldn't find a matching argument definition
+            missing_arg_names << arg_name
+          end
+        end
+
+        if missing_arg_names.any?
+          arg_owner_name = if arg_owner.is_a?(GraphQL::Field)
+            "Subscription.#{arg_owner.name}"
+          else
+            arg_owner.to_s
+          end
+          raise InvalidTriggerError, "Can't trigger Subscription.#{event_name}, received undefined arguments: #{missing_arg_names.join(", ")}. (Should match arguments of #{arg_owner_name}.)"
+        end
+
+        normalized_args
+      when GraphQL::ListType
+        args.map { |a| normalize_arguments(event_name, arg_owner.of_type, a) }
+      when GraphQL::NonNullType
+        normalize_arguments(event_name, arg_owner.of_type, args)
+      else
+        args
+      end
     end
   end
 end
