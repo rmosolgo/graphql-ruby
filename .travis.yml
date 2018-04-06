@@ -17,7 +17,7 @@ before_install:
 rvm:
 - 2.2.8 # Lowest version officially supported by the gem is 2.2
 - 2.4.3
-- jruby-9.1.15.0
+- jruby-9.1.16.0
 
 services:
   - postgresql
@@ -66,13 +66,13 @@ matrix:
     gemfile: gemfiles/rails_4.1.gemfile
   - rvm: 2.4.3
     gemfile: gemfiles/rails_4.2.gemfile
-  - rvm: jruby-9.1.15.0
+  - rvm: jruby-9.1.16.0
     gemfile: gemfiles/rails_3.2.gemfile # JRuby + latest Rails only
-  - rvm: jruby-9.1.15.0
+  - rvm: jruby-9.1.16.0
     gemfile: gemfiles/rails_4.0.gemfile # JRuby + latest Rails only
-  - rvm: jruby-9.1.15.0
+  - rvm: jruby-9.1.16.0
     gemfile: gemfiles/rails_4.1.gemfile # JRuby + latest Rails only
-  - rvm: jruby-9.1.15.0
+  - rvm: jruby-9.1.16.0
     gemfile: gemfiles/rails_4.2.gemfile # JRuby + latest Rails only
-  - rvm: jruby-9.1.15.0
+  - rvm: jruby-9.1.16.0
     gemfile: gemfiles/rails_5.0.gemfile # JRuby + latest Rails only
