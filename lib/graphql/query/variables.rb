@@ -77,7 +77,6 @@ module GraphQL
         case arg_owner
         when GraphQL::Field, GraphQL::InputObjectType
           normalized_args = {}
-          missing_arg_names = []
           args.each do |k, v|
             arg_name = k.to_s
             arg_defn = arg_owner.arguments[arg_name]
