@@ -67,7 +67,7 @@ describe GraphQL::Schema::Enum do
     it "works as input" do
       query_str = "query($family: Family!) { instruments(family: $family) { name } }"
       expected_names = ["Piano", "Organ"]
-      result = Jazz::Schema.execute(query_str, variables: { "family" => "KEYS" })
+      result = Jazz::Schema.execute(query_str, variables: { family: "KEYS" })
       assert_equal expected_names, result["data"]["instruments"].map { |i| i["name"] }
     end
   end
