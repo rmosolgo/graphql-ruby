@@ -36,5 +36,38 @@ describe GraphQL::Schema::Scalar do
       assert_equal true, key_info["isSharp"]
       assert_equal false, key_info["isFlat"]
     end
+
+    it "can be nested JSON" do
+      query_str = <<-GRAPHQL
+      {
+        echoJson(input: {foo: [{bar: "baz"}]})
+      }
+      GRAPHQL
+
+      res = Jazz::Schema.execute(query_str)
+      assert_equal({"foo" => [{"bar" => "baz"}]}, res["data"]["echoJson"])
+    end
+
+    it "can be a JSON array" do
+      query_str = <<-GRAPHQL
+      {
+        echoFirstJson(input: [{foo: "bar"}, {baz: "boo"}])
+      }
+      GRAPHQL
+
+      res = Jazz::Schema.execute(query_str)
+      assert_equal({"foo" => "bar"}, res["data"]["echoFirstJson"])
+    end
+
+    it "can be a JSON array even if the GraphQL type is not an array" do
+      query_str = <<-GRAPHQL
+      {
+        echoJson(input: [{foo: "bar"}])
+      }
+      GRAPHQL
+
+      res = Jazz::Schema.execute(query_str)
+      assert_equal([{"foo" => "bar"}], res["data"]["echoJson"])
+    end
   end
 end

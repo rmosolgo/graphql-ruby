@@ -16,7 +16,7 @@ module GraphQL
         elsif type.kind.list?
           item_type = type.of_type
           ensure_array(ast_value).all? { |val| validate(val, item_type) }
-        elsif type.kind.scalar? && !ast_value.is_a?(GraphQL::Language::Nodes::AbstractNode) && !ast_value.is_a?(Array)
+        elsif type.kind.scalar? && !ast_value.is_a?(GraphQL::Language::Nodes::VariableIdentifier)
           type.valid_input?(ast_value, @context)
         elsif type.kind.enum? && ast_value.is_a?(GraphQL::Language::Nodes::Enum)
           type.valid_input?(ast_value.name, @context)
