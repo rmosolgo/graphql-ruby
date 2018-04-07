@@ -44,6 +44,26 @@ function generateOutfile(type, clientName, keyValuePairs) {
       },
 
       /**
+       * Satisfy the Apollo Link API.
+       * This link checks for an operation name, and if it's present,
+       * sets the HTTP context to _not_ include the query,
+       * and instead, include \`extensions.operationId\`.
+       * (This is inspired by apollo-link-persisted-queries.)
+      */
+      apolloLink: function(operation, forward) {
+        if (operation.operationName) {
+          const operationId = OperationStoreClient.getOperationId(operation.operationName)
+          operation.setContext({
+            http: {
+              includeQuery: false,
+              includeExtensions: true,
+            }
+          })
+          operation.extensions.operationId = operationId
+        }
+        return forward(operation)
+      },
+      /**
        * Satisfy the Apollo middleware API.
        * Replace the query with an operationId
       */
