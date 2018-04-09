@@ -164,4 +164,35 @@ describe GraphQL::Schema::Field do
       assert_includes err.message, "Thing.stuff"
     end
   end
+
+  describe "mutation" do
+    let(:mutation) do
+      Class.new(GraphQL::Schema::Mutation) do
+        graphql_name "Thing"
+
+        field :stuff, String, null: false
+      end
+    end
+    let(:error_message) { "when keyword `mutation:` is present, all arguments are ignored, please remove them" }
+
+    it "fails when including null option as true" do
+      error = assert_raises(ArgumentError) do
+        GraphQL::Schema::Field.new(:my_field, mutation: mutation, null: true)
+      end
+
+      assert_equal error.message, error_message
+    end
+
+    it "fails when including null option as false" do
+      error = assert_raises(ArgumentError) do
+        GraphQL::Schema::Field.new(:my_field, mutation: mutation, null: false)
+      end
+
+      assert_equal error.message, error_message
+    end
+
+    it "passes when not including extra arguments" do
+      assert_equal GraphQL::Schema::Field.new(:my_field, mutation: mutation).mutation, mutation
+    end
+  end
 end
