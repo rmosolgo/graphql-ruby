@@ -826,8 +826,8 @@ module GraphQL
         # For each of the locations we found, extract the text for that definition.
         # The text will be transformed independently,
         # then the transformed text will replace the original text.
-        finder.locations.each do |category, locs|
-          locs.each do |name, (starting_idx, ending_idx)|
+        FieldFinder::DEFINITION_METHODS.each do |def_method|
+          finder.locations[def_method].each do |name, (starting_idx, ending_idx)|
             field_source = type_source[starting_idx..ending_idx]
             field_sources << field_source
           end
@@ -847,7 +847,9 @@ module GraphQL
 
       class FieldFinder < Parser::AST::Processor
         # These methods are definition DSLs which may accept a block,
-        # each of these definitions is passed for transformation in its own right
+        # each of these definitions is passed for transformation in its own right.
+        # `field` and `connection` take priority. In fact, they upgrade their
+        # own arguments, so those upgrades turn out to be no-ops.
         DEFINITION_METHODS = [:field, :connection, :input_field, :return_field, :argument]
         attr_reader :locations
 

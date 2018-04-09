@@ -8,9 +8,11 @@ module Platform
 
       global_id_field :id
 
-      field :viewer_has_starred, Boolean, description: "Returns a boolean indicating whether the viewing user has starred this starrable.", null: false
+      field :viewer_has_starred, Boolean, description: "Returns a boolean indicating whether the viewing user has starred this starrable.", null: false do
+        argument :preceeds_connection_method, Boolean, required: false
+      end
 
-      def viewer_has_starred
+      def viewer_has_starred(**arguments)
         if @context[:viewer]
           @context[:viewer].starred?(@object)
         else
