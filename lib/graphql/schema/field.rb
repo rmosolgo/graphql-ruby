@@ -52,7 +52,7 @@ module GraphQL
           desc = return_type_expr
           return_type_expr = nil
         end
-        if mutation && (return_type_expr || desc || description || function || field || null || deprecation_reason || method || resolve || introspection || hash_key)
+        if mutation && (return_type_expr || desc || description || function || field || !null.nil? || deprecation_reason || method || resolve || introspection || hash_key)
           raise ArgumentError, "when keyword `mutation:` is present, all arguments are ignored, please remove them"
         end
         if !(field || function || mutation)
