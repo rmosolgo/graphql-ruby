@@ -14,7 +14,9 @@ module Platform
 
       def viewer_has_starred(**arguments)
         if @context[:viewer]
-          @context[:viewer].starred?(@object)
+          ->(test_inner_proc) do
+            @context[:viewer].starred?(@object)
+          end
         else
           false
         end

@@ -582,7 +582,8 @@ module GraphQL
         def on_block(node)
           send_node, args_node, body_node = node.children
           _receiver, method_name, _send_args_node = *send_node
-          if method_name == :lambda
+          # Assume that the first three-argument proc we enter is the resolve
+          if method_name == :lambda && args_node.children.size == 3 && @proc_arg_names.nil?
             source_exp = body_node.loc.expression
             @proc_arg_names = args_node.children.map { |arg_node| arg_node.children[0].to_s }
             @proc_start = source_exp.begin.begin_pos
