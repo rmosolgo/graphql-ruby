@@ -187,7 +187,7 @@ module GraphQL
             resolve: self.method(:resolve_field),
             mutation_class: self,
             arguments: arguments,
-            null: self.null,
+            null: null,
           )
         end
 
