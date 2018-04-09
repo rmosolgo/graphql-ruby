@@ -141,6 +141,17 @@ module GraphQL
           @extras || []
         end
 
+        # Specifies whether or not the mutation is nullable
+        # @param allow_null [Boolean] Whether or not the response can be null
+        def null(allow_null = nil)
+          unless allow_null.nil?
+            @null = allow_null
+          end
+
+          raise ArgumentError, "must set `null` on mutation classes" if @null.nil?
+          @null
+        end
+
         private
 
         # Build a subclass of {.object_class} based on `self`.
@@ -173,10 +184,10 @@ module GraphQL
             field_name,
             payload_type,
             description,
-            resolve: self.method(:resolve_field),\
+            resolve: self.method(:resolve_field),
             mutation_class: self,
             arguments: arguments,
-            null: true,
+            null: self.null,
           )
         end
 

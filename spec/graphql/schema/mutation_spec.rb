@@ -96,4 +96,29 @@ describe GraphQL::Schema::Mutation do
       assert_equal 7, response["data"]["addInstrument"]["entries"].size
     end
   end
+
+  describe ".null" do
+    it "overrides whether or not the field can be null" do
+      non_nullable_mutation_class = Class.new(GraphQL::Schema::Mutation) do
+        graphql_name "Thing1"
+        null(false)
+      end
+
+      nullable_mutation_class = Class.new(GraphQL::Schema::Mutation) do
+        graphql_name "Thing2"
+        null(true)
+      end
+
+      default_mutation_class = Class.new(GraphQL::Schema::Mutation) do
+        graphql_name "Thing3"
+      end
+
+      error = assert_raises(ArgumentError) do
+        default_mutation_class.graphql_field
+      end
+      assert_equal error.message, "must set `null` on mutation classes"
+      assert nullable_mutation_class.graphql_field.instance_variable_get("@return_type_null")
+      refute non_nullable_mutation_class.graphql_field.instance_variable_get("@return_type_null")
+    end
+  end
 end
