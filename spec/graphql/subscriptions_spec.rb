@@ -192,10 +192,10 @@ describe GraphQL::Subscriptions do
 
       # Application stuff happens.
       # The application signals graphql via `subscriptions.trigger`:
-      schema.subscriptions.trigger("payload", {"id" => "100"}, root_object.payload)
+      schema.subscriptions.trigger(:payload, {"id" => "100"}, root_object.payload)
       schema.subscriptions.trigger("payload", {"id" => "200"}, root_object.payload)
       # Symobls are OK too
-      schema.subscriptions.trigger("payload", {:id => "100"}, root_object.payload)
+      schema.subscriptions.trigger(:payload, {:id => "100"}, root_object.payload)
       schema.subscriptions.trigger("payload", {"id" => "300"}, nil)
 
       # Let's see what GraphQL sent over the wire:
@@ -267,8 +267,8 @@ describe GraphQL::Subscriptions do
       schema.subscriptions.trigger("event", { "stream" => {"type" => "ONE", "userId" => "3"} }, OpenStruct.new(str: "", int: 2))
       # This is a non-trigger
       schema.subscriptions.trigger("event", { "stream" => {"userId" => "3", "type" => "TWO"} }, OpenStruct.new(str: "", int: 3))
-      # These get default value of ONE
-      schema.subscriptions.trigger("event", { "stream" => {"userId" => "3"} }, OpenStruct.new(str: "", int: 4))
+      # These get default value of ONE (underscored / symbols are ok)
+      schema.subscriptions.trigger("event", { stream: { user_id: "3"} }, OpenStruct.new(str: "", int: 4))
       # Trigger with null updates subscriptionss to null
       schema.subscriptions.trigger("event", { "stream" => {"userId" => 3, "type" => nil} }, OpenStruct.new(str: "", int: 5))
 
@@ -389,6 +389,33 @@ describe GraphQL::Subscriptions do
     it "returns a unique ID string" do
       assert_instance_of String, schema.subscriptions.build_id
       refute_equal schema.subscriptions.build_id, schema.subscriptions.build_id
+    end
+  end
+
+  describe ".trigger" do
+    it "raises when event name is not found" do
+      err = assert_raises(GraphQL::Subscriptions::InvalidTriggerError) do
+        schema.subscriptions.trigger(:nonsense_field, {}, nil)
+      end
+
+      assert_includes err.message, "trigger: nonsense_field"
+      assert_includes err.message, "Subscription.nonsenseField"
+    end
+
+    it "raises when argument is not found" do
+      err = assert_raises(GraphQL::Subscriptions::InvalidTriggerError) do
+        schema.subscriptions.trigger(:event, { scream: {"userId" => "😱"} }, nil)
+      end
+
+      assert_includes err.message, "arguments: scream"
+      assert_includes err.message, "arguments of Subscription.event"
+
+      err = assert_raises(GraphQL::Subscriptions::InvalidTriggerError) do
+        schema.subscriptions.trigger(:event, { stream: { user_id_number: "😱"} }, nil)
+      end
+
+      assert_includes err.message, "arguments: user_id_number"
+      assert_includes err.message, "arguments of StreamInput"
     end
   end
 end

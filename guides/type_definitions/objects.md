@@ -305,7 +305,6 @@ implements Types::UserAssignableType
 When an object `implements` interfaces, it:
 
 - inherits the GraphQL field definitions from that object
-- inherits the resolve behavior from those fields
-- `include`s the Ruby module named `Implementation` from that interface, if it has one
+- includes that module into the object definition
 
 Read more about interfaces in the {% internal_link "Interfaces guide", "/type_definitions/interfaces" %}

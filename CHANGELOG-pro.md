@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+## 1.7.2 (10 Apr 2018)
+
+### Bug Fix
+
+- Use a more permissive regexp (`/^\s*((?:[a-z._]+)\(.*\))\s*(asc|desc)?\s*$/im`) to parse SQL functions
+
 ## 1.7.1 (4 Apr 2018)
 
 ### Bug Fix

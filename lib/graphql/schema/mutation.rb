@@ -83,6 +83,10 @@ module GraphQL
       end
 
       class << self
+        def inherited(base)
+          base.null(null)
+        end
+
         # Override the method from HasFields to support `field: Mutation.field`, for backwards compat.
         #
         # If called without any arguments, returns a `GraphQL::Field`.
@@ -141,6 +145,16 @@ module GraphQL
           @extras || []
         end
 
+        # Specifies whether or not the mutation is nullable. Defaults to `true`
+        # @param allow_null [Boolean] Whether or not the response can be null
+        def null(allow_null = nil)
+          unless allow_null.nil?
+            @null = allow_null
+          end
+
+          @null.nil? ? true : @null
+        end
+
         private
 
         # Build a subclass of {.object_class} based on `self`.
@@ -173,10 +187,10 @@ module GraphQL
             field_name,
             payload_type,
             description,
-            resolve: self.method(:resolve_field),\
+            resolve: self.method(:resolve_field),
             mutation_class: self,
             arguments: arguments,
-            null: true,
+            null: null,
           )
         end
 
