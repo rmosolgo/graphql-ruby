@@ -84,6 +84,8 @@
 
 <p>Besides those, you can also use the plain <a href="/type_definitions/objects#fields">field API</a> to write mutation fields.</p>
 
+<p>An additional <code class="highlighter-rouge">null</code> helper method is provided on classes inheriting from <code class="highlighter-rouge">GraphQL::Schema::Mutation</code> to allow setting the nullability of the mutation. This is not required and defaults to <code class="highlighter-rouge">true</code>.</p>
+
 <h2 id="example-mutation-class">Example mutation class</h2>
 
 <p>You should add a base class to your application, for example:</p>
@@ -95,6 +97,8 @@
 <p>Then extend it for your mutations:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Mutations</span><span class="o">::</span><span class="no">CreateComment</span> <span class="o">&lt;</span> <span class="no">Mutations</span><span class="o">::</span><span class="no">BaseMutation</span>
+  <span class="n">null</span> <span class="kp">true</span>
+
   <span class="n">argument</span> <span class="ss">:body</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">true</span>
   <span class="n">argument</span> <span class="ss">:post_id</span><span class="p">,</span> <span class="no">ID</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">true</span>
 

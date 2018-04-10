@@ -110,30 +110,89 @@
 
 <h2 id="defining-interface-types">Defining Interface Types</h2>
 
-<p>Interfaces extend <a href="http://www.rubydoc.info/gems/graphql/1.8.0.pre10/GraphQL/Schema/Interface" target="_blank" title="API docs for GraphQL::Schema::Interface"><code>GraphQL::Schema::Interface</code></a>. First, make a base class:</p>
+<p>Interfaces are Ruby modules which include <a href="http://www.rubydoc.info/gems/graphql/1.8.0.pre10/GraphQL/Schema/Interface" target="_blank" title="API docs for GraphQL::Schema::Interface"><code>GraphQL::Schema::Interface</code></a>. First, make a base module:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">BaseInterface</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Interface</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">module</span> <span class="nn">Types::BaseInterface</span>
+  <span class="kp">include</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Interface</span>
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>Then, extend that for each interface:</p>
+<p>Then, include that into each interface:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">RetailItem</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseInterface</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">module</span> <span class="nn">Types::RetailItem</span>
+  <span class="kp">include</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseInterface</span>
   <span class="n">description</span> <span class="s2">"Something that can be bought"</span>
   <span class="n">field</span> <span class="ss">:price</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">Price</span><span class="p">,</span> <span class="s2">"How much this item costs"</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
 
-  <span class="c1"># Optional: if this method is defined, it overrides `Schema.resolve_type`</span>
-  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">resolve_type</span><span class="p">(</span><span class="n">object</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
-    <span class="c1"># ...</span>
+  <span class="k">def</span> <span class="nf">price</span>
+    <span class="c1"># Optional: provide a special implementation of `price` here</span>
   <span class="k">end</span>
 
-  <span class="k">module</span> <span class="nn">Implementation</span>
-    <span class="c1"># optional, see below</span>
+
+  <span class="c1"># Optional, see below</span>
+  <span class="n">definition_methods</span> <span class="k">do</span>
+    <span class="c1"># Optional: if this method is defined, it overrides `Schema.resolve_type`</span>
+    <span class="k">def</span> <span class="nf">resolve_type</span><span class="p">(</span><span class="n">object</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
+      <span class="c1"># ...</span>
+    <span class="k">end</span>
   <span class="k">end</span>
 <span class="k">end</span>
 </code></pre></div></div>
 
 <p>Interface classes are never instantiated. At runtime, only their <code class="highlighter-rouge">.resolve_type</code> methods are called (if they’re defined).</p>
+
+<h3 id="implementing-fields">Implementing Fields</h3>
+
+<p>Interfaces may provide field implementations along with the signatures. For example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:price</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">Price</span><span class="p">,</span> <span class="s2">"How much this item costs"</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
+
+<span class="c1"># Implement this field to return a `::Price` object</span>
+<span class="k">def</span> <span class="nf">price</span>
+  <span class="o">::</span><span class="no">Price</span><span class="p">.</span><span class="nf">from_cents</span><span class="p">(</span><span class="vi">@object</span><span class="p">.</span><span class="nf">price_in_cents</span><span class="p">)</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>This method will be called by objects who implement the interface. To override this implementation,
+object classes can override the <code class="highlighter-rouge">#price</code> method.</p>
+
+<h3 id="definition-methods">Definition Methods</h3>
+
+<p>You can use <code class="highlighter-rouge">definition_methods do ... end</code> to add helper methods to interface modules. By adding methods to <code class="highlighter-rouge">definition_methods</code>:</p>
+
+<ul>
+  <li>Those methods will be available as class methods in the interface itself</li>
+  <li>These class methods will <em>also</em> be added to interfaces that <code class="highlighter-rouge">include</code> this interface.</li>
+</ul>
+
+<p>This way, class methods are inherited when interfaces <code class="highlighter-rouge">include</code> other interfaces. (<code class="highlighter-rouge">definition_methods</code> is like <code class="highlighter-rouge">ActiveSupport::Concern</code>’s <code class="highlighter-rouge">class_methods</code> in this regard, but it has a different name to avoid naming conflicts).</p>
+
+<p>For example, you can add definition helpers to your base interface, then use them in concrete interfaces later:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># First, add a helper method to `BaseInterface`'s definition methods</span>
+<span class="k">module</span> <span class="nn">Types::BaseInterface</span>
+  <span class="kp">include</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Interface</span>
+
+  <span class="n">definition_methods</span> <span class="k">do</span>
+    <span class="c1"># Use this to add a price field + default implementation</span>
+    <span class="k">def</span> <span class="nf">price_field</span>
+      <span class="n">field</span><span class="p">(</span><span class="ss">:price</span><span class="p">,</span> <span class="o">::</span><span class="no">Types</span><span class="o">::</span><span class="no">Price</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span><span class="p">)</span>
+      <span class="n">define_method</span><span class="p">(</span><span class="ss">:price</span><span class="p">)</span> <span class="k">do</span>
+        <span class="o">::</span><span class="no">Price</span><span class="p">.</span><span class="nf">from_cents</span><span class="p">(</span><span class="vi">@object</span><span class="p">.</span><span class="nf">price_in_cents</span><span class="p">)</span>
+      <span class="k">end</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="c1"># Then call it later</span>
+<span class="k">module</span> <span class="nn">Types::ForSale</span>
+  <span class="kp">include</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseInterface</span>
+  <span class="c1"># This calls `price_field` from definition methods</span>
+  <span class="n">price_field</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>The type definition DSL uses this mechanism, too, so you can override those methods here also.</p>
 
 <h3 id="resolve-type">Resolve Type</h3>
 
@@ -141,55 +200,27 @@
 
 <ul>
   <li>Providing a top-level <code class="highlighter-rouge">Schema.resolve_type</code> method; <em>OR</em></li>
-  <li>Providing an interface-level <code class="highlighter-rouge">.resolve_type</code> method.</li>
+  <li>Providing an interface-level <code class="highlighter-rouge">.resolve_type</code> method in <code class="highlighter-rouge">definition_methods</code>.</li>
 </ul>
 
 <p>This method will be called whenever an object must be disambiguated. For example:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">RetailItem</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseInterface</span>
-  <span class="c1"># Determine what object type to use for `object`</span>
-  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">resolve_type</span><span class="p">(</span><span class="n">object</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">object</span><span class="p">.</span><span class="nf">is_a?</span><span class="p">(</span><span class="o">::</span><span class="no">Car</span><span class="p">)</span> <span class="o">||</span> <span class="n">object</span><span class="p">.</span><span class="nf">is_a?</span><span class="p">(</span><span class="o">::</span><span class="no">Truck</span><span class="p">)</span>
-      <span class="no">Types</span><span class="o">::</span><span class="no">Car</span>
-    <span class="k">elsif</span> <span class="n">object</span><span class="p">.</span><span class="nf">is_a?</span><span class="p">(</span><span class="o">::</span><span class="no">Purse</span><span class="p">)</span>
-      <span class="no">Types</span><span class="o">::</span><span class="no">Purse</span>
-    <span class="k">else</span>
-      <span class="k">raise</span> <span class="s2">"Unexpected RetailItem: </span><span class="si">#{</span><span class="n">object</span><span class="p">.</span><span class="nf">inspect</span><span class="si">}</span><span class="s2">"</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">module</span> <span class="nn">Types::RetailItem</span>
+  <span class="kp">include</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseInterface</span>
+  <span class="n">definition_methods</span> <span class="k">do</span>
+    <span class="c1"># Determine what object type to use for `object`</span>
+    <span class="k">def</span> <span class="nf">resolve_type</span><span class="p">(</span><span class="n">object</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
+      <span class="k">if</span> <span class="n">object</span><span class="p">.</span><span class="nf">is_a?</span><span class="p">(</span><span class="o">::</span><span class="no">Car</span><span class="p">)</span> <span class="o">||</span> <span class="n">object</span><span class="p">.</span><span class="nf">is_a?</span><span class="p">(</span><span class="o">::</span><span class="no">Truck</span><span class="p">)</span>
+        <span class="no">Types</span><span class="o">::</span><span class="no">Car</span>
+      <span class="k">elsif</span> <span class="n">object</span><span class="p">.</span><span class="nf">is_a?</span><span class="p">(</span><span class="o">::</span><span class="no">Purse</span><span class="p">)</span>
+        <span class="no">Types</span><span class="o">::</span><span class="no">Purse</span>
+      <span class="k">else</span>
+        <span class="k">raise</span> <span class="s2">"Unexpected RetailItem: </span><span class="si">#{</span><span class="n">object</span><span class="p">.</span><span class="nf">inspect</span><span class="si">}</span><span class="s2">"</span>
+      <span class="k">end</span>
     <span class="k">end</span>
   <span class="k">end</span>
 <span class="k">end</span>
 </code></pre></div></div>
-
-<h3 id="implementation-modules">Implementation modules</h3>
-
-<p>An interface may contain a module named <code class="highlighter-rouge">Implementation</code>. If it does, that module will be included into any <code class="highlighter-rouge">Object</code> class which implements the interface. For example, this <code class="highlighter-rouge">Implementation</code> module contains the <code class="highlighter-rouge">#price</code> method:</p>
-
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">RetailItem</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseInterface</span>
-  <span class="n">field</span> <span class="ss">:price</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">Price</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
-
-  <span class="k">module</span> <span class="nn">Implementation</span>
-    <span class="k">def</span> <span class="nf">price</span>
-      <span class="no">Price</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">price_in_cents</span><span class="p">)</span>
-    <span class="k">end</span>
-  <span class="k">end</span>
-<span class="k">end</span>
-</code></pre></div></div>
-
-<p>When the interface is implemented by an <code class="highlighter-rouge">Object</code>:</p>
-
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">Car</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
-  <span class="n">implements</span> <span class="no">Types</span><span class="o">::</span><span class="no">RetailItem</span>
-<span class="k">end</span>
-</code></pre></div></div>
-
-<p>Then the object gets a few things from the interface:</p>
-
-<ul>
-  <li>Any <code class="highlighter-rouge">field</code> definitions from the interface (which may be overridden by the <code class="highlighter-rouge">Object</code>)</li>
-  <li>The <code class="highlighter-rouge">Implementation</code> module is <code class="highlighter-rouge">include</code>-d into the object, so it gets any methods from that module (which may be overridden by the <code class="highlighter-rouge">Object</code>)</li>
-</ul>
-
-<p>Specifically, in the example above, <code class="highlighter-rouge">CarType</code> would get a field named <code class="highlighter-rouge">price</code> and a <code class="highlighter-rouge">#price</code> method which implements that field.</p>
 
 <h2 id="orphan-types">Orphan Types</h2>
 
