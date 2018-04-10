@@ -9,15 +9,14 @@ module GraphQL
         @built_in_namespace = GraphQL::Introspection
         @custom_namespace = schema.introspection_namespace || @built_in_namespace
 
-        # Use to-graphql to avoid sharing with any previous instantiations
-        @schema_type = load_constant(:SchemaType).to_graphql
-        @type_type = load_constant(:TypeType).to_graphql
-        @field_type = load_constant(:FieldType).to_graphql
-        @directive_type = load_constant(:DirectiveType).to_graphql
-        @enum_value_type = load_constant(:EnumValueType).to_graphql
-        @input_value_type = load_constant(:InputValueType).to_graphql
-        @type_kind_enum = load_constant(:TypeKindEnum).to_graphql
-        @directive_location_enum = load_constant(:DirectiveLocationEnum).to_graphql
+        @schema_type = load_constant(:SchemaType).graphql_definition
+        @type_type = load_constant(:TypeType).graphql_definition
+        @field_type = load_constant(:FieldType).graphql_definition
+        @directive_type = load_constant(:DirectiveType).graphql_definition
+        @enum_value_type = load_constant(:EnumValueType).graphql_definition
+        @input_value_type = load_constant(:InputValueType).graphql_definition
+        @type_kind_enum = load_constant(:TypeKindEnum).graphql_definition
+        @directive_location_enum = load_constant(:DirectiveLocationEnum).graphql_definition
         @entry_point_fields = get_fields_from_class(class_sym: :EntryPoints)
         @dynamic_fields = get_fields_from_class(class_sym: :DynamicFields)
       end
@@ -51,6 +50,11 @@ module GraphQL
         @dynamic_fields[name]
       end
 
+      # @api private
+      def bound_entry_point(f)
+        @entry_point_fields[f.name] = f
+      end
+
       private
 
       def load_constant(class_name)
@@ -62,7 +66,7 @@ module GraphQL
 
       def get_fields_from_class(class_sym:)
         object_class = load_constant(class_sym)
-        object_type_defn = object_class.to_graphql
+        object_type_defn = object_class.graphql_definition
         extracted_field_defns = {}
         object_type_defn.all_fields.each do |field_defn|
           inner_resolve = field_defn.resolve_proc

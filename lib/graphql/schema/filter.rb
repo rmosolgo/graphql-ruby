@@ -41,18 +41,10 @@ module GraphQL
           # TODO can we avoid double-wrapping?
           nodes
         else
-          build_connection(nodes, args, obj, obj.context)
+          parent = obj.object
+          connection_class = GraphQL::Relay::BaseConnection.connection_for_nodes(nodes)
+          connection_class.new(nodes, args, field: @field.graphql_definition, max_page_size: @field.max_page_size, parent: parent, context: obj.context)
         end
-      end
-
-      private
-
-      def build_connection(nodes, args, parent, ctx)
-        if parent.is_a?(GraphQL::Schema::Object)
-          parent = parent.object
-        end
-        connection_class = GraphQL::Relay::BaseConnection.connection_for_nodes(nodes)
-        connection_class.new(nodes, args, field: @field.graphql_definition, max_page_size: @field.max_page_size, parent: parent, context: ctx)
       end
     end
   end

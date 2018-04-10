@@ -231,7 +231,7 @@ module GraphQL
           ruby_kwargs = NO_ARGS
         end
 
-        with_filters(obj, ruby_kwargs) do |obj, ruby_kwargs|
+        with_filters(obj, ruby_kwargs) do |filtered_obj, filtered_ruby_kwargs|
           if @resolve || @function || @field
             # Support a passed-in proc, one way or another
             prev_resolve = if @resolve
@@ -243,10 +243,10 @@ module GraphQL
             end
 
             # Might be nil, still want to call the func in that case
-            inner_obj = obj && obj.object
+            inner_obj = filtered_obj && filtered_obj.object
             prev_resolve.call(inner_obj, args, ctx)
           else
-            resolve_field_dynamic(obj, ruby_kwargs)
+            resolve_field_dynamic(filtered_obj, filtered_ruby_kwargs)
           end
         end
       end

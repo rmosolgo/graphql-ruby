@@ -49,16 +49,16 @@ module GraphQL
         # Things might get added here during `visit...`
         # or they might be added manually if we can't find them by hand
         @late_bound_fields = []
-        prev_late_bound_fields.each do |(owner_type, field_defn, dynamic_field)|
+        prev_late_bound_fields.each do |(owner_type, field_defn, entry_point)|
           if @type_map.key?(field_defn.type.unwrap.name)
             late_bound_return_type = field_defn.type
             resolved_type = @type_map.fetch(late_bound_return_type.unwrap.name)
             wrapped_resolved_type = rewrap_resolved_type(late_bound_return_type, resolved_type)
             # Update the field definition in place? :thinking_face:
-            field_defn.type = wrapped_resolved_type
-            visit_field_on_type(@schema, owner_type, field_defn, dynamic_field: dynamic_field)
+            field_defn = field_defn.redefine(type: wrapped_resolved_type)
+            visit_field_on_type(@schema, owner_type, field_defn, entry_point: entry_point)
           else
-            @late_bound_fields << [owner_type, field_defn, dynamic_field]
+            @late_bound_fields << [owner_type, field_defn, entry_point]
           end
         end
 
@@ -108,7 +108,7 @@ Some late-bound types couldn't be resolved:
               member.introspection_system.entry_points.each do |introspection_field|
                 # Visit this so that arguments class is preconstructed
                 # Skip validation since it begins with "__"
-                visit_field_on_type(schema, member.query, introspection_field, dynamic_field: true)
+                visit_field_on_type(schema, member.query, introspection_field, entry_point: true)
               end
             end
           end
@@ -179,15 +179,16 @@ Some late-bound types couldn't be resolved:
         end
       end
 
-      def visit_field_on_type(schema, type_defn, field_defn, dynamic_field: false)
+      def visit_field_on_type(schema, type_defn, field_defn, entry_point: false)
         base_return_type = field_defn.type.unwrap
         if base_return_type.is_a?(GraphQL::Schema::LateBoundType)
-          @late_bound_fields << [type_defn, field_defn, dynamic_field]
+          @late_bound_fields << [type_defn, field_defn, entry_point]
           return
         end
-        if dynamic_field
+        if entry_point
           # Don't apply instrumentation to dynamic fields since they're shared constants
           instrumented_field_defn = field_defn
+          @schema.introspection_system.bound_entry_point(instrumented_field_defn)
         else
           instrumented_field_defn = @field_instrumenters.reduce(field_defn) do |defn, inst|
             inst.instrument(type_defn, defn)

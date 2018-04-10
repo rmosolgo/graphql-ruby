@@ -54,7 +54,7 @@ module GraphQL
           obj_type.mutation = mutation
 
           fields.each do |field_name, field_inst|
-            field_defn = field_inst.to_graphql
+            field_defn = field_inst.graphql_definition
             obj_type.fields[field_defn.name] = field_defn
           end
 
