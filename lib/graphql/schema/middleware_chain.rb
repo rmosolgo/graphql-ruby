@@ -38,6 +38,10 @@ module GraphQL
         invoke_core(0, arguments)
       end
 
+      def concat(callables)
+        callables.each { |c| add_middleware(c) }
+      end
+
       private
 
       def invoke_core(index, arguments)
