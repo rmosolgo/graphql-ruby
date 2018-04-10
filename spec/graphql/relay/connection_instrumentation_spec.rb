@@ -58,26 +58,7 @@ describe GraphQL::Relay::ConnectionInstrumentation do
     assert_instance_of GraphQL::Relay::ConnectionResolve, redefined_connection_field.resolve_proc
   end
 
-  describe "after_built_ins instrumentation" do
-    it "has access to connection objects" do
-      query_str = <<-GRAPHQL
-      {
-        rebels {
-          ships {
-            pageInfo {
-              __typename
-            }
-          }
-        }
-      }
-      GRAPHQL
-      ctx = { before_built_ins: [], after_built_ins: [] }
-      star_wars_query(query_str, {}, context: ctx)
-      # The second item is different here:
-      # Before the object is wrapped in a connection, the instrumentation sees `Array`
-      assert_equal ["StarWars::FactionRecord", "Array", "GraphQL::Relay::ArrayConnection"], ctx[:before_built_ins]
-      # After the object is wrapped in a connection, it sees the connection object
-      assert_equal ["StarWars::Faction", "GraphQL::Relay::ArrayConnection", "GraphQL::Relay::ArrayConnection"], ctx[:after_built_ins]
-    end
-  end
+  # TODO: Think about adding this back in.
+  # Maybe `connection: true` should keep using the old way,
+  # and make another way for people to opt into the new one.
 end
