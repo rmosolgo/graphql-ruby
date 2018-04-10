@@ -44,9 +44,6 @@ module GraphQL
 
     class ConnectionFilter < Filter
       def initialize(field:)
-        # TODO: this could be a bit weird, because these fields won't be present
-        # after initialization, only in the `to_graphql` response.
-        # This calculation _could_ be moved up if need be.
         field.argument :after, "String", "Returns the elements in the list that come after the specified global ID.", required: false
         field.argument :before, "String", "Returns the elements in the list that come before the specified global ID.", required: false
         field.argument :first, "Int", "Returns the first _n_ elements from the list.", required: false

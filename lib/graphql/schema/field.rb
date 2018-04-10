@@ -114,6 +114,9 @@ module GraphQL
         @filters = filters.map { |f| f.new(field: self) }
       end
 
+      # @return [Array<GraphQL::Schema::Filter>]
+      attr_reader :filters
+
       def description(text = nil)
         if text
           @description = text
@@ -245,6 +248,9 @@ module GraphQL
             # Might be nil, still want to call the func in that case
             inner_obj = filtered_obj && filtered_obj.object
             prev_resolve.call(inner_obj, args, ctx)
+          elsif @mutation_class
+            mutation_inst = @mutation_class.new(object: filtered_obj, arguments: args, context: ctx.query.context)
+            mutation_inst.resolve(**filtered_ruby_kwargs)
           else
             resolve_field_dynamic(filtered_obj, filtered_ruby_kwargs)
           end

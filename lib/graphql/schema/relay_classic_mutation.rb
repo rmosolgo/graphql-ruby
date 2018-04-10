@@ -48,6 +48,7 @@ module GraphQL
         # Extend {Schema::Mutation.generate_field} to add the `input` argument
         def generate_field
           field_instance = super
+          field_instance.filters << ClientMutationIdFilter.new(field: field_instance)
           field_instance.own_arguments.clear
           field_instance.argument(:input, input_type, required: true)
           field_instance
@@ -68,16 +69,15 @@ module GraphQL
             argument :client_mutation_id, String, "A unique identifier for the client performing the mutation.", required: false
           end
         end
+      end
 
-        # Override {GraphQL::Schema::Mutation.resolve_field} to
-        # delete `client_mutation_id` from the kwargs.
-        def resolve_field(obj, args, ctx)
-          mutation = self.new(object: obj, arguments: args, context: ctx.query.context)
-          kwargs = args.to_kwargs
-          # This is handled by Relay::Mutation::Resolve, a bit hacky, but here we are.
-          kwargs.delete(:client_mutation_id)
-          extras.each { |e| kwargs[e] = ctx.public_send(e) }
-          mutation.resolve(**kwargs)
+      class ClientMutationIdFilter < GraphQL::Schema::Filter
+        def resolve_field(obj, args)
+          inner_args = args.dup
+          cmid =  inner_args.delete(:client_mutation_id)
+          return_hash = yield(obj, inner_args)
+          return_hash[:client_mutation_id] = cmid
+          return_hash
         end
       end
     end
