@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 # test_via: ../object.rb
-require "graphql/schema/field/dynamic_resolve"
-require "graphql/schema/field/unwrapped_resolve"
 module GraphQL
   class Schema
     class Field
@@ -15,8 +13,11 @@ module GraphQL
       # @return [String]
       attr_accessor :description
 
-      # @return [Symbol]
-      attr_reader :method
+      # @return [Symbol] Method or hash key to look up
+      attr_reader :method_sym
+
+      # @return [String] Method or hash key to look up
+      attr_reader :method_str
 
       # @return [Class] The type that this field belongs to
       attr_reader :owner
@@ -82,8 +83,12 @@ module GraphQL
         if method && hash_key
           raise ArgumentError, "Provide `method:` _or_ `hash_key:`, not both. (called with: `method: #{method.inspect}, hash_key: #{hash_key.inspect}`)"
         end
-        @method = method
-        @hash_key = hash_key
+
+        # TODO: I think non-string/symbol hash keys are wrongly normalized (eg `1` will not work)
+        method_name = method || hash_key || Member::BuildType.underscore(name.to_s)
+
+        @method_str = method_name.to_s
+        @method_sym = method_name.to_sym
         @complexity = complexity
         @return_type_expr = return_type_expr
         @return_type_null = null
@@ -140,7 +145,6 @@ module GraphQL
           return field_inst.to_graphql
         end
 
-        method_name = @method || @hash_key || Member::BuildType.underscore(@name)
 
         field_defn = if @field
           @field.dup
@@ -152,20 +156,19 @@ module GraphQL
 
         field_defn.name = @camelize ? Member::BuildType.camelize(name) : name
         if @return_type_expr
-          return_type_name = Member::BuildType.to_type_name(@return_type_expr)
-          connection = @connection.nil? ? return_type_name.end_with?("Connection") : @connection
-          field_defn.type = -> {
-            begin
-              Member::BuildType.parse_type(@return_type_expr, null: @return_type_null)
-            rescue
-              raise ArgumentError, "Failed to build return type for #{@owner.graphql_name}.#{name} from #{@return_type_expr.inspect}: #{$!.message}", $!.backtrace
-            end
-          }
-        elsif @connection.nil? && (@field || @function)
-          return_type_name = Member::BuildType.to_type_name(field_defn.type)
-          connection = return_type_name.end_with?("Connection")
-        else
-          connection = @connection
+          field_defn.type = -> { type }
+        end
+
+        if @connection.nil?
+          # Provide default based on type name
+          return_type_name = if @field || @function
+            Member::BuildType.to_type_name(field_defn.type)
+          elsif @return_type_expr
+            Member::BuildType.to_type_name(@return_type_expr)
+          else
+            raise "No connection info possible"
+          end
+          @connection = return_type_name.end_with?("Connection")
         end
 
         if @description
@@ -180,24 +183,14 @@ module GraphQL
           field_defn.mutation = @mutation_class
         end
 
-        field_defn.resolve = if @resolve || @function || @field
-          prev_resolve = @resolve || field_defn.resolve_proc
-          UnwrappedResolve.new(inner_resolve: prev_resolve)
-        else
-          DynamicResolve.new(
-            method_name: method_name,
-            connection: connection,
-            extras: @extras
-          )
-        end
-
-        field_defn.connection = connection
+        field_defn.resolve = self.method(:resolve_field)
+        field_defn.connection = @connection
         field_defn.connection_max_page_size = @max_page_size
         field_defn.introspection = @introspection
         field_defn.complexity = @complexity
 
         # apply this first, so it can be overriden below
-        if connection
+        if @connection
           # TODO: this could be a bit weird, because these fields won't be present
           # after initialization, only in the `to_graphql` response.
           # This calculation _could_ be moved up if need be.
@@ -213,6 +206,90 @@ module GraphQL
         end
 
         field_defn
+      end
+
+      def type
+        @type ||= Member::BuildType.parse_type(@return_type_expr, null: @return_type_null)
+      rescue
+        raise ArgumentError, "Failed to build return type for #{@owner.graphql_name}.#{name} from #{@return_type_expr.inspect}: #{$!.message}", $!.backtrace
+      end
+
+      # Implement {GraphQL::Field}'s resolve API.
+      #
+      # Eventually, we might hook up field instances to execution in another way. TBD.
+      def resolve_field(obj, args, ctx)
+        if @resolve || @function || @field
+          # Support a passed-in proc, one way or another
+          prev_resolve = if @resolve
+            @resolve
+          elsif @function
+            @function
+          elsif @field
+            @field.resolve_proc
+          end
+
+          # Might be nil, still want to call the func in that case
+          inner_obj = obj && obj.object
+          prev_resolve.call(inner_obj, args, ctx)
+        else
+          resolve_field_dynamic(obj, args, ctx)
+        end
+      end
+
+      private
+
+      # Try a few ways to resolve the field
+      # @api private
+      def resolve_field_dynamic(obj, args, ctx)
+        if obj.respond_to?(@method_sym)
+          public_send_field(obj, @method_sym, args, ctx)
+        elsif obj.object.is_a?(Hash)
+          inner_object = obj.object
+          inner_object[@method_sym] || inner_object[@method_str]
+        elsif obj.object.respond_to?(@method_sym)
+          public_send_field(obj.object, @method_sym, args, ctx)
+        else
+          raise <<-ERR
+Failed to implement #{ctx.irep_node.owner_type.name}.#{ctx.field.name}, tried:
+
+- `#{obj.class}##{@method_sym}`, which did not exist
+- `#{obj.object.class}##{@method_sym}`, which did not exist
+- Looking up hash key `#{@method_sym.inspect}` or `#{@method_str.inspect}` on `#{obj.object}`, but it wasn't a Hash
+
+To implement this field, define one of the methods above (and check for typos)
+ERR
+        end
+      end
+
+      NO_ARGS = {}.freeze
+
+      def public_send_field(obj, method_name, graphql_args, field_ctx)
+        if graphql_args.any? || @extras.any?
+          # Splat the GraphQL::Arguments to Ruby keyword arguments
+          ruby_kwargs = graphql_args.to_kwargs
+
+          if @connection
+            # Remove pagination args before passing it to a user method
+            ruby_kwargs.delete(:first)
+            ruby_kwargs.delete(:last)
+            ruby_kwargs.delete(:before)
+            ruby_kwargs.delete(:after)
+          end
+
+          @extras.each do |extra_arg|
+            # TODO: provide proper tests for `:ast_node`, `:irep_node`, `:parent`, others?
+            ruby_kwargs[extra_arg] = field_ctx.public_send(extra_arg)
+          end
+        else
+          ruby_kwargs = NO_ARGS
+        end
+
+
+        if ruby_kwargs.any?
+          obj.public_send(method_name, **ruby_kwargs)
+        else
+          obj.public_send(method_name)
+        end
       end
     end
   end

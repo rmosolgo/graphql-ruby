@@ -25,11 +25,11 @@ describe GraphQL::Schema::Field do
     end
 
     it "exposes the method override" do
-      assert_nil field.method
       object = Class.new(Jazz::BaseObject) do
         field :t, String, method: :tt, null: true
       end
-      assert_equal :tt, object.fields["t"].method
+      assert_equal :tt, object.fields["t"].method_sym
+      assert_equal "tt", object.fields["t"].method_str
     end
 
     it "accepts a block for definition" do
@@ -82,6 +82,12 @@ describe GraphQL::Schema::Field do
 
     it "has a reference to the object that owns it with #owner" do
       assert_equal Jazz::Query, field.owner
+    end
+
+    describe "type" do
+      it "tells the return type" do
+        assert_equal "[String!]!", field.type.graphql_definition.to_s
+      end
     end
 
     describe "complexity" do
