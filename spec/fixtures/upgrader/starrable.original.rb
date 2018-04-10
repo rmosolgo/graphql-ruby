@@ -9,11 +9,14 @@ module Platform
       global_id_field :id
 
       field :viewerHasStarred, !types.Boolean do
+        argument :preceedsConnectionMethod, types.Boolean
         description "Returns a boolean indicating whether the viewing user has starred this starrable."
 
         resolve ->(object, arguments, context) do
           if context[:viewer]
-            context[:viewer].starred?(object)
+            ->(test_inner_proc) do
+              context[:viewer].starred?(object)
+            end
           else
             false
           end

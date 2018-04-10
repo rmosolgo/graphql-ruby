@@ -20,13 +20,11 @@ module GraphQL
       class << self
         def implements(*new_interfaces)
           new_interfaces.each do |int|
-            if int.is_a?(Class) && int < GraphQL::Schema::Interface
-              # Add the graphql field defns
-              int.fields.each do |name, field|
-                own_fields[name] = field
-              end
-              # And call the implemented hook
-              int.implemented(self)
+            if int.is_a?(Module)
+              # Include the methods here,
+              # `.fields` will use the inheritance chain
+              # to find inherited fields
+              include(int)
             else
               int.all_fields.each do |f|
                 field(f.name, field: f)

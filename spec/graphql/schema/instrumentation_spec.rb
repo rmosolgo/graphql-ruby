@@ -2,8 +2,9 @@
 require "spec_helper"
 
 module InstrumentationSpec
-  class SomeInterface < GraphQL::Schema::Interface
-    field :neverCalled, String, null: false
+  module SomeInterface
+    include GraphQL::Schema::Interface
+    field :never_called, String, null: false
 
     def never_called
       "should never be called"
@@ -15,7 +16,7 @@ module InstrumentationSpec
   end
 
   class Query < GraphQL::Schema::Object
-    field :someField, [SomeInterface], null: true
+    field :some_field, [SomeInterface], null: true
 
     def some_field
       nil
