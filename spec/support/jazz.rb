@@ -365,6 +365,7 @@ module Jazz
   end
 
   class AddInstrument < GraphQL::Schema::Mutation
+    null true
     description "Register a new musical instrument in the database"
 
     argument :name, String, required: true

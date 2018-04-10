@@ -24,6 +24,10 @@ module GraphQL
       field(:client_mutation_id, String, "A unique identifier for the client performing the mutation.", null: true)
 
       class << self
+        def inherited(base)
+          base.null(true)
+        end
+
         # The base class for generated input object types
         # @param new_class [Class] The base class to use for generating input object definitions
         # @return [Class] The base class for this mutation's generated input object (default is {GraphQL::Schema::InputObject})

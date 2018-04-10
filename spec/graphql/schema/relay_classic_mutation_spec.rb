@@ -25,4 +25,14 @@ describe GraphQL::Schema::RelayClassicMutation do
       assert_equal mutation, mutation.input_type.graphql_definition.mutation
     end
   end
+
+  describe ".null" do
+    it "is inherited as true" do
+      mutation = Class.new(GraphQL::Schema::RelayClassicMutation) do
+        graphql_name "Test"
+      end
+
+      assert mutation.null
+    end
+  end
 end
