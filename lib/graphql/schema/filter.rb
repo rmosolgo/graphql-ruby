@@ -37,9 +37,8 @@ module GraphQL
           nodes
         elsif nodes.is_a? GraphQL::ExecutionError
           raise nodes
-        elsif nodes.is_a? GraphQL::Relay::BaseConnection
-          # TODO can we avoid double-wrapping?
-          nodes
+        elsif obj.context.schema.lazy?(nodes)
+          # TODO Handle this somehow
         else
           parent = obj.object
           connection_class = GraphQL::Relay::BaseConnection.connection_for_nodes(nodes)
