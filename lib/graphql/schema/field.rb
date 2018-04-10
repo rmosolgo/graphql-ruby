@@ -22,6 +22,9 @@ module GraphQL
       # @return [Class] The type that this field belongs to
       attr_reader :owner
 
+      # @return [Integer, nil] The max page size for connections, if configured
+      attr_reader :max_page_size
+
       # @return [Class, nil] The mutation this field was derived from, if there is one
       def mutation
         @mutation || @mutation_class
@@ -47,7 +50,8 @@ module GraphQL
       # @param arguments [{String=>GraphQL::Schema::Arguments}] Arguments for this field (may be added in the block, also)
       # @param camelize [Boolean] If true, the field name will be camelized when building the schema
       # @param complexity [Numeric] When provided, set the complexity for this field
-      def initialize(name, return_type_expr = nil, desc = nil, owner: nil, null: nil, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, connection: nil, max_page_size: nil, resolve: nil, introspection: false, hash_key: nil, camelize: true, complexity: 1, extras: [], mutation: nil, mutation_class: nil, arguments: {}, &definition_block)
+      # @param filters [Array<Class>]
+      def initialize(name, return_type_expr = nil, desc = nil, owner: nil, null: nil, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, connection: nil, max_page_size: nil, resolve: nil, introspection: false, hash_key: nil, camelize: true, complexity: 1, extras: [], mutation: nil, mutation_class: nil, arguments: {}, filters: [], &definition_block)
         if (field || function) && desc.nil? && return_type_expr.is_a?(String)
           # The return type should be copied from `field` or `function`, and the second positional argument is the description
           desc = return_type_expr
@@ -106,6 +110,8 @@ module GraphQL
         if definition_block
           instance_eval(&definition_block)
         end
+
+        @filters = filters.map { |f| f.new(field: self) }
       end
 
       def description(text = nil)
@@ -191,19 +197,15 @@ module GraphQL
 
         # apply this first, so it can be overriden below
         if @connection
-          # TODO: this could be a bit weird, because these fields won't be present
-          # after initialization, only in the `to_graphql` response.
-          # This calculation _could_ be moved up if need be.
-          argument :after, "String", "Returns the elements in the list that come after the specified global ID.", required: false
-          argument :before, "String", "Returns the elements in the list that come before the specified global ID.", required: false
-          argument :first, "Int", "Returns the first _n_ elements from the list.", required: false
-          argument :last, "Int", "Returns the last _n_ elements from the list.", required: false
+          @filters.unshift(Schema::ConnectionFilter.new(field: self))
         end
 
         arguments.each do |name, defn|
           arg_graphql = defn.to_graphql
           field_defn.arguments[arg_graphql.name] = arg_graphql
         end
+
+        field_defn.metadata[:field_instance] = self
 
         field_defn
       end
@@ -218,39 +220,65 @@ module GraphQL
       #
       # Eventually, we might hook up field instances to execution in another way. TBD.
       def resolve_field(obj, args, ctx)
-        if @resolve || @function || @field
-          # Support a passed-in proc, one way or another
-          prev_resolve = if @resolve
-            @resolve
-          elsif @function
-            @function
-          elsif @field
-            @field.resolve_proc
+        if args.any? || @extras.any?
+          # Splat the GraphQL::Arguments to Ruby keyword arguments
+          ruby_kwargs = args.to_kwargs
+          @extras.each do |extra_arg|
+            # TODO: provide proper tests for `:ast_node`, `:irep_node`, `:parent`, others?
+            ruby_kwargs[extra_arg] = ctx.public_send(extra_arg)
           end
-
-          # Might be nil, still want to call the func in that case
-          inner_obj = obj && obj.object
-          prev_resolve.call(inner_obj, args, ctx)
         else
-          resolve_field_dynamic(obj, args, ctx)
+          ruby_kwargs = NO_ARGS
+        end
+
+        with_filters(obj, ruby_kwargs) do |obj, ruby_kwargs|
+          if @resolve || @function || @field
+            # Support a passed-in proc, one way or another
+            prev_resolve = if @resolve
+              @resolve
+            elsif @function
+              @function
+            elsif @field
+              @field.resolve_proc
+            end
+
+            # Might be nil, still want to call the func in that case
+            inner_obj = obj && obj.object
+            prev_resolve.call(inner_obj, args, ctx)
+          else
+            resolve_field_dynamic(obj, ruby_kwargs)
+          end
         end
       end
 
       private
 
+      def with_filters(obj, args, filter_idx: 0)
+        next_filter = @filters[filter_idx]
+        if next_filter
+          next_filter.resolve_field(obj, args) do |obj2, args2|
+            with_filters(obj2, args2, filter_idx: filter_idx + 1) do |obj3, args3|
+              yield(obj3, args3)
+            end
+          end
+        else
+          yield(obj, args)
+        end
+      end
+
       # Try a few ways to resolve the field
       # @api private
-      def resolve_field_dynamic(obj, args, ctx)
+      def resolve_field_dynamic(obj, ruby_kwargs)
         if obj.respond_to?(@method_sym)
-          public_send_field(obj, @method_sym, args, ctx)
+          public_send_field(obj, @method_sym, ruby_kwargs)
         elsif obj.object.is_a?(Hash)
           inner_object = obj.object
           inner_object[@method_sym] || inner_object[@method_str]
         elsif obj.object.respond_to?(@method_sym)
-          public_send_field(obj.object, @method_sym, args, ctx)
+          public_send_field(obj.object, @method_sym, ruby_kwargs)
         else
           raise <<-ERR
-Failed to implement #{ctx.irep_node.owner_type.name}.#{ctx.field.name}, tried:
+Failed to implement #{@owner.name}.#{name}, tried:
 
 - `#{obj.class}##{@method_sym}`, which did not exist
 - `#{obj.object.class}##{@method_sym}`, which did not exist
@@ -263,28 +291,7 @@ ERR
 
       NO_ARGS = {}.freeze
 
-      def public_send_field(obj, method_name, graphql_args, field_ctx)
-        if graphql_args.any? || @extras.any?
-          # Splat the GraphQL::Arguments to Ruby keyword arguments
-          ruby_kwargs = graphql_args.to_kwargs
-
-          if @connection
-            # Remove pagination args before passing it to a user method
-            ruby_kwargs.delete(:first)
-            ruby_kwargs.delete(:last)
-            ruby_kwargs.delete(:before)
-            ruby_kwargs.delete(:after)
-          end
-
-          @extras.each do |extra_arg|
-            # TODO: provide proper tests for `:ast_node`, `:irep_node`, `:parent`, others?
-            ruby_kwargs[extra_arg] = field_ctx.public_send(extra_arg)
-          end
-        else
-          ruby_kwargs = NO_ARGS
-        end
-
-
+      def public_send_field(obj, method_name, ruby_kwargs)
         if ruby_kwargs.any?
           obj.public_send(method_name, **ruby_kwargs)
         else

@@ -38,8 +38,7 @@ module GraphQL
 
       def build_connection(nodes, args, parent, ctx)
         if nodes.is_a? GraphQL::ExecutionError
-          ctx.add_error(nodes)
-          nil
+          raise nodes
         else
           if parent.is_a?(GraphQL::Schema::Object)
             parent = parent.object

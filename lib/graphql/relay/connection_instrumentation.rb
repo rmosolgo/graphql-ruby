@@ -28,7 +28,7 @@ module GraphQL
       # - Merging in the default arguments
       # - Transforming its resolve function to return a connection object
       def self.instrument(type, field)
-        if field.connection?
+        if field.connection? && !field.metadata[:field_instance]
           connection_arguments = DEFAULT_ARGUMENTS.merge(field.arguments)
           original_resolve = field.resolve_proc
           original_lazy_resolve = field.lazy_resolve_proc
