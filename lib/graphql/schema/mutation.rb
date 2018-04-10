@@ -83,6 +83,10 @@ module GraphQL
       end
 
       class << self
+        def inherited(base)
+          base.null(null)
+        end
+
         # Override the method from HasFields to support `field: Mutation.field`, for backwards compat.
         #
         # If called without any arguments, returns a `GraphQL::Field`.
@@ -141,15 +145,14 @@ module GraphQL
           @extras || []
         end
 
-        # Specifies whether or not the mutation is nullable
+        # Specifies whether or not the mutation is nullable. Defaults to `true`
         # @param allow_null [Boolean] Whether or not the response can be null
         def null(allow_null = nil)
           unless allow_null.nil?
             @null = allow_null
           end
 
-          raise ArgumentError, "must set `null` on mutation classes" if @null.nil?
-          @null
+          @null.nil? ? true : @null
         end
 
         private

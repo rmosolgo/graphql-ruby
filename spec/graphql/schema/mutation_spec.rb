@@ -113,12 +113,27 @@ describe GraphQL::Schema::Mutation do
         graphql_name "Thing3"
       end
 
-      error = assert_raises(ArgumentError) do
-        default_mutation_class.graphql_field
-      end
-      assert_equal error.message, "must set `null` on mutation classes"
+      assert default_mutation_class.graphql_field.instance_variable_get("@return_type_null")
       assert nullable_mutation_class.graphql_field.instance_variable_get("@return_type_null")
       refute non_nullable_mutation_class.graphql_field.instance_variable_get("@return_type_null")
+    end
+
+    it "should inherit and override in subclasses" do
+      base_mutation = Class.new(GraphQL::Schema::Mutation) do
+        null(false)
+      end
+
+      inheriting_mutation = Class.new(base_mutation) do
+        graphql_name "Thing"
+      end
+
+      override_mutation = Class.new(base_mutation) do
+        graphql_name "Thing2"
+        null(true)
+      end
+
+      assert_equal false, inheriting_mutation.graphql_field.instance_variable_get("@return_type_null")
+      assert override_mutation.graphql_field.instance_variable_get("@return_type_null")
     end
   end
 end
