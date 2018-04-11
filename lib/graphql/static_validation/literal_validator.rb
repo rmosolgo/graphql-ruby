@@ -16,23 +16,35 @@ module GraphQL
         elsif type.kind.list?
           item_type = type.of_type
           ensure_array(ast_value).all? { |val| validate(val, item_type) }
-        elsif type.kind.scalar? && !ast_value.is_a?(GraphQL::Language::Nodes::AbstractNode) && !ast_value.is_a?(Array)
+        elsif ast_value.is_a?(GraphQL::Language::Nodes::VariableIdentifier)
+          true
+        elsif type.kind.scalar? && constant_scalar?(ast_value)
           type.valid_input?(ast_value, @context)
         elsif type.kind.enum? && ast_value.is_a?(GraphQL::Language::Nodes::Enum)
           type.valid_input?(ast_value.name, @context)
         elsif type.kind.input_object? && ast_value.is_a?(GraphQL::Language::Nodes::InputObject)
           required_input_fields_are_present(type, ast_value) &&
             present_input_field_values_are_valid(type, ast_value)
-        elsif ast_value.is_a?(GraphQL::Language::Nodes::VariableIdentifier)
-          true
         else
           false
         end
       end
 
-
       private
 
+      # The GraphQL grammar supports variables embedded within scalars but graphql.js
+      # doesn't support it so we won't either for simplicity
+      def constant_scalar?(ast_value)
+        if ast_value.is_a?(GraphQL::Language::Nodes::VariableIdentifier)
+          false
+        elsif ast_value.is_a?(Array)
+          ast_value.all? { |element| constant_scalar?(element) }
+        elsif ast_value.is_a?(GraphQL::Language::Nodes::InputObject)
+          ast_value.arguments.all? { |arg| constant_scalar?(arg.value) }
+        else
+          true
+        end
+      end
 
       def required_input_fields_are_present(type, ast_node)
         required_field_names = @warden.arguments(type)

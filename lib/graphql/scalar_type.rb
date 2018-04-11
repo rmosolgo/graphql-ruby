@@ -109,7 +109,19 @@ module GraphQL
     end
 
     def coerce_non_null_input(value, ctx)
-      @coerce_input_proc.call(value, ctx)
+      @coerce_input_proc.call(raw_coercion_input(value), ctx)
+    end
+
+    def raw_coercion_input(value)
+      if value.is_a?(GraphQL::Language::Nodes::InputObject)
+        value.to_h
+      elsif value.is_a?(Array)
+        value.map { |element| raw_coercion_input(element) }
+      elsif value.is_a?(GraphQL::Language::Nodes::Enum)
+        value.name
+      else
+        value
+      end
     end
 
     def validate_non_null_input(value, ctx)
