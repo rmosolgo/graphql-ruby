@@ -12,6 +12,13 @@ describe GraphQL::Schema::Argument do
     end
   end
 
+  describe "#type" do
+    let(:argument) { SchemaArgumentTest.fields["field"].arguments["arg"] }
+    it "returns the type" do
+      assert_equal GraphQL::STRING_TYPE, argument.type
+    end
+  end
+
   describe "graphql definition" do
     it "calls block" do
       assert_equal "test", SchemaArgumentTest.fields["field"].arguments["argWithBlock"].description
