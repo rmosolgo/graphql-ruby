@@ -38,8 +38,9 @@ module GraphQL
               when GraphQL::BaseType
                 maybe_type
               when Module
+                # This is a way to check that it's the right kind of module:
                 if maybe_type.respond_to?(:graphql_definition)
-                  maybe_type.graphql_definition
+                  maybe_type
                 else
                   raise "Unexpected class/module found for GraphQL type: #{type_expr} (must be type definition class/module)"
                 end
@@ -64,8 +65,9 @@ module GraphQL
               raise ArgumentError, LIST_TYPE_ERROR
             end
           when Module
+            # This is a way to check that it's the right kind of module:
             if type_expr.respond_to?(:graphql_definition)
-              type_expr.graphql_definition
+              type_expr
             else
               # Eg `String` => GraphQL::STRING_TYPE
               parse_type(type_expr.name, null: true)

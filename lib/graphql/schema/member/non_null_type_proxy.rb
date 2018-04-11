@@ -7,13 +7,13 @@ module GraphQL
       # @api private
       class NonNullTypeProxy
         include GraphQL::Schema::Member::CachedGraphQLDefinition
-
-        def initialize(member)
-          @member = member
+        attr_reader :of_type
+        def initialize(of_type)
+          @of_type = of_type
         end
 
         def to_graphql
-          @member.graphql_definition.to_non_null_type
+          @of_type.graphql_definition.to_non_null_type
         end
 
         def to_list_type

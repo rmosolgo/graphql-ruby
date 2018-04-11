@@ -8,12 +8,14 @@ module GraphQL
       class ListTypeProxy
         include GraphQL::Schema::Member::CachedGraphQLDefinition
 
-        def initialize(member)
-          @member = member
+        attr_reader :of_type
+
+        def initialize(of_type)
+          @of_type = of_type
         end
 
         def to_graphql
-          @member.graphql_definition.to_list_type
+          @of_type.graphql_definition.to_list_type
         end
 
         def to_non_null_type

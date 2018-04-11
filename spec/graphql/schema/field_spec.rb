@@ -88,6 +88,11 @@ describe GraphQL::Schema::Field do
       it "tells the return type" do
         assert_equal "[String!]!", field.type.graphql_definition.to_s
       end
+
+      it "returns the type class" do
+        field = Jazz::Query.fields["nowPlaying"]
+        assert_equal Jazz::PerformingAct, field.type.of_type
+      end
     end
 
     describe "complexity" do
