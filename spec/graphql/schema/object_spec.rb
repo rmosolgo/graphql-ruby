@@ -57,6 +57,18 @@ describe GraphQL::Schema::Object do
       assert_equal ["Jerry Garcia"], ensemble["musicians"].map { |m| m["name"] }
       assert_equal "May 5, 1965", ensemble["formedAt"]
     end
+
+    it "works with strings and symbols" do
+      query_str = <<-GRAPHQL
+      {
+        hashByString { falsey }
+        hashBySym { falsey }
+      }
+      GRAPHQL
+      res = Jazz::Schema.execute(query_str)
+      assert_equal false, res["data"]["hashByString"]["falsey"]
+      assert_equal false, res["data"]["hashBySym"]["falsey"]
+    end
   end
 
   describe ".to_graphql_type" do

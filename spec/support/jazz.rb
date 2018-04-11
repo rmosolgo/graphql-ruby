@@ -302,6 +302,10 @@ module Jazz
     end
   end
 
+  class HashKeyTest < BaseObject
+    field :falsey, Boolean, null: false
+  end
+
   # Another new-style definition, with method overrides
   class Query < BaseObject
     field :ensembles, [Ensemble], null: false
@@ -396,6 +400,16 @@ module Jazz
 
     def echo_first_json(input:)
       input.first
+    end
+
+    field :hash_by_string, HashKeyTest, null: false
+    field :hash_by_sym, HashKeyTest, null: false
+    def hash_by_string
+      { "falsey" => false }
+    end
+
+    def hash_by_sym
+      { falsey: false }
     end
   end
 

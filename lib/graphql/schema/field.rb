@@ -245,7 +245,11 @@ module GraphQL
           public_send_field(obj, @method_sym, args, ctx)
         elsif obj.object.is_a?(Hash)
           inner_object = obj.object
-          inner_object[@method_sym] || inner_object[@method_str]
+          if inner_object.key?(@method_sym)
+            inner_object[@method_sym]
+          else
+            inner_object[@method_str]
+          end
         elsif obj.object.respond_to?(@method_sym)
           public_send_field(obj.object, @method_sym, args, ctx)
         else
