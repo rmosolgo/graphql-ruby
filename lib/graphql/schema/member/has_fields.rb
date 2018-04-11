@@ -58,9 +58,10 @@ module GraphQL
 
         private
 
+        # Initialize a field with this class's field class, but don't attach it.
         def build_field(*args, **kwargs, &block)
           kwargs[:owner] = self
-          field_defn = field_class.new(*args, **kwargs, &block)
+          field_class.new(*args, **kwargs, &block)
         end
       end
     end
