@@ -31,6 +31,7 @@ module Jazz
         ],
         "Ensemble" => [
           Models::Ensemble.new("Bela Fleck and the Flecktones"),
+          Models::Ensemble.new("Robert Glasper Experiment"),
         ],
         "Musician" => [
           Models::Musician.new("Herbie Hancock", Models::Key.from_notation("B♭")),
@@ -169,13 +170,18 @@ module Jazz
 
   # Here's a new-style GraphQL type definition
   class Ensemble < ObjectWithUpcasedName
+    # Test string type names
+    # This method should override inherited one
+    field :name, "String", null: false, method: :overridden_name
     implements GloballyIdentifiableType, NamedEntity
     description "A group of musicians playing together"
     config :config, :configged
-    # Test string type names:
-    field :name, "String", null: false
     field :musicians, "[Jazz::Musician]", null: false
     field :formed_at, String, null: true, hash_key: "formedAtDate"
+
+    def overridden_name
+      @object.name.sub("Robert Glasper", "ROBERT GLASPER")
+    end
   end
 
   class Family < BaseEnum

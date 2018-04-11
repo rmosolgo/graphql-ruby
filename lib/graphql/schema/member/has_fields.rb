@@ -8,8 +8,7 @@ module GraphQL
         # @see {GraphQL::Schema::Field#initialize} for method signature
         # @return [void]
         def field(*args, **kwargs, &block)
-          kwargs[:owner] = self
-          field_defn = field_class.new(*args, **kwargs, &block)
+          field_defn = build_field(*args, **kwargs, &block)
           add_field(field_defn)
           nil
         end
@@ -55,6 +54,13 @@ module GraphQL
         # @return [Array<GraphQL::Schema::Field>] Fields defined on this class _specifically_, not parent classes
         def own_fields
           @own_fields ||= {}
+        end
+
+        private
+
+        def build_field(*args, **kwargs, &block)
+          kwargs[:owner] = self
+          field_defn = field_class.new(*args, **kwargs, &block)
         end
       end
     end

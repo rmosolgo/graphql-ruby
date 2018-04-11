@@ -47,7 +47,6 @@ describe GraphQL::Schema::Object do
       query_str = <<-GRAPHQL
       {
         hashyEnsemble {
-          name
           musicians { name }
           formedAt
         }
@@ -55,7 +54,6 @@ describe GraphQL::Schema::Object do
       GRAPHQL
       res = Jazz::Schema.execute(query_str)
       ensemble = res["data"]["hashyEnsemble"]
-      assert_equal "The Grateful Dead", ensemble["name"]
       assert_equal ["Jerry Garcia"], ensemble["musicians"].map { |m| m["name"] }
       assert_equal "May 5, 1965", ensemble["formedAt"]
     end
@@ -86,7 +84,7 @@ describe GraphQL::Schema::Object do
       GRAPHQL
 
       res = Jazz::Schema.execute(query_str)
-      assert_equal ["BELA FLECK AND THE FLECKTONES"], res["data"]["ensembles"].map { |e| e["upcaseName"] }
+      assert_equal ["BELA FLECK AND THE FLECKTONES", "ROBERT GLASPER EXPERIMENT"], res["data"]["ensembles"].map { |e| e["upcaseName"] }
     end
   end
 
@@ -104,7 +102,11 @@ describe GraphQL::Schema::Object do
       }
       GRAPHQL
       res = Jazz::Schema.execute(query_str)
-      assert_equal [{"name" => "Bela Fleck and the Flecktones"}], res["data"]["ensembles"]
+      expected_ensembles = [
+        {"name" => "Bela Fleck and the Flecktones"},
+        {"name" => "ROBERT GLASPER Experiment"},
+      ]
+      assert_equal expected_ensembles, res["data"]["ensembles"]
       assert_equal({"name" => "Banjo"}, res["data"]["instruments"].first)
     end
 
