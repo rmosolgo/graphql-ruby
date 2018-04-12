@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+## 1.7.3 (12 Apr 2018)
+
+### Bug Fix
+
+- Fix authorization code for when `ActiveRecord` is not defined
+
 ## 1.7.2 (10 Apr 2018)
 
 ### Bug Fix
