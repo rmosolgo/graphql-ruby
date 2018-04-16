@@ -385,17 +385,20 @@ module GraphQL
       class VariableIdentifier < NameOnlyNode; end
 
       class SchemaDefinition < AbstractNode
-        attr_accessor :query, :mutation, :subscription
+        attr_accessor :query, :mutation, :subscription, :directives
 
-        def initialize_node(query: nil, mutation: nil, subscription: nil)
+        def initialize_node(query: nil, mutation: nil, subscription: nil, directives: [])
           @query = query
           @mutation = mutation
           @subscription = subscription
+          @directives = directives
         end
 
         def scalars
           [query, mutation, subscription]
         end
+
+        alias :children :directives
       end
 
       class ScalarTypeDefinition < AbstractNode

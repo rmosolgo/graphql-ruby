@@ -276,7 +276,7 @@ rule
    | directive_definition
 
   schema_definition:
-      SCHEMA LCURLY operation_type_definition_list RCURLY { return make_node(:SchemaDefinition, position_source: val[0], **val[2]) }
+      SCHEMA directives_list_opt LCURLY operation_type_definition_list RCURLY { return make_node(:SchemaDefinition, position_source: val[0], directives: val[1], **val[3]) }
 
   operation_type_definition_list:
       operation_type_definition

@@ -615,7 +615,7 @@ type Query {
 
     it "tracks original AST node" do
       schema_definition = <<-GRAPHQL
-schema {
+schema @custom(thing: true) {
   query: Query
 }
 
@@ -653,6 +653,7 @@ type Type implements Interface {
       schema = GraphQL::Schema.from_definition(schema_definition)
 
       assert_equal [1, 1], schema.ast_node.position
+      assert_equal [1, 8], schema.ast_node.directives.first.position
       assert_equal [5, 1], schema.types["Enum"].ast_node.position
       assert_equal [6, 3], schema.types["Enum"].values["VALUE"].ast_node.position
       assert_equal [9, 1], schema.types["Query"].ast_node.position
