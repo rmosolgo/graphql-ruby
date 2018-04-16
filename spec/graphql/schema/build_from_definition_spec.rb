@@ -132,11 +132,12 @@ type Hello {
 
     it 'supports adding directives while maintaining built-in directives' do
       schema = <<-SCHEMA
-schema {
+schema @custom(thing: true) {
   query: Hello
 }
 
 directive @foo(arg: Int) on FIELD
+directive @custom(thing: Boolean) on SCHEMA
 
 type Hello {
   str: String
