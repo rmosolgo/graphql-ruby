@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+## 1.7.4 (16 Apr 2018)
+
+### New Features
+
+- Support Mongoid::Criteria in authorization scoping
+
 ## 1.7.3 (12 Apr 2018)
 
 ### Bug Fix
