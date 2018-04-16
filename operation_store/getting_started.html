@@ -171,8 +171,10 @@
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># app/controllers/graphql_controller.rb</span>
 <span class="n">context</span> <span class="o">=</span> <span class="p">{</span>
-  <span class="c1"># ...</span>
+  <span class="c1"># Relay / Apollo 1.x:</span>
   <span class="ss">operation_id: </span><span class="n">params</span><span class="p">[</span><span class="ss">:operationId</span><span class="p">]</span>
+  <span class="c1"># Or, Apollo Link:</span>
+  <span class="c1"># operation_id: params[:extensions][:operationId]</span>
 <span class="p">}</span>
 
 <span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span>
@@ -181,7 +183,7 @@
 <span class="p">)</span>
 </code></pre></div></div>
 
-<p><code class="highlighter-rouge">OperationStore</code> will use <code class="highlighter-rouge">stored_operation</code> to fetch the operation from the database.</p>
+<p><code class="highlighter-rouge">OperationStore</code> will use <code class="highlighter-rouge">operation_id</code> to fetch the operation from the database.</p>
 
 <p>See <a href="/operation_store/server_management">Server Management</a> for details about rejecting GraphQL from <code class="highlighter-rouge">params[:query]</code>.</p>
 

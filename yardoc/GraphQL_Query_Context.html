@@ -8,10 +8,13 @@
 Expose some query-specific info to field resolve functions. It
 delegates <code class="highlighter-rouge">[]</code> to the hash that’s passed to
 <code class="highlighter-rouge">GraphQL::Query#initialize</code>. 
+Includes:
+GraphQL::Query::Context::SharedMethods
 Extended by:
-Forwardable
+GraphQL::Delegate
 Instance methods:
-[], []=, ast_node, initialize, namespace, skip, spawn, warden</p>
+[], []=, ast_node, initialize, inspect, irep_node, namespace,
+received_null_child, warden</p>
 
 
   </body>

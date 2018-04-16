@@ -28,7 +28,7 @@ end</p>
 <h1 id="-data---coder---favoritelanguage--ruby---">{ “data” =&gt; { “coder” =&gt; { “favoriteLanguage” =&gt; “RUBY” } } }</h1>
 <h1 id="defining-an-enum-input">Defining an enum input</h1>
 <p>field :coders, types[CoderType] do
-argument :knowing, types[LanguageType]
+argument :knowing, types[LanguageEnum]
 resolve -&gt;(obj, args, ctx) {
 Coder.where(language: args[:knowing])
 }

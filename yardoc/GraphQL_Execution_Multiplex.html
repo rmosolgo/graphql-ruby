@@ -22,8 +22,12 @@ isolation: one of these errors in one query will not affect the
 other queries. 
 See Also:</li>
   <li>{Schema#multiplex} - for public API
+Includes:
+GraphQL::Tracing::Traceable
 Class methods:
-begin_query, finish_query, run_all, run_queries
+begin_query, finish_query, has_custom_strategy?,
+instrument_and_analyze, run_all, run_as_multiplex, run_one_legacy,
+run_queries
 Instance methods:
 initialize</li>
 </ul>

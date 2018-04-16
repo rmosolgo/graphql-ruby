@@ -89,7 +89,7 @@ end</p>
     <h1 id="calculating-the-complexity-of-a-list-field">Calculating the complexity of a list field</h1>
     <p>field :items, types[ItemType] do
 argument :limit, !types.Int</p>
-    <h1 id="mulitply-the-child-complexity-by-the-possible-items-on-the-list">Mulitply the child complexity by the possible items on the list</h1>
+    <h1 id="multiply-the-child-complexity-by-the-possible-items-on-the-list">Multiply the child complexity by the possible items on the list</h1>
     <p>complexity -&gt;(ctx, args, child_complexity) { child_complexity * args[:limit] }
 end</p>
     <h1 id="creating-a-field-then-assigning-it-to-a-type">Creating a field, then assigning it to a type</h1>
@@ -106,9 +106,9 @@ end
 Includes:
 GraphQL::Define::InstanceDefinable
 Instance methods:
-build_default_resolver, connection?, default_arguments, initialize,
-initialize_copy, lazy_resolve, lazy_resolve=, prepare_lazy, resolve,
-resolve=, to_s, type, type=</p>
+build_default_resolver, connection?, edges?, initialize,
+initialize_copy, introspection?, lazy_resolve, lazy_resolve=,
+prepare_lazy, resolve, resolve=, to_s, type, type=</p>
   </li>
 </ul>
 

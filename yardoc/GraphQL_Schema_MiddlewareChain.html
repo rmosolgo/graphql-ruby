@@ -5,15 +5,16 @@
   </head>
   <body>
     <p>Class: GraphQL::Schema::MiddlewareChain &lt; Object
+This class is part of a private API.
 Given steps and arguments, call steps in order, passing
 <code class="highlighter-rouge">(*arguments, next_step)</code>. 
 Steps should call <code class="highlighter-rouge">next_step.call</code> to continue the chain, or <em>not</em>
 call it to stop the chain. 
 Extended by:
-Forwardable
+GraphQL::Delegate
 Instance methods:
-«, ==, add_middleware, get_arity, initialize, initialize_copy,
-invoke, invoke_core, push, wrap</p>
+«, ==, add_middleware, concat, initialize, initialize_copy, invoke,
+invoke_core, push, wrap</p>
 
 
   </body>

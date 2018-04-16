@@ -64,7 +64,7 @@
   <li><a href="#client-usage">Send <code class="highlighter-rouge">params[:operationId]</code></a> from the client app</li>
 </ul>
 
-<p>This documentation also touches on <a href="https://github.com/rmosolgo/graphql-ruby-client"><code class="highlighter-rouge">graphql-ruby-client</code></a>, a JavaScript client library for using <code class="highlighter-rouge">OperationStore</code>.</p>
+<p>This documentation also touches on <a href="/javascript_client/sync">graphql-ruby-client sync</a>, a JavaScript client library for using <code class="highlighter-rouge">OperationStore</code>.</p>
 
 <h3 id="add-a-client">Add a Client</h3>
 
@@ -82,7 +82,7 @@
 
 <p>Once a client is registered, it can push queries to the server via <a href="/operation_store/getting_started#add-routes">the Sync API</a>.</p>
 
-<p>The easiest way to sync is with <code class="highlighter-rouge">graphql-ruby-client sync</code>, a command-line tool written in JavaScript: <a href="https://github.com/rmosolgo/graphql-ruby-client"><code class="highlighter-rouge">graphql-ruby-client</code></a>.</p>
+<p>The easiest way to sync is with <code class="highlighter-rouge">graphql-ruby-client sync</code>, a command-line tool written in JavaScript (<a href="/javascript_client/sync">Sync Guide</a>)</p>
 
 <p>In short, it:</p>
 
@@ -99,13 +99,11 @@
   <img src="/operation_store/sync_example.png" title="OperationStore client sync" alt="OperationStore client sync" />
 </a></p>
 
-<p>See the readme for <a href="https://github.com/rmosolgo/graphql-ruby-client#use-with-relay">Relay support</a>, <a href="https://github.com/rmosolgo/graphql-ruby-client#use-with-apollo-client">Apollo Client support</a>, and <a href="https://github.com/rmosolgo/graphql-ruby-client#use-with-plain-javascript">plain JS usage</a>.</p>
-
-<p>For help syncing in another language, you can take inspiration from the <a href="https://github.com/rmosolgo/graphql-ruby-client">JavaScript implementation</a>, <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Implementing operation sync in another language" target="_blank">open an issue</a>, or email <code class="highlighter-rouge">support@graphql.pro</code>.</p>
+<p>For help syncing in another language, you can take inspiration from the <a href="https://github.com/rmosolgo/graphql-ruby/tree/master/javascript_client">JavaScript implementation</a>, <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Implementing operation sync in another language" target="_blank">open an issue</a>, or email <code class="highlighter-rouge">support@graphql.pro</code>.</p>
 
 <h3 id="client-usage">Client Usage</h3>
 
-<p><code class="highlighter-rouge">graphql-ruby-client</code> generates <a href="https://github.com/rmosolgo/graphql-ruby-client#use-with-apollo-client">Apollo middleware</a> and a <a href="https://github.com/rmosolgo/graphql-ruby-client#use-with-relay">Relay helper function</a> to get started quickly.</p>
+<p>See the <a href="/javascript_client/sync">Sync Guide</a> for using OperationStore with Relay Modern, Apollo 1.x, Apollo Link, or plain JavaScript.</p>
 
 <p>To run stored operations from another client, send a param called <code class="highlighter-rouge">operationId</code> which is composed of:</p>
 

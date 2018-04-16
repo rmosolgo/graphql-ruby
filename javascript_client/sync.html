@@ -52,6 +52,7 @@
   <li><a href="#sync-utility"><code class="highlighter-rouge">sync</code> CLI</a></li>
   <li><a href="#use-with-relay">Relay support</a></li>
   <li><a href="#use-with-apollo-client">Apollo Client support</a></li>
+  <li><a href="#use-with-apollo-link">Apollo Link support</a></li>
   <li><a href="#use-with-plain-javascript">Plain JS support</a></li>
   <li><a href="#authorization">Authorization</a></li>
 </ul>
@@ -174,6 +175,44 @@ Generating client module in app/javascript/graphql/OperationStoreClient.js...
 </code></pre></div></div>
 
 <p>Now, the middleware will replace query strings with <code class="highlighter-rouge">operationId</code>s.</p>
+
+<h2 id="use-with-apollo-link">Use with Apollo Link</h2>
+
+<p>Use the <code class="highlighter-rouge">--path</code> option to point at your <code class="highlighter-rouge">.graphql</code> files:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ graphql-ruby-client sync --path=src/graphql/ --url=...
+</code></pre></div></div>
+
+<p>Then, load the generated module and add its <code class="highlighter-rouge">.apolloLink</code> to your Apollo Link:</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// load the generated module</span>
+<span class="kd">var</span> <span class="nx">OperationStoreClient</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s2">"./OperationStoreClient"</span><span class="p">)</span>
+
+<span class="c1">// Integrate the link to another link:</span>
+<span class="kd">const</span> <span class="nx">link</span> <span class="o">=</span> <span class="nx">ApolloLink</span><span class="p">.</span><span class="k">from</span><span class="p">([</span>
+  <span class="nx">authLink</span><span class="p">,</span>
+  <span class="nx">OperationStoreClient</span><span class="p">.</span><span class="nx">apolloLink</span><span class="p">,</span>
+  <span class="nx">httpLink</span><span class="p">,</span>
+<span class="p">])</span>
+
+<span class="c1">// Create a client</span>
+<span class="kd">const</span> <span class="nx">client</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">ApolloClient</span><span class="p">({</span>
+  <span class="na">link</span><span class="p">:</span> <span class="nx">link</span><span class="p">,</span>
+  <span class="na">cache</span><span class="p">:</span> <span class="k">new</span> <span class="nx">InMemoryCache</span><span class="p">(),</span>
+<span class="p">});</span>
+</code></pre></div></div>
+
+<p><strong>Update the controller</strong>: Apollo Link supports extra parameters <em>nested</em> as <code class="highlighter-rouge">params[:extensions][:operationId]</code>, so update your controller to add that param to context:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># app/controllers/graphql_controller.rb</span>
+<span class="n">context</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="c1"># ...</span>
+  <span class="c1"># Support Apollo Link:</span>
+  <span class="ss">operation_id: </span><span class="n">params</span><span class="p">[</span><span class="ss">:extensions</span><span class="p">][</span><span class="ss">:operationId</span><span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Now, <code class="highlighter-rouge">context[:operation_id]</code> will be used to fetch a query from the database.</p>
 
 <h2 id="use-with-plain-javascript">Use with plain JavaScript</h2>
 

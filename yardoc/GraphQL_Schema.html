@@ -5,51 +5,35 @@
   </head>
   <body>
     <p>Class: GraphQL::Schema &lt; Object
-A GraphQL schema which may be queried with GraphQL::Query. 
-The Schema contains:</p>
-<ul>
-  <li>types for exposing your application</li>
-  <li>query analyzers for assessing incoming queries (including max
-depth &amp; max complexity restrictions)</li>
-  <li>execution strategies for running incoming queries</li>
-  <li>middleware for interacting with execution
-Schemas start with root types, Schema#query, Schema#mutation and
-Schema#subscription. The schema will traverse the tree of fields &amp;
-types, using those as starting points. Any undiscoverable types may
-be provided with the <code class="highlighter-rouge">types</code> configuration. 
-Schemas can restrict large incoming queries with <code class="highlighter-rouge">max_depth</code> and
-<code class="highlighter-rouge">max_complexity</code> configurations. (These configurations can be
-overridden by specific calls to Schema#execute) 
-Schemas can specify how queries should be executed against them.
-<code class="highlighter-rouge">query_execution_strategy</code>, <code class="highlighter-rouge">mutation_execution_strategy</code> and
-<code class="highlighter-rouge">subscription_execution_strategy</code> each apply to corresponding root
-types. 
-A schema accepts a <code class="highlighter-rouge">Relay::GlobalNodeIdentification</code> instance for
-use with Relay IDs. 
-Examples:
-    <h1 id="defining-a-schema">defining a schema</h1>
-    <p>MySchema = GraphQL::Schema.define do
-query QueryType
-middleware PermissionMiddleware
-rescue_from(ActiveRecord::RecordNotFound) { “Not found” }</p>
-    <h1 id="if-types-are-only-connected-by-way-of-interfaces-they-must-be-added-here">If types are only connected by way of interfaces, they must be added here</h1>
-    <p>orphan_types ImageType, AudioType
-end
+This class is part of a private API.
+The base class for things that make up the schema, eg objects,
+enums, scalars. 
 Includes:
 GraphQL::Define::InstanceDefinable
+Extended by:
+GraphQL::Delegate, GraphQL::Schema::Member::AcceptsDefinition
 Class methods:
-from_definition, from_introspection
+context_class, cursor_encoder, default_max_page_size,
+defined_instrumenters, defined_middleware,
+defined_multiplex_analyzers, defined_query_analyzers,
+defined_tracers, directives, from_definition, from_introspection,
+graphql_definition, id_from_object, inherited, instrument,
+introspection, lazy_classes, lazy_resolve, max_complexity,
+max_depth, middleware, multiplex_analyzer, mutation, object_from_id,
+orphan_types, plugins, query, query_analyzer, rescue_from,
+resolve_type, subscription, to_graphql, tracer, type_error, use
 Instance methods:
-as_json, build_instrumented_field_map, build_types_map, define,
-execute, execution_strategy_for_operation, get_field, get_fields,
+as_json, check_resolved_type, default_filter, define, execute,
+execution_strategy_for_operation, find, get_field, get_fields,
 id_from_object, id_from_object=, initialize, initialize_copy,
-instrument, lazy?, lazy_method_name, multiplex, object_from_id,
-object_from_id=, parse_error, parse_error=, possible_types,
+instrument, introspection_system, lazy?, lazy_method_name,
+multiplex, object_from_id, object_from_id=, parse_error,
+parse_error=, possible_types, rebuild_artifacts, references_to,
 remove_handler, rescue_from, rescue_middleware, rescues?,
-resolve_type, resolve_type=, root_type_for_operation, to_definition,
-to_json, type_error, type_error=, type_from_ast, types, validate</p>
-  </li>
-</ul>
+resolve_type, resolve_type=, root_type_for_operation, root_types,
+to_definition, to_document, to_json, type_error, type_error=,
+type_from_ast, types, union_memberships, validate,
+with_definition_error_check</p>
 
 
   </body>

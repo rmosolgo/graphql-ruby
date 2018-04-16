@@ -12,8 +12,15 @@ Examples:</p>
 <h1 id="creating-a-string-from-a-document">Creating a string from a document</h1>
 <p>document.to_query_string</p>
 <h1 id="--">{ … }</h1>
-<p>Instance methods:
-initialize_node, slice_definition</p>
+<h1 id="creating-a-custom-string-from-a-document">Creating a custom string from a document</h1>
+<p>class VariableScrubber &lt; GraphQL::Language::Printer
+def print_argument(arg)
+“#{arg.name}: <HIDDEN>"
+end
+end
+document.to_query_string(printer: VariableSrubber.new)
+Instance methods:
+initialize_node, slice_definition</HIDDEN></p>
 
 
   </body>

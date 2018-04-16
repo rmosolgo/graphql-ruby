@@ -6,18 +6,15 @@
   <body>
     <p>Class: GraphQL::Schema::Warden &lt; Object
 This class is part of a private API.
-Restrict access to a GraphQL::Schema with a user-defined mask. 
-The mask is object that responds to <code class="highlighter-rouge">#visible?(schema_member)</code>. 
+Restrict access to a GraphQL::Schema with a user-defined filter. 
 When validating and executing a query, all access to schema members
 should go through a warden. If you access the schema directly, you
 may show a client something that it shouldn’t be allowed to see. 
-Masks can be provided in Schema#execute (or Query#initialize) with
-the <code class="highlighter-rouge">mask:</code> keyword. 
 Examples:</p>
 <h1 id="hidding-private-fields">Hidding private fields</h1>
 <p>private_members = -&gt; (member, ctx) { member.metadata[:private] }
 result = Schema.execute(query_string, except: private_members)</p>
-<h1 id="custom-mask-implementation">Custom mask implementation</h1>
+<h1 id="custom-filter-implementation">Custom filter implementation</h1>
 <h1 id="it-must-respond-to-callmember">It must respond to <code class="highlighter-rouge">#call(member)</code>.</h1>
 <p>class MissingRequiredFlags
 def initialize(user)
@@ -34,10 +31,14 @@ end</p>
 <p>missing_required_flags = MissingRequiredFlags.new(current_user)</p>
 <h1 id="this-query-can-only-access-members-which-match-the-users-flags">This query can only access members which match the user’s flags</h1>
 <p>result = Schema.execute(query_string, except: missing_required_flags)
+Direct Known Subclasses:
+Query::NullContext::NullWarden
 Instance methods:
 arguments, directives, enum_values, fields, get_field, get_type,
-initialize, interfaces, possible_types, read_through,
-root_type_for_operation, types, visible?, visible_field?</p>
+initialize, interfaces, possible_types, possible_types?,
+read_through, referenced?, root_type?, root_type_for_operation,
+types, union_memberships, visible?, visible_abstract_type?,
+visible_field?, visible_type?</p>
 
 
   </body>
