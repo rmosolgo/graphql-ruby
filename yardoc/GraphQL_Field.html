@@ -1,0 +1,117 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta http-equiv="refresh" content="1;url=http://www.rubydoc.info/gems/graphql/1.8.0.pre10/GraphQL/Field" />
+  </head>
+  <body>
+    <p>Class: GraphQL::Field &lt; Object
+{Field}s belong to {ObjectType}s and  They’re usually created with
+the <code class="highlighter-rouge">field</code> helper. If you create it by hand, make sure {#name is a
+String. 
+A field must have a return type, but if you want to defer the return
+type calculation until later, you can pass a proc for the return
+type. That proc will be called when the schema is defined. 
+For complex field definition, you can pass a block to the <code class="highlighter-rouge">field</code>
+helper, eg <code class="highlighter-rouge">field :name do ... end</code>. This block is equivalent to
+calling <code class="highlighter-rouge">GraphQL::Field.define { ... }</code>.</p>
+<h2 id="resolve">Resolve</h2>
+<p>Fields have <code class="highlighter-rouge">resolve</code> functions to determine their values at
+query-time. The default implementation is to call a method on the
+object based on the field name. 
+You can specify a custom proc with the <code class="highlighter-rouge">resolve</code> helper. 
+There are some shortcuts for common <code class="highlighter-rouge">resolve</code> implementations:</p>
+<ul>
+  <li>Provide <code class="highlighter-rouge">property:</code> to call a method with a different name than
+the field name</li>
+  <li>Provide <code class="highlighter-rouge">hash_key:</code> to resolve the field by doing a key lookup,
+eg <code class="highlighter-rouge">obj[:my_hash_key]</code>
+    <h2 id="arguments">Arguments</h2>
+    <p>Fields can take inputs; they’re called arguments. You can define
+them with the <code class="highlighter-rouge">argument</code> helper. 
+They can have default values which will be provided to <code class="highlighter-rouge">resolve</code> if
+the query doesn’t include a value. 
+Only certain types maybe used for inputs:</p>
+  </li>
+  <li>Scalars - Enums - Input Objects - Lists of those types 
+Input types may also be non-null   in that case, the query will
+fail if the input is not present.
+    <h2 id="complexity">Complexity</h2>
+    <p>Fields can have <em>complexity</em> values which describe the computation
+cost of resolving the field. You can provide the complexity as a
+constant with <code class="highlighter-rouge">complexity:</code> or as a proc, with the <code class="highlighter-rouge">complexity</code>
+helper. 
+Examples:</p>
+    <h1 id="lazy-type-resolution">Lazy type resolution</h1>
+    <h1 id="if-the-fields-type-isnt-defined-yet-you-can-pass-a-proc">If the field’s type isn’t defined yet, you can pass a proc</h1>
+    <p>field :city, -&gt; { TypeForModelName.find(“City”) }</p>
+    <h1 id="defining-a-field-with-a-block">Defining a field with a block</h1>
+    <p>field :city, CityType do</p>
+    <h1 id="field-definition-continues-inside-the-block">field definition continues inside the block</h1>
+    <p>end</p>
+    <h1 id="create-a-field-which-calls-a-method-with-the-same-name">Create a field which calls a method with the same name.</h1>
+    <p>GraphQL::ObjectType.define do
+field :name, types.String, “The name of this thing “
+end</p>
+    <h1 id="create-a-field-that-calls-a-different-method-on-the-object">Create a field that calls a different method on the object</h1>
+    <p>GraphQL::ObjectType.define do</p>
+    <h1 id="use-the-property-keyword">use the <code class="highlighter-rouge">property</code> keyword:</h1>
+    <p>field :firstName, types.String, property: :first_name
+end</p>
+    <h1 id="create-a-field-looks-up-with-hash_key">Create a field looks up with <code class="highlighter-rouge">[hash_key]</code></h1>
+    <p>GraphQL::ObjectType.define do</p>
+    <h1 id="use-the-hash_key-keyword">use the <code class="highlighter-rouge">hash_key</code> keyword:</h1>
+    <p>field :firstName, types.String, hash_key: :first_name
+end</p>
+    <h1 id="create-a-field-with-an-argument">Create a field with an argument</h1>
+    <p>field :students, types[StudentType] do
+argument :grade, types.Int
+resolve -&gt;(obj, args, ctx) {
+Student.where(grade: args[:grade])
+}
+end</p>
+    <h1 id="argument-with-a-default-value">Argument with a default value</h1>
+    <p>field :events, types[EventType] do</p>
+    <h1 id="by-default-dont-include-past-events">by default, don’t include past events</h1>
+    <p>argument :includePast, types.Boolean, default_value: false
+resolve -&gt;(obj, args, ctx) {
+args[:includePast] # =&gt; false if no value was provided in the query</p>
+    <h1>…</h1>
+    <p>}
+end</p>
+    <h1 id="custom-complexity-values">Custom complexity values</h1>
+    <h1 id="complexity-can-be-a-number-or-a-proc">Complexity can be a number or a proc.</h1>
+    <h1 id="complexity-can-be-defined-with-a-keyword">Complexity can be defined with a keyword:</h1>
+    <p>field :expensive_calculation, !types.Int, complexity: 10</p>
+    <h1 id="or-inside-the-block">Or inside the block:</h1>
+    <p>field :expensive_calculation_2, !types.Int do
+complexity -&gt;(ctx, args, child_complexity) { ctx[:current_user].staff? ? 0 : 10 }
+end</p>
+    <h1 id="calculating-the-complexity-of-a-list-field">Calculating the complexity of a list field</h1>
+    <p>field :items, types[ItemType] do
+argument :limit, !types.Int</p>
+    <h1 id="multiply-the-child-complexity-by-the-possible-items-on-the-list">Multiply the child complexity by the possible items on the list</h1>
+    <p>complexity -&gt;(ctx, args, child_complexity) { child_complexity * args[:limit] }
+end</p>
+    <h1 id="creating-a-field-then-assigning-it-to-a-type">Creating a field, then assigning it to a type</h1>
+    <p>name_field = GraphQL::Field.define do
+name(“Name”)
+type(!types.String)
+description(“The name of this thing”)
+resolve -&gt;(object, arguments, context) { object.name }
+end
+NamedType = GraphQL::ObjectType.define do</p>
+    <h1 id="the-second-argument-may-be-a-graphqlfield">The second argument may be a GraphQL::Field</h1>
+    <p>field :name, name_field
+end
+Includes:
+GraphQL::Define::InstanceDefinable
+Instance methods:
+build_default_resolver, connection?, edges?, initialize,
+initialize_copy, introspection?, lazy_resolve, lazy_resolve=,
+prepare_lazy, resolve, resolve=, to_s, type, type=</p>
+  </li>
+</ul>
+
+
+  </body>
+</html>

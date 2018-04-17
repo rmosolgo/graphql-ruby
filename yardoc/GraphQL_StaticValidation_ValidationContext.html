@@ -1,0 +1,25 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta http-equiv="refresh" content="1;url=http://www.rubydoc.info/gems/graphql/1.8.0.pre10/GraphQL/StaticValidation/ValidationContext" />
+  </head>
+  <body>
+    <p>Class: GraphQL::StaticValidation::ValidationContext &lt; Object
+The validation context gets passed to each validator. 
+It exposes a GraphQL::Language::Visitor where validators may add
+hooks. (Language::Visitor#visit is called in Validator#validate) 
+It provides access to the schema &amp; fragments which validators may
+read from. 
+It holds a list of errors which each validator may add to. 
+It also provides limited access to the TypeStack instance, which
+tracks state as you climb in and out of different fields. 
+Extended by:
+GraphQL::Delegate
+Instance methods:
+argument_definition, directive_definition, each_irep_node,
+field_definition, initialize, object_types, on_dependency_resolve,
+parent_type_definition, path, type_definition, valid_literal?</p>
+
+
+  </body>
+</html>

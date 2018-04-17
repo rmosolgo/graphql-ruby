@@ -1,0 +1,24 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta http-equiv="refresh" content="1;url=http://www.rubydoc.info/gems/graphql/1.8.0.pre10/GraphQL/Analysis/FieldUsage" />
+  </head>
+  <body>
+    <p>Class: GraphQL::Analysis::FieldUsage &lt; Object
+A query reducer for tracking both field usage and deprecated field
+usage. 
+Examples:</p>
+<h1 id="logging-field-usage-and-deprecated-field-usage">Logging field usage and deprecated field usage</h1>
+<p>Schema.query_analyzers « GraphQL::Analysis::FieldUsage.new { |query, used_fields, used_deprecated_fields|
+puts “Used GraphQL fields: #{used_fields.join(‘, ‘)}”
+puts “Used deprecated GraphQL fields: #{used_deprecated_fields.join(‘, ‘)}”
+}
+Schema.execute(query_str)</p>
+<h1 id="used-graphql-fields-cheeseid-cheesefatcontent-querycheese">Used GraphQL fields: Cheese.id, Cheese.fatContent, Query.cheese</h1>
+<h1 id="used-deprecated-graphql-fields-cheesefatcontent">Used deprecated GraphQL fields: Cheese.fatContent</h1>
+<p>Instance methods:
+call, final_value, initial_value, initialize</p>
+
+
+  </body>
+</html>

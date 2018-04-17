@@ -1,0 +1,35 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta http-equiv="refresh" content="1;url=http://www.rubydoc.info/gems/graphql/1.8.0.pre10/GraphQL/Relay/RangeAdd" />
+  </head>
+  <body>
+    <p>Class: GraphQL::Relay::RangeAdd &lt; Object
+This provides some isolation from <code class="highlighter-rouge">GraphQL::Relay</code> internals. 
+Given a list of items and a new item, it will provide a connection
+and an edge. 
+The connection doesn’t receive outside arguments, so the list of
+items should be ordered and paginated before providing it here. 
+Examples:</p>
+<h1 id="adding-a-comment-to-list-of-comments">Adding a comment to list of comments</h1>
+<p>post = Post.find(args[:postId])
+comments = post.comments
+new_comment = comments.build(body: args[:body])
+new_comment.save!
+range_add = GraphQL::Relay::RangeAdd.new(
+parent: post,
+collection: comments,
+item: new_comment,
+context: ctx,
+)
+response = {
+post: post,
+commentsConnection: range_add.connection,
+newCommentEdge: range_add.edge,
+}
+Instance methods:
+initialize</p>
+
+
+  </body>
+</html>

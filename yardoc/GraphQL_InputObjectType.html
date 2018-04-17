@@ -1,0 +1,35 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta http-equiv="refresh" content="1;url=http://www.rubydoc.info/gems/graphql/1.8.0.pre10/GraphQL/InputObjectType" />
+  </head>
+  <body>
+    <p>Class: GraphQL::InputObjectType &lt; GraphQL::BaseType
+are key-value inputs for fields. 
+Input objects have <em>arguments</em> which are identical to
+{GraphQL::Field arguments. They map names to types and support
+default values. Their input types can be any input types, including
+{InputObjectType}s. 
+In a <code class="highlighter-rouge">resolve</code> function, you can access the values by making nested
+lookups on <code class="highlighter-rouge">args</code>. 
+Examples:</p>
+<h1 id="an-input-type-with-name-and-number">An input type with name and number</h1>
+<p>PlayerInput = GraphQL::InputObjectType.define do
+name(“Player”)
+argument :name, !types.String
+argument :number, !types.Int
+end</p>
+<h1 id="accessing-input-values-in-a-resolve-function">Accessing input values in a resolve function</h1>
+<p>resolve -&gt;(obj, args, ctx) {
+args[:player][:name]    # =&gt; “Tony Gwynn”
+args[:player][:number]  # =&gt; 19
+args[:player].to_h      # { “name” =&gt; “Tony Gwynn”, “number” =&gt; 19 }</p>
+<h1>…</h1>
+<p>}
+Instance methods:
+coerce_non_null_input, coerce_result, initialize, initialize_copy,
+kind, validate_non_null_input</p>
+
+
+  </body>
+</html>

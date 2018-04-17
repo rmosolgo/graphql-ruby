@@ -1,0 +1,25 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta http-equiv="refresh" content="1;url=http://www.rubydoc.info/gems/graphql/1.8.0.pre10/GraphQL/InternalRepresentation/Rewrite" />
+  </head>
+  <body>
+    <p>Class: GraphQL::InternalRepresentation::Rewrite &lt; Object
+While visiting an AST, build a normalized, flattened tree of  No
+unions or interfaces are present in this tree, only object types. 
+Selections from the AST are attached to the object types they apply
+to. 
+Inline fragments and fragment spreads are preserved in
+{InternalRepresentation::Node#ast_spreads, where they can be used to
+check for the presence of directives. This might not be sufficient
+for future directives, since the selections’ grouping is lost. 
+The rewritten query tree serves as the basis for the
+<code class="highlighter-rouge">FieldsWillMerge</code> validation. 
+Includes:
+GraphQL::Language
+Instance methods:
+initialize, operations, skip?, validate</p>
+
+
+  </body>
+</html>

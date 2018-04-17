@@ -1,0 +1,27 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta http-equiv="refresh" content="1;url=http://www.rubydoc.info/gems/graphql/1.8.0.pre10/GraphQL/Query/ValidationPipeline" />
+  </head>
+  <body>
+    <p>Class: GraphQL::Query::ValidationPipeline &lt; Object
+This class is part of a private API.
+Contain the validation pipeline and expose the results.</p>
+<ol>
+  <li>Checks in Query#initialize:
+    <ul>
+      <li>Rescue a ParseError, halt if there is one</li>
+      <li>Check for selected operation, halt if not found</li>
+    </ul>
+  </li>
+  <li>Validate the AST, halt if errors 2. Validate the variables, halt
+if errors 3. Run query analyzers, halt if errors 
+#valid? is false if any of the above checks halted the pipeline. 
+Instance methods:
+analysis_errors, analyzers, build_analyzers, ensure_has_validated,
+initialize, internal_representation, valid?, validation_errors</li>
+</ol>
+
+
+  </body>
+</html>

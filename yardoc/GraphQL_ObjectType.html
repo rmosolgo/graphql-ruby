@@ -1,0 +1,34 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta http-equiv="refresh" content="1;url=http://www.rubydoc.info/gems/graphql/1.8.0.pre10/GraphQL/ObjectType" />
+  </head>
+  <body>
+    <p>Class: GraphQL::ObjectType &lt; GraphQL::BaseType
+This type exposes fields on an object. 
+Examples:</p>
+<h1 id="defining-a-type-for-your-imdb-clone">defining a type for your IMDB clone</h1>
+<p>MovieType = GraphQL::ObjectType.define do
+name “Movie”
+description “A full-length film or a short film”
+interfaces [ProductionInterface, DurationInterface]
+field :runtimeMinutes, !types.Int, property: :runtime_minutes
+field :director, PersonType
+field :cast, CastType
+field :starring, types[PersonType] do
+argument :limit, types.Int
+resolve -&gt;(object, args, ctx) {
+stars = object.cast.stars
+args[:limit] &amp;&amp; stars = stars.limit(args[:limit])
+stars
+}
+end
+end
+Instance methods:
+all_fields, get_field, implements, initialize, initialize_copy,
+interface_fields, interfaces, interfaces=, kind, load_interfaces,
+normalize_interfaces</p>
+
+
+  </body>
+</html>
