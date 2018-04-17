@@ -7,7 +7,7 @@ desc: Working with Relay-style global IDs
 index: 0
 ---
 
-Relay uses [global object identification](https://facebook.github.io/relay/graphql/objectidentification.htm) support some of its features:
+Relay uses [global object identification](https://facebook.github.io/relay/graphql/objectidentification.htm) to support some of its features:
 
 - __Caching__: Unique IDs are used as primary keys in Relay's client-side cache.
 - __Refetching__: Relay uses unique IDs to refetch objects when it determines that its cache is stale. (It uses the `Query.node` field to refetch objects.)
