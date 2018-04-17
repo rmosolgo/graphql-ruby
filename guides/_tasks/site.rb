@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+require "yard"
 
 namespace :site do
   desc "View the documentation site locally"
@@ -66,8 +67,9 @@ namespace :site do
     puts 'Done.'
   end
 
-  task :build_doc do
-    require "yard"
+  YARD::Rake::YardocTask.new(:prepare_yardoc)
+
+  task build_doc: :prepare_yardoc do
     require_relative "../../lib/graphql/version"
 
     def to_rubydoc_url(path)
@@ -98,20 +100,26 @@ PAGE
     # Get docs for all classes and modules
     docs = registry.all(:class, :module)
     docs.each do |code_object|
-      # Skip private classes and modules
-      if code_object.visibility == :private
-        next
-      end
-      rubydoc_url = to_rubydoc_url(code_object.path)
-      page_content = DOC_TEMPLATE % {
-        title: code_object.path,
-        url: rubydoc_url,
-        documentation: code_object.format.gsub(/-{2,}/, " ").gsub(/^\s+/, ""),
-      }
+      begin
+        # Skip private classes and modules
+        if code_object.visibility == :private
+          next
+        end
+        rubydoc_url = to_rubydoc_url(code_object.path)
+        page_content = DOC_TEMPLATE % {
+          title: code_object.path,
+          url: rubydoc_url,
+          documentation: code_object.format.gsub(/-{2,}/, " ").gsub(/^\s+/, ""),
+        }
 
-      filename = code_object.path.gsub(/\W+/, "_")
-      filepath = "guides/yardoc/#{filename}.md"
-      File.write(filepath, page_content)
+        filename = code_object.path.gsub(/\W+/, "_")
+        filepath = "guides/yardoc/#{filename}.md"
+        File.write(filepath, page_content)
+      rescue StandardError => err
+        puts "Error on: #{code_object.path}"
+        puts err
+        puts err.backtrace
+      end
     end
     puts "Wrote #{docs.size} YARD docs to #{files_target}."
   end

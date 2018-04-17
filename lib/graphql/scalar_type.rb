@@ -56,7 +56,7 @@ module GraphQL
   # This will result in the message of the `GraphQL::CoercionError` being used in the error response:
   #
   # @example custom error response
-  # {"message"=>"cannot coerce `"2"` to Float", "locations"=>[{"line"=>3, "column"=>9}], "fields"=>["arg"]}
+  #   {"message"=>"cannot coerce `"2"` to Float", "locations"=>[{"line"=>3, "column"=>9}], "fields"=>["arg"]}
   #
   class ScalarType < GraphQL::BaseType
     accepts_definitions :coerce, :coerce_input, :coerce_result
