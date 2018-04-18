@@ -40,7 +40,10 @@ module GraphQL
         GraphQL::Language::Nodes::SchemaDefinition.new(
           query: warden.root_type_for_operation("query"),
           mutation: warden.root_type_for_operation("mutation"),
-          subscription: warden.root_type_for_operation("subscription")
+          subscription: warden.root_type_for_operation("subscription"),
+          # This only supports directives from parsing,
+          # use a custom printer to add to this list.
+          directives: @schema.ast_node ? @schema.ast_node.directives : [],
         )
       end
 

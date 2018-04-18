@@ -134,11 +134,21 @@ module GraphQL
       def print_schema_definition(schema)
         if (schema.query.nil? || schema.query == 'Query') &&
            (schema.mutation.nil? || schema.mutation == 'Mutation') &&
-           (schema.subscription.nil? || schema.subscription == 'Subscription')
+           (schema.subscription.nil? || schema.subscription == 'Subscription') &&
+           (schema.directives.none?)
           return
         end
 
-        out = "schema {\n".dup
+        out = "schema".dup
+        if schema.directives.any?
+          schema.directives.each do |dir|
+            out << "\n  "
+            out << print_node(dir)
+          end
+          out << "\n{"
+        else
+          out << " {\n"
+        end
         out << "  query: #{schema.query}\n" if schema.query
         out << "  mutation: #{schema.mutation}\n" if schema.mutation
         out << "  subscription: #{schema.subscription}\n" if schema.subscription
