@@ -23,6 +23,9 @@ module GraphQL
       extend GraphQL::Schema::Member::AcceptsDefinition
 
       class << self
+        extend GraphQL::Delegate
+        def_delegators :graphql_definition, :coerce_isolated_input, :coerce_isolated_result
+
         # Define a value for this enum
         # @param graphql_name [String, Symbol] the GraphQL value for this, usually `SCREAMING_CASE`
         # @param description [String], the GraphQL description for this value, present in documentation

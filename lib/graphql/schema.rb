@@ -693,6 +693,7 @@ module GraphQL
         schema_defn.cursor_encoder = cursor_encoder
         schema_defn.tracers.concat(defined_tracers)
         schema_defn.query_analyzers.concat(defined_query_analyzers)
+        schema_defn.middleware.concat(defined_middleware)
         schema_defn.multiplex_analyzers.concat(defined_multiplex_analyzers)
         defined_instrumenters.each do |step, insts|
           insts.each do |inst|
@@ -864,6 +865,14 @@ module GraphQL
         defined_query_analyzers << new_analyzer
       end
 
+      def middleware(new_middleware = nil)
+        if new_middleware
+          defined_middleware << new_middleware
+        else
+          graphql_definition.middleware
+        end
+      end
+
       def multiplex_analyzer(new_analyzer)
         defined_multiplex_analyzers << new_analyzer
       end
@@ -884,6 +893,10 @@ module GraphQL
 
       def defined_query_analyzers
         @defined_query_analyzers ||= []
+      end
+
+      def defined_middleware
+        @defined_middleware ||= []
       end
 
       def defined_multiplex_analyzers

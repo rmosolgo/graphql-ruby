@@ -44,15 +44,19 @@ module GraphQL
       def to_graphql
         argument = GraphQL::Argument.new
         argument.name = @camelize ? Member::BuildType.camelize(@name) : @name
-        argument.type = -> {
-          Member::BuildType.parse_type(@type_expr, null: @null)
-        }
+        argument.type = -> { type }
         argument.description = @description
         argument.metadata[:type_class] = self
         if NO_DEFAULT != @default_value
           argument.default_value = @default_value
         end
         argument
+      end
+
+      def type
+        @type ||= Member::BuildType.parse_type(@type_expr, null: @null)
+      rescue StandardError => err
+        raise "Couldn't build type for Argument #{@owner.name}.#{name}: #{err.class.name}: #{err.message}", err.backtrace
       end
     end
   end

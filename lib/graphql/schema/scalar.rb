@@ -5,12 +5,15 @@ module GraphQL
       extend GraphQL::Schema::Member::AcceptsDefinition
 
       class << self
+        extend GraphQL::Delegate
+        def_delegators :graphql_definition, :coerce_isolated_input, :coerce_isolated_result
+
         def coerce_input(val, ctx)
-          raise NotImplementedError, "#{self.name}.coerce_input(val, ctx) must prepare GraphQL input (#{val.inspect}) for Ruby processing"
+          val
         end
 
         def coerce_result(val, ctx)
-          raise NotImplementedError, "#{self.name}.coerce_result(val, ctx) must prepare Ruby value (#{val.inspect}) for GraphQL response"
+          val
         end
 
         def to_graphql

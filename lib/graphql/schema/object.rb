@@ -25,10 +25,6 @@ module GraphQL
               # `.fields` will use the inheritance chain
               # to find inherited fields
               include(int)
-            else
-              int.all_fields.each do |f|
-                field(f.name, field: f)
-              end
             end
           end
           own_interfaces.concat(new_interfaces)
@@ -40,6 +36,21 @@ module GraphQL
 
         def own_interfaces
           @own_interfaces ||= []
+        end
+
+        # Include legacy-style interfaces, too
+        def fields
+          all_fields = super
+          interfaces.each do |int|
+            if int.is_a?(GraphQL::InterfaceType)
+              int_f = {}
+              int.fields.each do |name, legacy_field|
+                int_f[name] = build_field(name, field: legacy_field)
+              end
+              all_fields = int_f.merge(all_fields)
+            end
+          end
+          all_fields
         end
 
         # @return [GraphQL::ObjectType]
