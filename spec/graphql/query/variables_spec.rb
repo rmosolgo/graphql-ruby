@@ -48,13 +48,11 @@ describe GraphQL::Query::Variables do
       end
     end
 
-    describe "symbol/underscored keys" do
+    describe "symbol keys" do
       let(:query_string) { <<-GRAPHQL
         query testVariables(
-          $camelizedInt: Int!
-          $dairyProduct1: DairyProductInput!
-          $dairyProduct2: DairyProductInput!
-          $dairy_product_3: DairyProductInput!
+          $dairy_product_1: DairyProductInput!
+          $dairy_product_2: DairyProductInput!
         ) {
           __typename
         }
@@ -63,16 +61,12 @@ describe GraphQL::Query::Variables do
 
       let(:provided_variables) {
         {
-          camelized_int: 1,
-          dairy_product_1: { source: "COW", fat_content: 0.99 },
-          "dairy_product_2" => { "source": "DONKEY", "fatContent": 0.89 },
-          "dairy_product_3" => { "source" => "COW", "fatContent" => 0.79 },
+          dairy_product_1: { source: "COW", fatContent: 0.99 },
+          "dairy_product_2" => { source: "DONKEY", "fatContent": 0.89 },
         }
       }
 
-      it "checks for string/camelized matches" do
-        assert_equal 1, variables["camelizedInt"]
-
+      it "checks for string matches" do
         # These get merged into all the values above
         default_values = {
           "originDairy"=>"Sugar Hollow Dairy",
@@ -84,19 +78,14 @@ describe GraphQL::Query::Variables do
           "source" => 1,
           "fatContent" => 0.99,
         }.merge(default_values)
-        assert_equal(expected_input_1, variables["dairyProduct1"].to_h)
+
+        assert_equal(expected_input_1, variables["dairy_product_1"].to_h)
 
         expected_input_2 = {
           "source" => :donkey,
           "fatContent" => 0.89,
         }.merge(default_values)
-        assert_equal(expected_input_2, variables["dairyProduct2"].to_h)
-
-        expected_input_3 = {
-          "source" => 1,
-          "fatContent" => 0.79,
-        }.merge(default_values)
-        assert_equal(expected_input_3, variables["dairy_product_3"].to_h)
+        assert_equal(expected_input_2, variables["dairy_product_2"].to_h)
       end
     end
 
