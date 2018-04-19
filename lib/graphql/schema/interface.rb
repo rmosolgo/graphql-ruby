@@ -73,9 +73,10 @@ module GraphQL
         end
       end
 
-      extend DefinitionMethods
       # Extend this _after_ `DefinitionMethods` is defined, so it will be used
       extend GraphQL::Schema::Member::AcceptsDefinition
+
+      extend DefinitionMethods
     end
   end
 end

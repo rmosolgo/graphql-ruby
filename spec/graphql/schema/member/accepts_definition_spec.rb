@@ -14,10 +14,14 @@ describe GraphQL::Schema::Member::AcceptsDefinition do
       accepts_definition :metadata
     end
 
+    GraphQL::Schema::Object.accepts_definition(:metadata2)
+
     class BaseObject < GraphQL::Schema::Object
       field_class BaseField
       accepts_definition :metadata
     end
+
+    GraphQL::Schema::Interface.accepts_definition(:metadata2)
 
     module BaseInterface
       include GraphQL::Schema::Interface
@@ -39,10 +43,12 @@ describe GraphQL::Schema::Member::AcceptsDefinition do
     module Thing
       include BaseInterface
       metadata :z, 888
+      metadata2 :a, :bc
     end
 
     class Query < BaseObject
       metadata :a, :abc
+      metadata2 :xyz, :zyx
 
       field :option, Option, null: false do
         metadata :a, :def
@@ -55,15 +61,16 @@ describe GraphQL::Schema::Member::AcceptsDefinition do
     query(Query)
   end
 
-
   it "passes along configs for types" do
     assert_equal [:a, 123], AcceptsDefinitionSchema::Option.metadata
     assert_equal 123, AcceptsDefinitionSchema::Option.graphql_definition.metadata[:a]
     assert_equal [:a, :abc], AcceptsDefinitionSchema::Query.metadata
     assert_equal :abc, AcceptsDefinitionSchema::Query.graphql_definition.metadata[:a]
+    assert_equal :zyx, AcceptsDefinitionSchema::Query.graphql_definition.metadata[:xyz]
 
     assert_equal [:z, 888], AcceptsDefinitionSchema::Thing.metadata
     assert_equal 888, AcceptsDefinitionSchema::Thing.graphql_definition.metadata[:z]
+    assert_equal :bc, AcceptsDefinitionSchema::Thing.graphql_definition.metadata[:a]
   end
 
   it "passes along configs for fields and arguments" do
