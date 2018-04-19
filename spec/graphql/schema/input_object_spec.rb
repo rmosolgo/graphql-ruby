@@ -14,6 +14,22 @@ describe GraphQL::Schema::InputObject do
       argument = input_object.arguments["name"]
       assert_equal input_object, argument.owner
     end
+
+    it "inherits arguments" do
+      base_class = Class.new(GraphQL::Schema::InputObject) do
+        argument :arg1, String, required: true
+        argument :arg2, String, required: true
+      end
+
+      subclass = Class.new(base_class) do
+        argument :arg2, Integer, required: true
+        argument :arg3, Integer, required: true
+      end
+
+      assert_equal 3, subclass.arguments.size
+      assert_equal ["arg1", "arg2", "arg3"], subclass.arguments.keys
+      assert_equal ["String!", "Int!", "Int!"], subclass.arguments.values.map { |a| a.type.to_s }
+    end
   end
 
   describe ".to_graphql" do
