@@ -14,7 +14,29 @@ module GraphQL
         "execute_query_lazy" => "GraphQL/execute",
       }
 
+      # @param set_transaction_name [Boolean] If true, the GraphQL operation name will be used as the transaction name.
+      #   This is not advised if you run more than one query per HTTP request, for example, with `graphql-client` or multiplexing.
+      def initialize(set_transaction_name: false)
+
+        @set_transaction_name = true
+      end
+
       def platform_trace(platform_key, key, data)
+        if @set_transaction_name && platform_key == "execute_query"
+          query = data[:query]
+          # Set the transaction name based on the operation type and name
+          selected_op = query.selected_operation
+          if selected_op
+            op_type = selected_op.operation_type
+            op_name = selected_op.name || "anonymous"
+          else
+            op_type = "query"
+            op_name = "anonymous"
+          end
+
+          NewRelic::Agent.set_transaction_name("GraphQL/#{op_type}.#{op_name}")
+        end
+
         NewRelic::Agent::MethodTracerHelpers.trace_execution_scoped(platform_key) do
           yield
         end
