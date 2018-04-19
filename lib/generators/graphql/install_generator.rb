@@ -81,13 +81,6 @@ module Graphql
         type: :boolean,
         desc: "Preconfigure smaller stack for API only apps"
 
-
-      GRAPHIQL_ROUTE = <<-RUBY
-if Rails.env.development?
-    mount GraphiQL::Rails::Engine, at: "/graphiql", graphql_path: "/graphql"
-  end
-RUBY
-
       def create_folder_structure
         create_dir("#{options[:directory]}/types")
         template("schema.erb", schema_file_path)
@@ -115,7 +108,20 @@ RUBY
           # This is a little cheat just to get cleaner shell output:
           log :route, 'graphiql-rails'
           shell.mute do
-            route(GRAPHIQL_ROUTE)
+            # Rails 5.2 has better support for `route`?
+            if Rails::VERSION::STRING > "5"
+              route <<-RUBY
+if Rails.env.development?
+  mount GraphiQL::Rails::Engine, at: "/graphiql", graphql_path: "/graphql"
+end
+RUBY
+            else
+              route <<-RUBY
+if Rails.env.development?
+    mount GraphiQL::Rails::Engine, at: "/graphiql", graphql_path: "/graphql"
+  end
+RUBY
+            end
           end
         end
 
