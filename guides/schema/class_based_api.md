@@ -4,7 +4,7 @@ search: true
 section: Schema
 title: Class-based API
 desc: Define your GraphQL schema with Ruby classes (1.8.x alpha releases)
-experimental: true
+class_based_api: true
 index: 10
 ---
 
@@ -21,7 +21,7 @@ You can get an overview of this new feature:
 
 And learn about the APIs:
 
-- [Schema class](#schema-class)
+- {% internal_link "Schema class", "/schema/definition" %}
 - [Common type configurations](#common-type-configurations) (shared by all the following types)
 - {% internal_link "Object classes", "/type_definitions/objects" %}
 - {% internal_link "Interface classes", "/type_definitions/interfaces" %}
@@ -272,7 +272,7 @@ Here is a working plan for rolling out this feature:
     - ☑ Custom introspection types
     - ☐ ~~Custom directives~~ Probably will mess with execution soon, not worth the investment now
     - ☐ ~~Custom `Schema#execute` method~~ not necessary
-  - ☐ Migrate all of GitHub's GraphQL schema to this new API
+  - ☑ Migrate all of GitHub's GraphQL schema to this new API
 - graphql 1.9:
   - ☐ Update all GraphQL-Ruby docs to reflect this new API
 - graphql 1.10:
