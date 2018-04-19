@@ -21,7 +21,7 @@ module GraphQL
 
         # @return [Hash<String => GraphQL::Schema::Argument] Arguments defined on this thing, keyed by name. Includes inherited definitions
         def arguments
-          inherited_arguments = ((self.is_a?(Class) && superclass <= GraphQL::Schema::Member::HasArguments) ? superclass.arguments : {})
+          inherited_arguments = ((self.is_a?(Class) && superclass.respond_to?(:arguments)) ? superclass.arguments : {})
           # Local definitions override inherited ones
           inherited_arguments.merge(own_arguments)
         end
