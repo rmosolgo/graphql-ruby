@@ -5,6 +5,7 @@ section: Schema
 title: Definition
 desc: Defining your schema
 class_based_api: true
+index: 1
 ---
 
 A GraphQL system is called a _schema_. The schema contains all the types and fields in the system. The schema executes queries and publishes an {% internal_link "introspection system","/schema/introspection" %}.
