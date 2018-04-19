@@ -2,7 +2,7 @@
 
 source "https://rubygems.org"
 
-gem "rails", "~> 5.0"
+gem "rails", "~> 5.2.0"
 gem "bootsnap"
 gem "ruby-prof", :platform => :ruby
 gem "sqlite3", :platform => :ruby
@@ -10,8 +10,6 @@ gem "pg", "< 1.0", :platform => :ruby
 gem "pry"
 gem "pry-stack_explorer", :platform => :ruby
 gem "activerecord-jdbcsqlite3-adapter", :platform => :jruby
-gem "activerecord", "~> 5.0.0"
-gem "actionpack", "~> 5.0.0"
 
 group :jekyll_plugins do
   gem "algoliasearch-jekyll"

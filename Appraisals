@@ -35,6 +35,10 @@ appraise 'rails_5.1' do
   gem 'selenium-webdriver'
 end
 
+appraise "rails_5.2" do
+  gem 'rails', '~> 5.2.0'
+end
+
 appraise 'without_rails' do
   gem "globalid"
 end
