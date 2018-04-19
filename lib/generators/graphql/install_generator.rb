@@ -109,7 +109,7 @@ module Graphql
           log :route, 'graphiql-rails'
           shell.mute do
             # Rails 5.2 has better support for `route`?
-            if Rails::VERSION::STRING > "5"
+            if Rails::VERSION::STRING > "5.2"
               route <<-RUBY
 if Rails.env.development?
   mount GraphiQL::Rails::Engine, at: "/graphiql", graphql_path: "/graphql"
