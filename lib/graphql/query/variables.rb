@@ -13,7 +13,8 @@ module GraphQL
       def initialize(ctx, ast_variables, provided_variables)
         schema = ctx.schema
         @context = ctx
-        @provided_variables = provided_variables
+
+        @provided_variables = deep_stringify(provided_variables)
         @errors = []
         @storage = ast_variables.each_with_object({}) do |ast_variable, memo|
           # Find the right value for this variable:
@@ -27,7 +28,7 @@ module GraphQL
             variable_name = ast_variable.name
             default_value = ast_variable.default_value
             provided_value = @provided_variables[variable_name]
-            value_was_provided = @provided_variables.key?(variable_name)
+            value_was_provided =  @provided_variables.key?(variable_name)
 
             validation_result = variable_type.validate_input(provided_value, ctx)
             if !validation_result.valid?
@@ -45,6 +46,23 @@ module GraphQL
       end
 
       def_delegators :@storage, :length, :key?, :[], :fetch, :to_h
+
+      private
+
+      def deep_stringify(val)
+        case val
+        when Array
+          val.map { |v| deep_stringify(v) }
+        when Hash
+          new_val = {}
+          val.each do |k, v|
+            new_val[k.to_s] = deep_stringify(v)
+          end
+          new_val
+        else
+          val
+        end
+      end
     end
   end
 end

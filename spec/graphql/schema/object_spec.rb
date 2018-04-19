@@ -141,10 +141,10 @@ describe GraphQL::Schema::Object do
       }
       GRAPHQL
 
-      res = Jazz::Schema.execute(mutation_str, variables: { "name" => "Miles Davis Quartet" })
+      res = Jazz::Schema.execute(mutation_str, variables: { name: "Miles Davis Quartet" })
       new_id = res["data"]["addEnsemble"]["id"]
 
-      res2 = Jazz::Schema.execute(query_str, variables: { "id" => new_id })
+      res2 = Jazz::Schema.execute(query_str, variables: { id: new_id })
       assert_equal "Miles Davis Quartet", res2["data"]["find"]["name"]
     end
 
