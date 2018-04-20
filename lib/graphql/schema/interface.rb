@@ -29,10 +29,6 @@ module GraphQL
             child_class.own_interfaces.each do |interface_defn|
               child_class.extend(interface_defn::DefinitionMethods)
             end
-            # Also, prepare a place for default field implementations
-            default_resolve_module = Module.new
-            child_class.const_set(:DefaultResolve, default_resolve_module)
-            child_class.include(default_resolve_module)
           elsif child_class < GraphQL::Schema::Object
             # This is being included into an object type, make sure it's using `implements(...)`
             backtrace_line = caller(0, 10).find { |line| line.include?("schema/object.rb") && line.include?("in `implements'")}

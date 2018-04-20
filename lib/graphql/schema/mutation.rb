@@ -85,6 +85,7 @@ module GraphQL
       class << self
         def inherited(base)
           base.null(null)
+          super
         end
 
         # Override the method from HasFields to support `field: Mutation.field`, for backwards compat.
