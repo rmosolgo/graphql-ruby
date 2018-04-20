@@ -65,15 +65,13 @@ module Jazz
       super(*args, **options, &block)
     end
 
-    def to_graphql
-      field_defn = super
-      if @upcase
-        inner_resolve = field_defn.resolve_proc
-        field_defn.resolve = ->(obj, args, ctx) {
-          inner_resolve.call(obj, args, ctx).upcase
-        }
+    def resolve_field(*)
+      result = super
+      if @upcase && result
+        result.upcase
+      else
+        result
       end
-      field_defn
     end
   end
 
