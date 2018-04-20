@@ -232,18 +232,22 @@ module GraphQL
           inner_obj = obj && obj.object
           prev_resolve.call(inner_obj, args, ctx)
         else
-          resolve_field_dynamic(obj, args, ctx)
+          public_send_field(obj, @method_sym, args, ctx)
         end
       end
 
-      private
-
-      # Try a few ways to resolve the field
-      # @api private
-      def resolve_field_dynamic(obj, args, ctx)
-        if obj.respond_to?(@method_sym)
-          public_send_field(obj, @method_sym, args, ctx)
-        elsif obj.object.is_a?(Hash)
+      # Find a way to resolve this field, checking:
+      #
+      # - Hash keys, if the wrapped object is a hash;
+      # - A method on the wrapped object;
+      # - Or, raise not implemented.
+      #
+      # This can be overridden by defining a method on the object type.
+      # @param obj [GraphQL::Schema::Object]
+      # @param ruby_kwargs [Hash<Symbol => Object>]
+      # @param ctx [GraphQL::Query::Context]
+      def resolve_field_method(obj, ruby_kwargs, ctx)
+        if obj.object.is_a?(Hash)
           inner_object = obj.object
           if inner_object.key?(@method_sym)
             inner_object[@method_sym]
@@ -251,19 +255,25 @@ module GraphQL
             inner_object[@method_str]
           end
         elsif obj.object.respond_to?(@method_sym)
-          public_send_field(obj.object, @method_sym, args, ctx)
+          if ruby_kwargs.any?
+            obj.object.public_send(@method_sym, **ruby_kwargs)
+          else
+            obj.object.public_send(@method_sym)
+          end
         else
           raise <<-ERR
-Failed to implement #{ctx.irep_node.owner_type.name}.#{ctx.field.name}, tried:
+        Failed to implement #{ctx.irep_node.owner_type.name}.#{ctx.field.name}, tried:
 
-- `#{obj.class}##{@method_sym}`, which did not exist
-- `#{obj.object.class}##{@method_sym}`, which did not exist
-- Looking up hash key `#{@method_sym.inspect}` or `#{@method_str.inspect}` on `#{obj.object}`, but it wasn't a Hash
+        - `#{obj.class}##{@method_sym}`, which did not exist
+        - `#{obj.object.class}##{@method_sym}`, which did not exist
+        - Looking up hash key `#{@method_sym.inspect}` or `#{@method_str.inspect}` on `#{obj.object}`, but it wasn't a Hash
 
-To implement this field, define one of the methods above (and check for typos)
-ERR
+        To implement this field, define one of the methods above (and check for typos)
+        ERR
         end
       end
+
+      private
 
       NO_ARGS = {}.freeze
 

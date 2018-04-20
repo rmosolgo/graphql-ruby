@@ -25,11 +25,21 @@ module GraphQL
           all_fields
         end
 
-        # Register this field with the class, overriding a previous one if needed
+        # Register this field with the class, overriding a previous one if needed.
+        # Also, add a parent method for resolving this field.
         # @param field_defn [GraphQL::Schema::Field]
         # @return [void]
         def add_field(field_defn)
           own_fields[field_defn.name] = field_defn
+          if defined?(self::DefaultResolve)
+            field_key = field_defn.name.inspect
+            self::DefaultResolve.module_eval <<-RUBY, __FILE__, __LINE__ + 1
+              def #{field_defn.method_sym}(**args)
+                field_inst = self.class.fields[#{field_key}] || raise(%|Failed to find field #{field_key} for \#{self.class} among \#{self.class.fields.keys}|)
+                field_inst.resolve_field_method(self, args, context)
+              end
+            RUBY
+          end
           nil
         end
 

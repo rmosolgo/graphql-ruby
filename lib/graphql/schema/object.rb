@@ -71,6 +71,16 @@ module GraphQL
 
           obj_type
         end
+
+        # When a subclass is created, give it a DefaultResolve module.
+        # That module has the base methods for executing fields.
+        # That way, later method definitions can call `super` to get the default behavior.
+        def inherited(child_class)
+          default_resolve_module = Module.new
+          child_class.const_set(:DefaultResolve, default_resolve_module)
+          child_class.include(default_resolve_module)
+          super
+        end
       end
     end
   end

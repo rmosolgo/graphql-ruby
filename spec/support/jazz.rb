@@ -302,6 +302,11 @@ module Jazz
 
   class HashKeyTest < BaseObject
     field :falsey, Boolean, null: false
+
+    def falsey
+      # test that super can be used in objects
+      super
+    end
   end
 
   # Another new-style definition, with method overrides
