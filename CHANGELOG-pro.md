@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+## 1.7.5 (19 Apr 2018)
+
+### New Features
+
+- Authorization: when a `fallback:` configuration is given, apply it to each field which doesn't have a configuration of its own or from its return type. _Don't_ apply that configuration at schema level (it's applied to each otherwise uncovered field instead).
+
 ## 1.7.4 (16 Apr 2018)
 
 ### New Features
