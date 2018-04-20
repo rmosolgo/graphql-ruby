@@ -166,15 +166,25 @@ module Jazz
     end
   end
 
+  module HasMusicians
+    include BaseInterface
+    field :musicians, "[Jazz::Musician]", null: false
+
+    def musicians
+      # Test that super works
+      super + [Models::Musician.new("Phil Lesh")]
+    end
+  end
+
+
   # Here's a new-style GraphQL type definition
   class Ensemble < ObjectWithUpcasedName
     # Test string type names
     # This method should override inherited one
     field :name, "String", null: false, method: :overridden_name
-    implements GloballyIdentifiableType, NamedEntity
+    implements GloballyIdentifiableType, NamedEntity, HasMusicians
     description "A group of musicians playing together"
     config :config, :configged
-    field :musicians, "[Jazz::Musician]", null: false
     field :formed_at, String, null: true, hash_key: "formedAtDate"
 
     def overridden_name
