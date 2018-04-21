@@ -12,6 +12,11 @@ module GraphQL
             super
           end
 
+          # Create a module which will have instance methods for implementing fields.
+          # These will be `super` methods for fields in interfaces, objects and mutations.
+          # Use an instance variable on the class instead of a constant
+          # so that module namespaces won't be an issue. (If we used constants,
+          # `child_class::DefaultResolve` might find a constant from an included module.)
           def add_default_resolve_module(child_class)
             if child_class.instance_variable_get(:@_default_resolve)
               # This can happen when an object implements an interface,
