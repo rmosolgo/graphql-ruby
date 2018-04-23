@@ -262,7 +262,7 @@ module GraphQL
           end
         else
           raise <<-ERR
-        Failed to implement #{ctx.irep_node.owner_type.name}.#{ctx.field.name}, tried:
+        Failed to implement #{@owner.graphql_name}.#{@name}, tried:
 
         - `#{obj.class}##{@method_sym}`, which did not exist
         - `#{obj.object.class}##{@method_sym}`, which did not exist

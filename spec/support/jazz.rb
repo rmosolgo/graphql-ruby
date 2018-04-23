@@ -169,11 +169,6 @@ module Jazz
   module HasMusicians
     include BaseInterface
     field :musicians, "[Jazz::Musician]", null: false
-
-    def musicians
-      # Test that super works
-      super + [Models::Musician.new("Phil Lesh")]
-    end
   end
 
 
@@ -312,11 +307,6 @@ module Jazz
 
   class HashKeyTest < BaseObject
     field :falsey, Boolean, null: false
-
-    def falsey
-      # test that super can be used in objects
-      super
-    end
   end
 
   # Another new-style definition, with method overrides

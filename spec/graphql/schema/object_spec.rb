@@ -54,8 +54,7 @@ describe GraphQL::Schema::Object do
       GRAPHQL
       res = Jazz::Schema.execute(query_str)
       ensemble = res["data"]["hashyEnsemble"]
-      # This also tests `super` in an interface field
-      assert_equal ["Jerry Garcia", "Phil Lesh"], ensemble["musicians"].map { |m| m["name"] }
+      assert_equal ["Jerry Garcia"], ensemble["musicians"].map { |m| m["name"] }
       assert_equal "May 5, 1965", ensemble["formedAt"]
     end
 
