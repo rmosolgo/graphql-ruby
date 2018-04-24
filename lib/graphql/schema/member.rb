@@ -3,6 +3,7 @@ require 'graphql/schema/member/accepts_definition'
 require 'graphql/schema/member/base_dsl_methods'
 require 'graphql/schema/member/cached_graphql_definition'
 require 'graphql/schema/member/graphql_type_names'
+require 'graphql/schema/member/type_system_helpers'
 require "graphql/relay/type_extensions"
 
 module GraphQL
@@ -16,12 +17,11 @@ module GraphQL
       extend CachedGraphQLDefinition
       extend GraphQL::Relay::TypeExtensions
       extend BaseDSLMethods
+      extend TypeSystemHelpers
     end
   end
 end
 
-require 'graphql/schema/member/list_type_proxy'
-require 'graphql/schema/member/non_null_type_proxy'
 require 'graphql/schema/member/has_arguments'
 require 'graphql/schema/member/has_fields'
 require 'graphql/schema/member/instrumentation'

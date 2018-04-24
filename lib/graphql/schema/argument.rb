@@ -7,6 +7,7 @@ module GraphQL
 
       NO_DEFAULT = :__no_default__
 
+      # @return [String] the GraphQL name for this argument, camelized unless `camelize: false` is provided
       attr_reader :name
 
       # @return [GraphQL::Schema::Field, Class] The field or input object this argument belongs to
@@ -20,12 +21,11 @@ module GraphQL
       # @param default_value [Object]
       # @param camelize [Boolean] if true, the name will be camelized when building the schema
       def initialize(arg_name, type_expr, desc = nil, required:, description: nil, default_value: NO_DEFAULT, camelize: true, owner:, &definition_block)
-        @name = arg_name.to_s
+        @name = camelize ? Member::BuildType.camelize(arg_name.to_s) : arg_name.to_s
         @type_expr = type_expr
         @description = desc || description
         @null = !required
         @default_value = default_value
-        @camelize = camelize
         @owner = owner
 
         if definition_block
@@ -43,7 +43,7 @@ module GraphQL
 
       def to_graphql
         argument = GraphQL::Argument.new
-        argument.name = @camelize ? Member::BuildType.camelize(@name) : @name
+        argument.name = @name
         argument.type = -> { type }
         argument.description = @description
         argument.metadata[:type_class] = self

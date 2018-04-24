@@ -4,7 +4,7 @@ require "spec_helper"
 describe GraphQL::Schema::Field do
   describe "graphql definition" do
     let(:object_class) { Jazz::Query }
-    let(:field) { object_class.fields["inspect_input"] }
+    let(:field) { object_class.fields["inspectInput"] }
 
     it "uses the argument class" do
       arg_defn = field.graphql_definition.arguments.values.first
@@ -13,6 +13,7 @@ describe GraphQL::Schema::Field do
 
     it "camelizes the field name, unless camelize: false" do
       assert_equal 'inspectInput', field.graphql_definition.name
+      assert_equal 'inspectInput', field.name
 
       underscored_field = GraphQL::Schema::Field.new(:underscored_field, String, null: false, camelize: false, owner: nil) do
         argument :underscored_arg, String, required: true, camelize: false
@@ -169,10 +170,38 @@ describe GraphQL::Schema::Field do
       end
 
       err = assert_raises ArgumentError do
-        thing.fields["stuff"].to_graphql.type
+        thing.fields["stuff"].type
       end
 
       assert_includes err.message, "Thing.stuff"
+      assert_includes err.message, "Unexpected class/module"
+    end
+
+    it "makes a suggestion when the type is false" do
+      thing = Class.new(GraphQL::Schema::Object) do
+        graphql_name "Thing"
+        # False might come from an invalid `!`
+        field :stuff, false, null: false
+      end
+
+      err = assert_raises ArgumentError do
+        thing.fields["stuff"].type
+      end
+
+      assert_includes err.message, "Thing.stuff"
+      assert_includes err.message, "Received `false` instead of a type, maybe a `!` should be replaced with `null: true` (for fields) or `required: true` (for arguments)"
+    end
+
+    it "makes a suggestion when the type is a GraphQL::Field" do
+      err = assert_raises ArgumentError do
+        Class.new(GraphQL::Schema::Object) do
+          graphql_name "Thing"
+          # Previously, field was a valid second argument
+          field :stuff, GraphQL::Relay::Node.field, null: false
+        end
+      end
+
+      assert_includes err.message, "use the `field:` keyword for this instead"
     end
   end
 

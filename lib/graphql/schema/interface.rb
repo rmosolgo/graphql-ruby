@@ -7,6 +7,7 @@ module GraphQL
         include GraphQL::Schema::Member::CachedGraphQLDefinition
         include GraphQL::Relay::TypeExtensions
         include GraphQL::Schema::Member::BaseDSLMethods
+        include GraphQL::Schema::Member::TypeSystemHelpers
         include GraphQL::Schema::Member::HasFields
 
         # Methods defined in this block will be:
@@ -64,6 +65,10 @@ module GraphQL
             type_defn.resolve_type = method(:resolve_type)
           end
           type_defn
+        end
+
+        def kind
+          GraphQL::TypeKinds::INTERFACE
         end
 
         protected

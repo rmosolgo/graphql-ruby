@@ -42,7 +42,7 @@ module GraphQL
                 if maybe_type.respond_to?(:graphql_definition)
                   maybe_type
                 else
-                  raise "Unexpected class/module found for GraphQL type: #{type_expr} (must be type definition class/module)"
+                  raise ArgumentError, "Unexpected class/module found for GraphQL type: #{type_expr} (must be type definition class/module)"
                 end
               end
             end
@@ -72,6 +72,8 @@ module GraphQL
               # Eg `String` => GraphQL::STRING_TYPE
               parse_type(type_expr.name, null: true)
             end
+          when false
+            raise ArgumentError, "Received `false` instead of a type, maybe a `!` should be replaced with `null: true` (for fields) or `required: true` (for arguments)"
           end
 
           if return_type.nil?
