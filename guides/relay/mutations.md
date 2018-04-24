@@ -7,7 +7,7 @@ desc: Implement Relay-compliant mutation fields
 index: 2
 ---
 
-Relay uses a [strict mutation API](https://facebook.github.io/relay/docs/graphql-mutations.html#content) for modifying the state of your application. This API makes mutations predictable to the client.
+Relay uses a [strict mutation API](https://facebook.github.io/relay/docs/en/mutations.html) for modifying the state of your application. This API makes mutations predictable to the client.
 
 On the client-side, Relay also requires you to specify how it should interpret the response from your GraphQL server, which may require your server-side mutations to return payloads with specific fields.
 
