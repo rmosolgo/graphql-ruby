@@ -72,23 +72,10 @@ module GraphQL
         # @return [void]
         def add_field(field_defn)
           own_fields[field_defn.name] = field_defn
-          # Add a `super` method for implementing this field:
-          field_key = field_defn.name.inspect
-          default_resolve_module = self.instance_variable_get(:@_default_resolve)
-          if default_resolve_module.nil?
-            # This should have been set up in one of the inherited or included hooks above,
-            # if it wasn't, it's because those hooks weren't called because `super` wasn't present.
-            raise <<-ERR
-Uh oh! #{self} doesn't have a default resolve module. This probably means that an `inherited` hook didn't call super.
-Check `inherited` on #{self}'s superclasses.
-ERR
+          if !method_defined?(field_defn.method_sym)
+            # Only add the super method if there isn't one already.
+            add_super_method(field_defn.name, field_defn.method_sym)
           end
-          default_resolve_module.module_eval <<-RUBY, __FILE__, __LINE__ + 1
-            def #{field_defn.method_sym}(**args)
-              field_inst = self.class.fields[#{field_key}] || raise(%|Failed to find field #{field_key} for \#{self.class} among \#{self.class.fields.keys}|)
-              field_inst.resolve_field_method(self, args, context)
-            end
-          RUBY
           nil
         end
 
@@ -121,6 +108,28 @@ ERR
         def build_field(*args, **kwargs, &block)
           kwargs[:owner] = self
           field_class.new(*args, **kwargs, &block)
+        end
+
+        # Find the magic module for holding super methods,
+        # and add a field named `method_name` for implementing the field
+        # called `field_name`.
+        # It will be the `super` method if the method is overwritten in the class definition.
+        def add_super_method(field_key, method_name)
+          default_resolve_module = @_default_resolve
+          if default_resolve_module.nil?
+            # This should have been set up in one of the inherited or included hooks above,
+            # if it wasn't, it's because those hooks weren't called because `super` wasn't present.
+            raise <<-ERR
+Uh oh! #{self} doesn't have a default resolve module. This probably means that an `inherited` hook didn't call super.
+Check `inherited` on #{self}'s superclasses.
+ERR
+          end
+          default_resolve_module.module_eval <<-RUBY, __FILE__, __LINE__ + 1
+            def #{method_name}(**args)
+              field_inst = self.class.fields[#{field_key}] || raise(%|Failed to find field #{field_key} for \#{self.class} among \#{self.class.fields.keys}|)
+              field_inst.resolve_field_method(self, args, context)
+            end
+          RUBY
         end
       end
     end

@@ -59,6 +59,10 @@ describe GraphQL::Schema::Member::HasFields do
       end
     end
 
+    class SubSubObjectWithStringField < SubObjectWithStringField
+      field :string, String, null: false
+    end
+
     class Query < BaseObject
       field :int, Integer, null: false
       def int
@@ -66,17 +70,11 @@ describe GraphQL::Schema::Member::HasFields do
         super * 2
       end
 
-      field :string1, ObjectWithStringField, null: false
-      alias :string1 :object
-
-      field :string2, SubObjectWithStringField, null: false
-      alias :string2 :object
-
-      field :float1, ObjectWithFloatField, null: false
-      alias :float1 :object
-
-      field :float2, ObjectWithSubFloatField, null: false
-      alias :float2 :object
+      field :string1, ObjectWithStringField, null: false, method: :object
+      field :string2, SubObjectWithStringField, null: false, method: :object
+      field :string3, SubSubObjectWithStringField, null: false, method: :object
+      field :float1, ObjectWithFloatField, null: false, method: :object
+      field :float2, ObjectWithSubFloatField, null: false, method: :object
     end
 
     class Schema < GraphQL::Schema
@@ -108,6 +106,11 @@ describe GraphQL::Schema::Member::HasFields do
       it "may call super to superclass method" do
         res = SuperTest::Schema.execute(" { string2 { string } }", root_value: {})
         assert_equal "GNIRTS A S'EREH", res["data"]["string2"]["string"]
+      end
+
+      it "can get a super method from a newly-added field" do
+        res = SuperTest::Schema.execute(" { string3 { string } }", root_value: {})
+        assert_equal "GNIRTS A S'EREH", res["data"]["string3"]["string"]
       end
     end
 
