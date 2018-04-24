@@ -48,10 +48,10 @@ describe GraphQL::Schema::Member::TypeSystemHelpers do
     it "returns the TypeKind instance" do
       pairs.each do |type_class, type_kind_name|
         type = if type_class.is_a?(Class)
-           Class.new(type_class)
-         else
-           Module.new { include(type_class) }
-         end
+          Class.new(type_class)
+        else
+          Module.new { include(type_class) }
+        end
 
         assert_equal type_kind_name, type.kind.name
       end
