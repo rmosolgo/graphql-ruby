@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module Platform
   module Objects
     class Photo < Platform::Objects::Base

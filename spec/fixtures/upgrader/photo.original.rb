@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module Platform
   module Objects
     Photo = GraphQL::ObjectType.define do
