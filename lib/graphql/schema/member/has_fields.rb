@@ -74,7 +74,7 @@ module GraphQL
           own_fields[field_defn.name] = field_defn
           if !method_defined?(field_defn.method_sym)
             # Only add the super method if there isn't one already.
-            add_super_method(field_defn.name, field_defn.method_sym)
+            add_super_method(field_defn.name.inspect, field_defn.method_sym)
           end
           nil
         end
