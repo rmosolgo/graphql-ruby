@@ -174,6 +174,21 @@ describe GraphQL::Schema::Field do
 
       assert_includes err.message, "Thing.stuff"
     end
+
+    it "makes a suggestion when the type is false" do
+      thing = Class.new(GraphQL::Schema::Object) do
+        graphql_name "Thing"
+        # False might come from an invalid `!`
+        field :stuff, false, null: false
+      end
+
+      err = assert_raises ArgumentError do
+        thing.fields["stuff"].type
+      end
+
+      assert_includes err.message, "Thing.stuff"
+      assert_includes err.message, "Received `false` instead of a type, maybe a `!` should be replaced with `null: true` (for fields) or `required: true` (for arguments)"
+    end
   end
 
   describe "mutation" do
