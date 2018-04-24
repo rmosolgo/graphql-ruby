@@ -161,7 +161,8 @@ module GraphQL
         keep_looking = true
         while keep_looking do
           keep_looking = false
-          input_text = input_text.gsub(/(?<field>(?:field|input_field|return_field|connection|argument)(?:\(.*|.*,))\n\s*(?<next_line>.+)/) do
+          # Find the `field` call (or other method), and an open paren, but not a close paren, or a comma between arguments
+          input_text = input_text.gsub(/(?<field>(?:field|input_field|return_field|connection|argument)(?:\([^)]*|.*,))\n\s*(?<next_line>.+)/) do
             keep_looking = true
             field = $~[:field].chomp
             next_line = $~[:next_line]
@@ -177,8 +178,8 @@ module GraphQL
     class RemoveMethodParensTransform < Transform
       def apply(input_text)
         input_text.sub(
-          /(field|input_field|return_field|connection|argument)\( *(.*?) *\) */,
-          '\1 \2'
+          /(field|input_field|return_field|connection|argument)\( *(.*?) *\)( *)/,
+          '\1 \2\3'
         )
       end
     end
@@ -485,7 +486,7 @@ module GraphQL
 
     class ResolveProcToMethodTransform < Transform
       def apply(input_text)
-        if input_text =~ /resolve ->/
+        if input_text =~ /resolve\(? ?->/
           # - Find the proc literal
           # - Get the three argument names (obj, arg, ctx)
           # - Get the proc body
