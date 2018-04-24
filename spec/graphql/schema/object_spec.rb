@@ -8,7 +8,7 @@ describe GraphQL::Schema::Object do
       assert_equal "Ensemble", object_class.graphql_name
       assert_equal "A group of musicians playing together", object_class.description
       assert_equal 6, object_class.fields.size
-      assert_equal 2, object_class.interfaces.size
+      assert_equal 3, object_class.interfaces.size
       # Compatibility methods are delegated to the underlying BaseType
       assert object_class.respond_to?(:connection_type)
     end
@@ -22,7 +22,7 @@ describe GraphQL::Schema::Object do
       # one more than the parent class
       assert_equal 7, new_object_class.fields.size
       # inherited interfaces are present
-      assert_equal 2, new_object_class.interfaces.size
+      assert_equal 3, new_object_class.interfaces.size
       # The new field is present
       assert new_object_class.fields.key?("newField")
       # The overridden field is present:

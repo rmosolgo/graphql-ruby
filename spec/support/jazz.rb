@@ -65,15 +65,13 @@ module Jazz
       super(*args, **options, &block)
     end
 
-    def to_graphql
-      field_defn = super
-      if @upcase
-        inner_resolve = field_defn.resolve_proc
-        field_defn.resolve = ->(obj, args, ctx) {
-          inner_resolve.call(obj, args, ctx).upcase
-        }
+    def resolve_field(*)
+      result = super
+      if @upcase && result
+        result.upcase
+      else
+        result
       end
-      field_defn
     end
   end
 
@@ -168,15 +166,20 @@ module Jazz
     end
   end
 
+  module HasMusicians
+    include BaseInterface
+    field :musicians, "[Jazz::Musician]", null: false
+  end
+
+
   # Here's a new-style GraphQL type definition
   class Ensemble < ObjectWithUpcasedName
     # Test string type names
     # This method should override inherited one
     field :name, "String", null: false, method: :overridden_name
-    implements GloballyIdentifiableType, NamedEntity
+    implements GloballyIdentifiableType, NamedEntity, HasMusicians
     description "A group of musicians playing together"
     config :config, :configged
-    field :musicians, "[Jazz::Musician]", null: false
     field :formed_at, String, null: true, hash_key: "formedAtDate"
 
     def overridden_name

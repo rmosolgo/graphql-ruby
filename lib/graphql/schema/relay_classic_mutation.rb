@@ -26,6 +26,7 @@ module GraphQL
       class << self
         def inherited(base)
           base.null(true)
+          super
         end
 
         # The base class for generated input object types
