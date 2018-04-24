@@ -169,10 +169,11 @@ describe GraphQL::Schema::Field do
       end
 
       err = assert_raises ArgumentError do
-        thing.fields["stuff"].to_graphql.type
+        thing.fields["stuff"].type
       end
 
       assert_includes err.message, "Thing.stuff"
+      assert_includes err.message, "Unexpected class/module"
     end
 
     it "makes a suggestion when the type is false" do
@@ -188,6 +189,21 @@ describe GraphQL::Schema::Field do
 
       assert_includes err.message, "Thing.stuff"
       assert_includes err.message, "Received `false` instead of a type, maybe a `!` should be replaced with `null: true` (for fields) or `required: true` (for arguments)"
+    end
+
+    it "makes a suggestion when the type is a GraphQL::Field" do
+      thing = Class.new(GraphQL::Schema::Object) do
+        graphql_name "Thing"
+        # Previously, field was a valid second argument
+        field :stuff, GraphQL::Relay::Node.field, null: false
+      end
+
+      err = assert_raises ArgumentError do
+        thing.fields["stuff"].type
+      end
+
+      assert_includes err.message, "Thing.stuff"
+      assert_includes err.message, "use the `field:` keyword for this instead"
     end
   end
 

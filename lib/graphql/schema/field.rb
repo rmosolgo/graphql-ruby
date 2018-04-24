@@ -67,6 +67,9 @@ module GraphQL
         if (field || function || resolve || resolve) && extras.any?
           raise ArgumentError, "keyword `extras:` may only be used with method-based resolve, please remove `field:`, `function:`, `resolve:`, or `mutation:`"
         end
+        if return_type_expr.is_a?(GraphQL::Field)
+          raise ArgumentError, "A GraphQL::Field was passed as the second argument, use the `field:` keyword for this instead."
+        end
         @name = name.to_s
         if description && desc
           raise ArgumentError, "Provide description as a positional argument or `description:` keyword, but not both (#{desc.inspect}, #{description.inspect})"
