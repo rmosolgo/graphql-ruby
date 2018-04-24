@@ -7,7 +7,7 @@ module GraphQL
       include GraphQL::Schema::Member::AcceptsDefinition
       include GraphQL::Schema::Member::HasArguments
 
-      # @return [String]
+      # @return [String] the GraphQL name for this field, camelized unless `camelize: false` is provided
       attr_reader :name
 
       # @return [String]

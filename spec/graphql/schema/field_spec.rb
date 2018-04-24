@@ -4,7 +4,7 @@ require "spec_helper"
 describe GraphQL::Schema::Field do
   describe "graphql definition" do
     let(:object_class) { Jazz::Query }
-    let(:field) { object_class.fields["inspect_input"] }
+    let(:field) { object_class.fields["inspectInput"] }
 
     it "uses the argument class" do
       arg_defn = field.graphql_definition.arguments.values.first
@@ -13,6 +13,7 @@ describe GraphQL::Schema::Field do
 
     it "camelizes the field name, unless camelize: false" do
       assert_equal 'inspectInput', field.graphql_definition.name
+      assert_equal 'inspectInput', field.name
 
       underscored_field = GraphQL::Schema::Field.new(:underscored_field, String, null: false, camelize: false, owner: nil) do
         argument :underscored_arg, String, required: true, camelize: false
@@ -192,17 +193,14 @@ describe GraphQL::Schema::Field do
     end
 
     it "makes a suggestion when the type is a GraphQL::Field" do
-      thing = Class.new(GraphQL::Schema::Object) do
-        graphql_name "Thing"
-        # Previously, field was a valid second argument
-        field :stuff, GraphQL::Relay::Node.field, null: false
-      end
-
       err = assert_raises ArgumentError do
-        thing.fields["stuff"].type
+        Class.new(GraphQL::Schema::Object) do
+          graphql_name "Thing"
+          # Previously, field was a valid second argument
+          field :stuff, GraphQL::Relay::Node.field, null: false
+        end
       end
 
-      assert_includes err.message, "Thing.stuff"
       assert_includes err.message, "use the `field:` keyword for this instead"
     end
   end

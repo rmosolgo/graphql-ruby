@@ -6,9 +6,15 @@ describe GraphQL::Schema::Argument do
     field :field, String, null: false do
       argument :arg, String, description: "test", required: false
 
-      argument :argWithBlock, String, required: false do
+      argument :arg_with_block, String, required: false do
         description "test"
       end
+    end
+  end
+
+  describe "#name" do
+    it "reflects camelization" do
+      assert_equal "argWithBlock", SchemaArgumentTest.fields["field"].arguments["argWithBlock"].name
     end
   end
 
