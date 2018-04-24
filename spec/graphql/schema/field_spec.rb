@@ -11,6 +11,10 @@ describe GraphQL::Schema::Field do
       assert_equal :ok, arg_defn.metadata[:custom]
     end
 
+    it "attaches itself to its graphql_definition as type_class" do
+      assert_equal field, field.graphql_definition.metadata[:type_class]
+    end
+
     it "camelizes the field name, unless camelize: false" do
       assert_equal 'inspectInput', field.graphql_definition.name
       assert_equal 'inspectInput', field.name

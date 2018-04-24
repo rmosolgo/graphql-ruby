@@ -207,6 +207,9 @@ module GraphQL
           field_defn.arguments[arg_graphql.name] = arg_graphql
         end
 
+        # Ok, `self` isn't a class, but this is for consistency with the classes
+        field_defn.metadata[:type_class] = self
+
         field_defn
       end
 
