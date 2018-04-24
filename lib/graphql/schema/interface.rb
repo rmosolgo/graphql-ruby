@@ -67,6 +67,10 @@ module GraphQL
           type_defn
         end
 
+        def kind
+          GraphQL::TypeKinds::INTERFACE
+        end
+
         protected
 
         def own_interfaces

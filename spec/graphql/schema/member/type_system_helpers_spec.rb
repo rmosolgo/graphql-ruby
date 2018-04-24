@@ -35,4 +35,29 @@ describe GraphQL::Schema::Member::TypeSystemHelpers do
       refute int_list_field.type.non_null?
     end
   end
+
+  describe "#kind" do
+    let(:pairs) {{
+      GraphQL::Schema::Object => "OBJECT",
+      GraphQL::Schema::Union => "UNION",
+      GraphQL::Schema::Interface => "INTERFACE",
+      GraphQL::Schema::Enum => "ENUM",
+      GraphQL::Schema::InputObject => "INPUT_OBJECT",
+      GraphQL::Schema::Scalar => "SCALAR",
+    }}
+    it "returns the TypeKind instance" do
+      pairs.each do |type_class, type_kind_name|
+        type = if type_class.is_a?(Class)
+           Class.new(type_class)
+         else
+           Module.new { include(type_class) }
+         end
+
+        assert_equal type_kind_name, type.kind.name
+      end
+
+      assert_equal "LIST", GraphQL::Schema::Object.to_list_type.kind.name
+      assert_equal "NON_NULL", GraphQL::Schema::Object.to_non_null_type.kind.name
+    end
+  end
 end

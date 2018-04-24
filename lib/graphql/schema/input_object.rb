@@ -70,6 +70,10 @@ module GraphQL
           type_defn.arguments_class = self
           type_defn
         end
+
+        def kind
+          GraphQL::TypeKinds::INPUT_OBJECT
+        end
       end
     end
   end

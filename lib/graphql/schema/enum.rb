@@ -68,6 +68,10 @@ module GraphQL
           @enum_value_class || (superclass <= GraphQL::Schema::Enum ? superclass.enum_value_class : nil)
         end
 
+        def kind
+          GraphQL::TypeKinds::ENUM
+        end
+
         private
 
         def own_values

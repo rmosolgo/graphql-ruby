@@ -25,6 +25,10 @@ module GraphQL
       def list?
         @of_type.list?
       end
+
+      def kind
+        GraphQL::TypeKinds::NON_NULL
+      end
     end
   end
 end

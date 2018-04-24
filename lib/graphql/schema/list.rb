@@ -20,6 +20,9 @@ module GraphQL
         @of_type.graphql_definition.to_list_type
       end
 
+      def kind
+        GraphQL::TypeKinds::LIST
+      end
     end
   end
 end

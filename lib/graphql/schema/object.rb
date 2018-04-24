@@ -71,6 +71,10 @@ module GraphQL
 
           obj_type
         end
+
+        def kind
+          GraphQL::TypeKinds::OBJECT
+        end
       end
     end
   end

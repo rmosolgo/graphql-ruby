@@ -23,6 +23,11 @@ module GraphQL
         def list?
           false
         end
+
+        # @return [GraphQL::TypeKinds::TypeKind]
+        def kind
+          raise NotImplementedError
+        end
       end
     end
   end
