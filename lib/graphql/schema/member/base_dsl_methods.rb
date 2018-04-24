@@ -67,16 +67,6 @@ module GraphQL
           raise NotImplementedError
         end
 
-        # @return [ListTypeProxy] Make a list-type representation of this type
-        def to_list_type
-          ListTypeProxy.new(self)
-        end
-
-        # @return [NonNullTypeProxy] Make a non-null-type representation of this type
-        def to_non_null_type
-          NonNullTypeProxy.new(self)
-        end
-
         def overridden_graphql_name
           @graphql_name || find_inherited_method(:overridden_graphql_name, nil)
         end

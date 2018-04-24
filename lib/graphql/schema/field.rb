@@ -70,7 +70,7 @@ module GraphQL
         if return_type_expr.is_a?(GraphQL::Field)
           raise ArgumentError, "A GraphQL::Field was passed as the second argument, use the `field:` keyword for this instead."
         end
-        @name = name.to_s
+        @name = camelize ? Member::BuildType.camelize(name.to_s) : name.to_s
         if description && desc
           raise ArgumentError, "Provide description as a positional argument or `description:` keyword, but not both (#{desc.inspect}, #{description.inspect})"
         end
@@ -99,7 +99,6 @@ module GraphQL
         @max_page_size = max_page_size
         @introspection = introspection
         @extras = extras
-        @camelize = camelize
         @mutation = mutation
         @mutation_class = mutation_class
         # Override the default from HasArguments
@@ -157,7 +156,7 @@ module GraphQL
           GraphQL::Field.new
         end
 
-        field_defn.name = @camelize ? Member::BuildType.camelize(name) : name
+        field_defn.name = @name
         if @return_type_expr
           field_defn.type = -> { type }
         end

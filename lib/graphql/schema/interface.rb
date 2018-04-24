@@ -7,6 +7,7 @@ module GraphQL
         include GraphQL::Schema::Member::CachedGraphQLDefinition
         include GraphQL::Relay::TypeExtensions
         include GraphQL::Schema::Member::BaseDSLMethods
+        include GraphQL::Schema::Member::TypeSystemHelpers
         include GraphQL::Schema::Member::HasFields
 
         # Methods defined in this block will be:
