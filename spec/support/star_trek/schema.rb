@@ -137,7 +137,7 @@ module StarTrek
     end
     def bases_by_name(order: nil)
       if order.present?
-        @object.bases.order(name: order)
+        @object.bases.order_by(name: order)
       else
         @object.bases
       end
@@ -296,7 +296,7 @@ module StarTrek
       }])
       Base.
         in(id: agg.map { |doc| doc['baseId'] }).
-        order(faction_id: -1)
+        order_by(faction_id: -1)
     }
 
     field :basesWithNullName, BaseType.connection_type, null: false, resolve: ->(obj, args, ctx) {

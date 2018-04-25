@@ -74,39 +74,6 @@ describe GraphQL::Relay::RelationConnection do
       )
     end
 
-    def capturing_mongo_logs(io)
-      prev_logger = Mongo::Logger.logger
-      Mongo::Logger.logger = Logger.new(io, :debug)
-      yield
-    ensure
-      Mongo::Logger.logger = prev_logger
-    end
-
-    it "makes one find and one count" do
-      query_str = <<-GRAPHQL
-      {
-        federation {
-          bases(first: 2) {
-            totalCount
-            edges {
-              cursor
-              node {
-                name
-              }
-            }
-          }
-        }
-      }
-      GRAPHQL
-      io = StringIO.new
-      result = capturing_mongo_logs(io) { star_trek_query(query_str, "first" => 2) }
-
-      assert io.string.lines.detect { |line| line =~ %r(#{StarTrek::db_name}\.count | SUCCEEDED) }
-      assert io.string.lines.detect { |line| line =~ %r(#{StarTrek::db_name}\.find | SUCCEEDED) }
-      assert_equal 3, result["data"]["federation"]["bases"]["totalCount"]
-      assert_equal 2, result["data"]["federation"]["bases"]["edges"].size
-    end
-
     it "provides bidirectional_pagination" do
       result = star_trek_query(query_string, "first" => 1)
       last_cursor = get_last_cursor(result)

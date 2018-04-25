@@ -22,7 +22,11 @@ module GraphQL
 
       def limit_nodes(sliced_nodes, limit)
         if limit == 0
-          sliced_nodes.without_options.none
+          if sliced_nodes.respond_to?(:none) # added in Mongoid 4.0
+            sliced_nodes.without_options.none
+          else
+            sliced_nodes.where(id: nil) # trying to simulate #none for 3.1.7
+          end
         else
           sliced_nodes.limit(limit)
         end

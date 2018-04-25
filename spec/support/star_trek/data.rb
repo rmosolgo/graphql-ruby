@@ -18,6 +18,12 @@ module StarTrek
         database: 'graphql_ruby_test',
         hosts: ['localhost:27017']
       }
+    },
+    sessions: {
+      default: {
+        database: 'graphql_ruby_test',
+        hosts: ['localhost:27017']
+      }
     }
   }.freeze
 
