@@ -16,6 +16,7 @@ if rails_should_be_installed?
   require "jdbc/sqlite3" if RUBY_ENGINE == 'jruby'
   require "sqlite3" if RUBY_ENGINE == 'ruby'
   require "pg" if RUBY_ENGINE == 'ruby'
+  require "mongoid" if RUBY_ENGINE == 'ruby'
   require "sequel"
 end
 
@@ -63,9 +64,14 @@ NO_OP_RESOLVE_TYPE = ->(type, obj, ctx) {
 Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each do |f|
   unless rails_should_be_installed?
     next if f.end_with?('star_wars/data.rb')
+    next if f.end_with?('star_trek/data.rb')
     next if f.end_with?('base_generator_test.rb')
   end
   require f
+end
+
+def star_trek_query(string, variables={}, context: {})
+  StarTrek::Schema.execute(string, variables: variables, context: context)
 end
 
 def star_wars_query(string, variables={}, context: {})
