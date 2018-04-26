@@ -33,7 +33,7 @@ module GraphQL
   #
   class NonNullType < GraphQL::BaseType
     include GraphQL::BaseType::ModifiesAnotherType
-    extend GraphQL::Delegate
+    extend Forwardable
 
     attr_reader :of_type
     def initialize(of_type:)

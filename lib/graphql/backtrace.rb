@@ -19,7 +19,7 @@ module GraphQL
   #
   class Backtrace
     include Enumerable
-    extend GraphQL::Delegate
+    extend Forwardable
 
     def_delegators :to_a, :each, :[]
 

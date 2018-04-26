@@ -5,7 +5,7 @@ module GraphQL
     #
     # Steps should call `next_step.call` to continue the chain, or _not_ call it to stop the chain.
     class MiddlewareChain
-      extend GraphQL::Delegate
+      extend Forwardable
 
       # @return [Array<#call(*args)>] Steps in this chain, will be called with arguments and `next_middleware`
       attr_reader :steps, :final_step
