@@ -71,6 +71,14 @@ module GraphQL
           )
         end
 
+        directives = field.metadata[:type_class] ? field.metadata[:type_class].definition_directives : []
+        directives.each do |name, args|
+          field_node.directives << GraphQL::Language::Nodes::Directive.new(
+            name: name,
+            arguments: (args || []).map { |k, v| GraphQL::Language::Nodes::Argument.new(name: k, value: v) }
+          )
+        end
+
         field_node
       end
 
