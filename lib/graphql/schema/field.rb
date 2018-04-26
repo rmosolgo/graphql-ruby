@@ -46,7 +46,7 @@ module GraphQL
       # @param arguments [{String=>GraphQL::Schema::Arguments}] Arguments for this field (may be added in the block, also)
       # @param camelize [Boolean] If true, the field name will be camelized when building the schema
       # @param complexity [Numeric] When provided, set the complexity for this field
-      def initialize(name, return_type_expr = nil, desc = nil, owner: nil, null: nil, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, connection: nil, max_page_size: nil, resolve: nil, introspection: false, hash_key: nil, camelize: true, complexity: 1, extras: [], mutation: nil, mutation_class: nil, arguments: {}, &definition_block)
+      def initialize(name, return_type_expr = nil, desc = nil, owner: nil, null: true, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, connection: nil, max_page_size: nil, resolve: nil, introspection: false, hash_key: nil, camelize: true, complexity: 1, extras: [], mutation: nil, mutation_class: nil, arguments: {}, &definition_block)
         if (field || function) && desc.nil? && return_type_expr.is_a?(String)
           # The return type should be copied from `field` or `function`, and the second positional argument is the description
           desc = return_type_expr
