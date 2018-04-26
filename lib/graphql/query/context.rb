@@ -99,7 +99,7 @@ module GraphQL
       end
 
       include SharedMethods
-      extend GraphQL::Delegate
+      extend Forwardable
 
       attr_reader :execution_strategy
       # `strategy` is required by GraphQL::Batch
@@ -189,7 +189,7 @@ module GraphQL
       class FieldResolutionContext
         include SharedMethods
         include Tracing::Traceable
-        extend GraphQL::Delegate
+        extend Forwardable
 
         attr_reader :irep_node, :field, :parent_type, :query, :schema, :parent, :key, :type
         alias :selection :irep_node

@@ -634,7 +634,7 @@ module GraphQL
     end
 
     class << self
-      extend GraphQL::Delegate
+      extend Forwardable
       # For compatibility, these methods all:
       # - Cause the Schema instance to be created, if it hasn't been created yet
       # - Delegate to that instance

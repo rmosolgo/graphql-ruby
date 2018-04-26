@@ -23,7 +23,7 @@ module GraphQL
       extend GraphQL::Schema::Member::AcceptsDefinition
 
       class << self
-        extend GraphQL::Delegate
+        extend Forwardable
         def_delegators :graphql_definition, :coerce_isolated_input, :coerce_isolated_result
 
         # Define a value for this enum

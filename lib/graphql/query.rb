@@ -16,7 +16,7 @@ module GraphQL
   # A combination of query string and {Schema} instance which can be reduced to a {#result}.
   class Query
     include Tracing::Traceable
-    extend GraphQL::Delegate
+    extend Forwardable
 
     class OperationNameMissingError < GraphQL::ExecutionError
       def initialize(name)

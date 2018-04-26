@@ -51,7 +51,7 @@ module GraphQL
 
         # Mock the Concurrent::Map API
         class ConcurrentishMap
-          extend GraphQL::Delegate
+          extend Forwardable
           # Technically this should be under the mutex too,
           # but I know it's only used when the lock is already acquired.
           def_delegators :@storage, :each_pair, :size

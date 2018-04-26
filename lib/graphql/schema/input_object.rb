@@ -3,7 +3,7 @@ module GraphQL
   class Schema
     class InputObject < GraphQL::Schema::Member
       extend GraphQL::Schema::Member::AcceptsDefinition
-      extend GraphQL::Delegate
+      extend Forwardable
       extend GraphQL::Schema::Member::HasArguments
 
       def initialize(values, context:, defaults_used:)
