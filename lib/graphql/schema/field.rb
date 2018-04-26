@@ -38,6 +38,7 @@ module GraphQL
       # @param hash_key [Object] The hash key to lookup to resolve this field (defaults to `name` or `name.to_s`)
       # @param connection [Boolean] `true` if this field should get automagic connection behavior; default is to infer by `*Connection` in the return type name
       # @param max_page_size [Integer] For connections, the maximum number of items to return from this field
+      # @param definition_directives [Hash<String => Nil, Hash<String=>Any>>] Directives to include in the SDL print-out of this field
       # @param introspection [Boolean] If true, this field will be marked as `#introspection?` and the name may begin with `__`
       # @param resolve [<#call(obj, args, ctx)>] **deprecated** for compatibility with <1.8.0
       # @param field [GraphQL::Field, GraphQL::Schema::Field] **deprecated** for compatibility with <1.8.0
@@ -47,7 +48,27 @@ module GraphQL
       # @param arguments [{String=>GraphQL::Schema::Arguments}] Arguments for this field (may be added in the block, also)
       # @param camelize [Boolean] If true, the field name will be camelized when building the schema
       # @param complexity [Numeric] When provided, set the complexity for this field
-      def initialize(name, return_type_expr = nil, desc = nil, owner: nil, null: nil, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, connection: nil, max_page_size: nil, resolve: nil, introspection: false, hash_key: nil, camelize: true, complexity: 1, extras: [], mutation: nil, mutation_class: nil, arguments: {}, &definition_block)
+      def initialize(name, return_type_expr = nil, desc = nil,
+          owner: nil,
+          null: nil,
+          field: nil,
+          function: nil,
+          description: nil,
+          deprecation_reason: nil,
+          method: nil,
+          connection: nil,
+          max_page_size: nil,
+          resolve: nil,
+          introspection: false,
+          hash_key: nil,
+          camelize: true,
+          complexity: 1,
+          extras: [],
+          mutation: nil,
+          definition_directives: [],
+          mutation_class: nil,
+          arguments: {}
+        )
         if (field || function) && desc.nil? && return_type_expr.is_a?(String)
           # The return type should be copied from `field` or `function`, and the second positional argument is the description
           desc = return_type_expr
@@ -104,9 +125,10 @@ module GraphQL
         # Override the default from HasArguments
         @own_arguments = arguments
         @owner = owner
+        @definition_directives = definition_directives
 
-        if definition_block
-          instance_eval(&definition_block)
+        if block_given?
+          instance_eval(&Proc.new)
         end
       end
 
@@ -116,6 +138,14 @@ module GraphQL
         else
           @description
         end
+      end
+
+      # @return [Hash<String => Nil, Hash<String=>Any>>] Directives to print in this field's SDL print-out
+      def definition_directives(new_directives = nil)
+        if new_directives
+          @definition_directives = new_directives
+        end
+        @definition_directives
       end
 
       def complexity(new_complexity)
