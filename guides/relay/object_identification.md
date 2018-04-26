@@ -26,7 +26,7 @@ MySchema = GraphQL::Schema.define do
 
   object_from_id ->(id, query_ctx) {
     class_name, item_id = MyApp::GlobalId.decrypt(id)
-    # "Post" => Post.find(id)
+    # "Post" => Post.find(item_id)
     Object.const_get(class_name).find(item_id)
   }
 end
