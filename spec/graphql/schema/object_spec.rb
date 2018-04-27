@@ -40,6 +40,18 @@ describe GraphQL::Schema::Object do
       assert_equal "NewSubclass", new_subclass_2.graphql_name
       assert_equal object_class.description, new_subclass_2.description
     end
+
+    it "should take Ruby name (without Type suffix) as default graphql name" do
+      TestingClassType = Class.new(GraphQL::Schema::Object)
+      assert_equal "TestingClass", TestingClassType.graphql_name
+    end
+
+    it "raise on anonymous class without declared graphql name" do
+      anonymous_class = Class.new(GraphQL::Schema::Object)
+      assert_raises NotImplementedError do
+        anonymous_class.graphql_name
+      end
+    end
   end
 
   describe "wrapping a Hash" do

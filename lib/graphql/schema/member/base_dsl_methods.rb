@@ -15,10 +15,15 @@ module GraphQL
         # @param new_name [String]
         # @return [String]
         def graphql_name(new_name = nil)
-          if new_name
+          case
+          when new_name
             @graphql_name = new_name
-          else
-            overridden_graphql_name || name.split("::").last.sub(/Type\Z/, "")
+          when overridden = overridden_graphql_name
+            overridden
+          else # Fallback to Ruby constant name
+            raise NotImplementedError, 'Anonymous class should declare an `graphql_name`' if name.nil?
+            
+            name.split("::").last.sub(/Type\Z/, "")
           end
         end
 
