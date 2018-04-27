@@ -19,6 +19,7 @@ rvm:
 
 services:
   - postgresql
+  - mongodb
 
 before_script:
   - psql -c 'create database graphql_ruby_test;' -U postgres
