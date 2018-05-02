@@ -66,7 +66,7 @@
 
   <span class="n">object_from_id</span> <span class="o">-&gt;</span><span class="p">(</span><span class="nb">id</span><span class="p">,</span> <span class="n">query_ctx</span><span class="p">)</span> <span class="p">{</span>
     <span class="n">class_name</span><span class="p">,</span> <span class="n">item_id</span> <span class="o">=</span> <span class="no">MyApp</span><span class="o">::</span><span class="no">GlobalId</span><span class="p">.</span><span class="nf">decrypt</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span>
-    <span class="c1"># "Post" =&gt; Post.find(id)</span>
+    <span class="c1"># "Post" =&gt; Post.find(item_id)</span>
     <span class="no">Object</span><span class="p">.</span><span class="nf">const_get</span><span class="p">(</span><span class="n">class_name</span><span class="p">).</span><span class="nf">find</span><span class="p">(</span><span class="n">item_id</span><span class="p">)</span>
   <span class="p">}</span>
 <span class="k">end</span>
