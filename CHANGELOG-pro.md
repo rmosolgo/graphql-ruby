@@ -8,6 +8,10 @@
 
 ### Bug Fix
 
+## 1.7.6 (2 May 2018)
+
+- Authorization: Add `view`/`access`/`authorize` methods to `GraphQL::Schema::Mutation`
+
 ## 1.7.5 (19 Apr 2018)
 
 ### New Features
