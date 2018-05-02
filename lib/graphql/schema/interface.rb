@@ -22,13 +22,22 @@ module GraphQL
           if !child_class.is_a?(Class)
             # In this case, it's been included into another interface.
             # This is how interface inheritance is implemented
-            child_class.const_set(:DefinitionMethods, Module.new)
-            child_class.extend(child_class::DefinitionMethods)
-            # We need this before we can call `own_interfaces`
-            child_class.extend(Schema::Interface::DefinitionMethods)
+            
+            if !child_class.const_defined?(:DefinitionMethods)
+              child_class.const_set(:DefinitionMethods, Module.new)
+              child_class.extend(child_class::DefinitionMethods)
+            end
+
+            if !(child_class.singleton_class < Schema::Interface::DefinitionMethods)
+              # We need this before we can call `own_interfaces`
+              child_class.extend(Schema::Interface::DefinitionMethods)
+            end
+
             child_class.own_interfaces << self
             child_class.own_interfaces.each do |interface_defn|
-              child_class.extend(interface_defn::DefinitionMethods)
+              # Don't extend the interface's definition methods if we've already extended it
+              next if child_class.singleton_class < interface_defn::DefinitionMethods
+              child_class.extend(interface_defn::DefinitionMethods) 
             end
           elsif child_class < GraphQL::Schema::Object
             # This is being included into an object type, make sure it's using `implements(...)`
