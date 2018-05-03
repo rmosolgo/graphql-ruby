@@ -12,9 +12,10 @@ module GraphQL
         # Symbolized, underscored hash:
         @ruby_style_hash = @arguments.to_kwargs
         # Apply prepares, not great to have it duplicated here.
-        self.class.arguments.each do |name, arg_inst|
-          if arg_inst.prepare && @ruby_style_hash.key?(arg_inst.keyword)
-            @ruby_style_hash[arg_inst.keyword] = self.public_send(arg_inst.prepare, @ruby_style_hash[arg_inst.keyword])
+        self.class.arguments.each do |name, arg_defn|
+          ruby_kwargs_key = arg_defn.keyword
+          if @ruby_style_hash.key?(ruby_kwargs_key) && arg_defn.prepare
+            @ruby_style_hash[ruby_kwargs_key] = arg_defn.prepare_value(self, @ruby_style_hash[ruby_kwargs_key])
           end
         end
       end

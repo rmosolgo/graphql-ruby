@@ -293,8 +293,7 @@ module GraphQL
           arguments.each do |name, arg_defn|
             ruby_kwargs_key = arg_defn.keyword
             if ruby_kwargs.key?(ruby_kwargs_key) && arg_defn.prepare
-              new_value = obj.public_send(arg_defn.prepare, ruby_kwargs[ruby_kwargs_key])
-              ruby_kwargs[ruby_kwargs_key] = new_value
+              ruby_kwargs[ruby_kwargs_key] = arg_defn.prepare_value(obj, ruby_kwargs[ruby_kwargs_key])
             end
           end
 

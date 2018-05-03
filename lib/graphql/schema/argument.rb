@@ -68,6 +68,22 @@ module GraphQL
       rescue StandardError => err
         raise ArgumentError, "Couldn't build type for Argument #{@owner.name}.#{name}: #{err.class.name}: #{err.message}", err.backtrace
       end
+
+      # Apply the {prepare} configuration to `value`, using methods from `obj`.
+      # Used by the runtime.
+      # @api private
+      def prepare_value(obj, value)
+        case @prepare
+        when nil
+          value
+        when Symbol, String
+          obj.public_send(@prepare, value)
+        when Proc
+          @prepare.call(value, obj.context)
+        else
+          raise "Invalid prepare for #{@owner.name}.name: #{@prepare.inspect}"
+        end
+      end
     end
   end
 end
