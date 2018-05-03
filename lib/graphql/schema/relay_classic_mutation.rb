@@ -22,22 +22,20 @@ module GraphQL
     class RelayClassicMutation < GraphQL::Schema::Mutation
       # The payload should always include this field
       field(:client_mutation_id, String, "A unique identifier for the client performing the mutation.", null: true)
-
+      # Relay classic default:
+      null(true)
 
       # Override {GraphQL::Schema::Mutation#resolve_mutation} to
       # delete `client_mutation_id` from the kwargs.
       def resolve_mutation(kwargs)
         # This is handled by Relay::Mutation::Resolve, a bit hacky, but here we are.
         kwargs.delete(:client_mutation_id)
-        super
+        resolve(**kwargs)
       end
 
-      class << self
-        def inherited(base)
-          base.null(true)
-          super
-        end
+      resolve_method(:resolve_mutation)
 
+      class << self
         # The base class for generated input object types
         # @param new_class [Class] The base class to use for generating input object definitions
         # @return [Class] The base class for this mutation's generated input object (default is {GraphQL::Schema::InputObject})
