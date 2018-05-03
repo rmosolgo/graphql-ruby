@@ -82,6 +82,12 @@ module GraphQL
         raise NotImplementedError, "#{self.class.name}#resolve should execute side effects and return a Symbol-keyed hash"
       end
 
+      # This is a hook for classes to intercept resolution.
+      # @see RelayClassicMutation for usage
+      def resolve_mutation(args)
+        resolve(args)
+      end
+
       class << self
         def inherited(base)
           base.null(null)
@@ -188,21 +194,12 @@ module GraphQL
             field_name,
             payload_type,
             description,
-            resolve: self.method(:resolve_field),
+            extras: extras,
+            method: :resolve_mutation,
             mutation_class: self,
             arguments: arguments,
             null: null,
           )
-        end
-
-        # This is basically the `.call` behavior for the generated field,
-        # instantiating the Mutation class and calling its {#resolve} method
-        # with Ruby keyword arguments.
-        def resolve_field(obj, args, ctx)
-          mutation = self.new(object: obj, arguments: args, context: ctx.query.context)
-          ruby_kwargs = args.to_kwargs
-          extras.each { |e| ruby_kwargs[e] = ctx.public_send(e) }
-          mutation.resolve(**ruby_kwargs)
         end
       end
     end

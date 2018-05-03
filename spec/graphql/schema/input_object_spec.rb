@@ -44,6 +44,46 @@ describe GraphQL::Schema::InputObject do
     end
   end
 
+  describe "prepare: / as:" do
+    module InputObjectPrepareTest
+      class InputObj < GraphQL::Schema::InputObject
+        argument :a, Integer, required: true
+        argument :b, Integer, required: true, as: :b2
+        argument :c, Integer, required: true, prepare: :prep
+        argument :d, Integer, required: true, prepare: :prep, as: :d2
+        argument :e, Integer, required: true, prepare: ->(val, ctx) { val * ctx[:multiply_by] * 2 }, as: :e2
+
+        def prep(val)
+          val * context[:multiply_by]
+        end
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :inputs, String, null: false do
+          argument :input, InputObj, required: true
+        end
+
+        def inputs(input:)
+          input.to_kwargs.inspect
+        end
+      end
+
+      class Schema < GraphQL::Schema
+        query(Query)
+      end
+    end
+
+    it "calls methods on the input object" do
+      query_str = <<-GRAPHQL
+      { inputs(input: { a: 1, b: 2, c: 3, d: 4, e: 5 }) }
+      GRAPHQL
+
+      res = InputObjectPrepareTest::Schema.execute(query_str, context: { multiply_by: 3 })
+      expected_obj = { a: 1, b2: 2, c: 9, d2: 12, e2: 30 }.inspect
+      assert_equal expected_obj, res["data"]["inputs"]
+    end
+  end
+
   describe "in queries" do
     it "is passed to the field method" do
       query_str = <<-GRAPHQL
