@@ -8,6 +8,58 @@
 
 ### Bug fixes
 
+## 1.8.0.pre11 (3 May 2018)
+
+### Breaking changes
+
+- `Schema::Mutation.resolve_mutation` was moved to an instance method; see changes to `Schema::RelayClassicMutation` in #1469 for an example refactor
+- `GraphQL::Delegate` was removed, use Ruby's `Forwardable` instead (warning: bad performance on Ruby 2.4.0)
+- `GraphQL::Schema::Interface` is a module, not a class #1372. To refactor, use a base module instead of a base class:
+
+  ```ruby
+  module BaseInterface
+    include GraphQL::Schema::Interface
+  end
+  ```
+
+  And include that in your interface types:
+
+  ```ruby
+  module Reservable
+    include BaseInterface
+    field :reservations, ...
+  end
+  ```
+
+  In object types, no change is required; use `implements` as before:
+
+  ```ruby
+  class EventVenue < BaseObject
+    implements Reservable
+  end
+  ```
+
+### New features
+
+- `GraphQL::Schema::Interface` is a module
+- Support `prepare:` and `as:` argument options #1469
+- First-class support for Mongoid connections #1452
+- More type inspection helpers for class-based types #1446
+- Field methods may call `super` to get the default behavior #1437
+- `variables:` accepts symbol keys #1401
+- Reprint any directives which were parsed from SDL #1417
+- Support custom JSON scalars #1398
+- Subscription `trigger` accepts symbol, underscored arguments and validates their presence #1400
+- Mutations accept a `null(true | false)` setting to affect field nullability #1406
+- `RescueMiddleware` uses inheritance to match errors #1393
+- Resolvers may return a list of errors #1231
+
+### Bug fixes
+
+- Better error for anonymous class names #1459
+- Input Objects correctly inherit arguments #1432
+- Fix `.subscriptions` for class-based Schemas #1391
+
 ## 1.8.0.pre10 (4 Apr 2018)
 
 ### New features
