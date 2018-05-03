@@ -75,7 +75,7 @@ class InMemoryBackend
     end
   end
   # Just a random stateful object for tracking what happens:
-  class Payload
+  class SubscriptionPayload
     attr_reader :str
 
     def initialize
@@ -88,45 +88,58 @@ class InMemoryBackend
     end
   end
 
-  SchemaDefinition = <<-GRAPHQL
-  type Subscription {
-    payload(id: ID!): Payload!
-    event(stream: StreamInput): Payload
-    myEvent(type: PayloadType): Payload
-  }
+  class Payload < GraphQL::Schema::Object
+    field :str, String, null: false
+    field :int, Integer, null: false
+  end
 
-  type Payload {
-    str: String!
-    int: Int!
-  }
+  class PayloadType < GraphQL::Schema::Enum
+    graphql_name "PayloadType"
+    # Arbitrary "kinds" of payloads which may be
+    # subscribed to separately
+    value "ONE"
+    value "TWO"
+  end
 
-  input StreamInput {
-    userId: ID!
-    type: PayloadType = ONE
-  }
+  class StreamInput < GraphQL::Schema::InputObject
+    argument :user_id, ID, required: true
+    argument :type, PayloadType, required: false, default_value: "ONE"
+  end
 
-  # Arbitrary "kinds" of payloads which may be
-  # subscribed to separately
-  enum PayloadType {
-    ONE
-    TWO
-  }
+  class Subscription < GraphQL::Schema::Object
+    field :payload, Payload, null: false do
+      argument :id, ID, required: true
+    end
 
-  type Query {
-    dummy: Int
-  }
-  GRAPHQL
+    def payload(id:)
+      object
+    end
 
-  Resolvers = {
-    "Subscription" => {
-      "payload" => ->(o,a,c) { o },
-      "myEvent" => ->(o,a,c) { o },
-      "event" => ->(o,a,c) { o },
-    },
-  }
-  Schema = GraphQL::Schema.from_definition(SchemaDefinition, default_resolve: Resolvers).redefine do
-    use InMemoryBackend::Subscriptions,
-      extra: 123
+    field :event, Payload, null: true do
+      argument :stream, StreamInput, required: false
+    end
+
+    def event(stream: nil)
+      object
+    end
+
+    field :my_event, Payload, null: true do
+      argument :type, PayloadType, required: false
+    end
+
+    def my_event(type: nil)
+      object
+    end
+  end
+
+  class Query < GraphQL::Schema::Object
+    field :dummy, Integer, null: true
+  end
+
+  class Schema < GraphQL::Schema
+    query(Query)
+    subscription(Subscription)
+    use InMemoryBackend::Subscriptions, extra: 123
   end
 
   # TODO don't hack this (no way to add metadata from IDL parser right now)
@@ -164,7 +177,7 @@ describe GraphQL::Subscriptions do
 
   let(:root_object) {
     OpenStruct.new(
-      payload: InMemoryBackend::Payload.new,
+      payload: InMemoryBackend::SubscriptionPayload.new,
     )
   }
 
