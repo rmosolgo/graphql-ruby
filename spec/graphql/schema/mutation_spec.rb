@@ -21,6 +21,14 @@ describe GraphQL::Schema::Mutation do
     end
   end
 
+  describe "argument prepare" do
+    it "calls methods on the mutation, uses `as:`" do
+      query_str = 'mutation { prepareInput(input: 4) }'
+      res = Jazz::Schema.execute(query_str)
+      assert_equal 16, res["data"]["prepareInput"], "It's squared by the prepare method"
+    end
+  end
+
   describe ".field" do
     it "returns a GraphQL::Field instance, for backwards compat" do
       field = mutation.field

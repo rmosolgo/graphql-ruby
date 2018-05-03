@@ -23,6 +23,15 @@ module GraphQL
       # The payload should always include this field
       field(:client_mutation_id, String, "A unique identifier for the client performing the mutation.", null: true)
 
+
+      # Override {GraphQL::Schema::Mutation#resolve_mutation} to
+      # delete `client_mutation_id` from the kwargs.
+      def resolve_mutation(kwargs)
+        # This is handled by Relay::Mutation::Resolve, a bit hacky, but here we are.
+        kwargs.delete(:client_mutation_id)
+        super
+      end
+
       class << self
         def inherited(base)
           base.null(true)
@@ -72,17 +81,6 @@ module GraphQL
             own_arguments.merge!(mutation_args)
             argument :client_mutation_id, String, "A unique identifier for the client performing the mutation.", required: false
           end
-        end
-
-        # Override {GraphQL::Schema::Mutation.resolve_field} to
-        # delete `client_mutation_id` from the kwargs.
-        def resolve_field(obj, args, ctx)
-          mutation = self.new(object: obj, arguments: args, context: ctx.query.context)
-          kwargs = args.to_kwargs
-          # This is handled by Relay::Mutation::Resolve, a bit hacky, but here we are.
-          kwargs.delete(:client_mutation_id)
-          extras.each { |e| kwargs[e] = ctx.public_send(e) }
-          mutation.resolve(**kwargs)
         end
       end
     end

@@ -13,6 +13,12 @@ module GraphQL
       # @return [GraphQL::Schema::Field, Class] The field or input object this argument belongs to
       attr_reader :owner
 
+      # @return [Symbol] A method to call to transform this value before sending it to field resolution method
+      attr_reader :prepare
+
+      # @return [Symbol] This argument's name in Ruby keyword arguments
+      attr_reader :keyword
+
       # @param arg_name [Symbol]
       # @param type_expr
       # @param desc [String]
@@ -20,7 +26,7 @@ module GraphQL
       # @param description [String]
       # @param default_value [Object]
       # @param camelize [Boolean] if true, the name will be camelized when building the schema
-      def initialize(arg_name, type_expr, desc = nil, required:, description: nil, default_value: NO_DEFAULT, as: nil, camelize: true, owner:, &definition_block)
+      def initialize(arg_name, type_expr, desc = nil, required:, description: nil, default_value: NO_DEFAULT, as: nil, camelize: true, prepare: nil, owner:, &definition_block)
         @name = camelize ? Member::BuildType.camelize(arg_name.to_s) : arg_name.to_s
         @type_expr = type_expr
         @description = desc || description
@@ -28,6 +34,8 @@ module GraphQL
         @default_value = default_value
         @owner = owner
         @as = as
+        @keyword = as || Schema::Member::BuildType.underscore(@name).to_sym
+        @prepare = prepare
 
         if definition_block
           instance_eval(&definition_block)

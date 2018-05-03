@@ -236,8 +236,11 @@ module GraphQL
           # Might be nil, still want to call the func in that case
           inner_obj = obj && obj.object
           prev_resolve.call(inner_obj, args, ctx)
+        elsif @mutation_class
+          mutation_inst = @mutation_class.new(object: obj, arguments: args, context: ctx.query.context)
+          public_send_field(mutation_inst, args, ctx)
         else
-          public_send_field(obj, @method_sym, args, ctx)
+          public_send_field(obj, args, ctx)
         end
       end
 
@@ -282,10 +285,18 @@ module GraphQL
 
       NO_ARGS = {}.freeze
 
-      def public_send_field(obj, method_name, graphql_args, field_ctx)
+      def public_send_field(obj, graphql_args, field_ctx)
         if graphql_args.any? || @extras.any?
           # Splat the GraphQL::Arguments to Ruby keyword arguments
           ruby_kwargs = graphql_args.to_kwargs
+          # Apply any `prepare` methods. Not great code organization, can this go somewhere better?
+          arguments.each do |name, arg_defn|
+            ruby_kwargs_key = arg_defn.keyword
+            if ruby_kwargs.key?(ruby_kwargs_key) && arg_defn.prepare
+              new_value = obj.public_send(arg_defn.prepare, ruby_kwargs[ruby_kwargs_key])
+              ruby_kwargs[ruby_kwargs_key] = new_value
+            end
+          end
 
           if @connection
             # Remove pagination args before passing it to a user method
@@ -305,9 +316,9 @@ module GraphQL
 
 
         if ruby_kwargs.any?
-          obj.public_send(method_name, **ruby_kwargs)
+          obj.public_send(@method_sym, **ruby_kwargs)
         else
-          obj.public_send(method_name)
+          obj.public_send(@method_sym)
         end
       end
     end

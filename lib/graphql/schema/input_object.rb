@@ -7,10 +7,16 @@ module GraphQL
       extend GraphQL::Schema::Member::HasArguments
 
       def initialize(values, context:, defaults_used:)
+        @context = context
         @arguments = self.class.arguments_class.new(values, context: context, defaults_used: defaults_used)
         # Symbolized, underscored hash:
         @ruby_style_hash = @arguments.to_kwargs
-        @context = context
+        # Apply prepares, not great to have it duplicated here.
+        self.class.arguments.each do |name, arg_inst|
+          if arg_inst.prepare && @ruby_style_hash.key?(arg_inst.keyword)
+            @ruby_style_hash[arg_inst.keyword] = self.public_send(arg_inst.prepare, @ruby_style_hash[arg_inst.keyword])
+          end
+        end
       end
 
       # @return [GraphQL::Query::Context] The context for this query

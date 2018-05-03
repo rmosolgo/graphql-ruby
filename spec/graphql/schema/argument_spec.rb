@@ -12,10 +12,15 @@ describe GraphQL::Schema::Argument do
         end
 
         argument :aliased_arg, String, required: false, as: :renamed
+        argument :prepared_arg, Int, required: false, prepare: :multiply
       end
 
       def field(**args)
         args.inspect
+      end
+
+      def multiply(val)
+        context[:multiply_by] * val
       end
     end
 
@@ -65,6 +70,18 @@ describe GraphQL::Schema::Argument do
       res = SchemaArgumentTest::Schema.execute(query_str)
       # Make sure it's getting the renamed symbol:
       assert_equal '{:renamed=>"x"}', res["data"]["field"]
+    end
+  end
+
+  describe "prepare:" do
+    it "calls the method on the field's owner" do
+      query_str = <<-GRAPHQL
+      { field(preparedArg: 5) }
+      GRAPHQL
+
+      res = SchemaArgumentTest::Schema.execute(query_str, context: {multiply_by: 3})
+      # Make sure it's getting the renamed symbol:
+      assert_equal '{:prepared_arg=>15}', res["data"]["field"]
     end
   end
 end

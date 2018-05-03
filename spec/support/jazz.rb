@@ -453,6 +453,19 @@ module Jazz
       Models.data["Ensemble"] << ens
       ens
     end
+
+    field :prepare_input, Integer, null: false do
+      argument :input, Integer, required: true, prepare: :square, as: :squared_input
+    end
+
+    def prepare_input(squared_input:)
+      # Test that `square` is called
+      squared_input
+    end
+
+    def square(value)
+      value ** 2
+    end
   end
 
   class MetadataPlugin
