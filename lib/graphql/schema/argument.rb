@@ -20,13 +20,14 @@ module GraphQL
       # @param description [String]
       # @param default_value [Object]
       # @param camelize [Boolean] if true, the name will be camelized when building the schema
-      def initialize(arg_name, type_expr, desc = nil, required:, description: nil, default_value: NO_DEFAULT, camelize: true, owner:, &definition_block)
+      def initialize(arg_name, type_expr, desc = nil, required:, description: nil, default_value: NO_DEFAULT, as: nil, camelize: true, owner:, &definition_block)
         @name = camelize ? Member::BuildType.camelize(arg_name.to_s) : arg_name.to_s
         @type_expr = type_expr
         @description = desc || description
         @null = !required
         @default_value = default_value
         @owner = owner
+        @as = as
 
         if definition_block
           instance_eval(&definition_block)
@@ -47,6 +48,7 @@ module GraphQL
         argument.type = -> { type }
         argument.description = @description
         argument.metadata[:type_class] = self
+        argument.as = @as
         if NO_DEFAULT != @default_value
           argument.default_value = @default_value
         end
@@ -56,7 +58,7 @@ module GraphQL
       def type
         @type ||= Member::BuildType.parse_type(@type_expr, null: @null)
       rescue StandardError => err
-        raise "Couldn't build type for Argument #{@owner.name}.#{name}: #{err.class.name}: #{err.message}", err.backtrace
+        raise ArgumentError, "Couldn't build type for Argument #{@owner.name}.#{name}: #{err.class.name}: #{err.message}", err.backtrace
       end
     end
   end
