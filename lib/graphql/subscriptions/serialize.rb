@@ -33,8 +33,8 @@ module GraphQL
         case
         when obj.is_a?(Array)
           obj.map { |i| dump_recursive(i) }.join(':')
-        when obj.is_a?(Hash)
-          obj.map { |k, v| "#{dump_recursive(k)}:#{dump_recursive(v)}" }.join(":")
+        when obj.respond_to?(:to_h)
+          obj.to_h.map { |k, v| "#{dump_recursive(k)}:#{dump_recursive(v)}" }.join(":")
         when obj.respond_to?(:to_gid_param)
           obj.to_gid_param
         when obj.respond_to?(:to_param)
