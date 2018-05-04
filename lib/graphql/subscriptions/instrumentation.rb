@@ -56,7 +56,11 @@ module GraphQL
             ctx.skip
           elsif ctx.irep_node.subscription_topic == ctx.query.subscription_topic
             # The root object is _already_ the subscription update:
-            obj
+            if obj.respond_to?(:object)
+              obj.object
+            else
+              obj
+            end
           else
             # This is a subscription update, but this event wasn't triggered.
             ctx.skip
