@@ -173,7 +173,7 @@ describe GraphQL::Schema::Interface do
 
     it "doesn't overwrite them when including multiple interfaces" do
       def_methods = InterfaceC::DefinitionMethods
-      
+
       InterfaceC.module_eval do
         include InterfaceA
         include InterfaceB
