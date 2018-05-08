@@ -87,6 +87,8 @@ To add [New Relic](https://newrelic.com/) instrumentation:
 ```ruby
 MySchema = GraphQL::Schema.define do
   use(GraphQL::Tracing::NewRelicTracing)
+  # Optional, use the operation name to set the new relic transaction name:
+  # use GraphQL::Tracing::NewRelicTracing, set_transaction_name: true
 end
 ```
 
