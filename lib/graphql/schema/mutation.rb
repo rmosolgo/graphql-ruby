@@ -58,9 +58,8 @@ module GraphQL
     #  }
     #  GRAPHQL
     #
-    class Mutation < GraphQL::Schema::SingletonField
+    class Mutation < GraphQL::Schema::Resolver
       extend GraphQL::Schema::Member::HasFields
-      extend GraphQL::Schema::Member::HasArguments
 
       class << self
         # Override the method from HasFields to support `field: Mutation.field`, for backwards compat.
