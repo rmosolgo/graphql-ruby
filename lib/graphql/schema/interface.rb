@@ -22,10 +22,20 @@ module GraphQL
           if !child_class.is_a?(Class)
             # In this case, it's been included into another interface.
             # This is how interface inheritance is implemented
-            child_class.const_set(:DefinitionMethods, Module.new)
-            child_class.extend(child_class::DefinitionMethods)
+
+            # Use an instance variable to tell whether it's been included previously or not;
+            # You can't use constant detection because constants are brought into scope
+            # by `include`, which has already happened at this point.
+            if !child_class.instance_variable_defined?(:@_definition_methods)
+              defn_methods_module = Module.new
+              child_class.instance_variable_set(:@_definition_methods, defn_methods_module)
+              child_class.const_set(:DefinitionMethods, defn_methods_module)
+              child_class.extend(child_class::DefinitionMethods)
+            end
+
             # We need this before we can call `own_interfaces`
             child_class.extend(Schema::Interface::DefinitionMethods)
+
             child_class.own_interfaces << self
             child_class.own_interfaces.each do |interface_defn|
               child_class.extend(interface_defn::DefinitionMethods)

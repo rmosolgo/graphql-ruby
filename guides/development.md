@@ -23,6 +23,7 @@ Get your own copy of graphql-ruby by forking [`rmosolgo/graphql-ruby` on GitHub]
 
 Then, install the dependencies:
 
+- Install SQLite3 and MongoDB (eg, `brew install sqlite && brew install mongodb`)
 - `bundle install`
 - Optional: [Ragel](http://www.colm.net/open-source/ragel/) is required to build the lexer
 

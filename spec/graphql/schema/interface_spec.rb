@@ -157,4 +157,29 @@ describe GraphQL::Schema::Interface do
       assert_equal(expected_data, res["data"]["find"])
     end
   end
+
+  describe ':DefinitionMethods' do
+    module InterfaceA
+      include GraphQL::Schema::Interface
+    end
+
+    module InterfaceB
+      include GraphQL::Schema::Interface
+    end
+
+    module InterfaceC
+      include GraphQL::Schema::Interface
+    end
+
+    it "doesn't overwrite them when including multiple interfaces" do
+      def_methods = InterfaceC::DefinitionMethods
+
+      InterfaceC.module_eval do
+        include InterfaceA
+        include InterfaceB
+      end
+
+      assert_equal(InterfaceC::DefinitionMethods, def_methods)
+    end
+  end
 end
