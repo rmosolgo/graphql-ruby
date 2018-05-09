@@ -35,6 +35,8 @@ module GraphQL
           obj.map { |i| dump_recursive(i) }.join(':')
         when obj.is_a?(Hash)
           obj.map { |k, v| "#{dump_recursive(k)}:#{dump_recursive(v)}" }.join(":")
+        when obj.is_a?(GraphQL::Schema::InputObject)
+          dump_recursive(obj.to_h)
         when obj.respond_to?(:to_gid_param)
           obj.to_gid_param
         when obj.respond_to?(:to_param)
