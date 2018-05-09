@@ -125,7 +125,7 @@ class ClassBasedInMemoryBackend < InMemoryBackend
       object
     end
 
-    field :my_event, Payload, null: true do
+    field :my_event, Payload, null: true, subscription_scope: :me do
       argument :type, PayloadType, required: false
     end
 
@@ -143,10 +143,6 @@ class ClassBasedInMemoryBackend < InMemoryBackend
     subscription(Subscription)
     use InMemoryBackend::Subscriptions, extra: 123
   end
-
-
-  # TODO don't hack this (no way to add metadata from IDL parser right now)
-  Schema.get_field("Subscription", "myEvent").subscription_scope = :me
 end
 
 class FromDefinitionInMemoryBackend < InMemoryBackend
