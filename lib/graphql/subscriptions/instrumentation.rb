@@ -44,7 +44,10 @@ module GraphQL
 
         # Wrap the proc with subscription registration logic
         def call(obj, args, ctx)
+          @inner_proc.call(obj, args, ctx) if @inner_proc
+
           events = ctx.namespace(:subscriptions)[:events]
+
           if events
             # This is the first execution, so gather an Event
             # for the backend to register:
