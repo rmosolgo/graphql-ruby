@@ -8,7 +8,7 @@ module GraphQL
       include GraphQL::Schema::Member::HasArguments
 
       # @return [String] the GraphQL name for this field, camelized unless `camelize: false` is provided
-      attr_reader :name
+      attr_accessor :name
 
       # @return [String]
       attr_accessor :description
@@ -112,7 +112,10 @@ module GraphQL
         end
         @resolver = resolver
         if resolver
-          @field_instance = resolver.graphql_field
+          @field_instance = resolver.graphql_field.dup
+          # TODO what a mess, how to generalize about overriding now?
+          @field_instance.description = @description
+          @field_instance.name = @name
         end
         @resolver_class = resolver_class
 
@@ -252,7 +255,7 @@ module GraphQL
           inner_obj = obj && obj.object
           prev_resolve.call(inner_obj, args, ctx)
         elsif @resolver_class
-          singleton_inst = @resolver_class.new(object: obj, context: ctx.query.context)
+          singleton_inst = @resolver_class.new(object: obj.object, context: ctx.query.context)
           public_send_field(singleton_inst, args, ctx)
         else
           public_send_field(obj, args, ctx)
