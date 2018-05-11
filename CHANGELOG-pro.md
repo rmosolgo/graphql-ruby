@@ -8,7 +8,15 @@
 
 ### Bug Fix
 
+## 1.7.7 (10 May 2018)
+
+### Bug Fix
+
+- Fix ordering of authorization field instrumenter (put it at the end, not the beginning of the list)
+
 ## 1.7.6 (2 May 2018)
+
+### New Features
 
 - Authorization: Add `view`/`access`/`authorize` methods to `GraphQL::Schema::Mutation`
 

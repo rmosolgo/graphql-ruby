@@ -54,7 +54,8 @@ module GraphQL
       # @param arguments [{String=>GraphQL::Schema::Arguments}] Arguments for this field (may be added in the block, also)
       # @param camelize [Boolean] If true, the field name will be camelized when building the schema
       # @param complexity [Numeric] When provided, set the complexity for this field
-      def initialize(name, return_type_expr = nil, desc = nil, owner: nil, null: nil, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, connection: nil, max_page_size: nil, resolve: nil, introspection: false, hash_key: nil, camelize: true, complexity: 1, extras: [], mutation: nil, resolver: nil, resolver_class: nil, arguments: {}, &definition_block)
+      # @param subscription_scope [Symbol, String] A key in `context` which will be used to scope subscription payloads
+      def initialize(name, return_type_expr = nil, desc = nil, owner: nil, null: nil, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, connection: nil, max_page_size: nil, resolve: nil, introspection: false, hash_key: nil, camelize: true, complexity: 1, extras: [], mutation: nil, resolver: nil, resolver_class: nil, subscription_scope: nil, arguments: {}, &definition_block)
         if (field || function) && desc.nil? && return_type_expr.is_a?(String)
           # The return type should be copied from `field` or `function`, and the second positional argument is the description
           desc = return_type_expr
@@ -122,6 +123,7 @@ module GraphQL
         # Override the default from HasArguments
         @own_arguments = arguments
         @owner = owner
+        @subscription_scope = subscription_scope
 
         if definition_block
           instance_eval(&definition_block)
@@ -208,6 +210,7 @@ module GraphQL
         field_defn.connection_max_page_size = @max_page_size
         field_defn.introspection = @introspection
         field_defn.complexity = @complexity
+        field_defn.subscription_scope = @subscription_scope
 
         # apply this first, so it can be overriden below
         if @connection
@@ -255,7 +258,8 @@ module GraphQL
           inner_obj = obj && obj.object
           prev_resolve.call(inner_obj, args, ctx)
         elsif @resolver_class
-          singleton_inst = @resolver_class.new(object: obj.object, context: ctx.query.context)
+          inner_obj = obj && obj.object
+          singleton_inst = @resolver_class.new(object: inner_obj, context: ctx.query.context)
           public_send_field(singleton_inst, args, ctx)
         else
           public_send_field(obj, args, ctx)
