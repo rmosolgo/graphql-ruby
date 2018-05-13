@@ -128,6 +128,12 @@ module GraphQL
 
       @result_values = nil
       @executed = false
+
+      # TODO add a general way to define schema-level filters
+      # TODO also add this to schema dumps
+      if @schema.class.respond_to?(:visible_member?)
+        merge_filters(only: @schema.class.method(:visible_member?))
+      end
     end
 
     def subscription_update?

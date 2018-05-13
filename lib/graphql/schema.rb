@@ -834,6 +834,18 @@ module GraphQL
         raise NotImplementedError, "#{self.name}.id_from_object(object, type, ctx) must be implemented to create global ids (tried to create an id for `#{object.inspect}`)"
       end
 
+      # This method is attached to the query
+      # @see {.visible?} for what to override.
+      def visible_member?(legacy_member, context)
+        member = legacy_member.metadata[:type_class] || legacy_member
+        visible?(member, context)
+      end
+
+      # Override this to filter out items in the schema
+      def visible?(member, context)
+        true
+      end
+
       def type_error(type_err, ctx)
         DefaultTypeError.call(type_err, ctx)
       end

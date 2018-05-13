@@ -9,6 +9,7 @@ module GraphQL
 
       # @return [String] the GraphQL name for this field, camelized unless `camelize: false` is provided
       attr_reader :name
+      alias :graphql_name :name
 
       # @return [String]
       attr_accessor :description
