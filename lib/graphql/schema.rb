@@ -848,7 +848,7 @@ module GraphQL
 
       # Override this to filter out items in the schema
       def visible?(member, context)
-        true
+        member.respond_to?(:visible?) ? member.visible?(context) : true
       end
 
       def type_error(type_err, ctx)

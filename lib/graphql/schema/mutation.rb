@@ -84,7 +84,7 @@ module GraphQL
 
       # This is a hook for classes to intercept resolution.
       # @see RelayClassicMutation for usage
-      def resolve_mutation(args)
+      def resolve_mutation(**args)
         resolve(args)
       end
 
@@ -160,6 +160,10 @@ module GraphQL
           end
 
           @null.nil? ? true : @null
+        end
+
+        def visible?(context)
+          true
         end
 
         private

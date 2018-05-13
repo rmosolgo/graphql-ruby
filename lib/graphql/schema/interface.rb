@@ -17,6 +17,10 @@ module GraphQL
           self::DefinitionMethods.module_eval(&block)
         end
 
+        def visible?(context)
+          true
+        end
+
         # Here's the tricky part. Make sure behavior keeps making its way down the inheritance chain.
         def included(child_class)
           if !child_class.is_a?(Class)

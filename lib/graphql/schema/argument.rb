@@ -53,6 +53,10 @@ module GraphQL
         end
       end
 
+      def visible?(context)
+        true
+      end
+
       def to_graphql
         argument = GraphQL::Argument.new
         argument.name = @name

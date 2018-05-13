@@ -22,7 +22,7 @@ module GraphQL
             overridden
           else # Fallback to Ruby constant name
             raise NotImplementedError, 'Anonymous class should declare an `graphql_name`' if name.nil?
-            
+
             name.split("::").last.sub(/Type\Z/, "")
           end
         end
@@ -74,6 +74,14 @@ module GraphQL
 
         def overridden_graphql_name
           @graphql_name || find_inherited_method(:overridden_graphql_name, nil)
+        end
+
+        def visible?(context)
+          if @mutation
+            @mutation.visible?(context)
+          else
+            true
+          end
         end
 
         private

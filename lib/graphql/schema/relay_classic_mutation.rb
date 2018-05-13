@@ -26,7 +26,7 @@ module GraphQL
 
       # Override {GraphQL::Schema::Mutation#resolve_mutation} to
       # delete `client_mutation_id` from the kwargs.
-      def resolve_mutation(kwargs)
+      def resolve_mutation(**kwargs)
         # This is handled by Relay::Mutation::Resolve, a bit hacky, but here we are.
         kwargs.delete(:client_mutation_id)
         super

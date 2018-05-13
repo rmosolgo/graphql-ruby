@@ -223,6 +223,15 @@ module GraphQL
         raise ArgumentError, "Failed to build return type for #{@owner.graphql_name}.#{name} from #{@return_type_expr.inspect}: #{$!.message}", $!.backtrace
       end
 
+      def visible?(context)
+        # TODO Update for GraphQL::Schema::Resolver
+        if @mutation_class
+          @mutation_class.visible?(context)
+        else
+          true
+        end
+      end
+
       # Implement {GraphQL::Field}'s resolve API.
       #
       # Eventually, we might hook up field instances to execution in another way. TBD.
