@@ -837,7 +837,12 @@ module GraphQL
       # This method is attached to the query
       # @see {.visible?} for what to override.
       def visible_member?(legacy_member, context)
-        member = legacy_member.metadata[:type_class] || legacy_member
+        member = if legacy_member.respond_to?(:metadata)
+          legacy_member.metadata[:type_class] || legacy_member
+        else
+          legacy_member
+        end
+
         visible?(member, context)
       end
 
