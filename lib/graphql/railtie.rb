@@ -72,7 +72,7 @@ module GraphQL
             unless File.exists?(destination_file)
               FileUtils.mkdir_p(File.dirname(destination_file))
               File.open(destination_file, 'w') do |f|
-                f.write "class Types::BaseInterface < GraphQL::Schema::Interface\nend"
+                f.write "module Types::BaseInterface\n  include GraphQL::Schema::Interface\nend"
               end
             end
 
