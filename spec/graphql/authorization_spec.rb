@@ -5,15 +5,22 @@ describe GraphQL::Authorization do
   module AuthTest
     class BaseArgument < GraphQL::Schema::Argument
       def visible?(context)
-        # Hide arguments named `int2` when `context[:hide]` is set
-        super && (context[:hide] ? @name != "int2" : true)
+        super && (context[:hide] ? @name != "hidden" : true)
+      end
+
+      def accessible?(context)
+        super && (context[:hide] ? @name != "inaccessible" : true)
       end
     end
 
     class BaseField < GraphQL::Schema::Field
       argument_class BaseArgument
       def visible?(context)
-        super && (context[:hide] ? @name != "int" : true)
+        super && (context[:hide] ? @name != "hidden" : true)
+      end
+
+      def accessible?(context)
+        super && (context[:hide] ? @name != "inaccessible" : true)
       end
     end
 
@@ -37,22 +44,72 @@ describe GraphQL::Authorization do
       end
     end
 
+    module HiddenDefaultInterface
+      include BaseInterface
+      # visible? will call the super method
+      def self.resolve_type(obj, ctx)
+        HiddenObject
+      end
+    end
+
     class HiddenObject < BaseObject
       implements HiddenInterface
+      implements HiddenDefaultInterface
       def self.visible?(ctx)
         super && (ctx[:hide] ? false : true)
       end
     end
 
+    # TODO test default behavior for abstract types,
+    # that they check their concrete types
+    module InaccessibleInterface
+      include BaseInterface
+
+      def self.accessible?(ctx)
+        super && (ctx[:hide] ? false : true)
+      end
+
+      def self.resolve_type(obj, ctx)
+        InaccessibleObject
+      end
+    end
+
+    module InaccessibleDefaultInterface
+      include BaseInterface
+      # accessible? will call the super method
+      def self.resolve_type(obj, ctx)
+        InaccessibleObject
+      end
+    end
+
+    class InaccessibleObject < BaseObject
+      implements InaccessibleInterface
+      implements InaccessibleDefaultInterface
+      def self.accessible?(ctx)
+        super && (ctx[:hide] ? false : true)
+      end
+    end
+
     class Query < BaseObject
-      field :int, Integer, null: false
+      field :hidden, Integer, null: false
       field :int2, Integer, null: false do
         argument :int, Integer, required: false
-        argument :int2, Integer, required: false
+        argument :hidden, Integer, required: false
+        argument :inaccessible, Integer, required: false
+      end
+
+      def int2(**args)
+        1
       end
 
       field :hidden_object, HiddenObject, null: false, method: :itself
       field :hidden_interface, HiddenInterface, null: false, method: :itself
+      field :hidden_default_interface, HiddenDefaultInterface, null: false, method: :itself
+
+      field :inaccessible, Integer, null: false, method: :object_id
+      field :inaccessible_object, InaccessibleObject, null: false, method: :itself
+      field :inaccessible_interface, InaccessibleInterface, null: false, method: :itself
+      field :inaccessible_default_interface, InaccessibleDefaultInterface, null: false, method: :itself
     end
 
     class DoHiddenStuff < GraphQL::Schema::RelayClassicMutation
@@ -61,8 +118,15 @@ describe GraphQL::Authorization do
       end
     end
 
+    class DoInaccessibleStuff < GraphQL::Schema::RelayClassicMutation
+      def self.accessible?(ctx)
+        super && (ctx[:hide] ? false : true)
+      end
+    end
+
     class Mutation < BaseObject
       field :do_hidden_stuff, mutation: DoHiddenStuff
+      field :do_inaccessible_stuff, mutation: DoInaccessibleStuff
     end
 
     class Schema < GraphQL::Schema
@@ -81,6 +145,7 @@ describe GraphQL::Authorization do
       error_queries = {
         "hiddenObject" => "{ hiddenObject { __typename } }",
         "hiddenInterface" => "{ hiddenInterface { __typename } }",
+        "hiddenDefaultInterface" => "{ hiddenDefaultInterface { __typename } }",
       }
 
       error_queries.each do |name, q|
@@ -123,7 +188,7 @@ describe GraphQL::Authorization do
     it "works in introspection" do
       res = AuthTest::Schema.execute <<-GRAPHQL, context: { hide: true }
         {
-          __type(name: "Query") {
+          query: __type(name: "Query") {
             fields {
               name
               args { name }
@@ -134,13 +199,58 @@ describe GraphQL::Authorization do
           hiddenInterface: __type(name: "HiddenInterface") { name }
         }
       GRAPHQL
-      query_field_names = res["data"]["__type"]["fields"].map { |f| f["name"] }
-      assert_equal ["int2"], query_field_names
-      int2_arg_names = res["data"]["__type"]["fields"].first["args"].map { |a| a["name"] }
-      assert_equal ["int"], int2_arg_names
+      query_field_names = res["data"]["query"]["fields"].map { |f| f["name"] }
+      refute_includes query_field_names, "int"
+      int2_arg_names = res["data"]["query"]["fields"].find { |f| f["name"] == "int2" }["args"].map { |a| a["name"] }
+      assert_equal ["int", "inaccessible"], int2_arg_names
 
       assert_nil res["data"]["hiddenObject"]
       assert_nil res["data"]["hiddenInterface"]
     end
+  end
+
+  describe "applying the accessible? method" do
+    it "works with fields and arguments" do
+      queries = {
+        "{ inaccessible }" => ["Some fields were unreachable ... "],
+        "{ int2(inaccessible: 1) }" => ["Some fields were unreachable ... "],
+      }
+
+      queries.each do |query_str, errors|
+        res = AuthTest::Schema.execute(query_str, context: { hide: true })
+        assert_equal errors, res.fetch("errors").map { |e| e["message"] }
+
+        res = AuthTest::Schema.execute(query_str, context: { hide: false })
+        refute res.key?("errors")
+      end
+    end
+
+    it "works with return types" do
+      queries = {
+        "{ inaccessibleObject { __typename } }" => ["Some fields were unreachable ... "],
+        "{ inaccessibleInterface { __typename } }" => ["Some fields were unreachable ... "],
+        "{ inaccessibleDefaultInterface { __typename } }" => ["Some fields were unreachable ... "],
+      }
+
+      queries.each do |query_str, errors|
+        res = AuthTest::Schema.execute(query_str, context: { hide: true })
+        assert_equal errors, res["errors"].map { |e| e["message"] }
+
+        res = AuthTest::Schema.execute(query_str, context: { hide: false })
+        refute res.key?("errors")
+      end
+    end
+
+    it "works with mutations" do
+      query = "mutation { doInaccessibleStuff(input: {}) { __typename } }"
+      res = AuthTest::Schema.execute(query, context: { hide: true })
+      assert_equal ["Some fields were unreachable ... "], res["errors"].map { |e| e["message"] }
+
+      assert_raises NotImplementedError do
+        AuthTest::Schema.execute(query)
+      end
+    end
+
+    it "works with edges and connections"
   end
 end

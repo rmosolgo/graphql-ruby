@@ -17,8 +17,24 @@ module GraphQL
           self::DefinitionMethods.module_eval(&block)
         end
 
+        # The interface is visible if any of its possible types are visible
         def visible?(context)
-          true
+          context.schema.possible_types(self).each do |type|
+            if context.schema.visible?(type, context)
+              return true
+            end
+          end
+          false
+        end
+
+        # The interface is accessible if any of its possible types are accessible
+        def accessible?(context)
+          context.schema.possible_types(self).each do |type|
+            if context.schema.accessible?(type, context)
+              return true
+            end
+          end
+          false
         end
 
         # Here's the tricky part. Make sure behavior keeps making its way down the inheritance chain.

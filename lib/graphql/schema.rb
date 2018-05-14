@@ -68,6 +68,7 @@ module GraphQL
   #   end
   #
   class Schema
+    extend Forwardable
     extend GraphQL::Schema::Member::AcceptsDefinition
     include GraphQL::Define::InstanceDefinable
     accepts_definitions \
@@ -534,6 +535,10 @@ module GraphQL
       @type_error_proc = new_proc
     end
 
+    # Can't delegate to `class`
+    alias :_schema_class :class
+    def_delegators :_schema_class, :visible?, :accessible?
+
     # A function to call when {#execute} receives an invalid query string
     #
     # @see {DefaultParseError} is the default behavior.
@@ -695,6 +700,7 @@ module GraphQL
         schema_defn.cursor_encoder = cursor_encoder
         schema_defn.tracers.concat(defined_tracers)
         schema_defn.query_analyzers.concat(defined_query_analyzers)
+        schema_defn.query_analyzers << GraphQL::Authorization::Analyzer
         schema_defn.middleware.concat(defined_middleware)
         schema_defn.multiplex_analyzers.concat(defined_multiplex_analyzers)
         defined_instrumenters.each do |step, insts|
@@ -834,21 +840,30 @@ module GraphQL
         raise NotImplementedError, "#{self.name}.id_from_object(object, type, ctx) must be implemented to create global ids (tried to create an id for `#{object.inspect}`)"
       end
 
-      # This method is attached to the query
-      # @see {.visible?} for what to override.
-      def visible_member?(legacy_member, context)
-        member = if legacy_member.respond_to?(:metadata)
-          legacy_member.metadata[:type_class] || legacy_member
-        else
-          legacy_member
-        end
-
-        visible?(member, context)
-      end
-
       # Override this to filter out items in the schema
       def visible?(member, context)
+        # TODO: make legacy objects respond to visible, remove this check
+        member = if member.respond_to?(:metadata)
+          member.metadata[:type_class] || member
+        else
+          member
+        end
+
         member.respond_to?(:visible?) ? member.visible?(context) : true
+      end
+
+      def accessible?(member, context)
+        member = if member.respond_to?(:metadata)
+          member.metadata[:type_class] || member
+        else
+          member
+        end
+
+        if member.respond_to?(:accessible?)
+          member.accessible?(context)
+        else
+          true
+        end
       end
 
       def type_error(type_err, ctx)

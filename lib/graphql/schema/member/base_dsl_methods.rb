@@ -84,6 +84,14 @@ module GraphQL
           end
         end
 
+        def accessible?(context)
+          if @mutation
+            @mutation.accessible?(context)
+          else
+            true
+          end
+        end
+
         private
 
         def find_inherited_method(method_name, default_value)

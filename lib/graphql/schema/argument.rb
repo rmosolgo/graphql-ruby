@@ -57,6 +57,10 @@ module GraphQL
         true
       end
 
+      def accessible?(context)
+        true
+      end
+
       def to_graphql
         argument = GraphQL::Argument.new
         argument.name = @name

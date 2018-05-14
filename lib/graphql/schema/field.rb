@@ -232,6 +232,14 @@ module GraphQL
         end
       end
 
+      def accessible?(context)
+        if @mutation_class
+          @mutation_class.visible?(context)
+        else
+          true
+        end
+      end
+
       # Implement {GraphQL::Field}'s resolve API.
       #
       # Eventually, we might hook up field instances to execution in another way. TBD.

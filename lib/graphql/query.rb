@@ -131,8 +131,8 @@ module GraphQL
 
       # TODO add a general way to define schema-level filters
       # TODO also add this to schema dumps
-      if @schema.class.respond_to?(:visible_member?)
-        merge_filters(only: @schema.class.method(:visible_member?))
+      if @schema.respond_to?(:visible?)
+        merge_filters(only: @schema.method(:visible?))
       end
     end
 

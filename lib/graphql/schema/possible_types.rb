@@ -22,6 +22,8 @@ module GraphQL
 
       def possible_types(type_defn)
         case type_defn
+        when Module
+          possible_types(type_defn.graphql_definition)
         when GraphQL::UnionType
           type_defn.possible_types
         when GraphQL::InterfaceType
