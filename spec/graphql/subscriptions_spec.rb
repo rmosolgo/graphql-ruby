@@ -133,7 +133,7 @@ class ClassBasedInMemoryBackend < InMemoryBackend
       object
     end
 
-    field :failed_event, Payload, null: false, resolve: -> (o, a, c) { raise GraphQL::ExecutionError.new("unauthorized") }  do
+    field :failed_event, Payload, null: false, resolve: ->(o, a, c) { raise GraphQL::ExecutionError.new("unauthorized") }  do
       argument :id, ID, required: true
     end
   end
@@ -430,7 +430,7 @@ describe GraphQL::Subscriptions do
             assert_equal 0, schema.subscriptions.instance_variable_get(:@subscriptions).size
           end
 
-          it "lets unhandled errors crash "do
+          it "lets unhandled errors crash" do
             query_str = <<-GRAPHQL
           subscription($type: PayloadType) {
             myEvent(type: $type) { int }
