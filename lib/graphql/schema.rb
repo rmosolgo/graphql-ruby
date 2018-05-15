@@ -537,7 +537,7 @@ module GraphQL
 
     # Can't delegate to `class`
     alias :_schema_class :class
-    def_delegators :_schema_class, :visible?, :accessible?
+    def_delegators :_schema_class, :visible?, :accessible?, :authorized?
 
     # A function to call when {#execute} receives an invalid query string
     #
@@ -861,6 +861,20 @@ module GraphQL
 
         if member.respond_to?(:accessible?)
           member.accessible?(context)
+        else
+          true
+        end
+      end
+
+      def authorized?(object, member, context)
+        member = if member.respond_to?(:metadata)
+          member.metadata[:type_class] || member
+        else
+          member
+        end
+
+        if member.respond_to?(:authorized?)
+          member.authorized?(object, context)
         else
           true
         end

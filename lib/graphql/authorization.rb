@@ -47,6 +47,8 @@ module GraphQL
         if nodes.any?
           # TODO extract error hook
           # TODO default error message
+          # Maybe make this a method on the Authorization plugin,
+          # so it can be customized via inheritance
           GraphQL::AnalysisError.new("Some fields were unreachable ... ")
         else
           nil
