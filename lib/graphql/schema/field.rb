@@ -25,12 +25,45 @@ module GraphQL
 
       # @return [Class, nil] The {Schema::Resolver} this field was derived from, if there is one
       def resolver
-        @resolver || @resolver_class
+        @resolver_class
       end
 
-      # @return [Class, nil] The mutation this field was derived from, if there is one
-      def mutation
-        @mutation || resolver
+      alias :mutation :resolver
+
+      # Create a field instance from a list of arguments, keyword arguments, and a block.
+      # @return [GraphQL::Schema:Field] an instance of `self
+      # @see {.initialize} for other options
+      def self.from_signature(name = nil, type = nil, desc = nil, resolver: nil, mutation: nil, **kwargs, &block)
+        if (parent_config = resolver || mutation)
+          # Get the parent config, merge in local overrides
+          kwargs = parent_config.field_signature.merge(kwargs)
+          # Add a reference to that parent class
+          kwargs[:resolver_class] = parent_config
+        end
+
+        if name
+          kwargs[:name] = name
+        end
+
+        if !type.nil?
+          if type.is_a?(GraphQL::Field)
+            raise ArgumentError, "A GraphQL::Field was passed as the second argument, use the `field:` keyword for this instead."
+          end
+          if desc
+            if kwargs[:description]
+              raise ArgumentError, "Provide description as a positional argument or `description:` keyword, but not both (#{desc.inspect}, #{kwargs[:description].inspect})"
+            end
+
+            kwargs[:description] = desc
+            kwargs[:type] = type
+          elsif (kwargs[:field] || kwargs[:function]) && type.is_a?(String)
+            # The return type should be copied from `field` or `function`, and the second positional argument is the description
+            kwargs[:description] = type
+          else
+            kwargs[:type] = type
+          end
+        end
+        new(**kwargs, &block)
       end
 
       # @param name [Symbol] The underscore-cased version of this field name (will be camelized for the GraphQL API)
@@ -48,25 +81,16 @@ module GraphQL
       # @param resolve [<#call(obj, args, ctx)>] **deprecated** for compatibility with <1.8.0
       # @param field [GraphQL::Field, GraphQL::Schema::Field] **deprecated** for compatibility with <1.8.0
       # @param function [GraphQL::Function] **deprecated** for compatibility with <1.8.0
-      # @param mutation [Class] A {Schema::Mutation} class for serving this field
-      # @param resolver [Class] A {Schema::Resolver} which this field was derived from.
       # @param resolver_class [Class] (Private) A {Schema::Resolver} which this field was derived from.
-      # @param arguments [{String=>GraphQL::Schema::Arguments}] Arguments for this field (may be added in the block, also)
+      # @param arguments [{String=>GraphQL::Schema::Argument, Hash}] Arguments for this field (may be added in the block, also)
       # @param camelize [Boolean] If true, the field name will be camelized when building the schema
       # @param complexity [Numeric] When provided, set the complexity for this field
       # @param subscription_scope [Symbol, String] A key in `context` which will be used to scope subscription payloads
-      def initialize(name, return_type_expr = nil, desc = nil, owner: nil, null: nil, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, connection: nil, max_page_size: nil, resolve: nil, introspection: false, hash_key: nil, camelize: true, complexity: 1, extras: [], mutation: nil, resolver: nil, resolver_class: nil, subscription_scope: nil, arguments: {}, &definition_block)
-        if (field || function) && desc.nil? && return_type_expr.is_a?(String)
-          # The return type should be copied from `field` or `function`, and the second positional argument is the description
-          desc = return_type_expr
-          return_type_expr = nil
-        end
-        if mutation && (return_type_expr || desc || description || function || field || !null.nil? || deprecation_reason || method || resolve || introspection || hash_key)
-          raise ArgumentError, "when keyword `mutation:` is present, all arguments are ignored, please remove them"
-        end
+      def initialize(type: nil, name: nil, owner: nil, null: nil, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, connection: nil, max_page_size: nil, resolve: nil, introspection: false, hash_key: nil, camelize: true, complexity: 1, extras: [], resolver_class: nil, subscription_scope: nil, arguments: {}, &definition_block)
+
         if !(field || function || mutation || resolver)
-          if return_type_expr.nil?
-            raise ArgumentError, "missing positional argument `type`"
+          if type.nil?
+            raise ArgumentError, "missing positional or keyword argument `type` / `type:`"
           end
           if null.nil?
             raise ArgumentError, "missing keyword argument null:"
@@ -75,14 +99,8 @@ module GraphQL
         if (field || function || resolve || resolve) && extras.any?
           raise ArgumentError, "keyword `extras:` may only be used with method-based resolve, please remove `field:`, `function:`, `resolve:`, or `mutation:`"
         end
-        if return_type_expr.is_a?(GraphQL::Field)
-          raise ArgumentError, "A GraphQL::Field was passed as the second argument, use the `field:` keyword for this instead."
-        end
         @name = camelize ? Member::BuildType.camelize(name.to_s) : name.to_s
-        if description && desc
-          raise ArgumentError, "Provide description as a positional argument or `description:` keyword, but not both (#{desc.inspect}, #{description.inspect})"
-        end
-        @description = description || desc
+        @description = description
         if field.is_a?(GraphQL::Schema::Field)
           @field_instance = field
         else
@@ -101,27 +119,24 @@ module GraphQL
         @method_str = method_name.to_s
         @method_sym = method_name.to_sym
         @complexity = complexity
-        @return_type_expr = return_type_expr
+        @return_type_expr = type
         @return_type_null = null
         @connection = connection
         @max_page_size = max_page_size
         @introspection = introspection
         @extras = extras
-        @mutation = mutation
-        if mutation
-          @field_instance = mutation.graphql_field
-        end
-        @resolver = resolver
-        if resolver
-          @field_instance = resolver.graphql_field.dup
-          # TODO what a mess, how to generalize about overriding now?
-          @field_instance.description = @description
-          @field_instance.name = @name
-        end
         @resolver_class = resolver_class
 
         # Override the default from HasArguments
-        @own_arguments = arguments
+        @own_arguments = {}
+        arguments.each do |name, arg|
+          if arg.is_a?(Hash)
+            argument(name: name, **arg)
+          else
+            @own_arguments[name] = arg
+          end
+        end
+
         @owner = owner
         @subscription_scope = subscription_scope
 

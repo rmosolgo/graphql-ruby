@@ -7,6 +7,7 @@ module GraphQL
       # Really we only need description from here, but:
       extend Schema::Member::BaseDSLMethods
       extend GraphQL::Schema::Member::HasArguments
+      extend Schema::Member::GeneratesField
 
       # @param object [Object] the initialize object, pass to {Query.initialize} as `root_value`
       # @param context [GraphQL::Query::Context]
@@ -28,12 +29,6 @@ module GraphQL
       end
 
       class << self
-        # @return [GraphQL::Schema::Field] The generated field instance for this singleton
-        # @see {GraphQL::Schema::Field}'s `field_class:` or `mutation:` option, don't call this directly
-        def graphql_field
-          @graphql_field ||= generate_field
-        end
-
         def field_class(new_class = nil)
           if new_class
             @field_class = new_class
@@ -105,22 +100,17 @@ module GraphQL
           @type || (superclass.respond_to?(:type) ? superclass.type : nil)
         end
 
-        private
-
-        # Build an instance of {.field_class} which uses this class.
-        # To customize field generation, override this method.
-        def generate_field
-          # TODO support deprecation_reason
-          self.field_class.new(
-            field_name,
-            type,
-            description,
+        def field_signature
+          super.merge({
+            name: field_name,
+            type: type,
+            description: description,
             extras: extras,
             method: resolve_method,
             resolver_class: self,
             arguments: arguments,
             null: null,
-          )
+          })
         end
       end
     end

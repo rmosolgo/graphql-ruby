@@ -49,7 +49,7 @@ module GraphQL
         # @see {GraphQL::Schema::Field#initialize} for method signature
         # @return [void]
         def field(*args, **kwargs, &block)
-          field_defn = build_field(*args, **kwargs, &block)
+          field_defn = field_class.from_signature(*args, owner: self, **kwargs, &block)
           add_field(field_defn)
           nil
         end
@@ -103,13 +103,6 @@ module GraphQL
         end
 
         private
-
-        # Initialize a field with this class's field class, but don't attach it.
-        def build_field(*args, **kwargs, &block)
-          kwargs[:owner] = self
-          field_class.new(*args, **kwargs, &block)
-        end
-
         # Find the magic module for holding super methods,
         # and add a field named `method_name` for implementing the field
         # called `field_name`.

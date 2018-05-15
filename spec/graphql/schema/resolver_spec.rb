@@ -35,15 +35,6 @@ describe GraphQL::Schema::Resolver do
     end
 
     class Resolver3 < Resolver1
-      class CustomField < GraphQL::Schema::Field
-        def resolve_field(*args)
-          value = super
-          value << -1
-          value
-        end
-      end
-
-      field_class(CustomField)
     end
 
     class Resolver4 < BaseResolver
@@ -54,6 +45,18 @@ describe GraphQL::Schema::Resolver do
     end
 
     class Query < GraphQL::Schema::Object
+      class CustomField < GraphQL::Schema::Field
+        def resolve_field(*args)
+          value = super
+          if @name == "resolver3"
+            value << -1
+          end
+          value
+        end
+      end
+
+      field_class(CustomField)
+
       field :resolver_1, resolver: Resolver1
       field :resolver_2, resolver: Resolver2
       field :resolver_3, resolver: Resolver3
@@ -79,7 +82,7 @@ describe GraphQL::Schema::Resolver do
     assert_equal [100, nil, 3], res["data"]["r2"]
   end
 
-  it "uses a custom field_class" do
+  it "uses the object's field_class" do
     res = ResolverTest::Schema.execute " { r1: resolver3(value: 1) r2: resolver3 }"
     assert_equal [100, 1, -1], res["data"]["r1"]
     assert_equal [100, nil, -1], res["data"]["r2"]

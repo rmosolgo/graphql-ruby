@@ -19,7 +19,7 @@ describe GraphQL::Schema::Field do
       assert_equal 'inspectInput', field.graphql_definition.name
       assert_equal 'inspectInput', field.name
 
-      underscored_field = GraphQL::Schema::Field.new(:underscored_field, String, null: false, camelize: false, owner: nil) do
+      underscored_field = GraphQL::Schema::Field.from_signature(:underscored_field, String, null: false, camelize: false, owner: nil) do
         argument :underscored_arg, String, required: true, camelize: false
       end
 
@@ -55,7 +55,7 @@ describe GraphQL::Schema::Field do
       type = Class.new(GraphQL::Schema::Object) do
         graphql_name 'MyType'
       end
-      field = GraphQL::Schema::Field.new(:my_field, type, owner: nil, null: true)
+      field = GraphQL::Schema::Field.from_signature(:my_field, type, owner: nil, null: true)
       assert_equal type.to_graphql, field.to_graphql.type
     end
 
@@ -210,33 +210,16 @@ describe GraphQL::Schema::Field do
   end
 
   describe "mutation" do
-    let(:mutation) do
-      Class.new(GraphQL::Schema::Mutation) do
+    it "passes when not including extra arguments" do
+      mutation_class = Class.new(GraphQL::Schema::Mutation) do
         graphql_name "Thing"
-
         field :stuff, String, null: false
       end
-    end
-    let(:error_message) { "when keyword `mutation:` is present, all arguments are ignored, please remove them" }
 
-    it "fails when including null option as true" do
-      error = assert_raises(ArgumentError) do
-        GraphQL::Schema::Field.new(:my_field, mutation: mutation, null: true)
+      obj = Class.new(GraphQL::Schema::Object) do
+        field(:my_field, mutation: mutation_class, null: true)
       end
-
-      assert_equal error.message, error_message
-    end
-
-    it "fails when including null option as false" do
-      error = assert_raises(ArgumentError) do
-        GraphQL::Schema::Field.new(:my_field, mutation: mutation, null: false)
-      end
-
-      assert_equal error.message, error_message
-    end
-
-    it "passes when not including extra arguments" do
-      assert_equal GraphQL::Schema::Field.new(:my_field, mutation: mutation).mutation, mutation
+      assert_equal obj.fields["myField"].mutation, mutation_class
     end
   end
 end

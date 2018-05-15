@@ -62,18 +62,6 @@ module GraphQL
       extend GraphQL::Schema::Member::HasFields
 
       class << self
-        # Override the method from HasFields to support `field: Mutation.field`, for backwards compat.
-        #
-        # If called without any arguments, returns a `GraphQL::Field`.
-        # @see {GraphQL::Schema::Member::HasFields.field} for default behavior
-        def field(*args, &block)
-          if args.none? && !block_given?
-            graphql_field.graphql_definition
-          else
-            super(*args, &block)
-          end
-        end
-
         # Call this method to get the derived return type of the mutation,
         # or use it as a configuration method to assign a return type
         # instead of generating one.
