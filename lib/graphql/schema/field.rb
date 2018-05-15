@@ -65,7 +65,7 @@ module GraphQL
             raise ArgumentError, "missing keyword argument null:"
           end
         end
-        if (field || function || resolve || resolve) && extras.any?
+        if (field || function || resolve || mutation) && extras.any?
           raise ArgumentError, "keyword `extras:` may only be used with method-based resolve, please remove `field:`, `function:`, `resolve:`, or `mutation:`"
         end
         if return_type_expr.is_a?(GraphQL::Field)
