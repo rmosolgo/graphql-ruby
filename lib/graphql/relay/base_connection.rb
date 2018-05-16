@@ -27,7 +27,7 @@ module GraphQL
         def connection_for_nodes(nodes)
           # Check for class _names_ because classes can be redefined in Rails development
           nodes.class.ancestors.each do |ancestor|
-            conn_impl = CONNECTION_IMPLEMENTATIONS[ancestor.name]
+            conn_impl = CONNECTION_IMPLEMENTATIONS[ancestor]
             if conn_impl
               return conn_impl
             end
@@ -41,7 +41,7 @@ module GraphQL
         # @param nodes_class [Class] A class representing a collection (eg, Array, AR::Relation)
         # @param connection_class [Class] A class implementing Connection methods
         def register_connection_implementation(nodes_class, connection_class)
-          CONNECTION_IMPLEMENTATIONS[nodes_class.name] = connection_class
+          CONNECTION_IMPLEMENTATIONS[nodes_class] = connection_class
         end
       end
 
