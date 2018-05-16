@@ -119,9 +119,8 @@ module GraphQL
           })
         end
 
-        private
-
         # A non-normalized type configuration, without `null` applied
+        # @api private
         def type_expr
           @type_expr || (superclass.respond_to?(:type_expr) ? superclass.type_expr : nil)
         end
