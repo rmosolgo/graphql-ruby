@@ -61,7 +61,7 @@ describe GraphQL::Schema::Resolver do
       field :resolver_2, resolver: Resolver2
       field :resolver_3, resolver: Resolver3
       field :resolver_3_again, resolver: Resolver3, description: "field desc"
-      field :resolver_4, resolver: Resolver4
+      field :resolver_4, "Positional description", resolver: Resolver4
     end
 
     class Schema < GraphQL::Schema
@@ -99,6 +99,7 @@ describe GraphQL::Schema::Resolver do
     it "gets the field's description" do
       assert_nil ResolverTest::Schema.find("Query.resolver3").description
       assert_equal "field desc", ResolverTest::Schema.find("Query.resolver3Again").description
+      assert_equal "Positional description", ResolverTest::Schema.find("Query.resolver4").description
     end
 
     it "gets the field's name" do

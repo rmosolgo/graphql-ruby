@@ -56,7 +56,7 @@ module GraphQL
 
             kwargs[:description] = desc
             kwargs[:type] = type
-          elsif (kwargs[:field] || kwargs[:function]) && type.is_a?(String)
+          elsif (kwargs[:field] || kwargs[:function] || resolver || mutation) && type.is_a?(String)
             # The return type should be copied from `field` or `function`, and the second positional argument is the description
             kwargs[:description] = type
           else
