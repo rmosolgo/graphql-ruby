@@ -93,17 +93,23 @@ module GraphQL
             if null.nil?
               raise ArgumentError, "required argument `null:` is missing"
             end
-            @type = Member::BuildType.parse_type(new_type, null: true)
-            # TODO should this be added to the parse_type call?
+            @type_expr = new_type
             @null = null
+          else
+            if @type_expr
+              GraphQL::Schema::Member::BuildType.parse_type(@type_expr, null: @null)
+            elsif superclass.respond_to?(:type)
+              superclass.type
+            else
+              nil
+            end
           end
-          @type || (superclass.respond_to?(:type) ? superclass.type : nil)
         end
 
         def field_signature
           super.merge({
             name: field_name,
-            type: type,
+            type: type_expr,
             description: description,
             extras: extras,
             method: resolve_method,
@@ -111,6 +117,13 @@ module GraphQL
             arguments: arguments,
             null: null,
           })
+        end
+
+        private
+
+        # A non-normalized type configuration, without `null` applied
+        def type_expr
+          @type_expr || (superclass.respond_to?(:type_expr) ? superclass.type_expr : nil)
         end
       end
     end

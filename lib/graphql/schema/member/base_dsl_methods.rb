@@ -76,6 +76,10 @@ module GraphQL
           @graphql_name || find_inherited_method(:overridden_graphql_name, nil)
         end
 
+        def unwrap
+          self
+        end
+
         private
 
         def find_inherited_method(method_name, default_value)

@@ -75,6 +75,7 @@ module GraphQL
         end
 
         alias :type :payload_type
+        alias :type_expr :payload_type
 
         # An object class to use for deriving payload types
         # @param new_class [Class, nil] Defaults to {GraphQL::Schema::Object}

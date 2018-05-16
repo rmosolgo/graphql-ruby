@@ -92,6 +92,10 @@ module GraphQL
       extend GraphQL::Schema::Member::AcceptsDefinition
 
       extend DefinitionMethods
+
+      def unwrap
+        self
+      end
     end
   end
 end

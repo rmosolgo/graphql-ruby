@@ -29,6 +29,10 @@ module GraphQL
       def kind
         GraphQL::TypeKinds::NON_NULL
       end
+
+      def unwrap
+        @of_type.unwrap
+      end
     end
   end
 end
