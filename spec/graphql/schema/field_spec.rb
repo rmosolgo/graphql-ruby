@@ -19,7 +19,7 @@ describe GraphQL::Schema::Field do
       assert_equal 'inspectInput', field.graphql_definition.name
       assert_equal 'inspectInput', field.name
 
-      underscored_field = GraphQL::Schema::Field.from_signature(:underscored_field, String, null: false, camelize: false, owner: nil) do
+      underscored_field = GraphQL::Schema::Field.from_options(:underscored_field, String, null: false, camelize: false, owner: nil) do
         argument :underscored_arg, String, required: true, camelize: false
       end
 
@@ -55,7 +55,7 @@ describe GraphQL::Schema::Field do
       type = Class.new(GraphQL::Schema::Object) do
         graphql_name 'MyType'
       end
-      field = GraphQL::Schema::Field.from_signature(:my_field, type, owner: nil, null: true)
+      field = GraphQL::Schema::Field.from_options(:my_field, type, owner: nil, null: true)
       assert_equal type.to_graphql, field.to_graphql.type
     end
 

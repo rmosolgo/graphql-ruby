@@ -55,8 +55,8 @@ module GraphQL
           @input_type ||= generate_input_type
         end
 
-        # Extend {Schema::Mutation.field_signature} to add the `input` argument
-        def field_signature
+        # Extend {Schema::Mutation.field_options} to add the `input` argument
+        def field_options
           sig = super
           # Arguments were added at the root, but they should be nested
           sig[:arguments].clear

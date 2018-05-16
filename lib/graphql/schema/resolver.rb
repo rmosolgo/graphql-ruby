@@ -106,7 +106,7 @@ module GraphQL
           end
         end
 
-        def field_signature
+        def field_options
           super.merge({
             name: field_name,
             type: type_expr,

@@ -49,7 +49,7 @@ module GraphQL
         # @see {GraphQL::Schema::Field#initialize} for method signature
         # @return [void]
         def field(*args, **kwargs, &block)
-          field_defn = field_class.from_signature(*args, owner: self, **kwargs, &block)
+          field_defn = field_class.from_options(*args, owner: self, **kwargs, &block)
           add_field(field_defn)
           nil
         end

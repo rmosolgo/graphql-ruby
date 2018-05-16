@@ -33,10 +33,10 @@ module GraphQL
       # Create a field instance from a list of arguments, keyword arguments, and a block.
       # @return [GraphQL::Schema:Field] an instance of `self
       # @see {.initialize} for other options
-      def self.from_signature(name = nil, type = nil, desc = nil, resolver: nil, mutation: nil, **kwargs, &block)
+      def self.from_options(name = nil, type = nil, desc = nil, resolver: nil, mutation: nil, **kwargs, &block)
         if (parent_config = resolver || mutation)
           # Get the parent config, merge in local overrides
-          kwargs = parent_config.field_signature.merge(kwargs)
+          kwargs = parent_config.field_options.merge(kwargs)
           # Add a reference to that parent class
           kwargs[:resolver_class] = parent_config
         end
