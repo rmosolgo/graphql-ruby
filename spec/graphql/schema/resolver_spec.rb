@@ -39,8 +39,10 @@ describe GraphQL::Schema::Resolver do
 
     class Resolver4 < BaseResolver
       type Integer, null: false
-      def resolve
-        object.value
+
+      extras [:ast_node]
+      def resolve(ast_node:)
+        object.value + ast_node.name.size
       end
     end
 
@@ -91,7 +93,12 @@ describe GraphQL::Schema::Resolver do
   describe "resolve method" do
     it "has access to the application object" do
       res = ResolverTest::Schema.execute " { resolver4 } ", root_value: OpenStruct.new(value: 4)
-      assert_equal 4, res["data"]["resolver4"]
+      assert_equal 13, res["data"]["resolver4"]
+    end
+
+    it "gets extras" do
+      res = ResolverTest::Schema.execute " { resolver4 } ", root_value: OpenStruct.new(value: 0)
+      assert_equal 9, res["data"]["resolver4"]
     end
   end
 

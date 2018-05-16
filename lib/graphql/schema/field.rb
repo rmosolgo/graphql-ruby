@@ -88,9 +88,12 @@ module GraphQL
       # @param subscription_scope [Symbol, String] A key in `context` which will be used to scope subscription payloads
       def initialize(type: nil, name: nil, owner: nil, null: nil, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, connection: nil, max_page_size: nil, resolve: nil, introspection: false, hash_key: nil, camelize: true, complexity: 1, extras: [], resolver_class: nil, subscription_scope: nil, arguments: {}, &definition_block)
 
+        if name.nil?
+          raise ArgumentError, "missing first `name` argument or keyword `name:`"
+        end
         if !(field || function || mutation || resolver)
           if type.nil?
-            raise ArgumentError, "missing positional or keyword argument `type` / `type:`"
+            raise ArgumentError, "missing second `type` argument or keyword `type:`"
           end
           if null.nil?
             raise ArgumentError, "missing keyword argument null:"
@@ -243,6 +246,15 @@ module GraphQL
           field_defn.arguments[arg_graphql.name] = arg_graphql
         end
 
+        # Support a passed-in proc, one way or another
+        @resolve_proc = if @resolve
+          @resolve
+        elsif @function
+          @function
+        elsif @field
+          @field.resolve_proc
+        end
+
         # Ok, `self` isn't a class, but this is for consistency with the classes
         field_defn.metadata[:type_class] = self
 
@@ -259,19 +271,10 @@ module GraphQL
       #
       # Eventually, we might hook up field instances to execution in another way. TBD.
       def resolve_field(obj, args, ctx)
-        if @resolve || @function || @field
-          # Support a passed-in proc, one way or another
-          prev_resolve = if @resolve
-            @resolve
-          elsif @function
-            @function
-          elsif @field
-            @field.resolve_proc
-          end
-
+        if @resolve_proc
           # Might be nil, still want to call the func in that case
           inner_obj = obj && obj.object
-          prev_resolve.call(inner_obj, args, ctx)
+          @resolve_proc.call(inner_obj, args, ctx)
         elsif @resolver_class
           inner_obj = obj && obj.object
           singleton_inst = @resolver_class.new(object: inner_obj, context: ctx.query.context)
