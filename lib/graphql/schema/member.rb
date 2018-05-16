@@ -2,6 +2,7 @@
 require 'graphql/schema/member/accepts_definition'
 require 'graphql/schema/member/base_dsl_methods'
 require 'graphql/schema/member/cached_graphql_definition'
+require 'graphql/schema/member/generates_field'
 require 'graphql/schema/member/graphql_type_names'
 require 'graphql/schema/member/type_system_helpers'
 require "graphql/relay/type_extensions"

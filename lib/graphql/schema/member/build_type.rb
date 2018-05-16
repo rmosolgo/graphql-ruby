@@ -101,13 +101,15 @@ module GraphQL
           when Array
             to_type_name(something.first)
           when Module
-            if something < GraphQL::Schema::Member
+            if something.respond_to?(:graphql_name)
               something.graphql_name
             else
-              something.name.split("::").last
+              to_type_name(something.name)
             end
           when String
             something.gsub(/\]\[\!/, "").split("::").last
+          when GraphQL::Schema::NonNull, GraphQL::Schema::List
+            to_type_name(something.unwrap)
           else
             raise "Unhandled to_type_name input: #{something} (#{something.class})"
           end

@@ -133,7 +133,12 @@ module Jazz
   module GloballyIdentifiableType
     include BaseInterface
     description "A fetchable object in the system"
-    field :id, ID, "A unique identifier for this object", null: false
+    field(
+      name: :id,
+      type: ID,
+      null: false,
+      description: "A unique identifier for this object",
+    )
     upcased_field :upcased_id, ID, null: false, method: :id # upcase: true added by helper
 
     def id

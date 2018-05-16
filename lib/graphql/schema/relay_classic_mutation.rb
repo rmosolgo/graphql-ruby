@@ -55,15 +55,16 @@ module GraphQL
           @input_type ||= generate_input_type
         end
 
-        private
-
-        # Extend {Schema::Mutation.generate_field} to add the `input` argument
-        def generate_field
-          field_instance = super
-          field_instance.own_arguments.clear
-          field_instance.argument(:input, input_type, required: true)
-          field_instance
+        # Extend {Schema::Mutation.field_options} to add the `input` argument
+        def field_options
+          sig = super
+          # Arguments were added at the root, but they should be nested
+          sig[:arguments].clear
+          sig[:arguments][:input] = { type: input_type, required: true }
+          sig
         end
+
+        private
 
         # Generate the input type for the `input:` argument
         # To customize how input objects are generated, override this method
