@@ -46,6 +46,17 @@ describe GraphQL::Schema::Member::AcceptsDefinition do
       metadata2 :a, :bc
     end
 
+    module Thing2
+      include Thing
+    end
+
+    class SomeObject < BaseObject
+      metadata :a, :aaa
+    end
+
+    class SomeObject2 < SomeObject
+    end
+
     class Query < BaseObject
       metadata :a, :abc
       metadata2 :xyz, :zyx
@@ -56,6 +67,9 @@ describe GraphQL::Schema::Member::AcceptsDefinition do
       end
 
       field :thing, Thing, null: false
+      field :thing2, Thing2, null: false
+      field :some_object, SomeObject, null: false
+      field :some_object2, SomeObject2, null: false
     end
 
     query(Query)
@@ -71,6 +85,14 @@ describe GraphQL::Schema::Member::AcceptsDefinition do
     assert_equal [:z, 888], AcceptsDefinitionSchema::Thing.metadata
     assert_equal 888, AcceptsDefinitionSchema::Thing.graphql_definition.metadata[:z]
     assert_equal :bc, AcceptsDefinitionSchema::Thing.graphql_definition.metadata[:a]
+    # Interface inheritance
+    assert_equal [:z, 888], AcceptsDefinitionSchema::Thing2.metadata
+    assert_equal 888, AcceptsDefinitionSchema::Thing2.graphql_definition.metadata[:z]
+    assert_equal :bc, AcceptsDefinitionSchema::Thing2.graphql_definition.metadata[:a]
+
+    # Object inheritance
+    assert_equal :aaa, AcceptsDefinitionSchema::SomeObject.graphql_definition.metadata[:a]
+    assert_equal :aaa, AcceptsDefinitionSchema::SomeObject2.graphql_definition.metadata[:a]
   end
 
   it "passes along configs for fields and arguments" do
