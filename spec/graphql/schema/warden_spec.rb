@@ -389,7 +389,7 @@ describe GraphQL::Schema::Warden do
       assert_nil res["data"]["Node"]
     end
 
-    it "hides unions if all possible types are hidden" do
+    it "hides unions if all possible types are hidden or its references are hidden" do
       sdl = "
         type Query {
           bag: BagOfThings
@@ -415,14 +415,71 @@ describe GraphQL::Schema::Warden do
       query_string = %|
         {
           BagOfThings: __type(name: "BagOfThings") { name }
+          Query: __type(name: "Query") { fields { name } }
         }
       |
 
       res = schema.execute(query_string)
       assert res["data"]["BagOfThings"]
+      assert_equal ["bag"], res["data"]["Query"]["fields"].map { |f| f["name"] }
 
+      # Hide the union when all its possible types are gone. This will cause the field to be hidden too.
       res = schema.execute(query_string, except: ->(m, _) { ["A", "B", "C"].include?(m.name) })
       assert_nil res["data"]["BagOfThings"]
+      assert_equal [], res["data"]["Query"]["fields"]
+
+      res = schema.execute(query_string, except: ->(m, _) { m.name == "bag" })
+      assert_nil res["data"]["BagOfThings"]
+      assert_equal [], res["data"]["Query"]["fields"]
+    end
+
+
+    it "hides unions if all possible types are hidden or its references are hidden" do
+      sdl = "
+        type Query {
+          node: Node
+        }
+
+        type A implements Node {
+          id: ID!
+        }
+
+        type B implements Node {
+          id: ID!
+        }
+
+        type C implements Node {
+          id: ID!
+        }
+
+        interface Node {
+          id: ID!
+        }
+      "
+
+      schema = GraphQL::Schema.from_definition(sdl)
+
+      query_string = %|
+        {
+          Node: __type(name: "Node") { name }
+          Query: __type(name: "Query") { fields { name } }
+        }
+      |
+
+      res = schema.execute(query_string)
+      assert res["data"]["Node"]
+      assert_equal ["node"], res["data"]["Query"]["fields"].map { |f| f["name"] }
+
+      # When the possible types are all hidden, hide the interface and fields pointing to it
+      res = schema.execute(query_string, except: ->(m, _) { ["A", "B", "C"].include?(m.name) })
+      assert_nil res["data"]["Node"]
+      assert_equal [], res["data"]["Query"]["fields"]
+
+      # Even when it's not the return value of a field,
+      # still show the interface since it allows code reuse
+      res = schema.execute(query_string, except: ->(m, _) { m.name == "node" })
+      assert_equal "Node", res["data"]["Node"]["name"]
+      assert_equal [], res["data"]["Query"]["fields"]
     end
 
     it "can't be a fragment condition" do
