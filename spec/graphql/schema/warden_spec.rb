@@ -316,6 +316,7 @@ describe GraphQL::Schema::Warden do
       query_string = %|
       {
         Phoneme: __type(name: "Phoneme") { name }
+        Grapheme: __type(name: "Grapheme") { name }
         EmicUnit: __type(name: "EmicUnit") {
           possibleTypes { name }
         }
@@ -356,6 +357,53 @@ describe GraphQL::Schema::Warden do
       # It's not visible as a union or interface member
       assert_equal false, possible_type_names(res["data"]["EmicUnit"]).include?("Phoneme")
       assert_equal false, possible_type_names(res["data"]["LanguageMember"]).include?("Phoneme")
+    end
+
+    it "hides interfaces if all possible types are hidden" do
+      sdl = %|
+        type Query {
+          a: String
+          repository: Repository
+        }
+
+        type Repository implements Node {
+          id: ID!
+        }
+
+        interface Node {
+          id: ID!
+        }
+      |
+
+      schema = GraphQL::Schema.from_definition(sdl)
+
+      query_string = %|
+        {
+          Repository: __type(name: "Repository") { name }
+          Node: __type(name: "Node") { name }
+        }
+      |
+
+      res = schema.execute(query_string, only: ->(m, _) { m.name != "Repository" })
+
+      assert_nil res["data"]["Node"]
+    end
+
+    it "hides unions if all possible types are hidden" do
+      query_string = %|
+        {
+          EmicUnit: __type(name: "EmicUnit") {
+            name
+            possibleTypes { name }
+          }
+        }
+      |
+
+      mask = ->(m, _) { MaskHelpers::EmicUnitUnion.possible_types.include?(m) }
+
+      res = MaskHelpers.query_with_mask(query_string, mask)
+
+      assert_nil res["data"]["EmicUnit"]
     end
 
     it "can't be a fragment condition" do

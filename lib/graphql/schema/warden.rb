@@ -136,13 +136,15 @@ module GraphQL
       end
 
       def visible_type?(type_defn)
-        visible?(type_defn) && (
-            root_type?(type_defn) ||
-            type_defn.introspection? ||
-            referenced?(type_defn) ||
-            visible_abstract_type?(type_defn) ||
-            possible_types?(type_defn)
-          )
+        return false unless visible?(type_defn)
+        return true if root_type?(type_defn)
+        return true if type_defn.introspection?
+
+        if type_defn.kind.union? || type_defn.kind.interface?
+          visible_possible_types?(type_defn)
+        else
+          referenced?(type_defn) || visible_abstract_type?(type_defn)
+        end
       end
 
       def root_type?(type_defn)
@@ -161,9 +163,8 @@ module GraphQL
           )
       end
 
-      def possible_types?(type_defn)
-        (type_defn.kind.union? || type_defn.kind.interface?) &&
-          @schema.possible_types(type_defn).any? { |t| visible_type?(t) }
+      def visible_possible_types?(type_defn)
+        @schema.possible_types(type_defn).any? { |t| visible_type?(t) }
       end
 
       def visible?(member)
