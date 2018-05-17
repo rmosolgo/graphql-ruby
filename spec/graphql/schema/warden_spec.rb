@@ -316,7 +316,6 @@ describe GraphQL::Schema::Warden do
       query_string = %|
       {
         Phoneme: __type(name: "Phoneme") { name }
-        Grapheme: __type(name: "Grapheme") { name }
         EmicUnit: __type(name: "EmicUnit") {
           possibleTypes { name }
         }
@@ -379,31 +378,51 @@ describe GraphQL::Schema::Warden do
 
       query_string = %|
         {
-          Repository: __type(name: "Repository") { name }
           Node: __type(name: "Node") { name }
         }
       |
 
-      res = schema.execute(query_string, only: ->(m, _) { m.name != "Repository" })
+      res = schema.execute(query_string)
+      assert res["data"]["Node"]
 
+      res = schema.execute(query_string, except: ->(m, _) { m.name == "Repository" })
       assert_nil res["data"]["Node"]
     end
 
     it "hides unions if all possible types are hidden" do
+      sdl = "
+        type Query {
+          bag: BagOfThings
+        }
+
+        type A {
+          id: ID!
+        }
+
+        type B {
+          id: ID!
+        }
+
+        type C {
+          id: ID!
+        }
+
+        union BagOfThings = A | B | C
+      "
+
+      schema = GraphQL::Schema.from_definition(sdl)
+
       query_string = %|
         {
-          EmicUnit: __type(name: "EmicUnit") {
-            name
-            possibleTypes { name }
-          }
+          BagOfThings: __type(name: "BagOfThings") { name }
         }
       |
 
-      mask = ->(m, _) { MaskHelpers::EmicUnitUnion.possible_types.include?(m) }
+      res = schema.execute(query_string)
+      assert res["data"]["BagOfThings"]
 
-      res = MaskHelpers.query_with_mask(query_string, mask)
-
-      assert_nil res["data"]["EmicUnit"]
+      res = schema.execute(query_string, except: ->(m, _) { ["A", "B", "C"].include?(m.name) })
+      assert_nil res["data"]["BagOfThings"]
     end
 
     it "can't be a fragment condition" do
