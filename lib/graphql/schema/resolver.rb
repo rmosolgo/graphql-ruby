@@ -50,9 +50,10 @@ module GraphQL
         # @see {GraphQL::Schema::Field#extras}
         def extras(new_extras = nil)
           if new_extras
-            @extras = new_extras
+            @own_extras = new_extras
           end
-          @extras || []
+          own_extras = @own_extras || []
+          own_extras + (superclass.respond_to?(:extras) ? superclass.extras : [])
         end
 
         # This name will be used for the {.field}.

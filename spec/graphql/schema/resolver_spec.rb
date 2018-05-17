@@ -46,6 +46,9 @@ describe GraphQL::Schema::Resolver do
       end
     end
 
+    class Resolver5 < Resolver4
+    end
+
     class Query < GraphQL::Schema::Object
       class CustomField < GraphQL::Schema::Field
         def resolve_field(*args)
@@ -64,6 +67,7 @@ describe GraphQL::Schema::Resolver do
       field :resolver_3, resolver: Resolver3
       field :resolver_3_again, resolver: Resolver3, description: "field desc"
       field :resolver_4, "Positional description", resolver: Resolver4
+      field :resolver_5, resolver: Resolver5
     end
 
     class Schema < GraphQL::Schema
@@ -99,6 +103,14 @@ describe GraphQL::Schema::Resolver do
     it "gets extras" do
       res = ResolverTest::Schema.execute " { resolver4 } ", root_value: OpenStruct.new(value: 0)
       assert_equal 9, res["data"]["resolver4"]
+    end
+  end
+
+  describe "extras" do
+    it "is inherited" do
+      res = ResolverTest::Schema.execute " { resolver4 resolver5 } ", root_value: OpenStruct.new(value: 0)
+      assert_equal 9, res["data"]["resolver4"]
+      assert_equal 9, res["data"]["resolver5"]
     end
   end
 
