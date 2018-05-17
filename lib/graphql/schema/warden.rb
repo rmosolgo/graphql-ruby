@@ -140,7 +140,9 @@ module GraphQL
         return true if root_type?(type_defn)
         return true if type_defn.introspection?
 
-        if type_defn.kind.union? || type_defn.kind.interface?
+        if type_defn.kind.union?
+          visible_possible_types?(type_defn) && referenced?(type_defn)
+        elsif type_defn.kind.interface?
           visible_possible_types?(type_defn)
         else
           referenced?(type_defn) || visible_abstract_type?(type_defn)
