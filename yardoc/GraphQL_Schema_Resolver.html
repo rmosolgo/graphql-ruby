@@ -1,0 +1,43 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta http-equiv="refresh" content="1;url=http://www.rubydoc.info/gems/graphql/1.8.0/GraphQL/Schema/Resolver" />
+  </head>
+  <body>
+    <p>Class: GraphQL::Schema::Resolver &lt; Object
+This class is part of a private API.
+A class-based container for field configuration and resolution
+logic. It supports:</p>
+<ul>
+  <li>Arguments, via <code class="highlighter-rouge">.argument(...)</code> helper, which will be applied to
+the field. - Return type, via <code class="highlighter-rouge">.type(..., null: ...)</code>, which will be
+applied to the field. - Description, via <code class="highlighter-rouge">.description(...)</code>, which
+will be applied to the field - Resolution, via <code class="highlighter-rouge">#resolve(**args)</code>
+method, which will be called to resolve the field. - <code class="highlighter-rouge">#object</code> and
+<code class="highlighter-rouge">#context</code> accessors for use during <code class="highlighter-rouge">#resolve</code>. 
+Resolvers can be attached with the <code class="highlighter-rouge">resolver:</code> option in a
+<code class="highlighter-rouge">field(...)</code> call. 
+A resolver’s configuration may be overridden with other keywords in
+the <code class="highlighter-rouge">field(...)</code> call. 
+See the field_options to see how a Resolver becomes a set of field
+configuration options. 
+See Also:</li>
+  <li>{GraphQL::Schema::Mutation} - for a concrete subclass of <code class="highlighter-rouge">Resolver</code>.</li>
+  <li>{GraphQL::Function} - <code class="highlighter-rouge">Resolver</code> is a replacement for
+<code class="highlighter-rouge">GraphQL::Function</code>
+Direct Known Subclasses:
+Mutation
+Includes:
+GraphQL::Schema::Member::GraphQLTypeNames
+Extended by:
+GraphQL::Schema::Member::HasArguments,
+GraphQL::Schema::Member::BaseDSLMethods
+Class methods:
+extras, field_options, null, resolve_method, type, type_expr
+Instance methods:
+initialize, resolve</li>
+</ul>
+
+
+  </body>
+</html>

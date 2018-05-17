@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html lang="en">
   <head>
-    <meta http-equiv="refresh" content="1;url=http://www.rubydoc.info/gems/graphql/1.8.0.pre11/GraphQL/Function" />
+    <meta http-equiv="refresh" content="1;url=http://www.rubydoc.info/gems/graphql/1.8.0/GraphQL/Function" />
   </head>
   <body>
     <p>Class: GraphQL::Function &lt; Object
@@ -29,12 +29,17 @@ name “Query”
 field :post, function: FindRecord.new(model: Post, type: PostType)
 field :comment, function: FindRecord.new(model: Comment, type: CommentType)
 end
+See Also:</p>
+<ul>
+  <li>{GraphQL::Schema::Resolver} - for a replacement for
+<code class="highlighter-rouge">GraphQL::Function</code>
 Class methods:
 argument, arguments, build_field, complexity, deprecation_reason,
 description, inherited_value, own_arguments, parent_function?, type,
 types
 Instance methods:
-arguments, call, complexity, deprecation_reason, description, type</p>
+arguments, call, complexity, deprecation_reason, description, type</li>
+</ul>
 
 
   </body>

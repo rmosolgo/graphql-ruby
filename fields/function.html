@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="http://www.rubydoc.info/gems/graphql/1.8.0.pre11/">API</a>
+          <a href="http://www.rubydoc.info/gems/graphql/1.8.0/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <input
@@ -46,9 +46,13 @@
 
 <h1 class="guide-header">GraphQL::Function</h1>
 <div class="guide-container">
-  <p><a href="http://www.rubydoc.info/gems/graphql/1.8.0.pre11/GraphQL/Function" target="_blank" title="API docs for GraphQL::Function"><code>GraphQL::Function</code></a> can hold generalized field logic which can be specialized on a field-by-field basis.</p>
+  <p><strong>Note</strong>: See <a href="/type_definitions/resolvers">Schema::Resolver</a> for an improved version of <code class="highlighter-rouge">GraphQL::Function</code>.</p>
 
-<p>To define a function, make a class that extends <a href="http://www.rubydoc.info/gems/graphql/1.8.0.pre11/GraphQL/Function" target="_blank" title="API docs for GraphQL::Function"><code>GraphQL::Function</code></a>:</p>
+<hr />
+
+<p><a href="http://www.rubydoc.info/gems/graphql/1.8.0/GraphQL/Function" target="_blank" title="API docs for GraphQL::Function"><code>GraphQL::Function</code></a> can hold generalized field logic which can be specialized on a field-by-field basis.</p>
+
+<p>To define a function, make a class that extends <a href="http://www.rubydoc.info/gems/graphql/1.8.0/GraphQL/Function" target="_blank" title="API docs for GraphQL::Function"><code>GraphQL::Function</code></a>:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">FindRecord</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Function</span>
   <span class="nb">attr_reader</span> <span class="ss">:type</span>
