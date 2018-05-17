@@ -8,6 +8,48 @@
 
 ### Bug fixes
 
+## 1.8.0 (17 May 2018)
+
+`1.8.0` has been in prerelease for 6 months. See the prerelease changelog for change-by-change details. Here's a high-level changelog, followed by a detailed list of changes since the last prerelease.
+
+### High-level changes
+
+#### Breaking Changes
+
+- GraphQL-Ruby is not tested on Ruby 2.1. #1070 Because Ruby 2.1 doesn't garbage collect Symbols, it's possible that GraphQL-Ruby will introduce a OOM vulnerability where unique symbols are dynamically created, for example, turning user input into Symbols. No instances of this are known in GraphQL-Ruby ... yet!
+- `GraphQL::Delegate`, a duplicate of Ruby's `Forwardable`, was removed. Use `Forwardable` instead, and update your Ruby if you're on `2.4.0`, due to a performance regression in `Forwardable` in that version.
+- `MySchema.subscriptions.trigger` asserts that its inputs are valid arguments #1400. So if you were previously passing invalid options there, you'll get an error. Remove those options.
+
+#### New Features
+
+- A new class-based API for schema definition. The old API is completely supported, but the new one is much nicer to use. If you migrate, some schema extensions may require a bit of extra work.
+- Built-in support for Mongoid-backed Relay connections
+- `.execute(variables: ...)` and `subscriptions.trigger` both accept Symbol-keyed hashes
+- Lots of other small things around SDL parsing, tracing, runtime ... everything. Read the details below for a full list.
+
+#### Bug Fixes
+
+- Many, many bug fixes. See the detailed list if you're curious about specific bugs.
+
+### Changes since `1.8.0.pre11`:
+
+#### Breaking Changes
+
+- `GraphQL::Schema::Field#initialize`'s signature changed to accept keywords and a block only. `type:`, `description:` and `name:` were moved to keywords. See `Field.from_options` for how the `field(...)` helper's arguments are merged to go to `Field.new`. #1508
+
+#### New Features
+
+- `Schema::Resolver` is a replacement for `GraphQL::Function` #1472
+- Fix subscriptions with class-based schema #1478
+- `Tracing::NewRelicTracing` accepts `set_transaction_name:` to use the GraphQL operation name as the NewRelic transaction name #1430
+
+#### Bug fixes
+
+- Backported `accepts_definition`s are inherited #1514
+- Fix Schema generator's `resolve_type` method #1481
+- Fix constant assignment warnings with interfaces including multiple other interfaces #1465
+- InputObject types loaded from SDL have the proper AST node assigned to them #1512
+
 ## 1.8.0.pre11 (3 May 2018)
 
 ### Breaking changes
