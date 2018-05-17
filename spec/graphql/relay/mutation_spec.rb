@@ -103,12 +103,14 @@ describe GraphQL::Relay::Mutation do
   end
 
   it "applies the description to the derived field" do
-    assert_equal "Add a ship to this faction", StarWars::IntroduceShipMutation.field.description
+    field = GraphQL::Schema::Field.from_options(name: "x", **StarWars::IntroduceShipMutation.field_options)
+    assert_equal "Add a ship to this faction", field.description
   end
 
   it "inserts itself into the derived objects' metadata" do
-    assert_equal StarWars::IntroduceShipMutation, StarWars::IntroduceShipMutation.field.mutation
-    assert_equal StarWars::IntroduceShipMutation, StarWars::IntroduceShipMutation.graphql_field.mutation
+    field = GraphQL::Schema::Field.from_options(name: "x", **StarWars::IntroduceShipMutation.field_options)
+    assert_equal StarWars::IntroduceShipMutation, field.mutation
+    assert_equal StarWars::IntroduceShipMutation, field.to_graphql.mutation
     assert_equal StarWars::IntroduceShipMutation, StarWars::IntroduceShipMutation.payload_type.mutation
     assert_equal StarWars::IntroduceShipMutation, StarWars::IntroduceShipMutation.input_type.mutation
   end
