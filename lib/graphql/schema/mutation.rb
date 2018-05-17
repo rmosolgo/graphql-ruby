@@ -62,6 +62,15 @@ module GraphQL
       extend GraphQL::Schema::Member::HasFields
 
       class << self
+        # Override this method to handle legacy-style usages of `MyMutation.field`
+        def field(*args, &block)
+          if args.none?
+            raise ArgumentError, "#{name}.field is used for adding fields to this mutation. Use `mutation: #{name}` to attach this mutation instead."
+          else
+            super
+          end
+        end
+
         # Call this method to get the derived return type of the mutation,
         # or use it as a configuration method to assign a return type
         # instead of generating one.
@@ -78,6 +87,24 @@ module GraphQL
         alias :type_expr :payload_type
 
         # An object class to use for deriving payload types
+        # @param new_class [Class, nil] Defaults to {GraphQL::Schema::Object}
+        # @return [Class]
+        def object_class(new_class = nil)
+          if new_class
+            @object_class = new_class
+          end
+          @object_class || (superclass.respond_to?(:object_class) ? superclass.object_class : GraphQL::Schema::Object)
+        end
+
+        def field_class(new_class = nil)
+          if new_class
+            @field_class = new_class
+          else
+            @field_class || find_inherited_method(:field_class, GraphQL::Schema::Field)
+          end
+        end
+
+        # An object class to use for deriving return types
         # @param new_class [Class, nil] Defaults to {GraphQL::Schema::Object}
         # @return [Class]
         def object_class(new_class = nil)

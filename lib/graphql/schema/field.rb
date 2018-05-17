@@ -31,6 +31,13 @@ module GraphQL
       alias :mutation :resolver
 
       # Create a field instance from a list of arguments, keyword arguments, and a block.
+      #
+      # This method implements prioritization between the `resolver` or `mutation` defaults
+      # and the local overrides via other keywords.
+      #
+      # It also normalizes positional arguments into keywords for {Schema::Field#initialize}.
+      # @param resolver [Class] A {GraphQL::Schema::Resolver} class to use for field configuration
+      # @param mutation [Class] A {GraphQL::Schema::Mutation} class to use for field configuration
       # @return [GraphQL::Schema:Field] an instance of `self
       # @see {.initialize} for other options
       def self.from_options(name = nil, type = nil, desc = nil, resolver: nil, mutation: nil, **kwargs, &block)
@@ -81,7 +88,7 @@ module GraphQL
       # @param resolve [<#call(obj, args, ctx)>] **deprecated** for compatibility with <1.8.0
       # @param field [GraphQL::Field, GraphQL::Schema::Field] **deprecated** for compatibility with <1.8.0
       # @param function [GraphQL::Function] **deprecated** for compatibility with <1.8.0
-      # @param resolver_class [Class] (Private) A {Schema::Resolver} which this field was derived from.
+      # @param resolver_class [Class] (Private) A {Schema::Resolver} which this field was derived from. Use `resolver:` to create a field with a resolver.
       # @param arguments [{String=>GraphQL::Schema::Argument, Hash}] Arguments for this field (may be added in the block, also)
       # @param camelize [Boolean] If true, the field name will be camelized when building the schema
       # @param complexity [Numeric] When provided, set the complexity for this field

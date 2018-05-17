@@ -30,13 +30,8 @@ describe GraphQL::Schema::Mutation do
   end
 
   describe "a derived field" do
-    it "gets a name from the mutation" do
-      field = GraphQL::Schema::Field.from_options(mutation.field_options)
-      assert_equal "addInstrument", field.name
-    end
-
     it "has a reference to the mutation" do
-      f = GraphQL::Schema::Field.from_options(mutation.field_options)
+      f = GraphQL::Schema::Field.from_options(name: "x", **mutation.field_options)
       assert_equal mutation, f.mutation
 
       # Make sure it's also present in the schema
@@ -48,6 +43,13 @@ describe GraphQL::Schema::Mutation do
   describe ".payload_type" do
     it "has a reference to the mutation" do
       assert_equal mutation, mutation.payload_type.mutation
+    end
+  end
+
+  describe ".field" do
+    it "raises a nice error when called without args" do
+      err = assert_raises(ArgumentError) { mutation.field }
+      assert_includes err.message, "Use `mutation: Jazz::AddInstrument` to attach this mutation instead."
     end
   end
 

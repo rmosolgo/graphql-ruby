@@ -7,6 +7,11 @@ desc: Create reusable resolve behavior with GraphQL::Function
 index: 2
 ---
 
+
+__Note__: See {% internal_link "Schema::Resolver", "/type_definitions/resolvers" %} for an improved version of `GraphQL::Function`.
+
+_____
+
 {{ "GraphQL::Function" | api_doc }} can hold generalized field logic which can be specialized on a field-by-field basis.
 
 To define a function, make a class that extends {{ "GraphQL::Function" | api_doc }}:

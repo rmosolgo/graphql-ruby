@@ -2,12 +2,27 @@
 
 module GraphQL
   class Schema
+    # A class-based container for field configuration and resolution logic. It supports:
+    #
+    # - Arguments, via `.argument(...)` helper, which will be applied to the field.
+    # - Return type, via `.type(..., null: ...)`, which will be applied to the field.
+    # - Description, via `.description(...)`, which will be applied to the field
+    # - Resolution, via `#resolve(**args)` method, which will be called to resolve the field.
+    # - `#object` and `#context` accessors for use during `#resolve`.
+    #
+    # Resolvers can be attached with the `resolver:` option in a `field(...)` call.
+    #
+    # A resolver's configuration may be overridden with other keywords in the `field(...)` call.
+    #
+    # See the {.field_options} to see how a Resolver becomes a set of field configuration options.
+    #
+    # @see {GraphQL::Schema::Mutation} for a concrete subclass of `Resolver`.
+    # @see {GraphQL::Function} `Resolver` is a replacement for `GraphQL::Function`
     class Resolver
       include Schema::Member::GraphQLTypeNames
       # Really we only need description from here, but:
       extend Schema::Member::BaseDSLMethods
       extend GraphQL::Schema::Member::HasArguments
-      extend Schema::Member::GeneratesField
 
       # @param object [Object] the initialize object, pass to {Query.initialize} as `root_value`
       # @param context [GraphQL::Query::Context]
@@ -29,14 +44,6 @@ module GraphQL
       end
 
       class << self
-        def field_class(new_class = nil)
-          if new_class
-            @field_class = new_class
-          else
-            @field_class || find_inherited_method(:field_class, GraphQL::Schema::Field)
-          end
-        end
-
         # Default `:resolve` set below.
         # @return [Symbol] The method to call on instances of this object to resolve the field
         def resolve_method(new_method = nil)
@@ -54,21 +61,6 @@ module GraphQL
           end
           own_extras = @own_extras || []
           own_extras + (superclass.respond_to?(:extras) ? superclass.extras : [])
-        end
-
-        # This name will be used for the {.field}.
-        def field_name
-          graphql_name.sub(/^[A-Z]/, &:downcase)
-        end
-
-        # An object class to use for deriving return types
-        # @param new_class [Class, nil] Defaults to {GraphQL::Schema::Object}
-        # @return [Class]
-        def object_class(new_class = nil)
-          if new_class
-            @object_class = new_class
-          end
-          @object_class || (superclass.respond_to?(:object_class) ? superclass.object_class : GraphQL::Schema::Object)
         end
 
         # Specifies whether or not the field is nullable. Defaults to `true`
@@ -108,8 +100,7 @@ module GraphQL
         end
 
         def field_options
-          super.merge({
-            name: field_name,
+          {
             type: type_expr,
             description: description,
             extras: extras,
@@ -117,7 +108,7 @@ module GraphQL
             resolver_class: self,
             arguments: arguments,
             null: null,
-          })
+          }
         end
 
         # A non-normalized type configuration, without `null` applied
