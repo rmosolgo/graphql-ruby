@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="http://www.rubydoc.info/gems/graphql/1.8.0/">API</a>
+          <a href="/api-doc/1.8.0/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <input
@@ -231,6 +231,28 @@ rake bench:validate        <span class="c"># Benchmark validation of several que
 </code></pre></div></div>
 
 <p>Without this key, the search index will fall out-of-sync with the website. Contact @rmosolgo to gain access to this key.</p>
+
+<h4 id="api-docs">API Docs</h4>
+
+<p>The GraphQL-Ruby website has its own rendered version of the gem’s API docs. They’re pushed to GitHub pages with a special process.</p>
+
+<p>First, generate local copies of the docs you want to publish:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ bundle exec rake apidocs:gen_version[1.8.0] # for example, generate docs that you want to publish
+</code></pre></div></div>
+
+<p>Then, check them out locally:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ bundle exec rake site:serve
+# then visit localhost:4000/api-doc/1.8.0/
+</code></pre></div></div>
+
+<p>Then, publish them as part of the whole site:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ bundle exec rake site:publish
+</code></pre></div></div>
+
+<p>Finally, check your work by visiting the docs on the website.</p>
 
 <h3 id="versioning">Versioning</h3>
 
