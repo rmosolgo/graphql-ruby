@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  Module: GraphQL::Introspection
+  
+    &mdash; GraphQL Ruby API Documentation
+  
+</title>
+
+  <link rel="stylesheet" href="../css/style.css" type="text/css" charset="utf-8" />
+
+  <link rel="stylesheet" href="../css/common.css" type="text/css" charset="utf-8" />
+
+<script type="text/javascript" charset="utf-8">
+  pathId = "GraphQL::Introspection";
+  relpath = '../';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="../class_list.html?1"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="../_index.html">Index (I)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span>
+     &raquo; 
+    <span class="title">Introspection</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <div id="content"><h1>Module: GraphQL::Introspection
+  
+  
+  
+</h1>
+<div class="box_info">
+  
+
+  
+  
+  
+  
+  
+
+  
+
+  
+  <dl>
+    <dt>Defined in:</dt>
+    <dd>lib/graphql/introspection.rb<span class="defines">,<br />
+  lib/graphql/introspection/schema_field.rb,<br /> lib/graphql/introspection/typename_field.rb,<br /> lib/graphql/introspection/type_by_name_field.rb</span>
+</dd>
+  </dl>
+  
+</div>
+
+
+  <h2>Constant Summary</h2>
+  <dl class="constants">
+    
+      <dt id="TypeType-constant" class="">TypeType =
+        
+      </dt>
+      <dd><pre class="code"><span class='const'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="ObjectType.html" title="GraphQL::ObjectType (class)">ObjectType</a></span></span><span class='period'>.</span><span class='id identifier rubyid_define'><span class='object_link'><a href="Define/InstanceDefinable.html#define-instance_method" title="GraphQL::Define::InstanceDefinable#define (method)">define</a></span></span> <span class='kw'>do</span>
+  <span class='id identifier rubyid_name'>name</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>__Type</span><span class='tstring_end'>&quot;</span></span>
+  <span class='id identifier rubyid_description'>description</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>The fundamental unit of any GraphQL Schema is the type. There are many kinds of types in </span><span class='tstring_end'>&quot;</span></span>\
+              <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>GraphQL as represented by the `__TypeKind` enum.\n\n</span><span class='tstring_end'>&quot;</span></span>\
+              <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Depending on the kind of a type, certain fields describe information about that type. </span><span class='tstring_end'>&quot;</span></span>\
+              <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Scalar types provide no information beyond a name and description, while </span><span class='tstring_end'>&quot;</span></span>\
+              <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Enum types provide their values. Object and Interface types provide the fields </span><span class='tstring_end'>&quot;</span></span>\
+              <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>they describe. Abstract types, Union and Interface, provide the Object types </span><span class='tstring_end'>&quot;</span></span>\
+              <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>possible at runtime. List and NonNull types compose other types.</span><span class='tstring_end'>&quot;</span></span>
+
+  <span class='id identifier rubyid_field'>field</span> <span class='symbol'>:kind</span> <span class='kw'>do</span>
+    <span class='id identifier rubyid_type'>type</span> <span class='op'>!</span><span class='const'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'>Introspection</span><span class='op'>::</span><span class='const'><span class='object_link'><a href="#TypeKindEnum-constant" title="GraphQL::Introspection::TypeKindEnum (constant)">TypeKindEnum</a></span></span>
+    <span class='id identifier rubyid_resolve'>resolve</span> <span class='tlambda'>-&gt;</span><span class='lparen'>(</span><span class='id identifier rubyid_target'>target</span><span class='comma'>,</span> <span class='id identifier rubyid_a'>a</span><span class='comma'>,</span> <span class='id identifier rubyid_c'>c</span><span class='rparen'>)</span> <span class='tlambeg'>{</span> <span class='id identifier rubyid_target'>target</span><span class='period'>.</span><span class='id identifier rubyid_kind'>kind</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span> <span class='rbrace'>}</span>
+  <span class='kw'>end</span>
+
+  <span class='id identifier rubyid_field'>field</span> <span class='symbol'>:name</span><span class='comma'>,</span> <span class='id identifier rubyid_types'>types</span><span class='period'>.</span><span class='const'>String</span>
+  <span class='id identifier rubyid_field'>field</span> <span class='symbol'>:description</span><span class='comma'>,</span> <span class='id identifier rubyid_types'>types</span><span class='period'>.</span><span class='const'>String</span>
+  <span class='id identifier rubyid_field'>field</span> <span class='symbol'>:fields</span><span class='comma'>,</span>        <span class='const'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'>Introspection</span><span class='op'>::</span><span class='const'><span class='object_link'><a href="#FieldsField-constant" title="GraphQL::Introspection::FieldsField (constant)">FieldsField</a></span></span>
+  <span class='id identifier rubyid_field'>field</span> <span class='symbol'>:interfaces</span><span class='comma'>,</span>    <span class='const'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'>Introspection</span><span class='op'>::</span><span class='const'><span class='object_link'><a href="#InterfacesField-constant" title="GraphQL::Introspection::InterfacesField (constant)">InterfacesField</a></span></span>
+  <span class='id identifier rubyid_field'>field</span> <span class='symbol'>:possibleTypes</span><span class='comma'>,</span> <span class='const'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'>Introspection</span><span class='op'>::</span><span class='const'><span class='object_link'><a href="#PossibleTypesField-constant" title="GraphQL::Introspection::PossibleTypesField (constant)">PossibleTypesField</a></span></span>
+  <span class='id identifier rubyid_field'>field</span> <span class='symbol'>:enumValues</span><span class='comma'>,</span>    <span class='const'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'>Introspection</span><span class='op'>::</span><span class='const'><span class='object_link'><a href="#EnumValuesField-constant" title="GraphQL::Introspection::EnumValuesField (constant)">EnumValuesField</a></span></span>
+  <span class='id identifier rubyid_field'>field</span> <span class='symbol'>:inputFields</span><span class='comma'>,</span>   <span class='const'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'>Introspection</span><span class='op'>::</span><span class='const'><span class='object_link'><a href="#InputFieldsField-constant" title="GraphQL::Introspection::InputFieldsField (constant)">InputFieldsField</a></span></span>
+  <span class='id identifier rubyid_field'>field</span> <span class='symbol'>:ofType</span><span class='comma'>,</span>        <span class='const'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'>Introspection</span><span class='op'>::</span><span class='const'><span class='object_link'><a href="#OfTypeField-constant" title="GraphQL::Introspection::OfTypeField (constant)">OfTypeField</a></span></span>
+  <span class='id identifier rubyid_introspection'>introspection</span> <span class='kw'>true</span>
+<span class='kw'>end</span></pre></dd>
+    
+      <dt id="FieldType-constant" class="">FieldType =
+        
+      </dt>
+      <dd><pre class="code"><span class='const'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="ObjectType.html" title="GraphQL::ObjectType (class)">ObjectType</a></span></span><span class='period'>.</span><span class='id identifier rubyid_define'><span class='object_link'><a href="Define/InstanceDefinable.html#define-instance_method" title="GraphQL::Define::InstanceDefinable#define (method)">define</a></span></span> <span class='kw'>do</span>
+  <span class='id identifier rubyid_name'>name</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>__Field</span><span class='tstring_end'>&quot;</span></span>
+  <span class='id identifier rubyid_description'>description</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Object and Interface types are described by a list of Fields, each of which has </span><span class='tstring_end'>&quot;</span></span>\
+              <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>a name, potentially a list of arguments, and a return type.</span><span class='tstring_end'>&quot;</span></span>
+  <span class='id identifier rubyid_field'>field</span> <span class='symbol'>:name</span><span class='comma'>,</span> <span class='op'>!</span><span class='id identifier rubyid_types'>types</span><span class='period'>.</span><span class='const'>String</span>
+  <span class='id identifier rubyid_field'>field</span> <span class='symbol'>:description</span><span class='comma'>,</span> <span class='id identifier rubyid_types'>types</span><span class='period'>.</span><span class='const'>String</span>
+  <span class='id identifier rubyid_field'>field</span> <span class='symbol'>:args</span><span class='comma'>,</span> <span class='const'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'>Introspection</span><span class='op'>::</span><span class='const'><span class='object_link'><a href="#ArgumentsField-constant" title="GraphQL::Introspection::ArgumentsField (constant)">ArgumentsField</a></span></span>
+  <span class='id identifier rubyid_field'>field</span> <span class='symbol'>:type</span><span class='comma'>,</span> <span class='op'>!</span><span class='const'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'>Introspection</span><span class='op'>::</span><span class='const'><span class='object_link'><a href="#TypeType-constant" title="GraphQL::Introspection::TypeType (constant)">TypeType</a></span></span>
+  <span class='id identifier rubyid_field'>field</span> <span class='symbol'>:isDeprecated</span><span class='comma'>,</span> <span class='op'>!</span><span class='id identifier rubyid_types'>types</span><span class='period'>.</span><span class='const'>Boolean</span> <span class='kw'>do</span>
+    <span class='id identifier rubyid_resolve'>resolve</span> <span class='tlambda'>-&gt;</span><span class='lparen'>(</span><span class='id identifier rubyid_obj'>obj</span><span class='comma'>,</span> <span class='id identifier rubyid_a'>a</span><span class='comma'>,</span> <span class='id identifier rubyid_c'>c</span><span class='rparen'>)</span> <span class='tlambeg'>{</span> <span class='op'>!</span><span class='op'>!</span><span class='id identifier rubyid_obj'>obj</span><span class='period'>.</span><span class='id identifier rubyid_deprecation_reason'>deprecation_reason</span> <span class='rbrace'>}</span>
+  <span class='kw'>end</span>
+  <span class='id identifier rubyid_field'>field</span> <span class='symbol'>:deprecationReason</span><span class='comma'>,</span> <span class='id identifier rubyid_types'>types</span><span class='period'>.</span><span class='const'>String</span><span class='comma'>,</span> <span class='label'>property:</span> <span class='symbol'>:deprecation_reason</span>
+  <span class='id identifier rubyid_introspection'>introspection</span> <span class='kw'>true</span>
+<span class='kw'>end</span></pre></dd>
+    
+      <dt id="SchemaType-constant" class="">SchemaType =
+        
+      </dt>
+      <dd><pre class="code"><span class='const'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="ObjectType.html" title="GraphQL::ObjectType (class)">ObjectType</a></span></span><span class='period'>.</span><span class='id identifier rubyid_define'><span class='object_link'><a href="Define/InstanceDefinable.html#define-instance_method" title="GraphQL::Define::InstanceDefinable#define (method)">define</a></span></span> <span class='kw'>do</span>
+  <span class='id identifier rubyid_name'>name</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>__Schema</span><span class='tstring_end'>&quot;</span></span>
+  <span class='id identifier rubyid_description'>description</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>A GraphQL Schema defines the capabilities of a GraphQL server. It exposes all </span><span class='tstring_end'>&quot;</span></span>\
+              <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>available types and directives on the server, as well as the entry points for </span><span class='tstring_end'>&quot;</span></span>\
+              <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>query, mutation, and subscription operations.</span><span class='tstring_end'>&quot;</span></span>
+
+  <span class='id identifier rubyid_field'>field</span> <span class='symbol'>:types</span><span class='comma'>,</span> <span class='op'>!</span><span class='id identifier rubyid_types'>types</span><span class='lbracket'>[</span><span class='op'>!</span><span class='const'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'>Introspection</span><span class='op'>::</span><span class='const'><span class='object_link'><a href="#TypeType-constant" title="GraphQL::Introspection::TypeType (constant)">TypeType</a></span></span><span class='rbracket'>]</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>A list of all types supported by this server.</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>do</span>
+    <span class='id identifier rubyid_resolve'>resolve</span> <span class='tlambda'>-&gt;</span><span class='lparen'>(</span><span class='id identifier rubyid_obj'>obj</span><span class='comma'>,</span> <span class='id identifier rubyid_arg'>arg</span><span class='comma'>,</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='rparen'>)</span> <span class='tlambeg'>{</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='period'>.</span><span class='id identifier rubyid_warden'>warden</span><span class='period'>.</span><span class='id identifier rubyid_types'>types</span> <span class='rbrace'>}</span>
+  <span class='kw'>end</span>
+
+  <span class='id identifier rubyid_field'>field</span> <span class='symbol'>:queryType</span><span class='comma'>,</span> <span class='op'>!</span><span class='const'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'>Introspection</span><span class='op'>::</span><span class='const'><span class='object_link'><a href="#TypeType-constant" title="GraphQL::Introspection::TypeType (constant)">TypeType</a></span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>The type that query operations will be rooted at.</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>do</span>
+    <span class='id identifier rubyid_resolve'>resolve</span> <span class='tlambda'>-&gt;</span><span class='lparen'>(</span><span class='id identifier rubyid_obj'>obj</span><span class='comma'>,</span> <span class='id identifier rubyid_arg'>arg</span><span class='comma'>,</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='rparen'>)</span> <span class='tlambeg'>{</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='period'>.</span><span class='id identifier rubyid_warden'>warden</span><span class='period'>.</span><span class='id identifier rubyid_root_type_for_operation'>root_type_for_operation</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>query</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span> <span class='rbrace'>}</span>
+  <span class='kw'>end</span>
+
+  <span class='id identifier rubyid_field'>field</span> <span class='symbol'>:mutationType</span><span class='comma'>,</span> <span class='const'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'>Introspection</span><span class='op'>::</span><span class='const'><span class='object_link'><a href="#TypeType-constant" title="GraphQL::Introspection::TypeType (constant)">TypeType</a></span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>If this server supports mutation, the type that mutation operations will be rooted at.</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>do</span>
+    <span class='id identifier rubyid_resolve'>resolve</span> <span class='tlambda'>-&gt;</span><span class='lparen'>(</span><span class='id identifier rubyid_obj'>obj</span><span class='comma'>,</span> <span class='id identifier rubyid_arg'>arg</span><span class='comma'>,</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='rparen'>)</span> <span class='tlambeg'>{</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='period'>.</span><span class='id identifier rubyid_warden'>warden</span><span class='period'>.</span><span class='id identifier rubyid_root_type_for_operation'>root_type_for_operation</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>mutation</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span> <span class='rbrace'>}</span>
+  <span class='kw'>end</span>
+
+  <span class='id identifier rubyid_field'>field</span> <span class='symbol'>:subscriptionType</span><span class='comma'>,</span> <span class='const'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'>Introspection</span><span class='op'>::</span><span class='const'><span class='object_link'><a href="#TypeType-constant" title="GraphQL::Introspection::TypeType (constant)">TypeType</a></span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>If this server support subscription, the type that subscription operations will be rooted at.</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>do</span>
+    <span class='id identifier rubyid_resolve'>resolve</span> <span class='tlambda'>-&gt;</span><span class='lparen'>(</span><span class='id identifier rubyid_obj'>obj</span><span class='comma'>,</span> <span class='id identifier rubyid_arg'>arg</span><span class='comma'>,</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='rparen'>)</span> <span class='tlambeg'>{</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='period'>.</span><span class='id identifier rubyid_warden'>warden</span><span class='period'>.</span><span class='id identifier rubyid_root_type_for_operation'>root_type_for_operation</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>subscription</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span> <span class='rbrace'>}</span>
+  <span class='kw'>end</span>
+
+  <span class='id identifier rubyid_field'>field</span> <span class='symbol'>:directives</span><span class='comma'>,</span> <span class='op'>!</span><span class='id identifier rubyid_types'>types</span><span class='lbracket'>[</span><span class='op'>!</span><span class='const'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'>Introspection</span><span class='op'>::</span><span class='const'><span class='object_link'><a href="#DirectiveType-constant" title="GraphQL::Introspection::DirectiveType (constant)">DirectiveType</a></span></span><span class='rbracket'>]</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>A list of all directives supported by this server.</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>do</span>
+    <span class='id identifier rubyid_resolve'>resolve</span> <span class='tlambda'>-&gt;</span><span class='lparen'>(</span><span class='id identifier rubyid_obj'>obj</span><span class='comma'>,</span> <span class='id identifier rubyid_arg'>arg</span><span class='comma'>,</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='rparen'>)</span> <span class='tlambeg'>{</span> <span class='id identifier rubyid_obj'>obj</span><span class='period'>.</span><span class='id identifier rubyid_directives'>directives</span><span class='period'>.</span><span class='id identifier rubyid_values'>values</span> <span class='rbrace'>}</span>
+  <span class='kw'>end</span>
+
+  <span class='id identifier rubyid_introspection'>introspection</span> <span class='kw'>true</span>
+<span class='kw'>end</span></pre></dd>
+    
+      <dt id="FieldsField-constant" class="">FieldsField =
+        
+      </dt>
+      <dd><pre class="code"><span class='const'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Field.html" title="GraphQL::Field (class)">Field</a></span></span><span class='period'>.</span><span class='id identifier rubyid_define'><span class='object_link'><a href="Define/InstanceDefinable.html#define-instance_method" title="GraphQL::Define::InstanceDefinable#define (method)">define</a></span></span> <span class='kw'>do</span>
+  <span class='id identifier rubyid_type'>type</span> <span class='tlambda'>-&gt;</span> <span class='tlambeg'>{</span> <span class='id identifier rubyid_types'>types</span><span class='lbracket'>[</span><span class='op'>!</span><span class='const'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'>Introspection</span><span class='op'>::</span><span class='const'><span class='object_link'><a href="#FieldType-constant" title="GraphQL::Introspection::FieldType (constant)">FieldType</a></span></span><span class='rbracket'>]</span> <span class='rbrace'>}</span>
+  <span class='id identifier rubyid_argument'>argument</span> <span class='symbol'>:includeDeprecated</span><span class='comma'>,</span> <span class='const'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../GraphQL.html#BOOLEAN_TYPE-constant" title="GraphQL::BOOLEAN_TYPE (constant)">BOOLEAN_TYPE</a></span></span><span class='comma'>,</span> <span class='label'>default_value:</span> <span class='kw'>false</span>
+  <span class='id identifier rubyid_resolve'>resolve</span> <span class='tlambda'>-&gt;</span><span class='lparen'>(</span><span class='id identifier rubyid_object'>object</span><span class='comma'>,</span> <span class='id identifier rubyid_arguments'>arguments</span><span class='comma'>,</span> <span class='id identifier rubyid_context'>context</span><span class='rparen'>)</span> <span class='tlambeg'>{</span>
+    <span class='kw'>return</span> <span class='kw'>nil</span> <span class='kw'>if</span> <span class='op'>!</span><span class='id identifier rubyid_object'>object</span><span class='period'>.</span><span class='id identifier rubyid_kind'>kind</span><span class='period'>.</span><span class='id identifier rubyid_fields?'>fields?</span>
+    <span class='id identifier rubyid_fields'>fields</span> <span class='op'>=</span> <span class='id identifier rubyid_context'>context</span><span class='period'>.</span><span class='id identifier rubyid_warden'>warden</span><span class='period'>.</span><span class='id identifier rubyid_fields'>fields</span><span class='lparen'>(</span><span class='id identifier rubyid_object'>object</span><span class='rparen'>)</span>
+    <span class='kw'>if</span> <span class='op'>!</span><span class='id identifier rubyid_arguments'>arguments</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>includeDeprecated</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span>
+      <span class='id identifier rubyid_fields'>fields</span> <span class='op'>=</span> <span class='id identifier rubyid_fields'>fields</span><span class='period'>.</span><span class='id identifier rubyid_select'>select</span> <span class='lbrace'>{</span><span class='op'>|</span><span class='id identifier rubyid_f'>f</span><span class='op'>|</span> <span class='op'>!</span><span class='id identifier rubyid_f'>f</span><span class='period'>.</span><span class='id identifier rubyid_deprecation_reason'>deprecation_reason</span> <span class='rbrace'>}</span>
+    <span class='kw'>end</span>
+    <span class='id identifier rubyid_fields'>fields</span><span class='period'>.</span><span class='id identifier rubyid_sort_by'>sort_by</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:name</span><span class='rparen'>)</span>
+  <span class='rbrace'>}</span>
+<span class='kw'>end</span></pre></dd>
+    
+      <dt id="SchemaField-constant" class="">SchemaField =
+        
+      </dt>
+      <dd><pre class="code"><span class='const'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Field.html" title="GraphQL::Field (class)">Field</a></span></span><span class='period'>.</span><span class='id identifier rubyid_define'><span class='object_link'><a href="Define/InstanceDefinable.html#define-instance_method" title="GraphQL::Define::InstanceDefinable#define (method)">define</a></span></span> <span class='kw'>do</span>
+  <span class='id identifier rubyid_name'>name</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>__schema</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_description'>description</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>This GraphQL schema</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_type'>type</span><span class='lparen'>(</span><span class='op'>!</span><span class='const'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'>Introspection</span><span class='op'>::</span><span class='const'><span class='object_link'><a href="#SchemaType-constant" title="GraphQL::Introspection::SchemaType (constant)">SchemaType</a></span></span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_resolve'>resolve</span> <span class='tlambda'>-&gt;</span><span class='lparen'>(</span><span class='id identifier rubyid_o'>o</span><span class='comma'>,</span> <span class='id identifier rubyid_a'>a</span><span class='comma'>,</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='rparen'>)</span> <span class='tlambeg'>{</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='period'>.</span><span class='id identifier rubyid_query'>query</span><span class='period'>.</span><span class='id identifier rubyid_schema'>schema</span> <span class='rbrace'>}</span>
+<span class='kw'>end</span></pre></dd>
+    
+      <dt id="OfTypeField-constant" class="">OfTypeField =
+        
+      </dt>
+      <dd><pre class="code"><span class='const'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Field.html" title="GraphQL::Field (class)">Field</a></span></span><span class='period'>.</span><span class='id identifier rubyid_define'><span class='object_link'><a href="Define/InstanceDefinable.html#define-instance_method" title="GraphQL::Define::InstanceDefinable#define (method)">define</a></span></span> <span class='kw'>do</span>
+  <span class='id identifier rubyid_name'>name</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>ofType</span><span class='tstring_end'>&quot;</span></span>
+  <span class='id identifier rubyid_type'>type</span> <span class='tlambda'>-&gt;</span> <span class='tlambeg'>{</span> <span class='const'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'>Introspection</span><span class='op'>::</span><span class='const'><span class='object_link'><a href="#TypeType-constant" title="GraphQL::Introspection::TypeType (constant)">TypeType</a></span></span> <span class='rbrace'>}</span>
+  <span class='id identifier rubyid_resolve'>resolve</span> <span class='tlambda'>-&gt;</span><span class='lparen'>(</span><span class='id identifier rubyid_obj'>obj</span><span class='comma'>,</span> <span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='rparen'>)</span> <span class='tlambeg'>{</span> <span class='id identifier rubyid_obj'>obj</span><span class='period'>.</span><span class='id identifier rubyid_kind'>kind</span><span class='period'>.</span><span class='id identifier rubyid_wraps?'>wraps?</span> <span class='op'>?</span> <span class='id identifier rubyid_obj'>obj</span><span class='period'>.</span><span class='id identifier rubyid_of_type'>of_type</span> <span class='op'>:</span> <span class='kw'>nil</span> <span class='rbrace'>}</span>
+<span class='kw'>end</span></pre></dd>
+    
+      <dt id="DirectiveType-constant" class="">DirectiveType =
+        
+      </dt>
+      <dd><pre class="code"><span class='const'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="ObjectType.html" title="GraphQL::ObjectType (class)">ObjectType</a></span></span><span class='period'>.</span><span class='id identifier rubyid_define'><span class='object_link'><a href="Define/InstanceDefinable.html#define-instance_method" title="GraphQL::Define::InstanceDefinable#define (method)">define</a></span></span> <span class='kw'>do</span>
+  <span class='id identifier rubyid_name'>name</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>__Directive</span><span class='tstring_end'>&quot;</span></span>
+  <span class='id identifier rubyid_description'>description</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>A Directive provides a way to describe alternate runtime execution and type validation behavior in a GraphQL document.</span><span class='tstring_end'>&quot;</span></span>\
+              <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>\n\n</span><span class='tstring_end'>&quot;</span></span>\
+              <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>In some cases, you need to provide options to alter GraphQL&#39;s execution behavior </span><span class='tstring_end'>&quot;</span></span>\
+              <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>in ways field arguments will not suffice, such as conditionally including or </span><span class='tstring_end'>&quot;</span></span>\
+              <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>skipping a field. Directives provide this by describing additional information </span><span class='tstring_end'>&quot;</span></span>\
+              <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>to the executor.</span><span class='tstring_end'>&quot;</span></span>
+  <span class='id identifier rubyid_field'>field</span> <span class='symbol'>:name</span><span class='comma'>,</span> <span class='op'>!</span><span class='id identifier rubyid_types'>types</span><span class='period'>.</span><span class='const'>String</span>
+  <span class='id identifier rubyid_field'>field</span> <span class='symbol'>:description</span><span class='comma'>,</span> <span class='id identifier rubyid_types'>types</span><span class='period'>.</span><span class='const'>String</span>
+  <span class='id identifier rubyid_field'>field</span> <span class='symbol'>:locations</span><span class='comma'>,</span> <span class='op'>!</span><span class='id identifier rubyid_types'>types</span><span class='lbracket'>[</span><span class='op'>!</span><span class='const'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'>Introspection</span><span class='op'>::</span><span class='const'><span class='object_link'><a href="#DirectiveLocationEnum-constant" title="GraphQL::Introspection::DirectiveLocationEnum (constant)">DirectiveLocationEnum</a></span></span><span class='rbracket'>]</span>
+  <span class='id identifier rubyid_field'>field</span> <span class='symbol'>:args</span><span class='comma'>,</span> <span class='label'>field:</span> <span class='const'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'>Introspection</span><span class='op'>::</span><span class='const'><span class='object_link'><a href="#ArgumentsField-constant" title="GraphQL::Introspection::ArgumentsField (constant)">ArgumentsField</a></span></span>
+  <span class='id identifier rubyid_field'>field</span> <span class='symbol'>:onOperation</span><span class='comma'>,</span> <span class='op'>!</span><span class='id identifier rubyid_types'>types</span><span class='period'>.</span><span class='const'>Boolean</span><span class='comma'>,</span> <span class='label'>deprecation_reason:</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Use `locations`.</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='label'>property:</span> <span class='symbol'>:on_operation?</span>
+  <span class='id identifier rubyid_field'>field</span> <span class='symbol'>:onFragment</span><span class='comma'>,</span> <span class='op'>!</span><span class='id identifier rubyid_types'>types</span><span class='period'>.</span><span class='const'>Boolean</span><span class='comma'>,</span> <span class='label'>deprecation_reason:</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Use `locations`.</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='label'>property:</span> <span class='symbol'>:on_fragment?</span>
+  <span class='id identifier rubyid_field'>field</span> <span class='symbol'>:onField</span><span class='comma'>,</span> <span class='op'>!</span><span class='id identifier rubyid_types'>types</span><span class='period'>.</span><span class='const'>Boolean</span><span class='comma'>,</span> <span class='label'>deprecation_reason:</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Use `locations`.</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='label'>property:</span> <span class='symbol'>:on_field?</span>
+  <span class='id identifier rubyid_introspection'>introspection</span> <span class='kw'>true</span>
+<span class='kw'>end</span></pre></dd>
+    
+      <dt id="TypeKindEnum-constant" class="">TypeKindEnum =
+        
+      </dt>
+      <dd><pre class="code"><span class='const'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="EnumType.html" title="GraphQL::EnumType (class)">EnumType</a></span></span><span class='period'>.</span><span class='id identifier rubyid_define'><span class='object_link'><a href="Define/InstanceDefinable.html#define-instance_method" title="GraphQL::Define::InstanceDefinable#define (method)">define</a></span></span> <span class='kw'>do</span>
+  <span class='id identifier rubyid_name'>name</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>__TypeKind</span><span class='tstring_end'>&quot;</span></span>
+  <span class='id identifier rubyid_description'>description</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>An enum describing what kind of type a given `__Type` is.</span><span class='tstring_end'>&quot;</span></span>
+  <span class='const'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="TypeKinds.html" title="GraphQL::TypeKinds (module)">TypeKinds</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="TypeKinds.html#TYPE_KINDS-constant" title="GraphQL::TypeKinds::TYPE_KINDS (constant)">TYPE_KINDS</a></span></span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_type_kind'>type_kind</span><span class='op'>|</span>
+    <span class='id identifier rubyid_value'>value</span><span class='lparen'>(</span><span class='id identifier rubyid_type_kind'>type_kind</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='comma'>,</span> <span class='id identifier rubyid_type_kind'>type_kind</span><span class='period'>.</span><span class='id identifier rubyid_description'>description</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+  <span class='id identifier rubyid_introspection'>introspection</span> <span class='kw'>true</span>
+<span class='kw'>end</span></pre></dd>
+    
+      <dt id="TypenameField-constant" class="">TypenameField =
+        
+      </dt>
+      <dd><pre class="code"><span class='const'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Field.html" title="GraphQL::Field (class)">Field</a></span></span><span class='period'>.</span><span class='id identifier rubyid_define'><span class='object_link'><a href="Define/InstanceDefinable.html#define-instance_method" title="GraphQL::Define::InstanceDefinable#define (method)">define</a></span></span> <span class='kw'>do</span>
+  <span class='id identifier rubyid_name'>name</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>__typename</span><span class='tstring_end'>&quot;</span></span>
+  <span class='id identifier rubyid_description'>description</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>The name of this type</span><span class='tstring_end'>&quot;</span></span>
+  <span class='id identifier rubyid_type'>type</span> <span class='tlambda'>-&gt;</span> <span class='tlambeg'>{</span> <span class='op'>!</span><span class='const'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../GraphQL.html#STRING_TYPE-constant" title="GraphQL::STRING_TYPE (constant)">STRING_TYPE</a></span></span> <span class='rbrace'>}</span>
+  <span class='id identifier rubyid_resolve'>resolve</span> <span class='tlambda'>-&gt;</span><span class='lparen'>(</span><span class='id identifier rubyid_obj'>obj</span><span class='comma'>,</span> <span class='id identifier rubyid_a'>a</span><span class='comma'>,</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='rparen'>)</span> <span class='tlambeg'>{</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='period'>.</span><span class='id identifier rubyid_irep_node'>irep_node</span><span class='period'>.</span><span class='id identifier rubyid_owner_type'>owner_type</span> <span class='rbrace'>}</span>
+<span class='kw'>end</span></pre></dd>
+    
+      <dt id="ArgumentsField-constant" class="">ArgumentsField =
+        
+      </dt>
+      <dd><pre class="code"><span class='const'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Field.html" title="GraphQL::Field (class)">Field</a></span></span><span class='period'>.</span><span class='id identifier rubyid_define'><span class='object_link'><a href="Define/InstanceDefinable.html#define-instance_method" title="GraphQL::Define::InstanceDefinable#define (method)">define</a></span></span> <span class='kw'>do</span>
+  <span class='id identifier rubyid_type'>type</span> <span class='op'>!</span><span class='const'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="ListType.html" title="GraphQL::ListType (class)">ListType</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="ListType.html#initialize-instance_method" title="GraphQL::ListType#initialize (method)">new</a></span></span><span class='lparen'>(</span><span class='label'>of_type:</span> <span class='op'>!</span><span class='const'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'>Introspection</span><span class='op'>::</span><span class='const'><span class='object_link'><a href="#InputValueType-constant" title="GraphQL::Introspection::InputValueType (constant)">InputValueType</a></span></span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_resolve'>resolve</span> <span class='tlambda'>-&gt;</span><span class='lparen'>(</span><span class='id identifier rubyid_obj'>obj</span><span class='comma'>,</span> <span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='rparen'>)</span> <span class='tlambeg'>{</span>
+    <span class='id identifier rubyid_ctx'>ctx</span><span class='period'>.</span><span class='id identifier rubyid_warden'>warden</span><span class='period'>.</span><span class='id identifier rubyid_arguments'>arguments</span><span class='lparen'>(</span><span class='id identifier rubyid_obj'>obj</span><span class='rparen'>)</span>
+  <span class='rbrace'>}</span>
+<span class='kw'>end</span></pre></dd>
+    
+      <dt id="EnumValueType-constant" class="">EnumValueType =
+        
+      </dt>
+      <dd><pre class="code"><span class='const'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="ObjectType.html" title="GraphQL::ObjectType (class)">ObjectType</a></span></span><span class='period'>.</span><span class='id identifier rubyid_define'><span class='object_link'><a href="Define/InstanceDefinable.html#define-instance_method" title="GraphQL::Define::InstanceDefinable#define (method)">define</a></span></span> <span class='kw'>do</span>
+  <span class='id identifier rubyid_name'>name</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>__EnumValue</span><span class='tstring_end'>&quot;</span></span>
+  <span class='id identifier rubyid_description'>description</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>One possible value for a given Enum. Enum values are unique values, not a </span><span class='tstring_end'>&quot;</span></span>\
+              <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>placeholder for a string or numeric value. However an Enum value is returned in </span><span class='tstring_end'>&quot;</span></span>\
+              <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>a JSON response as a string.</span><span class='tstring_end'>&quot;</span></span>
+  <span class='id identifier rubyid_field'>field</span> <span class='symbol'>:name</span><span class='comma'>,</span> <span class='op'>!</span><span class='id identifier rubyid_types'>types</span><span class='period'>.</span><span class='const'>String</span>
+  <span class='id identifier rubyid_field'>field</span> <span class='symbol'>:description</span><span class='comma'>,</span> <span class='id identifier rubyid_types'>types</span><span class='period'>.</span><span class='const'>String</span>
+  <span class='id identifier rubyid_field'>field</span> <span class='symbol'>:isDeprecated</span><span class='comma'>,</span> <span class='op'>!</span><span class='id identifier rubyid_types'>types</span><span class='period'>.</span><span class='const'>Boolean</span> <span class='kw'>do</span>
+    <span class='id identifier rubyid_resolve'>resolve</span> <span class='tlambda'>-&gt;</span><span class='lparen'>(</span><span class='id identifier rubyid_obj'>obj</span><span class='comma'>,</span> <span class='id identifier rubyid_a'>a</span><span class='comma'>,</span> <span class='id identifier rubyid_c'>c</span><span class='rparen'>)</span> <span class='tlambeg'>{</span> <span class='op'>!</span><span class='op'>!</span><span class='id identifier rubyid_obj'>obj</span><span class='period'>.</span><span class='id identifier rubyid_deprecation_reason'>deprecation_reason</span> <span class='rbrace'>}</span>
+  <span class='kw'>end</span>
+  <span class='id identifier rubyid_field'>field</span> <span class='symbol'>:deprecationReason</span><span class='comma'>,</span> <span class='id identifier rubyid_types'>types</span><span class='period'>.</span><span class='const'>String</span><span class='comma'>,</span> <span class='label'>property:</span> <span class='symbol'>:deprecation_reason</span>
+  <span class='id identifier rubyid_introspection'>introspection</span> <span class='kw'>true</span>
+<span class='kw'>end</span></pre></dd>
+    
+      <dt id="InputValueType-constant" class="">InputValueType =
+        
+      </dt>
+      <dd><pre class="code"><span class='const'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="ObjectType.html" title="GraphQL::ObjectType (class)">ObjectType</a></span></span><span class='period'>.</span><span class='id identifier rubyid_define'><span class='object_link'><a href="Define/InstanceDefinable.html#define-instance_method" title="GraphQL::Define::InstanceDefinable#define (method)">define</a></span></span> <span class='kw'>do</span>
+  <span class='id identifier rubyid_name'>name</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>__InputValue</span><span class='tstring_end'>&quot;</span></span>
+  <span class='id identifier rubyid_description'>description</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Arguments provided to Fields or Directives and the input fields of an </span><span class='tstring_end'>&quot;</span></span>\
+              <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>InputObject are represented as Input Values which describe their type and </span><span class='tstring_end'>&quot;</span></span>\
+              <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>optionally a default value.</span><span class='tstring_end'>&quot;</span></span>
+  <span class='id identifier rubyid_field'>field</span> <span class='symbol'>:name</span><span class='comma'>,</span> <span class='op'>!</span><span class='id identifier rubyid_types'>types</span><span class='period'>.</span><span class='const'>String</span>
+  <span class='id identifier rubyid_field'>field</span> <span class='symbol'>:description</span><span class='comma'>,</span> <span class='id identifier rubyid_types'>types</span><span class='period'>.</span><span class='const'>String</span>
+  <span class='id identifier rubyid_field'>field</span> <span class='symbol'>:type</span><span class='comma'>,</span> <span class='op'>!</span><span class='const'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'>Introspection</span><span class='op'>::</span><span class='const'><span class='object_link'><a href="#TypeType-constant" title="GraphQL::Introspection::TypeType (constant)">TypeType</a></span></span>
+  <span class='id identifier rubyid_field'>field</span> <span class='symbol'>:defaultValue</span><span class='comma'>,</span> <span class='id identifier rubyid_types'>types</span><span class='period'>.</span><span class='const'>String</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>A GraphQL-formatted string representing the default value for this input value.</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>do</span>
+    <span class='id identifier rubyid_resolve'>resolve</span> <span class='tlambda'>-&gt;</span><span class='lparen'>(</span><span class='id identifier rubyid_obj'>obj</span><span class='comma'>,</span> <span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='rparen'>)</span> <span class='tlambeg'>{</span>
+      <span class='kw'>if</span> <span class='id identifier rubyid_obj'>obj</span><span class='period'>.</span><span class='id identifier rubyid_default_value?'>default_value?</span>
+        <span class='id identifier rubyid_value'>value</span> <span class='op'>=</span> <span class='id identifier rubyid_obj'>obj</span><span class='period'>.</span><span class='id identifier rubyid_default_value'>default_value</span>
+        <span class='kw'>if</span> <span class='id identifier rubyid_value'>value</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+          <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>null</span><span class='tstring_end'>&#39;</span></span>
+        <span class='kw'>else</span>
+          <span class='id identifier rubyid_coerced_default_value'>coerced_default_value</span> <span class='op'>=</span> <span class='id identifier rubyid_obj'>obj</span><span class='period'>.</span><span class='id identifier rubyid_type'>type</span><span class='period'>.</span><span class='id identifier rubyid_coerce_result'>coerce_result</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='comma'>,</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='rparen'>)</span>
+          <span class='kw'>if</span> <span class='id identifier rubyid_obj'>obj</span><span class='period'>.</span><span class='id identifier rubyid_type'>type</span><span class='period'>.</span><span class='id identifier rubyid_unwrap'>unwrap</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="EnumType.html" title="GraphQL::EnumType (class)">EnumType</a></span></span><span class='rparen'>)</span>
+            <span class='id identifier rubyid_coerced_default_value'>coerced_default_value</span>
+          <span class='kw'>else</span>
+            <span class='const'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Language.html" title="GraphQL::Language (module)">Language</a></span></span><span class='period'>.</span><span class='id identifier rubyid_serialize'><span class='object_link'><a href="Language.html#serialize-class_method" title="GraphQL::Language.serialize (method)">serialize</a></span></span><span class='lparen'>(</span><span class='id identifier rubyid_coerced_default_value'>coerced_default_value</span><span class='rparen'>)</span>
+          <span class='kw'>end</span>
+        <span class='kw'>end</span>
+      <span class='kw'>else</span>
+        <span class='kw'>nil</span>
+      <span class='kw'>end</span>
+    <span class='rbrace'>}</span>
+  <span class='kw'>end</span>
+  <span class='id identifier rubyid_introspection'>introspection</span> <span class='kw'>true</span>
+<span class='kw'>end</span></pre></dd>
+    
+      <dt id="InterfacesField-constant" class="">InterfacesField =
+        
+      </dt>
+      <dd><pre class="code"><span class='const'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Field.html" title="GraphQL::Field (class)">Field</a></span></span><span class='period'>.</span><span class='id identifier rubyid_define'><span class='object_link'><a href="Define/InstanceDefinable.html#define-instance_method" title="GraphQL::Define::InstanceDefinable#define (method)">define</a></span></span> <span class='kw'>do</span>
+  <span class='id identifier rubyid_type'>type</span> <span class='tlambda'>-&gt;</span> <span class='tlambeg'>{</span> <span class='id identifier rubyid_types'>types</span><span class='lbracket'>[</span><span class='op'>!</span><span class='const'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'>Introspection</span><span class='op'>::</span><span class='const'><span class='object_link'><a href="#TypeType-constant" title="GraphQL::Introspection::TypeType (constant)">TypeType</a></span></span><span class='rbracket'>]</span> <span class='rbrace'>}</span>
+  <span class='id identifier rubyid_resolve'>resolve</span> <span class='tlambda'>-&gt;</span><span class='lparen'>(</span><span class='id identifier rubyid_target'>target</span><span class='comma'>,</span> <span class='id identifier rubyid_a'>a</span><span class='comma'>,</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='rparen'>)</span> <span class='tlambeg'>{</span>
+    <span class='kw'>if</span> <span class='id identifier rubyid_target'>target</span><span class='period'>.</span><span class='id identifier rubyid_kind'>kind</span> <span class='op'>==</span> <span class='const'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="TypeKinds.html" title="GraphQL::TypeKinds (module)">TypeKinds</a></span></span><span class='op'>::</span><span class='const'>OBJECT</span>
+      <span class='id identifier rubyid_ctx'>ctx</span><span class='period'>.</span><span class='id identifier rubyid_warden'>warden</span><span class='period'>.</span><span class='id identifier rubyid_interfaces'>interfaces</span><span class='lparen'>(</span><span class='id identifier rubyid_target'>target</span><span class='rparen'>)</span>
+    <span class='kw'>else</span>
+      <span class='kw'>nil</span>
+    <span class='kw'>end</span>
+  <span class='rbrace'>}</span>
+<span class='kw'>end</span></pre></dd>
+    
+      <dt id="EnumValuesField-constant" class="">EnumValuesField =
+        
+      </dt>
+      <dd><pre class="code"><span class='const'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Field.html" title="GraphQL::Field (class)">Field</a></span></span><span class='period'>.</span><span class='id identifier rubyid_define'><span class='object_link'><a href="Define/InstanceDefinable.html#define-instance_method" title="GraphQL::Define::InstanceDefinable#define (method)">define</a></span></span> <span class='kw'>do</span>
+  <span class='id identifier rubyid_type'>type</span> <span class='id identifier rubyid_types'>types</span><span class='lbracket'>[</span><span class='op'>!</span><span class='const'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'>Introspection</span><span class='op'>::</span><span class='const'><span class='object_link'><a href="#EnumValueType-constant" title="GraphQL::Introspection::EnumValueType (constant)">EnumValueType</a></span></span><span class='rbracket'>]</span>
+  <span class='id identifier rubyid_argument'>argument</span> <span class='symbol'>:includeDeprecated</span><span class='comma'>,</span> <span class='id identifier rubyid_types'>types</span><span class='period'>.</span><span class='const'>Boolean</span><span class='comma'>,</span> <span class='label'>default_value:</span> <span class='kw'>false</span>
+  <span class='id identifier rubyid_resolve'>resolve</span> <span class='tlambda'>-&gt;</span><span class='lparen'>(</span><span class='id identifier rubyid_object'>object</span><span class='comma'>,</span> <span class='id identifier rubyid_arguments'>arguments</span><span class='comma'>,</span> <span class='id identifier rubyid_context'>context</span><span class='rparen'>)</span> <span class='kw'>do</span>
+    <span class='kw'>if</span> <span class='op'>!</span><span class='id identifier rubyid_object'>object</span><span class='period'>.</span><span class='id identifier rubyid_kind'>kind</span><span class='period'>.</span><span class='id identifier rubyid_enum?'>enum?</span>
+      <span class='kw'>nil</span>
+    <span class='kw'>else</span>
+      <span class='id identifier rubyid_enum_values'>enum_values</span> <span class='op'>=</span> <span class='id identifier rubyid_context'>context</span><span class='period'>.</span><span class='id identifier rubyid_warden'>warden</span><span class='period'>.</span><span class='id identifier rubyid_enum_values'>enum_values</span><span class='lparen'>(</span><span class='id identifier rubyid_object'>object</span><span class='rparen'>)</span>
+
+      <span class='kw'>if</span> <span class='op'>!</span><span class='id identifier rubyid_arguments'>arguments</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>includeDeprecated</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span>
+        <span class='id identifier rubyid_enum_values'>enum_values</span> <span class='op'>=</span> <span class='id identifier rubyid_enum_values'>enum_values</span><span class='period'>.</span><span class='id identifier rubyid_select'>select</span> <span class='lbrace'>{</span><span class='op'>|</span><span class='id identifier rubyid_f'>f</span><span class='op'>|</span> <span class='op'>!</span><span class='id identifier rubyid_f'>f</span><span class='period'>.</span><span class='id identifier rubyid_deprecation_reason'>deprecation_reason</span> <span class='rbrace'>}</span>
+      <span class='kw'>end</span>
+
+      <span class='id identifier rubyid_enum_values'>enum_values</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre></dd>
+    
+      <dt id="InputFieldsField-constant" class="">InputFieldsField =
+        
+      </dt>
+      <dd><pre class="code"><span class='const'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Field.html" title="GraphQL::Field (class)">Field</a></span></span><span class='period'>.</span><span class='id identifier rubyid_define'><span class='object_link'><a href="Define/InstanceDefinable.html#define-instance_method" title="GraphQL::Define::InstanceDefinable#define (method)">define</a></span></span> <span class='kw'>do</span>
+  <span class='id identifier rubyid_name'>name</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>inputFields</span><span class='tstring_end'>&quot;</span></span>
+  <span class='id identifier rubyid_type'>type</span> <span class='id identifier rubyid_types'>types</span><span class='lbracket'>[</span><span class='op'>!</span><span class='const'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'>Introspection</span><span class='op'>::</span><span class='const'><span class='object_link'><a href="#InputValueType-constant" title="GraphQL::Introspection::InputValueType (constant)">InputValueType</a></span></span><span class='rbracket'>]</span>
+  <span class='id identifier rubyid_resolve'>resolve</span> <span class='tlambda'>-&gt;</span><span class='lparen'>(</span><span class='id identifier rubyid_target'>target</span><span class='comma'>,</span> <span class='id identifier rubyid_a'>a</span><span class='comma'>,</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='rparen'>)</span> <span class='tlambeg'>{</span>
+    <span class='kw'>if</span> <span class='id identifier rubyid_target'>target</span><span class='period'>.</span><span class='id identifier rubyid_kind'>kind</span><span class='period'>.</span><span class='id identifier rubyid_input_object?'>input_object?</span>
+      <span class='id identifier rubyid_ctx'>ctx</span><span class='period'>.</span><span class='id identifier rubyid_warden'>warden</span><span class='period'>.</span><span class='id identifier rubyid_arguments'>arguments</span><span class='lparen'>(</span><span class='id identifier rubyid_target'>target</span><span class='rparen'>)</span>
+    <span class='kw'>else</span>
+      <span class='kw'>nil</span>
+    <span class='kw'>end</span>
+  <span class='rbrace'>}</span>
+<span class='kw'>end</span></pre></dd>
+    
+      <dt id="TypeByNameField-constant" class="">TypeByNameField =
+        
+      </dt>
+      <dd><pre class="code"><span class='const'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Field.html" title="GraphQL::Field (class)">Field</a></span></span><span class='period'>.</span><span class='id identifier rubyid_define'><span class='object_link'><a href="Define/InstanceDefinable.html#define-instance_method" title="GraphQL::Define::InstanceDefinable#define (method)">define</a></span></span> <span class='kw'>do</span>
+  <span class='id identifier rubyid_name'>name</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>__type</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_description'>description</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>A type in the GraphQL system</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_type'>type</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'>Introspection</span><span class='op'>::</span><span class='const'><span class='object_link'><a href="#TypeType-constant" title="GraphQL::Introspection::TypeType (constant)">TypeType</a></span></span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_argument'>argument</span> <span class='symbol'>:name</span><span class='comma'>,</span> <span class='op'>!</span><span class='id identifier rubyid_types'>types</span><span class='period'>.</span><span class='const'>String</span>
+  <span class='id identifier rubyid_resolve'>resolve</span> <span class='tlambda'>-&gt;</span><span class='lparen'>(</span><span class='id identifier rubyid_o'>o</span><span class='comma'>,</span> <span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='rparen'>)</span> <span class='tlambeg'>{</span>
+    <span class='id identifier rubyid_ctx'>ctx</span><span class='period'>.</span><span class='id identifier rubyid_warden'>warden</span><span class='period'>.</span><span class='id identifier rubyid_get_type'>get_type</span><span class='lparen'>(</span><span class='id identifier rubyid_args'>args</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>name</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span><span class='rparen'>)</span>
+  <span class='rbrace'>}</span>
+<span class='kw'>end</span></pre></dd>
+    
+      <dt id="INTROSPECTION_QUERY-constant" class="">INTROSPECTION_QUERY =
+        <div class="docstring">
+  <div class="discussion">
+    <p>The introspection query to end all introspection queries, copied from
+https://github.com/graphql/graphql-js/blob/master/src/utilities/introspectionQuery.js</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+      </dt>
+      <dd><pre class="code"><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>
+query IntrospectionQuery {
+  __schema {
+    queryType { name }
+    mutationType { name }
+    subscriptionType { name }
+    types {
+      ...FullType
+    }
+    directives {
+      name
+      description
+      locations
+      args {
+        ...InputValue
+      }
+    }
+  }
+}
+fragment FullType on __Type {
+  kind
+  name
+  description
+  fields(includeDeprecated: true) {
+    name
+    description
+    args {
+      ...InputValue
+    }
+    type {
+      ...TypeRef
+    }
+    isDeprecated
+    deprecationReason
+  }
+  inputFields {
+    ...InputValue
+  }
+  interfaces {
+    ...TypeRef
+  }
+  enumValues(includeDeprecated: true) {
+    name
+    description
+    isDeprecated
+    deprecationReason
+  }
+  possibleTypes {
+    ...TypeRef
+  }
+}
+fragment InputValue on __InputValue {
+  name
+  description
+  type { ...TypeRef }
+  defaultValue
+}
+fragment TypeRef on __Type {
+  kind
+  name
+  ofType {
+    kind
+    name
+    ofType {
+      kind
+      name
+      ofType {
+        kind
+        name
+        ofType {
+          kind
+          name
+          ofType {
+            kind
+            name
+            ofType {
+              kind
+              name
+              ofType {
+                kind
+                name
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+</span><span class='tstring_end'>&quot;</span></span></pre></dd>
+    
+      <dt id="PossibleTypesField-constant" class="">PossibleTypesField =
+        
+      </dt>
+      <dd><pre class="code"><span class='const'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Field.html" title="GraphQL::Field (class)">Field</a></span></span><span class='period'>.</span><span class='id identifier rubyid_define'><span class='object_link'><a href="Define/InstanceDefinable.html#define-instance_method" title="GraphQL::Define::InstanceDefinable#define (method)">define</a></span></span> <span class='kw'>do</span>
+  <span class='id identifier rubyid_type'>type</span> <span class='tlambda'>-&gt;</span> <span class='tlambeg'>{</span> <span class='id identifier rubyid_types'>types</span><span class='lbracket'>[</span><span class='op'>!</span><span class='const'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'>Introspection</span><span class='op'>::</span><span class='const'><span class='object_link'><a href="#TypeType-constant" title="GraphQL::Introspection::TypeType (constant)">TypeType</a></span></span><span class='rbracket'>]</span> <span class='rbrace'>}</span>
+  <span class='id identifier rubyid_resolve'>resolve</span> <span class='tlambda'>-&gt;</span><span class='lparen'>(</span><span class='id identifier rubyid_target'>target</span><span class='comma'>,</span> <span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='rparen'>)</span> <span class='tlambeg'>{</span>
+    <span class='kw'>if</span> <span class='id identifier rubyid_target'>target</span><span class='period'>.</span><span class='id identifier rubyid_kind'>kind</span><span class='period'>.</span><span class='id identifier rubyid_resolves?'>resolves?</span>
+      <span class='id identifier rubyid_ctx'>ctx</span><span class='period'>.</span><span class='id identifier rubyid_warden'>warden</span><span class='period'>.</span><span class='id identifier rubyid_possible_types'>possible_types</span><span class='lparen'>(</span><span class='id identifier rubyid_target'>target</span><span class='rparen'>)</span>
+    <span class='kw'>else</span>
+      <span class='kw'>nil</span>
+    <span class='kw'>end</span>
+  <span class='rbrace'>}</span>
+<span class='kw'>end</span></pre></dd>
+    
+      <dt id="DirectiveLocationEnum-constant" class="">DirectiveLocationEnum =
+        
+      </dt>
+      <dd><pre class="code"><span class='const'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="EnumType.html" title="GraphQL::EnumType (class)">EnumType</a></span></span><span class='period'>.</span><span class='id identifier rubyid_define'><span class='object_link'><a href="Define/InstanceDefinable.html#define-instance_method" title="GraphQL::Define::InstanceDefinable#define (method)">define</a></span></span> <span class='kw'>do</span>
+  <span class='id identifier rubyid_name'>name</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>__DirectiveLocation</span><span class='tstring_end'>&quot;</span></span>
+  <span class='id identifier rubyid_description'>description</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>A Directive can be adjacent to many parts of the GraphQL language, a </span><span class='tstring_end'>&quot;</span></span>\
+              <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>__DirectiveLocation describes one such possible adjacencies.</span><span class='tstring_end'>&quot;</span></span>
+
+  <span class='const'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Directive.html" title="GraphQL::Directive (class)">Directive</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Directive.html#LOCATIONS-constant" title="GraphQL::Directive::LOCATIONS (constant)">LOCATIONS</a></span></span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_location'>location</span><span class='op'>|</span>
+    <span class='id identifier rubyid_value'>value</span><span class='lparen'>(</span><span class='id identifier rubyid_location'>location</span><span class='period'>.</span><span class='id identifier rubyid_to_s'>to_s</span><span class='comma'>,</span> <span class='const'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Directive.html" title="GraphQL::Directive (class)">Directive</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Directive.html#LOCATION_DESCRIPTIONS-constant" title="GraphQL::Directive::LOCATION_DESCRIPTIONS (constant)">LOCATION_DESCRIPTIONS</a></span></span><span class='lbracket'>[</span><span class='id identifier rubyid_location'>location</span><span class='rbracket'>]</span><span class='comma'>,</span> <span class='label'>value:</span> <span class='id identifier rubyid_location'>location</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+  <span class='id identifier rubyid_introspection'>introspection</span> <span class='kw'>true</span>
+<span class='kw'>end</span></pre></dd>
+    
+  </dl>
+
+
+
+
+
+
+
+
+
+</div>
+
+      <div id="footer">
+  Generated on Fri May 18 10:05:20 2018 by
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.12 (ruby-2.4.2).
+</div>
+
+    </div>
+  </body>
+</html>
