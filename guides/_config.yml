@@ -5,6 +5,7 @@ url: "http://graphql-ruby.org"
 exclude:
   - .gitignore
 
+keep_files: ["api-doc", ".git"]
 # Build settings
 markdown:         kramdown
 highlighter:      rouge

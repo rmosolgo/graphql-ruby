@@ -1,6 +1,35 @@
 # frozen_string_literal: true
 require "yard"
 
+namespace :apidocs do
+  desc "Fetch a gem version from RubyGems, build the docs"
+  task :gen_version, [:version] do |t, args|
+    version = args[:version] || raise("A version is required")
+    Dir.chdir("tmp") do
+      if !File.exist?("graphql-#{version}.gem")
+        system("gem fetch graphql --version=#{version}")
+      end
+      if !File.exist?("graphql-#{version}")
+        system("gem unpack graphql-#{version}.gem")
+      end
+      Dir.chdir("graphql-#{version}") do
+        if !File.exist?("doc")
+          system("yardoc")
+        end
+        # Copy it into gh-pages for publishing
+        # and locally for previewing
+        push_dest = "../../gh-pages/api-doc/#{version}"
+        local_dest = "../../guides/_site/api-doc/#{version}"
+        mkdir_p push_dest
+        mkdir_p local_dest
+        copy_entry "doc", push_dest
+        copy_entry "doc", local_dest
+      end
+    end
+    puts "Successfully generated docs for #{version}"
+  end
+end
+
 namespace :site do
   desc "View the documentation site locally"
   task serve: [:build_doc] do
@@ -39,7 +68,9 @@ namespace :site do
       'gh-pages/..',
       'gh-pages/.git',
       'gh-pages/.gitignore',
+      'gh-pages/api-doc',
     ]
+
     FileList["gh-pages/{*,.*}"].exclude(*purge_exclude).each do |path|
       sh "rm -rf #{path}"
     end
@@ -73,7 +104,7 @@ namespace :site do
     require_relative "../../lib/graphql/version"
 
     def to_rubydoc_url(path)
-      "http://www.rubydoc.info/gems/graphql/#{GraphQL::VERSION}/" + path
+      "/api-doc/#{GraphQL::VERSION}/" + path
         .gsub("::", "/")                        # namespaces
         .sub(/#(.+)$/, "#\\1-instance_method")  # instance methods
         .sub(/\.(.+)$/, "#\\1-class_method")    # class methods
