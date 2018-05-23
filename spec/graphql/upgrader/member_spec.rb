@@ -195,7 +195,7 @@ RUBY
     end
 
     describe "resolve proc to method" do
-      it "converts @object and @context" do
+      it "converts object and context" do
         old = %{
           field :firstName, !types.String do
             resolve ->(obj, arg, ctx) {
@@ -211,11 +211,11 @@ RUBY
           field :first_name, String, null: false
 
           def first_name
-            @context.something
+            context.something
             other_ctx # test combined identifiers
 
-            @object[@context] + @object
-            @object.given_name
+            object[context] + object
+            object.given_name
           end
         }
         assert_equal new, upgrade(old)
@@ -233,7 +233,7 @@ RUBY
           field :first_name, String, null: false
 
           def first_name
-            @object.given_name
+            object.given_name
           end
         }
         assert_equal new, upgrade(old)
