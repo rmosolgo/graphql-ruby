@@ -5,7 +5,6 @@ module GraphQL
 end
 
 require "graphql/introspection/base_object"
-require "graphql/introspection/typename_field"
 require "graphql/introspection/input_value_type"
 require "graphql/introspection/enum_value_type"
 require "graphql/introspection/type_kind_enum"
