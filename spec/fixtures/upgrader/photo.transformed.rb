@@ -5,7 +5,7 @@ module Platform
       field :caption, String, null: true
 
       def caption
-        @object.caption
+        object.caption
       end
     end
   end
