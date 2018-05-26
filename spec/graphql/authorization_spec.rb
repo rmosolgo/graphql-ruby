@@ -11,6 +11,10 @@ describe GraphQL::Authorization do
       def accessible?(context)
         super && (context[:hide] ? @name != "inaccessible" : true)
       end
+
+      def authorized?(value, context)
+        super && (context[:hide] ? @name != "unauthorized" : true)
+      end
     end
 
     class BaseField < GraphQL::Schema::Field
@@ -21,6 +25,10 @@ describe GraphQL::Authorization do
 
       def accessible?(context)
         super && (context[:hide] ? @name != "inaccessible" : true)
+      end
+
+      def authorized?(object, context)
+        super && (context[:hide] ? @name != "unauthorized" : true)
       end
     end
 
@@ -90,6 +98,12 @@ describe GraphQL::Authorization do
       end
     end
 
+    class UnauthorizedObject < BaseObject
+      def self.authorized?(value, context)
+        super && (context[:hide] ? false : true)
+      end
+    end
+
     class Query < BaseObject
       field :hidden, Integer, null: false
       field :int2, Integer, null: false do
@@ -110,6 +124,8 @@ describe GraphQL::Authorization do
       field :inaccessible_object, InaccessibleObject, null: false, method: :itself
       field :inaccessible_interface, InaccessibleInterface, null: false, method: :itself
       field :inaccessible_default_interface, InaccessibleDefaultInterface, null: false, method: :itself
+
+      field :unauthorized_object, UnauthorizedObject, null: true, method: :itself
     end
 
     class DoHiddenStuff < GraphQL::Schema::RelayClassicMutation
@@ -124,9 +140,16 @@ describe GraphQL::Authorization do
       end
     end
 
+    class DoUnauthorizedStuff < GraphQL::Schema::RelayClassicMutation
+      def self.authorized?(ctx)
+        super && (ctx[:hide] ? false : true)
+      end
+    end
+
     class Mutation < BaseObject
       field :do_hidden_stuff, mutation: DoHiddenStuff
       field :do_inaccessible_stuff, mutation: DoInaccessibleStuff
+      field :do_unauthorized_stuff, mutation: DoUnauthorizedStuff
     end
 
     class Schema < GraphQL::Schema
@@ -252,5 +275,19 @@ describe GraphQL::Authorization do
     end
 
     it "works with edges and connections"
+  end
+
+  describe "applying the authorized? method" do
+    it "halts on unauthorized objects" do
+      query = "{ unauthorizedObject { __typename } }"
+      hidden_response = AuthTest::Schema.execute(query, context: { hide: true })
+      assert_nil hidden_response["data"].fetch("unauthorizedObject")
+      visible_response = AuthTest::Schema.execute(query, context: {})
+      assert_equal({ "__typename" => "UnauthorizedObject" }, visible_response["data"]["unauthorizedObject"])
+    end
+
+    it "halts on unauthorized mutations"
+    it "halts on unauthorized fields"
+    it "halts on unauthorized arguments"
   end
 end

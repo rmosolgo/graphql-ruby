@@ -102,7 +102,7 @@ module GraphQL
               if concrete_type && (object_class = concrete_type.metadata[:type_class])
                 # use the query-level context here, since it won't be field-specific anyways
                 query_ctx = ctx.query.context
-                object_class.new(obj, query_ctx)
+                object_class.authorized_new(obj, query_ctx)
               else
                 obj
               end

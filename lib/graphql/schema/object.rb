@@ -12,6 +12,17 @@ module GraphQL
       # @return [GraphQL::Query::Context] the context instance for this query
       attr_reader :context
 
+      # Make a new instance of this type _if_ the auth check passes,
+      # otherwise, return nil.
+      # @api private
+      def self.authorized_new(object, context)
+        if authorized?(object, context)
+          self.new(object, context)
+        else
+          nil
+        end
+      end
+
       def initialize(object, context)
         @object = object
         @context = context
