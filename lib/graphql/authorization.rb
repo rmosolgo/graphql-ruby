@@ -5,7 +5,7 @@ module GraphQL
       module_function
       def initial_value(query)
         {
-          schema: query.schema.class,
+          schema: query.schema,
           context: query.context,
           inaccessible_nodes: [],
         }
