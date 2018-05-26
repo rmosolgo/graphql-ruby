@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 module GraphQL
   module Introspection
-    class EntryPoints < GraphQL::Schema::Object
+    class EntryPoints < Introspection::BaseObject
       field :__schema, GraphQL::Schema::LateBoundType.new("__Schema"), "This GraphQL schema", null: false
       field :__type, GraphQL::Schema::LateBoundType.new("__Type"), "A type in the GraphQL system", null: true do
         argument :name, String, required: true
