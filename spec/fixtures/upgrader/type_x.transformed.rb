@@ -23,12 +23,12 @@ module Platform
       def f4(**arguments)
         Class1.new(
           a: Class2.new(
-            b: @object.b_1,
-            c: @object.c_1
+            b: object.b_1,
+            c: object.c_1
           ),
           d: Class3.new(
-            b: @object.b_2,
-            c: @object.c_3,
+            b: object.b_2,
+            c: object.c_3,
           )
         )
       end
@@ -46,9 +46,9 @@ module Platform
       field :f10, String, null: true
 
       def f10
-        @object.something do |_|
+        object.something do |_|
           xyz_obj.obj
-          @object.f10
+          object.f10
         end
       end
     end

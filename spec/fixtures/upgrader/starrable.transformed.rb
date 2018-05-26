@@ -13,9 +13,9 @@ module Platform
       end
 
       def viewer_has_starred(**arguments)
-        if @context[:viewer]
+        if context[:viewer]
           ->(test_inner_proc) do
-            @context[:viewer].starred?(@object)
+            context[:viewer].starred?(object)
           end
         else
           false
@@ -27,11 +27,11 @@ module Platform
       end
 
       def stargazers(**arguments)
-        scope = case @object
+        scope = case object
         when Repository
-          @object.stars
+          object.stars
         when Gist
-          GistStar.where(gist_id: @object.id)
+          GistStar.where(gist_id: object.id)
         end
 
         table = scope.table_name

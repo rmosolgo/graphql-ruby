@@ -19,7 +19,7 @@ module GraphQL
         field = context.warden.get_field(parent_type, ast_field.name)
 
         if field.nil?
-          if  parent_type.kind.union?
+          if parent_type.kind.union?
             context.errors << message("Selections can't be made directly on unions (see selections on #{parent_type.name})", parent, context: context)
           else
             context.errors << message("Field '#{ast_field.name}' doesn't exist on type '#{parent_type.name}'", ast_field, context: context)

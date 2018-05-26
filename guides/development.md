@@ -198,6 +198,31 @@ $ export ALGOLIA_API_KEY=...
 
 Without this key, the search index will fall out-of-sync with the website. Contact @rmosolgo to gain access to this key.
 
+#### API Docs
+
+The GraphQL-Ruby website has its own rendered version of the gem's API docs. They're pushed to GitHub pages with a special process.
+
+First, generate local copies of the docs you want to publish:
+
+```
+$ bundle exec rake apidocs:gen_version[1.8.0] # for example, generate docs that you want to publish
+```
+
+Then, check them out locally:
+
+```
+$ bundle exec rake site:serve
+# then visit localhost:4000/api-doc/1.8.0/
+```
+
+Then, publish them as part of the whole site:
+
+```
+$ bundle exec rake site:publish
+```
+
+Finally, check your work by visiting the docs on the website.
+
 ### Versioning
 
 GraphQL-Ruby does _not_ attempt to deliver "semantic versioning" for the reasons described in `jashkenas`'

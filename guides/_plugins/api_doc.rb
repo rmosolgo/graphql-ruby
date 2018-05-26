@@ -2,7 +2,7 @@
 require_relative "../../lib/graphql/version"
 
 module GraphQLSite
-  API_DOC_ROOT = "http://www.rubydoc.info/gems/graphql/#{GraphQL::VERSION}/"
+  API_DOC_ROOT = "/api-doc/#{GraphQL::VERSION}/"
 
   module APIDoc
     def api_doc(input)

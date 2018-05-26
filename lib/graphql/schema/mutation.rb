@@ -58,51 +58,16 @@ module GraphQL
     #  }
     #  GRAPHQL
     #
-    class Mutation < GraphQL::Schema::Member
+    class Mutation < GraphQL::Schema::Resolver
       extend GraphQL::Schema::Member::HasFields
-      extend GraphQL::Schema::Member::HasArguments
-
-      # @param object [Object] the initialize object, pass to {Query.initialize} as `root_value`
-      # @param context [GraphQL::Query::Context]
-      def initialize(object:, context:, arguments:)
-        @object = object
-        @context = context
-      end
-
-      # @return [Object] the root value of the operation
-      attr_reader :object
-
-      # @return [GraphQL::Query::Context]
-      attr_reader :context
-
-      # Do the work. Everything happens here.
-      # @return [Hash] A key for each field in the return type
-      # @return [Object] An object corresponding to the return type
-      def resolve(**args)
-        raise NotImplementedError, "#{self.class.name}#resolve should execute side effects and return a Symbol-keyed hash"
-      end
-
-      # This is a hook for classes to intercept resolution.
-      # @see RelayClassicMutation for usage
-      def resolve_mutation(**args)
-        resolve(args)
-      end
 
       class << self
-        def inherited(base)
-          base.null(null)
-          super
-        end
-
-        # Override the method from HasFields to support `field: Mutation.field`, for backwards compat.
-        #
-        # If called without any arguments, returns a `GraphQL::Field`.
-        # @see {GraphQL::Schema::Member::HasFields.field} for default behavior
+        # Override this method to handle legacy-style usages of `MyMutation.field`
         def field(*args, &block)
-          if args.none? && !block_given?
-            graphql_field.graphql_definition
+          if args.none?
+            raise ArgumentError, "#{name}.field is used for adding fields to this mutation. Use `mutation: #{name}` to attach this mutation instead."
           else
-            super(*args, &block)
+            super
           end
         end
 
@@ -118,20 +83,8 @@ module GraphQL
           @payload_type ||= generate_payload_type
         end
 
-        # @return [GraphQL::Schema::Field] The generated field instance for this mutation
-        # @see {GraphQL::Schema::Field}'s `mutation:` option, don't call this directly
-        def graphql_field
-          @graphql_field ||= generate_field
-        end
-
-        # @param new_name [String, nil] if present, override the class name to set this value
-        # @return [String] The name of this mutation in the GraphQL schema (used for naming derived types and fields)
-        def graphql_name(new_name = nil)
-          if new_name
-            @graphql_name = new_name
-          end
-          @graphql_name ||= self.name.split("::").last
-        end
+        alias :type :payload_type
+        alias :type_expr :payload_type
 
         # An object class to use for deriving payload types
         # @param new_class [Class, nil] Defaults to {GraphQL::Schema::Object}
@@ -143,23 +96,22 @@ module GraphQL
           @object_class || (superclass.respond_to?(:object_class) ? superclass.object_class : GraphQL::Schema::Object)
         end
 
-        # Additional info injected into {#resolve}
-        # @see {GraphQL::Schema::Field#extras}
-        def extras(new_extras = nil)
-          if new_extras
-            @extras = new_extras
+        def field_class(new_class = nil)
+          if new_class
+            @field_class = new_class
+          else
+            @field_class || find_inherited_method(:field_class, GraphQL::Schema::Field)
           end
-          @extras || []
         end
 
-        # Specifies whether or not the mutation is nullable. Defaults to `true`
-        # @param allow_null [Boolean] Whether or not the response can be null
-        def null(allow_null = nil)
-          unless allow_null.nil?
-            @null = allow_null
+        # An object class to use for deriving return types
+        # @param new_class [Class, nil] Defaults to {GraphQL::Schema::Object}
+        # @return [Class]
+        def object_class(new_class = nil)
+          if new_class
+            @object_class = new_class
           end
-
-          @null.nil? ? true : @null
+          @object_class || (superclass.respond_to?(:object_class) ? superclass.object_class : GraphQL::Schema::Object)
         end
 
         def visible?(context)
@@ -183,27 +135,6 @@ module GraphQL
               field(name, field: f)
             end
           end
-        end
-
-        # This name will be used for the {.graphql_field}.
-        def field_name
-          graphql_name.sub(/^[A-Z]/, &:downcase)
-        end
-
-        # Build an instance of {.field_class} which will be used to execute this mutation.
-        # To customize field generation, override this method.
-        def generate_field
-          # TODO support deprecation_reason
-          self.field_class.new(
-            field_name,
-            payload_type,
-            description,
-            extras: extras,
-            method: :resolve_mutation,
-            mutation_class: self,
-            arguments: arguments,
-            null: null,
-          )
         end
       end
     end

@@ -29,7 +29,7 @@ And learn about the APIs:
 - {% internal_link "Enum classes", "/type_definitions/enums" %}
 - {% internal_link "Input Object classes", "/type_definitions/input_objects" %}
 - {% internal_link "Scalar classes", "/type_definitions/scalars" %}
-- {% internal_link "Customizing definitoins", "/type_definitions/extensions" %}
+- {% internal_link "Customizing definitions", "/type_definitions/extensions" %}
 - {% internal_link "Custom introspection", "/schema/introspection" %}
 
 ## Rationale & Goals

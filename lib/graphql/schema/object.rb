@@ -56,7 +56,7 @@ module GraphQL
             if int.is_a?(GraphQL::InterfaceType)
               int_f = {}
               int.fields.each do |name, legacy_field|
-                int_f[name] = build_field(name, field: legacy_field)
+                int_f[name] = field_class.from_options(name, field: legacy_field)
               end
               all_fields = int_f.merge(all_fields)
             end

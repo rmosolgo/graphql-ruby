@@ -72,6 +72,8 @@ module GraphQL
           raise NotImplementedError
         end
 
+        alias :unwrap :itself
+
         def overridden_graphql_name
           @graphql_name || find_inherited_method(:overridden_graphql_name, nil)
         end

@@ -331,8 +331,7 @@ module StarWars
 
   class MutationType < GraphQL::Schema::Object
     graphql_name "Mutation"
-    # The mutation object exposes a field:
-    field :introduceShip, field: IntroduceShipMutation.field
+    field :introduceShip, mutation: IntroduceShipMutation
     field :introduceShipFunction, field: IntroduceShipFunctionMutation.field
   end
 

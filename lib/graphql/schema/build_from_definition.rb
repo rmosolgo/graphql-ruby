@@ -237,7 +237,7 @@ module GraphQL
               **kwargs,
             )
 
-            argument.ast_node = input_object_type_definition
+            argument.ast_node = input_argument
 
             [
               input_argument.name,
