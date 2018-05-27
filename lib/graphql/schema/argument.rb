@@ -62,6 +62,10 @@ module GraphQL
         true
       end
 
+      def authorized?(obj, ctx)
+        true
+      end
+
       def to_graphql
         argument = GraphQL::Argument.new
         argument.name = @name

@@ -13,7 +13,7 @@ describe GraphQL::Authorization do
       end
 
       def authorized?(value, context)
-        super && (context[:hide] ? @name != "unauthorized" : true)
+        super && value != :hide2
       end
     end
 
@@ -28,7 +28,7 @@ describe GraphQL::Authorization do
       end
 
       def authorized?(object, context)
-        super && (context[:hide] ? @name != "unauthorized" : true)
+        super && object != :hide
       end
     end
 
@@ -106,14 +106,16 @@ describe GraphQL::Authorization do
 
     class Query < BaseObject
       field :hidden, Integer, null: false
-      field :int2, Integer, null: false do
+      field :unauthorized, Integer, null: true, method: :object
+      field :int2, Integer, null: true do
         argument :int, Integer, required: false
         argument :hidden, Integer, required: false
         argument :inaccessible, Integer, required: false
+        argument :unauthorized, Integer, required: false
       end
 
       def int2(**args)
-        1
+        args[:unauthorized] || 1
       end
 
       field :hidden_object, HiddenObject, null: false, method: :itself
@@ -225,7 +227,7 @@ describe GraphQL::Authorization do
       query_field_names = res["data"]["query"]["fields"].map { |f| f["name"] }
       refute_includes query_field_names, "int"
       int2_arg_names = res["data"]["query"]["fields"].find { |f| f["name"] == "int2" }["args"].map { |a| a["name"] }
-      assert_equal ["int", "inaccessible"], int2_arg_names
+      assert_equal ["int", "inaccessible", "unauthorized"], int2_arg_names
 
       assert_nil res["data"]["hiddenObject"]
       assert_nil res["data"]["hiddenInterface"]
@@ -287,7 +289,24 @@ describe GraphQL::Authorization do
     end
 
     it "halts on unauthorized mutations"
-    it "halts on unauthorized fields"
-    it "halts on unauthorized arguments"
+
+    it "halts on unauthorized fields, using the parent object" do
+      query = "{ unauthorized }"
+      hidden_response = AuthTest::Schema.execute(query, root_value: :hide)
+      assert_nil hidden_response["data"].fetch("unauthorized")
+      # TODO assert that error is present?
+      visible_response = AuthTest::Schema.execute(query, root_value: 1)
+      assert_equal 1, visible_response["data"]["unauthorized"]
+    end
+
+    it "halts on unauthorized arguments, using the parent object" do
+      query = "{ int2(unauthorized: 5) }"
+      hidden_response = AuthTest::Schema.execute(query, root_value: :hide2)
+      pp hidden_response
+      assert_nil hidden_response["data"].fetch("int2")
+      # TODO assert that error is present?
+      visible_response = AuthTest::Schema.execute(query)
+      assert_equal 5, visible_response["data"]["int2"]
+    end
   end
 end
