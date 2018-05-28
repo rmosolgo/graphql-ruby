@@ -277,24 +277,24 @@ module GraphQL
 
       def visible?(context)
         # TODO Update for GraphQL::Schema::Resolver
-        if @mutation_class
-          @mutation_class.visible?(context)
+        if @resolver_class
+          @resolver_class.visible?(context)
         else
           true
         end
       end
 
       def accessible?(context)
-        if @mutation_class
-          @mutation_class.visible?(context)
+        if @resolver_class
+          @resolver_class.accessible?(context)
         else
           true
         end
       end
 
       def authorized?(object, context)
-        if @mutation_class
-          @mutation_class.visible?(context)
+        if @resolver_class
+          @resolver_class.authorized?(object, context)
         else
           true
         end
