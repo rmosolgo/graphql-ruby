@@ -44,7 +44,7 @@ describe GraphQL::Authorization do
       include BaseInterface
 
       def self.visible?(ctx)
-        super && (ctx[:hide] ? false : true)
+        super && !ctx[:hide]
       end
 
       def self.resolve_type(obj, ctx)
@@ -64,7 +64,21 @@ describe GraphQL::Authorization do
       implements HiddenInterface
       implements HiddenDefaultInterface
       def self.visible?(ctx)
-        super && (ctx[:hide] ? false : true)
+        super && !ctx[:hide]
+      end
+    end
+
+    class RelayObject < BaseObject
+      def self.visible?(ctx)
+        super && !ctx[:hidden_relay]
+      end
+
+      def self.accessible?(ctx)
+        super && !ctx[:inaccessible_relay]
+      end
+
+      def self.authorized?(_val, ctx)
+        super && !ctx[:unauthorized_relay]
       end
     end
 
@@ -74,7 +88,7 @@ describe GraphQL::Authorization do
       include BaseInterface
 
       def self.accessible?(ctx)
-        super && (ctx[:hide] ? false : true)
+        super && !ctx[:hide]
       end
 
       def self.resolve_type(obj, ctx)
@@ -94,13 +108,13 @@ describe GraphQL::Authorization do
       implements InaccessibleInterface
       implements InaccessibleDefaultInterface
       def self.accessible?(ctx)
-        super && (ctx[:hide] ? false : true)
+        super && !ctx[:hide]
       end
     end
 
     class UnauthorizedObject < BaseObject
       def self.authorized?(value, context)
-        super && (context[:hide] ? false : true)
+        super && !context[:hide]
       end
     end
 
@@ -118,16 +132,23 @@ describe GraphQL::Authorization do
         args[:unauthorized] || 1
       end
 
+      def empty_array; []; end
       field :hidden_object, HiddenObject, null: false, method: :itself
       field :hidden_interface, HiddenInterface, null: false, method: :itself
       field :hidden_default_interface, HiddenDefaultInterface, null: false, method: :itself
+      field :hidden_connection, RelayObject.connection_type, null: :false, method: :empty_array
+      field :hidden_edge, RelayObject.edge_type, null: :false, method: :itself
 
       field :inaccessible, Integer, null: false, method: :object_id
       field :inaccessible_object, InaccessibleObject, null: false, method: :itself
       field :inaccessible_interface, InaccessibleInterface, null: false, method: :itself
       field :inaccessible_default_interface, InaccessibleDefaultInterface, null: false, method: :itself
+      field :inaccessible_connection, RelayObject.connection_type, null: :false, method: :empty_array
+      field :inaccessible_edge, RelayObject.edge_type, null: :false, method: :itself
 
       field :unauthorized_object, UnauthorizedObject, null: true, method: :itself
+      field :unauthorized_connection, RelayObject.connection_type, null: :false, method: :empty_array
+      field :unauthorized_edge, RelayObject.edge_type, null: :false, method: :itself
     end
 
     class DoHiddenStuff < GraphQL::Schema::RelayClassicMutation
@@ -160,9 +181,13 @@ describe GraphQL::Authorization do
     end
   end
 
+  def auth_execute(*args)
+    AuthTest::Schema.execute(*args)
+  end
+
   describe "applying the visible? method" do
     it "works in queries" do
-      res = AuthTest::Schema.execute(" { int int2 } ", context: { hide: true })
+      res = auth_execute(" { int int2 } ", context: { hide: true })
       assert_equal 1, res["errors"].size
     end
 
@@ -174,10 +199,10 @@ describe GraphQL::Authorization do
       }
 
       error_queries.each do |name, q|
-        hidden_res = AuthTest::Schema.execute(q, context: { hide: true})
+        hidden_res = auth_execute(q, context: { hide: true})
         assert_equal ["Field '#{name}' doesn't exist on type 'Query'"], hidden_res["errors"].map { |e| e["message"] }
 
-        visible_res = AuthTest::Schema.execute(q)
+        visible_res = auth_execute(q)
         # Both fields exist; the interface resolves to the object type, though
         assert_equal "HiddenObject", visible_res["data"][name]["__typename"]
       end
@@ -185,12 +210,12 @@ describe GraphQL::Authorization do
 
     it "uses the mutation for derived fields, inputs and outputs" do
       query = "mutation { doHiddenStuff(input: {}) { __typename } }"
-      res = AuthTest::Schema.execute(query, context: { hidden_mutation: true })
+      res = auth_execute(query, context: { hidden_mutation: true })
       assert_equal ["Field 'doHiddenStuff' doesn't exist on type 'Mutation'"], res["errors"].map { |e| e["message"] }
 
       # `#resolve` isn't implemented, so this errors out:
       assert_raises NotImplementedError do
-        AuthTest::Schema.execute(query)
+        auth_execute(query)
       end
 
       introspection_q = <<-GRAPHQL
@@ -199,19 +224,33 @@ describe GraphQL::Authorization do
           t2: __type(name: "DoHiddenStuffPayload") { name }
         }
       GRAPHQL
-      hidden_introspection_res = AuthTest::Schema.execute(introspection_q, context: { hidden_mutation: true })
+      hidden_introspection_res = auth_execute(introspection_q, context: { hidden_mutation: true })
       assert_nil hidden_introspection_res["data"]["t1"]
       assert_nil hidden_introspection_res["data"]["t2"]
 
-      visible_introspection_res = AuthTest::Schema.execute(introspection_q)
+      visible_introspection_res = auth_execute(introspection_q)
       assert_equal "DoHiddenStuffInput", visible_introspection_res["data"]["t1"]["name"]
       assert_equal "DoHiddenStuffPayload", visible_introspection_res["data"]["t2"]["name"]
     end
 
-    it "uses the base type for edges and connections"
+    it "uses the base type for edges and connections" do
+      query = <<-GRAPHQL
+      {
+        hiddenConnection { __typename }
+        hiddenEdge { __typename }
+      }
+      GRAPHQL
+
+      hidden_res = auth_execute(query, context: { hidden_relay: true })
+      assert_equal 2, hidden_res["errors"].size
+
+      visible_res = auth_execute(query)
+      assert_equal "RelayObjectConnection", visible_res["data"]["hiddenConnection"]["__typename"]
+      assert_equal "RelayObjectEdge", visible_res["data"]["hiddenEdge"]["__typename"]
+    end
 
     it "works in introspection" do
-      res = AuthTest::Schema.execute <<-GRAPHQL, context: { hide: true, hidden_mutation: true }
+      res = auth_execute <<-GRAPHQL, context: { hide: true, hidden_mutation: true }
         {
           query: __type(name: "Query") {
             fields {
@@ -242,10 +281,10 @@ describe GraphQL::Authorization do
       }
 
       queries.each do |query_str, errors|
-        res = AuthTest::Schema.execute(query_str, context: { hide: true })
+        res = auth_execute(query_str, context: { hide: true })
         assert_equal errors, res.fetch("errors").map { |e| e["message"] }
 
-        res = AuthTest::Schema.execute(query_str, context: { hide: false })
+        res = auth_execute(query_str, context: { hide: false })
         refute res.key?("errors")
       end
     end
@@ -258,64 +297,97 @@ describe GraphQL::Authorization do
       }
 
       queries.each do |query_str, errors|
-        res = AuthTest::Schema.execute(query_str, context: { hide: true })
+        res = auth_execute(query_str, context: { hide: true })
         assert_equal errors, res["errors"].map { |e| e["message"] }
 
-        res = AuthTest::Schema.execute(query_str, context: { hide: false })
+        res = auth_execute(query_str, context: { hide: false })
         refute res.key?("errors")
       end
     end
 
     it "works with mutations" do
       query = "mutation { doInaccessibleStuff(input: {}) { __typename } }"
-      res = AuthTest::Schema.execute(query, context: { inaccessible_mutation: true })
+      res = auth_execute(query, context: { inaccessible_mutation: true })
       assert_equal ["Some fields were unreachable ... "], res["errors"].map { |e| e["message"] }
 
       assert_raises NotImplementedError do
-        AuthTest::Schema.execute(query)
+        auth_execute(query)
       end
     end
 
-    it "works with edges and connections"
+    it "works with edges and connections" do
+      query = <<-GRAPHQL
+      {
+        inaccessibleConnection { __typename }
+        inaccessibleEdge { __typename }
+      }
+      GRAPHQL
+
+      inaccessible_res = auth_execute(query, context: { inaccessible_relay: true })
+      # TODO Better errors
+      assert_equal ["Some fields were unreachable ... "], inaccessible_res["errors"].map { |e| e["message"] }
+
+      accessible_res = auth_execute(query)
+      refute accessible_res.key?("errors")
+    end
   end
 
   describe "applying the authorized? method" do
     it "halts on unauthorized objects" do
       query = "{ unauthorizedObject { __typename } }"
-      hidden_response = AuthTest::Schema.execute(query, context: { hide: true })
+      hidden_response = auth_execute(query, context: { hide: true })
       assert_nil hidden_response["data"].fetch("unauthorizedObject")
-      visible_response = AuthTest::Schema.execute(query, context: {})
+      visible_response = auth_execute(query, context: {})
       assert_equal({ "__typename" => "UnauthorizedObject" }, visible_response["data"]["unauthorizedObject"])
     end
 
     it "halts on unauthorized mutations" do
       query = "mutation { doUnauthorizedStuff(input: {}) { __typename } }"
-      res = AuthTest::Schema.execute(query, context: { unauthorized_mutation: true })
+      res = auth_execute(query, context: { unauthorized_mutation: true })
       assert_nil res["data"].fetch("doUnauthorizedStuff")
       # TODO assert top-level error is present
       assert_raises NotImplementedError do
-        AuthTest::Schema.execute(query)
+        auth_execute(query)
       end
     end
 
     it "halts on unauthorized fields, using the parent object" do
       query = "{ unauthorized }"
-      hidden_response = AuthTest::Schema.execute(query, root_value: :hide)
+      hidden_response = auth_execute(query, root_value: :hide)
       assert_nil hidden_response["data"].fetch("unauthorized")
       # TODO assert that error is present?
-      visible_response = AuthTest::Schema.execute(query, root_value: 1)
+      visible_response = auth_execute(query, root_value: 1)
       assert_equal 1, visible_response["data"]["unauthorized"]
     end
 
     it "halts on unauthorized arguments, using the parent object" do
       query = "{ int2(unauthorized: 5) }"
-      hidden_response = AuthTest::Schema.execute(query, root_value: :hide2)
+      hidden_response = auth_execute(query, root_value: :hide2)
       assert_nil hidden_response["data"].fetch("int2")
       # TODO assert that error is present?
-      visible_response = AuthTest::Schema.execute(query)
+      visible_response = auth_execute(query)
       assert_equal 5, visible_response["data"]["int2"]
     end
 
-    it "works with edges and connections"
+    it "works with edges and connections" do
+      skip <<-MSG
+        This doesn't work because edge and connection type definitions
+        aren't class-based, and authorization is checked during class-based field execution.
+      MSG
+      query = <<-GRAPHQL
+      {
+        unauthorizedConnection { __typename }
+        unauthorizedEdge { __typename }
+      }
+      GRAPHQL
+
+      unauthorized_res = auth_execute(query, context: { unauthorized_relay: true })
+      assert_nil unauthorized_res["data"].fetch("unauthorizedConnection")
+      assert_nil unauthorized_res["data"].fetch("unauthorizedEdge")
+
+      authorized_res = auth_execute(query)
+      assert_nil authorized_res["data"].fetch("unauthorizedConnection").fetch("__typename")
+      assert_nil authorized_res["data"].fetch("unauthorizedEdge").fetch("__typename")
+    end
   end
 end

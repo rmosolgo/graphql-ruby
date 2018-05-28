@@ -843,42 +843,15 @@ module GraphQL
 
       # Override this to filter out items in the schema
       def visible?(member, context)
-        # TODO: make legacy objects respond to visible, remove this check
-        member = if member.respond_to?(:metadata)
-          member.metadata[:type_class] || member
-        else
-          member
-        end
-
-        member.respond_to?(:visible?) ? member.visible?(context) : true
+        call_on_type_class(member, :visible?, context, default: true)
       end
 
       def accessible?(member, context)
-        member = if member.respond_to?(:metadata)
-          member.metadata[:type_class] || member
-        else
-          member
-        end
-
-        if member.respond_to?(:accessible?)
-          member.accessible?(context)
-        else
-          true
-        end
+        call_on_type_class(member, :accessible?, context, default: true)
       end
 
       def authorized?(object, member, context)
-        member = if member.respond_to?(:metadata)
-          member.metadata[:type_class] || member
-        else
-          member
-        end
-
-        if member.respond_to?(:authorized?)
-          member.authorized?(object, context)
-        else
-          true
-        end
+        call_on_type_class(member, :authorized?, object, context, default: true)
       end
 
       def type_error(type_err, ctx)
@@ -950,6 +923,29 @@ module GraphQL
 
       def defined_multiplex_analyzers
         @defined_multiplex_analyzers ||= []
+      end
+
+      # Given this schema member, find the class-based definition object
+      # whose `method_name` should be treated as an application hook
+      # @see {.visible?}
+      # @see {.accessible?}
+      # @see {.authorized?}
+      def call_on_type_class(member, method_name, *args, default:)
+        member = if member.respond_to?(:metadata)
+          member.metadata[:type_class] || member
+        else
+          member
+        end
+
+        if member.respond_to?(:relay_node_type) && (t = member.relay_node_type)
+          member = t
+        end
+
+        if member.respond_to?(method_name)
+          member.public_send(method_name, *args)
+        else
+          default
+        end
       end
     end
 

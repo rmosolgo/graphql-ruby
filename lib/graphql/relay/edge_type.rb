@@ -9,6 +9,7 @@ module GraphQL
           description "An edge in a connection."
           field :node, wrapped_type, "The item at the end of the edge."
           field :cursor, !types.String, "A cursor for use in pagination."
+          relay_node_type(wrapped_type)
           block && instance_eval(&block)
         end
       end
