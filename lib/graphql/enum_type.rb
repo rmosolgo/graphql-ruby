@@ -57,7 +57,7 @@ module GraphQL
   #   }
   #
   # @example Enum whose values are different in ActiveRecord-land
-  #   class Language < ActiveRecord::BaseType
+  #   class Language < ActiveRecord::Base
   #     enum language: {
   #       rb: 0
   #     }
