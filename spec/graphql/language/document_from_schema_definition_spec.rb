@@ -17,6 +17,7 @@ describe GraphQL::Language::DocumentFromSchemaDefinition do
         four(argument: String = "string"): String
         five(argument: [String] = ["string", "string"]): String
         six(argument: String): Type
+        seven: Union
       }
 
       interface Bar {
@@ -71,6 +72,7 @@ describe GraphQL::Language::DocumentFromSchemaDefinition do
           four(argument: String = "string"): String
           five(argument: [String] = ["string", "string"]): String
           six(argument: String): Type
+          seven: Union
         }
 
         interface Bar {
@@ -120,6 +122,7 @@ describe GraphQL::Language::DocumentFromSchemaDefinition do
           four(argument: String = "string"): String
           five(argument: [String] = ["string", "string"]): String
           six(argument: String): Type
+          seven: Union
         }
 
         interface Bar {
@@ -176,6 +179,7 @@ describe GraphQL::Language::DocumentFromSchemaDefinition do
           four(argument: String = "string"): String
           five(argument: [String] = ["string", "string"]): String
           six(argument: String): Type
+          seven: Union
         }
 
         interface Bar {
@@ -340,6 +344,7 @@ describe GraphQL::Language::DocumentFromSchemaDefinition do
           four(argument: String = "string"): String
           five(argument: [String] = ["string", "string"]): String
           six(argument: String): Type
+          seven: Union
         }
 
         interface Bar {
@@ -409,6 +414,7 @@ describe GraphQL::Language::DocumentFromSchemaDefinition do
           four(argument: String = "string"): String
           five(argument: [String] = ["string", "string"]): String
           six(argument: String): Type
+          seven: Union
         }
 
         interface Bar {
@@ -580,6 +586,7 @@ describe GraphQL::Language::DocumentFromSchemaDefinition do
           four(argument: String = "string"): String
           five(argument: [String] = ["string", "string"]): String
           six(argument: String): Type
+          seven: Union
         }
 
         interface Bar {
