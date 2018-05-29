@@ -343,8 +343,8 @@ rule
       }
 
   union_members:
-      name                    { return [make_node(:TypeName, name: val[0])]}
-    | union_members PIPE name { val[0] << make_node(:TypeName, name: val[2]) }
+      name                    { return [make_node(:TypeName, name: val[0], position_source: val[0])]}
+    | union_members PIPE name { val[0] << make_node(:TypeName, name: val[2], position_source: val[2]) }
 
   union_type_definition:
       UNION name directives_list_opt EQUALS union_members {
