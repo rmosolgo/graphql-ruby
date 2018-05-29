@@ -47,17 +47,6 @@ REASON
       field :id, !types.ID
     end
 
-    post_type = GraphQL::ObjectType.define do
-      name "Post"
-      description "A blog post"
-
-      field :id, !types.ID
-      field :title, !types.String
-      field :body, !types.String
-      field :comments, types[!comment_type]
-      field :comments_count, !types.Int, deprecation_reason: 'Use "comments".'
-    end
-
     audio_type = GraphQL::ObjectType.define do
       name "Audio"
 
@@ -80,6 +69,18 @@ REASON
       description "Media objects"
 
       possible_types [image_type, audio_type]
+    end
+
+    post_type = GraphQL::ObjectType.define do
+      name "Post"
+      description "A blog post"
+
+      field :id, !types.ID
+      field :title, !types.String
+      field :body, !types.String
+      field :comments, types[!comment_type]
+      field :comments_count, !types.Int, deprecation_reason: 'Use "comments".'
+      field :media, types[!media_union_type]
     end
 
     query_root = GraphQL::ObjectType.define do
@@ -128,7 +129,6 @@ REASON
       mutation: mutation_root,
       subscription: subscription_root,
       resolve_type: ->(a,b,c) { :pass },
-      orphan_types: [media_union_type]
     )
   }
 
@@ -443,6 +443,7 @@ type Post {
   comments: [Comment!]
   comments_count: Int! @deprecated(reason: "Use \\\"comments\\\".")
   id: ID!
+  media: [Media!]
   title: String!
 }
 
@@ -591,6 +592,7 @@ type Post {
   body: String!
   comments: [Comment!]
   id: ID!
+  media: [Media!]
   title: String!
 }
 
@@ -624,6 +626,7 @@ type Post {
   comments: [Comment!]
   comments_count: Int! @deprecated(reason: "Use \\\"comments\\\".")
   id: ID!
+  media: [Media!]
   title: String!
 }
 SCHEMA
