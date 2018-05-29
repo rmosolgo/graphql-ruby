@@ -411,6 +411,7 @@ describe GraphQL::Schema::Warden do
       "
 
       schema = GraphQL::Schema.from_definition(sdl)
+      schema.orphan_types = []
 
       query_string = %|
         {
@@ -431,10 +432,14 @@ describe GraphQL::Schema::Warden do
       res = schema.execute(query_string, except: ->(m, _) { m.name == "bag" })
       assert_nil res["data"]["BagOfThings"]
       assert_equal [], res["data"]["Query"]["fields"]
+
+      # Unreferenced but still visible because orphan type
+      schema.orphan_types = [schema.find("BagOfThings")]
+      res = schema.execute(query_string, except: ->(m, _) { m.name == "bag" })
+      assert res["data"]["BagOfThings"]
     end
 
-
-    it "hides unions if all possible types are hidden or its references are hidden" do
+    it "hides interfaces if all possible types are hidden or its references are hidden" do
       sdl = "
         type Query {
           node: Node

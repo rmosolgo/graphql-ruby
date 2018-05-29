@@ -141,7 +141,7 @@ module GraphQL
         return true if type_defn.introspection?
 
         if type_defn.kind.union?
-          visible_possible_types?(type_defn) && referenced?(type_defn)
+          visible_possible_types?(type_defn) && (referenced?(type_defn) || orphan_type?(type_defn))
         elsif type_defn.kind.interface?
           visible_possible_types?(type_defn)
         else
@@ -156,6 +156,10 @@ module GraphQL
       def referenced?(type_defn)
         members = @schema.references_to(type_defn.unwrap.name)
         members.any? { |m| visible?(m) }
+      end
+
+      def orphan_type?(type_defn)
+        @schema.orphan_types.include?(type_defn)
       end
 
       def visible_abstract_type?(type_defn)
