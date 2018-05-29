@@ -1651,14 +1651,14 @@ module_eval(<<'.,.,', 'parser.y', 341)
 
 module_eval(<<'.,.,', 'parser.y', 345)
   def _reduce_141(val, _values, result)
-     return [make_node(:TypeName, name: val[0])]
+     return [make_node(:TypeName, name: val[0], position_source: val[0])]
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 346)
   def _reduce_142(val, _values, result)
-     val[0] << make_node(:TypeName, name: val[2]) 
+     val[0] << make_node(:TypeName, name: val[2], position_source: val[2]) 
     result
   end
 .,.,
