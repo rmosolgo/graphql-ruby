@@ -446,13 +446,27 @@ module Jazz
     end
   end
 
+  class AddSitar < GraphQL::Schema::Mutation
+    null true
+    description "Get Sitar to musical instrument"
+
+    field :instrument, InstrumentType, null: false
+    extras [:execution_errors]
+
+    def resolve
+      instrument = Models::Instrument.new("Sitar", :str)
+      { instrument: instrument, ee: execution_errors.class.name}
+    end
+  end
+
   class Mutation < BaseObject
     field :add_ensemble, Ensemble, null: false do
       argument :input, EnsembleInput, required: true
     end
 
     field :add_instrument, mutation: AddInstrument
-
+    field :add_sitar, mutation: AddSitar
+    
     def add_ensemble(input:)
       ens = Models::Ensemble.new(input.name)
       Models.data["Ensemble"] << ens
