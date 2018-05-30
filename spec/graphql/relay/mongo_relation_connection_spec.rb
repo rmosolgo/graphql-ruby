@@ -1,7 +1,18 @@
 # frozen_string_literal: true
 require 'spec_helper'
 
-describe GraphQL::Relay::RelationConnection do
+if MONGO_DETECTED
+  require "support/star_trek/data"
+  require "support/star_trek/schema"
+end
+
+describe GraphQL::Relay::MongoRelationConnection do
+  before do
+    if !MONGO_DETECTED
+      skip("Mongo not detected")
+    end
+  end
+
   def get_names(result)
     ships = result["data"]["federation"]["bases"]["edges"]
     ships.map { |e| e["node"]["name"] }
