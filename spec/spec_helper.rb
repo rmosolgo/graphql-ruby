@@ -38,7 +38,7 @@ MONGO_DETECTED = begin
     )
     .database
     .collections
-rescue StandardError, LoadError => err
+rescue StandardError, LoadError => err # rubocop:disable Lint/UselessAssignment
   # puts err.message, err.backtrace
   false
 end
