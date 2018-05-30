@@ -29,6 +29,7 @@ require "minitest/focus"
 require "minitest/reporters"
 
 MONGO_DETECTED = begin
+  require "mongo"
   Mongo::Client.new('mongodb://127.0.0.1:27017/graphql_ruby_test',
       connect_timeout: 1,
       socket_timeout: 1,
@@ -37,8 +38,8 @@ MONGO_DETECTED = begin
     )
     .database
     .collections
-rescue Mongo::Error => err
-  puts err.message, err.backtrace
+rescue StandardError, LoadError => err
+  # puts err.message, err.backtrace
   false
 end
 
