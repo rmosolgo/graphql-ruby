@@ -56,7 +56,7 @@ end
 # Then, in concrete classes
 class Dossier < BaseObject
   # The Dossier object type will have `.metadata[:required_permission] # => :admin`
-  permission_level :admin
+  required_permission :admin
 end
 ```
 
