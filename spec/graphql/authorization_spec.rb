@@ -3,6 +3,13 @@ require "spec_helper"
 
 describe GraphQL::Authorization do
   module AuthTest
+    class Box
+      attr_reader :value
+      def initialize(value:)
+        @value = value
+      end
+    end
+
     class BaseArgument < GraphQL::Schema::Argument
       def visible?(context)
         super && (context[:hide] ? @name != "hidden" : true)
@@ -118,6 +125,15 @@ describe GraphQL::Authorization do
       end
     end
 
+    class UnauthorizedBox < BaseObject
+      # Hide `"a"`
+      def self.authorized?(value, context)
+        super && value != "a"
+      end
+
+      field :value, String, null: false, method: :object
+    end
+
     class Query < BaseObject
       field :hidden, Integer, null: false
       field :unauthorized, Integer, null: true, method: :object
@@ -149,6 +165,13 @@ describe GraphQL::Authorization do
       field :unauthorized_object, UnauthorizedObject, null: true, method: :itself
       field :unauthorized_connection, RelayObject.connection_type, null: :false, method: :empty_array
       field :unauthorized_edge, RelayObject.edge_type, null: :false, method: :itself
+      field :unauthorized_lazy_box, UnauthorizedBox, null: true do
+        argument :value, String, required: true
+      end
+
+      def unauthorized_lazy_box(value:)
+        Box.new(value: value)
+      end
     end
 
     class DoHiddenStuff < GraphQL::Schema::RelayClassicMutation
@@ -178,6 +201,8 @@ describe GraphQL::Authorization do
     class Schema < GraphQL::Schema
       query(Query)
       mutation(Mutation)
+
+      lazy_resolve(Box, :value)
     end
   end
 
@@ -388,6 +413,19 @@ describe GraphQL::Authorization do
       authorized_res = auth_execute(query)
       assert_nil authorized_res["data"].fetch("unauthorizedConnection").fetch("__typename")
       assert_nil authorized_res["data"].fetch("unauthorizedEdge").fetch("__typename")
+    end
+
+    it "authorizes _after_ resolving lazy objects" do
+      query = <<-GRAPHQL
+      {
+        a: unauthorizedLazyBox(value: "a") { value }
+        b: unauthorizedLazyBox(value: "b") { value }
+      }
+      GRAPHQL
+
+      unauthorized_res = auth_execute(query)
+      assert_nil unauthorized_res["data"].fetch("a")
+      assert_equal "b", unauthorized_res["data"]["b"]["value"]
     end
   end
 end
