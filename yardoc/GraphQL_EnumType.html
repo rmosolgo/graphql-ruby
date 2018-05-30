@@ -14,8 +14,8 @@ that identify them, but you can provide a custom Ruby value with the
 Examples:</p>
 <h1 id="an-enum-of-programming-languages">An enum of programming languages</h1>
 <p>LanguageEnum = GraphQL::EnumType.define do
-name “Languages”
-description “Programming languages for Web projects”
+name “Language”
+description “Programming language for Web projects”
 value(“PYTHON”, “A dynamic, function-oriented language”)
 value(“RUBY”, “A very dynamic language aimed at programmer happiness”)
 value(“JAVASCRIPT”, “Accidental lingua franca of the web”)
@@ -53,7 +53,7 @@ resolve -&gt;(obj, args, ctx) {
 args[:favoriteLanguage] # =&gt; :rb
 }</p>
 <h1 id="enum-whose-values-are-different-in-activerecord-land">Enum whose values are different in ActiveRecord-land</h1>
-<p>class Language &lt; ActiveRecord::BaseType
+<p>class Language &lt; ActiveRecord::Base
 enum language: {
 rb: 0
 }
