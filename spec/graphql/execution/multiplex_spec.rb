@@ -92,7 +92,7 @@ describe GraphQL::Execution::Multiplex do
         },
         {
           "errors" => [{
-            "message"=>"Objects must have selections (field 'nullableNestedSum' returns LazySum but has no selections)",
+            "message"=>"Field must have selections (field 'nullableNestedSum' returns LazySum but has no selections. Did you mean 'nullableNestedSum { ... }'?)",
             "locations"=>[{"line"=>1, "column"=>4}],
             "fields"=>["query", "validationError"]
           }]
