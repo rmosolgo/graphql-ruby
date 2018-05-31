@@ -45,6 +45,7 @@ Gem::Specification.new do |s|
 
   # website stuff
   s.add_development_dependency "jekyll"
+  s.add_development_dependency "jekyll-redirect-from"
   s.add_development_dependency "yard"
   s.add_development_dependency 'algoliasearch-jekyll'
 end

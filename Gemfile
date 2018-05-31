@@ -11,7 +11,3 @@ gem 'mongoid'
 gem 'pry'
 gem 'pry-stack_explorer', platform: :ruby
 gem 'activerecord-jdbcsqlite3-adapter', platform: :jruby
-
-group :jekyll_plugins do
-  gem 'algoliasearch-jekyll'
-end

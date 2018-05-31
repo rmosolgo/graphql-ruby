@@ -75,6 +75,8 @@ end
 
 The `#resolve` method should return a hash whose symbols match the `field` names.
 
+(See {% internal_link "Mutation Errors", "/mutations/mutation_errors" %} for more information about returning errors.)
+
 ## Hooking up mutations
 
 Mutations must be attached to the mutation root using the `mutation:` keyword, for example:
