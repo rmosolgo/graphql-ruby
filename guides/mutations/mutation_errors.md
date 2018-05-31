@@ -45,8 +45,8 @@ class Types::UserError < Types::BaseObject
 
   field :message, String, null: false,
     description: "A description of the error"
-  field :attribute, String, null: false,
-    description: "Which input attribute this error came from"
+  field :path, [String], null: true,
+    description: "Which input value this error came from"
 end
 ```
 
@@ -72,8 +72,10 @@ def resolve(id:, attributes:)
   else
     # Convert Rails model errors into GraphQL-ready error hashes
     user_errors = post.errors.map do |attribute, message|
+      # This is the GraphQL argument which corresponds to the validation error:
+      path = ["attributes", attribute.camelize]
       {
-        attribute: attribute,
+        path: path,
         message: message,
       }
     end
@@ -99,8 +101,24 @@ mutation($postId: ID!, $postAttributes: PostAttributes!) {
     }
     # In case of failure, there will be errors in this list:
     errors {
-      attribute
+      path
       message
+    }
+  }
+}
+```
+
+In case of a failure, you might get a response like:
+
+```ruby
+{
+  "data" => {
+    "createPost" => {
+      "post" => nil,
+      "errors" => [
+        { "message" => "Title can't be blank", "path" => ["attributes", "title"] },
+        { "message" => "Body can't be blank", "path" => ["attributes", "body"] }
+      ]
     }
   }
 }
