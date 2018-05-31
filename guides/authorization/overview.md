@@ -91,7 +91,7 @@ def posts
 end
 ```
 
-The downside of this is that, when `Types::Post` is queried in other contexts, the same authorization check may not be applied. Additionally, since the authorization code is couple with the GraphQL API, the only way to test it is via GraphQL queries, which adds some complexity to tests.
+The downside of this is that, when `Types::Post` is queried in other contexts, the same authorization check may not be applied. Additionally, since the authorization code is coupled with the GraphQL API, the only way to test it is via GraphQL queries, which adds some complexity to tests.
 
 Alternatively, you could move the authorization to your business logic, the `Post` class:
 
