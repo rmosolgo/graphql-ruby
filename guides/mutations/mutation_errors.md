@@ -107,3 +107,23 @@ mutation($postId: ID!, $postAttributes: PostAttributes!) {
 ```
 
 Then, client apps can show the error messages to end users, so they might correct the right fields in a form, for example.
+
+## Nullable Mutation Payload Fields
+
+To benefit from "Errors as Data" described above, mutation fields must have `null: true`. Why?
+
+Well, for _non-null_ fields (which have `null: false`), if they return `nil`, then GraphQL aborts the query and removes those fields from the response altogether.
+
+In mutations, when errors happen, the other fields may return `nil`. So, if those other fields have `null: false`, but they return `nil`, the GraphQL will panic and remove the whole mutation from the response, _including_ the errors!
+
+In order to have the rich error data, even when other fields are `nil`, those fields must have `null: true` so that the type system can be obeyed when errors happen.
+
+Here's an example of a nullable field (good!):
+
+```ruby
+class Mutations::UpdatePost < Mutations::BaseMutation
+  # Use `null: true` to support rich errors:
+  field :post, Types::Post, null: true
+  # ...
+end
+```

@@ -37,7 +37,7 @@ While GraphQL-Ruby is executing a query, some constraints must be satisfied. For
 - Non-null fields may not return `nil`.
 - Interface and union types must resolve objects to types that belong to that interface/union.
 
-These constraints are part of the GraphQL specification, and when they are violated, it must be addressed somehow. Read more in {% internal_link "Invariants", "/errors/invariants" %}.
+These constraints are part of the GraphQL specification, and when they are violated, it must be addressed somehow. Read more in {% internal_link "Type Errors", "/errors/type_errors" %}.
 
 ## Top-level `"errors"`
 

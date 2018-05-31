@@ -7,9 +7,9 @@ desc: A conceptual introduction to errors in GraphQL
 index: 3
 ---
 
-The GraphQL specification _requires_ certain assumptions to hold true when executing a query. These assumptions are called _invariants_.
+The GraphQL specification _requires_ certain assumptions to hold true when executing a query. However, it's possible that some code would violate that assumption, resulting in a type error.
 
-Here are two invariant violations that you can customize in GraphQL-Ruby:
+Here are two type errors that you can customize in GraphQL-Ruby:
 
 - A field with `null: false` returned `nil`
 - A field returned a value as a union or interface, but that value couldn't be resolved to a member of that union or interface.
