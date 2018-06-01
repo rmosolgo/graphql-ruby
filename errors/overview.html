@@ -1,0 +1,125 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+      <title>GraphQL - Errors in GraphQL</title>
+    
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="icon" href="/graphql-ruby-icon.png">
+  </head>
+  <body>
+    <div class="header">
+      <div class="header-container">
+        <div class="nav">
+          <a href="/" class="img-link">
+            <img src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+          </a>
+          <a href="/getting_started">Get Started</a>
+          <a href="/guides">Guides</a>
+          <a href="/api-doc/1.8.0/">API</a>
+          <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
+          <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+          <input
+            class="search-input"
+            onkeyup="GraphQLRubySearch.run(this)"
+            type="text"
+            placeholder="Search the docs..."
+          />
+        </div>
+      </div>
+      <div class="search-results-container">
+        <div id="search-results"></div>
+      </div>
+    </div>
+    <div class="container">
+      <p class="breadcrumb">
+  <a href="/">GraphQL</a>
+  &raquo; <a href="/guides">Guides</a>
+   &raquo; <a href="/guides#errors-guides">Errors</a>
+  &raquo; Errors in GraphQL
+</p>
+
+
+
+<h1 class="guide-header">Errors in GraphQL</h1>
+<div class="guide-container">
+  <p>There are a <em>lot</em> of different kinds of errors in GraphQL! In this guide, we’ll discuss some of the main categories and learn when they apply.</p>
+
+<h2 id="validation-errors">Validation Errors</h2>
+
+<p>Because GraphQL is strongly typed, it performs validation of all queries before executing them. If an incoming query is invalid, it isn’t executed. Instead, a response is sent back with <code class="highlighter-rouge">"errors"</code>:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span>
+  <span class="s2">"errors"</span> <span class="o">=&gt;</span> <span class="p">[</span> <span class="o">...</span> <span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Each error has a message, line, column and path.</p>
+
+<p>The validation rules are part of the GraphQL specification and built into GraphQL-Ruby, so there’s not really a way to customize this behavior, except to pass <code class="highlighter-rouge">validate: false</code> when executing a query, which skips validation altogether.</p>
+
+<h2 id="analysis-errors">Analysis Errors</h2>
+
+<p>GraphQL-Ruby supports pre-execution analysis, which may return <code class="highlighter-rouge">"errors"</code> instead of running a query. You can find details in the <a href="/queries/analysis">Analysis guide</a>.</p>
+
+<h2 id="graphql-invariants">GraphQL Invariants</h2>
+
+<p>While GraphQL-Ruby is executing a query, some constraints must be satisfied. For example:</p>
+
+<ul>
+  <li>Non-null fields may not return <code class="highlighter-rouge">nil</code>.</li>
+  <li>Interface and union types must resolve objects to types that belong to that interface/union.</li>
+</ul>
+
+<p>These constraints are part of the GraphQL specification, and when they are violated, it must be addressed somehow. Read more in <a href="/errors/type_errors">Type Errors</a>.</p>
+
+<h2 id="top-level-errors">Top-level <code class="highlighter-rouge">"errors"</code></h2>
+
+<p>The GraphQL specification provides for a top-level <code class="highlighter-rouge">"errors"</code> key which may include information about errors during query execution. <code class="highlighter-rouge">"errors"</code> and <code class="highlighter-rouge">"data"</code> may <em>both</em> be present in the case of a partial success.</p>
+
+<p>In your own schema, you can add to the <code class="highlighter-rouge">"errors"</code> key by raising <code class="highlighter-rouge">GraphQL::ExecutionError</code> (or subclasses of it) in your code. Read more in the <a href="/errors/execution_errors">Execution Errors guide</a>.</p>
+
+<h2 id="unhandled-errors-crashes">Unhandled Errors (Crashes)</h2>
+
+<p>When a <code class="highlighter-rouge">raise</code>d error is not <code class="highlighter-rouge">rescue</code>d, the GraphQL query crashes entirely and the surrounding code (like a Rails controller) must handle the exception.</p>
+
+<p>For example, Rails will probably return a generic <code class="highlighter-rouge">500</code> page.</p>
+
+<h2 id="errors-as-data">Errors as Data</h2>
+
+<p>When you want end users (human beings) to read error messages, you can express errors <em>in the schema</em>, using normal GraphQL fields and types. In this approach, errors are strongly-typed data, queryable in the schema, like any other application data.</p>
+
+<p>For more about this approach, see <a href="/mutations/mutation_errors">Mutation Errors</a></p>
+
+</div>
+<p class="guide-footer">
+  Suggestion, improvement, or correction?
+  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/errors/overview.md">Edit this file</a> or
+  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: Errors in GraphQL">report an issue</a>.
+</p>
+<script>
+  // Find headers with IDs and wrap their text in `<a href=></a>`
+  // That way people can easily copy the link.
+  var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+  var header, idText, headerLink;
+  for (var i = 0; i < headers.length; i++) {
+    header = headers[i];
+    idText = header.id;
+    if (idText) {
+      headerLink = document.createElement("a");
+      headerLink.href = "#" + idText;
+      headerLink.textContent = header.textContent;
+      header.textContent = "";
+      header.appendChild(headerLink);
+    }
+  }
+</script>
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/algoliasearch/3/algoliasearchLite.min.js"></script>
+    <script src="/js/search.js"></script>
+  </body>
+</html>

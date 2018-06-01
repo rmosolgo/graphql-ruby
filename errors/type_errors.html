@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     
-      <title>GraphQL - Handing Typecasting Errors</title>
+      <title>GraphQL - Errors in GraphQL</title>
     
     <link href="https://fonts.googleapis.com/css?family=Rubik:300,400" rel="stylesheet" />
     <link rel="stylesheet" href="/css/main.css">
@@ -38,27 +38,29 @@
       <p class="breadcrumb">
   <a href="/">GraphQL</a>
   &raquo; <a href="/guides">Guides</a>
-   &raquo; <a href="/guides#schema-guides">Schema</a>
-  &raquo; Handing Typecasting Errors
+   &raquo; <a href="/guides#errors-guides">Errors</a>
+  &raquo; Errors in GraphQL
 </p>
 
 
 
-<h1 class="guide-header">Handing Typecasting Errors</h1>
+<h1 class="guide-header">Errors in GraphQL</h1>
 <div class="guide-container">
-  <p>In some cases, runtime data can cause GraphQL execution to reach an invalid state:</p>
+  <p>The GraphQL specification <em>requires</em> certain assumptions to hold true when executing a query. However, it’s possible that some code would violate that assumption, resulting in a type error.</p>
+
+<p>Here are two type errors that you can customize in GraphQL-Ruby:</p>
 
 <ul>
-  <li>A <code class="highlighter-rouge">resolve</code> function returned <code class="highlighter-rouge">nil</code> for a non-null type</li>
-  <li>A <code class="highlighter-rouge">resolve</code> function’s value couldn’t be resolved to a valid Union or Interface member (<a href="/api-doc/1.8.0/GraphQL/Schema#resolve_type-instance_method" target="_blank" title="API docs for GraphQL::Schema#resolve_type"><code>Schema#resolve_type</code></a> returned an unexpected value)</li>
+  <li>A field with <code class="highlighter-rouge">null: false</code> returned <code class="highlighter-rouge">nil</code></li>
+  <li>A field returned a value as a union or interface, but that value couldn’t be resolved to a member of that union or interface.</li>
 </ul>
 
-<p>You can specify behavior in these cases by defining a <a href="/api-doc/1.8.0/GraphQL/Schema#type_error-instance_method" target="_blank" title="API docs for GraphQL::Schema#type_error"><code>Schema#type_error</code></a> hook:</p>
+<p>You can specify behavior in these cases by defining a <a href="/api-doc/1.8.0/GraphQL/Schema#type_error-class_method" target="_blank" title="API docs for GraphQL::Schema.type_error"><code>Schema.type_error</code></a> hook:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
-  <span class="n">type_error</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">type_error</span><span class="p">,</span> <span class="n">query_ctx</span><span class="p">)</span> <span class="p">{</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
+  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">type_error</span><span class="p">(</span><span class="n">err</span><span class="p">,</span> <span class="n">query_ctx</span><span class="p">)</span>
     <span class="c1"># Handle a failed runtime type coercion</span>
-  <span class="p">}</span>
+  <span class="k">end</span>
 <span class="k">end</span>
 </code></pre></div></div>
 
@@ -76,8 +78,8 @@
 </div>
 <p class="guide-footer">
   Suggestion, improvement, or correction?
-  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/schema/type_errors.md">Edit this file</a> or
-  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: Handing Typecasting Errors">report an issue</a>.
+  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/errors/type_errors.md">Edit this file</a> or
+  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: Errors in GraphQL">report an issue</a>.
 </p>
 <script>
   // Find headers with IDs and wrap their text in `<a href=></a>`
