@@ -44,7 +44,7 @@ module GraphQL
 
         # Wrap the proc with subscription registration logic
         def call(obj, args, ctx)
-          @inner_proc.call(obj, args, ctx) if @inner_proc
+          @inner_proc.call(obj, args, ctx) if @inner_proc && !@inner_proc.is_a?(GraphQL::Field::Resolve::BuiltInResolve)
 
           events = ctx.namespace(:subscriptions)[:events]
 
