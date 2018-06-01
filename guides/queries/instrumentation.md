@@ -1,6 +1,7 @@
 ---
 title: Instrumentation
 layout: guide
+doc_stub: false
 search: true
 section: Queries
 desc: Wrap query execution with custom logic

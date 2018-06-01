@@ -1,5 +1,6 @@
 ---
 layout: guide
+doc_stub: false
 search: true
 section: Type Definitions
 title: Extending the GraphQL-Ruby Type Definition System

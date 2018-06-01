@@ -1,6 +1,7 @@
 ---
 title: Complexity & Depth
 layout: guide
+doc_stub: false
 search: true
 section: Queries
 desc: Limiting query depth and field selections

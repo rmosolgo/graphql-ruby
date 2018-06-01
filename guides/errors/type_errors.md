@@ -1,9 +1,10 @@
 ---
 layout: guide
+doc_stub: false
 search: true
 section: Errors
-title: Errors in GraphQL
-desc: A conceptual introduction to errors in GraphQL
+title: Type Errors
+desc: Handling type errors
 index: 3
 ---
 

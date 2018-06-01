@@ -1,5 +1,6 @@
 ---
 layout: guide
+doc_stub: false
 search: true
 section: Queries
 title: Ahead-of-Time Analysis

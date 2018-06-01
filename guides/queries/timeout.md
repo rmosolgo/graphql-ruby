@@ -1,6 +1,7 @@
 ---
 title: Timeout
 layout: guide
+doc_stub: false
 search: true
 section: Queries
 desc: Cutting off GraphQL execution

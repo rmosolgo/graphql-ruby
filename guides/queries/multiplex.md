@@ -1,6 +1,7 @@
 ---
 title: Multiplex
 layout: guide
+doc_stub: false
 search: true
 section: Queries
 desc: Run multiple queries concurrently

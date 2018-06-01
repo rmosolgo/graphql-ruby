@@ -27,5 +27,5 @@ algolia:
   index_name:     'prod_graphql_ruby'
 
 plugins:
-  - algoliasearch-jekyll
-  - jekyll-redirect-from
+- jekyll-algolia
+- jekyll-redirect-from

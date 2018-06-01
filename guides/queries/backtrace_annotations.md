@@ -1,6 +1,7 @@
 ---
 title: Backtrace Annotations
 layout: guide
+doc_stub: false
 search: true
 section: Queries
 desc: Use the GraphQL backtrace for debugging

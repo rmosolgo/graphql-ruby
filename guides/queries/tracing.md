@@ -1,6 +1,7 @@
 ---
 title: Tracing
 layout: guide
+doc_stub: false
 search: true
 section: Queries
 desc: Observation hooks for execution
