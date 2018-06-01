@@ -155,7 +155,7 @@ class FromDefinitionInMemoryBackend < InMemoryBackend
     payload(id: ID!): Payload!
     event(stream: StreamInput): Payload
     myEvent(type: PayloadType): Payload
-    failedEvent(id: ID!): Payload
+    failedEvent(id: ID!): Payload!
   }
 
   type Payload {
@@ -423,7 +423,7 @@ describe GraphQL::Subscriptions do
           }
             GRAPHQL
 
-            # assert_equal nil, res["data"] # TODO: data is not nil for `FromDefinitionInMemoryBackend`
+            assert_equal nil, res["data"]
             assert_equal "unauthorized", res["errors"][0]["message"]
 
             # this is to make sure nothing actually got subscribed.. but I don't have any idea better than checking its instance variable
