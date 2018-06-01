@@ -278,7 +278,7 @@ describe GraphQL::ExecutionError do
       executionErrorWithExtensions
     }
     |}
-    it "the error is inserted into the errors key and the rest of the query is fulfilled" do
+    it "the error is inserted into the errors key with custom data set in `extensions`" do
       expected_result = {
         "data"=>{"executionErrorWithExtensions"=>nil},
         "errors"=>
