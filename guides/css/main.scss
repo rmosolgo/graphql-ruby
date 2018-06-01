@@ -98,7 +98,7 @@ pre {
   border: 1px solid $code-border;
   border-radius: $code-border-radius;
   background-color: $code-background;
-  margin: 20px 0px;
+  margin: 10px 0px;
   overflow-x: scroll;
   line-height: 1.4rem;
 }
@@ -109,6 +109,7 @@ p, li {
 
 li {
   margin-left: 15px;
+  margin-top: 15px
 }
 
 p, ul {
@@ -117,7 +118,7 @@ p, ul {
 
 ul {
   list-style-type: disc;
-  list-style-position: inside;
+  list-style-position: outside;
 }
 
 code {
