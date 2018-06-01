@@ -254,6 +254,45 @@ describe GraphQL::Query::Arguments do
     end
   end
 
+  describe "#to_kwargs" do
+    it "returns a hash with keys that are valid ruby keyword arguments" do
+      assert_equal([:a, :b, :input_object], arguments.to_kwargs.keys)
+    end
+
+    it "returns nested values as hashes" do
+      assert_instance_of Hash, arguments.to_kwargs[:input_object]
+      pp arguments.to_kwargs
+    end
+
+    describe "recursive nested" do
+      let(:arguments) {
+        class TestInputA < GraphQL::Schema::InputObject
+          graphql_name "TestInput1"
+          argument :d, Int, required: true
+          argument :e, Int, required: true
+        end
+
+        class TestInputB < GraphQL::Schema::InputObject
+          graphql_name "TestInput2"
+          argument :a, Int, required: true
+          argument :b, Int, required: true
+          argument :c, [TestInputA], as: :inputObject, required: true
+        end
+
+        GraphQL::Query::Arguments.construct_arguments_class(TestInputA)
+        GraphQL::Query::Arguments.construct_arguments_class(TestInputB)
+        arg_values = {a: 1, b: 2, c: [{ d: 3, e: 4 }]}
+        TestInputB.arguments_class.new(arg_values, context: nil, defaults_used: Set.new)
+      }
+
+      it "returns nested values as hashes" do
+        assert_instance_of Array, arguments.to_kwargs[:input_object]
+        assert_instance_of Hash, arguments.to_kwargs[:input_object].first
+        pp arguments.to_kwargs
+      end
+    end
+  end
+
   describe "prepare" do
     let(:arg_values) { [] }
     let(:schema) {

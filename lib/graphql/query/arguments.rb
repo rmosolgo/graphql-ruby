@@ -108,10 +108,14 @@ module GraphQL
         ruby_kwargs = {}
 
         keys.each do |key|
-          ruby_kwargs[Schema::Member::BuildType.underscore(key).to_sym] = self[key]
+          value = unwrap_value(self[key])
+          ruby_kwargs[Schema::Member::BuildType.underscore(key).to_sym] = value
         end
+        pp ruby_kwargs
 
-        ruby_kwargs
+        return ruby_kwargs
+        # puts "%" * 80
+        # pp Hash[to_h.map { |(key, value)| [Schema::Member::BuildType.underscore(key).to_sym, value] }]
       end
 
       private
@@ -168,7 +172,7 @@ module GraphQL
         when GraphQL::Query::Arguments
           value.to_h
         else
-          value
+          value.try(:to_h) || value
         end
       end
     end
