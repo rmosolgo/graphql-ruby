@@ -8,6 +8,26 @@
 
 ### Bug fixes
 
+## 1.8.1 (1 June 2018)
+
+### Breaking changes
+
+- When filtering items out of a schema, Unions will now be hidden if their possible types are all hidden or if all fields returning it are hidden. #1515
+
+### New features
+
+- `GraphQL::ExecutionError.new` accepts an `extensions:` option which will be merged into the `"extensions"` key in that error's JSON #1552
+
+### Bug fixes
+
+- When filtering items out of a schema, Unions will now be hidden if their possible types are all hidden or if all fields returning it are hidden. #1515
+- Require that fields returning interfaces have selections made on them #1551
+- Correctly mark introspection types and fields as `introspection?` #1535
+- Remove unused introspection objects #1534
+- use `object`/`context` in the upgrader instead of `@object`/`@context` #1529
+- (Development) Don't require mongodb for non-mongo tests #1548
+- Track position of union member nodes in the parser #1541
+
 ## 1.8.0 (17 May 2018)
 
 `1.8.0` has been in prerelease for 6 months. See the prerelease changelog for change-by-change details. Here's a high-level changelog, followed by a detailed list of changes since the last prerelease.
