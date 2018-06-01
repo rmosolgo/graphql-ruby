@@ -168,9 +168,12 @@ describe GraphQL::Authorization do
       field :unauthorized_lazy_box, UnauthorizedBox, null: true do
         argument :value, String, required: true
       end
-
       def unauthorized_lazy_box(value:)
         Box.new(value: value)
+      end
+      field :unauthorized_list_items, [UnauthorizedObject], null: true
+      def unauthorized_list_items
+        [self, self]
       end
     end
 
@@ -426,6 +429,20 @@ describe GraphQL::Authorization do
       unauthorized_res = auth_execute(query)
       assert_nil unauthorized_res["data"].fetch("a")
       assert_equal "b", unauthorized_res["data"]["b"]["value"]
+    end
+
+    it "authorizes items in a list" do
+      query = <<-GRAPHQL
+      {
+        unauthorizedListItems { __typename }
+      }
+      GRAPHQL
+
+      unauthorized_res = auth_execute(query, context: { hide: true })
+
+      assert_nil unauthorized_res["data"]["unauthorizedListItems"]
+      authorized_res = auth_execute(query, context: { hide: false })
+      assert_equal 2, authorized_res["data"]["unauthorizedListItems"].size
     end
   end
 end

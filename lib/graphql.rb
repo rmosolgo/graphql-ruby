@@ -97,3 +97,4 @@ require "graphql/backtrace"
 
 require "graphql/deprecated_dsl"
 require "graphql/authorization"
+require "graphql/unauthorized_error"
