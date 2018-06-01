@@ -61,20 +61,22 @@ When this error is raised, its `message` will be added to the `"errors"` key and
 
 ## Customizing Error JSON
 
-The default error JSON includes `"message"`, `"locations"` and `"path"`. You can customize this in two ways:
+The default error JSON includes `"message"`, `"locations"` and `"path"`. The [forthcoming version](http://facebook.github.io/graphql/draft/#example-fce18) of the GraphQL spec recommends putting custom data in the `"extensions"` key of the error JSON.
+
+You can customize this in two ways:
 
 - Pass `options:` when raising an error, for example:
   ```ruby
-  raise GraphQL::ExecutionError.new("Something went wrong", options: { "code" => "BROKEN" })
+  raise GraphQL::ExecutionError.new("Something went wrong", options: { "extensions" => { "code" => "BROKEN" } })
   ```
-  In this case, `"code" => "BROKEN"` will be added to the error JSON.
+  In this case, `"extensions" => { "code" => "BROKEN" }` will be added to the error JSON.
 
 - Override `#to_h` in a subclass of `GraphQL::ExecutionError`, for example:
   ```ruby
   class ServiceUnavailableError < GraphQL::ExecutionError
     def to_h
-      super.merge({"code" => "SERVICE_UNAVAILABLE"})
+      super.merge({ "extensions" => {"code" => "SERVICE_UNAVAILABLE"} })
     end
   end
   ```
-  Now, `"code" => "SERVICE_UNAVAILABLE"` will be added to the error JSON.
+  Now, `"extensions" => { "code" => "SERVICE_UNAVAILABLE" }` will be added to the error JSON.
