@@ -271,7 +271,26 @@ describe GraphQL::ExecutionError do
       assert_equal(expected_result, result)
     end
   end
-  
+
+  describe "extensions in ExecutionError" do
+    let(:query_string) {%|
+    {
+      executionErrorWithExtensions
+    }
+    |}
+    it "the error is inserted into the errors key and the rest of the query is fulfilled" do
+      expected_result = {
+        "data"=>{"executionErrorWithExtensions"=>nil},
+        "errors"=>
+            [{"message"=>"Permission Denied!",
+              "locations"=>[{"line"=>3, "column"=>7}],
+              "path"=>["executionErrorWithExtensions"],
+              "extensions"=>{"code"=>"permission_denied"}}]
+      }
+      assert_equal(expected_result, result)
+    end
+  end
+
   describe "more than one ExecutionError" do
     let(:query_string) { %|{ multipleErrorsOnNonNullableField} |}
     it "the errors are inserted into the errors key and the data is nil even for a NonNullable field " do
