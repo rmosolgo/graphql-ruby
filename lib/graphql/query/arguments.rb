@@ -108,7 +108,8 @@ module GraphQL
         ruby_kwargs = {}
 
         keys.each do |key|
-          ruby_kwargs[Schema::Member::BuildType.underscore(key).to_sym] = self[key]
+          value = unwrap_value(self[key])
+          ruby_kwargs[Schema::Member::BuildType.underscore(key).to_sym] = value
         end
 
         ruby_kwargs
@@ -146,6 +147,15 @@ module GraphQL
             wrap_value(value, arg_defn_type.of_type, context)
           when GraphQL::InputObjectType
             if value.is_a?(Hash)
+              # alternatively, make sure that stuff is wrapped as an instance of Arguments?
+              #
+              # see:
+              # https://github.com/rmosolgo/graphql-ruby/blob/022477fdb/lib/graphql/schema/input_object.rb#L74-L78
+              #
+              #
+              # klass = arg_defn_type.arguments_class.try(:arguments_class) || arg_defn_type.arguments_class
+              # return klass.new(value, context: context, defaults_used: Set.new)
+
               arg_defn_type.arguments_class.new(value, context: context, defaults_used: Set.new)
             else
               value
@@ -165,7 +175,7 @@ module GraphQL
             memo[key] = unwrap_value(value)
             memo
           end
-        when GraphQL::Query::Arguments
+        when GraphQL::Query::Arguments, GraphQL::Schema::InputObject
           value.to_h
         else
           value
