@@ -112,7 +112,7 @@ module GraphQL
           ruby_kwargs[Schema::Member::BuildType.underscore(key).to_sym] = value
         end
 
-        return ruby_kwargs
+        ruby_kwargs
       end
 
       private
