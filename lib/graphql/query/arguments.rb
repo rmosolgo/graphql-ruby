@@ -113,8 +113,6 @@ module GraphQL
         end
 
         return ruby_kwargs
-        # puts "%" * 80
-        # pp Hash[to_h.map { |(key, value)| [Schema::Member::BuildType.underscore(key).to_sym, value] }]
       end
 
       private
@@ -168,7 +166,7 @@ module GraphQL
             memo[key] = unwrap_value(value)
             memo
           end
-        when GraphQL::Query::Arguments #, GraphQL::Schema::InputObject
+        when GraphQL::Query::Arguments, GraphQL::Schema::InputObject
           value.to_h
         else
           value

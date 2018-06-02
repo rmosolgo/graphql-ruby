@@ -262,36 +262,37 @@ describe GraphQL::Query::Arguments do
     it "returns nested values as hashes" do
       assert_instance_of Hash, arguments.to_kwargs[:input_object]
     end
+  end
 
-    describe "class based api" do
-      let(:arguments) {
-        class TestInputA < GraphQL::Schema::InputObject
-          graphql_name "TestInputA"
-          argument :d, Int, required: true
-          argument :e, Int, required: true
-        end
+  describe "class based api" do
+    let(:arguments) {
+      class TestInput1 < GraphQL::Schema::InputObject
+        graphql_name "TestInput1"
+        argument :d, Int, required: true
+        argument :e, Int, required: true
+      end
 
-        class TestInputB < GraphQL::Schema::InputObject
-          graphql_name "TestInputB"
-          argument :a, Int, required: true
-          argument :b, Int, required: true
-          argument :c, [TestInputA], as: :inputObject, required: true
-        end
+      class TestInput2 < GraphQL::Schema::InputObject
+        graphql_name "TestInput2"
+        argument :a, Int, required: true
+        argument :b, Int, required: true
+        argument :c, TestInput1, as: :inputObject, required: true
+      end
 
-        TestInputA.to_graphql
-        TestInputB.to_graphql
+      TestInput2.to_graphql
 
-        arg_values = {a: 1, b: 2, c: [{ d: 3, e: 4 }]}
-        TestInputB.new(arg_values, context: nil, defaults_used: Set.new)
-      }
+      arg_values = {a: 1, b: 2, c: { d: 3, e: 4 }}
+      TestInput2.new(arg_values, context: nil, defaults_used: Set.new)
+    }
 
+    describe "#to_kwargs" do
       it "returns a hash with keys that are valid ruby keyword arguments" do
         assert_equal([:a, :b, :input_object], arguments.to_kwargs.keys)
       end
 
-      it "returns nested values as hashes" do
-        assert_instance_of Array, arguments.to_kwargs[:input_object]
-        assert_instance_of Hash, arguments.to_kwargs[:input_object].first
+      it "returns nested values as hashes with valid keyword arguments" do
+        assert_instance_of Hash, arguments.to_kwargs[:input_object]
+        assert_equal([:d, :e], arguments.to_kwargs[:input_object].keys)
       end
     end
   end
