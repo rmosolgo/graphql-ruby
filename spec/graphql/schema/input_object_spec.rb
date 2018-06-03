@@ -108,4 +108,36 @@ describe GraphQL::Schema::InputObject do
       assert_equal expected_info, res["data"]["inspectInput"]
     end
   end
+
+  describe "#to_h" do
+    module InputObjectToHTest
+      class TestInput1 < GraphQL::Schema::InputObject
+        graphql_name "TestInput1"
+        argument :d, Int, required: true
+        argument :e, Int, required: true
+      end
+
+      class TestInput2 < GraphQL::Schema::InputObject
+        graphql_name "TestInput2"
+        argument :a, Int, required: true
+        argument :b, Int, required: true
+        argument :c, TestInput1, as: :inputObject, required: true
+      end
+
+      TestInput1.to_graphql
+      TestInput2.to_graphql
+    end
+
+    it "returns a stringified, aliased, ruby keyword style hash" do
+      arg_values = {a: 1, b: 2, c: { d: 3, e: 4 }}
+
+      input_object = InputObjectToHTest::TestInput2.new(
+        arg_values,
+        context: nil,
+        defaults_used: Set.new
+      )
+
+      assert_equal({ a: 1, b: 2, input_object: { d: 3, e: 4 } }, input_object.to_h)
+    end
+  end
 end
