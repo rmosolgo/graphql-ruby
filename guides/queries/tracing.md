@@ -32,7 +32,7 @@ To run a tracer for __every query__, add it to the schema with `tracer`:
 
 ```ruby
 # Run `MyCustomTracer` for all queries
-MySchema = GraphQL::Schema.define do
+class MySchema < GraphQL::Schema
   tracer(MyCustomTracer)
 end
 ```
@@ -54,7 +54,7 @@ To enable it, install the tracer:
 
 ```ruby
 # Send execution events to ActiveSupport::Notifications
-MySchema = GraphQL::Schema.define do
+class MySchema < GraphQL::Schema
   tracer GraphQL::Tracing::ActiveSupportNotificationsTracing
 end
 ```
@@ -72,7 +72,7 @@ Implementations are based on {{ "Tracing::PlatformTracing" | api_doc }}.
 To add [AppSignal](https://appsignal.com/) instrumentation:
 
 ```ruby
-MySchema = GraphQL::Schema.define do
+class MySchema < GraphQL::Schema
   use(GraphQL::Tracing::AppsignalTracing)
 end
 ```
@@ -86,7 +86,7 @@ end
 To add [New Relic](https://newrelic.com/) instrumentation:
 
 ```ruby
-MySchema = GraphQL::Schema.define do
+class MySchema < GraphQL::Schema
   use(GraphQL::Tracing::NewRelicTracing)
   # Optional, use the operation name to set the new relic transaction name:
   # use GraphQL::Tracing::NewRelicTracing, set_transaction_name: true
@@ -103,7 +103,7 @@ end
 To add [Scout APM](https://scoutapp.com/) instrumentation:
 
 ```ruby
-MySchema = GraphQL::Schema.define do
+class MySchema < GraphQL::Schema
   use(GraphQL::Tracing::ScoutTracing)
 end
 ```
@@ -117,7 +117,7 @@ end
 To add [Skylight](http://skylight.io) instrumentation:
 
 ```ruby
-MySchema = GraphQL::Schema.define do
+class MySchema < GraphQL::Schema
   use(GraphQL::Tracing::SkylightTracing)
 end
 ```
@@ -132,7 +132,7 @@ end
 To add [Datadog](https://www.datadoghq.com) instrumentation:
 
 ```ruby
-MySchema = GraphQL::Schema.define do
+class MySchema < GraphQL::Schema
   use(GraphQL::Tracing::DataDogTracing)
 end
 ```

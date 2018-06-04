@@ -39,9 +39,9 @@ To add subscriptions to your system, define an `ObjectType` named `Subscription`
 
 ```ruby
 # app/graphql/types/subscription_type.rb
-Types::SubscriptionType = GraphQL::ObjectType.define do
-  name "Subscription"
-  field :postWasPublished, !Types::PostType, "A post was published to the blog"
+class Types::SubscriptionType < GraphQL::Schema::Object
+  field :post_was_published, Types::PostType, null: false,
+    description: "A post was published to the blog"
   # ...
 end
 ```
@@ -50,7 +50,7 @@ Then, add it as the subscription root with `subscription(...)`:
 
 ```ruby
 # app/graphql/my_schema.rb
-MySchema = GraphQL::Schema.define do
+class MySchema < GraphQL::Schema
   query(Types::QueryType)
   # ...
   # Add Subscription to
