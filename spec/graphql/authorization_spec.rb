@@ -134,6 +134,15 @@ describe GraphQL::Authorization do
       field :value, String, null: false, method: :object
     end
 
+    class UnauthorizedCheckBox < BaseObject
+      # This authorized check returns a lazy object, it should be synced by the runtime.
+      def self.authorized?(value, context)
+        Box.new(value: super && value != "a")
+      end
+
+      field :value, String, null: false, method: :object
+    end
+
     class Query < BaseObject
       field :hidden, Integer, null: false
       field :unauthorized, Integer, null: true, method: :object
@@ -174,6 +183,10 @@ describe GraphQL::Authorization do
       field :unauthorized_list_items, [UnauthorizedObject], null: true
       def unauthorized_list_items
         [self, self]
+      end
+
+      field :unauthorized_lazy_check_box, UnauthorizedCheckBox, null: true, method: :unauthorized_lazy_box do
+        argument :value, String, required: true
       end
     end
 
@@ -443,6 +456,19 @@ describe GraphQL::Authorization do
       assert_nil unauthorized_res["data"]["unauthorizedListItems"]
       authorized_res = auth_execute(query, context: { hide: false })
       assert_equal 2, authorized_res["data"]["unauthorizedListItems"].size
+    end
+
+    it "syncs lazy objects from authorized? checks" do
+      query = <<-GRAPHQL
+      {
+        a: unauthorizedLazyCheckBox(value: "a") { value }
+        b: unauthorizedLazyCheckBox(value: "b") { value }
+      }
+      GRAPHQL
+
+      unauthorized_res = auth_execute(query)
+      assert_nil unauthorized_res["data"].fetch("a")
+      assert_equal "b", unauthorized_res["data"]["b"]["value"]
     end
   end
 end
