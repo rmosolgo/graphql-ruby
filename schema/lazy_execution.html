@@ -103,7 +103,7 @@
   <li>Connect the lazy resolve method</li>
 </ol>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
   <span class="c1"># ...</span>
   <span class="n">lazy_resolve</span><span class="p">(</span><span class="no">LazyFindPerson</span><span class="p">,</span> <span class="ss">:person</span><span class="p">)</span>
 <span class="k">end</span>
@@ -113,10 +113,10 @@
   <li>Return lazy objects from <code class="highlighter-rouge">resolve</code></li>
 </ol>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:author</span><span class="p">,</span> <span class="no">PersonType</span> <span class="k">do</span>
-  <span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
-    <span class="no">LazyFindPerson</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">obj</span><span class="p">.</span><span class="nf">author_id</span><span class="p">)</span>
-  <span class="p">}</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:author</span><span class="p">,</span> <span class="no">PersonType</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">true</span>
+
+<span class="k">def</span> <span class="nf">author</span>
+  <span class="no">LazyFindPerson</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">object</span><span class="p">.</span><span class="nf">author_id</span><span class="p">)</span>
 <span class="k">end</span>
 </code></pre></div></div>
 

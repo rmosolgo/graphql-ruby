@@ -49,7 +49,7 @@
 <div class="guide-container">
   <p>You can call hooks <em>before</em> and <em>after</em> each query. Query instrumentation can be attached during schema definition:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
   <span class="n">instrument</span><span class="p">(</span><span class="ss">:query</span><span class="p">,</span> <span class="no">QueryTimerInstrumentation</span><span class="p">)</span>
 <span class="k">end</span>
 </code></pre></div></div>

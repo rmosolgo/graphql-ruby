@@ -70,13 +70,14 @@
 
 <p>Scopes are based on query context: a value in <code class="highlighter-rouge">context:</code> is used as the scope; an equivalent value must be passed with <code class="highlighter-rouge">.trigger(... scope:)</code> to update that client. (The value is serialized with <a href="/api-doc/1.8.1/GraphQL/Subscriptions/Serialize" target="_blank" title="API docs for GraphQL::Subscriptions::Serialize"><code>GraphQL::Subscriptions::Serialize</code></a>)</p>
 
-<p>To specify that a topic is scoped, edit the field definition on your root <code class="highlighter-rouge">Subscription</code> type. Use the <code class="highlighter-rouge">subscription_scope</code> helper to name a <code class="highlighter-rouge">context:</code> key, for example:</p>
+<p>To specify that a topic is scoped, edit the field definition on your root <code class="highlighter-rouge">Subscription</code> type. Use the <code class="highlighter-rouge">subscription_scope:</code> option to name a <code class="highlighter-rouge">context:</code> key, for example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># For a given viewer, this will be triggered</span>
 <span class="c1"># whenever one of their posts gets a new comment</span>
-<span class="n">field</span> <span class="ss">:commentAdded</span><span class="p">,</span> <span class="no">CommentType</span><span class="p">,</span> <span class="s2">"A comment was added to one of the viewer's posts"</span> <span class="k">do</span>
-  <span class="n">subscription_scope</span> <span class="ss">:current_user_id</span>
-<span class="k">end</span>
+<span class="n">field</span> <span class="ss">:comment_added</span><span class="p">,</span> <span class="no">CommentType</span><span class="p">,</span>
+  <span class="ss">null: </span><span class="kp">false</span><span class="p">,</span>
+  <span class="ss">description: </span><span class="s2">"A comment was added to one of the viewer's posts"</span>
+  <span class="ss">subscription_scope: :current_user_id</span>
 </code></pre></div></div>
 
 <p>Then, subscription operations should have a <code class="highlighter-rouge">context: { current_user_id: ... }</code> value, for example:</p>

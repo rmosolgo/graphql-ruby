@@ -51,7 +51,6 @@
 
 <ul>
   <li><em>Don’t</em> test the schema, test other objects instead</li>
-  <li>Test schema elements (types, fields) in isolation</li>
   <li>Execute GraphQL queries and test the result</li>
 </ul>
 
@@ -61,13 +60,13 @@
 
 <p>For example, consider a field which calculates its own value:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">PostType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">PostType</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
   <span class="c1"># ...</span>
-  <span class="n">field</span> <span class="ss">:isTrending</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">Boolean</span> <span class="k">do</span>
-    <span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
-      <span class="n">recent_comments</span> <span class="o">=</span> <span class="n">comments</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="s2">"created_at &lt; ?"</span><span class="p">,</span> <span class="mi">1</span><span class="p">.</span><span class="nf">day</span><span class="p">.</span><span class="nf">ago</span><span class="p">)</span>
-      <span class="n">recent_comments</span><span class="p">.</span><span class="nf">count</span> <span class="o">&gt;</span> <span class="mi">100</span>
-    <span class="p">}</span>
+  <span class="n">field</span> <span class="ss">:is_trending</span><span class="p">,</span> <span class="no">Boolean</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
+
+  <span class="k">def</span> <span class="nf">is_boolean</span>
+    <span class="n">recent_comments</span> <span class="o">=</span> <span class="n">object</span><span class="p">.</span><span class="nf">comments</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="s2">"created_at &lt; ?"</span><span class="p">,</span> <span class="mi">1</span><span class="p">.</span><span class="nf">day</span><span class="p">.</span><span class="nf">ago</span><span class="p">)</span>
+    <span class="n">recent_comments</span><span class="p">.</span><span class="nf">count</span> <span class="o">&gt;</span> <span class="mi">100</span>
   <span class="k">end</span>
 <span class="k">end</span>
 </code></pre></div></div>
@@ -84,20 +83,19 @@
 
     <span class="k">def</span> <span class="nf">value</span>
       <span class="n">recent_comments</span> <span class="o">=</span> <span class="vi">@post</span><span class="p">.</span><span class="nf">comments</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="s2">"created_at &lt; ?"</span><span class="p">,</span> <span class="mi">1</span><span class="p">.</span><span class="nf">day</span><span class="p">.</span><span class="nf">ago</span><span class="p">)</span>
-      <span class="n">recent_comments</span><span class="p">.</span><span class="nf">count</span> <span class="o">&gt;</span> <span class="no">TRENDING_COMMENTS_COUNT</span>       
+      <span class="n">recent_comments</span><span class="p">.</span><span class="nf">count</span> <span class="o">&gt;</span> <span class="no">TRENDING_COMMENTS_COUNT</span>
     <span class="k">end</span>
   <span class="k">end</span>
 <span class="k">end</span>
 
 <span class="c1"># ....</span>
 
-<span class="no">PostType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<span class="k">class</span> <span class="nc">PostType</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
   <span class="c1"># ...</span>
-  <span class="n">field</span> <span class="ss">:isTrending</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">Boolean</span> <span class="k">do</span>
-    <span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
-      <span class="c1"># Use the Post::Trending class to calculate the value</span>
-      <span class="no">Post</span><span class="o">::</span><span class="no">Trending</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">obj</span><span class="p">).</span><span class="nf">value</span>
-    <span class="p">}</span>
+  <span class="n">field</span> <span class="ss">:is_trending</span><span class="p">,</span> <span class="no">Boolean</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
+
+  <span class="k">def</span> <span class="nf">is_boolean</span>
+    <span class="no">Post</span><span class="o">::</span><span class="no">Trending</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">object</span><span class="p">).</span><span class="nf">value</span>
   <span class="k">end</span>
 <span class="k">end</span>
 </code></pre></div></div>
@@ -129,65 +127,9 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<h2 id="testing-schema-elements-in-isolation">Testing schema elements in isolation</h2>
-
-<p>You can access type and field objects from your schema to make sure they’re defined correctly and behave the way you expect them to.</p>
-
-<h4 id="types">Types</h4>
-
-<p>Access a type by name from the schema with <code class="highlighter-rouge">GraphQL::Schema#types</code>:</p>
-
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">post</span> <span class="o">=</span> <span class="no">MySchema</span><span class="p">.</span><span class="nf">types</span><span class="p">[</span><span class="s2">"Post"</span><span class="p">]</span> <span class="c1"># =&gt; PostType</span>
-<span class="n">post</span><span class="p">.</span><span class="nf">fields</span>                   <span class="c1"># =&gt; {"id" =&gt; &lt;GraphQL::Field&gt;, ... }</span>
-<span class="n">post</span><span class="p">.</span><span class="nf">fields</span><span class="p">.</span><span class="nf">keys</span>              <span class="c1"># =&gt; ["id", "title", "body", "author", "comments"]</span>
-</code></pre></div></div>
-
-<p>The returned value of <code class="highlighter-rouge">Schema#types[type_name]</code> is an instance of the type class you used to <code class="highlighter-rouge">.define</code> it (eg, <code class="highlighter-rouge">GraphQL::ObjectType</code>, <code class="highlighter-rouge">GraphQL::EnumType</code>, <code class="highlighter-rouge">GraphQL::InputObjectType</code>).</p>
-
-<h4 id="fields">Fields</h4>
-
-<p>You can get a type’s fields from the <code class="highlighter-rouge">GraphQL::ObjectType#fields</code> hash. For example:</p>
-
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">post_type</span> <span class="o">=</span> <span class="no">MySchema</span><span class="p">.</span><span class="nf">types</span><span class="p">[</span><span class="s2">"Post"</span><span class="p">]</span>
-<span class="n">title_field</span> <span class="o">=</span> <span class="n">post_type</span><span class="p">.</span><span class="nf">fields</span><span class="p">[</span><span class="s2">"title"</span><span class="p">]</span> <span class="c1">#=&gt; &lt;GraphQL::Field&gt;</span>
-<span class="n">title_field</span><span class="p">.</span><span class="nf">name</span> <span class="c1">#=&gt; "title"</span>
-</code></pre></div></div>
-
-<p>You can test a resolve function by calling <code class="highlighter-rouge">GraphQL::Field#resolve</code>:</p>
-
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Because this field doesn't use context or variables, simply pass `nil`</span>
-<span class="n">post</span> <span class="o">=</span> <span class="no">Post</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="ss">title: </span><span class="s2">"Welcome to my blog"</span><span class="p">)</span>
-<span class="n">name_field</span><span class="p">.</span><span class="nf">resolve</span><span class="p">(</span><span class="n">post</span><span class="p">,</span> <span class="kp">nil</span><span class="p">,</span> <span class="kp">nil</span><span class="p">)</span> <span class="c1">#=&gt; "Welcome to my blog"</span>
-</code></pre></div></div>
-
-<p>Calling <code class="highlighter-rouge">resolve</code> in this way does <em>not</em> apply any coercion. (That’s only applied during query execution.)</p>
-
-<h4 id="other-elements">Other elements</h4>
-
-<p>Similarly, you can access:</p>
-
-<ul>
-  <li><code class="highlighter-rouge">GraphQL::Field#arguments</code>, which are <code class="highlighter-rouge">String</code> =&gt; <code class="highlighter-rouge">GraphQL::Argument</code> pairs</li>
-  <li><code class="highlighter-rouge">GraphQL::Field#type</code>, the field’s return type</li>
-  <li><code class="highlighter-rouge">GraphQL::InputObjectType#arguments</code>, which are <code class="highlighter-rouge">String</code> =&gt; <code class="highlighter-rouge">GraphQL::Argument</code> pairs</li>
-  <li><code class="highlighter-rouge">GraphQL::EnumType#values</code>, which are <code class="highlighter-rouge">String</code> =&gt; <code class="highlighter-rouge">GraphQL::EnumType::EnumValue</code> pairs</li>
-  <li><code class="highlighter-rouge">GraphQL::Schema#possible_types(type_defn)</code>, which returns the possible types for union or interface types in a given schema</li>
-</ul>
-
-<p><code class="highlighter-rouge">GraphQL::BaseType#unwrap</code> may also be helpful. It returns the “inner-most” type. For example:</p>
-
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">required_list_of_strings</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">NonNullType</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span>
-  <span class="ss">of_type: </span><span class="no">GraphQL</span><span class="o">::</span><span class="no">ListType</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span>
-    <span class="ss">of_type: </span><span class="no">GraphQL</span><span class="o">::</span><span class="no">STRING_TYPE</span>
-  <span class="p">)</span>
-<span class="p">)</span>
-
-<span class="n">required_list_of_strings</span><span class="p">.</span><span class="nf">unwrap</span> <span class="c1">#=&gt; GraphQL::STRING_TYPE</span>
-</code></pre></div></div>
-
 <h2 id="executing-graphql-queries">Executing GraphQL queries</h2>
 
-<p>Sometimes, you really need an end-to-end test. Although it requires a lot of overhead, it’s nice to have a “sanity check” on the system as a whole.</p>
+<p>Sometimes, you really need an end-to-end test. Although it requires a lot of overhead, it’s nice to have a “sanity check” on the system as a whole (for example, authorization and database batching).</p>
 
 <p>You can execute queries on your schema in a test. For example, you can set it up like this:</p>
 

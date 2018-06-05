@@ -147,17 +147,21 @@ mutation createPost($postParams: PostInput!, $createdById: ID!){
 
 <p>Then, you can access those values during execution:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span>  <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
-  <span class="n">ctx</span><span class="p">[</span><span class="ss">:current_user</span><span class="p">]</span> <span class="c1"># =&gt; #&lt;User id=123 ... &gt;</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:post</span><span class="p">,</span> <span class="no">Post</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">true</span> <span class="k">do</span>
+  <span class="n">argument</span> <span class="ss">:id</span><span class="p">,</span> <span class="no">ID</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">true</span>
+<span class="k">end</span>
+
+<span class="k">def</span> <span class="nf">post</span><span class="p">(</span><span class="nb">id</span><span class="p">:)</span>
+  <span class="n">context</span><span class="p">[</span><span class="ss">:current_user</span><span class="p">]</span> <span class="c1"># =&gt; #&lt;User id=123 ... &gt;</span>
   <span class="c1"># ...</span>
-<span class="p">}</span>
+<span class="k">end</span>
 </code></pre></div></div>
 
-<p>Note that <code class="highlighter-rouge">ctx</code> is <em>not</em> the hash that you passed it. It’s an instance of <a href="/api-doc/1.8.1/GraphQL/Query/Context" target="_blank" title="API docs for GraphQL::Query::Context"><code>GraphQL::Query::Context</code></a>, but it delegates <code class="highlighter-rouge">#[](key)</code> to the hash you provide.</p>
+<p>Note that <code class="highlighter-rouge">context</code> is <em>not</em> the hash that you passed it. It’s an instance of <a href="/api-doc/1.8.1/GraphQL/Query/Context" target="_blank" title="API docs for GraphQL::Query::Context"><code>GraphQL::Query::Context</code></a>, but it delegates <code class="highlighter-rouge">#[]</code>, <code class="highlighter-rouge">#[]=</code>, and a few other methods to the hash you provide.</p>
 
 <h2 id="root-value">Root Value</h2>
 
-<p>You can provide a root <code class="highlighter-rouge">obj</code> value with <code class="highlighter-rouge">root_value:</code>. For example, to base the query off of the current organization:</p>
+<p>You can provide a root <code class="highlighter-rouge">object</code> value with <code class="highlighter-rouge">root_value:</code>. For example, to base the query off of the current organization:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">current_org</span> <span class="o">=</span> <span class="n">session</span><span class="p">[</span><span class="ss">:current_organization</span><span class="p">]</span>
 <span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="n">query_string</span><span class="p">,</span> <span class="ss">root_value: </span><span class="n">current_org</span><span class="p">)</span>
@@ -165,13 +169,12 @@ mutation createPost($postParams: PostInput!, $createdById: ID!){
 
 <p>That value will be provided to root-level fields, such as mutation fields. For example:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">MutationType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
-  <span class="nb">name</span> <span class="s2">"Mutation"</span>
-  <span class="n">field</span> <span class="ss">:createPost</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">Post</span> <span class="k">do</span>
-    <span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
-      <span class="n">obj</span> <span class="c1"># =&gt; #&lt;Organization id=456 ...&gt;</span>
-      <span class="c1"># ...</span>
-    <span class="p">}</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MutationType</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
+  <span class="n">field</span> <span class="ss">:create_post</span><span class="p">,</span> <span class="no">Post</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">true</span>
+
+  <span class="k">def</span> <span class="nf">create_post</span><span class="p">(</span><span class="o">**</span><span class="n">args</span><span class="p">)</span>
+    <span class="n">object</span> <span class="c1"># =&gt; #&lt;Organization id=456 ...&gt;</span>
+    <span class="c1"># ...</span>
   <span class="k">end</span>
 <span class="k">end</span>
 </code></pre></div></div>

@@ -52,11 +52,11 @@
 <p>Fields have a “complexity” value which can be configured in their definition. It can be a constant (numeric) value, or a proc. It can be defined as a keyword <em>or</em> inside the configuration block. For example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Constant complexity:</span>
-<span class="n">field</span> <span class="ss">:top_score</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">Int</span><span class="p">,</span> <span class="ss">complexity: </span><span class="mi">10</span>
+<span class="n">field</span> <span class="ss">:top_score</span><span class="p">,</span> <span class="no">Integer</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span><span class="p">,</span> <span class="ss">complexity: </span><span class="mi">10</span>
 
 <span class="c1"># Dynamic complexity:</span>
-<span class="n">field</span> <span class="ss">:top_scorers</span><span class="p">,</span> <span class="n">types</span><span class="p">[</span><span class="no">PlayerType</span><span class="p">]</span> <span class="k">do</span>
-  <span class="n">argument</span> <span class="ss">:limit</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">Int</span><span class="p">,</span> <span class="ss">default_value: </span><span class="mi">5</span>
+<span class="n">field</span> <span class="ss">:top_scorers</span><span class="p">,</span> <span class="p">[</span><span class="no">PlayerType</span><span class="p">],</span> <span class="ss">null: </span><span class="kp">false</span> <span class="k">do</span>
+  <span class="n">argument</span> <span class="ss">:limit</span><span class="p">,</span> <span class="no">Integer</span><span class="p">,</span> <span class="ss">limit: </span><span class="kp">false</span><span class="p">,</span> <span class="ss">default_value: </span><span class="mi">5</span>
   <span class="n">complexity</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">child_complexity</span><span class="p">)</span> <span class="p">{</span>
     <span class="k">if</span> <span class="n">ctx</span><span class="p">[</span><span class="ss">:current_user</span><span class="p">].</span><span class="nf">staff?</span>
       <span class="c1"># no limit for staff users</span>
@@ -76,7 +76,7 @@
 
 <p>Then, define your <code class="highlighter-rouge">max_complexity</code> at the schema-level:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
  <span class="c1"># ...</span>
  <span class="n">max_complexity</span> <span class="mi">100</span>
 <span class="k">end</span>
@@ -95,8 +95,11 @@
 
 <p>To get a feeling for complexity of queries in your system, you can use the <code class="highlighter-rouge">QueryComplexity</code> query reducer. Hook it up to log out values from each query:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">log_query_complexity</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Analysis</span><span class="o">::</span><span class="no">QueryComplexity</span><span class="p">.</span><span class="nf">new</span> <span class="p">{</span> <span class="o">|</span><span class="n">query</span><span class="p">,</span> <span class="n">complexity</span><span class="o">|</span> <span class="no">Rails</span><span class="p">.</span><span class="nf">logger</span><span class="p">.</span><span class="nf">info</span><span class="p">(</span><span class="s2">"[GraphQL Query Complexity] </span><span class="si">#{</span><span class="n">complexity</span><span class="si">}</span><span class="s2">  | staff? </span><span class="si">#{</span><span class="n">query</span><span class="p">.</span><span class="nf">context</span><span class="p">[</span><span class="ss">:current_user</span><span class="p">].</span><span class="nf">staff?</span><span class="si">}</span><span class="s2">"</span><span class="p">)}</span>
-<span class="no">MySchema</span><span class="p">.</span><span class="nf">query_analyzers</span> <span class="o">&lt;&lt;</span> <span class="n">log_query_complexity</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
+  <span class="n">log_query_complexity</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Analysis</span><span class="o">::</span><span class="no">QueryComplexity</span><span class="p">.</span><span class="nf">new</span> <span class="p">{</span> <span class="o">|</span><span class="n">query</span><span class="p">,</span> <span class="n">complexity</span><span class="o">|</span> <span class="no">Rails</span><span class="p">.</span><span class="nf">logger</span><span class="p">.</span><span class="nf">info</span><span class="p">(</span><span class="s2">"[GraphQL Query Complexity] </span><span class="si">#{</span><span class="n">complexity</span><span class="si">}</span><span class="s2">  | staff? </span><span class="si">#{</span><span class="n">query</span><span class="p">.</span><span class="nf">context</span><span class="p">[</span><span class="ss">:current_user</span><span class="p">].</span><span class="nf">staff?</span><span class="si">}</span><span class="s2">"</span><span class="p">)}</span>
+  <span class="n">query_analyzer</span><span class="p">(</span><span class="n">log_query_complexity</span><span class="p">)</span>
+<span class="k">end</span>
 </code></pre></div></div>
 
 <h2 id="prevent-deeply-nested-queries">Prevent deeply-nested queries</h2>
@@ -104,7 +107,7 @@
 <p>You can also reject queries based on the depth of their nesting. You can define <code class="highlighter-rouge">max_depth</code> at schema-level or query-level:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Schema-level:</span>
-<span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
   <span class="c1"># ...</span>
   <span class="n">max_depth</span> <span class="mi">10</span>
 <span class="k">end</span>
@@ -121,8 +124,10 @@
 
 <p>To get a feeling for depth of queries in your system, you can use the <code class="highlighter-rouge">QueryDepth</code> query reducer. Hook it up to log out values from each query:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">log_query_depth</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Analysis</span><span class="o">::</span><span class="no">QueryDepth</span><span class="p">.</span><span class="nf">new</span> <span class="p">{</span> <span class="o">|</span><span class="n">query</span><span class="p">,</span> <span class="n">depth</span><span class="o">|</span> <span class="no">Rails</span><span class="p">.</span><span class="nf">logger</span><span class="p">.</span><span class="nf">info</span><span class="p">(</span><span class="s2">"[GraphQL Query Depth] </span><span class="si">#{</span><span class="n">depth</span><span class="si">}</span><span class="s2"> || staff?  </span><span class="si">#{</span><span class="n">query</span><span class="p">.</span><span class="nf">context</span><span class="p">[</span><span class="ss">:current_user</span><span class="p">].</span><span class="nf">staff?</span><span class="si">}</span><span class="s2">"</span><span class="p">)}</span>
-<span class="no">MySchema</span><span class="p">.</span><span class="nf">query_analyzers</span> <span class="o">&lt;&lt;</span> <span class="n">log_query_depth</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
+  <span class="n">log_query_depth</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Analysis</span><span class="o">::</span><span class="no">QueryDepth</span><span class="p">.</span><span class="nf">new</span> <span class="p">{</span> <span class="o">|</span><span class="n">query</span><span class="p">,</span> <span class="n">depth</span><span class="o">|</span> <span class="no">Rails</span><span class="p">.</span><span class="nf">logger</span><span class="p">.</span><span class="nf">info</span><span class="p">(</span><span class="s2">"[GraphQL Query Depth] </span><span class="si">#{</span><span class="n">depth</span><span class="si">}</span><span class="s2"> || staff?  </span><span class="si">#{</span><span class="n">query</span><span class="p">.</span><span class="nf">context</span><span class="p">[</span><span class="ss">:current_user</span><span class="p">].</span><span class="nf">staff?</span><span class="si">}</span><span class="s2">"</span><span class="p">)}</span>
+  <span class="n">query_analyzer</span><span class="p">(</span><span class="n">log_query_depth</span><span class="p">)</span>
+<span class="k">end</span>
 </code></pre></div></div>
 
 </div>

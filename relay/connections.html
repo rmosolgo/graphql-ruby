@@ -49,41 +49,41 @@
 <div class="guide-container">
   <p>Relay expresses <a href="https://facebook.github.io/relay/graphql/connections.htm">one-to-many relationships with <em>connections</em></a>. Connections support pagination, filtering and metadata in a robust way.</p>
 
-<p><code class="highlighter-rouge">graphql-ruby</code> includes built-in connection support for <code class="highlighter-rouge">Array</code>, <code class="highlighter-rouge">ActiveRecord::Relation</code>s, and <code class="highlighter-rouge">Sequel::Dataset</code>s. You can define custom connection classes to expose other collections with GraphQL.</p>
+<p><code class="highlighter-rouge">graphql-ruby</code> includes built-in connection support for <code class="highlighter-rouge">Array</code>, <code class="highlighter-rouge">ActiveRecord::Relation</code>s, <code class="highlighter-rouge">Sequel::Dataset</code>s, and <code class="highlighter-rouge">Mongoid::Criteria</code>s. You can define custom connection classes to expose other collections with GraphQL.</p>
 
 <h2 id="connection-fields">Connection fields</h2>
 
-<p>To define a connection field, use the <code class="highlighter-rouge">connection</code> helper. For a return type, get a type’s <code class="highlighter-rouge">.connection_type</code>.  The <code class="highlighter-rouge">resolve</code> proc should return a collection (eg, <code class="highlighter-rouge">Array</code> or <code class="highlighter-rouge">ActiveRecord::Relation</code>) <em>without</em> pagination. (The connection will paginate the collection).</p>
+<p>To define a connection field, use the <code class="highlighter-rouge">field</code> method. For a return type, get a type’s <code class="highlighter-rouge">.connection_type</code>.  The field’s method or <code class="highlighter-rouge">resolver:</code> should return a collection (eg, <code class="highlighter-rouge">Array</code> or <code class="highlighter-rouge">ActiveRecord::Relation</code>) <em>without</em> pagination. (The connection will paginate the collection).</p>
 
 <p>For example:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">PostType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">PostType</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
   <span class="c1"># `Post#comments` returns an ActiveRecord::Relation</span>
   <span class="c1"># The GraphQL field returns a Connection</span>
-  <span class="n">connection</span> <span class="ss">:comments</span><span class="p">,</span> <span class="no">CommentType</span><span class="p">.</span><span class="nf">connection_type</span>
+  <span class="n">field</span> <span class="ss">:comments</span><span class="p">,</span> <span class="no">CommentType</span><span class="p">.</span><span class="nf">connection_type</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
   <span class="c1"># `Post#similar_posts` returns an Array</span>
-  <span class="n">connection</span> <span class="ss">:similarPosts</span><span class="p">,</span> <span class="no">PostType</span><span class="p">.</span><span class="nf">connection_type</span><span class="p">,</span> <span class="ss">property: :similar_posts</span>
+  <span class="n">field</span> <span class="ss">:similar_posts</span><span class="p">,</span> <span class="no">PostType</span><span class="p">.</span><span class="nf">connection_type</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
 
   <span class="c1"># ...</span>
 <span class="k">end</span>
 </code></pre></div></div>
 
+<p>(GraphQL-Ruby applies connection logic because the return type’s name ends in <code class="highlighter-rouge">Connection</code>. You can manually override this with <code class="highlighter-rouge">connection: true</code> or <code class="highlighter-rouge">connection: false</code>.)</p>
+
 <p>You can also define custom arguments and a custom resolve function for connections, just like other fields:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">connection</span> <span class="ss">:featured_comments</span><span class="p">,</span> <span class="no">CommentType</span><span class="p">.</span><span class="nf">connection_type</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:featured_comments</span><span class="p">,</span> <span class="no">CommentType</span><span class="p">.</span><span class="nf">connection_type</span> <span class="k">do</span>
   <span class="c1"># Add an argument:</span>
-  <span class="n">argument</span> <span class="ss">:since</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="no">String</span>
+  <span class="n">argument</span> <span class="ss">:since</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">false</span>
+<span class="k">end</span>
 
+<span class="k">def</span> <span class="nf">featured_comments</span><span class="p">(</span><span class="ss">since: </span><span class="kp">nil</span><span class="p">)</span>
+  <span class="n">comments</span> <span class="o">=</span> <span class="n">post</span><span class="p">.</span><span class="nf">comments</span><span class="p">.</span><span class="nf">featured</span>
+  <span class="k">if</span> <span class="n">since</span>
+    <span class="n">comments</span> <span class="o">=</span> <span class="n">comments</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="s2">"created_at &gt;= ?"</span><span class="p">,</span> <span class="n">since</span><span class="p">)</span>
+  <span class="k">end</span>
   <span class="c1"># Return an Array or ActiveRecord::Relation</span>
-  <span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">post</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
-    <span class="n">comments</span> <span class="o">=</span> <span class="n">post</span><span class="p">.</span><span class="nf">comments</span><span class="p">.</span><span class="nf">featured</span>
-
-    <span class="k">if</span> <span class="n">args</span><span class="p">[</span><span class="ss">:since</span><span class="p">]</span>
-      <span class="n">comments</span> <span class="o">=</span> <span class="n">comments</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="s2">"created_at &gt;= "</span><span class="p">,</span> <span class="n">args</span><span class="p">[</span><span class="ss">:since</span><span class="p">])</span>
-    <span class="k">end</span>
-
-    <span class="n">comments</span>
-  <span class="p">}</span>
+  <span class="n">comments</span>
 <span class="k">end</span>
 </code></pre></div></div>
 
@@ -91,12 +91,12 @@
 
 <p>You can limit the number of results with <code class="highlighter-rouge">max_page_size:</code>:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">connection</span> <span class="ss">:featured_comments</span><span class="p">,</span> <span class="no">CommentType</span><span class="p">.</span><span class="nf">connection_type</span><span class="p">,</span> <span class="ss">max_page_size: </span><span class="mi">50</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:featured_comments</span><span class="p">,</span> <span class="no">CommentType</span><span class="p">.</span><span class="nf">connection_type</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span><span class="p">,</span> <span class="ss">max_page_size: </span><span class="mi">50</span>
 </code></pre></div></div>
 
 <p>In addition, you can set a global default for all connection that do not specify a <code class="highlighter-rouge">max_page_size</code>:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
   <span class="n">default_max_page_size</span> <span class="mi">100</span>
 <span class="k">end</span>
 </code></pre></div></div>
@@ -120,11 +120,13 @@
 
 <p>Now, you can use <code class="highlighter-rouge">PostConnectionWithTotalCountType</code> to define a connection with the “totalCount” field:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">AuthorType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">AuthorType</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
   <span class="c1"># Use the custom connection type:</span>
-  <span class="n">connection</span> <span class="ss">:posts</span><span class="p">,</span> <span class="no">PostConnectionWithTotalCountType</span>
+  <span class="n">field</span> <span class="ss">:posts</span><span class="p">,</span> <span class="no">PostConnectionWithTotalCountType</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span><span class="p">,</span> <span class="ss">connection: </span><span class="kp">true</span>
 <span class="k">end</span>
 </code></pre></div></div>
+
+<p>(It uses <code class="highlighter-rouge">connection: true</code> because the type name <em>doesn’t</em> end in <code class="highlighter-rouge">"Connection"</code>.)</p>
 
 <p>This way, you can query your custom fields, for example:</p>
 

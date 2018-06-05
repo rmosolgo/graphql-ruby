@@ -47,7 +47,11 @@
 
 <h1 class="guide-header">Mutations</h1>
 <div class="guide-container">
-  <p>Relay uses a <a href="https://facebook.github.io/relay/docs/en/mutations.html">strict mutation API</a> for modifying the state of your application. This API makes mutations predictable to the client.</p>
+  <p><strong>NOTE</strong>: See <a href="/mutations/mutation_classes">Mutation Classes</a> for an updated mutation API.</p>
+
+<hr />
+
+<p>Relay uses a <a href="https://facebook.github.io/relay/docs/en/mutations.html">strict mutation API</a> for modifying the state of your application. This API makes mutations predictable to the client.</p>
 
 <p>On the client-side, Relay also requires you to specify how it should interpret the response from your GraphQL server, which may require your server-side mutations to return payloads with specific fields.</p>
 
@@ -56,13 +60,12 @@
 <p>To add mutations to your GraphQL schema, define a mutation type and pass it to your schema:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Define the mutation type</span>
-<span class="no">MutationType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
-  <span class="nb">name</span> <span class="s2">"Mutation"</span>
+<span class="k">class</span> <span class="nc">MutationType</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
   <span class="c1"># ...</span>
 <span class="k">end</span>
 
 <span class="c1"># and pass it to the schema</span>
-<span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
   <span class="n">query</span> <span class="no">QueryType</span>
   <span class="n">mutation</span> <span class="no">MutationType</span>
 <span class="k">end</span>
@@ -78,10 +81,9 @@
 
 <p>After defining a mutation (see below), add it to your mutation type:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">MutationType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
-  <span class="nb">name</span> <span class="s2">"Mutation"</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MutationType</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
   <span class="c1"># Add the mutation's derived field to the mutation type</span>
-  <span class="n">field</span> <span class="ss">:addComment</span><span class="p">,</span> <span class="ss">field: </span><span class="no">AddCommentMutation</span><span class="p">.</span><span class="nf">field</span>
+  <span class="n">field</span> <span class="ss">:add_comment</span><span class="p">,</span> <span class="ss">field: </span><span class="no">AddCommentMutation</span><span class="p">.</span><span class="nf">field</span>
   <span class="c1"># ...</span>
 <span class="k">end</span>
 </code></pre></div></div>

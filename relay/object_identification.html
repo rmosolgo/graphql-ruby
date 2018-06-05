@@ -56,16 +56,16 @@
 
 <h3 id="defining-uuids">Defining UUIDs</h3>
 
-<p>You must provide a function for generating UUIDs and fetching objects with them. In your schema, define <code class="highlighter-rouge">id_from_object</code> and <code class="highlighter-rouge">object_from_id</code>:</p>
+<p>You must provide a function for generating UUIDs and fetching objects with them. In your schema, define <code class="highlighter-rouge">self.id_from_object</code> and <code class="highlighter-rouge">self.object_from_id</code>:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
-  <span class="n">id_from_object</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">object</span><span class="p">,</span> <span class="n">type_definition</span><span class="p">,</span> <span class="n">query_ctx</span><span class="p">)</span> <span class="p">{</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
+  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">id_from_object</span><span class="p">(</span><span class="n">object</span><span class="p">,</span> <span class="n">type_definition</span><span class="p">,</span> <span class="n">query_ctx</span><span class="p">)</span>
     <span class="c1"># Call your application's UUID method here</span>
     <span class="c1"># It should return a string</span>
     <span class="no">MyApp</span><span class="o">::</span><span class="no">GlobalId</span><span class="p">.</span><span class="nf">encrypt</span><span class="p">(</span><span class="n">object</span><span class="p">.</span><span class="nf">class</span><span class="p">.</span><span class="nf">name</span><span class="p">,</span> <span class="n">object</span><span class="p">.</span><span class="nf">id</span><span class="p">)</span>
-  <span class="p">}</span>
+  <span class="k">end</span>
 
-  <span class="n">object_from_id</span> <span class="o">-&gt;</span><span class="p">(</span><span class="nb">id</span><span class="p">,</span> <span class="n">query_ctx</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">object_from_id</span><span class="p">(</span><span class="nb">id</span><span class="p">,</span> <span class="n">query_ctx</span><span class="p">)</span>
     <span class="n">class_name</span><span class="p">,</span> <span class="n">item_id</span> <span class="o">=</span> <span class="no">MyApp</span><span class="o">::</span><span class="no">GlobalId</span><span class="p">.</span><span class="nf">decrypt</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span>
     <span class="c1"># "Post" =&gt; Post.find(item_id)</span>
     <span class="no">Object</span><span class="p">.</span><span class="nf">const_get</span><span class="p">(</span><span class="n">class_name</span><span class="p">).</span><span class="nf">find</span><span class="p">(</span><span class="n">item_id</span><span class="p">)</span>
@@ -75,18 +75,18 @@
 
 <p>An unencrypted ID generator is provided in the gem. It uses <code class="highlighter-rouge">Base64</code> to encode values. You can use it like this:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
   <span class="c1"># Create UUIDs by joining the type name &amp; ID, then base64-encoding it</span>
-  <span class="n">id_from_object</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">object</span><span class="p">,</span> <span class="n">type_definition</span><span class="p">,</span> <span class="n">query_ctx</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">id_from_object</span><span class="p">(</span><span class="n">object</span><span class="p">,</span> <span class="n">type_definition</span><span class="p">,</span> <span class="n">query_ctx</span><span class="p">)</span>
     <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">UniqueWithinType</span><span class="p">.</span><span class="nf">encode</span><span class="p">(</span><span class="n">type_definition</span><span class="p">.</span><span class="nf">name</span><span class="p">,</span> <span class="n">object</span><span class="p">.</span><span class="nf">id</span><span class="p">)</span>
-  <span class="p">}</span>
+  <span class="k">end</span>
 
-  <span class="n">object_from_id</span> <span class="o">-&gt;</span><span class="p">(</span><span class="nb">id</span><span class="p">,</span> <span class="n">query_ctx</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">object_from_id</span><span class="p">(</span><span class="nb">id</span><span class="p">,</span> <span class="n">query_ctx</span><span class="p">)</span>
     <span class="n">type_name</span><span class="p">,</span> <span class="n">item_id</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">UniqueWithinType</span><span class="p">.</span><span class="nf">decode</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span>
     <span class="c1"># Now, based on `type_name` and `id`</span>
     <span class="c1"># find an object in your application</span>
     <span class="c1"># ....</span>
-  <span class="p">}</span>
+  <span class="k">end</span>
 <span class="k">end</span>
 </code></pre></div></div>
 
@@ -94,22 +94,21 @@
 
 <p>One requirement for Relay’s object management is implementing the <code class="highlighter-rouge">"Node"</code> interface.</p>
 
-<p>To implement the node interface, include <a href="/api-doc/1.8.1/GraphQL/Relay/Node#interface-class_method" target="_blank" title="API docs for GraphQL::Relay::Node.interface"><code>GraphQL::Relay::Node.interface</code></a> in your list of interfaces:</p>
+<p>To implement the node interface, add <a href="/api-doc/1.8.1/GraphQL/Relay/Node#interface-class_method" target="_blank" title="API docs for GraphQL::Relay::Node.interface"><code>GraphQL::Relay::Node.interface</code></a> to your definition:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">Types</span><span class="o">::</span><span class="no">PostType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
-  <span class="nb">name</span> <span class="s2">"Post"</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">PostType</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="n">object</span>
   <span class="c1"># Implement the "Node" interface for Relay</span>
   <span class="n">implements</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Relay</span><span class="o">::</span><span class="no">Node</span><span class="p">.</span><span class="nf">interface</span>
   <span class="c1"># ...</span>
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>To tell GraphQL how to resolve members of the <code class="highlighter-rouge">"Node"</code> interface, you must also define <code class="highlighter-rouge">Schema#resolve_type</code>:</p>
+<p>To tell GraphQL how to resolve members of the <code class="highlighter-rouge">"Node"</code> interface, you must also define <code class="highlighter-rouge">Schema.resolve_type</code>:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
   <span class="c1"># You'll also need to define `resolve_type` for</span>
   <span class="c1"># telling the schema what type Relay `Node` objects are</span>
-  <span class="n">resolve_type</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">type</span><span class="p">,</span> <span class="n">obj</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">resolve_type</span><span class="p">(</span><span class="n">type</span><span class="p">,</span> <span class="n">obj</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span>
     <span class="k">case</span> <span class="n">obj</span>
     <span class="k">when</span> <span class="no">Post</span>
       <span class="no">Types</span><span class="o">::</span><span class="no">PostType</span>
@@ -118,7 +117,7 @@
     <span class="k">else</span>
       <span class="k">raise</span><span class="p">(</span><span class="s2">"Unexpected object: </span><span class="si">#{</span><span class="n">obj</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
     <span class="k">end</span>
-  <span class="p">}</span>
+  <span class="k">end</span>
 <span class="k">end</span>
 </code></pre></div></div>
 
@@ -128,23 +127,20 @@
 
 <p>To add a UUID field named <code class="highlighter-rouge">"id"</code>, use the <code class="highlighter-rouge">global_id_field</code> helper:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">Types</span><span class="o">::</span><span class="no">PostType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
-  <span class="nb">name</span> <span class="s2">"Post"</span>
-  <span class="c1"># ...</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">PostType</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
   <span class="c1"># `id` exposes the UUID</span>
   <span class="n">global_id_field</span> <span class="ss">:id</span>
   <span class="c1"># ...</span>
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>This field will call the previously-defined <code class="highlighter-rouge">id_from_object</code> function.</p>
+<p>This field will call the previously-defined <code class="highlighter-rouge">id_from_object</code> class method.</p>
 
 <h3 id="node-field-find-by-uuid"><code class="highlighter-rouge">node</code> field (find-by-UUID)</h3>
 
 <p>You should also provide a root-level <code class="highlighter-rouge">node</code> field so that Relay can refetch objects from your schema. It is provided as <code class="highlighter-rouge">GraphQL::Relay::Node.field</code>, so you can attach it like this:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">QueryType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
-  <span class="nb">name</span> <span class="s2">"Query"</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">QueryType</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
   <span class="c1"># Used by Relay to lookup objects by UUID:</span>
   <span class="n">field</span> <span class="ss">:node</span><span class="p">,</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Relay</span><span class="o">::</span><span class="no">Node</span><span class="p">.</span><span class="nf">field</span>
   <span class="c1"># ...</span>
@@ -155,23 +151,9 @@
 
 <p>You can also provide a root-level <code class="highlighter-rouge">nodes</code> field so that Relay can refetch objects by IDs. Similarly, it is provided as <code class="highlighter-rouge">GraphQL::Relay::Node.plural_field</code>:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">QueryType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
-  <span class="nb">name</span> <span class="s2">"Query"</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">QueryType</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
   <span class="c1"># Fetches a list of objects given a list of IDs</span>
   <span class="n">field</span> <span class="ss">:nodes</span><span class="p">,</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Relay</span><span class="o">::</span><span class="no">Node</span><span class="p">.</span><span class="nf">plural_field</span>
-  <span class="c1"># ...</span>
-<span class="k">end</span>
-</code></pre></div></div>
-
-<p>Both of these fields may be customized using the usual definition block:</p>
-
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">QueryType</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ObjectType</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
-  <span class="nb">name</span> <span class="s2">"Query"</span>
-
-  <span class="n">field</span> <span class="ss">:node</span><span class="p">,</span> <span class="p">(</span><span class="no">GraphQL</span><span class="o">::</span><span class="no">Relay</span><span class="o">::</span><span class="no">Node</span><span class="p">.</span><span class="nf">field</span> <span class="k">do</span>
-    <span class="n">resolve</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">_</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">_</span><span class="p">)</span> <span class="p">{</span> <span class="c1"># your own custom logic here }</span>
-  <span class="k">end</span><span class="p">)</span>
-
   <span class="c1"># ...</span>
 <span class="k">end</span>
 </code></pre></div></div>

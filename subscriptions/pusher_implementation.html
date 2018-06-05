@@ -153,7 +153,7 @@ appendonly <span class="nb">yes</span>
 
 <p>Then, that Redis client is passed to the Subscription configuration:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
   <span class="n">use</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">Subscriptions</span><span class="p">,</span> <span class="ss">redis: </span><span class="vg">$graphql_subscriptions_redis</span>
 <span class="k">end</span>
 </code></pre></div></div>
@@ -262,7 +262,7 @@ appendonly <span class="nb">yes</span>
 
 <p>Then, use your <em>custom</em> subscriptions class instead of the built-in one for your schema:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">MySchema</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
   <span class="c1"># Use custom subscriptions instead of GraphQL::Pro::Subscriptions</span>
   <span class="c1"># to get custom serialization logic</span>
   <span class="n">use</span> <span class="no">CustomSubscriptions</span><span class="p">,</span> <span class="ss">redis: </span><span class="vg">$redis</span>
