@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  Class: GraphQL::Upgrader::Member::FieldFinder
+  
+    &mdash; GraphQL Ruby API Documentation
+  
+</title>
+
+  <link rel="stylesheet" href="../../../css/style.css" type="text/css" charset="utf-8" />
+
+  <link rel="stylesheet" href="../../../css/common.css" type="text/css" charset="utf-8" />
+
+<script type="text/javascript" charset="utf-8">
+  pathId = "GraphQL::Upgrader::Member::FieldFinder";
+  relpath = '../../../';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../../../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../../../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="../../../class_list.html?1"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="../../../_index.html">Index (F)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../../Upgrader.html" title="GraphQL::Upgrader (module)">Upgrader</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../Member.html" title="GraphQL::Upgrader::Member (class)">Member</a></span></span>
+     &raquo; 
+    <span class="title">FieldFinder</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../../../class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <div id="content"><h1>Class: GraphQL::Upgrader::Member::FieldFinder
+  
+  
+  
+</h1>
+<div class="box_info">
+  
+  <dl>
+    <dt>Inherits:</dt>
+    <dd>
+      <span class="inheritName">Parser::AST::Processor</span>
+      
+        <ul class="fullTree">
+          <li>Object</li>
+          
+            <li class="next">Parser::AST::Processor</li>
+          
+            <li class="next">GraphQL::Upgrader::Member::FieldFinder</li>
+          
+        </ul>
+        <a href="#" class="inheritanceTree">show all</a>
+      
+    </dd>
+  </dl>
+  
+
+  
+  
+  
+  
+  
+
+  
+
+  
+  <dl>
+    <dt>Defined in:</dt>
+    <dd>lib/graphql/upgrader/member.rb</dd>
+  </dl>
+  
+</div>
+
+
+  <h2>Constant Summary</h2>
+  <dl class="constants">
+    
+      <dt id="DEFINITION_METHODS-constant" class="">DEFINITION_METHODS =
+        <div class="docstring">
+  <div class="discussion">
+    <p>These methods are definition DSLs which may accept a block,
+each of these definitions is passed for transformation in its own right.
+<code>field</code> and <code>connection</code> take priority. In fact, they upgrade their
+own arguments, so those upgrades turn out to be no-ops.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+      </dt>
+      <dd><pre class="code"><span class='lbracket'>[</span><span class='symbol'>:field</span><span class='comma'>,</span> <span class='symbol'>:connection</span><span class='comma'>,</span> <span class='symbol'>:input_field</span><span class='comma'>,</span> <span class='symbol'>:return_field</span><span class='comma'>,</span> <span class='symbol'>:argument</span><span class='rbracket'>]</span></pre></dd>
+    
+  </dl>
+
+
+
+
+  <h2>Instance Attribute Summary <small><a href="#" class="summary_toggle">collapse</a></small></h2>
+  <ul class="summary">
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#locations-instance_method" title="#locations (instance method)">#<strong>locations</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Returns the value of attribute locations.</p>
+</div></span>
+  
+</li>
+
+    
+  </ul>
+
+
+
+
+  
+    <h2>
+      Instance Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#add_location-instance_method" title="#add_location (instance method)">#<strong>add_location</strong>(send_node:, source_node:)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#initialize-instance_method" title="#initialize (instance method)">#<strong>initialize</strong>  &#x21d2; FieldFinder </a>
+    
+
+    
+  </span>
+  
+  
+    <span class="note title constructor">constructor</span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>A new instance of FieldFinder.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#on_block-instance_method" title="#on_block (instance method)">#<strong>on_block</strong>(node)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#on_send-instance_method" title="#on_send (instance method)">#<strong>on_send</strong>(node)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+
+  <div id="constructor_details" class="method_details_list">
+  <h2>Constructor Details</h2>
+  
+    <div class="method_details first">
+  <h3 class="signature first" id="initialize-instance_method">
+  
+    #<strong>initialize</strong>  &#x21d2; <tt><span class='object_link'><a href="" title="GraphQL::Upgrader::Member::FieldFinder (class)">FieldFinder</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns a new instance of FieldFinder</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+858
+859
+860
+861
+862</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/upgrader/member.rb', line 858</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span>
+  <span class='comment'># Pairs of `{ { method_name =&gt; { name =&gt; [start, end] } }`,
+</span>  <span class='comment'># since fields/arguments are unique by name, within their category
+</span>  <span class='ivar'>@locations</span> <span class='op'>=</span> <span class='const'>Hash</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_h'>h</span><span class='comma'>,</span><span class='id identifier rubyid_k'>k</span><span class='op'>|</span> <span class='id identifier rubyid_h'>h</span><span class='lbracket'>[</span><span class='id identifier rubyid_k'>k</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span> <span class='rbrace'>}</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+  
+</div>
+
+  <div id="instance_attr_details" class="attr_details">
+    <h2>Instance Attribute Details</h2>
+    
+      
+      <span id=""></span>
+      <div class="method_details first">
+  <h3 class="signature first" id="locations-instance_method">
+  
+    #<strong>locations</strong>  &#x21d2; <tt>Object</tt>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns the value of attribute locations</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+856
+857
+858</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/upgrader/member.rb', line 856</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_locations'>locations</span>
+  <span class='ivar'>@locations</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+
+  <div id="instance_method_details" class="method_details_list">
+    <h2>Instance Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="add_location-instance_method">
+  
+    #<strong>add_location</strong>(send_node:, source_node:)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>send_node</span>
+      
+      
+        <span class='type'>(<tt>node</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>The node which might be a <code>field</code> call, etc</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>source_node</span>
+      
+      
+        <span class='type'>(<tt>node</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>The node whose source defines the bounds of the definition (eg, the surrounding block)</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+866
+867
+868
+869
+870
+871
+872
+873
+874
+875
+876
+877
+878
+879</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/upgrader/member.rb', line 866</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_add_location'>add_location</span><span class='lparen'>(</span><span class='label'>send_node:</span><span class='comma'>,</span><span class='label'>source_node:</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_receiver_node'>receiver_node</span><span class='comma'>,</span> <span class='id identifier rubyid_method_name'>method_name</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_arg_nodes'>arg_nodes</span> <span class='op'>=</span> <span class='op'>*</span><span class='id identifier rubyid_send_node'>send_node</span>
+  <span class='comment'># Implicit self and one of the recognized methods
+</span>  <span class='kw'>if</span> <span class='id identifier rubyid_receiver_node'>receiver_node</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span> <span class='op'>&amp;&amp;</span> <span class='const'><span class='object_link'><a href="#DEFINITION_METHODS-constant" title="GraphQL::Upgrader::Member::FieldFinder::DEFINITION_METHODS (constant)">DEFINITION_METHODS</a></span></span><span class='period'>.</span><span class='id identifier rubyid_include?'>include?</span><span class='lparen'>(</span><span class='id identifier rubyid_method_name'>method_name</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_name'>name</span> <span class='op'>=</span> <span class='id identifier rubyid_arg_nodes'>arg_nodes</span><span class='lbracket'>[</span><span class='int'>0</span><span class='rbracket'>]</span>
+    <span class='comment'># This field may have already been added because
+</span>    <span class='comment'># we find `(block ...)` nodes _before_ we find `(send ...)` nodes.
+</span>    <span class='kw'>if</span> <span class='ivar'>@locations</span><span class='lbracket'>[</span><span class='id identifier rubyid_method_name'>method_name</span><span class='rbracket'>]</span><span class='lbracket'>[</span><span class='id identifier rubyid_name'>name</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+      <span class='id identifier rubyid_starting_idx'>starting_idx</span> <span class='op'>=</span> <span class='id identifier rubyid_source_node'>source_node</span><span class='period'>.</span><span class='id identifier rubyid_loc'>loc</span><span class='period'>.</span><span class='id identifier rubyid_expression'>expression</span><span class='period'>.</span><span class='id identifier rubyid_begin'>begin</span><span class='period'>.</span><span class='id identifier rubyid_begin_pos'>begin_pos</span>
+      <span class='id identifier rubyid_ending_idx'>ending_idx</span> <span class='op'>=</span> <span class='id identifier rubyid_source_node'>source_node</span><span class='period'>.</span><span class='id identifier rubyid_loc'>loc</span><span class='period'>.</span><span class='id identifier rubyid_expression'>expression</span><span class='period'>.</span><span class='id identifier rubyid_end'>end</span><span class='period'>.</span><span class='id identifier rubyid_end_pos'>end_pos</span>
+      <span class='ivar'>@locations</span><span class='lbracket'>[</span><span class='id identifier rubyid_method_name'>method_name</span><span class='rbracket'>]</span><span class='lbracket'>[</span><span class='id identifier rubyid_name'>name</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='id identifier rubyid_starting_idx'>starting_idx</span><span class='comma'>,</span> <span class='id identifier rubyid_ending_idx'>ending_idx</span><span class='rbracket'>]</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="on_block-instance_method">
+  
+    #<strong>on_block</strong>(node)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+881
+882
+883
+884
+885</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/upgrader/member.rb', line 881</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_on_block'>on_block</span><span class='lparen'>(</span><span class='id identifier rubyid_node'>node</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_send_node'>send_node</span><span class='comma'>,</span> <span class='id identifier rubyid__args_node'>_args_node</span><span class='comma'>,</span> <span class='id identifier rubyid__body_node'>_body_node</span> <span class='op'>=</span> <span class='op'>*</span><span class='id identifier rubyid_node'>node</span>
+  <span class='id identifier rubyid_add_location'>add_location</span><span class='lparen'>(</span><span class='label'>send_node:</span> <span class='id identifier rubyid_send_node'>send_node</span><span class='comma'>,</span> <span class='label'>source_node:</span> <span class='id identifier rubyid_node'>node</span><span class='rparen'>)</span>
+  <span class='kw'>super</span><span class='lparen'>(</span><span class='id identifier rubyid_node'>node</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="on_send-instance_method">
+  
+    #<strong>on_send</strong>(node)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+887
+888
+889
+890</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/upgrader/member.rb', line 887</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_on_send'>on_send</span><span class='lparen'>(</span><span class='id identifier rubyid_node'>node</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_add_location'>add_location</span><span class='lparen'>(</span><span class='label'>send_node:</span> <span class='id identifier rubyid_node'>node</span><span class='comma'>,</span> <span class='label'>source_node:</span> <span class='id identifier rubyid_node'>node</span><span class='rparen'>)</span>
+  <span class='kw'>super</span><span class='lparen'>(</span><span class='id identifier rubyid_node'>node</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+      <div id="footer">
+  Generated on Tue Jun  5 00:29:18 2018 by
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.12 (ruby-2.4.2).
+</div>
+
+    </div>
+  </body>
+</html>
