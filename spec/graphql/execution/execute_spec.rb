@@ -99,6 +99,12 @@ describe GraphQL::Execution::Execute do
             [nil]
           }
         end
+
+        field :nonNullList, !types[!types.String], "" do
+          resolve ->(obj, args, ctx) {
+            [nil]
+          }
+        end
       end
 
       GraphQL::Schema.define do
@@ -122,6 +128,12 @@ describe GraphQL::Execution::Execute do
       assert_equal ["nonNullListWithNullElementsLazy"], result["data"].keys
 
       assert_equal nil, result["data"]["nonNullListWithNullElements"]
+    end
+
+    it "propagates null for non-null lists of non-null types" do
+      result = schema.execute("{ nonNullList }").to_h
+
+      assert_equal nil, result["data"]
     end
   end
 
