@@ -198,6 +198,8 @@ module GraphQL
               result = []
               field_ctx.value = result
 
+              non_null_inner_type = inner_type.non_null?
+
               value.each do |inner_value|
                 inner_ctx = field_ctx.spawn_child(
                   key: i,
@@ -214,13 +216,11 @@ module GraphQL
                 inner_ctx.value = inner_result
                 result << inner_ctx
                 i += 1
+
+                return PROPAGATE_NULL if non_null_inner_type && inner_ctx.value.nil?
               end
 
-              if inner_type.non_null? && result.any? { |result| result.value.nil? }
-                PROPAGATE_NULL
-              else
-                result
-              end
+              result
             when GraphQL::TypeKinds::NON_NULL
               inner_type = field_type.of_type
               resolve_value(
