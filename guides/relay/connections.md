@@ -10,43 +10,43 @@ index: 1
 
 Relay expresses [one-to-many relationships with _connections_](https://facebook.github.io/relay/graphql/connections.htm). Connections support pagination, filtering and metadata in a robust way.
 
-`graphql-ruby` includes built-in connection support for `Array`, `ActiveRecord::Relation`s, and `Sequel::Dataset`s. You can define custom connection classes to expose other collections with GraphQL.
+`graphql-ruby` includes built-in connection support for `Array`, `ActiveRecord::Relation`s, `Sequel::Dataset`s, and `Mongoid::Criteria`s. You can define custom connection classes to expose other collections with GraphQL.
 
 ## Connection fields
 
-To define a connection field, use the `connection` helper. For a return type, get a type's `.connection_type`.  The `resolve` proc should return a collection (eg, `Array` or `ActiveRecord::Relation`) _without_ pagination. (The connection will paginate the collection).
+To define a connection field, use the `field` method. For a return type, get a type's `.connection_type`.  The field's method or `resolver:` should return a collection (eg, `Array` or `ActiveRecord::Relation`) _without_ pagination. (The connection will paginate the collection).
 
 For example:
 
 ```ruby
-PostType = GraphQL::ObjectType.define do
+class PostType < GraphQL::Schema::Object
   # `Post#comments` returns an ActiveRecord::Relation
   # The GraphQL field returns a Connection
-  connection :comments, CommentType.connection_type
+  field :comments, CommentType.connection_type, null: false
   # `Post#similar_posts` returns an Array
-  connection :similarPosts, PostType.connection_type, property: :similar_posts
+  field :similar_posts, PostType.connection_type, null: false
 
   # ...
 end
 ```
 
+(GraphQL-Ruby applies connection logic because the return type's name ends in `Connection`. You can manually override this with `connection: true` or `connection: false`.)
+
 You can also define custom arguments and a custom resolve function for connections, just like other fields:
 
 ```ruby
-connection :featured_comments, CommentType.connection_type do
+field :featured_comments, CommentType.connection_type do
   # Add an argument:
-  argument :since, types.String
+  argument :since, String, required: false
+end
 
+def featured_comments(since: nil)
+  comments = post.comments.featured
+  if since
+    comments = comments.where("created_at >= ?", since)
+  end
   # Return an Array or ActiveRecord::Relation
-  resolve ->(post, args, ctx) {
-    comments = post.comments.featured
-
-    if args[:since]
-      comments = comments.where("created_at >= ", args[:since])
-    end
-
-    comments
-  }
+  comments
 end
 ```
 
@@ -55,13 +55,13 @@ end
 You can limit the number of results with `max_page_size:`:
 
 ```ruby
-connection :featured_comments, CommentType.connection_type, max_page_size: 50
+field :featured_comments, CommentType.connection_type, null: false, max_page_size: 50
 ```
 
 In addition, you can set a global default for all connection that do not specify a `max_page_size`:
 
 ```ruby
-MySchema = GraphQL::Schema.define do
+class MySchema < GraphQL::Schema
   default_max_page_size 100
 end
 ```
@@ -87,11 +87,13 @@ end
 Now, you can use `PostConnectionWithTotalCountType` to define a connection with the "totalCount" field:
 
 ```ruby
-AuthorType = GraphQL::ObjectType.define do
+class AuthorType < GraphQL::Schema::Object
   # Use the custom connection type:
-  connection :posts, PostConnectionWithTotalCountType
+  field :posts, PostConnectionWithTotalCountType, null: false, connection: true
 end
 ```
+
+(It uses `connection: true` because the type name _doesn't_ end in `"Connection"`.)
 
 This way, you can query your custom fields, for example:
 

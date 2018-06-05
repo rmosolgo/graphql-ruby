@@ -14,11 +14,11 @@ Fields have a "complexity" value which can be configured in their definition. It
 
 ```ruby
 # Constant complexity:
-field :top_score, types.Int, complexity: 10
+field :top_score, Integer, null: false, complexity: 10
 
 # Dynamic complexity:
-field :top_scorers, types[PlayerType] do
-  argument :limit, types.Int, default_value: 5
+field :top_scorers, [PlayerType], null: false do
+  argument :limit, Integer, limit: false, default_value: 5
   complexity ->(ctx, args, child_complexity) {
     if ctx[:current_user].staff?
       # no limit for staff users
@@ -39,7 +39,7 @@ end
 Then, define your `max_complexity` at the schema-level:
 
 ```ruby
-MySchema = GraphQL::Schema.define do
+class MySchema < GraphQL::Schema
  # ...
  max_complexity 100
 end
@@ -61,8 +61,11 @@ MySchema.execute(query_string, max_complexity: nil)
 To get a feeling for complexity of queries in your system, you can use the `QueryComplexity` query reducer. Hook it up to log out values from each query:
 
 ```ruby
-log_query_complexity = GraphQL::Analysis::QueryComplexity.new { |query, complexity| Rails.logger.info("[GraphQL Query Complexity] #{complexity}  | staff? #{query.context[:current_user].staff?}")}
-MySchema.query_analyzers << log_query_complexity
+
+class MySchema < GraphQL::Schema
+  log_query_complexity = GraphQL::Analysis::QueryComplexity.new { |query, complexity| Rails.logger.info("[GraphQL Query Complexity] #{complexity}  | staff? #{query.context[:current_user].staff?}")}
+  query_analyzer(log_query_complexity)
+end
 ```
 
 ## Prevent deeply-nested queries
@@ -71,7 +74,7 @@ You can also reject queries based on the depth of their nesting. You can define 
 
 ```ruby
 # Schema-level:
-MySchema = GraphQL::Schema.define do
+class MySchema < GraphQL::Schema
   # ...
   max_depth 10
 end
@@ -90,6 +93,8 @@ MySchema.execute(query_string, max_depth: nil)
 To get a feeling for depth of queries in your system, you can use the `QueryDepth` query reducer. Hook it up to log out values from each query:
 
 ```ruby
-log_query_depth = GraphQL::Analysis::QueryDepth.new { |query, depth| Rails.logger.info("[GraphQL Query Depth] #{depth} || staff?  #{query.context[:current_user].staff?}")}
-MySchema.query_analyzers << log_query_depth
+class MySchema < GraphQL::Schema
+  log_query_depth = GraphQL::Analysis::QueryDepth.new { |query, depth| Rails.logger.info("[GraphQL Query Depth] #{depth} || staff?  #{query.context[:current_user].staff?}")}
+  query_analyzer(log_query_depth)
+end
 ```

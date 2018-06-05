@@ -83,7 +83,7 @@ end
 To hook up the storage to your schema, add the plugin:
 
 ```ruby
-MySchema = GraphQL::Schema.define do
+class MySchema < GraphQL::Schema
   # ...
   use GraphQL::Pro::OperationStore
 end

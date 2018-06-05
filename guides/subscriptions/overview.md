@@ -16,7 +16,7 @@ _Subscriptions_ allow GraphQL clients to observe specific events and receive upd
 
 ### Subscription Type
 
-`subscription` is an entry point to your GraphQL schema, like `query` or `mutation`. It is defined by your `SubscriptionType`, a root-level `ObjectType`.
+`subscription` is an entry point to your GraphQL schema, like `query` or `mutation`. It is defined by your `SubscriptionType`, a root-level `GraphQL::Schema::Object`.
 
 Read more in the {% internal_link "Subscription Type guide", "subscriptions/subscription_type" %}.
 

@@ -7,6 +7,8 @@ title: Resolvers
 desc: Reusable, extendable resolution logic for complex fields
 index: 9
 class_based_api: true
+redirect_from:
+  - /fields/functions
 ---
 
 A {{ "GraphQL::Schema::Resolver" | api_doc }} is a container for field signature and resolution logic. It can be attached to a field with the `resolver:` keyword:
