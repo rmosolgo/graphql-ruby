@@ -1,4 +1,3 @@
-<%= type_ruby_name %> = GraphQL::EnumType.define do
-  name "<%= type_graphql_name %>"
+class <%= type_ruby_name %> < Types::BaseEnum
 <% prepared_values.each do |v| %>  value "<%= v[0] %>"<%= v.length > 1 ? ", value: #{v[1]}" : "" %>
 <% end %>end

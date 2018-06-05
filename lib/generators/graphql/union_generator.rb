@@ -26,7 +26,7 @@ module Graphql
       private
 
       def normalized_possible_types
-        possible_types.map { |t| self.class.normalize_type_expression(t, mode: :ruby) }
+        possible_types.map { |t| self.class.normalize_type_expression(t, mode: :ruby)[0] }
       end
     end
   end
