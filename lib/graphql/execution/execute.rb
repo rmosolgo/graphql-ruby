@@ -215,7 +215,12 @@ module GraphQL
                 result << inner_ctx
                 i += 1
               end
-              result
+
+              if inner_type.non_null? && result.any? { |result| result.value.nil? }
+                PROPAGATE_NULL
+              else
+                result
+              end
             when GraphQL::TypeKinds::NON_NULL
               inner_type = field_type.of_type
               resolve_value(

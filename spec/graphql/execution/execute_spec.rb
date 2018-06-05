@@ -77,6 +77,54 @@ describe GraphQL::Execution::Execute do
     end
   end
 
+  describe "when a member of [!String] type returns nil" do
+    let(:schema) {
+      query_type = GraphQL::ObjectType.define do
+        name "Query"
+
+        field :nonNullListWithNullElements, types[!types.String], "" do
+          resolve ->(obj, args, ctx) {
+            [nil]
+          }
+        end
+
+        field :nonNullListWithNullElementsLazy, types[!types.String], "" do
+          resolve ->(obj, args, ctx) {
+            LazyHelpers::Wrapper.new([nil])
+          }
+        end
+
+        field :listWithNullElements, types[types.String], "" do
+          resolve ->(obj, args, ctx) {
+            [nil]
+          }
+        end
+      end
+
+      GraphQL::Schema.define do
+        query query_type
+        lazy_resolve(LazyHelpers::Wrapper, :item)
+      end
+    }
+
+    it "propagates null for non-lazy resolvers" do
+      result = schema.execute("{ nonNullListWithNullElements, listWithNullElements }").to_h
+
+      assert_equal ["nonNullListWithNullElements", "listWithNullElements"], result["data"].keys
+
+      assert_equal nil, result["data"]["nonNullListWithNullElements"]
+      assert_equal [nil], result["data"]["listWithNullElements"]
+    end
+
+    it "propagates null for lazy resolvers" do
+      result = schema.execute("{ nonNullListWithNullElementsLazy }").to_h
+
+      assert_equal ["nonNullListWithNullElementsLazy"], result["data"].keys
+
+      assert_equal nil, result["data"]["nonNullListWithNullElements"]
+    end
+  end
+
   describe "when a list member raises an error" do
     let(:schema) {
       thing_type = GraphQL::ObjectType.define do
