@@ -55,7 +55,7 @@ end
 You can limit the number of results with `max_page_size:`:
 
 ```ruby
-field :featured_comments, CommentType.connection_type, null: falsemax_page_size: 50
+field :featured_comments, CommentType.connection_type, null: false, max_page_size: 50
 ```
 
 In addition, you can set a global default for all connection that do not specify a `max_page_size`:
@@ -89,9 +89,11 @@ Now, you can use `PostConnectionWithTotalCountType` to define a connection with 
 ```ruby
 class AuthorType < GraphQL::Schema::Object
   # Use the custom connection type:
-  field :posts, PostConnectionWithTotalCountType, null: false
+  field :posts, PostConnectionWithTotalCountType, null: false, connection: true
 end
 ```
+
+(It uses `connection: true` because the type name _doesn't_ end in `"Connection"`.)
 
 This way, you can query your custom fields, for example:
 
