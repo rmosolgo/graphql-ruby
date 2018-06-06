@@ -12,7 +12,6 @@ If you're using GraphQL with Ruby on Rails, you can use generators to:
 
 - [setup GraphQL](#graphqlinstall), including [GraphiQL](https://github.com/graphql/graphiql), [GraphQL::Batch](https://github.com/Shopify/graphql-batch), and [Relay](https://facebook.github.io/relay/)
 - [scaffold types](#scaffolding-types)
-- [scaffold functions](#scaffolding-functions)
 - [scaffold Relay mutations](#scaffolding-mutations)
 - [scaffold GraphQL::Batch loaders](#scaffolding-loaders)
 
@@ -28,6 +27,7 @@ This will:
 
 - Set up a folder structure in `app/graphql/`
 - Add schema definition
+- Add base type classes
 - Add a `Query` type definition
 - Add a route and controller for executing queries
 - Install [`graphiql-rails`](https://github.com/rmosolgo/graphiql-rails)
@@ -54,17 +54,10 @@ Several generators will add GraphQL types to your project. Run them with `-h` to
 - `rails g graphql:union`
 - `rails g graphql:enum`
 
-## Scaffolding Functions
-
-You can prepare a {{ "GraphQL::Function" | api_doc }} with
-
-```
-rails g graphql:function #{function_name}
-```
 
 ## Scaffolding Mutations
 
-You can prepare a Relay mutation with
+You can prepare a Relay Classic mutation with
 
 ```
 rails g graphql:mutation #{mutation_name}
