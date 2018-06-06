@@ -16,11 +16,11 @@ module GraphQL
       # otherwise, return nil.
       # @api private
       def self.authorized_new(returned_object, context)
-        after_lazy(context, returned_object) do |object|
+        context.schema.after_lazy(returned_object) do |object|
           if object.nil?
             nil
           else
-            after_lazy(context, authorized?(object, context)) do |is_authorized|
+            context.schema.after_lazy(authorized?(object, context)) do |is_authorized|
               if is_authorized
                 self.new(object, context)
               else
@@ -28,18 +28,6 @@ module GraphQL
               end
             end
           end
-        end
-      end
-
-      # TODO move this somewhere private, at least
-      def self.after_lazy(context, value)
-        if (lazy_method = context.schema.lazy_method_name(value))
-          GraphQL::Execution::Lazy.new do
-            result = value.public_send(lazy_method)
-            yield(result)
-          end
-        else
-          yield(value)
         end
       end
 

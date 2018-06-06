@@ -88,7 +88,9 @@ module GraphQL
             if obj.nil?
               obj
             elsif depth > 0
-              obj.map { |inner_obj| proxy_to_depth(inner_obj, depth - 1, type, ctx) }
+              ctx.schema.after_lazy(obj) do |list_of_items|
+                list_of_items.map { |inner_obj| proxy_to_depth(inner_obj, depth - 1, type, ctx) }
+              end
             else
               concrete_type = case type
               when GraphQL::UnionType, GraphQL::InterfaceType

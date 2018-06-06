@@ -966,6 +966,21 @@ module GraphQL
       end
     end
 
+    # Call the given block at the right time, either:
+    # - Right away, if `value` is not registered with `lazy_resolve`
+    # - After resolving `value`, if it's registered with `lazy_resolve` (eg, `Promise`)
+    # @api private
+    def after_lazy(value)
+      if (lazy_method = lazy_method_name(value))
+        GraphQL::Execution::Lazy.new do
+          result = value.public_send(lazy_method)
+          yield(result)
+        end
+      else
+        yield(value)
+      end
+    end
+
     protected
 
     def rescues?
