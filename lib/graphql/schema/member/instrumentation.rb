@@ -42,7 +42,6 @@ module GraphQL
 
         def apply_proxy(field)
           resolve_proc = field.resolve_proc
-          lazy_resolve_proc = field.lazy_resolve_proc
           inner_return_type = field.type.unwrap
           depth = list_depth(field.type)
 
