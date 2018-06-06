@@ -128,7 +128,7 @@ describe GraphQL::Schema::InputObject do
       TestInput2.to_graphql
     end
 
-    it "returns a stringified, aliased, ruby keyword style hash" do
+    it "returns a symbolized, aliased, ruby keyword style hash" do
       arg_values = {a: 1, b: 2, c: { d: 3, e: 4 }}
 
       input_object = InputObjectToHTest::TestInput2.new(
