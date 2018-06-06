@@ -158,6 +158,7 @@ module GraphQL
       @instrumenters = Hash.new { |h, k| h[k] = [] }
       @lazy_methods = GraphQL::Execution::Lazy::LazyMethodMap.new
       @lazy_methods.set(GraphQL::Relay::ConnectionResolve::LazyNodesWrapper, :never_called)
+      @lazy_methods.set(GraphQL::Execution::Lazy, :value)
       @cursor_encoder = Base64Encoder
       # Default to the built-in execution strategy:
       @query_execution_strategy = self.class.default_execution_strategy

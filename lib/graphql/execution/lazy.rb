@@ -31,7 +31,11 @@ module GraphQL
         if !@resolved
           @resolved = true
           @value = begin
-            @get_value_func.call
+            v = @get_value_func.call
+            if v.is_a?(Lazy)
+              v = v.value
+            end
+            v
           rescue GraphQL::ExecutionError => err
             err
           end

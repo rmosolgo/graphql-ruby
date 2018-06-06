@@ -48,7 +48,6 @@ module GraphQL
 
           field.redefine(
             resolve: ProxiedResolve.new(inner_resolve: resolve_proc, list_depth: depth, inner_return_type: inner_return_type),
-            lazy_resolve: ProxiedResolve.new(inner_resolve: lazy_resolve_proc, list_depth: depth, inner_return_type: inner_return_type),
           )
         end
 
@@ -72,10 +71,7 @@ module GraphQL
 
           def call(obj, args, ctx)
             result = @inner_resolve.call(obj, args, ctx)
-            if ctx.schema.lazy?(result)
-              # Wrap it later
-              result
-            elsif ctx.skip == result
+            if ctx.skip == result
               result
             else
               proxy_to_depth(result, @list_depth, @inner_return_type, ctx)

@@ -15,11 +15,31 @@ module GraphQL
       # Make a new instance of this type _if_ the auth check passes,
       # otherwise, return nil.
       # @api private
-      def self.authorized_new(object, context)
-        if authorized?(object, context)
-          self.new(object, context)
+      def self.authorized_new(returned_object, context)
+        after_lazy(context, returned_object) do |object|
+          if object.nil?
+            nil
+          else
+            after_lazy(context, authorized?(object, context)) do |is_authorized|
+              if is_authorized
+                self.new(object, context)
+              else
+                raise GraphQL::UnauthorizedError
+              end
+            end
+          end
+        end
+      end
+
+      # TODO move this somewhere private, at least
+      def self.after_lazy(context, value)
+        if (lazy_method = context.schema.lazy_method_name(value))
+          GraphQL::Execution::Lazy.new do
+            result = value.public_send(lazy_method)
+            yield(result)
+          end
         else
-          raise GraphQL::UnauthorizedError
+          yield(value)
         end
       end
 

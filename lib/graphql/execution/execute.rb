@@ -124,6 +124,8 @@ module GraphQL
                   field.lazy_resolve(raw_value, arguments, field_ctx)
                 rescue GraphQL::ExecutionError => err
                   err
+                rescue GraphQL::UnauthorizedError => err2
+                  nil
                 end
               }
               field_ctx.value = continue_resolve_field(inner_value, field_ctx)
