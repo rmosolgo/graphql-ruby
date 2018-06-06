@@ -652,6 +652,7 @@ module GraphQL
         # Configuration
         :max_complexity=, :max_depth=,
         :metadata,
+        :default_mask,
         :default_filter, :redefine,
         :id_from_object_proc, :object_from_id_proc,
         :id_from_object=, :object_from_id=, :type_error,
