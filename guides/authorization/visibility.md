@@ -53,3 +53,4 @@ And in introspection:
 - `__schema { types { ... } }` will not include `SecretFeature`
 - `__type(name: "SecretFeature")` will return `nil`
 - Any interfaces or unions which normally include `SecretFeature` will _not_ include it
+- Any fields that return `SecretFeature` will be excluded from introspection
