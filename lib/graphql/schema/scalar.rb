@@ -23,11 +23,19 @@ module GraphQL
           type_defn.coerce_result = method(:coerce_result)
           type_defn.coerce_input = method(:coerce_input)
           type_defn.metadata[:type_class] = self
+          type_defn.default_scalar = default_scalar
           type_defn
         end
 
         def kind
           GraphQL::TypeKinds::SCALAR
+        end
+
+        def default_scalar(is_default = nil)
+          if !is_default.nil?
+            @default_scalar = is_default
+          end
+          @default_scalar
         end
       end
     end
