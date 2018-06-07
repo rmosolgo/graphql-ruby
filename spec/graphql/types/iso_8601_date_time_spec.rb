@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 require "spec_helper"
-require "graphql/iso_8601_date_time_type"
-describe GraphQL::ISO8601DateTimeType do
+require "graphql/types/iso_8601_date_time"
+describe GraphQL::Types::ISO8601DateTime do
   module DateTimeTest
     class DateTimeObject < GraphQL::Schema::Object
       field :year, Integer, null: false
@@ -12,12 +12,12 @@ describe GraphQL::ISO8601DateTimeType do
       field :second, Integer, null: false
       field :zone, String, null: false
       # Use method: :object so that the DateTime instance is passed to the scalar
-      field :iso8601, GraphQL::ISO8601DateTimeType, null: false, method: :object
+      field :iso8601, GraphQL::Types::ISO8601DateTime, null: false, method: :object
     end
 
     class Query < GraphQL::Schema::Object
       field :parse_date, DateTimeObject, null: true do
-        argument :date, GraphQL::ISO8601DateTimeType, required: true
+        argument :date, GraphQL::Types::ISO8601DateTime, required: true
       end
 
       def parse_date(date:)
