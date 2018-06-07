@@ -64,7 +64,7 @@ end
 This is an improvement because your behavior is not coupled to your GraphQL schema. Besides that, it's easier to test: you can simply unit test the calculation class. For example:
 
 ```ruby
-# app/models/post/trending_spec.rb
+# spec/models/post/trending_spec.rb
 describe Post::Trending do
   let(:post) { create(:post) }
   let(:trending) { Post::Trending.new(post) }
