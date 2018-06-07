@@ -12,12 +12,12 @@
 
 ### Breaking changes
 
-- `Schema::InputObject#to_h` recursively transforms hashes to camelized, symbolized keys. #1555
+- `Schema::InputObject#to_h` recursively transforms hashes to underscorized, symbolized keys. #1555
 
 ### New features
 
 - Generators create class-based types #1562
-- `Schema::InputObject#to_h` returns a camelized, symbolized hash #1555
+- `Schema::InputObject#to_h` returns a underscorized, symbolized hash #1555
 
 ### Bug fixes
 
