@@ -307,7 +307,7 @@ module GraphQL
         # First, apply auth ...
         query_ctx = ctx.query.context
         inner_obj = obj && obj.object
-        if authorized?(inner_obj, query_ctx) && arguments.each_value.all? { |a| a.authorized?(inner_obj, query_ctx) }
+        if authorized?(inner_obj, query_ctx) && arguments.each_value.all? { |a| args[a.name].nil? || a.authorized?(inner_obj, args[a.name], query_ctx) }
           # Then if it passed, resolve the field
           if @resolve_proc
             # Might be nil, still want to call the func in that case

@@ -19,8 +19,8 @@ describe GraphQL::Authorization do
         super && (context[:hide] ? @name != "inaccessible" : true)
       end
 
-      def authorized?(value, context)
-        super && value != :hide2
+      def authorized?(parent_object, value, context)
+        super && parent_object != :hide2
       end
     end
 
@@ -45,6 +45,29 @@ describe GraphQL::Authorization do
 
     module BaseInterface
       include GraphQL::Schema::Interface
+    end
+
+    class BaseEnumValue < GraphQL::Schema::EnumValue
+      def initialize(*args, role: nil, **kwargs)
+        @role = role
+        super(*args, **kwargs)
+      end
+
+      def visible?(context)
+        super && (context[:hide] ? @role != :hidden : true)
+      end
+
+      def accessible?(context)
+        super && (context[:inaccessible] ? @role != :inaccessible : true)
+      end
+
+      def authorized?(context)
+        super && (context[:unauthorized] ? @role != :unauthorized : true)
+      end
+    end
+
+    class BaseEnum < GraphQL::Schema::Enum
+      enum_value_class(BaseEnumValue)
     end
 
     module HiddenInterface
@@ -143,6 +166,13 @@ describe GraphQL::Authorization do
       field :value, String, null: false, method: :object
     end
 
+    class LandscapeFeature < BaseEnum
+      value "MOUNTAIN"
+      value "STREAM", role: :unauthorized
+      value "FIELD", role: :inaccessible
+      value "TAR_PIT", role: :hidden
+    end
+
     class Query < BaseObject
       field :hidden, Integer, null: false
       field :unauthorized, Integer, null: true, method: :object
@@ -155,6 +185,27 @@ describe GraphQL::Authorization do
 
       def int2(**args)
         args[:unauthorized] || 1
+      end
+
+      field :landscape_feature, LandscapeFeature, null: false do
+        argument :string, String, required: false
+        argument :enum, LandscapeFeature, required: false
+      end
+
+      def landscape_feature(string: nil, enum: nil)
+        puts "Running landscape_feature"
+        context[:runs] && (context[:runs] += 1)
+        string || enum
+      end
+
+      field :landscape_features, [LandscapeFeature], null: false do
+        argument :strings, [String], required: false
+        argument :enums, [LandscapeFeature], required: false
+      end
+
+      def landscape_features(strings: [], enums: [])
+        context[:runs] && (context[:runs] += 1)
+        strings + enums
       end
 
       def empty_array; []; end
@@ -290,6 +341,52 @@ describe GraphQL::Authorization do
       assert_equal "RelayObjectEdge", visible_res["data"]["hiddenEdge"]["__typename"]
     end
 
+    it "treats hidden enum values as non-existant, even in lists" do
+      hidden_res_1 = auth_execute <<-GRAPHQL, context: { hide: true }
+      {
+        landscapeFeature(enum: TAR_PIT)
+      }
+      GRAPHQL
+
+      assert_equal ["Argument 'enum' on Field 'landscapeFeature' has an invalid value. Expected type 'LandscapeFeature'."], hidden_res_1["errors"].map { |e| e["message"] }
+
+      hidden_res_2 = auth_execute <<-GRAPHQL, context: { hide: true }
+      {
+        landscapeFeatures(enums: [STREAM, TAR_PIT])
+      }
+      GRAPHQL
+
+      assert_equal ["Argument 'enums' on Field 'landscapeFeatures' has an invalid value. Expected type '[LandscapeFeature!]'."], hidden_res_2["errors"].map { |e| e["message"] }
+
+      success_res = auth_execute <<-GRAPHQL, context: { hide: false }
+      {
+        landscapeFeature(enum: TAR_PIT)
+        landscapeFeatures(enums: [STREAM, TAR_PIT])
+      }
+      GRAPHQL
+
+      assert_equal "TAR_PIT", success_res["data"]["landscapeFeature"]
+      assert_equal ["STREAM", "TAR_PIT"], success_res["data"]["landscapeFeatures"]
+    end
+
+    it "refuses to resolve to hidden enum values" do
+      assert_raises(GraphQL::EnumType::UnresolvedValueError) do
+        auth_execute <<-GRAPHQL, context: { hide: true }
+        {
+          landscapeFeature(string: "TAR_PIT")
+        }
+        GRAPHQL
+      end
+
+      assert_raises(GraphQL::EnumType::UnresolvedValueError) do
+        auth_execute <<-GRAPHQL, context: { hide: true }
+        {
+          landscapeFeatures(strings: ["STREAM", "TAR_PIT"])
+        }
+        GRAPHQL
+      end
+    end
+
     it "works in introspection" do
       res = auth_execute <<-GRAPHQL, context: { hide: true, hidden_mutation: true }
         {
@@ -302,6 +399,7 @@ describe GraphQL::Authorization do
 
           hiddenObject: __type(name: "HiddenObject") { name }
           hiddenInterface: __type(name: "HiddenInterface") { name }
+          landscapeFeatures: __type(name: "LandscapeFeature") { enumValues { name } }
         }
       GRAPHQL
       query_field_names = res["data"]["query"]["fields"].map { |f| f["name"] }
@@ -311,6 +409,9 @@ describe GraphQL::Authorization do
 
       assert_nil res["data"]["hiddenObject"]
       assert_nil res["data"]["hiddenInterface"]
+
+      visible_landscape_features = res["data"]["landscapeFeatures"]["enumValues"].map { |v| v["name"] }
+      assert_equal ["MOUNTAIN", "STREAM", "FIELD"], visible_landscape_features
     end
   end
 
@@ -408,6 +509,59 @@ describe GraphQL::Authorization do
       # TODO assert that error is present?
       visible_response = auth_execute(query)
       assert_equal 5, visible_response["data"]["int2"]
+    end
+
+    focus
+    it "prevents using unauthorized enum values as input" do
+      context = { unauthorized: true, runs: 0 }
+      unauthorized_res = auth_execute <<-GRAPHQL, context: context
+      {
+        landscapeFeature(enum: STREAM)
+      }
+      GRAPHQL
+      pp unauthorized_res
+
+      # Null propagated to top-level
+      assert_nil unauthorized_res["data"]
+      assert_equal 0, context[:runs]
+      # TODO check for errors?
+
+      unauthorized_res2 = auth_execute <<-GRAPHQL, context: { unauthorized: true }
+      {
+        landscapeFeatures(enums: STREAM)
+      }
+      GRAPHQL
+    end
+
+    it "returns nil instead of unauthorized enum values" do
+      unauthorized_res = auth_execute <<-GRAPHQL, context: { unauthorized: true }
+      {
+        landscapeFeature(string: "STREAM")
+      }
+      GRAPHQL
+
+      # Null propagated to top-level
+      assert_nil unauthorized_res["data"]
+      # TODO check for errors?
+
+      unauthorized_res2 = auth_execute <<-GRAPHQL, context: { unauthorized: true }
+      {
+        landscapeFeatures(strings: ["STREAM"])
+      }
+      GRAPHQL
+
+      # Null propagated to top-level
+      assert_nil unauthorized_res2["data"]
+
+      authorized_res = auth_execute <<-GRAPHQL
+      {
+        landscapeFeature(string: "STREAM")
+        landscapeFeatures(strings: ["STREAM"])
+      }
+      GRAPHQL
+
+      assert_equal "STREAM", authorized_res["data"]["landscapeFeature"]
+      assert_equal ["STREAM"], authorized_res["data"]["landscapeFeatures"]
     end
 
     it "works with edges and connections" do

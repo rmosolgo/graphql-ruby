@@ -24,7 +24,7 @@ module GraphQL
 
       class << self
         extend Forwardable
-        def_delegators :graphql_definition, :coerce_isolated_input, :coerce_isolated_result
+        def_delegators :graphql_definition, :coerce_isolated_input, :coerce_isolated_result, :coerce_input, :coerce_result
 
         # Define a value for this enum
         # @param graphql_name [String, Symbol] the GraphQL value for this, usually `SCREAMING_CASE`

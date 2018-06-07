@@ -120,7 +120,12 @@ module GraphQL
       all_values = warden ? warden.enum_values(self) : @values_by_name.each_value
       enum_value = all_values.find { |val| val.value == value }
       if enum_value
-        enum_value.name
+        p [enum_value, enum_value.metadata[:type_class]]
+        if (v = enum_value.metadata[:type_class]) && !v.authorized?(ctx.query.context)
+          raise GraphQL::UnauthorizedError
+        else
+          enum_value.name
+        end
       else
         raise(UnresolvedValueError, "Can't resolve enum #{name} for #{value.inspect}")
       end
@@ -163,7 +168,12 @@ module GraphQL
     # @return [Object] the underlying value for this enum value
     def coerce_non_null_input(value_name, ctx)
       if @values_by_name.key?(value_name)
-        @values_by_name.fetch(value_name).value
+        enum_value = @values_by_name.fetch(value_name)
+        if (t = enum_value.metadata[:type_class]) && !t.authorized?(ctx)
+          raise GraphQL::UnauthorizedError
+        else
+          enum_value.value
+        end
       else
         nil
       end

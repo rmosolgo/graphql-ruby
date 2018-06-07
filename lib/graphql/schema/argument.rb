@@ -62,7 +62,12 @@ module GraphQL
         true
       end
 
-      def authorized?(obj, ctx)
+      def authorized?(obj, arg_value, ctx)
+        if type.unwrap < GraphQL::Schema::Enum
+          # This will raise if unauthorized
+          p "Coercing #{arg_value} as #{type}"
+          type.coerce_input(arg_value, ctx)
+        end
         true
       end
 

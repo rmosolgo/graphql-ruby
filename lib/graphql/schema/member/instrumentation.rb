@@ -10,7 +10,8 @@ module GraphQL
           return_type = field.type.unwrap
           if (return_type.is_a?(GraphQL::ObjectType) && return_type.metadata[:type_class]) ||
               return_type.is_a?(GraphQL::InterfaceType) ||
-              (return_type.is_a?(GraphQL::UnionType) && return_type.possible_types.any? { |t| t.metadata[:type_class] })
+              (return_type.is_a?(GraphQL::UnionType) && return_type.possible_types.any? { |t| t.metadata[:type_class] }) ||
+              (return_type.is_a?(GraphQL::EnumType) && return_type.metadata[:type_class])
             field = apply_proxy(field)
           end
 
@@ -83,6 +84,18 @@ module GraphQL
 
           private
 
+          def authorize_enum_values(value, ctx)
+            p "Authorizing #{value} (#{value.class.name})"
+            case value
+            when GraphQL::Schema::EnumValue
+              if !value.authorized?(ctx)
+                raise GraphQL::UnauthorizedError
+              end
+            when Array
+              value.each { |v| authorize_enum_values(v) }
+            end
+          end
+
           def proxy_to_depth(obj, depth, type, ctx)
             ctx.schema.after_lazy(obj) do |inner_obj|
               if inner_obj.nil?
@@ -93,7 +106,7 @@ module GraphQL
                 concrete_type = case type
                 when GraphQL::UnionType, GraphQL::InterfaceType
                   ctx.query.resolve_type(type, inner_obj)
-                when GraphQL::ObjectType
+                when GraphQL::ObjectType, GraphQL::EnumType
                   type
                 else
                   raise "unexpected proxying type #{type} for #{inner_obj} at #{ctx.owner_type}.#{ctx.field.name}"
@@ -102,7 +115,15 @@ module GraphQL
                 if concrete_type && (object_class = concrete_type.metadata[:type_class])
                   # use the query-level context here, since it won't be field-specific anyways
                   query_ctx = ctx.query.context
-                  object_class.authorized_new(inner_obj, query_ctx)
+                  if object_class < GraphQL::Schema::Object
+                    object_class.authorized_new(inner_obj, query_ctx)
+                  elsif object_class < GraphQL::Schema::Enum
+                    # This will raise if something is not authorized
+                    authorize_enum_values(obj, query_ctx)
+                    obj
+                  else
+                    raise "Unexpected object class: #{object_class}"
+                  end
                 else
                   inner_obj
                 end
