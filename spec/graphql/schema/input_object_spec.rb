@@ -28,7 +28,7 @@ describe GraphQL::Schema::InputObject do
 
       assert_equal 3, subclass.arguments.size
       assert_equal ["arg1", "arg2", "arg3"], subclass.arguments.keys
-      assert_equal ["String!", "Int!", "Int!"], subclass.arguments.values.map { |a| a.type.to_s }
+      assert_equal ["String!", "Int!", "Int!"], subclass.arguments.values.map { |a| a.type.to_type_signature }
     end
   end
 
