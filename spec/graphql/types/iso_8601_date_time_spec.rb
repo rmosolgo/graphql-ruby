@@ -21,7 +21,7 @@ describe GraphQL::Types::ISO8601DateTime do
       end
 
       def parse_date(date:)
-        # Date is parsed by the scalar
+        # Date is parsed by the scalar, so it's already a DateTime
         date
       end
     end
