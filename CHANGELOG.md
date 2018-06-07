@@ -8,6 +8,24 @@
 
 ### Bug fixes
 
+## 1.8.2 (6 June 2018)
+
+### Breaking changes
+
+- `Schema::InputObject#to_h` recursively transforms hashes to camelized, symbolized keys. #1555
+
+### New features
+
+- Generators create class-based types #1562
+- `Schema::InputObject#to_h` returns a camelized, symbolized hash #1555
+
+### Bug fixes
+
+- Support `default_mask` in class-based schemas #1563
+- Fix null propagation for list types #1558
+- Validate unique arguments in queries #1557
+- Fix `RelayClassicMutation`s with no arguments #1543
+
 ## 1.8.1 (1 June 2018)
 
 ### Breaking changes
