@@ -104,6 +104,19 @@ describe GraphQL::Schema::Mutation do
       assert_equal "GraphQL::Query::Context::ExecutionErrors", response["data"]["addInstrument"]["ee"]
       assert_equal 7, response["data"]["addInstrument"]["entries"].size
     end
+
+    it "turns inputs into kwargs" do
+      res = Jazz::Schema.execute <<-GRAPHQL
+      mutation {
+        addSitar {
+          instrument {
+            name
+          }
+        }
+      }
+      GRAPHQL
+      assert_equal "Sitar", res["data"]["addSitar"]["instrument"]["name"]
+    end
   end
 
   describe ".null" do

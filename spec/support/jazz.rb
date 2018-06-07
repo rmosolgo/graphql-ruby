@@ -466,7 +466,7 @@ module Jazz
 
     field :add_instrument, mutation: AddInstrument
     field :add_sitar, mutation: AddSitar
-    
+
     def add_ensemble(input:)
       ens = Models::Ensemble.new(input.name)
       Models.data["Ensemble"] << ens
