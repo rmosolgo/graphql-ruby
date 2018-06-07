@@ -254,8 +254,6 @@ module GraphQL
               raise("Unknown type kind: #{field_type.kind}")
             end
           end
-        rescue GraphQL::UnauthorizedError
-          nil
         end
       end
 

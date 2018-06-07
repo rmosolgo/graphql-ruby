@@ -19,7 +19,7 @@ describe GraphQL::Authorization do
         super && (context[:hide] ? @name != "inaccessible" : true)
       end
 
-      def authorized?(parent_object, value, context)
+      def authorized?(parent_object, context)
         super && parent_object != :hide2
       end
     end
@@ -55,14 +55,6 @@ describe GraphQL::Authorization do
 
       def visible?(context)
         super && (context[:hide] ? @role != :hidden : true)
-      end
-
-      def accessible?(context)
-        super && (context[:inaccessible] ? @role != :inaccessible : true)
-      end
-
-      def authorized?(context)
-        super && (context[:unauthorized] ? @role != :unauthorized : true)
       end
     end
 
@@ -193,8 +185,6 @@ describe GraphQL::Authorization do
       end
 
       def landscape_feature(string: nil, enum: nil)
-        puts "Running landscape_feature"
-        context[:runs] && (context[:runs] += 1)
         string || enum
       end
 
@@ -204,7 +194,6 @@ describe GraphQL::Authorization do
       end
 
       def landscape_features(strings: [], enums: [])
-        context[:runs] && (context[:runs] += 1)
         strings + enums
       end
 
@@ -509,59 +498,6 @@ describe GraphQL::Authorization do
       # TODO assert that error is present?
       visible_response = auth_execute(query)
       assert_equal 5, visible_response["data"]["int2"]
-    end
-
-    focus
-    it "prevents using unauthorized enum values as input" do
-      context = { unauthorized: true, runs: 0 }
-      unauthorized_res = auth_execute <<-GRAPHQL, context: context
-      {
-        landscapeFeature(enum: STREAM)
-      }
-      GRAPHQL
-      pp unauthorized_res
-
-      # Null propagated to top-level
-      assert_nil unauthorized_res["data"]
-      assert_equal 0, context[:runs]
-      # TODO check for errors?
-
-      unauthorized_res2 = auth_execute <<-GRAPHQL, context: { unauthorized: true }
-      {
-        landscapeFeatures(enums: STREAM)
-      }
-      GRAPHQL
-    end
-
-    it "returns nil instead of unauthorized enum values" do
-      unauthorized_res = auth_execute <<-GRAPHQL, context: { unauthorized: true }
-      {
-        landscapeFeature(string: "STREAM")
-      }
-      GRAPHQL
-
-      # Null propagated to top-level
-      assert_nil unauthorized_res["data"]
-      # TODO check for errors?
-
-      unauthorized_res2 = auth_execute <<-GRAPHQL, context: { unauthorized: true }
-      {
-        landscapeFeatures(strings: ["STREAM"])
-      }
-      GRAPHQL
-
-      # Null propagated to top-level
-      assert_nil unauthorized_res2["data"]
-
-      authorized_res = auth_execute <<-GRAPHQL
-      {
-        landscapeFeature(string: "STREAM")
-        landscapeFeatures(strings: ["STREAM"])
-      }
-      GRAPHQL
-
-      assert_equal "STREAM", authorized_res["data"]["landscapeFeature"]
-      assert_equal ["STREAM"], authorized_res["data"]["landscapeFeatures"]
     end
 
     it "works with edges and connections" do
