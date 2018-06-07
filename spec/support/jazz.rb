@@ -451,11 +451,10 @@ module Jazz
     description "Get Sitar to musical instrument"
 
     field :instrument, InstrumentType, null: false
-    extras [:execution_errors]
 
     def resolve
       instrument = Models::Instrument.new("Sitar", :str)
-      { instrument: instrument, ee: execution_errors.class.name}
+      { instrument: instrument }
     end
   end
 
