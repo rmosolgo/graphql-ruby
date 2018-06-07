@@ -108,13 +108,14 @@ describe GraphQL::Schema::Mutation do
     it "turns inputs into kwargs" do
       res = Jazz::Schema.execute <<-GRAPHQL
       mutation {
-        addSitar {
+        addSitar(input: {}) {
           instrument {
             name
           }
         }
       }
       GRAPHQL
+
       assert_equal "Sitar", res["data"]["addSitar"]["instrument"]["name"]
     end
   end

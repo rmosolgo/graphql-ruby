@@ -45,9 +45,9 @@ module Jazz
   end
 
   class BaseArgument < GraphQL::Schema::Argument
-    def initialize(name, type, desc = nil, custom: nil, **kwargs)
+    def initialize(*args, custom: nil, **kwargs)
       @custom = custom
-      super(name, type, desc, **kwargs)
+      super(*args, **kwargs)
     end
 
     def to_graphql
@@ -446,7 +446,7 @@ module Jazz
     end
   end
 
-  class AddSitar < GraphQL::Schema::Mutation
+  class AddSitar < GraphQL::Schema::RelayClassicMutation
     null true
     description "Get Sitar to musical instrument"
 
