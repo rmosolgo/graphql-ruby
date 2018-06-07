@@ -247,7 +247,7 @@ module GraphQL
           out << print_arguments(directive.arguments)
         end
 
-        out << " on #{directive.locations.join(' | ')}"
+        out << " on #{directive.locations.map(&:name).join(' | ')}"
       end
 
       def print_description(node, indent: "", first_in_block: true)
