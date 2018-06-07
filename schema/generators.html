@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.8.1/">API</a>
+          <a href="/api-doc/1.8.2/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <input
@@ -52,7 +52,6 @@
 <ul>
   <li><a href="#graphqlinstall">setup GraphQL</a>, including <a href="https://github.com/graphql/graphiql">GraphiQL</a>, <a href="https://github.com/Shopify/graphql-batch">GraphQL::Batch</a>, and <a href="https://facebook.github.io/relay/">Relay</a></li>
   <li><a href="#scaffolding-types">scaffold types</a></li>
-  <li><a href="#scaffolding-functions">scaffold functions</a></li>
   <li><a href="#scaffolding-mutations">scaffold Relay mutations</a></li>
   <li><a href="#scaffolding-loaders">scaffold GraphQL::Batch loaders</a></li>
 </ul>
@@ -69,6 +68,7 @@
 <ul>
   <li>Set up a folder structure in <code class="highlighter-rouge">app/graphql/</code></li>
   <li>Add schema definition</li>
+  <li>Add base type classes</li>
   <li>Add a <code class="highlighter-rouge">Query</code> type definition</li>
   <li>Add a route and controller for executing queries</li>
   <li>Install <a href="https://github.com/rmosolgo/graphiql-rails"><code class="highlighter-rouge">graphiql-rails</code></a></li>
@@ -102,16 +102,9 @@
   <li><code class="highlighter-rouge">rails g graphql:enum</code></li>
 </ul>
 
-<h2 id="scaffolding-functions">Scaffolding Functions</h2>
-
-<p>You can prepare a <a href="/api-doc/1.8.1/GraphQL/Function" target="_blank" title="API docs for GraphQL::Function"><code>GraphQL::Function</code></a> with</p>
-
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>rails g graphql:function #{function_name}
-</code></pre></div></div>
-
 <h2 id="scaffolding-mutations">Scaffolding Mutations</h2>
 
-<p>You can prepare a Relay mutation with</p>
+<p>You can prepare a Relay Classic mutation with</p>
 
 <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>rails g graphql:mutation #{mutation_name}
 </code></pre></div></div>

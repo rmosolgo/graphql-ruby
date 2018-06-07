@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.8.1/">API</a>
+          <a href="/api-doc/1.8.2/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <input
@@ -102,7 +102,7 @@
 
 <p>This is an improvement because your behavior is not coupled to your GraphQL schema. Besides that, it’s easier to test: you can simply unit test the calculation class. For example:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># app/models/post/trending_spec.rb</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># spec/models/post/trending_spec.rb</span>
 <span class="n">describe</span> <span class="no">Post</span><span class="o">::</span><span class="no">Trending</span> <span class="k">do</span>
   <span class="n">let</span><span class="p">(</span><span class="ss">:post</span><span class="p">)</span> <span class="p">{</span> <span class="n">create</span><span class="p">(</span><span class="ss">:post</span><span class="p">)</span> <span class="p">}</span>
   <span class="n">let</span><span class="p">(</span><span class="ss">:trending</span><span class="p">)</span> <span class="p">{</span> <span class="no">Post</span><span class="o">::</span><span class="no">Trending</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">post</span><span class="p">)</span> <span class="p">}</span>

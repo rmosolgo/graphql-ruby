@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html lang="en">
   <head>
-    <meta http-equiv="refresh" content="1;url=/api-doc/1.8.1/Graphql/Generators/InstallGenerator" />
+    <meta http-equiv="refresh" content="1;url=/api-doc/1.8.2/Graphql/Generators/InstallGenerator" />
   </head>
   <body>
     <ul>
@@ -12,6 +12,11 @@ Setup a folder structure for GraphQL:
   <li>graphql/</li>
   <li>resolvers/</li>
   <li>types/</li>
+  <li>base_enum.rb</li>
+  <li>base_input_object.rb</li>
+  <li>base_interface.rb</li>
+  <li>base_object.rb</li>
+  <li>base_union.rb</li>
   <li>query_type.rb</li>
   <li>loaders/</li>
   <li>mutations/</li>
@@ -25,6 +30,7 @@ Add a route for that controller:
     <p>Accept a ` relay<code class="highlighter-rouge"> option which adds The root </code>node(id: ID!)<code class="highlighter-rouge"> field.
 Accept a </code> batch<code class="highlighter-rouge"> option which adds </code>GraphQL::Batch<code class="highlighter-rouge"> setup. 
 Use </code> no-graphiql<code class="highlighter-rouge"> to skip </code>graphiql-rails` installation. 
+TODO: also add base classes 
 Includes:
 Graphql::Generators::Core
 Instance methods:

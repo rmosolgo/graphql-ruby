@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.8.1/">API</a>
+          <a href="/api-doc/1.8.2/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <input
@@ -94,6 +94,37 @@
 </code></pre></div></div>
 
 <p>See <a href="/subscriptions/implementation">Implementing Subscriptions</a> for more about actually delivering updates.</p>
+
+<h2 id="authorizing-subscriptions">Authorizing Subscriptions</h2>
+
+<p>When a client first sends a <code class="highlighter-rouge">subscription</code> operation, the root fields are resolved, so their corresponding methods are called, for example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types</span><span class="o">::</span><span class="no">SubscriptionType</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
+  <span class="n">field</span> <span class="ss">:post_was_published</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">PostType</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span><span class="p">,</span>
+    <span class="ss">description: </span><span class="s2">"A post was published to the blog"</span> <span class="k">do</span>
+      <span class="n">argument</span> <span class="ss">:topic</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">PostTopic</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">true</span>
+    <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">post_was_published</span><span class="p">(</span><span class="n">topic</span><span class="p">:)</span>
+    <span class="c1"># This will be called on the initial request</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>During that method, you can raise an error to <em>prevent</em> establishing the subscription. For example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">post_was_published</span><span class="p">(</span><span class="n">topic</span><span class="p">:)</span>
+  <span class="k">if</span> <span class="n">context</span><span class="p">[</span><span class="ss">:viewer</span><span class="p">].</span><span class="nf">can_subscribe_to?</span><span class="p">(</span><span class="n">topic</span><span class="p">)</span>
+    <span class="c1"># Allow the request</span>
+  <span class="k">else</span>
+    <span class="k">raise</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ExecutionError</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"Can't subscribe to this topic: </span><span class="si">#{</span><span class="n">topic</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>If the error is raised, it will be added to the response’s <code class="highlighter-rouge">"errors"</code> key and the subscription won’t be created.</p>
+
+<p>The return value of the method is not used; only the raised error affects the behavior of the subscription.</p>
 
 </div>
 <p class="guide-footer">

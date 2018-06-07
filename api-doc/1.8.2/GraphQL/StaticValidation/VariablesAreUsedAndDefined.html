@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  Class: GraphQL::StaticValidation::VariablesAreUsedAndDefined
+  
+    &mdash; GraphQL Ruby API Documentation
+  
+</title>
+
+  <link rel="stylesheet" href="../../css/style.css" type="text/css" charset="utf-8" />
+
+  <link rel="stylesheet" href="../../css/common.css" type="text/css" charset="utf-8" />
+
+<script type="text/javascript" charset="utf-8">
+  pathId = "GraphQL::StaticValidation::VariablesAreUsedAndDefined";
+  relpath = '../../';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="../../class_list.html?1"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="../../_index.html">Index (V)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../StaticValidation.html" title="GraphQL::StaticValidation (module)">StaticValidation</a></span></span>
+     &raquo; 
+    <span class="title">VariablesAreUsedAndDefined</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../../class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <div id="content"><h1>Class: GraphQL::StaticValidation::VariablesAreUsedAndDefined
+  
+  
+  
+</h1>
+<div class="box_info">
+  
+  <dl>
+    <dt>Inherits:</dt>
+    <dd>
+      <span class="inheritName">Object</span>
+      
+        <ul class="fullTree">
+          <li>Object</li>
+          
+            <li class="next">GraphQL::StaticValidation::VariablesAreUsedAndDefined</li>
+          
+        </ul>
+        <a href="#" class="inheritanceTree">show all</a>
+      
+    </dd>
+  </dl>
+  
+
+  
+  
+  
+  
+  <dl>
+      <dt>Includes:</dt>
+      <dd><span class='object_link'><a href="Message/MessageHelper.html" title="GraphQL::StaticValidation::Message::MessageHelper (module)">Message::MessageHelper</a></span></dd>
+  </dl>
+  
+  
+
+  
+
+  
+  <dl>
+    <dt>Defined in:</dt>
+    <dd>lib/graphql/static_validation/rules/variables_are_used_and_defined.rb</dd>
+  </dl>
+  
+</div>
+
+<h2>Overview</h2><div class="docstring">
+  <div class="discussion">
+    <p>The problem is
+  - Variable usage must be determined at the OperationDefinition level
+  - You can’t tell how fragments use variables until you visit FragmentDefinitions (which may be at the end of the document)</p>
+
+<p>So, this validator includes some crazy logic to follow fragment spreads recursively, while avoiding infinite loops.</p>
+
+<p><code>graphql-js</code> solves this problem by:
+  - re-visiting the AST for each validator
+  - allowing validators to say <code>followSpreads: true</code></p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><h2>Defined Under Namespace</h2>
+<p class="children">
+  
+    
+  
+    
+      <strong class="classes">Classes:</strong> <span class='object_link'><a href="VariablesAreUsedAndDefined/VariableUsage.html" title="GraphQL::StaticValidation::VariablesAreUsedAndDefined::VariableUsage (class)">VariableUsage</a></span>
+    
+  
+</p>
+
+
+
+
+
+
+
+  
+    <h2>
+      Instance Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#validate-instance_method" title="#validate (instance method)">#<strong>validate</strong>(context)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#variable_hash-instance_method" title="#variable_hash (instance method)">#<strong>variable_hash</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <h3 class="inherited">Methods included from <span class='object_link'><a href="Message/MessageHelper.html" title="GraphQL::StaticValidation::Message::MessageHelper (module)">Message::MessageHelper</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="Message/MessageHelper.html#message-instance_method" title="GraphQL::StaticValidation::Message::MessageHelper#message (method)">#message</a></span></p>
+
+
+  <div id="instance_method_details" class="method_details_list">
+    <h2>Instance Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="validate-instance_method">
+  
+    #<strong>validate</strong>(context)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/static_validation/rules/variables_are_used_and_defined.rb', line 32</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_validate'>validate</span><span class='lparen'>(</span><span class='id identifier rubyid_context'>context</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_variable_usages_for_context'>variable_usages_for_context</span> <span class='op'>=</span> <span class='const'>Hash</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='lbrace'>{</span><span class='op'>|</span><span class='id identifier rubyid_hash'>hash</span><span class='comma'>,</span> <span class='id identifier rubyid_key'>key</span><span class='op'>|</span> <span class='id identifier rubyid_hash'>hash</span><span class='lbracket'>[</span><span class='id identifier rubyid_key'>key</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='id identifier rubyid_variable_hash'>variable_hash</span> <span class='rbrace'>}</span>
+  <span class='id identifier rubyid_spreads_for_context'>spreads_for_context</span> <span class='op'>=</span> <span class='const'>Hash</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='lbrace'>{</span><span class='op'>|</span><span class='id identifier rubyid_hash'>hash</span><span class='comma'>,</span> <span class='id identifier rubyid_key'>key</span><span class='op'>|</span> <span class='id identifier rubyid_hash'>hash</span><span class='lbracket'>[</span><span class='id identifier rubyid_key'>key</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span> <span class='rbrace'>}</span>
+  <span class='id identifier rubyid_variable_context_stack'>variable_context_stack</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
+
+  <span class='comment'># OperationDefinitions and FragmentDefinitions
+</span>  <span class='comment'># both push themselves onto the context stack (and pop themselves off)
+</span>  <span class='id identifier rubyid_push_variable_context_stack'>push_variable_context_stack</span> <span class='op'>=</span> <span class='tlambda'>-&gt;</span><span class='lparen'>(</span><span class='id identifier rubyid_node'>node</span><span class='comma'>,</span> <span class='id identifier rubyid_parent'>parent</span><span class='rparen'>)</span> <span class='tlambeg'>{</span>
+    <span class='comment'># initialize the hash of vars for this context:
+</span>    <span class='id identifier rubyid_variable_usages_for_context'>variable_usages_for_context</span><span class='lbracket'>[</span><span class='id identifier rubyid_node'>node</span><span class='rbracket'>]</span>
+    <span class='id identifier rubyid_variable_context_stack'>variable_context_stack</span><span class='period'>.</span><span class='id identifier rubyid_push'>push</span><span class='lparen'>(</span><span class='id identifier rubyid_node'>node</span><span class='rparen'>)</span>
+  <span class='rbrace'>}</span>
+
+  <span class='id identifier rubyid_pop_variable_context_stack'>pop_variable_context_stack</span> <span class='op'>=</span> <span class='tlambda'>-&gt;</span><span class='lparen'>(</span><span class='id identifier rubyid_node'>node</span><span class='comma'>,</span> <span class='id identifier rubyid_parent'>parent</span><span class='rparen'>)</span> <span class='tlambeg'>{</span>
+    <span class='id identifier rubyid_variable_context_stack'>variable_context_stack</span><span class='period'>.</span><span class='id identifier rubyid_pop'>pop</span>
+  <span class='rbrace'>}</span>
+
+
+  <span class='id identifier rubyid_context'>context</span><span class='period'>.</span><span class='id identifier rubyid_visitor'>visitor</span><span class='lbracket'>[</span><span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Language.html" title="GraphQL::Language (module)">Language</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Language/Nodes.html" title="GraphQL::Language::Nodes (module)">Nodes</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Language/Nodes/OperationDefinition.html" title="GraphQL::Language::Nodes::OperationDefinition (class)">OperationDefinition</a></span></span><span class='rbracket'>]</span> <span class='op'>&lt;&lt;</span> <span class='id identifier rubyid_push_variable_context_stack'>push_variable_context_stack</span>
+  <span class='id identifier rubyid_context'>context</span><span class='period'>.</span><span class='id identifier rubyid_visitor'>visitor</span><span class='lbracket'>[</span><span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Language.html" title="GraphQL::Language (module)">Language</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Language/Nodes.html" title="GraphQL::Language::Nodes (module)">Nodes</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Language/Nodes/OperationDefinition.html" title="GraphQL::Language::Nodes::OperationDefinition (class)">OperationDefinition</a></span></span><span class='rbracket'>]</span> <span class='op'>&lt;&lt;</span> <span class='tlambda'>-&gt;</span><span class='lparen'>(</span><span class='id identifier rubyid_node'>node</span><span class='comma'>,</span> <span class='id identifier rubyid_parent'>parent</span><span class='rparen'>)</span> <span class='tlambeg'>{</span>
+    <span class='comment'># mark variables as defined:
+</span>    <span class='id identifier rubyid_var_hash'>var_hash</span> <span class='op'>=</span> <span class='id identifier rubyid_variable_usages_for_context'>variable_usages_for_context</span><span class='lbracket'>[</span><span class='id identifier rubyid_node'>node</span><span class='rbracket'>]</span>
+    <span class='id identifier rubyid_node'>node</span><span class='period'>.</span><span class='id identifier rubyid_variables'>variables</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_var'>var</span><span class='op'>|</span>
+      <span class='id identifier rubyid_var_usage'>var_usage</span> <span class='op'>=</span> <span class='id identifier rubyid_var_hash'>var_hash</span><span class='lbracket'>[</span><span class='id identifier rubyid_var'>var</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='rbracket'>]</span>
+      <span class='id identifier rubyid_var_usage'>var_usage</span><span class='period'>.</span><span class='id identifier rubyid_declared_by'>declared_by</span> <span class='op'>=</span> <span class='id identifier rubyid_node'>node</span>
+      <span class='id identifier rubyid_var_usage'>var_usage</span><span class='period'>.</span><span class='id identifier rubyid_path'>path</span> <span class='op'>=</span> <span class='id identifier rubyid_context'>context</span><span class='period'>.</span><span class='id identifier rubyid_path'>path</span>
+    <span class='rbrace'>}</span>
+  <span class='rbrace'>}</span>
+  <span class='id identifier rubyid_context'>context</span><span class='period'>.</span><span class='id identifier rubyid_visitor'>visitor</span><span class='lbracket'>[</span><span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Language.html" title="GraphQL::Language (module)">Language</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Language/Nodes.html" title="GraphQL::Language::Nodes (module)">Nodes</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Language/Nodes/OperationDefinition.html" title="GraphQL::Language::Nodes::OperationDefinition (class)">OperationDefinition</a></span></span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_leave'>leave</span> <span class='op'>&lt;&lt;</span> <span class='id identifier rubyid_pop_variable_context_stack'>pop_variable_context_stack</span>
+
+  <span class='id identifier rubyid_context'>context</span><span class='period'>.</span><span class='id identifier rubyid_visitor'>visitor</span><span class='lbracket'>[</span><span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Language.html" title="GraphQL::Language (module)">Language</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Language/Nodes.html" title="GraphQL::Language::Nodes (module)">Nodes</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Language/Nodes/FragmentDefinition.html" title="GraphQL::Language::Nodes::FragmentDefinition (class)">FragmentDefinition</a></span></span><span class='rbracket'>]</span> <span class='op'>&lt;&lt;</span> <span class='id identifier rubyid_push_variable_context_stack'>push_variable_context_stack</span>
+  <span class='id identifier rubyid_context'>context</span><span class='period'>.</span><span class='id identifier rubyid_visitor'>visitor</span><span class='lbracket'>[</span><span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Language.html" title="GraphQL::Language (module)">Language</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Language/Nodes.html" title="GraphQL::Language::Nodes (module)">Nodes</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Language/Nodes/FragmentDefinition.html" title="GraphQL::Language::Nodes::FragmentDefinition (class)">FragmentDefinition</a></span></span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_leave'>leave</span> <span class='op'>&lt;&lt;</span> <span class='id identifier rubyid_pop_variable_context_stack'>pop_variable_context_stack</span>
+
+  <span class='comment'># For FragmentSpreads:
+</span>  <span class='comment'>#  - find the context on the stack
+</span>  <span class='comment'>#  - mark the context as containing this spread
+</span>  <span class='id identifier rubyid_context'>context</span><span class='period'>.</span><span class='id identifier rubyid_visitor'>visitor</span><span class='lbracket'>[</span><span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Language.html" title="GraphQL::Language (module)">Language</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Language/Nodes.html" title="GraphQL::Language::Nodes (module)">Nodes</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Language/Nodes/FragmentSpread.html" title="GraphQL::Language::Nodes::FragmentSpread (class)">FragmentSpread</a></span></span><span class='rbracket'>]</span> <span class='op'>&lt;&lt;</span> <span class='tlambda'>-&gt;</span><span class='lparen'>(</span><span class='id identifier rubyid_node'>node</span><span class='comma'>,</span> <span class='id identifier rubyid_parent'>parent</span><span class='rparen'>)</span> <span class='tlambeg'>{</span>
+    <span class='id identifier rubyid_variable_context'>variable_context</span> <span class='op'>=</span> <span class='id identifier rubyid_variable_context_stack'>variable_context_stack</span><span class='period'>.</span><span class='id identifier rubyid_last'>last</span>
+    <span class='id identifier rubyid_spreads_for_context'>spreads_for_context</span><span class='lbracket'>[</span><span class='id identifier rubyid_variable_context'>variable_context</span><span class='rbracket'>]</span> <span class='op'>&lt;&lt;</span> <span class='id identifier rubyid_node'>node</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span>
+  <span class='rbrace'>}</span>
+
+  <span class='comment'># For VariableIdentifiers:
+</span>  <span class='comment'>#  - mark the variable as used
+</span>  <span class='comment'>#  - assign its AST node
+</span>  <span class='id identifier rubyid_context'>context</span><span class='period'>.</span><span class='id identifier rubyid_visitor'>visitor</span><span class='lbracket'>[</span><span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Language.html" title="GraphQL::Language (module)">Language</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Language/Nodes.html" title="GraphQL::Language::Nodes (module)">Nodes</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Language/Nodes/VariableIdentifier.html" title="GraphQL::Language::Nodes::VariableIdentifier (class)">VariableIdentifier</a></span></span><span class='rbracket'>]</span> <span class='op'>&lt;&lt;</span> <span class='tlambda'>-&gt;</span><span class='lparen'>(</span><span class='id identifier rubyid_node'>node</span><span class='comma'>,</span> <span class='id identifier rubyid_parent'>parent</span><span class='rparen'>)</span> <span class='tlambeg'>{</span>
+    <span class='id identifier rubyid_usage_context'>usage_context</span> <span class='op'>=</span> <span class='id identifier rubyid_variable_context_stack'>variable_context_stack</span><span class='period'>.</span><span class='id identifier rubyid_last'>last</span>
+    <span class='id identifier rubyid_declared_variables'>declared_variables</span> <span class='op'>=</span> <span class='id identifier rubyid_variable_usages_for_context'>variable_usages_for_context</span><span class='lbracket'>[</span><span class='id identifier rubyid_usage_context'>usage_context</span><span class='rbracket'>]</span>
+    <span class='id identifier rubyid_usage'>usage</span> <span class='op'>=</span> <span class='id identifier rubyid_declared_variables'>declared_variables</span><span class='lbracket'>[</span><span class='id identifier rubyid_node'>node</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='rbracket'>]</span>
+    <span class='id identifier rubyid_usage'>usage</span><span class='period'>.</span><span class='id identifier rubyid_used_by'>used_by</span> <span class='op'>=</span> <span class='id identifier rubyid_usage_context'>usage_context</span>
+    <span class='id identifier rubyid_usage'>usage</span><span class='period'>.</span><span class='id identifier rubyid_ast_node'>ast_node</span> <span class='op'>=</span> <span class='id identifier rubyid_node'>node</span>
+    <span class='id identifier rubyid_usage'>usage</span><span class='period'>.</span><span class='id identifier rubyid_path'>path</span> <span class='op'>=</span> <span class='id identifier rubyid_context'>context</span><span class='period'>.</span><span class='id identifier rubyid_path'>path</span>
+  <span class='rbrace'>}</span>
+
+
+  <span class='id identifier rubyid_context'>context</span><span class='period'>.</span><span class='id identifier rubyid_visitor'>visitor</span><span class='lbracket'>[</span><span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Language.html" title="GraphQL::Language (module)">Language</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Language/Nodes.html" title="GraphQL::Language::Nodes (module)">Nodes</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Language/Nodes/Document.html" title="GraphQL::Language::Nodes::Document (class)">Document</a></span></span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_leave'>leave</span> <span class='op'>&lt;&lt;</span> <span class='tlambda'>-&gt;</span><span class='lparen'>(</span><span class='id identifier rubyid_node'>node</span><span class='comma'>,</span> <span class='id identifier rubyid_parent'>parent</span><span class='rparen'>)</span> <span class='tlambeg'>{</span>
+    <span class='id identifier rubyid_fragment_definitions'>fragment_definitions</span> <span class='op'>=</span> <span class='id identifier rubyid_variable_usages_for_context'>variable_usages_for_context</span><span class='period'>.</span><span class='id identifier rubyid_select'>select</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_key'>key</span><span class='comma'>,</span> <span class='id identifier rubyid_value'>value</span><span class='op'>|</span> <span class='id identifier rubyid_key'>key</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Language.html" title="GraphQL::Language (module)">Language</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Language/Nodes.html" title="GraphQL::Language::Nodes (module)">Nodes</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Language/Nodes/FragmentDefinition.html" title="GraphQL::Language::Nodes::FragmentDefinition (class)">FragmentDefinition</a></span></span><span class='rparen'>)</span> <span class='rbrace'>}</span>
+    <span class='id identifier rubyid_operation_definitions'>operation_definitions</span> <span class='op'>=</span> <span class='id identifier rubyid_variable_usages_for_context'>variable_usages_for_context</span><span class='period'>.</span><span class='id identifier rubyid_select'>select</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_key'>key</span><span class='comma'>,</span> <span class='id identifier rubyid_value'>value</span><span class='op'>|</span> <span class='id identifier rubyid_key'>key</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Language.html" title="GraphQL::Language (module)">Language</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Language/Nodes.html" title="GraphQL::Language::Nodes (module)">Nodes</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Language/Nodes/OperationDefinition.html" title="GraphQL::Language::Nodes::OperationDefinition (class)">OperationDefinition</a></span></span><span class='rparen'>)</span> <span class='rbrace'>}</span>
+
+    <span class='id identifier rubyid_operation_definitions'>operation_definitions</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_node'>node</span><span class='comma'>,</span> <span class='id identifier rubyid_node_variables'>node_variables</span><span class='op'>|</span>
+      <span class='id identifier rubyid_follow_spreads'>follow_spreads</span><span class='lparen'>(</span><span class='id identifier rubyid_node'>node</span><span class='comma'>,</span> <span class='id identifier rubyid_node_variables'>node_variables</span><span class='comma'>,</span> <span class='id identifier rubyid_spreads_for_context'>spreads_for_context</span><span class='comma'>,</span> <span class='id identifier rubyid_fragment_definitions'>fragment_definitions</span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='rbracket'>]</span><span class='rparen'>)</span>
+      <span class='id identifier rubyid_create_errors'>create_errors</span><span class='lparen'>(</span><span class='id identifier rubyid_node_variables'>node_variables</span><span class='comma'>,</span> <span class='id identifier rubyid_context'>context</span><span class='rparen'>)</span>
+    <span class='kw'>end</span>
+  <span class='rbrace'>}</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="variable_hash-instance_method">
+  
+    #<strong>variable_hash</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+28
+29
+30</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/static_validation/rules/variables_are_used_and_defined.rb', line 28</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_variable_hash'>variable_hash</span>
+  <span class='const'>Hash</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='lbrace'>{</span><span class='op'>|</span><span class='id identifier rubyid_h'>h</span><span class='comma'>,</span> <span class='id identifier rubyid_k'>k</span><span class='op'>|</span> <span class='id identifier rubyid_h'>h</span><span class='lbracket'>[</span><span class='id identifier rubyid_k'>k</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="VariablesAreUsedAndDefined/VariableUsage.html" title="GraphQL::StaticValidation::VariablesAreUsedAndDefined::VariableUsage (class)">VariableUsage</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='rbrace'>}</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+      <div id="footer">
+  Generated on Wed Jun  6 21:31:39 2018 by
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.12 (ruby-2.4.2).
+</div>
+
+    </div>
+  </body>
+</html>
