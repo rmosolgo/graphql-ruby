@@ -137,7 +137,19 @@ module GraphQL
             assert_equal 'if', type.arguments[0].name
             assert_equal 'Boolean', type.arguments[0].type.of_type.name
 
-            assert_equal ['FIELD', 'FRAGMENT_SPREAD', 'INLINE_FRAGMENT'], type.locations
+            assert_equal 3, type.locations.length
+
+            assert_instance_of GraphQL::Language::Nodes::DirectiveLocation, type.locations[0]
+            assert_equal 'FIELD', type.locations[0].name
+            assert_equal [3, 20], type.locations[0].position
+
+            assert_instance_of GraphQL::Language::Nodes::DirectiveLocation, type.locations[1]
+            assert_equal 'FRAGMENT_SPREAD', type.locations[1].name
+            assert_equal [4, 19], type.locations[1].position
+
+            assert_instance_of GraphQL::Language::Nodes::DirectiveLocation, type.locations[2]
+            assert_equal 'INLINE_FRAGMENT', type.locations[2].name
+            assert_equal [5, 19], type.locations[2].position
           end
 
           def test_it_parses_field_arguments

@@ -367,8 +367,8 @@ rule
       }
 
   directive_locations:
-      name                          { return [val[0].to_s] }
-    | directive_locations PIPE name { val[0] << val[2].to_s }
+      name                          { return [make_node(:DirectiveLocation, name: val[0].to_s, position_source: val[0])] }
+    | directive_locations PIPE name { val[0] << make_node(:DirectiveLocation, name: val[2].to_s, position_source: val[2]) }
 end
 
 ---- header ----

@@ -144,6 +144,8 @@ module GraphQL
         end
       end
 
+      class DirectiveLocation < NameOnlyNode; end
+
       # This is the AST root for normal queries
       #
       # @example Deriving a document by parsing a string
