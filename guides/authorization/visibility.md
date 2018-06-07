@@ -20,6 +20,7 @@ You can customize the visibility of parts of your schema by reimplementing vario
 
 - Type classes have a `.visible?(context)` class method
 - Fields and arguments have a `#visible?(context)` instance method
+- Enum values have `#visible?(context)` instance method
 - Mutation classes have a `.visible?(context)` class method
 
 These methods are called with the query context, based on the hash you pass as `context:`. If the method returns false, then that member of the schema will be treated as though it doesn't exist for the entirety of the query. That is:
