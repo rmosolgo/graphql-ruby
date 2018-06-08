@@ -173,7 +173,6 @@ describe GraphQL::Authorization do
 
     class IntegerObject < BaseObject
       def self.authorized?(obj, ctx)
-        pp obj, ctx.to_h
         Box.new(value: true)
       end
       field :value, Integer, null: false, method: :object
