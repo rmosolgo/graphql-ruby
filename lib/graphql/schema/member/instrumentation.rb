@@ -87,6 +87,8 @@ module GraphQL
             ctx.schema.after_lazy(obj) do |inner_obj|
               if inner_obj.nil?
                 nil
+              elsif inner_obj.is_a?(GraphQL::ExecutionError)
+                inner_obj
               elsif depth > 0
                 inner_obj.map { |i| proxy_to_depth(i, depth - 1, type, ctx) }
               else
