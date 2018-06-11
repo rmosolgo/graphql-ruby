@@ -11,9 +11,9 @@ module GraphQL
         @default_arguments ||= begin
           argument_definitions = [
               ["first", GraphQL::INT_TYPE, "Returns the first _n_ elements from the list."],
-              ["after", GraphQL::STRING_TYPE, "Returns the elements in the list that come after the specified global ID."],
+              ["after", GraphQL::STRING_TYPE, "Returns the elements in the list that come after the specified cursor."],
               ["last", GraphQL::INT_TYPE, "Returns the last _n_ elements from the list."],
-              ["before", GraphQL::STRING_TYPE, "Returns the elements in the list that come before the specified global ID."],
+              ["before", GraphQL::STRING_TYPE, "Returns the elements in the list that come before the specified cursor."],
             ]
 
           argument_definitions.reduce({}) do |memo, arg_defn|
