@@ -356,10 +356,10 @@ module GraphQL
           # This is not good, it will hit false positives
           # Should use AST to make this substitution
           if obj_arg_name != "_"
-            proc_body.gsub!(/([^\w:.]|^)#{obj_arg_name}([^\w:]|$)/, '\1@object\2')
+            proc_body.gsub!(/([^\w:.]|^)#{obj_arg_name}([^\w:]|$)/, '\1object\2')
           end
           if ctx_arg_name != "_"
-            proc_body.gsub!(/([^\w:.]|^)#{ctx_arg_name}([^\w:]|$)/, '\1@context\2')
+            proc_body.gsub!(/([^\w:.]|^)#{ctx_arg_name}([^\w:]|$)/, '\1context\2')
           end
 
           method_defn = "def #{@proc_name}(**#{args_arg_name})\n#{method_defn_indent}  #{proc_body}\n#{method_defn_indent}end\n"
@@ -491,8 +491,8 @@ module GraphQL
           # - Get the three argument names (obj, arg, ctx)
           # - Get the proc body
           # - Find and replace:
-          #  - The ctx argument becomes `@context`
-          #  - The obj argument becomes `@object`
+          #  - The ctx argument becomes `context`
+          #  - The obj argument becomes `object`
           # - Args is trickier:
           #   - If it's not used, remove it
           #   - If it's used, abandon ship and make it `**args`
@@ -513,10 +513,10 @@ module GraphQL
           # This is not good, it will hit false positives
           # Should use AST to make this substitution
           if obj_arg_name != "_"
-            proc_body.gsub!(/([^\w:.]|^)#{obj_arg_name}([^\w:]|$)/, '\1@object\2')
+            proc_body.gsub!(/([^\w:.]|^)#{obj_arg_name}([^\w:]|$)/, '\1object\2')
           end
           if ctx_arg_name != "_"
-            proc_body.gsub!(/([^\w:.]|^)#{ctx_arg_name}([^\w:]|$)/, '\1@context\2')
+            proc_body.gsub!(/([^\w:.]|^)#{ctx_arg_name}([^\w:]|$)/, '\1context\2')
           end
 
           method_def_indent = " " * (processor.resolve_indent - 2)

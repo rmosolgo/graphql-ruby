@@ -29,6 +29,7 @@ require "graphql/schema/enum"
 require "graphql/schema/field"
 require "graphql/schema/input_object"
 require "graphql/schema/interface"
+require "graphql/schema/resolver"
 require "graphql/schema/mutation"
 require "graphql/schema/relay_classic_mutation"
 require "graphql/schema/object"
@@ -133,7 +134,6 @@ module GraphQL
 
     self.default_execution_strategy = GraphQL::Execution::Execute
 
-    BUILT_IN_TYPES = Hash[[INT_TYPE, STRING_TYPE, FLOAT_TYPE, BOOLEAN_TYPE, ID_TYPE].map{ |type| [type.name, type] }]
     DIRECTIVES = [GraphQL::Directive::IncludeDirective, GraphQL::Directive::SkipDirective, GraphQL::Directive::DeprecatedDirective]
     DYNAMIC_FIELDS = ["__type", "__typename", "__schema"]
 
@@ -651,6 +651,7 @@ module GraphQL
         # Configuration
         :max_complexity=, :max_depth=,
         :metadata,
+        :default_mask,
         :default_filter, :redefine,
         :id_from_object_proc, :object_from_id_proc,
         :id_from_object=, :object_from_id=, :type_error,

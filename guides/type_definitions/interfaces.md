@@ -1,11 +1,14 @@
 ---
 layout: guide
+doc_stub: false
 search: true
 section: Type Definitions
 title: Interfaces
 desc: Interfaces are lists of fields which objects may implement
 index: 4
 class_based_api: true
+redirect_from:
+  - /types/abstract_types/
 ---
 
 Interfaces are lists of fields which may be implemented by object types.

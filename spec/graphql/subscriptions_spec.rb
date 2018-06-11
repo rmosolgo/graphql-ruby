@@ -132,6 +132,10 @@ class ClassBasedInMemoryBackend < InMemoryBackend
     def my_event(type: nil)
       object
     end
+
+    field :failed_event, Payload, null: false, resolve: ->(o, a, c) { raise GraphQL::ExecutionError.new("unauthorized") }  do
+      argument :id, ID, required: true
+    end
   end
 
   class Query < GraphQL::Schema::Object
@@ -151,6 +155,7 @@ class FromDefinitionInMemoryBackend < InMemoryBackend
     payload(id: ID!): Payload!
     event(stream: StreamInput): Payload
     myEvent(type: PayloadType): Payload
+    failedEvent(id: ID!): Payload!
   }
 
   type Payload {
@@ -180,6 +185,7 @@ class FromDefinitionInMemoryBackend < InMemoryBackend
       "payload" => ->(o,a,c) { o },
       "myEvent" => ->(o,a,c) { o },
       "event" => ->(o,a,c) { o },
+      "failedEvent" => ->(o,a,c) { raise GraphQL::ExecutionError.new("unauthorized") },
     },
   }
   Schema = GraphQL::Schema.from_definition(SchemaDefinition, default_resolve: Resolvers).redefine do
@@ -410,7 +416,21 @@ describe GraphQL::Subscriptions do
             end
           end
 
-          it "lets unhandled errors crash "do
+          it "avoid subscription on resolver error" do
+            res = schema.execute(<<-GRAPHQL, context: { socket: "1" }, variables: { "id" => "100" })
+          subscription ($id: ID!){
+            failedEvent(id: $id) { str, int }
+          }
+            GRAPHQL
+
+            assert_equal nil, res["data"]
+            assert_equal "unauthorized", res["errors"][0]["message"]
+
+            # this is to make sure nothing actually got subscribed.. but I don't have any idea better than checking its instance variable
+            assert_equal 0, schema.subscriptions.instance_variable_get(:@subscriptions).size
+          end
+
+          it "lets unhandled errors crash" do
             query_str = <<-GRAPHQL
           subscription($type: PayloadType) {
             myEvent(type: $type) { int }

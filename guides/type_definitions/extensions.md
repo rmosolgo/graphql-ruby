@@ -1,11 +1,14 @@
 ---
 layout: guide
+doc_stub: false
 search: true
 section: Type Definitions
 title: Extending the GraphQL-Ruby Type Definition System
 desc: Adding metadata and custom helpers to the DSL
 index: 8
 class_based_api: true
+redirect_from:
+  - /schema/extending_the_dsl/
 ---
 
 While integrating GraphQL into your app, you can customize the definition DSL. For example, you might:
@@ -56,7 +59,7 @@ end
 # Then, in concrete classes
 class Dossier < BaseObject
   # The Dossier object type will have `.metadata[:required_permission] # => :admin`
-  permission_level :admin
+  required_permission :admin
 end
 ```
 

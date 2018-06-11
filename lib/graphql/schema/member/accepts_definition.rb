@@ -69,7 +69,7 @@ module GraphQL
                 if args.any?
                   instance_variable_set(ivar_name, args)
                 end
-                instance_variable_get(ivar_name)
+                instance_variable_get(ivar_name) || (superclass.respond_to?(name) ? superclass.public_send(name) : nil)
               end
 
               define_method(name) do |*args|
@@ -86,7 +86,7 @@ module GraphQL
                   if args.any?
                     instance_variable_set(ivar_name, args)
                   end
-                  instance_variable_get(ivar_name)
+                  instance_variable_get(ivar_name) || ((int = interfaces.first { |i| i.respond_to?()}) && int.public_send(name))
                 end
               end
             end

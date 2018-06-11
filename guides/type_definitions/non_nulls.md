@@ -1,10 +1,12 @@
 ---
 layout: guide
+doc_stub: false
 search: true
 section: Type Definitions
 title: Non-Null Types
 desc: Values which must be present
 index: 7
+class_based_api: true
 ---
 
 GraphQL's concept of _non-null_ is expressed in the [Schema Definition Language](http://graphql.org/learn/schema/#type-language) (SDL) with `!`, for example:

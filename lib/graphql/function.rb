@@ -28,6 +28,8 @@ module GraphQL
   #     field :post, function: FindRecord.new(model: Post, type: PostType)
   #     field :comment, function: FindRecord.new(model: Comment, type: CommentType)
   #   end
+  #
+  # @see {GraphQL::Schema::Resolver} for a replacement for `GraphQL::Function`
   class Function
     # @return [Hash<String => GraphQL::Argument>] Arguments, keyed by name
     def arguments

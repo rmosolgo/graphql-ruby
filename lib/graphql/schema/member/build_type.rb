@@ -16,15 +16,15 @@ module GraphQL
           when String
             case type_expr
             when "String"
-              GraphQL::STRING_TYPE
+              GraphQL::Types::String
             when "Int", "Integer"
-              GraphQL::INT_TYPE
+              GraphQL::Types::Int
             when "Float"
-              GraphQL::FLOAT_TYPE
+              GraphQL::Types::Float
             when "Boolean"
-              GraphQL::BOOLEAN_TYPE
+              GraphQL::Types::Boolean
             when "ID"
-              GraphQL::ID_TYPE
+              GraphQL::Types::ID
             when /\A\[.*\]\Z/
               list_type = true
               # List members are required by default
@@ -101,13 +101,15 @@ module GraphQL
           when Array
             to_type_name(something.first)
           when Module
-            if something < GraphQL::Schema::Member
+            if something.respond_to?(:graphql_name)
               something.graphql_name
             else
-              something.name.split("::").last
+              to_type_name(something.name)
             end
           when String
             something.gsub(/\]\[\!/, "").split("::").last
+          when GraphQL::Schema::NonNull, GraphQL::Schema::List
+            to_type_name(something.unwrap)
           else
             raise "Unhandled to_type_name input: #{something} (#{something.class})"
           end

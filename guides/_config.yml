@@ -5,6 +5,7 @@ url: "http://graphql-ruby.org"
 exclude:
   - .gitignore
 
+keep_files: ["api-doc", ".git"]
 # Build settings
 markdown:         kramdown
 highlighter:      rouge
@@ -25,5 +26,6 @@ algolia:
   application_id: '8VO8708WUV'
   index_name:     'prod_graphql_ruby'
 
-gems:
-- algoliasearch-jekyll
+plugins:
+  - jekyll-algolia
+  - jekyll-redirect-from

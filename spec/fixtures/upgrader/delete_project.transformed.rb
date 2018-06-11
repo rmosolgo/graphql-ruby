@@ -12,13 +12,13 @@ module Platform
 
       def resolve(**inputs)
         project =  Platform::Helpers::NodeIdentification.typed_object_from_id(
-          [Objects::Project], inputs[:project_id], @context
+          [Objects::Project], inputs[:project_id], context
         )
 
-        @context[:permission].can_modify?("DeleteProject", project).sync
-        @context[:abilities].authorize_content(:project, :destroy, owner: project.owner)
+        context[:permission].can_modify?("DeleteProject", project).sync
+        context[:abilities].authorize_content(:project, :destroy, owner: project.owner)
 
-        project.enqueue_delete(actor: @context[:viewer])
+        project.enqueue_delete(actor: context[:viewer])
 
         { owner: project.owner }
       end

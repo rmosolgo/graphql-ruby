@@ -40,7 +40,7 @@ describe GraphQL::Schema::Argument do
   describe "#type" do
     let(:argument) { SchemaArgumentTest::Query.fields["field"].arguments["arg"] }
     it "returns the type" do
-      assert_equal GraphQL::STRING_TYPE, argument.type
+      assert_equal GraphQL::Types::String, argument.type
     end
   end
 

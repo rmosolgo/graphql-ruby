@@ -114,6 +114,7 @@ module GraphQL
     end
 
     alias :inspect :to_s
+    alias :to_type_signature :to_s
 
     def valid_isolated_input?(value)
       valid_input?(value, GraphQL::Query::NullContext)

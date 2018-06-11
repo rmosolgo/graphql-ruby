@@ -326,8 +326,8 @@ module StarTrek
 
   class MutationType < GraphQL::Schema::Object
     graphql_name "Mutation"
-    # The mutation object exposes a field:
-    field :introduceShip, field: IntroduceShipMutation.field
+    field :introduceShip, mutation: IntroduceShipMutation
+    # To hook up a Relay::Mutation
     field :introduceShipFunction, field: IntroduceShipFunctionMutation.field
   end
 

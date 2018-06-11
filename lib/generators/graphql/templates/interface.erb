@@ -1,4 +1,3 @@
-<%= type_ruby_name %> = GraphQL::InterfaceType.define do
-  name "<%= type_graphql_name %>"
-<% normalized_fields.each do |f| %>  field :<%= f[0] %>, <%= f[1] %>
+class <%= type_ruby_name %> < Types::BaseInterface
+<% normalized_fields.each do |f| %>  <%= f.to_ruby %>
 <% end %>end

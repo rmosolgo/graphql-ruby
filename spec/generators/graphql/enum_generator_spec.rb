@@ -7,8 +7,7 @@ class GraphQLGeneratorsEnumGeneratorTest < BaseGeneratorTest
 
   test "it generate enums with values" do
     expected_content = <<-RUBY
-Types::FamilyType = GraphQL::EnumType.define do
-  name "Family"
+class Types::FamilyType < Types::BaseEnum
   value "NIGHTSHADE"
   value "BRASSICA", value: Family::COLE
   value "UMBELLIFER", value: :umbellifer

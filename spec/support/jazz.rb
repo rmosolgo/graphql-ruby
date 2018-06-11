@@ -45,9 +45,9 @@ module Jazz
   end
 
   class BaseArgument < GraphQL::Schema::Argument
-    def initialize(name, type, desc = nil, custom: nil, **kwargs)
+    def initialize(*args, custom: nil, **kwargs)
       @custom = custom
-      super(name, type, desc, **kwargs)
+      super(*args, **kwargs)
     end
 
     def to_graphql
@@ -133,7 +133,12 @@ module Jazz
   module GloballyIdentifiableType
     include BaseInterface
     description "A fetchable object in the system"
-    field :id, ID, "A unique identifier for this object", null: false
+    field(
+      name: :id,
+      type: ID,
+      null: false,
+      description: "A unique identifier for this object",
+    )
     upcased_field :upcased_id, ID, null: false, method: :id # upcase: true added by helper
 
     def id
@@ -441,12 +446,25 @@ module Jazz
     end
   end
 
+  class AddSitar < GraphQL::Schema::RelayClassicMutation
+    null true
+    description "Get Sitar to musical instrument"
+
+    field :instrument, InstrumentType, null: false
+
+    def resolve
+      instrument = Models::Instrument.new("Sitar", :str)
+      { instrument: instrument }
+    end
+  end
+
   class Mutation < BaseObject
     field :add_ensemble, Ensemble, null: false do
       argument :input, EnsembleInput, required: true
     end
 
     field :add_instrument, mutation: AddInstrument
+    field :add_sitar, mutation: AddSitar
 
     def add_ensemble(input:)
       ens = Models::Ensemble.new(input.name)

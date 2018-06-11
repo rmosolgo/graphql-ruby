@@ -12,8 +12,8 @@ module GraphQL
   #
   # @example An enum of programming languages
   #   LanguageEnum = GraphQL::EnumType.define do
-  #     name "Languages"
-  #     description "Programming languages for Web projects"
+  #     name "Language"
+  #     description "Programming language for Web projects"
   #     value("PYTHON", "A dynamic, function-oriented language")
   #     value("RUBY", "A very dynamic language aimed at programmer happiness")
   #     value("JAVASCRIPT", "Accidental lingua franca of the web")
@@ -57,7 +57,7 @@ module GraphQL
   #   }
   #
   # @example Enum whose values are different in ActiveRecord-land
-  #   class Language < ActiveRecord::BaseType
+  #   class Language < ActiveRecord::Base
   #     enum language: {
   #       rb: 0
   #     }

@@ -1,11 +1,14 @@
 ---
 layout: guide
+doc_stub: false
 search: true
 section: Mutations
 title: Mutation Classes
 desc: Use mutation classes to implement behavior, then hook them up to your schema.
 class_based_api: true
 index: 1
+redirect_from:
+  - /queries/mutations/
 ---
 
 GraphQL _mutations_ are special fields: instead of reading data or performing calculations, they may _modify_ the application state. For example, mutation fields may:
@@ -51,7 +54,7 @@ class Mutations::CreateComment < Mutations::BaseMutation
   argument :post_id, ID, required: true
 
   field :comment, Types::Comment, null: true
-  field :error_messages, [String], null: false
+  field :errors, [String], null: false
 
   def resolve(body:, post_id:)
     post = Post.find(post_id)
@@ -74,6 +77,8 @@ end
 ```
 
 The `#resolve` method should return a hash whose symbols match the `field` names.
+
+(See {% internal_link "Mutation Errors", "/mutations/mutation_errors" %} for more information about returning errors.)
 
 ## Hooking up mutations
 

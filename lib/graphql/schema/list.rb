@@ -23,6 +23,18 @@ module GraphQL
       def kind
         GraphQL::TypeKinds::LIST
       end
+
+      def unwrap
+        @of_type.unwrap
+      end
+
+      def list?
+        true
+      end
+
+      def to_type_signature
+        "[#{@of_type.to_type_signature}]"
+      end
     end
   end
 end
