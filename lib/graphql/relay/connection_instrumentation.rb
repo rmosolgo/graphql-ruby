@@ -9,9 +9,9 @@ module GraphQL
     module ConnectionInstrumentation
       ARGUMENT_DEFINITIONS = [
           ["first", GraphQL::INT_TYPE, "Returns the first _n_ elements from the list."],
-          ["after", GraphQL::STRING_TYPE, "Returns the elements in the list that come after the specified global ID."],
+          ["after", GraphQL::STRING_TYPE, "Returns the elements in the list that come after the specified cursor."],
           ["last", GraphQL::INT_TYPE, "Returns the last _n_ elements from the list."],
-          ["before", GraphQL::STRING_TYPE, "Returns the elements in the list that come before the specified global ID."],
+          ["before", GraphQL::STRING_TYPE, "Returns the elements in the list that come before the specified cursor."],
         ]
 
       DEFAULT_ARGUMENTS = ARGUMENT_DEFINITIONS.reduce({}) do |memo, arg_defn|
