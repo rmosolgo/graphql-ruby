@@ -66,9 +66,9 @@ The default error JSON includes `"message"`, `"locations"` and `"path"`. The [fo
 
 You can customize this in two ways:
 
-- Pass `options:` when raising an error, for example:
+- Pass `extensions:` when raising an error, for example:
   ```ruby
-  raise GraphQL::ExecutionError.new("Something went wrong", options: { "extensions" => { "code" => "BROKEN" } })
+  raise GraphQL::ExecutionError.new("Something went wrong", extensions: { "code" => "BROKEN" })
   ```
   In this case, `"extensions" => { "code" => "BROKEN" }` will be added to the error JSON.
 
