@@ -102,8 +102,8 @@
 <p>You can customize this in two ways:</p>
 
 <ul>
-  <li>Pass <code class="highlighter-rouge">options:</code> when raising an error, for example:
-    <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">raise</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ExecutionError</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"Something went wrong"</span><span class="p">,</span> <span class="ss">options: </span><span class="p">{</span> <span class="s2">"extensions"</span> <span class="o">=&gt;</span> <span class="p">{</span> <span class="s2">"code"</span> <span class="o">=&gt;</span> <span class="s2">"BROKEN"</span> <span class="p">}</span> <span class="p">})</span>
+  <li>Pass <code class="highlighter-rouge">extensions:</code> when raising an error, for example:
+    <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">raise</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ExecutionError</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"Something went wrong"</span><span class="p">,</span> <span class="ss">extensions: </span><span class="p">{</span> <span class="s2">"code"</span> <span class="o">=&gt;</span> <span class="s2">"BROKEN"</span> <span class="p">})</span>
 </code></pre></div>    </div>
     <p>In this case, <code class="highlighter-rouge">"extensions" =&gt; { "code" =&gt; "BROKEN" }</code> will be added to the error JSON.</p>
   </li>
