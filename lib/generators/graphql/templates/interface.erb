@@ -1,3 +1,4 @@
-class <%= type_ruby_name %> < Types::BaseInterface
+module <%= type_ruby_name %>
+  include Types::BaseInterface
 <% normalized_fields.each do |f| %>  <%= f.to_ruby %>
 <% end %>end
