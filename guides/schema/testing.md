@@ -24,7 +24,7 @@ class PostType < GraphQL::Schema::Object
   # ...
   field :is_trending, Boolean, null: false
 
-  def is_boolean
+  def is_trending
     recent_comments = object.comments.where("created_at < ?", 1.day.ago)
     recent_comments.count > 100
   end
@@ -55,7 +55,7 @@ class PostType < GraphQL::Schema::Object
   # ...
   field :is_trending, Boolean, null: false
 
-  def is_boolean
+  def is_trending
     Post::Trending.new(object).value
   end
 end
