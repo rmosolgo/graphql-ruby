@@ -16,7 +16,8 @@ class GraphQLGeneratorsInterfaceGeneratorTest < BaseGeneratorTest
     ]
 
     expected_content = <<-RUBY
-class Types::BirdType < Types::BaseInterface
+module Types::BirdType
+  include Types::BaseInterface
   field :wingspan, Integer, null: false
   field :foliage, [Types::ColorType], null: true
 end
