@@ -72,4 +72,23 @@ describe GraphQL::Language::Visitor do
       assert_equal(0, counts[:fields_entered])
     end
   end
+
+  it "can visit InputObjectTypeDefinition directives" do
+    schema_sdl = <<-GRAPHQL
+    input Test @directive {
+      id: ID!
+    }
+    GRAPHQL
+
+    document = GraphQL.parse(schema_sdl)
+
+    visitor = GraphQL::Language::Visitor.new(document)
+
+    visited_directive = false
+    visitor[GraphQL::Language::Nodes::Directive] << ->(node, parent) { visited_directive = true }
+
+    visitor.visit
+
+    assert visited_directive
+  end
 end

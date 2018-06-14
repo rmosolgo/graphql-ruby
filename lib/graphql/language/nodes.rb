@@ -539,13 +539,16 @@ module GraphQL
         include Scalars::Name
 
         attr_accessor :name, :fields, :directives, :description
-        alias :children :fields
 
         def initialize_node(name:, fields:, directives: [], description: nil)
           @name = name
           @fields = fields
           @directives = directives
           @description = description
+        end
+
+        def children
+          fields + directives
         end
       end
     end
