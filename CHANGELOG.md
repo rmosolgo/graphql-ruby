@@ -8,6 +8,21 @@
 
 ### Bug fixes
 
+## 1.8.3 (14 June 2018)
+
+### New features
+
+- Add an ISO 8601 DateTime scalar: `Types::ISO8601DateTime`. #1566
+- Use classes under the hood for built-in scalars. These are now accessible via `Types::` namespace. #1565
+
+### Bug fixes
+
+- Fix `Language::Visitor` when visiting `InputObjectTypeDefinition` nodes to include child `Directive` nodes. #1584
+- Fix an issue preventing proper subclassing of `TimeoutMiddleware`. #1579
+- Fix `graphql:interface` generator such that it generates working code. #1577
+- Update the description of auto-generated `before` and `after` arguments to better describe their input type. #1572
+- Add `Language::Nodes::DirectiveLocation` AST node to represent directive locations in directive definitions. #1564
+
 ## 1.8.2 (6 June 2018)
 
 ### Breaking changes
