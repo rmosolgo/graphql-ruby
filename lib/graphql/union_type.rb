@@ -67,6 +67,24 @@ module GraphQL
       end
     end
 
+    # Get a possible type of this {UnionType} by type name
+    # @param type_name [String]
+    # @param ctx [GraphQL::Query::Context] The context for the current query
+    # @return [GraphQL::ObjectType, nil] The type named `type_name` if it exists and is a member of this {UnionType}, (else `nil`)
+    def get_possible_type(type_name, ctx)
+      type = ctx.query.get_type(type_name)
+      type if type && ctx.query.schema.possible_types(self).include?(type)
+    end
+
+    # Check if a type is a possible type of this {UnionType}
+    # @param type [String, GraphQL::BaseType] Name of the type or a type definition
+    # @param ctx [GraphQL::Query::Context] The context for the current query
+    # @return [Boolean] True if the `type` exists and is a member of this {UnionType}, (else `nil`)
+    def possible_type?(type, ctx)
+      type_name = type.is_a?(String) ? type : type.graphql_name
+      !get_possible_type(type_name, ctx).nil?
+    end
+
     def resolve_type(value, ctx)
       ctx.query.resolve_type(self, value)
     end

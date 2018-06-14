@@ -149,4 +149,48 @@ describe GraphQL::InterfaceType do
       assert_equal expected_result, result["data"]
     end
   end
+
+  describe "#get_possible_type" do
+    let(:query_string) {%|
+      query fav {
+        favoriteEdible { fatContent }
+      }
+    |}
+
+    let(:query) { GraphQL::Query.new(Dummy::Schema, query_string) }
+
+    it "returns the type definition if the type exists and is a possible type of the interface" do
+      assert interface.get_possible_type("Cheese", query.context)
+    end
+
+    it "returns nil if the type is not found in the schema" do
+      assert_nil interface.get_possible_type("Foo", query.context)
+    end
+
+    it "returns nil if the type is not a possible type of the interface" do
+      assert_nil interface.get_possible_type("Beverage", query.context)
+    end
+  end
+
+  describe "#possible_type?" do
+    let(:query_string) {%|
+      query fav {
+        favoriteEdible { fatContent }
+      }
+    |}
+
+    let(:query) { GraphQL::Query.new(Dummy::Schema, query_string) }
+
+    it "returns true if the type exists and is a possible type of the interface" do
+      assert interface.possible_type?("Cheese", query.context)
+    end
+
+    it "returns false if the type is not found in the schema" do
+      refute interface.possible_type?("Foo", query.context)
+    end
+
+    it "returns false if the type is not a possible type of the interface" do
+      refute interface.possible_type?("Beverage", query.context)
+    end
+  end
 end
