@@ -14,6 +14,7 @@
 
 - Add an ISO 8601 DateTime scalar: `Types::ISO8601DateTime`. #1566
 - Use classes under the hood for built-in scalars. These are now accessible via `Types::` namespace. #1565
+- Add `possible_types` helpers to abstract types #1580
 
 ### Bug fixes
 
