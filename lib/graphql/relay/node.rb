@@ -41,12 +41,7 @@ module GraphQL
 
       # @return [GraphQL::InterfaceType] The interface which all Relay types must implement
       def self.interface
-        @interface ||= GraphQL::InterfaceType.define do
-          name("Node")
-          description("An object with an ID.")
-          field(:id, types.ID.to_non_null_type, "ID of the object.")
-          default_relay(true)
-        end
+        @interface ||= GraphQL::Types::Relay::Node.graphql_definition
       end
 
       # A field resolve for finding objects by IDs
