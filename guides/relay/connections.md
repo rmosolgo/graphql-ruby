@@ -68,17 +68,21 @@ end
 
 ## Connection types
 
-You can customize a connection type with `.define_connection`:
+You can customize connection and edge types by using the class-based API:
 
 ```ruby
+# Make an edge class for use in the connection below:
+class PostEdgeType < GraphQL::Types::Relay::BaseEdge
+  node_type(PostType)
+end
+
 # Make a customized connection type
-PostConnectionWithTotalCountType = PostType.define_connection do
-  name "PostConnectionWithTotalCount"
-  field :totalCount do
-    type types.Int
-    # - `obj` is the Connection
-    # - `obj.nodes` is the collection of Posts
-    resolve ->(obj, args, ctx) { obj.nodes.size }
+class PostConnectionWithTotalCountType < GraphQL::Types::Relay::BaseConnection
+  field :total_count, Integer, null: false
+  def total_count
+    # - `object` is the Connection
+    # - `object.nodes` is the collection of Posts
+    object.nodes.size
   end
 end
 
@@ -107,51 +111,23 @@ This way, you can query your custom fields, for example:
 }
 ```
 
-### Custom edge types
+In the same vein, you can extend your `*Edge` classes with extra fields.
 
-If you need custom fields on `edge`s, you can define an edge type and pass it to a connection:
+### Customizing Base Classes
+
+The provided classes in {{ "GraphQL::Types::Relay" | api_doc }} extend {{ "Schema::Object" | api_doc }}, but if you want to add your own extensions, you can build your own type system using the built-in ones for inspiration.
+
+For example, to make your connection classes extend your _own_ base object, you could add a base connection class to your app:
 
 ```ruby
-# Person => Membership => Team
-MembershipSinceEdgeType = TeamType.define_edge do
-  name "MembershipSinceEdge"
-  field :memberSince, types.Int, "The date that this person joined this team" do
-    resolve ->(obj, args, ctx) {
-      obj # => GraphQL::Relay::Edge instance
-      person = obj.parent
-      team = obj.node
-      membership = Membership.where(person: person, team: team).first
-      membership.created_at.to_i
-    }
-  end
+class Types::BaseConnection < Types::BaseObject
+  # ... copy-paste here
 end
 ```
 
-Then, pass the edge type when defining the connection type:
+Then take code from {{ "GraphQL::Types::Relay::BaseConnection" | api_doc }} and adapt it to your app.
 
-```ruby
-TeamMembershipsConnectionType = TeamType.define_connection(edge_type: MembershipSinceEdgeType) do
-  # Use a name so it doesn't conflict with "TeamConnection"
-  name "TeamMembershipsConnection"
-end
-```
-
-Now, you can query custom fields on the `edge`:
-
-```graphql
-{
-  me {
-    teams {
-      edge {
-        memberSince     # <= Here's your custom field
-        node {
-          teamName: name
-        }
-      }
-    }
-  }
-}
-```
+You can mix-and-match customized and built-in types. For example, if you customize the base `Edge` class, you can still use the built-in {{ "Types::Relay::PageInfo" | api_doc }} class.
 
 ### Custom Edge classes
 
@@ -186,18 +162,19 @@ Then, hook it up with custom edge type and custom connection type:
 
 ```ruby
 # Person => Membership => Team
-MembershipSinceEdgeType = BaseType.define_edge do
-  name "MembershipSinceEdge"
-  field :memberSince, types.Int, "The date that this person joined this team", property: :member_since
-  field :isPrimary, types.Boolean, "Is this person the team leader?", property: :primary?
+class MembershipSinceEdgeType < GraphQL::Types::Relay::BaseEdge
+  node_type(TeamType)
+
+  field :member_since, Integer, null: false,
+    description: "The date that this person joined this team"
+  field :is_primary, Boolean, null: false,
+    description: "Is this person the team leader?",
+    method: :primary?
 end
 
-TeamMembershipsConnectionType = TeamType.define_connection(
-    edge_class: MembershipSinceEdge,
-    edge_type: MembershipSinceEdgeType,
-  ) do
-  # Use a name so it doesn't conflict with "TeamConnection"
-  name "TeamMembershipsConnection"
+class TeamMembershipsConnectionType < GraphQL::Types::Relay::BaseConnection
+  # Here, hook up yoru custom class with `edge_class:`
+  edge_type(MembershipSinceEdgeType, edge_class: MembershipSinceEdge)
 end
 ```
 
