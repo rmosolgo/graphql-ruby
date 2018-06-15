@@ -25,6 +25,11 @@ module GraphQL
         # This might return a {GraphQL::Execution::Lazy} if the user-provided `.authorized?`
         # hook returns some lazy value (like a Promise).
         #
+        # The reason that the auth check is in this wrapper method instead of {.new} is because
+        # of how it might return a Promise. It would be weird if `.new` returned a promise;
+        # It would be a headache to try to maintain Promise-y state inside a {Schema::Object}
+        # instance. So, hopefully this wrapper method will do the job.
+        #
         # @param object [Object] The thing wrapped by this object
         # @param context [GraphQL::Query::Context]
         # @return [GraphQL::Schema::Object, GraphQL::Execution::Lazy]
