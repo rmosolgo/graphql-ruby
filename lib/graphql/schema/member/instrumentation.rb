@@ -27,7 +27,7 @@ module GraphQL
             # If it has a wrapper, apply it
             wrapper_class = root_type.metadata[:type_class]
             if wrapper_class
-              new_root_value = wrapper_class.new(query.root_value, query.context)
+              new_root_value = wrapper_class.authorized_new(query.root_value, query.context)
               query.root_value = new_root_value
             end
           end

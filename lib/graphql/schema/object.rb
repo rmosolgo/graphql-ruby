@@ -12,15 +12,25 @@ module GraphQL
       # @return [GraphQL::Query::Context] the context instance for this query
       attr_reader :context
 
-      # Make a new instance of this type _if_ the auth check passes,
-      # otherwise, return nil.
-      # @api private
-      def self.authorized_new(object, context)
-        context.schema.after_lazy(authorized?(object, context)) do |is_authorized|
-          if is_authorized
-            self.new(object, context)
-          else
-            raise GraphQL::UnauthorizedError
+      class << self
+        # This is protected so that we can be sure callers use the public method, {.authorized_new}
+        # @see authorized_new to make instances
+        protected :new
+
+        # Make a new instance of this type _if_ the auth check passes,
+        # otherwise, raise an error.
+        #
+        # Probably only the framework should call this method.
+        #
+        # @param object [Object] The thing wrapped by this object
+        # @param context [GraphQL::Query::Context]
+        def self.authorized_new(object, context)
+          context.schema.after_lazy(authorized?(object, context)) do |is_authorized|
+            if is_authorized
+              self.new(object, context)
+            else
+              raise GraphQL::UnauthorizedError
+            end
           end
         end
       end
