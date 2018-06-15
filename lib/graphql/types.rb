@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 require "graphql/types/boolean"
 require "graphql/types/float"
 require "graphql/types/id"
