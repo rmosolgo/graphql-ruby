@@ -27,7 +27,7 @@ module GraphQL
       #   end
       #
       # @see Relay::BaseEdge for edge types
-      class BaseConnection < Platform::Objects::Base
+      class BaseConnection < Types::Relay::BaseObject
         extend Forwardable
         def_delegators :@object, :cursor_from_node, :parent
 
@@ -44,7 +44,9 @@ module GraphQL
         def self.edge_type(edge_type_class, edge_class: GraphQL::Relay::Edge, node_type: edge_type_class.node_type)
           # Set this connection's graphql name
           node_type_name = node_type.graphql_name
-          graphql_name("#{node_type_name}Connection")
+
+          @node_type = node_type
+          @edge_type = edge_type_class
 
           field :edges, [edge_type_class, null: true],
             null: true,
@@ -57,6 +59,11 @@ module GraphQL
             description: "A list of nodes."
 
           description("The connection type for #{node_type_name}.")
+        end
+
+        # Add the shortcut `nodes` field to this connection and its subclasses
+        def self.nodes_field
+          field :nodes, [@node_type, null: true], null: true
         end
 
         field :page_info, GraphQL::Types::Relay::PageInfo, null: false, description: "Information to aid in pagination."

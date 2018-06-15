@@ -21,7 +21,7 @@ module GraphQL
       #   end
       #
       # @see {Relay::BaseConnection} for connection types
-      class BaseEdge < GraphQL::Schema::Object
+      class BaseEdge < Types::Relay::BaseObject
         description "An edge in a connection."
 
         # Get or set the Object type that this edge wraps.
@@ -34,7 +34,7 @@ module GraphQL
             # Set this to be named like the node type, but suffixed with `Edge`
             graphql_name("#{wrapped_type_name}Edge")
             # Add a default `node` field
-            child_class.field :node, node_type, null: true, description: "The item at the end of the edge."
+            field :node, node_type, null: true, description: "The item at the end of the edge."
           end
           @node_type
         end

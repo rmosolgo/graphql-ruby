@@ -937,15 +937,6 @@ module GraphQL
 
     private
 
-    # Wrap Relay-related objects in wrappers
-    # @api private
-    BUILT_IN_INSTRUMENTERS = [
-      GraphQL::Relay::ConnectionInstrumentation,
-      GraphQL::Relay::EdgesInstrumentation,
-      GraphQL::Relay::Mutation::Instrumentation,
-      GraphQL::Schema::Member::Instrumentation,
-    ]
-
     def rebuild_artifacts
       if @rebuilding_artifacts
         raise CyclicalDefinitionError, "Part of the schema build process re-triggered the schema build process, causing an infinite loop. Avoid using Schema#types, Schema#possible_types, and Schema#get_field during schema build."
