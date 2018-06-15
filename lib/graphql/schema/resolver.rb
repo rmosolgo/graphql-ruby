@@ -99,6 +99,15 @@ module GraphQL
           end
         end
 
+        # Specifies the complexity of the field. Defaults to `1`
+        # @return [Integer, Proc]
+        def complexity(new_complexity = nil)
+          if new_complexity
+            @complexity = new_complexity
+          end
+          @complexity || (superclass.respond_to?(:complexity) ? superclass.complexity : 1)
+        end
+
         def field_options
           {
             type: type_expr,
@@ -108,6 +117,7 @@ module GraphQL
             resolver_class: self,
             arguments: arguments,
             null: null,
+            complexity: complexity,
           }
         end
 
