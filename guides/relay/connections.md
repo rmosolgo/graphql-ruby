@@ -173,7 +173,7 @@ class MembershipSinceEdgeType < GraphQL::Types::Relay::BaseEdge
 end
 
 class TeamMembershipsConnectionType < GraphQL::Types::Relay::BaseConnection
-  # Here, hook up yoru custom class with `edge_class:`
+  # Here, hook up your custom class with `edge_class:`
   edge_type(MembershipSinceEdgeType, edge_class: MembershipSinceEdge)
 end
 ```
