@@ -42,11 +42,13 @@ module GraphQL
 
         def apply_proxy(field)
           resolve_proc = field.resolve_proc
+          lazy_resolve_proc = field.lazy_resolve_proc
           inner_return_type = field.type.unwrap
           depth = list_depth(field.type)
 
           field.redefine(
             resolve: ProxiedResolve.new(inner_resolve: resolve_proc, list_depth: depth, inner_return_type: inner_return_type),
+            lazy_resolve: ProxiedResolve.new(inner_resolve: lazy_resolve_proc, list_depth: depth, inner_return_type: inner_return_type),
           )
         end
 
@@ -70,10 +72,14 @@ module GraphQL
 
           def call(obj, args, ctx)
             result = @inner_resolve.call(obj, args, ctx)
-            if ctx.skip == result
+            if ctx.skip == result || ctx.schema.lazy?(result) || result.nil? || result.is_a?(GraphQL::ExecutionError)
+              result
+            elsif obj.is_a?(GraphQL::Execution::Lazy)
+              # This object was already proxied, but the auth check returned a promise.
+              # Don't try to proxy it again.
               result
             else
-              proxy_to_depth(result, @list_depth, @inner_return_type, ctx)
+              proxy_to_depth(result, @list_depth, ctx)
             end
           rescue GraphQL::UnauthorizedError
             # If this object (or one of these objects) fails authorization,
@@ -83,31 +89,25 @@ module GraphQL
 
           private
 
-          def proxy_to_depth(obj, depth, type, ctx)
-            ctx.schema.after_lazy(obj) do |inner_obj|
-              if inner_obj.nil?
-                nil
-              elsif inner_obj.is_a?(GraphQL::ExecutionError)
-                inner_obj
-              elsif depth > 0
-                inner_obj.map { |i| proxy_to_depth(i, depth - 1, type, ctx) }
+          def proxy_to_depth(inner_obj, depth, ctx)
+            if depth > 0
+              inner_obj.map { |i| proxy_to_depth(i, depth - 1, ctx) }
+            else
+              concrete_type = case @inner_return_type
+              when GraphQL::UnionType, GraphQL::InterfaceType
+                ctx.query.resolve_type(@inner_return_type, inner_obj)
+              when GraphQL::ObjectType
+                @inner_return_type
               else
-                concrete_type = case type
-                when GraphQL::UnionType, GraphQL::InterfaceType
-                  ctx.query.resolve_type(type, inner_obj)
-                when GraphQL::ObjectType
-                  type
-                else
-                  raise "unexpected proxying type #{type} for #{inner_obj} at #{ctx.owner_type}.#{ctx.field.name}"
-                end
+                raise "unexpected proxying type #{@inner_return_type} for #{inner_obj} at #{ctx.owner_type}.#{ctx.field.name}"
+              end
 
-                if concrete_type && (object_class = concrete_type.metadata[:type_class])
-                  # use the query-level context here, since it won't be field-specific anyways
-                  query_ctx = ctx.query.context
-                  object_class.authorized_new(inner_obj, query_ctx)
-                else
-                  inner_obj
-                end
+              if concrete_type && (object_class = concrete_type.metadata[:type_class])
+                # use the query-level context here, since it won't be field-specific anyways
+                query_ctx = ctx.query.context
+                object_class.authorized_new(inner_obj, query_ctx)
+              else
+                inner_obj
               end
             end
           end

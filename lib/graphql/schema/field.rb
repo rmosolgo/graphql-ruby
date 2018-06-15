@@ -304,22 +304,24 @@ module GraphQL
       #
       # Eventually, we might hook up field instances to execution in another way. TBD.
       def resolve_field(obj, args, ctx)
-        # First, apply auth ...
-        query_ctx = ctx.query.context
-        inner_obj = obj && obj.object
-        if authorized?(inner_obj, query_ctx) && arguments.each_value.all? { |a| a.authorized?(inner_obj, query_ctx) }
-          # Then if it passed, resolve the field
-          if @resolve_proc
-            # Might be nil, still want to call the func in that case
-            @resolve_proc.call(inner_obj, args, ctx)
-          elsif @resolver_class
-            singleton_inst = @resolver_class.new(object: inner_obj, context: query_ctx)
-            public_send_field(singleton_inst, args, ctx)
+        ctx.schema.after_lazy(obj) do |after_obj|
+          # First, apply auth ...
+          query_ctx = ctx.query.context
+          inner_obj = after_obj && after_obj.object
+          if authorized?(inner_obj, query_ctx) && arguments.each_value.all? { |a| a.authorized?(inner_obj, query_ctx) }
+            # Then if it passed, resolve the field
+            if @resolve_proc
+              # Might be nil, still want to call the func in that case
+              @resolve_proc.call(inner_obj, args, ctx)
+            elsif @resolver_class
+              singleton_inst = @resolver_class.new(object: inner_obj, context: query_ctx)
+              public_send_field(singleton_inst, args, ctx)
+            else
+              public_send_field(after_obj, args, ctx)
+            end
           else
-            public_send_field(obj, args, ctx)
+            nil
           end
-        else
-          nil
         end
       end
 

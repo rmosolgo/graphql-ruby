@@ -8,17 +8,18 @@ module GraphQL
         @max_page_size = field.connection_max_page_size
       end
 
-      def call(parent, args, ctx)
-        returned_nodes = @underlying_resolve.call(parent, args, ctx)
+      def call(obj, args, ctx)
+        # in a lazy ressolve hook, obj is the promise,
+        # get the object that the promise was
+        # originally derived from
+        parent = ctx.object
 
-        ctx.schema.after_lazy(returned_nodes) do |nodes|
-          if nodes.nil?
-            nil
-          elsif nodes.is_a?(GraphQL::Execution::Execute::Skip)
-            nodes
-          else
-            build_connection(nodes, args, parent, ctx)
-          end
+        nodes = @underlying_resolve.call(obj, args, ctx)
+
+        if nodes.nil? || ctx.schema.lazy?(nodes) || nodes.is_a?(GraphQL::Execution::Execute::Skip)
+          nodes
+        else
+          build_connection(nodes, args, parent, ctx)
         end
       end
 

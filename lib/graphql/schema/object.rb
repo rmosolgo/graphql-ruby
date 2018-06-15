@@ -22,9 +22,14 @@ module GraphQL
         #
         # Probably only the framework should call this method.
         #
+        # This might return a {GraphQL::Execution::Lazy} if the user-provided `.authorized?`
+        # hook returns some lazy value (like a Promise).
+        #
         # @param object [Object] The thing wrapped by this object
         # @param context [GraphQL::Query::Context]
-        def self.authorized_new(object, context)
+        # @return [GraphQL::Schema::Object, GraphQL::Execution::Lazy]
+        # @raise [GraphQL::UnauthorizedError] if the user-provided hook returns `false`
+        def authorized_new(object, context)
           context.schema.after_lazy(authorized?(object, context)) do |is_authorized|
             if is_authorized
               self.new(object, context)
