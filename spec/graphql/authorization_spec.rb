@@ -178,7 +178,12 @@ describe GraphQL::Authorization do
       implements UnauthorizedInterface
       # This authorized check returns a lazy object, it should be synced by the runtime.
       def self.authorized?(value, context)
-        Box.new(value: super && value != "a")
+        if !value.is_a?(String)
+          raise "Unexpected box value: #{value.inspect}"
+        end
+        is_authed = super && value != "a"
+        # Make it many levels nested just to make sure we support nested lazy objects
+        Box.new(value: Box.new(value: Box.new(value: Box.new(value: is_authed))))
       end
 
       field :value, String, null: false, method: :object
@@ -259,7 +264,8 @@ describe GraphQL::Authorization do
         argument :value, String, required: true
       end
       def unauthorized_lazy_box(value:)
-        Box.new(value: value)
+        # Make it extra nested, just for good measure.
+        Box.new(value: Box.new(value: value))
       end
       field :unauthorized_list_items, [UnauthorizedObject], null: true
       def unauthorized_list_items

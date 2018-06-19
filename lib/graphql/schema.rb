@@ -999,7 +999,10 @@ module GraphQL
       if (lazy_method = lazy_method_name(value))
         GraphQL::Execution::Lazy.new do
           result = value.public_send(lazy_method)
-          yield(result)
+          # The returned result might also be lazy, so check it, too
+          after_lazy(result) do |final_result|
+            yield(final_result)
+          end
         end
       else
         yield(value)
