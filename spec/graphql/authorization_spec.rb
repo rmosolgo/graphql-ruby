@@ -162,7 +162,20 @@ describe GraphQL::Authorization do
       field :value, String, null: false, method: :object
     end
 
+    module UnauthorizedInterface
+      include BaseInterface
+
+      def self.resolve_type(obj, ctx)
+        if obj.is_a?(String)
+          UnauthorizedCheckBox
+        else
+          raise "Unexpected value: #{obj.inspect}"
+        end
+      end
+    end
+
     class UnauthorizedCheckBox < BaseObject
+      implements UnauthorizedInterface
       # This authorized check returns a lazy object, it should be synced by the runtime.
       def self.authorized?(value, context)
         Box.new(value: super && value != "a")
@@ -254,6 +267,10 @@ describe GraphQL::Authorization do
       end
 
       field :unauthorized_lazy_check_box, UnauthorizedCheckBox, null: true, method: :unauthorized_lazy_box do
+        argument :value, String, required: true
+      end
+
+      field :unauthorized_interface, UnauthorizedInterface, null: true, method: :unauthorized_lazy_box do
         argument :value, String, required: true
       end
 
@@ -599,6 +616,24 @@ describe GraphQL::Authorization do
       GRAPHQL
       res = auth_execute(query)
       assert_equal [1,2,3], res["data"]["integers"]["edges"].map { |e| e["node"]["value"] }
+    end
+
+    it "works with lazy values / interfaces" do
+      query = <<-GRAPHQL
+      query($value: String!){
+        unauthorizedInterface(value: $value) {
+          ... on UnauthorizedCheckBox {
+            value
+          }
+        }
+      }
+      GRAPHQL
+
+      res = auth_execute(query, variables: { value: "a"})
+      assert_nil res["data"]["unauthorizedInterface"]
+
+      res2 = auth_execute(query, variables: { value: "b"})
+      assert_equal "b", res2["data"]["unauthorizedInterface"]["value"]
     end
   end
 end

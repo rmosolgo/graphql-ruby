@@ -128,7 +128,25 @@ module GraphQL
                   query.schema.unauthorized_object(err)
                 end
               }
-              field_ctx.value = continue_resolve_field(inner_value, field_ctx)
+
+              # Maybe one call is not enough, because it just unwinds the `.authorized?` promise
+              # TODO use recursion for this?
+              if query.schema.lazy?(inner_value)
+                field_ctx.value = Execution::Lazy.new {
+                  inner_inner_value = field_ctx.trace("execute_field_lazy", {context: field_ctx}) {
+                    begin
+                      field.lazy_resolve(inner_value, arguments, field_ctx)
+                    rescue GraphQL::ExecutionError => err
+                      err
+                    rescue GraphQL::UnauthorizedError => err
+                      query.schema.unauthorized_object(err)
+                    end
+                  }
+                  field_ctx.value = continue_resolve_field(inner_inner_value, field_ctx)
+                }
+              else
+                field_ctx.value = continue_resolve_field(inner_value, field_ctx)
+              end
             }
           else
             field_ctx.value = continue_resolve_field(raw_value, field_ctx)
