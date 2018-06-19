@@ -276,7 +276,6 @@ module GraphQL
       end
 
       def visible?(context)
-        # TODO Update for GraphQL::Schema::Resolver
         if @resolver_class
           @resolver_class.visible?(context)
         else
