@@ -1,5 +1,6 @@
 ---
 layout: guide
+doc_stub: false
 search: true
 section: Schema
 title: Class-based API
@@ -9,8 +10,6 @@ index: 10
 ---
 
 In GraphQL `1.8`+, you can use Ruby classes to build your schema. You can __mix__ class-style and `.define`-style type definitions in a schema.
-
-(`1.8` is currently in prerelease, check [RubyGems](https://rubygems.org/gems/graphql) for the latest version.)
 
 You can get an overview of this new feature:
 

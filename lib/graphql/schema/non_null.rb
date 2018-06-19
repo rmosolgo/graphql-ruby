@@ -33,6 +33,10 @@ module GraphQL
       def unwrap
         @of_type.unwrap
       end
+
+      def to_type_signature
+        "#{@of_type.to_type_signature}!"
+      end
     end
   end
 end

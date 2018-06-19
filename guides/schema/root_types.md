@@ -1,5 +1,6 @@
 ---
 layout: guide
+doc_stub: false
 search: true
 section: Schema
 title: Root Types
@@ -11,7 +12,7 @@ GraphQL queries begin from [root types](http://graphql.org/learn/schema/#the-que
 Attach these to your schema using methods with the same name:
 
 ```ruby
-MySchema = GraphQL::Schema.define do
+class MySchema < GraphQL::Schema
   # required
   query Types::QueryType
   # optional
@@ -21,17 +22,22 @@ MySchema = GraphQL::Schema.define do
 end
 ```
 
-The types are `GraphQL::ObjectTypes`, for example:
+The types are `GraphQL::Schema::Object` classes, for example:
 
 ```ruby
 # app/graphql/types/query_type.rb
-Types::QueryType = GraphQL::ObjectType.define do
-  name "Query"
+class Types::QueryType < GraphQL::Schema::Object
   # ...
 end
 
-Types::MutationType = GraphQL::ObjectType.define { ... }
-Types::SubscriptionType = GraphQL::ObjectType.define { ... }
+# Similarly:
+class Types::MutationType < GraphQL::Schema::Object
+  # ...
+end
+# and
+class Types::SubscriptionType < GraphQL::Schema::Object
+  # ...
+end
 ```
 
 Each type is the entry point for the corresponding GraphQL query:

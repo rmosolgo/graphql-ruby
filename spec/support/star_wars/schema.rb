@@ -27,12 +27,23 @@ module StarWars
     field :planet, String, null: true
   end
 
-  # Use an optional block to add fields to the connection type:
-  BaseConnectionWithTotalCountType = BaseType.define_connection(nodes_field: true) do
-    name "BasesConnectionWithTotalCount"
-    field :totalCount do
-      type types.Int
-      resolve ->(obj, args, ctx) { obj.nodes.count }
+
+  class BaseEdge < GraphQL::Types::Relay::BaseEdge
+    node_type(BaseType)
+  end
+
+  class BaseConnection < GraphQL::Types::Relay::BaseConnection
+    edge_type(BaseEdge)
+  end
+
+  class BasesConnectionWithTotalCountType < GraphQL::Types::Relay::BaseConnection
+    edge_type(BaseEdge)
+    nodes_field
+
+    field :total_count, Integer, null: true
+
+    def total_count
+      object.nodes.count
     end
   end
 
@@ -121,7 +132,7 @@ module StarWars
 
     field :shipsWithMaxPageSize, "Ships with max page size", max_page_size: 2, function: ShipsWithMaxPageSize.new
 
-    field :bases, BaseConnectionWithTotalCountType, null: true, connection: true, resolve: ->(obj, args, ctx) {
+    field :bases, BasesConnectionWithTotalCountType, null: true, connection: true, resolve: ->(obj, args, ctx) {
       all_bases = Base.where(id: obj.bases)
       if args[:nameIncludes]
         all_bases = all_bases.where("name LIKE ?", "%#{args[:nameIncludes]}%")
@@ -131,8 +142,8 @@ module StarWars
       argument :nameIncludes, String, required: false
     end
 
-    field :basesClone, BaseType.connection_type, null: true
-    field :basesByName, BaseType.connection_type, null: true do
+    field :basesClone, BaseConnection, null: true
+    field :basesByName, BaseConnection, null: true do
       argument :order, String, default_value: "name", required: false
     end
     def bases_by_name(order: nil)
@@ -143,13 +154,13 @@ module StarWars
       end
     end
 
-    field :basesWithMaxLimitRelation, BaseType.connection_type, null: true, max_page_size: 2, resolve: Proc.new { Base.all}
-    field :basesWithMaxLimitArray, BaseType.connection_type, null: true, max_page_size: 2, resolve: Proc.new { Base.all.to_a }
-    field :basesWithDefaultMaxLimitRelation, BaseType.connection_type, null: true, resolve: Proc.new { Base.all }
-    field :basesWithDefaultMaxLimitArray, BaseType.connection_type, null: true, resolve: Proc.new { Base.all.to_a }
-    field :basesWithLargeMaxLimitRelation, BaseType.connection_type, null: true, max_page_size: 1000, resolve: Proc.new { Base.all }
+    field :basesWithMaxLimitRelation, BaseConnection, null: true, max_page_size: 2, resolve: Proc.new { Base.all}
+    field :basesWithMaxLimitArray, BaseConnection, null: true, max_page_size: 2, resolve: Proc.new { Base.all.to_a }
+    field :basesWithDefaultMaxLimitRelation, BaseConnection, null: true, resolve: Proc.new { Base.all }
+    field :basesWithDefaultMaxLimitArray, BaseConnection, null: true, resolve: Proc.new { Base.all.to_a }
+    field :basesWithLargeMaxLimitRelation, BaseConnection, null: true, max_page_size: 1000, resolve: Proc.new { Base.all }
 
-    field :basesAsSequelDataset, BaseConnectionWithTotalCountType, null: true, connection: true, max_page_size: 1000 do
+    field :basesAsSequelDataset, BasesConnectionWithTotalCountType, null: true, connection: true, max_page_size: 1000 do
       argument :nameIncludes, String, required: false
     end
 
@@ -297,14 +308,14 @@ module StarWars
 
     field :largestBase, BaseType, null: true, resolve: ->(obj, args, ctx) { Base.find(3) }
 
-    field :newestBasesGroupedByFaction, BaseType.connection_type, null: true, resolve: ->(obj, args, ctx) {
+    field :newestBasesGroupedByFaction, BaseConnection, null: true, resolve: ->(obj, args, ctx) {
       Base
         .having('id in (select max(id) from bases group by faction_id)')
         .group(:id)
         .order('faction_id desc')
     }
 
-    field :basesWithNullName, BaseType.connection_type, null: false, resolve: ->(obj, args, ctx) {
+    field :basesWithNullName, BaseConnection, null: false, resolve: ->(obj, args, ctx) {
       [OpenStruct.new(id: nil)]
     }
 

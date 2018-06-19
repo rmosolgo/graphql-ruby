@@ -1,5 +1,6 @@
 ---
 layout: guide
+doc_stub: false
 search: true
 section: Queries
 title: Executing Queries
@@ -110,17 +111,21 @@ MySchema.execute(query_string, context: context)
 Then, you can access those values during execution:
 
 ```ruby
-resolve ->(obj, args,  ctx) {
-  ctx[:current_user] # => #<User id=123 ... >
+field :post, Post, null: true do
+  argument :id, ID, required: true
+end
+
+def post(id:)
+  context[:current_user] # => #<User id=123 ... >
   # ...
-}
+end
 ```
 
-Note that `ctx` is _not_ the hash that you passed it. It's an instance of {{ "GraphQL::Query::Context" | api_doc }}, but it delegates `#[](key)` to the hash you provide.
+Note that `context` is _not_ the hash that you passed it. It's an instance of {{ "GraphQL::Query::Context" | api_doc }}, but it delegates `#[]`, `#[]=`, and a few other methods to the hash you provide.
 
 ## Root Value
 
-You can provide a root `obj` value with `root_value:`. For example, to base the query off of the current organization:
+You can provide a root `object` value with `root_value:`. For example, to base the query off of the current organization:
 
 ```ruby
 current_org = session[:current_organization]
@@ -130,13 +135,12 @@ MySchema.execute(query_string, root_value: current_org)
 That value will be provided to root-level fields, such as mutation fields. For example:
 
 ```ruby
-MutationType = GraphQL::ObjectType.define do
-  name "Mutation"
-  field :createPost, types.Post do
-    resolve ->(obj, args, ctx) {
-      obj # => #<Organization id=456 ...>
-      # ...
-    }
+class MutationType < GraphQL::Schema::Object
+  field :create_post, Post, null: true
+
+  def create_post(**args)
+    object # => #<Organization id=456 ...>
+    # ...
   end
 end
 ```

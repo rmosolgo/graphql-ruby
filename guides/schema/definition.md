@@ -1,5 +1,6 @@
 ---
 layout: guide
+doc_stub: false
 search: true
 section: Schema
 title: Definition
@@ -144,7 +145,7 @@ class MySchema < GraphQL::Schema
 end
 ```
 
-__`type_error`__ handles type errors at runtime, read more in the {% internal_link "Type Errors guide", "/schema/type_errors" %}.
+__`type_error`__ handles type errors at runtime, read more in the {% internal_link "Invariants guide", "/errors/type_errors" %}.
 
 ```ruby
 class MySchema < GraphQL::Schema

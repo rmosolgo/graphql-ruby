@@ -215,10 +215,13 @@ module GraphQL
                   inner_ctx,
                 )
 
+                return PROPAGATE_NULL if inner_result == PROPAGATE_NULL
+
                 inner_ctx.value = inner_result
                 result << inner_ctx
                 i += 1
               end
+
               result
             when GraphQL::TypeKinds::NON_NULL
               inner_type = field_type.of_type

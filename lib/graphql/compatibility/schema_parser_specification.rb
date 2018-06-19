@@ -78,6 +78,34 @@ module GraphQL
             assert_equal [], type.values[2].directives
           end
 
+          def test_it_parses_union_types
+            document = parse(
+              "union BagOfThings = \n" \
+              "A |\n" \
+              "B |\n" \
+              "C"
+            )
+
+            union = document.definitions.first
+
+            assert_equal GraphQL::Language::Nodes::UnionTypeDefinition, union.class
+            assert_equal 'BagOfThings', union.name
+            assert_equal 3, union.types.length
+            assert_equal [1, 1], union.position
+
+            assert_equal GraphQL::Language::Nodes::TypeName, union.types[0].class
+            assert_equal 'A', union.types[0].name
+            assert_equal [2, 1], union.types[0].position
+
+            assert_equal GraphQL::Language::Nodes::TypeName, union.types[1].class
+            assert_equal 'B', union.types[1].name
+            assert_equal [3, 1], union.types[1].position
+
+            assert_equal GraphQL::Language::Nodes::TypeName, union.types[2].class
+            assert_equal 'C', union.types[2].name
+            assert_equal [4, 1], union.types[2].position
+          end
+
           def test_it_parses_input_types
             document = parse('
               input EmptyMutationInput {
@@ -109,7 +137,19 @@ module GraphQL
             assert_equal 'if', type.arguments[0].name
             assert_equal 'Boolean', type.arguments[0].type.of_type.name
 
-            assert_equal ['FIELD', 'FRAGMENT_SPREAD', 'INLINE_FRAGMENT'], type.locations
+            assert_equal 3, type.locations.length
+
+            assert_instance_of GraphQL::Language::Nodes::DirectiveLocation, type.locations[0]
+            assert_equal 'FIELD', type.locations[0].name
+            assert_equal [3, 20], type.locations[0].position
+
+            assert_instance_of GraphQL::Language::Nodes::DirectiveLocation, type.locations[1]
+            assert_equal 'FRAGMENT_SPREAD', type.locations[1].name
+            assert_equal [4, 19], type.locations[1].position
+
+            assert_instance_of GraphQL::Language::Nodes::DirectiveLocation, type.locations[2]
+            assert_equal 'INLINE_FRAGMENT', type.locations[2].name
+            assert_equal [5, 19], type.locations[2].position
           end
 
           def test_it_parses_field_arguments

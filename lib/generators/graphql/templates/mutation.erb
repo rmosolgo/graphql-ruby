@@ -1,12 +1,11 @@
-Mutations::<%= mutation_name %> = GraphQL::Relay::Mutation.define do
-  name "<%= mutation_name %>"
+class Mutations::<%= mutation_name %> < GraphQL::Schema::RelayClassicMutation
   # TODO: define return fields
   # return_field :post, Types::PostType
 
   # TODO: define arguments
   # input_field :name, !types.String
 
-  resolve ->(obj, args, ctx) {
-    # TODO: define resolve function
-  }
+  def resolve(**inputs)
+    # TODO: define resolve method
+  end
 end

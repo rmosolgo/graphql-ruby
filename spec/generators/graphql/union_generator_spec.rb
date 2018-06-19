@@ -14,8 +14,7 @@ class GraphQLGeneratorsUnionGeneratorTest < BaseGeneratorTest
     ]
 
     expected_content = <<-RUBY
-Types::WingedCreatureType = GraphQL::UnionType.define do
-  name "WingedCreature"
+class Types::WingedCreatureType < Types::BaseUnion
   possible_types [Types::InsectType, Types::BirdType]
 end
 RUBY
@@ -36,8 +35,7 @@ RUBY
     ]
 
     expected_content = <<-RUBY
-Types::WingedCreatureType = GraphQL::UnionType.define do
-  name "WingedCreature"
+class Types::WingedCreatureType < Types::BaseUnion
 end
 RUBY
 
@@ -52,8 +50,7 @@ RUBY
     command = ["WingedCreature", "--directory", "app/mydirectory"]
 
     expected_content = <<-RUBY
-Types::WingedCreatureType = GraphQL::UnionType.define do
-  name "WingedCreature"
+class Types::WingedCreatureType < Types::BaseUnion
 end
 RUBY
 

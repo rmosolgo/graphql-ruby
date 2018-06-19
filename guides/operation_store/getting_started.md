@@ -1,5 +1,6 @@
 ---
 layout: guide
+doc_stub: false
 search: true
 section: GraphQL Pro - OperationStore
 title: Getting Started
@@ -82,7 +83,7 @@ end
 To hook up the storage to your schema, add the plugin:
 
 ```ruby
-MySchema = GraphQL::Schema.define do
+class MySchema < GraphQL::Schema
   # ...
   use GraphQL::Pro::OperationStore
 end

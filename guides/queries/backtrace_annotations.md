@@ -1,6 +1,7 @@
 ---
 title: Backtrace Annotations
 layout: guide
+doc_stub: false
 search: true
 section: Queries
 desc: Use the GraphQL backtrace for debugging
@@ -40,7 +41,7 @@ MySchema.execute(query_string, context: { backtrace: true })
 Or, to _always_ wrap backtraces, add it to your schema definition with `use`, for example:
 
 ```ruby
-MySchema = GraphQL::Schema.define do
+class MySchema < GraphQL::Schema
   # Always wrap backtraces with GraphQL annotation
   use GraphQL::Backtrace
 end

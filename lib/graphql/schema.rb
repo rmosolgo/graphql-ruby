@@ -135,7 +135,6 @@ module GraphQL
 
     self.default_execution_strategy = GraphQL::Execution::Execute
 
-    BUILT_IN_TYPES = Hash[[INT_TYPE, STRING_TYPE, FLOAT_TYPE, BOOLEAN_TYPE, ID_TYPE].map{ |type| [type.name, type] }]
     DIRECTIVES = [GraphQL::Directive::IncludeDirective, GraphQL::Directive::SkipDirective, GraphQL::Directive::DeprecatedDirective]
     DYNAMIC_FIELDS = ["__type", "__typename", "__schema"]
 
@@ -657,6 +656,7 @@ module GraphQL
         # Configuration
         :max_complexity=, :max_depth=,
         :metadata,
+        :default_mask,
         :default_filter, :redefine,
         :id_from_object_proc, :object_from_id_proc,
         :id_from_object=, :object_from_id=, :type_error,
@@ -993,15 +993,6 @@ module GraphQL
     end
 
     private
-
-    # Wrap Relay-related objects in wrappers
-    # @api private
-    BUILT_IN_INSTRUMENTERS = [
-      GraphQL::Relay::ConnectionInstrumentation,
-      GraphQL::Relay::EdgesInstrumentation,
-      GraphQL::Relay::Mutation::Instrumentation,
-      GraphQL::Schema::Member::Instrumentation,
-    ]
 
     def rebuild_artifacts
       if @rebuilding_artifacts

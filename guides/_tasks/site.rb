@@ -117,6 +117,7 @@ search: true
 title: %{title}
 url: %{url}
 rubydoc_url: %{url}
+doc_stub: true
 ---
 
 %{documentation}

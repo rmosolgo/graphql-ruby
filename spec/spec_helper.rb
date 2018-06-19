@@ -27,6 +27,22 @@ require "pry"
 require "minitest/autorun"
 require "minitest/focus"
 require "minitest/reporters"
+
+MONGO_DETECTED = begin
+  require "mongo"
+  Mongo::Client.new('mongodb://127.0.0.1:27017/graphql_ruby_test',
+      connect_timeout: 1,
+      socket_timeout: 1,
+      server_selection_timeout: 1,
+      logger: Logger.new(nil)
+    )
+    .database
+    .collections
+rescue StandardError, LoadError => err # rubocop:disable Lint/UselessAssignment
+  # puts err.message, err.backtrace
+  false
+end
+
 Minitest::Reporters.use! Minitest::Reporters::DefaultReporter.new(color: true)
 
 Minitest::Spec.make_my_diffs_pretty!
@@ -62,9 +78,12 @@ NO_OP_RESOLVE_TYPE = ->(type, obj, ctx) {
 
 # Load support files
 Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each do |f|
+  # These require mongodb in order to run,
+  # so only load them in the specific tests that require them.
+  next if f.include?("star_trek")
+
   unless rails_should_be_installed?
     next if f.end_with?('star_wars/data.rb')
-    next if f.end_with?('star_trek/data.rb')
     next if f.end_with?('base_generator_test.rb')
   end
   require f

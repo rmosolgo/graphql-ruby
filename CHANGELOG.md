@@ -8,6 +8,60 @@
 
 ### Bug fixes
 
+## 1.8.3 (14 June 2018)
+
+### New features
+
+- Add an ISO 8601 DateTime scalar: `Types::ISO8601DateTime`. #1566
+- Use classes under the hood for built-in scalars. These are now accessible via `Types::` namespace. #1565
+- Add `possible_types` helpers to abstract types #1580
+
+### Bug fixes
+
+- Fix `Language::Visitor` when visiting `InputObjectTypeDefinition` nodes to include child `Directive` nodes. #1584
+- Fix an issue preventing proper subclassing of `TimeoutMiddleware`. #1579
+- Fix `graphql:interface` generator such that it generates working code. #1577
+- Update the description of auto-generated `before` and `after` arguments to better describe their input type. #1572
+- Add `Language::Nodes::DirectiveLocation` AST node to represent directive locations in directive definitions. #1564
+
+## 1.8.2 (6 June 2018)
+
+### Breaking changes
+
+- `Schema::InputObject#to_h` recursively transforms hashes to underscorized, symbolized keys. #1555
+
+### New features
+
+- Generators create class-based types #1562
+- `Schema::InputObject#to_h` returns a underscorized, symbolized hash #1555
+
+### Bug fixes
+
+- Support `default_mask` in class-based schemas #1563
+- Fix null propagation for list types #1558
+- Validate unique arguments in queries #1557
+- Fix `RelayClassicMutation`s with no arguments #1543
+
+## 1.8.1 (1 June 2018)
+
+### Breaking changes
+
+- When filtering items out of a schema, Unions will now be hidden if their possible types are all hidden or if all fields returning it are hidden. #1515
+
+### New features
+
+- `GraphQL::ExecutionError.new` accepts an `extensions:` option which will be merged into the `"extensions"` key in that error's JSON #1552
+
+### Bug fixes
+
+- When filtering items out of a schema, Unions will now be hidden if their possible types are all hidden or if all fields returning it are hidden. #1515
+- Require that fields returning interfaces have selections made on them #1551
+- Correctly mark introspection types and fields as `introspection?` #1535
+- Remove unused introspection objects #1534
+- use `object`/`context` in the upgrader instead of `@object`/`@context` #1529
+- (Development) Don't require mongodb for non-mongo tests #1548
+- Track position of union member nodes in the parser #1541
+
 ## 1.8.0 (17 May 2018)
 
 `1.8.0` has been in prerelease for 6 months. See the prerelease changelog for change-by-change details. Here's a high-level changelog, followed by a detailed list of changes since the last prerelease.

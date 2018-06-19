@@ -381,6 +381,13 @@ module Dummy
       }
     end
 
+    field :executionErrorWithExtensions do
+      type GraphQL::INT_TYPE
+      resolve ->(t, a, c) {
+        GraphQL::ExecutionError.new("Permission Denied!", extensions: { "code" => "permission_denied" })
+      }
+    end
+
     # To test possibly-null fields
     field :maybeNull, MaybeNullType do
       resolve ->(t, a, c) { OpenStruct.new(cheese: nil) }

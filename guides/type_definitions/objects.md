@@ -1,5 +1,6 @@
 ---
 layout: guide
+doc_stub: false
 search: true
 section: Type Definitions
 title: Objects
@@ -101,6 +102,7 @@ The different elements of field definition are addressed below:
 - [Resolution behavior](#field-resolution) hooks up Ruby code to the GraphQL field
 - [Arguments](#field-arguments) allow fields to take input when they're queried
 - [Extra field metadata](#extra-field-metadata) for low-level access to the GraphQL-Ruby runtime
+- [Add default values for field parameters](#field-parameter-default-values)
 
 ### Field Return Type
 
@@ -291,6 +293,23 @@ end
 ```
 
 At runtime, the requested runtime object will be passed to the field.
+
+### Field Parameter Default Values 
+
+The field method requires you to pass `null:` keyword argument to determine whether the field is nullable or not. Another field you may want to overrid is `camelize`, which is `true` by default. You can override this behavior by adding a custom field. 
+
+```ruby
+class CustomField < GraphQL::Schema::Field
+  # Add `null: false` and `camelize: false` which provide default values 
+  # in case the caller doesn't pass anything for those arguments. 
+  # **kwargs is a catch-all that will get everything else 
+  def initialize(*args, null: false, camelize: false, **kwargs, &block)
+    # Then, call super _without_ any args, where Ruby will take 
+    # _all_ the args originally passed to this method and pass it to the super method.
+    super 
+  end
+end
+```
 
 ## Implementing interfaces
 

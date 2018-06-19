@@ -1651,14 +1651,14 @@ module_eval(<<'.,.,', 'parser.y', 341)
 
 module_eval(<<'.,.,', 'parser.y', 345)
   def _reduce_141(val, _values, result)
-     return [make_node(:TypeName, name: val[0])]
+     return [make_node(:TypeName, name: val[0], position_source: val[0])]
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 346)
   def _reduce_142(val, _values, result)
-     val[0] << make_node(:TypeName, name: val[2]) 
+     val[0] << make_node(:TypeName, name: val[2], position_source: val[2]) 
     result
   end
 .,.,
@@ -1697,14 +1697,14 @@ module_eval(<<'.,.,', 'parser.y', 365)
 
 module_eval(<<'.,.,', 'parser.y', 369)
   def _reduce_147(val, _values, result)
-     return [val[0].to_s] 
+     return [make_node(:DirectiveLocation, name: val[0].to_s, position_source: val[0])] 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 370)
   def _reduce_148(val, _values, result)
-     val[0] << val[2].to_s 
+     val[0] << make_node(:DirectiveLocation, name: val[2].to_s, position_source: val[2]) 
     result
   end
 .,.,

@@ -35,4 +35,20 @@ describe GraphQL::Schema::RelayClassicMutation do
       assert mutation.null
     end
   end
+
+  describe "execution" do
+    it "works with no arguments" do
+      res = Jazz::Schema.execute <<-GRAPHQL
+      mutation {
+        addSitar(input: {}) {
+          instrument {
+            name
+          }
+        }
+      }
+      GRAPHQL
+
+      assert_equal "Sitar", res["data"]["addSitar"]["instrument"]["name"]
+    end
+  end
 end

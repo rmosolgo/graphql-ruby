@@ -49,6 +49,21 @@ describe GraphQL::Schema::Resolver do
     class Resolver5 < Resolver4
     end
 
+    class Resolver6 < Resolver1
+      type Integer, null: false
+
+      def resolve
+        self.class.complexity
+      end
+    end
+
+    class Resolver7 < Resolver6
+      complexity 2
+    end
+
+    class Resolver8 < Resolver7
+    end
+
     class Query < GraphQL::Schema::Object
       class CustomField < GraphQL::Schema::Field
         def resolve_field(*args)
@@ -68,6 +83,9 @@ describe GraphQL::Schema::Resolver do
       field :resolver_3_again, resolver: Resolver3, description: "field desc"
       field :resolver_4, "Positional description", resolver: Resolver4
       field :resolver_5, resolver: Resolver5
+      field :resolver_6, resolver: Resolver6
+      field :resolver_7, resolver: Resolver7
+      field :resolver_8, resolver: Resolver8
     end
 
     class Schema < GraphQL::Schema
@@ -111,6 +129,19 @@ describe GraphQL::Schema::Resolver do
       res = ResolverTest::Schema.execute " { resolver4 resolver5 } ", root_value: OpenStruct.new(value: 0)
       assert_equal 9, res["data"]["resolver4"]
       assert_equal 9, res["data"]["resolver5"]
+    end
+  end
+
+  describe "complexity" do
+    it "has default values" do
+      res = ResolverTest::Schema.execute " { resolver6 } ", root_value: OpenStruct.new(value: 0)
+      assert_equal 1, res["data"]["resolver6"]
+    end
+
+    it "is inherited" do
+      res = ResolverTest::Schema.execute " { resolver7 resolver8 } ", root_value: OpenStruct.new(value: 0)
+      assert_equal 2, res["data"]["resolver7"]
+      assert_equal 2, res["data"]["resolver8"]
     end
   end
 

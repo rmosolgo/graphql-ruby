@@ -27,7 +27,28 @@ module GraphQL
       attr_reader :arguments
 
       # Ruby-like hash behaviors, read-only
-      def_delegators :@ruby_style_hash, :to_h, :keys, :values, :each, :any?
+      def_delegators :@ruby_style_hash, :keys, :values, :each, :any?
+
+      def to_h
+        @ruby_style_hash.inject({}) do |h, (key, value)|
+          h.merge(key => unwrap_value(value))
+        end
+      end
+
+      def unwrap_value(value)
+        case value
+        when Array
+          value.map { |item| unwrap_value(item) }
+        when Hash
+          value.inject({}) do |h, (key, value)|
+            h.merge(key => unwrap_value(value))
+          end
+        when InputObject
+          value.to_h
+        else
+          value
+        end
+      end
 
       # Lookup a key on this object, it accepts new-style underscored symbols
       # Or old-style camelized identifiers.

@@ -149,8 +149,18 @@ module GraphQL
         GraphQL::Language::Nodes::DirectiveDefinition.new(
           name: directive.name,
           arguments: build_argument_nodes(warden.arguments(directive)),
-          locations: directive.locations.map(&:to_s),
+          locations: build_directive_location_nodes(directive.locations),
           description: directive.description,
+        )
+      end
+
+      def build_directive_location_nodes(locations)
+        locations.map { |location| build_directive_location_node(location) }
+      end
+
+      def build_directive_location_node(location)
+        GraphQL::Language::Nodes::DirectiveLocation.new(
+          name: location.to_s
         )
       end
 

@@ -1,5 +1,6 @@
 ---
 layout: guide
+doc_stub: false
 search: true
 section: Subscriptions
 title: Triggers
@@ -29,14 +30,15 @@ To send updates to _certain clients only_, you can use `scope:` to narrow the tr
 
 Scopes are based on query context: a value in `context:` is used as the scope; an equivalent value must be passed with `.trigger(... scope:)` to update that client. (The value is serialized with {{ "GraphQL::Subscriptions::Serialize" | api_doc }})
 
-To specify that a topic is scoped, edit the field definition on your root `Subscription` type. Use the `subscription_scope` helper to name a `context:` key, for example:
+To specify that a topic is scoped, edit the field definition on your root `Subscription` type. Use the `subscription_scope:` option to name a `context:` key, for example:
 
 ```ruby
 # For a given viewer, this will be triggered
 # whenever one of their posts gets a new comment
-field :commentAdded, CommentType, "A comment was added to one of the viewer's posts" do
-  subscription_scope :current_user_id
-end
+field :comment_added, CommentType,
+  null: false,
+  description: "A comment was added to one of the viewer's posts"
+  subscription_scope: :current_user_id
 ```
 
 Then, subscription operations should have a `context: { current_user_id: ... }` value, for example:
