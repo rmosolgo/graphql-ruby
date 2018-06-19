@@ -81,10 +81,8 @@ module GraphQL
             else
               proxy_to_depth(result, @list_depth, ctx)
             end
-          rescue GraphQL::UnauthorizedError
-            # If this object (or one of these objects) fails authorization,
-            # replace the field value with `nil`
-            nil
+          rescue GraphQL::UnauthorizedError => err
+            ctx.schema.unauthorized_object(err)
           end
 
           private

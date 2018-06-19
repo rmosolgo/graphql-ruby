@@ -441,8 +441,8 @@ describe GraphQL::Authorization do
   describe "applying the accessible? method" do
     it "works with fields and arguments" do
       queries = {
-        "{ inaccessible }" => ["Some fields were unreachable ... "],
-        "{ int2(inaccessible: 1) }" => ["Some fields were unreachable ... "],
+        "{ inaccessible }" => ["Some fields in this query are not accessible: inaccessible"],
+        "{ int2(inaccessible: 1) }" => ["Some fields in this query are not accessible: int2"],
       }
 
       queries.each do |query_str, errors|
@@ -456,9 +456,9 @@ describe GraphQL::Authorization do
 
     it "works with return types" do
       queries = {
-        "{ inaccessibleObject { __typename } }" => ["Some fields were unreachable ... "],
-        "{ inaccessibleInterface { __typename } }" => ["Some fields were unreachable ... "],
-        "{ inaccessibleDefaultInterface { __typename } }" => ["Some fields were unreachable ... "],
+        "{ inaccessibleObject { __typename } }" => ["Some fields in this query are not accessible: inaccessibleObject"],
+        "{ inaccessibleInterface { __typename } }" => ["Some fields in this query are not accessible: inaccessibleInterface"],
+        "{ inaccessibleDefaultInterface { __typename } }" => ["Some fields in this query are not accessible: inaccessibleDefaultInterface"],
       }
 
       queries.each do |query_str, errors|
@@ -473,7 +473,7 @@ describe GraphQL::Authorization do
     it "works with mutations" do
       query = "mutation { doInaccessibleStuff(input: {}) { __typename } }"
       res = auth_execute(query, context: { inaccessible_mutation: true })
-      assert_equal ["Some fields were unreachable ... "], res["errors"].map { |e| e["message"] }
+      assert_equal ["Some fields in this query are not accessible: doInaccessibleStuff"], res["errors"].map { |e| e["message"] }
 
       assert_raises NotImplementedError do
         auth_execute(query)
@@ -489,8 +489,7 @@ describe GraphQL::Authorization do
       GRAPHQL
 
       inaccessible_res = auth_execute(query, context: { inaccessible_relay: true })
-      # TODO Better errors
-      assert_equal ["Some fields were unreachable ... "], inaccessible_res["errors"].map { |e| e["message"] }
+      assert_equal ["Some fields in this query are not accessible: inaccessibleConnection, inaccessibleEdge"], inaccessible_res["errors"].map { |e| e["message"] }
 
       accessible_res = auth_execute(query)
       refute accessible_res.key?("errors")
@@ -510,7 +509,6 @@ describe GraphQL::Authorization do
       query = "mutation { doUnauthorizedStuff(input: {}) { __typename } }"
       res = auth_execute(query, context: { unauthorized_mutation: true })
       assert_nil res["data"].fetch("doUnauthorizedStuff")
-      # TODO assert top-level error is present
       assert_raises NotImplementedError do
         auth_execute(query)
       end
@@ -520,7 +518,6 @@ describe GraphQL::Authorization do
       query = "{ unauthorized }"
       hidden_response = auth_execute(query, root_value: :hide)
       assert_nil hidden_response["data"].fetch("unauthorized")
-      # TODO assert that error is present?
       visible_response = auth_execute(query, root_value: 1)
       assert_equal 1, visible_response["data"]["unauthorized"]
     end
@@ -529,7 +526,6 @@ describe GraphQL::Authorization do
       query = "{ int2(unauthorized: 5) }"
       hidden_response = auth_execute(query, root_value: :hide2)
       assert_nil hidden_response["data"].fetch("int2")
-      # TODO assert that error is present?
       visible_response = auth_execute(query)
       assert_equal 5, visible_response["data"]["int2"]
     end

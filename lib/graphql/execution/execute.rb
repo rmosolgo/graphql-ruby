@@ -124,10 +124,8 @@ module GraphQL
                   field.lazy_resolve(raw_value, arguments, field_ctx)
                 rescue GraphQL::ExecutionError => err
                   err
-                rescue GraphQL::UnauthorizedError
-                  # TODO this should probably be in auth code somewhere or something
-                  # it should be handled by a user hook?
-                  nil
+                rescue GraphQL::UnauthorizedError => err
+                  query.schema.unauthorized_object(err)
                 end
               }
               field_ctx.value = continue_resolve_field(inner_value, field_ctx)

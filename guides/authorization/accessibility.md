@@ -44,8 +44,20 @@ Now, any fields created with `field(..., preview: true)` will be _visible_ to ev
 
 ## Adding an Error
 
-TODO:
+By default, GraphQL-Ruby will return a simple error to the client if any `.accessible?` checks return false.
 
-There is some kind of API where you can define a class method or something that returns an error object, or maybe it raises an error.
+You can customize this behavior by overriding {{ "Schema.inaccessible_fields" | api_docs }}, for example:
 
-Raising is probably better because you get the attached backtrace for debugging.
+```ruby
+class MySchema < GraphQL::Schema
+  # If you have a custom `permission_level` setting on your `GraphQL::Field` class,
+  # you can access it here:
+  def self.inaccessible_fields(error)
+    required_permissions = error.fields.map(&:permission_level).uniq
+    # Return a custom error
+    GraphQL::AnalysisError.new("You need certain permissions: #{required_permissions.join(", ")}")
+  end
+end
+```
+
+Then, your custom error will be added to the response instead of the default one.

@@ -537,7 +537,7 @@ module GraphQL
 
     # Can't delegate to `class`
     alias :_schema_class :class
-    def_delegators :_schema_class, :visible?, :accessible?, :authorized?
+    def_delegators :_schema_class, :visible?, :accessible?, :authorized?, :unauthorized_object, :inaccessible_fields
 
     # A function to call when {#execute} receives an invalid query string
     #
@@ -841,7 +841,6 @@ module GraphQL
         raise NotImplementedError, "#{self.name}.id_from_object(object, type, ctx) must be implemented to create global ids (tried to create an id for `#{object.inspect}`)"
       end
 
-      # Override this to filter out items in the schema
       def visible?(member, context)
         call_on_type_class(member, :visible?, context, default: true)
       end
@@ -850,8 +849,35 @@ module GraphQL
         call_on_type_class(member, :accessible?, context, default: true)
       end
 
+      # This hook is called when a client tries to access one or more
+      # fields that fail the `accessible?` check.
+      #
+      # By default, an error is added to the response. Override this hook to
+      # track metrics or return a different error to the client.
+      #
+      # @param error [InaccessibleFieldsError] The analysis error for this check
+      # @return [AnalysisError, nil] Return an error to skip the query
+      def inaccessible_fields(error)
+        error
+      end
+
       def authorized?(object, member, context)
         call_on_type_class(member, :authorized?, object, context, default: true)
+      end
+
+      # This hook is called when an object fails an `authorized?` check.
+      # You might report to your bug tracker here, so you can correct
+      # the field resolvers not to return unauthorized objects.
+      #
+      # By default, this hook just replaces the unauthorized object with `nil`.
+      #
+      # If you want to add an error to the `"errors"` key, raise a {GraphQL::ExecutionError}
+      # in this hook.
+      #
+      # @param unauthorized_error [GraphQL::UnauthorizedError]
+      # @return [Object] The returned object will be put in the GraphQL response
+      def unauthorized_object(unauthorized_error)
+        nil
       end
 
       def type_error(type_err, ctx)

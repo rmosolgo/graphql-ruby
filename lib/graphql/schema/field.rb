@@ -243,8 +243,8 @@ module GraphQL
           # TODO: this could be a bit weird, because these fields won't be present
           # after initialization, only in the `to_graphql` response.
           # This calculation _could_ be moved up if need be.
-          argument :after, "String", "Returns the elements in the list that come after the specified cursor.", required: false
-          argument :before, "String", "Returns the elements in the list that come before the specified cursor.", required: false
+          argument :after, "String", "Returns the elements in the list that come after the specified global ID.", required: false
+          argument :before, "String", "Returns the elements in the list that come before the specified global ID.", required: false
           argument :first, "Int", "Returns the first _n_ elements from the list.", required: false
           argument :last, "Int", "Returns the last _n_ elements from the list.", required: false
         end
