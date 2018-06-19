@@ -178,78 +178,11 @@ describe GraphQL::Authorization do
       field :value, Integer, null: false, method: :object
     end
 
-    class BaseEdge < BaseObject
-      description "An edge in a connection."
-
-      def self.node_type(wrapped_type)
-        wrapped_type_name = wrapped_type.graphql_name
-        graphql_name("#{wrapped_type_name}Edge")
-        # Add a default `node` field
-        field :node, wrapped_type, null: true, description: "The item at the end of the edge."
-      end
-
-      field :cursor, String,
-        null: false,
-        description: "A cursor for use in pagination."
-    end
-
-    class BaseConnection < BaseObject
-      extend Forwardable
-      def_delegators :@object, :cursor_from_node, :parent
-
-      # Configure this connection to return `edges` and `nodes` based on `edge_type_class`.
-      #
-      # This method will use the inputs to create:
-      # - `edges` field
-      # - `nodes` field
-      # - description
-      #
-      # It's called when you subclass this base connection, trying to use the
-      # class name to set defaults. You can call it again in the class definition
-      # to override the default (or provide a value, if the default lookup failed).
-      def self.edge_type(edge_type_class, edge_class: GraphQL::Relay::Edge, node_type: nil)
-        field :edges, [edge_type_class, null: true],
-          null: true,
-          description: "A list of edges.",
-          method: :edge_nodes,
-          edge_class: edge_class
-
-        if node_type.nil?
-          if edge_type_class.is_a?(Class)
-            node_type = edge_type_class.fields["node"].type
-          elsif edge_type_class.is_a?(GraphQL::ObjectType)
-            # This was created with `.edge_type`
-            node_type = Platform::Objects.const_get(edge_type_class.name.sub("Edge", ""))
-          else
-            raise ArgumentError, "Can't get node type from edge type: #{edge_type_class}" # rubocop:disable GitHub/UsePlatformErrors
-          end
-        end
-
-        if node_type.respond_to?(:of_type)
-          node_type = node_type.of_type
-        end
-
-        field :nodes, [node_type, null: true],
-          null: true,
-          description: "A list of nodes."
-
-        description("The connection type for #{node_type.graphql_name}.")
-      end
-
-      field :page_info, GraphQL::Relay::PageInfo, null: false, description: "Information to aid in pagination."
-
-      # By default this calls through to the ConnectionWrapper's edge nodes method,
-      # but sometimes you need to override it to support the `nodes` field
-      def nodes
-        @object.edge_nodes
-      end
-    end
-
-    class IntegerObjectEdge < BaseEdge
+    class IntegerObjectEdge < GraphQL::Types::Relay::BaseEdge
       node_type(IntegerObject)
     end
 
-    class IntegerObjectConnection < BaseConnection
+    class IntegerObjectConnection < GraphQL::Types::Relay::BaseConnection
       edge_type(IntegerObjectEdge)
     end
 
