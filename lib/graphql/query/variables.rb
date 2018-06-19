@@ -33,7 +33,7 @@ module GraphQL
             begin
               validation_result = variable_type.validate_input(provided_value, ctx)
             rescue GraphQL::CoercionError => ex
-              validation_result = Query::InputValidationResult.new
+              validation_result = GraphQL::Query::InputValidationResult.new
               validation_result.add_problem(ex.message)
             end
 
