@@ -284,7 +284,13 @@ describe GraphQL::Authorization do
       field :integers, IntegerObjectConnection, null: false
 
       def integers
-        Box.new(value: Box.new(value: Box.new(value: [1,2,3])))
+        [1,2,3]
+      end
+
+      field :lazy_integers, IntegerObjectConnection, null: false
+
+      def lazy_integers
+        Box.new(value: Box.new(value: [1,2,3]))
       end
     end
 
@@ -624,6 +630,16 @@ describe GraphQL::Authorization do
     end
 
     it "Works for lazy connections" do
+      query = <<-GRAPHQL
+      {
+        lazyIntegers { edges { node { value } } }
+      }
+      GRAPHQL
+      res = auth_execute(query)
+      assert_equal [1,2,3], res["data"]["lazyIntegers"]["edges"].map { |e| e["node"]["value"] }
+    end
+
+    it "Works for eager connections" do
       query = <<-GRAPHQL
       {
         integers { edges { node { value } } }
