@@ -248,6 +248,21 @@ module Dummy
     end
   end
 
+  TimeType = GraphQL::ScalarType.define do
+    name "Time"
+    description "Time since epoch in seconds"
+
+    coerce_input ->(value, ctx) do
+      begin
+        Time.at(Float(value))
+      rescue ArgumentError
+        raise GraphQL::CoercionError, 'cannot coerce to Float'
+      end
+    end
+
+    coerce_result ->(value, ctx) { value.to_f }
+  end
+
   class FetchItem < GraphQL::Function
     attr_reader :type, :description, :arguments
 
@@ -312,6 +327,7 @@ module Dummy
       type !DairyProductUnion
       # This is a list just for testing 😬
       argument :product, types[DairyProductInputType], default_value: [{"source" => "SHEEP"}]
+      argument :expiresAfter, TimeType
       resolve ->(t, args, c) {
         source = args["product"][0][:source] # String or Sym is ok
         products = CHEESES.values + MILKS.values

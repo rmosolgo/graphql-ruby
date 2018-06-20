@@ -110,6 +110,26 @@ describe GraphQL::Query::Variables do
           assert_equal expected, variables.errors.first.message
         end
       end
+
+      describe "when provided input cannot be coerced" do
+        let(:query_string) {%|
+        query searchMyDairy (
+          $time: Time
+        ) {
+          searchDairy(expiresAfter: $time) {
+            ... on Cheese {
+              flavor
+            }
+          }
+        }
+        |}
+        let(:provided_variables) { { "time" => "a" } }
+
+        it "validates invalid input objects" do
+          expected = "Variable time of type Time was provided invalid value"
+          assert_equal expected, variables.errors.first.message
+        end
+      end
     end
 
     describe "nullable variables" do

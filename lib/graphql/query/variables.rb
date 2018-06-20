@@ -30,7 +30,13 @@ module GraphQL
             provided_value = @provided_variables[variable_name]
             value_was_provided =  @provided_variables.key?(variable_name)
 
-            validation_result = variable_type.validate_input(provided_value, ctx)
+            begin
+              validation_result = variable_type.validate_input(provided_value, ctx)
+            rescue GraphQL::CoercionError => ex
+              validation_result = GraphQL::Query::InputValidationResult.new
+              validation_result.add_problem(ex.message)
+            end
+
             if !validation_result.valid?
               # This finds variables that were required but not provided
               @errors << GraphQL::Query::VariableValidationError.new(ast_variable, variable_type, provided_value, validation_result)
