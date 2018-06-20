@@ -861,10 +861,6 @@ module GraphQL
         error
       end
 
-      def authorized?(object, member, context)
-        call_on_type_class(member, :authorized?, object, context, default: true)
-      end
-
       # This hook is called when an object fails an `authorized?` check.
       # You might report to your bug tracker here, so you can correct
       # the field resolvers not to return unauthorized objects.

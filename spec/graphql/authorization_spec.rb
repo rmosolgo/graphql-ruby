@@ -191,7 +191,7 @@ describe GraphQL::Authorization do
 
     class IntegerObject < BaseObject
       def self.authorized?(obj, ctx)
-        Box.new(value: true)
+        Box.new(value: Box.new(value: !ctx[:unauthorized_relay]))
       end
       field :value, Integer, null: false, method: :object
     end
@@ -283,7 +283,7 @@ describe GraphQL::Authorization do
       field :integers, IntegerObjectConnection, null: false
 
       def integers
-        Box.new(value: [1,2,3])
+        Box.new(value: Box.new(value: Box.new(value: [1,2,3])))
       end
     end
 
@@ -316,6 +316,12 @@ describe GraphQL::Authorization do
       mutation(Mutation)
 
       lazy_resolve(Box, :value)
+
+      def self.unauthorized_object(err)
+        raise GraphQL::ExecutionError, "Unauthorized #{err.type.graphql_name}: #{err.object}"
+      end
+
+      # use GraphQL::Backtrace
     end
   end
 
@@ -612,6 +618,8 @@ describe GraphQL::Authorization do
       unauthorized_res = auth_execute(query)
       assert_nil unauthorized_res["data"].fetch("a")
       assert_equal "b", unauthorized_res["data"]["b"]["value"]
+      # Also, the custom handler was called:
+      assert_equal ["Unauthorized UnauthorizedCheckBox: a"], unauthorized_res["errors"].map { |e| e["message"] }
     end
 
     it "Works for lazy connections" do

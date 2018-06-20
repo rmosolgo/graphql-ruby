@@ -74,10 +74,6 @@ module GraphQL
             result = @inner_resolve.call(obj, args, ctx)
             if ctx.skip == result || ctx.schema.lazy?(result) || result.nil? || result.is_a?(GraphQL::ExecutionError)
               result
-            elsif obj.is_a?(GraphQL::Execution::Lazy)
-              # This object was already proxied, but the auth check returned a promise.
-              # Don't try to proxy it again.
-              result
             else
               proxy_to_depth(result, @list_depth, ctx)
             end
