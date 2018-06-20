@@ -25,9 +25,6 @@ module GraphQL
         description "An edge in a connection."
 
         class << self
-          extend Forwardable
-          def_delegators :@node_type, :visible?, :accessible?, :authorized?
-
           # Get or set the Object type that this edge wraps.
           #
           # @param node_type [Class] A `Schema::Object` subclass

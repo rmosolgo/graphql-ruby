@@ -32,9 +32,6 @@ module GraphQL
         def_delegators :@object, :cursor_from_node, :parent
 
         class << self
-          extend Forwardable
-          def_delegators :@node_type, :visible?, :accessible?, :authorized?
-
           # @return [Class]
           attr_reader :node_type
 

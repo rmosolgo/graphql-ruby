@@ -191,6 +191,9 @@ describe GraphQL::Authorization do
 
     class IntegerObject < BaseObject
       def self.authorized?(obj, ctx)
+        if !obj.is_a?(Integer)
+          raise "Unexpected IntegerObject: #{obj}"
+        end
         is_allowed = !(ctx[:unauthorized_relay] || obj == ctx[:exclude_integer])
         Box.new(value: Box.new(value: is_allowed))
       end
