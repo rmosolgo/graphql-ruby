@@ -27,9 +27,8 @@ module GraphQL
               error_message = err.message
             end
 
-            error_message ||= "Default value for $#{node.name} doesn't match type #{type}"
-
             if !valid
+              error_message ||= "Default value for $#{node.name} doesn't match type #{type}"
               context.errors << message(error_message, node, context: context)
             end
           end
