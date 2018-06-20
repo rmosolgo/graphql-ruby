@@ -191,7 +191,8 @@ describe GraphQL::Authorization do
 
     class IntegerObject < BaseObject
       def self.authorized?(obj, ctx)
-        Box.new(value: Box.new(value: !ctx[:unauthorized_relay]))
+        is_allowed = !(ctx[:unauthorized_relay] || obj == ctx[:exclude_integer])
+        Box.new(value: Box.new(value: is_allowed))
       end
       field :value, Integer, null: false, method: :object
     end
@@ -630,6 +631,17 @@ describe GraphQL::Authorization do
       GRAPHQL
       res = auth_execute(query)
       assert_equal [1,2,3], res["data"]["integers"]["edges"].map { |e| e["node"]["value"] }
+    end
+
+    it "filters out individual nodes by value" do
+      query = <<-GRAPHQL
+      {
+        integers { edges { node { value } } }
+      }
+      GRAPHQL
+      res = auth_execute(query, context: { exclude_integer: 1 })
+      assert_equal [nil,2,3], res["data"]["integers"]["edges"].map { |e| e["node"] && e["node"]["value"] }
+      assert_equal ["Unauthorized IntegerObject: 1"], res["errors"].map { |e| e["message"] }
     end
 
     it "works with lazy values / interfaces" do
