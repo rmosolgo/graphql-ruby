@@ -72,9 +72,10 @@ module GraphQL
 
           def call(obj, args, ctx)
             result = @inner_resolve.call(obj, args, ctx)
-            if ctx.skip == result || ctx.schema.lazy?(result) || result.nil? || result.is_a?(GraphQL::ExecutionError)
+            if ctx.skip == result || ctx.schema.lazy?(result) || result.nil? || result.is_a?(GraphQL::ExecutionError) || ctx.wrapped_object
               result
             else
+              ctx.wrapped_object = true
               proxy_to_depth(result, @list_depth, ctx)
             end
           rescue GraphQL::UnauthorizedError => err
