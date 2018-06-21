@@ -8,6 +8,17 @@
 
 ### Bug fixes
 
+## 1.8.4 (21 June 2018)
+
+### New features
+
+- Add class-based definitions for Relay types #1568
+- Add a built-in auth system #1494
+
+### Bug fixes
+
+- Properly rescue coercion errors in variable values #1602
+
 ## 1.8.3 (14 June 2018)
 
 ### New features
