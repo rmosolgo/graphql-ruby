@@ -21,10 +21,8 @@ module GraphQL
             err
           end
 
-          if ctx.schema.lazy?(mutation_result)
-            mutation_result
-          else
-            build_result(mutation_result, args, ctx)
+          ctx.schema.after_lazy(mutation_result) do |res|
+            build_result(res, args, ctx)
           end
         end
 

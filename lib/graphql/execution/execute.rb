@@ -110,23 +110,47 @@ module GraphQL
             err
           end
 
-          # If the returned object is lazy (unfinished),
-          # assign the lazy object to `.value=` so we can resolve it later.
-          # When we resolve it later, reassign it to `.value=` so that
-          # the finished value replaces the unfinished one.
-          #
-          # If the returned object is finished, continue to coerce
-          # and resolve child fields
-          if query.schema.lazy?(raw_value)
+          if field_ctx.schema.lazy?(raw_value)
             field_ctx.value = Execution::Lazy.new {
               inner_value = field_ctx.trace("execute_field_lazy", {context: field_ctx}) {
                 begin
-                  field.lazy_resolve(raw_value, arguments, field_ctx)
+                  begin
+                    field_ctx.field.lazy_resolve(raw_value, arguments, field_ctx)
+                  rescue GraphQL::UnauthorizedError => err
+                    field_ctx.schema.unauthorized_object(err)
+                  end
                 rescue GraphQL::ExecutionError => err
                   err
                 end
               }
-              field_ctx.value = continue_resolve_field(inner_value, field_ctx)
+              continue_or_wait(inner_value, arguments, field_ctx)
+            }
+          else
+            continue_or_wait(raw_value, arguments, field_ctx)
+          end
+        end
+
+        # If the returned object is lazy (unfinished),
+        # assign the lazy object to `.value=` so we can resolve it later.
+        # When we resolve it later, reassign it to `.value=` so that
+        # the finished value replaces the unfinished one.
+        #
+        # If the returned object is finished, continue to coerce
+        # and resolve child fields
+        def continue_or_wait(raw_value, arguments, field_ctx)
+          if (lazy_method = field_ctx.schema.lazy_method_name(raw_value))
+            field_ctx.value = Execution::Lazy.new {
+              inner_value = begin
+                  begin
+                    raw_value.public_send(lazy_method)
+                  rescue GraphQL::UnauthorizedError => err
+                    field_ctx.schema.unauthorized_object(err)
+                  end
+                rescue GraphQL::ExecutionError => err
+                  err
+                end
+
+              field_ctx.value = continue_or_wait(inner_value, arguments, field_ctx)
             }
           else
             field_ctx.value = continue_resolve_field(raw_value, field_ctx)

@@ -114,6 +114,10 @@ module GraphQL
           @object_class || (superclass.respond_to?(:object_class) ? superclass.object_class : GraphQL::Schema::Object)
         end
 
+        def visible?(context)
+          true
+        end
+
         private
 
         # Build a subclass of {.object_class} based on `self`.

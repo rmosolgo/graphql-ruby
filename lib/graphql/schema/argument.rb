@@ -9,6 +9,7 @@ module GraphQL
 
       # @return [String] the GraphQL name for this argument, camelized unless `camelize: false` is provided
       attr_reader :name
+      alias :graphql_name :name
 
       # @return [GraphQL::Schema::Field, Class] The field or input object this argument belongs to
       attr_reader :owner
@@ -51,6 +52,18 @@ module GraphQL
         else
           @description
         end
+      end
+
+      def visible?(context)
+        true
+      end
+
+      def accessible?(context)
+        true
+      end
+
+      def authorized?(obj, ctx)
+        true
       end
 
       def to_graphql

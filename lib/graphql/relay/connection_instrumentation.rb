@@ -36,8 +36,8 @@ module GraphQL
           connection_arguments = default_arguments.merge(field.arguments)
           original_resolve = field.resolve_proc
           original_lazy_resolve = field.lazy_resolve_proc
-          connection_resolve = GraphQL::Relay::ConnectionResolve.new(field, original_resolve, lazy: false)
-          connection_lazy_resolve = GraphQL::Relay::ConnectionResolve.new(field, original_lazy_resolve, lazy: true)
+          connection_resolve = GraphQL::Relay::ConnectionResolve.new(field, original_resolve)
+          connection_lazy_resolve = GraphQL::Relay::ConnectionResolve.new(field, original_lazy_resolve)
           field.redefine(
             resolve: connection_resolve,
             lazy_resolve: connection_lazy_resolve,

@@ -207,7 +207,13 @@ module GraphQL
           @query = context.query
           @schema = context.schema
           @tracers = @query.tracers
+          # This hack flag is required by ConnectionResolve
+          @wrapped_connection = false
+          @wrapped_object = false
         end
+
+        # @api private
+        attr_accessor :wrapped_connection, :wrapped_object
 
         def path
           @path ||= @parent.path.dup << @key

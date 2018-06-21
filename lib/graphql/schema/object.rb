@@ -12,6 +12,39 @@ module GraphQL
       # @return [GraphQL::Query::Context] the context instance for this query
       attr_reader :context
 
+      class << self
+        # This is protected so that we can be sure callers use the public method, {.authorized_new}
+        # @see authorized_new to make instances
+        protected :new
+
+        # Make a new instance of this type _if_ the auth check passes,
+        # otherwise, raise an error.
+        #
+        # Probably only the framework should call this method.
+        #
+        # This might return a {GraphQL::Execution::Lazy} if the user-provided `.authorized?`
+        # hook returns some lazy value (like a Promise).
+        #
+        # The reason that the auth check is in this wrapper method instead of {.new} is because
+        # of how it might return a Promise. It would be weird if `.new` returned a promise;
+        # It would be a headache to try to maintain Promise-y state inside a {Schema::Object}
+        # instance. So, hopefully this wrapper method will do the job.
+        #
+        # @param object [Object] The thing wrapped by this object
+        # @param context [GraphQL::Query::Context]
+        # @return [GraphQL::Schema::Object, GraphQL::Execution::Lazy]
+        # @raise [GraphQL::UnauthorizedError] if the user-provided hook returns `false`
+        def authorized_new(object, context)
+          context.schema.after_lazy(authorized?(object, context)) do |is_authorized|
+            if is_authorized
+              self.new(object, context)
+            else
+              raise GraphQL::UnauthorizedError.new(object: object, type: self, context: context)
+            end
+          end
+        end
+      end
+
       def initialize(object, context)
         @object = object
         @context = context

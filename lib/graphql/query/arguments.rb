@@ -35,6 +35,8 @@ module GraphQL
         end
       end
 
+      attr_reader :argument_values
+
       def initialize(values, context:, defaults_used:)
         @argument_values = values.inject({}) do |memo, (inner_key, inner_value)|
           arg_name = inner_key.to_s

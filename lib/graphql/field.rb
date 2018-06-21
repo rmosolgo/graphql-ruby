@@ -157,6 +157,7 @@ module GraphQL
 
     # @return [String] The name of this field on its {GraphQL::ObjectType} (or {GraphQL::InterfaceType})
     attr_accessor :name
+    alias :graphql_name :name
 
     # @return [String, nil] The client-facing description of this field
     attr_accessor :description
@@ -323,7 +324,12 @@ module GraphQL
     module DefaultLazyResolve
       def self.call(obj, args, ctx)
         method_name = ctx.schema.lazy_method_name(obj)
-        obj.public_send(method_name)
+        next_obj = obj.public_send(method_name)
+        if ctx.schema.lazy?(next_obj)
+          call(next_obj, args, ctx)
+        else
+          next_obj
+        end
       end
     end
   end

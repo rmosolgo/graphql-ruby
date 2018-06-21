@@ -69,6 +69,7 @@ module GraphQL
   #   end
   #
   class Schema
+    extend Forwardable
     extend GraphQL::Schema::Member::AcceptsDefinition
     include GraphQL::Define::InstanceDefinable
     accepts_definitions \
@@ -155,7 +156,7 @@ module GraphQL
       @parse_error_proc = DefaultParseError
       @instrumenters = Hash.new { |h, k| h[k] = [] }
       @lazy_methods = GraphQL::Execution::Lazy::LazyMethodMap.new
-      @lazy_methods.set(GraphQL::Relay::ConnectionResolve::LazyNodesWrapper, :never_called)
+      @lazy_methods.set(GraphQL::Execution::Lazy, :value)
       @cursor_encoder = Base64Encoder
       # Default to the built-in execution strategy:
       @query_execution_strategy = self.class.default_execution_strategy
@@ -534,6 +535,10 @@ module GraphQL
       @type_error_proc = new_proc
     end
 
+    # Can't delegate to `class`
+    alias :_schema_class :class
+    def_delegators :_schema_class, :visible?, :accessible?, :authorized?, :unauthorized_object, :inaccessible_fields
+
     # A function to call when {#execute} receives an invalid query string
     #
     # @see {DefaultParseError} is the default behavior.
@@ -647,7 +652,7 @@ module GraphQL
         :static_validator, :introspection_system,
         :query_analyzers, :middleware, :tracers, :instrumenters,
         :query_execution_strategy, :mutation_execution_strategy, :subscription_execution_strategy,
-        :validate, :multiplex_analyzers, :lazy?, :lazy_method_name,
+        :validate, :multiplex_analyzers, :lazy?, :lazy_method_name, :after_lazy,
         # Configuration
         :max_complexity=, :max_depth=,
         :metadata,
@@ -696,6 +701,7 @@ module GraphQL
         schema_defn.cursor_encoder = cursor_encoder
         schema_defn.tracers.concat(defined_tracers)
         schema_defn.query_analyzers.concat(defined_query_analyzers)
+        schema_defn.query_analyzers << GraphQL::Authorization::Analyzer
         schema_defn.middleware.concat(defined_middleware)
         schema_defn.multiplex_analyzers.concat(defined_multiplex_analyzers)
         defined_instrumenters.each do |step, insts|
@@ -835,6 +841,41 @@ module GraphQL
         raise NotImplementedError, "#{self.name}.id_from_object(object, type, ctx) must be implemented to create global ids (tried to create an id for `#{object.inspect}`)"
       end
 
+      def visible?(member, context)
+        call_on_type_class(member, :visible?, context, default: true)
+      end
+
+      def accessible?(member, context)
+        call_on_type_class(member, :accessible?, context, default: true)
+      end
+
+      # This hook is called when a client tries to access one or more
+      # fields that fail the `accessible?` check.
+      #
+      # By default, an error is added to the response. Override this hook to
+      # track metrics or return a different error to the client.
+      #
+      # @param error [InaccessibleFieldsError] The analysis error for this check
+      # @return [AnalysisError, nil] Return an error to skip the query
+      def inaccessible_fields(error)
+        error
+      end
+
+      # This hook is called when an object fails an `authorized?` check.
+      # You might report to your bug tracker here, so you can correct
+      # the field resolvers not to return unauthorized objects.
+      #
+      # By default, this hook just replaces the unauthorized object with `nil`.
+      #
+      # If you want to add an error to the `"errors"` key, raise a {GraphQL::ExecutionError}
+      # in this hook.
+      #
+      # @param unauthorized_error [GraphQL::UnauthorizedError]
+      # @return [Object] The returned object will be put in the GraphQL response
+      def unauthorized_object(unauthorized_error)
+        nil
+      end
+
       def type_error(type_err, ctx)
         DefaultTypeError.call(type_err, ctx)
       end
@@ -905,6 +946,29 @@ module GraphQL
       def defined_multiplex_analyzers
         @defined_multiplex_analyzers ||= []
       end
+
+      # Given this schema member, find the class-based definition object
+      # whose `method_name` should be treated as an application hook
+      # @see {.visible?}
+      # @see {.accessible?}
+      # @see {.authorized?}
+      def call_on_type_class(member, method_name, *args, default:)
+        member = if member.respond_to?(:metadata)
+          member.metadata[:type_class] || member
+        else
+          member
+        end
+
+        if member.respond_to?(:relay_node_type) && (t = member.relay_node_type)
+          member = t
+        end
+
+        if member.respond_to?(method_name)
+          member.public_send(method_name, *args)
+        else
+          default
+        end
+      end
     end
 
 
@@ -920,6 +984,24 @@ module GraphQL
         graphql_definition.check_resolved_type(type, obj, ctx) do |ok_type, ok_obj, ok_ctx|
           super(ok_type, ok_obj, ok_ctx)
         end
+      end
+    end
+
+    # Call the given block at the right time, either:
+    # - Right away, if `value` is not registered with `lazy_resolve`
+    # - After resolving `value`, if it's registered with `lazy_resolve` (eg, `Promise`)
+    # @api private
+    def after_lazy(value)
+      if (lazy_method = lazy_method_name(value))
+        GraphQL::Execution::Lazy.new do
+          result = value.public_send(lazy_method)
+          # The returned result might also be lazy, so check it, too
+          after_lazy(result) do |final_result|
+            yield(final_result)
+          end
+        end
+      else
+        yield(value)
       end
     end
 

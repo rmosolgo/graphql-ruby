@@ -32,7 +32,8 @@ module GraphQL
                 @context[:pushes] << @context[:lazy_pushes]
                 @context[:lazy_pushes] = []
               end
-              self
+              # Something that _behaves_ like this object, but isn't registered lazy
+              OpenStruct.new(value: @value)
             end
           end
         end
