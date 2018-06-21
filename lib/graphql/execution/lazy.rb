@@ -50,6 +50,14 @@ module GraphQL
         }
       end
 
+      # @param lazies [Array<Object>] Maybe-lazy objects
+      # @return [Lazy] A lazy which will sync all of `lazies`
+      def self.all(lazies)
+        self.class.new {
+          lazies.map { |l| l.is_a?(Lazy) ? l.value : l }
+        }
+      end
+
       # This can be used for fields which _had no_ lazy results
       # @api private
       NullResult = Lazy.new(){}

@@ -10,11 +10,16 @@ module GraphQL
     # @return [GraphQL::Query::Context] the context for the current query
     attr_reader :context
 
-    def initialize(object:, type:, context:)
+    def initialize(message = nil, object: nil, type: nil, context: nil)
+      if message.nil? && object.nil?
+        raise ArgumentError, "#{self.class.name} requires either a message or keywords"
+      end
+
       @object = object
       @type = type
       @context = context
-      super("An instance of #{object.class} failed #{type.name}'s authorization check")
+      message ||= "An instance of #{object.class} failed #{type.name}'s authorization check"
+      super(message)
     end
   end
 end

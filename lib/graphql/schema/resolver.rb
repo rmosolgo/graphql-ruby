@@ -37,10 +37,43 @@ module GraphQL
       # @return [GraphQL::Query::Context]
       attr_reader :context
 
+      # This method is _actually_ called by the runtime,
+      # it does some preparation and then eventually calls
+      # the user-defined `#resolve` method.
+      # @api private
+      def resolve_with_support(**args)
+        prepared_args = {}
+        arg_defns = self.class.arguments
+        args.each do |key, value|
+          if arg_defns.key?(key.to_s)
+            prepared_args[key] = prepare_argument(key, value)
+          else
+            # These are `extras: [...]`
+            prepared_args[key] = value
+          end
+        end
+        all_prepared = GraphQL::Execution::Lazy.all(prepared_args.map do |key, prepped_value|
+          context.schema.after_lazy(prepped_value) do |finished_prepped_value|
+            prepared_args[key] = finished_prepped_value
+          end
+        end)
+        context.schema.after_lazy(all_prepared) do
+          if prepared_args.any?
+            public_send(self.class.resolve_method, **prepared_args)
+          else
+            public_send(self.class.resolve_method)
+          end
+        end
+      end
+
       # Do the work. Everything happens here.
       # @return [Object] An object corresponding to the return type
       def resolve(**args)
         raise NotImplementedError, "#{self.class.name}#resolve should execute the field's logic"
+      end
+
+      def prepare_argument(name, value)
+        public_send("prepare_#{name}", value)
       end
 
       class << self
@@ -113,7 +146,7 @@ module GraphQL
             type: type_expr,
             description: description,
             extras: extras,
-            method: resolve_method,
+            method: :resolve_with_support,
             resolver_class: self,
             arguments: arguments,
             null: null,
@@ -124,6 +157,19 @@ module GraphQL
         # A non-normalized type configuration, without `null` applied
         def type_expr
           @type_expr || (superclass.respond_to?(:type_expr) ? superclass.type_expr : nil)
+        end
+
+        # Add an argument to this field's signature, but
+        # also add a `prepare_#{name}` method which will be used for this argument
+        # @see {GraphQL::Schema::Argument#initialize} for the signature
+        def argument(*)
+          arg_defn = super
+          class_eval <<-RUBY, __FILE__, __LINE__ + 1
+          def prepare_#{arg_defn.keyword}(value)
+            value
+          end
+          RUBY
+          arg_defn
         end
       end
     end

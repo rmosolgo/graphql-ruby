@@ -64,6 +64,50 @@ describe GraphQL::Schema::Resolver do
     class Resolver8 < Resolver7
     end
 
+    class PrepResolver1 < BaseResolver
+      argument :int, Integer, required: true
+
+      def prepare_int(i)
+        i * 10
+      end
+
+      type Integer, null: false
+
+      def resolve(int:)
+        int
+      end
+    end
+
+    class PrepResolver2 < PrepResolver1
+      def prepare_int(i)
+        GraphQL::Execution::Lazy.new {
+          super - 35
+        }
+      end
+    end
+
+    class PrepResolver3 < PrepResolver1
+      type Integer, null: true
+
+      def prepare_int(i)
+        if i == 13
+          raise GraphQL::UnauthorizedError, "Unlucky number"
+        elsif i > 99
+          raise GraphQL::ExecutionError, "💥 #{i}"
+        else
+          i
+        end
+      end
+    end
+
+    class PrepResolver4 < PrepResolver3
+      def prepare_int(i)
+        GraphQL::Execution::Lazy.new {
+          super
+        }
+      end
+    end
+
     class Query < GraphQL::Schema::Object
       class CustomField < GraphQL::Schema::Field
         def resolve_field(*args)
@@ -86,6 +130,11 @@ describe GraphQL::Schema::Resolver do
       field :resolver_6, resolver: Resolver6
       field :resolver_7, resolver: Resolver7
       field :resolver_8, resolver: Resolver8
+
+      field :prep_resolver_1, resolver: PrepResolver1
+      field :prep_resolver_2, resolver: PrepResolver2
+      field :prep_resolver_3, resolver: PrepResolver3
+      field :prep_resolver_4, resolver: PrepResolver4
     end
 
     class Schema < GraphQL::Schema
@@ -93,40 +142,44 @@ describe GraphQL::Schema::Resolver do
     end
   end
 
+  def exec_query(*args)
+    ResolverTest::Schema.execute(*args)
+  end
+
   it "gets initialized for each resolution" do
     # State isn't shared between calls:
-    res = ResolverTest::Schema.execute " { r1: resolver1(value: 1) r2: resolver1 }"
+    res = exec_query " { r1: resolver1(value: 1) r2: resolver1 }"
     assert_equal [100, 1], res["data"]["r1"]
     assert_equal [100, nil], res["data"]["r2"]
   end
 
   it "inherits type and arguments" do
-    res = ResolverTest::Schema.execute " { r1: resolver2(value: 1, extraValue: 2) r2: resolver2(extraValue: 3) }"
+    res = exec_query " { r1: resolver2(value: 1, extraValue: 2) r2: resolver2(extraValue: 3) }"
     assert_equal [100, 1, 2], res["data"]["r1"]
     assert_equal [100, nil, 3], res["data"]["r2"]
   end
 
   it "uses the object's field_class" do
-    res = ResolverTest::Schema.execute " { r1: resolver3(value: 1) r2: resolver3 }"
+    res = exec_query " { r1: resolver3(value: 1) r2: resolver3 }"
     assert_equal [100, 1, -1], res["data"]["r1"]
     assert_equal [100, nil, -1], res["data"]["r2"]
   end
 
   describe "resolve method" do
     it "has access to the application object" do
-      res = ResolverTest::Schema.execute " { resolver4 } ", root_value: OpenStruct.new(value: 4)
+      res = exec_query " { resolver4 } ", root_value: OpenStruct.new(value: 4)
       assert_equal 13, res["data"]["resolver4"]
     end
 
     it "gets extras" do
-      res = ResolverTest::Schema.execute " { resolver4 } ", root_value: OpenStruct.new(value: 0)
+      res = exec_query " { resolver4 } ", root_value: OpenStruct.new(value: 0)
       assert_equal 9, res["data"]["resolver4"]
     end
   end
 
   describe "extras" do
     it "is inherited" do
-      res = ResolverTest::Schema.execute " { resolver4 resolver5 } ", root_value: OpenStruct.new(value: 0)
+      res = exec_query " { resolver4 resolver5 } ", root_value: OpenStruct.new(value: 0)
       assert_equal 9, res["data"]["resolver4"]
       assert_equal 9, res["data"]["resolver5"]
     end
@@ -134,12 +187,12 @@ describe GraphQL::Schema::Resolver do
 
   describe "complexity" do
     it "has default values" do
-      res = ResolverTest::Schema.execute " { resolver6 } ", root_value: OpenStruct.new(value: 0)
+      res = exec_query " { resolver6 } ", root_value: OpenStruct.new(value: 0)
       assert_equal 1, res["data"]["resolver6"]
     end
 
     it "is inherited" do
-      res = ResolverTest::Schema.execute " { resolver7 resolver8 } ", root_value: OpenStruct.new(value: 0)
+      res = exec_query " { resolver7 resolver8 } ", root_value: OpenStruct.new(value: 0)
       assert_equal 2, res["data"]["resolver7"]
       assert_equal 2, res["data"]["resolver8"]
     end
@@ -157,6 +210,44 @@ describe GraphQL::Schema::Resolver do
       assert ResolverTest::Schema.find("Query.resolver3")
       # Mismatched name:
       assert ResolverTest::Schema.find("Query.resolver3Again")
+    end
+  end
+
+  describe "preparing arguments" do
+    it "calls prep methods and injects the return value" do
+      res = exec_query("{ prepResolver1(int: 5) }")
+      assert_equal 50, res["data"]["prepResolver1"], "The prep multiplier was called"
+    end
+
+    it "supports lazy values" do
+      res = exec_query("{ prepResolver2(int: 5) }")
+      assert_equal 15, res["data"]["prepResolver2"], "The prep multiplier was called"
+    end
+
+    it "supports raising GraphQL::UnauthorizedError and GraphQL::ExecutionError" do
+      res = exec_query("{ prepResolver3(int: 5) }")
+      assert_equal 5, res["data"]["prepResolver3"]
+
+      res = exec_query("{ prepResolver3(int: 13) }")
+      assert_nil res["data"].fetch("prepResolver3")
+      refute res.key?("errors")
+
+      res = exec_query("{ prepResolver3(int: 100) }")
+      assert_nil res["data"].fetch("prepResolver3")
+      assert_equal ["💥 100"], res["errors"].map { |e| e["message"] }
+    end
+
+    it "suppoorts raising errors from promises" do
+      res = exec_query("{ prepResolver4(int: 5) }")
+      assert_equal 5, res["data"]["prepResolver4"]
+
+      res = exec_query("{ prepResolver4(int: 13) }")
+      assert_nil res["data"].fetch("prepResolver4")
+      refute res.key?("errors")
+
+      res = exec_query("{ prepResolver4(int: 101) }")
+      assert_nil res["data"].fetch("prepResolver4")
+      assert_equal ["💥 101"], res["errors"].map { |e| e["message"] }
     end
   end
 end

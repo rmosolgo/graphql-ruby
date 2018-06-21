@@ -102,9 +102,13 @@ module GraphQL
           field = field_ctx.field
 
           raw_value = begin
-            arguments = query.arguments_for(irep_node, field)
-            field_ctx.trace("execute_field", { context: field_ctx }) do
-              field_ctx.schema.middleware.invoke([parent_type, object, field, arguments, field_ctx])
+            begin
+              arguments = query.arguments_for(irep_node, field)
+              field_ctx.trace("execute_field", { context: field_ctx }) do
+                field_ctx.schema.middleware.invoke([parent_type, object, field, arguments, field_ctx])
+              end
+            rescue GraphQL::UnauthorizedError => err
+              field_ctx.schema.unauthorized_object(err)
             end
           rescue GraphQL::ExecutionError => err
             err
