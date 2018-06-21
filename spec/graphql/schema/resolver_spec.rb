@@ -3,6 +3,16 @@ require "spec_helper"
 
 describe GraphQL::Schema::Resolver do
   module ResolverTest
+    class LazyBlock
+      def initialize
+        @get_value = Proc.new
+      end
+
+      def value
+        @get_value.call
+      end
+    end
+
     class BaseResolver < GraphQL::Schema::Resolver
     end
 
@@ -80,7 +90,7 @@ describe GraphQL::Schema::Resolver do
 
     class PrepResolver2 < PrepResolver1
       def prepare_int(i)
-        GraphQL::Execution::Lazy.new {
+        LazyBlock.new {
           super - 35
         }
       end
@@ -102,7 +112,29 @@ describe GraphQL::Schema::Resolver do
 
     class PrepResolver4 < PrepResolver3
       def prepare_int(i)
-        GraphQL::Execution::Lazy.new {
+        LazyBlock.new {
+          super
+        }
+      end
+    end
+
+    class PrepResolver5 < PrepResolver1
+      type Integer, null: true
+
+      def before_prepare(int:)
+        if int == 13
+          raise GraphQL::ExecutionError, "Preparing 13 is unlucky!"
+        elsif int > 99
+          raise GraphQL::UnauthorizedError, "Top secret big number: #{int}"
+        else
+          nil
+        end
+      end
+    end
+
+    class PrepResolver6 < PrepResolver5
+      def before_prepare(**args)
+        LazyBlock.new {
           super
         }
       end
@@ -135,10 +167,13 @@ describe GraphQL::Schema::Resolver do
       field :prep_resolver_2, resolver: PrepResolver2
       field :prep_resolver_3, resolver: PrepResolver3
       field :prep_resolver_4, resolver: PrepResolver4
+      field :prep_resolver_5, resolver: PrepResolver5
+      field :prep_resolver_6, resolver: PrepResolver6
     end
 
     class Schema < GraphQL::Schema
       query(Query)
+      lazy_resolve LazyBlock, :value
     end
   end
 
@@ -210,6 +245,34 @@ describe GraphQL::Schema::Resolver do
       assert ResolverTest::Schema.find("Query.resolver3")
       # Mismatched name:
       assert ResolverTest::Schema.find("Query.resolver3Again")
+    end
+  end
+
+  describe "before_prepare" do
+    it "can raise errors" do
+      res = exec_query("{ int: prepResolver5(int: 5) }")
+      assert_equal 50, res["data"]["int"]
+
+      res = exec_query("{ int: prepResolver5(int: 13) }")
+      assert_equal nil, res["data"].fetch("int")
+      assert_equal ["Preparing 13 is unlucky!"], res["errors"].map { |e| e["message"] }
+
+      res = exec_query("{ int: prepResolver5(int: 200) }")
+      assert_equal nil, res["data"].fetch("int")
+      refute res.key?("errors"), "silent auth failure"
+    end
+
+    it "can raise errors in lazy sync" do
+      res = exec_query("{ int: prepResolver6(int: 5) }")
+      assert_equal 50, res["data"]["int"]
+
+      res = exec_query("{ int: prepResolver6(int: 13) }")
+      assert_equal nil, res["data"].fetch("int")
+      assert_equal ["Preparing 13 is unlucky!"], res["errors"].map { |e| e["message"] }
+
+      res = exec_query("{ int: prepResolver6(int: 2060) }")
+      assert_equal nil, res["data"].fetch("int")
+      refute res.key?("errors"), "silent auth failure"
     end
   end
 

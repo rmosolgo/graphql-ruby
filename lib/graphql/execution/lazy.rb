@@ -53,7 +53,7 @@ module GraphQL
       # @param lazies [Array<Object>] Maybe-lazy objects
       # @return [Lazy] A lazy which will sync all of `lazies`
       def self.all(lazies)
-        self.class.new {
+        self.new {
           lazies.map { |l| l.is_a?(Lazy) ? l.value : l }
         }
       end

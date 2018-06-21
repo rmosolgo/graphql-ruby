@@ -42,26 +42,19 @@ module GraphQL
       # the user-defined `#resolve` method.
       # @api private
       def resolve_with_support(**args)
-        prepared_args = {}
-        arg_defns = self.class.arguments
-        args.each do |key, value|
-          if arg_defns.key?(key.to_s)
-            prepared_args[key] = prepare_argument(key, value)
-          else
-            # These are `extras: [...]`
-            prepared_args[key] = value
-          end
+        before_prepare_val = if args.any?
+          before_prepare(**args)
+        else
+          before_prepare
         end
-        all_prepared = GraphQL::Execution::Lazy.all(prepared_args.map do |key, prepped_value|
-          context.schema.after_lazy(prepped_value) do |finished_prepped_value|
-            prepared_args[key] = finished_prepped_value
-          end
-        end)
-        context.schema.after_lazy(all_prepared) do
-          if prepared_args.any?
-            public_send(self.class.resolve_method, **prepared_args)
-          else
-            public_send(self.class.resolve_method)
+        context.schema.after_lazy(before_prepare_val) do
+          prepare_val = prepare(args)
+          context.schema.after_lazy(prepare_val) do |prepared_args|
+            if prepared_args.any?
+              public_send(self.class.resolve_method, **prepared_args)
+            else
+              public_send(self.class.resolve_method)
+            end
           end
         end
       end
@@ -70,6 +63,49 @@ module GraphQL
       # @return [Object] An object corresponding to the return type
       def resolve(**args)
         raise NotImplementedError, "#{self.class.name}#resolve should execute the field's logic"
+      end
+
+      # Called before arguments are prepared.
+      # Implement this hook to make checks before doing any work.
+      #
+      # If it returns a lazy object (like a promise), it will be synced by GraphQL
+      # (but the resulting value won't be used).
+      #
+      # @param args [Hash] The input arguments, if there are any
+      # @raise [GraphQL::ExecutionError] To add an error to the response
+      # @raise [GraphQL::UnauthorizedError] To signal an authorization failure
+      def before_prepare(**args)
+      end
+      private
+
+      def prepare(args)
+        prepared_args = {}
+        arg_defns = self.class.arguments
+
+        args.each do |key, value|
+          if arg_defns.key?(key.to_s)
+            prepared_args[key] = prepare_argument(key, value)
+          else
+            # These are `extras: [...]`
+            prepared_args[key] = value
+          end
+        end
+
+        prepare_lazies = []
+        prepared_args.each do |key, prepped_value|
+          if context.schema.lazy?(prepped_value)
+            prepare_lazies << context.schema.after_lazy(prepped_value) do |finished_prepped_value|
+              prepared_args[key] = finished_prepped_value
+            end
+          end
+        end
+
+        # Avoid returning a lazy if none are needed
+        if prepare_lazies.any?
+          GraphQL::Execution::Lazy.all(prepare_lazies).then { prepared_args }
+        else
+          prepared_args
+        end
       end
 
       def prepare_argument(name, value)
