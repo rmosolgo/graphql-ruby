@@ -284,6 +284,12 @@ describe GraphQL::Authorization do
         argument :value, String, required: true
       end
 
+      field :unauthorized_lazy_list_interface, [UnauthorizedInterface, null: true], null: true
+
+      def unauthorized_lazy_list_interface
+        ["z", Box.new(value: Box.new(value: "z2")), "a", Box.new(value: "a")]
+      end
+
       field :integers, IntegerObjectConnection, null: false
 
       def integers
@@ -679,6 +685,23 @@ describe GraphQL::Authorization do
 
       res2 = auth_execute(query, variables: { value: "b"})
       assert_equal "b", res2["data"]["unauthorizedInterface"]["value"]
+    end
+
+    it "works with lazy values / lists of interfaces" do
+      query = <<-GRAPHQL
+      {
+        unauthorizedLazyListInterface {
+          ... on UnauthorizedCheckBox {
+            value
+          }
+        }
+      }
+      GRAPHQL
+
+      res = auth_execute(query)
+      # An error from two, values from the others
+      assert_equal ["Unauthorized UnauthorizedCheckBox: a", "Unauthorized UnauthorizedCheckBox: a"], res["errors"].map { |e| e["message"] }
+      assert_equal [{"value" => "z"}, {"value" => "z2"}, nil, nil], res["data"]["unauthorizedLazyListInterface"]
     end
   end
 end
