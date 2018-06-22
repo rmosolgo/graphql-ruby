@@ -462,6 +462,10 @@ module GraphQL
         object = object.object
       end
 
+      if type.respond_to?(:graphql_definition)
+        type = type.graphql_definition
+      end
+
       # Prefer a type-local function; fall back to the schema-level function
       type_proc = type && type.resolve_type_proc
       type_result = if type_proc

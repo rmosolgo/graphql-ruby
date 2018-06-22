@@ -94,7 +94,7 @@ module GraphQL
           obj_type.interfaces = interfaces
           obj_type.introspection = introspection
           obj_type.mutation = mutation
-
+          obj_type.resolve_type_proc = self.method(:resolve_type)
           fields.each do |field_name, field_inst|
             field_defn = field_inst.to_graphql
             obj_type.fields[field_defn.name] = field_defn
@@ -107,6 +107,16 @@ module GraphQL
 
         def kind
           GraphQL::TypeKinds::OBJECT
+        end
+
+        # This can be called with objects loaded from ID, to make sure the
+        # loaded object is of the expected type.
+        #
+        # TODO: Make this so it checks a list of class names
+        #
+        # @see {Schema::Resolver}'s ID-to-object argument loading for example
+        def resolve_type(obj, ctx)
+          self
         end
       end
     end

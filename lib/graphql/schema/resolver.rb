@@ -29,6 +29,14 @@ module GraphQL
       def initialize(object:, context:)
         @object = object
         @context = context
+        # Since this hash is constantly rebuilt, cache it for this call
+        @arguments_by_keyword = {}
+        self.class.arguments.each do |name, arg|
+          @arguments_by_keyword[arg.keyword] = arg
+        end
+
+        @arguments_lookup_as_type = self.class.arguments_lookup_as_type
+
       end
 
       # @return [Object] The application object this field is being resolved on
@@ -89,11 +97,11 @@ module GraphQL
 
       def load_arguments(args)
         prepared_args = {}
-        arg_defns = self.class.arguments
         prepare_lazies = []
 
         args.each do |key, value|
-          if arg_defns.key?(key.to_s)
+          arg_defn = @arguments_by_keyword[key]
+          if arg_defn
             prepped_value = prepared_args[key] = load_argument(key, value)
             if context.schema.lazy?(prepped_value)
               prepare_lazies << context.schema.after_lazy(prepped_value) do |finished_prepped_value|
@@ -120,10 +128,10 @@ module GraphQL
 
       # TODO dedup with load_arguments
       def validate_arguments(args)
-        arg_defns = self.class.arguments
         validate_lazies = []
         args.each do |key, value|
-          if arg_defns.key?(key.to_s)
+          arg_defn = @arguments_by_keyword[key]
+          if arg_defn
             validate_return = validate_argument(key, value)
             if context.schema.lazy?(validate_return)
               validate_lazies << context.schema.after_lazy(validate_return).then { "no-op" }
@@ -141,6 +149,35 @@ module GraphQL
 
       def validate_argument(name, value)
         public_send("validate_#{name}", value)
+      end
+
+      class LoadApplicationObjectFailedError < GraphQL::ExecutionError
+        def initialize(argument:, id:)
+          @id = id
+          @argument = argument
+          super("No object found for `#{argument.graphql_name}: #{id.inspect}`")
+        end
+      end
+
+      def load_application_object(arg_kwarg, id)
+        argument = @arguments_by_keyword[arg_kwarg]
+        # See if any object can be found for this ID
+        application_object = context.schema.object_from_id(id, context)
+        if application_object.nil?
+          raise LoadApplicationObjectFailedError.new(argument: argument, id: id)
+        end
+        # Double-check that the located object is actually of this type
+        # (Don't want to allow arbitrary access to objects this way)
+        lookup_as_type = @arguments_lookup_as_type[arg_kwarg]
+        application_object_type = context.schema.resolve_type(lookup_as_type, application_object, context)
+        possible_object_types = context.schema.possible_types(lookup_as_type)
+        if !possible_object_types.include?(application_object_type)
+          raise LoadApplicationObjectFailedError.new(argument: argument, id: id)
+        else
+          # This object was loaded successfully
+          # and resolved to the right type
+          application_object
+        end
       end
 
       class << self
@@ -229,18 +266,58 @@ module GraphQL
         # Add an argument to this field's signature, but
         # also add some preparation hook methods which will be used for this argument
         # @see {GraphQL::Schema::Argument#initialize} for the signature
-        def argument(*)
-          arg_defn = super
-          class_eval <<-RUBY, __FILE__, __LINE__ + 1
-          def load_#{arg_defn.keyword}(value)
-            value
+        def argument(name, type, *rest, **kwargs, &block)
+          if (lookup_as_type = lookup_as_type?(type))
+            # The caller passed a return type as an input type,
+            # so take it as a cue to fetch that object by ID.
+            type = "ID"
+            kwargs[:as] = name
+            own_arguments_lookup_as_type[name] = lookup_as_type
+            name = :"#{name}_id"
+          end
+          arg_defn = super(name, type, *rest, **kwargs, &block)
+
+          if lookup_as_type
+            class_eval <<-RUBY, __FILE__, __LINE__ + 1
+            def load_#{arg_defn.keyword}(value)
+              load_application_object(:#{arg_defn.keyword}, value)
+            end
+            RUBY
+          else
+            class_eval <<-RUBY, __FILE__, __LINE__ + 1
+            def load_#{arg_defn.keyword}(value)
+              value
+            end
+            RUBY
           end
 
+          class_eval <<-RUBY, __FILE__, __LINE__ + 1
           def validate_#{arg_defn.keyword}(value)
             # No-op
           end
           RUBY
           arg_defn
+        end
+
+        # @api private
+        def arguments_lookup_as_type
+          inherited_lookups = superclass.respond_to?(:arguments_lookup_as_type) ? superclass.arguments_lookup_as_type : {}
+          inherited_lookups.merge(own_arguments_lookup_as_type)
+        end
+
+        private
+
+        def own_arguments_lookup_as_type
+          @own_arguments_lookup_as_type ||= {}
+        end
+
+        # @return [Module, false] The type to treat this input as, or false if it's just a plain input
+        def lookup_as_type?(type_arg)
+          if type_arg.is_a?(Module) && (type_arg < GraphQL::Schema::Object || type_arg < GraphQL::Schema::Union || type_arg < GraphQL::Schema::Interface)
+            type_arg
+          else
+            false
+          end
         end
       end
     end

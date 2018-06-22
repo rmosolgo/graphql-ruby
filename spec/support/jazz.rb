@@ -458,6 +458,22 @@ module Jazz
     end
   end
 
+  class RenameEnsemble < GraphQL::Schema::RelayClassicMutation
+    argument :ensemble, Ensemble, required: true
+    argument :new_name, String, required: true
+
+    field :ensemble, Ensemble, null: false
+
+    def resolve(ensemble:, new_name:)
+      # doesn't actually update the "database"
+      dup_ensemble = ensemble.dup
+      dup_ensemble.name = new_name
+      {
+        ensemble: dup_ensemble
+      }
+    end
+  end
+
   class Mutation < BaseObject
     field :add_ensemble, Ensemble, null: false do
       argument :input, EnsembleInput, required: true
@@ -465,6 +481,7 @@ module Jazz
 
     field :add_instrument, mutation: AddInstrument
     field :add_sitar, mutation: AddSitar
+    field :rename_ensemble, mutation: RenameEnsemble
 
     def add_ensemble(input:)
       ens = Models::Ensemble.new(input.name)
@@ -552,6 +569,10 @@ module Jazz
     def self.resolve_type(type, obj, ctx)
       class_name = obj.class.name.split("::").last
       ctx.schema.types[class_name] || raise("No type for #{obj.inspect}")
+    end
+
+    def self.object_from_id(id, ctx)
+      GloballyIdentifiableType.find(id)
     end
   end
 end
