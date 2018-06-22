@@ -77,7 +77,7 @@ describe GraphQL::Schema::Resolver do
     class PrepResolver1 < BaseResolver
       argument :int, Integer, required: true
 
-      def prepare_int(i)
+      def load_int(i)
         i * 10
       end
 
@@ -86,10 +86,22 @@ describe GraphQL::Schema::Resolver do
       def resolve(int:)
         int
       end
+
+      private
+
+      def check_for_magic_number(int)
+        if int == 13
+          raise GraphQL::ExecutionError, "13 is unlucky!"
+        elsif int > 99
+          raise GraphQL::UnauthorizedError, "Top secret big number: #{int}"
+        else
+          int
+        end
+      end
     end
 
     class PrepResolver2 < PrepResolver1
-      def prepare_int(i)
+      def load_int(i)
         LazyBlock.new {
           super - 35
         }
@@ -99,19 +111,13 @@ describe GraphQL::Schema::Resolver do
     class PrepResolver3 < PrepResolver1
       type Integer, null: true
 
-      def prepare_int(i)
-        if i == 13
-          raise GraphQL::UnauthorizedError, "Unlucky number"
-        elsif i > 99
-          raise GraphQL::ExecutionError, "💥 #{i}"
-        else
-          i
-        end
+      def load_int(i)
+        check_for_magic_number(i)
       end
     end
 
     class PrepResolver4 < PrepResolver3
-      def prepare_int(i)
+      def load_int(i)
         LazyBlock.new {
           super
         }
@@ -122,13 +128,7 @@ describe GraphQL::Schema::Resolver do
       type Integer, null: true
 
       def before_prepare(int:)
-        if int == 13
-          raise GraphQL::ExecutionError, "Preparing 13 is unlucky!"
-        elsif int > 99
-          raise GraphQL::UnauthorizedError, "Top secret big number: #{int}"
-        else
-          nil
-        end
+        check_for_magic_number(int)
       end
     end
 
@@ -137,6 +137,24 @@ describe GraphQL::Schema::Resolver do
         LazyBlock.new {
           super
         }
+      end
+    end
+
+    class PrepResolver7 < PrepResolver1
+      type Integer, null: true
+
+      def load_int(int)
+        int
+      end
+
+      def validate_int(int)
+        check_for_magic_number(int)
+      end
+    end
+
+    class PrepResolver8 < PrepResolver7
+      def validate_int(int)
+        LazyBlock.new { super }
       end
     end
 
@@ -169,6 +187,8 @@ describe GraphQL::Schema::Resolver do
       field :prep_resolver_4, resolver: PrepResolver4
       field :prep_resolver_5, resolver: PrepResolver5
       field :prep_resolver_6, resolver: PrepResolver6
+      field :prep_resolver_7, resolver: PrepResolver7
+      field :prep_resolver_8, resolver: PrepResolver8
     end
 
     class Schema < GraphQL::Schema
@@ -255,7 +275,7 @@ describe GraphQL::Schema::Resolver do
 
       res = exec_query("{ int: prepResolver5(int: 13) }")
       assert_equal nil, res["data"].fetch("int")
-      assert_equal ["Preparing 13 is unlucky!"], res["errors"].map { |e| e["message"] }
+      assert_equal ["13 is unlucky!"], res["errors"].map { |e| e["message"] }
 
       res = exec_query("{ int: prepResolver5(int: 200) }")
       assert_equal nil, res["data"].fetch("int")
@@ -268,7 +288,7 @@ describe GraphQL::Schema::Resolver do
 
       res = exec_query("{ int: prepResolver6(int: 13) }")
       assert_equal nil, res["data"].fetch("int")
-      assert_equal ["Preparing 13 is unlucky!"], res["errors"].map { |e| e["message"] }
+      assert_equal ["13 is unlucky!"], res["errors"].map { |e| e["message"] }
 
       res = exec_query("{ int: prepResolver6(int: 2060) }")
       assert_equal nil, res["data"].fetch("int")
@@ -276,15 +296,15 @@ describe GraphQL::Schema::Resolver do
     end
   end
 
-  describe "preparing arguments" do
-    it "calls prep methods and injects the return value" do
+  describe "loading arguments" do
+    it "calls load methods and injects the return value" do
       res = exec_query("{ prepResolver1(int: 5) }")
-      assert_equal 50, res["data"]["prepResolver1"], "The prep multiplier was called"
+      assert_equal 50, res["data"]["prepResolver1"], "The load multiplier was called"
     end
 
     it "supports lazy values" do
       res = exec_query("{ prepResolver2(int: 5) }")
-      assert_equal 15, res["data"]["prepResolver2"], "The prep multiplier was called"
+      assert_equal 15, res["data"]["prepResolver2"], "The load multiplier was called"
     end
 
     it "supports raising GraphQL::UnauthorizedError and GraphQL::ExecutionError" do
@@ -293,24 +313,46 @@ describe GraphQL::Schema::Resolver do
 
       res = exec_query("{ prepResolver3(int: 13) }")
       assert_nil res["data"].fetch("prepResolver3")
-      refute res.key?("errors")
+      assert_equal ["13 is unlucky!"], res["errors"].map { |e| e["message"] }
 
       res = exec_query("{ prepResolver3(int: 100) }")
       assert_nil res["data"].fetch("prepResolver3")
-      assert_equal ["💥 100"], res["errors"].map { |e| e["message"] }
+      refute res.key?("errors")
     end
 
-    it "suppoorts raising errors from promises" do
+    it "supports raising errors from promises" do
       res = exec_query("{ prepResolver4(int: 5) }")
       assert_equal 5, res["data"]["prepResolver4"]
 
       res = exec_query("{ prepResolver4(int: 13) }")
       assert_nil res["data"].fetch("prepResolver4")
-      refute res.key?("errors")
+      assert_equal ["13 is unlucky!"], res["errors"].map { |e| e["message"] }
 
       res = exec_query("{ prepResolver4(int: 101) }")
       assert_nil res["data"].fetch("prepResolver4")
-      assert_equal ["💥 101"], res["errors"].map { |e| e["message"] }
+      refute res.key?("errors")
+    end
+  end
+
+  describe "validating arguments" do
+    test_cases = {
+      "eager" => "prepResolver7",
+      "lazy" => "prepResolver8",
+    }
+
+    test_cases.each do |mode, field_name|
+      it "supports raising #{mode} errors" do
+        res = exec_query("{ validatedInt: #{field_name}(int: 5) }")
+        assert_equal 5, res["data"]["validatedInt"]
+
+        res = exec_query("{ validatedInt: #{field_name}(int: 13) }")
+        assert_nil res["data"].fetch("validatedInt")
+        assert_equal ["13 is unlucky!"], res["errors"].map { |e| e["message"] }
+
+        res = exec_query("{ validatedInt: #{field_name}(int: 101) }")
+        assert_nil res["data"].fetch("validatedInt")
+        refute res.key?("errors")
+      end
     end
   end
 end

@@ -222,7 +222,8 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
 
   describe "custom error messages" do
     let(:schema) {
-      TimeType = GraphQL::ScalarType.define do
+
+      CoerceTestTimeType = GraphQL::ScalarType.define do
         name "Time"
         description "Time since epoch in seconds"
 
@@ -237,19 +238,19 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
         coerce_result ->(value, ctx) { value.to_f }
       end
 
-      QueryType = GraphQL::ObjectType.define do
+      CoerceTestQueryType = GraphQL::ObjectType.define do
         name "Query"
         description "The query root of this schema"
 
         field :time do
-          type TimeType
-          argument :value, !TimeType
+          type CoerceTestTimeType
+          argument :value, !CoerceTestTimeType
           resolve ->(obj, args, ctx) { args[:value] }
         end
       end
 
       GraphQL::Schema.define do
-        query QueryType
+        query CoerceTestQueryType
       end
     }
 

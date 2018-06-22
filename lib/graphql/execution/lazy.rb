@@ -40,7 +40,12 @@ module GraphQL
             err
           end
         end
-        @value
+
+        if @value.is_a?(StandardError)
+          raise @value
+        else
+          @value
+        end
       end
 
       # @return [Lazy] A {Lazy} whose value depends on another {Lazy}, plus any transformations in `block`

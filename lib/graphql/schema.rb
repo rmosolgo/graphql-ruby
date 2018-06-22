@@ -997,11 +997,11 @@ module GraphQL
           result = value.public_send(lazy_method)
           # The returned result might also be lazy, so check it, too
           after_lazy(result) do |final_result|
-            yield(final_result)
+            yield(final_result) if block_given?
           end
         end
       else
-        yield(value)
+        yield(value) if block_given?
       end
     end
 
