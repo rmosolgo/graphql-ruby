@@ -268,90 +268,68 @@ describe GraphQL::Schema::Resolver do
     end
   end
 
-  describe "before_prepare" do
-    it "can raise errors" do
-      res = exec_query("{ int: prepResolver5(int: 5) }")
-      assert_equal 50, res["data"]["int"]
+  describe "preparing inputs" do
+    # Add assertions for a given field, assuming the behavior of `check_for_magic_number`
+    def add_error_assertions(field_name, description)
+      res = exec_query("{ int: #{field_name}(int: 13) }")
+      assert_nil res["data"].fetch("int"), "#{description}: no result for execution error"
+      assert_equal ["13 is unlucky!"], res["errors"].map { |e| e["message"] }, "#{description}: top-level error is added"
 
-      res = exec_query("{ int: prepResolver5(int: 13) }")
-      assert_equal nil, res["data"].fetch("int")
-      assert_equal ["13 is unlucky!"], res["errors"].map { |e| e["message"] }
-
-      res = exec_query("{ int: prepResolver5(int: 200) }")
-      assert_equal nil, res["data"].fetch("int")
-      refute res.key?("errors"), "silent auth failure"
+      res = exec_query("{ int: #{field_name}(int: 200) }")
+      assert_nil res["data"].fetch("int"), "#{description}: No result for authorization error"
+      refute res.key?("errors"), "#{description}: silent auth failure (no top-level error)"
     end
 
-    it "can raise errors in lazy sync" do
-      res = exec_query("{ int: prepResolver6(int: 5) }")
-      assert_equal 50, res["data"]["int"]
+    describe "before_prepare" do
+      it "can raise errors" do
+        res = exec_query("{ int: prepResolver5(int: 5) }")
+        assert_equal 50, res["data"]["int"]
+        add_error_assertions("prepResolver5", "before_prepare")
+      end
 
-      res = exec_query("{ int: prepResolver6(int: 13) }")
-      assert_equal nil, res["data"].fetch("int")
-      assert_equal ["13 is unlucky!"], res["errors"].map { |e| e["message"] }
-
-      res = exec_query("{ int: prepResolver6(int: 2060) }")
-      assert_equal nil, res["data"].fetch("int")
-      refute res.key?("errors"), "silent auth failure"
-    end
-  end
-
-  describe "loading arguments" do
-    it "calls load methods and injects the return value" do
-      res = exec_query("{ prepResolver1(int: 5) }")
-      assert_equal 50, res["data"]["prepResolver1"], "The load multiplier was called"
+      it "can raise errors in lazy sync" do
+        res = exec_query("{ int: prepResolver6(int: 5) }")
+        assert_equal 50, res["data"]["int"]
+        add_error_assertions("prepResolver6", "lazy before_prepare")
+      end
     end
 
-    it "supports lazy values" do
-      res = exec_query("{ prepResolver2(int: 5) }")
-      assert_equal 15, res["data"]["prepResolver2"], "The load multiplier was called"
+    describe "loading arguments" do
+      it "calls load methods and injects the return value" do
+        res = exec_query("{ prepResolver1(int: 5) }")
+        assert_equal 50, res["data"]["prepResolver1"], "The load multiplier was called"
+      end
+
+      it "supports lazy values" do
+        res = exec_query("{ prepResolver2(int: 5) }")
+        assert_equal 15, res["data"]["prepResolver2"], "The load multiplier was called"
+      end
+
+      it "supports raising GraphQL::UnauthorizedError and GraphQL::ExecutionError" do
+        res = exec_query("{ prepResolver3(int: 5) }")
+        assert_equal 5, res["data"]["prepResolver3"]
+        add_error_assertions("prepResolver3", "load_ hook")
+      end
+
+      it "supports raising errors from promises" do
+        res = exec_query("{ prepResolver4(int: 5) }")
+        assert_equal 5, res["data"]["prepResolver4"]
+        add_error_assertions("prepResolver4", "lazy load_ hook")
+      end
     end
 
-    it "supports raising GraphQL::UnauthorizedError and GraphQL::ExecutionError" do
-      res = exec_query("{ prepResolver3(int: 5) }")
-      assert_equal 5, res["data"]["prepResolver3"]
+    describe "validating arguments" do
+      test_cases = {
+        "eager" => "prepResolver7",
+        "lazy" => "prepResolver8",
+      }
 
-      res = exec_query("{ prepResolver3(int: 13) }")
-      assert_nil res["data"].fetch("prepResolver3")
-      assert_equal ["13 is unlucky!"], res["errors"].map { |e| e["message"] }
-
-      res = exec_query("{ prepResolver3(int: 100) }")
-      assert_nil res["data"].fetch("prepResolver3")
-      refute res.key?("errors")
-    end
-
-    it "supports raising errors from promises" do
-      res = exec_query("{ prepResolver4(int: 5) }")
-      assert_equal 5, res["data"]["prepResolver4"]
-
-      res = exec_query("{ prepResolver4(int: 13) }")
-      assert_nil res["data"].fetch("prepResolver4")
-      assert_equal ["13 is unlucky!"], res["errors"].map { |e| e["message"] }
-
-      res = exec_query("{ prepResolver4(int: 101) }")
-      assert_nil res["data"].fetch("prepResolver4")
-      refute res.key?("errors")
-    end
-  end
-
-  describe "validating arguments" do
-    test_cases = {
-      "eager" => "prepResolver7",
-      "lazy" => "prepResolver8",
-    }
-
-    test_cases.each do |mode, field_name|
-      it "supports raising #{mode} errors" do
-        res = exec_query("{ validatedInt: #{field_name}(int: 5) }")
-        assert_equal 5, res["data"]["validatedInt"]
-
-        res = exec_query("{ validatedInt: #{field_name}(int: 13) }")
-        assert_nil res["data"].fetch("validatedInt")
-        assert_equal ["13 is unlucky!"], res["errors"].map { |e| e["message"] }
-
-        res = exec_query("{ validatedInt: #{field_name}(int: 101) }")
-        assert_nil res["data"].fetch("validatedInt")
-        refute res.key?("errors")
+      test_cases.each do |mode, field_name|
+        it "supports raising #{mode} errors" do
+          res = exec_query("{ validatedInt: #{field_name}(int: 5) }")
+          assert_equal 5, res["data"]["validatedInt"]
+          add_error_assertions(field_name, "#{mode} validation")
+        end
       end
     end
   end
