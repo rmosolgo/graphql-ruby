@@ -87,6 +87,9 @@ module GraphQL
           def proxy_to_depth(inner_obj, depth, ctx)
             if depth > 0
               inner_obj.map { |i| proxy_to_depth(i, depth - 1, ctx) }
+            elsif inner_obj.nil?
+              # For lists with nil, we need another nil check here
+              nil
             else
               concrete_type = case @inner_return_type
               when GraphQL::UnionType, GraphQL::InterfaceType
