@@ -137,7 +137,7 @@ describe GraphQL::ExecutionError do
             },
           ]
         }
-      assert_equal(expected_result, result)
+      assert_equal(expected_result, result.to_h)
     end
   end
 
