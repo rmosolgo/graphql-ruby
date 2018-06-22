@@ -129,7 +129,7 @@ RUBY
     assert_file "app/controllers/graphql_controller.rb", /CustomSchema\.execute/
   end
 
-  EXPECTED_GRAPHQLS_CONTROLLER = <<-RUBY
+  EXPECTED_GRAPHQLS_CONTROLLER = <<-'RUBY'
 class GraphqlController < ApplicationController
   def execute
     variables = ensure_hash(params[:variables])
@@ -141,6 +141,9 @@ class GraphqlController < ApplicationController
     }
     result = DummySchema.execute(query, variables: variables, context: context, operation_name: operation_name)
     render json: result
+  rescue => e
+    raise e unless Rails.env.development?
+    handle_error_in_development e
   end
 
   private
@@ -159,8 +162,15 @@ class GraphqlController < ApplicationController
     when nil
       {}
     else
-      raise ArgumentError, "Unexpected parameter: \#{ambiguous_param}"
+      raise ArgumentError, "Unexpected parameter: #{ambiguous_param}"
     end
+  end
+
+  def handle_error_in_development(e)
+    logger.error e.message
+    logger.error e.backtrace.join("\n")
+
+    render json: { error: { message: e.message, backtrace: e.backtrace }, data: {} }, status: 500
   end
 end
 RUBY
