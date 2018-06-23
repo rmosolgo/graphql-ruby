@@ -299,10 +299,16 @@ rule
 
   type_system_extension:
       schema_extension
+    | type_extension
 
   schema_extension:
       EXTEND SCHEMA directives_list_opt LCURLY operation_type_definition_list RCURLY { return make_node(:SchemaExtension, position_source: val[0], directives: val[2], **val[4]) }
     | EXTEND SCHEMA directives_list { return make_node(:SchemaExtension, position_source: val[0], directives: val[2]) }
+
+  type_extension:
+      scalar_type_extension
+
+  scalar_type_extension: EXTEND SCALAR name directives_list { return make_node(:ScalarTypeExtension, name: val[2], directives: val[3], position_source: val[0]) }
 
   scalar_type_definition: SCALAR name directives_list_opt { return make_node(:ScalarTypeDefinition, name: val[1], directives: val[2], description: get_description(val[0]), position_source: val[0]) }
 

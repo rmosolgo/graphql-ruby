@@ -246,6 +246,23 @@ module GraphQL
             assert_equal nil, schema_extension.subscription
           end
 
+          def test_it_parses_scalar_extensions
+            document = parse('
+              extend scalar Date @something @somethingElse
+            ')
+
+            scalar_extension = document.definitions.first
+            assert_equal GraphQL::Language::Nodes::ScalarTypeExtension, scalar_extension.class
+            assert_equal 'Date', scalar_extension.name
+            assert_equal [2, 15], scalar_extension.position
+
+            assert_equal 2, scalar_extension.directives.length
+            assert_equal GraphQL::Language::Nodes::Directive, scalar_extension.directives.first.class
+            assert_equal 'something', scalar_extension.directives.first.name
+            assert_equal GraphQL::Language::Nodes::Directive, scalar_extension.directives.last.class
+            assert_equal 'somethingElse', scalar_extension.directives.last.name
+          end
+
           def test_it_parses_whole_definition_with_descriptions
             document = parse(SCHEMA_DEFINITION_STRING)
 
