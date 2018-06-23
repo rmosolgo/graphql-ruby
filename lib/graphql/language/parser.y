@@ -9,9 +9,13 @@ rule
     | definitions_list definition   { val[0] << val[1] }
 
   definition:
+      executable_definition
+    | type_system_definition
+    | type_system_extension
+
+  executable_definition:
       operation_definition
     | fragment_definition
-    | type_system_definition
 
   operation_definition:
       operation_type operation_name_opt variable_definitions_opt directives_list_opt selection_set {
@@ -292,6 +296,13 @@ rule
     | union_type_definition
     | enum_type_definition
     | input_object_type_definition
+
+  type_system_extension:
+      schema_extension
+
+  schema_extension:
+      EXTEND SCHEMA directives_list_opt LCURLY operation_type_definition_list RCURLY { return make_node(:SchemaExtension, position_source: val[0], directives: val[2], **val[4]) }
+    | EXTEND SCHEMA directives_list { return make_node(:SchemaExtension, position_source: val[0], directives: val[2]) }
 
   scalar_type_definition: SCALAR name directives_list_opt { return make_node(:ScalarTypeDefinition, name: val[1], directives: val[2], description: get_description(val[0]), position_source: val[0]) }
 

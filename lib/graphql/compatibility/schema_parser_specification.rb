@@ -192,6 +192,60 @@ module GraphQL
             assert_equal 'SubscriptionRoot', schema.subscription
           end
 
+          def test_it_parses_schema_extensions
+            document = parse('
+              extend schema {
+                query: QueryRoot
+                mutation: MutationRoot
+                subscription: SubscriptionRoot
+              }
+            ')
+
+            schema_extension = document.definitions.first
+            assert_equal GraphQL::Language::Nodes::SchemaExtension, schema_extension.class
+            assert_equal [2, 15], schema_extension.position
+
+            assert_equal 'QueryRoot', schema_extension.query
+            assert_equal 'MutationRoot', schema_extension.mutation
+            assert_equal 'SubscriptionRoot', schema_extension.subscription
+          end
+
+          def test_it_parses_schema_extensions_with_directives
+            document = parse('
+              extend schema @something {
+                query: QueryRoot
+              }
+            ')
+
+            schema_extension = document.definitions.first
+            assert_equal GraphQL::Language::Nodes::SchemaExtension, schema_extension.class
+
+            assert_equal 1, schema_extension.directives.length
+            assert_equal GraphQL::Language::Nodes::Directive, schema_extension.directives.first.class
+            assert_equal 'something', schema_extension.directives.first.name
+
+            assert_equal 'QueryRoot', schema_extension.query
+            assert_equal nil, schema_extension.mutation
+            assert_equal nil, schema_extension.subscription
+          end
+
+          def test_it_parses_schema_extensions_with_only_directives
+            document = parse('
+              extend schema @something
+            ')
+
+            schema_extension = document.definitions.first
+            assert_equal GraphQL::Language::Nodes::SchemaExtension, schema_extension.class
+
+            assert_equal 1, schema_extension.directives.length
+            assert_equal GraphQL::Language::Nodes::Directive, schema_extension.directives.first.class
+            assert_equal 'something', schema_extension.directives.first.name
+
+            assert_equal nil, schema_extension.query
+            assert_equal nil, schema_extension.mutation
+            assert_equal nil, schema_extension.subscription
+          end
+
           def test_it_parses_whole_definition_with_descriptions
             document = parse(SCHEMA_DEFINITION_STRING)
 

@@ -403,6 +403,8 @@ module GraphQL
         alias :children :directives
       end
 
+      class SchemaExtension < SchemaDefinition; end
+
       class ScalarTypeDefinition < AbstractNode
         include Scalars::Name
 
