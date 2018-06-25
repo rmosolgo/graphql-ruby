@@ -263,6 +263,109 @@ module GraphQL
             assert_equal 'somethingElse', scalar_extension.directives.last.name
           end
 
+          def test_it_parses_object_type_extensions_with_field_definitions
+            document = parse('
+              extend type User {
+                login: String!
+              }
+            ')
+
+            object_type_extension = document.definitions.first
+            assert_equal GraphQL::Language::Nodes::ObjectTypeExtension, object_type_extension.class
+            assert_equal 'User', object_type_extension.name
+            assert_equal [2, 15], object_type_extension.position
+
+            assert_equal 1, object_type_extension.fields.length
+            assert_equal GraphQL::Language::Nodes::FieldDefinition, object_type_extension.fields.first.class
+          end
+
+          def test_it_parses_object_type_extensions_with_field_definitions_and_directives
+            document = parse('
+              extend type User @deprecated {
+                login: String!
+              }
+            ')
+
+            object_type_extension = document.definitions.first
+            assert_equal GraphQL::Language::Nodes::ObjectTypeExtension, object_type_extension.class
+            assert_equal 'User', object_type_extension.name
+            assert_equal [2, 15], object_type_extension.position
+
+            assert_equal 1, object_type_extension.fields.length
+            assert_equal GraphQL::Language::Nodes::FieldDefinition, object_type_extension.fields.first.class
+
+            assert_equal 1, object_type_extension.directives.length
+            assert_equal GraphQL::Language::Nodes::Directive, object_type_extension.directives.first.class
+          end
+
+          def test_it_parses_object_type_extensions_with_field_definitions_and_implements
+            document = parse('
+              extend type User implements Node {
+                login: String!
+              }
+            ')
+
+            object_type_extension = document.definitions.first
+            assert_equal GraphQL::Language::Nodes::ObjectTypeExtension, object_type_extension.class
+            assert_equal 'User', object_type_extension.name
+            assert_equal [2, 15], object_type_extension.position
+
+            assert_equal 1, object_type_extension.fields.length
+            assert_equal GraphQL::Language::Nodes::FieldDefinition, object_type_extension.fields.first.class
+
+            assert_equal 1, object_type_extension.interfaces.length
+            assert_equal GraphQL::Language::Nodes::TypeName, object_type_extension.interfaces.first.class
+          end
+
+          def test_it_parses_object_type_extensions_with_only_directives
+            document = parse('
+              extend type User @deprecated
+            ')
+
+            object_type_extension = document.definitions.first
+            assert_equal GraphQL::Language::Nodes::ObjectTypeExtension, object_type_extension.class
+            assert_equal 'User', object_type_extension.name
+            assert_equal [2, 15], object_type_extension.position
+
+            assert_equal 1, object_type_extension.directives.length
+            assert_equal GraphQL::Language::Nodes::Directive, object_type_extension.directives.first.class
+            assert_equal 'deprecated', object_type_extension.directives.first.name
+          end
+
+          def test_it_parses_object_type_extensions_with_implements_and_directives
+            document = parse('
+              extend type User implements Node @deprecated
+            ')
+
+            object_type_extension = document.definitions.first
+            assert_equal GraphQL::Language::Nodes::ObjectTypeExtension, object_type_extension.class
+            assert_equal 'User', object_type_extension.name
+            assert_equal [2, 15], object_type_extension.position
+
+            assert_equal 1, object_type_extension.directives.length
+            assert_equal GraphQL::Language::Nodes::Directive, object_type_extension.directives.first.class
+            assert_equal 'deprecated', object_type_extension.directives.first.name
+
+            assert_equal 1, object_type_extension.interfaces.length
+            assert_equal GraphQL::Language::Nodes::TypeName, object_type_extension.interfaces.first.class
+            assert_equal 'Node', object_type_extension.interfaces.first.name
+          end
+
+          def test_it_parses_object_type_extensions_with_only_implements
+            document = parse('
+              extend type User implements Node
+            ')
+
+            object_type_extension = document.definitions.first
+            assert_equal GraphQL::Language::Nodes::ObjectTypeExtension, object_type_extension.class
+            assert_equal 'User', object_type_extension.name
+            assert_equal [2, 15], object_type_extension.position
+
+            assert_equal 1, object_type_extension.interfaces.length
+            assert_equal GraphQL::Language::Nodes::TypeName, object_type_extension.interfaces.first.class
+            assert_equal 'Node', object_type_extension.interfaces.first.name
+          end
+
           def test_it_parses_whole_definition_with_descriptions
             document = parse(SCHEMA_DEFINITION_STRING)
 

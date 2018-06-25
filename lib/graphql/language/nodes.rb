@@ -446,6 +446,8 @@ module GraphQL
         end
       end
 
+      class ObjectTypeExtension < ObjectTypeDefinition; end;
+
       class InputValueDefinition < AbstractNode
         attr_accessor :name, :type, :default_value, :directives,:description
         alias :children :directives

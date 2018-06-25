@@ -307,8 +307,16 @@ rule
 
   type_extension:
       scalar_type_extension
+    | object_type_extension
 
   scalar_type_extension: EXTEND SCALAR name directives_list { return make_node(:ScalarTypeExtension, name: val[2], directives: val[3], position_source: val[0]) }
+
+  object_type_extension:
+      /* TODO - This first one shouldn't be necessary but parser is getting confused */
+      EXTEND TYPE name implements LCURLY field_definition_list RCURLY { return make_node(:ObjectTypeExtension, name: val[2], interfaces: val[3], directives: [], fields: val[5], position_source: val[0]) }
+    | EXTEND TYPE name implements_opt directives_list_opt LCURLY field_definition_list RCURLY { return make_node(:ObjectTypeExtension, name: val[2], interfaces: val[3], directives: val[4], fields: val[6], position_source: val[0]) }
+    | EXTEND TYPE name implements_opt directives_list { return make_node(:ObjectTypeExtension, name: val[2], interfaces: val[3], directives: val[4], fields: [], position_source: val[0]) }
+    | EXTEND TYPE name implements { return make_node(:ObjectTypeExtension, name: val[2], interfaces: val[3], directives: [], fields: [], position_source: val[0]) }
 
   scalar_type_definition: SCALAR name directives_list_opt { return make_node(:ScalarTypeDefinition, name: val[1], directives: val[2], description: get_description(val[0]), position_source: val[0]) }
 
@@ -319,7 +327,10 @@ rule
 
   implements_opt:
       /* none */ { return [] }
-    | IMPLEMENTS AMP interfaces_list { return val[2] }
+    | implements
+
+  implements:
+      IMPLEMENTS AMP interfaces_list { return val[2] }
     | IMPLEMENTS interfaces_list { return val[1] }
     | IMPLEMENTS legacy_interfaces_list { return val[1] }
 
