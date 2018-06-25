@@ -48,6 +48,38 @@ describe GraphQL::Directive do
       end
     end
 
+    describe "when directive uses argument with default value" do
+      describe "with false" do
+        let(:query_string) { <<-GRAPHQL
+          query($f: Boolean = false) {
+            cheese(id: 1) {
+              dontIncludeFlavor: flavor @include(if: $f)
+            }
+          }
+        GRAPHQL
+        }
+
+        it "is not included" do
+          assert !result["data"]["cheese"].key?("dontIncludeFlavor")
+        end
+      end
+
+      describe "with true" do
+        let(:query_string) { <<-GRAPHQL
+          query($t: Boolean = true) {
+            cheese(id: 1) {
+              includeFlavor: flavor @include(if: $t)
+            }
+          }
+        GRAPHQL
+        }
+
+        it "is included" do
+          assert result["data"]["cheese"].key?("includeFlavor")
+        end
+      end
+    end
+
     it "intercepts fields" do
       expected = { "data" =>{
         "cheese" => {
