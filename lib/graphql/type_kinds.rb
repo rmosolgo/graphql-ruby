@@ -5,18 +5,21 @@ module GraphQL
     # These objects are singletons, eg `GraphQL::TypeKinds::UNION`, `GraphQL::TypeKinds::SCALAR`.
     class TypeKind
       attr_reader :name, :description
-      def initialize(name, resolves: false, fields: false, wraps: false, input: false, description: nil)
+      def initialize(name, abstract: false, fields: false, wraps: false, input: false, description: nil)
         @name = name
-        @resolves = resolves
+        @abstract = abstract
         @fields = fields
         @wraps = wraps
         @input = input
-        @composite = fields? || resolves?
+        @composite = fields? || abstract?
         @description = description
       end
 
       # Does this TypeKind have multiple possible implementors?
-      def resolves?;  @resolves;  end
+      # @deprecated Use `abstract?` instead of `resolves?`.
+      def resolves?;  @abstract;  end
+      # Is this TypeKind abstract?
+      def abstract?; @abstract; end
       # Does this TypeKind have queryable fields?
       def fields?;    @fields;    end
       # Does this TypeKind modify another type?
@@ -31,8 +34,8 @@ module GraphQL
     TYPE_KINDS = [
       SCALAR =        TypeKind.new("SCALAR", input: true, description: 'Indicates this type is a scalar.'),
       OBJECT =        TypeKind.new("OBJECT", fields: true, description: 'Indicates this type is an object. `fields` and `interfaces` are valid fields.'),
-      INTERFACE =     TypeKind.new("INTERFACE", resolves: true, fields: true, description: 'Indicates this type is an interface. `fields` and `possibleTypes` are valid fields.'),
-      UNION =         TypeKind.new("UNION", resolves: true, description: 'Indicates this type is a union. `possibleTypes` is a valid field.'),
+      INTERFACE =     TypeKind.new("INTERFACE", abstract: true, fields: true, description: 'Indicates this type is an interface. `fields` and `possibleTypes` are valid fields.'),
+      UNION =         TypeKind.new("UNION", abstract: true, description: 'Indicates this type is a union. `possibleTypes` is a valid field.'),
       ENUM =          TypeKind.new("ENUM", input: true, description: 'Indicates this type is an enum. `enumValues` is a valid field.'),
       INPUT_OBJECT =  TypeKind.new("INPUT_OBJECT", input: true, description: 'Indicates this type is an input object. `inputFields` is a valid field.'),
       LIST =          TypeKind.new("LIST", wraps: true, description: 'Indicates this type is a list. `ofType` is a valid field.'),
