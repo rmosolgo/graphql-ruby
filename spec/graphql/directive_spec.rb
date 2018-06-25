@@ -54,6 +54,7 @@ describe GraphQL::Directive do
           query($f: Boolean = false) {
             cheese(id: 1) {
               dontIncludeFlavor: flavor @include(if: $f)
+              dontSkipFlavor: flavor @skip(if: $f)
             }
           }
         GRAPHQL
@@ -62,6 +63,10 @@ describe GraphQL::Directive do
         it "is not included" do
           assert !result["data"]["cheese"].key?("dontIncludeFlavor")
         end
+
+        it "is not skipped" do
+          assert result["data"]["cheese"].key?("dontSkipFlavor")
+        end
       end
 
       describe "with true" do
@@ -69,6 +74,7 @@ describe GraphQL::Directive do
           query($t: Boolean = true) {
             cheese(id: 1) {
               includeFlavor: flavor @include(if: $t)
+              skipFlavor: flavor @skip(if: $t)
             }
           }
         GRAPHQL
@@ -76,6 +82,10 @@ describe GraphQL::Directive do
 
         it "is included" do
           assert result["data"]["cheese"].key?("includeFlavor")
+        end
+
+        it "is skipped" do
+          assert !result["data"]["cheese"].key?("skipFlavor")
         end
       end
     end
