@@ -366,6 +366,61 @@ module GraphQL
             assert_equal 'Node', object_type_extension.interfaces.first.name
           end
 
+          def test_it_parses_interface_type_extensions_with_directives_and_fields
+            document = parse('
+              extend interface Node @directive {
+                field: String
+              }
+            ')
+
+            interface_type_extension = document.definitions.first
+            assert_equal GraphQL::Language::Nodes::InterfaceTypeExtension, interface_type_extension.class
+            assert_equal 'Node', interface_type_extension.name
+            assert_equal [2, 15], interface_type_extension.position
+
+            assert_equal 1, interface_type_extension.directives.length
+            assert_equal GraphQL::Language::Nodes::Directive, interface_type_extension.directives.first.class
+            assert_equal 'directive', interface_type_extension.directives.first.name
+
+            assert_equal 1, interface_type_extension.fields.length
+            assert_equal GraphQL::Language::Nodes::FieldDefinition, interface_type_extension.fields.first.class
+            assert_equal 'field', interface_type_extension.fields.first.name
+          end
+
+          def test_it_parses_interface_type_extensions_with_fields
+            document = parse('
+              extend interface Node {
+                field: String
+              }
+            ')
+
+            interface_type_extension = document.definitions.first
+            assert_equal GraphQL::Language::Nodes::InterfaceTypeExtension, interface_type_extension.class
+            assert_equal 'Node', interface_type_extension.name
+            assert_equal [2, 15], interface_type_extension.position
+
+            assert_equal 0, interface_type_extension.directives.length
+
+            assert_equal 1, interface_type_extension.fields.length
+            assert_equal GraphQL::Language::Nodes::FieldDefinition, interface_type_extension.fields.first.class
+            assert_equal 'field', interface_type_extension.fields.first.name
+          end
+
+          def test_it_parses_interface_type_extensions_with_directives
+            document = parse('
+              extend interface Node @directive
+            ')
+
+            interface_type_extension = document.definitions.first
+            assert_equal GraphQL::Language::Nodes::InterfaceTypeExtension, interface_type_extension.class
+            assert_equal 'Node', interface_type_extension.name
+            assert_equal [2, 15], interface_type_extension.position
+
+            assert_equal 1, interface_type_extension.directives.length
+            assert_equal GraphQL::Language::Nodes::Directive, interface_type_extension.directives.first.class
+            assert_equal 'directive', interface_type_extension.directives.first.name
+          end
+
           def test_it_parses_whole_definition_with_descriptions
             document = parse(SCHEMA_DEFINITION_STRING)
 

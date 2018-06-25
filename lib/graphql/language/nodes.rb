@@ -502,6 +502,8 @@ module GraphQL
         end
       end
 
+      class InterfaceTypeExtension < InterfaceTypeDefinition; end;
+
       class UnionTypeDefinition < AbstractNode
         include Scalars::Name
 
