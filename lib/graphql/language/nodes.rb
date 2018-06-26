@@ -571,6 +571,8 @@ module GraphQL
           fields + directives
         end
       end
+
+      class InputObjectTypeExtension < InputObjectTypeDefinition; end;
     end
   end
 end
