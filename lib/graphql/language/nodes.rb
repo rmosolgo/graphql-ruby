@@ -418,15 +418,7 @@ module GraphQL
         end
       end
 
-      class ScalarTypeExtension < AbstractNode
-        attr_accessor :name, :directives
-        alias :children :directives
-
-        def initialize_node(name:, directives:)
-          @name = name
-          @directives = directives
-        end
-      end
+      class ScalarTypeExtension < ScalarTypeDefinition; end;
 
       class ObjectTypeDefinition < AbstractNode
         include Scalars::Name
