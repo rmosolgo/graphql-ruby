@@ -12,6 +12,7 @@ module GraphQL
         }
 
         visitor = context.visitor
+
         visitor[GraphQL::Language::Nodes::DirectiveDefinition] << register_node
         visitor[GraphQL::Language::Nodes::SchemaDefinition] << register_node
         visitor[GraphQL::Language::Nodes::ScalarTypeDefinition] << register_node
@@ -20,6 +21,14 @@ module GraphQL
         visitor[GraphQL::Language::Nodes::InterfaceTypeDefinition] << register_node
         visitor[GraphQL::Language::Nodes::UnionTypeDefinition] << register_node
         visitor[GraphQL::Language::Nodes::EnumTypeDefinition] << register_node
+
+        visitor[GraphQL::Language::Nodes::SchemaExtension] << register_node
+        visitor[GraphQL::Language::Nodes::ScalarTypeExtension] << register_node
+        visitor[GraphQL::Language::Nodes::ObjectTypeExtension] << register_node
+        visitor[GraphQL::Language::Nodes::InputObjectTypeExtension] << register_node
+        visitor[GraphQL::Language::Nodes::InterfaceTypeExtension] << register_node
+        visitor[GraphQL::Language::Nodes::UnionTypeExtension] << register_node
+        visitor[GraphQL::Language::Nodes::EnumTypeExtension] << register_node
 
         visitor[GraphQL::Language::Nodes::Document].leave << ->(node, _p) {
           if schema_definition_nodes.any?
