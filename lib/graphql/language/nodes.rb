@@ -540,6 +540,8 @@ module GraphQL
         end
       end
 
+      class EnumTypeExtension < EnumTypeDefinition; end;
+
       class EnumValueDefinition < AbstractNode
         include Scalars::Name
 

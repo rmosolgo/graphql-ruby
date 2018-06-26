@@ -474,6 +474,65 @@ module GraphQL
             assert_equal 0, union_type_extension.types.length
           end
 
+          def test_it_parses_enum_type_extension_with_values
+            document = parse('
+              extend enum Status {
+                DRAFT
+                PUBLISHED
+              }
+            ')
+
+            enum_type_extension = document.definitions.first
+            assert_equal GraphQL::Language::Nodes::EnumTypeExtension, enum_type_extension.class
+            assert_equal 'Status', enum_type_extension.name
+            assert_equal [2, 15], enum_type_extension.position
+
+            assert_equal 0, enum_type_extension.directives.length
+
+            assert_equal 2, enum_type_extension.values.length
+            assert_equal GraphQL::Language::Nodes::EnumValueDefinition, enum_type_extension.values.first.class
+            assert_equal 'DRAFT', enum_type_extension.values.first.name
+          end
+
+          def test_it_parses_enum_type_extension_with_directives_and_values
+            document = parse('
+              extend enum Status @directive {
+                DRAFT
+                PUBLISHED
+              }
+            ')
+
+            enum_type_extension = document.definitions.first
+            assert_equal GraphQL::Language::Nodes::EnumTypeExtension, enum_type_extension.class
+            assert_equal 'Status', enum_type_extension.name
+            assert_equal [2, 15], enum_type_extension.position
+
+            assert_equal 1, enum_type_extension.directives.length
+            assert_equal GraphQL::Language::Nodes::Directive, enum_type_extension.directives.first.class
+            assert_equal 'directive', enum_type_extension.directives.first.name
+
+            assert_equal 2, enum_type_extension.values.length
+            assert_equal GraphQL::Language::Nodes::EnumValueDefinition, enum_type_extension.values.first.class
+            assert_equal 'DRAFT', enum_type_extension.values.first.name
+          end
+
+          def test_it_parses_enum_type_extension_with_directives
+            document = parse('
+              extend enum Status @directive
+            ')
+
+            enum_type_extension = document.definitions.first
+            assert_equal GraphQL::Language::Nodes::EnumTypeExtension, enum_type_extension.class
+            assert_equal 'Status', enum_type_extension.name
+            assert_equal [2, 15], enum_type_extension.position
+
+            assert_equal 1, enum_type_extension.directives.length
+            assert_equal GraphQL::Language::Nodes::Directive, enum_type_extension.directives.first.class
+            assert_equal 'directive', enum_type_extension.directives.first.name
+
+            assert_equal 0, enum_type_extension.values.length
+          end
+
           def test_it_parses_whole_definition_with_descriptions
             document = parse(SCHEMA_DEFINITION_STRING)
 
