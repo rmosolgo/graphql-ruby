@@ -323,7 +323,7 @@ rule
     | EXTEND TYPE name implements { return make_node(:ObjectTypeExtension, name: val[2], interfaces: val[3], directives: [], fields: [], position_source: val[0]) }
 
   interface_type_extension:
-      EXTEND INTERFACE name directives_list_opt fields_definition { return make_node(:InterfaceTypeExtension, name: val[2], directives: val[3], fields: val[4], position_source: val[0]) }
+      EXTEND INTERFACE name directives_list_opt LCURLY field_definition_list RCURLY { return make_node(:InterfaceTypeExtension, name: val[2], directives: val[3], fields: val[5], position_source: val[0]) }
     | EXTEND INTERFACE name directives_list { return make_node(:InterfaceTypeExtension, name: val[2], directives: val[3], fields: [], position_source: val[0]) }
 
   union_type_extension:
