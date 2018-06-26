@@ -403,6 +403,23 @@ module GraphQL
         alias :children :directives
       end
 
+      class SchemaExtension < AbstractNode
+        attr_accessor :query, :mutation, :subscription, :directives
+
+        def initialize_node(query: nil, mutation: nil, subscription: nil, directives: [])
+          @query = query
+          @mutation = mutation
+          @subscription = subscription
+          @directives = directives
+        end
+
+        def scalars
+          [query, mutation, subscription]
+        end
+
+        alias :children :directives
+      end
+
       class ScalarTypeDefinition < AbstractNode
         include Scalars::Name
 
@@ -413,6 +430,16 @@ module GraphQL
           @name = name
           @directives = directives
           @description = description
+        end
+      end
+
+      class ScalarTypeExtension < AbstractNode
+        attr_accessor :name, :directives
+        alias :children :directives
+
+        def initialize_node(name:, directives: [])
+          @name = name
+          @directives = directives
         end
       end
 
@@ -427,6 +454,21 @@ module GraphQL
           @directives = directives
           @fields = fields
           @description = description
+        end
+
+        def children
+          interfaces + fields + directives
+        end
+      end
+
+      class ObjectTypeExtension < AbstractNode
+        attr_accessor :name, :interfaces, :fields, :directives
+
+        def initialize_node(name:, interfaces:, fields:, directives: [])
+          @name = name
+          @interfaces = interfaces || []
+          @directives = directives
+          @fields = fields
         end
 
         def children
@@ -488,6 +530,20 @@ module GraphQL
         end
       end
 
+      class InterfaceTypeExtension < AbstractNode
+        attr_accessor :name, :fields, :directives
+
+        def initialize_node(name:, fields:, directives: [])
+          @name = name
+          @fields = fields
+          @directives = directives
+        end
+
+        def children
+          fields + directives
+        end
+      end
+
       class UnionTypeDefinition < AbstractNode
         include Scalars::Name
 
@@ -505,6 +561,20 @@ module GraphQL
         end
       end
 
+      class UnionTypeExtension < AbstractNode
+        attr_accessor :name, :types, :directives
+
+        def initialize_node(name:, types:, directives: [])
+          @name = name
+          @types = types
+          @directives = directives
+        end
+
+        def children
+          types + directives
+        end
+      end
+
       class EnumTypeDefinition < AbstractNode
         include Scalars::Name
 
@@ -515,6 +585,20 @@ module GraphQL
           @values = values
           @directives = directives
           @description = description
+        end
+
+        def children
+          values + directives
+        end
+      end
+
+      class EnumTypeExtension < AbstractNode
+        attr_accessor :name, :values, :directives
+
+        def initialize_node(name:, values:, directives: [])
+          @name = name
+          @values = values
+          @directives = directives
         end
 
         def children
@@ -545,6 +629,20 @@ module GraphQL
           @fields = fields
           @directives = directives
           @description = description
+        end
+
+        def children
+          fields + directives
+        end
+      end
+
+      class InputObjectTypeExtension < AbstractNode
+        attr_accessor :name, :fields, :directives
+
+        def initialize_node(name:, fields:, directives: [])
+          @name = name
+          @fields = fields
+          @directives = directives
         end
 
         def children
