@@ -421,6 +421,59 @@ module GraphQL
             assert_equal 'directive', interface_type_extension.directives.first.name
           end
 
+          def test_it_parses_union_type_extension_with_union_members
+            document = parse('
+              extend union BagOfThings = A | B
+            ')
+
+            union_type_extension = document.definitions.first
+            assert_equal GraphQL::Language::Nodes::UnionTypeExtension, union_type_extension.class
+            assert_equal 'BagOfThings', union_type_extension.name
+            assert_equal [2, 15], union_type_extension.position
+
+            assert_equal 0, union_type_extension.directives.length
+
+            assert_equal 2, union_type_extension.types.length
+            assert_equal GraphQL::Language::Nodes::TypeName, union_type_extension.types.first.class
+            assert_equal 'A', union_type_extension.types.first.name
+          end
+
+          def test_it_parses_union_type_extension_with_directives_and_union_members
+            document = parse('
+              extend union BagOfThings @directive = A | B
+            ')
+
+            union_type_extension = document.definitions.first
+            assert_equal GraphQL::Language::Nodes::UnionTypeExtension, union_type_extension.class
+            assert_equal 'BagOfThings', union_type_extension.name
+            assert_equal [2, 15], union_type_extension.position
+
+            assert_equal 1, union_type_extension.directives.length
+            assert_equal GraphQL::Language::Nodes::Directive, union_type_extension.directives.first.class
+            assert_equal 'directive', union_type_extension.directives.first.name
+
+            assert_equal 2, union_type_extension.types.length
+            assert_equal GraphQL::Language::Nodes::TypeName, union_type_extension.types.first.class
+            assert_equal 'A', union_type_extension.types.first.name
+          end
+
+          def test_it_parses_union_type_extension_with_directives
+            document = parse('
+              extend union BagOfThings @directive
+            ')
+
+            union_type_extension = document.definitions.first
+            assert_equal GraphQL::Language::Nodes::UnionTypeExtension, union_type_extension.class
+            assert_equal 'BagOfThings', union_type_extension.name
+            assert_equal [2, 15], union_type_extension.position
+
+            assert_equal 1, union_type_extension.directives.length
+            assert_equal GraphQL::Language::Nodes::Directive, union_type_extension.directives.first.class
+            assert_equal 'directive', union_type_extension.directives.first.name
+
+            assert_equal 0, union_type_extension.types.length
+          end
+
           def test_it_parses_whole_definition_with_descriptions
             document = parse(SCHEMA_DEFINITION_STRING)
 

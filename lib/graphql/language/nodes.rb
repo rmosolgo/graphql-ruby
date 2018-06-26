@@ -521,6 +521,8 @@ module GraphQL
         end
       end
 
+      class UnionTypeExtension < UnionTypeDefinition; end;
+
       class EnumTypeDefinition < AbstractNode
         include Scalars::Name
 

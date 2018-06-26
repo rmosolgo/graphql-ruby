@@ -309,6 +309,7 @@ rule
       scalar_type_extension
     | object_type_extension
     | interface_type_extension
+    | union_type_extension
 
   scalar_type_extension: EXTEND SCALAR name directives_list { return make_node(:ScalarTypeExtension, name: val[2], directives: val[3], position_source: val[0]) }
 
@@ -322,6 +323,10 @@ rule
   interface_type_extension:
       EXTEND INTERFACE name directives_list_opt fields_definition { return make_node(:InterfaceTypeExtension, name: val[2], directives: val[3], fields: val[4], position_source: val[0]) }
     | EXTEND INTERFACE name directives_list { return make_node(:InterfaceTypeExtension, name: val[2], directives: val[3], fields: [], position_source: val[0]) }
+
+  union_type_extension:
+      EXTEND UNION name directives_list_opt EQUALS union_members { return make_node(:UnionTypeExtension, name: val[2], directives: val[3], types: val[5], position_source: val[0]) }
+    | EXTEND UNION name directives_list { return make_node(:UnionTypeExtension, name: val[2], directives: val[3], types: [], position_source: val[0]) }
 
   scalar_type_definition: SCALAR name directives_list_opt { return make_node(:ScalarTypeDefinition, name: val[1], directives: val[2], description: get_description(val[0]), position_source: val[0]) }
 
