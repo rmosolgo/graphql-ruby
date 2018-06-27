@@ -21,7 +21,7 @@ describe GraphQL::Relay::RelationConnection do
 
   describe "results" do
     let(:query_string) {%|
-      query getShips($first: Int, $after: String, $last: Int, $before: String,  $nameIncludes: String){
+      query getShips($first: Int, $after: ID, $last: Int, $before: ID,  $nameIncludes: String){
         empire {
           bases(first: $first, after: $after, last: $last, before: $before, nameIncludes: $nameIncludes) {
             ... basesConnection
@@ -240,7 +240,7 @@ describe GraphQL::Relay::RelationConnection do
 
     describe "applying max_page_size" do
       let(:query_string) {%|
-        query getBases($first: Int, $after: String, $last: Int, $before: String){
+        query getBases($first: Int, $after: ID, $last: Int, $before: ID){
           empire {
             bases: basesWithMaxLimitRelation(first: $first, after: $after, last: $last, before: $before) {
               ... basesConnection
@@ -299,7 +299,7 @@ describe GraphQL::Relay::RelationConnection do
 
     describe "applying default_max_page_size" do
       let(:query_string) {%|
-        query getBases($first: Int, $after: String, $last: Int, $before: String){
+        query getBases($first: Int, $after: ID, $last: Int, $before: ID){
           empire {
             bases: basesWithDefaultMaxLimitRelation(first: $first, after: $after, last: $last, before: $before) {
               ... basesConnection
@@ -359,7 +359,7 @@ describe GraphQL::Relay::RelationConnection do
 
   describe "applying a max_page_size bigger than the results" do
     let(:query_string) {%|
-      query getBases($first: Int, $after: String, $last: Int, $before: String){
+      query getBases($first: Int, $after: ID, $last: Int, $before: ID){
         empire {
           bases: basesWithLargeMaxLimitRelation(first: $first, after: $after, last: $last, before: $before) {
             ... basesConnection
@@ -498,7 +498,7 @@ describe GraphQL::Relay::RelationConnection do
 
     describe "results" do
       let(:query_string) {%|
-        query getShips($first: Int, $after: String, $last: Int, $before: String,  $nameIncludes: String){
+        query getShips($first: Int, $after: ID, $last: Int, $before: ID,  $nameIncludes: String){
           empire {
             basesAsSequelDataset(first: $first, after: $after, last: $last, before: $before, nameIncludes: $nameIncludes) {
               ... basesConnection
