@@ -459,7 +459,7 @@ module Jazz
   end
 
   class RenameEnsemble < GraphQL::Schema::RelayClassicMutation
-    argument :ensemble, Ensemble, required: true
+    argument :ensemble_id, ID, required: true, loads: Ensemble
     argument :new_name, String, required: true
 
     field :ensemble, Ensemble, null: false

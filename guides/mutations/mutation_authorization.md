@@ -38,15 +38,15 @@ Now, when any non-`admin` user tries to run the mutation, it won't run. Instead,
 
 ## Loading and authorizing objects
 
-Often, mutations take `ID`s as input and use them to load records from the database. GraphQL-Ruby can load IDs for you by specializing the mutation's `argument`s.
+Often, mutations take `ID`s as input and use them to load records from the database. GraphQL-Ruby can load IDs for you when you provide a `loads:` option.
 
 In short, here's an example:
 
 
 ```ruby
 class Mutations::PromoteEmployee < Mutations::BaseMutation
-  # Types::Employee is an _Object_ type
-  argument :employee, Types::Employee, required: true
+  # `employeeId` is an ID, Types::Employee is an _Object_ type
+  argument :employee_id, ID, required: true, loads: Types::Employee
 
   # Behind the scenes, `:employee_id` is used to fetch an object from the database,
   # then the object is authorized with `Employee.authorized?`, then
@@ -57,12 +57,13 @@ class Mutations::PromoteEmployee < Mutations::BaseMutation
 end
 ```
 
-It works like this: if a mutation's `argument` type is an Object, Union or Interface, it will:
+It works like this: if you pass a `loads:` option, it will:
 
-- Add `_id` to the end of the argument name (eg, `:employee_id`)
-- Use `ID` as the argument type
+- Automatically remove `_id` from the name and pass that name for the `as:` option
 - Add a prepare hook to fetch an object of the given type (using {{ "Schema.object_from_id" | api_doc }})
-- Inject it into `#resolve` using the original argument name (`:employee`)
+- Check that the fetched object's type matches the `loads:` type (using {{ "Schema.resolve_type" | api_doc }})
+- Run the fetched object through its type's `.authorized?` hook (see {% internal_link "Authorization", "/authorization/authorization" %})
+- Inject it into `#resolve` using the object-style name (`employee:`)
 
 In this case, if the argument value is provided by `object_from_id` doesn't return a value, the mutation will fail with an error.
 

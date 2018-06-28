@@ -87,5 +87,7 @@ describe GraphQL::Schema::RelayClassicMutation do
       assert_nil res["data"].fetch("renameEnsemble")
       assert_equal ["No object found for `ensembleId: \"Instrument/Organ\"`"], res["errors"].map { |e| e["message"] }
     end
+
+    it "raises an authorization error when the type's auth fails"
   end
 end

@@ -278,18 +278,14 @@ module GraphQL
         # Add an argument to this field's signature, but
         # also add some preparation hook methods which will be used for this argument
         # @see {GraphQL::Schema::Argument#initialize} for the signature
-        def argument(name, type, *rest, **kwargs, &block)
-          if (lookup_as_type = lookup_as_type?(type))
-            # The caller passed a return type as an input type,
-            # so take it as a cue to fetch that object by ID.
-            type = "ID"
-            kwargs[:as] = name
-            own_arguments_lookup_as_type[name] = lookup_as_type
-            name = :"#{name}_id"
+        def argument(name, type, *rest, loads: nil, **kwargs, &block)
+          if loads
+            kwargs[:as] = name.to_s.sub(/_id$/, "").to_sym
+            own_arguments_lookup_as_type[name] = loads
           end
           arg_defn = super(name, type, *rest, **kwargs, &block)
 
-          if lookup_as_type
+          if loads
             class_eval <<-RUBY, __FILE__, __LINE__ + 1
             def load_#{arg_defn.keyword}(value)
               load_application_object(:#{arg_defn.keyword}, value)
