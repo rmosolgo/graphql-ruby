@@ -1,3 +1,4 @@
+# coding: utf-8
 # frozen_string_literal: true
 require "graphql"
 require_relative "./data"
@@ -256,7 +257,7 @@ module Dummy
       begin
         Time.at(Float(value))
       rescue ArgumentError
-        raise GraphQL::CoercionError, 'cannot coerce to Float'
+        raise GraphQL::CoercionError.new('cannot coerce to Float', extensions: {'error' => 'invalid_format'})
       end
     end
 

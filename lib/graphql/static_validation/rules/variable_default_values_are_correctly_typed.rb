@@ -25,11 +25,12 @@ module GraphQL
               valid = context.valid_literal?(value, type)
             rescue GraphQL::CoercionError => err
               error_message = err.message
+              error_extensions = err.extensions
             end
 
             if !valid
               error_message ||= "Default value for $#{node.name} doesn't match type #{type}"
-              context.errors << message(error_message, node, context: context)
+              context.errors << message(error_message, node, context: context, extensions: error_extensions)
             end
           end
         end
