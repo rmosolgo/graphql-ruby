@@ -34,9 +34,7 @@ module GraphQL
         self.class.arguments.each do |name, arg|
           @arguments_by_keyword[arg.keyword] = arg
         end
-
         @arguments_lookup_as_type = self.class.arguments_lookup_as_type
-
       end
 
       # @return [Object] The application object this field is being resolved on
@@ -152,9 +150,16 @@ module GraphQL
       end
 
       class LoadApplicationObjectFailedError < GraphQL::ExecutionError
-        def initialize(argument:, id:)
+        # @return [GraphQL::Schema::Argument] the argument definition for the argument that was looked up
+        attr_reader :argument
+        # @return [String] The ID provided by the client
+        attr_reader :id
+        # @return [Object] The value found with this ID
+        attr_reader :object
+        def initialize(argument:, id:, object:)
           @id = id
           @argument = argument
+          @object = object
           super("No object found for `#{argument.graphql_name}: #{id.inspect}`")
         end
       end
@@ -164,7 +169,7 @@ module GraphQL
         # See if any object can be found for this ID
         application_object = context.schema.object_from_id(id, context)
         if application_object.nil?
-          raise LoadApplicationObjectFailedError.new(argument: argument, id: id)
+          raise LoadApplicationObjectFailedError.new(argument: argument, id: id, object: application_object)
         end
         # Double-check that the located object is actually of this type
         # (Don't want to allow arbitrary access to objects this way)
@@ -172,12 +177,19 @@ module GraphQL
         application_object_type = context.schema.resolve_type(lookup_as_type, application_object, context)
         possible_object_types = context.schema.possible_types(lookup_as_type)
         if !possible_object_types.include?(application_object_type)
-          raise LoadApplicationObjectFailedError.new(argument: argument, id: id)
+          raise LoadApplicationObjectFailedError.new(argument: argument, id: id, object: application_object)
         else
           # This object was loaded successfully
           # and resolved to the right type
           application_object
         end
+      rescue LoadApplicationObjectFailedError => err
+        # pass it to a handler
+        load_application_object_failed(err)
+      end
+
+      def load_application_object_failed(err)
+        raise err
       end
 
       class << self

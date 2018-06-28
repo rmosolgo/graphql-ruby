@@ -80,7 +80,12 @@ describe GraphQL::Schema::RelayClassicMutation do
     end
 
     it "returns an error instead when the ID resolves to an object of the wrong type" do
-      skip "Have to provide some way to assert that objects are the matching object type"
+      res = Jazz::Schema.execute(query_str, variables: {
+        id: "Instrument/Organ",
+        newName: "August Greene"
+      })
+      assert_nil res["data"].fetch("renameEnsemble")
+      assert_equal ["No object found for `ensembleId: \"Instrument/Organ\"`"], res["errors"].map { |e| e["message"] }
     end
   end
 end

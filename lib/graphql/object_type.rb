@@ -40,7 +40,6 @@ module GraphQL
       @interface_fields = {}
       @dirty_interfaces = []
       @dirty_inherited_interfaces = []
-      @resolve_type_proc = DefaultResolveType.new(self)
     end
 
     def initialize_copy(other)
@@ -50,7 +49,6 @@ module GraphQL
       @dirty_interfaces = other.dirty_interfaces.dup
       @dirty_inherited_interfaces = other.dirty_inherited_interfaces.dup
       @fields = other.fields.dup
-      @resolve_type_proc = DefaultResolveType.new(self)
     end
 
     # This method declares interfaces for this type AND inherits any field definitions
@@ -104,23 +102,15 @@ module GraphQL
       dirty_ifaces.concat(interfaces)
     end
 
-    attr_accessor :resolve_type_proc
+    def resolve_type_proc
+      nil
+    end
 
     protected
 
     attr_reader :dirty_interfaces, :dirty_inherited_interfaces
 
     private
-
-    class DefaultResolveType
-      def initialize(type)
-        @type = type
-      end
-
-      def call(object, ctx)
-        @type
-      end
-    end
 
     def normalize_interfaces(ifaces)
       ifaces.map { |i_type| GraphQL::BaseType.resolve_related_type(i_type) }
