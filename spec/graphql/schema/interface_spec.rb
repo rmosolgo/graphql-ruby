@@ -161,6 +161,12 @@ describe GraphQL::Schema::Interface do
   describe ':DefinitionMethods' do
     module InterfaceA
       include GraphQL::Schema::Interface
+
+      definition_methods do
+        def some_method
+          42
+        end
+      end
     end
 
     module InterfaceB
@@ -169,6 +175,10 @@ describe GraphQL::Schema::Interface do
 
     module InterfaceC
       include GraphQL::Schema::Interface
+    end
+
+    class ObjectA < GraphQL::Schema::Object
+      implements InterfaceA
     end
 
     it "doesn't overwrite them when including multiple interfaces" do
@@ -180,6 +190,10 @@ describe GraphQL::Schema::Interface do
       end
 
       assert_equal(InterfaceC::DefinitionMethods, def_methods)
+    end
+
+    it "extends classes with the defined methods" do
+      assert_equal(ObjectA.some_method, InterfaceA.some_method)
     end
   end
 end
