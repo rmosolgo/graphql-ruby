@@ -111,6 +111,7 @@ module GraphQL
           raise ArgumentError, "keyword `extras:` may only be used with method-based resolve, please remove `field:`, `function:`, `resolve:`, or `mutation:`"
         end
         @name = camelize ? Member::BuildType.camelize(name.to_s) : name.to_s
+        @name.chop! if @name.end_with?('?')
         @description = description
         if field.is_a?(GraphQL::Schema::Field)
           @field_instance = field

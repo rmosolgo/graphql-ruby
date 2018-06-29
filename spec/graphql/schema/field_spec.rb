@@ -29,6 +29,13 @@ describe GraphQL::Schema::Field do
       assert_equal 'underscored_arg', arg_defn.name
     end
 
+    it "removes `?` name suffix but preserve it in method name" do
+      boolean_field = GraphQL::Schema::Field.from_options(:boolean_field?, GraphQL::Types::Boolean, null: false, camelize: false, owner: nil)
+      assert_equal 'boolean_field', boolean_field.to_graphql.name
+      assert_equal 'boolean_field?', boolean_field.method_str
+      assert_equal :boolean_field?, boolean_field.method_sym
+    end
+
     it "exposes the method override" do
       object = Class.new(Jazz::BaseObject) do
         field :t, String, method: :tt, null: true

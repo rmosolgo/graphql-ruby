@@ -28,7 +28,7 @@ describe GraphQL::ObjectType do
       # Force evaluation
       InvalidNameObject.name
     }
-    assert_equal("Names must match /^[_a-zA-Z][_a-zA-Z0-9]*$/ but 'Three Word Query' does not", exception.message)
+    assert_equal("Names must match /^[_a-zA-Z][_a-zA-Z0-9]*\\??$/ but 'Three Word Query' does not", exception.message)
   end
 
   it "has a name" do
