@@ -32,6 +32,7 @@ module Jazz
         "Ensemble" => [
           Models::Ensemble.new("Bela Fleck and the Flecktones"),
           Models::Ensemble.new("Robert Glasper Experiment"),
+          Models::Ensemble.new("Spinal Tap"),
         ],
         "Musician" => [
           Models::Musician.new("Herbie Hancock", Models::Key.from_notation("B♭")),
@@ -189,6 +190,11 @@ module Jazz
 
     def overridden_name
       @object.name.sub("Robert Glasper", "ROBERT GLASPER")
+    end
+
+    def self.authorized?(object, context)
+      # Spinal Tap is top-secret, don't show it to anyone.
+      object.name != "Spinal Tap"
     end
   end
 

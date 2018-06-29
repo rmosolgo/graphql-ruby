@@ -34,7 +34,7 @@ module GraphQL
         self.class.arguments.each do |name, arg|
           @arguments_by_keyword[arg.keyword] = arg
         end
-        @arguments_lookup_as_type = self.class.arguments_lookup_as_type
+        @arguments_loads_as_type = self.class.arguments_loads_as_type
       end
 
       # @return [Object] The application object this field is being resolved on
@@ -173,15 +173,30 @@ module GraphQL
         end
         # Double-check that the located object is actually of this type
         # (Don't want to allow arbitrary access to objects this way)
-        lookup_as_type = @arguments_lookup_as_type[arg_kwarg]
+        lookup_as_type = @arguments_loads_as_type[arg_kwarg]
         application_object_type = context.schema.resolve_type(lookup_as_type, application_object, context)
         possible_object_types = context.schema.possible_types(lookup_as_type)
         if !possible_object_types.include?(application_object_type)
           raise LoadApplicationObjectFailedError.new(argument: argument, id: id, object: application_object)
         else
           # This object was loaded successfully
-          # and resolved to the right type
-          application_object
+          # and resolved to the right type,
+          # now apply the `.authorized?` class method if there is one
+          if (class_based_type = application_object_type.metadata[:type_class])
+            context.schema.after_lazy(class_based_type.authorized?(application_object, context)) do |authed|
+              if authed
+                application_object
+              else
+                raise GraphQL::UnauthorizedError.new(
+                  object: application_object,
+                  type: class_based_type,
+                  context: context,
+                )
+              end
+            end
+          else
+            application_object
+          end
         end
       rescue LoadApplicationObjectFailedError => err
         # pass it to a handler
@@ -280,8 +295,9 @@ module GraphQL
         # @see {GraphQL::Schema::Argument#initialize} for the signature
         def argument(name, type, *rest, loads: nil, **kwargs, &block)
           if loads
-            kwargs[:as] = name.to_s.sub(/_id$/, "").to_sym
-            own_arguments_lookup_as_type[name] = loads
+            arg_keyword = name.to_s.sub(/_id$/, "").to_sym
+            kwargs[:as] = arg_keyword
+            own_arguments_loads_as_type[arg_keyword] = loads
           end
           arg_defn = super(name, type, *rest, **kwargs, &block)
 
@@ -308,24 +324,15 @@ module GraphQL
         end
 
         # @api private
-        def arguments_lookup_as_type
-          inherited_lookups = superclass.respond_to?(:arguments_lookup_as_type) ? superclass.arguments_lookup_as_type : {}
-          inherited_lookups.merge(own_arguments_lookup_as_type)
+        def arguments_loads_as_type
+          inherited_lookups = superclass.respond_to?(:arguments_loads_as_type) ? superclass.arguments_loads_as_type : {}
+          inherited_lookups.merge(own_arguments_loads_as_type)
         end
 
         private
 
-        def own_arguments_lookup_as_type
-          @own_arguments_lookup_as_type ||= {}
-        end
-
-        # @return [Module, false] The type to treat this input as, or false if it's just a plain input
-        def lookup_as_type?(type_arg)
-          if type_arg.is_a?(Module) && (type_arg < GraphQL::Schema::Object || type_arg < GraphQL::Schema::Union || type_arg < GraphQL::Schema::Interface)
-            type_arg
-          else
-            false
-          end
+        def own_arguments_loads_as_type
+          @own_arguments_loads_as_type ||= {}
         end
       end
     end

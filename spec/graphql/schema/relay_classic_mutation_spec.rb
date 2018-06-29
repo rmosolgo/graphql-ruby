@@ -88,6 +88,14 @@ describe GraphQL::Schema::RelayClassicMutation do
       assert_equal ["No object found for `ensembleId: \"Instrument/Organ\"`"], res["errors"].map { |e| e["message"] }
     end
 
-    it "raises an authorization error when the type's auth fails"
+    it "raises an authorization error when the type's auth fails" do
+      res = Jazz::Schema.execute(query_str, variables: {
+        id: "Ensemble/Spinal Tap",
+        newName: "August Greene"
+      })
+      assert_nil res["data"].fetch("renameEnsemble")
+      # Failed silently
+      refute res.key?("errors")
+    end
   end
 end

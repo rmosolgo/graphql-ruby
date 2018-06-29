@@ -31,7 +31,7 @@ module GraphQL
         when GraphQL::BaseType
           [type_defn]
         else
-          raise "Unexpected possible_types object: #{type_defn}"
+          raise "Unexpected possible_types object: #{type_defn.inspect}"
         end
       end
     end
