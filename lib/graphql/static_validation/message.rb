@@ -33,7 +33,11 @@ module GraphQL
       private
 
       def locations
-        @nodes.map{|node| {"line" => node.line, "column" => node.col}}
+        @nodes.map do |node|
+          h = {"line" => node.line, "column" => node.col}
+          h["filename"] = node.filename if node.filename
+          h
+        end
       end
     end
   end
