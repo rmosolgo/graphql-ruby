@@ -61,6 +61,12 @@ module GraphQL
               child_class.extend(interface_defn::DefinitionMethods)
             end
           elsif child_class < GraphQL::Schema::Object
+            # Add all definition methods of this interface and the interfaces it
+            # includes onto the child class.
+            (own_interfaces + [self]).each do |interface_defn|
+              child_class.extend(interface_defn::DefinitionMethods)
+            end
+
             # This is being included into an object type, make sure it's using `implements(...)`
             backtrace_line = caller(0, 10).find { |line| line.include?("schema/object.rb") && line.include?("in `implements'")}
             if !backtrace_line
