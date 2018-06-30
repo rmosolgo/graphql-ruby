@@ -30,7 +30,7 @@ On Rails, you can get started with a few [GraphQL generators](https://rmosolgo.g
 # Add graphql-ruby boilerplate and mount graphiql in development
 rails g graphql:install
 # Make your first object type
-rails g graphql:object Post title:String rating:Int comments:[Comment]
+rails g graphql:object Post title:String rating:Int 'comments:[Comment]'
 ```
 
 Or, you can build a GraphQL server by hand:
