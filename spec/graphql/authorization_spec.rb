@@ -309,6 +309,12 @@ describe GraphQL::Authorization do
       end
     end
 
+    class DoHiddenStuff2 < GraphQL::Schema::Mutation
+      def self.visible?(ctx)
+        super && !ctx[:hidden_mutation]
+      end
+    end
+
     class DoInaccessibleStuff < GraphQL::Schema::RelayClassicMutation
       def self.accessible?(ctx)
         super && (ctx[:inaccessible_mutation] ? false : true)
@@ -323,6 +329,7 @@ describe GraphQL::Authorization do
 
     class Mutation < BaseObject
       field :do_hidden_stuff, mutation: DoHiddenStuff
+      field :do_hidden_stuff2, mutation: DoHiddenStuff2
       field :do_inaccessible_stuff, mutation: DoInaccessibleStuff
       field :do_unauthorized_stuff, mutation: DoUnauthorizedStuff
     end
@@ -391,6 +398,17 @@ describe GraphQL::Authorization do
       visible_introspection_res = auth_execute(introspection_q)
       assert_equal "DoHiddenStuffInput", visible_introspection_res["data"]["t1"]["name"]
       assert_equal "DoHiddenStuffPayload", visible_introspection_res["data"]["t2"]["name"]
+    end
+
+    it "works with Schema::Mutation" do
+      query = "mutation { doHiddenStuff2 { __typename } }"
+      res = auth_execute(query, context: { hidden_mutation: true })
+      assert_equal ["Field 'doHiddenStuff2' doesn't exist on type 'Mutation'"], res["errors"].map { |e| e["message"] }
+
+      # `#resolve` isn't implemented, so this errors out:
+      assert_raises NotImplementedError do
+        auth_execute(query)
+      end
     end
 
     it "uses the base type for edges and connections" do
