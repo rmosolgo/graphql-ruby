@@ -194,7 +194,8 @@ module Jazz
 
     def self.authorized?(object, context)
       # Spinal Tap is top-secret, don't show it to anyone.
-      object.name != "Spinal Tap"
+      obj_name = object.is_a?(Hash) ? object[:name] : object.name
+      obj_name != "Spinal Tap"
     end
   end
 
@@ -350,7 +351,8 @@ module Jazz
     end
 
     def ensembles
-      Models.data["Ensemble"]
+      # Filter out the unauthorized one to avoid an error later
+      Models.data["Ensemble"].select { |e| e.name != "Spinal Tap" }
     end
 
     def find(id:)

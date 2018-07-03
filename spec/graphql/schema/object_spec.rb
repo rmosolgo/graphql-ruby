@@ -83,7 +83,7 @@ describe GraphQL::Schema::Object do
     end
   end
 
-  describe ".to_graphql_type" do
+  describe ".to_graphql" do
     let(:obj_type) { Jazz::Ensemble.to_graphql }
     it "returns a matching GraphQL::ObjectType" do
       assert_equal "Ensemble", obj_type.name
