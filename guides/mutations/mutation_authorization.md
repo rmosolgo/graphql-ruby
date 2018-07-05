@@ -60,7 +60,7 @@ end
 It works like this: if you pass a `loads:` option, it will:
 
 - Automatically remove `_id` from the name and pass that name for the `as:` option
-- Add a prepare hook to fetch an object of the given type (using {{ "Schema.object_from_id" | api_doc }})
+- Add a prepare hook to fetch an object with the given `ID` (using {{ "Schema.object_from_id" | api_doc }})
 - Check that the fetched object's type matches the `loads:` type (using {{ "Schema.resolve_type" | api_doc }})
 - Run the fetched object through its type's `.authorized?` hook (see {% internal_link "Authorization", "/authorization/authorization" %})
 - Inject it into `#resolve` using the object-style name (`employee:`)
