@@ -17,6 +17,7 @@ module GraphQL
           kwargs[:owner] = self
           arg_defn = self.argument_class.new(*args, **kwargs, &block)
           own_arguments[arg_defn.name] = arg_defn
+          arg_defn
         end
 
         # @return [Hash<String => GraphQL::Schema::Argument] Arguments defined on this thing, keyed by name. Includes inherited definitions

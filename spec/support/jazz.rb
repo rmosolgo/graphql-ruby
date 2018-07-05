@@ -32,6 +32,7 @@ module Jazz
         "Ensemble" => [
           Models::Ensemble.new("Bela Fleck and the Flecktones"),
           Models::Ensemble.new("Robert Glasper Experiment"),
+          Models::Ensemble.new("Spinal Tap"),
         ],
         "Musician" => [
           Models::Musician.new("Herbie Hancock", Models::Key.from_notation("B♭")),
@@ -190,6 +191,12 @@ module Jazz
     def overridden_name
       @object.name.sub("Robert Glasper", "ROBERT GLASPER")
     end
+
+    def self.authorized?(object, context)
+      # Spinal Tap is top-secret, don't show it to anyone.
+      obj_name = object.is_a?(Hash) ? object[:name] : object.name
+      obj_name != "Spinal Tap"
+    end
   end
 
   class Family < BaseEnum
@@ -344,7 +351,8 @@ module Jazz
     end
 
     def ensembles
-      Models.data["Ensemble"]
+      # Filter out the unauthorized one to avoid an error later
+      Models.data["Ensemble"].select { |e| e.name != "Spinal Tap" }
     end
 
     def find(id:)
@@ -464,6 +472,22 @@ module Jazz
     end
   end
 
+  class RenameEnsemble < GraphQL::Schema::RelayClassicMutation
+    argument :ensemble_id, ID, required: true, loads: Ensemble
+    argument :new_name, String, required: true
+
+    field :ensemble, Ensemble, null: false
+
+    def resolve(ensemble:, new_name:)
+      # doesn't actually update the "database"
+      dup_ensemble = ensemble.dup
+      dup_ensemble.name = new_name
+      {
+        ensemble: dup_ensemble
+      }
+    end
+  end
+
   class Mutation < BaseObject
     field :add_ensemble, Ensemble, null: false do
       argument :input, EnsembleInput, required: true
@@ -471,6 +495,7 @@ module Jazz
 
     field :add_instrument, mutation: AddInstrument
     field :add_sitar, mutation: AddSitar
+    field :rename_ensemble, mutation: RenameEnsemble
 
     def add_ensemble(input:)
       ens = Models::Ensemble.new(input.name)
@@ -558,6 +583,10 @@ module Jazz
     def self.resolve_type(type, obj, ctx)
       class_name = obj.class.name.split("::").last
       ctx.schema.types[class_name] || raise("No type for #{obj.inspect}")
+    end
+
+    def self.object_from_id(id, ctx)
+      GloballyIdentifiableType.find(id)
     end
   end
 end

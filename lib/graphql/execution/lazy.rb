@@ -40,13 +40,26 @@ module GraphQL
             err
           end
         end
-        @value
+
+        if @value.is_a?(StandardError)
+          raise @value
+        else
+          @value
+        end
       end
 
       # @return [Lazy] A {Lazy} whose value depends on another {Lazy}, plus any transformations in `block`
       def then
         self.class.new {
           yield(value)
+        }
+      end
+
+      # @param lazies [Array<Object>] Maybe-lazy objects
+      # @return [Lazy] A lazy which will sync all of `lazies`
+      def self.all(lazies)
+        self.new {
+          lazies.map { |l| l.is_a?(Lazy) ? l.value : l }
         }
       end
 

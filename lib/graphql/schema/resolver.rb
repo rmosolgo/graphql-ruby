@@ -29,6 +29,12 @@ module GraphQL
       def initialize(object:, context:)
         @object = object
         @context = context
+        # Since this hash is constantly rebuilt, cache it for this call
+        @arguments_by_keyword = {}
+        self.class.arguments.each do |name, arg|
+          @arguments_by_keyword[arg.keyword] = arg
+        end
+        @arguments_loads_as_type = self.class.arguments_loads_as_type
       end
 
       # @return [Object] The application object this field is being resolved on
@@ -37,10 +43,168 @@ module GraphQL
       # @return [GraphQL::Query::Context]
       attr_reader :context
 
+      # This method is _actually_ called by the runtime,
+      # it does some preparation and then eventually calls
+      # the user-defined `#resolve` method.
+      # @api private
+      def resolve_with_support(**args)
+        # First call the before_prepare hook which may raise
+        before_prepare_val = if args.any?
+          before_prepare(**args)
+        else
+          before_prepare
+        end
+        context.schema.after_lazy(before_prepare_val) do
+          # Then call each prepare hook, which may return a different value
+          # for that argument, or may return a lazy object
+          load_arguments_val = load_arguments(args)
+          context.schema.after_lazy(load_arguments_val) do |loaded_args|
+            # Then validate each argument, which may raise or may return a lazy object
+            validate_arguments_val = validate_arguments(loaded_args)
+            context.schema.after_lazy(validate_arguments_val) do |validated_args|
+              # Finally, all the hooks have passed, so resolve it
+              if validated_args.any?
+                public_send(self.class.resolve_method, **validated_args)
+              else
+                public_send(self.class.resolve_method)
+              end
+            end
+          end
+        end
+      end
+
       # Do the work. Everything happens here.
       # @return [Object] An object corresponding to the return type
       def resolve(**args)
         raise NotImplementedError, "#{self.class.name}#resolve should execute the field's logic"
+      end
+
+      # Called before arguments are prepared.
+      # Implement this hook to make checks before doing any work.
+      #
+      # If it returns a lazy object (like a promise), it will be synced by GraphQL
+      # (but the resulting value won't be used).
+      #
+      # @param args [Hash] The input arguments, if there are any
+      # @raise [GraphQL::ExecutionError] To add an error to the response
+      # @raise [GraphQL::UnauthorizedError] To signal an authorization failure
+      def before_prepare(**args)
+      end
+
+      private
+
+      def load_arguments(args)
+        prepared_args = {}
+        prepare_lazies = []
+
+        args.each do |key, value|
+          arg_defn = @arguments_by_keyword[key]
+          if arg_defn
+            prepped_value = prepared_args[key] = load_argument(key, value)
+            if context.schema.lazy?(prepped_value)
+              prepare_lazies << context.schema.after_lazy(prepped_value) do |finished_prepped_value|
+                prepared_args[key] = finished_prepped_value
+              end
+            end
+          else
+            # These are `extras: [...]`
+            prepared_args[key] = value
+          end
+        end
+
+        # Avoid returning a lazy if none are needed
+        if prepare_lazies.any?
+          GraphQL::Execution::Lazy.all(prepare_lazies).then { prepared_args }
+        else
+          prepared_args
+        end
+      end
+
+      def load_argument(name, value)
+        public_send("load_#{name}", value)
+      end
+
+      # TODO dedup with load_arguments
+      def validate_arguments(args)
+        validate_lazies = []
+        args.each do |key, value|
+          arg_defn = @arguments_by_keyword[key]
+          if arg_defn
+            validate_return = validate_argument(key, value)
+            if context.schema.lazy?(validate_return)
+              validate_lazies << context.schema.after_lazy(validate_return).then { "no-op" }
+            end
+          end
+        end
+
+        # Avoid returning a lazy if none are needed
+        if validate_lazies.any?
+          GraphQL::Execution::Lazy.all(validate_lazies).then { args }
+        else
+          args
+        end
+      end
+
+      def validate_argument(name, value)
+        public_send("validate_#{name}", value)
+      end
+
+      class LoadApplicationObjectFailedError < GraphQL::ExecutionError
+        # @return [GraphQL::Schema::Argument] the argument definition for the argument that was looked up
+        attr_reader :argument
+        # @return [String] The ID provided by the client
+        attr_reader :id
+        # @return [Object] The value found with this ID
+        attr_reader :object
+        def initialize(argument:, id:, object:)
+          @id = id
+          @argument = argument
+          @object = object
+          super("No object found for `#{argument.graphql_name}: #{id.inspect}`")
+        end
+      end
+
+      def load_application_object(arg_kwarg, id)
+        argument = @arguments_by_keyword[arg_kwarg]
+        # See if any object can be found for this ID
+        application_object = context.schema.object_from_id(id, context)
+        if application_object.nil?
+          raise LoadApplicationObjectFailedError.new(argument: argument, id: id, object: application_object)
+        end
+        # Double-check that the located object is actually of this type
+        # (Don't want to allow arbitrary access to objects this way)
+        lookup_as_type = @arguments_loads_as_type[arg_kwarg]
+        application_object_type = context.schema.resolve_type(lookup_as_type, application_object, context)
+        possible_object_types = context.schema.possible_types(lookup_as_type)
+        if !possible_object_types.include?(application_object_type)
+          raise LoadApplicationObjectFailedError.new(argument: argument, id: id, object: application_object)
+        else
+          # This object was loaded successfully
+          # and resolved to the right type,
+          # now apply the `.authorized?` class method if there is one
+          if (class_based_type = application_object_type.metadata[:type_class])
+            context.schema.after_lazy(class_based_type.authorized?(application_object, context)) do |authed|
+              if authed
+                application_object
+              else
+                raise GraphQL::UnauthorizedError.new(
+                  object: application_object,
+                  type: class_based_type,
+                  context: context,
+                )
+              end
+            end
+          else
+            application_object
+          end
+        end
+      rescue LoadApplicationObjectFailedError => err
+        # pass it to a handler
+        load_application_object_failed(err)
+      end
+
+      def load_application_object_failed(err)
+        raise err
       end
 
       class << self
@@ -113,7 +277,7 @@ module GraphQL
             type: type_expr,
             description: description,
             extras: extras,
-            method: resolve_method,
+            method: :resolve_with_support,
             resolver_class: self,
             arguments: arguments,
             null: null,
@@ -124,6 +288,51 @@ module GraphQL
         # A non-normalized type configuration, without `null` applied
         def type_expr
           @type_expr || (superclass.respond_to?(:type_expr) ? superclass.type_expr : nil)
+        end
+
+        # Add an argument to this field's signature, but
+        # also add some preparation hook methods which will be used for this argument
+        # @see {GraphQL::Schema::Argument#initialize} for the signature
+        def argument(name, type, *rest, loads: nil, **kwargs, &block)
+          if loads
+            arg_keyword = name.to_s.sub(/_id$/, "").to_sym
+            kwargs[:as] = arg_keyword
+            own_arguments_loads_as_type[arg_keyword] = loads
+          end
+          arg_defn = super(name, type, *rest, **kwargs, &block)
+
+          if loads
+            class_eval <<-RUBY, __FILE__, __LINE__ + 1
+            def load_#{arg_defn.keyword}(value)
+              load_application_object(:#{arg_defn.keyword}, value)
+            end
+            RUBY
+          else
+            class_eval <<-RUBY, __FILE__, __LINE__ + 1
+            def load_#{arg_defn.keyword}(value)
+              value
+            end
+            RUBY
+          end
+
+          class_eval <<-RUBY, __FILE__, __LINE__ + 1
+          def validate_#{arg_defn.keyword}(value)
+            # No-op
+          end
+          RUBY
+          arg_defn
+        end
+
+        # @api private
+        def arguments_loads_as_type
+          inherited_lookups = superclass.respond_to?(:arguments_loads_as_type) ? superclass.arguments_loads_as_type : {}
+          inherited_lookups.merge(own_arguments_loads_as_type)
+        end
+
+        private
+
+        def own_arguments_loads_as_type
+          @own_arguments_loads_as_type ||= {}
         end
       end
     end

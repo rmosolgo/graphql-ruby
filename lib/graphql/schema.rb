@@ -462,6 +462,10 @@ module GraphQL
         object = object.object
       end
 
+      if type.respond_to?(:graphql_definition)
+        type = type.graphql_definition
+      end
+
       # Prefer a type-local function; fall back to the schema-level function
       type_proc = type && type.resolve_type_proc
       type_result = if type_proc
@@ -997,11 +1001,11 @@ module GraphQL
           result = value.public_send(lazy_method)
           # The returned result might also be lazy, so check it, too
           after_lazy(result) do |final_result|
-            yield(final_result)
+            yield(final_result) if block_given?
           end
         end
       else
-        yield(value)
+        yield(value) if block_given?
       end
     end
 
