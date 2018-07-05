@@ -152,5 +152,14 @@ describe GraphQL::StaticValidation::Validator do
         assert_equal(1, errors.length)
       end
     end
+
+    describe "queries with no selections" do
+      let(:query_string) {%|
+        # Welcome to GraphiQL!
+      |}
+      it "marks an error" do
+        assert_equal(1, errors.length)
+      end
+    end
   end
 end
