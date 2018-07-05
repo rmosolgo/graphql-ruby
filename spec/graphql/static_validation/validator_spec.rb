@@ -25,6 +25,21 @@ describe GraphQL::StaticValidation::Validator do
     end
   end
 
+  describe "error format" do
+    let(:query_string) { "{ cheese(id: $undefinedVar) { source } }" }
+    let(:document) { GraphQL.parse_with_racc(query_string, filename: "not_a_real.graphql") }
+    let(:query) { GraphQL::Query.new(Dummy::Schema, nil, document: document) }
+
+    it "includes message, locations, and fields keys" do
+      expected_errors = [{
+        "message" => "Variable $undefinedVar is used by  but not declared",
+        "locations" => [{"line" => 1, "column" => 14, "filename" => "not_a_real.graphql"}],
+        "fields" => ["query", "cheese", "id"]
+      }]
+      assert_equal expected_errors, errors
+    end
+  end
+
   describe "validation order" do
     let(:document) { GraphQL.parse(query_string)}
 

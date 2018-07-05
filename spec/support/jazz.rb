@@ -427,6 +427,12 @@ module Jazz
     def hash_by_sym
       { falsey: false }
     end
+
+    field :named_entities, [NamedEntity, null: true], null: false
+
+    def named_entities
+      [Models.data["Ensemble"].first, nil]
+    end
   end
 
   class EnsembleInput < GraphQL::Schema::InputObject

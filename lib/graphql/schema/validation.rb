@@ -131,7 +131,7 @@ module GraphQL
         }
 
         SCHEMA_CAN_RESOLVE_TYPES = ->(schema) {
-          if schema.types.values.any? { |type| type.kind.resolves? } && schema.resolve_type_proc.nil?
+          if schema.types.values.any? { |type| type.kind.abstract? } && schema.resolve_type_proc.nil?
             "schema contains Interfaces or Unions, so you must define a `resolve_type -> (obj, ctx) { ... }` function"
           else
             # :+1:

@@ -60,7 +60,7 @@ module GraphQL
       end
 
       def possible_types
-        if @object.kind.resolves?
+        if @object.kind.abstract?
           @context.warden.possible_types(@object)
         else
           nil

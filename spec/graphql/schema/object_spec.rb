@@ -83,6 +83,22 @@ describe GraphQL::Schema::Object do
     end
   end
 
+  describe "wrapping `nil`" do
+    it "doesn't wrap nil in lists" do
+      query_str = <<-GRAPHQL
+      {
+        namedEntities {
+          name
+        }
+      }
+      GRAPHQL
+
+      res = Jazz::Schema.execute(query_str)
+      expected_items = [{"name" => "Bela Fleck and the Flecktones"}, nil]
+      assert_equal expected_items, res["data"]["namedEntities"]
+    end
+  end
+
   describe ".to_graphql" do
     let(:obj_type) { Jazz::Ensemble.to_graphql }
     it "returns a matching GraphQL::ObjectType" do

@@ -65,7 +65,7 @@ This is an improvement because your behavior is not coupled to your GraphQL sche
 
 ```ruby
 # spec/models/post/trending_spec.rb
-describe Post::Trending do
+RSpec.describe Post::Trending do
   let(:post) { create(:post) }
   let(:trending) { Post::Trending.new(post) }
 
@@ -96,7 +96,7 @@ Sometimes, you really need an end-to-end test. Although it requires a lot of ove
 You can execute queries on your schema in a test. For example, you can set it up like this:
 
 ```ruby
-describe MySchema do
+RSpec.describe MySchema do
   # You can override `context` or `variables` in
   # more specific scopes
   let(:context) { {} }

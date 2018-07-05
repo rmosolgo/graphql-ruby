@@ -88,21 +88,28 @@ module GraphQL
             if depth > 0
               inner_obj.map { |i| proxy_to_depth(i, depth - 1, ctx) }
             else
-              concrete_type = case @inner_return_type
-              when GraphQL::UnionType, GraphQL::InterfaceType
-                ctx.query.resolve_type(@inner_return_type, inner_obj)
-              when GraphQL::ObjectType
-                @inner_return_type
-              else
-                raise "unexpected proxying type #{@inner_return_type} for #{inner_obj} at #{ctx.owner_type}.#{ctx.field.name}"
-              end
+              ctx.schema.after_lazy(inner_obj) do |inner_obj|
+                if inner_obj.nil?
+                  # For lists with nil, we need another nil check here
+                  nil
+                else
+                  concrete_type = case @inner_return_type
+                  when GraphQL::UnionType, GraphQL::InterfaceType
+                    ctx.query.resolve_type(@inner_return_type, inner_obj)
+                  when GraphQL::ObjectType
+                    @inner_return_type
+                  else
+                    raise "unexpected proxying type #{@inner_return_type} for #{inner_obj} at #{ctx.owner_type}.#{ctx.field.name}"
+                  end
 
-              if concrete_type && (object_class = concrete_type.metadata[:type_class])
-                # use the query-level context here, since it won't be field-specific anyways
-                query_ctx = ctx.query.context
-                object_class.authorized_new(inner_obj, query_ctx)
-              else
-                inner_obj
+                  if concrete_type && (object_class = concrete_type.metadata[:type_class])
+                    # use the query-level context here, since it won't be field-specific anyways
+                    query_ctx = ctx.query.context
+                    object_class.authorized_new(inner_obj, query_ctx)
+                  else
+                    inner_obj
+                  end
+                end
               end
             end
           end
