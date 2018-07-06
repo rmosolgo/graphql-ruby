@@ -17,7 +17,7 @@ module GraphQL
     #    argument :post_id, ID, required: true
     #
     #    field :comment, Types::Comment, null: true
-    #    field :error_messages, [String], null: false
+    #    field :errors, [String], null: false
     #
     #    def resolve(body:, post_id:)
     #      post = Post.find(post_id)
