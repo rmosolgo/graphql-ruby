@@ -1,5 +1,6 @@
 ---
 layout: guide
+doc_stub: false
 search: true
 section: JavaScript Client
 title: OperationStore Sync
@@ -12,6 +13,7 @@ JavaScript support for GraphQL projects using [graphql-pro](http://graphql.pro)'
 - [`sync` CLI](#sync-utility)
 - [Relay support](#use-with-relay)
 - [Apollo Client support](#use-with-apollo-client)
+- [Apollo Link support](#use-with-apollo-link)
 - [Plain JS support](#use-with-plain-javascript)
 - [Authorization](#authorization)
 
@@ -112,6 +114,47 @@ if (process.env.NODE_ENV === "production") {
 ```
 
 Now, the middleware will replace query strings with `operationId`s.
+
+## Use with Apollo Link
+
+Use the `--path` option to point at your `.graphql` files:
+
+```
+$ graphql-ruby-client sync --path=src/graphql/ --url=...
+```
+
+Then, load the generated module and add its `.apolloLink` to your Apollo Link:
+
+```js
+// load the generated module
+var OperationStoreClient = require("./OperationStoreClient")
+
+// Integrate the link to another link:
+const link = ApolloLink.from([
+  authLink,
+  OperationStoreClient.apolloLink,
+  httpLink,
+])
+
+// Create a client
+const client = new ApolloClient({
+  link: link,
+  cache: new InMemoryCache(),
+});
+```
+
+__Update the controller__: Apollo Link supports extra parameters _nested_ as `params[:extensions][:operationId]`, so update your controller to add that param to context:
+
+```ruby
+# app/controllers/graphql_controller.rb
+context = {
+  # ...
+  # Support Apollo Link:
+  operation_id: params[:extensions][:operationId]
+}
+```
+
+Now, `context[:operation_id]` will be used to fetch a query from the database.
 
 ## Use with plain JavaScript
 

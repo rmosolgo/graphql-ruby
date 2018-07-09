@@ -37,7 +37,7 @@ class GraphqlChannel < ActionCable::Channel::Base
     end
   end
 
-  GraphQLSchema = GraphQL::Schema.define do
+  class GraphQLSchema < GraphQL::Schema
     query(QueryType)
     subscription(SubscriptionType)
     use GraphQL::Subscriptions::ActionCableSubscriptions,

@@ -1,5 +1,6 @@
 ---
 layout: guide
+doc_stub: false
 search: true
 section: GraphQL Pro - OperationStore
 title: Client Workflow
@@ -15,7 +16,7 @@ To use persisted queries with your client application, you must:
 - [Sync operations](#syncing) from the client to the server
 - [Send `params[:operationId]`](#client-usage) from the client app
 
-This documentation also touches on [`graphql-ruby-client`](https://github.com/rmosolgo/graphql-ruby-client), a JavaScript client library for using `OperationStore`.
+This documentation also touches on {% internal_link "graphql-ruby-client sync", "/javascript_client/sync" %}, a JavaScript client library for using `OperationStore`.
 
 ### Add a Client
 
@@ -31,7 +32,7 @@ A default `secret` is provided for you, but you can also enter your own. The `se
 
 Once a client is registered, it can push queries to the server via {% internal_link "the Sync API","/operation_store/getting_started#add-routes" %}.
 
-The easiest way to sync is with `graphql-ruby-client sync`, a command-line tool written in JavaScript: [`graphql-ruby-client`](https://github.com/rmosolgo/graphql-ruby-client).
+The easiest way to sync is with `graphql-ruby-client sync`, a command-line tool written in JavaScript ({% internal_link "Sync Guide", "/javascript_client/sync" %})
 
 In short, it:
 
@@ -44,15 +45,11 @@ For example:
 
 {{ "/operation_store/sync_example.png" | link_to_img:"OperationStore client sync" }}
 
-See the readme for [Relay support](https://github.com/rmosolgo/graphql-ruby-client#use-with-relay), [Apollo Client support](https://github.com/rmosolgo/graphql-ruby-client#use-with-apollo-client), and [plain JS usage](https://github.com/rmosolgo/graphql-ruby-client#use-with-plain-javascript).
-
-
-
-For help syncing in another language, you can take inspiration from the [JavaScript implementation](https://github.com/rmosolgo/graphql-ruby-client), {% open_an_issue "Implementing operation sync in another language" %}, or email `support@graphql.pro`.
+For help syncing in another language, you can take inspiration from the [JavaScript implementation](https://github.com/rmosolgo/graphql-ruby/tree/master/javascript_client), {% open_an_issue "Implementing operation sync in another language" %}, or email `support@graphql.pro`.
 
 ### Client Usage
 
-`graphql-ruby-client` generates [Apollo middleware](https://github.com/rmosolgo/graphql-ruby-client#use-with-apollo-client) and a [Relay helper function](https://github.com/rmosolgo/graphql-ruby-client#use-with-relay) to get started quickly.
+See the {% internal_link "Sync Guide", "/javascript_client/sync" %} for using OperationStore with Relay Modern, Apollo 1.x, Apollo Link, or plain JavaScript.
 
 To run stored operations from another client, send a param called `operationId` which is composed of:
 

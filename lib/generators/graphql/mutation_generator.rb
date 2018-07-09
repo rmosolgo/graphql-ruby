@@ -6,12 +6,12 @@ module Graphql
   module Generators
     # TODO: What other options should be supported?
     #
-    # @example Generate a `Relay::Mutation` by name
+    # @example Generate a `GraphQL::Schema::RelayClassicMutation` by name
     #     rails g graphql:mutation CreatePostMutation
     class MutationGenerator < Rails::Generators::Base
       include Core
 
-      desc "Create a Relay mutation by name"
+      desc "Create a Relay Classic mutation by name"
       source_root File.expand_path('../templates', __FILE__)
 
       argument :name, type: :string
@@ -32,10 +32,10 @@ module Graphql
         else
           log :gsub, "#{options[:directory]}/types/mutation_type.rb"
         end
-        
+
         template "mutation.erb", "#{options[:directory]}/mutations/#{file_name}.rb"
 
-        sentinel = /name "Mutation"\s*\n/m
+        sentinel = /class .*MutationType/m
         in_root do
           gsub_file "#{options[:directory]}/types/mutation_type.rb", /  \# TODO\: Add Mutations as fields\s*\n/m, ""
           inject_into_file "#{options[:directory]}/types/mutation_type.rb", "  field :#{field_name}, Mutations::#{mutation_name}.field\n", after: sentinel, verbose: false, force: false

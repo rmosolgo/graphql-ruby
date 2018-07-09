@@ -243,4 +243,22 @@ TABLE
       assert_equal [expected_err], result["errors"]
     end
   end
+
+  describe "custom context class" do
+    it "can be specified" do
+      query_str = '{
+        inspectContext
+        find(id: "Musician/Herbie Hancock") {
+          ... on Musician {
+            inspectContext
+          }
+        }
+      }'
+      res = Jazz::Schema.execute(query_str, context: { magic_key: :ignored, normal_key: "normal_value" })
+      expected_values = ["custom_method", "magic_value", "normal_value"]
+      expected_values_with_nil = expected_values + [nil]
+      assert_equal expected_values, res["data"]["inspectContext"]
+      assert_equal expected_values_with_nil, res["data"]["find"]["inspectContext"]
+    end
+  end
 end

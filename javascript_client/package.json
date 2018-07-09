@@ -1,6 +1,6 @@
 {
   "name": "graphql-ruby-client",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "JavaScript client for graphql-ruby",
   "main": "index.js",
   "repository": "https://github.com/rmosolgo/graphql-ruby-client",
@@ -17,6 +17,7 @@
   "dependencies": {
     "apollo-link": "^1.0.3",
     "glob": "^7.1.2",
-    "graphql": "^0.10.5"
+    "graphql": "^0.10.5",
+    "minimist": "^1.2.0"
   }
 }

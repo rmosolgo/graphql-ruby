@@ -16,22 +16,10 @@ describe GraphQL::Query::Arguments do
       argument :c, !test_input_1, as: :inputObject
     end
 
-    GraphQL::Query::Arguments.new(
-      {
-        a: 1,
-        b: 2,
-        c: GraphQL::Query::Arguments.new(
-          {
-            d: 3,
-            e: 4,
-          },
-          argument_definitions: test_input_1.arguments,
-          defaults_used: Set.new
-        ),
-      },
-      argument_definitions: test_input_2.arguments,
-      defaults_used: Set.new
-    )
+    GraphQL::Query::Arguments.construct_arguments_class(test_input_1)
+    GraphQL::Query::Arguments.construct_arguments_class(test_input_2)
+    arg_values = {a: 1, b: 2, c: { d: 3, e: 4 }}
+    test_input_2.arguments_class.new(arg_values, context: nil, defaults_used: Set.new)
   }
 
   it "returns keys as strings, with aliases" do
@@ -81,11 +69,11 @@ describe GraphQL::Query::Arguments do
       )
     end
 
-    new_arguments = GraphQL::Query::Arguments.new(
-      transformed_args,
-      argument_definitions: types,
-      defaults_used: Set.new
-    )
+    args_class = Class.new(GraphQL::Query::Arguments) do
+      self.argument_definitions = types
+    end
+
+    new_arguments = args_class.new(transformed_args, context: nil, defaults_used: Set.new)
     expected_hash = {
       "A" => 1,
       "B" => 2,
@@ -106,10 +94,10 @@ describe GraphQL::Query::Arguments do
       test_input_type
     }
     it "wraps input objects, but not other hashes" do
-      args = GraphQL::Query::Arguments.new(
+      args = input_type.arguments_class.new(
         {a: 1, b: {a: 2}, c: {a: 3}},
-        argument_definitions: input_type.arguments,
-        defaults_used: Set.new
+        defaults_used: Set.new,
+        context: nil,
       )
       assert_kind_of GraphQL::Query::Arguments, args["b"]
       assert_instance_of Hash, args["c"]
@@ -328,7 +316,7 @@ describe GraphQL::Query::Arguments do
       assert_nil input_object.arguments_class
 
       GraphQL::Query::Arguments.construct_arguments_class(input_object)
-      args = input_object.arguments_class.new({foo: 3, bar: -90}, Set.new)
+      args = input_object.arguments_class.new({foo: 3, bar: -90}, defaults_used: Set.new, context: nil)
 
       assert_equal 3, args.foo
       assert_equal -90, args.bar

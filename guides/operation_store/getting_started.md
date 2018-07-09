@@ -1,5 +1,6 @@
 ---
 layout: guide
+doc_stub: false
 search: true
 section: GraphQL Pro - OperationStore
 title: Getting Started
@@ -82,7 +83,7 @@ end
 To hook up the storage to your schema, add the plugin:
 
 ```ruby
-MySchema = GraphQL::Schema.define do
+class MySchema < GraphQL::Schema
   # ...
   use GraphQL::Pro::OperationStore
 end
@@ -123,8 +124,10 @@ Add `operation_id:` to your GraphQL context:
 ```ruby
 # app/controllers/graphql_controller.rb
 context = {
-  # ...
+  # Relay / Apollo 1.x:
   operation_id: params[:operationId]
+  # Or, Apollo Link:
+  # operation_id: params[:extensions][:operationId]
 }
 
 MySchema.execute(
@@ -133,7 +136,7 @@ MySchema.execute(
 )
 ```
 
-`OperationStore` will use `stored_operation` to fetch the operation from the database.
+`OperationStore` will use `operation_id` to fetch the operation from the database.
 
 See {% internal_link "Server Management","/operation_store/server_management" %} for details about rejecting GraphQL from `params[:query]`.
 

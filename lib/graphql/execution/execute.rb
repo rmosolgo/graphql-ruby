@@ -68,12 +68,10 @@ module GraphQL
               irep_node: child_irep_node,
             )
 
-            field_result = field_ctx.trace("execute_field", { context: field_ctx }) do
-              resolve_field(
-                object,
-                field_ctx
-              )
-            end
+            field_result = resolve_field(
+              object,
+              field_ctx
+            )
 
             if field_result.is_a?(Skip)
               next
@@ -104,34 +102,66 @@ module GraphQL
           field = field_ctx.field
 
           raw_value = begin
-            arguments = query.arguments_for(irep_node, field)
-            field_ctx.schema.middleware.invoke([parent_type, object, field, arguments, field_ctx])
+            begin
+              arguments = query.arguments_for(irep_node, field)
+              field_ctx.trace("execute_field", { context: field_ctx }) do
+                field_ctx.schema.middleware.invoke([parent_type, object, field, arguments, field_ctx])
+              end
+            rescue GraphQL::UnauthorizedError => err
+              field_ctx.schema.unauthorized_object(err)
+            end
           rescue GraphQL::ExecutionError => err
             err
           end
 
-          # If the returned object is lazy (unfinished),
-          # assign the lazy object to `.value=` so we can resolve it later.
-          # When we resolve it later, reassign it to `.value=` so that
-          # the finished value replaces the unfinished one.
-          #
-          # If the returned object is finished, continue to coerce
-          # and resolve child fields
-          if query.schema.lazy?(raw_value)
-            field_ctx.value = field.prepare_lazy(raw_value, arguments, field_ctx).then { |inner_value|
-              field_ctx.value = continue_resolve_field(inner_value, field_ctx)
-            }
-          elsif raw_value.is_a?(GraphQL::Execution::Lazy)
-            # It came from a connection resolve, assume it was already instrumented
-            field_ctx.value = raw_value.then { |inner_value|
-              field_ctx.value = continue_resolve_field(inner_value, field_ctx)
+          if field_ctx.schema.lazy?(raw_value)
+            field_ctx.value = Execution::Lazy.new {
+              inner_value = field_ctx.trace("execute_field_lazy", {context: field_ctx}) {
+                begin
+                  begin
+                    field_ctx.field.lazy_resolve(raw_value, arguments, field_ctx)
+                  rescue GraphQL::UnauthorizedError => err
+                    field_ctx.schema.unauthorized_object(err)
+                  end
+                rescue GraphQL::ExecutionError => err
+                  err
+                end
+              }
+              continue_or_wait(inner_value, field_ctx.type, field_ctx)
             }
           else
-            field_ctx.value = continue_resolve_field(raw_value, field_ctx)
+            continue_or_wait(raw_value, field_ctx.type, field_ctx)
           end
         end
 
-        def continue_resolve_field(raw_value, field_ctx)
+        # If the returned object is lazy (unfinished),
+        # assign the lazy object to `.value=` so we can resolve it later.
+        # When we resolve it later, reassign it to `.value=` so that
+        # the finished value replaces the unfinished one.
+        #
+        # If the returned object is finished, continue to coerce
+        # and resolve child fields
+        def continue_or_wait(raw_value, field_type, field_ctx)
+          if (lazy_method = field_ctx.schema.lazy_method_name(raw_value))
+            field_ctx.value = Execution::Lazy.new {
+              inner_value = begin
+                  begin
+                    raw_value.public_send(lazy_method)
+                  rescue GraphQL::UnauthorizedError => err
+                    field_ctx.schema.unauthorized_object(err)
+                  end
+                rescue GraphQL::ExecutionError => err
+                  err
+                end
+
+              field_ctx.value = continue_or_wait(inner_value, field_type, field_ctx)
+            }
+          else
+            field_ctx.value = continue_resolve_field(raw_value, field_type, field_ctx)
+          end
+        end
+
+        def continue_resolve_field(raw_value, field_type, field_ctx)
           if field_ctx.parent.invalid_null?
             return nil
           end
@@ -143,19 +173,22 @@ module GraphQL
             raw_value.path = field_ctx.path
             query.context.errors.push(raw_value)
           when Array
-            list_errors = raw_value.each_with_index.select { |value, _| value.is_a?(GraphQL::ExecutionError) }
-            if list_errors.any?
-              list_errors.each do |error, index|
-                error.ast_node = field_ctx.ast_node
-                error.path = field_ctx.path + [index]
-                query.context.errors.push(error)
+            if !field_type.list?
+              # List type errors are handled above, this is for the case of fields returning an array of errors
+              list_errors = raw_value.each_with_index.select { |value, _| value.is_a?(GraphQL::ExecutionError) }
+              if list_errors.any?
+                list_errors.each do |error, index|
+                  error.ast_node = field_ctx.ast_node
+                  error.path = field_ctx.path + [index]
+                  query.context.errors.push(error)
+                end
               end
             end
           end
 
           resolve_value(
             raw_value,
-            field_ctx.type,
+            field_type,
             field_ctx,
           )
         end
@@ -173,6 +206,12 @@ module GraphQL
               nil
             end
           elsif value.is_a?(GraphQL::ExecutionError)
+            if field_type.kind.non_null?
+              PROPAGATE_NULL
+            else
+              nil
+            end
+          elsif value.is_a?(Array) && value.any? && value.all? {|v| v.is_a?(GraphQL::ExecutionError)}
             if field_type.kind.non_null?
               PROPAGATE_NULL
             else
@@ -197,16 +236,18 @@ module GraphQL
                   irep_node: field_ctx.irep_node,
                 )
 
-                inner_result = resolve_value(
+                inner_result = continue_or_wait(
                   inner_value,
                   inner_type,
                   inner_ctx,
                 )
 
-                inner_ctx.value = inner_result
+                return PROPAGATE_NULL if inner_result == PROPAGATE_NULL
+
                 result << inner_ctx
                 i += 1
               end
+
               result
             when GraphQL::TypeKinds::NON_NULL
               inner_type = field_type.of_type

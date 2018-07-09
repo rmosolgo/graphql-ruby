@@ -5,45 +5,44 @@ module GraphQL
     #
     # {Arguments} recursively wraps the input in {Arguments} instances.
     class Arguments
-      extend GraphQL::Delegate
+      extend Forwardable
 
       def self.construct_arguments_class(argument_owner)
         argument_definitions = argument_owner.arguments
         argument_owner.arguments_class = Class.new(self) do
           self.argument_definitions = argument_definitions
 
-          def initialize(values, defaults_used)
-            super(values, argument_definitions: self.class.argument_definitions, defaults_used: defaults_used)
-          end
-
           argument_definitions.each do |_arg_name, arg_definition|
             expose_as = arg_definition.expose_as.to_s
-
-            # Don't define a helper method if it would override something.
-            if instance_methods.include?(expose_as)
-              warn(
-                "Unable to define a helper for argument with name '#{expose_as}' "\
-                "as this is a reserved name. If you're using an argument such as "\
-                "`argument #{expose_as}`, consider renaming this argument.`"
-              )
-              next
-            end
-
-            define_method(expose_as) do
-              self[expose_as]
+            expose_as_underscored = GraphQL::Schema::Member::BuildType.underscore(expose_as)
+            method_names = [expose_as, expose_as_underscored].uniq
+            method_names.each do |method_name|
+              # Don't define a helper method if it would override something.
+              if instance_methods.include?(method_name)
+                warn(
+                  "Unable to define a helper for argument with name '#{method_name}' "\
+                  "as this is a reserved name. If you're using an argument such as "\
+                  "`argument #{method_name}`, consider renaming this argument.`"
+                )
+              else
+                define_method(method_name) do
+                  # Always use `expose_as` here, since #[] doesn't accept underscored names
+                  self[expose_as]
+                end
+              end
             end
           end
         end
       end
 
-      def initialize(values, argument_definitions:, defaults_used:)
+      attr_reader :argument_values
+
+      def initialize(values, context:, defaults_used:)
         @argument_values = values.inject({}) do |memo, (inner_key, inner_value)|
           arg_name = inner_key.to_s
-
-          arg_defn = argument_definitions[arg_name]
+          arg_defn = self.class.argument_definitions[arg_name]
           arg_default_used = defaults_used.include?(arg_name)
-
-          arg_value = wrap_value(inner_value, arg_defn.type)
+          arg_value = wrap_value(inner_value, arg_defn.type, context)
           string_key = arg_defn.expose_as
           memo[string_key] = ArgumentValue.new(string_key, arg_value, arg_defn, arg_default_used)
           memo
@@ -84,7 +83,7 @@ module GraphQL
         end
       end
 
-      def_delegators :to_h, :keys, :values, :each
+      def_delegators :to_h, :keys, :values, :each, :any?
 
       # Access each key, value and type for the arguments in this set.
       # @yield [argument_value] The {ArgumentValue} for each argument
@@ -95,10 +94,26 @@ module GraphQL
         end
       end
 
-      NO_ARGS = self.new({}, argument_definitions: [], defaults_used: Set.new)
-
       class << self
         attr_accessor :argument_definitions
+      end
+
+      NoArguments = Class.new(self) do
+        self.argument_definitions = []
+      end
+
+      NO_ARGS = NoArguments.new({}, context: nil, defaults_used: Set.new)
+
+      # Convert this instance into valid Ruby keyword arguments
+      # @return [{Symbol=>Object}]
+      def to_kwargs
+        ruby_kwargs = {}
+
+        keys.each do |key|
+          ruby_kwargs[Schema::Member::BuildType.underscore(key).to_sym] = self[key]
+        end
+
+        ruby_kwargs
       end
 
       private
@@ -122,18 +137,18 @@ module GraphQL
 
       NULL_ARGUMENT_VALUE = ArgumentValue.new(nil, nil, nil, nil)
 
-      def wrap_value(value, arg_defn_type)
+      def wrap_value(value, arg_defn_type, context)
         if value.nil?
           nil
         else
           case arg_defn_type
           when GraphQL::ListType
-            value.map { |item| wrap_value(item, arg_defn_type.of_type) }
+            value.map { |item| wrap_value(item, arg_defn_type.of_type, context) }
           when GraphQL::NonNullType
-            wrap_value(value, arg_defn_type.of_type)
+            wrap_value(value, arg_defn_type.of_type, context)
           when GraphQL::InputObjectType
             if value.is_a?(Hash)
-              arg_defn_type.arguments_class.new(value, Set.new)
+              arg_defn_type.arguments_class.new(value, context: context, defaults_used: Set.new)
             else
               value
             end

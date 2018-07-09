@@ -1,5 +1,6 @@
 ---
 layout: guide
+doc_stub: false
 search: true
 section: GraphQL Pro - OperationStore
 title: Access Control
@@ -30,7 +31,7 @@ The Authorization header takes the form:
 "GraphQL::Pro #{client_name} #{hmac}"
 ```
 
-[`graphql-ruby-client`](http://github.com/rmosolgo/graphql-ruby-client) adds this header to outgoing requests by using the provided `--client` and `--secret` values.
+{% internal_link "graphql-ruby-client", "/javascript_client/sync" %} adds this header to outgoing requests by using the provided `--client` and `--secret` values.
 
 ## Authorization
 

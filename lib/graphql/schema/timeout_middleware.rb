@@ -34,7 +34,7 @@ module GraphQL
       end
 
       def call(parent_type, parent_object, field_definition, field_args, query_context)
-        ns = query_context.namespace(TimeoutMiddleware)
+        ns = query_context.namespace(self.class)
         timeout_at = ns[:timeout_at] ||= Time.now + @max_seconds
 
         if timeout_at < Time.now

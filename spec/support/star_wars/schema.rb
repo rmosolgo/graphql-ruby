@@ -3,39 +3,47 @@ module StarWars
   # Adapted from graphql-relay-js
   # https://github.com/graphql/graphql-relay-js/blob/master/src/__tests__/starWarsSchema.js
 
-  Ship = GraphQL::ObjectType.define do
-    name "Ship"
-    interfaces [GraphQL::Relay::Node.interface]
+  class Ship < GraphQL::Schema::Object
+    implements GraphQL::Relay::Node.interface
     global_id_field :id
-    field :name, types.String
+    field :name, String, null: true
     # Test cyclical connection types:
-    connection :ships, Ship.connection_type
+    field :ships, Ship.connection_type, null: false
   end
 
-  BaseType = GraphQL::ObjectType.define do
-    name "Base"
-    interfaces [GraphQL::Relay::Node.interface]
+  class BaseType < GraphQL::Schema::Object
+    graphql_name "Base"
+    implements GraphQL::Relay::Node.interface
     global_id_field :id
-    field :name, !types.String do
-      resolve ->(obj, args, ctx) {
-        LazyWrapper.new {
-          if obj.id.nil?
-            raise GraphQL::ExecutionError, "Boom!"
-          else
-            obj.name
-          end
-        }
+    field :name, String, null: false, resolve: ->(obj, args, ctx) {
+      LazyWrapper.new {
+        if obj.id.nil?
+          raise GraphQL::ExecutionError, "Boom!"
+        else
+          obj.name
+        end
       }
-    end
-    field :planet, types.String
+    }
+    field :planet, String, null: true
   end
 
-  # Use an optional block to add fields to the connection type:
-  BaseConnectionWithTotalCountType = BaseType.define_connection(nodes_field: true) do
-    name "BasesConnectionWithTotalCount"
-    field :totalCount do
-      type types.Int
-      resolve ->(obj, args, ctx) { obj.nodes.count }
+
+  class BaseEdge < GraphQL::Types::Relay::BaseEdge
+    node_type(BaseType)
+  end
+
+  class BaseConnection < GraphQL::Types::Relay::BaseConnection
+    edge_type(BaseEdge)
+  end
+
+  class BasesConnectionWithTotalCountType < GraphQL::Types::Relay::BaseConnection
+    edge_type(BaseEdge)
+    nodes_field
+
+    field :total_count, Integer, null: true
+
+    def total_count
+      object.nodes.count
     end
   end
 
@@ -90,133 +98,98 @@ module StarWars
     end
   end
 
-  Faction = GraphQL::ObjectType.define do
-    name "Faction"
-    interfaces [GraphQL::Relay::Node.interface]
+  class Faction < GraphQL::Schema::Object
+    implements GraphQL::Relay::Node.interface
 
-    field :id, !types.ID, resolve: GraphQL::Relay::GlobalIdResolve.new(type: Faction)
-    field :name, types.String
-    connection :ships, ShipConnectionWithParentType, max_page_size: 1000 do
-      resolve ->(obj, args, ctx) {
-        all_ships = obj.ships.map {|ship_id| StarWars::DATA["Ship"][ship_id] }
-        if args[:nameIncludes]
-          case args[:nameIncludes]
-          when "error"
-            all_ships = GraphQL::ExecutionError.new("error from within connection")
-          when "raisedError"
-            raise GraphQL::ExecutionError.new("error raised from within connection")
-          when "lazyError"
-            all_ships = LazyWrapper.new { GraphQL::ExecutionError.new("lazy error from within connection") }
-          when "lazyRaisedError"
-            all_ships = LazyWrapper.new { raise GraphQL::ExecutionError.new("lazy raised error from within connection") }
-          when "null"
-            all_ships = nil
-          when "lazyObject"
-            prev_all_ships = all_ships
-            all_ships = LazyWrapper.new { prev_all_ships }
-          else
-            all_ships = all_ships.select { |ship| ship.name.include?(args[:nameIncludes])}
-          end
-        end
-        all_ships
-      }
-      # You can define arguments here and use them in the connection
-      argument :nameIncludes, types.String
-    end
-
-    connection :shipsWithMaxPageSize, max_page_size: 2, function: ShipsWithMaxPageSize.new
-
-    connection :bases, BaseConnectionWithTotalCountType do
-      # Resolve field should return an Array, the Connection
-      # will do the rest!
-      resolve ->(obj, args, ctx) {
-        all_bases = Base.where(id: obj.bases)
-        if args[:nameIncludes]
-          all_bases = all_bases.where("name LIKE ?", "%#{args[:nameIncludes]}%")
-        end
-        all_bases
-      }
-      argument :nameIncludes, types.String
-    end
-
-    connection :basesClone, BaseType.connection_type
-    connection :basesByName, BaseType.connection_type, property: :bases do
-      argument :order, types.String, default_value: "name"
-      resolve ->(obj, args, ctx) {
-        if args[:order].present?
-          obj.bases.order(args[:order])
+    field :id, ID, null: false, resolve: GraphQL::Relay::GlobalIdResolve.new(type: Faction)
+    field :name, String, null: true
+    field :ships, ShipConnectionWithParentType, connection: true, max_page_size: 1000, null: true, resolve: ->(obj, args, ctx) {
+      all_ships = obj.ships.map {|ship_id| StarWars::DATA["Ship"][ship_id] }
+      if args[:nameIncludes]
+        case args[:nameIncludes]
+        when "error"
+          all_ships = GraphQL::ExecutionError.new("error from within connection")
+        when "raisedError"
+          raise GraphQL::ExecutionError.new("error raised from within connection")
+        when "lazyError"
+          all_ships = LazyWrapper.new { GraphQL::ExecutionError.new("lazy error from within connection") }
+        when "lazyRaisedError"
+          all_ships = LazyWrapper.new { raise GraphQL::ExecutionError.new("lazy raised error from within connection") }
+        when "null"
+          all_ships = nil
+        when "lazyObject"
+          prev_all_ships = all_ships
+          all_ships = LazyWrapper.new { prev_all_ships }
         else
-          obj.bases
+          all_ships = all_ships.select { |ship| ship.name.include?(args[:nameIncludes])}
         end
-      }
+      end
+      all_ships
+    } do
+      # You can define arguments here and use them in the connection
+      argument :nameIncludes, String, required: false
     end
 
-    connection :basesWithMaxLimitRelation, BaseType.connection_type, max_page_size: 2 do
-      resolve ->(object, args, context) { Base.all }
+    field :shipsWithMaxPageSize, "Ships with max page size", max_page_size: 2, function: ShipsWithMaxPageSize.new
+
+    field :bases, BasesConnectionWithTotalCountType, null: true, connection: true, resolve: ->(obj, args, ctx) {
+      all_bases = Base.where(id: obj.bases)
+      if args[:nameIncludes]
+        all_bases = all_bases.where("name LIKE ?", "%#{args[:nameIncludes]}%")
+      end
+      all_bases
+    } do
+      argument :nameIncludes, String, required: false
     end
 
-    connection :basesWithMaxLimitArray, BaseType.connection_type, max_page_size: 2 do
-      resolve ->(object, args, context) { Base.all.to_a }
+    field :basesClone, BaseConnection, null: true
+    field :basesByName, BaseConnection, null: true do
+      argument :order, String, default_value: "name", required: false
+    end
+    def bases_by_name(order: nil)
+      if order.present?
+        @object.bases.order(order)
+      else
+        @object.bases
+      end
     end
 
-    connection :basesWithDefaultMaxLimitRelation, BaseType.connection_type do
-      resolve ->(object, args, context) { Base.all }
+    field :basesWithMaxLimitRelation, BaseConnection, null: true, max_page_size: 2, resolve: Proc.new { Base.all}
+    field :basesWithMaxLimitArray, BaseConnection, null: true, max_page_size: 2, resolve: Proc.new { Base.all.to_a }
+    field :basesWithDefaultMaxLimitRelation, BaseConnection, null: true, resolve: Proc.new { Base.all }
+    field :basesWithDefaultMaxLimitArray, BaseConnection, null: true, resolve: Proc.new { Base.all.to_a }
+    field :basesWithLargeMaxLimitRelation, BaseConnection, null: true, max_page_size: 1000, resolve: Proc.new { Base.all }
+
+    field :basesAsSequelDataset, BasesConnectionWithTotalCountType, null: true, connection: true, max_page_size: 1000 do
+      argument :nameIncludes, String, required: false
     end
 
-    connection :basesWithDefaultMaxLimitArray, BaseType.connection_type do
-      resolve ->(object, args, context) { Base.all.to_a }
+    def bases_as_sequel_dataset(name_includes: nil)
+      all_bases = SequelBase.where(faction_id: @object.id)
+      if name_includes
+        all_bases = all_bases.where(Sequel.like(:name, "%#{name_includes}%"))
+      end
+      all_bases
     end
 
-    connection :basesWithLargeMaxLimitRelation, BaseType.connection_type, max_page_size: 1000 do
-      resolve ->(object, args, context) { Base.all }
-    end
-
-    connection :basesAsSequelDataset, BaseConnectionWithTotalCountType, max_page_size: 1000 do
-      argument :nameIncludes, types.String
-      resolve ->(obj, args, ctx) {
-        all_bases = SequelBase.where(faction_id: obj.id)
-        if args[:nameIncludes]
-          all_bases = all_bases.where(Sequel.like(:name, "%#{args[:nameIncludes]}%"))
-        end
-        all_bases
-      }
-    end
-
-    connection :basesWithCustomEdge, CustomEdgeBaseConnectionType do
-      resolve ->(o, a, c) {
-        LazyNodesWrapper.new(o.bases)
-      }
-    end
+    field :basesWithCustomEdge, CustomEdgeBaseConnectionType, null: true, connection: true, resolve: ->(o, a, c) { LazyNodesWrapper.new(o.bases) }
   end
 
-  # Define a mutation. It will also:
-  #   - define a derived InputObjectType
-  #   - define a derived ObjectType (for return)
-  #   - define a field, accessible from {Mutation#field}
-  #
-  # The resolve proc takes `inputs, ctx`, where:
-  #   - `inputs` has the keys defined with `input_field`
-  #   - `ctx` is the Query context (like normal fields)
-  #
-  # Notice that you leave out clientMutationId.
-  IntroduceShipMutation = GraphQL::Relay::Mutation.define do
-    # Used as the root for derived types:
-    name "IntroduceShip"
+  class IntroduceShipMutation < GraphQL::Schema::RelayClassicMutation
     description "Add a ship to this faction"
 
     # Nested under `input` in the query:
-    input_field :shipName, types.String
-    input_field :factionId, !types.ID
+    argument :ship_name, String, required: false
+    argument :faction_id, ID, required: true
 
     # Result may have access to these fields:
-    return_field :shipEdge, Ship.edge_type
-    return_field :faction, Faction
-    return_field :aliasedFaction, Faction, property: :aliased_faction
+    field :ship_edge, Ship.edge_type, null: true
+    field :faction, Faction, null: true
+    field :aliased_faction, Faction, hash_key: :aliased_faction, null: true
 
-    # Here's the mutation operation:
-    resolve ->(root_obj, inputs, ctx) {
-      IntroduceShipFunction.new.call(root_obj, inputs, ctx)
-    }
+    def resolve(ship_name: nil, faction_id:)
+      IntroduceShipFunction.new.call(object, {ship_name: ship_name, faction_id: faction_id}, context)
+    end
   end
 
   class IntroduceShipFunction < GraphQL::Function
@@ -232,21 +205,24 @@ module StarWars
     end)
 
     def call(obj, args, ctx)
-      faction_id = args["factionId"]
-      if args["shipName"] == 'Millennium Falcon'
+      # support old and new args
+      ship_name = args["shipName"] || args[:ship_name]
+      faction_id = args["factionId"] || args[:faction_id]
+      if ship_name == 'Millennium Falcon'
         GraphQL::ExecutionError.new("Sorry, Millennium Falcon ship is reserved")
-      elsif args["shipName"] == 'Leviathan'
+      elsif ship_name == 'Leviathan'
         raise GraphQL::ExecutionError.new("🔥")
-      elsif args["shipName"] == "Ebon Hawk"
+      elsif ship_name == "Ebon Hawk"
         LazyWrapper.new { raise GraphQL::ExecutionError.new("💥")}
       else
-        ship = DATA.create_ship(args["shipName"], faction_id)
+        ship = DATA.create_ship(ship_name, faction_id)
         faction = DATA["Faction"][faction_id]
         connection_class = GraphQL::Relay::BaseConnection.connection_for_nodes(faction.ships)
         ships_connection = connection_class.new(faction.ships, args)
         ship_edge = GraphQL::Relay::Edge.new(ship, ships_connection)
         result = {
           shipEdge: ship_edge,
+          ship_edge: ship_edge, # support new-style, too
           faction: faction,
           aliased_faction: faction,
         }
@@ -323,60 +299,51 @@ module StarWars
 
   GraphQL::Relay::BaseConnection.register_connection_implementation(LazyNodesWrapper, LazyNodesRelationConnection)
 
-  QueryType = GraphQL::ObjectType.define do
-    name "Query"
-    field :rebels, Faction do
-      resolve ->(obj, args, ctx) { StarWars::DATA["Faction"]["1"]}
-    end
+  class QueryType < GraphQL::Schema::Object
+    graphql_name "Query"
 
-    field :empire, Faction do
-      resolve ->(obj, args, ctx) { StarWars::DATA["Faction"]["2"]}
-    end
+    field :rebels, Faction, null: true, resolve: ->(obj, args, ctx) { StarWars::DATA["Faction"]["1"]}
 
-    field :largestBase, BaseType do
-      resolve ->(obj, args, ctx) { Base.find(3) }
-    end
+    field :empire, Faction, null: true, resolve: ->(obj, args, ctx) { StarWars::DATA["Faction"]["2"]}
 
-    connection :newestBasesGroupedByFaction, BaseType.connection_type do
-      resolve ->(obj, args, ctx) {
-        Base
-          .having('id in (select max(id) from bases group by faction_id)')
-          .group(:id)
-          .order('faction_id desc')
-      }
-    end
+    field :largestBase, BaseType, null: true, resolve: ->(obj, args, ctx) { Base.find(3) }
 
-    connection :basesWithNullName, BaseType.connection_type do
-      resolve ->(obj, args, ctx) {
-        [OpenStruct.new(id: nil)]
-      }
-    end
+    field :newestBasesGroupedByFaction, BaseConnection, null: true, resolve: ->(obj, args, ctx) {
+      Base
+        .having('id in (select max(id) from bases group by faction_id)')
+        .group(:id)
+        .order('faction_id desc')
+    }
 
-    field :node, GraphQL::Relay::Node.field
+    field :basesWithNullName, BaseConnection, null: false, resolve: ->(obj, args, ctx) {
+      [OpenStruct.new(id: nil)]
+    }
+
+    field :node, field: GraphQL::Relay::Node.field
 
     custom_node_field = GraphQL::Relay::Node.field do
       resolve ->(_, _, _) { StarWars::DATA["Faction"]["1"] }
     end
-    field :nodeWithCustomResolver, custom_node_field
+    field :nodeWithCustomResolver, field: custom_node_field
 
-    field :nodes, GraphQL::Relay::Node.plural_field
-    field :nodesWithCustomResolver, GraphQL::Relay::Node.plural_field(
+    field :nodes, field: GraphQL::Relay::Node.plural_field
+    field :nodesWithCustomResolver, field: GraphQL::Relay::Node.plural_field(
       resolve: ->(_, _, _) { [StarWars::DATA["Faction"]["1"], StarWars::DATA["Faction"]["2"]] }
     )
 
-    field :batchedBase, BaseType do
-      argument :id, !types.ID
-      resolve ->(o, a, c) {
-        LazyLoader.defer(c, Base, a["id"])
-      }
+    field :batchedBase, BaseType, null: true do
+      argument :id, ID, required: true
+    end
+
+    def batched_base(id:)
+      LazyLoader.defer(@context, Base, id)
     end
   end
 
-  MutationType = GraphQL::ObjectType.define do
-    name "Mutation"
-    # The mutation object exposes a field:
-    field :introduceShip, field: IntroduceShipMutation.field
-    field :introduceShipFunction, IntroduceShipFunctionMutation.field
+  class MutationType < GraphQL::Schema::Object
+    graphql_name "Mutation"
+    field :introduceShip, mutation: IntroduceShipMutation
+    field :introduceShipFunction, field: IntroduceShipFunctionMutation.field
   end
 
   class ClassNameRecorder
@@ -399,12 +366,12 @@ module StarWars
     end
   end
 
-  Schema = GraphQL::Schema.define do
+  class Schema < GraphQL::Schema
     query(QueryType)
     mutation(MutationType)
     default_max_page_size 3
 
-    resolve_type ->(type, object, ctx) {
+    def self.resolve_type(type, object, ctx)
       if object == :test_error
         :not_a_type
       elsif object.is_a?(Base)
@@ -416,14 +383,14 @@ module StarWars
       else
         nil
       end
-    }
+    end
 
-    object_from_id ->(node_id, ctx) do
+    def self.object_from_id(node_id, ctx)
       type_name, id = GraphQL::Schema::UniqueWithinType.decode(node_id)
       StarWars::DATA[type_name][id]
     end
 
-    id_from_object ->(object, type, ctx) do
+    def self.id_from_object(object, type, ctx)
       GraphQL::Schema::UniqueWithinType.encode(type.name, object.id)
     end
 

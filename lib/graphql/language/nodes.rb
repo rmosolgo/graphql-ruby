@@ -18,7 +18,7 @@ module GraphQL
           end
         end
 
-        attr_accessor :line, :col, :filename
+        attr_reader :line, :col, :filename
 
         # Initialize a node by extracting its position,
         # then calling the class's `initialize_node` method.
@@ -140,6 +140,8 @@ module GraphQL
           arguments + locations
         end
       end
+
+      class DirectiveLocation < NameOnlyNode; end
 
       # This is the AST root for normal queries
       #
@@ -381,17 +383,37 @@ module GraphQL
       class VariableIdentifier < NameOnlyNode; end
 
       class SchemaDefinition < AbstractNode
-        attr_reader :query, :mutation, :subscription
-        
-        def initialize_node(query: nil, mutation: nil, subscription: nil)
+        attr_reader :query, :mutation, :subscription, :directives
+
+        def initialize_node(query: nil, mutation: nil, subscription: nil, directives: [])
           @query = query
           @mutation = mutation
           @subscription = subscription
+          @directives = directives
         end
 
         def scalars
           [query, mutation, subscription]
         end
+
+        alias :children :directives
+      end
+
+      class SchemaExtension < AbstractNode
+        attr_reader :query, :mutation, :subscription, :directives
+
+        def initialize_node(query: nil, mutation: nil, subscription: nil, directives: [])
+          @query = query
+          @mutation = mutation
+          @subscription = subscription
+          @directives = directives
+        end
+
+        def scalars
+          [query, mutation, subscription]
+        end
+
+        alias :children :directives
       end
 
       class ScalarTypeDefinition < AbstractNode
@@ -406,6 +428,16 @@ module GraphQL
         end
       end
 
+      class ScalarTypeExtension < AbstractNode
+        attr_reader :name, :directives
+        alias :children :directives
+
+        def initialize_node(name:, directives: [])
+          @name = name
+          @directives = directives
+        end
+      end
+
       class ObjectTypeDefinition < AbstractNode
         attr_reader :name, :interfaces, :fields, :directives, :description
         include Scalars::Name
@@ -416,6 +448,21 @@ module GraphQL
           @directives = directives
           @fields = fields
           @description = description
+        end
+
+        def children
+          interfaces + fields + directives
+        end
+      end
+
+      class ObjectTypeExtension < AbstractNode
+        attr_reader :name, :interfaces, :fields, :directives
+
+        def initialize_node(name:, interfaces:, fields:, directives: [])
+          @name = name
+          @interfaces = interfaces || []
+          @directives = directives
+          @fields = fields
         end
 
         def children
@@ -476,6 +523,20 @@ module GraphQL
         end
       end
 
+      class InterfaceTypeExtension < AbstractNode
+        attr_reader :name, :fields, :directives
+
+        def initialize_node(name:, fields:, directives: [])
+          @name = name
+          @fields = fields
+          @directives = directives
+        end
+
+        def children
+          fields + directives
+        end
+      end
+
       class UnionTypeDefinition < AbstractNode
         attr_reader :name, :types, :directives, :description
         include Scalars::Name
@@ -485,6 +546,20 @@ module GraphQL
           @types = types
           @directives = directives
           @description = description
+        end
+
+        def children
+          types + directives
+        end
+      end
+
+      class UnionTypeExtension < AbstractNode
+        attr_reader :name, :types, :directives
+
+        def initialize_node(name:, types:, directives: [])
+          @name = name
+          @types = types
+          @directives = directives
         end
 
         def children
@@ -508,6 +583,20 @@ module GraphQL
         end
       end
 
+      class EnumTypeExtension < AbstractNode
+        attr_reader :name, :values, :directives
+
+        def initialize_node(name:, values:, directives: [])
+          @name = name
+          @values = values
+          @directives = directives
+        end
+
+        def children
+          values + directives
+        end
+      end
+
       class EnumValueDefinition < AbstractNode
         attr_reader :name, :directives, :description
         include Scalars::Name
@@ -523,13 +612,30 @@ module GraphQL
       class InputObjectTypeDefinition < AbstractNode
         attr_reader :name, :fields, :directives, :description
         include Scalars::Name
-        alias :children :fields
 
         def initialize_node(name:, fields:, directives: [], description: nil)
           @name = name
           @fields = fields
           @directives = directives
           @description = description
+        end
+
+        def children
+          fields + directives
+        end
+      end
+
+      class InputObjectTypeExtension < AbstractNode
+        attr_reader :name, :fields, :directives
+
+        def initialize_node(name:, fields:, directives: [])
+          @name = name
+          @fields = fields
+          @directives = directives
+        end
+
+        def children
+          fields + directives
         end
       end
     end

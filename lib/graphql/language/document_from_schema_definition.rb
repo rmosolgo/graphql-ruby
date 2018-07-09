@@ -40,7 +40,10 @@ module GraphQL
         GraphQL::Language::Nodes::SchemaDefinition.new(
           query: warden.root_type_for_operation("query"),
           mutation: warden.root_type_for_operation("mutation"),
-          subscription: warden.root_type_for_operation("subscription")
+          subscription: warden.root_type_for_operation("subscription"),
+          # This only supports directives from parsing,
+          # use a custom printer to add to this list.
+          directives: @schema.ast_node ? @schema.ast_node.directives : [],
         )
       end
 
@@ -149,8 +152,18 @@ module GraphQL
         GraphQL::Language::Nodes::DirectiveDefinition.new(
           name: directive.name,
           arguments: build_argument_nodes(warden.arguments(directive)),
-          locations: directive.locations.map(&:to_s),
+          locations: build_directive_location_nodes(directive.locations),
           description: directive.description,
+        )
+      end
+
+      def build_directive_location_nodes(locations)
+        locations.map { |location| build_directive_location_node(location) }
+      end
+
+      def build_directive_location_node(location)
+        GraphQL::Language::Nodes::DirectiveLocation.new(
+          name: location.to_s
         )
       end
 

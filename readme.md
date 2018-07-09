@@ -37,7 +37,7 @@ Or, see ["Getting Started"](https://rmosolgo.github.io/graphql-ruby/).
 
 ## Upgrade
 
-I also sell [GraphQL::Pro](http://graphql.pro) which provides several features on top of the GraphQL runtime, including [authorization](http://rmosolgo.github.io/graphql-ruby/pro/authorization), [monitoring](http://rmosolgo.github.io/graphql-ruby/pro/monitoring) plugins and [persisted queries](http://rmosolgo.github.io/graphql-ruby/operation_store/overview). Besides that, Pro customers get email support and an opportunity to support graphql-ruby's development!
+I also sell [GraphQL::Pro](http://graphql.pro) which provides several features on top of the GraphQL runtime, including [authorization](http://rmosolgo.github.io/graphql-ruby/pro/authorization), [Pusher-based subscriptions](http://graphql-ruby.org/subscriptions/pusher_implementation) and [persisted queries](http://rmosolgo.github.io/graphql-ruby/operation_store/overview). Besides that, Pro customers get email support and an opportunity to support graphql-ruby's development!
 
 ## Goals
 

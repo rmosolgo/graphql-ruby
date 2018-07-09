@@ -28,6 +28,8 @@ module GraphQL
   #     field :post, function: FindRecord.new(model: Post, type: PostType)
   #     field :comment, function: FindRecord.new(model: Comment, type: CommentType)
   #   end
+  #
+  # @see {GraphQL::Schema::Resolver} for a replacement for `GraphQL::Function`
   class Function
     # @return [Hash<String => GraphQL::Argument>] Arguments, keyed by name
     def arguments
@@ -95,6 +97,18 @@ module GraphQL
         else
           @type
         end
+      end
+
+      def build_field(function)
+        GraphQL::Field.define(
+          arguments: function.arguments,
+          complexity: function.complexity,
+          type: function.type,
+          resolve: function,
+          description: function.description,
+          function: function,
+          deprecation_reason: function.deprecation_reason,
+        )
       end
 
       # Class-level reader/writer which is inherited

@@ -6,32 +6,40 @@ describe GraphQL::StaticValidation::FieldsHaveAppropriateSelections do
   let(:query_string) {"
     query getCheese {
       okCheese: cheese(id: 1) { fatContent, similarCheese(source: YAK) { source } }
-      missingFieldsCheese: cheese(id: 1)
+      missingFieldsObject: cheese(id: 1)
+      missingFieldsInterface: cheese(id: 1) { selfAsEdible }
       illegalSelectionCheese: cheese(id: 1) { id { something, ... someFields } }
       incorrectFragmentSpread: cheese(id: 1) { flavor { ... on String { __typename } } }
     }
   "}
 
   it "adds errors for selections on scalars" do
-    assert_equal(3, errors.length)
+    assert_equal(4, errors.length)
 
     illegal_selection_error = {
       "message"=>"Selections can't be made on scalars (field 'id' returns Int but has selections [something, someFields])",
-      "locations"=>[{"line"=>5, "column"=>47}],
+      "locations"=>[{"line"=>6, "column"=>47}],
       "fields"=>["query getCheese", "illegalSelectionCheese", "id"],
     }
     assert_includes(errors, illegal_selection_error, "finds illegal selections on scalars")
 
-    selection_required_error = {
-      "message"=>"Objects must have selections (field 'cheese' returns Cheese but has no selections)",
+    objects_selection_required_error = {
+      "message"=>"Field must have selections (field 'cheese' returns Cheese but has no selections. Did you mean 'cheese { ... }'?)",
       "locations"=>[{"line"=>4, "column"=>7}],
-      "fields"=>["query getCheese", "missingFieldsCheese"],
+      "fields"=>["query getCheese", "missingFieldsObject"],
     }
-    assert_includes(errors, selection_required_error, "finds objects without selections")
+    assert_includes(errors, objects_selection_required_error, "finds objects without selections")
+
+    interfaces_selection_required_error = {
+      "message"=>"Field must have selections (field 'selfAsEdible' returns Edible but has no selections. Did you mean 'selfAsEdible { ... }'?)",
+      "locations"=>[{"line"=>5, "column"=>47}],
+      "fields"=>["query getCheese", "missingFieldsInterface", "selfAsEdible"],
+    }
+    assert_includes(errors, interfaces_selection_required_error, "finds interfaces without selections")
 
     incorrect_fragment_error = {
       "message"=>"Selections can't be made on scalars (field 'flavor' returns String but has inline fragments [String])",
-      "locations"=>[{"line"=>6, "column"=>48}],
+      "locations"=>[{"line"=>7, "column"=>48}],
       "fields"=>["query getCheese", "incorrectFragmentSpread", "flavor"],
     }
     assert_includes(errors, incorrect_fragment_error, "finds scalar fields with selections")
@@ -43,7 +51,7 @@ describe GraphQL::StaticValidation::FieldsHaveAppropriateSelections do
       assert_equal(1, errors.length)
 
       selections_required_error = {
-        "message"=> "Objects must have selections (anonymous query returns Query but has no selections)",
+        "message"=> "Field must have selections (anonymous query returns Query but has no selections. Did you mean ' { ... }'?)",
         "locations"=>[{"line"=>1, "column"=>1}],
         "fields"=>["query"]
       }

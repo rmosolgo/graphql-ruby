@@ -37,6 +37,8 @@ module GraphQL
     include GraphQL::Define::InstanceDefinable
     accepts_definitions :name, :type, :description, :default_value, :as, :prepare
     attr_accessor :type, :description, :default_value, :name, :as
+    attr_accessor :ast_node
+    alias :graphql_name :name
 
     ensure_defined(:name, :description, :default_value, :type=, :type, :as, :expose_as, :prepare)
 
@@ -58,8 +60,13 @@ module GraphQL
     end
 
     def default_value=(new_default_value)
-      @has_default_value = true
-      @default_value = new_default_value
+      if new_default_value == NO_DEFAULT_VALUE
+        @has_default_value = false
+        @default_value = nil
+      else
+        @has_default_value = true
+        @default_value = new_default_value
+      end
     end
 
     # @!attribute name
@@ -97,28 +104,28 @@ module GraphQL
     NO_DEFAULT_VALUE = Object.new
     # @api private
     def self.from_dsl(name, type_or_argument = nil, description = nil, default_value: NO_DEFAULT_VALUE, as: nil, prepare: DefaultPrepare, **kwargs, &block)
+      name_s = name.to_s
+
+      # Move some positional args into keywords if they're present
+      description && kwargs[:description] ||= description
+      kwargs[:name] ||= name_s
+      kwargs[:default_value] ||= default_value
+      kwargs[:as] ||= as
+
+      unless prepare == DefaultPrepare
+        kwargs[:prepare] ||= prepare
+      end
+
+      if !type_or_argument.nil? && !type_or_argument.is_a?(GraphQL::Argument)
+        # Maybe a string, proc or BaseType
+        kwargs[:type] = type_or_argument
+      end
+
       if type_or_argument.is_a?(GraphQL::Argument)
-        return type_or_argument.redefine(name: name.to_s)
-      end
-
-      argument = if block_given?
-        GraphQL::Argument.define(&block)
+        type_or_argument.redefine(kwargs, &block)
       else
-        GraphQL::Argument.define(**kwargs)
+        GraphQL::Argument.define(kwargs, &block)
       end
-
-      argument.name = name.to_s
-      type_or_argument && argument.type = type_or_argument
-      description && argument.description = description
-      if default_value != NO_DEFAULT_VALUE
-        argument.default_value = default_value
-      end
-      as && argument.as = as
-      if prepare != DefaultPrepare
-        argument.prepare = prepare
-      end
-
-      argument
     end
   end
 end

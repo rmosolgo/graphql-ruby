@@ -223,10 +223,7 @@ module Dummy
       description "Where it came from"
     end
 
-    input_field :originDairy, types.String, "Dairy which produced it", default_value: "Sugar Hollow Dairy" do
-      description   "Ignored because arg takes precedence"
-      default_value "Ignored because keyword arg takes precedence"
-    end
+    input_field :originDairy, types.String, "Dairy which produced it", default_value: "Sugar Hollow Dairy"
 
     input_field :fatContent, types.Float, "How much fat it has" do
       # ensure we can define default in block
@@ -249,6 +246,21 @@ module Dummy
     field :deepNonNull, DeepNonNullType.to_non_null_type do
       resolve ->(obj, args, ctx) { :deepNonNull }
     end
+  end
+
+  TimeType = GraphQL::ScalarType.define do
+    name "Time"
+    description "Time since epoch in seconds"
+
+    coerce_input ->(value, ctx) do
+      begin
+        Time.at(Float(value))
+      rescue ArgumentError
+        raise GraphQL::CoercionError, 'cannot coerce to Float'
+      end
+    end
+
+    coerce_result ->(value, ctx) { value.to_f }
   end
 
   class FetchItem < GraphQL::Function
@@ -315,6 +327,7 @@ module Dummy
       type !DairyProductUnion
       # This is a list just for testing 😬
       argument :product, types[DairyProductInputType], default_value: [{"source" => "SHEEP"}]
+      argument :expiresAfter, TimeType
       resolve ->(t, args, c) {
         source = args["product"][0][:source] # String or Sym is ok
         products = CHEESES.values + MILKS.values
@@ -369,10 +382,25 @@ module Dummy
       }
     end
 
+    field :multipleErrorsOnNonNullableField do
+      type !GraphQL::STRING_TYPE
+      resolve ->(t, a, c) {
+        [GraphQL::ExecutionError.new("This is an error message for some error."),
+         GraphQL::ExecutionError.new("This is another error message for a different error.")]
+      }
+    end
+
     field :executionErrorWithOptions do
       type GraphQL::INT_TYPE
       resolve ->(t, a, c) {
         GraphQL::ExecutionError.new("Permission Denied!", options: { "code" => "permission_denied" })
+      }
+    end
+
+    field :executionErrorWithExtensions do
+      type GraphQL::INT_TYPE
+      resolve ->(t, a, c) {
+        GraphQL::ExecutionError.new("Permission Denied!", extensions: { "code" => "permission_denied" })
       }
     end
 
@@ -403,26 +431,31 @@ module Dummy
     input_field :values, !types[!types.Int]
   end
 
-  DairyAppMutationType = GraphQL::ObjectType.define do
-    name "Mutation"
+  PushValueField = GraphQL::Field.define do
+    name :pushValue
+    type !types[!types.Int]
+    description("Push a value onto a global array :D")
+    argument :value, !types.Int, as: :val
+    resolve ->(o, args, ctx) {
+      GLOBAL_VALUES << args.val
+      GLOBAL_VALUES
+    }
+  end
+
+  class DairyAppMutationType < GraphQL::Schema::Object
+    graphql_name "Mutation"
     description "The root for mutations in this schema"
-    field :pushValue, !types[!types.Int] do
-      description("Push a value onto a global array :D")
-      argument :value, !types.Int, as: :val
-      resolve ->(o, args, ctx) {
-        GLOBAL_VALUES << args.val
-        GLOBAL_VALUES
-      }
+    # Test the `field:` compatibility option
+    field :pushValue, field: PushValueField
+
+    field :replaceValues, [Integer], "Replace the global array with new values", null: false do
+      argument :input, ReplaceValuesInputType, required: true
     end
 
-    field :replaceValues, !types[!types.Int] do
-      description("Replace the global array with new values")
-      argument :input, !ReplaceValuesInputType
-      resolve ->(o, args, ctx) {
-        GLOBAL_VALUES.clear
-        GLOBAL_VALUES.push(*args.input[:values])
-        GLOBAL_VALUES
-      }
+    def replace_values(input:)
+      GLOBAL_VALUES.clear
+      GLOBAL_VALUES.concat(input["values"])
+      GLOBAL_VALUES
     end
   end
 
@@ -433,7 +466,7 @@ module Dummy
     end
   end
 
-  Schema = GraphQL::Schema.define do
+  class Schema < GraphQL::Schema
     query DairyAppQueryType
     mutation DairyAppMutationType
     subscription SubscriptionType
@@ -442,8 +475,8 @@ module Dummy
 
     rescue_from(NoSuchDairyError) { |err| err.message  }
 
-    resolve_type ->(type, obj, ctx) {
+    def self.resolve_type(type, obj, ctx)
       Schema.types[obj.class.name.split("::").last]
-    }
+    end
   end
 end

@@ -1,5 +1,6 @@
 ---
 layout: guide
+doc_stub: false
 search: true
 section: Queries
 title: Ahead-of-Time Analysis
@@ -64,7 +65,7 @@ end
 Query analyzers are added to the schema with `query_analyzer`, for example:
 
 ```ruby
-MySchema = GraphQL::Schema.define do
+class MySchema < GraphQL::Schema
   query_analyzer MyQueryAnalyzer.new
 end
 ```

@@ -16,7 +16,7 @@ module Graphql
 
       def insert_root_type(type, name)
         log :add_root_type, type
-        sentinel = /GraphQL\:\:Schema\.define do\s*\n/m
+        sentinel = /< GraphQL::Schema\s*\n/m
 
         in_root do
           inject_into_file schema_file_path, "  #{type}(Types::#{name})\n", after: sentinel, verbose: false, force: false

@@ -6,7 +6,7 @@ module GraphQL
     # It provides the requested data and
     # access to the {Query} and {Query::Context}.
     class Result
-      extend GraphQL::Delegate
+      extend Forwardable
 
       def initialize(query:, values:)
         @query = query

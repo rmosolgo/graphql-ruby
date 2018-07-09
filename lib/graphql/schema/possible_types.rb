@@ -22,6 +22,8 @@ module GraphQL
 
       def possible_types(type_defn)
         case type_defn
+        when Module
+          possible_types(type_defn.graphql_definition)
         when GraphQL::UnionType
           type_defn.possible_types
         when GraphQL::InterfaceType
@@ -29,7 +31,7 @@ module GraphQL
         when GraphQL::BaseType
           [type_defn]
         else
-          raise "Unexpected possible_types object: #{type_defn}"
+          raise "Unexpected possible_types object: #{type_defn.inspect}"
         end
       end
     end

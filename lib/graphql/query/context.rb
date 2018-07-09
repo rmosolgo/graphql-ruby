@@ -70,10 +70,36 @@ module GraphQL
         def backtrace
           GraphQL::Backtrace.new(self)
         end
+
+        def execution_errors
+          @execution_errors ||= ExecutionErrors.new(self)
+        end
+      end
+
+      class ExecutionErrors
+        def initialize(ctx)
+          @context = ctx
+        end
+
+        def add(err_or_msg)
+          err = case err_or_msg
+          when String
+            GraphQL::ExecutionError.new(err_or_msg)
+          when GraphQL::ExecutionError
+            err_or_msg
+          else
+            raise ArgumentError, "expected String or GraphQL::ExecutionError, not #{err_or_msg.class} (#{err_or_msg.inspect})"
+          end
+          # This will assign ast_node and path
+          @context.add_error(err)
+        end
+
+        alias :>> :add
+        alias :push :add
       end
 
       include SharedMethods
-      extend GraphQL::Delegate
+      extend Forwardable
 
       attr_reader :execution_strategy
       # `strategy` is required by GraphQL::Batch
@@ -129,6 +155,7 @@ module GraphQL
       attr_writer :value
 
       def_delegators :@provided_values, :[], :[]=, :to_h, :key?, :fetch
+      def_delegators :@query, :trace
 
       # @!method [](key)
       #   Lookup `key` from the hash passed to {Schema#execute} as `context:`
@@ -162,7 +189,7 @@ module GraphQL
       class FieldResolutionContext
         include SharedMethods
         include Tracing::Traceable
-        extend GraphQL::Delegate
+        extend Forwardable
 
         attr_reader :irep_node, :field, :parent_type, :query, :schema, :parent, :key, :type
         alias :selection :irep_node
@@ -180,7 +207,13 @@ module GraphQL
           @query = context.query
           @schema = context.schema
           @tracers = @query.tracers
+          # This hack flag is required by ConnectionResolve
+          @wrapped_connection = false
+          @wrapped_object = false
         end
+
+        # @api private
+        attr_accessor :wrapped_connection, :wrapped_object
 
         def path
           @path ||= @parent.path.dup << @key
@@ -267,3 +300,6 @@ module GraphQL
     end
   end
 end
+
+
+GraphQL::Schema::Context = GraphQL::Query::Context

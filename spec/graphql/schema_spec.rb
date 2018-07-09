@@ -6,14 +6,27 @@ describe GraphQL::Schema do
   let(:relay_schema)  { StarWars::Schema }
   let(:empty_schema) { GraphQL::Schema.define }
 
-  describe "#rescue_from" do
-    let(:rescue_middleware) { schema.middleware.first }
+  describe "#graphql_definition" do
+    it "returns itself" do
+      assert_equal empty_schema, empty_schema.graphql_definition
+    end
+  end
 
+  describe "#rescue_from" do
     it "adds handlers to the rescue middleware" do
+      schema_defn = schema.graphql_definition
+      rescue_middleware = schema_defn.middleware.first
       assert_equal(1, rescue_middleware.rescue_table.length)
       # normally, you'd use a real class, not a symbol:
-      schema.rescue_from(:error_class) { "my custom message" }
+      schema_defn.rescue_from(:error_class) { "my custom message" }
       assert_equal(2, rescue_middleware.rescue_table.length)
+    end
+  end
+
+  describe "#find" do
+    it "finds a member using a string path" do
+      field = schema.find("Edible.fatContent")
+      assert_equal "fatContent", field.name
     end
   end
 
@@ -35,7 +48,7 @@ describe GraphQL::Schema do
       assert_equal(
         [
           Dummy::DairyAppQueryType,
-          Dummy::DairyAppMutationType,
+          Dummy::DairyAppMutationType.graphql_definition,
           Dummy::SubscriptionType
         ],
         schema.root_types
@@ -386,17 +399,18 @@ type Query {
 
   describe "#dup" do
     it "copies internal state" do
-      schema_2 = schema.dup
-      refute schema_2.types.equal?(schema.types)
+      schema_1 = schema.graphql_definition
+      schema_2 = schema_1.dup
+      refute schema_2.types.equal?(schema_1.types)
 
-      refute schema_2.instrumenters.equal?(schema.instrumenters)
-      assert_equal schema_2.instrumenters, schema.instrumenters
+      refute schema_2.instrumenters.equal?(schema_1.instrumenters)
+      assert_equal schema_2.instrumenters, schema_1.instrumenters
 
-      refute schema_2.middleware.equal?(schema.middleware)
-      assert_equal schema_2.middleware, schema.middleware
+      refute schema_2.middleware.equal?(schema_1.middleware)
+      assert_equal schema_2.middleware, schema_1.middleware
 
       schema_2.middleware << ->(*args) { :noop }
-      refute_equal schema_2.middleware, schema.middleware
+      refute_equal schema_2.middleware, schema_1.middleware
     end
   end
 
@@ -438,6 +452,21 @@ type Query {
       assert_instance_of GraphQL::Field, field
       field_2 = schema.get_field(Dummy::CheeseType, "id")
       assert_equal field, field_2
+    end
+  end
+
+  describe "class-based schemas" do
+    it "delegates to the graphql definition" do
+      # Not delegated:
+      assert_equal Jazz::Query.graphql_definition, Jazz::Schema.query
+      assert Jazz::Schema.respond_to?(:query)
+      # Delegated
+      assert_equal [], Jazz::Schema.tracers
+      assert Jazz::Schema.respond_to?(:tracers)
+    end
+
+    it "works with plugins" do
+      assert_equal "xyz", Jazz::Schema.metadata[:plugin_key]
     end
   end
 end

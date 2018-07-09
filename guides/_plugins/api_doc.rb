@@ -2,7 +2,7 @@
 require_relative "../../lib/graphql/version"
 
 module GraphQLSite
-  API_DOC_ROOT = "http://www.rubydoc.info/gems/graphql/#{GraphQL::VERSION}/"
+  API_DOC_ROOT = "/api-doc/#{GraphQL::VERSION}/"
 
   module APIDoc
     def api_doc(input)
@@ -45,9 +45,7 @@ module GraphQLSite
     end
 
     def render(context)
-      <<~HTML
-      <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=#{@title}#{@body ? "&body=#{@body}" : ""}" target="_blank">open an issue</a>
-      HTML
+      %|<a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=#{@title}#{@body ? "&body=#{@body}" : ""}" target="_blank">open an issue</a>|
     end
 
     private

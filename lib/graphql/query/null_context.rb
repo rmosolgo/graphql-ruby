@@ -22,7 +22,7 @@ module GraphQL
       end
 
       class << self
-        extend GraphQL::Delegate
+        extend Forwardable
 
         def instance
           @instance = self.new

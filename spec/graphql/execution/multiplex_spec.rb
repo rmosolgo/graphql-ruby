@@ -92,7 +92,7 @@ describe GraphQL::Execution::Multiplex do
         },
         {
           "errors" => [{
-            "message"=>"Objects must have selections (field 'nullableNestedSum' returns LazySum but has no selections)",
+            "message"=>"Field must have selections (field 'nullableNestedSum' returns LazySum but has no selections. Did you mean 'nullableNestedSum { ... }'?)",
             "locations"=>[{"line"=>1, "column"=>4}],
             "fields"=>["query", "validationError"]
           }]
@@ -176,7 +176,7 @@ describe GraphQL::Execution::Multiplex do
       assert_raises(GraphQL::Error) do
         InspectSchema.execute("{ raiseError }")
       end
-      unhandled_err_json = 'null'
+      unhandled_err_json = '{}'
       assert_equal unhandled_err_json, InspectQueryInstrumentation.last_json
     end
   end

@@ -1,5 +1,6 @@
 ---
 layout: guide
+doc_stub: false
 search: true
 section: Subscriptions
 title: Pusher Implementation
@@ -105,7 +106,7 @@ $graphql_subscriptions_redis = Redis.new # default connection
 Then, that Redis client is passed to the Subscription configuration:
 
 ```ruby
-MySchema = GraphQL::Schema.define do
+class MySchema < GraphQL::Schema
   use GraphQL::Pro::Subscriptions, redis: $graphql_subscriptions_redis
 end
 ```
@@ -219,7 +220,7 @@ end
 Then, use your _custom_ subscriptions class instead of the built-in one for your schema:
 
 ```ruby
-MySchema = GraphQL::Schema.define do
+class MySchema < GraphQL::Schema
   # Use custom subscriptions instead of GraphQL::Pro::Subscriptions
   # to get custom serialization logic
   use CustomSubscriptions, redis: $redis

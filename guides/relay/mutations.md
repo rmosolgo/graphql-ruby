@@ -1,5 +1,6 @@
 ---
 layout: guide
+doc_stub: false
 search: true
 title: Mutations
 section: Relay
@@ -7,7 +8,12 @@ desc: Implement Relay-compliant mutation fields
 index: 2
 ---
 
-Relay uses a [strict mutation API](https://facebook.github.io/relay/docs/graphql-mutations.html#content) for modifying the state of your application. This API makes mutations predictable to the client.
+
+**NOTE**: See {% internal_link "Mutation Classes", "/mutations/mutation_classes" %} for an updated mutation API.
+
+------
+
+Relay uses a [strict mutation API](https://facebook.github.io/relay/docs/en/mutations.html) for modifying the state of your application. This API makes mutations predictable to the client.
 
 On the client-side, Relay also requires you to specify how it should interpret the response from your GraphQL server, which may require your server-side mutations to return payloads with specific fields.
 
@@ -17,13 +23,12 @@ To add mutations to your GraphQL schema, define a mutation type and pass it to y
 
 ```ruby
 # Define the mutation type
-MutationType = GraphQL::ObjectType.define do
-  name "Mutation"
+class MutationType < GraphQL::Schema::Object
   # ...
 end
 
 # and pass it to the schema
-MySchema = GraphQL::Schema.define do
+class MySchema < GraphQL::Schema
   query QueryType
   mutation MutationType
 end
@@ -40,10 +45,9 @@ For Relay-compliant GraphQL, a mutation field must comply to a strict API. `Grap
 After defining a mutation (see below), add it to your mutation type:
 
 ```ruby
-MutationType = GraphQL::ObjectType.define do
-  name "Mutation"
+class MutationType < GraphQL::Schema::Object
   # Add the mutation's derived field to the mutation type
-  field :addComment, field: AddCommentMutation.field
+  field :add_comment, field: AddCommentMutation.field
   # ...
 end
 ```

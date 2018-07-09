@@ -56,7 +56,7 @@ module GraphQL
   # This will result in the message of the `GraphQL::CoercionError` being used in the error response:
   #
   # @example custom error response
-  # {"message"=>"cannot coerce `"2"` to Float", "locations"=>[{"line"=>3, "column"=>9}], "fields"=>["arg"]}
+  #   {"message"=>"cannot coerce `"2"` to Float", "locations"=>[{"line"=>3, "column"=>9}], "fields"=>["arg"]}
   #
   class ScalarType < GraphQL::BaseType
     accepts_definitions :coerce, :coerce_input, :coerce_result
@@ -109,7 +109,19 @@ module GraphQL
     end
 
     def coerce_non_null_input(value, ctx)
-      @coerce_input_proc.call(value, ctx)
+      @coerce_input_proc.call(raw_coercion_input(value), ctx)
+    end
+
+    def raw_coercion_input(value)
+      if value.is_a?(GraphQL::Language::Nodes::InputObject)
+        value.to_h
+      elsif value.is_a?(Array)
+        value.map { |element| raw_coercion_input(element) }
+      elsif value.is_a?(GraphQL::Language::Nodes::Enum)
+        value.name
+      else
+        value
+      end
     end
 
     def validate_non_null_input(value, ctx)

@@ -1,4 +1,34 @@
 # frozen_string_literal: true
+require "yard"
+
+namespace :apidocs do
+  desc "Fetch a gem version from RubyGems, build the docs"
+  task :gen_version, [:version] do |t, args|
+    version = args[:version] || raise("A version is required")
+    Dir.chdir("tmp") do
+      if !File.exist?("graphql-#{version}.gem")
+        system("gem fetch graphql --version=#{version}")
+      end
+      if !File.exist?("graphql-#{version}")
+        system("gem unpack graphql-#{version}.gem")
+      end
+      Dir.chdir("graphql-#{version}") do
+        if !File.exist?("doc")
+          system("yardoc")
+        end
+        # Copy it into gh-pages for publishing
+        # and locally for previewing
+        push_dest = "../../gh-pages/api-doc/#{version}"
+        local_dest = "../../guides/_site/api-doc/#{version}"
+        mkdir_p push_dest
+        mkdir_p local_dest
+        copy_entry "doc", push_dest
+        copy_entry "doc", local_dest
+      end
+    end
+    puts "Successfully generated docs for #{version}"
+  end
+end
 
 namespace :site do
   desc "View the documentation site locally"
@@ -38,7 +68,9 @@ namespace :site do
       'gh-pages/..',
       'gh-pages/.git',
       'gh-pages/.gitignore',
+      'gh-pages/api-doc',
     ]
+
     FileList["gh-pages/{*,.*}"].exclude(*purge_exclude).each do |path|
       sh "rm -rf #{path}"
     end
@@ -66,12 +98,13 @@ namespace :site do
     puts 'Done.'
   end
 
-  task :build_doc do
-    require "yard"
+  YARD::Rake::YardocTask.new(:prepare_yardoc)
+
+  task build_doc: :prepare_yardoc do
     require_relative "../../lib/graphql/version"
 
     def to_rubydoc_url(path)
-      "http://www.rubydoc.info/gems/graphql/#{GraphQL::VERSION}/" + path
+      "/api-doc/#{GraphQL::VERSION}/" + path
         .gsub("::", "/")                        # namespaces
         .sub(/#(.+)$/, "#\\1-instance_method")  # instance methods
         .sub(/\.(.+)$/, "#\\1-class_method")    # class methods
@@ -84,6 +117,7 @@ search: true
 title: %{title}
 url: %{url}
 rubydoc_url: %{url}
+doc_stub: true
 ---
 
 %{documentation}
@@ -98,20 +132,26 @@ PAGE
     # Get docs for all classes and modules
     docs = registry.all(:class, :module)
     docs.each do |code_object|
-      # Skip private classes and modules
-      if code_object.visibility == :private
-        next
-      end
-      rubydoc_url = to_rubydoc_url(code_object.path)
-      page_content = DOC_TEMPLATE % {
-        title: code_object.path,
-        url: rubydoc_url,
-        documentation: code_object.format.gsub(/-{2,}/, " ").gsub(/^\s+/, ""),
-      }
+      begin
+        # Skip private classes and modules
+        if code_object.visibility == :private
+          next
+        end
+        rubydoc_url = to_rubydoc_url(code_object.path)
+        page_content = DOC_TEMPLATE % {
+          title: code_object.path,
+          url: rubydoc_url,
+          documentation: code_object.format.gsub(/-{2,}/, " ").gsub(/^\s+/, ""),
+        }
 
-      filename = code_object.path.gsub(/\W+/, "_")
-      filepath = "guides/yardoc/#{filename}.md"
-      File.write(filepath, page_content)
+        filename = code_object.path.gsub(/\W+/, "_")
+        filepath = "guides/yardoc/#{filename}.md"
+        File.write(filepath, page_content)
+      rescue StandardError => err
+        puts "Error on: #{code_object.path}"
+        puts err
+        puts err.backtrace
+      end
     end
     puts "Wrote #{docs.size} YARD docs to #{files_target}."
   end

@@ -86,10 +86,7 @@ describe GraphQL::Query::SerialExecution::ValueResolution do
 
       it "raises an error" do
         err = assert_raises(GraphQL::UnresolvedTypeError) { result }
-        expected_message = "The value from \"resolvesToNilInterface\" on \"Query\" could not be resolved to \"SomeInterface\". " \
-          "(Received: `nil`, Expected: [SomeObject]) " \
-          "Make sure you have defined a `type_from_object` proc on your schema and that value `1337` " \
-          "gets resolved to a valid type."
+        expected_message = "The value from \"resolvesToNilInterface\" on \"Query\" could not be resolved to \"SomeInterface\". (Received: `nil`, Expected: [SomeObject]) Make sure you have defined a `resolve_type` proc on your schema and that value `1337` gets resolved to a valid type. You may need to add your type to `orphan_types` if it implements an interface but isn't a return type of any other field."
         assert_equal expected_message, err.message
       end
     end
@@ -103,10 +100,7 @@ describe GraphQL::Query::SerialExecution::ValueResolution do
 
       it "raises an error" do
         err = assert_raises(GraphQL::UnresolvedTypeError) { result }
-        expected_message = "The value from \"resolvesToWrongTypeInterface\" on \"Query\" could not be resolved to \"SomeInterface\". " \
-          "(Received: `OtherObject`, Expected: [SomeObject]) " \
-          "Make sure you have defined a `type_from_object` proc on your schema and that value `:something` " \
-          "gets resolved to a valid type."
+        expected_message = "The value from \"resolvesToWrongTypeInterface\" on \"Query\" could not be resolved to \"SomeInterface\". (Received: `OtherObject`, Expected: [SomeObject]) Make sure you have defined a `resolve_type` proc on your schema and that value `:something` gets resolved to a valid type. You may need to add your type to `orphan_types` if it implements an interface but isn't a return type of any other field."
         assert_equal expected_message, err.message
       end
     end

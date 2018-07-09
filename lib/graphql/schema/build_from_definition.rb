@@ -107,6 +107,8 @@ module GraphQL
             directives directives.values
           end
 
+          schema.ast_node = schema_definition if schema_definition
+
           schema
         end
 
@@ -117,18 +119,26 @@ module GraphQL
         NullScalarCoerce = ->(val, _ctx) { val }
 
         def build_enum_type(enum_type_definition, type_resolver)
-          GraphQL::EnumType.define(
+          enum = GraphQL::EnumType.define(
             name: enum_type_definition.name,
             description: enum_type_definition.description,
             values: enum_type_definition.values.map do |enum_value_definition|
-              EnumType::EnumValue.define(
+              value = EnumType::EnumValue.define(
                 name: enum_value_definition.name,
                 value: enum_value_definition.name,
                 deprecation_reason: build_deprecation_reason(enum_value_definition.directives),
                 description: enum_value_definition.description,
               )
+
+              value.ast_node = enum_value_definition
+
+              value
             end
           )
+
+          enum.ast_node = enum_type_definition
+
+          enum
         end
 
         def build_deprecation_reason(directives)
@@ -148,6 +158,8 @@ module GraphQL
             coerce: NullScalarCoerce,
           )
 
+          scalar_type.ast_node = scalar_type_definition
+
           if default_resolve.respond_to?(:coerce_input)
             scalar_type = scalar_type.redefine(
               coerce_input: ->(val, ctx) { default_resolve.coerce_input(scalar_type, val, ctx) },
@@ -159,11 +171,15 @@ module GraphQL
         end
 
         def build_union_type(union_type_definition, type_resolver)
-          GraphQL::UnionType.define(
+          union = GraphQL::UnionType.define(
             name: union_type_definition.name,
             description: union_type_definition.description,
             possible_types: union_type_definition.types.map{ |type_name| type_resolver.call(type_name) },
           )
+
+          union.ast_node = union_type_definition
+
+          union
         end
 
         def build_object_type(object_type_definition, type_resolver, default_resolve:)
@@ -175,14 +191,20 @@ module GraphQL
             fields: Hash[build_fields(object_type_definition.fields, type_resolver, default_resolve: typed_resolve_fn)],
             interfaces: object_type_definition.interfaces.map{ |interface_name| type_resolver.call(interface_name) },
           )
+          type_def.ast_node = object_type_definition
+          type_def
         end
 
         def build_input_object_type(input_object_type_definition, type_resolver)
-          GraphQL::InputObjectType.define(
+          input = GraphQL::InputObjectType.define(
             name: input_object_type_definition.name,
             description: input_object_type_definition.description,
             arguments: Hash[build_input_arguments(input_object_type_definition, type_resolver)],
           )
+
+          input.ast_node = input_object_type_definition
+
+          input
         end
 
         def build_default_value(default_value)
@@ -208,25 +230,33 @@ module GraphQL
               kwargs[:default_value] = build_default_value(input_argument.default_value)
             end
 
+            argument = GraphQL::Argument.define(
+              name: input_argument.name,
+              type: type_resolver.call(input_argument.type),
+              description: input_argument.description,
+              **kwargs,
+            )
+
+            argument.ast_node = input_argument
+
             [
               input_argument.name,
-              GraphQL::Argument.define(
-                name: input_argument.name,
-                type: type_resolver.call(input_argument.type),
-                description: input_argument.description,
-                **kwargs,
-              )
+              argument
             ]
           end
         end
 
         def build_directive(directive_definition, type_resolver)
-          GraphQL::Directive.define(
+          directive = GraphQL::Directive.define(
             name: directive_definition.name,
             description: directive_definition.description,
             arguments: Hash[build_directive_arguments(directive_definition, type_resolver)],
-            locations: directive_definition.locations.map(&:to_sym),
+            locations: directive_definition.locations.map { |location| location.name.to_sym },
           )
+
+          directive.ast_node = directive_definition
+
+          directive
         end
 
         def build_directive_arguments(directive_definition, type_resolver)
@@ -237,24 +267,32 @@ module GraphQL
               kwargs[:default_value] = build_default_value(directive_argument.default_value)
             end
 
+            argument = GraphQL::Argument.define(
+              name: directive_argument.name,
+              type: type_resolver.call(directive_argument.type),
+              description: directive_argument.description,
+              **kwargs,
+            )
+
+            argument.ast_node = directive_argument
+
             [
               directive_argument.name,
-              GraphQL::Argument.define(
-                name: directive_argument.name,
-                type: type_resolver.call(directive_argument.type),
-                description: directive_argument.description,
-                **kwargs,
-              )
+              argument
             ]
           end
         end
 
         def build_interface_type(interface_type_definition, type_resolver)
-          GraphQL::InterfaceType.define(
+          interface = GraphQL::InterfaceType.define(
             name: interface_type_definition.name,
             description: interface_type_definition.description,
             fields: Hash[build_fields(interface_type_definition.fields, type_resolver, default_resolve: nil)],
           )
+
+          interface.ast_node = interface_type_definition
+
+          interface
         end
 
         def build_fields(field_definitions, type_resolver, default_resolve:)
@@ -273,6 +311,8 @@ module GraphQL
                 **kwargs,
               )
 
+              arg.ast_node = argument
+
               [argument.name, arg]
             end]
 
@@ -284,6 +324,8 @@ module GraphQL
               resolve: ->(obj, args, ctx) { default_resolve.call(field, obj, args, ctx) },
               deprecation_reason: build_deprecation_reason(field_definition.directives),
             )
+
+            field.ast_node = field_definition
 
             type_name = resolve_type_name(field_definition.type)
             field.connection = type_name.end_with?("Connection")

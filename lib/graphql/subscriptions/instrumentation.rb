@@ -44,7 +44,10 @@ module GraphQL
 
         # Wrap the proc with subscription registration logic
         def call(obj, args, ctx)
+          @inner_proc.call(obj, args, ctx) if @inner_proc && !@inner_proc.is_a?(GraphQL::Field::Resolve::BuiltInResolve)
+
           events = ctx.namespace(:subscriptions)[:events]
+
           if events
             # This is the first execution, so gather an Event
             # for the backend to register:
@@ -56,7 +59,11 @@ module GraphQL
             ctx.skip
           elsif ctx.irep_node.subscription_topic == ctx.query.subscription_topic
             # The root object is _already_ the subscription update:
-            obj
+            if obj.is_a?(GraphQL::Schema::Object)
+              obj.object
+            else
+              obj
+            end
           else
             # This is a subscription update, but this event wasn't triggered.
             ctx.skip

@@ -10,7 +10,8 @@ module GraphQL
         def initialize(mutation, resolve)
           @mutation = mutation
           @resolve = resolve
-          @wrap_result = mutation.has_generated_return_type?
+          @wrap_result = mutation.is_a?(GraphQL::Relay::Mutation) && mutation.has_generated_return_type?
+          @class_based = mutation.is_a?(Class)
         end
 
         def call(obj, args, ctx)
@@ -20,10 +21,8 @@ module GraphQL
             err
           end
 
-          if ctx.schema.lazy?(mutation_result)
-            mutation_result
-          else
-            build_result(mutation_result, args, ctx)
+          ctx.schema.after_lazy(mutation_result) do |res|
+            build_result(res, args, ctx)
           end
         end
 
@@ -44,6 +43,9 @@ module GraphQL
             end
 
             @mutation.result_class.new(client_mutation_id: args[:input][:clientMutationId], result: mutation_result)
+          elsif @class_based
+            mutation_result[:client_mutation_id] = args[:input][:client_mutation_id]
+            mutation_result
           else
             mutation_result
           end

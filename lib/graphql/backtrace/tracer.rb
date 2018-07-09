@@ -22,30 +22,24 @@ module GraphQL
         end
 
         if push_data
-          execution_context = Thread.current[:graphql_execution_context] ||= []
-          if key == "execute_multiplex"
-            execution_context.clear
-            execution_context.push(push_data)
-            begin
-              yield
-            rescue StandardError => err
-              # This is an unhandled error from execution,
-              # Re-raise it with a GraphQL trace.
-              potential_context = execution_context.last
+          Thread.current[:last_graphql_backtrace_context] = push_data
+        end
 
-              if potential_context.is_a?(GraphQL::Query::Context) || potential_context.is_a?(GraphQL::Query::Context::FieldResolutionContext)
-                raise TracedError.new(err, potential_context)
-              else
-                raise
-              end
-            ensure
-              execution_context.clear
+        if key == "execute_multiplex"
+          begin
+            yield
+          rescue StandardError => err
+            # This is an unhandled error from execution,
+            # Re-raise it with a GraphQL trace.
+            potential_context = Thread.current[:last_graphql_backtrace_context]
+
+            if potential_context.is_a?(GraphQL::Query::Context) || potential_context.is_a?(GraphQL::Query::Context::FieldResolutionContext)
+              raise TracedError.new(err, potential_context)
+            else
+              raise
             end
-          else
-            execution_context.push(push_data)
-            res = yield
-            execution_context.pop
-            res
+          ensure
+            Thread.current[:last_graphql_backtrace_context] = nil
           end
         else
           yield

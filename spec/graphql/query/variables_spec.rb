@@ -48,6 +48,47 @@ describe GraphQL::Query::Variables do
       end
     end
 
+    describe "symbol keys" do
+      let(:query_string) { <<-GRAPHQL
+        query testVariables(
+          $dairy_product_1: DairyProductInput!
+          $dairy_product_2: DairyProductInput!
+        ) {
+          __typename
+        }
+      GRAPHQL
+      }
+
+      let(:provided_variables) {
+        {
+          dairy_product_1: { source: "COW", fatContent: 0.99 },
+          "dairy_product_2" => { source: "DONKEY", "fatContent": 0.89 },
+        }
+      }
+
+      it "checks for string matches" do
+        # These get merged into all the values above
+        default_values = {
+          "originDairy"=>"Sugar Hollow Dairy",
+          "organic"=>false,
+          "order_by"=>{"direction"=>"ASC"}
+        }
+
+        expected_input_1 = {
+          "source" => 1,
+          "fatContent" => 0.99,
+        }.merge(default_values)
+
+        assert_equal(expected_input_1, variables["dairy_product_1"].to_h)
+
+        expected_input_2 = {
+          "source" => :donkey,
+          "fatContent" => 0.89,
+        }.merge(default_values)
+        assert_equal(expected_input_2, variables["dairy_product_2"].to_h)
+      end
+    end
+
     describe "validating input objects" do
       let(:query_string) {%|
       query searchMyDairy (
@@ -66,6 +107,26 @@ describe GraphQL::Query::Variables do
 
         it "validates invalid input objects" do
           expected = "Variable product of type DairyProductInput was provided invalid value"
+          assert_equal expected, variables.errors.first.message
+        end
+      end
+
+      describe "when provided input cannot be coerced" do
+        let(:query_string) {%|
+        query searchMyDairy (
+          $time: Time
+        ) {
+          searchDairy(expiresAfter: $time) {
+            ... on Cheese {
+              flavor
+            }
+          }
+        }
+        |}
+        let(:provided_variables) { { "time" => "a" } }
+
+        it "validates invalid input objects" do
+          expected = "Variable time of type Time was provided invalid value"
           assert_equal expected, variables.errors.first.message
         end
       end
