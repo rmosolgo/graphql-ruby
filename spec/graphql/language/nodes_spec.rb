@@ -48,7 +48,6 @@ type Query {
       node_classes = GraphQL::Language::Nodes.constants - [:WrapperType, :NameOnlyNode]
       node_classes.each do |const|
         node_class = GraphQL::Language::Nodes.const_get(const)
-        abstract_method = GraphQL::Language::Nodes::AbstractNode.instance_method(:visit_method)
         if node_class.is_a?(Class) && node_class < GraphQL::Language::Nodes::AbstractNode
           concrete_method = node_class.instance_method(:visit_method)
           refute_nil concrete_method.super_method, "#{node_class} overrides #visit_method"
