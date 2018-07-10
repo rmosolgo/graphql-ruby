@@ -78,8 +78,6 @@ module GraphQL
               ctx.wrapped_object = true
               proxy_to_depth(result, @list_depth, ctx)
             end
-          rescue GraphQL::UnauthorizedError => err
-            ctx.schema.unauthorized_object(err)
           end
 
           private

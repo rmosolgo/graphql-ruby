@@ -208,6 +208,26 @@ describe GraphQL::Authorization do
       edge_type(IntegerObjectEdge)
     end
 
+    # This object responds with `replaced => false`,
+    # but if its replacement value is used, it gives `replaced => true`
+    class Replaceable
+      def replacement
+        { replaced: true }
+      end
+
+      def replaced
+        false
+      end
+    end
+
+    class ReplacedObject < BaseObject
+      def self.authorized?(obj, ctx)
+        super && !ctx[:replace_me]
+      end
+
+      field :replaced, Boolean, null: false
+    end
+
     class LandscapeFeature < BaseEnum
       value "MOUNTAIN"
       value "STREAM", role: :unauthorized
@@ -301,6 +321,11 @@ describe GraphQL::Authorization do
       def lazy_integers
         Box.new(value: Box.new(value: [1,2,3]))
       end
+
+      field :replaced_object, ReplacedObject, null: false
+      def replaced_object
+        Replaceable.new
+      end
     end
 
     class DoHiddenStuff < GraphQL::Schema::RelayClassicMutation
@@ -341,7 +366,11 @@ describe GraphQL::Authorization do
       lazy_resolve(Box, :value)
 
       def self.unauthorized_object(err)
-        raise GraphQL::ExecutionError, "Unauthorized #{err.type.graphql_name}: #{err.object}"
+        if err.object.respond_to?(:replacement)
+          err.object.replacement
+        else
+          raise GraphQL::ExecutionError, "Unauthorized #{err.type.graphql_name}: #{err.object}"
+        end
       end
 
       # use GraphQL::Backtrace
@@ -720,6 +749,15 @@ describe GraphQL::Authorization do
       # An error from two, values from the others
       assert_equal ["Unauthorized UnauthorizedCheckBox: a", "Unauthorized UnauthorizedCheckBox: a"], res["errors"].map { |e| e["message"] }
       assert_equal [{"value" => "z"}, {"value" => "z2"}, nil, nil], res["data"]["unauthorizedLazyListInterface"]
+    end
+
+    it "replaces objects from the unauthorized_object hook" do
+      query = "{ replacedObject { replaced } }"
+      res = auth_execute(query, context: { replace_me: true })
+      assert_equal true, res["data"]["replacedObject"]["replaced"]
+
+      res = auth_execute(query, context: { replace_me: false })
+      assert_equal false, res["data"]["replacedObject"]["replaced"]
     end
   end
 end

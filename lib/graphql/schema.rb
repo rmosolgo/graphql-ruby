@@ -871,6 +871,10 @@ module GraphQL
       #
       # By default, this hook just replaces the unauthorized object with `nil`.
       #
+      # Whatever value is returned from this method will be used instead of the
+      # unauthorized object (accessible ass `unauthorized_error.object`). If an
+      # error is raised, then `nil` will be used.
+      #
       # If you want to add an error to the `"errors"` key, raise a {GraphQL::ExecutionError}
       # in this hook.
       #
