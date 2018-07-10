@@ -157,7 +157,11 @@ module GraphQL
         end
       end
 
-      class DirectiveLocation < NameOnlyNode; end
+      class DirectiveLocation < NameOnlyNode
+        def visit_method
+          :on_directive_location
+        end
+      end
 
       # This is the AST root for normal queries
       #
@@ -489,6 +493,10 @@ module GraphQL
         end
 
         alias :children :directives
+
+        def visit_method
+          :on_schema_extension
+        end
       end
 
       class ScalarTypeDefinition < AbstractNode
@@ -514,6 +522,10 @@ module GraphQL
         def initialize_node(name:, directives: [])
           @name = name
           @directives = directives
+        end
+
+        def visit_method
+          :on_scalar_type_extension
         end
       end
 
@@ -550,6 +562,10 @@ module GraphQL
 
         def children
           interfaces + fields + directives
+        end
+
+        def visit_method
+          :on_object_type_extension
         end
       end
 
@@ -630,6 +646,10 @@ module GraphQL
         def children
           fields + directives
         end
+
+        def visit_method
+          :on_interface_type_extension
+        end
       end
 
       class UnionTypeDefinition < AbstractNode
@@ -664,6 +684,10 @@ module GraphQL
         def children
           types + directives
         end
+
+        def visit_method
+          :on_union_type_extension
+        end
       end
 
       class EnumTypeDefinition < AbstractNode
@@ -680,6 +704,10 @@ module GraphQL
         def children
           values + directives
         end
+
+        def visit_method
+          :on_enum_type_extension
+        end
       end
 
       class EnumTypeExtension < AbstractNode
@@ -693,6 +721,10 @@ module GraphQL
 
         def children
           values + directives
+        end
+
+        def visit_method
+          :on_enum_type_extension
         end
       end
 
@@ -743,6 +775,10 @@ module GraphQL
 
         def children
           fields + directives
+        end
+
+        def visit_method
+          :on_input_object_type_extension
         end
       end
     end
