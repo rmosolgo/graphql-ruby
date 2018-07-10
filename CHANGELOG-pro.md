@@ -8,6 +8,10 @@
 
 ### Bug Fix
 
+## 1.7.8 (10 July 2018)
+
+- Authorization: fix scoping lists of abstract type when there's no `#scope` method on the strategy
+
 ## 1.7.7 (10 May 2018)
 
 ### Bug Fix
