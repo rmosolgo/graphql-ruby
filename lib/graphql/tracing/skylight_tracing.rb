@@ -18,6 +18,12 @@ module GraphQL
         if (query = data[:query])
           title = query.selected_operation_name || "<anonymous>"
           category = platform_key
+          # Assign the endpoint so that queries will be grouped
+          current_instance = Skylight::Instrumenter.instance
+          if current_instance
+            endpoint = "GraphQL/#{query.operation_type}.#{title}"
+            current_instance.current_trace.endpoint = endpoint
+          end
         elsif key.start_with?("execute_field")
           title = platform_key
           category = key
